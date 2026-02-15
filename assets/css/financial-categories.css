@@ -1,0 +1,653 @@
+/**
+ * Estilos para Gestión de Categorías Financieras
+ * 
+ * @package AuraBusinessSuite
+ * @subpackage Financial
+ */
+
+/* ====================
+   PÁGINA PRINCIPAL
+   ==================== */
+
+.aura-categories-page {
+    max-width: 1400px;
+    margin: 20px auto;
+}
+
+.aura-categories-page .wp-heading-inline {
+    margin-right: 10px;
+}
+
+/* ====================
+   FILTROS
+   ==================== */
+
+.aura-filters-container {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.aura-filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.aura-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 200px;
+}
+
+.aura-filter-group label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1d2327;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.aura-filter-group label .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.aura-filter-group input[type="text"],
+.aura-filter-group select {
+    padding: 6px 10px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#aura-clear-filters-btn {
+    margin-left: auto;
+}
+
+/* ====================
+   TABLA
+   ==================== */
+
+.aura-table-container {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.aura-categories-table {
+    margin: 0;
+}
+
+.aura-categories-table thead th {
+    background: #f6f7f7;
+    font-weight: 600;
+    padding: 12px 10px;
+}
+
+.aura-categories-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.aura-categories-table tbody tr:hover {
+    background-color: #f6f7f7;
+}
+
+.aura-categories-table td {
+    padding: 12px 10px;
+    vertical-align: middle;
+}
+
+/* Columnas específicas */
+.column-type,
+.column-color,
+.column-icon,
+.column-status,
+.column-order {
+    text-align: center;
+    width: 80px;
+}
+
+.column-transactions {
+    text-align: center;
+    width: 120px;
+}
+
+.column-parent {
+    width: 150px;
+}
+
+.column-actions {
+    width: 180px;
+}
+
+/* Iconos de tipo */
+.aura-icon-income {
+    color: #27ae60;
+    font-size: 20px;
+}
+
+.aura-icon-expense {
+    color: #e74c3c;
+    font-size: 20px;
+}
+
+.aura-icon-both {
+    color: #3498db;
+    font-size: 20px;
+}
+
+/* Iconos de estado */
+.aura-icon-active {
+    color: #27ae60;
+    font-size: 20px;
+}
+
+.aura-icon-inactive {
+    color: #e74c3c;
+    font-size: 20px;
+}
+
+/* Badge de color */
+.aura-color-badge {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+/* Nombre de categoría padre */
+.aura-parent-name {
+    color: #646970;
+    font-size: 13px;
+}
+
+/* Row actions */
+.row-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+tr:hover .row-actions {
+    opacity: 1;
+}
+
+/* ====================
+   MODAL
+   ==================== */
+
+.aura-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(2px);
+}
+
+.aura-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideIn 0.3s ease;
+}
+
+.aura-modal-small .aura-modal-content {
+    max-width: 400px;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal Header */
+.aura-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #dcdcde;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f6f7f7;
+}
+
+.aura-modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.aura-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.aura-modal-close:hover {
+    background: #e0e0e0;
+}
+
+.aura-modal-close .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+/* Modal Body */
+.aura-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Modal Footer */
+.aura-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #dcdcde;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    background: #f6f7f7;
+}
+
+.aura-modal-footer .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.aura-modal-footer .button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Prevenir scroll en body cuando modal está abierto */
+body.aura-modal-open {
+    overflow: hidden;
+}
+
+/* ====================
+   FORMULARIO
+   ==================== */
+
+.form-row {
+    margin-bottom: 20px;
+}
+
+.form-row-2-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.form-group label .required {
+    color: #d63638;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.form-group .description {
+    font-size: 13px;
+    color: #646970;
+    font-style: italic;
+}
+
+/* Radio buttons personalizados */
+.radio-group {
+    display: flex;
+    gap: 15px;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 10px 15px;
+    border: 2px solid #dcdcde;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.radio-label:hover {
+    border-color: #2271b1;
+    background: #f6f7f7;
+}
+
+.radio-label input[type="radio"] {
+    display: none;
+}
+
+.radio-label input[type="radio"]:checked + .radio-icon {
+    border-color: currentColor;
+    background: currentColor;
+}
+
+.radio-label input[type="radio"]:checked + .radio-icon .dashicons {
+    color: #fff !important;
+}
+
+.radio-label input[type="radio"]:checked ~ .radio-text {
+    font-weight: 600;
+}
+
+.radio-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 2px solid #dcdcde;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.radio-icon.income {
+    color: #27ae60;
+}
+
+.radio-icon.expense {
+    color: #e74c3c;
+}
+
+.radio-icon.both {
+    color: #3498db;
+}
+
+.radio-icon .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.radio-text {
+    font-size: 14px;
+}
+
+/* Checkbox personalizado */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Icon preview */
+.icon-preview {
+    margin-top: 10px;
+    padding: 15px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* ====================
+   ALERTAS
+   ==================== */
+
+.aura-alert {
+    padding: 15px;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.aura-alert .dashicons {
+    flex-shrink: 0;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.aura-alert p {
+    margin: 0;
+    flex: 1;
+}
+
+.aura-alert-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+
+.aura-alert-warning .dashicons {
+    color: #ffc107;
+}
+
+/* ====================
+   NOTIFICACIONES
+   ==================== */
+
+.aura-notice {
+    position: relative;
+    animation: noticeSlideDown 0.3s ease;
+}
+
+@keyframes noticeSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ====================
+   ESTADOS VACÍOS
+   ==================== */
+
+#aura-no-categories {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+#aura-no-categories .dashicons {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #dcdcde;
+    margin-bottom: 10px;
+}
+
+#aura-no-categories p {
+    color: #646970;
+    font-size: 16px;
+    margin: 0;
+}
+
+/* ====================
+   LOADING
+   ==================== */
+
+.aura-loading-row td {
+    text-align: center;
+    padding: 40px !important;
+}
+
+.aura-loading-row .spinner {
+    float: none;
+    margin: 0 auto 10px;
+}
+
+/* ====================
+   RESPONSIVE
+   ==================== */
+
+@media screen and (max-width: 782px) {
+    .aura-filters-row {
+        flex-direction: column;
+    }
+    
+    .aura-filter-group {
+        width: 100%;
+    }
+    
+    #aura-clear-filters-btn {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .form-row-2-cols {
+        grid-template-columns: 1fr;
+    }
+    
+    .aura-modal-content {
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .aura-categories-table {
+        font-size: 13px;
+    }
+    
+    .column-parent,
+    .column-order,
+    .column-transactions {
+        display: none;
+    }
+    
+    .row-actions {
+        opacity: 1;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .radio-group {
+        flex-direction: column;
+    }
+    
+    .radio-label {
+        width: 100%;
+    }
+    
+    .aura-modal-footer {
+        flex-direction: column;
+    }
+    
+    .aura-modal-footer .button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ====================
+   COLOR PICKER
+   ==================== */
+
+.wp-picker-container {
+    margin-top: 5px;
+}
+
+.wp-picker-container .wp-color-result {
+    height: 36px;
+    border-radius: 4px;
+}
+
+/* ====================
+   UTILIDADES
+   ==================== */
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}

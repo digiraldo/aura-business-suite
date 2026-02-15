@@ -1,0 +1,81 @@
+# Aura Business Suite - Ignorar archivos
+
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/backup-db/
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+wp-content/updraft/
+
+# Plugin específico
+*.log
+*.sql
+*.sqlite
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# Node (si usas build tools)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Composer
+/vendor/
+composer.lock
+
+# Build tools
+/dist/
+/build/
+*.min.js.map
+*.min.css.map
+
+# Temporales
+*.tmp
+*.bak
+*.cache
+
+# Documentos privados
+/docs/private/
+/config/local.php
+
+# Backups
+*.backup
+*.old
+
+# Testing
+/tests/coverage/
+phpunit.xml
+.phpunit.result.cache
+
+# Environment
+.env
+.env.local
+.env.*.local
