@@ -19,6 +19,43 @@ if (!defined('ABSPATH')) {
 class Aura_Notifications {
     
     /**
+     * Crear una notificación interna para un usuario
+     * Almacena la notificación en user_meta del usuario destino.
+     *
+     * @param int    $user_id  ID del usuario que recibe la notificación
+     * @param string $message  Texto del mensaje
+     * @param string $type     Tipo: 'info', 'warning', 'error', 'success'
+     * @param string $module   Módulo origen: 'financial', 'vehicles', etc.
+     * @return bool True si se guardó correctamente
+     */
+    public static function create_notification($user_id, $message, $type = 'info', $module = 'general') {
+        if (!$user_id || !get_userdata($user_id)) {
+            return false;
+        }
+
+        $notifications = get_user_meta($user_id, 'aura_notifications', true);
+        if (!is_array($notifications)) {
+            $notifications = array();
+        }
+
+        $notifications[] = array(
+            'id'        => uniqid('notif_', true),
+            'message'   => wp_kses_post($message),
+            'type'      => sanitize_key($type),
+            'module'    => sanitize_key($module),
+            'read'      => false,
+            'created_at' => current_time('mysql'),
+        );
+
+        // Mantener solo las últimas 50 notificaciones
+        if (count($notifications) > 50) {
+            $notifications = array_slice($notifications, -50);
+        }
+
+        return update_user_meta($user_id, 'aura_notifications', $notifications);
+    }
+
+    /**
      * Inicializar el sistema de notificaciones
      */
     public static function init() {
@@ -225,8 +262,9 @@ class Aura_Notifications {
      * @return string HTML del email
      */
     private static function get_email_template($template, $data = array()) {
-        $logo_url = AURA_PLUGIN_URL . 'assets/images/logo-aura.png';
-        $site_name = get_bloginfo('name');
+        $site_name = aura_get_org_name();
+        $show_logo = get_option( 'aura_org_logo_in_email', true ) && (int) get_option( 'aura_org_logo_id', 0 ) > 0;
+        $logo_url  = $show_logo ? aura_get_org_logo_url( 'medium' ) : '';
         
         // Header común para todos los emails
         $header = '
@@ -254,7 +292,7 @@ class Aura_Notifications {
         <body>
             <div class="container">
                 <div class="header">
-                    <img src="' . $logo_url . '" alt="Aura">
+                    ' . ($logo_url ? '<img src="' . esc_url($logo_url) . '" alt="' . esc_attr($site_name) . '" style="max-height:70px;width:auto;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto;">' : '') . '
                     <h2 style="color: white; margin: 10px 0;">' . $site_name . '</h2>
                 </div>
                 <div class="content">
@@ -369,5 +407,102 @@ class Aura_Notifications {
         $body = isset($templates[$template]) ? $templates[$template] : '<p>Notificación de Aura Business Suite</p>';
         
         return $header . $body . $footer;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // WHATSAPP — Servicio global de mensajería
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Enviar un mensaje de WhatsApp usando el proveedor configurado globalmente.
+     *
+     * Proveedores soportados:
+     *   - callmebot : gratuito, el destinatario debe activarlo primero
+     *   - twilio    : API REST estándar
+     *   - meta      : WhatsApp Business API (Cloud API)
+     *
+     * Configuración en: Ajustes → Aura Business Suite → WhatsApp.
+     *
+     * @param  string $phone    Número E.164 (ej. +57987654321)
+     * @param  string $message  Texto del mensaje (admite *negrita* markdown para CallMeBot/Twilio)
+     * @return bool             true si la petición HTTP fue exitosa
+     */
+    public static function send_whatsapp( string $phone, string $message ): bool {
+        if ( ! get_option( 'aura_whatsapp_enabled', '0' ) ) {
+            return false;
+        }
+
+        $provider = get_option( 'aura_whatsapp_provider', 'callmebot' );
+        $token    = get_option( 'aura_whatsapp_api_token', '' );
+
+        if ( empty( $token ) ) {
+            return false;
+        }
+
+        $response = false;
+
+        switch ( $provider ) {
+
+            // ── CallMeBot ──────────────────────────────────────────
+            case 'callmebot':
+                $url  = add_query_arg( [
+                    'phone'  => rawurlencode( $phone ),
+                    'text'   => rawurlencode( $message ),
+                    'apikey' => rawurlencode( $token ),
+                ], 'https://api.callmebot.com/whatsapp.php' );
+                $resp     = wp_remote_get( $url, [ 'timeout' => 15 ] );
+                $response = ! is_wp_error( $resp ) && wp_remote_retrieve_response_code( $resp ) === 200;
+                break;
+
+            // ── Twilio ─────────────────────────────────────────────
+            case 'twilio':
+                $account_sid = get_option( 'aura_whatsapp_twilio_sid', '' );
+                if ( empty( $account_sid ) ) {
+                    return false;
+                }
+                $from = get_option( 'aura_whatsapp_from', '' );
+                $url  = 'https://api.twilio.com/2010-04-01/Accounts/' . rawurlencode( $account_sid ) . '/Messages.json';
+                $resp = wp_remote_post( $url, [
+                    'timeout' => 15,
+                    'headers' => [
+                        'Authorization' => 'Basic ' . base64_encode( $account_sid . ':' . $token ),
+                        'Content-Type'  => 'application/x-www-form-urlencoded',
+                    ],
+                    'body' => http_build_query( [
+                        'From' => 'whatsapp:' . $from,
+                        'To'   => 'whatsapp:' . $phone,
+                        'Body' => $message,
+                    ] ),
+                ] );
+                $code     = wp_remote_retrieve_response_code( $resp );
+                $response = ! is_wp_error( $resp ) && in_array( $code, [ 200, 201 ], true );
+                break;
+
+            // ── Meta / WhatsApp Cloud API ──────────────────────────
+            case 'meta':
+                $phone_id = get_option( 'aura_whatsapp_meta_phone_id', '' );
+                if ( empty( $phone_id ) ) {
+                    return false;
+                }
+                $url  = 'https://graph.facebook.com/v19.0/' . rawurlencode( $phone_id ) . '/messages';
+                $resp = wp_remote_post( $url, [
+                    'timeout' => 15,
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $token,
+                        'Content-Type'  => 'application/json',
+                    ],
+                    'body' => wp_json_encode( [
+                        'messaging_product' => 'whatsapp',
+                        'to'                => ltrim( $phone, '+' ),
+                        'type'              => 'text',
+                        'text'              => [ 'body' => $message ],
+                    ] ),
+                ] );
+                $code     = wp_remote_retrieve_response_code( $resp );
+                $response = ! is_wp_error( $resp ) && $code === 200;
+                break;
+        }
+
+        return (bool) $response;
     }
 }

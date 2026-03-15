@@ -1,0 +1,548 @@
+/**
+ * Dashboard Financiero — Estilos
+ * Fase 3, Item 3.1
+ */
+
+/* ============================================================
+   BARRA DE CONTROLES SUPERIORES
+   ============================================================ */
+
+.aura-dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 16px 0 20px;
+}
+
+.aura-dash-header h1 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.5rem;
+}
+
+.aura-period-bar {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.aura-period-bar__presets {
+    display: flex;
+    gap: 4px;
+}
+
+.period-btn {
+    padding: 4px 10px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #f6f7f7;
+    color: #2c3338;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1.5;
+    transition: background .15s, border-color .15s;
+}
+
+.period-btn:hover {
+    background: #e8ecf0;
+    border-color: #8c8f94;
+}
+
+.period-btn.active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+
+.aura-period-bar__sep {
+    width: 1px;
+    height: 24px;
+    background: #ddd;
+    margin: 0 4px;
+}
+
+.aura-period-bar__custom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.aura-period-bar__custom input[type="date"] {
+    padding: 3px 6px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    font-size: 12px;
+    height: 28px;
+}
+
+.aura-period-bar__custom .apply-custom {
+    padding: 3px 10px;
+    height: 28px;
+    font-size: 12px;
+}
+
+.aura-period-bar__compare {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #50575e;
+}
+
+/* ============================================================
+   KPI CARDS
+   ============================================================ */
+
+.aura-kpis-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 1200px) {
+    .aura-kpis-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .aura-kpis-row { grid-template-columns: 1fr; }
+}
+
+.aura-kpi {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: box-shadow .2s;
+}
+
+.aura-kpi:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+
+.aura-kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    border-radius: 8px 0 0 8px;
+}
+
+.aura-kpi--income::before  { background: #10b981; }
+.aura-kpi--expense::before { background: #ef4444; }
+.aura-kpi--balance::before { background: #6366f1; }
+.aura-kpi--pending::before { background: #f59e0b; }
+
+.aura-kpi__label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-kpi__label .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.aura-kpi--income  .aura-kpi__label .dashicons { color: #10b981; }
+.aura-kpi--expense .aura-kpi__label .dashicons { color: #ef4444; }
+.aura-kpi--balance .aura-kpi__label .dashicons { color: #6366f1; }
+.aura-kpi--pending .aura-kpi__label .dashicons { color: #f59e0b; }
+
+.aura-kpi__value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.1;
+}
+
+.aura-kpi--balance.is-negative .aura-kpi__value { color: #ef4444; }
+.aura-kpi--balance.is-positive .aura-kpi__value { color: #10b981; }
+
+.aura-kpi__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    color: #9ca3af;
+}
+
+.aura-kpi__trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-weight: 600;
+    font-size: 11.5px;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.aura-kpi__trend.up {
+    background: rgba(16,185,129,.12);
+    color: #059669;
+}
+
+.aura-kpi__trend.down {
+    background: rgba(239,68,68,.12);
+    color: #dc2626;
+}
+
+.aura-kpi__trend.neutral {
+    background: rgba(107,114,128,.1);
+    color: #6b7280;
+}
+
+.aura-kpi__trend .dashicons {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+}
+
+.aura-kpi__link {
+    font-size: 11px;
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.aura-kpi__link:hover { text-decoration: underline; }
+
+/* Skeleton loader para KPIs */
+.aura-kpi.is-loading .aura-kpi__value,
+.aura-kpi.is-loading .aura-kpi__meta {
+    background: #f3f4f6;
+    border-radius: 4px;
+    color: transparent;
+    animation: dash-shimmer 1.5s infinite linear;
+    background-size: 200% 100%;
+    background-image: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+}
+
+@keyframes dash-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ============================================================
+   GRID DE GRÁFICOS
+   ============================================================ */
+
+.aura-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 1100px) {
+    .aura-charts-row { grid-template-columns: 1fr; }
+}
+
+.aura-chart-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.aura-chart-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.aura-chart-card__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.aura-chart-card__actions {
+    display: flex;
+    gap: 6px;
+}
+
+.chart-export-btn {
+    padding: 3px 8px;
+    font-size: 11px;
+    height: auto;
+    line-height: 1.5;
+}
+
+.aura-chart-card canvas {
+    max-height: 280px;
+}
+
+/* Leyenda dona */
+.aura-donut-legend {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.aura-donut-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #374151;
+}
+
+.aura-donut-legend__color {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.aura-donut-legend__name { flex: 1; }
+
+.aura-donut-legend__pct {
+    font-weight: 600;
+    color: #6b7280;
+}
+
+/* ============================================================
+   FILA INFERIOR: TRANSACCIONES + ALERTAS
+   ============================================================ */
+
+.aura-widgets-row {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 1100px) {
+    .aura-widgets-row { grid-template-columns: 1fr; }
+}
+
+.aura-widget-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.aura-widget-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.aura-widget-card__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.aura-widget-card__link {
+    font-size: 11.5px;
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.aura-widget-card__link:hover { text-decoration: underline; }
+
+/* Tabla compacta de transacciones recientes */
+.aura-recent-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.aura-recent-table th {
+    text-align: left;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 0 8px 8px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.aura-recent-table td {
+    padding: 8px;
+    border-bottom: 1px solid #f9fafb;
+    color: #374151;
+    vertical-align: middle;
+}
+
+.aura-recent-table tr:last-child td { border-bottom: none; }
+.aura-recent-table tr:hover td { background: #fafafa; }
+
+.aura-recent-table .col-amount {
+    text-align: right;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.aura-recent-table .amount-income { color: #059669; }
+.aura-recent-table .amount-expense { color: #dc2626; }
+
+.aura-recent-table .tx-type-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+}
+
+.tx-type-icon.income  { background: rgba(16,185,129,.15); color: #059669; }
+.tx-type-icon.expense { background: rgba(239,68,68,.15);  color: #dc2626; }
+
+/* Badges de estado */
+.status-pill {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-pill.approved { background: rgba(16,185,129,.12); color: #059669; }
+.status-pill.pending  { background: rgba(245,158,11,.12); color: #d97706; }
+.status-pill.rejected { background: rgba(239,68,68,.12);  color: #dc2626; }
+
+/* ============================================================
+   WIDGET DE ALERTAS
+   ============================================================ */
+
+.aura-alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aura-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+.aura-alert--danger  { background: rgba(239,68,68,.08); border-left: 3px solid #ef4444; }
+.aura-alert--warning { background: rgba(245,158,11,.08); border-left: 3px solid #f59e0b; }
+.aura-alert--info    { background: rgba(99,102,241,.08); border-left: 3px solid #6366f1; }
+.aura-alert--success { background: rgba(16,185,129,.08); border-left: 3px solid #10b981; }
+
+.aura-alert .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.aura-alert--danger  .dashicons { color: #ef4444; }
+.aura-alert--warning .dashicons { color: #f59e0b; }
+.aura-alert--info    .dashicons { color: #6366f1; }
+.aura-alert--success .dashicons { color: #10b981; }
+
+.aura-alert__text a {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.aura-alerts-empty {
+    text-align: center;
+    padding: 20px;
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+/* ============================================================
+   SPINNER / OVERLAY DE RECARGA
+   ============================================================ */
+
+.aura-dashboard-refreshing {
+    position: fixed;
+    top: 46px; right: 16px;
+    background: #2c3338;
+    color: #fff;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 9999;
+    animation: fadeIn .2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.aura-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   ESTADO VACÍO
+   ============================================================ */
+
+.aura-empty-state {
+    text-align: center;
+    padding: 32px 20px;
+    color: #9ca3af;
+}
+
+.aura-empty-state .dashicons {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    margin-bottom: 8px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.aura-empty-state p { font-size: 13px; margin: 4px 0 0; }

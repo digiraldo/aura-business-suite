@@ -1,0 +1,748 @@
+/**
+ * CSS para Página de Edición de Transacciones
+ * 
+ * Estilos para formulario de edición con indicadores de cambios,
+ * sidebar de historial y diseño limpio
+ *
+ * @package AuraBusinessSuite
+ * @subpackage Financial
+ */
+
+/* ==========================================================================
+   LAYOUT PRINCIPAL
+   ========================================================================== */
+
+.aura-edit-mode {
+    background: #f5f5f5;
+}
+
+.aura-edit-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* ==========================================================================
+   INFO BOX DE ADVERTENCIA
+   ========================================================================== */
+
+.aura-info-box {
+    display: flex;
+    gap: 15px;
+    padding: 15px 20px;
+    margin: 20px 0;
+    border-radius: 6px;
+    border-left: 4px solid;
+    background: #fff;
+}
+
+.aura-info-box .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.aura-info-box .info-content {
+    flex: 1;
+}
+
+.aura-info-box .info-content p {
+    margin: 5px 0 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.aura-info-box.aura-info-warning {
+    border-left-color: #f39c12;
+    background: #fffbf0;
+}
+
+.aura-info-box.aura-info-warning .dashicons {
+    color: #f39c12;
+}
+
+.aura-info-box.aura-info-warning strong {
+    color: #c87f0a;
+}
+
+/* ==========================================================================
+   FORMULARIO DE EDICIÓN
+   ========================================================================== */
+
+.aura-transaction-form-main {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 30px;
+}
+
+.aura-form-section {
+    margin-bottom: 30px;
+}
+
+.aura-form-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.aura-form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.aura-form-field {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.aura-form-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.aura-form-field label.required::after {
+    content: '*';
+    color: #e74c3c;
+    margin-left: 4px;
+}
+
+.aura-form-field input[type="text"],
+.aura-form-field input[type="number"],
+.aura-form-field textarea,
+.aura-form-field select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.aura-form-field input:focus,
+.aura-form-field textarea:focus,
+.aura-form-field select:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.1);
+}
+
+.aura-form-field textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.aura-form-field.aura-field-100 {
+    grid-column: 1 / -1;
+}
+
+/* ==========================================================================
+   INDICADORES DE CAMBIOS
+   ========================================================================== */
+
+.aura-form-field.field-changed input,
+.aura-form-field.field-changed textarea,
+.aura-form-field.field-changed select {
+    border-color: #f39c12;
+    background: #fffbf0;
+}
+
+.change-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    padding: 4px 10px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.change-indicator .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   TIPO DE TRANSACCIÓN (BLOQUEADO)
+   ========================================================================== */
+
+.aura-transaction-type-selector.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.aura-transaction-type-selector.disabled::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.5);
+    cursor: not-allowed;
+}
+
+.aura-transaction-type-selector .description {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 10px;
+    background: #f9fafb;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.aura-transaction-type-selector .description .dashicons {
+    color: #9ca3af;
+}
+
+/* ==========================================================================
+   CONTADORES DE CARACTERES
+   ========================================================================== */
+
+.char-counter {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 6px;
+}
+
+.char-counter.valid {
+    color: #10b981;
+}
+
+/* ==========================================================================
+   BOTONES DE ACCIÓN
+   ========================================================================== */
+
+.aura-form-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.aura-form-actions .button-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+}
+
+.aura-form-actions .button-link {
+    color: #6b7280;
+    text-decoration: none;
+}
+
+.aura-form-actions .button-link:hover {
+    color: #2271b1;
+}
+
+/* ==========================================================================
+   SIDEBAR
+   ========================================================================== */
+
+.aura-transaction-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.aura-sidebar-widget {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.aura-sidebar-widget h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 16px 20px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.aura-sidebar-widget h3 .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #6b7280;
+}
+
+.aura-sidebar-widget .widget-content {
+    padding: 20px;
+}
+
+/* ==========================================================================
+   RESUMEN DE CAMBIOS
+   ========================================================================== */
+
+#changes-summary {
+    border: 2px solid #f39c12;
+}
+
+#changes-summary h3 {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.changes-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #fef3c7;
+    border-radius: 6px;
+}
+
+.changes-count strong {
+    font-size: 24px;
+    color: #f39c12;
+}
+
+#changes-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#changes-list li {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+}
+
+#changes-list li:last-child {
+    border-bottom: none;
+}
+
+#changes-list strong {
+    display: block;
+    color: #2c3e50;
+    margin-bottom: 6px;
+}
+
+#changes-list .old-value {
+    color: #e74c3c;
+    text-decoration: line-through;
+}
+
+#changes-list .new-value {
+    color: #10b981;
+    font-weight: 600;
+}
+
+#changes-list .dashicons {
+    color: #6b7280;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+}
+
+/* ==========================================================================
+   HISTORIAL DE MODIFICACIONES
+   ========================================================================== */
+
+.history-timeline {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.history-entry {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.history-entry:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.history-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background: #e0e7ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-icon .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #4338ca;
+}
+
+.history-content {
+    flex: 1;
+}
+
+.history-content strong {
+    font-size: 13px;
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.history-change {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    font-size: 12px;
+}
+
+.history-change .old-value {
+    padding: 4px 8px;
+    background: #fee2e2;
+    color: #7f1d1d;
+    border-radius: 4px;
+}
+
+.history-change .new-value {
+    padding: 4px 8px;
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: 4px;
+}
+
+.history-change .dashicons {
+    color: #9ca3af;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.history-meta {
+    margin-top: 8px;
+}
+
+.history-meta small {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.change-reason {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f9fafb;
+    border-left: 3px solid #2271b1;
+    border-radius: 4px;
+    font-size: 12px;
+    font-style: italic;
+    color: #4b5563;
+}
+
+.no-history {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.no-history .dashicons {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+}
+
+/* ==========================================================================
+   INFORMACIÓN ORIGINAL
+   ========================================================================== */
+
+.aura-sidebar-widget p {
+    margin: 0 0 15px 0;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.aura-sidebar-widget p:last-child {
+    margin-bottom: 0;
+}
+
+.aura-sidebar-widget p strong {
+    display: block;
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media screen and (max-width: 1280px) {
+    .aura-edit-layout {
+        grid-template-columns: 1fr 300px;
+        gap: 15px;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .aura-edit-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .aura-transaction-sidebar {
+        order: 2;
+    }
+    
+    .aura-transaction-form-main {
+        order: 1;
+    }
+}
+
+@media screen and (max-width: 782px) {
+    .aura-form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .aura-transaction-form-main {
+        padding: 20px;
+    }
+    
+    .aura-sidebar-widget .widget-content {
+        padding: 15px;
+    }
+}
+
+/* ==========================================================================
+   ANIMACIONES
+   ========================================================================== */
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.dashicons.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* ==========================================================================
+   MENSAJES
+   ========================================================================== */
+
+.aura-messages {
+    margin: 20px 0;
+}
+
+.aura-messages .notice {
+    padding: 12px 16px;
+    margin: 10px 0;
+    border-left: 4px solid;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.aura-messages .notice-success {
+    border-left-color: #10b981;
+    background: #d1fae5;
+}
+
+.aura-messages .notice-error {
+    border-left-color: #ef4444;
+    background: #fee2e2;
+}
+
+.aura-messages .notice-warning {
+    border-left-color: #f39c12;
+    background: #fef3c7;
+}
+
+.aura-messages .notice-info {
+    border-left-color: #2271b1;
+    background: #dbeafe;
+}
+
+/* ==========================================================================
+   CAMPO DE MONTO
+   ========================================================================== */
+
+.aura-amount-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.aura-amount-field .currency-symbol {
+    position: absolute;
+    left: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.aura-amount-field input {
+    padding-left: 28px !important;
+}
+
+/* ==========================================================================
+   TOGGLE SWITCH (BLOQUEADO)
+   ========================================================================== */
+
+.aura-toggle-switch {
+    display: flex;
+    position: relative;
+    background: #f3f4f6;
+    border-radius: 50px;
+    padding: 4px;
+    width: fit-content;
+}
+
+.aura-toggle-switch input[type="radio"] {
+    display: none;
+}
+
+.aura-toggle-switch label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 2;
+    position: relative;
+}
+
+.aura-toggle-switch input:checked + label {
+    color: #fff;
+}
+
+.aura-toggle-switch .toggle-slider {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50px;
+    transition: all 0.3s;
+    z-index: 1;
+}
+
+.aura-toggle-switch input#type-expense:checked ~ .toggle-slider {
+    transform: translateX(100%);
+}
+/* ==========================================================================
+   ARCHIVO DE COMPROBANTE EXISTENTE
+   ========================================================================== */
+
+.current-receipt-file {
+    margin-bottom: 15px;
+}
+
+.receipt-preview {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.receipt-preview .receipt-image {
+    max-width: 100px;
+    max-height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #d1d5db;
+}
+
+.receipt-preview .receipt-icon {
+    font-size: 48px;
+    color: #6b7280;
+}
+
+.receipt-preview .file-name {
+    font-size: 14px;
+    color: #374151;
+    font-weight: 500;
+}
+
+.receipt-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.receipt-actions .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.receipt-actions .button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.current-receipt-file .description {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}

@@ -219,23 +219,7 @@ class Aura_Electricity_CPT {
      * Agregar páginas de menú
      */
     public static function add_menu_pages() {
-        if (current_user_can('aura_electric_view_dashboard')) {
-            add_submenu_page(
-                'aura-suite',
-                __('Dashboard Electricidad', 'aura-suite'),
-                __('Dashboard Electricidad', 'aura-suite'),
-                'aura_electric_view_dashboard',
-                'aura-electricity-dashboard',
-                array('Aura_Electricity_Dashboard', 'render')
-            );
-            
-            add_submenu_page(
-                'aura-suite',
-                __('Lecturas Eléctricas', 'aura-suite'),
-                __('Lecturas', 'aura-suite'),
-                'aura_electric_view_dashboard',
-                'edit.php?post_type=aura_electric_reading'
-            );
-        }
+        // Módulo Electricidad pendiente de implementar como módulo independiente.
+        // Las entradas de menú se habilitarán cuando se implemente el módulo completo.
     }
 }

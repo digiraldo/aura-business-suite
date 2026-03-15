@@ -23,8 +23,12 @@ class Aura_Roles_Manager {
      * Inicializar el gestor de roles
      */
     public static function init() {
-        // Hook para agregar capabilities a la instalación
+        // Hook para agregar capabilities a la instalación (basado en versión)
         add_action('init', array(__CLASS__, 'maybe_add_capabilities'));
+
+        // Garantizar que el administrador tenga TODAS las capabilities en cada carga
+        // del admin (solo escribe a BD cuando falta alguna, no genera sobrecarga)
+        add_action('admin_init', array(__CLASS__, 'ensure_admin_capabilities'));
         
         // Hook para restringir acceso en el admin
         add_action('admin_init', array(__CLASS__, 'restrict_admin_access'));
@@ -36,13 +40,38 @@ class Aura_Roles_Manager {
     public static function register_all_capabilities() {
         $capabilities = self::get_all_capabilities();
         
-        // Agregar capabilities al rol de Administrador
+        // Agregar capabilities al rol de Administrador (solo las que aún no tiene)
         $admin_role = get_role('administrator');
         
         if ($admin_role) {
             foreach ($capabilities as $module => $caps) {
                 foreach ($caps as $cap => $description) {
-                    $admin_role->add_cap($cap);
+                    if ( ! isset( $admin_role->capabilities[ $cap ] ) ) {
+                        $admin_role->add_cap( $cap );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Forzar asignación de capabilities faltantes al administrador,
+     * independientemente del número de versión almacenado.
+     * Se llama en cada carga del plugin para garantizar que nuevas
+     * capabilities añadidas en actualizaciones siempre se registren.
+     */
+    public static function ensure_admin_capabilities() {
+        $capabilities = self::get_all_capabilities();
+        $admin_role   = get_role( 'administrator' );
+
+        if ( ! $admin_role ) {
+            return;
+        }
+
+        foreach ( $capabilities as $module => $caps ) {
+            foreach ( $caps as $cap => $description ) {
+                if ( ! isset( $admin_role->capabilities[ $cap ] ) ) {
+                    $admin_role->add_cap( $cap );
                 }
             }
         }
@@ -80,7 +109,12 @@ class Aura_Roles_Manager {
                 'aura_finance_view_all'    => __('Ver todas las transacciones', 'aura-suite'),
                 'aura_finance_charts'      => __('Ver gráficos financieros', 'aura-suite'),
                 'aura_finance_export'      => __('Exportar reportes financieros', 'aura-suite'),
-                'aura_finance_category_manage' => __('Gestionar categorías financieras', 'aura-suite'),
+                'aura_finance_category_manage' => __('Gestionar categorías de gastos/ingresos (ej: Suministros, Salarios)', 'aura-suite'),
+                // Fase 6: Vinculación de Usuarios
+                'aura_finance_link_user'           => __('Vincular usuario del sistema a una transacción', 'aura-suite'),
+                'aura_finance_user_ledger'         => __('Ver libro mayor agrupado por usuario', 'aura-suite'),
+                'aura_finance_view_user_summary'   => __('Ver propio dashboard financiero personal', 'aura-suite'),
+                'aura_finance_view_others_summary' => __('Ver dashboard financiero de otros usuarios', 'aura-suite'),
             ),
             'vehicles' => array(
                 'aura_vehicles_create'          => __('Crear/registrar vehículos', 'aura-suite'),
@@ -123,6 +157,40 @@ class Aura_Roles_Manager {
                 'aura_admin_backup'             => __('Gestionar backups', 'aura-suite'),
                 'aura_admin_logs'               => __('Ver logs de auditoría', 'aura-suite'),
             ),
+            // Fase 7 — Módulo de Áreas y Programas
+            'areas' => array(
+                'aura_areas_manage'             => __('Gestionar áreas y programas', 'aura-suite'),
+                'aura_areas_view_all'           => __('Ver todas las áreas', 'aura-suite'),
+                'aura_areas_view_own'           => __('Ver solo área asignada como responsable', 'aura-suite'),
+                'aura_areas_budget_manage'      => __('Gestionar presupuesto de área', 'aura-suite'),
+                'aura_areas_budget_view'        => __('Ver presupuesto de área', 'aura-suite'),
+                'aura_areas_assign_user'        => __('Asignar responsable a área', 'aura-suite'),
+                'aura_areas_forms_manage'       => __('Crear formularios propios del área', 'aura-suite'),
+                'aura_areas_enrollment_manage'  => __('Gestionar inscripciones del área', 'aura-suite'),
+            ),
+            // Módulo de Inventario y Mantenimientos
+            'inventory' => array(
+                'aura_inventory_create'               => __('Crear/registrar equipos y herramientas', 'aura-suite'),
+                'aura_inventory_edit'                 => __('Editar datos de equipos', 'aura-suite'),
+                'aura_inventory_delete'               => __('Eliminar equipos del inventario', 'aura-suite'),
+                'aura_inventory_view_all'             => __('Ver todo el inventario', 'aura-suite'),
+                'aura_inventory_checkout'             => __('Registrar préstamo/salida de equipos', 'aura-suite'),
+                'aura_inventory_checkin'              => __('Registrar devolución de equipos', 'aura-suite'),
+                'aura_inventory_loan_edit'             => __('Editar registros de préstamos', 'aura-suite'),
+                'aura_inventory_loan_delete'           => __('Eliminar registros de préstamos', 'aura-suite'),
+                'aura_inventory_maintenance_create'   => __('Registrar mantenimiento realizado', 'aura-suite'),
+                'aura_inventory_maintenance_edit'     => __('Editar registros de mantenimiento', 'aura-suite'),
+                'aura_inventory_maintenance_delete'   => __('Eliminar registros de mantenimiento', 'aura-suite'),
+                'aura_inventory_maintenance_schedule' => __('Configurar calendarios de mantenimiento', 'aura-suite'),
+                'aura_inventory_maintenance_view'     => __('Ver historial de mantenimientos', 'aura-suite'),
+                'aura_inventory_maintenance_alerts'   => __('Recibir notificaciones de mantenimientos', 'aura-suite'),
+                'aura_inventory_maintenance_external' => __('Registrar servicios en talleres externos', 'aura-suite'),
+                'aura_inventory_stock_min'            => __('Configurar stock mínimo y alertas', 'aura-suite'),
+                'aura_inventory_reports'              => __('Ver reportes de disponibilidad y uso', 'aura-suite'),
+                'aura_inventory_categories'           => __('Gestionar categorías de inventario', 'aura-suite'),
+                'aura_inventory_cost_tracking'        => __('Ver costos de mantenimiento por equipo', 'aura-suite'),
+                'aura_inventory_lifecycle'            => __('Ver vida útil y depreciación de equipos', 'aura-suite'),
+            ),
         );
     }
     
@@ -149,6 +217,11 @@ class Aura_Roles_Manager {
                     'aura_finance_charts'      => array('label' => __('Ver gráficos', 'aura-suite'), 'code' => 'charts'),
                     'aura_finance_export'      => array('label' => __('Exportar reportes', 'aura-suite'), 'code' => 'export'),
                     'aura_finance_category_manage' => array('label' => __('Gestionar categorías', 'aura-suite'), 'code' => 'category_manage'),
+                    // Fase 6: Vinculación de Usuarios y Dashboard Personal
+                    'aura_finance_link_user'           => array('label' => __('Vincular usuario a transacción', 'aura-suite'), 'code' => 'link_user'),
+                    'aura_finance_user_ledger'         => array('label' => __('Ver libro mayor por usuario', 'aura-suite'), 'code' => 'user_ledger'),
+                    'aura_finance_view_user_summary'   => array('label' => __('Ver mi dashboard financiero personal', 'aura-suite'), 'code' => 'view_user_summary'),
+                    'aura_finance_view_others_summary' => array('label' => __('Ver dashboard financiero de otros usuarios', 'aura-suite'), 'code' => 'view_others_summary', 'star' => true),
                 ),
             ),
             array(
@@ -207,6 +280,50 @@ class Aura_Roles_Manager {
                     'aura_admin_modules_enable'     => array('label' => __('Activar/desactivar módulos', 'aura-suite'), 'code' => 'modules_enable'),
                     'aura_admin_backup'             => array('label' => __('Gestionar backups', 'aura-suite'), 'code' => 'backup'),
                     'aura_admin_logs'               => array('label' => __('Ver logs de auditoría', 'aura-suite'), 'code' => 'logs'),
+                ),
+            ),
+            // Fase 7 — Módulo de Áreas y Programas
+            array(
+                'module'       => 'areas',
+                'icon'         => '🏛️',
+                'title'        => __('MÓDULO: ÁREAS Y PROGRAMAS', 'aura-suite'),
+                'capabilities' => array(
+                    'aura_areas_manage'            => array('label' => __('Gestionar áreas/programas', 'aura-suite'), 'code' => 'manage', 'star' => true),
+                    'aura_areas_view_all'          => array('label' => __('Ver todas las áreas', 'aura-suite'), 'code' => 'view_all'),
+                    'aura_areas_view_own'          => array('label' => __('Ver solo área asignada', 'aura-suite'), 'code' => 'view_own'),
+                    'aura_areas_budget_manage'     => array('label' => __('Gestionar presupuesto de área', 'aura-suite'), 'code' => 'budget_manage'),
+                    'aura_areas_budget_view'       => array('label' => __('Ver presupuesto de área', 'aura-suite'), 'code' => 'budget_view'),
+                    'aura_areas_assign_user'       => array('label' => __('Asignar responsable a área', 'aura-suite'), 'code' => 'assign_user'),
+                    'aura_areas_forms_manage'      => array('label' => __('Crear formularios del área', 'aura-suite'), 'code' => 'forms_manage'),
+                    'aura_areas_enrollment_manage' => array('label' => __('Gestionar inscripciones del área', 'aura-suite'), 'code' => 'enrollment_manage'),
+                ),
+            ),
+            // Módulo de Inventario y Mantenimientos
+            array(
+                'module'       => 'inventory',
+                'icon'         => '📦',
+                'title'        => __('MÓDULO: INVENTARIO Y MANTENIMIENTOS', 'aura-suite'),
+                'capabilities' => array(
+                    'aura_inventory_create'               => array('label' => __('Registrar equipos', 'aura-suite'), 'code' => 'create'),
+                    'aura_inventory_edit'                 => array('label' => __('Editar equipos', 'aura-suite'), 'code' => 'edit'),
+                    'aura_inventory_delete'               => array('label' => __('Eliminar equipos', 'aura-suite'), 'code' => 'delete'),
+                    'aura_inventory_view_all'             => array('label' => __('Ver todo el inventario', 'aura-suite'), 'code' => 'view_all'),
+                    'aura_inventory_checkout'             => array('label' => __('Registrar préstamo (salida)', 'aura-suite'), 'code' => 'checkout'),
+                    'aura_inventory_checkin'              => array('label' => __('Registrar devolución', 'aura-suite'), 'code' => 'checkin'),
+                    'aura_inventory_loan_edit'            => array('label' => __('Editar préstamos', 'aura-suite'), 'code' => 'loan_edit'),
+                    'aura_inventory_loan_delete'          => array('label' => __('Eliminar préstamos', 'aura-suite'), 'code' => 'loan_delete'),
+                    'aura_inventory_maintenance_create'   => array('label' => __('Registrar mantenimiento', 'aura-suite'), 'code' => 'maint_create'),
+                    'aura_inventory_maintenance_edit'     => array('label' => __('Editar mantenimientos', 'aura-suite'), 'code' => 'maint_edit'),
+                    'aura_inventory_maintenance_delete'   => array('label' => __('Eliminar mantenimientos', 'aura-suite'), 'code' => 'maint_delete'),
+                    'aura_inventory_maintenance_schedule' => array('label' => __('Configurar calendario mantenimiento', 'aura-suite'), 'code' => 'maint_schedule', 'star' => true),
+                    'aura_inventory_maintenance_view'     => array('label' => __('Ver historial mantenimientos', 'aura-suite'), 'code' => 'maint_view'),
+                    'aura_inventory_maintenance_alerts'   => array('label' => __('Recibir alertas de mantenimiento', 'aura-suite'), 'code' => 'maint_alerts'),
+                    'aura_inventory_maintenance_external' => array('label' => __('Registrar talleres externos', 'aura-suite'), 'code' => 'maint_external'),
+                    'aura_inventory_stock_min'            => array('label' => __('Configurar stock mínimo', 'aura-suite'), 'code' => 'stock_min'),
+                    'aura_inventory_reports'              => array('label' => __('Ver reportes de inventario', 'aura-suite'), 'code' => 'reports'),
+                    'aura_inventory_categories'           => array('label' => __('Gestionar categorías', 'aura-suite'), 'code' => 'categories', 'star' => true),
+                    'aura_inventory_cost_tracking'        => array('label' => __('Ver costos por equipo', 'aura-suite'), 'code' => 'cost_tracking'),
+                    'aura_inventory_lifecycle'            => array('label' => __('Ver vida útil / depreciación', 'aura-suite'), 'code' => 'lifecycle'),
                 ),
             ),
         );

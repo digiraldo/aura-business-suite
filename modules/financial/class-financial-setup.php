@@ -231,7 +231,59 @@ class Aura_Financial_Setup {
                 }
             }
             
-            // 5-9. Otras categorías de ingresos
+            // 5. Sostenimiento Institucional (Agencia Misionera / Asociación Civil)
+            $sostenimiento_id = $this->create_category([
+                'name'        => 'Sostenimiento Institucional',
+                'slug'        => 'sostenimiento-institucional',
+                'type'        => 'income',
+                'color'       => '#2980b9',
+                'icon'        => 'dashicons-networking',
+                'description' => 'Ingresos institucionales formales provenientes de agencias misioneras u organismos externos. Facilita rendición de cuentas entre la Agencia y la Asociación Civil.',
+                'order'       => 45,
+            ]);
+
+            if ($sostenimiento_id) {
+                $created_count++;
+
+                $subcats_sostenimiento = [
+                    [
+                        'name'        => 'Aportes Agencia Misionera',
+                        'slug'        => 'aportes-agencia-misionera',
+                        'description' => 'Transferencias formales recibidas de la agencia misionera para operación general de la Asociación Civil.',
+                    ],
+                    [
+                        'name'        => 'Fondos de Operación',
+                        'slug'        => 'fondos-operacion',
+                        'description' => 'Fondos destinados a cubrir gastos operativos ordinarios del ministerio o instituto.',
+                    ],
+                    [
+                        'name'        => 'Sostenimiento de Staff / Misioneros',
+                        'slug'        => 'sostenimiento-staff-misioneros',
+                        'description' => 'Fondos enviados específicamente para el sustento personal de misioneros o staff.',
+                    ],
+                    [
+                        'name'        => 'Proyectos Especiales de la Agencia',
+                        'slug'        => 'proyectos-especiales-agencia',
+                        'description' => 'Desembolsos con un fin único y presupuesto delimitado, enviados por la agencia para un proyecto específico.',
+                    ],
+                ];
+
+                foreach ($subcats_sostenimiento as $subcat) {
+                    if ($this->create_category([
+                        'name'        => $subcat['name'],
+                        'slug'        => $subcat['slug'],
+                        'type'        => 'income',
+                        'parent_id'   => $sostenimiento_id,
+                        'color'       => '#2980b9',
+                        'icon'        => 'dashicons-networking',
+                        'description' => $subcat['description'],
+                    ])) {
+                        $created_count++;
+                    }
+                }
+            }
+
+            // 6-10. Otras categorías de ingresos
             $other_income_categories = [
                 ['name' => 'Ventas de Productos', 'slug' => 'ventas-productos', 'color' => '#1e8a98', 'icon' => 'dashicons-cart', 'order' => 50],
                 ['name' => 'Ventas de Servicios', 'slug' => 'ventas-servicios', 'color' => '#16a085', 'icon' => 'dashicons-admin-tools', 'order' => 60],

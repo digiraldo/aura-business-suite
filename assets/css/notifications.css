@@ -1,0 +1,291 @@
+/* ============================================================
+   Notifications — Aura Business Suite
+   Fase 5, Item 5.4
+   ============================================================ */
+
+/* ---- Variables ---- */
+:root {
+    --notif-card-bg:  #fff;
+    --notif-border:   #e0e0e0;
+    --notif-radius:   8px;
+    --notif-shadow:   0 1px 4px rgba(0,0,0,.1);
+    --notif-unread:   #f0f6fc;
+    --notif-blue:     #2271b1;
+}
+
+/* ============================================================
+   Layout principal
+   ============================================================ */
+.aura-notif-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    margin-top: 16px;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .aura-notif-layout { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   Card compartida
+   ============================================================ */
+.aura-notif-card {
+    background: var(--notif-card-bg);
+    border: 1px solid var(--notif-border);
+    border-radius: var(--notif-radius);
+    padding: 16px 20px;
+    box-shadow: var(--notif-shadow);
+}
+.aura-notif-card h3 {
+    margin: 0 0 14px;
+    font-size: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+}
+
+/* ============================================================
+   Toolbar
+   ============================================================ */
+.aura-notif-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.aura-notif-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.aura-notif-filters select { min-width: 160px; }
+.aura-notif-actions { display: flex; gap: 6px; }
+.aura-notif-actions .dashicons { vertical-align: sub; font-size: 16px; margin-right: 2px; }
+
+/* ============================================================
+   Badge título página
+   ============================================================ */
+.aura-notif-badge-title {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #c00;
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 1px 7px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* ============================================================
+   Lista de notificaciones
+   ============================================================ */
+.aura-notif-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.aura-notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--notif-border);
+    border-radius: var(--notif-radius);
+    margin-bottom: 8px;
+    background: var(--notif-card-bg);
+    transition: background .15s;
+}
+.aura-notif-item.is-unread {
+    background: var(--notif-unread);
+    border-left: 4px solid var(--notif-blue);
+}
+.aura-notif-item.is-read { opacity: .8; }
+.aura-notif-item:hover { background: #f6f7f7; }
+
+/* Punto de color */
+.aura-notif-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+/* Cuerpo */
+.aura-notif-body { flex: 1; min-width: 0; }
+.aura-notif-title {
+    display: block;
+    font-size: .9rem;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.aura-notif-msg {
+    margin: 0 0 6px;
+    font-size: .82rem;
+    color: #444;
+    line-height: 1.45;
+}
+.aura-notif-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.aura-notif-type-badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: .73rem;
+    font-weight: 600;
+}
+.aura-notif-time {
+    font-size: .75rem;
+    color: #888;
+}
+
+/* Acciones por ítem */
+.aura-notif-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.aura-notif-item-actions .button { padding: 2px 6px; min-height: 26px; }
+.aura-notif-item-actions .dashicons { font-size: 14px; line-height: 22px; }
+
+/* ============================================================
+   Paginación
+   ============================================================ */
+#notif-pagination .page-btn {
+    display: inline-block;
+    padding: 4px 10px;
+    margin: 2px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #fff;
+    font-size: .85rem;
+}
+#notif-pagination .page-btn.active {
+    background: var(--notif-blue);
+    color: #fff;
+    border-color: var(--notif-blue);
+}
+#notif-pagination .page-btn:hover:not(.active) { background: #f0f0f1; }
+
+/* ============================================================
+   Preferencias sidebar
+   ============================================================ */
+.aura-notif-prefs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+    margin-bottom: 12px;
+}
+.aura-notif-prefs-table th {
+    text-align: left;
+    padding: 4px 8px;
+    background: #f6f7f7;
+    font-size: .78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 1px solid var(--notif-border);
+}
+.aura-notif-prefs-table td {
+    padding: 7px 8px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+.aura-notif-prefs-table tr:last-child td { border-bottom: none; }
+
+/* Toggle switch */
+.aura-toggle {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+}
+.aura-toggle input { opacity: 0; width: 0; height: 0; }
+.aura-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #c3c4c7;
+    border-radius: 20px;
+    transition: .25s;
+}
+.aura-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: .25s;
+}
+.aura-toggle input:checked + .aura-toggle-slider { background: var(--notif-blue); }
+.aura-toggle input:checked + .aura-toggle-slider::before { transform: translateX(16px); }
+
+/* Secciones pref */
+.aura-notif-pref-section {
+    margin: 12px 0;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+.aura-notif-pref-section strong {
+    display: block;
+    font-size: .83rem;
+    margin-bottom: 6px;
+    color: #1d2327;
+}
+.aura-radio-label,
+.aura-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .85rem;
+    margin-bottom: 4px;
+    cursor: pointer;
+}
+
+/* ============================================================
+   Admin Bar Bell
+   ============================================================ */
+#wp-admin-bar-aura-notifications-bell .ab-icon.dashicons {
+    font-size: 18px;
+    height: 32px;
+    line-height: 32px;
+    margin-right: 4px;
+}
+
+/* Badge de notificaciones circular */
+#wp-admin-bar-aura-notifications-bell .aura-bell-badge,
+.aura-bell-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #dc3232 !important;
+    color: #fff !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    border-radius: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    max-width: 18px !important;
+    max-height: 18px !important;
+    padding: 0 !important;
+    margin-left: 2px !important;
+    vertical-align: middle !important;
+    position: relative !important;
+    top: -2px !important;
+    box-sizing: border-box !important;
+}

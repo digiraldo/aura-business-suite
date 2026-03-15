@@ -38,8 +38,51 @@ if (isset($_POST['aura_assign_permissions']) && isset($_POST['user_id']) && wp_v
             }
         }
         
-        echo '<div class="notice notice-success"><p>' . __('Permisos actualizados exitosamente.', 'aura-suite') . '</p></div>';
+        // Procesar asignación de áreas
+        $selected_areas = isset($_POST['user_areas']) && is_array($_POST['user_areas']) 
+            ? array_map('absint', $_POST['user_areas']) 
+            : [];
+        
+        // Obtener todas las áreas para actualizar relaciones
+        $all_areas = Aura_Areas_Setup::get_all_areas();
+        
+        foreach ($all_areas as $area) {
+            $area_id = (int) $area->id;
+            
+            if (in_array($area_id, $selected_areas)) {
+                // El usuario debe estar en esta área
+                if (!Aura_Areas_Setup::is_user_in_area($area_id, $user_id)) {
+                    // Agregar usuario al área (manteniendo otros usuarios existentes)
+                    $current_users = Aura_Areas_Setup::get_area_users($area_id);
+                    $user_ids = array_column($current_users, 'user_id');
+                    $user_ids[] = $user_id;
+                    $user_ids = array_unique($user_ids);
+                    Aura_Areas_Setup::assign_users_to_area($area_id, $user_ids);
+                }
+            } else {
+                // El usuario NO debe estar en esta área - removerlo si está
+                if (Aura_Areas_Setup::is_user_in_area($area_id, $user_id)) {
+                    $current_users = Aura_Areas_Setup::get_area_users($area_id);
+                    $user_ids = array_column($current_users, 'user_id');
+                    $user_ids = array_diff($user_ids, [$user_id]);
+                    Aura_Areas_Setup::assign_users_to_area($area_id, array_values($user_ids));
+                }
+            }
+        }
+        
+        // Redirigir de vuelta al usuario con mensaje de éxito
+        wp_redirect(add_query_arg([
+            'page' => 'aura-permissions',
+            'user_id' => $user_id,
+            'updated' => 'true'
+        ], admin_url('admin.php')));
+        exit;
     }
+}
+
+// Mostrar mensaje de éxito si viene de actualización
+if (isset($_GET['updated']) && $_GET['updated'] === 'true') {
+    echo '<div class="notice notice-success is-dismissible"><p>' . __('Permisos y áreas actualizados exitosamente.', 'aura-suite') . '</p></div>';
 }
 
 // Obtener usuario seleccionado
@@ -72,14 +115,42 @@ $all_users = get_users(array('orderby' => 'display_name'));
                         <label for="user_select"><?php _e('Usuario', 'aura-suite'); ?></label>
                     </th>
                     <td>
-                        <select id="user_select" name="user_id" class="regular-text" onchange="this.form.submit()">
+                        <select id="user_select" name="user_id" class="regular-text" onchange="this.form.submit()" style="min-width:400px;">
                             <option value=""><?php _e('-- Seleccionar Usuario --', 'aura-suite'); ?></option>
-                            <?php foreach ($all_users as $user): ?>
-                                <option value="<?php echo $user->ID; ?>" <?php selected($selected_user_id, $user->ID); ?>>
+                            <?php foreach ($all_users as $user): 
+                                $avatar_url = get_avatar_url($user->ID, ['size' => 32]);
+                            ?>
+                                <option value="<?php echo $user->ID; ?>" 
+                                        <?php selected($selected_user_id, $user->ID); ?>
+                                        data-avatar="<?php echo esc_url($avatar_url); ?>">
                                     <?php echo esc_html($user->display_name . ' (' . $user->user_email . ')'); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        
+                        <?php if ($selected_user): 
+                            $selected_avatar = get_avatar_url($selected_user->ID, ['size' => 64]);
+                        ?>
+                        <div id="selected-user-info" style="margin-top:15px; display:flex; align-items:center; gap:15px; padding:15px; background:#f9fafb; border-left:4px solid #2271b1; border-radius:4px;">
+                            <img src="<?php echo esc_url($selected_avatar); ?>" 
+                                 alt="<?php echo esc_attr($selected_user->display_name); ?>" 
+                                 style="width:64px; height:64px; border-radius:50%; border:3px solid #2271b1; box-shadow:0 2px 4px rgba(0,0,0,0.1);" />
+                            <div>
+                                <h3 style="margin:0 0 5px 0; font-size:18px;"><?php echo esc_html($selected_user->display_name); ?></h3>
+                                <p style="margin:0; color:#6b7280; font-size:14px;">
+                                    <span class="dashicons dashicons-email" style="font-size:14px; margin-right:3px;"></span>
+                                    <?php echo esc_html($selected_user->user_email); ?>
+                                </p>
+                                <p style="margin:5px 0 0 0; color:#6b7280; font-size:13px;">
+                                    <span class="dashicons dashicons-admin-users" style="font-size:13px; margin-right:3px;"></span>
+                                    <?php 
+                                    $roles = $selected_user->roles;
+                                    echo esc_html(implode(', ', array_map('ucfirst', $roles)));
+                                    ?>
+                                </p>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                     </td>
                 </tr>
             </table>
@@ -111,6 +182,55 @@ $all_users = get_users(array('orderby' => 'display_name'));
     <form method="post" action="">
         <?php wp_nonce_field('assign_permissions', 'aura_permissions_nonce'); ?>
         <input type="hidden" name="user_id" value="<?php echo $selected_user->ID; ?>">
+        
+        <!-- Sección: Asignar Áreas/Programas al Usuario -->
+        <div class="aura-config-section">
+            <h2><?php _e('🏢 Asignar Áreas/Programas', 'aura-suite'); ?></h2>
+            <p class="description"><?php _e('Asigna este usuario como responsable de una o más áreas/programas. Podrá ver presupuestos y transacciones relacionadas a estas áreas.', 'aura-suite'); ?></p>
+            
+            <div id="user-areas-assignment" style="margin-top: 15px;">
+                <?php
+                // Obtener áreas asignadas al usuario
+                $user_areas = Aura_Areas_Setup::get_user_areas( $selected_user->ID );
+                
+                // Obtener todas las áreas disponibles
+                $all_areas = Aura_Areas_Setup::get_all_areas();
+                ?>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                    <?php foreach ($all_areas as $area): 
+                        $is_assigned = false;
+                        foreach ($user_areas as $user_area) {
+                            if ($user_area->id == $area->id) {
+                                $is_assigned = true;
+                                break;
+                            }
+                        }
+                    ?>
+                    <label style="border: 2px solid <?php echo $is_assigned ? $area->color : '#e5e7eb'; ?>; border-radius: 8px; padding: 12px; cursor: pointer; display: flex; align-items: center; background: <?php echo $is_assigned ? $area->color . '10' : '#fff'; ?>;">
+                        <input type="checkbox" 
+                               name="user_areas[]" 
+                               value="<?php echo $area->id; ?>"
+                               <?php checked($is_assigned); ?>
+                               style="margin-right: 10px;">
+                        <span class="dashicons <?php echo esc_attr($area->icon); ?>" 
+                              style="color: <?php echo esc_attr($area->color); ?>; margin-right: 8px;"></span>
+                        <div>
+                            <strong><?php echo esc_html($area->name); ?></strong>
+                            <br>
+                            <small style="color: #6b7280;"><?php echo esc_html($area->type); ?></small>
+                        </div>
+                    </label>
+                    <?php endforeach; ?>
+                </div>
+                
+                <?php if (empty($all_areas)): ?>
+                <p style="color: #6b7280; font-style: italic;">
+                    <?php _e('No hay áreas disponibles. Crea áreas primero en Áreas y Programas.', 'aura-suite'); ?>
+                </p>
+                <?php endif; ?>
+            </div>
+        </div>
         
         <div class="aura-config-section">
             <h2><?php _e('3️⃣ Asignar Capabilities Individuales', 'aura-suite'); ?></h2>
@@ -167,9 +287,29 @@ $all_users = get_users(array('orderby' => 'display_name'));
     
     <!-- Resumen de Permisos Actuales -->
     <div class="aura-config-section">
-        <h2><?php _e('Resumen de Permisos Actuales', 'aura-suite'); ?></h2>
+        <h2><?php _e('Resumen de Permisos y Áreas Actuales', 'aura-suite'); ?></h2>
         <p><strong><?php _e('Usuario:', 'aura-suite'); ?></strong> <?php echo $selected_user->display_name; ?></p>
         
+        <!-- Áreas asignadas -->
+        <h3><?php _e('Áreas/Programas Asignados:', 'aura-suite'); ?></h3>
+        <?php
+        $user_areas = Aura_Areas_Setup::get_user_areas( $selected_user->ID );
+        if (!empty($user_areas)):
+        ?>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0;">
+            <?php foreach ($user_areas as $area): ?>
+            <div style="border: 2px solid <?php echo esc_attr($area->color); ?>; border-radius: 6px; padding: 8px 12px; display: inline-flex; align-items: center; background: <?php echo esc_attr($area->color); ?>15;">
+                <span class="dashicons <?php echo esc_attr($area->icon); ?>" style="color: <?php echo esc_attr($area->color); ?>; margin-right: 6px;"></span>
+                <strong><?php echo esc_html($area->name); ?></strong>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php else: ?>
+        <p style="color: #6b7280;"><?php _e('No tiene áreas asignadas.', 'aura-suite'); ?></p>
+        <?php endif; ?>
+        
+        <!-- Capabilities -->
+        <h3><?php _e('Capabilities Asignadas:', 'aura-suite'); ?></h3>
         <?php
         $active_caps = array();
         $all_caps = Aura_Roles_Manager::get_all_capabilities();

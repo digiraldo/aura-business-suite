@@ -278,33 +278,7 @@ class Aura_Vehicle_CPT {
      * Agregar páginas de menú
      */
     public static function add_menu_pages() {
-        if (current_user_can('aura_vehicles_view_all')) {
-            add_submenu_page(
-                'aura-suite',
-                __('Vehículos', 'aura-suite'),
-                __('Vehículos', 'aura-suite'),
-                'aura_vehicles_view_all',
-                'edit.php?post_type=aura_vehicle'
-            );
-            
-            add_submenu_page(
-                'aura-suite',
-                __('Salidas de Vehículos', 'aura-suite'),
-                __('Salidas', 'aura-suite'),
-                'aura_vehicles_view_all',
-                'edit.php?post_type=aura_vehicle_exit'
-            );
-        }
-        
-        if (current_user_can('aura_vehicles_reports')) {
-            add_submenu_page(
-                'aura-suite',
-                __('Reportes de Vehículos', 'aura-suite'),
-                __('Reportes Vehículos', 'aura-suite'),
-                'aura_vehicles_reports',
-                'aura-vehicle-reports',
-                array('Aura_Vehicle_Reports', 'render')
-            );
-        }
+        // Módulo Vehículos pendiente de implementar como módulo independiente.
+        // Las entradas de menú se habilitarán cuando se implemente el módulo completo.
     }
 }

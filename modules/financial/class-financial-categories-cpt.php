@@ -45,6 +45,9 @@ class Aura_Financial_Categories_CPT {
         
         // Enqueue scripts y estilos en el admin
         add_action('admin_enqueue_scripts', array(__CLASS__, 'enqueue_admin_assets'));
+        
+        // Ejecutar migraciones si es necesario
+        add_action('admin_init', array(__CLASS__, 'check_and_run_migrations'));
     }
     
     /**
@@ -705,6 +708,7 @@ class Aura_Financial_Categories_CPT {
             icon VARCHAR(50) DEFAULT 'dashicons-category',
             description TEXT,
             is_active BOOLEAN DEFAULT 1,
+            always_require_approval BOOLEAN DEFAULT 0,
             display_order INT DEFAULT 0,
             created_by BIGINT UNSIGNED NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -718,8 +722,63 @@ class Aura_Financial_Categories_CPT {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
         
+        // Migración: Agregar columna always_require_approval si no existe
+        self::migrate_add_always_require_approval_column();
+        
         // Registrar versión de la tabla
-        add_option('aura_finance_categories_db_version', '1.0');
+        add_option('aura_finance_categories_db_version', '1.1');
+    }
+    
+    /**
+     * Migración: Agregar columna always_require_approval
+     * 
+     * Esta columna se usa para marcar categorías que siempre requieren
+     * aprobación manual, independientemente del umbral configurado.
+     * 
+     * @since 1.0.0
+     */
+    private static function migrate_add_always_require_approval_column() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . self::TABLE_NAME;
+        
+        // Verificar si la columna ya existe
+        $column_exists = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                 WHERE TABLE_SCHEMA = %s 
+                 AND TABLE_NAME = %s 
+                 AND COLUMN_NAME = 'always_require_approval'",
+                DB_NAME,
+                $table_name
+            )
+        );
+        
+        // Si no existe, agregarla
+        if (empty($column_exists)) {
+            $wpdb->query(
+                "ALTER TABLE $table_name 
+                 ADD COLUMN always_require_approval BOOLEAN DEFAULT 0 
+                 AFTER is_active"
+            );
+        }
+    }
+    
+    /**
+     * Verificar y ejecutar migraciones de base de datos
+     * 
+     * Este método se ejecuta en admin_init para verificar si hay migraciones
+     * pendientes y ejecutarlas automáticamente.
+     * 
+     * @since 1.0.0
+     */
+    public static function check_and_run_migrations() {
+        $current_db_version = get_option('aura_finance_categories_db_version', '1.0');
+        
+        // Si la versión es menor a 1.1, ejecutar migración de always_require_approval
+        if (version_compare($current_db_version, '1.1', '<')) {
+            self::migrate_add_always_require_approval_column();
+            update_option('aura_finance_categories_db_version', '1.1');
+        }
     }
     
     /**

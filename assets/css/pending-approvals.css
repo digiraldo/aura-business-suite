@@ -1,0 +1,816 @@
+/**
+ * Estilos para Página de Aprobaciones Pendientes
+ * 
+ * @package AuraBusinessSuite
+ * @subpackage Financial
+ * @since 1.0.0
+ */
+
+/* ========================================
+   ENCABEZADO Y BADGES
+======================================== */
+
+.aura-pending-transactions-page .wp-heading-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pending-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #10b981;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    min-width: 24px;
+    height: 24px;
+}
+
+/* ========================================
+   BARRA DE FILTROS COMPACTA
+======================================== */
+
+.aura-filters-bar {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    margin: 12px 0 16px;
+}
+
+/* Cabecera del panel: botón toggle + limpiar */
+.aura-filters-bar__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 14px;
+}
+
+.aura-filters-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    padding: 4px 0;
+    line-height: 1;
+}
+
+.aura-filters-toggle:hover {
+    color: #2271b1;
+}
+
+.aura-filters-toggle .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #646970;
+}
+
+.aura-filters-toggle:hover .dashicons {
+    color: #2271b1;
+}
+
+.toggle-chevron {
+    margin-left: 2px;
+    transition: transform 0.2s ease;
+}
+
+.aura-filters-toggle[aria-expanded="true"] .toggle-chevron {
+    transform: rotate(180deg);
+}
+
+.active-filters-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #2271b1;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    line-height: 1;
+}
+
+.clear-filters-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #d63638;
+    text-decoration: none;
+    margin-left: auto;
+}
+
+.clear-filters-link:hover {
+    color: #b32d2e;
+    text-decoration: underline;
+}
+
+.clear-filters-link .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* Cuerpo colapsable */
+.aura-filters-bar__body {
+    border-top: 1px solid #f0f0f1;
+    padding: 12px 14px;
+}
+
+.aura-filters-bar__body[hidden] {
+    display: none;
+}
+
+/* Fila inline de filtros */
+.filters-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.fi-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fi-group label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #646970;
+    white-space: nowrap;
+}
+
+.fi-group select,
+.fi-group input[type="number"] {
+    height: 30px;
+    min-width: 140px;
+    font-size: 13px;
+    padding: 0 6px;
+    border-radius: 3px;
+    border: 1px solid #8c8f94;
+    background: #fff;
+    color: #1d2327;
+}
+
+.fi-group select:focus,
+.fi-group input[type="number"]:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+/* Grupo monto: dos inputs en línea */
+.fi-group--range .fi-range {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fi-group--range input[type="number"] {
+    min-width: 0;
+    width: 90px;
+}
+
+.fi-range-sep {
+    color: #8c8f94;
+    font-size: 12px;
+}
+
+/* Botón aplicar alineado al fondo */
+.fi-actions {
+    display: flex;
+    align-items: flex-end;
+    margin-left: auto;
+}
+
+.fi-actions .button {
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    padding: 0 10px;
+}
+
+.fi-actions .button .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* ========================================
+   TABLA DE TRANSACCIONES
+======================================== */
+
+.wp-list-table .transaction-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.transaction-type.type-income {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.transaction-type.type-expense {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #f9fafb;
+    border-left: 3px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.transaction-amount {
+    font-weight: 700;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.transaction-amount.amount-income {
+    color: #10b981;
+}
+
+.transaction-amount.amount-expense {
+    color: #ef4444;
+}
+
+.high-amount-indicator {
+    font-size: 16px;
+}
+
+.old-pending,
+.pending-warning {
+    font-size: 16px;
+}
+
+.own-transaction-label {
+    font-size: 16px;
+    margin-left: 6px;
+}
+
+.creator-name.current-user {
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.you-label {
+    font-style: italic;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* Row actions específicos */
+.row-actions .approve-transaction {
+    color: #10b981 !important;
+    font-weight: 600;
+}
+
+.row-actions .approve-transaction:hover {
+    color: #059669 !important;
+}
+
+.row-actions .reject-transaction {
+    color: #ef4444 !important;
+    font-weight: 600;
+}
+
+.row-actions .reject-transaction:hover {
+    color: #dc2626 !important;
+}
+
+/* ========================================
+   ESTADO VACÍO
+======================================== */
+
+.aura-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.aura-empty-state .dashicons {
+    font-size: 80px;
+    width: 80px;
+    height: 80px;
+    color: #10b981;
+    margin-bottom: 20px;
+}
+
+.aura-empty-state h2 {
+    font-size: 24px;
+    margin: 0 0 10px;
+    color: #1d2327;
+}
+
+.aura-empty-state p {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* ========================================
+   MODALES
+======================================== */
+
+.aura-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+}
+
+.aura-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+}
+
+.aura-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 8px;
+    max-width: 550px;
+    width: 90%;
+    margin: 80px auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aura-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.aura-modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.aura-modal-close:hover {
+    background: #f3f4f6;
+}
+
+.aura-modal-close .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: #6b7280;
+}
+
+.aura-modal-body {
+    padding: 24px;
+}
+
+.approval-info,
+.rejection-info,
+.bulk-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    background: #ecfdf5;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.rejection-info,
+.bulk-info.danger {
+    background: #fef2f2;
+}
+
+.approval-info .dashicons,
+.bulk-info .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #10b981;
+    margin-bottom: 12px;
+}
+
+.rejection-info .dashicons,
+.bulk-info.danger .dashicons {
+    color: #ef4444;
+}
+
+.approval-info p,
+.rejection-info p,
+.bulk-info p {
+    margin: 0 0 8px;
+    font-size: 15px;
+    color: #374151;
+}
+
+.transaction-summary {
+    background: #fff;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    width: 100%;
+    text-align: left;
+}
+
+.transaction-summary strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #1d2327;
+}
+
+.transaction-summary span {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.form-field {
+    margin-bottom: 16px;
+}
+
+.form-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.form-field .required {
+    color: #ef4444;
+    margin-left: 4px;
+}
+
+.form-field textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-field textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-field .description {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.form-field .description #reason-char-count,
+.form-field .description #bulk-reason-char-count {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    border-radius: 0 0 8px 8px;
+}
+
+.aura-modal-footer .button {
+    min-width: 120px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.button-danger {
+    background: #ef4444;
+    border-color: #dc2626;
+    color: #fff;
+}
+
+.button-danger:hover,
+.button-danger:focus {
+    background: #dc2626;
+    border-color: #b91c1c;
+    color: #fff;
+}
+
+.button-danger:disabled {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* ========================================
+   BADGE EN MENÚ
+======================================== */
+
+#adminmenu .awaiting-mod {
+    display: inline-block;
+    background: #d63638;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 17px;
+    padding: 0 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* ========================================
+   DASHBOARD WIDGET
+======================================== */
+
+#aura_pending_transactions_widget .inside {
+    margin: 0;
+    padding: 0;
+}
+
+.aura-pending-widget-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.aura-pending-widget-item {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s;
+}
+
+.aura-pending-widget-item:hover {
+    background: #f9f9f9;
+}
+
+.aura-pending-widget-item:last-child {
+    border-bottom: none;
+}
+
+.widget-transaction-info {
+    flex: 1;
+}
+
+.widget-transaction-date {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.widget-transaction-desc {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1d2327;
+    margin-bottom: 4px;
+}
+
+.widget-transaction-amount {
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.widget-transaction-amount.income {
+    color: #10b981;
+}
+
+.widget-transaction-amount.expense {
+    color: #ef4444;
+}
+
+.widget-transaction-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.widget-transaction-actions .button {
+    padding: 6px 12px;
+    height: auto;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.widget-approve-btn {
+    background: #10b981;
+    color: #fff;
+    border: none;
+}
+
+.widget-approve-btn:hover {
+    background: #059669;
+    color: #fff;
+}
+
+.widget-reject-btn {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+}
+
+.widget-reject-btn:hover {
+    background: #dc2626;
+    color: #fff;
+}
+
+.aura-widget-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.aura-widget-empty .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #d1d5db;
+    margin-bottom: 12px;
+}
+
+.aura-widget-footer {
+    padding: 12px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+}
+
+.aura-widget-footer .button {
+    width: 100%;
+}
+
+/* ========================================
+   NOTICE/TOAST
+======================================== */
+
+.notice.is-dismissible {
+    position: relative;
+    padding-right: 38px;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media screen and (max-width: 1024px) {
+    .filters-inline {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .fi-group select,
+    .fi-group input[type="number"] {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .fi-group--range .fi-range {
+        width: 100%;
+    }
+
+    .fi-group--range input[type="number"] {
+        flex: 1;
+        width: auto;
+    }
+
+    .fi-actions {
+        margin-left: 0;
+    }
+
+    .fi-actions .button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media screen and (max-width: 782px) {
+    .aura-modal-content {
+        margin: 40px auto;
+        width: 95%;
+    }
+    
+    .aura-modal-header {
+        padding: 16px;
+    }
+    
+    .aura-modal-body {
+        padding: 16px;
+    }
+    
+    .aura-modal-footer {
+        padding: 12px 16px;
+        flex-direction: column;
+    }
+    
+    .aura-modal-footer .button {
+        width: 100%;
+    }
+    
+    .widget-transaction-actions {
+        flex-direction: column;
+    }
+    
+    .widget-transaction-actions .button {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .wp-list-table .transaction-type,
+    .category-badge {
+        font-size: 12px;
+        padding: 3px 8px;
+    }
+    
+    .transaction-amount {
+        font-size: 13px;
+    }
+    
+    .amount-range-inputs {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .amount-range-inputs input {
+        width: 100%;
+    }
+    
+    .amount-range-inputs span {
+        display: none;
+    }
+}

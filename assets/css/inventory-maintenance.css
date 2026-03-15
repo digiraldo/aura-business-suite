@@ -1,0 +1,141 @@
+/* =============================================================
+   Inventario — Mantenimientos CSS
+   ============================================================= */
+
+/* ── Tabla de mantenimientos ────────────────────────────────── */
+#aura-maint-table th.sortable { cursor: pointer; user-select: none; }
+#aura-maint-table th.sortable:hover { background: #f6f7f7; }
+#aura-maint-table th.sorted-asc::after  { content: ' ▲'; font-size: 10px; }
+#aura-maint-table th.sorted-desc::after { content: ' ▼'; font-size: 10px; }
+
+/* ── Badges de tipo de mantenimiento ────────────────────────── */
+.aura-maint-type-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+.aura-maint-type-preventive   { background: #dbeafe; color: #1e40af; }
+.aura-maint-type-corrective   { background: #fee2e2; color: #991b1b; }
+.aura-maint-type-oil_change   { background: #fef9c3; color: #854d0e; }
+.aura-maint-type-cleaning     { background: #d1fae5; color: #065f46; }
+.aura-maint-type-inspection   { background: #ede9fe; color: #5b21b6; }
+.aura-maint-type-major_repair { background: #ffedd5; color: #9a3412; }
+
+/* ── Badges estado post-mantenimiento ───────────────────────── */
+.aura-maint-ps-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.aura-maint-ps-operational    { background: #d1fae5; color: #065f46; }
+.aura-maint-ps-needs_followup { background: #fef3c7; color: #92400e; }
+.aura-maint-ps-out_of_service { background: #fee2e2; color: #991b1b; }
+
+/* ── Badge ejecutor ─────────────────────────────────────────── */
+.aura-maint-exec-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #50575e;
+}
+.aura-maint-exec-badge.external { color: #2271b1; font-weight: 600; }
+
+/* ── Columnas — alineación ──────────────────────────────────── */
+#aura-maint-table td                  { vertical-align: middle; }
+#aura-maint-table .col-photo          { text-align: center; }
+#aura-maint-table .col-date           { text-align: center; }
+#aura-maint-table .col-type           { text-align: center; }
+#aura-maint-table .col-cost           { text-align: center; }
+#aura-maint-table .col-post-status    { text-align: center; }
+#aura-maint-table .col-finance        { text-align: center; }
+#aura-maint-table .col-actions        { text-align: center; }
+.aura-maint-cost-cell { font-weight: 600; text-align: center; }
+.aura-maint-cost-cell.zero { color: #8c8f94; font-weight: 400; }
+
+/* ── Formulario: tabla costos ───────────────────────────────── */
+.aura-maint-costs-table td input.small-text { width: 90px; text-align: right; }
+.aura-maint-total-row th,
+.aura-maint-total-row td { border-top: 2px solid #dcdcde; padding-top: 10px; font-size: 15px; }
+#maint_total_display { white-space: nowrap; }
+
+/* ── Detalle modal ──────────────────────────────────────────── */
+.aura-maint-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+}
+.aura-maint-detail-row { display: flex; flex-direction: column; gap: 2px; }
+.aura-maint-detail-label { font-size: 11px; color: #646970; text-transform: uppercase; letter-spacing: .4px; }
+.aura-maint-detail-value { font-size: 14px; font-weight: 500; color: #1d2327; }
+.aura-maint-detail-section {
+    grid-column: 1 / -1;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1px solid #dcdcde;
+    padding-bottom: 5px;
+    margin-top: 14px;
+    margin-bottom: 4px;
+}
+.aura-maint-detail-text-row {
+    grid-column: 1 / -1;
+}
+.aura-maint-detail-text-row .aura-maint-detail-value {
+    font-weight: 400;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    background: #f6f7f7;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+/* ── Finance link badge ─────────────────────────────────────── */
+.aura-maint-finance-ok {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #00a32a;
+    font-weight: 600;
+}
+
+/* ── Paginación (reutiliza del equipment css) ───────────────── */
+#aura-maint-pagination .pagination-links { display: flex; align-items: center; gap: 8px; float: right; }
+#aura-maint-page-info { font-size: 13px; color: #646970; }
+
+/* ── Spinner botón guardar ──────────────────────────────────── */
+@keyframes aura-maint-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.aura-maint-spin { display: inline-block; animation: aura-maint-spin 0.8s linear infinite; }
+#aura-maint-save-btn .dashicons { vertical-align: middle; margin-top: -2px; }
+
+/* ── Post-status: etiquetas con color ───────────────────────── */
+.aura-maint-ps-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: border-color .15s, box-shadow .15s;
+}
+.aura-maint-ps-label:has(input:checked) { box-shadow: 0 0 0 2px currentColor; }
+.aura-maint-ps-operational    { background: #d1fae5; color: #065f46; }
+.aura-maint-ps-needs_followup { background: #fef3c7; color: #92400e; }
+.aura-maint-ps-out_of_service { background: #fee2e2; color: #991b1b; }
+.aura-maint-ps-label input[type="radio"] { accent-color: currentColor; }
+
+/* ── Notice tope de formulario ──────────────────────────────── */
+#aura-maint-top-notice { margin: 8px 0 16px; }
+#aura-maint-top-notice p { font-size: 13px; }

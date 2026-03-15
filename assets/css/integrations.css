@@ -1,0 +1,528 @@
+/**
+ * Aura Business Suite — Integraciones Contables (Fase 5, Item 5.5)
+ * Estilos para el asistente de exportación contable.
+ */
+
+/* =====================================================================
+   VARIABLES
+   ===================================================================== */
+:root {
+    --int-blue      : #2271b1;
+    --int-blue-light: #e8f0fe;
+    --int-green     : #00a32a;
+    --int-red       : #d63638;
+    --int-gray      : #8c8f94;
+    --int-bg        : #f6f7f7;
+    --int-border    : #c3c4c7;
+    --int-radius    : 8px;
+    --int-shadow    : 0 2px 8px rgba(0,0,0,.08);
+    --int-step-done : #00a32a;
+    --int-step-act  : #2271b1;
+    --int-step-idle : #c3c4c7;
+}
+
+/* =====================================================================
+   LAYOUT GENERAL
+   ===================================================================== */
+.aura-integrations-wrap {
+    max-width: 1060px;
+}
+
+.aura-page-title .dashicons {
+    margin-right: 8px;
+    vertical-align: middle;
+    font-size: 1.4em;
+    color: var(--int-blue);
+}
+
+.aura-page-description {
+    color: #646970;
+    margin-bottom: 24px;
+}
+
+/* =====================================================================
+   INDICADOR DE STEPS
+   ===================================================================== */
+.aura-wizard-steps {
+    display: flex;
+    align-items: center;
+    margin-bottom: 32px;
+    padding: 20px 24px;
+    background: #fff;
+    border: 1px solid var(--int-border);
+    border-radius: var(--int-radius);
+    box-shadow: var(--int-shadow);
+}
+
+.aura-step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: default;
+    min-width: 80px;
+}
+
+.aura-step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    background: var(--int-step-idle);
+    color: #fff;
+    transition: background .25s, transform .2s;
+}
+
+.aura-step-label {
+    font-size: 12px;
+    color: var(--int-gray);
+    font-weight: 500;
+    text-align: center;
+    transition: color .25s;
+}
+
+.aura-step-item.active .aura-step-num {
+    background: var(--int-step-act);
+    transform: scale(1.1);
+}
+
+.aura-step-item.active .aura-step-label {
+    color: var(--int-step-act);
+    font-weight: 700;
+}
+
+.aura-step-item.completed .aura-step-num {
+    background: var(--int-step-done);
+}
+
+.aura-step-item.completed .aura-step-num::before {
+    content: '✓';
+}
+
+.aura-step-item.completed .aura-step-label {
+    color: var(--int-step-done);
+}
+
+.aura-step-connector {
+    flex: 1;
+    height: 3px;
+    background: var(--int-step-idle);
+    border-radius: 2px;
+    transition: background .3s;
+    margin: 0 8px;
+    margin-bottom: 20px;
+}
+
+/* =====================================================================
+   PANELES DEL WIZARD
+   ===================================================================== */
+.aura-wizard-panel {
+    display: none;
+    background: #fff;
+    border: 1px solid var(--int-border);
+    border-radius: var(--int-radius);
+    box-shadow: var(--int-shadow);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    animation: auraFadeIn .25s ease;
+}
+
+.aura-wizard-panel.active {
+    display: block;
+}
+
+@keyframes auraFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.aura-wizard-panel h2 {
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #1d2327;
+}
+
+/* =====================================================================
+   PASO 1: SOFTWARE CARDS
+   ===================================================================== */
+.aura-software-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.aura-software-card {
+    cursor: pointer;
+    display: block;
+}
+
+.aura-software-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.aura-software-card-inner {
+    border: 2px solid var(--int-border);
+    border-radius: var(--int-radius);
+    padding: 20px 16px;
+    text-align: center;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+    background: var(--int-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-software-card:hover .aura-software-card-inner {
+    border-color: var(--int-blue);
+    background: var(--int-blue-light);
+    box-shadow: 0 3px 12px rgba(34,113,177,.15);
+}
+
+.aura-software-card input:checked + .aura-software-card-inner {
+    border-color: var(--int-blue);
+    background: var(--int-blue-light);
+    box-shadow: 0 4px 16px rgba(34,113,177,.25);
+}
+
+.aura-software-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -.5px;
+}
+
+.qb-icon  { background: #2ca01c; }
+.sat-icon { background: #c0392b; }
+.sap-icon { background: #0070b8; }
+.xl-icon  { background: #217346; }
+
+.aura-software-card-inner strong {
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.aura-software-ext {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--int-gray);
+    background: #e2e4e7;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: monospace;
+}
+
+.aura-software-card-inner p {
+    font-size: 12px;
+    color: #646970;
+    margin: 0;
+    line-height: 1.4;
+    text-align: center;
+}
+
+/* Columnas Excel */
+.aura-excel-cols-opts {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--int-blue-light);
+    border-radius: var(--int-radius);
+    border: 1px dashed var(--int-blue);
+}
+
+.aura-excel-cols-opts h3 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--int-blue);
+}
+
+.aura-cols-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.aura-col-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* =====================================================================
+   PASO 2: FILTROS
+   ===================================================================== */
+.aura-filters-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.aura-form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.aura-form-row label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.aura-form-row input[type="date"],
+.aura-form-row input[type="text"] {
+    padding: 8px 12px;
+    border: 1px solid var(--int-border);
+    border-radius: 4px;
+    font-size: 13px;
+    max-width: 280px;
+}
+
+.aura-form-row input:focus {
+    outline: none;
+    border-color: var(--int-blue);
+    box-shadow: 0 0 0 2px rgba(34,113,177,.15);
+}
+
+.aura-full-row {
+    grid-column: 1 / -1;
+}
+
+.aura-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.aura-hint {
+    font-weight: normal;
+    color: var(--int-gray);
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+.aura-multiselect {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid var(--int-border);
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 13px;
+}
+
+.aura-sat-opts input[type="text"] {
+    text-transform: uppercase;
+}
+
+/* =====================================================================
+   PASO 3: TABLA DE MAPEO
+   ===================================================================== */
+.aura-mapping-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.aura-mapping-status {
+    font-size: 13px;
+    font-style: italic;
+}
+
+.aura-status-ok    { color: var(--int-green); font-weight: 600; }
+.aura-status-error { color: var(--int-red); font-weight: 600; }
+
+.aura-mapping-table th {
+    background: #f0f0f1;
+    padding: 10px 14px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.aura-mapping-table td {
+    padding: 10px 14px;
+    vertical-align: middle;
+}
+
+.aura-mapping-input {
+    padding: 6px 10px !important;
+    border: 1px solid var(--int-border) !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    font-family: monospace !important;
+    transition: border-color .15s !important;
+}
+
+.aura-mapping-input:focus {
+    border-color: var(--int-blue) !important;
+    box-shadow: 0 0 0 2px rgba(34,113,177,.15) !important;
+    outline: none !important;
+}
+
+.aura-mapping-legend {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--int-gray);
+}
+
+.aura-loading-msg {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--int-gray);
+    padding: 16px 0;
+}
+
+/* =====================================================================
+   PASO 4: VISTA PREVIA
+   ===================================================================== */
+.aura-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.aura-preview-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-preview-table th {
+    background: #2c3e50;
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.aura-preview-table td {
+    padding: 9px 14px;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.aura-preview-table tr:nth-child(even) td {
+    background: #f8f9fa;
+}
+
+.aura-debe  { color: var(--int-red);   font-weight: 600; }
+.aura-haber { color: var(--int-green); font-weight: 600; }
+
+.aura-preview-table code {
+    background: #f0f0f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #c0392b;
+}
+
+.aura-download-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--int-blue-light);
+    border-radius: var(--int-radius);
+    color: var(--int-blue);
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+/* =====================================================================
+   BADGES
+   ===================================================================== */
+.aura-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .3px;
+}
+
+.aura-badge-green { background: #d1fae5; color: #065f46; }
+.aura-badge-red   { background: #fee2e2; color: #991b1b; }
+.aura-badge-blue  { background: var(--int-blue-light); color: var(--int-blue); }
+.aura-badge-gray  { background: #f1f2f3; color: #3c434a; }
+
+/* =====================================================================
+   NAVEGACIÓN
+   ===================================================================== */
+.aura-wizard-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--int-border);
+}
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+@media (max-width: 782px) {
+    .aura-software-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .aura-filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-wizard-steps {
+        padding: 14px 12px;
+    }
+
+    .aura-step-label {
+        font-size: 10px;
+    }
+
+    .aura-step-num {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .aura-preview-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .aura-wizard-panel {
+        padding: 18px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .aura-software-grid {
+        grid-template-columns: 1fr;
+    }
+}

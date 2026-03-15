@@ -1,0 +1,284 @@
+/* ============================================================
+   Audit Log — Aura Business Suite
+   Fase 5, Item 5.3
+   ============================================================ */
+
+/* ---- Variables ---- */
+:root {
+    --audit-card-bg:     #fff;
+    --audit-border:      #e0e0e0;
+    --audit-radius:      8px;
+    --audit-shadow:      0 1px 4px rgba(0,0,0,.1);
+    --audit-create:      #155724;
+    --audit-create-bg:   #d4edda;
+    --audit-update:      #004085;
+    --audit-update-bg:   #cce5ff;
+    --audit-delete:      #721c24;
+    --audit-delete-bg:   #f8d7da;
+    --audit-approve:     #0c5460;
+    --audit-approve-bg:  #d1ecf1;
+    --audit-reject:      #856404;
+    --audit-reject-bg:   #fff3cd;
+    --audit-restore:     #155724;
+    --audit-restore-bg:  #d4edda;
+    --audit-alert:       #721c24;
+    --audit-alert-bg:    #f8d7da;
+    --audit-io:          #4a235a;
+    --audit-io-bg:       #e8daef;
+    --audit-neutral:     #555;
+    --audit-neutral-bg:  #f0f0f1;
+}
+
+/* ============================================================
+   Layout principal
+   ============================================================ */
+.aura-audit-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+    margin-top: 16px;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .aura-audit-layout { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   Cards compartidas
+   ============================================================ */
+.aura-audit-card {
+    background: var(--audit-card-bg);
+    border: 1px solid var(--audit-border);
+    border-radius: var(--audit-radius);
+    padding: 16px 20px;
+    box-shadow: var(--audit-shadow);
+    margin-bottom: 16px;
+}
+.aura-audit-card h3 {
+    margin: 0 0 14px;
+    font-size: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+}
+.aura-audit-card label {
+    display: block;
+    font-weight: 600;
+    font-size: .85rem;
+    margin-bottom: 3px;
+    margin-top: 10px;
+    color: #1d2327;
+}
+.aura-audit-card label:first-of-type { margin-top: 0; }
+.aura-audit-card select,
+.aura-audit-card input[type="text"],
+.aura-audit-card input[type="date"],
+.aura-audit-card input[type="number"] {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Rango de fechas */
+.aura-date-range {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.aura-date-range input { flex: 1; }
+
+/* Botones de filtro */
+.aura-filter-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.aura-filter-buttons .dashicons { vertical-align: sub; font-size: 16px; margin-right: 2px; }
+
+/* ============================================================
+   Barra de estadísticas
+   ============================================================ */
+.aura-audit-stats-bar {
+    background: #f0f6fc;
+    border: 1px solid #c8d7e1;
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    font-weight: 500;
+    font-size: .9rem;
+}
+.aura-audit-stats-bar #audit-total-count { color: #2271b1; }
+
+/* ============================================================
+   Tabla de logs
+   ============================================================ */
+.aura-audit-table { font-size: .875rem; }
+.aura-audit-table td { vertical-align: middle; padding: 8px 10px; }
+.aura-audit-table .audit-row:hover > td { background: #f6f7f7; }
+
+/* Fecha */
+.audit-date { white-space: nowrap; font-size: .82rem; color: #444; }
+
+/* IP */
+.audit-ip { font-size: .78rem; background: #f6f7f7; padding: 1px 5px; border-radius: 3px; }
+
+/* ---- Badges de acción ---- */
+.audit-action-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: .78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.audit-action-create  { background: var(--audit-create-bg);  color: var(--audit-create);  }
+.audit-action-update  { background: var(--audit-update-bg);  color: var(--audit-update);  }
+.audit-action-delete  { background: var(--audit-delete-bg);  color: var(--audit-delete);  }
+.audit-action-restore { background: var(--audit-restore-bg); color: var(--audit-restore); }
+.audit-action-approve { background: var(--audit-approve-bg); color: var(--audit-approve); }
+.audit-action-reject  { background: var(--audit-reject-bg);  color: var(--audit-reject);  }
+.audit-action-alert   { background: var(--audit-alert-bg);   color: var(--audit-alert);   }
+.audit-action-io      { background: var(--audit-io-bg);      color: var(--audit-io);      }
+.audit-action-neutral { background: var(--audit-neutral-bg); color: var(--audit-neutral); }
+
+/* ---- Badges de entidad ---- */
+.audit-entity-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: .75rem;
+    font-weight: 500;
+    background: #e8f4f8;
+    color: #2980b9;
+}
+.audit-entity-transaction { background: #e8eaf6; color: #283593; }
+.audit-entity-category    { background: #fce4ec; color: #880e4f; }
+.audit-entity-budget      { background: #e8f5e9; color: #1b5e20; }
+.audit-entity-export      { background: #fff8e1; color: #f57f17; }
+.audit-entity-import      { background: #ede7f6; color: #4527a0; }
+
+/* ============================================================
+   Fila de detalle expandible
+   ============================================================ */
+.audit-detail-row td {
+    background: #fafbfc;
+    border-top: none;
+    padding: 0;
+}
+.audit-detail-inner {
+    padding: 12px 16px;
+    border-left: 4px solid #2271b1;
+    margin: 4px 6px 8px;
+    background: #fff;
+    border-radius: 0 4px 4px 0;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.06);
+}
+
+/* Tabla de diff */
+.audit-diff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .82rem;
+    margin-bottom: 8px;
+}
+.audit-diff-table th,
+.audit-diff-table td {
+    padding: 5px 10px;
+    border: 1px solid #e0e0e0;
+    text-align: left;
+    vertical-align: top;
+}
+.audit-diff-table th {
+    background: #f6f7f7;
+    font-weight: 600;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.diff-changed { background: #fffbe6; }
+.diff-old { color: #c00; }
+.diff-new { color: #1e7e34; }
+
+/* User Agent */
+.audit-user-agent {
+    font-size: .75rem;
+    color: #777;
+    margin: 6px 0 0;
+    word-break: break-all;
+}
+
+/* ============================================================
+   Paginación
+   ============================================================ */
+#audit-pagination .page-btn {
+    display: inline-block;
+    padding: 4px 10px;
+    margin: 2px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #fff;
+    font-size: .85rem;
+}
+#audit-pagination .page-btn.active {
+    background: #2271b1;
+    color: #fff;
+    border-color: #2271b1;
+}
+#audit-pagination .page-btn:hover:not(.active) { background: #f0f0f1; }
+
+/* ============================================================
+   Sección de purga
+   ============================================================ */
+.aura-audit-purge-row .description { font-size: .75rem; color: #777; margin-top: 4px; }
+
+/* ============================================================
+   Widget dashboard — Actividad Reciente
+   ============================================================ */
+.aura-audit-widget {
+    background: #fff;
+    border: 1px solid var(--audit-border);
+    border-radius: var(--audit-radius);
+    padding: 16px 20px;
+    box-shadow: var(--audit-shadow);
+}
+.aura-audit-widget h3 {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.aura-audit-widget ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.aura-audit-widget li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: .85rem;
+}
+.aura-audit-widget li:last-child { border-bottom: none; }
+.aura-activity-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+.audit-activity-meta {
+    display: block;
+    font-size: .75rem;
+    color: #888;
+    margin-top: 2px;
+}
+.aura-audit-widget .audit-widget-toggle {
+    font-size: .8rem;
+    cursor: pointer;
+    color: #2271b1;
+    background: none;
+    border: none;
+    padding: 0;
+    text-decoration: underline;
+    margin-left: auto;
+    flex-shrink: 0;
+}

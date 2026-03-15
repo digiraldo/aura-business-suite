@@ -1,0 +1,876 @@
+/**
+ * Aura Business Suite — Inventory Loans CSS (FASE 5)
+ * Checkout / Checkin de equipos
+ */
+
+/* ── KPIs ──────────────────────────────────────────────────── */
+.aura-loan-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.aura-loan-kpi-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.07);
+}
+
+.aura-loan-kpi-icon {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    opacity: .8;
+}
+
+.aura-loan-kpi-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.aura-loan-kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #1d2327;
+}
+
+.aura-loan-kpi-label {
+    font-size: 12px;
+    color: #646970;
+    margin-top: 2px;
+}
+
+/* KPI Color variants */
+.aura-loan-kpi-blue  { border-top: 4px solid #2271b1; }
+.aura-loan-kpi-blue  .aura-loan-kpi-icon { color: #2271b1; }
+.aura-loan-kpi-red   { border-top: 4px solid #d63638; }
+.aura-loan-kpi-red   .aura-loan-kpi-icon { color: #d63638; }
+.aura-loan-kpi-red   .aura-loan-kpi-value { color: #d63638; }
+.aura-loan-kpi-green { border-top: 4px solid #00a32a; }
+.aura-loan-kpi-green .aura-loan-kpi-icon { color: #00a32a; }
+.aura-loan-kpi-gray  { border-top: 4px solid #8c8f94; }
+.aura-loan-kpi-gray  .aura-loan-kpi-icon { color: #8c8f94; }
+
+/* ── Action button ─────────────────────────────────────────── */
+.aura-loan-btn-checkout {
+    margin-left: 8px !important;
+}
+
+/* ── Filters ───────────────────────────────────────────────── */
+.aura-loan-filters {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 0 0 16px;
+}
+
+.aura-loan-filter-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.aura-loan-filter {
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #f9f9fb;
+}
+
+.aura-loan-filter:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px rgba(34,113,177,.15);
+    outline: none;
+    background: #fff;
+}
+
+/* ── Table wrapper ─────────────────────────────────────────── */
+.aura-loan-table-wrap {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.aura-loan-loading {
+    padding: 20px;
+    color: #646970;
+    font-size: 13px;
+}
+
+.aura-loan-empty {
+    padding: 24px;
+    text-align: center;
+    color: #646970;
+    font-size: 13px;
+}
+
+.aura-loan-table {
+    margin: 0 !important;
+}
+
+.aura-loan-table th {
+    font-size: 12px;
+    font-weight: 600;
+    background: #f9f9fb;
+}
+
+.aura-loan-table td                   { vertical-align: middle; }
+.aura-loan-table .col-photo           { width: 58px;  text-align: center; }
+.aura-loan-table .col-equip           { width: 20%;   }
+.aura-loan-table .col-borrower        { width: 17%;   }
+.aura-loan-table .col-project         { width: 17%;   }
+.aura-loan-table .col-loan-date       { width: 10%;   text-align: center; }
+.aura-loan-table .col-return-date     { width: 12%;   text-align: center; }
+.aura-loan-table .col-status          { width: 9%;    text-align: center; }
+.aura-loan-table .col-actions         { width: 8%;    text-align: center; }
+
+/* ── Status badges ─────────────────────────────────────────── */
+.aura-loan-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.aura-loan-status-active   { background: #e5f3fb; color: #0069a4; }
+.aura-loan-status-overdue  { background: #fcebec; color: #ae1e24; }
+.aura-loan-status-returned { background: #edfaef; color: #006505; }
+
+/* ── Overdue indicator ─────────────────────────────────────── */
+.aura-loan-overdue-days {
+    font-size: 11px;
+    color: #d63638;
+    font-weight: 600;
+    display: block;
+    margin-top: 2px;
+}
+
+/* ── Equipment name cell ───────────────────────────────────── */
+.aura-loan-equip-cell strong {
+    display: block;
+    color: #1d2327;
+    font-weight: 600;
+}
+
+.aura-loan-equip-cell small {
+    color: #646970;
+    font-size: 11px;
+}
+
+/* ── Borrower cell (avatar + name) ────────────────────────── */
+.aura-loan-borrower-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.aura-loan-borrower-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid #e0e0e0;
+}
+
+.aura-loan-borrower-initials {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #2271b1;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.aura-loan-borrower-name {
+    font-size: 13px;
+    color: #1d2327;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+/* ── Modal: badge prioridad + hint ────────────────────────── */
+.aura-loan-badge-priority {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    background: #00a32a;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 10px;
+    vertical-align: middle;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+}
+
+.aura-loan-field-hint {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: #646970;
+    font-style: italic;
+}
+
+/* ── Action buttons in table ───────────────────────────────── */
+.aura-loan-action-wrap {
+    display: flex;
+    gap: 4px;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+
+.aura-loan-action-btn {
+    background: none;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    color: #2271b1;
+    transition: background .12s, color .12s;
+    white-space: nowrap;
+}
+
+.aura-loan-action-btn:hover {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+
+.aura-loan-action-btn.checkin {
+    color: #00a32a;
+    border-color: #00a32a;
+}
+
+.aura-loan-action-btn.checkin:hover {
+    background: #00a32a;
+    color: #fff;
+}
+
+.aura-loan-action-btn.aura-loan-btn-danger {
+    color: #d63638;
+    border-color: #d63638;
+}
+
+.aura-loan-action-btn.aura-loan-btn-danger:hover {
+    background: #d63638;
+    color: #fff;
+}
+
+/* ── Pagination ────────────────────────────────────────────── */
+.aura-loan-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px;
+    flex-wrap: wrap;
+    border-top: 1px solid #f0f0f1;
+}
+
+.aura-loan-pagination button {
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background .12s;
+}
+
+.aura-loan-pagination button:hover:not(:disabled) {
+    background: #dcdcde;
+}
+
+.aura-loan-pagination button.active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+
+.aura-loan-pagination button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.aura-loan-pg-info {
+    font-size: 12px;
+    color: #646970;
+    margin: 0 8px;
+}
+
+/* ── Modals ────────────────────────────────────────────────── */
+.aura-loan-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 99990;
+}
+
+.aura-loan-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+    width: 92%;
+    max-width: 580px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.25);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.aura-loan-modal-wide {
+    max-width: 800px;
+}
+
+.aura-loan-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #dcdcde;
+    flex-shrink: 0;
+}
+
+.aura-loan-modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-loan-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #646970;
+    padding: 4px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: color .12s;
+}
+
+.aura-loan-modal-close:hover {
+    color: #d63638;
+    background: #fcebec;
+}
+
+.aura-loan-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.aura-loan-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 20px;
+    border-top: 1px solid #f0f0f1;
+    flex-shrink: 0;
+}
+
+/* ── Form fields ───────────────────────────────────────────── */
+.aura-loan-field-group {
+    margin-bottom: 16px;
+}
+
+.aura-loan-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    margin-bottom: 5px;
+}
+
+.aura-loan-required {
+    color: #d63638;
+    margin-left: 2px;
+}
+
+.aura-loan-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background: #f9f9fb;
+    transition: border-color .12s;
+}
+
+.aura-loan-input:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 2px rgba(34,113,177,.15);
+    outline: none;
+    background: #fff;
+}
+
+.aura-loan-textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.aura-loan-fields-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/* ── Radio groups ──────────────────────────────────────────── */
+.aura-loan-radio-group {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.aura-loan-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #1d2327;
+    padding: 6px 12px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    transition: background .12s, border-color .12s;
+}
+
+.aura-loan-radio-label input {
+    cursor: pointer;
+}
+
+.aura-loan-radio-label:has(input:checked) {
+    background: #e5f3fb;
+    border-color: #2271b1;
+    color: #2271b1;
+    font-weight: 600;
+}
+
+.aura-loan-radio-danger:has(input:checked) {
+    background: #fcebec;
+    border-color: #d63638;
+    color: #d63638;
+}
+
+/* ── Checkbox ──────────────────────────────────────────────── */
+.aura-loan-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+
+/* ── Equipment picker: mode tabs ────────────────────────────── */
+.aura-loan-equip-mode-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.aura-loan-equip-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #f6f7f7;
+    color: #50575e;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background .1s, color .1s, border-color .1s;
+}
+
+.aura-loan-equip-tab .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.aura-loan-equip-tab:hover {
+    background: #e5f3fb;
+    border-color: #2271b1;
+    color: #135e96;
+}
+
+.aura-loan-equip-tab.active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ── Equipment list mode ─────────────────────────────────────── */
+.aura-loan-equip-list-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: #646970;
+}
+
+.aura-loan-equip-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 2px 0;
+}
+
+.aura-loan-equip-list-card {
+    border: 1px solid #c3c4c7;
+    border-radius: 5px;
+    padding: 9px 11px;
+    cursor: pointer;
+    background: #fff;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: border-color .1s, background .1s, box-shadow .1s;
+}
+
+.aura-loan-equip-list-card:hover {
+    border-color: #2271b1;
+    background: #f0f7fd;
+    box-shadow: 0 0 0 2px rgba(34,113,177,.15);
+}
+
+.aura-loan-equip-list-card .equip-card-name {
+    font-weight: 600;
+    color: #1d2327;
+    line-height: 1.3;
+}
+
+.aura-loan-equip-list-card .equip-card-meta {
+    font-size: 11px;
+    color: #646970;
+}
+
+.aura-loan-equip-list-card .equip-card-cat {
+    display: inline-block;
+    margin-top: 3px;
+    font-size: 10px;
+    padding: 1px 6px;
+    background: #e5f3fb;
+    color: #135e96;
+    border-radius: 10px;
+    letter-spacing: .3px;
+}
+
+/* ── Equipment search autocomplete ────────────────────────── */
+.aura-loan-equip-search-wrap {
+    position: relative;
+}
+
+.aura-loan-equip-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+}
+
+.aura-loan-equip-result-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f0f1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: background .08s;
+}
+
+.aura-loan-equip-result-item:last-child {
+    border-bottom: none;
+}
+
+.aura-loan-equip-result-item:hover {
+    background: #f0f7fd;
+}
+
+.aura-loan-equip-result-item .equip-res-name {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-loan-equip-result-item .equip-res-meta {
+    font-size: 11px;
+    color: #646970;
+}
+
+.aura-loan-selected-equip {
+    margin-top: 6px;
+    background: #e5f3fb;
+    border: 1px solid #2271b1;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.aura-loan-selected-equip .selected-name {
+    font-weight: 600;
+    color: #0069a4;
+}
+
+.aura-loan-selected-equip .selected-clear {
+    cursor: pointer;
+    color: #d63638;
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* ── Checkin summary card ──────────────────────────────────── */
+.aura-loan-checkin-summary {
+    background: #f9f9fb;
+    border: 1px solid #dcdcde;
+    border-radius: 5px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+}
+
+.aura-loan-checkin-summary .sum-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.aura-loan-checkin-summary .sum-label {
+    font-size: 11px;
+    color: #646970;
+}
+
+.aura-loan-checkin-summary .sum-value {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* Prestatario con avatar dentro del resumen de checkin */
+.aura-loan-checkin-summary .sum-value .aura-loan-borrower-cell {
+    margin-top: 2px;
+}
+.aura-loan-checkin-summary .sum-value .aura-loan-borrower-name {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* Equipo con negrita mayor */
+.aura-loan-checkin-summary .sum-value-equip {
+    font-size: 14px;
+}
+
+.aura-loan-checkin-summary .sum-overdue {
+    color: #d63638;
+}
+
+/* ── Damaged warning ───────────────────────────────────────── */
+.aura-loan-damaged-warning {
+    margin-top: 8px;
+    background: #fcebec;
+    border: 1px solid #f0b7b8;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #8a1e1f;
+}
+
+/* ── Notices in modals ─────────────────────────────────────── */
+.aura-loan-notice {
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    flex: 1;
+}
+
+.aura-loan-notice.success {
+    background: #edfaef;
+    border-left: 4px solid #00a32a;
+    color: #006505;
+}
+
+.aura-loan-notice.error {
+    background: #fcebec;
+    border-left: 4px solid #d63638;
+    color: #8a1e1f;
+}
+
+/* ── History table ─────────────────────────────────────────── */
+.aura-loan-history-table {
+    width: 100%;
+    font-size: 12px;
+}
+
+.aura-loan-history-table th {
+    background: #f9f9fb;
+    font-weight: 600;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 2px solid #dcdcde;
+}
+
+.aura-loan-history-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #f0f0f1;
+    vertical-align: middle;
+}
+
+/* Historia: wrapper con scroll horizontal */
+.aura-loan-history-table-wrap {
+    overflow-x: auto;
+    border-radius: 6px;
+    border: 1px solid #dcdcde;
+}
+
+/* Historia: header info (título + meta) */
+.aura-loan-history-header-info {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    min-width: 0;
+    flex: 1;
+}
+
+.aura-loan-history-meta {
+    font-size: 12px;
+    color: #646970;
+    font-style: italic;
+    white-space: nowrap;
+}
+
+/* Historia: fila vencida */
+.aura-loan-history-row-overdue td {
+    background: #fff8f8;
+}
+
+/* Historia: fechas con ancho fijo */
+.aura-loan-history-date {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+}
+.aura-loan-history-date-overdue {
+    color: #d63638;
+    font-weight: 600;
+}
+
+/* Valor vacío / NA */
+.aura-loan-history-na {
+    color: #b5b5ba;
+    font-style: italic;
+}
+
+/* Spinner de carga en modal historial */
+.aura-loan-history-loading {
+    color: #646970;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0;
+}
+.aura-loan-history-loading .spinner {
+    float: none;
+    margin: 0;
+}
+
+/* Estado vacío mejorado */
+.aura-loan-history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    gap: 8px;
+    color: #646970;
+}
+.aura-loan-history-empty .dashicons {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    color: #b5b5ba;
+}
+.aura-loan-history-empty p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Error en historial */
+.aura-loan-history-error {
+    color: #d63638;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 0;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media screen and (max-width: 1100px) {
+    .aura-loan-table .col-project { display: none; }
+}
+
+@media screen and (max-width: 900px) {
+    .aura-loan-fields-2col { grid-template-columns: 1fr; gap: 0; }
+    .aura-loan-kpis { grid-template-columns: repeat(2, 1fr); }
+    .aura-loan-modal { max-width: 96vw; }
+    .aura-loan-checkin-summary { grid-template-columns: 1fr; }
+}
+
+@media screen and (max-width: 600px) {
+    .aura-loan-kpis { grid-template-columns: 1fr; }
+    .aura-loan-table .col-loan-date,
+    .aura-loan-table .col-return-date { display: none; }
+}

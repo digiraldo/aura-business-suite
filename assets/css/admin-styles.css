@@ -236,51 +236,706 @@
     margin: 12px 0;
 }
 
-/* === Módulo Principal === */
-.aura-main-dashboard {
-    padding: 15px;
+/* ================================================================
+   AURA DASHBOARD PRINCIPAL v2.0 — Sistema de diseño adp-*
+   ================================================================ */
+
+/* ── Variables ─────────────────────────────────────────────────── */
+.adp-wrap {
+    --adp-primary:   #3b82f6;
+    --adp-success:   #10b981;
+    --adp-warning:   #f59e0b;
+    --adp-danger:    #ef4444;
+    --adp-info:      #06b6d4;
+    --adp-surface:   #ffffff;
+    --adp-bg:        #f3f4f6;
+    --adp-border:    #e5e7eb;
+    --adp-text:      #111827;
+    --adp-muted:     #6b7280;
+    --adp-radius-md: 10px;
+    --adp-radius-lg: 14px;
+    --adp-radius-xl: 18px;
+    --adp-shadow-md: 0 4px 10px rgba(0,0,0,.08);
+    --adp-shadow-lg: 0 10px 24px rgba(0,0,0,.12);
+
+    /* Gradientes por módulo */
+    --adp-g-finance:     linear-gradient(135deg,#10b981 0%,#059669 100%);
+    --adp-g-vehicles:    linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);
+    --adp-g-electricity: linear-gradient(135deg,#eab308 0%,#ca8a04 100%);
+    --adp-g-forms:       linear-gradient(135deg,#f59e0b 0%,#d97706 100%);
+    --adp-g-inventory:   linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%);
+    --adp-g-library:     linear-gradient(135deg,#ec4899 0%,#db2777 100%);
+    --adp-g-students:    linear-gradient(135deg,#06b6d4 0%,#0891b2 100%);
+
+    max-width: 1400px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--adp-text);
 }
 
+/* ── IDENTIDAD DE LA ORGANIZACIÓN (header dashboard) ──────────── */
+.adp-org-identity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,.2);
+}
+
+.adp-org-logo {
+    height: 56px;
+    width: auto;
+    max-width: 120px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(255,255,255,.12);
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+.adp-org-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.adp-org-name {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    letter-spacing: -.3px;
+}
+
+.adp-org-tagline {
+    font-size: .82rem;
+    color: rgba(255,255,255,.75);
+    font-style: italic;
+}
+
+/* ── SALUDO CON AVATAR DE USUARIO ────────────────────────────── */
+.adp-user-greeting {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 6px;
+}
+
+.adp-user-avatar-wrap {
+    flex-shrink: 0;
+}
+
+.adp-user-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255,255,255,.45);
+    box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    background: rgba(255,255,255,.15);
+    display: block;
+}
+
+.adp-user-greeting__info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Mueve el h1 dentro del bloque de info — quita su margin-bottom propio */
+.adp-user-greeting__info .adp-header__title {
+    margin-bottom: 0;
+}
+
+.adp-user-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.9);
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 20px;
+    padding: 3px 10px 3px 7px;
+    width: fit-content;
+}
+
+.adp-user-role-badge .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1;
+}
+
+/* ── MÓDULO COMPACT (coming-soon) ─────────────────────────────── */
+.adp-module-card--compact {
+    gap: 10px;
+    padding: 16px 18px;
+}
+
+.adp-module-card--compact .adp-module-card__icon { font-size: 2.2rem; }
+.adp-module-card--compact .adp-module-card__title { font-size: 1.05rem; }
+.adp-module-card--compact .adp-module-card__desc  { font-size: .84rem; }
+
+/* ── HEADER ────────────────────────────────────────────────────── */
+.adp-header {
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    color: #fff;
+    border-radius: var(--adp-radius-xl);
+    padding: 36px 40px;
+    margin-bottom: 30px;
+    box-shadow: var(--adp-shadow-lg);
+    animation: adpSlideDown .45s ease-out;
+}
+
+.adp-header__title {
+    font-size: 2.2rem;
+    margin: 0 0 8px;
+    font-weight: 700;
+    color: #fff;
+    border: none;
+}
+
+.adp-header__subtitle {
+    font-size: 1.1rem;
+    margin: 0 0 8px;
+    opacity: .92;
+}
+
+.adp-header__date {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .95rem;
+    opacity: .85;
+    margin: 0;
+}
+
+/* Stat cards row */
+.adp-header__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+}
+
+.adp-stat-card {
+    background: rgba(255,255,255,.14);
+    backdrop-filter: blur(8px);
+    border-radius: var(--adp-radius-lg);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: background .25s, transform .25s;
+    position: relative;
+    overflow: hidden;
+}
+
+.adp-stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: rgba(255,255,255,.5);
+}
+
+.adp-stat-card:hover { background: rgba(255,255,255,.25); transform: translateY(-4px); }
+
+.adp-stat-card--alert  .adp-stat-card__value { color: #fbbf24; animation: adpPulse 2s infinite; }
+.adp-stat-card--warning .adp-stat-card__value { color: #fde68a; }
+.adp-stat-card--success .adp-stat-card__value { color: #a7f3d0; }
+.adp-stat-card--danger  .adp-stat-card__value { color: #fca5a5; }
+
+.adp-stat-card__icon { font-size: 2.4rem; }
+
+.adp-stat-card__body { flex: 1; }
+
+.adp-stat-card__value {
+    display: block;
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+}
+
+.adp-stat-card__label {
+    display: block;
+    font-size: .82rem;
+    opacity: .88;
+    margin-top: 4px;
+}
+
+.adp-stat-card__link {
+    font-size: .8rem;
+    color: rgba(255,255,255,.85);
+    text-decoration: none;
+    margin-top: 6px;
+    display: block;
+}
+.adp-stat-card__link:hover { color: #fff; }
+
+/* ── SECCIÓN GENÉRICA ──────────────────────────────────────────── */
+.adp-section { margin: 32px 0; }
+
+.adp-section__title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--adp-text);
+    border: none;
+}
+
+.adp-section__icon { font-size: 1.6rem; }
+
+/* ── GRID DE MÓDULOS ───────────────────────────────────────────── */
+.adp-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 22px;
+}
+
+/* Módulo Card */
+.adp-module-card {
+    background: var(--adp-surface);
+    border-radius: var(--adp-radius-xl);
+    padding: 24px;
+    box-shadow: var(--adp-shadow-md);
+    border: 2px solid transparent;
+    transition: transform .3s, box-shadow .3s, border-color .3s;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: adpFadeUp .5s ease-out backwards;
+}
+
+.adp-module-card:nth-child(1){animation-delay:.05s}
+.adp-module-card:nth-child(2){animation-delay:.12s}
+.adp-module-card:nth-child(3){animation-delay:.18s}
+.adp-module-card:nth-child(4){animation-delay:.24s}
+.adp-module-card:nth-child(5){animation-delay:.30s}
+.adp-module-card:nth-child(6){animation-delay:.36s}
+.adp-module-card:nth-child(7){animation-delay:.42s}
+
+.adp-module-card:hover:not(.adp-module-card--coming-soon) {
+    transform: translateY(-8px);
+    box-shadow: var(--adp-shadow-lg);
+    border-color: var(--adp-primary);
+}
+
+/* Top accent bar por módulo */
+.adp-module-card--finance     { border-top: 4px solid #10b981; }
+.adp-module-card--vehicles    { border-top: 4px solid #3b82f6; }
+.adp-module-card--electricity { border-top: 4px solid #eab308; }
+.adp-module-card--forms       { border-top: 4px solid #f59e0b; }
+.adp-module-card--inventory   { border-top: 4px solid #8b5cf6; }
+.adp-module-card--library     { border-top: 4px solid #ec4899; }
+.adp-module-card--students    { border-top: 4px solid #06b6d4; }
+
+/* Coming soon: tono grisáceo */
+.adp-module-card--coming-soon {
+    opacity: .88;
+    background: #f9fafb;
+}
+.adp-module-card--coming-soon:hover { transform: none; box-shadow: var(--adp-shadow-md); }
+
+/* Header del card */
+.adp-module-card__header { display: flex; flex-direction: column; gap: 10px; }
+
+.adp-module-card__icon-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.adp-module-card__icon { font-size: 3rem; line-height: 1; }
+
+.adp-module-card__title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--adp-text);
+}
+
+.adp-module-card__desc {
+    font-size: .9rem;
+    color: var(--adp-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.adp-module-card__eta {
+    font-size: .82rem;
+    color: var(--adp-muted);
+    background: var(--adp-border);
+    padding: 5px 12px;
+    border-radius: 20px;
+    align-self: flex-start;
+}
+
+/* Badges */
+.adp-badge {
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.adp-badge--active { background: #d1fae5; color: #065f46; }
+.adp-badge--soon   { background: #fef3c7; color: #92400e; }
+.adp-badge--beta   { background: #dbeafe; color: #1e40af; }
+
+/* Mini stats dentro del card */
+.adp-mini-stats {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+    padding: 14px 0;
+    border-top: 1px solid var(--adp-border);
+    border-bottom: 1px solid var(--adp-border);
+}
+
+.adp-mini-stat { text-align: center; }
+
+.adp-mini-stat__value {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--adp-text);
+}
+
+.adp-mini-stat__label {
+    display: block;
+    font-size: .75rem;
+    color: var(--adp-muted);
+    margin-top: 3px;
+}
+
+.adp-text--success { color: var(--adp-success) !important; }
+.adp-text--danger  { color: var(--adp-danger)  !important; }
+.adp-text--warning { color: var(--adp-warning) !important; }
+
+/* Progress bar */
+.adp-progress { display: flex; flex-direction: column; gap: 6px; }
+
+.adp-progress__label {
+    display: flex;
+    justify-content: space-between;
+    font-size: .85rem;
+    color: var(--adp-muted);
+}
+
+.adp-progress__bar {
+    height: 8px;
+    background: var(--adp-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.adp-progress__fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width .6s ease;
+}
+
+/* Feature list (coming soon) */
+.adp-feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.adp-feature-list li {
+    padding: 5px 0;
+    font-size: .88rem;
+    color: var(--adp-muted);
+    border-bottom: 1px dashed var(--adp-border);
+}
+
+.adp-feature-list li:last-child { border-bottom: none; }
+
+/* Botones del card */
+.adp-module-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.adp-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border-radius: var(--adp-radius-md);
+    text-decoration: none;
+    font-size: .88rem;
+    font-weight: 600;
+    transition: filter .2s, transform .15s;
+    cursor: pointer;
+}
+
+.adp-btn:hover { filter: brightness(1.08); transform: scale(1.02); }
+
+.adp-btn--primary   { background: var(--adp-primary);  color: #fff; }
+.adp-btn--secondary { background: #f3f4f6; color: #374151; }
+.adp-btn--secondary:hover { background: #e5e7eb; }
+.adp-btn--alert     { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.adp-btn--alert:hover { background: #fee2e2; }
+
+/* ── FILA INFERIOR ─────────────────────────────────────────────── */
+.adp-bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+    margin-top: 32px;
+}
+
+/* Panel genérico */
+.adp-panel {
+    background: var(--adp-surface);
+    border-radius: var(--adp-radius-xl);
+    padding: 26px;
+    box-shadow: var(--adp-shadow-md);
+}
+
+.adp-panel__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--adp-border);
+    color: var(--adp-text);
+}
+
+/* Accesos rápidos */
+.adp-quick-actions { display: flex; flex-direction: column; gap: 10px; }
+
+.adp-quick-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: #f9fafb;
+    border-radius: var(--adp-radius-md);
+    text-decoration: none;
+    color: var(--adp-text);
+    transition: background .2s, transform .2s;
+    border: 1px solid var(--adp-border);
+}
+
+.adp-quick-btn:hover { background: #eff6ff; transform: translateX(4px); color: var(--adp-text); }
+.adp-quick-btn--highlight { background: #fffbeb; border-color: #fde68a; }
+.adp-quick-btn--highlight:hover { background: #fef3c7; }
+
+.adp-quick-btn__icon { font-size: 1.8rem; min-width: 36px; text-align: center; }
+
+.adp-quick-btn div { flex: 1; }
+.adp-quick-btn div strong { display: block; font-size: .95rem; }
+.adp-quick-btn div span  { display: block; font-size: .8rem; color: var(--adp-muted); margin-top: 2px; }
+
+.adp-quick-btn__arrow { font-size: 1.2rem; color: #d1d5db; transition: color .2s, transform .2s; }
+.adp-quick-btn:hover .adp-quick-btn__arrow { color: var(--adp-primary); transform: translateX(4px); }
+
+/* Columna derecha */
+.adp-right-col { display: flex; flex-direction: column; gap: 20px; }
+
+/* Avatar + perfil */
+.adp-user-mini {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--adp-border);
+}
+
+.adp-avatar { border-radius: 50%; }
+
+.adp-user-mini div { display: flex; flex-direction: column; gap: 3px; }
+.adp-user-mini strong { font-size: 1rem; color: var(--adp-text); }
+
+.adp-user-role {
+    font-size: .8rem;
+    color: var(--adp-muted);
+    background: var(--adp-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+    align-self: flex-start;
+}
+
+.adp-link-small { font-size: .8rem; color: var(--adp-primary); text-decoration: none; }
+.adp-link-small:hover { text-decoration: underline; }
+
+/* Tabla info */
+.adp-info-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+
+.adp-info-table tr td {
+    padding: 7px 0;
+    border-bottom: 1px solid var(--adp-border);
+    color: var(--adp-muted);
+}
+
+.adp-info-table tr:last-child td { border-bottom: none; }
+.adp-info-table tr td:last-child { color: var(--adp-text); text-align: right; }
+
+/* System links */
+.adp-syslinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.adp-syslinks a {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background: var(--adp-bg);
+    border-radius: 20px;
+    font-size: .8rem;
+    color: var(--adp-text);
+    text-decoration: none;
+    transition: background .2s, color .2s;
+}
+
+.adp-syslinks a:hover { background: var(--adp-primary); color: #fff; }
+
+/* Roadmap */
+.adp-roadmap { list-style: none; padding: 0; margin: 0; }
+
+.adp-roadmap li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    font-size: .9rem;
+    color: var(--adp-text);
+    border-bottom: 1px solid var(--adp-border);
+}
+
+.adp-roadmap li:last-child { border-bottom: none; }
+
+.adp-roadmap__badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: .72rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.adp-roadmap__badge--q1 { background: #dbeafe; color: #1e40af; }
+.adp-roadmap__badge--q2 { background: #f3f4f6; color: #6b7280; }
+
+/* ── FOOTER ────────────────────────────────────────────────────── */
+.adp-footer {
+    margin-top: 40px;
+    padding: 24px;
+    background: var(--adp-surface);
+    border-radius: var(--adp-radius-xl);
+    box-shadow: var(--adp-shadow-md);
+    text-align: center;
+    color: var(--adp-muted);
+    font-size: .88rem;
+}
+
+.adp-footer p { margin: 0; }
+
+.adp-footer-link {
+    color: var(--adp-primary);
+    text-decoration: none;
+    transition: color .2s, opacity .2s;
+}
+.adp-footer-link:hover {
+    color: var(--adp-primary);
+    opacity: .75;
+    text-decoration: underline;
+}
+
+/* ── ANIMACIONES ───────────────────────────────────────────────── */
+@keyframes adpSlideDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes adpFadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes adpPulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: .65; }
+}
+
+/* ── RESPONSIVE ────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+    .adp-bottom-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+    .adp-modules-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .adp-header { padding: 28px 22px; }
+    .adp-header__title { font-size: 1.7rem; }
+}
+
+@media (max-width: 600px) {
+    .adp-header__stats { grid-template-columns: 1fr 1fr; }
+    .adp-modules-grid  { grid-template-columns: 1fr; }
+    .adp-mini-stats    { grid-template-columns: repeat(2,1fr); }
+
+    /* Cards "Próximamente" en 2 columnas en móvil para reducir scroll */
+    .adp-modules-grid .adp-module-card--compact {
+        grid-column: auto;
+    }
+    .adp-modules-grid {
+        /* Mezcla: card Finanzas ocupa columna completa, el resto en 2 cols */
+        grid-template-columns: 1fr 1fr;
+    }
+    .adp-module-card--finance {
+        grid-column: 1 / -1; /* Finanzas ocupa todo el ancho */
+    }
+
+    /* Org identity más compacta en móvil */
+    .adp-org-logo  { height: 42px; max-width: 90px; }
+    .adp-org-name  { font-size: 1.05rem; }
+    .adp-org-tagline { display: none; }
+
+    /* Avatar y saludo en móvil */
+    .adp-user-avatar { width: 48px; height: 48px; }
+    .adp-user-greeting { gap: 12px; }
+    .adp-user-role-badge { font-size: .72rem; }
+}
+
+/* ── LEGADO: estilos antigüos (mantener compatibilidad) ────────── */
+/* === Módulo Principal (legacy) === */
+.aura-main-dashboard { padding: 15px; }
 .aura-modules-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 15px;
-    margin: 12px 0;
+    gap: 15px; margin: 12px 0;
 }
-
 .aura-module-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    text-decoration: none;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    color: white; border-radius: 12px; padding: 20px; text-align: center;
+    text-decoration: none; transition: transform .2s, box-shadow .2s;
+    box-shadow: 0 4px 6px rgba(102,126,234,.3);
 }
-
-.aura-module-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
-    color: white;
-}
-
-.aura-module-card .module-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-}
-
-.aura-module-card h2 {
-    margin: 0 0 8px 0;
-    font-size: 20px;
-    color: white;
-}
-
-.aura-module-card p {
-    margin: 0;
-    opacity: 0.9;
-    font-size: 13px;
-}
+.aura-module-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(102,126,234,.4); color: white; }
+.aura-module-card .module-icon { font-size: 48px; margin-bottom: 12px; }
+.aura-module-card h2 { margin: 0 0 8px; font-size: 20px; color: white; }
+.aura-module-card p  { margin: 0; opacity: .9; font-size: 13px; }
 
 /* === Permisos UI === */
 .aura-permissions-grid {
@@ -375,4 +1030,494 @@
 .urgency-warning {
     background: #f59e0b;
     color: white;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   CABECERA DE IMPRESIÓN — Reportes y Exportación PDF
+   FASE B · Aura Business Suite
+   ═══════════════════════════════════════════════════════════════ */
+
+.aura-print-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 10px;
+    border-bottom: 3px solid #2271b1;
+    margin-bottom: 16px;
+}
+
+.aura-print-header__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aura-print-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.aura-print-header__brand {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.aura-print-header__brand strong {
+    font-size: 15pt;
+    color: #2271b1;
+}
+
+.aura-print-header__tagline {
+    font-size: 9pt;
+    color: #64748b;
+}
+
+.aura-print-header__info {
+    text-align: center;
+    font-size: 11pt;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.aura-print-header__meta {
+    text-align: right;
+    font-size: 8.5pt;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Ocultar cabecera en pantalla normal; mostrar solo al imprimir          */
+/* (solo para el área de reporte; en pantalla se usa el header de la app) */
+@media screen {
+    .aura-report-printable .aura-print-header {
+        display: none;
+    }
+}
+
+@media print {
+    /* Mostrar cabecera de impresión */
+    .aura-report-printable .aura-print-header {
+        display: flex !important;
+    }
+
+    /* Ocultar elementos de UI que no van al PDF */
+    .aura-reports-sidebar,
+    .aura-reports-header,
+    #aura-export-card,
+    #wpadminbar,
+    #adminmenuback,
+    #adminmenuwrap,
+    .notice,
+    .update-nag {
+        display: none !important;
+    }
+
+    /* El área del reporte ocupa toda la página */
+    .aura-reports-layout { display: block !important; }
+    .aura-reports-main   { width: 100% !important; padding: 0 !important; }
+    .aura-report-printable { display: block !important; }
+
+    /* Evitar corte de las filas de tabla entre páginas */
+    tbody tr { page-break-inside: avoid; }
+    thead     { display: table-header-group; }
+
+    /* Colores exactos al imprimir */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+
+    /* Numeración de páginas via CSS Paged Media */
+    @page {
+        size: A4 landscape;
+        margin: 14mm 10mm 18mm;
+    }
+}
+/* ============================================================
+   PANEL DE AYUDA – OPERADORES DE BÚSQUEDA (FASE C)
+   ============================================================ */
+
+/* Botón "?" junto al label */
+.aura-syntax-toggle {
+    background: none;
+    border: 1px solid #c3c4c7;
+    border-radius: 50%;
+    color: #646970;
+    cursor: pointer;
+    font-size: 0;        /* oculta posible texto */
+    height: 20px;
+    line-height: 18px;
+    margin-left: 6px;
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+    width: 20px;
+    transition: background 0.15s, color 0.15s;
+}
+.aura-syntax-toggle:hover,
+.aura-syntax-toggle[aria-expanded="true"] {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+.aura-syntax-toggle .dashicons {
+    font-size: 14px;
+    height: 14px;
+    line-height: 18px;
+    width: 14px;
+}
+
+/* Panel de ayuda colapsable */
+.aura-syntax-help {
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    margin-top: 10px;
+    padding: 12px 16px;
+}
+.aura-syntax-help h4 {
+    color: #1d2327;
+    font-size: 13px;
+    margin: 0 0 10px;
+}
+.aura-syntax-table {
+    border-collapse: collapse;
+    font-size: 12px;
+    width: 100%;
+}
+.aura-syntax-table th,
+.aura-syntax-table td {
+    border: 1px solid #dcdcde;
+    padding: 5px 8px;
+    text-align: left;
+    vertical-align: top;
+}
+.aura-syntax-table th {
+    background: #e8eaeb;
+    font-weight: 600;
+}
+.aura-syntax-table tr:nth-child(even) td {
+    background: #f0f1f2;
+}
+.aura-syntax-table code {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 3px;
+    font-size: 11px;
+    padding: 1px 4px;
+    white-space: nowrap;
+}
+.aura-syntax-help__combine {
+    border-top: 1px solid #dcdcde;
+    font-size: 12px;
+    margin: 10px 0 0;
+    padding-top: 8px;
+}
+.aura-syntax-help__combine code {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 3px;
+    font-size: 11px;
+    padding: 2px 6px;
+}
+
+/* ===================================================================
+   Tabla de Transacciones — diseño compacto, informativo y responsive
+   =================================================================== */
+
+/* ── Contenedor con scroll horizontal ──────────────────────────────── */
+.aura-transactions-list-page form#posts-filter,
+.aura-pending-transactions-page form#posts-filter,
+.aura-transactions-list-page .tablenav,
+.aura-pending-transactions-page .tablenav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── Tabla base ─────────────────────────────────────────────────────── */
+.aura-transactions-list-page .wp-list-table,
+.aura-pending-transactions-page .wp-list-table {
+    table-layout: auto;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.aura-transactions-list-page .wp-list-table th,
+.aura-pending-transactions-page .wp-list-table th {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 8px 10px;
+    background: #f9fafb;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.aura-transactions-list-page .wp-list-table td,
+.aura-pending-transactions-page .wp-list-table td {
+    padding: 9px 10px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.aura-transactions-list-page .wp-list-table tbody tr:hover td,
+.aura-pending-transactions-page .wp-list-table tbody tr:hover td {
+    background: #f0f9ff;
+}
+
+/* ── Columna # / Tipo ───────────────────────────────────────────────── */
+.aura-transactions-list-page .column-id,
+.aura-pending-transactions-page .column-id,
+.aura-transactions-list-page th.column-id,
+.aura-pending-transactions-page th.column-id {
+    width: 58px !important;
+    min-width: 58px;
+    white-space: nowrap;
+}
+
+.aura-txn-id { white-space: nowrap; }
+
+/* ── Columna Estado (badge con pill) ────────────────────────────────── */
+.aura-status-badge {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 3px;
+    border-radius: 10px !important;
+    white-space: nowrap;
+}
+
+.aura-transactions-list-page .column-status,
+.aura-pending-transactions-page .column-status {
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+/* ── Columna Fecha ──────────────────────────────────────────────────── */
+.aura-transactions-list-page .column-transaction_date,
+.aura-pending-transactions-page .column-transaction_date {
+    white-space: nowrap;
+    min-width: 80px;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: #374151;
+}
+
+/* ── Columna Categoría (badge + tooltip con descripción) ────────────── */
+.aura-transactions-list-page .column-category,
+.aura-pending-transactions-page .column-category {
+    min-width: 100px;
+    max-width: 150px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.aura-category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    white-space: nowrap;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.aura-category-badge[title] { cursor: help; }
+
+/* ── Columna Área ───────────────────────────────────────────────────── */
+.aura-transactions-list-page .column-area {
+    min-width: 110px;
+    max-width: 160px;
+    overflow: hidden;
+}
+
+/* Badge de área: icono dashicons + nombre con color de fondo suave */
+.aura-area-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 7px 2px 5px;
+    border-radius: 20px;
+    background-color: color-mix(in srgb, var(--area-color, #8c8f94) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--area-color, #8c8f94) 35%, transparent);
+    white-space: nowrap;
+    cursor: default;
+    max-width: 150px;
+    overflow: hidden;
+}
+
+/* Fallback para browsers sin color-mix */
+@supports not (background: color-mix(in srgb, red 10%, white)) {
+    .aura-area-badge {
+        background-color: rgba(140, 143, 148, 0.12);
+        border-color: rgba(140, 143, 148, 0.30);
+    }
+}
+
+.aura-area-badge .dashicons {
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.aura-area-badge__name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--area-color, #3c434a);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 110px;
+    line-height: 1.4;
+}
+
+/* ── Columna Monto ──────────────────────────────────────────────────── */
+.aura-transactions-list-page .column-amount,
+.aura-pending-transactions-page .column-amount {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    font-weight: 600;
+    min-width: 90px;
+}
+
+/* ── Columna Pago (icono) ───────────────────────────────────────────── */
+.aura-transactions-list-page .column-payment_method,
+.aura-pending-transactions-page .column-payment_method {
+    width: 36px;
+    min-width: 36px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ── Columna Usuario Vinculado ──────────────────────────────────────── */
+.aura-transactions-list-page .column-related_user,
+.aura-pending-transactions-page .column-related_user {
+    width: 52px;
+    min-width: 52px;
+    max-width: 60px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.aura-user-compact {
+    cursor: help;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.aura-user-compact img {
+    flex-shrink: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+}
+
+/* Inicial del nombre de usuario — 1 carácter en negrita */
+.aura-user-initial {
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+    letter-spacing: 0;
+    line-height: 1;
+}
+
+/* ── Columna Creado por ─────────────────────────────────────────────── */
+.aura-transactions-list-page .column-created_by,
+.aura-pending-transactions-page .column-created_by {
+    width: 52px;
+    min-width: 52px;
+    max-width: 60px;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* ── Columna Acciones — botones solo icono ──────────────────────────── */
+.aura-transactions-list-page .column-actions,
+.aura-pending-transactions-page .column-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+    padding-right: 8px !important;
+}
+
+.aura-row-actions-icons {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    white-space: nowrap;
+}
+
+/* Botón icono base */
+.aura-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    padding: 0;
+    vertical-align: middle;
+    line-height: 1;
+    /* Reset estilos nativos de <button> */
+    -webkit-appearance: none;
+    appearance: none;
+    box-shadow: none;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.aura-icon-btn .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    line-height: 1;
+}
+
+/* Hover en gris (ver/edital neutral) */
+.aura-icon-btn:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+    color: #111827;
+}
+
+/* Color heredado para íconos de color (aprobar/rechazar/eliminar) */
+.aura-icon-btn[style*="color"] { /* preservar color inline */ }
+.aura-icon-btn[style*="color:#27ae60"]:hover { background: #d1fae5; border-color: #6ee7b7; }
+.aura-icon-btn[style*="color:#e74c3c"]:hover { background: #fee2e2; border-color: #fca5a5; }
+.aura-icon-btn[style*="color:#3b82f6"]:hover { background: #dbeafe; border-color: #93c5fd; }
+.aura-icon-btn[style*="color:#f59e0b"]:hover { background: #fef3c7; border-color: #fcd34d; }
+
+/* ── Responsive: ocultar columnas en pantallas pequeñas ─────────────── */
+@media screen and (max-width: 1280px) {
+    .aura-transactions-list-page .column-approval_method,
+    .aura-transactions-list-page .column-related_user { display: none; }
+}
+
+@media screen and (max-width: 960px) {
+    .aura-transactions-list-page .column-area,
+    .aura-transactions-list-page .column-created_by { display: none; }
+}
+
+@media screen and (max-width: 720px) {
+    .aura-transactions-list-page .column-payment_method { display: none; }
+    .aura-transactions-list-page .wp-list-table td,
+    .aura-transactions-list-page .wp-list-table th { padding: 7px 6px; }
 }

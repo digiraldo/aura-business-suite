@@ -1,0 +1,482 @@
+/**
+ * Aura Business Suite — Inventory Settings CSS
+ * Página de configuración del módulo de inventario
+ */
+
+/* ── Layout principal ─────────────────────────────────────── */
+.aura-inv-settings-wrap {
+    max-width: 1100px;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+.aura-inv-tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: 2px solid #c3c4c7;
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.aura-inv-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: #50575e;
+    cursor: pointer;
+    transition: background .1s, color .1s;
+    position: relative;
+    bottom: -2px;
+}
+
+.aura-inv-tab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.aura-inv-tab:hover {
+    background: #fff;
+    color: #135e96;
+}
+
+.aura-inv-tab.active {
+    background: #fff;
+    border-bottom-color: #fff;
+    color: #2271b1;
+    font-weight: 600;
+    z-index: 1;
+}
+
+/* ── Panel content ─────────────────────────────────────────── */
+.aura-inv-tab-panel {
+    background: transparent;
+    padding: 24px 0;
+}
+
+/* ── Notice / Mensaje ─────────────────────────────────────── */
+.aura-inv-notice {
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    border-left: 4px solid transparent;
+}
+
+.aura-inv-notice.success {
+    background: #edfaef;
+    border-left-color: #00a32a;
+    color: #008a20;
+}
+
+.aura-inv-notice.error {
+    background: #fce8e8;
+    border-left-color: #d63638;
+    color: #b32d2e;
+}
+
+.aura-inv-notice.info {
+    background: #e5f3fb;
+    border-left-color: #2271b1;
+    color: #135e96;
+}
+
+/* ── Section header con botón a la derecha ────────────────── */
+.aura-inv-section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.aura-inv-section-header h2 {
+    margin: 0 0 4px;
+    font-size: 18px;
+}
+
+.aura-inv-btn-defaults {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.aura-inv-btn-defaults .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.aura-inv-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.aura-inv-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.aura-inv-card-title .dashicons {
+    color: #2271b1;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* ── Tabla de categorías ─────────────────────────────────── */
+.aura-inv-cats-table {
+    margin: 0 !important;
+}
+
+.aura-inv-cats-table th.col-name     { width: 30%; }
+.aura-inv-cats-table th.col-slug     { width: 18%; }
+.aura-inv-cats-table th.col-interval { width: 30%; }
+.aura-inv-cats-table th.col-count    { width: 10%; text-align: center; }
+.aura-inv-cats-table th.col-actions  { width: 12%; text-align: center; }
+.aura-inv-cats-table td.col-count    { text-align: center; }
+.aura-inv-cats-table td.col-actions  { text-align: center; }
+
+.aura-inv-cats-table code {
+    font-size: 11px;
+    background: #f0f0f1;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: #3c434a;
+}
+
+/* Badges: intervalo */
+.aura-inv-interval-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .3px;
+}
+
+.aura-inv-interval-time  { background: #e5f3fb; color: #135e96; }
+.aura-inv-interval-hours { background: #fef8e0; color: #996c00; }
+.aura-inv-interval-both  { background: #f0e8fd; color: #6b3fa0; }
+.aura-inv-interval-none  { background: #f0f0f1; color: #646970; }
+
+/* Badges: contador de equipos */
+.aura-inv-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    padding: 2px 7px;
+    border-radius: 12px;
+    background: #f0f0f1;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3c434a;
+}
+
+/* Botón eliminar */
+.aura-inv-btn-delete-cat {
+    color: #d63638 !important;
+    border-color: #d63638 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.aura-inv-btn-delete-cat .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.aura-inv-btn-delete-cat:hover {
+    background: #fce8e8 !important;
+}
+
+/* Grupo de acciones (editar + eliminar) */
+.aura-inv-action-group {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Botón editar categoría */
+.aura-inv-btn-edit-cat {
+    color: #2271b1 !important;
+    border-color: #2271b1 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+.aura-inv-btn-edit-cat .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+.aura-inv-btn-edit-cat:hover {
+    background: #e8f0fb !important;
+}
+
+/* ── Modal editar categoría ────────────────────────────────── */
+.aura-inv-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.aura-inv-modal-box {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.25);
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.aura-inv-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #dcdcde;
+    background: #f9f9fb;
+}
+.aura-inv-modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.aura-inv-modal-header h2 .dashicons {
+    color: #2271b1;
+}
+.aura-inv-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #646970;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: background .15s, color .15s;
+}
+.aura-inv-modal-close:hover {
+    background: #f0f0f1;
+    color: #d63638;
+}
+.aura-inv-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+.aura-inv-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f1;
+}
+
+/* Campo group 2 columnas en modal */
+.aura-inv-field-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+.aura-inv-modal-body .aura-inv-field {
+    margin-bottom: 14px;
+}
+.aura-inv-modal-body .aura-inv-field:last-child {
+    margin-bottom: 0;
+}
+.aura-inv-modal-body .aura-inv-field label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1d2327;
+    margin-bottom: 4px;
+    display: block;
+}
+.aura-inv-modal-body .aura-inv-field input,
+.aura-inv-modal-body .aura-inv-field select,
+.aura-inv-modal-body .aura-inv-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Spinner animado en botón guardar */
+@keyframes aura-spin { to { transform: rotate(360deg); } }
+.aura-spin { display: inline-block; animation: aura-spin .6s linear infinite; }
+
+/* ── Formulario agregar categoría ─────────────────────────── */
+.aura-inv-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.aura-inv-field-full {
+    grid-column: 1 / -1;
+}
+
+.aura-inv-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.aura-inv-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-inv-label .required {
+    color: #d63638;
+}
+
+/* Bloque de intervalo */
+.aura-inv-interval-block {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+}
+
+.aura-inv-interval-block h4 {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* Form actions */
+.aura-inv-form-actions {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid #f0f0f1;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.aura-inv-form-actions .button .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    margin-right: 3px;
+    vertical-align: middle;
+}
+
+/* ── Tabla de configuración ─────────────────────────────── */
+.aura-inv-settings-table th {
+    width: 260px;
+    font-weight: 600;
+}
+
+.aura-inv-settings-table .description {
+    font-size: 12px;
+    color: #646970;
+    margin-top: 4px;
+}
+
+/* ── Alert types info ────────────────────────────────────── */
+.aura-inv-alert-types {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.aura-inv-alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    font-size: 13px;
+}
+
+.aura-inv-alert-item .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.aura-inv-alert-item strong {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.aura-inv-alert-item p {
+    margin: 0;
+    font-size: 12px;
+    color: #646970;
+}
+
+.aura-inv-alert-info    { background: #e5f3fb; border-color: #b8dcf3; }
+.aura-inv-alert-info    .dashicons { color: #2271b1; }
+.aura-inv-alert-warning { background: #fef8e0; border-color: #f5e6a3; }
+.aura-inv-alert-warning .dashicons { color: #996c00; }
+.aura-inv-alert-danger  { background: #fce8e8; border-color: #f3b8b8; }
+.aura-inv-alert-danger  .dashicons { color: #d63638; }
+
+/* ── Spinner inline ──────────────────────────────────────── */
+.aura-inv-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #c3c4c7;
+    border-top-color: #2271b1;
+    border-radius: 50%;
+    animation: aura-inv-spin .6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+@keyframes aura-inv-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 782px) {
+    .aura-inv-form-grid { grid-template-columns: 1fr; }
+    .aura-inv-alert-types { grid-template-columns: 1fr; }
+    .aura-inv-section-header { flex-direction: column; }
+    .aura-inv-tabs { flex-wrap: wrap; }
+}

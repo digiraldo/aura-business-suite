@@ -1,0 +1,563 @@
+/* ============================================================
+   Aura Financial Reports — Fase 3, Item 3.2
+   ============================================================ */
+
+/* ── Layout principal ──────────────────────────────────────── */
+.aura-reports-wrap {
+    max-width: 1400px;
+}
+
+.aura-reports-header {
+    margin-bottom: 24px;
+}
+.aura-reports-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px;
+}
+.aura-reports-subtitle {
+    color: #64748b;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.aura-reports-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 1100px) {
+    .aura-reports-layout { grid-template-columns: 1fr; }
+}
+
+/* ── Sidebar ───────────────────────────────────────────────── */
+.aura-reports-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.aura-reports-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.aura-reports-card__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.aura-reports-card__title .dashicons {
+    color: #2563eb;
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+}
+
+/* ── Formulario ────────────────────────────────────────────── */
+.aura-form-group {
+    margin-bottom: 14px;
+}
+.aura-form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+.aura-select,
+.aura-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #1e293b;
+    background: #f8fafc;
+    box-sizing: border-box;
+    transition: border-color .15s, box-shadow .15s;
+}
+.aura-select:focus,
+.aura-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+    background: #fff;
+}
+
+/* Presets de fecha */
+.aura-date-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+.aura-preset-btn {
+    font-size: 0.75rem;
+    padding: 4px 9px;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    background: #f1f5f9;
+    color: #475569;
+    cursor: pointer;
+    transition: all .15s;
+    line-height: 1.4;
+}
+.aura-preset-btn:hover,
+.aura-preset-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.aura-date-range {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 6px;
+}
+.aura-date-range span {
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* Botón generar */
+.aura-btn-generate {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px !important;
+    font-size: 0.875rem !important;
+    border-radius: 6px !important;
+}
+.aura-btn-generate:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.aura-btn-generate .dashicons {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    margin-top: 1px;
+}
+
+/* ── Exportación ──────────────────────────────────────────── */
+.aura-export-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.aura-export-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all .15s;
+}
+.aura-export-btn .dashicons {
+    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+}
+.aura-export-btn--csv {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #15803d;
+}
+.aura-export-btn--csv:hover { background: #dcfce7; }
+.aura-export-btn--excel {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+.aura-export-btn--excel:hover { background: #dbeafe; }
+.aura-export-btn--print {
+    background: #fdf4ff;
+    border-color: #d8b4fe;
+    color: #7c3aed;
+}
+.aura-export-btn--print:hover { background: #f3e8ff; }
+
+/* ── Configuraciones guardadas ────────────────────────────── */
+.aura-empty-msg {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-align: center;
+    margin: 4px 0 12px;
+}
+.aura-config-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    background: #f8fafc;
+    font-size: 0.82rem;
+}
+.aura-config-item__name {
+    flex: 1;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.aura-config-item__name:hover { color: #2563eb; text-decoration: underline; }
+.aura-config-item__type {
+    font-size: 0.72rem;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 2px 6px;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+.aura-config-item__del {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ef4444;
+    font-size: 0.8rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    opacity: .7;
+    transition: opacity .15s;
+    flex-shrink: 0;
+}
+.aura-config-item__del:hover { opacity: 1; }
+.aura-save-config-form {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.aura-btn-save-config {
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    font-size: 0.8rem !important;
+}
+.aura-btn-save-config .dashicons {
+    font-size: 0.9rem;
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+/* ── Área principal del reporte ───────────────────────────── */
+.aura-reports-main {
+    min-height: 420px;
+}
+
+/* Estado vacío */
+.aura-report-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 380px;
+    color: #94a3b8;
+    text-align: center;
+    gap: 12px;
+}
+.aura-report-empty__icon {
+    font-size: 4rem !important;
+    width: 4rem !important;
+    height: 4rem !important;
+    color: #cbd5e1;
+}
+
+/* Loader */
+.aura-report-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 380px;
+    gap: 16px;
+    color: #64748b;
+}
+.aura-spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: aura-spin .7s linear infinite;
+}
+@keyframes aura-spin { to { transform: rotate(360deg); } }
+
+/* ── Contenido del reporte ────────────────────────────────── */
+.aura-report-printable {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+/* Cabecera de impresión */
+.aura-print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 14px;
+    margin-bottom: 24px;
+    gap: 12px;
+}
+.aura-print-header__logo strong {
+    font-size: 1.1rem;
+    color: #2563eb;
+    font-weight: 700;
+}
+.aura-print-header__info {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+.aura-print-header__meta {
+    text-align: right;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+/* KPIs del reporte */
+.aura-report-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+.aura-report-kpi {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+.aura-report-kpi.income  { border-left-color: #16a34a; }
+.aura-report-kpi.expense { border-left-color: #dc2626; }
+.aura-report-kpi.balance { border-left-color: #2563eb; }
+.aura-report-kpi.pending { border-left-color: #d97706; }
+.aura-report-kpi__label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+.aura-report-kpi__value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+.aura-report-kpi__sub {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+.aura-report-kpi__change {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-top: 4px;
+}
+.aura-report-kpi__change.up   { background: #dcfce7; color: #16a34a; }
+.aura-report-kpi__change.down { background: #fee2e2; color: #dc2626; }
+
+/* Gráfico */
+.aura-report-chart-wrap {
+    margin-bottom: 28px;
+    max-height: 320px;
+}
+
+/* Tabla del reporte */
+.aura-report-table-wrap {
+    overflow-x: auto;
+}
+.aura-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    color: #1e293b;
+}
+.aura-report-table thead th {
+    background: #1e3a5f;
+    color: #fff;
+    font-weight: 600;
+    padding: 10px 13px;
+    text-align: left;
+    white-space: nowrap;
+}
+.aura-report-table tbody tr:nth-child(even) td {
+    background: #f8fafc;
+}
+.aura-report-table tbody tr:hover td {
+    background: #eff6ff;
+}
+.aura-report-table td {
+    padding: 9px 13px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+.aura-report-table .totals-row td {
+    font-weight: 700;
+    background: #eff6ff !important;
+    border-top: 2px solid #2563eb;
+}
+.aura-report-table .section-header td {
+    background: #f1f5f9 !important;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 7px 13px;
+}
+
+/* Badges estado */
+.aura-status-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: capitalize;
+}
+.aura-status-badge.approved  { background: #dcfce7; color: #16a34a; }
+.aura-status-badge.pending   { background: #fef3c7; color: #d97706; }
+.aura-status-badge.rejected  { background: #fee2e2; color: #dc2626; }
+
+/* Colores monto */
+.amount-income  { color: #16a34a; font-weight: 600; }
+.amount-expense { color: #dc2626; font-weight: 600; }
+.amount-net.positive { color: #16a34a; font-weight: 600; }
+.amount-net.negative { color: #dc2626; font-weight: 600; }
+
+/* Progress bar para % ejecución */
+.aura-progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.aura-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.aura-progress-bar__fill {
+    height: 100%;
+    border-radius: 4px;
+    background: #16a34a;
+    transition: width .4s ease;
+}
+.aura-progress-bar__fill.warn  { background: #d97706; }
+.aura-progress-bar__fill.over  { background: #dc2626; }
+.aura-progress-pct {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+    min-width: 38px;
+    text-align: right;
+}
+
+/* "Sin datos" en tabla */
+.aura-no-data {
+    text-align: center;
+    color: #94a3b8;
+    padding: 30px !important;
+    font-style: italic;
+}
+
+/* Pie de reporte */
+.aura-report-footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+    text-align: right;
+    color: #94a3b8;
+    font-size: 0.78rem;
+}
+
+/* ── Notificaciones inline ────────────────────────────────── */
+.aura-reports-notice {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.aura-reports-notice.success { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+.aura-reports-notice.error   { background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; }
+
+/* ── Impresión ────────────────────────────────────────────── */
+@media print {
+    .aura-reports-sidebar,
+    .aura-reports-header,
+    #wpadminbar,
+    #adminmenuwrap,
+    #wpfooter,
+    .notice,
+    .screen-reader-text {
+        display: none !important;
+    }
+    .aura-reports-layout {
+        display: block;
+    }
+    .aura-reports-main {
+        width: 100%;
+    }
+    .aura-report-printable {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+    }
+    .aura-report-table thead th {
+        background: #1e3a5f !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .aura-report-table tbody tr:nth-child(even) td {
+        background: #f8fafc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .aura-report-chart-wrap {
+        page-break-inside: avoid;
+    }
+    .aura-report-table-wrap {
+        page-break-inside: auto;
+    }
+}

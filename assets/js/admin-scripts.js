@@ -61,8 +61,9 @@
             }
         });
         
-        // Validación de fechas
+        // Validación de fechas (excluye campos marcados con data-allow-future)
         $('input[type="date"]').on('change', function() {
+            if ($(this).data('allow-future')) return; // presupuestos u otros campos que permiten fechas futuras
             var selectedDate = new Date($(this).val());
             var today = new Date();
             today.setHours(0, 0, 0, 0);

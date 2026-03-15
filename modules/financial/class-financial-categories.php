@@ -58,9 +58,9 @@ class Aura_Financial_Categories {
      */
     public function add_admin_menu() {
         add_submenu_page(
-            'aura-suite',
+            'aura-financial-dashboard',
             __('Gestión de Categorías', 'aura-suite'),
-            __('Categorías Financieras', 'aura-suite'),
+            __('Categorías', 'aura-suite'),
             'aura_finance_category_manage',
             'aura-financial-categories',
             array($this, 'render_categories_page')
@@ -71,7 +71,7 @@ class Aura_Financial_Categories {
      * Enqueue assets
      */
     public function enqueue_assets($hook) {
-        if ('aura-suite_page_aura-financial-categories' !== $hook) {
+        if ('finanzas_page_aura-financial-categories' !== $hook) {
             return;
         }
         
@@ -329,7 +329,8 @@ class Aura_Financial_Categories {
         }
         
         $category_id = $wpdb->insert_id;
-        
+
+        do_action( 'aura_finance_category_saved', $category_id, 'created', [] );
         wp_send_json_success(array(
             'message' => __('Categoría creada exitosamente.', 'aura-suite'),
             'category_id' => $category_id,
@@ -435,7 +436,8 @@ class Aura_Financial_Categories {
         if ($result === false) {
             wp_send_json_error(array('message' => __('No se pudo actualizar la categoría.', 'aura-suite')));
         }
-        
+
+        do_action( 'aura_finance_category_saved', $category_id, 'updated', $data );
         wp_send_json_success(array(
             'message' => __('Categoría actualizada exitosamente.', 'aura-suite'),
         ));
@@ -504,7 +506,8 @@ class Aura_Financial_Categories {
         if ($result === false) {
             wp_send_json_error(array('message' => __('No se pudo eliminar la categoría.', 'aura-suite')));
         }
-        
+
+        do_action( 'aura_finance_category_deleted', $category_id );
         wp_send_json_success(array(
             'message' => __('Categoría eliminada exitosamente.', 'aura-suite'),
         ));

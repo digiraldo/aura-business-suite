@@ -81,6 +81,58 @@ En lugar de roles fijos, cada usuario puede tener **permisos específicos asigna
 | `aura_finance_charts` | Ver gráficos financieros | Cualquier rol que lo necesite |
 | `aura_finance_export` | Exportar reportes a Excel/PDF | Auditor, Contador |
 | `aura_finance_category_manage` | Gestionar categorías de ingresos/egresos | Administrador, Contador |
+| `aura_finance_budget_manage` | Gestionar presupuestos por categoría | Administrador, Contador |
+| `aura_finance_settings_manage` | Configurar módulo (umbrales, aprobaciones) | Solo Administrador |
+| `aura_finance_link_user` | Vincular un usuario del sistema a una transacción | Tesorero, Contador, Administrador |
+| `aura_finance_view_user_summary` | Ver propio dashboard financiero personal | Cualquier usuario con acceso al plugin |
+| `aura_finance_view_others_summary` | Ver dashboard financiero de otros usuarios | Administrador, Auditor |
+| `aura_finance_user_ledger` | Libro mayor de movimientos agrupado por usuario | Administrador, Auditor, Contador |
+
+**Configuraciones del Módulo (requiere `aura_finance_settings_manage`)**:
+
+1. **Umbral de Aprobación Automática**:
+   - Transacciones por debajo del umbral configurado se aprueban automáticamente
+   - Ejemplo: Si umbral = $1,000, transacciones de $500 → aprobadas sin intervención
+   - Configurable por tipo: solo egresos, solo ingresos, o ambos
+   - Excepciones por categoría o módulo de origen
+   - Beneficios:
+     * Reduce carga administrativa en 40-70% (gastos menores recurrentes)
+     * Agiliza flujo de caja (pagos pequeños no se atrasan)
+     * Aprobadores se enfocan en decisiones críticas (montos altos)
+
+2. **Restricciones de Edición**:
+   - Días máximos para editar transacciones aprobadas (default: 30)
+   - Requiere motivo para ediciones de monto >20%
+
+3. **Comprobantes**:
+   - Tamaño máximo de archivo (default: 5MB)
+   - Formatos permitidos (JPG, PNG, PDF)
+   - Obligatorio para transacciones mayores a monto configurable
+
+4. **Notificaciones**:
+   - Frecuencia de resumen de pendientes (inmediato, diario, semanal)
+   - Alertas de presupuesto excedido
+
+**Casos de Uso del Umbral de Aprobación:**
+
+```
+Ejemplo 1 - Pequeña Empresa:
+- Umbral configurado: $500
+- Suministros de oficina ($50) → Auto-aprobado
+- Equipo IT ($1,200) → Requiere aprobación manual
+
+Ejemplo 2 - Fundación:
+- Umbral: $200 solo para egresos
+- Donación recibida ($100) → Requiere aprobación (transparencia)
+- Material de limpieza ($80) → Auto-aprobado
+- Pago a proveedor ($300) → Requiere aprobación manual
+
+Ejemplo 3 - Instituto Educativo:
+- Umbral: $1,000
+- Mantenimiento menor ($150) → Auto-aprobado
+- Becas ($800) → SIEMPRE requiere aprobación (excepción por categoría)
+- Nómina ($15,000) → SIEMPRE requiere aprobación (excepción por categoría)
+```
 
 ---
 
@@ -96,7 +148,11 @@ En lugar de roles fijos, cada usuario puede tener **permisos específicos asigna
 | `aura_inventory_view_all` | Ver todo el inventario | Cualquier usuario autorizado |
 | `aura_inventory_checkout` | Registrar préstamo/salida de herramientas | Encargado de Almacén, Voluntario |
 | `aura_inventory_checkin` | Registrar devolución de herramientas | Encargado de Almacén |
-| `aura_inventory_maintenance_register` | Registrar mantenimiento realizado | Técnico de Mantenimiento |
+| `aura_inventory_loan_edit` | Editar registros de préstamos | Encargado de Almacén, Administrador |
+| `aura_inventory_loan_delete` | Eliminar registros de préstamos | Solo Administrador |
+| `aura_inventory_maintenance_create` | Registrar mantenimiento realizado | Técnico de Mantenimiento |
+| `aura_inventory_maintenance_edit` | Editar registros de mantenimiento | Técnico, Supervisor |
+| `aura_inventory_maintenance_delete` | Eliminar registros de mantenimiento | Solo Administrador |
 | `aura_inventory_maintenance_schedule` | Configurar calendarios de mantenimiento periódico | Supervisor de Mantenimiento |
 | `aura_inventory_maintenance_view` | Ver historial de mantenimientos | Administrador, Auditor |
 | `aura_inventory_maintenance_alerts` | Recibir notificaciones de mantenimientos próximos | Técnico, Supervisor |
@@ -257,6 +313,7 @@ En lugar de roles fijos, cada usuario puede tener **permisos específicos asigna
 | `aura_admin_users_manage` | Crear/editar/eliminar usuarios | Solo Administrador |
 | `aura_admin_permissions_assign` | Asignar permisos a usuarios | Solo Administrador |
 | `aura_admin_settings` | Configurar ajustes globales | Solo Administrador |
+| `aura_admin_branding` | Gestionar identidad visual de la organización (logo, nombre) | Solo Administrador |
 | `aura_admin_modules_enable` | Activar/desactivar módulos | Solo Administrador |
 | `aura_admin_backup` | Acceder a backups y restauración | Solo Administrador |
 | `aura_admin_logs` | Ver logs de auditoría del sistema | Administrador, Auditor de TI |
@@ -409,6 +466,115 @@ El administrador verá una pantalla como esta al editar un usuario:
 │                                                    │
 │  [💾 Guardar Permisos]     [🔄 Copiar de otro usuario] │
 └────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2.2 Arquitectura de Personas Externas — Sin Cuenta WordPress
+
+> **Decisión de diseño v3.0** — Validada 13 de marzo de 2026
+
+### 2.2.1 Principio Guía
+
+El sistema distingue dos tipos de personas que interactúan con la plataforma:
+
+| Tipo | Quiénes | Acceso |
+|---|---|---|
+| **Usuarios con cuenta WP** | Personal interno de planta y estudiantes | wp-admin (personal) · portal frontend (estudiantes) |
+| **Contactos externos** | Prestamistas de herramientas, conductores ocasionales, lectores de contador, receptores de pago | Solo datos — sin cuenta WP |
+
+**Principio**: No se crean cuentas WordPress para personas que solo realizan una acción puntual. En su lugar, se almacena nombre + teléfono en la tabla correspondiente y el sistema de notificaciones los contacta directamente.
+
+---
+
+### 2.2.2 Decisión por Módulo
+
+| Módulo | Persona externa | ¿Cuenta WP? | Estrategia |
+|---|---|---|---|
+| **Inventario — Préstamos** | Quien recibe una herramienta | ❌ No | `borrowed_to_name` + `borrowed_to_phone` (sin cuenta) → notificación WhatsApp |
+| **Vehículos** | Conductor ocasional / externo | ❌ No | Campo `driver_name` + `driver_phone` libre en registro de salida |
+| **Electricidad** | Lector del contador externo | ❌ No | Formulario pública con token en URL (`/lectura?token=abc123`); sin login |
+| **Finanzas** | Receptor de un pago (proveedor, voluntario) | ❌ No | Solo registro contable — no necesita cuenta |
+| **Estudiantes** | Estudiante inscrito | ✅ Sí | Portal frontend con rol WordPress `aura_student` |
+| **Personal interno** | Empleados, coordinadores, admins | ✅ Sí | wp-admin con capabilities CBAC |
+
+---
+
+### 2.2.3 Sistema de Notificaciones por WhatsApp (Sin Cuenta WP)
+
+Para los contactos externos que no tienen cuenta, el sistema usa el **número de teléfono como único identificador**. No se requiere login ni registro.
+
+**APIs compatibles** (en orden de recomendación):
+
+| API | Costo | Notas |
+|---|---|---|
+| **Meta Cloud API** | Gratuita hasta 1.000 conversaciones/mes | Oficial, requiere número verificado |
+| **Twilio WhatsApp** | ~$0.005 USD/mensaje | Sandbox gratuito para desarrollo |
+| **CallMeBot** | Gratuito, limitado | Útil para pruebas |
+
+**Configuración en AURA** (🌐 global en `admin.php?page=aura-settings` → sección _WhatsApp — Configuración Global_):
+```
+aura_whatsapp_provider   = 'meta' | 'twilio' | 'callmebot'
+aura_whatsapp_api_token  = '***'
+aura_whatsapp_from       = '+1234567890'
+aura_whatsapp_enabled    = true | false
+```
+> Configurado una sola vez, disponible para todos los módulos. Ver §"Servicios Globales del Sistema".
+
+---
+
+### 2.2.4 Flujo de Préstamo sin Cuenta (Inventario)
+
+```
+CHECKOUT
+  Staff registra: nombre del prestamista + teléfono + fecha de devolución
+  └── Sistema envía WhatsApp:
+      “Hola [nombre], tienes la herramienta [X] prestada hasta el [fecha].
+       Cualquier consulta: [teléfono de la organización].”
+
+RECORDATORIOS automáticos (WP Cron):
+  3 días antes  → “Recuerda devolver [X] el [fecha]. ¡Gracias!”
+  1 día antes   → “Mañana vence tu préstamo de [X].”
+  Día 0 AM      → “Hoy vence el préstamo de [X]. Por favor éntregala hoy.”
+  Día +1, +3    → “Tu préstamo de [X] está vencido. Comunícate con nosotros.”
+  (+ alerta interna al staff en el dashboard de AURA)
+
+CHECKIN
+  Staff registra la devolución
+  └── Sistema envía WhatsApp:
+      “Hemos recibido [X] correctamente. ¡Gracias, [nombre]!”
+```
+
+---
+
+### 2.2.5 Flujo de Vehículos sin Cuenta
+
+```
+REGISTRO DE SALIDA
+  Staff registra: nombre del conductor + teléfono + destino + km salida + fecha retorno
+  └── WhatsApp al conductor:
+      “Salida registrada: Vehículo [placa] a [destino]. Retorno esperado: [fecha].”
+
+RETORNO VENCIDO (WP Cron)
+  └── WhatsApp al conductor + alerta interna al staff
+```
+
+---
+
+### 2.2.6 Flujo de Estudiantes (con cuenta WP)
+
+Los estudiantes son el único perfil externo que **sí requiere cuenta** porque necesitan:
+- Consultar su historial de pagos y estado de becas
+- Descargar comprobantes
+- Ver el estado de sus cuotas (Paz y Salvo)
+
+**Arquitectura del portal de estudiantes:**
+```
+Página WordPress pública (/portal-estudiante)
+  └── Shortcode: [aura_student_portal]
+      └── Login: wp_login_form() con redirect a /portal-estudiante (NO a wp-admin)
+          └── PHP/JS consume los mismos endpoints AJAX del plugin
+              └── Rol WP: aura_student (solo capabilities _view_own y _payments_view_own)
 ```
 
 ---
@@ -753,7 +919,11 @@ El instituto cuenta con equipos que requieren mantenimientos periódicos obligat
 - [ ] Validación de capabilities en cada acción:
   - `aura_inventory_create`: Crear equipos
   - `aura_inventory_maintenance_schedule`: Configurar calendarios de mantenimiento
-  - `aura_inventory_maintenance_register`: Registrar mantenimiento realizado
+  - `aura_inventory_maintenance_create`: Registrar mantenimiento realizado
+  - `aura_inventory_maintenance_edit`: Editar registros de mantenimiento
+  - `aura_inventory_maintenance_delete`: Eliminar registros de mantenimiento
+  - `aura_inventory_loan_edit`: Editar registros de préstamos
+  - `aura_inventory_loan_delete`: Eliminar registros de préstamos
   - `aura_inventory_maintenance_external`: Registrar servicios externos
   - `aura_inventory_maintenance_view`: Ver historial
   - `aura_inventory_maintenance_alerts`: Recibir notificaciones
@@ -1488,7 +1658,11 @@ function aura_register_all_capabilities() {
         'aura_inventory_view_all' => 'Ver todo el inventario',
         'aura_inventory_checkout' => 'Registrar préstamo de equipos',
         'aura_inventory_checkin' => 'Registrar devolución de equipos',
-        'aura_inventory_maintenance_register' => 'Registrar mantenimientos',
+        'aura_inventory_maintenance_create' => 'Registrar mantenimientos',
+        'aura_inventory_maintenance_edit' => 'Editar registros de mantenimiento',
+        'aura_inventory_maintenance_delete' => 'Eliminar registros de mantenimiento',
+        'aura_inventory_loan_edit' => 'Editar registros de préstamos',
+        'aura_inventory_loan_delete' => 'Eliminar registros de préstamos',
         'aura_inventory_maintenance_schedule' => 'Configurar calendarios de mantenimiento',
         'aura_inventory_maintenance_view' => 'Ver historial de mantenimientos',
         'aura_inventory_maintenance_alerts' => 'Recibir alertas de mantenimientos',
@@ -1843,7 +2017,67 @@ add_action('init', 'aura_register_financial_cpt');
 
 ### 5.5 Branding y Assets del Proyecto
 
-#### Identidad Visual
+#### 🏢 Identidad de la Organización (Configurable desde el Plugin)
+
+El plugin permite que cada instalación personalice la identidad visual de su organización directamente desde la página de Configuración (Aura Suite → Configuración), sin necesidad de modificar archivos. Esta información se propaga automáticamente a:
+
+- **Dashboard principal** (cabecera con logo + nombre)
+- **Módulo Financiero**: reportes PDF/Excel exportados, cabecera de análisis visual
+- **Notificaciones por email**: encabezado con logo institucional
+- **Presupuestos**: logo en vistas de impresión
+- **Página de login** de WordPress (opcional)
+
+**Campos configurables:**
+| Campo | Opción WP | Descripción |
+|-------|-----------|-------------|
+| Nombre de la organización | `aura_org_name` | Nombre completo que aparece en reportes y cabeceras |
+| Logo de la organización | `aura_org_logo_id` | ID de adjunto de la Biblioteca de WordPress |
+| URL del logo | `aura_org_logo_url` | URL calculada a partir del ID del adjunto |
+| Slogan / descripción breve | `aura_org_tagline` | Subtexto que acompaña el logo en reportes |
+
+**PHP Helper Functions:**
+```php
+// Obtener nombre de la organización
+function aura_get_org_name() {
+    return get_option('aura_org_name', get_bloginfo('name'));
+}
+
+// Obtener URL del logo de la organización
+function aura_get_org_logo_url( $size = 'medium' ) {
+    $attachment_id = (int) get_option('aura_org_logo_id', 0);
+    if ( $attachment_id ) {
+        $src = wp_get_attachment_image_url($attachment_id, $size);
+        return $src ?: '';
+    }
+    // Fallback: logo AURA por defecto
+    return plugin_dir_url(AURA_PLUGIN_FILE) . 'assets/images/logo-aura.png';
+}
+
+// Retorna tag <img> listo para usar
+function aura_get_org_logo_img( $class = '', $alt = '' ) {
+    $url  = aura_get_org_logo_url();
+    $name = aura_get_org_name();
+    $alt  = $alt ?: $name;
+    return sprintf('<img src="%s" alt="%s" class="aura-org-logo %s">', esc_url($url), esc_attr($alt), esc_attr($class));
+}
+```
+
+**Uso en plantillas:**
+```php
+// En templates/financial/reports-page.php
+$logo_url  = aura_get_org_logo_url('medium');
+$org_name  = aura_get_org_name();
+$org_tag   = get_option('aura_org_tagline', '');
+
+// Cabecera del reporte
+if ($logo_url) {
+    echo '<img src="' . esc_url($logo_url) . '" style="max-height:80px;" alt="' . esc_attr($org_name) . '">';
+}
+echo '<h1>' . esc_html($org_name) . '</h1>';
+if ($org_tag) echo '<p>' . esc_html($org_tag) . '</p>';
+```
+
+#### Identidad Visual del Plugin (Assets Estáticos)
 
 **Logo Principal**
 - **Ubicación**: `image/logo-aura.png`
@@ -1851,10 +2085,9 @@ add_action('init', 'aura_register_financial_cpt');
 - **Dimensiones**: 1:1 (cuadrado, ideal para perfiles)
 - **Uso**: 
   - Encabezado de documentación (PRD, README)
-  - Login personalizado de WordPress
+  - Login personalizado de WordPress (fallback si no se configura logo de organización)
   - Favicon del sitio
   - Widget de dashboard
-  - Emails transaccionales
 
 **Estructura de Assets para el Plugin WordPress**
 
@@ -1945,7 +2178,7 @@ add_action('wp_head', 'aura_custom_favicon');
   - "Operador de Campo" (vehicles, electricity)
   - "Director General" (todas las capabilities de view + approve)
   - "Secretaria Académica" (students management, enrollments)
-  - "Técnico de Mantenimiento" (inventory_maintenance_register, maintenance_view)
+  - "Técnico de Mantenimiento" (inventory_maintenance_create, maintenance_edit, maintenance_view)
   - "Supervisor de Mantenimiento" (todas las capabilities de inventario)
   - "Estudiante" (view_own, payments_view_own)
 - [ ] Estructura básica del plugin `aura-business-suite`
@@ -1959,7 +2192,8 @@ add_action('wp_head', 'aura_custom_favicon');
 - [ ] Dashboard financiero básico (página admin custom)
 - [ ] Gráficos Chart.js: Ingresos vs Egresos mensuales
 - [ ] Notificaciones email en aprobaciones
-- [ ] Categorías predefinidas incluyendo "Inscripciones y Matrículas" y "Mantenimiento de Equipos"
+- [ ] Categorías predefinidas incluyendo "Inscripciones y Matrículas", "Mantenimiento de Equipos" y "Sostenimiento Institucional"
+  - **Sostenimiento Institucional** `#2980b9` `dashicons-networking` *(v2.5)*: Ingresos institucionales formales procedentes de agencias misioneras u organismos externos. Subcategorías: Aportes Agencia Misionera, Fondos de Operación, Sostenimiento de Staff/Misioneros, Proyectos Especiales de la Agencia. Facilita rendición de cuentas entre la Agencia y la Asociación Civil.
 
 #### Semana 3: Módulo Inventario y Mantenimientos Periódicos (NUEVO)
 - [ ] Tablas custom: `wp_aura_inventory_equipment`, `wp_aura_inventory_maintenance`, `wp_aura_inventory_loans`
@@ -2180,6 +2414,69 @@ add_action('wp_head', 'aura_custom_favicon');
 
 ---
 
+---
+
+### 🏛️ MÓDULO: ÁREAS / PROGRAMAS
+
+**Concepto**: Unidades organizativas internas (programas, departamentos, equipos) a las que se les asignan **múltiples usuarios** con diferentes roles, un presupuesto propio y acceso a los demás módulos del sistema según su ámbito.
+
+**Programas predefinidos del Instituto**:
+- Hadime Junior `#ede522`, Hadime Más `#004526`, Hadime Raíces `#720427`
+- Hadime Líderes `#5B2C6F`, Hadime Misioneros `#102e54`, Hadime Voluntarios `#E67E22`
+- Hadime Rentas `#4D5656`, Hadime Nuevo Programa `#008080`
+- Las áreas pueden crearse, editarse o archivarse libremente por el administrador.
+
+**Qué puede tener cada Área**:
+- **Múltiples usuarios asignados**: Soporte completo para equipos con roles (responsible, coordinator, viewer)
+- **Avatares visibles**: Todos los usuarios asignados muestran su avatar en la interfaz
+- **N presupuestos**: uno por categoría financiera (ej: Hadime Raíces → Papelería + Limpieza + Transporte); la combinación `(area_id, category_id, período)` es única — no se pueden duplicar
+- Vehículos e inventario asignados
+- Formularios personalizados
+- Formularios de inscripción de estudiantes o personal
+- Dashboard financiero propio con sus ingresos/egresos por área y desglose por categoría
+- **Integración con Gestión de Permisos**: Asignación de áreas desde la página de permisos granulares (CBAC)
+
+**Roles de Usuario en Áreas**:
+
+| Rol | Descripción | Permisos |
+|-----|-------------|----------|
+| `responsible` | Responsable principal del área | Control total sobre el área |
+| `coordinator` | Coordinador o subdirector | Apoya en la gestión del área |
+| `viewer` | Observador o auditor | Solo lectura de datos del área |
+
+**Capabilities disponibles**:
+
+| Capability | Descripción |
+|---|---|
+| `aura_areas_manage` | Crear/editar/archivar áreas y programas |
+| `aura_areas_view_all` | Ver todas las áreas y sus datos |
+| `aura_areas_view_own` | Ver solo las áreas asignadas al usuario |
+| `aura_areas_budget_manage` | Asignar y gestionar presupuesto de un área |
+| `aura_areas_budget_view` | Ver ejecución de presupuesto del área |
+| `aura_areas_assign_user` | Asignar múltiples usuarios a un área |
+| `aura_areas_forms_manage` | Crear formularios propios del área |
+| `aura_areas_enrollment_manage` | Gestionar inscripciones de estudiantes/personal del área |
+
+**Tablas de Base de Datos**:
+- `wp_aura_areas`: id, name, slug, type, description, responsible_user_id (legacy), parent_area_id, color, icon, status, created_at
+- **`wp_aura_area_users`** (NUEVO v2.7): Junction table para relación many-to-many
+  - Campos: id, area_id, user_id, role, assigned_at, assigned_by
+  - Permite múltiples usuarios por área con auditoría
+  - Mantiene compatibilidad con `responsible_user_id` (sincronización automática)
+- `wp_aura_finance_budgets`: + columna `area_id` (FK → wp_aura_areas.id)
+- `wp_aura_finance_transactions`: + columna `area_id` para etiquetar gastos por área
+
+**Diferencia entre Categorías y Áreas** (Aclaración v2.7):
+
+| Concepto | Qué es | Ejemplos | Capacidad |
+|----------|--------|----------|-----------|
+| **Categorías Financieras** | Tipos de transacciones contables (gastos/ingresos) | Suministros, Salarios, Mantenimiento, Donaciones | `aura_finance_category_manage` |
+| **Áreas/Programas** | Unidades organizacionales | Finanzas Generales, Programa Educación, Proyecto X | `aura_areas_manage` |
+
+> **Nota**: Una transacción tiene una **categoría** (tipo de gasto) Y un **área** (unidad organizacional). Ejemplo: Categoría="Suministros", Área="Programa Educación", Monto=$150
+
+---
+
 **Aprobación del PRD**:
 - [ ] Product Owner: ___________________ Fecha: __________
 - [ ] Technical Lead: ___________________ Fecha: __________
@@ -2187,15 +2484,244 @@ add_action('wp_head', 'aura_custom_favicon');
 
 ---
 
+## Servicios Globales del Sistema
+
+### Arquitectura: "Configuración única, uso en todos los módulos"
+
+A partir de la versión 3.2, los servicios de integración externa (Email, WhatsApp, Google Calendar) siguen el patrón empresarial estándar de los ERP modernos (SAP, Odoo, Zoho): **se configuran una sola vez a nivel global** y cada módulo hereda esa configuración sin necesidad de duplicar credenciales ni formularios.
+
+---
+
+### 💡 Analogía empresarial (¿por qué este diseño?)
+
+Imagina cómo funciona el correo en una empresa real:
+
+| Analogía | Lo que es global | Lo que es por departamento |
+|---|---|---|
+| **Empresa física** | Servidor de correo, número de teléfono corporativo, papel membretado | Lista de CC del jefe de cada área, si ese departamento envía alertas por email o WhatsApp |
+| **ERP (SAP/Odoo)** | SMTP, credenciales del servidor de email, API de WhatsApp | Destinatarios por módulo, eventos que disparan notificaciones, canales activos |
+| **AURA** | `aura_notification_email`, API de WhatsApp, Service Account de GCal | `email_alerts`, `email_extra`, triggers por módulo |
+
+**Principio clave**: La *infraestructura* (cómo se envía) es global. La *política* (a quién, cuándo y en qué canal) es por módulo.
+
+---
+
+### Ubicación de configuración global
+- **Página:** `admin.php?page=aura-settings`
+- **Secciones activas:**
+  - `🏢 Identidad de la Organización` — nombre, logo, slogan
+  - `📧 Configuración de Notificaciones` — correo remitente, nombre del remitente
+  - `📱 WhatsApp — Configuración Global` — proveedor, token, número, firma
+  - `📅 Google Calendar — Configuración Global` — Service Account JSON, correos, recordatorios
+
+---
+
+### Opciones globales en `wp_options`
+
+#### Email (infraestructura de envío)
+| Opción | Descripción |
+|---|---|
+| `aura_notification_email` | Correo remitente (`From:`) para todos los módulos |
+| `aura_notification_from_name` | Nombre del remitente visible en el cliente de correo |
+| `aura_org_logo_in_email` | Mostrar logo institucional en la cabecera de todos los emails |
+| `aura_org_logo_id` | ID de la imagen del logo (attachment de WordPress) |
+| `aura_org_name` | Nombre de la organización (aparece en firma y pie de emails) |
+
+#### WhatsApp (credenciales del proveedor)
+| Opción | Descripción |
+|---|---|
+| `aura_whatsapp_enabled` | `'1'` si WhatsApp está activo globalmente |
+| `aura_whatsapp_provider` | `'callmebot'` / `'twilio'` / `'meta'` |
+| `aura_whatsapp_api_token` | Token API del proveedor |
+| `aura_whatsapp_from` | Número origen (requerido para Twilio) |
+| `aura_whatsapp_twilio_sid` | Account SID de Twilio |
+| `aura_whatsapp_meta_phone_id` | Phone Number ID de Meta Cloud API |
+| `aura_whatsapp_signature` | Firma opcional que se agrega al final de cada mensaje |
+
+#### Google Calendar (Service Account)
+| Opción | Descripción |
+|---|---|
+| `aura_gcal_enabled` | `'1'` si Google Calendar está activo globalmente |
+| `aura_gcal_service_account_json` | JSON de Service Account descargado de Google Cloud Console |
+| `aura_gcal_share_email` | Correos a los que se comparte el calendario (separados por coma) |
+| `aura_gcal_reminder_days` | Días de recordatorio (ej. `15,7,3,1`) |
+| `aura_gcal_calendar_id_resolved` | Calendar ID cacheado tras la primera conexión exitosa |
+
+---
+
+### Clases de servicio global
+
+| Clase | Archivo | Responsabilidad |
+|---|---|---|
+| `Aura_Notifications` | `modules/common/class-notifications.php` | Envío de emails (via `wp_mail`) y WhatsApp (todos los proveedores). Registra los hooks `wp_mail_from` / `wp_mail_from_name` globales. |
+| `Aura_Google_Calendar` | `modules/common/class-google-calendar.php` | Google Calendar API v3: autenticación JWT/RSA-256, cache de token, CRUD de calendarios y eventos. Sin OAuth de usuario, sin librerías externas. |
+
+### API pública para módulos consumidores
+
+```php
+// Enviar mensaje WhatsApp a un teléfono externo
+Aura_Notifications::send_whatsapp( string $phone, string $message ): bool
+
+// Verificar si Google Calendar está configurado y activo
+Aura_Google_Calendar::is_enabled(): bool
+
+// Obtener o crear un calendario (devuelve Calendar ID)
+Aura_Google_Calendar::get_or_create_calendar( string $name, string $option_key ): ?string
+
+// Sincronizar (crear o actualizar) un evento
+Aura_Google_Calendar::sync_event( string $cal_id, string $event_id_key, array $event ): void
+
+// Eliminar un evento
+Aura_Google_Calendar::delete_event( string $cal_id, string $event_id_key ): void
+
+// Compartir calendario con correos configurados
+Aura_Google_Calendar::share_calendar( string $cal_id, bool $force = false ): array
+```
+
+---
+
+### Mapa de configuración Global vs. Por-Módulo (todos los módulos)
+
+> **Regla general**:
+> - **🌐 Global** = infraestructura (cómo se envía, con qué cuenta, desde qué número)
+> - **🧩 Por módulo** = política (a quién notificar, qué eventos la disparan, si ese módulo usa o no ese canal)
+
+| Configuración | 📧 Email | 📱 WhatsApp | 📅 Google Calendar |
+|---|---|---|---|
+| Credenciales / proveedor | 🌐 Global | 🌐 Global | 🌐 Global |
+| Correo remitente (`From:`) | 🌐 Global | — | — |
+| Nombre del remitente | 🌐 Global | — | — |
+| Logo en emails | 🌐 Global | — | — |
+| Firma de mensajes | — | 🌐 Global | — |
+| Activar/desactivar canal en el módulo | 🧩 Por módulo | 🧩 Por módulo | 🧩 Por módulo |
+| Destinatarios adicionales del módulo | 🧩 Por módulo | — | — |
+| Teléfonos de contacto externo | 🧩 Por módulo (campo en registro) | 🧩 Por módulo | — |
+| Eventos que disparan notificación | 🧩 Por módulo | 🧩 Por módulo | 🧩 Por módulo |
+| Calendario específico del módulo | — | — | 🧩 Por módulo |
+
+---
+
+### Implementación por módulo
+
+#### 📦 Inventario y Mantenimientos — Estado: ✅ Implementado
+
+| Canal | Global (ya configurado) | Por módulo (en `admin.php?page=aura-inventory-settings`) |
+|---|---|---|
+| **Email** | Remitente, logo, nombre org. | `email_alerts` (toggle), `email_extra` (destinatarios CC adicionales) |
+| **WhatsApp** | Proveedor, token, número | Teléfono del prestamista en cada registro de préstamo |
+| **Google Calendar** | Service Account, correos compartidos, días recordatorio | `Mantenimientos CEM` (calendario propio del módulo) |
+
+*Triggers email/WhatsApp*: mantenimiento próximo (5 niveles), préstamo próximo a vencer, préstamo vencido, devolución confirmada.
+*Triggers GCal*: al guardar/actualizar fecha de próximo mantenimiento de un equipo.
+
+---
+
+#### 💰 Finanzas — Estado: ✅ Email implementado · WhatsApp/GCal: pendiente
+
+| Canal | Global (ya configurado) | Por módulo (en `admin.php?page=aura-settings` → sección Finanzas) |
+|---|---|---|
+| **Email** | Remitente, logo, nombre org. | Frecuencia de resumen de pendientes (inmediato/diario/semanal), umbral de días sin acción |
+| **WhatsApp** | Proveedor, token, número | Toggle activar alertas WA, teléfono del aprobador (campo en perfil de usuario) |
+| **Google Calendar** | Service Account | No planificado (las transacciones no requieren GCal) |
+
+*Triggers email*: transacción pendiente sin revisión >N días, transacción aprobada/rechazada, presupuesto excedido.
+*Triggers WhatsApp (pendiente)*: aprobación pendiente urgente al aprobador.
+
+---
+
+#### 🚗 Vehículos — Estado: Email implementado · WhatsApp/GCal: pendiente
+
+| Canal | Global (ya configurado) | Por módulo (configuración del módulo) |
+|---|---|---|
+| **Email** | Remitente, logo, nombre org. | `email_alerts` (toggle), `email_extra` (administrador de flota) |
+| **WhatsApp** | Proveedor, token, número | Teléfono del conductor en cada registro de salida |
+| **Google Calendar** | Service Account | `Mantenimientos Vehículos` (calendar propio, pendiente implementar) |
+
+*Triggers email*: mantenimiento próximo por km/fecha, SOAT/tecnicomecánica próxima a vencer.
+*Triggers WhatsApp (pendiente)*: confirmación de salida al conductor, retorno vencido.
+*Triggers GCal (pendiente)*: fecha de mantenimiento programado, vencimiento de documentos.
+
+---
+
+#### 📚 Biblioteca — Estado: Módulo pendiente de implementar
+
+| Canal | Global (se heredará) | Por módulo (se implementará en la configuración del módulo) |
+|---|---|---|
+| **Email** | Remitente, logo, nombre org. | `email_alerts` (toggle), `email_extra` (bibliotecario/responsable) |
+| **WhatsApp** | Proveedor, token, número | Teléfono del lector en cada registro de préstamo |
+| **Google Calendar** | Service Account | No planificado (préstamos de libros no requieren GCal) |
+
+*Triggers email planificados*: préstamo registrado (confirmación al lector si tiene cuenta WP), devolución próxima a vencer, devolución vencida.
+*Triggers WhatsApp planificados*: recordatorio 3 días antes del vencimiento, alerta el día del vencimiento, alerta post-vencimiento.
+
+---
+
+#### 🎓 Estudiantes e Inscripciones — Estado: Email implementado · WhatsApp/GCal: pendiente
+
+| Canal | Global (ya configurado) | Por módulo (configuración del módulo) |
+|---|---|---|
+| **Email** | Remitente, logo, nombre org. | `email_alerts` (toggle), `email_extra` (secretaría académica, tesorería) |
+| **WhatsApp** | Proveedor, token, número | Teléfono del estudiante en su perfil |
+| **Google Calendar** | Service Account | No planificado |
+
+*Triggers email*: inscripción aprobada (bienvenida al estudiante), cuota próxima a vencer, cuota vencida.
+*Triggers WhatsApp (pendiente)*: recordatorio de cuota 3 días antes, cuota vencida, beca aprobada.
+
+---
+
+#### 📝 Formularios y Encuestas — Estado: Módulo pendiente de implementar
+
+| Canal | Global (se heredará) | Por módulo (configurable por formulario) |
+|---|---|---|
+| **Email** | Remitente, logo, nombre org. | Por formulario: lista de correos a notificar cuando llega una respuesta |
+| **WhatsApp** | Proveedor, token, número | Por formulario: toggle activar WA al responsable, si el formulario incluye campo `teléfono` del respondiente |
+| **Google Calendar** | Service Account | Por formulario: si el formulario captura una fecha de evento, crear evento en GCal automáticamente |
+
+*Triggers email planificados*: nueva respuesta recibida → notificar al(los) responsable(s) del formulario.
+*Triggers WhatsApp planificados*: formulario de inscripción enviado → confirmación al inscrito (si incluyó teléfono).
+
+---
+
+#### ⚡ Electricidad — Estado: Email implementado · WhatsApp: pendiente
+
+| Canal | Global (ya configurado) | Por módulo (en configuración del módulo) |
+|---|---|---|
+| **Email** | Remitente, logo, nombre org. | `email_alerts` (toggle), `email_extra` (gerente de operaciones, responsable de costos) |
+| **WhatsApp** | Proveedor, token, número | Toggle activar alertas WA, teléfono del responsable en configuración |
+| **Google Calendar** | Service Account | No planificado |
+
+*Triggers email*: consumo supera umbral configurado.
+*Triggers WhatsApp (pendiente)*: consumo crítico (>150% del umbral) → alerta inmediata.
+
+---
+
+### AJAX actions registradas
+
+| Action | Clase handler | Propósito |
+|---|---|---|
+| `aura_global_gcal_test` | `Aura_Google_Calendar` | Probar conexión con Google Calendar API |
+| `aura_global_gcal_save` | `Aura_Google_Calendar` | Guardar credenciales GCal (vía settings-page) |
+| `aura_global_gcal_test_whatsapp` | `Aura_Google_Calendar` | Enviar mensaje WhatsApp de prueba |
+| `aura_inventory_gcal_resync_all` | `Aura_Inventory_Google_Calendar` | Resincronizar todos los eventos de mantenimiento |
+
+---
+
 **Registro de Cambios**:
+- v3.2 (Mar 2026): **Arquitectura Global de Servicios** — Implementación del patrón "Configuración única, uso en todos los módulos". Nueva clase `Aura_Google_Calendar` en `modules/common/` con toda la infraestructura JWT/API de Google Calendar. `Aura_Inventory_Google_Calendar` refactorizado a wrapper delgado. `Aura_Notifications::send_whatsapp()` extraído a capa común; inventory delega a él. Nuevas secciones de configuración en `templates/settings-page.php` (WhatsApp Global + Google Calendar Global). Configuración de WhatsApp y GCal eliminada de la página de ajustes del módulo Inventario (muestra aviso con enlace a ajustes globales). AJAX actions globales: `aura_global_gcal_test`, `aura_global_gcal_save`, `aura_global_gcal_test_whatsapp`.
+- v3.1 (13 Mar 2026): **Integración Google Calendar para Mantenimientos** — Al guardar/actualizar la fecha de próximo mantenimiento de un equipo, el sistema crea/actualiza automáticamente un evento de todo el día en el calendario Google `Mantenimientos CEM` mediante Google Calendar API v3 con autenticación Service Account (RSA-256/JWT, sin OAuth del usuario, sin librerías externas). El evento incluye recordatorios popup + email configurables (default: 15, 7, 3 y 1 días antes). El administrador recibe invitación automática al calendario. Nueva sección §11.7 en prdInventario.md. Nueva pestaña "Google Calendar" en la página de configuración del módulo. WP options: `aura_gcal_enabled`, `aura_gcal_service_account_json`, `aura_gcal_reminder_days`, `aura_gcal_calendar_id_resolved`.
+- v3.0 (13 Mar 2026): **Arquitectura de Personas Externas sin Cuenta WordPress** — Decisión de diseño: solo se crean cuentas WP para personal interno y estudiantes. Prestamistas de herramientas, conductores ocasionales, lectores de contador y receptores de pago son "contactos externos" sin cuenta — se identifican por nombre + teléfono. Sistema de notificaciones WhatsApp (Meta Cloud API / Twilio / CallMeBot) para alertar a contactos externos sobre vencimientos de préstamos, salidas de vehículos, etc. Campo `borrowed_to_phone` en tabla de préstamos de inventario. Portal frontend con shortcode `[aura_student_portal]` y rol `aura_student` para estudiantes. Nueva sección §2.2 "Arquitectura de Personas Externas". Sección 11.6 en prdInventario.md.
+- v2.7 (Actual): **Áreas Multi-Usuario con Avatares** - Nueva tabla `wp_aura_area_users` para relación many-to-many entre áreas y usuarios. Soporte para múltiples usuarios por área con roles (responsible, coordinator, viewer). Integración completa con Gestión de Permisos (CBAC): asignación de áreas desde página de permisos. Avatares visibles en toda la interfaz usando `get_avatar_url()`. Clarificación de diferencia entre "Categorías Financieras" (tipos de transacciones) y "Áreas/Programas" (unidades organizacionales). Nueva capability `aura_areas_assign_user` actualizada. Compatibilidad con `responsible_user_id` legacy. Ver: `GUIA-AREAS-MULTIUSUARIO.md` y script `migrate-area-users-table.php`.
+- v2.6: **Módulo Áreas/Programas** - Sistema de unidades organizativas internas con presupuesto propio, responsable asignado (staff/voluntario), integración con Finanzas (budget + transacciones etiquetadas por área), Vehículos, Inventario, Formularios e Inscripciones. Programas predefinidos: Hadime Junior, Hadime Más, Hadime Raíces, Hadime Líderes, Hadime Misioneros, CEM Voluntarios. 8 capabilities nuevas. FASE 7 y FASE 8 en prdFinanzas.md.
+- v2.5: **Nueva Categoría de Ingresos: Sostenimiento Institucional** - Categoría `#2980b9` `dashicons-networking` para gestionar ingresos institucionales formales entre la Agencia Misionera y la Asociación Civil. 4 subcategorías: Aportes Agencia Misionera, Fondos de Operación, Sostenimiento de Staff/Misioneros, Proyectos Especiales de la Agencia. Incorporada en `class-financial-setup.php` (instala automáticamente al activar el plugin). Facilita rendición de cuentas y trazabilidad de fondos externos.
+- v2.4: **Vinculación de Usuarios y Dashboard Personal (FASE 6 Finanzas)** - Campo `related_user_id` + `related_user_concept` en tabla de transacciones (FK a wp_users), campo autocomplete de usuario WP en formulario de transacción, nueva columna y filtro "Usuario Relacionado" en listado, Dashboard Financiero Personal del usuario (widget WP + página dedicada), Libro Mayor por usuario con saldo acumulativo. Integración con módulo de Inventario: equipos en préstamo visibles en dashboard personal. 5 capabilities nuevas: `aura_finance_budget_manage`, `aura_finance_link_user`, `aura_finance_view_user_summary`, `aura_finance_view_others_summary`, `aura_finance_user_ledger`. Capabilities de Finanzas expandidas de 12 a 17.
 - v2.3 (15 Feb 2026 - 23:30): **Módulo de Inventario y Mantenimientos Periódicos** - Sistema completo de gestión de equipos con mantenimientos periódicos programados (por tiempo y/o horas de uso), notificaciones automáticas, registro de mantenimientos internos y externos, integración automática con módulo de Finanzas para tracking de costos, sistema de préstamos de equipos, alertas de mantenimientos vencidos, dashboard con KPIs y reportes de costos por equipo. Capabilities expandidas de 66 a 72 (16 capabilities de Inventario). Equipos soportados: bombas de aire, compresores, tanques hidráulicos, motores 4T/2T, generadores, equipo de sonido
 - v2.2 (15 Feb 2026 - 22:00): **Módulo de Estudiantes e Inscripciones** - Sistema completo de gestión de inscripciones con becas (internas/externas), esquemas de pago con cuotas, integración automática con módulo de Finanzas, dashboard de paz y salvo, registro manual de estudiantes y alertas de morosidad
 - v2.1 (12 Feb 2026 - 14:00): Sistema de permisos granulares (CBAC) - Capabilities individuales por usuario en lugar de roles fijos
 - v2.0 (12 Feb 2026): Pivote a implementación WordPress
 - v1.0 (2 Feb 2026): Versión inicial (arquitectura custom PHP)
 
-*Última actualización: 15 de febrero de 2026*
-*Versión del Documento: 2.3 - WordPress Implementation con CBAC + Estudiantes + Inventario y Mantenimientos*
+*Última actualización: Mar 2026 (v3.2)*
+*Versión del Documento: 3.2 - WordPress Implementation con CBAC + Estudiantes + Inventario + Vinculación de Usuarios + Sostenimiento Institucional + Áreas/Programas Multi-Usuario + Servicios Globales (WhatsApp + Google Calendar)*
 
 
 https://diserwp.test/wp-admin/edit.php?post_type=aura_fin_category

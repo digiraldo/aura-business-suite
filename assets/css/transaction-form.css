@@ -152,11 +152,11 @@
     background: #e74c3c;
 }
 
-.type-income .aura-amount-field input {
+.type-income .aura-amount-field {
     border-left-color: #27ae60;
 }
 
-.type-expense .aura-amount-field input {
+.type-expense .aura-amount-field {
     border-left-color: #e74c3c;
 }
 
@@ -263,24 +263,41 @@
 
 /* Campo de monto con símbolo $ */
 .aura-amount-field {
-    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background: #fff;
+    overflow: hidden;
+    border-left: 4px solid #27ae60;
+    transition: border-color 0.15s;
+}
+
+.aura-amount-field:focus-within {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
 }
 
 .aura-amount-field .currency-symbol {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 16px;
+    padding: 0 8px 0 10px;
+    font-size: 15px;
     font-weight: 600;
-    color: #333;
+    color: #3c434a;
+    white-space: nowrap;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 .aura-amount-field input {
-    padding-left: 30px;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding-left: 0;
+    flex: 1;
+    min-width: 0;
     font-size: 16px;
     font-weight: 600;
-    border-left: 4px solid #27ae60;
+    background: transparent;
 }
 
 /* Contador de caracteres */

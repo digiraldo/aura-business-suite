@@ -456,38 +456,7 @@ class Aura_Financial_CPT {
      * Agregar páginas de menú
      */
     public static function add_menu_pages() {
-        // Página de creación rápida
-        if (current_user_can('aura_finance_create')) {
-            add_submenu_page(
-                'aura-suite',
-                __('Nueva Transacción', 'aura-suite'),
-                __('Nueva Transacción', 'aura-suite'),
-                'aura_finance_create',
-                'post-new.php?post_type=aura_transaction'
-            );
-        }
-        
-        // Página de listado
-        if (current_user_can('aura_finance_view_own') || current_user_can('aura_finance_view_all')) {
-            add_submenu_page(
-                'aura-suite',
-                __('Transacciones', 'aura-suite'),
-                __('Transacciones', 'aura-suite'),
-                'read',
-                'edit.php?post_type=aura_transaction'
-            );
-        }
-        
-        // Dashboard financiero
-        if (current_user_can('aura_finance_charts')) {
-            add_submenu_page(
-                'aura-suite',
-                __('Dashboard Financiero', 'aura-suite'),
-                __('Dashboard Financiero', 'aura-suite'),
-                'aura_finance_charts',
-                'aura-financial-dashboard',
-                array('Aura_Financial_Dashboard', 'render')
-            );
-        }
+        // Registros de menú legacy (CPT-based) deshabilitados.
+        // El menú de Finanzas se gestiona íntegramente en Aura_Business_Suite::add_admin_menu().
     }
 }

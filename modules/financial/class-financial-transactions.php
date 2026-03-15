@@ -25,6 +25,17 @@ class Aura_Financial_Transactions {
         add_action('wp_ajax_aura_save_transaction', array(__CLASS__, 'ajax_save_transaction'));
         add_action('wp_ajax_aura_get_categories_by_type', array(__CLASS__, 'ajax_get_categories_by_type'));
         add_action('wp_ajax_aura_upload_receipt', array(__CLASS__, 'ajax_upload_receipt'));
+        // Fase 6, Item 6.1: Búsqueda de usuarios WP para autocomplete
+        add_action('wp_ajax_aura_search_users', array(__CLASS__, 'ajax_search_users'));
+        
+        // Migración: agregar columna deleted_by si no existe
+        add_action('admin_init', array(__CLASS__, 'maybe_migrate_deleted_by'));
+        // Migración: agregar columnas related_user_id y related_user_concept (Fase 6)
+        add_action('admin_init', array(__CLASS__, 'maybe_migrate_related_user'));
+        // Migración: agregar columna area_id (Fase 8.2)
+        add_action('admin_init', array(__CLASS__, 'maybe_migrate_area_id'));
+        // Migración: agregar columna expense_category_id (Fase 8.4)
+        add_action('admin_init', array(__CLASS__, 'maybe_migrate_expense_category_id'));
         
         // Enqueue scripts and styles
         add_action('admin_enqueue_scripts', array(__CLASS__, 'enqueue_scripts'));
@@ -61,18 +72,39 @@ class Aura_Financial_Transactions {
         );
         
         // Localizar script
+        // Construir mapa category_id => [area_id, ...] para auto-filtrado inverso (Fase 8.2)
+        global $wpdb;
+        $budgeted_map  = [];
+        $budget_rows   = $wpdb->get_results(
+            "SELECT DISTINCT category_id, area_id
+             FROM {$wpdb->prefix}aura_finance_budgets
+             WHERE is_active = 1
+               AND category_id IS NOT NULL
+               AND area_id    IS NOT NULL"
+        );
+        foreach ( $budget_rows as $br ) {
+            $budgeted_map[ (int) $br->category_id ][] = (int) $br->area_id;
+        }
+
         wp_localize_script('aura-transaction-form', 'auraTransactionData', array(
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('aura_transaction_nonce'),
+            'ajaxUrl'      => admin_url('admin-ajax.php'),
+            'nonce'        => wp_create_nonce('aura_transaction_nonce'),
+            'budgetsNonce' => wp_create_nonce('aura_budgets_nonce'),
             'messages' => array(
-                'saving' => __('Guardando transacción...', 'aura-suite'),
-                'success' => __('Transacción guardada exitosamente', 'aura-suite'),
-                'error' => __('Error al guardar la transacción', 'aura-suite'),
-                'uploadError' => __('Error al subir el archivo', 'aura-suite'),
-                'confirmLeave' => __('Tienes cambios sin guardar. ¿Deseas salir?', 'aura-suite'),
+                'saving'                  => __('Guardando transacción...', 'aura-suite'),
+                'success'                 => __('Transacción guardada exitosamente', 'aura-suite'),
+                'error'                   => __('Error al guardar la transacción', 'aura-suite'),
+                'uploadError'             => __('Error al subir el archivo', 'aura-suite'),
+                'confirmLeave'            => __('Tienes cambios sin guardar. ¿Deseas salir?', 'aura-suite'),
+                'noBudgetsForArea'        => __('Esta área no tiene presupuestos asignados para la fecha actual.', 'aura-suite'),
+                'noBudgetForCat'          => __('No hay presupuesto activo para esta categoría en el área seleccionada.', 'aura-suite'),
+                'overspend'               => __('⚠️ Este monto supera el disponible del presupuesto', 'aura-suite'),
+                'loadingCats'             => __('Cargando categorías...', 'aura-suite'),
+                'areaFilteredByCategory'  => __('Mostrando áreas con presupuesto para esta categoría.', 'aura-suite'),
             ),
-            'maxFileSize' => 5242880, // 5MB en bytes
-            'allowedFileTypes' => array('jpg', 'jpeg', 'png', 'pdf'),
+            'maxFileSize'             => 5242880, // 5MB en bytes
+            'allowedFileTypes'        => array('jpg', 'jpeg', 'png', 'pdf'),
+            'budgetedAreasByCategory' => $budgeted_map,
         ));
     }
     
@@ -102,6 +134,27 @@ class Aura_Financial_Transactions {
         $notes = sanitize_textarea_field($_POST['notes'] ?? '');
         $tags = sanitize_text_field($_POST['tags'] ?? '');
         $receipt_file = sanitize_text_field($_POST['receipt_file'] ?? '');
+        // Fase 6, Item 6.1: usuario vinculado
+        $related_user_id = intval($_POST['related_user_id'] ?? 0);
+        $related_user_concept = sanitize_key($_POST['related_user_concept'] ?? '');
+        // Fase 8.4: categoría detallada del gasto (qué se compró / por qué ingresó)
+        $expense_category_id = intval($_POST['expense_category_id'] ?? 0);
+
+        // Fase 8.2: área / programa
+        $current_uid = get_current_user_id();
+        $area_id     = null;
+        if ( current_user_can( 'aura_areas_view_own' )
+             && ! current_user_can( 'aura_areas_view_all' )
+             && ! current_user_can( 'manage_options' ) ) {
+            // Forzar el área del responsable
+            global $wpdb;
+            $area_id = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT id FROM {$wpdb->prefix}aura_areas WHERE responsible_user_id = %d AND status = 'active' LIMIT 1",
+                $current_uid
+            ) ) ?: null;
+        } elseif ( ! empty( $_POST['area_id'] ) ) {
+            $area_id = absint( $_POST['area_id'] ) ?: null;
+        }
         
         // Validaciones
         $errors = array();
@@ -109,10 +162,14 @@ class Aura_Financial_Transactions {
         if (empty($transaction_type) || !in_array($transaction_type, array('income', 'expense'))) {
             $errors[] = __('Tipo de transacción inválido', 'aura-suite');
         }
-        
-        if ($category_id <= 0) {
-            $errors[] = __('Debe seleccionar una categoría', 'aura-suite');
+
+        // expense_category_id es obligatorio (detalle del gasto)
+        if ($expense_category_id <= 0) {
+            $errors[] = __('Debe seleccionar la categoría del gasto', 'aura-suite');
         }
+
+        // category_id es opcional (presupuesto del área); si está vacío se usará expense_category_id
+        // No se valida como obligatorio aquí.
         
         if ($amount <= 0) {
             $errors[] = __('El monto debe ser mayor a 0', 'aura-suite');
@@ -133,26 +190,43 @@ class Aura_Financial_Transactions {
             ));
         }
         
-        // Verificar que la categoría existe y es del tipo correcto
+        // Verificar que la categoría del gasto (expense_category_id) existe y coincide con el tipo
         global $wpdb;
         $table_name = $wpdb->prefix . 'aura_finance_categories';
-        $category = $wpdb->get_row($wpdb->prepare(
+
+        $expense_category = $wpdb->get_row( $wpdb->prepare(
             "SELECT * FROM $table_name WHERE id = %d AND is_active = 1",
-            $category_id
-        ));
-        
-        if (!$category) {
-            wp_send_json_error(array(
-                'message' => __('Categoría no válida o inactiva', 'aura-suite')
-            ));
+            $expense_category_id
+        ) );
+
+        if ( ! $expense_category ) {
+            wp_send_json_error( array(
+                'message' => __( 'La categoría del gasto seleccionada no es válida o está inactiva', 'aura-suite' )
+            ) );
         }
-        
-        // Verificar que el tipo de transacción coincida con el tipo de categoría
-        if ($category->type !== 'both' && $category->type !== $transaction_type) {
-            wp_send_json_error(array(
-                'message' => __('La categoría seleccionada no es válida para este tipo de transacción', 'aura-suite')
-            ));
+
+        if ( $expense_category->type !== 'both' && $expense_category->type !== $transaction_type ) {
+            wp_send_json_error( array(
+                'message' => __( 'La categoría del gasto no corresponde al tipo de transacción (ingreso/egreso)', 'aura-suite' )
+            ) );
         }
+
+        // Verificar la categoría del presupuesto (category_id) solo si fue seleccionada
+        $category = null;
+        if ( $category_id > 0 ) {
+            $category = $wpdb->get_row( $wpdb->prepare(
+                "SELECT * FROM $table_name WHERE id = %d AND is_active = 1",
+                $category_id
+            ) );
+            if ( ! $category ) {
+                wp_send_json_error( array(
+                    'message' => __( 'La categoría del presupuesto no es válida o está inactiva', 'aura-suite' )
+                ) );
+            }
+        }
+
+        // Si no hay category_id explícito, usar expense_category_id como referencia para aprobación
+        $effective_category_id = $category_id > 0 ? $category_id : $expense_category_id;
         
         // Insertar en la base de datos
         $transactions_table = $wpdb->prefix . 'aura_finance_transactions';
@@ -162,48 +236,86 @@ class Aura_Financial_Transactions {
         $related_item_id = intval($_POST['related_item_id'] ?? 0);
         $related_action = sanitize_text_field($_POST['related_action'] ?? '');
         
+        // SISTEMA DE APROBACIÓN AUTOMÁTICA (Item 2.6)
+        // Determinar estado inicial basado en configuración de umbral
+        $transaction_data = array(
+            'transaction_type' => $transaction_type,
+            'category_id' => $effective_category_id,
+            'amount' => $amount,
+            'area_id' => $area_id,
+            'related_module' => !empty($related_module) ? $related_module : null,
+            'related_action' => !empty($related_action) ? $related_action : null,
+        );
+        
+        $initial_status = Aura_Financial_Settings::determine_initial_status($transaction_data);
+        $current_user_id = get_current_user_id();
+        
+        // Preparar datos de inserción
+        $insert_data = array(
+            'transaction_type' => $transaction_type,
+            'category_id' => $effective_category_id,  // presupuesto o fallback a gasto
+            'amount' => $amount,
+            'transaction_date' => $transaction_date,
+            'description' => $description,
+            'notes' => $notes,
+            'status' => $initial_status,
+            'payment_method' => $payment_method,
+            'reference_number' => $reference_number,
+            'recipient_payer' => $recipient_payer,
+            'receipt_file' => $receipt_file,
+            'tags' => $tags,
+            'related_module' => !empty($related_module) ? $related_module : null,
+            'related_item_id' => $related_item_id > 0 ? $related_item_id : null,
+            'related_action' => !empty($related_action) ? $related_action : null,
+            // Fase 6, Item 6.1
+            'related_user_id'      => $related_user_id > 0 ? $related_user_id : null,
+            'related_user_concept' => !empty($related_user_concept) ? $related_user_concept : null,
+            // Fase 8.2: área / programa
+            'area_id'              => $area_id,
+            // Fase 8.4: categoría detallada del gasto
+            'expense_category_id'  => $expense_category_id > 0 ? $expense_category_id : null,
+            'created_by' => $current_user_id,
+            'created_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql'),
+        );
+        
+        $insert_formats = array(
+            '%s', // transaction_type
+            '%d', // category_id
+            '%f', // amount
+            '%s', // transaction_date
+            '%s', // description
+            '%s', // notes
+            '%s', // status
+            '%s', // payment_method
+            '%s', // reference_number
+            '%s', // recipient_payer
+            '%s', // receipt_file
+            '%s', // tags
+            '%s', // related_module
+            '%d', // related_item_id
+            '%s', // related_action
+            '%d', // related_user_id (Fase 6)
+            '%s', // related_user_concept (Fase 6)
+            '%d', // area_id (Fase 8.2)
+            '%d', // expense_category_id (Fase 8.4)
+            '%d', // created_by
+            '%s', // created_at
+            '%s', // updated_at
+        );
+        
+        // Si fue auto-aprobada, agregar campos de aprobación
+        if ($initial_status === 'approved') {
+            $insert_data['approved_by'] = $current_user_id;
+            $insert_data['approved_at'] = current_time('mysql');
+            $insert_formats[] = '%d'; // approved_by
+            $insert_formats[] = '%s'; // approved_at
+        }
+        
         $result = $wpdb->insert(
             $transactions_table,
-            array(
-                'transaction_type' => $transaction_type,
-                'category_id' => $category_id,
-                'amount' => $amount,
-                'transaction_date' => $transaction_date,
-                'description' => $description,
-                'notes' => $notes,
-                'status' => 'pending',
-                'payment_method' => $payment_method,
-                'reference_number' => $reference_number,
-                'recipient_payer' => $recipient_payer,
-                'receipt_file' => $receipt_file,
-                'tags' => $tags,
-                'related_module' => !empty($related_module) ? $related_module : null,
-                'related_item_id' => $related_item_id > 0 ? $related_item_id : null,
-                'related_action' => !empty($related_action) ? $related_action : null,
-                'created_by' => get_current_user_id(),
-                'created_at' => current_time('mysql'),
-                'updated_at' => current_time('mysql'),
-            ),
-            array(
-                '%s', // transaction_type
-                '%d', // category_id
-                '%f', // amount
-                '%s', // transaction_date
-                '%s', // description
-                '%s', // notes
-                '%s', // status
-                '%s', // payment_method
-                '%s', // reference_number
-                '%s', // recipient_payer
-                '%s', // receipt_file
-                '%s', // tags
-                '%s', // related_module
-                '%d', // related_item_id
-                '%s', // related_action
-                '%d', // created_by
-                '%s', // created_at
-                '%s', // updated_at
-            )
+            $insert_data,
+            $insert_formats
         );
         
         if ($result === false) {
@@ -218,10 +330,52 @@ class Aura_Financial_Transactions {
         // Hook para extensiones
         do_action('aura_finance_transaction_created', $transaction_id, $transaction_type, $amount);
         
+        // Preparar mensaje de respuesta según el estado
+        if ($initial_status === 'approved') {
+            // Transacción auto-aprobada
+            $threshold = (float) get_option('aura_finance_auto_approval_threshold', 0);
+            $message = sprintf(
+                __('✅ Transacción aprobada automáticamente (Monto: $%s, Umbral: $%s)', 'aura-suite'),
+                number_format($amount, 2),
+                number_format($threshold, 2)
+            );
+            
+            // Registrar en historial de auditoría
+            $history_table = $wpdb->prefix . 'aura_finance_transaction_history';
+            $wpdb->insert(
+                $history_table,
+                array(
+                    'transaction_id' => $transaction_id,
+                    'field_changed' => 'status',
+                    'old_value' => '-',
+                    'new_value' => 'approved (Auto-aprobada)',
+                    'change_reason' => sprintf(
+                        'Auto-aprobada por estar bajo el umbral configurado de $%s',
+                        number_format($threshold, 2)
+                    ),
+                    'changed_by' => $current_user_id,
+                    'changed_at' => current_time('mysql')
+                ),
+                array('%d', '%s', '%s', '%s', '%s', '%d', '%s')
+            );
+            
+            // Hook específico para auto-aprobación
+            do_action('aura_finance_transaction_auto_approved', $transaction_id, $amount, $threshold);
+            
+        } else {
+            // Transacción pendiente de aprobación
+            $message = __('Transacción guardada exitosamente. Está pendiente de aprobación.', 'aura-suite');
+            
+            // Notificar a aprobadores (hook existente)
+            do_action('aura_finance_transaction_pending_approval', $transaction_id);
+        }
+        
         // Respuesta exitosa
         wp_send_json_success(array(
-            'message' => __('Transacción guardada exitosamente', 'aura-suite'),
+            'message' => $message,
             'transaction_id' => $transaction_id,
+            'status' => $initial_status,
+            'is_auto_approved' => $initial_status === 'approved',
             'redirect_url' => admin_url('admin.php?page=aura-financial-transactions')
         ));
     }
@@ -232,7 +386,7 @@ class Aura_Financial_Transactions {
     public static function ajax_get_categories_by_type() {
         check_ajax_referer('aura_transaction_nonce', 'nonce');
         
-        $type = sanitize_text_field($_POST['type'] ?? '');
+        $type = sanitize_text_field($_POST['type'] ?? $_POST['transaction_type'] ?? '');
         
         if (!in_array($type, array('income', 'expense'))) {
             wp_send_json_error(array(
@@ -293,10 +447,43 @@ class Aura_Financial_Transactions {
             ));
         }
         
-        // Subir archivo usando WordPress
+        // Crear directorio personalizado para recibos
+        $upload_dir = wp_upload_dir();
+        $custom_dir = $upload_dir['basedir'] . '/aura-finance/receipts';
+        $custom_url = $upload_dir['baseurl'] . '/aura-finance/receipts';
+        
+        // Crear directorio si no existe
+        if (!file_exists($custom_dir)) {
+            wp_mkdir_p($custom_dir);
+            
+            // Crear archivo .htaccess para proteger acceso directo
+            $htaccess_content = "Options -Indexes\n";
+            $htaccess_content .= "<FilesMatch \"\\.(jpg|jpeg|png|pdf)$\">\n";
+            $htaccess_content .= "  Order Allow,Deny\n";
+            $htaccess_content .= "  Allow from all\n";
+            $htaccess_content .= "</FilesMatch>";
+            file_put_contents($custom_dir . '/.htaccess', $htaccess_content);
+        }
+        
+        // Subir archivo usando WordPress con directorio personalizado
         require_once(ABSPATH . 'wp-admin/includes/file.php');
         
+        // Generar nombre único para el archivo
+        $file_extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $unique_filename = wp_unique_filename($custom_dir, time() . '_' . sanitize_file_name($file['name']));
+        
+        // Filtro para cambiar el directorio de subida
+        add_filter('upload_dir', function($dirs) use ($custom_dir, $custom_url) {
+            $dirs['path'] = $custom_dir;
+            $dirs['url'] = $custom_url;
+            $dirs['subdir'] = '';
+            return $dirs;
+        });
+        
         $upload = wp_handle_upload($file, array('test_form' => false));
+        
+        // Remover el filtro
+        remove_all_filters('upload_dir');
         
         if (isset($upload['error'])) {
             wp_send_json_error(array(
@@ -304,9 +491,13 @@ class Aura_Financial_Transactions {
             ));
         }
         
+        // Extraer solo el nombre del archivo (sin la ruta completa)
+        $filename = basename($upload['file']);
+        
         wp_send_json_success(array(
             'file_url' => $upload['url'],
-            'file_path' => $upload['file']
+            'file_path' => $filename, // Solo el nombre del archivo
+            'filename' => $filename
         ));
     }
     
@@ -465,21 +656,27 @@ class Aura_Financial_Transactions {
         $required = array('transaction_type', 'category_id', 'amount', 'description', 'related_module', 'related_item_id', 'related_action');
         foreach ($required as $field) {
             if (empty($args[$field])) {
-                error_log("AURA Finance: Campo requerido faltante: $field");
+                if ( defined('WP_DEBUG') && WP_DEBUG ) {
+                    error_log("AURA Finance: Campo requerido faltante: $field");
+                }
                 return false;
             }
         }
         
         // Validar tipo de transacción
         if (!in_array($args['transaction_type'], array('income', 'expense'))) {
-            error_log("AURA Finance: Tipo de transacción inválido: {$args['transaction_type']}");
+            if ( defined('WP_DEBUG') && WP_DEBUG ) {
+                error_log("AURA Finance: Tipo de transacción inválido: {$args['transaction_type']}");
+            }
             return false;
         }
         
         // Validar módulo relacionado
         $valid_modules = array('inventory', 'students', 'library', 'vehicles', 'forms');
         if (!in_array($args['related_module'], $valid_modules)) {
-            error_log("AURA Finance: Módulo relacionado inválido: {$args['related_module']}");
+            if ( defined('WP_DEBUG') && WP_DEBUG ) {
+                error_log("AURA Finance: Módulo relacionado inválido: {$args['related_module']}");
+            }
             return false;
         }
         
@@ -514,7 +711,9 @@ class Aura_Financial_Transactions {
         $result = $wpdb->insert($transactions_table, $transaction_data);
         
         if ($result === false) {
-            error_log("AURA Finance: Error al crear transacción relacionada - " . $wpdb->last_error);
+            if ( defined('WP_DEBUG') && WP_DEBUG ) {
+                error_log("AURA Finance: Error al crear transacción relacionada - " . $wpdb->last_error);
+            }
             return false;
         }
         
@@ -523,7 +722,9 @@ class Aura_Financial_Transactions {
         // Hook para extensiones
         do_action('aura_finance_related_transaction_created', $transaction_id, $args['related_module'], $args['related_item_id']);
         
-        error_log("AURA Finance: Transacción relacionada creada - ID: $transaction_id, Módulo: {$args['related_module']}, Item: {$args['related_item_id']}");
+        if ( defined('WP_DEBUG') && WP_DEBUG ) {
+            error_log("AURA Finance: Transacción relacionada creada - ID: $transaction_id, Módulo: {$args['related_module']}, Item: {$args['related_item_id']}");
+        }
         
         return $transaction_id;
     }
@@ -571,6 +772,7 @@ class Aura_Financial_Transactions {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             deleted_at DATETIME NULL,
+            deleted_by BIGINT UNSIGNED NULL,
             INDEX idx_type (transaction_type),
             INDEX idx_category (category_id),
             INDEX idx_status (status),
@@ -629,8 +831,188 @@ class Aura_Financial_Transactions {
         add_option('aura_finance_budgets_db_version', '1.0');
         add_option('aura_finance_transaction_history_db_version', '1.0');
         
-        // Log de éxito
-        error_log('AURA: Tablas financieras creadas exitosamente - transactions, budgets, transaction_history');
+        // Log de éxito (solo en modo debug)
+        if ( defined('WP_DEBUG') && WP_DEBUG ) {
+            error_log('AURA: Tablas financieras creadas exitosamente - transactions, budgets, transaction_history');
+        }
+    }
+    
+    /**
+     * Migración: agregar columna deleted_by a la tabla de transacciones si no existe
+     * Se ejecuta en admin_init para instalaciones existentes
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    public static function maybe_migrate_deleted_by() {
+        // Comprobar si ya se hizo esta migración
+        if (get_option('aura_finance_deleted_by_migrated')) {
+            return;
+        }
+        
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_transactions';
+        
+        // Verificar si la columna ya existe
+        $column_exists = $wpdb->get_results($wpdb->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = 'deleted_by'",
+            DB_NAME,
+            $table
+        ));
+
+        if (empty($column_exists)) {
+            $wpdb->query("ALTER TABLE $table ADD COLUMN deleted_by BIGINT UNSIGNED NULL AFTER deleted_at");
+            if ( defined('WP_DEBUG') && WP_DEBUG ) {
+                error_log('AURA: Columna deleted_by agregada a ' . $table);
+            }
+        }
+
+        update_option('aura_finance_deleted_by_migrated', '1.0');
+    }
+
+    /**
+     * Migración Fase 6, Item 6.1: agregar related_user_id y related_user_concept
+     * si las columnas no existen en la tabla de transacciones.
+     *
+     * @since 1.0.1
+     * @return void
+     */
+    public static function maybe_migrate_related_user(): void {
+        if ( get_option( 'aura_finance_related_user_migrated' ) ) {
+            return;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_transactions';
+
+        $columns = $wpdb->get_col( $wpdb->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
+            DB_NAME,
+            $table
+        ) );
+
+        if ( ! in_array( 'related_user_id', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN related_user_id BIGINT UNSIGNED NULL AFTER recipient_payer" );
+            if ( defined('WP_DEBUG') && WP_DEBUG ) { error_log( 'AURA: Columna related_user_id agregada a ' . $table ); }
+        }
+
+        if ( ! in_array( 'related_user_concept', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN related_user_concept VARCHAR(100) NULL AFTER related_user_id" );
+            if ( defined('WP_DEBUG') && WP_DEBUG ) { error_log( 'AURA: Columna related_user_concept agregada a ' . $table ); }
+        }
+
+        if ( ! in_array( 'related_user_id', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD INDEX idx_related_user (related_user_id)" );
+        }
+
+        update_option( 'aura_finance_related_user_migrated', '1.0' );
+    }
+
+    /**
+     * Migración Fase 8.2: agregar columna area_id a la tabla de transacciones
+     * si la columna no existe.
+     *
+     * @since 1.0.2
+     * @return void
+     */
+    public static function maybe_migrate_area_id(): void {
+        if ( get_option( 'aura_finance_area_id_migrated_v1' ) ) {
+            return;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_transactions';
+
+        $columns = $wpdb->get_col( $wpdb->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
+            DB_NAME,
+            $table
+        ) );
+
+        if ( ! in_array( 'area_id', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN area_id BIGINT UNSIGNED NULL AFTER related_user_concept" );
+            $wpdb->query( "ALTER TABLE {$table} ADD INDEX idx_area (area_id)" );
+            if ( defined('WP_DEBUG') && WP_DEBUG ) { error_log( 'AURA: Columna area_id agregada a ' . $table ); }
+        }
+
+        update_option( 'aura_finance_area_id_migrated_v1', '1.0' );
+    }
+
+    /**
+     * Migración Fase 8.4: agregar columna expense_category_id a la tabla de transacciones.
+     * Almacena la categoría detallada que describe en qué se usó el dinero.
+     *
+     * @since 1.0.3
+     * @return void
+     */
+    public static function maybe_migrate_expense_category_id(): void {
+        if ( get_option( 'aura_finance_expense_cat_migrated_v1' ) ) {
+            return;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_transactions';
+
+        $columns = $wpdb->get_col( $wpdb->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
+            DB_NAME,
+            $table
+        ) );
+
+        if ( ! in_array( 'expense_category_id', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN expense_category_id INT NULL DEFAULT NULL AFTER area_id" );
+            $wpdb->query( "ALTER TABLE {$table} ADD INDEX idx_expense_cat (expense_category_id)" );
+            if ( defined('WP_DEBUG') && WP_DEBUG ) { error_log( 'AURA: Columna expense_category_id agregada a ' . $table ); }
+        }
+
+        update_option( 'aura_finance_expense_cat_migrated_v1', '1.0' );
+    }
+
+    /**
+     * AJAX: Buscar usuarios WordPress para autocomplete (Fase 6, Item 6.1)
+     * Capability requerida: aura_finance_link_user o aura_finance_view_all
+     *
+     * @since 1.0.1
+     * @return void
+     */
+    public static function ajax_search_users(): void {
+        check_ajax_referer( 'aura_transaction_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_finance_link_user' ) && ! current_user_can( 'aura_finance_view_all' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para buscar usuarios.', 'aura-suite' ) ] );
+        }
+
+        $term = sanitize_text_field( $_POST['term'] ?? '' );
+        if ( strlen( $term ) < 2 ) {
+            wp_send_json_success( [] );
+        }
+
+        $users = get_users( [
+            'search'         => '*' . $term . '*',
+            'search_columns' => [ 'user_login', 'user_email', 'display_name' ],
+            'number'         => 10,
+            'orderby'        => 'display_name',
+            'fields'         => [ 'ID', 'display_name', 'user_email', 'user_login' ],
+        ] );
+
+        $result = [];
+        foreach ( $users as $user ) {
+            $result[] = [
+                'id'         => (int) $user->ID,
+                'name'       => $user->display_name,
+                'email'      => $user->user_email,
+                'login'      => $user->user_login,
+                'avatar_url' => get_avatar_url( $user->ID, [ 'size' => 32 ] ),
+                'label'      => $user->display_name . ' (' . $user->user_email . ')',
+                'value'      => $user->display_name,
+            ];
+        }
+
+        wp_send_json_success( $result );
     }
 }
 

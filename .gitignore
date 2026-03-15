@@ -79,3 +79,18 @@ phpunit.xml
 .env
 .env.local
 .env.*.local
+
+# Documentación md (no subir a GitHub)
+ordenDeModulos.md
+prd-finanzas.md
+PRD.md
+prdFinanzas.md
+prdInventario.md
+
+# Documentación interna (no subir a GitHub)
+/documentacion/
+
+# Archivos de Python / virtualenv
+.venv/
+__pycache__/
+*.py[cod]

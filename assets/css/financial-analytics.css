@@ -1,0 +1,652 @@
+/**
+ * Análisis Visual – Fase 3, Item 3.3
+ * Estilos para la página de gráficos interactivos avanzados
+ *
+ * @package AuraBusinessSuite
+ */
+
+/* ================================================================ */
+/* CONTENEDOR PRINCIPAL                                              */
+/* ================================================================ */
+
+.aura-analytics-wrap {
+    max-width: 1400px;
+}
+
+.aura-analytics-wrap h1 {
+    margin-bottom: 12px;
+}
+
+/* ================================================================ */
+/* FILTROS GLOBALES                                                   */
+/* ================================================================ */
+
+.aura-analytics-global-filters {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+.aura-filters-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.aura-filters-row label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+    margin: 0;
+}
+
+.aura-filters-row input[type="date"] {
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 13px;
+}
+
+/* ================================================================ */
+/* NAVEGACIÓN DE TABS                                                 */
+/* ================================================================ */
+
+.aura-analytics-tabs {
+    border-bottom: 1px solid #ccd0d4;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.aura-analytics-tabs .nav-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-bottom: 3px solid transparent;
+    transition: border-color .2s, color .2s;
+}
+
+.aura-analytics-tabs .nav-tab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+}
+
+.aura-analytics-tabs .nav-tab-active,
+.aura-analytics-tabs .nav-tab:hover {
+    border-bottom-color: #2271b1;
+    color: #2271b1;
+    background: transparent;
+}
+
+/* ================================================================ */
+/* CONTENIDO DE TABS                                                  */
+/* ================================================================ */
+
+.aura-tab-content {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-top: none;
+    padding: 20px;
+    border-radius: 0 0 6px 6px;
+}
+
+/* ================================================================ */
+/* BARRA DE HERRAMIENTAS DEL GRÁFICO                                  */
+/* ================================================================ */
+
+.aura-chart-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.aura-toolbar-left,
+.aura-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.aura-toolbar-left label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    margin: 0;
+}
+
+/* ================================================================ */
+/* BOTONES TOGGLE (GRUPO)                                             */
+/* ================================================================ */
+
+.aura-btn-group {
+    display: inline-flex;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.aura-btn-toggle {
+    padding: 5px 12px;
+    font-size: 12px;
+    background: #f6f7f7;
+    border: none;
+    border-right: 1px solid #ccd0d4;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    color: #444;
+    line-height: 1.4;
+}
+
+.aura-btn-toggle:last-child {
+    border-right: none;
+}
+
+.aura-btn-toggle:hover {
+    background: #e9ecef;
+}
+
+.aura-btn-toggle.active {
+    background: #2271b1;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ================================================================ */
+/* CONTENEDOR DEL GRÁFICO                                             */
+/* ================================================================ */
+
+.aura-chart-container {
+    min-height: 420px;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.aura-chart-container.short {
+    min-height: 240px;
+}
+
+/* ================================================================ */
+/* LEYENDA                                                            */
+/* ================================================================ */
+
+.aura-chart-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #555;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-item.income  .legend-dot { background: #10b981; }
+.legend-item.expense .legend-dot { background: #ef4444; }
+.legend-item.balance .legend-dot { background: #3b82f6; }
+.legend-item.projection .legend-dot {
+    background: transparent;
+    border: 2px dashed #a78bfa;
+}
+
+/* ================================================================ */
+/* ANOTACIONES                                                        */
+/* ================================================================ */
+
+.aura-annotations-list {
+    margin-top: 12px;
+    font-size: 12px;
+}
+
+.ann-list-header {
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.aura-annotations-list ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.aura-annotations-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 4px 8px;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    margin-bottom: 4px;
+    border-radius: 3px;
+}
+
+.ann-date {
+    font-weight: 600;
+    color: #b45309;
+    white-space: nowrap;
+}
+
+.ann-note {
+    flex: 1;
+    color: #444;
+}
+
+.ann-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    font-size: 10px;
+    padding: 0 2px;
+    line-height: 1;
+}
+
+.ann-delete-btn:hover {
+    color: #ef4444;
+}
+
+/* ================================================================ */
+/* BOTÓN ANOTACIÓN / FULLSCREEN                                       */
+/* ================================================================ */
+
+.aura-add-annotation {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    background: #f6f7f7;
+    cursor: pointer;
+    color: #444;
+    transition: background .15s;
+}
+
+.aura-add-annotation:hover {
+    background: #e9ecef;
+}
+
+.aura-fullscreen-btn {
+    background: none;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 4px 6px;
+    cursor: pointer;
+    color: #555;
+    transition: background .15s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.aura-fullscreen-btn:hover {
+    background: #f0f0f0;
+}
+
+/* ================================================================ */
+/* TAB COMPARACIONES                                                  */
+/* ================================================================ */
+
+.aura-comparison-periods {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f6f7f7;
+    border-radius: 6px;
+}
+
+.period-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.period-picker h3 {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #2271b1;
+}
+
+.period-picker label {
+    font-size: 12px;
+    color: #666;
+}
+
+.period-picker input[type="date"] {
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 13px;
+}
+
+.period-vs {
+    font-size: 20px;
+    font-weight: 700;
+    color: #888;
+    align-self: center;
+    padding-bottom: 4px;
+}
+
+.aura-comparison-table-wrap,
+.aura-budget-table-wrap {
+    margin-top: 20px;
+}
+
+.aura-comparison-table-wrap h3,
+.aura-budget-table-wrap h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.aura-comparison-table td.positive { color: #10b981; font-weight: 600; }
+.aura-comparison-table td.negative { color: #ef4444; font-weight: 600; }
+.aura-comparison-table tr.highlight-max { background: #fef9c3; }
+
+/* ================================================================ */
+/* TAB PATRONES                                                       */
+/* ================================================================ */
+
+.aura-patterns-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 900px) {
+    .aura-patterns-grid { grid-template-columns: 1fr; }
+}
+
+.aura-pattern-card {
+    background: #f9f9f9;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 16px;
+    position: relative;
+}
+
+.aura-pattern-card h3 {
+    font-size: 13px;
+    margin: 0 0 12px;
+    color: #374151;
+}
+
+.aura-fullscreen-btn-wrap {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.aura-outliers-wrap { margin-top: 20px; }
+.aura-outliers-wrap h3 { font-size: 14px; margin-bottom: 10px; }
+
+/* ================================================================ */
+/* TAB PRESUPUESTO                                                    */
+/* ================================================================ */
+
+.aura-budget-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.aura-budget-controls label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+}
+
+.aura-budget-controls select {
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 13px;
+}
+
+.aura-budget-table tr.over-budget td { background: #fef2f2; color: #b91c1c; }
+.aura-budget-table td:nth-child(4) { font-weight: 600; }
+
+/* ================================================================ */
+/* ESTADO DE CARGA / VACÍO                                            */
+/* ================================================================ */
+
+.aura-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 180px;
+    color: #888;
+    font-size: 14px;
+}
+
+.aura-loading::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 3px solid #ddd;
+    border-top-color: #2271b1;
+    border-radius: 50%;
+    animation: aura-spin .7s linear infinite;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+@keyframes aura-spin {
+    to { transform: rotate(360deg); }
+}
+
+.aura-no-data,
+.aura-empty-row {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 30px;
+}
+
+/* ================================================================ */
+/* MODALES                                                            */
+/* ================================================================ */
+
+.aura-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+}
+
+.aura-modal-box {
+    position: relative;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    padding: 24px 28px;
+    min-width: 360px;
+    max-width: 560px;
+    width: 94%;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1;
+}
+
+.aura-modal-box h2 {
+    margin-top: 0;
+    font-size: 17px;
+}
+
+.aura-modal-box .form-group {
+    margin-bottom: 16px;
+}
+
+.aura-modal-box .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.aura-modal-box .form-group input,
+.aura-modal-box .form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.aura-modal-box .form-group textarea {
+    resize: vertical;
+}
+
+.aura-modal-box .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.aura-budget-modal-box {
+    max-width: 640px;
+}
+
+/* Input presupuesto en modal */
+.budget-input {
+    width: 140px !important;
+    text-align: right;
+}
+
+/* ================================================================ */
+/* FULLSCREEN OVERLAY                                                 */
+/* ================================================================ */
+
+.aura-fullscreen-overlay {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    z-index: 99998;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+#aura-fullscreen-chart {
+    flex: 1;
+    min-height: 0;
+}
+
+.aura-exit-fullscreen {
+    align-self: flex-end;
+    margin-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    background: #f6f7f7;
+    cursor: pointer;
+    font-size: 13px;
+    color: #444;
+    transition: background .15s;
+}
+
+.aura-exit-fullscreen:hover {
+    background: #e9ecef;
+}
+
+/* ================================================================ */
+/* TOOLTIP APEXCHARTS CUSTOM                                          */
+/* ================================================================ */
+
+.aura-apex-tooltip {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+}
+
+.aura-apex-tooltip strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #fff;
+}
+
+.tt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    line-height: 1.8;
+}
+
+.tt-name { color: #94a3b8; }
+.tt-val  { font-weight: 600; color: #f1f5f9; }
+
+.tt-link {
+    display: block;
+    margin-top: 8px;
+    color: #60a5fa;
+    text-decoration: underline;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+/* ================================================================ */
+/* RESPONSIVE                                                         */
+/* ================================================================ */
+
+@media (max-width: 782px) {
+    .aura-chart-toolbar {
+        flex-direction: column;
+    }
+
+    .aura-comparison-periods {
+        flex-direction: column;
+    }
+
+    .period-vs {
+        align-self: auto;
+    }
+
+    .aura-modal-box {
+        min-width: unset;
+    }
+}
