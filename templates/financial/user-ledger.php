@@ -29,13 +29,38 @@ $currency = get_option( 'aura_currency_symbol', '$' );
 // Conceptos
 $concepts_map = Aura_Financial_User_Ledger::get_concepts_labels();
 
+// Helper: etiqueta de rol principal en español
+$aura_role_labels = [
+    'administrator' => 'Administrador',
+    'editor'        => 'Editor',
+    'author'        => 'Autor',
+    'contributor'   => 'Colaborador',
+    'subscriber'    => 'Suscriptor',
+    'driver'        => 'Conductor',
+];
+$get_primary_role_label = function( WP_User $u ) use ( $aura_role_labels ) {
+    if ( empty( $u->roles ) ) return '';
+    $role = $u->roles[0];
+    return $aura_role_labels[ $role ] ?? ucfirst( $role );
+};
+
 // -----------------------------------------------------------------------
 // Datos del usuario seleccionado
 // -----------------------------------------------------------------------
 $selected_user = $req_user_id ? get_userdata( $req_user_id ) : null;
 
-// Obtener todos los usuarios para el selector
-$all_ledger_users = get_users( array( 'orderby' => 'display_name' ) );
+// Obtener solo usuarios con al menos una capability de Aura Suite
+global $wpdb;
+$all_ledger_users = get_users( [
+    'orderby'    => 'display_name',
+    'meta_query' => [
+        [
+            'key'     => $wpdb->prefix . 'capabilities',
+            'value'   => '"aura_',
+            'compare' => 'LIKE',
+        ],
+    ],
+] );
 
 $filters = [
     'date_from' => $req_date_from,
@@ -100,26 +125,37 @@ $ajax_nonce   = wp_create_nonce( 'aura_transaction_nonce' );
                     <option value=""><?php _e( '-- Seleccionar Usuario --', 'aura-suite' ); ?></option>
                     <?php foreach ( $all_ledger_users as $user ) :
                         $avatar_url = get_avatar_url( $user->ID, ['size' => 32] );
+                        $role_label = $get_primary_role_label( $user );
                     ?>
                         <option value="<?php echo esc_attr( $user->ID ); ?>"
                                 <?php selected( $req_user_id, $user->ID ); ?>
                                 data-avatar="<?php echo esc_url( $avatar_url ); ?>"
                                 data-email="<?php echo esc_attr( $user->user_email ); ?>">
-                            <?php echo esc_html( $user->display_name . ' (' . $user->user_email . ')' ); ?>
+                            <?php echo esc_html(
+                                $user->display_name
+                                . ' (' . $user->user_email . ')'
+                                . ( $role_label ? ' — ' . $role_label : '' )
+                            ); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
 
             <?php if ( $selected_user ) :
-                $selected_avatar = get_avatar_url( $selected_user->ID, ['size' => 64] );
+                $selected_avatar    = get_avatar_url( $selected_user->ID, ['size' => 64] );
+                $selected_role_lbl  = $get_primary_role_label( $selected_user );
             ?>
             <div id="selected-user-card" style="flex: 0 0 auto; background: #f9fafb; border: 3px solid #2563eb; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                 <img src="<?php echo esc_url( $selected_avatar ); ?>"
                      alt="<?php echo esc_attr( $selected_user->display_name ); ?>"
                      style="width: 64px; height: 64px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                 <div>
-                    <h3 style="margin:0 0 5px 0; font-size:18px; color:#1f2937;"><?php echo esc_html( $selected_user->display_name ); ?></h3>
+                    <h3 style="margin:0 0 4px 0; font-size:18px; color:#1f2937;"><?php echo esc_html( $selected_user->display_name ); ?></h3>
+                    <?php if ( $selected_role_lbl ) : ?>
+                    <span style="display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:#e0e7ff;color:#3730a3;margin-bottom:4px;">
+                        <?php echo esc_html( $selected_role_lbl ); ?>
+                    </span>
+                    <?php endif; ?>
                     <p style="margin:0; font-size:13px; color:#6b7280;">
                         <span class="dashicons dashicons-email" style="font-size:13px;"></span>
                         <?php echo esc_html( $selected_user->user_email ); ?>

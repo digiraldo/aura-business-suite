@@ -1,0 +1,310 @@
+/* ============================================================
+   Caja Chica USD — Estilos
+   @package AuraBusinessSuite
+   ============================================================ */
+
+.aura-usd-ledger {
+    max-width: 1200px;
+}
+
+.aura-usd-ledger__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+.aura-usd-ledger__title .dashicons {
+    font-size: 1.5rem;
+    color: #27ae60;
+}
+
+/* ── TARJETAS DE RESUMEN ───────────────────────────────────── */
+.aura-usd-cards {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.aura-usd-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06);
+    min-width: 240px;
+    flex: 1;
+}
+
+.aura-usd-card--balance {
+    border-left: 4px solid #27ae60;
+}
+.aura-usd-card--info {
+    border-left: 4px solid #3498db;
+}
+
+.aura-usd-card__icon .dashicons {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    color: #888;
+}
+.aura-usd-card--balance .aura-usd-card__icon .dashicons { color: #27ae60; }
+.aura-usd-card--info    .aura-usd-card__icon .dashicons { color: #3498db; }
+
+.aura-usd-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.aura-usd-card__label {
+    font-size: .8rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.aura-usd-card__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+.aura-usd-card__value--sm {
+    font-size: .9rem;
+    font-weight: 500;
+}
+
+/* ── GRID ──────────────────────────────────────────────────── */
+.aura-usd-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .aura-usd-grid { grid-template-columns: 1fr; }
+}
+
+/* ── PANEL ─────────────────────────────────────────────────── */
+.aura-usd-panel {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    margin-bottom: 20px;
+}
+.aura-usd-panel:last-child { margin-bottom: 0; }
+
+.aura-usd-panel--convert {
+    border-top: 3px solid #27ae60;
+}
+
+.aura-usd-panel__title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #1a1a1a;
+}
+.aura-usd-panel__title .dashicons {
+    color: #3498db;
+}
+.aura-usd-panel--convert .aura-usd-panel__title .dashicons {
+    color: #27ae60;
+}
+.aura-usd-panel__desc {
+    font-size: .82rem;
+    color: #555;
+    margin: -8px 0 16px;
+    line-height: 1.5;
+    background: #f0f9f0;
+    border-radius: 4px;
+    padding: 8px 10px;
+    border-left: 3px solid #27ae60;
+}
+
+/* ── FORMULARIO ────────────────────────────────────────────── */
+.aura-usd-form .aura-usd-form__row {
+    margin-bottom: 14px;
+}
+.aura-usd-form label {
+    display: block;
+    font-size: .82rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+}
+.aura-usd-form input[type="number"],
+.aura-usd-form input[type="date"],
+.aura-usd-form select,
+.aura-usd-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+.aura-usd-form textarea {
+    resize: vertical;
+    min-height: 56px;
+}
+
+.aura-usd-input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+}
+.aura-usd-input-group input {
+    border: none !important;
+    box-shadow: none !important;
+    flex: 1;
+    padding: 6px 8px;
+    outline: none;
+}
+.aura-usd-input-prefix,
+.aura-usd-input-suffix {
+    background: #f6f7f7;
+    padding: 6px 8px;
+    font-size: .82rem;
+    color: #555;
+    border-color: #8c8f94;
+    white-space: nowrap;
+}
+.aura-usd-input-prefix { border-right: 1px solid #ddd; }
+.aura-usd-input-suffix { border-left:  1px solid #ddd; }
+
+.aura-usd-available {
+    display: block;
+    margin-top: 4px;
+    font-size: .78rem;
+    color: #555;
+}
+
+/* Calculadora */
+.aura-usd-calc {
+    background: #f0f9f0;
+    border: 1px solid #c3e6cb;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 4px 0 14px;
+    font-size: .9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.aura-usd-calc .dashicons { color: #27ae60; }
+.aura-usd-calc strong { color: #1a5c2a; }
+#conv-mxn-preview {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a5c2a;
+    margin-left: auto;
+}
+
+.aura-usd-btn-full {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+    font-size: .9rem;
+}
+.aura-usd-btn-convert {
+    background: #27ae60 !important;
+    border-color: #1e8449 !important;
+    color: #fff !important;
+}
+.aura-usd-btn-convert:hover {
+    background: #1e8449 !important;
+}
+
+.aura-usd-form__feedback {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: .85rem;
+}
+.aura-usd-form__feedback.is-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.aura-usd-form__feedback.is-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* ── HISTORIAL ─────────────────────────────────────────────── */
+.aura-usd-panel__title .aura-usd-refresh {
+    margin-left: auto;
+    padding: 2px 8px;
+}
+.aura-usd-panel__title .aura-usd-refresh .dashicons {
+    font-size: .9rem;
+    width: .9rem;
+    height: .9rem;
+    color: #555;
+}
+
+.aura-usd-table {
+    font-size: .82rem;
+}
+.aura-usd-table th.num,
+.aura-usd-table td.num {
+    text-align: right;
+}
+.aura-usd-table td.notes-cell {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aura-usd-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.aura-usd-badge--opening  { background: #cce5ff; color: #004085; }
+.aura-usd-badge--deposit  { background: #d4edda; color: #155724; }
+.aura-usd-badge--conversion { background: #fff3cd; color: #856404; }
+
+.aura-usd-mxn-link {
+    font-size: .75rem;
+    color: #3498db;
+    display: block;
+    margin-top: 2px;
+}
+
+.aura-usd-loading {
+    text-align: center;
+    color: #888;
+    padding: 24px !important;
+}
+
+.aura-usd-history-footer {
+    border-top: 2px solid #e0e0e0;
+    padding: 12px 0 0;
+    margin-top: 12px;
+    font-size: .9rem;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+#usd-footer-balance {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #27ae60;
+}

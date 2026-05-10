@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 ![Logo AURA](image/logo-aura.png)
 
@@ -10784,119 +10784,16 @@ add_action('wp_ajax_aura_get_dashboard_stats', ['Aura_Main_Dashboard', 'ajax_get
 
 ---
 
-### **7. Checklist de Implementación**
+## Estandar de Tablas — DataTables Responsive
 
-- [ ] Crear archivo `templates/main-dashboard.php` con estructura HTML
-- [ ] Crear archivo `assets/css/main-dashboard.css` con estilos CSS
-- [ ] Crear archivo `assets/js/main-dashboard.js` con JavaScript
-- [ ] Crear clase `Aura_Main_Dashboard` en `modules/core/`
-- [ ] Implementar todos los métodos de obtención de datos
-- [ ] Agregar AJAX endpoint para refresh de stats
-- [ ] Probar con diferentes roles de usuario
-- [ ] Validar responsive en móvil, tablet y desktop
-- [ ] Optimizar queries SQL para performance
-- [ ] Agregar caché de datos (Transients API)
-- [ ] Testing con 0 módulos activos, 1 módulo, todos los módulos
-- [ ] Validar permisos y visibilidad por rol
-- [ ] Documentar código con PHPDoc
-- [ ] Crear variantes para modo oscuro (WP Dark Mode)
-- [ ] Testing de accesibilidad (WCAG AA)
+Este modulo aplica el **Estandar de Tablas DataTables Responsive** definido en `PRD.md seccion 5.6`. Los puntos obligatorios son:
 
----
+- **CDN requerido:** DataTables 2.2.2 (core) + Responsive 3.0.4 — ambos CSS y JS, encolados como dependencias encadenadas.
+- **`responsive: true`** en la instancia de DataTable (requiere que el plugin Responsive este cargado).
+- **`dom: '<"aura-dt-top"li>rt<"aura-dt-bottom"p>'`** — layout estandar con contador arriba y paginacion abajo.
+- **`searching: false`** — filtros propios del modulo reemplazan la busqueda nativa de DataTables.
+- **`responsivePriority`** en columnas clave: ID → 10000, nombre/entidad principal → 1, acciones → 1.
+- **CSS dashicons** para el boton expandir/colapsar en movil (f344 azul cerrado / f343 gris abierto).
+- **Idioma unificado:** `info: '_TOTAL_ {entidades}'`, `lengthMenu: 'Mostrar _MENU_ por pagina'`, paginate: `"first":"«","last":"»","previous":"‹","next":"›"`.
 
-**Estado del Dashboard:** 🚀 **LISTO PARA WOW - Especificación Completa**  
-**Fecha:** 25 de febrero de 2026  
-**Versión:** Dashboard Principal v1.0  
-**Impacto Esperado:** ⭐⭐⭐⭐⭐
-
-
----
-
-## Sesión 17-03-2026 - Identidad de Organización y Tarjetas de Módulos
-
-### 🎯 Contexto de la Solicitud
-
-**Necesidad:** Mejorar el dashboard principal (`admin.php?page=aura-suite`) con tres cambios:
-1. Mostrar el logo y nombre de la organización sobre el saludo del usuario
-2. Unificar el estado visual de los módulos: solo Finanzas activo; el resto como "Próximamente" en el orden del roadmap
-3. Tarjetas más compactas en dispositivos móviles para reducir el scroll
-
----
-
-### ✅ Cambios Implementados
-
-#### 1. Bloque de Identidad de Organización (`templates/main-dashboard.php`)
-
-Se leen tres opciones de WordPress al inicio del template:
-
-```php
-$org_name     = get_option('aura_org_name',     get_bloginfo('name'));
-$org_logo_url = get_option('aura_org_logo_url', '');
-$org_tagline  = get_option('aura_org_tagline',  '');
-```
-
-Se renderiza un nuevo bloque `adp-org-identity` **antes** del `<h1>` de bienvenida:
-
-```html
-<div class="adp-org-identity">
-    <!-- Logo (solo si está configurado) -->
-    <img src="[logo_url]" alt="[org_name]" class="adp-org-logo"> <!-- condicional -->
-    <div class="adp-org-info">
-        <span class="adp-org-name">[org_name]</span>
-        <span class="adp-org-tagline">[org_tagline]</span> <!-- condicional -->
-    </div>
-</div>
-```
-
-**Degradación elegante:** Si no hay logo ni tagline configurados, solo aparece el nombre de la organización (o el nombre del sitio WordPress como fallback).
-
----
-
-#### 2. Tarjetas de Módulos Reordenadas (`templates/main-dashboard.php`)
-
-**Antes:** Vehículos, Electricidad y Formularios tenían tarjetas activas; 3 módulos tenían tarjetas "Próximamente" sin orden claro.
-
-**Después:** Finanzas es el único módulo ACTIVO. Los 6 módulos restantes usan las clases `adp-module-card--coming-soon adp-module-card--compact`, ordenados según `ordenDeModulos.md`:
-
-| # | Módulo | ETA |
-|---|--------|-----|
-| 1 | 💰 Finanzas | ✅ **Activo** |
-| 2 | 📦 Inventario | 📅 Semana 3 · Q1 2026 |
-| 3 | 🎓 Estudiantes | 📅 Semana 4 · Q2 2026 |
-| 4 | 🚗 Vehículos | 📅 Semana 5 · Q2 2026 |
-| 5 | ⚡ Electricidad | 📅 Semana 6 · Q2 2026 |
-| 6 | 📚 Biblioteca | 📅 Semana 6+ · Q3 2026 |
-| 7 | 📋 Formularios | 📅 Semana 6+ · Q3 2026 |
-
-Las tarjetas "Próximamente" ya no muestran listas de features, solo: icono + título + descripción breve + badge ETA.
-
----
-
-#### 3. CSS Nuevas Clases (`assets/css/admin-styles.css`)
-
-**Identidad de organización:** `.adp-org-identity`, `.adp-org-logo`, `.adp-org-info`, `.adp-org-name`, `.adp-org-tagline`
-
-**Tarjetas compactas:** `.adp-module-card--compact` — padding/icono/fuente reducidos para módulos "Próximamente"
-
-**Responsive móvil `@media (max-width: 600px)`:**
-- `.adp-modules-grid` → 2 columnas (grid 2×3 para las 6 tarjetas compactas)
-- `.adp-module-card--finance` → `grid-column: 1 / -1` (Finanzas ocupa todo el ancho)
-- `.adp-org-logo` → height: 42px; `.adp-org-tagline` → `display: none`
-
----
-
-### 📌 Opciones de WordPress Utilizadas
-
-| Opción WordPress | Uso | Fallback |
-|------------------|-----|----------|
-| `aura_org_name` | Nombre de la organización en el header | `get_bloginfo('name')` |
-| `aura_org_logo_url` | URL del logo (cargado desde medios de WordPress) | No se muestra imagen |
-| `aura_org_tagline` | Eslogan/descripción de la organización | No se muestra tagline |
-
-Estas opciones se configuran en **Ajustes → Aura Suite → Información de la Organización**.
-
----
-
-**Estado:** ✅ Implementado y validado (PHP sin errores de sintaxis)  
-**Fecha:** 17 de marzo de 2026  
-**Archivos modificados:** `templates/main-dashboard.php`, `assets/css/admin-styles.css`
+Ver `PRD.md` seccion `5.6` para el codigo completo de referencia.

@@ -1,0 +1,769 @@
+/**
+ * library-loans.css — Préstamos y Devoluciones (Fase 3)
+ * Aura Business Suite
+ *
+ * Reutiliza badges y modales de library-books.css.
+ * Solo estilos específicos de la vista de préstamos.
+ */
+
+/* ══════════════════════════════════════════════════════
+   DataTables Responsive — botón expand/collapse (PRD §5.6)
+══════════════════════════════════════════════════════ */
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+    position: relative !important;
+    padding-left: 36px !important;
+    cursor: pointer !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
+    content: "\f344" !important;
+    font-family: dashicons !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 50% !important;
+    background-color: #2271b1 !important;
+    color: #fff !important;
+    font-size: 16px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,.3) !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    z-index: 10 !important;
+    margin: 0 !important;
+    text-indent: 0 !important;
+    line-height: 1 !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::before {
+    content: "\f343" !important;
+    background-color: #646970 !important;
+}
+
+/* ── Barra de filtros (reutiliza base de books) ── */
+.aura-library-loans-list .aura-lib-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.aura-library-loans-list .aura-lib-filters-bar input[type="search"],
+.aura-library-loans-list .aura-lib-filters-bar select,
+.aura-library-loans-list .aura-lib-filters-bar input[type="date"] {
+    min-width: 140px;
+}
+
+/* ── Tooltip de imagen ampliada (PRD §5.6) ── */
+.aura-library-loans-list .aura-img-preview {
+    position: relative;
+    display: inline-block;
+    cursor: zoom-in;
+}
+.aura-library-loans-list .aura-img-preview .aura-thumb {
+    width: 32px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    display: block;
+}
+.aura-library-loans-list .aura-img-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    top: 50%;
+    left: calc(100% + 8px);
+    transform: translateY(-50%);
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    padding: 4px;
+}
+.aura-library-loans-list .aura-img-tooltip img {
+    width: 160px;
+    height: auto;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+}
+.aura-library-loans-list .aura-img-preview:hover .aura-img-tooltip {
+    display: block;
+}
+
+/* ── Columna Libro (con portada) ── */
+#aura-lib-loans-table .aura-lib-col-book {
+    max-width: 240px;
+}
+.aura-lib-loan-book-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.aura-lib-loan-book-cover {
+    flex-shrink: 0;
+}
+.aura-lib-loan-book-cover .aura-lib-cover-thumb,
+.aura-lib-loan-book-cover .aura-thumb {
+    width: 32px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: 3px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.15);
+    display: block;
+}
+.aura-lib-loan-book-cover .aura-lib-cover-placeholder-sm {
+    font-size: 28px;
+    color: #c5c5c5;
+    display: block;
+    width: 32px;
+    text-align: center;
+}
+.aura-lib-loan-book-info {
+    min-width: 0;
+}
+.aura-lib-loan-book-info strong {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+/* ── Badges (défault ya en library-books.css pero redeclaro por si carga sola) ── */
+.aura-lib-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    white-space: nowrap;
+}
+.aura-lib-badge-green  { background: #d1e8d0; color: #1a5c1a; }
+.aura-lib-badge-red    { background: #fde8e8; color: #8c1a1a; }
+.aura-lib-badge-orange { background: #fde8d0; color: #7a3a00; }
+.aura-lib-badge-blue   { background: #dbeafe; color: #1e40af; }
+.aura-lib-badge-gray   { background: #e9ecef; color: #555; }
+.aura-lib-badge-purple { background: #ede9fe; color: #5b21b6; }
+
+/* ── Botones de acción ── */
+.aura-lib-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.aura-lib-btn-action {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #c3c4c7;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s, border-color .15s;
+}
+.aura-lib-btn-action:hover {
+    background: #f0f0f0;
+    border-color: #0073aa;
+    color: #0073aa;
+}
+.aura-lib-btn-action.aura-lib-btn-success {
+    border-color: #00a32a;
+    color: #00a32a;
+}
+.aura-lib-btn-action.aura-lib-btn-success:hover {
+    background: #d1e8d0;
+}
+
+/* ── Modal base ── */
+.aura-lib-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.aura-lib-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+}
+.aura-lib-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.25);
+    min-width: 440px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1;
+}
+.aura-lib-modal-large {
+    max-width: 720px;
+}
+.aura-lib-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #ddd;
+    background: #f9f9f9;
+    border-radius: 6px 6px 0 0;
+}
+.aura-lib-modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+}
+.aura-lib-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 22px;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+}
+.aura-lib-modal-close:hover { color: #d63638; }
+.aura-lib-modal-body {
+    padding: 20px;
+}
+.aura-lib-modal-footer {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 16px 0 4px;
+    border-top: 1px solid #eee;
+    margin-top: 16px;
+}
+body.aura-lib-modal-open {
+    overflow: hidden;
+}
+
+/* ── Formulario filas ── */
+.aura-lib-form-row {
+    margin-bottom: 14px;
+}
+.aura-lib-form-row label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+.aura-lib-form-row .aura-lib-field-hint {
+    color: #007cba;
+    font-size: 12px;
+    margin-top: 3px;
+    display: block;
+}
+.aura-lib-form-row-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+@media (max-width: 500px) {
+    .aura-lib-form-row-2col { grid-template-columns: 1fr; }
+}
+
+/* ── Cuadro de info de préstamo (modal devolución) ── */
+.aura-lib-return-info-box {
+    background: #f8f9fa;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+}
+
+/* ── Panel de multa ── */
+.aura-lib-fine-panel {
+    background: #fff8e5;
+    border: 1px solid #f5c518;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-top: 12px;
+}
+.aura-lib-fine-panel h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: #7a5c00;
+}
+.aura-lib-fine-panel label {
+    cursor: pointer;
+    font-size: 13px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODAL NUEVO PRÉSTAMO — UX v2
+═══════════════════════════════════════════════════════ */
+
+/* ── Modal content (más ancho) ── */
+.aura-lib-loan-modal-content {
+    max-width: 660px;
+    width: 96%;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+/* ── Header con degradado ── */
+.aura-lib-loan-mhdr {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px 18px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #0073aa 100%);
+    color: #fff;
+    border-radius: 6px 6px 0 0;
+    flex-shrink: 0;
+}
+.aura-lib-loan-mhdr-icon {
+    font-size: 28px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.aura-lib-loan-mhdr-text {
+    flex: 1;
+    min-width: 0;
+}
+.aura-lib-loan-mhdr-text h2 {
+    margin: 0 0 2px;
+    font-size: 17px;
+    color: #fff;
+    font-weight: 700;
+}
+.aura-lib-loan-mhdr-text span {
+    font-size: 12px;
+    opacity: .8;
+    color: #e0f0ff;
+}
+.aura-lib-loan-mhdr-close {
+    background: rgba(255,255,255,.15) !important;
+    border-radius: 50% !important;
+    width: 30px !important;
+    height: 30px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    color: #fff !important;
+    font-size: 18px !important;
+    flex-shrink: 0;
+}
+.aura-lib-loan-mhdr-close:hover {
+    background: rgba(255,255,255,.3) !important;
+    color: #fff !important;
+}
+
+/* ── Cuerpo scrollable ── */
+.aura-lib-loan-mbody {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 !important;
+}
+.aura-lib-loan-mbody form {
+    padding: 0 24px 8px;
+}
+
+/* ── Sección / paso ── */
+.aura-lib-lstep {
+    padding: 18px 0 16px;
+    border-bottom: 1px solid #f0f0f1;
+}
+.aura-lib-lstep:last-child {
+    border-bottom: none;
+}
+.aura-lib-lstep-notes {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+/* ── Header del paso ── */
+.aura-lib-lstep-hdr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.aura-lib-lstep-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #0073aa;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.aura-lib-lstep-hdr strong {
+    font-size: 13px;
+    color: #1d2327;
+}
+.aura-lib-lstep-req {
+    font-size: 11px;
+    color: #d63638;
+    font-weight: 400;
+    margin-left: auto;
+}
+
+/* ── Chip de duración ── */
+.aura-lib-loan-duration-chip {
+    margin-left: auto;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.aura-lib-loan-duration-chip.aura-lib-chip-warn {
+    background: #fef3cd;
+    color: #7a5c00;
+}
+.aura-lib-loan-duration-chip.aura-lib-chip-error {
+    background: #fde8e8;
+    color: #8c1a1a;
+}
+
+/* ── Input de búsqueda estilizado ── */
+.aura-lib-lsearch-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.aura-lib-lsearch-icon {
+    position: absolute;
+    left: 10px;
+    color: #9ca3af;
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    pointer-events: none;
+    z-index: 1;
+}
+.aura-lib-lsearch-input {
+    width: 100%;
+    padding: 8px 12px 8px 34px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    font-size: 13px !important;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+    box-sizing: border-box;
+}
+.aura-lib-lsearch-input:focus {
+    border-color: #0073aa !important;
+    box-shadow: 0 0 0 2px rgba(0,115,170,.12) !important;
+    outline: none !important;
+}
+
+/* ── Tarjeta de selección (libro / lector) ── */
+.aura-lib-loan-selected-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f0fdf4;
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 8px;
+    animation: loanCardIn .2s ease;
+}
+@keyframes loanCardIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: none; }
+}
+.aura-lib-loan-card-cover {
+    width: 44px;
+    height: 58px;
+    border-radius: 4px;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.aura-lib-loan-card-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.aura-lib-loan-user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+.aura-lib-loan-card-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.aura-lib-loan-card-title {
+    font-size: 13px;
+    color: #1d2327;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+.aura-lib-loan-card-sub {
+    font-size: 11px;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* ── Badge de copias disponibles ── */
+.aura-lib-loan-card-avail {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.aura-lib-loan-card-avail.avail-ok    { background: #d1e8d0; color: #1a5c1a; }
+.aura-lib-loan-card-avail.avail-low   { background: #fef3cd; color: #7a5c00; }
+.aura-lib-loan-card-avail.avail-none  { background: #fde8e8; color: #8c1a1a; }
+
+/* ── Botón limpiar selección ── */
+.aura-lib-loan-clear-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color .15s, background .15s;
+}
+.aura-lib-loan-clear-btn:hover {
+    color: #ef4444;
+    background: #fde8e8;
+}
+
+/* ── Error inline de campo ── */
+.aura-lib-loan-field-error {
+    display: block;
+    font-size: 12px;
+    color: #d63638;
+    font-weight: 600;
+    margin-top: 6px;
+    animation: loanCardIn .2s ease;
+}
+
+/* ── Grid de fechas ── */
+.aura-lib-loan-dates-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.aura-lib-loan-date-field label {
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3c434a;
+    margin-bottom: 5px;
+}
+.aura-lib-loan-date-field input[type="date"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    box-sizing: border-box;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+}
+.aura-lib-loan-date-field input[type="date"]:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 2px rgba(0,115,170,.12);
+    outline: none;
+}
+
+/* ── Notas colapsables ── */
+.aura-lib-loan-notes-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0073aa;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color .15s;
+}
+.aura-lib-loan-notes-toggle:hover { color: #005177; }
+.aura-lib-notes-icon { font-size: 14px !important; width: 14px !important; height: 14px !important; }
+#aura-lib-loan-notes-wrap textarea {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 8px 10px;
+    resize: vertical;
+    min-height: 60px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ── Error general del modal ── */
+.aura-lib-loan-modal-error {
+    background: #fde8e8;
+    border: 1px solid #f89898;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #8c1a1a;
+    font-weight: 600;
+    margin-top: 8px;
+    animation: loanCardIn .2s ease;
+}
+
+/* ── Footer pegajoso del modal ── */
+.aura-lib-loan-mfooter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 24px;
+    border-top: 1px solid #e9ecef;
+    background: #f9f9f9;
+    border-radius: 0 0 6px 6px;
+    flex-shrink: 0;
+}
+.aura-lib-loan-save-btn {
+    background: #0073aa !important;
+    border-color: #005a87 !important;
+    min-width: 170px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background .15s, transform .1s;
+}
+.aura-lib-loan-save-btn:hover { background: #005a87 !important; }
+.aura-lib-loan-save-btn:active { transform: scale(.97); }
+.aura-lib-loan-save-btn[disabled] {
+    opacity: .7;
+    cursor: not-allowed;
+}
+
+/* ── jQuery UI autocomplete (estilo mejorado) ── */
+.aura-lib-loan-modal-content .ui-autocomplete {
+    max-height: 220px;
+    overflow-y: auto;
+    border-radius: 6px !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12) !important;
+    font-size: 13px;
+    z-index: 200001 !important;
+}
+.aura-lib-loan-modal-content .ui-menu-item-wrapper {
+    padding: 8px 12px !important;
+}
+.aura-lib-loan-modal-content .ui-menu-item-wrapper.ui-state-active {
+    background: #e8f4f8 !important;
+    color: #1d2327 !important;
+    border: none !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+    .aura-lib-loan-modal-content { border-radius: 0; max-height: 100vh; }
+    .aura-lib-loan-dates-grid { grid-template-columns: 1fr; }
+    .aura-lib-loan-mhdr { padding: 14px 16px; }
+    .aura-lib-loan-mbody form { padding: 0 16px 8px; }
+    .aura-lib-loan-mfooter { padding: 12px 16px; }
+    .aura-lib-loan-save-btn { min-width: unset; flex: 1; }
+}
+
+/* ── Tabla de detalle ── */
+.aura-lib-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.aura-lib-detail-table th,
+.aura-lib-detail-table td {
+    padding: 8px 12px;
+    border: 1px solid #e1e1e1;
+    vertical-align: top;
+}
+.aura-lib-detail-table th {
+    background: #f9f9f9;
+    font-weight: 600;
+    width: 35%;
+}
+
+/* ── Paginación ── */
+.aura-lib-pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.aura-lib-count {
+    color: #666;
+    font-size: 13px;
+}
+.aura-lib-page-btns {
+    display: flex;
+    gap: 4px;
+}
+.aura-lib-page-btn.button-primary {
+    pointer-events: none;
+}
+
+/* ── Autocomplete jQuery UI ── */
+.ui-autocomplete {
+    z-index: 100070 !important;
+    max-height: 220px;
+    overflow-y: auto;
+    font-size: 13px;
+}
+.ui-menu-item-wrapper {
+    padding: 6px 12px !important;
+}

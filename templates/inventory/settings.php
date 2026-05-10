@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Template — Configuración del Módulo de Inventario
  *

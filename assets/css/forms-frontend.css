@@ -1,0 +1,831 @@
+/**
+ * forms-frontend.css — Módulo de Formularios y Encuestas
+ * Estilos del frontend público: renderizado de formularios, portal del estudiante.
+ *
+ * @package AuraBusinessSuite
+ */
+
+/* ─── Variables ─────────────────────────────────────────────────────────────── */
+:root {
+    --af-primary:      #2563eb;
+    --af-primary-dark: #1d4ed8;
+    --af-success:      #16a34a;
+    --af-danger:       #dc2626;
+    --af-warning:      #d97706;
+    --af-bg:           #ffffff;
+    --af-bg-soft:      #f8fafc;
+    --af-border:       #d1d5db;
+    --af-text:         #111827;
+    --af-text-muted:   #6b7280;
+    --af-radius:       6px;
+    --af-shadow:       0 1px 3px rgba(0,0,0,.08);
+    --af-focus:        0 0 0 3px rgba(37,99,235,.25);
+}
+
+/* ─── Wrapper del formulario ────────────────────────────────────────────────── */
+.aura-form-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    font-family: inherit;
+    color: var(--af-text);
+}
+
+/* ─── Cabecera ──────────────────────────────────────────────────────────────── */
+.aura-form-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.aura-form-logo {
+    max-width: 160px;
+    max-height: 80px;
+    object-fit: contain;
+    margin-bottom: 12px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.aura-form-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: var(--af-text);
+}
+
+.aura-form-company {
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--af-text-muted);
+    margin: 0 0 4px;
+}
+
+.aura-form-description {
+    font-size: .95rem;
+    color: var(--af-text-muted);
+    line-height: 1.6;
+}
+
+/* ─── Contenedor de mensajes ────────────────────────────────────────────────── */
+.aura-form-messages { margin-bottom: 16px; }
+.aura-form-messages:empty { display: none; }
+
+/* ─── Notices (estados del formulario) ──────────────────────────────────────── */
+.aura-form-notice {
+    padding: 14px 18px;
+    border-radius: var(--af-radius);
+    font-size: .9rem;
+    line-height: 1.5;
+    border: 1px solid transparent;
+}
+
+.aura-form-notice a { color: inherit; text-decoration: underline; }
+
+.aura-form-notice--error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+.aura-form-notice--closed {
+    background: #f9fafb;
+    border-color: var(--af-border);
+    color: var(--af-text-muted);
+}
+
+.aura-form-notice--login {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+
+/* ─── Formulario ────────────────────────────────────────────────────────────── */
+.aura-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ─── Campo genérico ────────────────────────────────────────────────────────── */
+.aura-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.aura-field-label,
+.aura-field fieldset legend {
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--af-text);
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.aura-required {
+    color: var(--af-danger);
+    margin-left: 2px;
+}
+
+.aura-field-desc {
+    font-size: .82rem;
+    color: var(--af-text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ─── Inputs base ─────────────────────────────────────────────────────────── */
+.aura-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: .9rem;
+    line-height: 1.5;
+    color: var(--af-text);
+    background: var(--af-bg);
+    border: 1px solid var(--af-border);
+    border-radius: var(--af-radius);
+    box-sizing: border-box;
+    transition: border-color .15s, box-shadow .15s;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.aura-input:focus {
+    outline: none;
+    border-color: var(--af-primary);
+    box-shadow: var(--af-focus);
+}
+
+.aura-input--error,
+.aura-input--error:focus {
+    border-color: var(--af-danger);
+    box-shadow: 0 0 0 3px rgba(220,38,38,.2);
+}
+
+.aura-input-error {
+    font-size: .8rem;
+    color: var(--af-danger);
+    margin-top: 2px;
+    display: block;
+}
+
+textarea.aura-input {
+    resize: vertical;
+    min-height: 100px;
+}
+
+select.aura-input {
+    background-color: var(--af-bg);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px 8px;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+select[multiple].aura-input {
+    background-image: none;
+    padding-right: 12px;
+    height: auto;
+    min-height: 100px;
+}
+
+/* ─── Radio y Checkbox ──────────────────────────────────────────────────────── */
+.aura-radio-group,
+.aura-checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.aura-radio-label,
+.aura-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: .9rem;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+.aura-radio-label input:not(.aura-other-text-input),
+.aura-checkbox-label input:not(.aura-other-text-input) {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    cursor: pointer;
+    accent-color: var(--af-primary);
+}
+
+/* ─── Opción "Otro" (radio / select) ──────────────────────────────────────── */
+.aura-radio-other {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.aura-other-text-input {
+    flex: 1;
+    min-width: 150px;
+    width: auto;
+    padding: 4px 8px;
+    font-size: .88rem;
+    border: 1px solid var(--af-border);
+    border-radius: 6px;
+    background: var(--af-bg);
+    color: var(--af-text);
+}
+.aura-other-text-input:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+.aura-field-select .aura-other-text-input {
+    margin-top: 8px;
+    width: 100%;
+}
+
+/* ─── Escala NPS/Likert ─────────────────────────────────────────────────────── */
+.aura-scale-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.aura-scale-hint {
+    font-size: .78rem;
+    color: var(--af-text-muted);
+    white-space: nowrap;
+}
+
+.aura-scale-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.aura-scale-btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 6px;
+    border: 1px solid var(--af-border);
+    border-radius: var(--af-radius);
+    background: var(--af-bg);
+    color: var(--af-text);
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-scale-btn:hover {
+    border-color: var(--af-primary);
+    color: var(--af-primary);
+}
+
+.aura-scale-btn.is-selected {
+    background: var(--af-primary);
+    border-color: var(--af-primary);
+    color: #fff;
+}
+
+/* ─── Fecha de nacimiento ───────────────────────────────────────────────────── */
+.aura-birthdate-age {
+    font-size: .82rem;
+    color: var(--af-text-muted);
+    margin: 0;
+    font-style: italic;
+}
+
+/* ─── Archivo ───────────────────────────────────────────────────────────────── */
+.aura-file-hint {
+    font-size: .78rem;
+    color: var(--af-text-muted);
+    margin: 2px 0 0;
+}
+
+/* ─── Sección / Separador ───────────────────────────────────────────────────── */
+.aura-field-section-title {
+    border-top: 2px solid var(--af-primary);
+    padding-top: 16px;
+    margin-top: 8px;
+}
+
+.aura-section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: var(--af-text);
+}
+
+.aura-section-desc {
+    font-size: .88rem;
+    color: var(--af-text-muted);
+    margin: 0;
+}
+
+/* ─── Párrafo de texto ──────────────────────────────────────────────────────── */
+.aura-field-paragraph .aura-paragraph-text {
+    font-size: .9rem;
+    line-height: 1.6;
+    color: var(--af-text-muted);
+    padding: 12px 14px;
+    background: var(--af-bg-soft);
+    border-radius: var(--af-radius);
+    border-left: 3px solid var(--af-border);
+}
+
+/* ─── Imagen decorativa ─────────────────────────────────────────────────────── */
+.aura-field-image-img {
+    max-width: 100%;
+    border-radius: var(--af-radius);
+    display: block;
+}
+
+.aura-field-image-caption {
+    font-size: .82rem;
+    color: var(--af-text-muted);
+    margin: 6px 0 0;
+}
+
+/* ─── Descarga de documento ─────────────────────────────────────────────────── */
+.aura-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: var(--af-bg-soft);
+    border: 1px solid var(--af-border);
+    border-radius: var(--af-radius);
+    color: var(--af-primary);
+    font-size: .9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .15s, border-color .15s;
+}
+
+.aura-download-btn:hover {
+    background: #eff6ff;
+    border-color: var(--af-primary);
+    color: var(--af-primary-dark);
+}
+
+.aura-download-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* ─── Términos ──────────────────────────────────────────────────────────────── */
+.aura-terms-text {
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--af-text-muted);
+    padding: 12px 14px;
+    background: var(--af-bg-soft);
+    border: 1px solid var(--af-border);
+    border-radius: var(--af-radius);
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.aura-terms-radios { display: flex; gap: 14px; flex-wrap: wrap; }
+
+.aura-terms-agree  label { color: var(--af-success); font-weight: 600; }
+.aura-terms-disagree label { color: var(--af-danger); }
+
+.aura-terms-disagree-msg {
+    padding: 8px 14px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--af-radius);
+    font-size: .85rem;
+    color: #b91c1c;
+    margin-top: 6px;
+}
+
+/* ─── Botón de envío ────────────────────────────────────────────────────────── */
+.aura-form-submit-wrap {
+    margin-top: 8px;
+}
+
+.aura-form-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 32px;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;
+    background: var(--af-primary);
+    border: none;
+    border-radius: var(--af-radius);
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    min-width: 140px;
+}
+
+.aura-form-submit-btn:hover {
+    background: var(--af-primary-dark);
+}
+
+.aura-form-submit-btn:active {
+    transform: scale(0.98);
+}
+
+.aura-form-submit-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* =============================================================================
+   PÁGINA PÚBLICA STANDALONE — sin menú ni layout del tema
+   /formulario/{slug}/  ·  light/dark mode
+============================================================================= */
+
+/* ─── Design tokens ─────────────────────────────────────────────────────────── */
+:root,
+[data-afs-theme="light"] {
+    --afs-bg:          #f8fafc;
+    --afs-surface:     #ffffff;
+    --afs-border:      rgba(0, 0, 0, .07);
+    --afs-text:        #0f172a;
+    --afs-muted:       #64748b;
+    --afs-blob-a:      rgba(37, 99, 235, .13);
+    --afs-blob-b:      rgba(139, 92, 246, .10);
+    --afs-toggle-bg:   #e2e8f0;
+    --afs-toggle-icon: #475569;
+    --afs-footer-sep:  rgba(0, 0, 0, .06);
+}
+[data-afs-theme="dark"] {
+    --afs-bg:          #0b1120;
+    --afs-surface:     #141c2f;
+    --afs-border:      rgba(255, 255, 255, .08);
+    --afs-text:        #f1f5f9;
+    --afs-muted:       #94a3b8;
+    --afs-blob-a:      rgba(37, 99, 235, .22);
+    --afs-blob-b:      rgba(139, 92, 246, .18);
+    --afs-toggle-bg:   #1e293b;
+    --afs-toggle-icon: #cbd5e1;
+    --afs-footer-sep:  rgba(255, 255, 255, .06);
+    /* Tokens del formulario — contexto de página dark */
+    --af-bg:           #141c2f;
+    --af-bg-soft:      #1c2742;
+    --af-border:       rgba(255, 255, 255, .10);
+    --af-text:         #f1f5f9;
+    --af-text-muted:   #94a3b8;
+}
+
+/* ─── Body ──────────────────────────────────────────────────────────────────── */
+body.aura-form-standalone {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: var(--afs-bg);
+    color: var(--afs-text);
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Transiciones suaves al cambiar tema */
+body.aura-form-standalone,
+body.aura-form-standalone *,
+body.aura-form-standalone *::before,
+body.aura-form-standalone *::after {
+    transition-property: background, background-color, color, border-color, box-shadow;
+    transition-duration: .25s;
+    transition-timing-function: ease;
+}
+
+/* Ocultar cualquier elemento del tema inyectado */
+body.aura-form-standalone .site-header,
+body.aura-form-standalone header.site-header,
+body.aura-form-standalone .main-navigation,
+body.aura-form-standalone .nav-menu,
+body.aura-form-standalone #site-navigation,
+body.aura-form-standalone .widget-area,
+body.aura-form-standalone .site-footer,
+body.aura-form-standalone footer.site-footer,
+body.aura-form-standalone #colophon,
+body.aura-form-standalone #wpadminbar {
+    display: none !important;
+}
+
+/* ─── Blobs decorativos ─────────────────────────────────────────────────────── */
+.afs-bg-blobs {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.afs-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .7;
+}
+.afs-blob-1 {
+    width: 540px;
+    height: 540px;
+    top: -160px;
+    right: -140px;
+    background: var(--afs-blob-a);
+}
+.afs-blob-2 {
+    width: 420px;
+    height: 420px;
+    bottom: -80px;
+    left: -110px;
+    background: var(--afs-blob-b);
+}
+
+/* ─── Main ──────────────────────────────────────────────────────────────────── */
+.afs-main {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    padding: 56px 16px 44px;
+}
+
+/* Card contenedor del formulario */
+.afs-container {
+    max-width: 640px;
+    margin: 0 auto;
+    background: var(--afs-surface);
+    border: 1px solid var(--afs-border);
+    border-radius: 20px;
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, .05),
+        0 8px 40px rgba(0, 0, 0, .09);
+    padding: 44px 44px 40px;
+}
+
+/* ─── Footer mínimo ─────────────────────────────────────────────────────────── */
+.afs-footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 24px;
+    border-top: 1px solid var(--afs-footer-sep);
+}
+.afs-footer-brand {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--afs-muted);
+    text-decoration: none;
+    letter-spacing: .3px;
+}
+.afs-footer-brand:hover {
+    color: var(--afs-brand, #2563eb);
+}
+
+/* ─── Botón dark / light ────────────────────────────────────────────────────── */
+.afs-theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 9999;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--afs-border);
+    background: var(--afs-surface);
+    color: var(--afs-toggle-icon);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+}
+.afs-theme-toggle:hover {
+    color: var(--afs-brand, #2563eb);
+}
+.afs-theme-toggle:focus-visible {
+    outline: 2px solid var(--afs-brand, #2563eb);
+    outline-offset: 2px;
+}
+
+/* Visibilidad de iconos según tema */
+.afs-icon-sun  { display: none; }
+.afs-icon-moon { display: block; }
+[data-afs-theme="dark"] .afs-icon-sun  { display: block; }
+[data-afs-theme="dark"] .afs-icon-moon { display: none; }
+
+/* ─── Formulario dentro del card ────────────────────────────────────────────── */
+body.aura-form-standalone .aura-form-wrap {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+body.aura-form-standalone .aura-form-header {
+    margin-bottom: 28px;
+}
+body.aura-form-standalone .aura-form-title {
+    font-size: clamp(1.35rem, 4vw, 1.8rem);
+    font-weight: 800;
+    letter-spacing: -.4px;
+    color: var(--af-text);
+    margin: 0 0 6px;
+    line-height: 1.2;
+}
+body.aura-form-standalone .aura-form-company {
+    color: var(--af-text-muted);
+}
+body.aura-form-standalone .aura-form-description {
+    color: var(--af-text-muted);
+    font-size: .9rem;
+    line-height: 1.65;
+    margin: 0;
+}
+
+/* Labels y descripciones de campo */
+body.aura-form-standalone .aura-field-label,
+body.aura-form-standalone .aura-field fieldset legend {
+    color: var(--af-text);
+}
+body.aura-form-standalone .aura-field-desc,
+body.aura-form-standalone .aura-file-hint,
+body.aura-form-standalone .aura-birthdate-age,
+body.aura-form-standalone .aura-scale-hint,
+body.aura-form-standalone .aura-section-desc {
+    color: var(--af-text-muted);
+}
+body.aura-form-standalone .aura-section-title {
+    color: var(--af-text);
+}
+
+/* Inputs, selects, textareas */
+body.aura-form-standalone .aura-input {
+    background: var(--af-bg);
+    color: var(--af-text);
+    border-color: var(--af-border);
+}
+body.aura-form-standalone .aura-input::placeholder {
+    color: var(--af-text-muted);
+    opacity: 1;
+}
+body.aura-form-standalone select.aura-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* Botones de escala */
+body.aura-form-standalone .aura-scale-btn {
+    background: var(--af-bg);
+    color: var(--af-text);
+    border-color: var(--af-border);
+}
+body.aura-form-standalone .aura-scale-btn.is-selected {
+    background: var(--af-primary) !important;
+    border-color: var(--af-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+
+/* Radio y checkbox labels */
+body.aura-form-standalone .aura-radio-label,
+body.aura-form-standalone .aura-checkbox-label {
+    color: var(--af-text);
+}
+
+/* Bloque párrafo */
+body.aura-form-standalone .aura-paragraph-text {
+    background: var(--af-bg-soft);
+    border-left-color: var(--af-border);
+    color: var(--af-text-muted);
+}
+
+/* Términos */
+body.aura-form-standalone .aura-terms-text {
+    background: var(--af-bg-soft);
+    border-color: var(--af-border);
+    color: var(--af-text-muted);
+}
+
+/* Botón descarga */
+body.aura-form-standalone .aura-download-btn {
+    background: var(--af-bg-soft);
+    border-color: var(--af-border);
+}
+
+/* ─── Dark mode — notices y elementos de color fijo ─────────────────────────── */
+[data-afs-theme="dark"] body.aura-form-standalone .aura-form-notice--error {
+    background: rgba(220, 38, 38, .12);
+    border-color: rgba(220, 38, 38, .30);
+    color: #fca5a5;
+}
+[data-afs-theme="dark"] body.aura-form-standalone .aura-form-notice--login {
+    background: rgba(37, 99, 235, .14);
+    border-color: rgba(37, 99, 235, .30);
+    color: #93c5fd;
+}
+[data-afs-theme="dark"] body.aura-form-standalone .aura-form-notice--closed {
+    background: rgba(255, 255, 255, .04);
+}
+[data-afs-theme="dark"] body.aura-form-standalone .aura-terms-disagree-msg {
+    background: rgba(220, 38, 38, .12);
+    border-color: rgba(220, 38, 38, .30);
+    color: #fca5a5;
+}
+[data-afs-theme="dark"] body.aura-form-standalone .aura-form-success {
+    background: rgba(22, 163, 74, .12);
+    border-color: rgba(22, 163, 74, .30);
+    color: #86efac;
+}
+[data-afs-theme="dark"] body.aura-form-standalone .aura-terms-agree label {
+    color: #4ade80;
+}
+[data-afs-theme="dark"] body.aura-form-standalone .aura-download-btn:hover {
+    background: rgba(37, 99, 235, .14);
+    border-color: var(--af-primary);
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .afs-main { padding: 28px 12px 32px; }
+    .afs-container { padding: 28px 20px 24px; border-radius: 16px; }
+    .afs-blob-1 { width: 280px; height: 280px; }
+    .afs-blob-2 { width: 220px; height: 220px; }
+}
+
+/* ─── Confirmación de envío ─────────────────────────────────────────────────── */
+.aura-form-success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 24px;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: var(--af-radius);
+    color: #166534;
+    text-align: center;
+}
+
+.aura-form-success__icon svg {
+    stroke: var(--af-success);
+}
+
+.aura-form-success__form-name {
+    font-size: .82rem;
+    color: var(--af-text-muted);
+    margin: 0;
+    font-style: italic;
+}
+
+.aura-form-success__message {
+    font-size: 1rem;
+    line-height: 1.6;
+    font-weight: 600;
+}
+
+/* ─── Portal del estudiante ─────────────────────────────────────────────────── */
+.aura-form-portal {
+    padding: 16px 0;
+}
+
+/* ─── URL amigable (página completa) ────────────────────────────────────────── */
+.aura-form-page {
+    padding: 40px 20px;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+    .aura-scale-buttons {
+        gap: 4px;
+    }
+
+    .aura-scale-btn {
+        min-width: 36px;
+        height: 36px;
+        font-size: .82rem;
+    }
+
+    .aura-form-submit-btn {
+        width: 100%;
+    }
+
+    .aura-terms-radios {
+        flex-direction: column;
+    }
+}
+

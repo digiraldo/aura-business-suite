@@ -47,7 +47,7 @@ if ( $preequip_id > 0 ) {
 }
 
 // Listas
-$users   = get_users( [ 'orderby' => 'display_name', 'fields' => [ 'ID', 'display_name' ] ] );
+$users   = Aura_Roles_Manager::get_aura_users( [ 'fields' => [ 'ID', 'display_name' ] ] );
 $equipment_list = $wpdb->get_results(
     "SELECT id, name, brand, internal_code FROM {$wpdb->prefix}aura_inventory_equipment WHERE deleted_at IS NULL ORDER BY name ASC"
 ) ?: [];
@@ -189,6 +189,103 @@ $page_title = $is_edit ? __( 'Editar Mantenimiento', 'aura-suite' ) : __( 'Regis
                                 </td>
                             </tr>
                         </table>
+
+                        <!-- ── Panel informativo: instrucciones + último mantenimiento ─ -->
+                        <div id="maint-instructions-panel" style="display:<?php
+                            // Pre-seleccionado: mostrar si hay instrucciones o mantenimiento previo
+                            $show_panel = false;
+                            $preequip_instructions = '';
+                            $prev_maint_data       = null;
+                            if ( $preequip_id > 0 ) {
+                                global $wpdb;
+                                $preequip_instructions = $wpdb->get_var( $wpdb->prepare(
+                                    "SELECT maintenance_instructions FROM {$wpdb->prefix}aura_inventory_equipment WHERE id = %d AND deleted_at IS NULL",
+                                    $preequip_id
+                                ) );
+                                $prev_maint_data = $wpdb->get_row( $wpdb->prepare(
+                                    "SELECT id, maintenance_date, type, description, performed_by, workshop_name, post_status
+                                     FROM {$wpdb->prefix}aura_inventory_maintenance
+                                     WHERE equipment_id = %d
+                                     ORDER BY maintenance_date DESC, id DESC
+                                     LIMIT 1",
+                                    $preequip_id
+                                ) );
+                                $show_panel = ! empty( $preequip_instructions ) || ! empty( $prev_maint_data );
+                            }
+                            echo $show_panel ? 'block' : 'none';
+                        ?>">
+
+                            <!-- Bloque A: Instrucciones qué hacer -->
+                            <div id="maint-instructions-block"
+                                 style="display:<?php echo ! empty( $preequip_instructions ) ? 'block' : 'none'; ?>;
+                                        background:#f0f6fc;
+                                        border-left:4px solid #2271b1;
+                                        border-radius:0 6px 6px 0;
+                                        padding:14px 16px;
+                                        margin-top:14px;">
+                                <p style="margin:0 0 8px;font-weight:600;font-size:13px;color:#1d2327;">
+                                    <span class="dashicons dashicons-clipboard" style="color:#2271b1;vertical-align:middle;"></span>
+                                    <?php _e( '¿Qué debe hacerse en este mantenimiento?', 'aura-suite' ); ?>
+                                </p>
+                                <pre id="maint-instructions-text"
+                                     style="margin:0;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;
+                                            font-family:inherit;color:#1d2327;background:transparent;border:0;padding:0;"><?php
+                                    echo esc_html( $preequip_instructions ?? '' );
+                                ?></pre>
+                            </div>
+
+                            <!-- Bloque B: Último mantenimiento anterior -->
+                            <div id="maint-prev-block"
+                                 style="display:<?php echo ! empty( $prev_maint_data ) ? 'block' : 'none'; ?>;
+                                        background:#f6f7f7;
+                                        border-left:4px solid #8c8f94;
+                                        border-radius:0 6px 6px 0;
+                                        padding:14px 16px;
+                                        margin-top:10px;">
+                                <p style="margin:0 0 6px;font-weight:600;font-size:13px;color:#1d2327;">
+                                    <span class="dashicons dashicons-clock" style="color:#8c8f94;vertical-align:middle;"></span>
+                                    <?php _e( 'Último mantenimiento registrado', 'aura-suite' ); ?>
+                                </p>
+                                <div id="maint-prev-content" style="font-size:12px;color:#50575e;">
+                                    <?php if ( $prev_maint_data ) :
+                                        $type_labels_pm = [
+                                            'preventive'   => __( 'Preventivo',       'aura-suite' ),
+                                            'corrective'   => __( 'Correctivo',        'aura-suite' ),
+                                            'oil_change'   => __( 'Cambio de aceite',  'aura-suite' ),
+                                            'cleaning'     => __( 'Limpieza',          'aura-suite' ),
+                                            'inspection'   => __( 'Inspección',        'aura-suite' ),
+                                            'major_repair' => __( 'Reparación mayor',  'aura-suite' ),
+                                        ];
+                                        $ps_labels_pm = [
+                                            'operational'    => '✅ ' . __( 'Operacional',         'aura-suite' ),
+                                            'needs_followup' => '⚠️ ' . __( 'Requiere seguimiento','aura-suite' ),
+                                            'out_of_service' => '🔴 ' . __( 'Fuera de servicio',  'aura-suite' ),
+                                        ];
+                                    ?>
+                                    <table style="border-collapse:collapse;width:100%;">
+                                        <tr><td style="padding:2px 8px 2px 0;font-weight:600;"><?php _e( 'Fecha:', 'aura-suite' ); ?></td>
+                                            <td><?php echo esc_html( date_i18n( get_option('date_format'), strtotime( $prev_maint_data->maintenance_date ) ) ); ?></td></tr>
+                                        <tr><td style="padding:2px 8px 2px 0;font-weight:600;"><?php _e( 'Tipo:', 'aura-suite' ); ?></td>
+                                            <td><?php echo esc_html( $type_labels_pm[ $prev_maint_data->type ] ?? $prev_maint_data->type ); ?></td></tr>
+                                        <?php if ( $prev_maint_data->description ) : ?>
+                                        <tr><td style="padding:2px 8px 2px 0;font-weight:600;"><?php _e( 'Trabajo:', 'aura-suite' ); ?></td>
+                                            <td><?php echo nl2br( esc_html( $prev_maint_data->description ) ); ?></td></tr>
+                                        <?php endif; ?>
+                                        <?php if ( $prev_maint_data->performed_by === 'external' && $prev_maint_data->workshop_name ) : ?>
+                                        <tr><td style="padding:2px 8px 2px 0;font-weight:600;"><?php _e( 'Taller:', 'aura-suite' ); ?></td>
+                                            <td><?php echo esc_html( $prev_maint_data->workshop_name ); ?></td></tr>
+                                        <?php endif; ?>
+                                        <tr><td style="padding:2px 8px 2px 0;font-weight:600;"><?php _e( 'Estado:', 'aura-suite' ); ?></td>
+                                            <td><?php echo esc_html( $ps_labels_pm[ $prev_maint_data->post_status ] ?? $prev_maint_data->post_status ); ?></td></tr>
+                                    </table>
+                                    <?php else : ?>
+                                    <em><?php _e( 'Sin mantenimientos previos registrados.', 'aura-suite' ); ?></em>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                        </div><!-- #maint-instructions-panel -->
+
                     </div>
                 </div><!-- postbox: equipo y fecha -->
 
@@ -462,6 +559,8 @@ $_maint_form_js = wp_json_encode( [
     'isEdit'        => $is_edit,
     'listUrl'       => admin_url( 'admin.php?page=aura-inventory-maintenance' ),
     'preequipPhoto' => isset( $preequip_photo_url ) ? $preequip_photo_url : '',
+    'preequipInstructions' => isset( $preequip_instructions ) ? (string) $preequip_instructions : '',
+    'preequipPrevMaint'    => isset( $prev_maint_data ) ? $prev_maint_data : null,
     'currency'    => get_option( 'aura_currency_symbol', '$' ),
     'txt' => [
         'saving'   => __( 'Guardando…',                             'aura-suite' ),
@@ -470,6 +569,32 @@ $_maint_form_js = wp_json_encode( [
         'error'    => __( 'Error al guardar el mantenimiento.',     'aura-suite' ),
         'required_equip' => __( 'Selecciona un equipo.',            'aura-suite' ),
         'required_date'  => __( 'La fecha es obligatoria.',         'aura-suite' ),
+        'instructions_title' => __( '¿Qué debe hacerse en este mantenimiento?', 'aura-suite' ),
+        'prev_maint_title'   => __( 'Último mantenimiento registrado', 'aura-suite' ),
+        'no_prev_maint'      => __( 'Sin mantenimientos previos registrados.', 'aura-suite' ),
+        'type_labels' => [
+            'preventive'   => __( 'Preventivo',       'aura-suite' ),
+            'corrective'   => __( 'Correctivo',        'aura-suite' ),
+            'oil_change'   => __( 'Cambio de aceite',  'aura-suite' ),
+            'cleaning'     => __( 'Limpieza',          'aura-suite' ),
+            'inspection'   => __( 'Inspección',        'aura-suite' ),
+            'major_repair' => __( 'Reparación mayor',  'aura-suite' ),
+        ],
+        'ps_labels' => [
+            'operational'    => __( 'Operacional',           'aura-suite' ),
+            'needs_followup' => __( 'Requiere seguimiento',  'aura-suite' ),
+            'out_of_service' => __( 'Fuera de servicio',     'aura-suite' ),
+        ],
+        'ps_icons' => [
+            'operational'    => '✅',
+            'needs_followup' => '⚠️',
+            'out_of_service' => '🔴',
+        ],
+        'date_label'        => __( 'Fecha:',   'aura-suite' ),
+        'type_label'        => __( 'Tipo:',    'aura-suite' ),
+        'work_label'        => __( 'Trabajo:', 'aura-suite' ),
+        'workshop_label'    => __( 'Taller:',  'aura-suite' ),
+        'status_label'      => __( 'Estado:',  'aura-suite' ),
     ],
 ] );
 ?>

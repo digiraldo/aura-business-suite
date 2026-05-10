@@ -44,7 +44,7 @@ class Aura_Electricity_CPT {
             ),
             'public'       => false,
             'show_ui'      => true,
-            'show_in_menu' => 'aura-suite',
+            'show_in_menu' => 'aura-electricity',
             'show_in_rest' => true,
             'supports'     => array('title', 'editor', 'author'),
             'menu_icon'    => 'dashicons-lightbulb',
@@ -219,7 +219,50 @@ class Aura_Electricity_CPT {
      * Agregar páginas de menú
      */
     public static function add_menu_pages() {
-        // Módulo Electricidad pendiente de implementar como módulo independiente.
-        // Las entradas de menú se habilitarán cuando se implemente el módulo completo.
+        if ( ! Aura_Roles_Manager::user_can_view_module( 'electricity' ) && ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+
+        // Menú principal
+        add_menu_page(
+            __( 'Electricidad — AURA', 'aura-suite' ),
+            __( 'Electricidad', 'aura-suite' ),
+            'read',
+            'aura-electricity',
+            array( 'Aura_Electricity_Dashboard', 'render' ),
+            'dashicons-lightbulb',
+            3.8
+        );
+
+        // Dashboard (entrada raíz del menú)
+        add_submenu_page(
+            'aura-electricity',
+            __( 'Dashboard Electricidad', 'aura-suite' ),
+            __( 'Dashboard', 'aura-suite' ),
+            'read',
+            'aura-electricity',
+            array( 'Aura_Electricity_Dashboard', 'render' )
+        );
+
+        // Lecturas (lista CPT nativa)
+        if ( current_user_can( 'aura_electric_reading_create' ) || current_user_can( 'manage_options' ) ) {
+            add_submenu_page(
+                'aura-electricity',
+                __( 'Lecturas', 'aura-suite' ),
+                __( 'Lecturas', 'aura-suite' ),
+                'read',
+                'edit.php?post_type=aura_electric_reading',
+                null
+            );
+
+            add_submenu_page(
+                'aura-electricity',
+                __( 'Nueva Lectura', 'aura-suite' ),
+                __( '+ Nueva Lectura', 'aura-suite' ),
+                'aura_electric_reading_create',
+                'post-new.php?post_type=aura_electric_reading',
+                null
+            );
+        }
     }
 }

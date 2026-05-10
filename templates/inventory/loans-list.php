@@ -98,36 +98,34 @@ $nonce        = wp_create_nonce( 'aura_inventory_nonce' );
         </div>
     </div>
 
-    <!-- Tabla de préstamos ───────────────────────────────────── -->
-    <div id="js-loans-table-wrap" class="aura-loan-table-wrap">
-        <div class="aura-loan-loading" id="js-loans-loading">
-            <span class="spinner is-active" style="float:none;margin:0 6px 0 0;"></span>
-            <?php _e( 'Cargando préstamos…', 'aura-suite' ); ?>
-        </div>
-        <table class="wp-list-table widefat fixed striped aura-loan-table" id="js-loans-table" style="display:none;">
-            <thead>
-                <tr>
-                    <th class="col-photo" style="width:58px;"><?php _e( 'Foto', 'aura-suite' ); ?></th>
-                    <th class="col-equip"><?php _e( 'Equipo', 'aura-suite' ); ?></th>
-                    <th class="col-borrower"><?php _e( 'Prestatario', 'aura-suite' ); ?></th>
-                    <th class="col-project"><?php _e( 'Proyecto / Motivo', 'aura-suite' ); ?></th>
-                    <th class="col-loan-date"><?php _e( 'Fecha salida', 'aura-suite' ); ?></th>
-                    <th class="col-return-date"><?php _e( 'Devolución esperada', 'aura-suite' ); ?></th>
-                    <th class="col-status"><?php _e( 'Estado', 'aura-suite' ); ?></th>
-                    <th class="col-actions"><?php _e( 'Acciones', 'aura-suite' ); ?></th>
-                </tr>
-            </thead>
-            <tbody id="js-loans-tbody">
-            </tbody>
-        </table>
-        <div id="js-loans-empty" class="aura-loan-empty" style="display:none;">
-            <?php _e( 'No se encontraron préstamos con los filtros aplicados.', 'aura-suite' ); ?>
-        </div>
-        <!-- Paginación -->
-        <div class="aura-loan-pagination" id="js-loans-pagination"></div>
-    </div>
+    <!-- Tabla de préstamos — DataTables la inicializa vía JS -->
+    <table id="js-loans-table" class="wp-list-table widefat aura-loan-table">
+        <thead>
+            <tr>
+                <th><?php _e( 'Foto',               'aura-suite' ); ?></th>
+                <th><?php _e( 'Equipo',             'aura-suite' ); ?></th>
+                <th><?php _e( 'Prestatario',        'aura-suite' ); ?></th>
+                <th><?php _e( 'Proyecto / Motivo',  'aura-suite' ); ?></th>
+                <th><?php _e( 'Fecha salida',       'aura-suite' ); ?></th>
+                <th><?php _e( 'Devolución esperada','aura-suite' ); ?></th>
+                <th><?php _e( 'Estado',             'aura-suite' ); ?></th>
+                <th><?php _e( 'Acciones',           'aura-suite' ); ?></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+<?php
+wp_enqueue_style( 'datatables-css',           'https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css', [], '2.2.2' );
+wp_enqueue_style( 'datatables-responsive-css','https://cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.min.css', ['datatables-css'], '3.0.4' );
+wp_enqueue_script( 'datatables-js',           'https://cdn.datatables.net/2.2.2/js/dataTables.min.js', ['jquery'], '2.2.2', true );
+wp_enqueue_script( 'datatables-responsive-js','https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.min.js', ['datatables-js'], '3.0.4', true );
+wp_enqueue_script( 'aura-inv-loans-list',     AURA_PLUGIN_URL . 'assets/js/inventory-loans.js', ['jquery','datatables-responsive-js'], AURA_VERSION, true );
+wp_enqueue_style(  'aura-inv-loans',          AURA_PLUGIN_URL . 'assets/css/inventory-loans.css', ['datatables-responsive-css'], AURA_VERSION );
+?>
 
 </div><!-- .aura-inventory-loans-wrap -->
+
 
 
 <!-- ══════════════════════════════════════════════════════════
@@ -178,16 +176,18 @@ $nonce        = wp_create_nonce( 'aura_inventory_nonce' );
 
                     <!-- Modo: Listado completo de disponibles -->
                     <div id="co-equip-mode-list" style="display:none;">
-                        <div id="co-equip-list-search-wrap" style="margin-bottom:6px;">
-                            <input type="text" id="co-equip-list-filter" class="aura-loan-input"
-                                   placeholder="<?php esc_attr_e( 'Filtrar listado…', 'aura-suite' ); ?>"
-                                   autocomplete="off">
-                        </div>
                         <div id="co-equip-list-loading" class="aura-loan-equip-list-loading" style="display:none;">
                             <span class="spinner is-active" style="float:none;"></span>
                             <?php _e( 'Cargando equipos disponibles…', 'aura-suite' ); ?>
                         </div>
-                        <div id="co-equip-list-items" class="aura-loan-equip-list-grid"></div>
+                        <div id="co-equip-list-select-wrap" style="display:none; align-items:center; gap:8px;">
+                            <select id="co-equip-list-select" class="aura-loan-input" style="flex:1;">
+                                <option value=""><?php _e( 'Seleccione un equipo…', 'aura-suite' ); ?></option>
+                            </select>
+                            <button type="button" class="button button-secondary" id="js-btn-select-listed-equip">
+                                <?php _e( 'Seleccionar', 'aura-suite' ); ?>
+                            </button>
+                        </div>
                     </div>
 
                     <input type="hidden" id="co-equipment-id" name="equipment_id">
@@ -259,7 +259,7 @@ $nonce        = wp_create_nonce( 'aura_inventory_nonce' );
                                 <?php echo esc_html( wp_get_current_user()->display_name ); ?> (<?php _e( 'yo', 'aura-suite' ); ?>)
                             </option>
                             <?php
-                            $users = get_users( [ 'fields' => [ 'ID', 'display_name' ], 'number' => 200 ] );
+                            $users = Aura_Roles_Manager::get_aura_users( [ 'fields' => [ 'ID', 'display_name' ] ] );
                             foreach ( $users as $u ) {
                                 if ( (int) $u->ID === get_current_user_id() ) continue;
                                 echo '<option value="' . esc_attr( $u->ID ) . '">' . esc_html( $u->display_name ) . '</option>';

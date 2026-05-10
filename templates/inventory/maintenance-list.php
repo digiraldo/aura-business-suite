@@ -150,46 +150,35 @@ $currency = get_option( 'aura_currency_symbol', '$' );
         <button id="aura-maint-filter-clear" class="button button-link">
             <?php _e( 'Limpiar', 'aura-suite' ); ?>
         </button>
-    </div><!-- .aura-inv-filters-bar -->
+    </div><!-- .aura-inv-filters-    <!-- Tabla — DataTables la inicializa vía JS -->
+    <table id="aura-maint-table" class="wp-list-table widefat">
+        <thead>
+            <tr>
+                <th><?php _e( 'Foto',             'aura-suite' ); ?></th>
+                <th><?php _e( 'Equipo',           'aura-suite' ); ?></th>
+                    <th><?php _e( 'Fecha',            'aura-suite' ); ?></th>
+                <th><?php _e( 'Tipo',             'aura-suite' ); ?></th>
+                <th><?php _e( 'Ejecutor',         'aura-suite' ); ?></th>
+                <th><?php _e( 'Costo total',      'aura-suite' ); ?></th>
+                <th><?php _e( 'Estado post-mant.','aura-suite' ); ?></th>
+                <th><?php _e( 'Finanzas',         'aura-suite' ); ?></th>
+                <th><?php _e( 'Acciones',         'aura-suite' ); ?></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-    <!-- Tabla -->
-    <div id="aura-maint-table-wrap">
-        <table id="aura-maint-table" class="wp-list-table widefat fixed striped">
-            <thead>
-                <tr>
-                    <th class="col-photo" style="width:58px;"><?php _e( 'Foto', 'aura-suite' ); ?></th>
-                    <th class="col-date sortable" data-sort="maintenance_date"><?php _e( 'Fecha',      'aura-suite' ); ?></th>
-                    <th class="col-equipment"><?php _e( 'Equipo',         'aura-suite' ); ?></th>
-                    <th class="col-type sortable" data-sort="type"><?php _e( 'Tipo',          'aura-suite' ); ?></th>
-                    <th class="col-executor"><?php _e( 'Ejecutor',        'aura-suite' ); ?></th>
-                    <th class="col-cost sortable" data-sort="total_cost"><?php _e( 'Costo total', 'aura-suite' ); ?></th>
-                    <th class="col-post-status"><?php _e( 'Estado post-mant.','aura-suite' ); ?></th>
-                    <th class="col-finance"><?php _e( 'Finanzas',         'aura-suite' ); ?></th>
-                    <th class="col-actions"><?php _e( 'Acciones',         'aura-suite' ); ?></th>
-                </tr>
-            </thead>
-            <tbody id="aura-maint-tbody">
-                <tr><td colspan="9" style="text-align:center;padding:30px;">
-                    <span class="spinner is-active" style="float:none;margin:0 8px 0 0;"></span>
-                    <?php _e( 'Cargando mantenimientos…', 'aura-suite' ); ?>
-                </td></tr>
-            </tbody>
-        </table>
-
-        <!-- Paginación -->
-        <div id="aura-maint-pagination" class="tablenav bottom" style="display:none;">
-            <div class="tablenav-pages">
-                <span class="displaying-num" id="aura-maint-total-count"></span>
-                <span class="pagination-links">
-                    <button id="aura-maint-prev" class="button" disabled>&laquo;</button>
-                    <span id="aura-maint-page-info"></span>
-                    <button id="aura-maint-next" class="button">&raquo;</button>
-                </span>
-            </div>
-        </div>
-    </div><!-- #aura-maint-table-wrap -->
+<?php
+wp_enqueue_style( 'datatables-css',           'https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css', [], '2.2.2' );
+wp_enqueue_style( 'datatables-responsive-css','https://cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.min.css', ['datatables-css'], '3.0.4' );
+wp_enqueue_script( 'datatables-js',           'https://cdn.datatables.net/2.2.2/js/dataTables.min.js', ['jquery'], '2.2.2', true );
+wp_enqueue_script( 'datatables-responsive-js','https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.min.js', ['datatables-js'], '3.0.4', true );
+wp_enqueue_script( 'aura-inv-maintenance-list', AURA_PLUGIN_URL . 'assets/js/inventory-maintenance.js', ['jquery','datatables-responsive-js'], AURA_VERSION, true );
+wp_enqueue_style(  'aura-inv-maintenance',    AURA_PLUGIN_URL . 'assets/css/inventory-maintenance.css', ['datatables-responsive-css'], AURA_VERSION );
+?>
 
 </div><!-- .aura-inv-maintenance-list -->
+
 
 <!-- Modal de detalle -->
 <div id="aura-maint-detail-modal" class="aura-inv-modal" style="display:none;">

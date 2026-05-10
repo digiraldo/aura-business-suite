@@ -205,8 +205,9 @@ class Aura_Inventory_Equipment {
             'responsible_user_id'  => intval( $_POST['responsible_user_id'] ?? 0 ) ?: null,
             'area_id'              => intval( $_POST['area_id']              ?? 0 ) ?: null,
             'photo'                => sanitize_text_field( $_POST['photo']              ?? '' ) ?: null,
-            'accessories'          => sanitize_textarea_field( $_POST['accessories'] ?? '' ) ?: null,
-            'parent_equipment_id'  => intval( $_POST['parent_equipment_id'] ?? 0 ) ?: null,
+            'accessories'             => sanitize_textarea_field( $_POST['accessories'] ?? '' ) ?: null,
+            'parent_equipment_id'     => intval( $_POST['parent_equipment_id'] ?? 0 ) ?: null,
+            'maintenance_instructions'=> sanitize_textarea_field( $_POST['maintenance_instructions'] ?? '' ) ?: null,
         ];
 
         global $wpdb;
@@ -712,20 +713,31 @@ class Aura_Inventory_Equipment {
             wp_send_json_error( [ 'message' => $crop_result->get_error_message() ] );
         }
 
-        // Redimensionar a exactamente 800×600
-        $resize_result = $editor->resize( 800, 600, true );
-        if ( is_wp_error( $resize_result ) ) {
-            wp_send_json_error( [ 'message' => __( 'Error al redimensionar la imagen.', 'aura-suite' ) ] );
+        // Redimensionar a máximo 800×600 solo si la imagen supera esas dimensiones
+        $current_size = $editor->get_size();
+        if ( $current_size['width'] > 800 || $current_size['height'] > 600 ) {
+            $resize_result = $editor->resize( 800, 600 );
+            if ( is_wp_error( $resize_result ) ) {
+                wp_send_json_error( [ 'message' => $resize_result->get_error_message() ] );
+            }
         }
 
-        // Calidad JPEG 80%
-        $editor->set_quality( 80 );
+        // Preservar PNG para mantener transparencia; el resto → JPEG q80.
+        $orig_mime = (string) ( get_post_mime_type( $attachment_id ) ?: 'image/jpeg' );
+        $is_png    = ( 'image/png' === $orig_mime );
+        $save_mime = $is_png ? 'image/png' : 'image/jpeg';
+        $save_ext  = $is_png ? 'png' : 'jpg';
+
+        if ( ! $is_png ) {
+            // Calidad JPEG 80%
+            $editor->set_quality( 80 );
+        }
 
         // Guardar en el directorio de uploads del mes actual
         $upload_dir = wp_upload_dir();
-        $filename   = 'equipo-' . time() . '-' . wp_rand( 1000, 9999 ) . '.jpg';
+        $filename   = 'equipo-' . time() . '-' . wp_rand( 1000, 9999 ) . '.' . $save_ext;
         $save_path  = trailingslashit( $upload_dir['path'] ) . $filename;
-        $saved      = $editor->save( $save_path, 'image/jpeg' );
+        $saved      = $editor->save( $save_path, $save_mime );
 
         if ( is_wp_error( $saved ) ) {
             wp_send_json_error( [ 'message' => $saved->get_error_message() ] );
@@ -734,7 +746,7 @@ class Aura_Inventory_Equipment {
         // Registrar como adjunto en la Media Library
         require_once ABSPATH . 'wp-admin/includes/image.php';
         $attachment = [
-            'post_mime_type' => 'image/jpeg',
+            'post_mime_type' => $save_mime,
             'post_title'     => sanitize_file_name( pathinfo( $filename, PATHINFO_FILENAME ) ),
             'post_content'   => '',
             'post_status'    => 'inherit',

@@ -41,7 +41,7 @@ $areas = $wpdb->get_results(
     "SELECT id, name FROM {$wpdb->prefix}aura_areas WHERE status = 'active' ORDER BY name ASC"
 ) ?: [];
 
-$users = get_users( [ 'role__not_in' => [], 'orderby' => 'display_name', 'fields' => [ 'ID', 'display_name' ] ] );
+$users = Aura_Roles_Manager::get_aura_users( [ 'fields' => [ 'ID', 'display_name' ] ] );
 
 // Lista de equipos disponibles para vinculación como componente (excluye el actual)
 $all_equipment_for_parent = $wpdb->get_results(
@@ -182,7 +182,7 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                             </tr>
                             <tr>
                                 <th><label for="inv_warranty_date"><?php _e( 'Vencimiento de garantía', 'aura-suite' ); ?></label></th>
-                                <td><input type="date" id="inv_warranty_date" name="warranty_date" value="<?php echo $v('warranty_date'); ?>"></td>
+                                <td><input type="date" id="inv_warranty_date" name="warranty_date" value="<?php echo $v('warranty_date'); ?>" data-allow-future="1"></td>
                             </tr>
                         </table>
                     </div>
@@ -237,6 +237,29 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                                 </tr>
                             </table>
                         </div><!-- #aura-inv-maintenance-fields -->
+
+                        <!-- Instrucciones de mantenimiento (siempre visible) -->
+                        <table class="form-table" style="margin-top:16px;border-top:1px solid #dcdcde;padding-top:8px;">
+                            <tr>
+                                <th style="width:200px;">
+                                    <label for="inv_maintenance_instructions">
+                                        <span class="dashicons dashicons-clipboard" style="vertical-align:middle;color:#2271b1;"></span>
+                                        <?php _e( 'Instrucciones de mantenimiento', 'aura-suite' ); ?>
+                                    </label>
+                                </th>
+                                <td>
+                                    <textarea id="inv_maintenance_instructions"
+                                              name="maintenance_instructions"
+                                              rows="5"
+                                              class="large-text"
+                                              placeholder="<?php esc_attr_e( "Describe qué debe hacerse en cada mantenimiento:\n- Cambio de aceite SAE 10W-30 (0.6 L)\n- Limpiar filtro de aire\n- Revisar y ajustar bujía\n- Inspeccionar correa de transmisión\n- Verificar nivel de combustible y fugas", 'aura-suite' ); ?>"><?php echo esc_textarea( $equipment->maintenance_instructions ?? '' ); ?></textarea>
+                                    <p class="description">
+                                        <span class="dashicons dashicons-info" style="vertical-align:middle;color:#2271b1;font-size:14px;"></span>
+                                        <?php _e( 'Este texto será visible para el técnico al registrar un mantenimiento. Documenta el procedimiento específico, tipos de aceite, presiones, repuestos estándar, etc.', 'aura-suite' ); ?>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                 </div><!-- postbox: mantenimiento -->
 

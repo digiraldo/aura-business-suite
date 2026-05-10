@@ -85,45 +85,62 @@ $can_delete = current_user_can( 'aura_inventory_delete' ) || current_user_can( '
         </button>
     </div><!-- .aura-inv-filters-bar -->
 
-    <!-- Tabla de equipos -->
-    <div id="aura-inv-table-wrap">
-        <table id="aura-inv-equipment-table" class="wp-list-table widefat fixed striped">
-            <thead>
-                <tr>
-                    <th class="column-photo" style="width:58px;"><?php _e( 'Foto', 'aura-suite' ); ?></th>
-                    <th class="column-name sortable" data-sort="name"><?php _e( 'Equipo', 'aura-suite' ); ?></th>
-                    <th class="column-category"><?php _e( 'Categoría', 'aura-suite' ); ?></th>
-                    <th class="column-status"><?php _e( 'Estado', 'aura-suite' ); ?></th>
-                    <th class="column-location"><?php _e( 'Ubicación', 'aura-suite' ); ?></th>
-                    <th class="column-maintenance"><?php _e( 'Próximo mantenimiento', 'aura-suite' ); ?></th>
-                    <th class="column-responsible"><?php _e( 'Responsable', 'aura-suite' ); ?></th>
-                    <th class="column-actions"><?php _e( 'Acciones', 'aura-suite' ); ?></th>
-                </tr>
-            </thead>
-            <tbody id="aura-inv-tbody">
-                <tr class="aura-inv-loading-row">
-                    <td colspan="8" style="text-align:center;padding:30px;">
-                        <span class="spinner is-active" style="float:none;margin:0 8px 0 0;"></span>
-                        <?php _e( 'Cargando equipos…', 'aura-suite' ); ?>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Tabla de equipos — DataTables la inicializa vía JS -->
+    <table id="aura-inv-equipment-table" class="wp-list-table widefat">
+        <thead>
+            <tr>
+                <th><?php _e( 'Foto', 'aura-suite' ); ?></th>
+                <th><?php _e( 'Equipo', 'aura-suite' ); ?></th>
+                <th><?php _e( 'Mantenimiento', 'aura-suite' ); ?></th>
+                    <th><?php _e( 'Estado', 'aura-suite' ); ?></th>
+                    <th><?php _e( 'Categoría', 'aura-suite' ); ?></th>
+                    <th><?php _e( 'Ubicación', 'aura-suite' ); ?></th>
+                <th><?php _e( 'Responsable', 'aura-suite' ); ?></th>
+                <th><?php _e( 'Acciones', 'aura-suite' ); ?></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-        <!-- Paginación -->
-        <div id="aura-inv-pagination" class="tablenav bottom" style="display:none;">
-            <div class="tablenav-pages">
-                <span class="displaying-num" id="aura-inv-total-count"></span>
-                <span class="pagination-links">
-                    <button id="aura-inv-prev" class="button" disabled>&laquo;</button>
-                    <span id="aura-inv-page-info"></span>
-                    <button id="aura-inv-next" class="button">&raquo;</button>
-                </span>
-            </div>
-        </div>
-    </div><!-- #aura-inv-table-wrap -->
+<?php
+// ── DataTables CDN (core + Responsive) ───────────────────────────
+wp_enqueue_style(
+    'datatables-css',
+    'https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css',
+    [], '2.2.2'
+);
+wp_enqueue_style(
+    'datatables-responsive-css',
+    'https://cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.min.css',
+    ['datatables-css'], '3.0.4'
+);
+wp_enqueue_script(
+    'datatables-js',
+    'https://cdn.datatables.net/2.2.2/js/dataTables.min.js',
+    ['jquery'], '2.2.2', true
+);
+wp_enqueue_script(
+    'datatables-responsive-js',
+    'https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.min.js',
+    ['datatables-js'], '3.0.4', true
+);
+wp_enqueue_script(
+    'aura-inv-equipment-list',
+    AURA_PLUGIN_URL . 'assets/js/inventory-equipment.js',
+    ['jquery', 'datatables-responsive-js'],
+    filemtime( AURA_PLUGIN_DIR . 'assets/js/inventory-equipment.js' ), true
+);
+wp_enqueue_style(
+    'aura-inv-equipment',
+    AURA_PLUGIN_URL . 'assets/css/inventory-equipment.css',
+    ['datatables-responsive-css'],
+    AURA_VERSION
+);
+?>
 
 </div><!-- .aura-inventory-equipment-list -->
+
+
 
 <!-- Modal: detalle del equipo -->
 <div id="aura-inv-detail-modal" class="aura-inv-modal" style="display:none;">

@@ -417,22 +417,28 @@ class Aura_Notifications {
      * Enviar un mensaje de WhatsApp usando el proveedor configurado globalmente.
      *
      * Proveedores soportados:
-     *   - callmebot : gratuito, el destinatario debe activarlo primero
+     *   - green_api : recomendado — plan gratuito (3 chats) y $12/mes ilimitado
+     *   - callmebot : gratuito, el destinatario debe activarlo primero (obsoleto)
      *   - twilio    : API REST estándar
      *   - meta      : WhatsApp Business API (Cloud API)
      *
      * Configuración en: Ajustes → Aura Business Suite → WhatsApp.
      *
      * @param  string $phone    Número E.164 (ej. +57987654321)
-     * @param  string $message  Texto del mensaje (admite *negrita* markdown para CallMeBot/Twilio)
+     * @param  string $message  Texto del mensaje
      * @return bool             true si la petición HTTP fue exitosa
      */
-    public static function send_whatsapp( string $phone, string $message ): bool {
-        if ( ! get_option( 'aura_whatsapp_enabled', '0' ) ) {
+    /**
+     * @param bool $force  Omitir el check de aura_whatsapp_enabled (útil para pruebas).
+     */
+    public static string $last_debug = ''; // Captura la respuesta del proveedor para diagnóstico.
+
+    public static function send_whatsapp( string $phone, string $message, bool $force = false ): bool {
+        if ( ! $force && ! get_option( 'aura_whatsapp_enabled', '0' ) ) {
             return false;
         }
 
-        $provider = get_option( 'aura_whatsapp_provider', 'callmebot' );
+        $provider = get_option( 'aura_whatsapp_provider', 'green_api' );
         $token    = get_option( 'aura_whatsapp_api_token', '' );
 
         if ( empty( $token ) ) {
@@ -443,15 +449,54 @@ class Aura_Notifications {
 
         switch ( $provider ) {
 
+            // ── GREEN-API (recomendado) ────────────────────────────
+            // Plan Desarrollador: gratuito (3 chats) | Plan Negocio: $12/mes (ilimitado)
+            // El destinatario NO necesita activar nada. Usa tu propio número de WhatsApp.
+            // Registro: https://console.green-api.com | Documentación: https://green-api.com/en/docs/
+            case 'green_api':
+                $instance_id = get_option( 'aura_whatsapp_green_instance_id', '' );
+                if ( empty( $instance_id ) ) {
+                    return false;
+                }
+                // chatId: número sin '+', solo dígitos, seguido de '@c.us'
+                $chat_id = preg_replace( '/[^0-9]/', '', $phone ) . '@c.us';
+                $url     = sprintf(
+                    'https://api.green-api.com/waInstance%s/sendMessage/%s',
+                    rawurlencode( $instance_id ),
+                    rawurlencode( $token )
+                );
+                $resp = wp_remote_post( $url, [
+                    'timeout' => 15,
+                    'headers' => [ 'Content-Type' => 'application/json' ],
+                    'body'    => wp_json_encode( [
+                        'chatId'  => $chat_id,
+                        'message' => $message,
+                    ] ),
+                ] );
+                $code     = wp_remote_retrieve_response_code( $resp );
+                $response = ! is_wp_error( $resp ) && $code === 200;
+                break;
+
             // ── CallMeBot ──────────────────────────────────────────
+            // add_query_arg ya URL-codifica los valores; NO usar rawurlencode() aquí.
+            // El teléfono debe ir SIN '+' (ej. 5213338162094, no +5213338162094).
             case 'callmebot':
                 $url  = add_query_arg( [
-                    'phone'  => rawurlencode( $phone ),
-                    'text'   => rawurlencode( $message ),
-                    'apikey' => rawurlencode( $token ),
+                    'phone'  => ltrim( preg_replace( '/\s+/', '', $phone ), '+' ),
+                    'text'   => $message,
+                    'apikey' => $token,
                 ], 'https://api.callmebot.com/whatsapp.php' );
-                $resp     = wp_remote_get( $url, [ 'timeout' => 15 ] );
-                $response = ! is_wp_error( $resp ) && wp_remote_retrieve_response_code( $resp ) === 200;
+                $resp = wp_remote_get( $url, [ 'timeout' => 15 ] );
+                if ( is_wp_error( $resp ) ) {
+                    self::$last_debug = 'WP_Error: ' . $resp->get_error_message();
+                    $response = false;
+                } else {
+                    $body = wp_remote_retrieve_body( $resp );
+                    $code = wp_remote_retrieve_response_code( $resp );
+                    self::$last_debug = 'HTTP ' . $code . ' — ' . wp_strip_all_tags( $body );
+                    // CallMeBot devuelve HTTP 200 incluso en errores; verificar también el body.
+                    $response = $code === 200 && stripos( $body, 'ERROR' ) === false;
+                }
                 break;
 
             // ── Twilio ─────────────────────────────────────────────

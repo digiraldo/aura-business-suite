@@ -186,6 +186,9 @@ Ejemplo 3 - Instituto Educativo:
 ---
 
 ### 📚 MÓDULO: BIBLIOTECA
+- Debe utilizar el Sistema de Clasificación Decimal Dewey (CDD) asi que al crear el archivo `prdBiblioteca.md` se debe incluir un campo para el número de clasificación Dewey, además de los campos básicos como título, autor, ISBN, categoría, ubicación física, etc. Esto permitirá organizar los libros de manera eficiente y facilitar su búsqueda y préstamo.
+- Debe ser compatible con el sistema general o configuracion general de notificaciones globales de whatsapp y email para enviar alertas a los usuarios cuando se les entregue y cuando tengan libros próximos a vencer o vencidos, así como para notificar al bibliotecario sobre devoluciones pendientes.
+- Usar en todas las tablas el `5.6 Estándar de Tablas de Datos (DataTables Responsive)`, de este archivo PRD.md.
 
 **Capabilities disponibles** (para gestión de préstamos de libros):
 
@@ -247,6 +250,14 @@ Ejemplo 3 - Instituto Educativo:
 | `aura_forms_export` | Exportar respuestas a CSV/Excel | Analista, Gerente |
 | `aura_forms_analytics` | Ver análisis y gráficos de encuestas | Gerente, Director |
 
+**Integración con Módulo Estudiantes**:
+- **Formulario de Inscripción Personalizado** ✅ (implementado v1.7.7): Al crear un formulario de tipo `enrollment`, el admin puede asignar `mapping_key` a cada campo. Al enviar el formulario, `Aura_Forms_Enrollment` crea automáticamente el estudiante en `aura_students` y el enrollment pendiente en `aura_student_enrollments`. Los mapping_keys soportados son: `first_name`, `last_name`, `email`, `phone`, `birthdate`, `gender`, `city`, `country`, `id_number`, `address`, `motivation`, `course_id`, `notes`.
+- **Botón "Insertar campos predeterminados"**: En el builder, formularios de tipo Inscripción muestran un banner con este botón que pre-inserta los 11 campos base (Datos Personales + Información de Postulación) con sus mapping_keys.
+- **Encuestas dirigidas a estudiantes**: El admin selecciona estudiantes (por área, estado o individualmente) y les asigna un formulario. Los estudiantes lo ven y completan desde la pestaña "📋 Mis Formularios" del portal `[aura_student_portal]`.
+- **Login requerido**: Los estudiantes deben iniciar sesión en el portal frontend para acceder a sus formularios. El formulario público de inscripción es independiente (no requiere login).
+- **Hook de asignación**: `do_action('aura_students_forms_assign', $student_ids, $form_id, $context)` — el Módulo Estudiantes expone este hook para que el Módulo Formularios ejecute la asignación.
+- **Tabla de asignaciones**: `aura_form_assignments` (creada por este módulo): `form_id, student_id, enrollment_id, assigned_by, assigned_at, completed_at, status ENUM('pending','completed','expired')`
+
 ---
 
 ### 🎓 MÓDULO: ESTUDIANTES E INSCRIPCIONES
@@ -271,8 +282,10 @@ Ejemplo 3 - Instituto Educativo:
 | `aura_students_reports` | Ver reportes de inscripciones y pagos | Dirección, Finanzas |
 
 **Funcionalidades del Módulo Estudiantes**:
-- **Registro de estudiantes**: Desde formulario de inscripción o creación manual
-- **Gestión de cursos**: Inscripción a capacitaciones con costos configurables
+- **Registro de estudiantes**: Desde formulario de inscripción (con selector de área de interés) o creación manual
+- **Gestión de cursos**: Inscripción a capacitaciones con costos configurables, vinculadas a Áreas-Programa
+- **Integración con Áreas**: Las Áreas (`wp_aura_areas` con `type='program'`) son los programas académicos. Los Cursos son instancias de un Área (fechas + costo + cupos). El portal del estudiante agrupa cursos, logros y certificados por Área. Responsables de un Área pueden ver el listado de inscritos en sus programas.
+- **Multi-área**: Un estudiante puede estar inscrito simultáneamente en cursos de diferentes Áreas. En el portal ve sus logros, pagos y certificados organizados por Área.
 - **Sistema de becas**: Internas (instituto) y externas con porcentajes personalizables
 - **Esquemas de pago flexibles**:
   - Pago completo (100%)
@@ -282,7 +295,249 @@ Ejemplo 3 - Instituto Educativo:
 - **Control de pagos**: Registro de pagos con integración automática al módulo de Finanzas
 - **Estado paz y salvo**: Dashboard que muestra estudiantes al día vs morosos
 - **Alertas automáticas**: Notificaciones de cuotas vencidas
-- **Reportes financieros**: Ingresos proyectados vs reales por curso
+- **Reportes financieros**: Ingresos proyectados vs reales por curso y por Área
+- **Integración con Formularios** ✅ (implementado v1.7.7): El Módulo de Formularios crea estudiantes automáticamente al enviar formularios de tipo `enrollment`. La clase puente `Aura_Forms_Enrollment` mapea los campos del formulario a los datos del estudiante. El admin también puede asignar encuestas a estudiantes por área, estado o individualmente; los estudiantes las responden desde el portal `[aura_student_portal]` (requieren login).
+
+---
+
+### 🏅 MÓDULO: CERTIFICADOS Y DIPLOMAS
+
+> **Dependencia**: Requiere Módulo Estudiantes activo. Se implementa después de completar Estudiantes Fase 1.
+> **Ruta de archivos**: `modules/certificates/` · Tabla: `aura_certificates`, `aura_certificate_templates`
+> **Inspiración de referencia**: Tutor LMS Certificate Builder (canvas Fabric.js, drag & drop libre, variables dinámicas, QR de verificación)
+
+---
+
+#### Descripción General
+
+El módulo permite crear plantillas de diplomas/certificados con un editor visual drag & drop (canvas libre, sin grillas), emitir certificados personalizados en PDF a estudiantes aprobados, y verificar su autenticidad mediante un código único y un QR público. Cualquier usuario con el permiso correspondiente puede emitir y gestionar certificados desde el backend; el estudiante puede descargar el suyo desde su perfil en el frontend.
+
+---
+
+#### Capabilities disponibles
+
+| Capability | Descripción | Ejemplo de Uso |
+|------------|-------------|----------------|
+| `aura_cert_template_create` | Crear nuevas plantillas de diseño | Administrador, Director Académico |
+| `aura_cert_template_edit` | Editar plantillas existentes | Administrador |
+| `aura_cert_template_delete` | Eliminar plantillas | Solo Administrador |
+| `aura_cert_template_view` | Ver listado de plantillas | Secretaría Académica |
+| `aura_cert_issue` | Emitir/aprobar un certificado a un estudiante | Secretaría Académica, Director |
+| `aura_cert_revoke` | Revocar certificados emitidos | Solo Administrador |
+| `aura_cert_download_any` | Descargar PDF de cualquier estudiante | Administrador, Director |
+| `aura_cert_download_own` | Descargar solo el propio certificado | Estudiante (frontend) |
+| `aura_cert_view_all` | Ver listado completo de certificados emitidos | Director, Auditor |
+| `aura_cert_signatures_manage` | Gestionar firmantes y sus firmas digitales | Administrador |
+| `aura_cert_verify_public` | Verificar autenticidad vía página pública | Sin autenticación (público) |
+
+---
+
+#### FASE 1 — Editor de Plantillas (Backend)
+
+**Stack técnico**: [Fabric.js](https://fabricjs.com/) para el canvas HTML5 · mPDF (ya en `vendor/`) para generación PDF · `endroid/qr-code` o `chillerlan/php-qrcode` vía Composer para QR
+
+**Canvas drag & drop libre** (sin filas/columnas — igual que Tutor LMS):
+- Posicionamiento libre X/Y de cualquier elemento
+- Resize con handles en las 4 esquinas
+- Z-index / gestión de capas (elemento arriba/abajo)
+- Undo/Redo (historial de acciones)
+- Guías de alineación (snap-to-grid opcional)
+
+**Elementos disponibles en el canvas**:
+
+| Elemento | Descripción |
+|----------|-------------|
+| **Texto estático** | Título del diploma, texto libre, subtítulos |
+| **Variable dinámica** | `{nombre}`, `{apellido}`, `{nombre_completo}`, `{curso}`, `{programa}`, `{fecha_emision}`, `{fecha_graduacion}`, `{instructor}`, `{organizacion}`, `{folio}` |
+| **Logo** | Imagen del logo de la organización (se carga desde Configuración global) |
+| **Imagen decorativa** | Upload propio o desde biblioteca de ilustraciones incluidas |
+| **Firma digital** | Imagen de firma + nombre del firmante + cargo (múltiples firmantes) |
+| **Código QR** | Se genera automáticamente con la URL de verificación pública del certificado |
+| **Número de folio** | Código único alfanumérico del certificado (ej: `CEM-2026-0042`) |
+| **Formas y líneas** | Rectángulos, líneas decorativas, bordes, marcos |
+| **Sello/Badge** | Imágenes de sello de aprobación, medallas, insignias incluidas en la biblioteca |
+| **Fondo (Backdrop)** | Color sólido, gradiente, patrón o imagen de fondo full-canvas |
+
+**Tipografía**:
+- Google Fonts integradas (selector con preview en tiempo real)
+- Control de: tamaño, peso (bold/normal/light), estilo (italic), espaciado de letras, alineación
+- Color con selector avanzado (HEX, RGB, pipeta)
+
+**Orientación del canvas**:
+- Paisaje (landscape) — estándar para diplomas: 297 × 210 mm (A4)
+- Retrato (portrait): 210 × 297 mm (A4)
+- Personalizado: dimensiones en mm o px
+
+**Plantillas prediseñadas** (mínimo 5 incluidas):
+- Clásico dorado
+- Moderno minimalista
+- Profesional azul corporativo
+- Académico formal
+- Informal / participación
+
+**Almacenamiento del diseño**:
+- Serializado en JSON en `aura_certificate_templates.design_json`
+- Vista previa PNG/JPG guardada como thumbnail en WordPress Media Library
+
+---
+
+#### FASE 2 — Emisión de Certificados
+
+**Flujo principal**:
+1. Admin/secretaría va a perfil del estudiante (módulo Estudiantes) → **"Emitir Certificado"**
+2. Selecciona plantilla de la lista
+3. Previsualización en modal con los datos reales del estudiante
+4. Confirma → sistema:
+   - Genera folio único: `CEM-{AÑO}-{SECUENCIAL-4-DÍGITOS}` (ej: `CEM-2026-0042`)
+   - Genera código de verificación UUID v4
+   - Genera QR que apunta a `{site_url}/verificar-certificado/{folio}`
+   - Renderiza el canvas con variables dinámicas sustituidas
+   - Genera PDF con mPDF (resolución 150 dpi, CMYK para impresión)
+   - Guarda el PDF en `uploads/aura-certificates/{year}/{month}/cert-{folio}.pdf`
+   - Registra en tabla `aura_certificates` (student_id, template_id, folio, verification_code, issued_at, issued_by, pdf_path, status)
+   - Envía email al estudiante con el PDF adjunto o enlace de descarga
+   - Notificación WhatsApp al estudiante (si está configurado el servicio global)
+
+**Opciones al emitir**:
+- [ ] Incluir firma digital de los responsables *(por defecto: sí)*
+- [ ] Enviar por email al estudiante *(por defecto: sí)*
+- [ ] Notificar por WhatsApp *(según config global)*
+- Selector de firmantes activos (puede elegir quiénes firman de la lista configurada)
+
+**Emisión masiva**:
+- Desde la lista de estudiantes: filtrar por curso/programa + estado "Aprobado" → seleccionar todos → "Emitir certificados masivamente"
+- Se procesa en background (WP Cron) con notificación al terminar
+
+---
+
+#### FASE 3 — Verificación Pública
+
+**URL pública**: `{site_url}/verificar-certificado/{folio}` (sin autenticación)
+
+**Página de verificación muestra**:
+- ✅ / ❌ Estado del certificado (válido / revocado / no existe)
+- Nombre completo del beneficiario
+- Nombre del curso o programa
+- Fecha de emisión
+- Nombre de la organización + logo
+- Firmantes incluidos
+- Folio y código de verificación
+
+**Implementación**: WordPress rewrite rule + shortcode `[aura_verificar_certificado]` asignable a cualquier página. Sin login necesario.
+
+---
+
+#### FASE 4 — Portal del Estudiante (Frontend)
+
+En el dashboard frontend del estudiante (módulo Estudiantes):
+- Sección "Mis Certificados" muestra listado de certificados emitidos (folio, curso, fecha)
+- Botón "Descargar PDF" por certificado
+- Botón "Ver QR" con el QR de verificación
+- Botón "Compartir" (copiar enlace de verificación pública)
+
+---
+
+#### FASE 5 — Gestión de Firmantes
+
+En `⚙️ Configuración → Certificados`:
+- Lista de firmantes registrados (nombre, cargo, imagen de firma PNG transparente)
+- CRUD de firmantes
+- Opción de "Firma activa" (aparece por defecto en nuevos certificados)
+- Hasta 4 firmantes simultáneos por plantilla
+
+---
+
+#### Variables Dinámicas Disponibles
+
+| Variable | Se reemplaza con |
+|----------|-----------------|
+| `{nombre}` | Primer nombre del estudiante |
+| `{apellido}` | Apellido del estudiante |
+| `{nombre_completo}` | Nombre y apellido completos |
+| `{curso}` | Nombre del curso o programa |
+| `{programa}` | Nombre del área o programa académico |
+| `{fecha_emision}` | Fecha en que se emitió el certificado (dd/mm/yyyy) |
+| `{fecha_graduacion}` | Fecha de graduación registrada en el perfil |
+| `{instructor}` | Nombre del instructor del curso |
+| `{organizacion}` | Nombre de la organización (desde Configuración global) |
+| `{folio}` | Código único del certificado (ej: CEM-2026-0042) |
+| `{año}` | Año de emisión |
+| `{descripcion}` | Texto libre personalizable al momento de emitir |
+
+---
+
+#### Integración con otros módulos
+
+| Módulo | Integración |
+|--------|-------------|
+| **Estudiantes** | Fuente de datos del beneficiario; botón de emisión en perfil del estudiante |
+| **Finanzas** | Requisito opcional: estudiante al día en pagos (paz y salvo) para emitir certificado |
+| **Notificaciones globales** | Email + WhatsApp al emitir; usa servicios de `Aura_Notifications` |
+| **Configuración global** | Logo de la organización, nombre de la org, se leen de `aura_org_*` options |
+
+---
+
+#### Esquema de Base de Datos
+
+```sql
+-- Plantillas de diseño
+CREATE TABLE {prefix}aura_certificate_templates (
+    id              BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name            VARCHAR(200) NOT NULL,
+    slug            VARCHAR(200) NOT NULL UNIQUE,
+    orientation     ENUM('landscape','portrait') NOT NULL DEFAULT 'landscape',
+    width_mm        DECIMAL(6,2) NOT NULL DEFAULT 297.00,
+    height_mm       DECIMAL(6,2) NOT NULL DEFAULT 210.00,
+    design_json     LONGTEXT NOT NULL,        -- Estado completo del canvas Fabric.js
+    thumbnail_url   VARCHAR(500) NULL,        -- Preview PNG guardado en WP Media
+    is_default      TINYINT(1) NOT NULL DEFAULT 0,
+    is_active       TINYINT(1) NOT NULL DEFAULT 1,
+    created_by      BIGINT UNSIGNED NOT NULL,
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Certificados emitidos
+CREATE TABLE {prefix}aura_certificates (
+    id                  BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    student_id          BIGINT UNSIGNED NOT NULL,    -- FK → WP user ID
+    template_id         BIGINT UNSIGNED NOT NULL,    -- FK → aura_certificate_templates.id
+    folio               VARCHAR(50) NOT NULL UNIQUE, -- CEM-2026-0042
+    verification_code   VARCHAR(36) NOT NULL UNIQUE, -- UUID v4
+    course_name         VARCHAR(300) NOT NULL,        -- Snapshot al momento de emitir
+    student_name        VARCHAR(300) NOT NULL,        -- Snapshot al momento de emitir
+    issued_by           BIGINT UNSIGNED NOT NULL,    -- FK → WP user ID del quien emitió
+    issued_at           DATETIME NOT NULL,
+    graduation_date     DATE NULL,
+    pdf_path            VARCHAR(500) NULL,
+    include_signatures  TINYINT(1) NOT NULL DEFAULT 1,
+    signers_json        TEXT NULL,                   -- Snapshot de firmantes al emitir
+    status              ENUM('active','revoked') NOT NULL DEFAULT 'active',
+    revoked_at          DATETIME NULL,
+    revoked_by          BIGINT UNSIGNED NULL,
+    revoke_reason       VARCHAR(500) NULL,
+    notes               TEXT NULL,
+    INDEX idx_student    (student_id),
+    INDEX idx_template   (template_id),
+    INDEX idx_folio      (folio),
+    INDEX idx_verify     (verification_code),
+    INDEX idx_status     (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+---
+
+#### Notas de Implementación
+
+- **Fabric.js** se carga solo en la página del editor (no globalmente). Versión recomendada: 5.x o 6.x
+- **mPDF** ya está en `vendor/` — usar `Mpdf\Mpdf` con `format = 'A4-L'` para landscape
+- **QR Code**: añadir `chillerlan/php-qrcode` al `composer.json` (licencia MIT, ~150KB sin dependencias)
+- El JSON del canvas de Fabric.js se guarda tal cual (`canvas.toJSON()`) y se restaura con `canvas.loadFromJSON()`
+- Para el PDF: renderizar el canvas a PNG en el navegador (`canvas.toDataURL('image/png', 1.0)`) y enviarlo al servidor vía AJAX; mPDF lo embebe como imagen full-page
+- Los PDFs se almacenan fuera de la raíz web en producción, o con `.htaccess` restrictivo, y se sirven solo mediante un endpoint PHP autenticado (`?aura_cert_download=FOLIO&token=XXX`)
+- El folio se genera con: `'CEM-' . date('Y') . '-' . str_pad($next_id, 4, '0', STR_PAD_LEFT)`
+- La página de verificación pública NO requiere login; la información mostrada es intencionalmente pública (nombre, curso, fecha)
 
 ---
 
@@ -504,21 +759,47 @@ El sistema distingue dos tipos de personas que interactúan con la plataforma:
 
 Para los contactos externos que no tienen cuenta, el sistema usa el **número de teléfono como único identificador**. No se requiere login ni registro.
 
-**APIs compatibles** (en orden de recomendación):
+**APIs compatibles** — análisis y comparativa:
 
-| API | Costo | Notas |
-|---|---|---|
-| **Meta Cloud API** | Gratuita hasta 1.000 conversaciones/mes | Oficial, requiere número verificado |
-| **Twilio WhatsApp** | ~$0.005 USD/mensaje | Sandbox gratuito para desarrollo |
-| **CallMeBot** | Gratuito, limitado | Útil para pruebas |
+| API | Costo | Activación por receptor | Requiere número verificado | Recomendación |
+|---|---|---|---|---|
+| **GREEN-API** | Gratis (3 chats) / $12/mes (ilimitado) | ❌ No | Propio (scan QR) | ⭐ **Recomendada** |
+| **Meta Cloud API** | Gratis hasta 1.000 conv./mes | ❌ No | Sí — número de negocio aprobado por Meta | Producción alta escala |
+| **Twilio WhatsApp** | ~$0.005–0.02 USD/msg | ❌ No | Sí — sandbox o número verificado | Alternativa robusta |
+| **CallMeBot** | Gratuito | ✅ Sí — el receptor debe enviar primero un mensaje | No | ⚠️ Obsoleto / no recomendado |
+| **UltraMsg** | ~$35/mes | ❌ No | Propio (scan QR) | Similar a GREEN-API pero más caro |
+
+**¿Por qué GREEN-API es la opción recomendada?**
+- Plan **Desarrollador gratuito** funcional (3 chats, mensajes ilimitados) — ideal para instituciones pequeñas.
+- Plan **Negocio $12/mes** — chats ilimitados, suficiente para producción.
+- Usa el **número de WhatsApp propio** de la organización (conectar escaneando QR una sola vez).
+- El destinatario **NO necesita activar nada**, a diferencia de CallMeBot.
+- API REST sencilla, compatible con `wp_remote_post()` de WordPress.
+- SDK PHP oficial disponible.
+- SLA 99.98%, soporte técnico en español.
+- Registro: https://console.green-api.com
+
+**Por qué CallMeBot ya no se recomienda:**
+- Requiere que cada destinatario envíe manualmente un mensaje al bot de activación antes de poder recibir notificaciones — impracticable en un sistema con múltiples usuarios.
+- La API ha presentado inestabilidad y tiempos de respuesta inconsistentes.
 
 **Configuración en AURA** (🌐 global en `admin.php?page=aura-settings` → sección _WhatsApp — Configuración Global_):
 ```
-aura_whatsapp_provider   = 'meta' | 'twilio' | 'callmebot'
-aura_whatsapp_api_token  = '***'
-aura_whatsapp_from       = '+1234567890'
-aura_whatsapp_enabled    = true | false
+aura_whatsapp_provider          = 'green_api' | 'meta' | 'twilio' | 'callmebot'
+aura_whatsapp_api_token         = '***'   ← API Token Instance (GREEN-API) / Auth Token (Twilio) / Bearer (Meta)
+aura_whatsapp_green_instance_id = '1101234567'   ← solo para GREEN-API
+aura_whatsapp_from              = '+1234567890'  ← solo para Twilio / Meta
+aura_whatsapp_enabled           = true | false
 ```
+
+**Guía de configuración GREEN-API:**
+1. Registrarse en https://console.green-api.com (plan gratuito disponible)
+2. Crear una instancia nueva
+3. Escanear el QR con el número de WhatsApp de la organización
+4. Copiar el **idInstance** (ej. `1101234567`) y el **apiTokenInstance** del panel
+5. En Aura → Ajustes → WhatsApp: seleccionar "GREEN-API", pegar el Instance ID y el Token
+6. Enviar prueba con el botón "Enviar prueba WhatsApp"
+
 > Configurado una sola vez, disponible para todos los módulos. Ver §"Servicios Globales del Sistema".
 
 ---
@@ -1582,26 +1863,28 @@ Solución:
 **Criterios de Aceptación**:
 
 **A. Registro de Capabilities por Módulo**
-- [ ] **72 capabilities custom** registradas en WordPress divididas por módulo:
+- [ ] **74 capabilities custom** registradas en WordPress divididas por módulo:
   - Finanzas: 10 capabilities
   - Inventario y Mantenimientos: 16 capabilities (EXPANDIDO)
   - Biblioteca: 11 capabilities
-  - Vehículos: 10 capabilities  
+  - Vehículos: 12 capabilities (+2 administrativas: `audit`, `settings`)
   - Formularios: 8 capabilities
   - Estudiantes: 14 capabilities
   - Electricidad: 9 capabilities
   - Administración: 6 capabilities
   - Capabilities básicas: 9 (read, upload, etc)
 
-**B. Interfaz de Asignación de Permisos**
-- [ ] Pantalla de edición de usuario con checkboxes agrupados por módulo
-- [ ] Búsqueda/filtrado de capabilities por nombre
-- [ ] Función "Copiar permisos de otro usuario" para agilizar configuración
-- [ ] Plantillas de perfiles predefinidos (opcional):
-  - Plantilla "Tesorero Base"
-  - Plantilla "Auditor General"
-  - Plantilla "Operador de Campo"
-  - Plantilla "Director General"
+**B. Interfaz de Asignación de Permisos** *(Implementada como acordeones interactivos)*
+- [x] Módulos en acordeones coloreados, agrupados por módulo
+- [x] **Orden de módulos alineado al dashboard principal**: Finanzas💰 → Inventario📦 → Estudiantes🎓 → Certificados🏅 → Formularios📝 → Vehículos🚗 → Electricidad⚡ → Áreas🏛️ → Admin⚙️
+- [x] Búsqueda/filtrado de capabilities por nombre en tiempo real con contador de resultados
+- [x] Checkbox "Todos" por módulo con estado indeterminado (selección parcial)
+- [x] Badges de progreso X/Y por módulo (caps activas / total del módulo)
+- [x] Módulos con caps asignadas se abren automáticamente; cerrados si sin asignación
+- [x] Botón "Expandir todos" / "Colapsar todos"
+- [x] Barra fija inferior (*sticky save bar*) con contador de caps totales activas
+- [x] Color identificador por módulo (borde izquierdo + fondo activo)
+- [x] Función "Copiar permisos de otro usuario" (`applyTemplate`) con apertura automática de módulos afectados
 - [ ] Preview de permisos antes de guardar
 
 **C. Validación de Permisos en Tiempo Real**
@@ -1684,6 +1967,8 @@ function aura_register_all_capabilities() {
         'aura_vehicles_view_all' => 'Ver todos los vehículos',
         'aura_vehicles_reports' => 'Ver reportes de vehículos',
         'aura_vehicles_alerts' => 'Recibir alertas de mantenimiento',
+        'aura_vehicles_audit' => 'Ver log de auditoría del módulo',
+        'aura_vehicles_settings' => 'Configurar ajustes del módulo de vehículos',
         
         // ... (resto de módulos)
     ];
@@ -1699,7 +1984,44 @@ function aura_register_all_capabilities() {
 
 ---
 
-## 4. Requisitos No Funcionales
+#### RF-013: Patrón de Listado de Usuarios — Solo Usuarios Aura
+**Prioridad**: P1 (Alto)
+**Implementación**: `Aura_Roles_Manager::get_aura_users()`
+
+**Descripción**: En todos los selectores y filtros de usuario dentro del panel de administración de Aura Suite, **únicamente deben mostrarse los usuarios que tienen asignada al menos una capability `aura_*`**. Esto excluye suscriptores puros de WooCommerce, LMS u otros plugins que no pertenecen a ningún módulo de Aura.
+
+**Criterios de Aceptación**:
+
+**A. Helper Centralizado**
+- [x] `Aura_Roles_Manager::get_aura_users( array $extra_args = [], string $module_prefix = '' ): array`
+  - Sin `$module_prefix`: filtra usuarios con cualquier cap `aura_*`
+  - Con `$module_prefix` (ej. `'aura_finance_'`): filtra solo usuarios con caps de ese módulo
+  - Implementado con `meta_query LIKE '"aura_'` sobre `wp_capabilities` (formato serializado de WordPress)
+  - Un único punto de mantenimiento para toda la suite
+
+**B. Aplicación por Módulo**
+
+| Vista / Filtro | Archivo | Filtro aplicado |
+|---|---|---|
+| Libro Mayor → Selector de usuario | `templates/financial/user-ledger.php` | Cualquier cap Aura |
+| Registro de Auditoría → Filtro Usuario | `templates/financial/audit-log-page.php` | Cualquier cap Aura |
+| Reportes Financieros → Creado por | `templates/financial/reports-page.php` | `aura_finance_*` |
+| Búsqueda Avanzada → Creado por | `templates/financial/search-page.php` | `aura_finance_*` |
+| Lista de Transacciones → Creado por | `templates/financial/transactions-list.php` | `aura_finance_*` |
+| Formulario de Equipo → Responsable | `templates/inventory/equipment-form.php` | Cualquier cap Aura |
+| Lista de Préstamos → Prestado a | `templates/inventory/loans-list.php` | Cualquier cap Aura |
+| Formulario de Mantenimiento → Técnico | `templates/inventory/maintenance-form.php` | Cualquier cap Aura |
+| Gestión de Permisos → Selector usuario | `templates/permissions-page.php` | **Sin filtro** *(necesita ver todos para asignar caps)* |
+
+**C. Visualización del Rol**
+- [x] En selectores donde puede haber usuarios con el mismo nombre, mostrar el rol principal entre guiones: `Nombre Apellido (email) — Administrador`
+- [x] En tarjetas de perfil del usuario seleccionado, mostrar badge de rol (pill coloreado)
+- [x] Mapa de roles en español: `administrator → Administrador`, `subscriber → Suscriptor`, `driver → Conductor`, etc.
+
+**D. Regla de Diseño**
+> Nunca llamar `get_users()` directamente en templates o módulos cuando el propósito sea construir un selector de usuario para Aura. Siempre usar `Aura_Roles_Manager::get_aura_users()`.
+
+---
 
 ### 4.1 Seguridad (NFR-SEC)
 
@@ -1927,6 +2249,8 @@ class Aura_Roles_Manager {
                 'aura_vehicles_view_all' => __('Ver todos los vehículos', 'aura-suite'),
                 'aura_vehicles_reports' => __('Ver reportes', 'aura-suite'),
                 'aura_vehicles_alerts' => __('Recibir alertas de mantenimiento', 'aura-suite'),
+                'aura_vehicles_audit' => __('Ver log de auditoría', 'aura-suite'),
+                'aura_vehicles_settings' => __('Configurar ajustes del módulo', 'aura-suite'),
             ],
             'forms' => [
                 'aura_forms_submit' => __('Llenar formularios', 'aura-suite'),
@@ -2154,6 +2478,744 @@ add_action('admin_head', 'aura_custom_favicon');
 add_action('wp_head', 'aura_custom_favicon');
 ```
 
+### 5.6 Estándar de Tablas de Datos (DataTables Responsive)
+
+**Aplicable a:** Todos los módulos con tablas de administración en el panel WordPress.  
+**Referencia de implementación:** Módulo Inventario (equipos, préstamos, mantenimientos).
+
+#### Stack requerido
+
+| Asset | Fuente CDN | Versión |
+|-------|-----------|---------|
+| DataTables core CSS | `cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css` | **2.2.2** |
+| DataTables Responsive CSS | `cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.min.css` | **3.0.4** |
+| DataTables core JS | `cdn.datatables.net/2.2.2/js/dataTables.min.js` | **2.2.2** |
+| DataTables Responsive JS | `cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.min.js` | **3.0.4** |
+
+Los cuatro assets deben encolarse con dependencias encadenadas en el hook `admin_enqueue_scripts` de cada módulo:
+
+```php
+wp_enqueue_style( 'datatables-css',
+    'https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css',
+    [], '2.2.2' );
+wp_enqueue_style( 'datatables-responsive-css',
+    'https://cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.min.css',
+    [ 'datatables-css' ], '3.0.4' );
+wp_enqueue_script( 'datatables-js',
+    'https://cdn.datatables.net/2.2.2/js/dataTables.min.js',
+    [ 'jquery' ], '2.2.2', true );
+wp_enqueue_script( 'datatables-responsive-js',
+    'https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.min.js',
+    [ 'datatables-js' ], '3.0.4', true );
+// El script del módulo DEBE depender de 'datatables-responsive-js'
+wp_enqueue_script( 'aura-{modulo}-list', '...', [ 'jquery', 'datatables-responsive-js' ], $version, true );
+```
+
+#### Configuración obligatoria del DataTable
+
+```javascript
+$( '#mi-tabla' ).DataTable({
+    responsive:  true,   // Activa el plugin Responsive (requiere ambos assets CDN)
+    searching:   false,  // La barra de filtros propia del módulo reemplaza la búsqueda nativa
+    dom:         '<"aura-dt-top"li>rt<"aura-dt-bottom"p>',
+    pageLength:  20,
+    language: {
+        info:         '_TOTAL_ {entidades}',  // Ej: '_TOTAL_ equipos'
+        infoEmpty:    '0 {entidades}',
+        infoFiltered: '(filtrado de _MAX_ total)',
+        lengthMenu:   'Mostrar _MENU_ por página',
+        paginate:     { first: '«', last: '»', previous: '‹', next: '›' }
+    }
+});
+```
+
+#### Layout del `dom`
+
+```
+'<"aura-dt-top"li>rt<"aura-dt-bottom"p>'
+ └─ aura-dt-top:    l = selector de filas/página  +  i = contador de registros
+ └─ tabla HTML:     r = indicador de procesando   +  t = tabla
+ └─ aura-dt-bottom: p = paginación
+```
+
+#### `responsivePriority` en columnas
+
+Controla el orden en que las columnas se ocultan al reducir el ancho. **Menor = última en ocultarse.**
+
+| Valor | Significado |
+|-------|-------------|
+| `1` | Última en ocultarse (máxima prioridad) |
+| `10000` | Primera en ocultarse (valor por defecto) |
+
+Reglas de asignación:
+- La **primera** y la **última** columna reciben automáticamente `responsivePriority: 1` por DataTables.
+- **ID / código** → `responsivePriority: 10000` (prescindible en móvil).
+- **Nombre / entidad principal** → `responsivePriority: 1` (siempre visible).
+- **Acciones** → `responsivePriority: 1` (siempre visible, no debe ocultarse).
+
+#### Botón expandir/colapsar en móvil (CSS obligatorio)
+
+Reemplazar el SVG por defecto de DataTables con dashicons de WordPress. Incluir en el CSS de cada módulo:
+
+```css
+/* DataTables Responsive — botón expandir/colapsar con dashicons */
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+    position: relative !important;
+    padding-left: 36px !important;
+    cursor: pointer !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
+    content: "\f344" !important;           /* dashicons-arrow-right-alt2 (cerrado) */
+    font-family: "dashicons" !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    background-color: #2271b1 !important;  /* Azul WordPress */
+    color: #fff !important;
+    border-radius: 50% !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important;
+    z-index: 10 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    margin: 0 !important;
+    text-indent: 0 !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::before {
+    content: "\f343" !important;           /* dashicons-arrow-down-alt2 (expandido) */
+    background-color: #646970 !important;  /* Gris WordPress */
+}
+```
+
+#### Barra de filtros personalizada
+
+Cada módulo implementa su propia barra de filtros HTML fuera del DOM de DataTables. Patrón estándar:
+
+- **Búsqueda libre:** `<input type="search" id="aura-{modulo}-search">` → conectado a `_table.search( val ).draw()` en evento `input`.
+- **Filtros por dropdowns:** estado, categoría, área, fechas (según módulo).
+- **Botón Filtrar:** dispara recarga AJAX (`table.ajax.reload()`) o `_table.draw()` según el modo de carga del módulo.
+- **Botón Limpiar:** resetea todos los inputs + `$( '#aura-{modulo}-search' ).val( '' )` + `_table.search( '' )` + recarga.
+
+#### Modo de carga de datos
+
+| Modo | Cuándo usarlo | Cómo filtrar |
+|------|--------------|--------------|
+| **AJAX** (`ajax:` option) | Tablas con muchos registros o filtros server-side | `table.ajax.reload()` al aplicar filtros |
+| **Client-side** (`data: []` + `.clear().rows.add().draw()`) | Tablas pequeñas cargadas vía `apiFetch` propio | `_table.search( val ).draw()` para búsqueda libre |
+
+#### Tooltip con imagen ampliada al pasar el mouse
+
+Aplicable a cualquier columna de tabla que muestre una imagen miniatura (foto de equipo, foto de vehículo, avatar, etc.). Al hacer hover sobre la miniatura debe aparecer un tooltip con la imagen en tamaño mayor.
+
+**Patrón HTML en la celda:**
+```html
+<div class="aura-img-preview">
+    <img src="<?= esc_url($thumb_url) ?>" class="aura-thumb" alt="<?= esc_attr($name) ?>">
+    <div class="aura-img-tooltip">
+        <img src="<?= esc_url($full_url) ?>" alt="<?= esc_attr($name) ?>">
+    </div>
+</div>
+```
+
+> Usar `$thumb_url` para la miniatura visible en la tabla (ej. tamaño `thumbnail` de WP) y `$full_url` para la imagen ampliada en el tooltip (ej. tamaño `medium` o `large`).
+
+**CSS obligatorio** (incluir en el CSS de cada módulo que use imágenes):
+```css
+/* Tooltip de imagen ampliada */
+.aura-img-preview {
+    position: relative;
+    display: inline-block;
+    cursor: zoom-in;
+}
+.aura-img-preview .aura-thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    display: block;
+}
+.aura-img-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    top: 50%;
+    left: calc(100% + 8px);
+    transform: translateY(-50%);
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    padding: 4px;
+}
+.aura-img-tooltip img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
+}
+.aura-img-preview:hover .aura-img-tooltip {
+    display: block;
+}
+/* Evitar que el tooltip quede cortado en columnas al borde derecho */
+.aura-img-preview.tooltip-left .aura-img-tooltip {
+    left: auto;
+    right: calc(100% + 8px);
+}
+```
+
+**Nota:** Para celdas en las últimas columnas de la tabla (donde el tooltip podría salirse del viewport), agregar la clase `tooltip-left` al `div.aura-img-preview` desde PHP.
+
+---
+
+#### Estado por módulo
+
+| Módulo | Tablas | Estado |
+|--------|--------|--------|
+| Inventario | Equipos, Préstamos, Mantenimientos | ✅ Referencia oficial |
+| Vehículos | Vehículos, Salidas, Reportes | ✅ Implementado |
+| Formularios | Listado de formularios | ⬜ Pendiente de verificar |
+| Estudiantes | Cursos, Estudiantes, Postulaciones | ⬜ Pendiente de verificar |
+| Certificados | Listado de certificados | ⬜ Pendiente de verificar |
+| Finanzas | Transacciones | ⬜ Pendiente de verificar |
+
+---
+
+### 5.7 Sistema de Diseño de Modales (Modal Design System)
+
+> **Propósito:** Este estándar define la estructura visual, clases CSS, patrones HTML y comportamientos JavaScript que DEBEN usarse en **todos los modales de registro/edición** de la Suite Aura. El objetivo es garantizar coherencia visual y de UX en cada módulo (Biblioteca, Inventario, Finanzas, Vehículos, Estudiantes, etc.).
+>
+> **Referencia de implementación:** El modal "Nuevo Préstamo" del módulo Biblioteca (`templates/library/loans-list.php` + `assets/css/library-loans.css` + `assets/js/library-loans.js`) es la **implementación canónica** de este sistema.
+
+---
+
+#### 5.7.1 Principios de Diseño
+
+| Principio | Descripción |
+|-----------|-------------|
+| **Claridad estructural** | El modal se divide en secciones numeradas visualmente, no en pasos ocultos, para que el usuario vea su progreso de forma inmediata |
+| **Feedback inmediato** | Los errores se muestran inline debajo de cada campo, no como `alert()` ni mensajes flotantes |
+| **Contexto visual de la selección** | Al seleccionar un registro (libro, usuario, equipo, etc.) se muestra una tarjeta de previsualización dentro del modal |
+| **Acciones opcionales colapsadas** | Los campos opcionales (notas, referencias) se ocultan por defecto detrás de un toggle para no saturar el formulario |
+| **Footer fijo con estado de carga** | El botón de guardar siempre está visible al final del modal y muestra un spinner mientras se procesa la petición |
+| **Sin dependencias de pasos ocultos** | A diferencia del wizard multi-paso, el modal de registro muestra todas las secciones al mismo tiempo con separación visual clara |
+
+---
+
+#### 5.7.2 Estructura HTML del Modal
+
+```html
+<!-- Overlay del modal -->
+<div id="aura-[modulo]-[accion]-modal" class="aura-modal-overlay" style="display:none;">
+  <div class="aura-modal-content aura-[modulo]-modal-content">
+
+    <!-- ① CABECERA con gradiente -->
+    <div class="aura-modal-header aura-[modulo]-modal-header">
+      <div class="aura-modal-header-info">
+        <span class="aura-modal-icon">🔷</span>
+        <div>
+          <h2>Título de la Acción</h2>
+          <p class="aura-modal-subtitle">Descripción breve del propósito del modal</p>
+        </div>
+      </div>
+      <button class="aura-modal-close" data-modal="aura-[modulo]-[accion]-modal">&times;</button>
+    </div>
+
+    <!-- ② CUERPO del formulario -->
+    <div class="aura-modal-body">
+      <form id="aura-[modulo]-[accion]-form">
+
+        <!-- Sección numerada -->
+        <div class="aura-modal-step">
+          <div class="aura-modal-step-header">
+            <span class="aura-modal-step-num">1</span>
+            <div>
+              <strong>Nombre de la Sección</strong>
+              <small>Instrucción contextual para el usuario</small>
+            </div>
+          </div>
+
+          <!-- Input con ícono de búsqueda / campo normal -->
+          <div class="aura-search-wrap">
+            <span class="dashicons dashicons-search aura-search-icon"></span>
+            <input type="text" id="aura-[modulo]-search-input"
+                   class="regular-text aura-search-input"
+                   placeholder="Buscar..." autocomplete="off">
+          </div>
+
+          <!-- Error inline del campo -->
+          <span class="aura-field-error" id="aura-[modulo]-search-error" style="display:none;"></span>
+
+          <!-- Tarjeta de previsualización (oculta hasta selección) -->
+          <div class="aura-selected-card" id="aura-[modulo]-selected-card" style="display:none;">
+            <div class="aura-card-avatar">
+              <span class="dashicons dashicons-admin-users"></span>
+            </div>
+            <div class="aura-card-info">
+              <strong id="aura-[modulo]-card-name"></strong>
+              <span id="aura-[modulo]-card-detail"></span>
+            </div>
+            <button type="button" class="aura-card-remove" id="aura-[modulo]-remove-btn">
+              <span class="dashicons dashicons-no-alt"></span>
+            </button>
+          </div>
+
+          <input type="hidden" id="aura-[modulo]-selected-id" name="entity_id">
+        </div>
+
+        <!-- Sección de fechas / campos requeridos -->
+        <div class="aura-modal-step">
+          <div class="aura-modal-step-header">
+            <span class="aura-modal-step-num">2</span>
+            <div>
+              <strong>Fechas y Condiciones</strong>
+              <small>Configure los parámetros del registro</small>
+            </div>
+          </div>
+          <div class="aura-form-grid">
+            <div class="aura-form-field">
+              <label for="aura-fecha-inicio">Fecha de inicio <span class="required">*</span></label>
+              <input type="date" id="aura-fecha-inicio" name="start_date">
+              <span class="aura-field-error" id="aura-start-date-error" style="display:none;"></span>
+            </div>
+            <div class="aura-form-field">
+              <label for="aura-fecha-fin">Fecha de devolución <span class="required">*</span></label>
+              <input type="date" id="aura-fecha-fin" name="due_date">
+              <span class="aura-field-error" id="aura-due-date-error" style="display:none;"></span>
+              <!-- Chip informativo opcional -->
+              <span class="aura-duration-chip" id="aura-duration-chip" style="display:none;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección colapsable para campos opcionales (notas, referencias, etc.) -->
+        <div class="aura-modal-step aura-step-optional">
+          <button type="button" class="aura-toggle-optional">
+            <span class="dashicons dashicons-plus-alt2"></span>
+            Agregar notas u observaciones (opcional)
+          </button>
+          <div class="aura-optional-content" style="display:none;">
+            <textarea name="notes" id="aura-notes" rows="3" placeholder="..."></textarea>
+          </div>
+        </div>
+
+      </form>
+    </div><!-- /.aura-modal-body -->
+
+    <!-- ③ FOOTER fijo -->
+    <div class="aura-modal-footer">
+      <button type="button" class="button aura-modal-cancel-btn"
+              data-modal="aura-[modulo]-[accion]-modal">Cancelar</button>
+      <button type="button" class="button button-primary aura-modal-save-btn"
+              id="aura-[modulo]-save-btn">
+        <span class="aura-btn-text">Guardar</span>
+        <span class="aura-btn-spinner" style="display:none;">⏳ Guardando…</span>
+      </button>
+    </div>
+
+  </div><!-- /.aura-modal-content -->
+</div><!-- /.aura-modal-overlay -->
+```
+
+---
+
+#### 5.7.3 Clases CSS del Sistema de Modales
+
+> **Prefijo recomendado:** `aura-` (genérico para toda la suite). Cada módulo puede extender con su propio prefijo (ej. `aura-lib-` para Biblioteca, `aura-inv-` para Inventario) pero siempre basándose en las clases base.
+
+| Clase CSS | Elemento | Descripción |
+|-----------|----------|-------------|
+| `.aura-modal-overlay` | `<div>` | Fondo oscuro semi-transparente que cubre toda la pantalla |
+| `.aura-modal-content` | `<div>` | Contenedor blanco del modal, `max-width: 620px`, `border-radius: 12px`, flex column |
+| `.aura-modal-header` | `<div>` | Cabecera con `background: linear-gradient(135deg, #1e3a5f, #0073aa)`, `color: white` |
+| `.aura-modal-header-info` | `<div>` | Flex row con ícono + texto de cabecera |
+| `.aura-modal-icon` | `<span>` | Emoji o dashicon grande (≥24px) que identifica el tipo de acción |
+| `.aura-modal-subtitle` | `<p>` | Descripción de una línea en la cabecera, `opacity: 0.85`, `font-size: 0.82em` |
+| `.aura-modal-close` | `<button>` | Botón `&times;` en esquina derecha de la cabecera, `background: none`, sin borde |
+| `.aura-modal-body` | `<div>` | Zona de scroll del contenido, `overflow-y: auto`, `padding: 24px` |
+| `.aura-modal-step` | `<div>` | Sección numerada: `border: 1px solid #e2e8f0`, `border-radius: 10px`, `padding: 18px`, `margin-bottom: 16px` |
+| `.aura-modal-step-header` | `<div>` | Flex row con número de paso + título + subtítulo de la sección |
+| `.aura-modal-step-num` | `<span>` | Círculo con número de paso: `background: #0073aa`, `color: white`, `border-radius: 50%`, `width/height: 28px` |
+| `.aura-search-wrap` | `<div>` | Contenedor de input con ícono de lupa a la izquierda (position relative) |
+| `.aura-search-icon` | `<span>` | Dashicon de búsqueda posicionado absolutamente dentro del input |
+| `.aura-search-input` | `<input>` | Campo de búsqueda con `padding-left: 34px` para dejar espacio al ícono |
+| `.aura-selected-card` | `<div>` | Tarjeta que aparece al seleccionar un registro: fondo `#f0f7ff`, `border: 1px solid #bfdbfe`, flex row |
+| `.aura-card-avatar` | `<div>` | Círculo de color con inicial o ícono del registro seleccionado |
+| `.aura-card-info` | `<div>` | Columna de texto: nombre en negrita + línea de detalle |
+| `.aura-card-remove` | `<button>` | Botón `×` para deseleccionar y volver a buscar |
+| `.aura-duration-chip` | `<span>` | Chip informativo (ej. "15 días") con `background: #e8f5e9`, `color: #2e7d32` |
+| `.aura-form-grid` | `<div>` | Grid de 2 columnas para campos de formulario (`gap: 16px`) |
+| `.aura-form-field` | `<div>` | Flex column: `label` + `input` + `.aura-field-error` |
+| `.aura-field-error` | `<span>` | Mensaje de error inline: `color: #dc3545`, `font-size: 0.8em`, `display: none` (se activa con JS) |
+| `.aura-step-optional` | `.aura-modal-step` | Variante colapsable para secciones opcionales, borde punteado |
+| `.aura-toggle-optional` | `<button>` | Botón que expande/colapsa la sección opcional |
+| `.aura-optional-content` | `<div>` | Contenido colapsable, oculto por defecto |
+| `.aura-modal-footer` | `<div>` | Footer fijo con `border-top`, `padding: 16px 24px`, flex row justify-end |
+| `.aura-modal-cancel-btn` | `<button>` | Botón secundario "Cancelar" |
+| `.aura-modal-save-btn` | `<button>` | Botón primario "Guardar" que cambia a estado spinner durante el guardado |
+| `.aura-btn-text` | `<span>` | Texto normal del botón de guardar |
+| `.aura-btn-spinner` | `<span>` | Texto con spinner mostrado durante `saving`, oculto por defecto |
+
+---
+
+#### 5.7.4 Patrones JavaScript Requeridos
+
+##### Abrir / Cerrar modal
+
+```javascript
+// Abrir
+function openAuraModal(modalId) {
+    $('#' + modalId).fadeIn(200);
+    $('body').addClass('aura-modal-open'); // Bloquear scroll del body
+    resetAuraModal(); // Limpiar estado previo
+}
+
+// Cerrar (delegado a botones .aura-modal-close y .aura-modal-cancel-btn)
+$(document).on('click', '.aura-modal-close, .aura-modal-cancel-btn', function () {
+    var modalId = $(this).data('modal');
+    $('#' + modalId).fadeOut(200);
+    $('body').removeClass('aura-modal-open');
+});
+
+// Cerrar al hacer clic en el overlay
+$(document).on('click', '.aura-modal-overlay', function (e) {
+    if ($(e.target).hasClass('aura-modal-overlay')) {
+        $(this).fadeOut(200);
+        $('body').removeClass('aura-modal-open');
+    }
+});
+```
+
+##### Autocomplete con jQuery UI
+
+```javascript
+$('#aura-search-input').autocomplete({
+    source: function (req, res) {
+        $.post(auraData.ajaxurl, {
+            action: 'aura_[modulo]_search',
+            nonce: auraData.nonce,
+            q: req.term  // ⚠️ SIEMPRE usar 'q', NO 'term'
+        }, function (data) {
+            if (data.success) {
+                res(data.data.map(function (item) {
+                    return {
+                        label: item.name + ' — ' + item.detail,
+                        value: item.name,
+                        id: item.id,
+                        // ... demás campos del item
+                    };
+                }));
+            }
+        });
+    },
+    minLength: 2,
+    select: function (event, ui) {
+        event.preventDefault();
+        showEntityCard(ui.item);   // Mostrar tarjeta de previsualización
+        $(this).hide();            // Ocultar input después de seleccionar
+    }
+});
+```
+
+##### Mostrar tarjeta de entidad seleccionada
+
+```javascript
+function showEntityCard(item) {
+    $('#aura-selected-id').val(item.id);
+    $('#aura-card-name').text(item.name);
+    $('#aura-card-detail').text(item.detail);
+    $('#aura-search-input').hide();
+    $('#aura-selected-card').show();
+    $('#aura-search-error').hide();
+}
+
+// Remover selección
+$('#aura-remove-btn').on('click', function () {
+    $('#aura-selected-id').val('');
+    $('#aura-selected-card').hide();
+    $('#aura-search-input').show().val('').focus();
+});
+```
+
+##### Validación inline (sin alert())
+
+```javascript
+function validateAuraForm() {
+    var valid = true;
+    // Limpiar errores previos
+    $('.aura-field-error').hide().text('');
+
+    // Validar campo de entidad seleccionada
+    if (!$('#aura-selected-id').val()) {
+        $('#aura-entity-error').text('Debes seleccionar un registro.').show();
+        valid = false;
+    }
+
+    // Validar fechas
+    var startDate = $('#aura-fecha-inicio').val();
+    var dueDate   = $('#aura-fecha-fin').val();
+    if (!startDate) {
+        $('#aura-start-date-error').text('La fecha de inicio es obligatoria.').show();
+        valid = false;
+    }
+    if (!dueDate) {
+        $('#aura-due-date-error').text('La fecha de devolución es obligatoria.').show();
+        valid = false;
+    }
+    if (startDate && dueDate && dueDate <= startDate) {
+        $('#aura-due-date-error').text('La fecha de devolución debe ser posterior a la de inicio.').show();
+        valid = false;
+    }
+
+    return valid;
+}
+```
+
+##### Estado de carga del botón de guardar
+
+```javascript
+function setAuraSavingState(saving) {
+    var $btn = $('#aura-save-btn');
+    if (saving) {
+        $btn.prop('disabled', true);
+        $btn.find('.aura-btn-text').hide();
+        $btn.find('.aura-btn-spinner').show();
+    } else {
+        $btn.prop('disabled', false);
+        $btn.find('.aura-btn-text').show();
+        $btn.find('.aura-btn-spinner').hide();
+    }
+}
+
+// Uso al guardar
+$('#aura-save-btn').on('click', function () {
+    if (!validateAuraForm()) return;
+    setAuraSavingState(true);
+    $.post(auraData.ajaxurl, formData, function (res) {
+        setAuraSavingState(false);
+        if (res.success) {
+            closeAuraModal();
+            // Recargar tabla / notificar éxito
+        } else {
+            // Mostrar error general
+        }
+    }).fail(function () {
+        setAuraSavingState(false);
+    });
+});
+```
+
+##### Sección colapsable opcional
+
+```javascript
+$(document).on('click', '.aura-toggle-optional', function () {
+    var $content = $(this).siblings('.aura-optional-content');
+    var isOpen = $content.is(':visible');
+    $content.slideToggle(200);
+    $(this).find('.dashicons')
+        .toggleClass('dashicons-plus-alt2', isOpen)
+        .toggleClass('dashicons-minus', !isOpen);
+});
+```
+
+---
+
+#### 5.7.5 CSS Base Mínimo del Sistema de Modales
+
+> Agregar en `assets/css/admin-styles.css` (estilos globales del admin) para que esté disponible en todos los módulos sin repetición.
+
+```css
+/* ============================================================
+   AURA MODAL DESIGN SYSTEM — Base Styles
+   Versión: 1.0 | Referencia: loans-list.php (Biblioteca)
+   ============================================================ */
+
+/* Overlay */
+.aura-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+/* Contenedor */
+.aura-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 620px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Cabecera */
+.aura-modal-header {
+    background: linear-gradient(135deg, #1e3a5f, #0073aa);
+    color: #fff;
+    padding: 20px 24px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.aura-modal-header h2 { color: #fff; margin: 0; font-size: 1.15em; }
+.aura-modal-header-info { display: flex; align-items: center; gap: 14px; }
+.aura-modal-icon { font-size: 1.8em; line-height: 1; }
+.aura-modal-subtitle { margin: 4px 0 0; opacity: .85; font-size: .82em; }
+.aura-modal-close {
+    background: none; border: none; color: rgba(255,255,255,.7);
+    font-size: 1.6em; cursor: pointer; padding: 4px 8px; border-radius: 4px;
+    line-height: 1; transition: color .2s;
+}
+.aura-modal-close:hover { color: #fff; }
+
+/* Cuerpo */
+.aura-modal-body { overflow-y: auto; padding: 24px; flex: 1; }
+
+/* Sección numerada */
+.aura-modal-step {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 16px;
+    background: #fafbfc;
+}
+.aura-modal-step-header {
+    display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;
+}
+.aura-modal-step-num {
+    background: #0073aa; color: #fff; border-radius: 50%;
+    width: 28px; height: 28px; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: .9em; flex-shrink: 0;
+}
+
+/* Input con ícono */
+.aura-search-wrap { position: relative; }
+.aura-search-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: #8896a4; pointer-events: none;
+}
+.aura-search-input { padding-left: 34px !important; width: 100%; box-sizing: border-box; }
+
+/* Tarjeta de selección */
+.aura-selected-card {
+    display: flex; align-items: center; gap: 12px;
+    background: #f0f7ff; border: 1px solid #bfdbfe;
+    border-radius: 8px; padding: 12px 16px;
+}
+.aura-card-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(135deg, #0073aa, #005d8c);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; flex-shrink: 0;
+}
+.aura-card-info { flex: 1; min-width: 0; }
+.aura-card-info strong { display: block; font-size: .95em; color: #1e293b; }
+.aura-card-info span { font-size: .82em; color: #64748b; }
+.aura-card-remove {
+    background: none; border: none; cursor: pointer;
+    color: #94a3b8; padding: 4px; border-radius: 4px;
+}
+.aura-card-remove:hover { color: #dc2626; }
+
+/* Error inline */
+.aura-field-error { display: none; color: #dc3545; font-size: .8em; margin-top: 4px; }
+
+/* Chip informativo */
+.aura-duration-chip {
+    display: inline-block; background: #e8f5e9; color: #2e7d32;
+    border: 1px solid #a5d6a7; border-radius: 20px;
+    padding: 2px 10px; font-size: .8em; margin-top: 6px;
+}
+
+/* Grid de campos */
+.aura-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.aura-form-field { display: flex; flex-direction: column; gap: 4px; }
+.aura-form-field label { font-weight: 600; font-size: .88em; color: #374151; }
+.aura-form-field .required { color: #dc3545; }
+
+/* Sección opcional colapsable */
+.aura-step-optional { border-style: dashed; background: transparent; }
+.aura-toggle-optional {
+    background: none; border: none; cursor: pointer; color: #0073aa;
+    font-size: .88em; font-weight: 600; display: flex; align-items: center; gap: 6px;
+    padding: 0; width: 100%;
+}
+.aura-toggle-optional:hover { color: #005d8c; }
+.aura-optional-content { padding-top: 12px; }
+.aura-optional-content textarea { width: 100%; box-sizing: border-box; }
+
+/* Footer fijo */
+.aura-modal-footer {
+    border-top: 1px solid #e5e7eb; padding: 16px 24px;
+    display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+    background: #fff; border-radius: 0 0 12px 12px; flex-shrink: 0;
+}
+
+/* Bloquear scroll del body cuando hay modal abierto */
+body.aura-modal-open { overflow: hidden; }
+
+/* Responsive */
+@media (max-width: 520px) {
+    .aura-modal-content { max-height: 95vh; border-radius: 8px; }
+    .aura-form-grid { grid-template-columns: 1fr; }
+}
+```
+
+---
+
+#### 5.7.6 Checklist de Implementación por Modal
+
+Al crear o refactorizar un modal en cualquier módulo de Aura Suite, verificar:
+
+- [ ] El overlay usa la clase `.aura-modal-overlay` y `fadeIn/fadeOut(200)`
+- [ ] La cabecera usa el gradiente azul (`#1e3a5f → #0073aa`) con ícono + título + subtítulo
+- [ ] Cada sección del formulario tiene numeración visual (`.aura-modal-step-num`)
+- [ ] Los campos de búsqueda con autocomplete usan el parámetro `q` (no `term`) en la petición AJAX
+- [ ] Al seleccionar un registro se muestra una tarjeta de previsualización (`.aura-selected-card`)
+- [ ] Los errores de validación son **inline** (`.aura-field-error`), nunca `alert()`
+- [ ] El botón de guardar cambia a estado spinner durante la petición
+- [ ] El modal se puede cerrar con: botón `×`, botón "Cancelar", clic en overlay, y tecla `Escape`
+- [ ] Los campos opcionales están colapsados por defecto
+- [ ] El footer está fijo y visible sin necesidad de hacer scroll
+- [ ] Se llama a una función `reset` del modal al abrirlo (limpiar campos, errores, estados)
+- [ ] Se probó en pantallas ≤520px (responsive)
+
+---
+
+#### 5.7.7 Estado de Adopción por Módulo
+
+| Módulo | Modal | Estado de adopción |
+|--------|-------|--------------------|
+| Biblioteca | Nuevo Préstamo | ✅ Implementación canónica |
+| Biblioteca | Nuevo Libro (Wizard) | ⚠️ Wizard multi-paso — estilo propio, revisar cabecera |
+| Biblioteca | Registrar Devolución | ⬜ Pendiente de migrar |
+| Biblioteca | Nueva Reserva | ⬜ Pendiente de migrar |
+| Inventario | Nuevo Equipo | ⬜ Pendiente de migrar |
+| Inventario | Registrar Préstamo | ⬜ Pendiente de migrar |
+| Inventario | Registrar Mantenimiento | ⬜ Pendiente de migrar |
+| Vehículos | Nueva Salida | ⬜ Pendiente de migrar |
+| Finanzas | Nueva Transacción | ⬜ Pendiente de migrar |
+| Estudiantes | Registrar Postulación | ⬜ Pendiente de migrar |
+| Formularios | Nuevo Formulario | ⬜ Pendiente de migrar |
+
+---
 
 
 ## 6. Roadmap de Desarrollo
@@ -2707,6 +3769,7 @@ Aura_Google_Calendar::share_calendar( string $cal_id, bool $force = false ): arr
 ---
 
 **Registro de Cambios**:
+- v3.3 (Abr 2026): **Módulo Vehículos — Hardening de Seguridad + UX CBAC** — 9 brechas de seguridad corregidas en el módulo de vehículos (IDOR en edición de salidas, caps muertas en menú, verificaciones de propiedad faltantes, filtros de área inconsistentes). Nuevas capabilities `aura_vehicles_audit` (⭐) y `aura_vehicles_settings` (⭐) agregadas, conectadas al menú (submenús Auditoría y Configuración), REST endpoints y filtro `grant_cap`. Rediseño completo de la UI de *Gestión de Permisos Granulares (CBAC)*: acordeones coloreados por módulo, búsqueda en tiempo real, badges X/Y de progreso por módulo, checkbox "Todos" con estado indeterminado, apertura automática de módulos con caps asignadas, botones expandir/colapsar globales, *sticky save bar* fija en parte inferior. Orden de módulos alineado al dashboard: Finanzas💰 → Inventario📦 → Estudiantes🎓 → Certificados🏅 → Formularios📝 → Vehículos🚗 → Electricidad⚡ → Áreas🏛️ → Admin⚙️. Total capabilities: 72 → 74.
 - v3.2 (Mar 2026): **Arquitectura Global de Servicios** — Implementación del patrón "Configuración única, uso en todos los módulos". Nueva clase `Aura_Google_Calendar` en `modules/common/` con toda la infraestructura JWT/API de Google Calendar. `Aura_Inventory_Google_Calendar` refactorizado a wrapper delgado. `Aura_Notifications::send_whatsapp()` extraído a capa común; inventory delega a él. Nuevas secciones de configuración en `templates/settings-page.php` (WhatsApp Global + Google Calendar Global). Configuración de WhatsApp y GCal eliminada de la página de ajustes del módulo Inventario (muestra aviso con enlace a ajustes globales). AJAX actions globales: `aura_global_gcal_test`, `aura_global_gcal_save`, `aura_global_gcal_test_whatsapp`.
 - v3.1 (13 Mar 2026): **Integración Google Calendar para Mantenimientos** — Al guardar/actualizar la fecha de próximo mantenimiento de un equipo, el sistema crea/actualiza automáticamente un evento de todo el día en el calendario Google `Mantenimientos CEM` mediante Google Calendar API v3 con autenticación Service Account (RSA-256/JWT, sin OAuth del usuario, sin librerías externas). El evento incluye recordatorios popup + email configurables (default: 15, 7, 3 y 1 días antes). El administrador recibe invitación automática al calendario. Nueva sección §11.7 en prdInventario.md. Nueva pestaña "Google Calendar" en la página de configuración del módulo. WP options: `aura_gcal_enabled`, `aura_gcal_service_account_json`, `aura_gcal_reminder_days`, `aura_gcal_calendar_id_resolved`.
 - v3.0 (13 Mar 2026): **Arquitectura de Personas Externas sin Cuenta WordPress** — Decisión de diseño: solo se crean cuentas WP para personal interno y estudiantes. Prestamistas de herramientas, conductores ocasionales, lectores de contador y receptores de pago son "contactos externos" sin cuenta — se identifican por nombre + teléfono. Sistema de notificaciones WhatsApp (Meta Cloud API / Twilio / CallMeBot) para alertar a contactos externos sobre vencimientos de préstamos, salidas de vehículos, etc. Campo `borrowed_to_phone` en tabla de préstamos de inventario. Portal frontend con shortcode `[aura_student_portal]` y rol `aura_student` para estudiantes. Nueva sección §2.2 "Arquitectura de Personas Externas". Sección 11.6 en prdInventario.md.

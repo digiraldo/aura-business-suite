@@ -32,10 +32,6 @@ if (isset($_POST['aura_save_settings']) && wp_verify_nonce($_POST['aura_settings
     update_option('aura_electric_threshold', floatval($_POST['electric_threshold']));
     update_option('aura_electric_cost_kwh', floatval($_POST['electric_cost_kwh']));
     
-    // Configuración de vehículos
-    update_option('aura_vehicle_maintenance_interval', intval($_POST['vehicle_maintenance_interval']));
-    update_option('aura_vehicle_alert_threshold', intval($_POST['vehicle_alert_threshold']));
-
     // Identidad de la organización
     $org_logo_id = absint($_POST['aura_org_logo_id'] ?? 0);
     update_option('aura_org_name',         sanitize_text_field($_POST['org_name'] ?? ''));
@@ -47,7 +43,8 @@ if (isset($_POST['aura_save_settings']) && wp_verify_nonce($_POST['aura_settings
 
     // WhatsApp global
     update_option('aura_whatsapp_enabled',       isset($_POST['whatsapp_enabled']) ? '1' : '0');
-    update_option('aura_whatsapp_provider',      sanitize_key($_POST['whatsapp_provider'] ?? 'callmebot'));
+    update_option('aura_whatsapp_provider',         sanitize_key($_POST['whatsapp_provider'] ?? 'green_api'));
+    update_option('aura_whatsapp_green_instance_id', sanitize_text_field($_POST['whatsapp_green_instance_id'] ?? ''));
     update_option('aura_whatsapp_from',          sanitize_text_field($_POST['whatsapp_from'] ?? ''));
     update_option('aura_whatsapp_twilio_sid',    sanitize_text_field($_POST['whatsapp_twilio_sid'] ?? ''));
     update_option('aura_whatsapp_meta_phone_id', sanitize_text_field($_POST['whatsapp_meta_phone_id'] ?? ''));
@@ -92,9 +89,6 @@ $apply_to_expenses_only = get_option('aura_finance_auto_approval_apply_to_expens
 $apply_to_income_only = get_option('aura_finance_auto_approval_apply_to_income_only', false);
 $electric_threshold = get_option('aura_electric_threshold', 500);
 $electric_cost_kwh = get_option('aura_electric_cost_kwh', 0.12);
-$vehicle_maintenance_interval = get_option('aura_vehicle_maintenance_interval', 5000);
-$vehicle_alert_threshold = get_option('aura_vehicle_alert_threshold', 500);
-
 // Identidad de la organización
 $org_name         = aura_get_org_name();
 $org_tagline      = get_option('aura_org_tagline', '');
@@ -497,33 +491,6 @@ $org_logo_in_email = get_option('aura_org_logo_in_email', true);
             </table>
         </div>
         
-        <!-- Vehículos -->
-        <div class="aura-config-section">
-            <h2><?php _e('🚗 Configuración de Vehículos', 'aura-suite'); ?></h2>
-            <table class="form-table">
-                <tr>
-                    <th scope="row">
-                        <label for="vehicle_maintenance_interval"><?php _e('Intervalo de Mantenimiento (km)', 'aura-suite'); ?></label>
-                    </th>
-                    <td>
-                        <input type="number" id="vehicle_maintenance_interval" name="vehicle_maintenance_interval" 
-                               value="<?php echo esc_attr($vehicle_maintenance_interval); ?>" min="0" class="regular-text" required>
-                        <p class="description"><?php _e('Kilometraje por defecto entre mantenimientos.', 'aura-suite'); ?></p>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row">
-                        <label for="vehicle_alert_threshold"><?php _e('Umbral de Alerta (km)', 'aura-suite'); ?></label>
-                    </th>
-                    <td>
-                        <input type="number" id="vehicle_alert_threshold" name="vehicle_alert_threshold" 
-                               value="<?php echo esc_attr($vehicle_alert_threshold); ?>" min="0" class="regular-text" required>
-                        <p class="description"><?php _e('Se enviará alerta cuando falten menos de estos kilómetros para el mantenimiento.', 'aura-suite'); ?></p>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        
         <!-- API de Electricidad -->
         <div class="aura-config-section">
             <h2><?php _e('🔌 API de Electricidad para IoT', 'aura-suite'); ?></h2>
@@ -618,12 +585,16 @@ $org_logo_in_email = get_option('aura_org_logo_in_email', true);
                     <th scope="row"><label for="gset-wa-provider"><?php _e('Proveedor', 'aura-suite'); ?></label></th>
                     <td>
                         <select name="whatsapp_provider" id="gset-wa-provider" class="regular-text">
-                            <option value="callmebot" <?php selected(get_option('aura_whatsapp_provider','callmebot'),'callmebot'); ?>>CallMeBot (gratuito)</option>
-                            <option value="twilio"    <?php selected(get_option('aura_whatsapp_provider','callmebot'),'twilio');    ?>>Twilio</option>
-                            <option value="meta"      <?php selected(get_option('aura_whatsapp_provider','callmebot'),'meta');      ?>>Meta / WhatsApp Cloud API</option>
+                            <option value="green_api" <?php selected(get_option('aura_whatsapp_provider','green_api'),'green_api'); ?>>✅ GREEN-API (recomendado — gratis/bajo costo)</option>
+                            <option value="callmebot" <?php selected(get_option('aura_whatsapp_provider','green_api'),'callmebot'); ?>>CallMeBot (gratuito)</option>
+                            <option value="twilio"    <?php selected(get_option('aura_whatsapp_provider','green_api'),'twilio');    ?>>Twilio</option>
+                            <option value="meta"      <?php selected(get_option('aura_whatsapp_provider','green_api'),'meta');      ?>>Meta / WhatsApp Cloud API</option>
                         </select>
-                        <p class="description gwa-desc-callmebot">
-                            <?php printf(__('CallMeBot es gratuito. El destinatario debe aceptarlo primero. <a href="%s" target="_blank" rel="noopener">Ver instrucciones</a>.','aura-suite'),'https://www.callmebot.com/blog/free-api-whatsapp-messages/'); ?>
+                        <p class="description gwa-desc-green_api">
+                            <?php printf(__('GREEN-API: plan gratuito (3 chats) o $12/mes ilimitado. Usa tu propio número de WhatsApp; el receptor NO necesita activar nada. <a href="%s" target="_blank" rel="noopener">Regístrate gratis →</a>','aura-suite'),'https://console.green-api.com'); ?>
+                        </p>
+                        <p class="description gwa-desc-callmebot" style="display:none;">
+                            <?php printf(__('CallMeBot es gratuito. El destinatario debe activarlo enviando un mensaje al bot una sola vez. <a href="%s" target="_blank" rel="noopener">Ver instrucciones</a>.','aura-suite'),'https://www.callmebot.com/blog/free-api-whatsapp-messages/'); ?>
                         </p>
                         <p class="description gwa-desc-twilio" style="display:none;"><?php _e('Requiere cuenta Twilio con número habilitado para WhatsApp Business.','aura-suite'); ?></p>
                         <p class="description gwa-desc-meta"   style="display:none;"><?php _e('Requiere app en Meta for Developers con permiso whatsapp_business_messaging.','aura-suite'); ?></p>
@@ -635,7 +606,9 @@ $org_logo_in_email = get_option('aura_org_logo_in_email', true);
                         <input type="password" name="whatsapp_api_token" id="gset-wa-token" class="regular-text"
                                autocomplete="new-password"
                                value="<?php echo esc_attr(get_option('aura_whatsapp_api_token','')); ?>"
-                               placeholder="<?php esc_attr_e('Token API (CallMeBot / Twilio Auth Token / Meta Bearer)','aura-suite'); ?>">
+                               placeholder="<?php esc_attr_e('API Token Instance (GREEN-API) / Auth Token (Twilio) / Bearer (Meta)','aura-suite'); ?>">
+                        <p class="description gwa-tokendesc-green_api"><?php _e('GREEN-API: el <strong>API Token Instance</strong> se obtiene en console.green-api.com → tu instancia → pestaña Cuenta.','aura-suite'); ?></p>
+                        <p class="description gwa-tokendesc-callmebot" style="display:none;"><?php _e('CallMeBot: el <strong>apikey</strong> que recibes tras activar el servicio.','aura-suite'); ?></p>
                         <p class="description"><?php _e('Déjalo en blanco para conservar el token guardado.','aura-suite'); ?></p>
                     </td>
                 </tr>
@@ -645,9 +618,19 @@ $org_logo_in_email = get_option('aura_org_logo_in_email', true);
                         <input type="text" name="whatsapp_from" id="gset-wa-from" class="regular-text"
                                value="<?php echo esc_attr(get_option('aura_whatsapp_from','')); ?>"
                                placeholder="+521234567890">
-                        <p class="description gwa-desc-from-callmebot"><?php _e('No requerido para CallMeBot.','aura-suite'); ?></p>
-                        <p class="description gwa-desc-from-twilio" style="display:none;"><?php _e('Número Twilio habilitado para WhatsApp, ej. +14155238886','aura-suite'); ?></p>
-                        <p class="description gwa-desc-from-meta"   style="display:none;"><?php _e('No requerido aquí para Meta; usa el campo Phone ID.','aura-suite'); ?></p>
+                        <p class="description gwa-desc-from-green_api"><?php _e('GREEN-API: no requerido aquí; usa el campo Instance ID abajo.','aura-suite'); ?></p>
+                        <p class="description gwa-desc-from-callmebot" style="display:none;"><?php _e('No requerido para CallMeBot.','aura-suite'); ?></p>
+                        <p class="description gwa-desc-from-twilio"    style="display:none;"><?php _e('Número Twilio habilitado para WhatsApp, ej. +14155238886','aura-suite'); ?></p>
+                        <p class="description gwa-desc-from-meta"      style="display:none;"><?php _e('No requerido aquí para Meta; usa el campo Phone ID.','aura-suite'); ?></p>
+                    </td>
+                </tr>
+                <tr class="gwa-row-green_api">
+                    <th scope="row"><label for="gset-wa-green-instance"><?php _e('GREEN-API Instance ID', 'aura-suite'); ?></label></th>
+                    <td>
+                        <input type="text" name="whatsapp_green_instance_id" id="gset-wa-green-instance" class="regular-text"
+                               value="<?php echo esc_attr(get_option('aura_whatsapp_green_instance_id','')); ?>"
+                               placeholder="1101234567">
+                        <p class="description"><?php printf(__('ID de tu instancia en <a href="%s" target="_blank" rel="noopener">console.green-api.com</a>. Ej: <code>1101234567</code>','aura-suite'),'https://console.green-api.com'); ?></p>
                     </td>
                 </tr>
                 <tr class="gwa-row-twilio" style="display:none;">
@@ -838,10 +821,13 @@ jQuery(document).ready(function($) {
     // ── WhatsApp global — visibilidad de campos según proveedor ──
     function gwaUpdateProvider() {
         var p = $('#gset-wa-provider').val();
-        $('.gwa-desc-callmebot, .gwa-desc-twilio, .gwa-desc-meta').hide();
+        $('.gwa-desc-green_api, .gwa-desc-callmebot, .gwa-desc-twilio, .gwa-desc-meta').hide();
         $('.gwa-desc-' + p).show();
-        $('.gwa-desc-from-callmebot, .gwa-desc-from-twilio, .gwa-desc-from-meta').hide();
+        $('.gwa-tokendesc-green_api, .gwa-tokendesc-callmebot').hide();
+        $('.gwa-tokendesc-' + p).show();
+        $('.gwa-desc-from-green_api, .gwa-desc-from-callmebot, .gwa-desc-from-twilio, .gwa-desc-from-meta').hide();
         $('.gwa-desc-from-' + p).show();
+        $('.gwa-row-green_api').toggle(p === 'green_api');
         $('.gwa-row-twilio').toggle(p === 'twilio');
         $('.gwa-row-meta').toggle(p === 'meta');
     }

@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Aura Business Suite
- * Plugin URI: https://aurabusiness.com
- * Description: Suite modular de gestión empresarial con permisos granulares (CBAC) - Módulos: Finanzas, Vehículos, Formularios, Electricidad, Áreas/Programas Multi-Usuario
- * Version: 1.1.0
- * Author: Aura Development Team
- * Author URI: https://aurabusiness.com
+ * Plugin URI: https://profiles.wordpress.org/digiraldo/
+ * Description: Suite modular de gestion empresarial con permisos granulares (CBAC) - Modulos: Finanzas, Vehiculos, Formularios, Electricidad, Areas/Programas Multi-Usuario
+ * Version: 1.7.8
+ * Author: DiGiraldo
+ * Author URI: https://github.com/digiraldo/aura-business-suite
  * Text Domain: aura-suite
  * Domain Path: /languages
  * Requires at least: 6.4
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Constantes del plugin
-define('AURA_VERSION', '1.2.0');
+define('AURA_VERSION', '1.7.8');
 define('AURA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AURA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AURA_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -100,6 +100,7 @@ class Aura_Business_Suite {
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-settings.php';
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-user-dashboard.php'; // Fase 6, Item 6.2
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-user-ledger.php';     // Fase 6, Item 6.3
+        require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-usd-ledger.php';         // Caja Chica USD
         
         // Cargar WP_List_Table si estamos en admin
         if (is_admin()) {
@@ -111,16 +112,63 @@ class Aura_Business_Suite {
         // Módulo de Áreas y Programas (Fase 7)
         require_once AURA_PLUGIN_DIR . 'modules/areas/class-areas-setup.php';
         require_once AURA_PLUGIN_DIR . 'modules/areas/class-areas-admin.php';  // Ítem 7.2 — Admin UI
+        require_once AURA_PLUGIN_DIR . 'modules/areas/class-areas-types.php';  // Ítem 7.3 — Tipos de Área
 
-        // Módulo de Vehículos
-        require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-cpt.php';
+        // Módulo de Vehículos — Fase 1
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-cpt.php';        // conservado como referencia, no se llama init()
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-setup.php';
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-module.php';
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/admin/class-vehicle-admin.php';
         require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-alerts.php';
         require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-reports.php';
+        // Módulo de Vehículos — Fase 2
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-audit-manager.php';
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-manager.php';
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/api/class-vehicle-rest-vehicles.php';
+        // Módulo de Vehículos — Fase 3
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-trip-manager.php';
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/api/class-vehicle-rest-trips.php';
+        // Módulo de Vehículos — Fase 4
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-catalog-manager.php';
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/api/class-vehicle-rest-catalogs.php';
+        // Módulo de Vehículos — Fase 5
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/api/class-vehicle-rest-stats.php';
+        // Módulo de Vehículos — Fase 6
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/api/class-vehicle-rest-reports.php';
+        // Módulo de Vehículos — Fase 7
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/api/class-vehicle-rest-audit.php';
+        // Módulo de Vehículos — Fase 9
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/api/class-vehicle-rest-settings.php';
+        // Módulo de Vehículos — Fase QR
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/api/class-vehicle-rest-qr.php';
+        // Módulo de Vehículos — Fase 10
+        require_once AURA_PLUGIN_DIR . 'modules/vehicles/class-vehicle-financial-bridge.php';
         
         // Módulo de Electricidad
         require_once AURA_PLUGIN_DIR . 'modules/electricity/class-electricity-cpt.php';
         require_once AURA_PLUGIN_DIR . 'modules/electricity/class-electricity-api.php';
         require_once AURA_PLUGIN_DIR . 'modules/electricity/class-electricity-dashboard.php';
+
+        // Módulo de Biblioteca — Fase 1
+        require_once AURA_PLUGIN_DIR . 'modules/library/class-library-setup.php';
+        require_once AURA_PLUGIN_DIR . 'modules/library/class-library-module.php';
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-admin.php';
+        // Módulo de Biblioteca — Fase 2: Catálogo
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-books.php';
+        // Módulo de Biblioteca — Fase 3: Préstamos y Devoluciones
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-fines.php';
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-loans.php';
+        // Módulo de Biblioteca — Fase 4: Reservas
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-reservations.php';
+        // Módulo de Biblioteca — Fase 5: Notificaciones y Cron
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-notifications.php';
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-cron.php';
+        // Módulo de Biblioteca — Fase 6: Dashboard y Reportes
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-reports.php';
+        // Módulo de Biblioteca — Fase 8: Auditoría + Configuración + REST API
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-audit.php';
+        require_once AURA_PLUGIN_DIR . 'modules/library/admin/class-library-settings.php';
+        require_once AURA_PLUGIN_DIR . 'modules/library/class-library-api.php';
 
         // Módulo de Inventario y Mantenimientos (FASE 1+)
         require_once AURA_PLUGIN_DIR . 'modules/inventory/class-inventory-setup.php';
@@ -139,6 +187,47 @@ class Aura_Business_Suite {
         require_once AURA_PLUGIN_DIR . 'modules/inventory/class-inventory-reports.php';
         // Módulo de Inventario — Configuración y Categorías
         require_once AURA_PLUGIN_DIR . 'modules/inventory/class-inventory-categories.php';
+
+        // ── Módulo de Estudiantes e Inscripciones ─────────────────
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-setup.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-admin.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-dashboard.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-courses.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-crud.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-enrollments.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-payments.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-scholarships.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-frontend.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-notifications.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-reports.php';
+        require_once AURA_PLUGIN_DIR . 'modules/students/class-students-settings.php';
+
+        // ── Módulo de Certificados y Diplomas ──────────────────────
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-settings.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-setup.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-admin.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-templates.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-signers.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-folio.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-issuer.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-verify.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-frontend.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-notifications.php';
+        require_once AURA_PLUGIN_DIR . 'modules/certificates/class-certificates-reports.php';
+
+        // ── Módulo de Formularios y Encuestas ──────────────────────
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-setup.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-admin.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-builder.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-submissions.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-assignments.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-enrollment.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-analytics.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-export.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-frontend.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-notifications.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-reports.php';
+        require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-settings.php';
     }
     
     /**
@@ -175,6 +264,9 @@ class Aura_Business_Suite {
 
         // Hook AJAX para refresh de stats del dashboard principal
         add_action('wp_ajax_aura_dashboard_refresh_stats', array($this, 'ajax_dashboard_refresh_stats'));
+
+        // Hook AJAX para crear un nuevo usuario (por usuarios con aura_admin_users_create)
+        add_action('wp_ajax_aura_create_user', array($this, 'ajax_create_user'));
     }
     
     /**
@@ -186,7 +278,6 @@ class Aura_Business_Suite {
         
         Aura_Financial_Categories_CPT::init();
         Aura_Financial_Categories::get_instance();
-        Aura_Vehicle_CPT::init();
         Aura_Electricity_CPT::init();
         
         // Inicializar REST API
@@ -197,8 +288,10 @@ class Aura_Business_Suite {
         Aura_Notifications::init();
         Aura_Google_Calendar::init();
         
-        // Inicializar alertas de vehículos
-        Aura_Vehicle_Alerts::init();
+        // Módulo de Vehículos — Fase 1 + 2 + 3
+        Aura_Vehicle_Module::get_instance();
+        Aura_Vehicle_Rest_Vehicles::init();
+        Aura_Vehicle_Rest_Trips::init();
         
         // Inicializar sistema de aprobación de transacciones
         Aura_Financial_Approval::init();
@@ -240,6 +333,9 @@ class Aura_Business_Suite {
         // Inicializar Áreas y Programas — Admin UI (Fase 7, Ítem 7.2)
         Aura_Areas_Admin::init();
 
+        // Inicializar Áreas y Programas — Tipos de Área CRUD (Fase 7, Ítem 7.3)
+        Aura_Areas_Types::init();
+
         // Inicializar notificaciones y recordatorios (Fase 5, Item 5.4)
         Aura_Financial_Notifications::init();
 
@@ -251,6 +347,9 @@ class Aura_Business_Suite {
 
         // Inicializar Libro Mayor por Usuario (Fase 6, Item 6.3)
         Aura_Financial_User_Ledger::init();
+
+        // Inicializar Caja Chica USD → MXN
+        Aura_Financial_USD_Ledger::init();
 
         // Registrar tamaños de imagen personalizados para equipos
         add_image_size( 'aura-equipment-full',  800, 600, true );  // vista en modal/formulario
@@ -272,8 +371,51 @@ class Aura_Business_Suite {
         Aura_Inventory_Reports::init();
         // Inicializar Configuración y Categorías del Inventario
         Aura_Inventory_Categories::init();
+
+        // ── Módulo de Estudiantes e Inscripciones ─────────────────
+        Aura_Students_Setup::init();
+        Aura_Students_Admin::init();
+        Aura_Students_Dashboard::init();
+        Aura_Students_Courses::init();
+        Aura_Students_CRUD::init();
+        Aura_Students_Enrollments::init();
+        Aura_Students_Payments::init();
+        Aura_Students_Scholarships::init();
+        Aura_Students_Frontend::init();
+        Aura_Students_Notifications::init();
+        Aura_Students_Reports::init();
+        Aura_Students_Settings::init();
+
+        // ── Módulo de Certificados y Diplomas ──────────────────────
+        Aura_Certificates_Setup::init();
+        Aura_Certificates_Admin::init();
+        Aura_Certificates_Templates::init();
+        Aura_Certificates_Signers::init();
+        Aura_Certificates_Issuer::init();
+        Aura_Certificates_Verify::init();
+        Aura_Certificates_Frontend::init();
+        Aura_Certificates_Notifications::init();
+        Aura_Certificates_Reports::init();
+        Aura_Certificates_Settings::init();
+
+        // ── Módulo de Formularios y Encuestas ──────────────────────
+        Aura_Forms_Setup::init();
+        Aura_Forms_Admin::init();
+        Aura_Forms_Builder::init();
+        Aura_Forms_Submissions::init();
+        Aura_Forms_Assignments::init();
+        Aura_Forms_Enrollment::init();
+        Aura_Forms_Analytics::init();
+        Aura_Forms_Export::init();
+        Aura_Forms_Frontend::init();
+        Aura_Forms_Notifications::init();
+        Aura_Forms_Reports::init();
+        Aura_Forms_Settings::init();
+
+        // Módulo de Biblioteca — Fase 1
+        Aura_Library_Module::get_instance();
     }
-    
+
     /**
      * Activación del plugin
      */
@@ -284,7 +426,13 @@ class Aura_Business_Suite {
         // Crear tablas de base de datos
         Aura_Financial_Categories_CPT::create_categories_table();
         Aura_Financial_Transactions::create_transactions_table();
+        Aura_Financial_USD_Ledger::create_table();
         Aura_Inventory_Setup::create_tables();
+        Aura_Students_Setup::create_tables();
+        Aura_Certificates_Setup::create_tables();
+        Aura_Forms_Setup::create_tables();
+        Aura_Vehicle_Setup::create_tables();
+        Aura_Library_Setup::create_tables();
         
         // Instalar categorías financieras predeterminadas
         $this->install_default_categories();
@@ -297,6 +445,18 @@ class Aura_Business_Suite {
         
         // Agregar opción de versión
         add_option('aura_version', AURA_VERSION);
+
+        // Programar cron diario de expiración de reservas de Biblioteca (Fase 4)
+        if ( ! wp_next_scheduled( 'aura_library_expire_reservations' ) ) {
+            wp_schedule_event( time(), 'daily', 'aura_library_expire_reservations' );
+        }
+
+        // Programar cron diario de alertas de préstamos de Biblioteca (Fase 5)
+        // La hora exacta la determina schedule_cron_jobs() en el hook 'wp'.
+        // Forzamos la primera programación en activación.
+        if ( class_exists( 'Aura_Library_Cron' ) && ! wp_next_scheduled( 'aura_library_daily_cron' ) ) {
+            Aura_Library_Cron::schedule_cron_jobs();
+        }
     }
     
     /**
@@ -312,6 +472,12 @@ class Aura_Business_Suite {
 
         // Eliminar crons del módulo de inventario (FASE 6)
         Aura_Inventory_Notifications::clear_cron_jobs();
+
+        // Eliminar cron de reservas de Biblioteca (Fase 4)
+        wp_clear_scheduled_hook( 'aura_library_expire_reservations' );
+
+        // Eliminar cron de alertas de préstamos de Biblioteca (Fase 5)
+        wp_clear_scheduled_hook( 'aura_library_daily_cron' );
     }
     
     /**
@@ -797,11 +963,13 @@ class Aura_Business_Suite {
 
         // Cargar scripts de transacciones en el dashboard principal para el widget de aprobaciones
         if ($hook === 'index.php' && current_user_can('aura_finance_approve')) {
+            $tx_list_js_ver = AURA_VERSION . '.' . @filemtime(AURA_PLUGIN_DIR . 'assets/js/transactions-list.js');
+
             wp_enqueue_script(
                 'aura-transactions-list',
                 AURA_PLUGIN_URL . 'assets/js/transactions-list.js',
                 array('jquery'),
-                AURA_VERSION,
+                $tx_list_js_ver,
                 true
             );
             
@@ -818,6 +986,9 @@ class Aura_Business_Suite {
         
         // Assets específicos para la página de listado de transacciones
         if ($hook === 'finanzas_page_aura-financial-transactions') {
+            // Autocomplete para filtro de usuario vinculado
+            wp_enqueue_script('jquery-ui-autocomplete');
+
             // CSS y JS del modal de exportación (Fase 4, Item 4.1)
             wp_enqueue_style(
                 'aura-export-modal',
@@ -873,11 +1044,13 @@ class Aura_Business_Suite {
             );
             
             // JS del listado de transacciones
+            $tx_list_js_ver = AURA_VERSION . '.' . @filemtime(AURA_PLUGIN_DIR . 'assets/js/transactions-list.js');
+
             wp_enqueue_script(
                 'aura-transactions-list',
                 AURA_PLUGIN_URL . 'assets/js/transactions-list.js',
-                array('jquery', 'jquery-ui-datepicker', 'select2'),
-                AURA_VERSION,
+                array('jquery', 'jquery-ui-datepicker', 'jquery-ui-autocomplete', 'select2'),
+                $tx_list_js_ver,
                 true
             );
             
@@ -1168,7 +1341,8 @@ class Aura_Business_Suite {
 
         // Assets específicos para la página de edición de transacciones
         if ($hook === 'admin_page_aura-financial-edit-transaction'
-            || $hook === 'finanzas_page_aura-financial-new-transaction') {
+            || $hook === 'finanzas_page_aura-financial-new-transaction'
+            || $hook === 'aura-financial-dashboard_page_aura-financial-new-transaction') {
             // jQuery UI autocomplete para etiquetas (Fase 5, Item 5.2)
             wp_enqueue_script('jquery-ui-autocomplete');
             wp_add_inline_script('jquery-ui-autocomplete',
@@ -1337,11 +1511,13 @@ class Aura_Business_Suite {
             );
             
             // JavaScript de acciones de transacciones (aprobar/rechazar)
+            $tx_list_js_ver = AURA_VERSION . '.' . @filemtime(AURA_PLUGIN_DIR . 'assets/js/transactions-list.js');
+
             wp_enqueue_script(
                 'aura-transactions-list',
                 AURA_PLUGIN_URL . 'assets/js/transactions-list.js',
                 array('jquery'),
-                AURA_VERSION,
+                $tx_list_js_ver,
                 true
             );
             
@@ -1402,42 +1578,54 @@ class Aura_Business_Suite {
             }
         ');
         
-        // Chart.js para gráficos
-        wp_enqueue_script(
-            'chartjs',
-            'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
-            array(),
-            '4.4.0',
-            true
+        // Solo cargar scripts pesados en páginas del plugin AURA
+        $is_aura_page = (
+            strpos($hook, 'aura-') !== false ||
+            strpos($hook, 'aura_') !== false ||
+            strpos($hook, 'toplevel_page_aura') !== false ||
+            strpos($hook, 'finanzas_page') !== false
         );
-        
-        // Scripts personalizados del admin
-        wp_enqueue_script(
-            'aura-admin-scripts',
-            AURA_PLUGIN_URL . 'assets/js/admin-scripts.js',
-            array('jquery', 'chartjs'),
-            AURA_VERSION,
-            true
-        );
-        
-        // Scripts de gráficos
-        wp_enqueue_script(
-            'aura-charts',
-            AURA_PLUGIN_URL . 'assets/js/charts.js',
-            array('jquery', 'chartjs'),
-            AURA_VERSION,
-            true
-        );
-        
-        // Localizar script con datos para AJAX
-        wp_localize_script('aura-admin-scripts', 'auraData', array(
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce'   => wp_create_nonce('aura_nonce'),
-            'strings' => array(
-                'confirmDelete' => __('¿Estás seguro de eliminar este elemento?', 'aura-suite'),
-                'error'         => __('Ha ocurrido un error. Por favor, intenta nuevamente.', 'aura-suite'),
-            ),
-        ));
+
+        if ( $is_aura_page ) {
+            // Chart.js para gráficos
+            wp_enqueue_script(
+                'chartjs',
+                'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
+                array(),
+                '4.4.0',
+                true
+            );
+
+            // Scripts personalizados del admin
+            wp_enqueue_script(
+                'aura-admin-scripts',
+                AURA_PLUGIN_URL . 'assets/js/admin-scripts.js',
+                array('jquery', 'chartjs'),
+                AURA_VERSION,
+                true
+            );
+
+            // Scripts de gráficos
+            wp_enqueue_script(
+                'aura-charts',
+                AURA_PLUGIN_URL . 'assets/js/charts.js',
+                array('jquery', 'chartjs'),
+                AURA_VERSION,
+                true
+            );
+        }
+
+        // Localizar script con datos para AJAX (solo si el script fue registrado)
+        if ( $is_aura_page ) {
+            wp_localize_script('aura-admin-scripts', 'auraData', array(
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce'   => wp_create_nonce('aura_nonce'),
+                'strings' => array(
+                    'confirmDelete' => __('¿Estás seguro de eliminar este elemento?', 'aura-suite'),
+                    'error'         => __('Ha ocurrido un error. Por favor, intenta nuevamente.', 'aura-suite'),
+                ),
+            ));
+        }
 
         // Media Uploader para la página de Configuración (logo de la organización)
         if ( $hook === 'aura-suite_page_aura-settings' ) {
@@ -1719,13 +1907,15 @@ class Aura_Business_Suite {
             );
         }
 
-        // Gestión de Permisos (solo administradores)
-        if (current_user_can('aura_admin_permissions_assign')) {
+        // Gestión de Permisos (asignar permisos O crear usuarios)
+        if (current_user_can('aura_admin_permissions_assign') || current_user_can('aura_admin_users_create')) {
+            // La capability mínima para ver el menú es la que el usuario tenga
+            $perms_cap = current_user_can('aura_admin_permissions_assign') ? 'aura_admin_permissions_assign' : 'aura_admin_users_create';
             add_submenu_page(
                 'aura-suite',
                 __('Gestión de Permisos', 'aura-suite'),
                 __('🔐 Permisos', 'aura-suite'),
-                'aura_admin_permissions_assign',
+                $perms_cap,
                 'aura-permissions',
                 array($this, 'render_permissions_page')
             );
@@ -1755,7 +1945,7 @@ class Aura_Business_Suite {
                 'aura-financial-dashboard',
                 array('Aura_Financial_Dashboard', 'render'),
                 'dashicons-chart-bar',
-                4
+                3.1
             );
 
             // ── GRUPO 1: Visión general ──────────────────────────
@@ -1979,7 +2169,7 @@ class Aura_Business_Suite {
                 'aura-inventory',
                 array( 'Aura_Inventory_Dashboard', 'render' ),
                 'dashicons-clipboard',
-                4.5
+                3.2
             );
 
             // Dashboard (entrada raíz del menú)
@@ -2181,6 +2371,73 @@ class Aura_Business_Suite {
      */
     public function render_permissions_page() {
         include AURA_PLUGIN_DIR . 'templates/permissions-page.php';
+    }
+
+    /**
+     * AJAX: Crear un nuevo usuario de WordPress con rol Suscriptor.
+     * Requiere capability aura_admin_users_create.
+     */
+    public function ajax_create_user() {
+        check_ajax_referer( 'aura_create_user_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_admin_users_create' ) ) {
+            wp_send_json_error( array( 'message' => __( 'No tienes permiso para crear usuarios.', 'aura-suite' ) ), 403 );
+        }
+
+        $first_name = sanitize_text_field( $_POST['first_name'] ?? '' );
+        $last_name  = sanitize_text_field( $_POST['last_name']  ?? '' );
+        $email      = sanitize_email( $_POST['email'] ?? '' );
+        $phone      = sanitize_text_field( $_POST['phone'] ?? '' );
+        $password   = $_POST['password'] ?? '';
+
+        if ( empty( $first_name ) || empty( $email ) || empty( $password ) ) {
+            wp_send_json_error( array( 'message' => __( 'Nombre, email y contraseña son obligatorios.', 'aura-suite' ) ), 422 );
+        }
+
+        if ( ! is_email( $email ) ) {
+            wp_send_json_error( array( 'message' => __( 'El email no es válido.', 'aura-suite' ) ), 422 );
+        }
+
+        if ( email_exists( $email ) ) {
+            wp_send_json_error( array( 'message' => __( 'Ya existe un usuario con ese email.', 'aura-suite' ) ), 409 );
+        }
+
+        if ( strlen( $password ) < 8 ) {
+            wp_send_json_error( array( 'message' => __( 'La contraseña debe tener al menos 8 caracteres.', 'aura-suite' ) ), 422 );
+        }
+
+        // Generar username a partir del email (único)
+        $username_base = sanitize_user( strstr( $email, '@', true ), true );
+        $username      = $username_base;
+        $suffix        = 1;
+        while ( username_exists( $username ) ) {
+            $username = $username_base . $suffix;
+            $suffix++;
+        }
+
+        $user_id = wp_insert_user( array(
+            'user_login'   => $username,
+            'user_email'   => $email,
+            'user_pass'    => $password,
+            'first_name'   => $first_name,
+            'last_name'    => $last_name,
+            'display_name' => trim( $first_name . ' ' . $last_name ),
+            'role'         => 'subscriber',
+            'meta_input'   => array(
+                'aura_phone' => $phone,
+            ),
+        ) );
+
+        if ( is_wp_error( $user_id ) ) {
+            wp_send_json_error( array( 'message' => $user_id->get_error_message() ), 500 );
+        }
+
+        wp_send_json_success( array(
+            'user_id'      => $user_id,
+            'display_name' => trim( $first_name . ' ' . $last_name ),
+            'email'        => $email,
+            'redirect_url' => admin_url( 'admin.php?page=aura-permissions&user_id=' . $user_id . '&created=1' ),
+        ) );
     }
 }
 

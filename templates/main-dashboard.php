@@ -12,6 +12,8 @@ if (!defined('ABSPATH')) {
 }
 
 // ── Datos del usuario ────────────────────────────────────────────────────────
+global $wpdb;
+
 $current_user = wp_get_current_user();
 $user_first   = !empty($current_user->first_name) ? $current_user->first_name : $current_user->display_name;
 $user_role    = !empty($current_user->roles) ? $current_user->roles[0] : 'subscriber';
@@ -58,9 +60,9 @@ $org_tagline  = get_option('aura_org_tagline', '');
 
 // ── Módulos accesibles ────────────────────────────────────────────────────────
 // Módulos lanzados (desplegados y en producción)
-$deployed_modules = ['finance', 'inventory'];
-// Total del roadmap completo del plugin
-$total_planned    = 7;
+$deployed_modules = ['finance', 'inventory', 'students', 'certificates', 'forms', 'vehicles', 'library'];
+// Total del roadmap completo del plugin (7 activos + 1 planificado)
+$total_planned    = 8;
 // Cuántos módulos desplegados puede ver este usuario
 $active_count     = 0;
 foreach ($deployed_modules as $mk) {
@@ -188,7 +190,78 @@ if (Aura_Roles_Manager::user_can_view_module('inventory')) {
     }
 }
 
-// ── Notificaciones globales ───────────────────────────────────────────────────
+// ── Certificados: estadísticas ───────────────────────────────────────────────
+$cert_total_issued   = 0;
+$cert_issued_month   = 0;
+$cert_total_templates = 0;
+$cert_pending_bulk   = 0;
+$cert_can_view_all   = false;
+
+if ( Aura_Roles_Manager::user_can_view_module( 'certificates' ) ) {
+    $cert_can_view_all = current_user_can( 'aura_certificates_view_all' ) || current_user_can( 'manage_options' );
+
+    if ( $cert_can_view_all ) {
+        $t_certs     = $wpdb->prefix . 'aura_certificates';
+        $t_cert_tpls = $wpdb->prefix . 'aura_certificate_templates';
+
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_certs}'" ) === $t_certs ) {
+            $cert_total_issued = (int) $wpdb->get_var(
+                "SELECT COUNT(*) FROM {$t_certs} WHERE status = 'issued' AND deleted_at IS NULL"
+            );
+            $cert_issued_month = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$t_certs}
+                  WHERE status = 'issued' AND deleted_at IS NULL
+                    AND issued_at >= %s",
+                date( 'Y-m-01' )
+            ) );
+            $cert_pending_bulk = (int) $wpdb->get_var(
+                "SELECT COUNT(*) FROM {$t_certs} WHERE status = 'pending'"
+            );
+        }
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_cert_tpls}'" ) === $t_cert_tpls ) {
+            $cert_total_templates = (int) $wpdb->get_var(
+                "SELECT COUNT(*) FROM {$t_cert_tpls} WHERE status = 'active'"
+            );
+        }
+    }
+}
+
+// ── Vehículos: estadísticas ──────────────────────────────────────────────────
+$veh_total         = 0;
+$veh_available     = 0;
+$veh_trips_month   = 0;
+$veh_maint_alert   = 0;
+$veh_can_view_all  = false;
+
+if ( Aura_Roles_Manager::user_can_view_module( 'vehicles' ) ) {
+    $veh_can_view_all = current_user_can( 'aura_vehicles_view_all' ) || current_user_can( 'manage_options' );
+
+    if ( $veh_can_view_all ) {
+        $t_veh   = $wpdb->prefix . 'aura_vehicles';
+        $t_trips = $wpdb->prefix . 'aura_vehicle_trips';
+
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_veh}'" ) === $t_veh ) {
+            $veh_total     = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t_veh} WHERE deleted_at IS NULL" );
+            $veh_available = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t_veh} WHERE deleted_at IS NULL AND status = 'available'" );
+
+            // Mantenimientos por km próximos o vencidos
+            $veh_maint_alert = (int) $wpdb->get_var(
+                "SELECT COUNT(*) FROM {$t_veh}
+                  WHERE deleted_at IS NULL
+                    AND next_maintenance_km IS NOT NULL
+                    AND current_km >= (next_maintenance_km - 500)"
+            );
+        }
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_trips}'" ) === $t_trips ) {
+            $veh_trips_month = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$t_trips} WHERE departure_date >= %s",
+                gmdate( 'Y-m-01' )
+            ) );
+        }
+    }
+}
+
+// ── Notificaciones globales ─────────────────────────────────────────────────── ───────────────────────────────────────────────────
 $total_notifications = 0;
 $notif_table = $wpdb->prefix . 'aura_notifications';
 if ($wpdb->get_var("SHOW TABLES LIKE '{$notif_table}'") === $notif_table) {
@@ -196,6 +269,41 @@ if ($wpdb->get_var("SHOW TABLES LIKE '{$notif_table}'") === $notif_table) {
         SELECT COUNT(*) FROM {$notif_table}
         WHERE user_id = %d AND is_read = 0
     ", get_current_user_id()));
+}
+
+// ── Biblioteca: estadísticas ─────────────────────────────────────────────────
+$lib_total_books   = 0;
+$lib_active_loans  = 0;
+$lib_overdue       = 0;
+$lib_reservations  = 0;
+$lib_can_view      = false;
+
+if ( Aura_Roles_Manager::user_can_view_module( 'library' ) ) {
+    $lib_can_view = current_user_can( 'aura_library_view_all' ) || current_user_can( 'manage_options' );
+    if ( $lib_can_view ) {
+        $t_books = $wpdb->prefix . 'aura_library_books';
+        $t_loans = $wpdb->prefix . 'aura_library_loans';
+        $t_reserv = $wpdb->prefix . 'aura_library_reservations';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_books}'" ) === $t_books ) {
+            $lib_total_books = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t_books} WHERE deleted_at IS NULL" );
+        }
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_loans}'" ) === $t_loans ) {
+            $lib_active_loans = (int) $wpdb->get_var(
+                "SELECT COUNT(*) FROM {$t_loans} WHERE status = 'active'"
+            );
+            $lib_overdue = (int) $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$t_loans} WHERE status = 'active' AND due_date < %s",
+                    gmdate( 'Y-m-d' )
+                )
+            );
+        }
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_reserv}'" ) === $t_reserv ) {
+            $lib_reservations = (int) $wpdb->get_var(
+                "SELECT COUNT(*) FROM {$t_reserv} WHERE status = 'pending'"
+            );
+        }
+    }
 }
 
 // ── Acceso rápido: nonce ──────────────────────────────────────────────────────
@@ -255,11 +363,11 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
             <div class="adp-stat-card">
                 <div class="adp-stat-card__icon">🧩</div>
                 <div class="adp-stat-card__body">
-                    <span class="adp-stat-card__value"><?php echo $active_count; ?></span><small style="font-size:.75em;color:#9ca3af;font-weight:400;">&nbsp;/&nbsp;<?php echo count($deployed_modules); ?></small>
+                    <span class="adp-stat-card__value"><?php echo $active_count; ?></span><small style="font-size:.75em;color:rgba(255,255,255,.65);font-weight:400;">&nbsp;/&nbsp;<?php echo count($deployed_modules); ?></small>
                     <span class="adp-stat-card__label">
                         <?php _e('Módulos Activos', 'aura-suite'); ?>
-                        <small style="display:block;font-size:10px;color:#9ca3af;font-weight:400;margin-top:1px;">
-                            <?php printf(__('%d en desarrollo', 'aura-suite'), $total_planned - count($deployed_modules)); ?>
+                        <small style="display:block;font-size:10px;color:rgba(255,255,255,.65);font-weight:400;margin-top:1px;">
+                            <?php printf(__('%d en planificación', 'aura-suite'), $total_planned - count($deployed_modules)); ?>
                         </small>
                     </span>
                 </div>
@@ -460,69 +568,373 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
             </div>
             <?php endif; ?>
 
-            <!-- ── ESTUDIANTES (Próximamente - Semana 4) ── -->
-            <div class="adp-module-card adp-module-card--students adp-module-card--coming-soon adp-module-card--compact">
+            <!-- ── ESTUDIANTES (Activo) ── -->
+            <?php
+            $st_total_active  = 0;
+            $st_enrollments   = 0;
+            $st_pending       = 0;
+            $st_overdue       = 0;
+            $st_can_view_all  = false;
+
+            if ( Aura_Roles_Manager::user_can_view_module( 'students' ) ) :
+                $st_can_view_all = current_user_can( 'aura_students_view_all' ) || current_user_can( 'manage_options' );
+
+                if ( $st_can_view_all ) {
+                    $t_st  = $wpdb->prefix . 'aura_students';
+                    $t_en  = $wpdb->prefix . 'aura_student_enrollments';
+                    $t_pay = $wpdb->prefix . 'aura_student_payments';
+
+                    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_st}'" ) === $t_st ) {
+                        $st_total_active = (int) $wpdb->get_var(
+                            "SELECT COUNT(*) FROM {$t_st} WHERE status = 'active' AND deleted_at IS NULL"
+                        );
+                    }
+                    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_en}'" ) === $t_en ) {
+                        $st_enrollments = (int) $wpdb->get_var(
+                            "SELECT COUNT(*) FROM {$t_en} WHERE status = 'active'"
+                        );
+                        $st_pending = (int) $wpdb->get_var(
+                            "SELECT COUNT(*) FROM {$t_en} WHERE status = 'pending'"
+                        );
+                    }
+                    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_pay}'" ) === $t_pay ) {
+                        $st_overdue = (int) $wpdb->get_var(
+                            "SELECT COUNT(*) FROM {$t_pay} WHERE status = 'pending' AND due_date < CURDATE()"
+                        );
+                    }
+                }
+            ?>
+            <div class="adp-module-card adp-module-card--students">
                 <div class="adp-module-card__header">
                     <div class="adp-module-card__icon-row">
                         <span class="adp-module-card__icon">🎓</span>
-                        <span class="adp-badge adp-badge--soon"><?php _e('Próximamente', 'aura-suite'); ?></span>
+                        <span class="adp-badge adp-badge--active"><?php _e( 'Activo', 'aura-suite' ); ?></span>
                     </div>
-                    <h3 class="adp-module-card__title"><?php _e('Estudiantes', 'aura-suite'); ?></h3>
-                    <p class="adp-module-card__desc"><?php _e('Inscripciones, becas, pagos por cuotas y control académico integrado', 'aura-suite'); ?></p>
+                    <h3 class="adp-module-card__title"><?php _e( 'Estudiantes', 'aura-suite' ); ?></h3>
+                    <p class="adp-module-card__desc"><?php _e( 'Inscripciones, becas, pagos por cuotas y control académico integrado', 'aura-suite' ); ?></p>
                 </div>
-                <div class="adp-module-card__eta">📅 <?php _e('Semana 4', 'aura-suite'); ?> · Q2 2026</div>
-            </div>
 
-            <!-- ── VEHÍCULOS (Próximamente - Semana 5) ── -->
-            <div class="adp-module-card adp-module-card--vehicles adp-module-card--coming-soon adp-module-card--compact">
+                <div class="adp-mini-stats">
+                    <?php if ( $st_can_view_all ) : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value"><?php echo $st_total_active; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Estudiantes activos', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value <?php echo $st_pending > 0 ? 'adp-text--warning' : ''; ?>"><?php echo $st_pending; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Inscr. pendientes', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value <?php echo $st_overdue > 0 ? 'adp-text--danger' : ''; ?>"><?php echo $st_overdue; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Cuotas vencidas', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php else : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value" style="font-size:1.2em;">🎓</span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Módulo activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="adp-module-card__actions">
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-students' ); ?>" class="adp-btn adp-btn--primary">
+                        <span class="dashicons dashicons-dashboard"></span>
+                        <?php _e( 'Ver estudiantes', 'aura-suite' ); ?>
+                    </a>
+                    <?php if ( current_user_can( 'aura_students_create' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-students-new' ); ?>" class="adp-btn adp-btn--secondary">
+                        <span class="dashicons dashicons-plus-alt"></span>
+                        <?php _e( 'Nuevo estudiante', 'aura-suite' ); ?>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ( $st_pending > 0 && $st_can_view_all ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-students-enrollments' ); ?>" class="adp-btn adp-btn--alert">
+                        <span class="dashicons dashicons-clipboard"></span>
+                        <?php printf( _n( '%d inscr. pendiente', '%d inscr. pendientes', $st_pending, 'aura-suite' ), $st_pending ); ?>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ( $st_overdue > 0 && $st_can_view_all ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-students-payments' ); ?>" class="adp-btn adp-btn--alert">
+                        <span class="dashicons dashicons-warning"></span>
+                        <?php printf( _n( '%d cuota vencida', '%d cuotas vencidas', $st_overdue, 'aura-suite' ), $st_overdue ); ?>
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ── CERTIFICADOS (Activo) ── -->
+            <?php if ( Aura_Roles_Manager::user_can_view_module( 'certificates' ) ) : ?>
+            <div class="adp-module-card adp-module-card--certificates">
+                <div class="adp-module-card__header">
+                    <div class="adp-module-card__icon-row">
+                        <span class="adp-module-card__icon">🏅</span>
+                        <span class="adp-badge adp-badge--active"><?php _e( 'Activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <h3 class="adp-module-card__title"><?php _e( 'Certificados', 'aura-suite' ); ?></h3>
+                    <p class="adp-module-card__desc"><?php _e( 'Editor visual de diplomas, emisión con QR, folio único y verificación pública', 'aura-suite' ); ?></p>
+                </div>
+
+                <div class="adp-mini-stats">
+                    <?php if ( $cert_can_view_all ) : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value"><?php echo $cert_total_issued; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Total emitidos', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value adp-text--success"><?php echo $cert_issued_month; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Emitidos este mes', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value"><?php echo $cert_total_templates; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Plantillas activas', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php else : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value" style="font-size:1.2em;">🏅</span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Módulo activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="adp-module-card__actions">
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-certificates' ); ?>" class="adp-btn adp-btn--primary">
+                        <span class="dashicons dashicons-dashboard"></span>
+                        <?php _e( 'Ver certificados', 'aura-suite' ); ?>
+                    </a>
+                    <?php if ( current_user_can( 'aura_certificates_issue' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-certificates-list' ); ?>" class="adp-btn adp-btn--secondary">
+                        <span class="dashicons dashicons-awards"></span>
+                        <?php _e( 'Emitir certificado', 'aura-suite' ); ?>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ( current_user_can( 'aura_certificates_templates_manage' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-certificates-templates' ); ?>" class="adp-btn adp-btn--secondary">
+                        <span class="dashicons dashicons-art"></span>
+                        <?php _e( 'Plantillas', 'aura-suite' ); ?>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ( $cert_pending_bulk > 0 && $cert_can_view_all ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-certificates-bulk' ); ?>" class="adp-btn adp-btn--alert">
+                        <span class="dashicons dashicons-warning"></span>
+                        <?php printf( _n( '%d emisión pendiente', '%d emisiones pendientes', $cert_pending_bulk, 'aura-suite' ), $cert_pending_bulk ); ?>
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ── FORMULARIOS (Activo) ── -->
+            <?php
+            $frm_active   = 0;
+            $frm_subs_month = 0;
+            $frm_pending  = 0;
+            $frm_can_view_all = false;
+
+            if ( Aura_Roles_Manager::user_can_view_module( 'forms' ) ) :
+                $frm_can_view_all = current_user_can( 'aura_forms_view_responses_all' ) || current_user_can( 'manage_options' );
+
+                if ( $frm_can_view_all ) {
+                    $t_frms = $wpdb->prefix . 'aura_forms';
+                    $t_fsub = $wpdb->prefix . 'aura_form_submissions';
+
+                    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_frms}'" ) === $t_frms ) {
+                        $frm_active = (int) $wpdb->get_var(
+                            "SELECT COUNT(*) FROM `{$t_frms}` WHERE is_active = 1 AND deleted_at IS NULL"
+                        );
+                    }
+                    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_fsub}'" ) === $t_fsub ) {
+                        $frm_subs_month = (int) $wpdb->get_var(
+                            $wpdb->prepare(
+                                "SELECT COUNT(*) FROM `{$t_fsub}` WHERE submitted_at >= %s",
+                                gmdate( 'Y-m-01 00:00:00' )
+                            )
+                        );
+                    }
+                    $t_enr = $wpdb->prefix . 'aura_student_enrollments';
+                    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_enr}'" ) === $t_enr ) {
+                        $frm_pending = (int) $wpdb->get_var(
+                            "SELECT COUNT(*) FROM `{$t_enr}` WHERE status IN ('pending', 'pending_review')"
+                        );
+                    }
+                }
+            ?>
+            <div class="adp-module-card adp-module-card--forms">
+                <div class="adp-module-card__header">
+                    <div class="adp-module-card__icon-row">
+                        <span class="adp-module-card__icon">📝</span>
+                        <span class="adp-badge adp-badge--active"><?php _e( 'Activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <h3 class="adp-module-card__title"><?php _e( 'Formularios', 'aura-suite' ); ?></h3>
+                    <p class="adp-module-card__desc"><?php _e( 'Encuestas, solicitudes e inscripciones con recopilación de datos dinámica', 'aura-suite' ); ?></p>
+                </div>
+
+                <div class="adp-mini-stats">
+                    <?php if ( $frm_can_view_all ) : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value"><?php echo $frm_active; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Forms activos', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value adp-text--success"><?php echo $frm_subs_month; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Envíos este mes', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value <?php echo $frm_pending > 0 ? 'adp-text--warning' : ''; ?>"><?php echo $frm_pending; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Inscr. pendientes', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php else : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value" style="font-size:1.2em;">📝</span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Módulo activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="adp-module-card__actions">
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-forms-dashboard' ); ?>" class="adp-btn adp-btn--primary">
+                        <span class="dashicons dashicons-dashboard"></span>
+                        <?php _e( 'Ver formularios', 'aura-suite' ); ?>
+                    </a>
+                    <?php if ( current_user_can( 'aura_forms_create' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-forms-new' ); ?>" class="adp-btn adp-btn--secondary">
+                        <span class="dashicons dashicons-plus-alt"></span>
+                        <?php _e( 'Nuevo formulario', 'aura-suite' ); ?>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ( $frm_pending > 0 && $frm_can_view_all ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-forms-enrollments' ); ?>" class="adp-btn adp-btn--alert">
+                        <span class="dashicons dashicons-clipboard"></span>
+                        <?php printf( _n( '%d inscr. pendiente', '%d inscr. pendientes', $frm_pending, 'aura-suite' ), $frm_pending ); ?>
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ── VEHÍCULOS (Activo) ── -->
+            <?php
+            if ( Aura_Roles_Manager::user_can_view_module( 'vehicles' ) ) :
+            ?>
+            <div class="adp-module-card adp-module-card--vehicles">
                 <div class="adp-module-card__header">
                     <div class="adp-module-card__icon-row">
                         <span class="adp-module-card__icon">🚗</span>
-                        <span class="adp-badge adp-badge--soon"><?php _e('Próximamente', 'aura-suite'); ?></span>
+                        <span class="adp-badge adp-badge--active"><?php _e( 'Activo', 'aura-suite' ); ?></span>
                     </div>
-                    <h3 class="adp-module-card__title"><?php _e('Vehículos', 'aura-suite'); ?></h3>
-                    <p class="adp-module-card__desc"><?php _e('Control de flota, salidas, odómetro y mantenimientos por kilometraje', 'aura-suite'); ?></p>
+                    <h3 class="adp-module-card__title"><?php _e( 'Vehículos', 'aura-suite' ); ?></h3>
+                    <p class="adp-module-card__desc"><?php _e( 'Control de flota, salidas, odómetro y mantenimientos por kilometraje', 'aura-suite' ); ?></p>
                 </div>
-                <div class="adp-module-card__eta">📅 <?php _e('Semana 5', 'aura-suite'); ?> · Q2 2026</div>
-            </div>
 
-            <!-- ── ELECTRICIDAD (Próximamente - Semana 6) ── -->
+                <div class="adp-mini-stats">
+                    <?php if ( $veh_can_view_all ) : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value"><?php echo $veh_available; ?> <small style="font-size:.65em;color:#6b7280;">/ <?php echo $veh_total; ?></small></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Disponibles', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value adp-text--success"><?php echo $veh_trips_month; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Salidas este mes', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value <?php echo $veh_maint_alert > 0 ? 'adp-text--warning' : ''; ?>"><?php echo $veh_maint_alert; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Alertas mant.', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php else : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value" style="font-size:1.2em;">🚗</span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Módulo activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="adp-module-card__actions">
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-vehicles' ); ?>" class="adp-btn adp-btn--primary">
+                        <span class="dashicons dashicons-dashboard"></span>
+                        <?php _e( 'Ver flota', 'aura-suite' ); ?>
+                    </a>
+                    <?php if ( current_user_can( 'aura_vehicles_exits_create' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-vehicles-trips' ); ?>" class="adp-btn adp-btn--secondary">
+                        <span class="dashicons dashicons-plus-alt"></span>
+                        <?php _e( 'Nueva salida', 'aura-suite' ); ?>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ( $veh_maint_alert > 0 && $veh_can_view_all ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-vehicles-list' ); ?>" class="adp-btn adp-btn--alert">
+                        <span class="dashicons dashicons-warning"></span>
+                        <?php printf( _n( '%d con alerta', '%d con alerta km', $veh_maint_alert, 'aura-suite' ), $veh_maint_alert ); ?>
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ── BIBLIOTECA (Activo) ── -->
+            <?php if ( Aura_Roles_Manager::user_can_view_module( 'library' ) ) : ?>
+            <div class="adp-module-card adp-module-card--library">
+                <div class="adp-module-card__header">
+                    <div class="adp-module-card__icon-row">
+                        <span class="adp-module-card__icon">📚</span>
+                        <span class="adp-badge adp-badge--active"><?php _e( 'Activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <h3 class="adp-module-card__title"><?php _e( 'Biblioteca', 'aura-suite' ); ?></h3>
+                    <p class="adp-module-card__desc"><?php _e( 'Catálogo digital, préstamos, devoluciones, reservas y alertas de vencimiento', 'aura-suite' ); ?></p>
+                </div>
+
+                <div class="adp-mini-stats">
+                    <?php if ( $lib_can_view ) : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value"><?php echo $lib_total_books; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Libros', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value adp-text--success"><?php echo $lib_active_loans; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Préstamos activos', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value <?php echo $lib_overdue > 0 ? 'adp-text--danger' : ''; ?>"><?php echo $lib_overdue; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Vencidos', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php else : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value" style="font-size:1.2em;">📚</span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Módulo activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="adp-module-card__actions">
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-library' ); ?>" class="adp-btn adp-btn--primary">
+                        <span class="dashicons dashicons-dashboard"></span>
+                        <?php _e( 'Ver biblioteca', 'aura-suite' ); ?>
+                    </a>
+                    <?php if ( current_user_can( 'aura_library_manage' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-library-loans' ); ?>" class="adp-btn adp-btn--secondary">
+                        <span class="dashicons dashicons-book"></span>
+                        <?php _e( 'Préstamos', 'aura-suite' ); ?>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ( $lib_overdue > 0 && $lib_can_view ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-library-loans' ); ?>" class="adp-btn adp-btn--alert">
+                        <span class="dashicons dashicons-warning"></span>
+                        <?php printf( _n( '%d préstamo vencido', '%d préstamos vencidos', $lib_overdue, 'aura-suite' ), $lib_overdue ); ?>
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ── ELECTRICIDAD (En Desarrollo) ── -->
             <div class="adp-module-card adp-module-card--electricity adp-module-card--coming-soon adp-module-card--compact">
                 <div class="adp-module-card__header">
                     <div class="adp-module-card__icon-row">
                         <span class="adp-module-card__icon">⚡</span>
-                        <span class="adp-badge adp-badge--soon"><?php _e('Próximamente', 'aura-suite'); ?></span>
+                        <span class="adp-badge" style="background:#f59e0b;color:#fff;"><?php _e('En desarrollo', 'aura-suite'); ?></span>
                     </div>
                     <h3 class="adp-module-card__title"><?php _e('Electricidad', 'aura-suite'); ?></h3>
                     <p class="adp-module-card__desc"><?php _e('Monitoreo de consumo eléctrico por área, alertas de umbral y tendencias', 'aura-suite'); ?></p>
                 </div>
-                <div class="adp-module-card__eta">📅 <?php _e('Semana 6', 'aura-suite'); ?> · Q2 2026</div>
-            </div>
-
-            <!-- ── BIBLIOTECA (Próximamente - Semana 6+) ── -->
-            <div class="adp-module-card adp-module-card--library adp-module-card--coming-soon adp-module-card--compact">
-                <div class="adp-module-card__header">
-                    <div class="adp-module-card__icon-row">
-                        <span class="adp-module-card__icon">📚</span>
-                        <span class="adp-badge adp-badge--soon"><?php _e('Próximamente', 'aura-suite'); ?></span>
-                    </div>
-                    <h3 class="adp-module-card__title"><?php _e('Biblioteca', 'aura-suite'); ?></h3>
-                    <p class="adp-module-card__desc"><?php _e('Catálogo digital, préstamos, devoluciones y alertas de vencimiento', 'aura-suite'); ?></p>
-                </div>
-                <div class="adp-module-card__eta">📅 <?php _e('Semana 6+', 'aura-suite'); ?> · Q3 2026</div>
-            </div>
-
-            <!-- ── FORMULARIOS (Próximamente - Semana 6+) ── -->
-            <div class="adp-module-card adp-module-card--forms adp-module-card--coming-soon adp-module-card--compact">
-                <div class="adp-module-card__header">
-                    <div class="adp-module-card__icon-row">
-                        <span class="adp-module-card__icon">📝</span>
-                        <span class="adp-badge adp-badge--soon"><?php _e('Próximamente', 'aura-suite'); ?></span>
-                    </div>
-                    <h3 class="adp-module-card__title"><?php _e('Formularios', 'aura-suite'); ?></h3>
-                    <p class="adp-module-card__desc"><?php _e('Encuestas, solicitudes e inscripciones con recopilación de datos dinámica', 'aura-suite'); ?></p>
-                </div>
-                <div class="adp-module-card__eta">📅 <?php _e('Semana 6+', 'aura-suite'); ?> · Q3 2026</div>
+                <div class="adp-module-card__eta">📅 Q3 2026</div>
             </div>
 
         </div><!-- /.adp-modules-grid -->
@@ -573,7 +985,7 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
                 <?php endif; ?>
 
                 <?php if (current_user_can('aura_vehicles_exits_create')): ?>
-                <a href="<?php echo admin_url('post-new.php?post_type=aura_vehicle_exit'); ?>" class="adp-quick-btn">
+                <a href="<?php echo admin_url('admin.php?page=aura-vehicles-trips'); ?>" class="adp-quick-btn">
                     <span class="adp-quick-btn__icon">🚗</span>
                     <div>
                         <strong><?php _e('Salida de Vehículo', 'aura-suite'); ?></strong>
@@ -611,6 +1023,28 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
                     <div>
                         <strong><?php _e('Préstamo de Equipo', 'aura-suite'); ?></strong>
                         <span><?php _e('Registrar salida de un equipo', 'aura-suite'); ?></span>
+                    </div>
+                    <span class="adp-quick-btn__arrow">→</span>
+                </a>
+                <?php endif; ?>
+
+                <?php if ( current_user_can( 'aura_students_create' ) || current_user_can( 'manage_options' ) ) : ?>
+                <a href="<?php echo admin_url( 'admin.php?page=aura-students-new' ); ?>" class="adp-quick-btn">
+                    <span class="adp-quick-btn__icon">🎓</span>
+                    <div>
+                        <strong><?php _e( 'Nuevo Estudiante', 'aura-suite' ); ?></strong>
+                        <span><?php _e( 'Registrar estudiante o participante', 'aura-suite' ); ?></span>
+                    </div>
+                    <span class="adp-quick-btn__arrow">→</span>
+                </a>
+                <?php endif; ?>
+
+                <?php if ( current_user_can( 'aura_certificates_issue' ) || current_user_can( 'manage_options' ) ) : ?>
+                <a href="<?php echo admin_url( 'admin.php?page=aura-certificates-list' ); ?>" class="adp-quick-btn">
+                    <span class="adp-quick-btn__icon">🏅</span>
+                    <div>
+                        <strong><?php _e( 'Emitir Certificado', 'aura-suite' ); ?></strong>
+                        <span><?php _e( 'Generar y enviar diploma/certificado', 'aura-suite' ); ?></span>
                     </div>
                     <span class="adp-quick-btn__arrow">→</span>
                 </a>
@@ -672,7 +1106,7 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
                     </tr>
                     <tr>
                         <td><?php _e('Módulos activos:', 'aura-suite'); ?></td>
-                        <td><strong><?php echo $active_count; ?> / <?php echo $total_planned; ?></strong></td>
+                        <td><strong><?php echo $active_count; ?> / <?php echo count($deployed_modules); ?></strong> <small style="color:#6b7280;">(<?php echo $total_planned - count($deployed_modules); ?> en planificación)</small></td>
                     </tr>
                 </table>
                 <div class="adp-syslinks">
@@ -697,23 +1131,39 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
 
             <!-- Roadmap -->
             <div class="adp-panel">
-                <h2 class="adp-panel__title">🚀 <?php _e('Próximas Funcionalidades', 'aura-suite'); ?></h2>
+                <h2 class="adp-panel__title">🚀 <?php _e('Estado del Roadmap', 'aura-suite'); ?></h2>
                 <ul class="adp-roadmap">
                     <li>
-                        <span class="adp-roadmap__badge adp-roadmap__badge--q1">Q1 2026</span>
-                        📦 <?php _e('Módulo Inventario', 'aura-suite'); ?>
+                        <span class="adp-roadmap__badge" style="background:#10b981;color:#fff;">✅ Listo</span>
+                        💰 <?php _e('Módulo Finanzas (FASE 1-8)', 'aura-suite'); ?>
                     </li>
                     <li>
-                        <span class="adp-roadmap__badge adp-roadmap__badge--q1">Q1 2026</span>
-                        📚 <?php _e('Módulo Biblioteca', 'aura-suite'); ?>
+                        <span class="adp-roadmap__badge" style="background:#10b981;color:#fff;">✅ Listo</span>
+                        📦 <?php _e('Módulo Inventario (FASE 1-8)', 'aura-suite'); ?>
                     </li>
                     <li>
-                        <span class="adp-roadmap__badge adp-roadmap__badge--q2">Q2 2026</span>
+                        <span class="adp-roadmap__badge" style="background:#10b981;color:#fff;">✅ Listo</span>
                         🎓 <?php _e('Módulo Estudiantes', 'aura-suite'); ?>
                     </li>
                     <li>
-                        <span class="adp-roadmap__badge adp-roadmap__badge--q2">Q2 2026</span>
-                        📝 <?php _e('Formularios Dinámicos', 'aura-suite'); ?>
+                        <span class="adp-roadmap__badge" style="background:#10b981;color:#fff;">✅ Listo</span>
+                        🏅 <?php _e('Módulo Certificados', 'aura-suite'); ?>
+                    </li>
+                    <li>
+                        <span class="adp-roadmap__badge" style="background:#10b981;color:#fff;">✅ Listo</span>
+                        📝 <?php _e('Módulo Formularios', 'aura-suite'); ?>
+                    </li>
+                    <li>
+                        <span class="adp-roadmap__badge" style="background:#10b981;color:#fff;">✅ Listo</span>
+                        🚗 <?php _e('Módulo Vehículos', 'aura-suite'); ?>
+                    </li>
+                    <li>
+                        <span class="adp-roadmap__badge" style="background:#10b981;color:#fff;">✅ Listo</span>
+                        📚 <?php _e('Módulo Biblioteca', 'aura-suite'); ?>
+                    </li>
+                    <li>
+                        <span class="adp-roadmap__badge" style="background:#f59e0b;color:#fff;">⏳ En desarrollo</span>
+                        ⚡ <?php _e('Módulo Electricidad', 'aura-suite'); ?> &mdash; Q3 2026
                     </li>
                 </ul>
             </div><!-- /.adp-panel (roadmap) -->

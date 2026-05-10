@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Lista de usuarios para el filtro de auditoría (solo admins/view_all)
 $can_view_all = current_user_can( 'aura_finance_view_all' ) || current_user_can( 'manage_options' );
-$users_list   = $can_view_all ? get_users( [ 'fields' => [ 'ID', 'display_name' ], 'orderby' => 'display_name' ] ) : [];
+$users_list   = $can_view_all ? Aura_Roles_Manager::get_aura_users( [ 'fields' => [ 'ID', 'display_name' ] ], 'aura_finance_' ) : [];
 
 // Lista de áreas para el filtro de presupuesto
 global $wpdb;

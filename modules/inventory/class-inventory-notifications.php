@@ -583,10 +583,11 @@ class Aura_Inventory_Notifications {
      *
      * @param  string $phone    Número E.164 (ej. +57987654321)
      * @param  string $message  Texto del mensaje
+     * @param  bool   $force    Omitir check de aura_whatsapp_enabled (solo para tests)
      * @return bool             true si la petición HTTP fue exitosa
      */
-    private static function send_whatsapp( string $phone, string $message ): bool {
-        return Aura_Notifications::send_whatsapp( $phone, $message );
+    private static function send_whatsapp( string $phone, string $message, bool $force = false ): bool {
+        return Aura_Notifications::send_whatsapp( $phone, $message, $force );
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -752,9 +753,9 @@ class Aura_Inventory_Notifications {
             wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
-        $provider = sanitize_key( $_POST['whatsapp_provider'] ?? 'callmebot' );
-        if ( ! in_array( $provider, [ 'callmebot', 'twilio', 'meta' ], true ) ) {
-            $provider = 'callmebot';
+        $provider = sanitize_key( $_POST['whatsapp_provider'] ?? 'green_api' );
+        if ( ! in_array( $provider, [ 'green_api', 'callmebot', 'twilio', 'meta' ], true ) ) {
+            $provider = 'green_api';
         }
 
         update_option( 'aura_whatsapp_enabled',  ! empty( $_POST['whatsapp_enabled'] ) ? '1' : '0' );
@@ -792,10 +793,8 @@ class Aura_Inventory_Notifications {
             wp_send_json_error( [ 'message' => __( 'Debes indicar un número de teléfono de destino.', 'aura-suite' ) ] );
         }
 
-        if ( ! get_option( 'aura_whatsapp_enabled', '0' ) ) {
-            wp_send_json_error( [ 'message' => __( 'WhatsApp no está habilitado. Actívalo y guarda antes de probar.', 'aura-suite' ) ] );
-        }
-
+        // No se bloquea si WhatsApp no está habilitado — el test debe poder usarse
+        // para verificar credenciales antes de activar el servicio.
         $site    = esc_html( aura_get_org_name() );
         $message = sprintf(
             __( '✅ Prueba de notificación desde %s. Si ves este mensaje, la integración WhatsApp funciona correctamente. (%s)', 'aura-suite' ),
@@ -803,7 +802,7 @@ class Aura_Inventory_Notifications {
             date_i18n( 'd/m/Y H:i' )
         );
 
-        $sent = self::send_whatsapp( $phone, $message );
+        $sent = self::send_whatsapp( $phone, $message, true );
 
         if ( $sent ) {
             wp_send_json_success( [

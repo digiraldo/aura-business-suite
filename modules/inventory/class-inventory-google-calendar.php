@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Integración Google Calendar — Módulo de Inventario FASE 6+
  *

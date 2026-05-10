@@ -12,58 +12,225 @@
     'use strict';
 
     // ─────────────────────────────────────────────────────────────
-    // MÓDULO: LISTADO DE MANTENIMIENTOS
+    // MÓDULO: LISTADO DE MANTENIMIENTOS — DataTables
     // ─────────────────────────────────────────────────────────────
     var MaintenanceList = {
 
-        cfg:         null,
-        currentPage: 1,
-        sortBy:      'maintenance_date',
-        sortDir:     'DESC',
+        cfg:   null,
+        table: null,
 
         init: function () {
             if (typeof auraMaintList === 'undefined') return;
             this.cfg = auraMaintList;
-            this.bindEvents();
 
             // Pre-seleccionar equipo si viene por URL
             if (this.cfg.preselectEquip) {
                 $('#aura-maint-filter-equipment').val(this.cfg.preselectEquip);
             }
-            this.load();
+            this.initDataTable();
+            this.bindEvents();
         },
 
+        // ── Helpers de render ────────────────────────────────────
+        _thumb: function (m) {
+            return m.photo_thumb_url
+                ? '<div class="aura-inv-thumb-wrap" data-full="' + escHtml(m.photo_full_url || m.photo_thumb_url) + '">' +
+                  '<img src="' + escHtml(m.photo_thumb_url) + '" alt="" width="44" height="33"' +
+                  ' style="border-radius:3px;object-fit:cover;display:block;border:1px solid #dcdcde;">' +
+                  '</div>'
+                : '<span class="dashicons dashicons-format-image" style="color:#c3c4c7;font-size:24px;" title="Sin foto"></span>';
+        },
+
+        _typeBadge: function (m) {
+            var cfg = this.cfg;
+            return '<span class="aura-maint-type-badge aura-maint-type-' + m.type + '">' +
+                   escHtml(cfg.txt.type_labels[m.type] || m.type) + '</span>';
+        },
+
+        _executor: function (m) {
+            var cfg = this.cfg;
+            return m.performed_by === 'external'
+                ? '<span class="aura-maint-exec-badge external"><span class="dashicons dashicons-store"></span>' +
+                  escHtml(m.workshop_name || cfg.txt.performed_labels.external) + '</span>'
+                : '<span class="aura-maint-exec-badge"><span class="dashicons dashicons-businessman"></span>' +
+                  escHtml(m.tech_name || cfg.txt.performed_labels.internal) + '</span>';
+        },
+
+        _costCell: function (m) {
+            var currency = this.cfg.currency || '$';
+            return m.total_cost > 0
+                ? '<span class="aura-maint-cost-cell">' + currency +
+                  parseFloat(m.total_cost).toLocaleString('es', {minimumFractionDigits:2}) + '</span>'
+                : '<span class="aura-maint-cost-cell zero">—</span>';
+        },
+
+        _psBadge: function (m) {
+            var cfg = this.cfg;
+            return '<span class="aura-maint-ps-badge aura-maint-ps-' + m.post_status + '">' +
+                   escHtml(cfg.txt.post_status_labels[m.post_status] || m.post_status) + '</span>';
+        },
+
+        _finBadge: function (m) {
+            var cfg = this.cfg;
+            return m.has_finance
+                ? '<span class="aura-maint-finance-ok"><span class="dashicons dashicons-yes-alt"></span>' + cfg.txt.has_finance + '</span>'
+                : '<span style="color:#c3c4c7;">' + cfg.txt.no_finance + '</span>';
+        },
+
+        _actions: function (m) {
+            var cfg = this.cfg;
+            var h = '<div class="aura-inv-row-actions">';
+            h += '<button class="aura-inv-btn-icon aura-maint-btn-detail" data-id="' + m.id + '" title="Ver detalle">' +
+                 '<span class="dashicons dashicons-visibility"></span></button>';
+            if (m.can_edit) {
+                h += '<button class="aura-inv-btn-icon aura-maint-btn-edit" data-id="' + m.id + '" title="Editar">' +
+                     '<span class="dashicons dashicons-edit"></span></button>';
+            }
+            if (m.can_delete) {
+                h += '<button class="aura-inv-btn-icon delete aura-maint-btn-delete" data-id="' + m.id + '" title="Eliminar">' +
+                     '<span class="dashicons dashicons-trash"></span></button>';
+            }
+            h += '</div>';
+            return h;
+        },
+
+        // ── Inicializar DataTable ────────────────────────────────
+        initDataTable: function () {
+            var self = this;
+            var cfg  = this.cfg;
+
+            // Evitar re-inicialización si WP ya cargó el script antes
+            if ($.fn.DataTable.isDataTable('#aura-maint-table')) {
+                this.table = $('#aura-maint-table').DataTable();
+                return;
+            }
+
+            this.table = new DataTable('#aura-maint-table', {
+                responsive: true,
+                processing: true,
+                serverSide: false,
+                pageLength: 20,
+                lengthMenu: [10, 20, 50, 100],
+                order: [[1, 'desc']],       // Fecha descendente por defecto
+                language: {
+                    processing:  cfg.txt.loading || 'Cargando…',
+                    zeroRecords: cfg.txt.no_results || 'No se encontraron mantenimientos.',
+                    info:        '_TOTAL_ registros',
+                    infoEmpty:   '0 registros',
+                    infoFiltered: '(filtrado de _MAX_ total)',
+                    lengthMenu:  'Mostrar _MENU_ por página',
+                    paginate: { first:'«', last:'»', next:'›', previous:'‹' }
+                },
+                searching: false,
+                dom: '<"aura-dt-top"li>rt<"aura-dt-bottom"p>',
+
+                ajax: {
+                    url:  cfg.ajaxurl,
+                    type: 'POST',
+                    data: function () {
+                        return {
+                            action:       'aura_inventory_maintenance_get_list',
+                            nonce:        cfg.nonce,
+                            page:         1,
+                            per_page:     9999,
+                            search:       $('#aura-maint-search').val(),
+                            equipment_id: $('#aura-maint-filter-equipment').val() || 0,
+                            type:         $('#aura-maint-filter-type').val(),
+                            performed_by: $('#aura-maint-filter-performed').val(),
+                            post_status:  $('#aura-maint-filter-post-status').val(),
+                            date_from:    $('#aura-maint-filter-date-from').val(),
+                            date_to:      $('#aura-maint-filter-date-to').val(),
+                        };
+                    },
+                    dataSrc: function (json) {
+                        if (!json.success) return [];
+                        return json.data.items || [];
+                    },
+                },
+
+                columns: [
+                    {
+                        title: 'Foto',
+                        data: 'photo_thumb_url',
+                        orderable: false,
+                        className: 'col-photo',
+                        width: '58px',
+                        render: function (data, type, item) {
+                            return type === 'display' ? self._thumb(item) : item.equipment_name || '';
+                        },
+                    },
+                    {
+                        title: 'Equipo', data: 'equipment_name',
+                        render: function (data, type, m) {
+                            if (type !== 'display') return data || '';
+                            var h = '<strong>' + escHtml(m.equipment_name) + '</strong>';
+                            var sub = [
+                                m.equipment_brand ? escHtml(m.equipment_brand) : '',
+                                m.equipment_code  ? 'Cód: ' + escHtml(m.equipment_code) : ''
+                            ].filter(Boolean).join(' · ');
+                            if (sub) h += '<br><small style="color:#646970;">' + sub + '</small>';
+                            return h;
+                        },
+                    },
+                    {
+                        title: 'Fecha', data: 'maintenance_date',
+                        render: function (data) { return escHtml(data || '—'); },
+                    },
+                    {
+                        title: 'Tipo', data: 'type',
+                        render: function (d, t, m) {
+                            return t === 'display' ? self._typeBadge(m) : (m.type || '');
+                        },
+                    },
+                    {
+                        title: 'Ejecutor', data: 'performed_by',
+                        render: function (d, t, m) {
+                            return t === 'display' ? self._executor(m) : (m.workshop_name || m.tech_name || '');
+                        },
+                    },
+                    {
+                        title: 'Costo total', data: 'total_cost',
+                        render: function (d, t, m) {
+                            return t === 'display' ? self._costCell(m) : (parseFloat(d) || 0);
+                        },
+                    },
+                    {
+                        title: 'Estado post-mant.', data: 'post_status',
+                        render: function (d, t, m) {
+                            return t === 'display' ? self._psBadge(m) : (d || '');
+                        },
+                    },
+                    {
+                        title: 'Finanzas', data: 'has_finance',
+                        render: function (d, t, m) {
+                            return t === 'display' ? self._finBadge(m) : (d ? '1' : '0');
+                        },
+                    },
+                    {
+                        title: 'Acciones', data: null, orderable: false, searchable: false,
+                        render: function (d, t, m) {
+                            return t === 'display' ? self._actions(m) : '';
+                        },
+                    },
+                ],
+            });
+        },
+
+        // ── Filtros externos → recargar tabla ────────────────────
         bindEvents: function () {
             var self = this;
             var cfg  = this.cfg;
 
-            // Filtros
-            $('#aura-maint-filter-apply').on('click',  function () { self.currentPage = 1; self.load(); });
+            $('#aura-maint-filter-apply').on('click', function () { self.table.ajax.reload(); });
             $('#aura-maint-filter-clear').on('click',  function () { self.clearFilters(); });
             $('#aura-maint-search').on('keydown', function (e) {
-                if (e.key === 'Enter') { self.currentPage = 1; self.load(); }
+                if (e.key === 'Enter') self.table.ajax.reload();
             });
             // Enlace "Ver →" de seguimientos pendientes
             $('#aura-maint-filter-followup').on('click', function (e) {
                 e.preventDefault();
                 $('#aura-maint-filter-post-status').val('needs_followup');
-                self.currentPage = 1; self.load();
-            });
-
-            // Paginación
-            $('#aura-maint-prev').on('click', function () { if (self.currentPage > 1) { self.currentPage--; self.load(); } });
-            $('#aura-maint-next').on('click', function () { self.currentPage++; self.load(); });
-
-            // Ordenamiento
-            $(document).on('click', '#aura-maint-table th.sortable', function () {
-                var col = $(this).data('sort');
-                if (self.sortBy === col) {
-                    self.sortDir = self.sortDir === 'ASC' ? 'DESC' : 'ASC';
-                } else {
-                    self.sortBy  = col;
-                    self.sortDir = 'DESC';
-                }
-                self.currentPage = 1; self.load();
+                self.table.ajax.reload();
             });
 
             // Acciones delegadas
@@ -90,138 +257,7 @@
             $('#aura-maint-search').val('');
             $('#aura-maint-filter-equipment, #aura-maint-filter-type, #aura-maint-filter-performed, #aura-maint-filter-post-status').val('');
             $('#aura-maint-filter-date-from, #aura-maint-filter-date-to').val('');
-            this.currentPage = 1; this.load();
-        },
-
-        load: function () {
-            var self = this;
-            var cfg  = this.cfg;
-
-            var $tbody = $('#aura-maint-tbody');
-            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:30px;">' +
-                '<span class="spinner is-active" style="float:none;margin:0 8px 0 0;"></span>' + cfg.txt.loading + '</td></tr>');
-
-            $.ajax({
-                url:    cfg.ajaxurl,
-                method: 'POST',
-                data: {
-                    action:       'aura_inventory_maintenance_get_list',
-                    nonce:        cfg.nonce,
-                    page:         self.currentPage,
-                    per_page:     20,
-                    search:       $('#aura-maint-search').val(),
-                    equipment_id: $('#aura-maint-filter-equipment').val() || 0,
-                    type:         $('#aura-maint-filter-type').val(),
-                    performed_by: $('#aura-maint-filter-performed').val(),
-                    post_status:  $('#aura-maint-filter-post-status').val(),
-                    date_from:    $('#aura-maint-filter-date-from').val(),
-                    date_to:      $('#aura-maint-filter-date-to').val(),
-                    sort_by:      self.sortBy,
-                    sort_dir:     self.sortDir,
-                },
-                success: function (res) {
-                    if (!res.success) {
-                        $tbody.html('<tr><td colspan="8">' + (res.data.message || cfg.txt.error) + '</td></tr>');
-                        return;
-                    }
-                    var d = res.data;
-                    self.renderRows(d.items, $tbody);
-                    self.updatePagination(d);
-                    self.updateSortHeaders();
-                },
-                error: function () {
-                    $tbody.html('<tr><td colspan="8">' + cfg.txt.error + '</td></tr>');
-                },
-            });
-        },
-
-        renderRows: function (items, $tbody) {
-            var cfg = this.cfg;
-            if (!items || items.length === 0) {
-                $tbody.html('<tr><td colspan="9" style="text-align:center;padding:30px;color:#646970;">' + cfg.txt.no_results + '</td></tr>');
-                return;
-            }
-
-            var currency = cfg.currency || '$';
-            var html = '';
-            items.forEach(function (m) {
-                var typeBadge = '<span class="aura-maint-type-badge aura-maint-type-' + m.type + '">' +
-                    escHtml(cfg.txt.type_labels[m.type] || m.type) + '</span>';
-
-                var executor = m.performed_by === 'external'
-                    ? '<span class="aura-maint-exec-badge external"><span class="dashicons dashicons-store"></span>' + escHtml(m.workshop_name || cfg.txt.performed_labels.external) + '</span>'
-                    : '<span class="aura-maint-exec-badge"><span class="dashicons dashicons-businessman"></span>' + escHtml(m.tech_name || cfg.txt.performed_labels.internal) + '</span>';
-
-                var costCell = m.total_cost > 0
-                    ? '<span class="aura-maint-cost-cell">' + currency + parseFloat(m.total_cost).toLocaleString('es', {minimumFractionDigits:2}) + '</span>'
-                    : '<span class="aura-maint-cost-cell zero">—</span>';
-
-                var psBadge = '<span class="aura-maint-ps-badge aura-maint-ps-' + m.post_status + '">' +
-                    escHtml(cfg.txt.post_status_labels[m.post_status] || m.post_status) + '</span>';
-
-                var finBadge = m.has_finance
-                    ? '<span class="aura-maint-finance-ok"><span class="dashicons dashicons-yes-alt"></span>' + cfg.txt.has_finance + '</span>'
-                    : '<span style="color:#c3c4c7;">' + cfg.txt.no_finance + '</span>';
-
-                var actions = '<div class="aura-inv-row-actions">';
-                actions += '<button class="aura-inv-btn-icon aura-maint-btn-detail" data-id="' + m.id + '" title="Ver detalle"><span class="dashicons dashicons-visibility"></span></button>';
-                if (m.can_edit) {
-                    actions += '<button class="aura-inv-btn-icon aura-maint-btn-edit" data-id="' + m.id + '" title="Editar"><span class="dashicons dashicons-edit"></span></button>';
-                }
-                if (m.can_delete) {
-                    actions += '<button class="aura-inv-btn-icon delete aura-maint-btn-delete" data-id="' + m.id + '" title="Eliminar"><span class="dashicons dashicons-trash"></span></button>';
-                }
-                actions += '</div>';
-
-                // Thumbnail del equipo
-                var thumbCell = m.photo_thumb_url
-                    ? '<img src="' + escHtml(m.photo_thumb_url) + '" alt="" width="44" height="33"' +
-                      ' style="border-radius:3px;object-fit:cover;display:block;border:1px solid #dcdcde;">'
-                    : '<span class="dashicons dashicons-format-image" style="color:#c3c4c7;font-size:24px;" title="Sin foto"></span>';
-
-                html += '<tr id="aura-maint-row-' + m.id + '">' +
-                    '<td style="width:54px;text-align:center;">' + thumbCell + '</td>' +
-                    '<td>' + escHtml(m.maintenance_date) + '</td>' +
-                    '<td><strong>' + escHtml(m.equipment_name) + '</strong>' +
-                    ((m.equipment_brand || m.equipment_code)
-                        ? '<br><small style="color:#646970;">' +
-                          [m.equipment_brand ? escHtml(m.equipment_brand) : '', m.equipment_code ? 'Cód: ' + escHtml(m.equipment_code) : ''].filter(Boolean).join(' &middot; ') +
-                          '</small>'
-                        : '') +
-                    '</td>' +
-                    '<td>' + typeBadge  + '</td>' +
-                    '<td>' + executor   + '</td>' +
-                    '<td>' + costCell   + '</td>' +
-                    '<td>' + psBadge    + '</td>' +
-                    '<td>' + finBadge   + '</td>' +
-                    '<td>' + actions    + '</td>' +
-                    '</tr>';
-            });
-
-            $tbody.html(html);
-        },
-
-        updatePagination: function (d) {
-            var cfg = this.cfg;
-            var $pag = $('#aura-maint-pagination');
-            $pag.show();
-            $('#aura-maint-total-count').text(d.total + ' ' + cfg.txt.n_items.replace('%s', ''));
-            $('#aura-maint-page-info').text(
-                cfg.txt.page_of.replace('%1$s', d.page).replace('%2$s', d.total_pages)
-            );
-            $('#aura-maint-prev').prop('disabled', d.page <= 1);
-            $('#aura-maint-next').prop('disabled', d.page >= d.total_pages);
-        },
-
-        updateSortHeaders: function () {
-            var sortBy = this.sortBy;
-            var sortDir = this.sortDir;
-            $('#aura-maint-table th.sortable').each(function () {
-                $(this).removeClass('sorted-asc sorted-desc');
-                if ($(this).data('sort') === sortBy) {
-                    $(this).addClass(sortDir === 'ASC' ? 'sorted-asc' : 'sorted-desc');
-                }
-            });
+            this.table.ajax.reload();
         },
 
         showDetail: function (id) {
@@ -396,7 +432,9 @@
 
             // Foto del equipo al cambiar el select
             $('#maint_equipment_id').on('change', function () {
-                self.loadEquipmentPhoto($(this).val());
+                var equipId = $(this).val();
+                self.loadEquipmentPhoto( equipId );
+                self.loadEquipmentInstructions( equipId );
             });
         },
 
@@ -433,6 +471,115 @@
                     }
                 },
                 error: function () { $wrap.hide(); }
+            });
+        },
+
+        /**
+         * Cargar instrucciones de mantenimiento y último mantenimiento previo
+         * al seleccionar un equipo en el formulario.
+         */
+        loadEquipmentInstructions: function (equipId) {
+            var cfg = this.cfg;
+            var txt = cfg.txt;
+
+            var $panel        = $('#maint-instructions-panel');
+            var $instrBlock   = $('#maint-instructions-block');
+            var $instrText    = $('#maint-instructions-text');
+            var $prevBlock    = $('#maint-prev-block');
+            var $prevContent  = $('#maint-prev-content');
+
+            if (!equipId) {
+                $panel.hide();
+                return;
+            }
+
+            // Usar el endpoint get_form_data del equipo (retorna el equipo completo)
+            $.ajax({
+                url:    cfg.ajaxurl,
+                method: 'POST',
+                data: {
+                    action: 'aura_inventory_equipment_get_form_data',
+                    nonce:  cfg.nonce,
+                    id:     equipId,
+                },
+                success: function (res) {
+                    if (!res.success || !res.data) { $panel.hide(); return; }
+
+                    var eq           = res.data.equipment || {};
+                    var instructions = (eq.maintenance_instructions || '').trim();
+                    var showPanel    = false;
+
+                    // — Bloque A: instrucciones —
+                    if (instructions) {
+                        $instrText.text(instructions);
+                        $instrBlock.show();
+                        showPanel = true;
+                    } else {
+                        $instrBlock.hide();
+                    }
+
+                    // — Bloque B: último mantenimiento —
+                    // Cargamos el historial desde get_detail (ya lo retorna)
+                    $.ajax({
+                        url:    cfg.ajaxurl,
+                        method: 'POST',
+                        data: {
+                            action: 'aura_inventory_equipment_get_detail',
+                            nonce:  cfg.nonce,
+                            id:     equipId,
+                        },
+                        success: function (res2) {
+                            if (res2.success && res2.data) {
+                                var history = res2.data.maintenance_history || [];
+                                if (history.length > 0) {
+                                    var prev = history[0]; // ya viene ordenado DESC por fecha
+                                    var typeLabel = (txt.type_labels && txt.type_labels[prev.type]) || prev.type;
+                                    var psIcon    = (txt.ps_icons  && txt.ps_icons[prev.post_status])  || '';
+                                    var psLabel   = (txt.ps_labels && txt.ps_labels[prev.post_status]) || prev.post_status;
+
+                                    var html = '<table style="border-collapse:collapse;width:100%;">';
+                                    html += '<tr><td style="padding:2px 8px 2px 0;font-weight:600;">' + escHtml(txt.date_label || 'Fecha:') + '</td>'
+                                          + '<td>' + escHtml(prev.maintenance_date || '—') + '</td></tr>';
+                                    html += '<tr><td style="padding:2px 8px 2px 0;font-weight:600;">' + escHtml(txt.type_label || 'Tipo:') + '</td>'
+                                          + '<td>' + escHtml(typeLabel) + '</td></tr>';
+                                    if (prev.description) {
+                                        html += '<tr><td style="padding:2px 8px 2px 0;font-weight:600;vertical-align:top;">' + escHtml(txt.work_label || 'Trabajo:') + '</td>'
+                                              + '<td>' + escHtml(prev.description).replace(/\n/g,'<br>') + '</td></tr>';
+                                    }
+                                    if (prev.performed_by === 'external' && prev.technician_name) {
+                                        html += '<tr><td style="padding:2px 8px 2px 0;font-weight:600;">' + escHtml(txt.workshop_label || 'Taller:') + '</td>'
+                                              + '<td>' + escHtml(prev.technician_name) + '</td></tr>';
+                                    }
+                                    html += '<tr><td style="padding:2px 8px 2px 0;font-weight:600;">' + escHtml(txt.status_label || 'Estado:') + '</td>'
+                                          + '<td>' + psIcon + ' ' + escHtml(psLabel) + '</td></tr>';
+                                    html += '</table>';
+
+                                    $prevContent.html(html);
+                                    $prevBlock.show();
+                                    showPanel = true;
+                                } else {
+                                    if (!instructions) {
+                                        $prevBlock.hide();
+                                    } else {
+                                        $prevContent.html('<em>' + escHtml(txt.no_prev_maint || 'Sin mantenimientos previos.') + '</em>');
+                                        $prevBlock.show();
+                                        showPanel = true;
+                                    }
+                                }
+                            } else {
+                                $prevBlock.hide();
+                            }
+
+                            if (showPanel) {
+                                $panel.slideDown(200);
+                            } else {
+                                $panel.hide();
+                            }
+                        },
+                        error: function () { $prevBlock.hide(); if (showPanel) { $panel.slideDown(200); } else { $panel.hide(); } }
+                    });
+                },
+                error: function () { $panel.hide(); }
             });
         },
 

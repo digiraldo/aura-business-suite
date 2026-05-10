@@ -71,24 +71,33 @@ class Aura_Financial_Transactions_List extends WP_List_Table {
      */
     public static function enqueue_scripts($hook) {
         // Solo cargar en la página de listado de transacciones
-        if ('aura-suite_page_aura-financial-transactions' !== $hook) {
+        $allowed_hooks = array(
+            'aura-suite_page_aura-financial-transactions',
+            'finanzas_page_aura-financial-transactions',
+            'aura-financial-dashboard_page_aura-financial-transactions',
+        );
+
+        if (!in_array($hook, $allowed_hooks, true)) {
             return;
         }
         
         // jQuery UI Datepicker para rango de fechas
         wp_enqueue_script('jquery-ui-datepicker');
+        wp_enqueue_script('jquery-ui-autocomplete');
         wp_enqueue_style('jquery-ui-css', 'https://code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css');
         
         // Select2 para dropdowns múltiples
         wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
         wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'));
+
+        $tx_list_js_ver = AURA_VERSION . '.' . @filemtime(AURA_PLUGIN_DIR . 'assets/js/transactions-list.js');
         
         // Scripts personalizados
         wp_enqueue_script(
             'aura-transactions-list',
             AURA_PLUGIN_URL . 'assets/js/transactions-list.js',
-            array('jquery', 'jquery-ui-datepicker', 'select2'),
-            AURA_VERSION,
+            array('jquery', 'jquery-ui-datepicker', 'jquery-ui-autocomplete', 'select2'),
+            $tx_list_js_ver,
             true
         );
         

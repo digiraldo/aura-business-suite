@@ -45,8 +45,17 @@ class Aura_Financial_Transactions {
      * Enqueue scripts y styles
      */
     public static function enqueue_scripts($hook) {
-        // Solo cargar en la página de nueva transacción
-        if ('aura-suite_page_aura-financial-new-transaction' !== $hook && 'toplevel_page_aura-suite' !== $hook) {
+        // Solo cargar en la página de nueva transacción.
+        // Compatibilidad con distintas estructuras de menú/hook.
+        $allowed_hooks = array(
+            'aura-financial-dashboard_page_aura-financial-new-transaction',
+            'finanzas_page_aura-financial-new-transaction',
+            'aura-suite_page_aura-financial-new-transaction',
+            'admin_page_aura-financial-new-transaction',
+            'toplevel_page_aura-suite',
+        );
+
+        if ( ! in_array( $hook, $allowed_hooks, true ) ) {
             return;
         }
         

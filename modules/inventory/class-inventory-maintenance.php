@@ -556,7 +556,32 @@ class Aura_Inventory_Maintenance {
             wp_send_json_error( [ 'message' => __( 'Registro no encontrado.', 'aura-suite' ) ] );
         }
 
-        wp_send_json_success( [ 'maintenance' => $row ] );
+        // Enriquecer con instrucciones del equipo
+        $equipment_instructions = $wpdb->get_var( $wpdb->prepare(
+            "SELECT maintenance_instructions FROM {$wpdb->prefix}aura_inventory_equipment WHERE id = %d AND deleted_at IS NULL",
+            $row->equipment_id
+        ) );
+
+        // Obtener el mantenimiento anterior (penúltimo para este equipo en edición)
+        $prev_maintenance = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id, maintenance_date, type, description, performed_by, workshop_name, post_status
+             FROM {$wpdb->prefix}aura_inventory_maintenance
+             WHERE equipment_id = %d AND id != %d
+             ORDER BY maintenance_date DESC, id DESC
+             LIMIT 1",
+            $row->equipment_id,
+            $id
+        ) );
+        if ( $prev_maintenance ) {
+            $prev_maintenance->type_label        = self::get_type_label( $prev_maintenance->type );
+            $prev_maintenance->post_status_label = self::get_post_status_label( $prev_maintenance->post_status );
+        }
+
+        wp_send_json_success( [
+            'maintenance'                 => $row,
+            'equipment_instructions'      => $equipment_instructions,
+            'previous_maintenance'        => $prev_maintenance,
+        ] );
     }
 
     // ─────────────────────────────────────────────────────────────

@@ -8,8 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 $nonce = wp_create_nonce( 'aura_audit_nonce' );
 
-// Usuarios para filtro
-$users = get_users( [ 'fields' => [ 'ID', 'display_name' ] ] );
+// Usuarios para filtro — solo usuarios con al menos una capability de Aura Suite
+$users = Aura_Roles_Manager::get_aura_users( [ 'fields' => [ 'ID', 'display_name' ] ] );
 
 // Retención configurada
 $retention = (int) get_option( 'aura_audit_log_retention_days', 365 );

@@ -34,6 +34,59 @@
     margin-top: 20px;
 }
 
+.aura-validation-summary {
+    position: sticky;
+    top: 14px;
+    z-index: 25;
+    margin: 12px 0 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #d14e3a;
+    background: #fff4f2;
+    box-shadow: 0 8px 22px rgba(102, 25, 15, 0.12);
+}
+
+.aura-validation-summary.is-hidden {
+    display: none;
+}
+
+.aura-validation-summary.is-visible {
+    display: block;
+    animation: auraSummaryIn 0.22s ease;
+}
+
+.aura-validation-summary__title {
+    font-weight: 700;
+    color: #7c271d;
+    margin-bottom: 8px;
+}
+
+.aura-validation-summary ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.aura-validation-summary li {
+    margin: 0 0 4px;
+    color: #7c271d;
+}
+
+.aura-validation-link {
+    border: 0;
+    background: transparent;
+    color: #9a2f20;
+    cursor: pointer;
+    text-decoration: underline;
+    font: inherit;
+    padding: 0;
+}
+
+.aura-validation-link:hover,
+.aura-validation-link:focus {
+    color: #5e1b13;
+    outline: none;
+}
+
 /* ========================================
    Formulario Principal
    ======================================== */
@@ -48,6 +101,45 @@
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid #e0e0e0;
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Solo ocultar inicialmente cuando el JS de animación está activo */
+.aura-transaction-form-wrap.aura-entrance-ready .aura-form-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: none;
+}
+
+.aura-transaction-form-wrap.aura-entrance-ready .aura-form-section.aura-section-visible {
+    animation: auraSectionIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--aura-section-delay, 0ms);
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Filas internas: escalonar después de que la sección aparece */
+.aura-transaction-form-wrap.aura-entrance-ready .aura-form-section.aura-section-visible .aura-form-row {
+    animation: auraRowIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--aura-section-delay, 0ms) + var(--aura-row-delay, 0ms) + 80ms);
+}
+
+/* Contenido del collapsible al abrirse */
+.aura-collapsible-content {
+    overflow: hidden;
+}
+
+.aura-collapsible-content .aura-form-row {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: none;
+}
+
+.aura-collapsible-open .aura-collapsible-content .aura-form-row {
+    animation: auraRowIn 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--aura-row-delay, 0ms);
 }
 
 .aura-form-section:last-child {
@@ -205,8 +297,12 @@
     .aura-form-field.aura-field-50 {
         width: 100%;
     }
-}
 
+    .aura-validation-summary {
+        top: 8px;
+        margin-top: 10px;
+    }
+}
 .aura-form-field label {
     display: block;
     margin-bottom: 8px;
@@ -243,8 +339,27 @@
 
 .aura-form-field input.error,
 .aura-form-field select.error,
-.aura-form-field textarea.error {
-    border-color: #e74c3c;
+.aura-form-field textarea.error,
+.aura-form-field .aura-field-invalid {
+    border-color: #d04b38;
+    box-shadow: 0 0 0 3px rgba(208, 75, 56, 0.12);
+}
+
+.aura-form-field .aura-field-success {
+    border-color: #1f9d65;
+    box-shadow: 0 0 0 3px rgba(31, 157, 101, 0.1);
+}
+
+.aura-form-field.has-success label {
+    color: #166a46;
+}
+
+.aura-form-field.has-error label {
+    color: #8f2b1e;
+}
+
+.aura-form-field.aura-shake {
+    animation: auraFieldShake 0.35s ease;
 }
 
 .aura-form-field textarea {
@@ -602,6 +717,58 @@
     to { transform: rotate(360deg); }
 }
 
+@keyframes auraFieldShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-4px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(1px); }
+}
+
+@keyframes auraSummaryIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes auraSectionIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes auraRowIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes auraPreviewIn {
+    from {
+        opacity: 0;
+        transform: translateX(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 .dashicons.spin {
     animation: spin 1s linear infinite;
 }
@@ -649,4 +816,247 @@
 .notice .button {
     margin-top: 10px;
     margin-right: 5px;
+}
+
+/* ========================================
+   UX Refresh (Fase UI)
+   ======================================== */
+.aura-transaction-form-wrap {
+    --aura-bg-soft: linear-gradient(140deg, #eef4fb 0%, #f6f9fc 45%, #f4f7f3 100%);
+    --aura-card: #ffffff;
+    --aura-text: #1e2630;
+    --aura-muted: #5f6b7a;
+    --aura-border: #d7dee8;
+    --aura-focus: #0a7ea4;
+    --aura-income: #1f9d65;
+    --aura-expense: #d04b38;
+    background: var(--aura-bg-soft);
+    border: 1px solid #dce6f2;
+    border-radius: 14px;
+}
+
+.aura-transaction-form-wrap .wp-heading-inline {
+    color: #16314a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aura-transaction-ux-head {
+    margin-top: 18px;
+    margin-bottom: 20px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: #16314a;
+    color: #fff;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+}
+
+.aura-transaction-ux-head h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #fff;
+}
+
+.aura-transaction-ux-head p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.aura-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.aura-progress-track {
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+}
+
+.aura-progress-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #67d38a 0%, #2cc3d6 100%);
+    transition: width 0.3s ease;
+}
+
+.aura-transaction-form-main {
+    border: 1px solid #dde5ef;
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(20, 46, 74, 0.08);
+}
+
+.aura-form-section {
+    border-bottom: 1px solid #e6edf5;
+}
+
+.aura-form-section h2 {
+    color: var(--aura-text);
+}
+
+.aura-section-help {
+    margin: -8px 0 16px;
+    color: var(--aura-muted);
+    font-size: 13px;
+}
+
+.aura-form-field label {
+    color: #22374b;
+}
+
+.aura-form-field input[type="text"],
+.aura-form-field input[type="number"],
+.aura-form-field select,
+.aura-form-field textarea {
+    border: 1px solid var(--aura-border);
+    border-radius: 9px;
+    min-height: 42px;
+    background: #fff;
+}
+
+.aura-form-field textarea {
+    min-height: 95px;
+}
+
+.aura-form-field input[type="text"]:focus,
+.aura-form-field input[type="number"]:focus,
+.aura-form-field select:focus,
+.aura-form-field textarea:focus {
+    border-color: var(--aura-focus);
+    box-shadow: 0 0 0 3px rgba(10, 126, 164, 0.14);
+}
+
+.aura-form-field .description {
+    margin: 6px 0 0;
+    color: #65758a;
+    font-size: 12px;
+}
+
+.aura-amount-field {
+    border-color: var(--aura-border);
+    border-radius: 9px;
+}
+
+.type-income .aura-amount-field {
+    border-left-color: var(--aura-income);
+}
+
+.type-expense .aura-amount-field {
+    border-left-color: var(--aura-expense);
+}
+
+.aura-form-actions {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to top, #fff 72%, rgba(255, 255, 255, 0.85));
+    padding-bottom: 10px;
+    z-index: 5;
+}
+
+.aura-form-actions .button {
+    min-height: 38px;
+    border-radius: 8px;
+}
+
+.aura-form-actions .button.button-primary {
+    background: linear-gradient(135deg, #0a7ea4 0%, #1a976a 100%);
+    border-color: transparent;
+}
+
+.aura-transaction-preview .preview-card,
+.aura-transaction-preview .preview-tips {
+    border-radius: 14px;
+    border: 1px solid #dde7f1;
+    box-shadow: 0 8px 24px rgba(20, 46, 74, 0.08);
+    opacity: 0;
+    transform: translateX(18px);
+}
+
+.aura-transaction-preview .preview-card.aura-preview-visible,
+.aura-transaction-preview .preview-tips.aura-preview-visible {
+    animation: auraPreviewIn 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--aura-preview-delay, 120ms);
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.preview-card h3 {
+    border-bottom-color: #0a7ea4;
+    color: #183b58;
+}
+
+.preview-badge .badge-type.income {
+    background: var(--aura-income);
+}
+
+.preview-badge .badge-type.expense {
+    background: var(--aura-expense);
+}
+
+.preview-amount {
+    color: #102738;
+    background: #f3f8fb;
+    border-radius: 10px;
+}
+
+.preview-category,
+.preview-description,
+.preview-date,
+.preview-tags,
+.preview-area,
+.preview-expense-category,
+.preview-payment,
+.preview-recipient,
+.preview-reference {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    background: #f7fbff;
+    border: 1px solid #e5edf6;
+    border-radius: 8px;
+}
+
+.preview-description .description-text {
+    font-style: normal;
+    color: #3d4f61;
+}
+
+.preview-tips {
+    background: linear-gradient(135deg, #fff8de 0%, #fff3ca 100%);
+    border-left: 4px solid #e0a100;
+}
+
+@media (max-width: 1024px) {
+    .aura-transaction-ux-head {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .aura-transaction-form-wrap {
+        padding: 14px;
+    }
+
+    .aura-transaction-form-main {
+        padding: 18px;
+    }
+
+    .aura-toggle-switch {
+        width: 100%;
+        max-width: 360px;
+    }
+
+    .preview-card {
+        position: static;
+    }
 }

@@ -223,7 +223,7 @@ $stats = $transactions_list->get_stats();
                         <select name="filter_user" id="filter_user" class="aura-select2">
                             <option value=""><?php _e('Todos los usuarios', 'aura-suite'); ?></option>
                             <?php
-                            $users = get_users(array('orderby' => 'display_name'));
+                            $users = Aura_Roles_Manager::get_aura_users( [], 'aura_finance_' );
                             foreach ($users as $user) {
                                 $selected = selected(!empty($_GET['filter_user']) && $_GET['filter_user'] == $user->ID, true, false);
                                 printf(
@@ -240,6 +240,17 @@ $stats = $transactions_list->get_stats();
                     
                     <!-- Usuario Vinculado (Fase 6, Item 6.1) -->
                     <?php if (current_user_can('aura_finance_view_all') || current_user_can('aura_finance_user_ledger')) : ?>
+                    <?php
+                    $related_user_name   = '';
+                    $related_user_avatar = '';
+                    if (!empty($_GET['filter_related_user'])) {
+                        $fu = get_userdata(intval($_GET['filter_related_user']));
+                        if ($fu) {
+                            $related_user_name   = $fu->display_name;
+                            $related_user_avatar = get_avatar_url($fu->ID, array('size' => 24));
+                        }
+                    }
+                    ?>
                     <div class="filter-group">
                         <label><?php _e('Usuario Vinculado', 'aura-suite'); ?></label>
                         <div class="aura-user-autocomplete-wrap">
@@ -248,16 +259,23 @@ $stats = $transactions_list->get_stats();
                                    placeholder="<?php _e('Buscar por nombre o email...', 'aura-suite'); ?>"
                                    autocomplete="off"
                                    class="widefat"
-                                   value="<?php
-                                       if (!empty($_GET['filter_related_user'])) {
-                                           $fu = get_userdata(intval($_GET['filter_related_user']));
-                                           echo $fu ? esc_attr($fu->display_name) : '';
-                                       }
-                                   ?>">
+                                   value="<?php echo esc_attr($related_user_name); ?>">
                             <input type="hidden"
                                    id="filter_related_user"
                                    name="filter_related_user"
                                    value="<?php echo esc_attr($_GET['filter_related_user'] ?? ''); ?>">
+                            <div id="aura-filter-user-preview" class="aura-filter-user-preview" <?php echo $related_user_name ? '' : 'style="display:none;"'; ?>>
+                                <img id="aura-filter-user-avatar"
+                                     src="<?php echo esc_url($related_user_avatar); ?>"
+                                     alt=""
+                                     width="24"
+                                     height="24">
+                                <div class="aura-filter-user-meta">
+                                    <span class="aura-filter-user-label"><?php _e('Usuario seleccionado', 'aura-suite'); ?></span>
+                                    <span id="aura-filter-user-name" class="aura-filter-user-name"><?php echo esc_html($related_user_name); ?></span>
+                                </div>
+                                <button type="button" id="aura-filter-user-clear" class="aura-filter-user-clear" title="<?php esc_attr_e('Quitar usuario', 'aura-suite'); ?>">×</button>
+                            </div>
                         </div>
                     </div>
                     <?php endif; ?>

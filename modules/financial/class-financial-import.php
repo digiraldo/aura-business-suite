@@ -10,7 +10,7 @@ class Aura_Financial_Import {
 
     private static $transient_prefix = 'aura_import_';
     private static $max_file_size    = 5242880; // 5 MB
-    private static $max_rows         = 1000;
+    private static $max_rows         = 5000;
 
     /* ------------------------------------------------------------------
      * Bootstrap
@@ -678,28 +678,37 @@ class Aura_Financial_Import {
 
         // Por ID numérico
         if ( is_numeric( $value ) ) {
-            return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE id = %d AND deleted_at IS NULL", (int) $value ) );
+            return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE id = %d", (int) $value ) );
         }
 
         // Por nombre exacto
-        $id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE name = %s AND deleted_at IS NULL", $value ) );
+        $id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE name = %s", $value ) );
         if ( $id ) return $id;
 
         // Por nombre insensible a mayúsculas
-        return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE LOWER(name) = LOWER(%s) AND deleted_at IS NULL", $value ) );
+        return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE LOWER(name) = LOWER(%s)", $value ) );
     }
 
     private static function create_category( $name, $type = 'expense' ) {
         global $wpdb;
-        $table = $wpdb->prefix . 'aura_finance_categories';
+        $table  = $wpdb->prefix . 'aura_finance_categories';
+        $slug   = sanitize_title( $name );
+        // Asegurar slug único
+        $exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table} WHERE slug = %s", $slug ) );
+        if ( $exists ) {
+            $slug = $slug . '-' . time();
+        }
+        $user_id = get_current_user_id() ?: 1;
         $wpdb->insert( $table, [
-            'name'             => sanitize_text_field( $name ),
-            'type'             => in_array( $type, [ 'income', 'expense' ], true ) ? $type : 'expense',
-            'description'      => __( 'Creada automáticamente al importar', 'aura-suite' ),
-            'color'            => '#607D8B',
-            'is_active'        => 1,
-            'created_at'       => current_time( 'mysql' ),
-        ], [ '%s','%s','%s','%s','%d','%s' ] );
+            'name'        => sanitize_text_field( $name ),
+            'slug'        => $slug,
+            'type'        => in_array( $type, [ 'income', 'expense' ], true ) ? $type : 'expense',
+            'description' => __( 'Creada automáticamente al importar', 'aura-suite' ),
+            'color'       => '#607D8B',
+            'is_active'   => 1,
+            'created_by'  => $user_id,
+            'created_at'  => current_time( 'mysql' ),
+        ], [ '%s','%s','%s','%s','%s','%d','%d','%s' ] );
         return $wpdb->insert_id ?: false;
     }
 

@@ -1,0 +1,639 @@
+/* ============================================================
+   Aura Business Suite — Módulo de Certificados
+   Version: 1.7.5
+   Color Principal: #8b5cf6 (violet)
+   ============================================================ */
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   VARIABLES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root {
+    --cert-primary:     #8b5cf6;
+    --cert-primary-dk:  #6d28d9;
+    --cert-primary-lt:  #ede9fe;
+    --cert-success:     #16a34a;
+    --cert-danger:      #dc2626;
+    --cert-warn:        #d97706;
+    --cert-gray-100:    #f9fafb;
+    --cert-gray-200:    #e5e7eb;
+    --cert-gray-500:    #6b7280;
+    --cert-gray-800:    #1f2937;
+    --cert-radius:      8px;
+    --cert-shadow:      0 2px 8px rgba(0,0,0,.08);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   KPIs DASHBOARD
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-cert-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.aura-cert-kpi {
+    background: #fff;
+    border: 1px solid var(--cert-gray-200);
+    border-radius: var(--cert-radius);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--cert-shadow);
+}
+
+.aura-cert-kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--cert-primary);
+    line-height: 1;
+}
+
+.aura-cert-kpi-label {
+    font-size: .75rem;
+    color: var(--cert-gray-500);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.aura-cert-kpi--warn .aura-cert-kpi-value  { color: var(--cert-danger); }
+.aura-cert-kpi--muted .aura-cert-kpi-value { color: var(--cert-gray-500); }
+
+.aura-cert-dashboard-section {
+    margin-top: 24px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ESTADO / BADGES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-cert-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: .75rem;
+    font-weight: 600;
+}
+
+.aura-cert-status--active  { background: #dcfce7; color: var(--cert-success); }
+.aura-cert-status--revoked { background: #fee2e2; color: var(--cert-danger); }
+.aura-cert-status--pending { background: #fef3c7; color: var(--cert-warn); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GRILLA DE PLANTILLAS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-cert-templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.aura-cert-template-card {
+    background: #fff;
+    border: 1px solid var(--cert-gray-200);
+    border-radius: var(--cert-radius);
+    overflow: hidden;
+    box-shadow: var(--cert-shadow);
+    transition: box-shadow .2s;
+}
+.aura-cert-template-card:hover { box-shadow: 0 4px 16px rgba(139,92,246,.15); }
+.aura-cert-template-card--inactive { opacity: .6; }
+
+.aura-cert-template-thumb {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    background: var(--cert-gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.aura-cert-template-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.aura-cert-template-no-thumb {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--cert-gray-500);
+    font-size: .8rem;
+    gap: 4px;
+}
+.aura-cert-template-no-thumb span { font-size: 2rem; }
+
+.aura-cert-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: .7rem;
+    font-weight: 700;
+}
+.aura-cert-badge--default  { background: var(--cert-primary); color: #fff; }
+.aura-cert-badge--inactive { background: var(--cert-gray-500); color: #fff; }
+
+.aura-cert-template-info {
+    padding: 12px;
+}
+.aura-cert-template-name {
+    margin: 0 0 4px;
+    font-size: .95rem;
+    font-weight: 600;
+}
+.aura-cert-template-desc {
+    margin: 0 0 4px;
+    font-size: .8rem;
+    color: var(--cert-gray-500);
+}
+.aura-cert-template-meta {
+    font-size: .75rem;
+    color: var(--cert-gray-500);
+}
+.aura-cert-template-actions {
+    padding: 8px 12px;
+    border-top: 1px solid var(--cert-gray-200);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BUILDER
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-cert-builder-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 100001;  /* por encima de la barra de admin (#wpadminbar z-index:99999) */
+    background: #f3f4f6;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cuando la barra de ADMIN de WP es visible, la barra superior ocupa 32px (móvil: 46px).
+   Para no tapar controles de WP activos, el builder convive encima. */
+html.admin-bar .aura-cert-builder-wrap { top: 0; } /* queremos cubrirla intencionalmente */
+
+.aura-cert-builder-topbar {
+    height: 52px;
+    background: #1e1b4b;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    z-index: 10;
+}
+
+.aura-cert-builder-topbar-left  { display: flex; align-items: center; gap: 12px; }
+.aura-cert-builder-topbar-center { display: flex; align-items: center; gap: 4px; }
+.aura-cert-builder-topbar-right  { display: flex; align-items: center; gap: 8px; }
+
+.aura-cert-builder-back {
+    color: rgba(255,255,255,.7);
+    text-decoration: none;
+    font-size: .85rem;
+}
+.aura-cert-builder-back:hover { color: #fff; }
+
+.aura-cert-builder-title {
+    font-weight: 600;
+    font-size: .95rem;
+}
+
+.aura-cb-tool-btn {
+    background: rgba(255,255,255,.15);
+    border: none;
+    color: #fff;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: .85rem;
+    transition: background .15s;
+}
+.aura-cb-tool-btn:hover { background: rgba(255,255,255,.3); }
+
+.aura-cert-builder-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr 240px;
+    flex: 1;
+    min-height: 0;           /* necesario para que flex:1 recorte el overfllow correctamente */
+    overflow: hidden;
+    height: calc(100vh - 52px); /* 52px = topbar */
+}
+
+/* Panel tools izquierdo */
+.aura-cert-builder-tools {
+    background: #fff;
+    border-right: 1px solid var(--cert-gray-200);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+    height: 100%;
+}
+
+.aura-cert-builder-tools h3 {
+    font-size: .75rem;
+    text-transform: uppercase;
+    color: var(--cert-gray-500);
+    letter-spacing: .05em;
+    margin: 8px 0 6px;
+}
+
+.aura-cb-elem-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    background: var(--cert-gray-100);
+    border: 1px solid var(--cert-gray-200);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: .8rem;
+    cursor: pointer;
+    margin-bottom: 4px;
+    transition: background .15s;
+}
+.aura-cb-elem-btn:hover { background: var(--cert-primary-lt); border-color: var(--cert-primary); }
+.aura-cb-elem-btn span { font-size: 1rem; }
+
+.aura-cb-vars-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.aura-cb-var-btn {
+    background: #f5f3ff;
+    border: 1px solid #c4b5fd;
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: .75rem;
+    cursor: pointer;
+    color: var(--cert-primary-dk);
+    text-align: left;
+}
+.aura-cb-var-btn:hover { background: var(--cert-primary-lt); }
+
+.aura-cb-prebuilt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.aura-cb-prebuilt-btn {
+    background: var(--cert-gray-100);
+    border: 1px solid var(--cert-gray-200);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: .78rem;
+    cursor: pointer;
+    text-align: left;
+}
+.aura-cb-prebuilt-btn:hover { background: var(--cert-primary-lt); border-color: var(--cert-primary); }
+
+/* Canvas — flex sin align-items/justify-content para que overflow:auto funcione.
+   El centrado se logra con margin:auto en .canvas-container (aplicado por JS). */
+.aura-cert-builder-canvas-wrap {
+    overflow: auto;
+    display: flex;
+    padding: 20px;
+    background: #e5e7eb;
+}
+
+/* Fabric.js crea un .canvas-container que envuelve los <canvas>.
+   margin:auto centra cuando es más pequeño que el área visible;
+   cuando es más grande, los scrollbars aparecen normalmente. */
+.aura-cert-builder-canvas-wrap .canvas-container {
+    margin: auto;
+    flex-shrink: 0;
+}
+
+#aura-cert-canvas {
+    box-shadow: 0 4px 24px rgba(0,0,0,.2);
+}
+
+/* Panel propiedades derecho */
+.aura-cert-builder-props {
+    background: #fff;
+    border-left: 1px solid var(--cert-gray-200);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+    height: 100%;
+}
+
+.aura-cb-props-section h3 {
+    font-size: .75rem;
+    text-transform: uppercase;
+    color: var(--cert-gray-500);
+    letter-spacing: .05em;
+    margin: 0 0 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--cert-gray-200);
+}
+
+.aura-cb-toggle-btn.active {
+    background: var(--cert-primary);
+    color: #fff;
+}
+
+.aura-cb-signers {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.aura-cb-signer-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border: 1px solid var(--cert-gray-200);
+    border-radius: 4px;
+    cursor: grab;
+    font-size: .8rem;
+}
+.aura-cb-signer-item img {
+    height: 28px;
+    max-width: 60px;
+    object-fit: contain;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MODAL
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+}
+
+.aura-modal-content {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border-radius: var(--cert-radius);
+    padding: 24px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,.2);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   VERIFICACIÓN PÚBLICA (frontend)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-cert-verify-wrap {
+    max-width: 640px;
+    margin: 40px auto;
+    padding: 0 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.aura-cert-verify-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.1);
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.aura-cert-verify-card--valid {
+    border-top: 4px solid var(--cert-success);
+}
+
+.aura-cert-verify-card--revoked {
+    border-top: 4px solid var(--cert-danger);
+}
+
+.aura-cert-verify-card--notfound {
+    border-top: 4px solid var(--cert-gray-500);
+}
+
+.aura-cert-verify-icon {
+    font-size: 3rem;
+    margin-bottom: 8px;
+}
+
+.aura-cert-verify-title {
+    font-size: 1.5rem;
+    color: var(--cert-success);
+    margin: 0 0 20px;
+}
+
+.aura-cert-verify-logo {
+    max-height: 80px;
+    max-width: 200px;
+    object-fit: contain;
+    margin-bottom: 12px;
+}
+
+.aura-cert-verify-data {
+    text-align: left;
+    border: 1px solid var(--cert-gray-200);
+    border-radius: var(--cert-radius);
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.aura-cert-verify-row {
+    display: flex;
+    border-bottom: 1px solid var(--cert-gray-200);
+}
+.aura-cert-verify-row:last-child { border-bottom: none; }
+
+.aura-cert-verify-label {
+    width: 40%;
+    padding: 10px 14px;
+    background: var(--cert-gray-100);
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--cert-gray-500);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.aura-cert-verify-value {
+    padding: 10px 14px;
+    font-size: .9rem;
+    color: var(--cert-gray-800);
+    flex: 1;
+}
+
+.aura-cert-folio-badge {
+    font-family: monospace;
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--cert-primary-dk);
+}
+
+.aura-cert-verify-footer {
+    color: var(--cert-gray-500);
+    font-size: .8rem;
+    margin: 0;
+}
+
+.aura-cert-verify-search {
+    background: var(--cert-gray-100);
+    border-radius: var(--cert-radius);
+    padding: 20px;
+}
+.aura-cert-verify-search h3 {
+    margin: 0 0 12px;
+    font-size: 1rem;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PORTAL DEL ESTUDIANTE — MIS CERTIFICADOS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-my-certificates { padding: 8px 0; }
+
+.aura-my-certs-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--cert-gray-500);
+}
+.aura-empty-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+
+.aura-my-certs-group { margin-bottom: 20px; }
+.aura-my-certs-program {
+    font-size: .85rem;
+    text-transform: uppercase;
+    color: var(--cert-gray-500);
+    letter-spacing: .05em;
+    border-bottom: 2px solid var(--cert-primary-lt);
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+}
+
+.aura-my-certs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aura-my-cert-card {
+    background: #fff;
+    border: 1px solid var(--cert-gray-200);
+    border-radius: var(--cert-radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--cert-shadow);
+}
+
+.aura-my-cert-icon { font-size: 1.8rem; flex-shrink: 0; }
+
+.aura-my-cert-info { flex: 1; }
+.aura-my-cert-course {
+    margin: 0 0 4px;
+    font-size: .95rem;
+    font-weight: 600;
+}
+.aura-my-cert-meta { margin: 0; font-size: .75rem; color: var(--cert-gray-500); }
+.aura-my-cert-meta code { font-size: .8rem; }
+
+.aura-my-cert-actions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BOTONES GENÉRICOS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: .8rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    background: var(--cert-primary);
+    color: #fff;
+    border: 1px solid var(--cert-primary);
+    transition: background .15s;
+}
+.aura-btn:hover { background: var(--cert-primary-dk); color: #fff; }
+.aura-btn-sm    { padding: 4px 10px; font-size: .75rem; }
+.aura-btn-outline {
+    background: transparent;
+    color: var(--cert-primary);
+}
+.aura-btn-outline:hover {
+    background: var(--cert-primary-lt);
+    color: var(--cert-primary-dk);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PROGRESS BAR
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-progress-bar-wrap {
+    background: var(--cert-gray-200);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CARD GENÉRICA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-card {
+    background: #fff;
+    border: 1px solid var(--cert-gray-200);
+    border-radius: var(--cert-radius);
+    padding: 20px 24px;
+    box-shadow: var(--cert-shadow);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   DRAG HANDLE (firmantes)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-drag-handle { cursor: grab; color: var(--cert-gray-500); }
+.aura-drag-handle:active { cursor: grabbing; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FILTROS / BÚSQUEDA
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-search-form { margin: 12px 0; }
+
+.aura-filter-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.aura-input {
+    border: 1px solid var(--cert-gray-200) !important;
+    border-radius: 4px !important;
+    padding: 5px 10px !important;
+    font-size: .875rem !important;
+    line-height: 1.5 !important;
+    outline-color: var(--cert-primary);
+}
+
+.aura-count { color: var(--cert-gray-500); font-size: .85rem; margin: 4px 0 8px; }
+.aura-empty { color: var(--cert-gray-500); font-style: italic; }
+.aura-cert-actions-cell { display: flex; gap: 4px; }

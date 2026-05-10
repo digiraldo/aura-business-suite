@@ -672,8 +672,41 @@
     function initUserFilterAutocomplete() {
         const $filterSearch = $('#filter_related_user_search');
         const $filterHidden = $('#filter_related_user');
+        const $preview = $('#aura-filter-user-preview');
+        const $previewAvatar = $('#aura-filter-user-avatar');
+        const $previewName = $('#aura-filter-user-name');
+        const $clearBtn = $('#aura-filter-user-clear');
 
         if (!$filterSearch.length) return;
+
+        function renderSelectedUser(name, avatarUrl) {
+            $previewName.text(name || '');
+            if (avatarUrl) {
+                $previewAvatar.attr('src', avatarUrl).show();
+            } else {
+                $previewAvatar.attr('src', '').hide();
+            }
+            $preview.show();
+        }
+
+        function clearSelectedUser() {
+            $filterSearch.val('');
+            $filterHidden.val('');
+            $previewAvatar.attr('src', '').show();
+            $previewName.text('');
+            $preview.hide();
+        }
+
+        // Estado inicial cuando el filtro viene aplicado en la URL
+        if ($filterHidden.val() && $filterSearch.val()) {
+            renderSelectedUser($filterSearch.val(), $previewAvatar.attr('src'));
+        }
+
+        // Evitar que falle toda la página si jQuery UI Autocomplete no está cargado
+        if (typeof $.fn.autocomplete !== 'function') {
+            console.warn('[Aura] jQuery UI Autocomplete no está disponible para filtros de usuario.');
+            return;
+        }
 
         $filterSearch.autocomplete({
             minLength: 2,
@@ -696,6 +729,7 @@
             select: function(event, ui) {
                 $filterSearch.val(ui.item.name);
                 $filterHidden.val(ui.item.id);
+                renderSelectedUser(ui.item.name, ui.item.avatar_url || '');
                 return false;
             }
         }).autocomplete('instance')._renderItem = function(ul, item) {
@@ -713,8 +747,13 @@
         // Si se borra el texto, limpiar el hidden
         $filterSearch.on('input', function() {
             if ($(this).val() === '') {
-                $filterHidden.val('');
+                clearSelectedUser();
             }
+        });
+
+        $clearBtn.on('click', function(e) {
+            e.preventDefault();
+            clearSelectedUser();
         });
     }
 

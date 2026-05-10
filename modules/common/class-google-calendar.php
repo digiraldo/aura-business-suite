@@ -547,17 +547,47 @@ class Aura_Google_Calendar {
             wp_send_json_error( [ 'message' => __( 'Ingresa un número de teléfono de destino.', 'aura-suite' ) ] );
         }
 
+        // Preflight: verificar configuración antes de intentar enviar.
+        $provider = get_option( 'aura_whatsapp_provider', 'green_api' );
+        $token    = get_option( 'aura_whatsapp_api_token', '' );
+
+        if ( empty( $token ) ) {
+            wp_send_json_error( [ 'message' => __( 'El token API está vacío. Guarda la configuración primero.', 'aura-suite' ) ] );
+        }
+
+        if ( $provider === 'green_api' && empty( get_option( 'aura_whatsapp_green_instance_id', '' ) ) ) {
+            wp_send_json_error( [ 'message' => __( 'Falta el Instance ID de GREEN-API. Completa la configuración y guarda.', 'aura-suite' ) ] );
+        }
+
+        if ( $provider === 'twilio' && empty( get_option( 'aura_whatsapp_twilio_sid', '' ) ) ) {
+            wp_send_json_error( [ 'message' => __( 'Falta el Account SID de Twilio. Completa la configuración y guarda.', 'aura-suite' ) ] );
+        }
+
+        if ( $provider === 'meta' && empty( get_option( 'aura_whatsapp_meta_phone_id', '' ) ) ) {
+            wp_send_json_error( [ 'message' => __( 'Falta el Phone Number ID de Meta. Completa la configuración y guarda.', 'aura-suite' ) ] );
+        }
+
         $message = sprintf(
             __( '✅ Prueba AURA Business Suite — %s. Si recibes este mensaje, WhatsApp está configurado correctamente.', 'aura-suite' ),
             date_i18n( 'd/m/Y H:i' )
         );
 
-        $ok = Aura_Notifications::send_whatsapp( $phone, $message );
+        // $force = true para que la prueba funcione aunque "Activar" no esté marcado aún.
+        $ok = Aura_Notifications::send_whatsapp( $phone, $message, true );
 
         if ( $ok ) {
             wp_send_json_success( [ 'message' => sprintf( __( '✅ Mensaje de prueba enviado a %s.', 'aura-suite' ), $phone ) ] );
         } else {
-            wp_send_json_error( [ 'message' => __( '❌ No se pudo enviar el mensaje. Verifica el proveedor, el token API y el número teléfono.', 'aura-suite' ) ] );
+            $debug  = ! empty( Aura_Notifications::$last_debug ) ? ' — Respuesta: ' . Aura_Notifications::$last_debug : '';
+            $detail = ( $provider === 'callmebot' )
+                ? __( 'Verifica que el número sea correcto (ej: +5213338162094) y que el destinatario haya activado el bot.', 'aura-suite' ) . $debug
+                : __( 'Verifica token, número y la configuración del proveedor.', 'aura-suite' ) . $debug;
+            wp_send_json_error( [ 'message' => sprintf(
+                /* translators: 1: nombre proveedor, 2: detalle de error */
+                __( 'El proveedor %1$s rechazó la solicitud. %2$s', 'aura-suite' ),
+                strtoupper( $provider ),
+                $detail
+            ) ] );
         }
     }
 }

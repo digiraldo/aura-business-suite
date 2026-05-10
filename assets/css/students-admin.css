@@ -1,0 +1,349 @@
+/**
+ * Módulo de Estudiantes e Inscripciones — Admin Styles
+ * AURA Business Suite · Fase 1
+ *
+ * Color del módulo: #8b5cf6 (violeta académico)
+ */
+
+/* ============================================================
+   CONTENEDOR PRINCIPAL
+   ============================================================ */
+
+.wrap.aura-students-dashboard,
+.wrap.aura-students-coming-soon {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+}
+
+/* ============================================================
+   GRID DE KPIs — 4 columnas en escritorio, 2 en tablet, 1 en móvil
+   ============================================================ */
+
+.aura-stu-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 20px 0 28px;
+}
+
+@media ( max-width: 1200px ) {
+    .aura-stu-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media ( max-width: 782px ) {
+    .aura-stu-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media ( max-width: 480px ) {
+    .aura-stu-kpi-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Tarjeta KPI base ──────────────────────────────────────── */
+
+.aura-stu-kpi-card {
+    background: #ffffff;
+    border-left: 4px solid #8b5cf6;
+    border-radius: 8px;
+    padding: 16px 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform .15s, box-shadow .15s;
+}
+
+.aura-stu-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 14px rgba(0,0,0,.13);
+}
+
+.aura-stu-kpi-icon {
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.aura-stu-kpi-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.aura-stu-kpi-value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #1d2327;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aura-stu-kpi-label {
+    font-size: 12px;
+    color: #646970;
+    margin-top: 2px;
+    line-height: 1.3;
+}
+
+/* ── Variantes de color por borde izquierdo ──────────────── */
+
+.aura-stu-kpi-violet  { border-left-color: #8b5cf6; }
+.aura-stu-kpi-green   { border-left-color: #10b981; }
+.aura-stu-kpi-blue    { border-left-color: #3b82f6; }
+.aura-stu-kpi-orange  { border-left-color: #f59e0b; }
+.aura-stu-kpi-red     { border-left-color: #ef4444; }
+.aura-stu-kpi-gold    { border-left-color: #d97706; }
+.aura-stu-kpi-gray    { border-left-color: #9ca3af; }
+.aura-stu-kpi-indigo  { border-left-color: #6366f1; }
+.aura-stu-kpi-teal    { border-left-color: #14b8a6; }
+
+/* ============================================================
+   ACCESOS RÁPIDOS — Grid de 4 tarjetas
+   ============================================================ */
+
+.aura-stu-quick-access {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 0 0 28px;
+}
+
+@media ( max-width: 1200px ) {
+    .aura-stu-quick-access { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media ( max-width: 600px ) {
+    .aura-stu-quick-access { grid-template-columns: 1fr; }
+}
+
+.aura-stu-quick-card {
+    background: #ffffff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    padding: 18px 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.aura-stu-quick-card h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    border-bottom: 1px solid #f0f0f1;
+    padding-bottom: 8px;
+}
+
+.aura-stu-quick-card ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.aura-stu-quick-card li {
+    margin: 0;
+    padding: 5px 0;
+    border-bottom: 1px solid #f6f7f7;
+}
+
+.aura-stu-quick-card li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.aura-stu-quick-card a {
+    font-size: 13px;
+    color: #2271b1;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-stu-quick-card a:hover {
+    color: #135e96;
+    text-decoration: underline;
+}
+
+/* ============================================================
+   ESTADO DE IMPLEMENTACIÓN — Fases
+   ============================================================ */
+
+.aura-stu-phase-status {
+    background: #ffffff;
+    border: 1px solid #e2e4e7;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 28px;
+}
+
+.aura-stu-phase-status h2 {
+    margin: 0 0 18px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d2327;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-stu-phase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+@media ( max-width: 1100px ) {
+    .aura-stu-phase-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media ( max-width: 600px ) {
+    .aura-stu-phase-grid { grid-template-columns: 1fr; }
+}
+
+.aura-stu-phase-card {
+    border-radius: 6px;
+    padding: 14px 16px;
+    border-left: 3px solid #9ca3af;
+}
+
+.aura-stu-phase-done {
+    background: #f0fdf4;
+    border-left-color: #10b981;
+}
+
+.aura-stu-phase-pending {
+    background: #f9fafb;
+    border-left-color: #d1d5db;
+}
+
+.aura-stu-phase-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    margin-bottom: 6px;
+    color: #6b7280;
+}
+
+.aura-stu-phase-done .aura-stu-phase-badge {
+    color: #059669;
+}
+
+.aura-stu-phase-card h4 {
+    margin: 0 0 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-stu-phase-card p {
+    margin: 0;
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* ============================================================
+   PÁGINA "EN CONSTRUCCIÓN"
+   ============================================================ */
+
+.aura-stu-notice-box {
+    background: #ffffff;
+    border: 1px solid #e2e4e7;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    max-width: 520px;
+    margin: 40px auto 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.aura-stu-notice-box h2 {
+    font-size: 20px;
+    color: #1d2327;
+    margin: 0 0 10px;
+}
+
+.aura-stu-notice-box p {
+    color: #6b7280;
+    margin: 0 0 24px;
+}
+
+/* ============================================================
+   TABLAS GENERALES (reutilizable en fases posteriores)
+   ============================================================ */
+
+.aura-stu-table {
+    width: 100%;
+    min-width: 820px;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    font-size: 13px;
+}
+
+.aura-stu-table th {
+    background: #f6f7f7;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: #1d2327;
+    border-bottom: 1px solid #e2e4e7;
+    white-space: nowrap;
+}
+
+.aura-stu-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #f0f0f1;
+    vertical-align: middle;
+    color: #1d2327;
+}
+
+.aura-stu-table tr:last-child td {
+    border-bottom: none;
+}
+
+.aura-stu-table tr:hover td {
+    background: #f9fafb;
+}
+
+/* Celda de acciones: botones en línea sin corte */
+.aura-stu-table td:last-child {
+    white-space: nowrap;
+}
+
+.aura-stu-table .btn-view-student,
+.aura-stu-table .btn-edit-student,
+.aura-stu-table .btn-delete-student {
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+.aura-stu-table .btn-delete-student {
+    margin-right: 0;
+}
+
+/* ── Badges de estado ──────────────────────────────────────── */
+
+.aura-stu-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.aura-stu-status-applicant  { background: #f3f4f6; color: #6b7280; }
+.aura-stu-status-approved   { background: #dbeafe; color: #1d4ed8; }
+.aura-stu-status-active     { background: #dcfce7; color: #166534; }
+.aura-stu-status-graduated  { background: #fef3c7; color: #92400e; }
+.aura-stu-status-withdrawn  { background: #fed7aa; color: #9a3412; }
+.aura-stu-status-rejected   { background: #fee2e2; color: #991b1b; }
+
+.aura-stu-pay-unpaid   { background: #fee2e2; color: #991b1b; }
+.aura-stu-pay-partial  { background: #fef3c7; color: #92400e; }
+.aura-stu-pay-paid     { background: #dcfce7; color: #166534; }
+.aura-stu-pay-overdue  { background: #fecaca; color: #7f1d1d; }

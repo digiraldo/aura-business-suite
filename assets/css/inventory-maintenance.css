@@ -139,3 +139,46 @@
 /* ── Notice tope de formulario ──────────────────────────────── */
 #aura-maint-top-notice { margin: 8px 0 16px; }
 #aura-maint-top-notice p { font-size: 13px; }
+
+/* =============================================================
+   DataTables Responsive - Fix Icon Overlap 
+   Asegura que la flecha se vea claramente junto a la foto
+   ============================================================= */
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control, 
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+    position: relative !important;
+    padding-left: 36px !important; /* Espacio para el icono */
+    cursor: pointer !important;
+}
+
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before, 
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
+    content: "\f344" !important; /* dashicons-arrow-right-alt2 */
+    font-family: "dashicons" !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    background-color: #2271b1 !important; /* Azul WP */
+    color: #fff !important;
+    border-radius: 50% !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important;
+    z-index: 10 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    margin: 0 !important;
+    text-indent: 0 !important;
+}
+
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > td.dtr-control::before, 
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::before {
+    content: "\f343" !important; /* dashicons-arrow-down-alt2 */
+    background-color: #646970 !important; /* Gris WP */
+}
+

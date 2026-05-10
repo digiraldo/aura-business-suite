@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class Aura_Inventory_Setup {
 
     /** Versión del esquema de BD del módulo */
-    const DB_VERSION        = '1.2.0';
+    const DB_VERSION        = '1.3.0';
     const DB_VERSION_OPTION = 'aura_inventory_db_version';
 
     // ─────────────────────────────────────────────────────────────
@@ -76,6 +76,7 @@ class Aura_Inventory_Setup {
             warranty_date            DATE         DEFAULT NULL,
             manual_file              VARCHAR(500) DEFAULT NULL,
             requires_maintenance     TINYINT(1)   NOT NULL DEFAULT 0,
+            maintenance_instructions TEXT         DEFAULT NULL,
             interval_type            ENUM('time','hours','both') DEFAULT 'time',
             interval_months          INT          DEFAULT NULL,
             interval_hours           INT          DEFAULT NULL,

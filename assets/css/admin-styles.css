@@ -265,7 +265,14 @@
     --adp-g-forms:       linear-gradient(135deg,#f59e0b 0%,#d97706 100%);
     --adp-g-inventory:   linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%);
     --adp-g-library:     linear-gradient(135deg,#ec4899 0%,#db2777 100%);
-    --adp-g-students:    linear-gradient(135deg,#06b6d4 0%,#0891b2 100%);
+    --adp-g-students:      linear-gradient(135deg,#06b6d4 0%,#0891b2 100%);
+    --adp-g-certificates:  linear-gradient(135deg,#f97316 0%,#ea580c 100%);
+
+    /* Variables contextuales (btns secundarios, cards hover, quick-btns) */
+    --adp-surface-alt:  #f9fafb;
+    --adp-hover-blue:   #eff6ff;
+    --adp-hover-amber:  #fffbeb;
+    --adp-hover-amber2: #fef3c7;
 
     max-width: 1400px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -535,13 +542,14 @@
 .adp-module-card--electricity { border-top: 4px solid #eab308; }
 .adp-module-card--forms       { border-top: 4px solid #f59e0b; }
 .adp-module-card--inventory   { border-top: 4px solid #8b5cf6; }
-.adp-module-card--library     { border-top: 4px solid #ec4899; }
-.adp-module-card--students    { border-top: 4px solid #06b6d4; }
+.adp-module-card--library        { border-top: 4px solid #ec4899; }
+.adp-module-card--students       { border-top: 4px solid #06b6d4; }
+.adp-module-card--certificates   { border-top: 4px solid #f97316; }
 
 /* Coming soon: tono grisáceo */
 .adp-module-card--coming-soon {
     opacity: .88;
-    background: #f9fafb;
+    background: var(--adp-surface-alt);
 }
 .adp-module-card--coming-soon:hover { transform: none; box-shadow: var(--adp-shadow-md); }
 
@@ -590,9 +598,9 @@
     white-space: nowrap;
 }
 
-.adp-badge--active { background: #d1fae5; color: #065f46; }
-.adp-badge--soon   { background: #fef3c7; color: #92400e; }
-.adp-badge--beta   { background: #dbeafe; color: #1e40af; }
+.adp-badge--active { background: #d1fae5; color: #065f46; transition: background .2s, color .2s; }
+.adp-badge--soon   { background: #fef3c7; color: #92400e; transition: background .2s, color .2s; }
+.adp-badge--beta   { background: #dbeafe; color: #1e40af; transition: background .2s, color .2s; }
 
 /* Mini stats dentro del card */
 .adp-mini-stats {
@@ -688,8 +696,8 @@
 .adp-btn:hover { filter: brightness(1.08); transform: scale(1.02); }
 
 .adp-btn--primary   { background: var(--adp-primary);  color: #fff; }
-.adp-btn--secondary { background: #f3f4f6; color: #374151; }
-.adp-btn--secondary:hover { background: #e5e7eb; }
+.adp-btn--secondary { background: var(--adp-surface-alt); color: var(--adp-text); }
+.adp-btn--secondary:hover { background: var(--adp-border); color: var(--adp-text); }
 .adp-btn--alert     { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 .adp-btn--alert:hover { background: #fee2e2; }
 
@@ -726,7 +734,7 @@
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    background: #f9fafb;
+    background: var(--adp-surface-alt);
     border-radius: var(--adp-radius-md);
     text-decoration: none;
     color: var(--adp-text);
@@ -734,9 +742,9 @@
     border: 1px solid var(--adp-border);
 }
 
-.adp-quick-btn:hover { background: #eff6ff; transform: translateX(4px); color: var(--adp-text); }
-.adp-quick-btn--highlight { background: #fffbeb; border-color: #fde68a; }
-.adp-quick-btn--highlight:hover { background: #fef3c7; }
+.adp-quick-btn:hover { background: var(--adp-hover-blue); transform: translateX(4px); color: var(--adp-text); }
+.adp-quick-btn--highlight { background: var(--adp-hover-amber); border-color: rgba(245,158,11,.45); }
+.adp-quick-btn--highlight:hover { background: var(--adp-hover-amber2); }
 
 .adp-quick-btn__icon { font-size: 1.8rem; min-width: 36px; text-align: center; }
 
@@ -835,8 +843,8 @@
     white-space: nowrap;
 }
 
-.adp-roadmap__badge--q1 { background: #dbeafe; color: #1e40af; }
-.adp-roadmap__badge--q2 { background: #f3f4f6; color: #6b7280; }
+.adp-roadmap__badge--q1 { background: #dbeafe; color: #1e40af; transition: background .2s, color .2s; }
+.adp-roadmap__badge--q2 { background: var(--adp-surface-alt); color: var(--adp-muted); transition: background .2s, color .2s; }
 
 /* ── FOOTER ────────────────────────────────────────────────────── */
 .adp-footer {
@@ -918,6 +926,83 @@
     .adp-user-role-badge { font-size: .72rem; }
 }
 
+/* ── MODO OSCURO ───────────────────────────────────────────────────
+   Selector primario : html[data-wp-dark-mode-scheme="dark"]
+     → aplicado por el plugin WP Dark Mode al activarse.
+     → El plugin gestiona también la preferencia del OS (auto mode),
+       por lo que NO se usa @media (prefers-color-scheme: dark):
+       ese fallback causaría fondos oscuros en modo claro cuando
+       el SO está en dark pero el usuario eligió claro en el plugin.
+   Selector extra     : body.admin-color-midnight / .admin-color-coffee
+     → temas WP admin oscuros nativos (sin WP Dark Mode).
+──────────────────────────────────────────────────────────────────── */
+
+/* Variables oscuras — WP Dark Mode plugin (primario) */
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap {
+    --adp-surface:     #1e1e2e;
+    --adp-bg:          #13131f;
+    --adp-surface-alt: #191929;
+    --adp-border:      #2d2d3d;
+    --adp-text:        #e2e8f0;
+    --adp-muted:       #94a3b8;
+    --adp-hover-blue:  rgba(59,130,246,.14);
+    --adp-hover-amber: rgba(245,158,11,.12);
+    --adp-hover-amber2:rgba(245,158,11,.22);
+    --adp-shadow-md:   0 4px 10px rgba(0,0,0,.40);
+    --adp-shadow-lg:   0 10px 28px rgba(0,0,0,.60);
+}
+
+/* Variables oscuras — OS dark mode (fallback ELIMINADO)
+   WP Dark Mode gestiona internamente la preferencia del OS.
+   Usar @media (prefers-color-scheme: dark) causaría conflicto
+   cuando el usuario elige modo claro en el plugin pero su OS
+   está en oscuro. Solo usamos el selector del plugin. */
+
+/* Estilos complementarios de modo oscuro — WP Dark Mode plugin */
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-badge--active { background: rgba(16,185,129,.2);  color: #6ee7b7; }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-badge--soon   { background: rgba(245,158,11,.2);  color: #fcd34d; }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-badge--beta   { background: rgba(59,130,246,.2);  color: #93c5fd; }
+
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-btn--alert       { background: rgba(239,68,68,.15); color: #fca5a5; border-color: rgba(239,68,68,.35); }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-btn--alert:hover { background: rgba(239,68,68,.28); }
+
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-module-card--coming-soon { opacity: .65; }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-quick-btn--highlight     { border-color: rgba(245,158,11,.35); }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-roadmap__badge--q1       { background: rgba(59,130,246,.2); color: #93c5fd; }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-org-logo                 { background: rgba(255,255,255,.06); }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-mini-stats               { border-color: var(--adp-border); }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-progress__bar            { background: var(--adp-border); }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-feature-list li          { border-color: var(--adp-border); }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-info-table tr td         { border-color: var(--adp-border); }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-syslinks a               { background: var(--adp-surface-alt); border: 1px solid var(--adp-border); }
+html[data-wp-dark-mode-scheme="dark"] .adp-wrap .adp-syslinks a:hover         { background: var(--adp-primary); border-color: transparent; color: #fff; }
+
+/* WP Admin temas Midnight y Coffee (nativos WP) */
+body.admin-color-midnight .adp-wrap,
+body.admin-color-coffee   .adp-wrap {
+    --adp-surface:     #1e1e2e;
+    --adp-bg:          #16161f;
+    --adp-surface-alt: #191929;
+    --adp-border:      #2d2d3d;
+    --adp-text:        #dde1eb;
+    --adp-muted:       #8b96aa;
+    --adp-shadow-md:   0 4px 10px rgba(0,0,0,.38);
+    --adp-shadow-lg:   0 10px 28px rgba(0,0,0,.55);
+}
+
+body.admin-color-midnight .adp-badge--active,
+body.admin-color-coffee   .adp-badge--active { background: rgba(16,185,129,.2);  color: #6ee7b7; }
+body.admin-color-midnight .adp-badge--soon,
+body.admin-color-coffee   .adp-badge--soon   { background: rgba(245,158,11,.2);  color: #fcd34d; }
+body.admin-color-midnight .adp-btn--alert,
+body.admin-color-coffee   .adp-btn--alert    { background: rgba(239,68,68,.15); color: #fca5a5; border-color: rgba(239,68,68,.35); }
+body.admin-color-midnight .adp-btn--alert:hover,
+body.admin-color-coffee   .adp-btn--alert:hover { background: rgba(239,68,68,.28); }
+body.admin-color-midnight .adp-module-card--coming-soon,
+body.admin-color-coffee   .adp-module-card--coming-soon { opacity: .65; }
+body.admin-color-midnight .adp-roadmap__badge--q1,
+body.admin-color-coffee   .adp-roadmap__badge--q1 { background: rgba(59,130,246,.2); color: #93c5fd; }
+
 /* ── LEGADO: estilos antigüos (mantener compatibilidad) ────────── */
 /* === Módulo Principal (legacy) === */
 .aura-main-dashboard { padding: 15px; }
@@ -937,49 +1022,277 @@
 .aura-module-card h2 { margin: 0 0 8px; font-size: 20px; color: white; }
 .aura-module-card p  { margin: 0; opacity: .9; font-size: 13px; }
 
-/* === Permisos UI === */
-.aura-permissions-grid {
-    display: grid;
-    gap: 15px;
-}
+/* === Permisos UI — Accordion Rediseñado === */
 
-.aura-permission-module {
-    background: #ffffff;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 16px;
-}
-
-.aura-permission-module h3 {
-    margin-top: 0;
+/* Cabecera de sección (controles globales) */
+.aura-perm-section-header {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 16px;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
 }
-
-.aura-permission-module h3 .icon {
-    font-size: 20px;
-}
-
-.permission-checkboxes {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 10px;
-    margin-top: 12px;
-}
-
-.permission-checkbox-item {
+.aura-perm-global-controls {
     display: flex;
-    align-items: center;
     gap: 8px;
+    flex-shrink: 0;
 }
 
-.permission-checkbox-item label {
+/* Barra de búsqueda */
+.aura-perm-search-bar {
+    display: flex;
+    align-items: center;
+    background: #f9fafb;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 14px;
+    gap: 8px;
+    transition: border-color 0.2s;
+}
+.aura-perm-search-bar:focus-within {
+    border-color: #6366f1;
+    background: #fff;
+}
+.aura-perm-search-input {
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 14px;
+    flex: 1;
+    min-width: 0;
+    padding: 0 !important;
+    color: #111827;
+}
+.aura-perm-search-count {
+    font-size: 12px;
+    color: #6b7280;
+    white-space: nowrap;
+    background: #e5e7eb;
+    border-radius: 12px;
+    padding: 2px 10px;
+}
+
+/* Acordeón contenedor */
+.aura-perm-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Tarjeta de módulo */
+.aura-perm-module {
+    border: 1.5px solid #e5e7eb;
+    border-left: 4px solid var(--perm-color, #6b7280);
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.aura-perm-module:hover          { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.aura-perm-module.is-open        { box-shadow: 0 2px 14px rgba(0,0,0,.09); }
+.aura-perm-module.is-hidden-by-search { display: none; }
+
+/* Colores por módulo */
+.aura-perm-module--finance      { --perm-color: #10b981; }
+.aura-perm-module--inventory    { --perm-color: #f59e0b; }
+.aura-perm-module--students     { --perm-color: #6366f1; }
+.aura-perm-module--certificates { --perm-color: #eab308; }
+.aura-perm-module--forms        { --perm-color: #3b82f6; }
+.aura-perm-module--vehicles     { --perm-color: #ef4444; }
+.aura-perm-module--electricity  { --perm-color: #f97316; }
+.aura-perm-module--areas        { --perm-color: #8b5cf6; }
+.aura-perm-module--admin        { --perm-color: #6b7280; }
+
+/* Cabecera clickeable */
+.aura-perm-module-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    gap: 10px;
+    background: #fafafa;
+    transition: background 0.15s;
+}
+.aura-perm-module-header:hover               { background: #f3f4f6; }
+.aura-perm-module.is-open .aura-perm-module-header { background: #f8faff; }
+
+/* Meta (icono + nombre + badge) */
+.aura-perm-module-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+.aura-perm-module-emoji { font-size: 18px; flex-shrink: 0; }
+.aura-perm-module-name  {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.aura-perm-module-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #e5e7eb;
+    color: #6b7280;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-weight: 600;
+    transition: background 0.2s, color 0.2s;
+}
+.aura-perm-module-badge--active {
+    background: var(--perm-color, #6b7280);
+    color: #fff;
+}
+
+/* Acciones de cabecera */
+.aura-perm-module-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.aura-perm-select-all {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 3px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+}
+.aura-perm-select-all:hover { background: #f3f4f6; border-color: #9ca3af; }
+.aura-perm-chevron {
+    font-size: 15px !important;
+    color: #9ca3af;
+    transition: transform 0.25s;
+    flex-shrink: 0;
+}
+.aura-perm-module.is-open .aura-perm-chevron { transform: rotate(180deg); }
+
+/* Cuerpo colapsable con animación suave */
+.aura-perm-module-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding: 0;
+}
+.aura-perm-module.is-open .aura-perm-module-body {
+    max-height: 3000px;
+    padding: 14px 16px 16px;
+    border-top: 1px solid #f3f4f6;
+}
+
+/* Grid de capabilities */
+.aura-perm-cap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 5px;
+}
+
+/* Item de capability */
+.aura-perm-cap-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background 0.12s, border-color 0.12s;
+}
+.aura-perm-cap-item:hover             { background: #f9fafb; border-color: #e5e7eb; }
+.aura-perm-cap-item.is-hidden-by-search { display: none; }
+
+/* Estados activos por módulo */
+.aura-perm-module--finance .aura-perm-cap-item.is-active      { background: #f0fdf4; border-color: #86efac; }
+.aura-perm-module--inventory .aura-perm-cap-item.is-active    { background: #fffbeb; border-color: #fcd34d; }
+.aura-perm-module--students .aura-perm-cap-item.is-active     { background: #eef2ff; border-color: #a5b4fc; }
+.aura-perm-module--certificates .aura-perm-cap-item.is-active { background: #fefce8; border-color: #fde047; }
+.aura-perm-module--forms .aura-perm-cap-item.is-active        { background: #eff6ff; border-color: #93c5fd; }
+.aura-perm-module--vehicles .aura-perm-cap-item.is-active     { background: #fef2f2; border-color: #fca5a5; }
+.aura-perm-module--electricity .aura-perm-cap-item.is-active  { background: #fff7ed; border-color: #fdba74; }
+.aura-perm-module--areas .aura-perm-cap-item.is-active        { background: #f5f3ff; border-color: #c4b5fd; }
+.aura-perm-module--admin .aura-perm-cap-item.is-active        { background: #f9fafb; border-color: #d1d5db; }
+
+/* Item estrella activo */
+.aura-perm-cap-item.is-star.is-active { background: #fffbeb; border-color: #fde68a; }
+
+.aura-perm-cap-item input[type="checkbox"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--perm-color, #6b7280);
     cursor: pointer;
 }
+.aura-perm-cap-text {
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.4;
+    cursor: pointer;
+}
+.aura-perm-star {
+    text-decoration: none;
+    margin-left: 2px;
+    cursor: help;
+    font-style: normal;
+}
+
+/* Barra guardar flotante */
+.aura-perm-sticky-save {
+    position: fixed;
+    bottom: 0;
+    left: 160px;
+    right: 0;
+    background: #fff;
+    border-top: 2px solid #e5e7eb;
+    padding: 10px 24px;
+    z-index: 9990;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.10);
+}
+.aura-perm-sticky-save.is-visible { transform: translateY(0); }
+.aura-perm-sticky-save-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 1400px;
+}
+.aura-perm-sticky-total {
+    font-size: 13px;
+    color: #6b7280;
+}
+.aura-perm-sticky-total strong { color: #111827; font-size: 15px; }
+
+/* Compat: mantener clases antiguas por si acaso */
+.aura-permissions-grid { display: flex; flex-direction: column; gap: 6px; }
+.aura-permission-module { border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 16px; background: #fff; }
+.aura-permission-module h3 { margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 16px; }
+.permission-checkboxes { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-top: 12px; }
+.permission-checkbox-item { display: flex; align-items: center; gap: 8px; }
+.permission-checkbox-item label { cursor: pointer; }
 
 /* === Responsive === */
+@media (max-width: 960px) {
+    .aura-perm-sticky-save { left: 0; }
+    .aura-perm-module-name { font-size: 12px; }
+    .aura-perm-cap-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+}
 @media (max-width: 768px) {
     .aura-kpis-grid,
     .aura-modules-grid {
@@ -994,6 +1307,10 @@
     .aura-dashboard-grid {
         grid-template-columns: 1fr;
     }
+    .aura-perm-section-header { flex-direction: column; }
+    .aura-perm-global-controls { width: 100%; justify-content: flex-end; }
+    .aura-perm-cap-grid { grid-template-columns: 1fr; }
+    .aura-perm-sticky-save { left: 0; padding: 10px 14px; }
 }
 
 /* === Comparativa === */
@@ -1520,4 +1837,152 @@
     .aura-transactions-list-page .column-payment_method { display: none; }
     .aura-transactions-list-page .wp-list-table td,
     .aura-transactions-list-page .wp-list-table th { padding: 7px 6px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PANEL DE POSTULANTES — INSCRIPCIONES DESDE FORMULARIOS
+   (Fase 4 — Módulo de Formularios)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Badges de estado ─────────────────────────────────────────── */
+.aura-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+.aura-badge-warning   { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.aura-badge-success   { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.aura-badge-danger    { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.aura-badge-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+.aura-badge-info      { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.aura-badge-primary   { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+
+/* ── Barra de filtros ─────────────────────────────────────────── */
+.aura-enrollment-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 12px 0 16px;
+    padding: 12px 14px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+}
+.aura-enrollment-filters select {
+    min-width: 160px;
+    max-width: 260px;
+}
+.aura-enrollment-total {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0 0 6px;
+}
+
+/* ── Tabla de enrollment ──────────────────────────────────────── */
+.aura-enrollment-table .column-name    { width: 17%; }
+.aura-enrollment-table .column-email   { width: 18%; }
+.aura-enrollment-table .column-course  { width: 15%; }
+.aura-enrollment-table .column-form    { width: 14%; }
+.aura-enrollment-table .column-date    { width: 10%; }
+.aura-enrollment-table .column-estatus { width: 9%; }
+.aura-enrollment-table .column-actions { width: 17%; }
+.aura-enrollment-table .column-actions .button {
+    margin: 0 2px 2px 0;
+}
+
+/* ── Modal genérico aura-modal ────────────────────────────────── */
+.aura-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 100000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    overflow-y: auto;
+}
+.aura-modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-height: calc(100vh - 80px);
+    overflow: hidden;
+}
+.aura-modal-sm { max-width: 480px; }
+.aura-modal-md { max-width: 680px; }
+.aura-modal-lg { max-width: 880px; }
+
+.aura-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+.aura-modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+.aura-modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background .15s, color .15s;
+}
+.aura-modal-close:hover { background: #f3f4f6; color: #111827; }
+
+.aura-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+.aura-modal-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    padding: 12px 20px;
+    border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+
+/* ── Lista de detalle del postulante ──────────────────────────── */
+dl.aura-detail-list {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 6px 12px;
+    margin: 0;
+}
+dl.aura-detail-list dt {
+    font-weight: 600;
+    color: #374151;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    align-self: start;
+    padding-top: 3px;
+}
+dl.aura-detail-list dd {
+    margin: 0;
+    color: #111827;
+    font-size: 13px;
+    word-break: break-word;
+    align-self: start;
 }

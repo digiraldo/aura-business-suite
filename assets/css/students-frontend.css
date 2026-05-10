@@ -1,0 +1,509 @@
+/**
+ * AURA Business Suite — Estilos Frontend del Portal de Estudiantes
+ * Se carga sólo en páginas con shortcodes [aura_student_*] o [aura_enrollment_form]
+ *
+ * @package AuraBusinessSuite
+ */
+
+/* ─────────────────────────────────────────────────────────────
+   BASE
+───────────────────────────────────────────────────────────── */
+.aura-portal-wrap,
+.aura-login-wrap,
+.aura-enroll-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1f2937;
+    line-height: 1.6;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BOTONES
+───────────────────────────────────────────────────────────── */
+.aura-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: .92em;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .15s, transform .1s;
+}
+.aura-btn:active { transform: scale(.98); }
+.aura-btn:focus  { outline: 2px solid #8b5cf6; outline-offset: 2px; }
+
+.aura-btn-primary  { background: #8b5cf6; color: #fff; }
+.aura-btn-primary:hover  { background: #7c3aed; }
+.aura-btn-secondary{ background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+.aura-btn-secondary:hover{ background: #e5e7eb; }
+.aura-btn-ghost    { background: transparent; color: #6b7280; border: 1px solid #e5e7eb; }
+.aura-btn-ghost:hover { background: #f3f4f6; }
+
+.aura-btn-full { width: 100%; justify-content: center; }
+.aura-btn-sm   { padding: 5px 12px; font-size: .82em; }
+.aura-btn-lg   { padding: 12px 24px; font-size: 1em; }
+
+/* ─────────────────────────────────────────────────────────────
+   INPUTS
+───────────────────────────────────────────────────────────── */
+.aura-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: .92em;
+    background: #fff;
+    color: #1f2937;
+    transition: border-color .15s;
+    box-sizing: border-box;
+}
+.aura-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139,92,246,.12);
+}
+.aura-textarea { resize: vertical; min-height: 80px; }
+.aura-input-full { width: 100%; }
+select.aura-input { appearance: auto; }
+
+/* ─────────────────────────────────────────────────────────────
+   FORMULARIO DE LOGIN
+───────────────────────────────────────────────────────────── */
+.aura-login-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 36px 32px;
+    max-width: 420px;
+    margin: 40px auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
+.aura-login-header { text-align: center; margin-bottom: 24px; }
+.aura-login-logo   { max-height: 70px; margin-bottom: 12px; }
+.aura-login-site-name { font-size: 1.4em; color: #8b5cf6; margin: 0 0 6px; }
+.aura-login-subtitle  { color: #6b7280; font-size: .9em; margin: 0; }
+
+.aura-login-form .aura-field-group { margin-bottom: 16px; }
+.aura-login-form label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .88em;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 5px;
+}
+.aura-forgot-link { font-weight: 400; color: #8b5cf6; font-size: .85em; }
+.aura-forgot-link:hover { text-decoration: underline; }
+
+.aura-pass-wrap { position: relative; }
+.aura-pass-wrap .aura-input { padding-right: 40px; }
+.aura-toggle-pass {
+    position: absolute; right: 10px; top: 50%;
+    transform: translateY(-50%);
+    background: none; border: none;
+    cursor: pointer; font-size: 1em; color: #9ca3af;
+}
+.aura-field-inline { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+.aura-field-inline label { font-size: .88em; color: #374151; display: flex; gap: 6px; align-items: center; }
+
+.aura-login-notice {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: .88em;
+    margin-bottom: 14px;
+    display: none;
+}
+.aura-notice-ok    { background: #d1fae5; color: #065f46; }
+.aura-notice-error { background: #fee2e2; color: #991b1b; }
+
+/* ─────────────────────────────────────────────────────────────
+   FORMULARIO DE INSCRIPCIÓN
+───────────────────────────────────────────────────────────── */
+.aura-enrollment-form {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.aura-enroll-type-label {
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    font-size: .92em;
+    color: #5b21b6;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.aura-enroll-section { margin-bottom: 28px; }
+.aura-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1em;
+    color: #1f2937;
+    border-bottom: 2px solid #ede9fe;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+.section-num {
+    background: #8b5cf6;
+    color: #fff;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8em;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.aura-field-row { display: flex; gap: 14px; margin-bottom: 14px; }
+.aura-field-half { flex: 1; }
+.aura-field-group { display: flex; flex-direction: column; gap: 5px; }
+.aura-field-group label {
+    font-size: .86em;
+    font-weight: 600;
+    color: #374151;
+}
+.required { color: #dc2626; }
+
+/* Tipo de perfil radio cards */
+.aura-profile-type-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+.aura-radio-card {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .88em;
+    transition: border-color .15s, background .15s;
+}
+.aura-radio-card:has(input:checked) {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+    color: #5b21b6;
+    font-weight: 600;
+}
+.aura-radio-card input { margin: 0; }
+
+/* Áreas de interés */
+.aura-areas-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.aura-area-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .88em;
+    transition: border-color .15s, background .15s;
+}
+.aura-area-checkbox:has(input:checked) {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+    color: #5b21b6;
+}
+.aura-areas-single { font-weight: 600; color: #5b21b6; }
+.aura-areas-auto   { color: #9ca3af; font-weight: 400; font-size: .85em; }
+
+/* Honeypot */
+.aura-hp-field {
+    position: absolute;
+    width: 0; height: 0;
+    margin: 0; padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Notices frontend */
+.aura-notice-front {
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    font-size: .88em;
+}
+.aura-notice-front.aura-notice-ok    { background: #d1fae5; color: #065f46; }
+.aura-notice-front.aura-notice-error { background: #fee2e2; color: #991b1b; }
+
+/* Footer del form */
+.aura-enroll-footer { margin-top: 8px; }
+.aura-enroll-disclaimer {
+    font-size: .8em;
+    color: #9ca3af;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Success screen */
+.aura-enroll-success {
+    text-align: center;
+    padding: 48px 24px;
+}
+.aura-success-icon { font-size: 3em; display: block; margin-bottom: 12px; }
+.aura-enroll-success h3 { color: #059669; font-size: 1.4em; margin-bottom: 8px; }
+.aura-enroll-success p  { color: #6b7280; }
+
+/* ─────────────────────────────────────────────────────────────
+   PORTAL DEL ESTUDIANTE — HEADER
+───────────────────────────────────────────────────────────── */
+.aura-portal-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    border-radius: 12px;
+    color: #fff;
+    margin-bottom: 20px;
+}
+.aura-portal-avatar { flex-shrink: 0; }
+.aura-avatar-img {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255,255,255,.5);
+}
+.aura-avatar-placeholder {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #fff;
+}
+.aura-portal-greeting { flex: 1; }
+.aura-portal-greeting h2 { margin: 0 0 4px; font-size: 1.3em; }
+.aura-portal-greeting p  { margin: 0; opacity: .9; font-size: .9em; }
+.aura-portal-logout { flex-shrink: 0; }
+
+/* Status badges */
+.aura-status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: .78em;
+    font-weight: 600;
+}
+.status-gray   { background: rgba(255,255,255,.2); color: #fff; }
+.status-blue   { background: #dbeafe; color: #1d4ed8; }
+.status-green  { background: #d1fae5; color: #065f46; }
+.status-gold   { background: #fef3c7; color: #92400e; }
+.status-orange { background: #ffedd5; color: #9a3412; }
+.status-red    { background: #fee2e2; color: #991b1b; }
+
+/* ─────────────────────────────────────────────────────────────
+   PORTAL — TABS NAV
+───────────────────────────────────────────────────────────── */
+.aura-portal-nav {
+    display: flex;
+    gap: 4px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.aura-portal-tab-btn {
+    flex: 1;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #6b7280;
+    font-size: .9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+}
+.aura-portal-tab-btn.active {
+    background: #fff;
+    color: #8b5cf6;
+    box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+.aura-portal-tab-btn:hover:not(.active) { background: #e5e7eb; color: #374151; }
+
+/* ─────────────────────────────────────────────────────────────
+   PORTAL — CURSOS
+───────────────────────────────────────────────────────────── */
+.aura-area-block  { margin-bottom: 24px; }
+.aura-area-title  { font-size: 1em; color: #5b21b6; border-bottom: 2px solid #ede9fe; padding-bottom: 6px; margin-bottom: 12px; }
+
+.aura-course-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+.aura-course-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.aura-course-name  { font-weight: 700; color: #1f2937; }
+.aura-course-dates { font-size: .83em; color: #9ca3af; margin-bottom: 8px; }
+.aura-course-payment { margin-top: 8px; }
+.aura-badge-pct    { background: #ede9fe; color: #5b21b6; font-size: .8em; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.aura-cost-net     { font-weight: 700; margin-left: 6px; }
+
+/* Progress bar */
+.aura-progress-wrap {
+    height: 7px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+.aura-progress-bar { height: 100%; border-radius: 4px; transition: width .4s; }
+.bar-green { background: #10b981; }
+.bar-blue  { background: #3b82f6; }
+.bar-gray  { background: #d1d5db; }
+.aura-balance { margin-top: 4px; font-size: .85em; }
+.text-red   { color: #dc2626; }
+.text-green { color: #059669; }
+
+/* ─────────────────────────────────────────────────────────────
+   PORTAL — PAGOS
+───────────────────────────────────────────────────────────── */
+.aura-pay-summary {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.aura-summary-kpi {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 18px;
+    flex: 1;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.aura-summary-kpi .kpi-label { font-size: .8em; color: #6b7280; }
+.aura-summary-kpi .kpi-value { font-size: 1.3em; font-weight: 700; }
+.kpi-green { color: #059669; }
+.kpi-red   { color: #dc2626; }
+
+.aura-section-sub { font-size: 1em; color: #374151; margin: 18px 0 10px; font-weight: 700; }
+
+.aura-portal-table { width: 100%; border-collapse: collapse; font-size: .88em; }
+.aura-portal-table thead th {
+    background: #f9fafb;
+    padding: 9px 12px;
+    text-align: left;
+    font-size: .83em;
+    color: #6b7280;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+.aura-portal-table tbody tr { border-bottom: 1px solid #f3f4f6; }
+.aura-portal-table tbody tr:hover { background: #fafafa; }
+.aura-portal-table tbody td { padding: 8px 12px; vertical-align: top; }
+.row-overdue td { background: #fff5f5; }
+.aura-link { color: #8b5cf6; text-decoration: none; }
+.aura-link:hover { text-decoration: underline; }
+
+/* ─────────────────────────────────────────────────────────────
+   PORTAL — CERTIFICADOS
+───────────────────────────────────────────────────────────── */
+.aura-certs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+.aura-cert-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #f59e0b;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.aura-cert-icon { font-size: 2em; line-height: 1; }
+.aura-cert-info { flex: 1; font-size: .88em; }
+.aura-cert-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ─────────────────────────────────────────────────────────────
+   LOADING / LOADING STATE
+───────────────────────────────────────────────────────────── */
+.aura-loading {
+    text-align: center;
+    padding: 20px;
+    color: #9ca3af;
+    font-size: .9em;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PAZ Y SALVO (pública)
+───────────────────────────────────────────────────────────── */
+.aura-paz-salvo-check { max-width: 480px; margin: 0 auto; }
+.aura-paz-salvo-check h3 { margin-bottom: 12px; }
+.aura-ps-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.aura-ps-form .aura-input { flex: 1; min-width: 200px; }
+.aura-ps-card {
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+.aura-ps-ok       { background: #d1fae5; color: #065f46; }
+.aura-ps-debt     { background: #fee2e2; color: #991b1b; }
+.aura-ps-not-found{ background: #f3f4f6; color: #6b7280; }
+
+/* PORTAL notice (sin sesión) */
+.aura-portal-notice {
+    padding: 16px 20px;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    color: #92400e;
+}
+.aura-portal-error   { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+.aura-portal-warning { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+.aura-portal-notice a { color: inherit; font-weight: 700; }
+
+/* ─────────────────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .aura-field-row { flex-direction: column; gap: 0; }
+    .aura-field-half { flex: none; width: 100%; }
+    .aura-portal-header { flex-wrap: wrap; }
+    .aura-portal-logout { order: -1; margin-left: auto; }
+    .aura-pay-summary { flex-direction: column; }
+    .aura-login-card { padding: 24px 18px; margin: 20px auto; }
+    .aura-ps-form { flex-direction: column; }
+}

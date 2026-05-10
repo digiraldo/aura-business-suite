@@ -1,0 +1,2413 @@
+/**
+ * Aura Vehicles Module — Admin Styles
+ * Fase 1 y Fase 2: estilos base + modales + tabla de vehículos.
+ *
+ * @package Aura_Business_Suite\Vehicles
+ */
+
+/* ── Contenedor principal ────────────────────────────────────── */
+.wrap[class*="aura-vehicles"] .notice.inline {
+    margin-top: 16px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SISTEMA DE MODALES
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 160000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-veh-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    cursor: pointer;
+}
+
+.aura-veh-modal-content {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    width: 560px;
+    max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.aura-veh-modal-content.aura-veh-modal-large {
+    width: 860px;
+}
+
+.aura-veh-modal-content.aura-veh-modal-sm {
+    width: 420px;
+}
+
+.aura-veh-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #ddd;
+    background: #f6f7f7;
+    flex-shrink: 0;
+}
+
+.aura-veh-modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-veh-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #787c82;
+    font-size: 20px;
+    padding: 0;
+    line-height: 1;
+    transition: color .15s;
+}
+.aura-veh-modal-close:hover { color: #d63638; }
+
+.aura-veh-modal-body {
+    padding: 18px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.aura-veh-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid #ddd;
+    background: #f6f7f7;
+    flex-shrink: 0;
+}
+
+/* Scroll lock cuando un modal está abierto */
+body.aura-veh-modal-open {
+    overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BARRA DE FILTROS
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 16px 0 12px;
+    padding: 12px 14px;
+    background: #f6f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.aura-veh-filters-bar input[type="search"],
+.aura-veh-filters-bar select {
+    height: 32px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TABLA / DATATABLES
+══════════════════════════════════════════════════════════════ */
+
+#aura-veh-table {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+#aura-veh-table thead th {
+    background: #2271b1;
+    color: #fff;
+    font-weight: 600;
+    padding: 8px 12px;
+    white-space: nowrap;
+}
+
+#aura-veh-table tbody td {
+    padding: 8px 12px;
+    vertical-align: middle;
+}
+
+#aura-veh-table tbody tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+#aura-veh-table tbody tr:hover {
+    background: #e8f0fe;
+}
+
+/* ── Badges de estado ────────────────────────────────────────── */
+.aura-veh-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #fff;
+}
+
+/* ── Botones de acción pequeños ──────────────────────────────── */
+.aura-veh-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+.aura-veh-action {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    min-width: 30px;
+    min-height: 30px !important;
+    height: 30px !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    border-radius: 999px !important;
+    border: 1px solid transparent !important;
+    transition: transform .15s ease, filter .15s ease;
+}
+
+.aura-veh-action:hover {
+    transform: translateY(-1px);
+    filter: brightness(0.96);
+}
+
+.aura-veh-action .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1.4;
+}
+
+.aura-veh-action--view {
+    background: #eaf4ff !important;
+    border-color: #a8d1ff !important;
+    color: #0a5ea8 !important;
+}
+
+.aura-veh-action--edit {
+    background: #eefcf6 !important;
+    border-color: #aae9cd !important;
+    color: #067647 !important;
+}
+
+.aura-veh-action--areas {
+    background: #eef2ff !important;
+    border-color: #c8d4ff !important;
+    color: #3a4cb1 !important;
+}
+
+.aura-veh-action--photos {
+    background: #fff8e8 !important;
+    border-color: #ffe0a3 !important;
+    color: #a45b05 !important;
+}
+
+.aura-veh-action--unavailable,
+.aura-veh-action--delete {
+    background: #fff1f2 !important;
+    border-color: #ffc6cc !important;
+    color: #b42318 !important;
+}
+
+.aura-veh-action--restore {
+    background: #ecfdf3 !important;
+    border-color: #a6f4c5 !important;
+    color: #067647 !important;
+}
+
+.aura-veh-action--transfer {
+    background: #f5f3ff !important;
+    border-color: #dbd2fe !important;
+    color: #6d28d9 !important;
+}
+
+.aura-veh-action--qr {
+    background: #f3e8ff !important;
+    border-color: #e3c6ff !important;
+    color: #7e22ce !important;
+}
+
+/* ── Modal detalle de vehículo ───────────────────────────────── */
+.aura-veh-view-modal-content {
+    width: 900px;
+}
+
+.aura-veh-view-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 70%, #2563eb 100%);
+    border-bottom: 0;
+}
+
+.aura-veh-view-header h2,
+.aura-veh-view-header .aura-veh-modal-close {
+    color: #fff;
+}
+
+.aura-veh-view-body {
+    background: radial-gradient(circle at top right, #eff6ff 0%, #ffffff 45%);
+}
+
+.aura-veh-view-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    color: #334155;
+}
+
+.aura-veh-view-loading p {
+    margin-top: 10px;
+}
+
+.aura-veh-view-hero {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.aura-veh-view-photo {
+    width: 100%;
+    min-height: 165px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #e2e8f0;
+}
+
+.aura-veh-view-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+}
+
+.aura-veh-view-photo-empty {
+    min-height: 165px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+}
+
+.aura-veh-view-photo-empty .dashicons {
+    font-size: 34px;
+    width: 34px;
+    height: 34px;
+}
+
+.aura-veh-view-main h3 {
+    margin: 0;
+    font-size: 24px;
+    color: #0f172a;
+}
+
+.aura-veh-license-plate {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0 10px;
+    padding: 8px 18px;
+    min-height: 52px;
+    border: 3px solid #111827;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #fef9c3 0%, #fde047 100%);
+    color: #0f172a;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-family: "Trebuchet MS", "Arial Black", sans-serif;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.5), 0 4px 12px rgba(15, 23, 42, .2);
+}
+
+.aura-veh-view-subtitle {
+    margin: 6px 0 10px;
+    color: #475569;
+}
+
+.aura-veh-view-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.aura-veh-view-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #1e293b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.aura-veh-view-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.aura-veh-view-card {
+    background: #fff;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .05);
+}
+
+.aura-veh-view-card h4 {
+    margin: 0 0 10px;
+    color: #0f172a;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-veh-view-card dl {
+    margin: 0;
+}
+
+.aura-veh-view-card dl > div {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.aura-veh-view-card dl > div:last-child {
+    border-bottom: 0;
+}
+
+.aura-veh-view-card dt {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.aura-veh-view-card dd {
+    margin: 0;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.aura-veh-view-chip {
+    display: inline-block;
+    margin: 0 6px 6px 0;
+    padding: 2px 9px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.aura-veh-view-notes p {
+    margin: 0;
+    color: #334155;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 820px) {
+    .aura-veh-view-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-veh-view-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-veh-license-plate {
+        font-size: 24px;
+        letter-spacing: 3px;
+    }
+
+    .aura-veh-lightbox-toolbar {
+        order: 2;
+        margin: 8px 0 0;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ── Lightbox imagen detalle ─────────────────────────────────── */
+.aura-veh-lightbox .aura-veh-modal-overlay {
+    background: rgba(2, 6, 23, .9);
+}
+
+.aura-veh-lightbox-content {
+    width: min(1100px, calc(100vw - 30px));
+    max-width: min(1100px, calc(100vw - 30px));
+    max-height: calc(100vh - 30px);
+    background: #0f172a;
+    border: 1px solid #1e293b;
+}
+
+.aura-veh-lightbox-header {
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+}
+
+.aura-veh-lightbox-header h2,
+.aura-veh-lightbox-header .aura-veh-modal-close {
+    color: #e2e8f0;
+}
+
+.aura-veh-lightbox-toolbar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.aura-veh-lightbox-toolbar .button {
+    min-width: 34px;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #111827;
+    color: #e2e8f0;
+    border-color: #334155;
+}
+
+.aura-veh-lightbox-toolbar .button[disabled] {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+#aura-veh-lightbox-counter {
+    font-size: 12px;
+    color: #cbd5e1;
+    min-width: 54px;
+    text-align: center;
+}
+
+.aura-veh-lightbox-body {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+    background: #020617;
+}
+
+#aura-veh-lightbox-img {
+    max-width: 100%;
+    max-height: calc(100vh - 140px);
+    width: auto;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, .5);
+}
+
+.aura-veh-lightbox-thumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    overflow-x: auto;
+    background: #0b1220;
+    border-top: 1px solid #1e293b;
+}
+
+.aura-veh-lightbox-thumb {
+    width: 74px;
+    height: 54px;
+    border-radius: 8px;
+    padding: 0;
+    border: 2px solid #334155;
+    background: #111827;
+    cursor: pointer;
+    overflow: hidden;
+    flex: 0 0 auto;
+    transition: border-color .15s ease, transform .15s ease;
+}
+
+.aura-veh-lightbox-thumb:hover {
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+}
+
+.aura-veh-lightbox-thumb.is-active {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, .2);
+}
+
+.aura-veh-lightbox-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORMULARIO (modal)
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-form-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.aura-veh-form-col {
+    flex: 1 1 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-veh-form-col label {
+    font-size: 12px;
+    color: #50575e;
+}
+
+.aura-veh-form-col input,
+.aura-veh-form-col select,
+.aura-veh-form-col textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GALERÍA DE FOTOS
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-photos-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    min-height: 40px;
+}
+
+.aura-veh-photo-item {
+    text-align: center;
+}
+
+.aura-veh-photo-upload-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UX: FORM SECTIONS (Fase 2 / Fase 3)
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-form-section {
+    border: 1px solid #dde0e4;
+    border-radius: 6px;
+    padding: 12px 14px 6px;
+    margin-bottom: 14px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.aura-veh-form-section-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: -12px -14px 12px;
+    padding: 8px 14px;
+    background: #f0f4f9;
+    border-bottom: 1px solid #dde0e4;
+    border-radius: 6px 6px 0 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #1a487f;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-veh-form-section-title .dashicons {
+    color: #2271b1;
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* ── Vehículo: layout dos columnas (form + sidebar foto) ────────── */
+.aura-veh-form-layout {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.aura-veh-form-main  { flex: 1 1 0; min-width: 0; }
+.aura-veh-form-sidebar { width: 210px; flex-shrink: 0; }
+
+@media (max-width: 700px) {
+    .aura-veh-form-layout  { flex-direction: column; }
+    .aura-veh-form-sidebar { width: 100%; }
+}
+
+/* ── Trips: tarjetas de tipo de salida ──────────────────────── */
+.aura-trips-type-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+@media (max-width: 520px) {
+    .aura-trips-type-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+.aura-trips-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 14px 8px 10px;
+    border: 2px solid #dde0e4;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    text-align: center;
+    font-family: inherit;
+    transition: border-color .18s, background .18s, box-shadow .15s;
+}
+
+.aura-trips-type-card:hover {
+    border-color: #2271b1;
+    background: #f0f6ff;
+}
+
+.aura-trips-type-card.is-active {
+    border-color: #2271b1;
+    background: #2271b1;
+    box-shadow: 0 3px 10px rgba(34,113,177,.3);
+}
+
+.aura-trips-type-card .dashicons {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    color: #2271b1;
+}
+
+.aura-trips-type-card.is-active .dashicons { color: #fff; }
+
+.aura-trips-type-card > span {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1d2327;
+}
+
+.aura-trips-type-card.is-active > span { color: #fff; }
+
+.aura-trips-type-card > small {
+    font-size: 10px;
+    color: #72777c;
+    line-height: 1.3;
+}
+
+.aura-trips-type-card.is-active > small { color: rgba(255,255,255,.8); }
+/* ══════════════════════════════════════════════════════════════
+   FASE 4: CATÁLOGOS
+══════════════════════════════════════════════════════════════ */
+
+/* Pestañas de tipo */
+.aura-cat-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 16px 0 0;
+    border-bottom: 2px solid #dcdcdc;
+    padding-bottom: 0;
+}
+
+.aura-cat-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background: #f6f7f7;
+    color: #50575e;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    position: relative;
+    top: 2px;
+}
+
+.aura-cat-tab:hover {
+    background: #e9ecef;
+    color: #1d2327;
+}
+
+.aura-cat-tab.is-active {
+    background: #fff;
+    border-color: #dcdcdc;
+    border-bottom-color: #fff;
+    color: #2271b1;
+    font-weight: 600;
+}
+
+.aura-cat-tab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Panel de cada pestaña */
+.aura-cat-panel {
+    background: #fff;
+    border: 1px solid #dcdcdc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 16px;
+}
+
+.aura-cat-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.aura-cat-panel-desc {
+    margin: 0;
+    color: #50575e;
+    font-size: 13px;
+    line-height: 1.5;
+    flex: 1;
+}
+
+/* Tabla de ítems */
+.aura-cat-table {
+    width: 100%;
+}
+
+.aura-cat-th-handle { width: 32px; text-align: center; }
+.aura-cat-th-icon   { width: 56px; text-align: center; }
+.aura-cat-th-area   { width: 140px; }
+.aura-cat-th-status { width: 90px; }
+.aura-cat-th-actions { width: 110px; text-align: right; }
+
+.aura-cat-handle {
+    text-align: center;
+    cursor: grab;
+    color: #a7aaad;
+}
+
+.aura-cat-handle:active { cursor: grabbing; }
+
+.aura-cat-row-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #f0f4f9;
+    border-radius: 6px;
+    color: #2271b1;
+    font-size: 18px;
+}
+
+.aura-cat-no-icon {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    text-align: center;
+    line-height: 32px;
+    color: #c3c4c7;
+    font-size: 18px;
+}
+
+.aura-cat-td-name strong { color: #1d2327; }
+
+.aura-cat-desc {
+    color: #72777c;
+    font-size: 11.5px;
+}
+
+.aura-cat-row-inactive td { opacity: .55; }
+.aura-cat-row-inactive .aura-cat-td-name strong { text-decoration: line-through; }
+
+/* Badges */
+.aura-cat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.aura-cat-badge-active {
+    background: #edfaef;
+    color: #1a7734;
+    border: 1px solid #b7ebc0;
+}
+
+.aura-cat-badge-inactive {
+    background: #fef0f0;
+    color: #a01010;
+    border: 1px solid #f8c0c0;
+}
+
+.aura-cat-global-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: #f0f4f9;
+    color: #50575e;
+    border: 1px solid #dcdcdc;
+}
+
+.aura-cat-area-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: #fef8ee;
+    color: #7a5500;
+    border: 1px solid #f5d080;
+}
+
+/* Acciones de fila */
+.aura-cat-actions {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.aura-cat-actions .button {
+    padding: 2px 6px;
+    min-height: 26px;
+    line-height: 22px;
+}
+
+.aura-cat-actions .is-destructive {
+    color: #b32d2e;
+    border-color: #e4b1b1;
+}
+
+.aura-cat-actions .is-destructive:hover {
+    background: #fef0f0;
+    border-color: #b32d2e;
+}
+
+/* Celda vacía */
+.aura-cat-empty {
+    text-align: center;
+    padding: 32px;
+    color: #72777c;
+    font-size: 13px;
+}
+
+.aura-cat-empty .dashicons {
+    display: block;
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 8px;
+    color: #c3c4c7;
+}
+
+/* Filas en proceso de carga */
+#aura-catalogs-page.is-loading .aura-cat-tbody-row {
+    opacity: .5;
+    pointer-events: none;
+}
+
+/* ── Modal de catálogos ────────────────────────────────────── */
+
+/* Selector de ícono */
+.aura-cat-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 6px;
+    padding: 10px;
+    background: #f6f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.aura-icon-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 4px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    gap: 2px;
+    min-height: 52px;
+}
+
+.aura-icon-option:hover {
+    border-color: #2271b1;
+    background: #e8f0f8;
+}
+
+.aura-icon-option.is-selected {
+    border-color: #2271b1;
+    background: #2271b1;
+    color: #fff;
+}
+
+.aura-icon-option.is-selected .dashicons { color: #fff; }
+.aura-icon-option.is-selected small { color: rgba(255,255,255,.85); }
+
+.aura-icon-option .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #2271b1;
+}
+
+.aura-icon-option small {
+    font-size: 9px;
+    text-align: center;
+    line-height: 1.2;
+    color: #72777c;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 60px;
+}
+
+/* Radio grupo para el ámbito */
+.aura-cat-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.aura-cat-radio-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.aura-cat-radio-option input[type="radio"] { margin: 0; }
+
+.aura-cat-radio-option .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #2271b1;
+}
+
+/* Sortable drag ghost */
+.sortable-ghost {
+    opacity: .4;
+    background: #e8f0f8 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE 5: DASHBOARD Y KPIs
+══════════════════════════════════════════════════════════════ */
+
+/* ── Barra de controles ──────────────────────────────────────── */
+.aura-dash-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin: 16px 0 20px;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.aura-dash-controls-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #50575e;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    flex-shrink: 0;
+}
+
+.aura-dash-period-group,
+.aura-dash-area-group,
+.aura-dash-refresh-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-dash-refresh-wrap {
+    margin-left: auto;
+}
+
+.aura-dash-period-btns {
+    display: flex;
+    gap: 4px;
+}
+
+.aura-dash-period-btn {
+    padding: 5px 12px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #f6f7f7;
+    color: #50575e;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+
+.aura-dash-period-btn:hover {
+    background: #e8f0f8;
+    border-color: #2271b1;
+    color: #2271b1;
+}
+
+.aura-dash-period-btn.is-active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(34,113,177,.3);
+}
+
+.aura-dash-area-select {
+    min-width: 180px;
+    height: 32px;
+    font-size: 13px;
+}
+
+.aura-dash-last-update {
+    font-size: 11px;
+    color: #72777c;
+}
+
+/* ── Aviso de dashboard ──────────────────────────────────────── */
+.aura-dash-notice {
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.aura-dash-notice.is-success {
+    background: #edfaef;
+    color: #1a7734;
+    border-left: 4px solid #00ba88;
+}
+
+.aura-dash-notice.is-error {
+    background: #fef0f0;
+    color: #a01010;
+    border-left: 4px solid #d63638;
+}
+
+/* ── Spinner de carga ────────────────────────────────────────── */
+.aura-dash-loader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    font-size: 13px;
+    color: #72777c;
+}
+
+/* ── Título de sección ───────────────────────────────────────── */
+.aura-dash-section-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 18px 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a487f;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.aura-dash-section-title .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #2271b1;
+}
+
+/* ── Grid de KPIs ────────────────────────────────────────────── */
+.aura-dash-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+#aura-dash-kpis-activity {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+@media (max-width: 900px) {
+    .aura-dash-kpis                { grid-template-columns: repeat(2, 1fr); }
+    #aura-dash-kpis-activity       { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 520px) {
+    .aura-dash-kpis,
+    #aura-dash-kpis-activity       { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Tarjeta KPI ─────────────────────────────────────────────── */
+.aura-dash-kpi-card {
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 8px;
+    padding: 16px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    border-left-width: 4px;
+    border-left-style: solid;
+    transition: box-shadow .2s;
+}
+
+.aura-dash-kpi-card:hover {
+    box-shadow: 0 3px 10px rgba(0,0,0,.1);
+}
+
+.aura-dash-kpi-available    { border-left-color: #00ba88; }
+.aura-dash-kpi-rented       { border-left-color: #2271b1; }
+.aura-dash-kpi-maintenance  { border-left-color: #f0b849; }
+.aura-dash-kpi-unavailable  { border-left-color: #a7aaad; }
+.aura-dash-kpi-active-trips { border-left-color: #0ea5e9; }
+.aura-dash-kpi-trips-today  { border-left-color: #7c3aed; }
+.aura-dash-kpi-km           { border-left-color: #f59e0b; }
+.aura-dash-kpi-income       { border-left-color: #10b981; }
+.aura-dash-kpi-costs        { border-left-color: #ef4444; }
+
+.aura-dash-kpi-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #f0f4f9;
+    flex-shrink: 0;
+}
+
+.aura-dash-kpi-icon .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #2271b1;
+}
+
+.aura-dash-kpi-available .aura-dash-kpi-icon .dashicons    { color: #00ba88; }
+.aura-dash-kpi-rented .aura-dash-kpi-icon .dashicons       { color: #2271b1; }
+.aura-dash-kpi-maintenance .aura-dash-kpi-icon .dashicons  { color: #f0b849; }
+.aura-dash-kpi-unavailable .aura-dash-kpi-icon .dashicons  { color: #a7aaad; }
+.aura-dash-kpi-active-trips .aura-dash-kpi-icon .dashicons { color: #0ea5e9; }
+.aura-dash-kpi-trips-today .aura-dash-kpi-icon .dashicons  { color: #7c3aed; }
+.aura-dash-kpi-km .aura-dash-kpi-icon .dashicons           { color: #f59e0b; }
+.aura-dash-kpi-income .aura-dash-kpi-icon .dashicons       { color: #10b981; }
+.aura-dash-kpi-costs .aura-dash-kpi-icon .dashicons        { color: #ef4444; }
+
+.aura-dash-kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1d2327;
+    line-height: 1.1;
+    min-height: 34px;
+}
+
+.aura-dash-kpi-label {
+    font-size: 11.5px;
+    color: #72777c;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+/* Estado cargando — valores pulsantes */
+#aura-veh-dashboard-page.is-loading .aura-dash-kpi-value {
+    color: #c3c4c7;
+}
+
+/* ── Filas de gráficas ───────────────────────────────────────── */
+.aura-dash-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0 0;
+}
+
+@media (max-width: 900px) {
+    .aura-dash-charts-row { grid-template-columns: 1fr; }
+}
+
+/* ── Caja de gráfica ─────────────────────────────────────────── */
+.aura-dash-chart-box {
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 8px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    display: flex;
+    flex-direction: column;
+}
+
+.aura-dash-chart-sm { /* doughnut — un tercio del ancho aprox. */ }
+.aura-dash-chart-lg { /* bar — el resto */ }
+
+/* Primera fila: sm + lg a 1/3 + 2/3 */
+.aura-dash-charts-row:first-of-type .aura-dash-chart-sm {
+    grid-column: 1;
+}
+.aura-dash-charts-row:first-of-type .aura-dash-chart-lg {
+    grid-column: 2;
+}
+
+/* Gráfica full-width (costos vs ingresos) */
+.aura-dash-chart-full {
+    grid-column: 1 / -1;
+}
+
+.aura-dash-chart-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f1f2;
+}
+
+.aura-dash-chart-header .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: #2271b1;
+}
+
+.aura-dash-chart-header h3 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-dash-chart-wrap {
+    flex: 1;
+    position: relative;
+    height: 280px;
+}
+
+.aura-dash-chart-wrap-wide {
+    height: 240px;
+}
+
+/* Estado vacío de una gráfica */
+.aura-dash-chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 180px;
+    color: #c3c4c7;
+    text-align: center;
+    gap: 8px;
+}
+
+.aura-dash-chart-empty .dashicons {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    color: #dde0e4;
+}
+
+.aura-dash-chart-empty p {
+    margin: 0;
+    font-size: 13px;
+    color: #a7aaad;
+}}
+
+/* ════════════════════════════════════════════════════════════════
+   FASE 6: REPORTES Y EXPORTACIÓN
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Tabs de tipo de reporte ─────────────────────────────────── */
+.aura-rep-type-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 0;
+    padding: 0;
+}
+
+.aura-rep-type-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+    color: #50575e;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+}
+
+.aura-rep-type-btn .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+
+.aura-rep-type-btn:hover,
+.aura-rep-type-btn:focus {
+    background: #f0f6fc;
+    border-color: #2271b1;
+    color: #135e96;
+    outline: none;
+}
+
+.aura-rep-type-btn.is-active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ── Panel de filtros ────────────────────────────────────────── */
+.aura-rep-filters-panel {
+    margin: 12px 0 16px;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.aura-rep-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 12px 16px;
+    margin-bottom: 14px;
+}
+
+.aura-rep-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-rep-filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #50575e;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-rep-filter-group select,
+.aura-rep-filter-group input[type="date"] {
+    padding: 5px 8px;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #1d2327;
+    background: #fff;
+    width: 100%;
+}
+
+.aura-rep-filter-group select:focus,
+.aura-rep-filter-group input[type="date"]:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+/* ── Botones de acción ───────────────────────────────────────── */
+.aura-rep-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid #f0f0f1;
+    padding-top: 12px;
+}
+
+.aura-rep-actions .button .dashicons {
+    margin-right: 3px;
+}
+
+.aura-rep-spinner {
+    float: none;
+    margin: 0;
+}
+
+/* ── Notificación ────────────────────────────────────────────── */
+.aura-rep-notice {
+    margin: 0 0 12px;
+}
+
+/* ── Barra de totales ────────────────────────────────────────── */
+.aura-rep-totals-bar {
+    background: #f6f7f7;
+    border: 1px solid #dde0e4;
+    border-radius: 4px;
+    padding: 10px 16px;
+    margin: 0 0 14px;
+}
+
+.aura-rep-totals-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+}
+
+.aura-rep-total-item {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+}
+
+.aura-rep-total-label {
+    color: #72777c;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-rep-total-value {
+    font-size: 16px;
+    color: #1d2327;
+    line-height: 1.3;
+}
+
+/* ── Previsualización ────────────────────────────────────────── */
+.aura-rep-preview-container {
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    padding: 16px 18px;
+    overflow-x: auto;
+}
+
+.aura-rep-preview-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.aura-rep-preview-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-rep-row-count {
+    font-size: 12px;
+    color: #72777c;
+}
+
+.aura-rep-table-wrap {
+    overflow-x: auto;
+}
+
+.aura-rep-no-data {
+    text-align: center;
+    padding: 24px;
+    color: #72777c;
+    font-style: italic;
+}
+
+/* ── DataTables overrides (reports page) ─────────────────────── */
+.aura-rep-dt-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.aura-rep-dt-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+/* ── DataTables — layout estándar (todas las tablas del módulo) ── */
+.aura-dt-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 4px 0;
+}
+
+.aura-dt-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 4px 0;
+}
+
+/* ── Tooltip de imagen ampliada (columna Foto en Vehículos) ─────── */
+.aura-img-preview {
+    position: relative;
+    display: inline-block;
+    cursor: zoom-in;
+}
+
+.aura-img-preview .aura-thumb {
+    width: 56px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    display: block;
+}
+
+.aura-img-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    top: 50%;
+    left: calc(100% + 8px);
+    transform: translateY(-50%);
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    padding: 4px;
+}
+
+.aura-img-tooltip img {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
+}
+
+.aura-img-preview:hover .aura-img-tooltip {
+    display: block;
+}
+
+.aura-img-preview.tooltip-left .aura-img-tooltip {
+    left: auto;
+    right: calc(100% + 8px);
+}
+
+#aura-rep-table th {
+    background: #2271b1;
+    color: #fff;
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 8px 10px;
+}
+
+#aura-rep-table td {
+    font-size: 12px;
+    padding: 6px 10px;
+    vertical-align: middle;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   FASE 7: AUDITORÍA
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Filtros ─────────────────────────────────────────────────── */
+.aura-audit-filters {
+    margin: 14px 0 16px;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.aura-audit-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px 16px;
+    margin-bottom: 14px;
+}
+
+.aura-audit-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-audit-filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #50575e;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-audit-filter-group select,
+.aura-audit-filter-group input[type="text"],
+.aura-audit-filter-group input[type="date"],
+.aura-audit-filter-group input[type="number"] {
+    padding: 5px 8px;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #1d2327;
+    background: #fff;
+    width: 100%;
+}
+
+/* ── Acciones ────────────────────────────────────────────────── */
+.aura-audit-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid #f0f0f1;
+    padding-top: 12px;
+}
+
+.aura-audit-actions .aura-aud-btn-danger {
+    background: #f6f7f7;
+    border-color: #d63638;
+    color: #d63638;
+}
+
+.aura-audit-actions .aura-aud-btn-danger:hover {
+    background: #d63638;
+    color: #fff;
+}
+
+#aura-aud-spinner {
+    float: none;
+    margin: 0;
+}
+
+/* ── Resumen ─────────────────────────────────────────────────── */
+.aura-audit-summary {
+    font-size: 12px;
+    color: #50575e;
+    margin: 0 0 10px;
+    padding: 6px 0;
+}
+
+/* ── Tabla ───────────────────────────────────────────────────── */
+.aura-audit-table-wrap {
+    overflow-x: auto;
+}
+
+#aura-aud-table th {
+    font-size: 12px;
+    font-weight: 600;
+    background: #f6f7f7;
+    padding: 8px 10px;
+}
+
+#aura-aud-table td {
+    padding: 6px 10px;
+    vertical-align: middle;
+}
+
+/* ── Badge de operación ──────────────────────────────────────── */
+.aura-aud-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    line-height: 1.6;
+}
+
+/* ── Paginación ──────────────────────────────────────────────── */
+.aura-audit-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #50575e;
+}
+
+.aura-audit-pag-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#aura-aud-page-indicator {
+    padding: 0 6px;
+}
+
+/* ── Advertencia en modal de limpieza ────────────────────────── */
+.aura-audit-warning {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #d63638;
+    font-weight: 600;
+    font-size: 13px;
+    margin: 8px 0 0;
+}
+
+.aura-audit-warning .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   FASE 9: CONFIGURACIÓN — UX Refresh + Catálogos
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Hero Header ────────────────────────────────────────────────── */
+.aura-veh-settings-hero {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 26px;
+    background: linear-gradient(135deg, #1d2d44 0%, #2271b1 100%);
+    border-radius: 8px;
+    margin-bottom: 22px;
+    color: #fff;
+}
+
+.aura-veh-settings-hero__icon {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    background: rgba(255,255,255,.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-veh-settings-hero__icon .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #fff;
+}
+
+.aura-veh-settings-hero__text h1 {
+    margin: 0 0 4px;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.aura-veh-settings-hero__text p {
+    margin: 0;
+    color: rgba(255,255,255,.80);
+    font-size: 13px;
+}
+
+/* ── Layout sidebar + main ──────────────────────────────────────── */
+.aura-veh-settings-layout {
+    display: flex;
+    gap: 0;
+    align-items: flex-start;
+    max-width: 1080px;
+}
+
+/* ── Sidebar de navegación ──────────────────────────────────────── */
+.aura-veh-settings-sidebar {
+    flex-shrink: 0;
+    width: 200px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px 0 0 8px;
+    padding: 12px 0;
+    border-right: none;
+}
+
+.aura-veh-settings-sidebar__group {
+    padding: 0 0 8px;
+}
+
+.aura-veh-settings-sidebar__group + .aura-veh-settings-sidebar__group {
+    border-top: 1px solid #e8eaed;
+    padding-top: 8px;
+}
+
+.aura-veh-settings-sidebar__label {
+    padding: 6px 16px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #8c8f94;
+}
+
+.aura-veh-settings-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 16px;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    color: #3c434a;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none;
+    transition: background .15s, color .15s, border-color .15s;
+}
+
+.aura-veh-settings-tab:hover {
+    background: #f0f6fc;
+    color: #2271b1;
+}
+
+.aura-veh-settings-tab.is-active,
+.aura-veh-settings-tab.nav-tab-active {
+    background: #f0f6fc;
+    color: #2271b1;
+    border-left-color: #2271b1;
+    font-weight: 600;
+}
+
+.aura-veh-settings-tab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    opacity: .75;
+    flex-shrink: 0;
+}
+
+.aura-veh-settings-tab.is-active .dashicons,
+.aura-veh-settings-tab.nav-tab-active .dashicons {
+    opacity: 1;
+}
+
+/* Catalog tabs — accent distinto */
+.aura-veh-tab-catalog.is-active,
+.aura-veh-tab-catalog.nav-tab-active {
+    color: #0a6b3b;
+    border-left-color: #0a6b3b;
+    background: #f0faf5;
+}
+
+.aura-veh-tab-catalog:hover {
+    color: #0a6b3b;
+    background: #f0faf5;
+}
+
+/* ── Panel principal ────────────────────────────────────────────── */
+.aura-veh-settings-main {
+    flex: 1;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 0 8px 8px 0;
+    padding: 28px 28px 0;
+}
+
+/* Necesario para que el body no agregue borde doble */
+.aura-veh-settings-body {
+    /* contenedor transparente, sin estilos propios */
+}
+
+/* ── Panel header ────────────────────────────────────────────────── */
+.aura-veh-stpanel-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.aura-veh-stpanel-header > .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #2271b1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.aura-veh-stpanel-header h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1d2327;
+}
+
+.aura-veh-stpanel-header p {
+    margin: 0;
+    font-size: 13px;
+    color: #646970;
+}
+
+/* ── Cards de configuración ─────────────────────────────────────── */
+.aura-veh-stcard {
+    background: #f9f9f9;
+    border: 1px solid #e8eaed;
+    border-radius: 6px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.aura-veh-stcard__title {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* ── Filas de configuración ─────────────────────────────────────── */
+.aura-veh-strow {
+    display: flex;
+    gap: 20px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e8eaed;
+}
+
+.aura-veh-strow:last-child {
+    border-bottom: none;
+}
+
+.aura-veh-strow__label {
+    flex-shrink: 0;
+    width: 200px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #2c3338;
+    padding-top: 4px;
+    line-height: 1.4;
+}
+
+.aura-veh-strow__control {
+    flex: 1;
+    min-width: 0;
+}
+
+.aura-veh-strow__control .description {
+    color: #646970;
+    font-size: 12px;
+    margin: 5px 0 0;
+}
+
+/* ── Inputs con afijo (prefix/suffix) ───────────────────────────── */
+.aura-veh-input-affix {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-veh-input-affix__prefix,
+.aura-veh-input-affix__suffix {
+    font-size: 13px;
+    color: #646970;
+    user-select: none;
+}
+
+/* ── Toggle switch ──────────────────────────────────────────────── */
+.aura-veh-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.aura-veh-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.aura-veh-toggle__track {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    background: #c3c4c7;
+    border-radius: 20px;
+    flex-shrink: 0;
+    transition: background .2s;
+}
+
+.aura-veh-toggle__track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+
+.aura-veh-toggle input:checked + .aura-veh-toggle__track {
+    background: #2271b1;
+}
+
+.aura-veh-toggle input:checked + .aura-veh-toggle__track::after {
+    transform: translateX(16px);
+}
+
+.aura-veh-toggle__label {
+    font-size: 13px;
+    color: #3c434a;
+    line-height: 1.4;
+}
+
+/* ── Info box ───────────────────────────────────────────────────── */
+.aura-veh-info-box {
+    padding: 14px 18px;
+    background: #f0f6fc;
+    border-left: 4px solid #2271b1;
+    border-radius: 0 4px 4px 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #2c3338;
+}
+
+/* ── Barra de guardado sticky ───────────────────────────────────── */
+.aura-veh-settings-save-bar {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    background: #fff;
+    border-top: 1px solid #e0e1e3;
+    margin-top: 28px;
+    z-index: 10;
+}
+
+/* ── Catálogos: toolbar ─────────────────────────────────────────── */
+.aura-veh-catalog-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.aura-veh-catalog-filter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #50575e;
+    cursor: pointer;
+}
+
+/* ── Catálogos: contenedor y tabla ─────────────────────────────── */
+.aura-veh-catalog-container {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.aura-veh-cat-table {
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+.aura-veh-cat-table th {
+    font-weight: 600;
+    font-size: 12px;
+    background: #f6f7f7;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e8eaed;
+    color: #3c434a;
+}
+
+.aura-veh-cat-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.aura-veh-cat-desc {
+    color: #646970;
+    font-size: 12px;
+}
+
+.aura-veh-cat-loading {
+    padding: 24px;
+    text-align: center;
+    color: #50575e;
+    font-size: 13px;
+}
+
+.aura-veh-cat-empty {
+    padding: 28px 16px;
+    text-align: center;
+    color: #8c8f94;
+    font-size: 13px;
+}
+
+.aura-veh-cat-empty .dashicons {
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* ── Badges de estado ───────────────────────────────────────────── */
+.aura-veh-cat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+
+.aura-veh-cat-badge--active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.aura-veh-cat-badge--inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* ── Botones de acción en tabla ─────────────────────────────────── */
+.aura-veh-cat-table .button-small {
+    padding: 3px 7px;
+    min-height: 28px;
+}
+
+.aura-veh-cat-table .button-small .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.aura-veh-cat-table .aura-veh-cat-delete-btn {
+    border-color: #d63638;
+    color: #d63638;
+}
+
+.aura-veh-cat-table .aura-veh-cat-delete-btn:hover {
+    background: #d63638;
+    color: #fff;
+}
+
+/* ── Error en modal de catálogo ─────────────────────────────────── */
+.aura-veh-scat-error {
+    padding: 8px 12px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 4px;
+    color: #991b1b;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+/* ── Card de prueba de alertas ──────────────────────────────────── */
+.aura-veh-stcard {
+    padding: 0;
+}
+
+/* Override para las cards de notificaciones y alerts que tienen padding directo */
+#tab-notif .aura-veh-stcard + .aura-veh-stcard {
+    padding: 18px 20px;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media screen and (max-width: 900px) {
+    .aura-veh-settings-layout {
+        flex-direction: column;
+    }
+
+    .aura-veh-settings-sidebar {
+        width: 100%;
+        border-radius: 8px 8px 0 0;
+        border-right: 1px solid #c3c4c7;
+        border-bottom: none;
+        display: flex;
+        flex-wrap: wrap;
+        padding: 8px;
+    }
+
+    .aura-veh-settings-sidebar__group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        padding: 0;
+    }
+
+    .aura-veh-settings-sidebar__group + .aura-veh-settings-sidebar__group {
+        border-top: none;
+        padding-top: 0;
+    }
+
+    .aura-veh-settings-sidebar__label {
+        display: none;
+    }
+
+    .aura-veh-settings-tab {
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        border-radius: 4px 4px 0 0;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .aura-veh-settings-tab.is-active,
+    .aura-veh-settings-tab.nav-tab-active {
+        border-bottom-color: #2271b1;
+        border-left: none;
+    }
+
+    .aura-veh-settings-main {
+        border-radius: 0 0 8px 8px;
+        padding: 18px 16px 0;
+    }
+
+    .aura-veh-strow {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .aura-veh-strow__label {
+        width: 100%;
+    }
+}
+
+
+
+/* ══════════════════════════════════════════════════════════════
+   MODAL NUEVA SALIDA — UX MEJORADA
+══════════════════════════════════════════════════════════════ */
+
+/* ── Panel de info del vehículo seleccionado ─────────────────── */
+.aura-trips-vehicle-info {
+    margin-top: 6px;
+    padding: 7px 10px;
+    background: #f0f6ff;
+    border: 1px solid #b8d4f0;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #1a487f;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    line-height: 1.5;
+}
+
+.aura-trips-vehicle-info .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1.2;
+    color: #2271b1;
+    flex-shrink: 0;
+}
+
+/* ── Campos con error de validación ──────────────────────────── */
+.aura-veh-form-col.has-error > input,
+.aura-veh-form-col.has-error > select,
+.aura-veh-form-col.has-error > textarea {
+    border-color: #d63638 !important;
+    box-shadow: 0 0 0 1px #d63638;
+}
+
+.aura-veh-form-col.has-error > label,
+.aura-veh-form-col.has-error > strong {
+    color: #d63638;
+}
+
+
+/* ── DataTables Responsive — botón expandir/colapsar con dashicons ── */
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+    position: relative !important;
+    padding-left: 36px !important;
+    cursor: pointer !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
+    content: "\f344" !important;
+    font-family: "dashicons" !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    background-color: #2271b1 !important;
+    color: #fff !important;
+    border-radius: 50% !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important;
+    z-index: 10 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    margin: 0 !important;
+    text-indent: 0 !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::before {
+    content: "\f343" !important;
+    background-color: #646970 !important;
+}

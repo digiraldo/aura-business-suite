@@ -49,6 +49,22 @@ if ( $_frm_view_own ) {
     
     <!-- Notificaciones -->
     <div id="aura-transaction-messages" class="aura-messages"></div>
+
+    <section class="aura-transaction-ux-head" aria-label="Estado del formulario">
+        <div class="aura-transaction-ux-head__content">
+            <h2><?php _e('Registrar Nueva Transacción', 'aura-suite'); ?></h2>
+            <p><?php _e('Completa los datos clave y revisa la vista previa antes de guardar.', 'aura-suite'); ?></p>
+        </div>
+        <div class="aura-transaction-ux-head__progress">
+            <div class="aura-progress-meta">
+                <strong><?php _e('Progreso del formulario', 'aura-suite'); ?></strong>
+                <span id="aura-tx-progress-text">0%</span>
+            </div>
+            <div class="aura-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progreso de diligenciamiento">
+                <span id="aura-tx-progress-bar" class="aura-progress-fill" style="width:0%;"></span>
+            </div>
+        </div>
+    </section>
     
     <div class="aura-transaction-container">
         <!-- Formulario Principal -->
@@ -77,6 +93,7 @@ if ( $_frm_view_own ) {
                 <!-- Campos Principales -->
                 <div class="aura-form-section">
                     <h2><?php _e('Información General', 'aura-suite'); ?></h2>
+                    <p class="aura-section-help"><?php _e('Estos campos definen el impacto contable y son la base para reportes y aprobación.', 'aura-suite'); ?></p>
                     
                     <!-- Fila 1: Fecha | Categoría del gasto -->
                     <div class="aura-form-row">

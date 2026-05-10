@@ -22,6 +22,7 @@
         initDatepicker();
         initToggleSwitch();
         initFormValidation();
+        initFieldMicroInteractions();
         initFileUpload();
         initCollapsible();
         initPreview();
@@ -30,6 +31,9 @@
         loadCategories('income');
         loadExpenseCategoriesForType('income');
         restoreDraft();
+        updateFormCompletion();
+        initSectionEntrance();
+        $('.aura-transaction-form-wrap').addClass('type-income');
 
         // Fase 8: estado inicial del campo Categoría del presupuesto
         // Si hay un área fija (view_own) el campo siempre es visible;
@@ -101,6 +105,7 @@
         // Detectar cambios en el formulario
         $('#aura-transaction-form').on('change input', function() {
             formChanged = true;
+            updateFormCompletion();
         });
         
         // Advertir al salir con cambios sin guardar
@@ -533,63 +538,103 @@
     function validateForm() {
         let isValid = true;
         const errors = [];
-        
+        const invalidEntries = [];
+        let firstInvalidField = null;
+
+        clearValidationSummary();
+
+        function setFieldError($field, message) {
+            if (!$field || !$field.length) return;
+            $field.addClass('error aura-field-invalid').removeClass('aura-field-success');
+            $field.closest('.aura-form-field').removeClass('has-success').addClass('has-error aura-shake');
+            setTimeout(function () {
+                $field.closest('.aura-form-field').removeClass('aura-shake');
+            }, 360);
+            invalidEntries.push({
+                id: $field.attr('id') || '',
+                message: message
+            });
+            firstInvalidField = firstInvalidField || $field;
+        }
+
+        function setFieldSuccess($field) {
+            if (!$field || !$field.length) return;
+            $field.removeClass('error aura-field-invalid').addClass('aura-field-success');
+            $field.closest('.aura-form-field').removeClass('has-error').addClass('has-success');
+        }
+
         // Validar tipo
         const type = $('input[name="transaction_type"]:checked').val();
         if (!type) {
             errors.push('Debe seleccionar un tipo de transacción');
             isValid = false;
         }
-        
+
         // Validar categoría del gasto (obligatoria)
-        const expenseCategoryId = parseInt($('#expense_category_id').val());
+        const expenseCategoryId = parseInt($('#expense_category_id').val(), 10);
         if (!expenseCategoryId || expenseCategoryId <= 0) {
-            errors.push('Debe seleccionar la categoría del gasto');
-            $('#expense_category_id').addClass('error');
+            const msg = 'Debe seleccionar la categoría del gasto';
+            errors.push(msg);
+            setFieldError($('#expense_category_id'), msg);
             isValid = false;
         } else {
-            $('#expense_category_id').removeClass('error');
+            setFieldSuccess($('#expense_category_id'));
         }
 
         // Categoría del presupuesto: opcional (se sugiere pero no bloquea si el área no tiene presupuesto)
-        const categoryId = parseInt($('#category_id').val());
-        // No se valida como requerida.
-        
+        const categoryId = parseInt($('#category_id').val(), 10);
+        if (categoryId > 0) {
+            setFieldSuccess($('#category_id'));
+        } else {
+            $('#category_id').removeClass('aura-field-success aura-field-invalid error');
+            $('#category_id').closest('.aura-form-field').removeClass('has-success has-error');
+        }
+
         // Validar monto
         const amount = parseFloat($('#amount').val());
         if (!amount || amount <= 0) {
-            errors.push('El monto debe ser mayor a 0');
-            $('#amount').addClass('error');
+            const msg = 'El monto debe ser mayor a 0';
+            errors.push(msg);
+            setFieldError($('#amount'), msg);
             isValid = false;
         } else {
-            $('#amount').removeClass('error');
+            setFieldSuccess($('#amount'));
         }
-        
+
         // Validar fecha
         const date = $('#transaction_date').val();
         if (!date) {
-            errors.push('La fecha es requerida');
-            $('#transaction_date').addClass('error');
+            const msg = 'La fecha es requerida';
+            errors.push(msg);
+            setFieldError($('#transaction_date'), msg);
             isValid = false;
         } else {
-            $('#transaction_date').removeClass('error');
+            setFieldSuccess($('#transaction_date'));
         }
-        
+
         // Validar descripción
-        const description = $('#description').val();
+        const description = $('#description').val() || '';
         if (description.length < 10) {
-            errors.push('La descripción debe tener al menos 10 caracteres');
-            $('#description').addClass('error');
+            const msg = 'La descripción debe tener al menos 10 caracteres';
+            errors.push(msg);
+            setFieldError($('#description'), msg);
             isValid = false;
         } else {
-            $('#description').removeClass('error');
+            setFieldSuccess($('#description'));
         }
-        
+
         // Mostrar errores
         if (!isValid) {
+            showValidationSummary(invalidEntries, errors);
             showMessage(errors.join('<br>'), 'error');
+            if (firstInvalidField && firstInvalidField.length) {
+                firstInvalidField.trigger('focus');
+                $('html, body').animate({
+                    scrollTop: Math.max(0, firstInvalidField.offset().top - 180)
+                }, 250);
+            }
         }
-        
+
         return isValid;
     }
     
@@ -797,16 +842,98 @@
      */
     function initCollapsible() {
         $('.aura-collapsible-header').on('click', function() {
-            const $content = $(this).next('.aura-collapsible-content');
-            const $icon = $(this).find('.dashicons');
-            
-            $content.slideToggle(300);
+            const $section  = $(this).closest('.aura-collapsible');
+            const $content  = $(this).next('.aura-collapsible-content');
+            const $icon     = $(this).find('.dashicons');
+            const isOpening = !$section.hasClass('aura-collapsible-open');
+
+            if (isOpening) {
+                $section.addClass('aura-collapsible-open');
+                // Asignar delays de fila antes de slideDown para que CSS los lea
+                $content.find('.aura-form-row').each(function(i) {
+                    $(this).css('--aura-row-delay', (i * 60) + 'ms');
+                });
+                $content.slideDown(300);
+            } else {
+                $section.removeClass('aura-collapsible-open');
+                $content.slideUp(260, function() {
+                    // Resetear animación de filas para la próxima apertura
+                    $content.find('.aura-form-row').css('--aura-row-delay', '');
+                });
+            }
+
             $icon.toggleClass('dashicons-arrow-down-alt2 dashicons-arrow-up-alt2');
         });
     }
     
     /**
-     * Inicializar vista previa
+     * Animaciones de entrada por sección (IntersectionObserver + stagger de filas).
+     * No bloquea ninguna funcionalidad en browsers que no soporten IntersectionObserver.
+     */
+    function initSectionEntrance() {
+        $('.aura-transaction-form-wrap').addClass('aura-entrance-ready');
+
+        // --- Secciones del formulario ---
+        var $sections = $('.aura-form-section');
+
+        $sections.each(function(sectionIdx) {
+            var $section = $(this);
+            // Stagger base: cada sección espera un poco más que la anterior,
+            // pero solo si está en viewport desde el inicio (las de arriba se ven de inmediato).
+            var baseDelay = sectionIdx * 60;
+            $section.css('--aura-section-delay', baseDelay + 'ms');
+
+            // Escalonar filas internas
+            $section.find('.aura-form-row').each(function(rowIdx) {
+                $(this).css('--aura-row-delay', (rowIdx * 55) + 'ms');
+            });
+        });
+
+        if (typeof IntersectionObserver !== 'undefined') {
+            var sectionObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        $(entry.target).addClass('aura-section-visible');
+                        sectionObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.06, rootMargin: '0px 0px -30px 0px' });
+
+            $sections.each(function() {
+                sectionObserver.observe(this);
+            });
+        } else {
+            // Fallback: mostrar todas de inmediato
+            $sections.addClass('aura-section-visible');
+        }
+
+        // --- Panel de vista previa y tips ---
+        var $previewCards = $('.aura-transaction-preview .preview-card, .aura-transaction-preview .preview-tips');
+
+        $previewCards.each(function(i) {
+            $(this).css('--aura-preview-delay', (120 + i * 80) + 'ms');
+        });
+
+        if (typeof IntersectionObserver !== 'undefined') {
+            var previewObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        $(entry.target).addClass('aura-preview-visible');
+                        previewObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.04 });
+
+            $previewCards.each(function() {
+                previewObserver.observe(this);
+            });
+        } else {
+            $previewCards.addClass('aura-preview-visible');
+        }
+    }
+
+    /**
+     * Inicializar previsualización en tiempo real
      */
     function initPreview() {
         // Actualizar previsualización en tiempo real
@@ -918,6 +1045,134 @@
         } else {
             $('.preview-tags').hide();
         }
+    }
+
+    /**
+     * Calcula y muestra el progreso de diligenciamiento del formulario.
+     */
+    function updateFormCompletion() {
+        const checks = [
+            !!$('input[name="transaction_type"]:checked').val(),
+            !!$('#transaction_date').val(),
+            !!($('#expense_category_id').val() && parseInt($('#expense_category_id').val(), 10) > 0),
+            !!($('#amount').val() && parseFloat($('#amount').val()) > 0),
+            !!($('#description').val() && $('#description').val().trim().length >= 10),
+            !!getSelectedAreaId(),
+            !!$('#payment_method').val(),
+            !!$('#recipient_payer').val()
+        ];
+
+        const done = checks.filter(Boolean).length;
+        const percent = Math.round((done / checks.length) * 100);
+        const $text = $('#aura-tx-progress-text');
+        const $bar = $('#aura-tx-progress-bar');
+        const $track = $('.aura-progress-track');
+
+        if ($text.length) {
+            $text.text(percent + '%');
+        }
+        if ($bar.length) {
+            $bar.css('width', percent + '%');
+        }
+        if ($track.length) {
+            $track.attr('aria-valuenow', String(percent));
+        }
+    }
+
+    /**
+     * Microinteracciones de campos: éxito/limpieza de error en tiempo real.
+     */
+    function initFieldMicroInteractions() {
+        $('#aura-transaction-form').on('input change blur', 'input, select, textarea', function () {
+            const $field = $(this);
+            const id = $field.attr('id') || '';
+            const rawVal = ($field.val() || '').toString().trim();
+            let isValid = rawVal.length > 0;
+
+            if (id === 'amount') {
+                isValid = !!rawVal && parseFloat(rawVal) > 0;
+            }
+
+            if (id === 'description') {
+                isValid = rawVal.length >= 10;
+            }
+
+            if (id === 'expense_category_id') {
+                isValid = !!rawVal && parseInt(rawVal, 10) > 0;
+            }
+
+            if (isValid) {
+                $field.removeClass('error aura-field-invalid').addClass('aura-field-success');
+                $field.closest('.aura-form-field').removeClass('has-error').addClass('has-success');
+            } else if (rawVal.length === 0) {
+                $field.removeClass('aura-field-success aura-field-invalid error');
+                $field.closest('.aura-form-field').removeClass('has-success has-error');
+            }
+        });
+    }
+
+    /**
+     * Crea (si no existe) y devuelve el panel flotante de errores.
+     */
+    function ensureValidationSummary() {
+        let $summary = $('#aura-validation-summary');
+        if ($summary.length) return $summary;
+
+        $summary = $('<div id="aura-validation-summary" class="aura-validation-summary is-hidden" role="alert" aria-live="polite"></div>');
+        $('#aura-transaction-messages').after($summary);
+        return $summary;
+    }
+
+    function clearValidationSummary() {
+        const $summary = ensureValidationSummary();
+        $summary.addClass('is-hidden').removeClass('is-visible').empty();
+    }
+
+    function showValidationSummary(invalidEntries, fallbackErrors) {
+        const $summary = ensureValidationSummary();
+        const items = (invalidEntries || []).filter(function (entry) {
+            return entry && entry.message;
+        });
+
+        const seen = {};
+        const listItems = [];
+
+        items.forEach(function (entry) {
+            if (seen[entry.message]) return;
+            seen[entry.message] = true;
+            const fieldId = entry.id ? (' data-field-id="' + escHtml(entry.id) + '"') : '';
+            listItems.push('<li><button type="button" class="aura-validation-link"' + fieldId + '>' + escHtml(entry.message) + '</button></li>');
+        });
+
+        if (!listItems.length && Array.isArray(fallbackErrors)) {
+            fallbackErrors.forEach(function (message) {
+                if (seen[message]) return;
+                seen[message] = true;
+                listItems.push('<li>' + escHtml(message) + '</li>');
+            });
+        }
+
+        if (!listItems.length) {
+            clearValidationSummary();
+            return;
+        }
+
+        const html = ''
+            + '<div class="aura-validation-summary__title">Revisa estos campos antes de guardar:</div>'
+            + '<ul>' + listItems.join('') + '</ul>';
+
+        $summary.html(html).removeClass('is-hidden').addClass('is-visible');
+
+        $summary.off('click', '.aura-validation-link').on('click', '.aura-validation-link', function () {
+            const fieldId = $(this).data('fieldId');
+            if (!fieldId) return;
+            const $field = $('#' + fieldId);
+            if (!$field.length) return;
+            $field.trigger('focus');
+            $('html, body').animate({
+                scrollTop: Math.max(0, $field.offset().top - 180)
+            }, 220);
+        });
     }
     
     /**

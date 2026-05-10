@@ -28,6 +28,18 @@ class Aura_Areas_Setup {
     /** Clave para la restricción UNIQUE en tabla de presupuestos */
     const BUDGETS_UNIQUE_KEY = 'aura_budgets_unique_v1';
 
+    /** Clave para la migración de columna logo_id */
+    const LOGO_COLUMN_KEY = 'aura_areas_logo_v1';
+
+    /** Nombre base (sin prefijo) de la tabla de tipos de área */
+    const AREA_TYPES_TABLE = 'aura_area_types';
+
+    /** Clave para la migración de tabla de tipos */
+    const AREA_TYPES_KEY = 'aura_areas_types_v1';
+
+    /** Clave para la migración de columna type a VARCHAR */
+    const AREA_TYPE_VARCHAR_KEY = 'aura_areas_type_varchar_v1';
+
     /** Nombre base (sin prefijo) de la tabla de áreas */
     const TABLE = 'aura_areas';
 
@@ -44,6 +56,12 @@ class Aura_Areas_Setup {
         add_action( 'admin_init', [ __CLASS__, 'maybe_create_area_users_table' ] );
         // Agregar restricción UNIQUE en tabla de presupuestos (migración v1.2.0)
         add_action( 'admin_init', [ __CLASS__, 'maybe_add_budgets_unique_key' ] );
+        // Agregar columna logo_id a la tabla de áreas (migración v1.3.0)
+        add_action( 'admin_init', [ __CLASS__, 'maybe_add_logo_column' ] );
+        // Crear tabla de tipos de área y sembrar predeterminados (migración v1.4.0)
+        add_action( 'admin_init', [ __CLASS__, 'maybe_create_types_table' ] );
+        // Convertir columna type de ENUM a VARCHAR (migración v1.5.0)
+        add_action( 'admin_init', [ __CLASS__, 'maybe_convert_type_to_varchar' ] );
     }
 
     /**
@@ -150,6 +168,42 @@ class Aura_Areas_Setup {
         }
 
         update_option( self::BUDGETS_UNIQUE_KEY, true, false );
+    }
+
+    /* ======================================================================
+     * MIGRACIÓN v1.3.0: Agregar columna logo_id
+     * ==================================================================== */
+
+    /**
+     * Agrega las columnas `logo_id` (FK a wp_posts attachments) e `icon_label`
+     * a la tabla de áreas. Idempotente.
+     */
+    public static function maybe_add_logo_column(): void {
+        if ( get_option( self::LOGO_COLUMN_KEY ) ) {
+            return;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . self::TABLE;
+
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+            return;
+        }
+
+        $has_logo = $wpdb->get_results(
+            "SHOW COLUMNS FROM `{$table}` LIKE 'logo_id'"
+        );
+
+        if ( empty( $has_logo ) ) {
+            $wpdb->query(
+                "ALTER TABLE `{$table}`
+                 ADD COLUMN `logo_id` BIGINT UNSIGNED NULL DEFAULT NULL
+                 COMMENT 'Attachment ID del logo/imagen del área' AFTER `icon`,
+                 ADD INDEX `idx_logo` (`logo_id`)"
+            );
+        }
+
+        update_option( self::LOGO_COLUMN_KEY, true, false );
     }
 
     /* ======================================================================
@@ -507,7 +561,7 @@ class Aura_Areas_Setup {
         global $wpdb;
         $table = $wpdb->prefix . self::TABLE;
         return (array) $wpdb->get_results(
-            "SELECT id, name, slug, type, color, icon, responsible_user_id, parent_area_id
+            "SELECT id, name, slug, type, color, icon, logo_id, responsible_user_id, parent_area_id
                FROM `{$table}`
               WHERE status = 'active'
               ORDER BY sort_order ASC, name ASC"
@@ -697,5 +751,155 @@ class Aura_Areas_Setup {
     public static function force_remigrate(): void {
         delete_option( self::MIGRATION_KEY );
         self::maybe_migrate();
+    }
+
+    /* ======================================================================
+     * MIGRACIÓN v1.4.0: Tabla de tipos de área
+     * ==================================================================== */
+
+    /**
+     * Crea la tabla `wp_aura_area_types` y siembra los 6 tipos predeterminados.
+     * Idempotente mediante guard en wp_options.
+     */
+    public static function maybe_create_types_table(): void {
+        if ( get_option( self::AREA_TYPES_KEY ) ) {
+            return;
+        }
+
+        global $wpdb;
+        $table           = $wpdb->prefix . self::AREA_TYPES_TABLE;
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE IF NOT EXISTS `{$table}` (
+            id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            name        VARCHAR(100)    NOT NULL,
+            slug        VARCHAR(120)    NOT NULL,
+            description TEXT            NULL,
+            color       VARCHAR(20)     NOT NULL DEFAULT '#e0e7ff',
+            sort_order  INT             NOT NULL DEFAULT 0,
+            is_default  TINYINT(1)      NOT NULL DEFAULT 0,
+            created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY uk_slug (slug)
+        ) ENGINE=InnoDB {$charset_collate};";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta( $sql );
+
+        // Sembrar tipos predeterminados
+        $defaults = [
+            [ 'program',    'Programa',     '#e0e7ff', 0, 1 ],
+            [ 'activity',   'Actividad',    '#dcfce7', 1, 0 ],
+            [ 'department', 'Departamento', '#fef3c7', 2, 0 ],
+            [ 'team',       'Equipo',       '#fee2e2', 3, 0 ],
+            [ 'church',     'Iglesia',      '#f3e8ff', 4, 0 ],
+            [ 'ministry',   'Ministerio',   '#fff7ed', 5, 0 ],
+        ];
+
+        foreach ( $defaults as [ $slug, $name, $color, $sort, $is_def ] ) {
+            $exists = $wpdb->get_var( $wpdb->prepare(
+                "SELECT id FROM `{$table}` WHERE slug = %s",
+                $slug
+            ) );
+            if ( ! $exists ) {
+                $wpdb->insert(
+                    $table,
+                    [
+                        'name'       => $name,
+                        'slug'       => $slug,
+                        'color'      => $color,
+                        'sort_order' => $sort,
+                        'is_default' => $is_def,
+                    ],
+                    [ '%s', '%s', '%s', '%d', '%d' ]
+                );
+            }
+        }
+
+        update_option( self::AREA_TYPES_KEY, true, false );
+    }
+
+    /* ======================================================================
+     * MIGRACIÓN v1.5.0: Columna type → VARCHAR
+     * ==================================================================== */
+
+    /**
+     * Convierte la columna `type` de ENUM a VARCHAR(120).
+     * MySQL almacena ENUM como string, no hay pérdida de datos.
+     * Idempotente mediante guard en wp_options.
+     */
+    public static function maybe_convert_type_to_varchar(): void {
+        if ( get_option( self::AREA_TYPE_VARCHAR_KEY ) ) {
+            return;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . self::TABLE;
+
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+            return;
+        }
+
+        $col_type = $wpdb->get_var( $wpdb->prepare(
+            "SELECT COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS
+              WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME   = %s
+                AND COLUMN_NAME  = 'type'",
+            $table
+        ) );
+
+        if ( $col_type && 0 === strpos( strtolower( $col_type ), 'enum' ) ) {
+            $wpdb->query(
+                "ALTER TABLE `{$table}`
+                 MODIFY COLUMN `type` VARCHAR(120) NOT NULL DEFAULT 'program'"
+            );
+        }
+
+        update_option( self::AREA_TYPE_VARCHAR_KEY, true, false );
+    }
+
+    /* ======================================================================
+     * HELPER: Todos los tipos (con caché estático)
+     * ==================================================================== */
+
+    /**
+     * Devuelve todos los tipos de área como array indexado por slug.
+     * Usa caché estático para evitar múltiples queries en la misma petición.
+     *
+     * @return array<string,array{id:int,name:string,color:string,description:string,is_default:bool}>
+     */
+    public static function get_all_types(): array {
+        static $cache = null;
+        if ( null !== $cache ) {
+            return $cache;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . self::AREA_TYPES_TABLE;
+
+        // Guard: si la tabla aún no existe (antes de que corra la migración)
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+            $cache = [];
+            return $cache;
+        }
+
+        $rows = $wpdb->get_results(
+            "SELECT id, name, slug, description, color, sort_order, is_default
+               FROM `{$table}`
+              ORDER BY is_default DESC, sort_order ASC, name ASC"
+        );
+
+        $cache = [];
+        foreach ( $rows as $row ) {
+            $cache[ $row->slug ] = [
+                'id'          => (int) $row->id,
+                'name'        => $row->name,
+                'color'       => $row->color,
+                'description' => $row->description ?? '',
+                'is_default'  => (bool) $row->is_default,
+            ];
+        }
+
+        return $cache;
     }
 }

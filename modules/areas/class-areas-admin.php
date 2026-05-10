@@ -28,7 +28,7 @@ class Aura_Areas_Admin {
         add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
 
         // AJAX handlers (solo admin logueado)
-        $ajax_actions = [ 'list', 'save', 'delete', 'get', 'users', 'areas_dropdown', 'assign_users' ];
+        $ajax_actions = [ 'list', 'save', 'delete', 'get', 'users', 'areas_dropdown', 'assign_users', 'crop_logo', 'types_dropdown' ];
         foreach ( $ajax_actions as $action ) {
             add_action( 'wp_ajax_aura_areas_' . $action, [ __CLASS__, 'ajax_' . $action ] );
         }
@@ -45,7 +45,7 @@ class Aura_Areas_Admin {
             'aura-suite',
             __( 'Áreas y Programas', 'aura-suite' ),
             '<span class="dashicons dashicons-networking" style="font-size:16px;line-height:1.4;vertical-align:text-bottom;margin-right:4px;"></span>' . __( 'Áreas', 'aura-suite' ),
-            'manage_options',
+            'aura_areas_manage',
             'aura-areas',
             [ __CLASS__, 'render_page' ]
         );
@@ -56,7 +56,7 @@ class Aura_Areas_Admin {
      * ==================================================================== */
 
     public static function enqueue_assets( string $hook ): void {
-        if ( 'aura-suite_page_aura-areas' !== $hook ) {
+        if ( 'aura-suite_page_aura-areas' !== $hook && 'aura-suite_page_aura-areas-tipos' !== $hook ) {
             return;
         }
 
@@ -66,6 +66,29 @@ class Aura_Areas_Admin {
 
         // WordPress media uploader (para logo de área)
         wp_enqueue_media();
+
+        // DataTables core + Responsive
+        wp_enqueue_style(
+            'datatables-css',
+            'https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css',
+            [], '2.2.2'
+        );
+        wp_enqueue_style(
+            'datatables-responsive-css',
+            'https://cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.min.css',
+            [ 'datatables-css' ], '3.0.4'
+        );
+        wp_enqueue_script(
+            'datatables-js',
+            'https://cdn.datatables.net/2.2.2/js/dataTables.min.js',
+            [ 'jquery' ], '2.2.2', true
+        );
+        wp_enqueue_script(
+            'datatables-responsive-js',
+            'https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.min.js',
+            [ 'datatables-js' ], '3.0.4', true
+        );
+
         // Los datos JS (ajaxUrl, nonce, strings) se inyectan directamente
         // en el template via wp_json_encode() para garantizar disponibilidad.
     }
@@ -125,8 +148,11 @@ class Aura_Areas_Admin {
             $where[] = $wpdb->prepare( 'a.status = %s', $status );
         }
 
-        if ( $type && in_array( $type, [ 'program', 'activity', 'department', 'team' ], true ) ) {
-            $where[] = $wpdb->prepare( 'a.type = %s', $type );
+        if ( $type ) {
+            $valid_slugs = array_keys( Aura_Areas_Setup::get_all_types() );
+            if ( in_array( $type, $valid_slugs, true ) ) {
+                $where[] = $wpdb->prepare( 'a.type = %s', $type );
+            }
         }
 
         if ( $search ) {
@@ -233,13 +259,15 @@ class Aura_Areas_Admin {
         $description    = sanitize_textarea_field( $_POST['description'] ?? '' );
         $color          = sanitize_hex_color( $_POST['color'] ?? '' ) ?: '#2271b1';
         $icon           = sanitize_text_field( $_POST['icon'] ?? 'dashicons-groups' );
+        $logo_id        = absint( $_POST['logo_id'] ?? 0 );
         $sort_order     = absint( $_POST['sort_order'] ?? 0 );
         $responsible_id = absint( $_POST['responsible_user_id'] ?? 0 );
         $parent_id      = absint( $_POST['parent_area_id'] ?? 0 );
 
-        // Validar tipo
-        if ( ! in_array( $type, [ 'program', 'activity', 'department', 'team' ], true ) ) {
-            $type = 'program';
+        // Validar tipo contra los slugs registrados en la tabla dinámica
+        $valid_types = array_keys( Aura_Areas_Setup::get_all_types() );
+        if ( ! in_array( $type, $valid_types, true ) ) {
+            $type = ! empty( $valid_types ) ? $valid_types[0] : 'program';
         }
 
         // Evitar que un área sea su propio padre
@@ -266,11 +294,12 @@ class Aura_Areas_Admin {
             'description'         => $description,
             'color'               => $color,
             'icon'                => $icon,
+            'logo_id'             => $logo_id ?: null,
             'sort_order'          => $sort_order,
             'responsible_user_id' => $responsible_id ?: null,
             'parent_area_id'      => $parent_id ?: null,
         ];
-        $formats = [ '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d' ];
+        $formats = [ '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d' ];
 
         if ( $id ) {
             // UPDATE
@@ -670,6 +699,100 @@ class Aura_Areas_Admin {
     }
 
     /* ======================================================================
+     * AJAX: CROP_LOGO — subir/recortar logo de área desde Biblioteca de Medios
+     * ==================================================================== */
+
+    public static function ajax_crop_logo(): void {
+        check_ajax_referer( self::NONCE, 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'aura_areas_manage' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
+        }
+
+        $attachment_id = absint( $_POST['attachment_id'] ?? 0 );
+        $crop_x        = (int) round( (float) ( $_POST['x']      ?? 0 ) );
+        $crop_y        = (int) round( (float) ( $_POST['y']      ?? 0 ) );
+        $crop_w        = (int) round( (float) ( $_POST['width']  ?? 0 ) );
+        $crop_h        = (int) round( (float) ( $_POST['height'] ?? 0 ) );
+
+        if ( ! $attachment_id ) {
+            wp_send_json_error( [ 'message' => __( 'Attachment inválido.', 'aura-suite' ) ] );
+        }
+
+        if ( ! wp_attachment_is_image( $attachment_id ) ) {
+            wp_send_json_error( [ 'message' => __( 'El archivo seleccionado no es una imagen.', 'aura-suite' ) ] );
+        }
+
+        // Si hay datos de recorte válidos, recortar; si no, solo registrar el attachment original
+        if ( $crop_w >= 10 && $crop_h >= 10 ) {
+            $original_path = get_attached_file( $attachment_id );
+            if ( ! $original_path || ! file_exists( $original_path ) ) {
+                wp_send_json_error( [ 'message' => __( 'Archivo original no encontrado.', 'aura-suite' ) ] );
+            }
+
+            $editor = wp_get_image_editor( $original_path );
+            if ( is_wp_error( $editor ) ) {
+                wp_send_json_error( [ 'message' => $editor->get_error_message() ] );
+            }
+
+            $crop_result = $editor->crop( $crop_x, $crop_y, $crop_w, $crop_h );
+            if ( is_wp_error( $crop_result ) ) {
+                wp_send_json_error( [ 'message' => $crop_result->get_error_message() ] );
+            }
+
+            // Redimensionar a máximo 600×600 solo si supera ese tamaño
+            $current_size = $editor->get_size();
+            if ( $current_size['width'] > 600 || $current_size['height'] > 600 ) {
+                $resize_result = $editor->resize( 600, 600 );
+                if ( is_wp_error( $resize_result ) ) {
+                    wp_send_json_error( [ 'message' => $resize_result->get_error_message() ] );
+                }
+            }
+
+            // Preservar PNG para mantener transparencia; el resto → JPEG q85.
+            $orig_mime = (string) ( get_post_mime_type( $attachment_id ) ?: 'image/jpeg' );
+            $is_png    = ( 'image/png' === $orig_mime );
+            $save_mime = $is_png ? 'image/png' : 'image/jpeg';
+            $save_ext  = $is_png ? 'png' : 'jpg';
+
+            if ( ! $is_png ) {
+                $editor->set_quality( 85 );
+            }
+
+            $upload_dir = wp_upload_dir();
+            $filename   = 'area-logo-' . time() . '-' . wp_rand( 1000, 9999 ) . '.' . $save_ext;
+            $save_path  = trailingslashit( $upload_dir['path'] ) . $filename;
+            $saved      = $editor->save( $save_path, $save_mime );
+
+            if ( is_wp_error( $saved ) ) {
+                wp_send_json_error( [ 'message' => $saved->get_error_message() ] );
+            }
+
+            require_once ABSPATH . 'wp-admin/includes/image.php';
+            $attachment_data = [
+                'post_mime_type' => $save_mime,
+                'post_title'     => sanitize_file_name( pathinfo( $filename, PATHINFO_FILENAME ) ),
+                'post_content'   => '',
+                'post_status'    => 'inherit',
+            ];
+            $new_id = wp_insert_attachment( $attachment_data, $saved['path'] );
+            if ( is_wp_error( $new_id ) ) {
+                wp_send_json_error( [ 'message' => $new_id->get_error_message() ] );
+            }
+
+            $metadata = wp_generate_attachment_metadata( $new_id, $saved['path'] );
+            wp_update_attachment_metadata( $new_id, $metadata );
+            $attachment_id = $new_id;
+        }
+
+        wp_send_json_success( [
+            'attachment_id' => $attachment_id,
+            'url'           => wp_get_attachment_image_url( $attachment_id, 'medium' ) ?: wp_get_attachment_url( $attachment_id ),
+            'thumb_url'     => wp_get_attachment_image_url( $attachment_id, 'thumbnail' ) ?: wp_get_attachment_url( $attachment_id ),
+        ] );
+    }
+
+    /* ======================================================================
      * HELPERS PRIVADOS
      * ==================================================================== */
 
@@ -691,6 +814,13 @@ class Aura_Areas_Admin {
             'description'         => $row->description ?? '',
             'color'               => $row->color ?? '#2271b1',
             'icon'                => $row->icon ?? 'dashicons-groups',
+            'logo_id'             => (int) ( $row->logo_id ?? 0 ),
+            'logo_url'            => ( (int) ( $row->logo_id ?? 0 ) )
+                                        ? ( wp_get_attachment_image_url( (int) $row->logo_id, 'medium' ) ?: '' )
+                                        : '',
+            'logo_thumb_url'      => ( (int) ( $row->logo_id ?? 0 ) )
+                                        ? ( wp_get_attachment_image_url( (int) $row->logo_id, 'thumbnail' ) ?: '' )
+                                        : '',
             'sort_order'          => (int) ( $row->sort_order ?? 0 ),
             'status'              => $row->status ?? 'active',
             'responsible_user_id' => (int) ( $row->responsible_user_id ?? 0 ),
@@ -706,13 +836,8 @@ class Aura_Areas_Admin {
      * Etiqueta legible del tipo de área.
      */
     private static function type_label( string $type ): string {
-        return match ( $type ) {
-            'program'    => __( 'Programa', 'aura-suite' ),
-            'activity'   => __( 'Actividad', 'aura-suite' ),
-            'department' => __( 'Departamento', 'aura-suite' ),
-            'team'       => __( 'Equipo', 'aura-suite' ),
-            default      => ucfirst( $type ),
-        };
+        $types = Aura_Areas_Setup::get_all_types();
+        return $types[ $type ]['name'] ?? ucfirst( $type );
     }
 
     /**
@@ -753,6 +878,31 @@ class Aura_Areas_Admin {
      * Devuelve el presupuesto asignado a un área (FASE 8 lo utiliza plenamente).
      * En tanto, intenta leer de aura_finance_budgets si la columna area_id existe.
      */
+    /* ======================================================================
+     * AJAX: TYPES_DROPDOWN — lista tipos para select en formulario de áreas
+     * ==================================================================== */
+
+    public static function ajax_types_dropdown(): void {
+        check_ajax_referer( self::NONCE, 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'aura_areas_manage' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
+        }
+
+        $types  = Aura_Areas_Setup::get_all_types();
+        $result = [];
+        foreach ( $types as $slug => $info ) {
+            $result[] = [
+                'slug'       => $slug,
+                'name'       => $info['name'],
+                'color'      => $info['color'],
+                'is_default' => $info['is_default'],
+            ];
+        }
+
+        wp_send_json_success( $result );
+    }
+
     private static function get_budget_assigned( int $area_id ): ?float {
         if ( ! $area_id ) {
             return null;

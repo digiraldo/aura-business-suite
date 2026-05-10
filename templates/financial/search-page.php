@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 $search_nonce  = wp_create_nonce( 'aura_search_nonce' );
 $tags_nonce    = wp_create_nonce( 'aura_tags_nonce' );
 
-// Usuarios para "creado por"
-$users = get_users( [ 'fields' => [ 'ID', 'display_name' ] ] );
+// Usuarios para "creado por" — solo usuarios con caps financieras de Aura Suite
+$users = Aura_Roles_Manager::get_aura_users( [ 'fields' => [ 'ID', 'display_name' ] ], 'aura_finance_' );
 
 // Categorías financieras
 global $wpdb;

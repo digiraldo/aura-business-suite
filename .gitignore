@@ -56,6 +56,13 @@ composer.lock
 /build/
 *.min.js.map
 *.min.css.map
+/aura-business-suite.zip
+/build-zip.ps1
+*.zip
+*.xlsx
+/import_*.csv
+/import_transacciones*.csv
+/Y-Global2 2017-20 (Use this one).xlsx
 
 # Temporales
 *.tmp
