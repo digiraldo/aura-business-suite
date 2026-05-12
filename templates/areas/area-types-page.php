@@ -47,6 +47,7 @@ wp_enqueue_script(
 #aura-types-app {
     --at-bg:         #f0f0f1;
     --at-surface:    #ffffff;
+    --at-modal-surface: #ffffff;
     --at-border:     #dcdcde;
     --at-text:       #1d2327;
     --at-muted:      #646970;
@@ -65,6 +66,7 @@ wp_enqueue_script(
 html[data-wp-dark-mode-scheme="dark"] #aura-types-app {
     --at-bg:         #13131f;
     --at-surface:    #1e1e2e;
+    --at-modal-surface: #1e1e2e;
     --at-border:     #2d2d3d;
     --at-text:       #e2e8f0;
     --at-muted:      #94a3b8;
@@ -84,6 +86,7 @@ body.admin-color-midnight #aura-types-app,
 body.admin-color-coffee   #aura-types-app {
     --at-bg:         #16161f;
     --at-surface:    #1e1e2e;
+    --at-modal-surface: #1e1e2e;
     --at-border:     #2d2d3d;
     --at-text:       #dde1eb;
     --at-muted:      #8b96aa;
@@ -241,20 +244,38 @@ body.admin-color-coffee   .at-default-badge {
 
 /* ── Modal ───────────────────────────────────────────────────────── */
 .at-modal-wrap {
-    position: fixed; inset: 0; z-index: 100000;
+    position: fixed; inset: 0; z-index: 160000;
     display: flex; align-items: flex-start; justify-content: center;
     padding-top: 60px;
+    isolation: isolate;
+    opacity: 1 !important;
 }
-.at-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.55); }
+.at-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: rgba(15, 23, 42, .48);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
 .at-modal-box {
-    position: relative; z-index: 1;
-    background: var(--at-surface);
+    position: relative; z-index: 2;
+    background: #ffffff !important;
+    background-color: var(--at-modal-surface, #ffffff) !important;
+    background-image: none !important;
     border: 1px solid var(--at-border);
     border-radius: 6px;
     box-shadow: 0 8px 32px rgba(0,0,0,.28);
     width: 520px; max-width: 95vw; max-height: 90vh;
     display: flex; flex-direction: column; overflow: hidden;
+    opacity: 1 !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
 }
+.at-modal-box * { opacity: 1; }
+body.at-modal-open { overflow: hidden; }
 .at-modal-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 18px;
@@ -262,50 +283,174 @@ body.admin-color-coffee   .at-default-badge {
     color: var(--at-header-txt);
     border-bottom: 1px solid var(--at-border);
 }
-.at-modal-header h2 { margin: 0; font-size: 15px; color: var(--at-header-txt); }
+.at-modal-header h2 { margin: 0; font-size: 16px; font-weight: 700; color: var(--at-header-txt); }
 .at-modal-close-btn {
-    background: none; border: none; cursor: pointer;
-    color: rgba(255,255,255,.6); font-size: 20px; line-height: 1; padding: 2px;
+    background: none; border: none; cursor: pointer; border-radius: 4px;
+    color: rgba(255,255,255,.7); font-size: 20px; line-height: 1; padding: 4px 6px;
+    transition: all .2s ease-out;
 }
-.at-modal-close-btn:hover { color: #fff; }
-.at-modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+.at-modal-close-btn:hover { color: #fff; background: rgba(255,255,255,.1); }
+.at-modal-body {
+    padding: 28px;
+    overflow-y: auto;
+    flex: 1;
+    background: var(--at-modal-surface, #ffffff) !important;
+    max-height: calc(90vh - 180px);
+}
 .at-modal-footer {
-    padding: 12px 18px;
+    padding: 16px 28px;
     border-top: 1px solid var(--at-border);
-    background: var(--at-footer-bg);
-    display: flex; justify-content: flex-end; gap: 8px;
+    background: var(--at-modal-surface, #ffffff) !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 /* ── Campos de formulario ────────────────────────────────────────── */
-.at-field { margin-bottom: 14px; }
-.at-field label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; color: var(--at-text); }
+.at-field { margin-bottom: 18px; position: relative; }
+.at-field label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--at-text);
+    letter-spacing: .3px;
+}
+.at-field label .required { color: #d63638; font-weight: 700; margin-left: 2px; }
 .at-field input[type="text"],
 .at-field input[type="number"],
 .at-field textarea {
-    width: 100%; box-sizing: border-box;
+    width: 100%;
+    box-sizing: border-box;
     background: var(--at-input-bg);
-    border: 1px solid var(--at-border);
+    border: 1.5px solid var(--at-border);
     color: var(--at-text);
-    border-radius: 3px;
-    padding: 6px 8px;
+    border-radius: 4px;
+    padding: 8px 10px;
     font-size: 13px;
+    font-family: inherit;
+    transition: all .25s cubic-bezier(.4, 0, .2, 1);
+}
+.at-field input[type="text"]:focus,
+.at-field input[type="number"]:focus,
+.at-field textarea:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, .1);
+    background: var(--at-input-bg);
 }
 .at-field input[readonly] {
     background: var(--at-input-ro);
     color: var(--at-muted);
     cursor: default;
+    border-color: var(--at-border);
 }
-.at-field textarea { resize: vertical; }
-.at-field .description { font-size: 12px; color: var(--at-muted); margin-top: 3px; }
-.at-field-row { display: flex; gap: 14px; }
-.at-field-row .at-field { flex: 1; }
-.at-field-row .at-field-sm { flex: 0 0 110px; }
-.at-checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--at-text); font-size: 13px; }
+.at-field input[readonly]:focus {
+    box-shadow: none;
+    border-color: var(--at-border);
+}
+.at-field textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+.at-field .description {
+    font-size: 12px;
+    color: var(--at-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+.at-field.has-error input,
+.at-field.has-error textarea {
+    border-color: #d63638;
+    box-shadow: 0 0 0 3px rgba(214, 54, 56, .1);
+}
+.at-field.has-error .description {
+    color: #d63638;
+    font-weight: 500;
+}
+.at-field-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+.at-field-row .at-field {
+    flex: 1;
+    margin-bottom: 0;
+}
+.at-field-row .at-field-sm {
+    flex: 0 0 120px;
+}
+.at-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--at-text);
+    font-size: 13px;
+    padding: 4px 0;
+    transition: color .2s ease-out;
+}
+.at-checkbox-label:hover { color: #2271b1; }
+.at-checkbox-label input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+/* ── Botones mejorados ────────────────────────────────────────── */
+#aura-types-form .button {
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .2s ease-out;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+#aura-types-form .button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+}
+#aura-types-form .button:active {
+    transform: translateY(0);
+}
+#aura-types-form .button.button-primary {
+    background: #2271b1;
+    color: #fff;
+}
+#aura-types-form .button.button-primary:hover {
+    background: #135e96;
+}
+#aura-types-form .button-secondary {
+    background: #f3f4f6;
+    color: #1d2327;
+    border: 1px solid #dcdcde;
+}
+#aura-types-form .button-secondary:hover {
+    background: #e5e7eb;
+    color: #000;
+}
+
+/* ── Color Picker ────────────────────────────────────────── */
+.aura-color-picker {
+    cursor: color-picker !important;\n}
+.wp-color-result { margin: 0; }\n.wp-color-result::before {\n    border-radius: 4px;\n}\n\n/* ── Validación ────────────────────────────────────────── */\n#aura-types-form input:invalid:not(:placeholder-shown) {\n    border-color: #d63638;\n    box-shadow: 0 0 0 3px rgba(214, 54, 56, .1);\n}\n#aura-types-form input:valid:not(:placeholder-shown) {\n    border-color: #11a861;\n}\n\n/* ── Encabezado del formulario ────────────────────────────────────────── */\n.at-modal-body > .at-field:first-child {\n    margin-top: 0;\n}\n.at-modal-body .at-field {\n    animation: fadeInUp .3s ease-out;\n}\n@keyframes fadeInUp {\n    from {\n        opacity: 0;\n        transform: translateY(8px);\n    }\n    to {\n        opacity: 1;\n        transform: translateY(0);\n    }\n}\n\n/* ── Estado deshabilitado ────────────────────────────────────────── */\n#aura-types-form .button:disabled {\n    opacity: .5;\n    cursor: not-allowed;\n    transform: none !important;\n}\n\n/* ── Loading state ────────────────────────────────────────── */\n#aura-types-form .button.is-loading::before {\n    display: inline-block;\n    width: 14px;\n    height: 14px;\n    border: 2px solid currentColor;\n    border-right-color: transparent;\n    border-radius: 50%;\n    animation: spin .6s linear infinite;\n    margin-right: 4px;\n}\n@keyframes spin {\n    to { transform: rotate(360deg); }\n}\n
 
 @media (max-width: 600px) {
-    .at-field-row { flex-direction: column; }
+    .at-modal-body { padding: 20px; }
+    .at-modal-footer { padding: 12px 20px; }
+    .at-field-row {
+        flex-direction: column;
+        gap: 0;
+        margin-bottom: 0;
+    }
+    .at-field-row .at-field { flex: 1; }
     .at-field-row .at-field-sm { flex: 1; }
     .at-filters-bar input[type="search"] { width: 100%; }
+    #aura-types-form .button { width: 100%; justify-content: center; }
 }
 </style>
 
@@ -363,49 +508,76 @@ body.admin-color-coffee   .at-default-badge {
             <input type="hidden" id="aura-type-id" name="id" value="0">
 
             <div class="at-field">
-                <label for="aura-type-name"><?php esc_html_e( 'Nombre', 'aura-suite' ); ?> <span style="color:#d63638;">*</span></label>
-                <input type="text" id="aura-type-name" name="name" maxlength="100"
-                       placeholder="<?php esc_attr_e( 'Ej. Ministerio, Célula...', 'aura-suite' ); ?>">
+                <label for="aura-type-name">
+                    <?php esc_html_e( 'Nombre', 'aura-suite' ); ?>
+                    <span class="required" title="Campo requerido">*</span>
+                </label>
+                <input type="text" id="aura-type-name" name="name" maxlength="100" required
+                       placeholder="<?php esc_attr_e( 'Ej. Ministerio, Célula...', 'aura-suite' ); ?>"
+                       aria-label="<?php esc_attr_e( 'Nombre del tipo de área', 'aura-suite' ); ?>">
+                <span class="description"><?php esc_html_e( 'Nombre único para identificar este tipo de área.', 'aura-suite' ); ?></span>
             </div>
 
             <div class="at-field">
-                <label for="aura-type-slug"><?php esc_html_e( 'Slug (auto)', 'aura-suite' ); ?></label>
-                <input type="text" id="aura-type-slug" name="slug" readonly>
-                <span class="description"><?php esc_html_e( 'Generado automáticamente desde el nombre.', 'aura-suite' ); ?></span>
+                <label for="aura-type-slug">
+                    <?php esc_html_e( 'Slug', 'aura-suite' ); ?>
+                    <span style="font-size:11px;color:var(--at-muted);font-weight:400;">(<?php esc_html_e( 'auto', 'aura-suite' ); ?>)</span>
+                </label>
+                <input type="text" id="aura-type-slug" name="slug" readonly 
+                       aria-label="<?php esc_attr_e( 'Identificador único generado automáticamente', 'aura-suite' ); ?>">
+                <span class="description"><?php esc_html_e( '🔄 Se genera automáticamente basado en el nombre.', 'aura-suite' ); ?></span>
             </div>
 
             <div class="at-field">
-                <label for="aura-type-description"><?php esc_html_e( 'Descripción', 'aura-suite' ); ?></label>
+                <label for="aura-type-description">
+                    <?php esc_html_e( 'Descripción', 'aura-suite' ); ?>
+                </label>
                 <textarea id="aura-type-description" name="description" rows="3"
-                          placeholder="<?php esc_attr_e( 'Descripción opcional...', 'aura-suite' ); ?>"></textarea>
+                          placeholder="<?php esc_attr_e( 'Agrega detalles del tipo de área... (opcional)', 'aura-suite' ); ?>"
+                          aria-label="<?php esc_attr_e( 'Descripción del tipo de área', 'aura-suite' ); ?>"></textarea>
+                <span class="description"><?php esc_html_e( 'Información adicional para clasificar mejor las áreas.', 'aura-suite' ); ?></span>
             </div>
 
             <div class="at-field-row">
                 <div class="at-field">
-                    <label for="aura-type-color"><?php esc_html_e( 'Color de etiqueta', 'aura-suite' ); ?></label>
-                    <input type="text" id="aura-type-color" name="color" value="#e0e7ff" class="aura-color-picker">
+                    <label for="aura-type-color">
+                        <?php esc_html_e( 'Color de etiqueta', 'aura-suite' ); ?>
+                        <span style="font-size:11px;color:var(--at-muted);font-weight:400;"><?php esc_html_e( '(opcional)', 'aura-suite' ); ?></span>
+                    </label>
+                    <input type="text" id="aura-type-color" name="color" value="#e0e7ff" class="aura-color-picker"
+                           aria-label="<?php esc_attr_e( 'Color para las etiquetas de este tipo', 'aura-suite' ); ?>">
+                    <span class="description"><?php esc_html_e( '🎨 Selecciona un color para identificar este tipo.', 'aura-suite' ); ?></span>
                 </div>
                 <div class="at-field at-field-sm">
-                    <label for="aura-type-sort"><?php esc_html_e( 'Orden', 'aura-suite' ); ?></label>
-                    <input type="number" id="aura-type-sort" name="sort_order" value="0" min="0" max="9999" class="small-text">
+                    <label for="aura-type-sort">
+                        <?php esc_html_e( 'Orden', 'aura-suite' ); ?>
+                    </label>
+                    <input type="number" id="aura-type-sort" name="sort_order" value="0" min="0" max="9999" class="small-text"
+                           aria-label="<?php esc_attr_e( 'Orden de aparición', 'aura-suite' ); ?>">
+                    <span class="description"><?php esc_html_e( '↕️ Orden de aparición', 'aura-suite' ); ?></span>
                 </div>
             </div>
 
             <div class="at-field">
                 <label class="at-checkbox-label">
-                    <input type="checkbox" id="aura-type-default" name="is_default" value="1">
-                    <?php esc_html_e( 'Usar como tipo predeterminado para nuevas áreas', 'aura-suite' ); ?>
+                    <input type="checkbox" id="aura-type-default" name="is_default" value="1"
+                           aria-label="<?php esc_attr_e( 'Usar como tipo predeterminado', 'aura-suite' ); ?>">
+                    <span>
+                        <?php esc_html_e( 'Usar como tipo predeterminado para nuevas áreas', 'aura-suite' ); ?>
+                    </span>
                 </label>
+                <span class="description"><?php esc_html_e( '⭐ El primer tipo de área que se sugiere al crear nuevas áreas.', 'aura-suite' ); ?></span>
             </div>
         </form>
 
         <div class="at-modal-footer">
-            <button type="submit" form="aura-types-form" class="button button-primary">
-                <span class="dashicons dashicons-saved" style="line-height:28px;"></span>
-                <?php esc_html_e( 'Guardar', 'aura-suite' ); ?>
-            </button>
-            <button type="button" class="button aura-modal-close">
+            <button type="button" class="button button-secondary aura-modal-close">
+                <span class="dashicons dashicons-no-alt" style="line-height:28px;"></span>
                 <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
+            </button>
+            <button type="submit" form="aura-types-form" class="button button-primary">
+                <span class="dashicons dashicons-yes-alt" style="line-height:28px;"></span>
+                <?php esc_html_e( 'Guardar tipo', 'aura-suite' ); ?>
             </button>
         </div>
     </div>
@@ -600,12 +772,16 @@ body.admin-color-coffee   .at-default-badge {
             }
         }
 
-        $('#aura-types-modal').fadeIn(200);
+        var $modal = $('#aura-types-modal');
+        $modal.stop(true, true).css({ display: 'flex', opacity: '1' }).show();
+        $('body').addClass('at-modal-open');
         setTimeout(function() { $('#aura-type-name').trigger('focus'); }, 210);
     }
 
     function closeModal() {
-        $('#aura-types-modal').fadeOut(200);
+        var $modal = $('#aura-types-modal');
+        $modal.stop(true, true).css('opacity', '1').hide();
+        $('body').removeClass('at-modal-open');
     }
 
     /* ------------------------------------------------------------------

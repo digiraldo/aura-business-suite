@@ -20,6 +20,13 @@ if (!current_user_can('aura_finance_create')) {
 global $wpdb;
 $categories_table = $wpdb->prefix . 'aura_finance_categories';
 $categories = $wpdb->get_results("SELECT * FROM $categories_table WHERE is_active = 1 ORDER BY display_order ASC, name ASC");
+$accounts_table = $wpdb->prefix . 'aura_finance_accounts';
+$finance_accounts = $wpdb->get_results(
+    "SELECT id, name, account_type, currency, current_balance
+     FROM {$accounts_table}
+     WHERE deleted_at IS NULL AND is_active = 1
+     ORDER BY name ASC"
+);
 
 // Fase 8.2: áreas activas + usuario restringido a su área
 $_frm_areas = $wpdb->get_results(
@@ -212,6 +219,71 @@ if ( $_frm_view_own ) {
                                 <option value="other"><?php _e('Otro', 'aura-suite'); ?></option>
                             </select>
                             <span class="aura-field-icon dashicons dashicons-money"></span>
+                        </div>
+                    </div>
+
+                    <div class="aura-form-row aura-account-links">
+                        <div class="aura-form-field aura-field-50 aura-account-field aura-account-source">
+                            <label for="source_account_id" class="required">
+                                <?php _e('Cuenta Origen', 'aura-suite'); ?>
+                            </label>
+                            <select id="source_account_id" name="source_account_id">
+                                <option value=""><?php _e('Seleccionar cuenta origen...', 'aura-suite'); ?></option>
+                                <?php foreach ( $finance_accounts as $account ) : ?>
+                                <option value="<?php echo (int) $account->id; ?>">
+                                    <?php echo esc_html( $account->name . ' · ' . $account->currency . ' · ' . number_format( (float) $account->current_balance, 2 ) ); ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <span class="aura-field-icon dashicons dashicons-money-alt"></span>
+                            <p class="description"><?php _e('Obligatoria para egresos. Desde aquí saldrá el dinero.', 'aura-suite'); ?></p>
+                        </div>
+
+                        <div class="aura-form-field aura-field-50 aura-account-field aura-account-destination">
+                            <label for="destination_account_id" class="required">
+                                <?php _e('Cuenta Destino', 'aura-suite'); ?>
+                            </label>
+                            <select id="destination_account_id" name="destination_account_id">
+                                <option value=""><?php _e('Seleccionar cuenta destino...', 'aura-suite'); ?></option>
+                                <?php foreach ( $finance_accounts as $account ) : ?>
+                                <option value="<?php echo (int) $account->id; ?>">
+                                    <?php echo esc_html( $account->name . ' · ' . $account->currency . ' · ' . number_format( (float) $account->current_balance, 2 ) ); ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <span class="aura-field-icon dashicons dashicons-store"></span>
+                            <p class="description"><?php _e('Obligatoria para ingresos. Aquí entrará el dinero.', 'aura-suite'); ?></p>
+                        </div>
+                    </div>
+
+                    <div class="aura-form-row">
+                        <div class="aura-form-field aura-field-50">
+                            <label for="excel_block">
+                                <?php _e('Bloque contable (Excel)', 'aura-suite'); ?>
+                            </label>
+                            <select id="excel_block" name="excel_block">
+                                <option value=""><?php _e('Seleccionar...', 'aura-suite'); ?></option>
+                                <option value="assets"><?php _e('Activos', 'aura-suite'); ?></option>
+                                <option value="liabilities"><?php _e('Pasivos', 'aura-suite'); ?></option>
+                                <option value="income_operations"><?php _e('Ingresos del fondo de operaciones', 'aura-suite'); ?></option>
+                                <option value="expense_operations"><?php _e('Gastos del fondo de operaciones', 'aura-suite'); ?></option>
+                                <option value="expense_property"><?php _e('Gastos del fondo de propiedad', 'aura-suite'); ?></option>
+                                <option value="expense_capital_hadime"><?php _e('Gastos de capital & HADIME', 'aura-suite'); ?></option>
+                                <option value="expense_van"><?php _e('Gastos Van', 'aura-suite'); ?></option>
+                            </select>
+                            <span class="aura-field-icon dashicons dashicons-list-view"></span>
+                            <p class="description"><?php _e('Clasificación para reportes y compatibilidad con Excel.', 'aura-suite'); ?></p>
+                        </div>
+
+                        <div class="aura-form-field aura-field-50">
+                            <label for="sign_mode">
+                                <?php _e('Modo de signo', 'aura-suite'); ?>
+                            </label>
+                            <select id="sign_mode" name="sign_mode">
+                                <option value="auto"><?php _e('Automático', 'aura-suite'); ?></option>
+                                <option value="excel_manual"><?php _e('Manual tipo Excel', 'aura-suite'); ?></option>
+                            </select>
+                            <span class="aura-field-icon dashicons dashicons-editor-table"></span>
                         </div>
                     </div>
                     

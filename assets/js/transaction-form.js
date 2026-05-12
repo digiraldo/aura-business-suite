@@ -160,7 +160,39 @@
             }
             // Fase 8.4: recargar categoría del gasto por tipo
             loadExpenseCategoriesForType(type);
+            toggleAccountFields(type);
         });
+
+        toggleAccountFields($('input[name="transaction_type"]:checked').val() || 'income');
+    }
+
+    /**
+     * Alternar campos de cuenta según el tipo de transacción.
+     */
+    function toggleAccountFields(type) {
+        const isIncome = type === 'income';
+        const isExpense = type === 'expense';
+
+        const $sourceWrap = $('.aura-account-source');
+        const $destinationWrap = $('.aura-account-destination');
+        const $sourceSelect = $('#source_account_id');
+        const $destinationSelect = $('#destination_account_id');
+
+        $sourceWrap.toggle(!isIncome).toggleClass('is-hidden-by-type', isIncome);
+        $destinationWrap.toggle(!isExpense).toggleClass('is-hidden-by-type', isExpense);
+
+        $sourceSelect.prop('disabled', isIncome);
+        $destinationSelect.prop('disabled', isExpense);
+
+        if (isIncome) {
+            $sourceSelect.val('');
+        }
+        if (isExpense) {
+            $destinationSelect.val('');
+        }
+
+        $sourceSelect.prop('required', isExpense);
+        $destinationSelect.prop('required', isIncome);
     }
     
     /**

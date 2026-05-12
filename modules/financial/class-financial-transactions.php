@@ -36,6 +36,8 @@ class Aura_Financial_Transactions {
         add_action('admin_init', array(__CLASS__, 'maybe_migrate_area_id'));
         // Migración: agregar columna expense_category_id (Fase 8.4)
         add_action('admin_init', array(__CLASS__, 'maybe_migrate_expense_category_id'));
+        // Migración: agregar campos de cuentas origen/destino y bloque contable
+        add_action('admin_init', array(__CLASS__, 'maybe_migrate_account_fields'));
         
         // Enqueue scripts and styles
         add_action('admin_enqueue_scripts', array(__CLASS__, 'enqueue_scripts'));
@@ -148,6 +150,10 @@ class Aura_Financial_Transactions {
         $related_user_concept = sanitize_key($_POST['related_user_concept'] ?? '');
         // Fase 8.4: categoría detallada del gasto (qué se compró / por qué ingresó)
         $expense_category_id = intval($_POST['expense_category_id'] ?? 0);
+        $source_account_id = intval($_POST['source_account_id'] ?? 0);
+        $destination_account_id = intval($_POST['destination_account_id'] ?? 0);
+        $excel_block = sanitize_key($_POST['excel_block'] ?? '');
+        $sign_mode = sanitize_key($_POST['sign_mode'] ?? 'auto');
 
         // Fase 8.2: área / programa
         $current_uid = get_current_user_id();
@@ -186,6 +192,24 @@ class Aura_Financial_Transactions {
         
         if (empty($transaction_date)) {
             $errors[] = __('La fecha es requerida', 'aura-suite');
+        }
+
+        if ($transaction_type === 'income' && $destination_account_id <= 0) {
+            $errors[] = __('En un ingreso debes seleccionar la cuenta destino.', 'aura-suite');
+        }
+
+        $uses_personal_funds = ($transaction_type === 'expense' && $source_account_id <= 0 && $related_user_id > 0);
+        if ($transaction_type === 'expense' && $source_account_id <= 0 && !$uses_personal_funds) {
+            $errors[] = __('En un egreso debes seleccionar la cuenta origen o vincular un usuario para registrar reembolso por dinero personal.', 'aura-suite');
+        }
+
+        $allowed_excel_blocks = array('assets', 'liabilities', 'income_operations', 'expense_operations', 'expense_property', 'expense_capital_hadime', 'expense_van');
+        if (!empty($excel_block) && !in_array($excel_block, $allowed_excel_blocks, true)) {
+            $errors[] = __('El bloque contable seleccionado no es válido.', 'aura-suite');
+        }
+
+        if ($sign_mode !== 'excel_manual') {
+            $sign_mode = 'auto';
         }
         
         if (strlen($description) < 10) {
@@ -236,6 +260,24 @@ class Aura_Financial_Transactions {
 
         // Si no hay category_id explícito, usar expense_category_id como referencia para aprobación
         $effective_category_id = $category_id > 0 ? $category_id : $expense_category_id;
+
+        // Fase 2.1: validar presupuesto anual/mensual para egresos.
+        $budget_warning = '';
+        if ($transaction_type === 'expense' && class_exists('Aura_Financial_Accounts')) {
+            $budget_validation = Aura_Financial_Accounts::validate_expense_budget($transaction_date, $amount);
+            if (!empty($budget_validation['warning'])) {
+                $budget_warning = (string) $budget_validation['warning'];
+            }
+
+            if (isset($budget_validation['allowed']) && !$budget_validation['allowed']) {
+                wp_send_json_error(array(
+                    'message' => sprintf(
+                        __('Transacción bloqueada por política de presupuesto. %s', 'aura-suite'),
+                        $budget_warning
+                    )
+                ));
+            }
+        }
         
         // Insertar en la base de datos
         $transactions_table = $wpdb->prefix . 'aura_finance_transactions';
@@ -269,6 +311,10 @@ class Aura_Financial_Transactions {
             'notes' => $notes,
             'status' => $initial_status,
             'payment_method' => $payment_method,
+            'source_account_id' => $source_account_id > 0 ? $source_account_id : null,
+            'destination_account_id' => $destination_account_id > 0 ? $destination_account_id : null,
+            'excel_block' => !empty($excel_block) ? $excel_block : null,
+            'sign_mode' => $sign_mode,
             'reference_number' => $reference_number,
             'recipient_payer' => $recipient_payer,
             'receipt_file' => $receipt_file,
@@ -297,6 +343,10 @@ class Aura_Financial_Transactions {
             '%s', // notes
             '%s', // status
             '%s', // payment_method
+            '%d', // source_account_id
+            '%d', // destination_account_id
+            '%s', // excel_block
+            '%s', // sign_mode
             '%s', // reference_number
             '%s', // recipient_payer
             '%s', // receipt_file
@@ -335,6 +385,29 @@ class Aura_Financial_Transactions {
         }
         
         $transaction_id = $wpdb->insert_id;
+
+        if ( class_exists( 'Aura_Financial_Accounts' ) && in_array( $initial_status, array( 'approved', 'auto_approved' ), true ) ) {
+            Aura_Financial_Accounts::sync_transaction_accounts(
+                $transaction_id,
+                $transaction_type,
+                $amount,
+                $source_account_id,
+                $destination_account_id,
+                array(
+                    'currency' => 'COP',
+                    'notes' => $description,
+                )
+            );
+
+            if ($uses_personal_funds) {
+                Aura_Financial_Accounts::maybe_create_reimbursement_from_transaction(
+                    $transaction_id,
+                    $related_user_id,
+                    $amount,
+                    $description
+                );
+            }
+        }
         
         // Hook para extensiones
         do_action('aura_finance_transaction_created', $transaction_id, $transaction_type, $amount);
@@ -378,6 +451,10 @@ class Aura_Financial_Transactions {
             // Notificar a aprobadores (hook existente)
             do_action('aura_finance_transaction_pending_approval', $transaction_id);
         }
+
+        if (!empty($budget_warning)) {
+            $message .= ' ' . sprintf(__('Aviso de presupuesto: %s', 'aura-suite'), $budget_warning);
+        }
         
         // Respuesta exitosa
         wp_send_json_success(array(
@@ -385,6 +462,7 @@ class Aura_Financial_Transactions {
             'transaction_id' => $transaction_id,
             'status' => $initial_status,
             'is_auto_approved' => $initial_status === 'approved',
+            'budget_warning' => $budget_warning,
             'redirect_url' => admin_url('admin.php?page=aura-financial-transactions')
         ));
     }
@@ -767,6 +845,10 @@ class Aura_Financial_Transactions {
             notes TEXT,
             status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
             payment_method VARCHAR(50),
+            source_account_id BIGINT UNSIGNED NULL,
+            destination_account_id BIGINT UNSIGNED NULL,
+            excel_block ENUM('assets','liabilities','income_operations','expense_operations','expense_property','expense_capital_hadime','expense_van') NULL,
+            sign_mode ENUM('auto','excel_manual') NULL DEFAULT 'auto',
             reference_number VARCHAR(100),
             recipient_payer VARCHAR(255),
             receipt_file VARCHAR(255),
@@ -961,7 +1043,6 @@ class Aura_Financial_Transactions {
         if ( get_option( 'aura_finance_expense_cat_migrated_v1' ) ) {
             return;
         }
-
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_transactions';
 
@@ -979,6 +1060,46 @@ class Aura_Financial_Transactions {
         }
 
         update_option( 'aura_finance_expense_cat_migrated_v1', '1.0' );
+    }
+
+    /**
+     * Migración Fase 2: agregar campos de cuentas origen/destino y bloque contable.
+     *
+     * @since 1.0.4
+     * @return void
+     */
+    public static function maybe_migrate_account_fields(): void {
+        if ( get_option( 'aura_finance_account_fields_migrated_v1' ) ) {
+            return;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_transactions';
+
+        $columns = $wpdb->get_col( $wpdb->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
+            DB_NAME,
+            $table
+        ) );
+
+        if ( ! in_array( 'source_account_id', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN source_account_id BIGINT UNSIGNED NULL AFTER payment_method" );
+        }
+
+        if ( ! in_array( 'destination_account_id', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN destination_account_id BIGINT UNSIGNED NULL AFTER source_account_id" );
+        }
+
+        if ( ! in_array( 'excel_block', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN excel_block ENUM('assets','liabilities','income_operations','expense_operations','expense_property','expense_capital_hadime','expense_van') NULL AFTER destination_account_id" );
+        }
+
+        if ( ! in_array( 'sign_mode', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN sign_mode ENUM('auto','excel_manual') NULL DEFAULT 'auto' AFTER excel_block" );
+        }
+
+        update_option( 'aura_finance_account_fields_migrated_v1', '1.0' );
     }
 
     /**

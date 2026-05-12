@@ -1,0 +1,1581 @@
+.aura-financial-accounts-page {
+    --afa-surface: #ffffff;
+    --afa-border: #dcdcde;
+    --afa-text: #1d2327;
+    --afa-muted: #646970;
+    --afa-soft: #f6f7fb;
+    --afa-primary: #2271b1;
+    --afa-primary-soft: rgba(34, 113, 177, 0.12);
+    --afa-success: #00a32a;
+    --afa-success-soft: rgba(0, 163, 42, 0.12);
+    --afa-accent: #8e44ad;
+    --afa-warning: #dba617;
+    --afa-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.aura-accounts-hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.aura-accounts-hero__text {
+    max-width: 760px;
+}
+
+.aura-accounts-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 14px;
+    margin: 16px 0 20px;
+}
+
+.aura-accounts-kpi-card,
+.aura-budget-overview-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--afa-surface);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow .2s;
+}
+
+.aura-accounts-kpi-card:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .08);
+}
+
+.aura-accounts-kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    border-radius: 8px 0 0 8px;
+}
+
+.aura-accounts-kpi-card:nth-child(1)::before { background: #2271b1; }
+.aura-accounts-kpi-card:nth-child(2)::before { background: #10b981; }
+.aura-accounts-kpi-card:nth-child(3)::before { background: #6366f1; }
+.aura-accounts-kpi-card:nth-child(4)::before { background: #f59e0b; }
+
+.aura-accounts-kpi-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--afa-soft);
+    color: var(--afa-primary);
+    font-size: 20px;
+}
+
+.aura-accounts-kpi-card__icon.is-success {
+    color: var(--afa-success);
+    background: var(--afa-success-soft);
+}
+
+.aura-accounts-kpi-card__icon.is-primary {
+    background: var(--afa-primary-soft);
+}
+
+.aura-accounts-kpi-card__icon.is-accent {
+    color: var(--afa-accent);
+    background: rgba(142, 68, 173, 0.12);
+}
+
+.aura-accounts-kpi-card__label,
+.aura-budget-overview-card__label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.aura-accounts-kpi-card__value,
+.aura-budget-overview-card__value {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #111827;
+}
+
+.aura-financial-accounts-page .description {
+    margin: 8px 0 16px;
+}
+
+#aura-accounts-feedback {
+    margin: 12px 0;
+}
+
+.aura-finance-inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.aura-finance-primary-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.aura-action-button {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #dcdcde;
+    border-radius: 10px;
+    background: #fff;
+    color: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.aura-action-button .dashicons {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+    line-height: 1;
+    margin-top: -2px;
+    color: #2271b1;
+}
+
+.aura-action-button div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-action-button strong {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.aura-action-button span {
+    display: block;
+    font-size: 12px;
+    color: #646970;
+}
+
+.aura-action-button--primary {
+    background: linear-gradient(135deg, #2271b1 0%, #1d5c99 100%);
+    border-color: #1d5c99;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(34, 113, 177, 0.18);
+}
+
+.aura-action-button--primary .dashicons {
+    color: #fff;
+}
+
+.aura-action-button--primary:hover,
+.aura-action-button--primary:focus-visible {
+    background: linear-gradient(135deg, #1d5c99 0%, #184d82 100%);
+    border-color: #184d82;
+    box-shadow: 0 4px 12px rgba(34, 113, 177, 0.28);
+    transform: translateY(-1px);
+}
+
+.aura-action-button--primary span {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.aura-action-button--secondary {
+    background: #fbfcfe;
+    border-color: #dcdcde;
+}
+
+.aura-action-button--secondary:hover,
+.aura-action-button--secondary:focus-visible {
+    background: #f1f1f1;
+    border-color: #8f98a1;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+}
+
+.aura-action-button--secondary .dashicons {
+    color: #2271b1;
+}
+
+.aura-action-button:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+.aura-finance-inline-hint,
+.aura-section-helper,
+.aura-budget-readonly-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fff8e5;
+    border: 1px solid #e6d3a3;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    color: #6b4f00;
+}
+
+.aura-finance-inline-hint p,
+.aura-section-helper p,
+.aura-budget-readonly-note {
+    margin: 0;
+}
+
+.aura-finance-inline-hint .dashicons,
+.aura-section-helper .dashicons {
+    color: #9a6700;
+    margin-top: 2px;
+}
+
+.aura-accounts-layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+    margin-top: 14px;
+    align-items: start;
+}
+
+.aura-accounts-list-card,
+.aura-accounts-form-card {
+    background: var(--afa-surface);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.aura-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-budget-cta-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px;
+    border: 1px dashed #c3c4c7;
+    border-radius: 12px;
+    background: rgba(34, 113, 177, 0.04);
+    margin-top: 14px;
+}
+
+.aura-budget-cta-box h3,
+.aura-budget-cta-box p {
+    margin: 0;
+}
+
+.aura-budget-cta-box p {
+    color: var(--afa-muted);
+}
+
+.aura-accounts-form-card {
+    position: sticky;
+    top: 42px;
+}
+
+.aura-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.aura-card-head h2,
+.aura-card-head h3 {
+    margin: 0 0 4px;
+}
+
+.aura-title-with-help {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-help-tip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    min-width: 18px;
+    height: 18px;
+    border: 1px solid rgba(34, 113, 177, 0.35);
+    border-radius: 999px;
+    background: rgba(34, 113, 177, 0.10);
+    color: #2271b1;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: help;
+    padding: 0;
+    z-index: 1;
+}
+
+.aura-help-tip::after {
+    content: attr(data-tooltip);
+    position: fixed;
+    width: max(200px, min(300px, 90vw));
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #111827;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: left;
+    font-weight: 400;
+    box-shadow: 0 10px 28px rgba(17, 24, 39, 0.38);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .2s ease, visibility .2s ease;
+    z-index: 200000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.aura-help-tip::before {
+    content: '';
+    position: fixed;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-top-color: #111827;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, visibility .2s ease;
+    z-index: 200001;
+}
+
+.aura-help-tip:hover::after,
+.aura-help-tip:hover::before,
+.aura-help-tip:focus-visible::after,
+.aura-help-tip:focus-visible::before,
+.aura-help-tip.is-open::after,
+.aura-help-tip.is-open::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+.aura-help-tip:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+/* Tooltip positioning - will be set by JavaScript */
+.aura-help-tip.tooltip-top::after {
+    bottom: auto;
+    top: var(--tooltip-top, auto);
+    left: var(--tooltip-left, 50%);
+    transform: translateX(-50%);
+}
+
+.aura-help-tip.tooltip-top::before {
+    bottom: auto;
+    top: var(--tooltip-arrow-top, auto);
+    left: var(--tooltip-arrow-left, 50%);
+    transform: translateX(-50%);
+}
+
+.aura-help-tip.tooltip-bottom::after {
+    top: var(--tooltip-top, auto);
+    left: var(--tooltip-left, 50%);
+    transform: translateX(-50%);
+}
+
+.aura-help-tip.tooltip-bottom::before {
+    border-top-color: transparent;
+    border-bottom-color: #111827;
+    top: var(--tooltip-arrow-top, auto);
+    left: var(--tooltip-arrow-left, 50%);
+    transform: translateX(-50%);
+}
+
+.aura-help-tip.tooltip-left::after {
+    right: var(--tooltip-right, auto);
+    left: auto;
+    top: var(--tooltip-top, 50%);
+    transform: translateY(-50%);
+}
+
+.aura-help-tip.tooltip-left::before {
+    right: var(--tooltip-arrow-right, auto);
+    left: auto;
+    top: var(--tooltip-arrow-top, 50%);
+    border-right-color: transparent;
+    border-left-color: #111827;
+    transform: translateY(-50%);
+}
+
+.aura-help-tip.tooltip-right::after {
+    left: var(--tooltip-left, auto);
+    right: auto;
+    top: var(--tooltip-top, 50%);
+    transform: translateY(-50%);
+}
+
+.aura-help-tip.tooltip-right::before {
+    left: var(--tooltip-left, auto);
+    right: auto;
+    top: var(--tooltip-arrow-top, 50%);
+    border-left-color: transparent;
+    border-right-color: #111827;
+    transform: translateY(-50%);\n}
+
+.aura-card-head p {
+    margin: 0;
+    color: var(--afa-muted);
+}
+
+.aura-accounts-form-card h2 {
+    margin-top: 0;
+    margin-bottom: 14px;
+}
+
+.aura-accounts-form-card p {
+    margin: 0 0 12px;
+}
+
+.aura-accounts-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+/* ---- Filtros rápidos ---- */
+.aura-accounts-filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 8px;
+    padding: 6px 10px;
+}
+
+.aura-filter-select {
+    padding: 4px 10px;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    background: #fff;
+    color: #2c3338;
+    font-size: 12px;
+    height: 30px;
+    cursor: pointer;
+    transition: border-color .15s;
+}
+
+.aura-filter-select:focus {
+    border-color: var(--afa-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(34, 113, 177, .18);
+}
+
+.aura-filter-select option {
+    font-size: 13px;
+}
+
+.aura-filter-reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    height: 30px;
+    border: 1px solid rgba(214, 54, 56, 0.3);
+    border-radius: 6px;
+    background: rgba(214, 54, 56, 0.06);
+    color: #d63638;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+}
+
+.aura-filter-reset-btn:hover {
+    background: rgba(214, 54, 56, 0.12);
+    border-color: #d63638;
+}
+
+.aura-filter-reset-btn .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+
+.aura-filter-active-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--afa-primary-soft);
+    color: var(--afa-primary);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.aura-accounts-toolbar__search {
+    position: relative;
+    width: min(360px, 100%);
+}
+
+.aura-accounts-toolbar__search .dashicons {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--afa-muted);
+}
+
+.aura-accounts-toolbar__search input[type="search"] {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--afa-border);
+    border-radius: 10px;
+    background: var(--afa-soft);
+}
+
+.aura-accounts-table-wrap {
+    overflow: auto;
+}
+
+#aura-accounts-table {
+    width: 100% !important;
+}
+
+#aura-accounts-table tbody td,
+#aura-accounts-table thead th {
+    vertical-align: top;
+}
+
+#aura-accounts-table tbody td {
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.aura-account-name {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-account-name strong {
+    font-size: 14px;
+}
+
+.aura-account-name small {
+    color: var(--afa-muted);
+}
+
+.aura-account-badge,
+.aura-account-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.aura-account-badge.is-bank_account { background: rgba(34, 113, 177, 0.12); color: var(--afa-primary); }
+.aura-account-badge.is-petty_cash { background: rgba(219, 166, 23, 0.14); color: #9a6700; }
+.aura-account-badge.is-contributions_fund { background: rgba(142, 68, 173, 0.12); color: var(--afa-accent); }
+.aura-account-badge.is-usd_cash { background: rgba(0, 163, 42, 0.12); color: var(--afa-success); }
+.aura-account-badge.is-custom { background: rgba(100, 105, 112, 0.14); color: #50575e; }
+
+.aura-account-status.is-active { background: rgba(0, 163, 42, 0.12); color: var(--afa-success); }
+.aura-account-status.is-inactive { background: rgba(100, 105, 112, 0.14); color: #50575e; }
+
+.aura-account-balance {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-account-balance strong {
+    font-size: 14px;
+}
+
+.aura-account-balance small {
+    color: var(--afa-muted);
+}
+
+.aura-account-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.aura-account-action {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    min-width: 32px;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    border-radius: 999px !important;
+}
+
+.aura-account-action .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.aura-account-action.is-edit {
+    border-color: rgba(34, 113, 177, 0.25) !important;
+    color: var(--afa-primary) !important;
+}
+
+.aura-account-action.is-delete {
+    border-color: rgba(214, 54, 56, 0.25) !important;
+    color: #d63638 !important;
+}
+
+.aura-dt-top,
+.aura-dt-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.aura-dt-top {
+    margin-bottom: 12px;
+}
+
+.aura-dt-bottom {
+    margin-top: 12px;
+}
+
+.dataTables_length,
+.dataTables_info {
+    color: var(--afa-muted) !important;
+    font-size: 13px;
+}
+
+.dataTables_length select {
+    border-color: var(--afa-border) !important;
+    border-radius: 8px !important;
+}
+
+.dataTables_paginate .paginate_button {
+    border-radius: 8px !important;
+}
+
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+    position: relative !important;
+    padding-left: 36px !important;
+    cursor: pointer !important;
+}
+
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
+    content: "\f344" !important;
+    font-family: "dashicons" !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    background: var(--afa-primary) !important;
+    color: #fff !important;
+    border-radius: 50% !important;
+    border: none !important;
+    font-size: 16px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.24) !important;
+}
+
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::before {
+    content: "\f343" !important;
+    background: #646970 !important;
+}
+
+.aura-accounts-form-card input[type="text"],
+.aura-accounts-form-card input[type="number"],
+.aura-accounts-form-card select {
+    width: 100%;
+    max-width: 100%;
+}
+
+.aura-budget-card {
+    margin-top: 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.aura-budget-card h2,
+.aura-budget-card h3 {
+    margin-top: 0;
+}
+
+.aura-card-head--budget {
+    margin-bottom: 18px;
+}
+
+.aura-budget-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--afa-primary-soft);
+    color: var(--afa-primary);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.aura-budget-overview {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.aura-budget-progress-panel {
+    background: var(--afa-soft);
+    border: 1px solid var(--afa-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+}
+
+.aura-budget-progress-panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: var(--afa-muted);
+    font-size: 13px;
+}
+
+.aura-budget-progress-track {
+    width: 100%;
+    height: 12px;
+    background: #e9edf3;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.aura-budget-progress-fill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #2271b1 0%, #36a2eb 100%);
+    border-radius: inherit;
+}
+
+.aura-budget-import-box {
+    background: var(--afa-soft);
+    border: 1px solid var(--afa-border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.aura-budget-import-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.aura-budget-import-summary {
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #50575e;
+}
+
+.aura-budget-mapping-wrap {
+    margin-bottom: 12px;
+}
+
+.aura-budget-mapping-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 8px 10px;
+}
+
+.aura-budget-mapping-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-budget-import-preview-wrap h4 {
+    margin: 8px 0;
+}
+
+.aura-budget-import-table-wrap {
+    overflow: auto;
+    max-height: 240px;
+    border: 1px solid var(--afa-border);
+    border-radius: 10px;
+    background: #fff;
+}
+
+#aura-budget-preview-table {
+    min-width: 820px;
+}
+
+.aura-budget-import-wizard-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-budget-import-validation {
+    margin-top: 10px;
+    background: #fff8e5;
+    border: 1px solid #e6d3a3;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.aura-budget-import-validation ul {
+    margin: 6px 0 0 18px;
+}
+
+.aura-budget-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.aura-budget-grid p,
+.aura-budget-month-card {
+    margin: 0;
+}
+
+.aura-budget-grid input,
+.aura-budget-grid select,
+.aura-budget-months-grid input {
+    width: 100%;
+}
+
+.aura-budget-months-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(110px, 1fr));
+    gap: 10px;
+}
+
+.aura-budget-month-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #fff;
+    border: 1px solid var(--afa-border);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.aura-budget-summary {
+    margin: 14px 0 10px;
+    font-size: 14px;
+}
+
+.aura-petty-cash-card {
+    margin-top: 20px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.aura-petty-cash-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.aura-petty-cash-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 14px;
+}
+
+.aura-petty-cash-form p {
+    margin: 0 0 10px;
+}
+
+.aura-petty-cash-form input,
+.aura-petty-cash-form select,
+.aura-petty-cash-form textarea {
+    width: 100%;
+}
+
+.aura-petty-cash-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.aura-petty-cash-table-wrap {
+    overflow: auto;
+}
+
+#aura-petty-cash-table {
+    min-width: 760px;
+}
+
+.aura-petty-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.aura-petty-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.aura-petty-status.is-open { background: rgba(34, 113, 177, 0.12); color: #2271b1; }
+.aura-petty-status.is-submitted { background: rgba(219, 166, 23, 0.14); color: #9a6700; }
+.aura-petty-status.is-approved { background: rgba(0, 163, 42, 0.12); color: #00a32a; }
+.aura-petty-status.is-closed { background: rgba(100, 105, 112, 0.14); color: #50575e; }
+.aura-petty-status.is-rejected { background: rgba(214, 54, 56, 0.14); color: #d63638; }
+
+.aura-petty-overdue-mark {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(214, 54, 56, 0.14);
+    color: #d63638;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.aura-petty-overdue-mark.is-evidence {
+    background: rgba(34, 113, 177, 0.12);
+    color: #2271b1;
+}
+
+body.aura-modal-open {
+    overflow: hidden;
+}
+
+.aura-finance-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 159000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.aura-finance-modal[style*="display: none"] {
+    display: none !important;
+}
+
+.aura-finance-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.52);
+    backdrop-filter: blur(6px);
+    animation: fadeInBackdrop .3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInBackdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUpIn {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aura-finance-modal__dialog {
+    position: relative;
+    width: min(760px, calc(100vw - 40px));
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    margin: auto;
+    background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.06),
+        0 4px 12px rgba(15, 23, 42, 0.12),
+        0 16px 48px rgba(15, 23, 42, 0.2);
+    padding: 24px;
+    animation: slideUpIn .4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.aura-finance-modal__dialog--medium {
+    width: min(720px, calc(100vw - 40px));
+}
+
+.aura-finance-modal__dialog--large {
+    width: min(1000px, calc(100vw - 40px));
+    max-height: calc(100vh - 80px);
+}
+
+.aura-finance-modal__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin: -24px -24px 20px;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: linear-gradient(to right, rgba(34, 113, 177, 0.03), transparent);
+}
+
+.aura-finance-modal__head h2,
+.aura-finance-modal__head p {
+    margin: 0;
+}
+
+.aura-finance-modal__head h2 {
+    color: #111827;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.aura-finance-modal__head p {
+    color: #646970;
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+.aura-finance-modal__head button {
+    flex-shrink: 0;
+    font-size: 24px;
+    line-height: 1;
+    padding: 0;
+    margin: -2px 0 0;
+    color: #646970;
+    transition: color .2s ease;
+}
+
+.aura-finance-modal__head button:hover {
+    color: #111827;
+}
+
+.aura-finance-modal__form {
+    display: block;
+    animation: fadeIn .5s ease-in .1s both;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.aura-modal-wizard {
+    display: block;
+}
+
+.aura-modal-wizard__steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.aura-modal-step {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #dcdcde;
+    background: #f6f7f7;
+    color: #50575e;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all .2s ease;
+    cursor: pointer;
+}
+
+.aura-modal-step:hover {
+    background: #ececec;
+}
+
+.aura-modal-step.is-active {
+    background: linear-gradient(135deg, rgba(34, 113, 177, 0.15) 0%, rgba(34, 113, 177, 0.08) 100%);
+    color: #2271b1;
+    border-color: #2271b1;
+    box-shadow: 0 2px 8px rgba(34, 113, 177, 0.15);
+}
+
+.aura-modal-wizard__panel {
+    display: none;
+}
+
+.aura-modal-wizard__panel.is-active {
+    display: block;
+}
+
+.aura-modal-wizard__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.aura-wizard-span-2 {
+    grid-column: 1 / -1;
+}
+
+.aura-finance-form-grid {
+    display: grid;
+    gap: 12px 14px;
+}
+
+.aura-finance-form-grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.aura-finance-modal__form p {
+    margin: 0 0 12px;
+}
+
+.aura-finance-modal__form input[type="text"],
+.aura-finance-modal__form input[type="number"],
+.aura-finance-modal__form input[type="date"],
+.aura-finance-modal__form select,
+.aura-finance-modal__form textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+.aura-petty-evidence-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 160000;
+}
+
+.aura-petty-evidence-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 20, 30, 0.45);
+    backdrop-filter: blur(3px);
+}
+
+.aura-petty-evidence-modal__dialog {
+    position: relative;
+    width: min(780px, calc(100vw - 24px));
+    max-height: calc(100vh - 40px);
+    overflow: auto;
+    margin: 20px auto;
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 10px;
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.26);
+    padding: 14px 16px;
+}
+
+.aura-petty-evidence-modal__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.aura-petty-evidence-modal__head h3 {
+    margin: 0;
+}
+
+.aura-petty-evidence-modal__content h4 {
+    margin: 10px 0 6px;
+}
+
+.aura-petty-evidence-files {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.aura-petty-evidence-links {
+    margin: 0;
+    padding: 10px;
+    border: 1px solid #dcdcde;
+    border-radius: 8px;
+    background: #f6f7f7;
+    white-space: pre-wrap;
+    font-size: 12px;
+}
+
+.aura-reimburse-card {
+    margin-top: 20px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.aura-reimburse-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.18);
+    color: #9a6700;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.aura-reimburse-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 14px;
+}
+
+.aura-reimburse-forms {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.aura-reimburse-form-box {
+    border: 1px solid #dcdcde;
+    border-radius: 10px;
+    padding: 12px;
+    background: #fbfcfe;
+}
+
+.aura-reimburse-form-box h3 {
+    margin: 0 0 10px;
+}
+
+.aura-reimburse-form-box p {
+    margin: 0 0 10px;
+}
+
+.aura-reimburse-form-box input,
+.aura-reimburse-form-box select,
+.aura-reimburse-form-box textarea {
+    width: 100%;
+}
+
+.aura-reimburse-table-wrap {
+    overflow: auto;
+}
+
+#aura-reimbursements-table {
+    min-width: 860px;
+}
+
+.aura-reimburse-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.aura-reimburse-status.is-pending { background: rgba(214, 54, 56, 0.14); color: #d63638; }
+.aura-reimburse-status.is-partial { background: rgba(219, 166, 23, 0.14); color: #9a6700; }
+.aura-reimburse-status.is-paid { background: rgba(0, 163, 42, 0.12); color: #00a32a; }
+.aura-reimburse-status.is-cancelled { background: rgba(100, 105, 112, 0.14); color: #50575e; }
+
+.aura-reimburse-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-finance-report-card {
+    margin-top: 20px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.aura-card-head--reports {
+    align-items: center;
+}
+
+.aura-report-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-report-actions input {
+    width: 110px;
+}
+
+.aura-report-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.aura-report-kpi {
+    border: 1px solid #dcdcde;
+    border-radius: 10px;
+    padding: 14px;
+    background: #fbfcfe;
+}
+
+.aura-report-kpi__label {
+    display: block;
+    color: #646970;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.aura-report-kpi strong {
+    font-size: 22px;
+    line-height: 1.1;
+}
+
+.aura-report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(320px, 1fr));
+    gap: 14px;
+}
+
+.aura-report-panel {
+    border: 1px solid #dcdcde;
+    border-radius: 10px;
+    padding: 14px;
+    background: #fff;
+}
+
+.aura-report-panel h3,
+.aura-report-panel h4 {
+    margin-top: 0;
+}
+
+.aura-report-panel--audit {
+    grid-column: 1 / -1;
+}
+
+.aura-report-table-wrap {
+    overflow: auto;
+}
+
+.aura-report-dual {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.aura-report-budget-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: #50575e;
+}
+
+.aura-report-audit-list {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.aura-report-audit-item {
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid #dcdcde;
+    background: #fbfcfe;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.aura-report-audit-item strong {
+    font-size: 22px;
+}
+
+.aura-report-audit-item.is-danger {
+    background: rgba(214, 54, 56, 0.08);
+    border-color: rgba(214, 54, 56, 0.25);
+}
+
+.aura-report-audit-item.is-warn {
+    background: rgba(219, 166, 23, 0.10);
+    border-color: rgba(219, 166, 23, 0.28);
+}
+
+.aura-report-audit-item.is-ok {
+    background: rgba(0, 163, 42, 0.08);
+    border-color: rgba(0, 163, 42, 0.20);
+}
+
+.aura-report-negative {
+    color: #d63638;
+    font-weight: 700;
+}
+
+.aura-report-positive {
+    color: #00a32a;
+    font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+    .aura-accounts-kpis,
+    .aura-budget-overview {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+
+    .aura-accounts-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-accounts-form-card {
+        position: static;
+    }
+
+    .aura-budget-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-budget-mapping-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-budget-months-grid {
+        grid-template-columns: repeat(3, minmax(110px, 1fr));
+    }
+
+    .aura-petty-cash-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-reimburse-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-report-kpis,
+    .aura-report-grid,
+    .aura-report-dual,
+    .aura-report-audit-list,
+    .aura-finance-form-grid--two {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-wizard-span-2 {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 782px) {
+    .aura-accounts-kpis,
+    .aura-budget-overview,
+    .aura-budget-months-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-finance-primary-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-accounts-hero,
+    .aura-card-head,
+    .aura-finance-modal__head,
+    .aura-budget-progress-panel__head,
+    .aura-dt-top,
+    .aura-dt-bottom {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .aura-accounts-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .aura-report-actions {
+        width: 100%;
+    }
+
+    .aura-finance-inline-actions,
+    .aura-section-actions,
+    .aura-budget-cta-box {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .aura-accounts-toolbar__search {
+        width: 100%;
+    }
+
+    .aura-accounts-filters {
+        justify-content: flex-start;
+    }
+
+    .aura-filter-select {
+        flex: 1 1 120px;
+    }
+}

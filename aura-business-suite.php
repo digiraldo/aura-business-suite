@@ -100,6 +100,7 @@ class Aura_Business_Suite {
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-settings.php';
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-user-dashboard.php'; // Fase 6, Item 6.2
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-user-ledger.php';     // Fase 6, Item 6.3
+        require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-accounts.php';        // Fase 0/1 Bancos y cuentas
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-usd-ledger.php';         // Caja Chica USD
         
         // Cargar WP_List_Table si estamos en admin
@@ -347,6 +348,9 @@ class Aura_Business_Suite {
 
         // Inicializar Libro Mayor por Usuario (Fase 6, Item 6.3)
         Aura_Financial_User_Ledger::init();
+
+        // Inicializar Bancos y Cuentas (Fase 0 + Fase 1)
+        Aura_Financial_Accounts::init();
 
         // Inicializar Caja Chica USD → MXN
         Aura_Financial_USD_Ledger::init();

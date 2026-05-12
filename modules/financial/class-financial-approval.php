@@ -99,6 +99,20 @@ class Aura_Financial_Approval {
         
         // Log en historial
         self::log_approval($transaction_id, 'approved', $approval_note);
+
+        if ( class_exists( 'Aura_Financial_Accounts' ) ) {
+            Aura_Financial_Accounts::sync_transaction_accounts(
+                $transaction_id,
+                $transaction['transaction_type'],
+                $transaction['amount'],
+                isset( $transaction['source_account_id'] ) ? (int) $transaction['source_account_id'] : 0,
+                isset( $transaction['destination_account_id'] ) ? (int) $transaction['destination_account_id'] : 0,
+                array(
+                    'currency' => 'COP',
+                    'notes' => $approval_note,
+                )
+            );
+        }
         
         // Enviar notificación al creador
         self::notify_creator($transaction_id, 'approved', $approval_note);
@@ -279,6 +293,19 @@ class Aura_Financial_Approval {
             if ($result !== false) {
                 $approved_count++;
                 self::log_approval($transaction_id, 'approved', $approval_note);
+                if ( class_exists( 'Aura_Financial_Accounts' ) ) {
+                    Aura_Financial_Accounts::sync_transaction_accounts(
+                        $transaction_id,
+                        $transaction['transaction_type'],
+                        $transaction['amount'],
+                        isset( $transaction['source_account_id'] ) ? (int) $transaction['source_account_id'] : 0,
+                        isset( $transaction['destination_account_id'] ) ? (int) $transaction['destination_account_id'] : 0,
+                        array(
+                            'currency' => 'COP',
+                            'notes' => $approval_note,
+                        )
+                    );
+                }
                 self::notify_creator($transaction_id, 'approved', $approval_note);
                 do_action('aura_finance_transaction_approved', $transaction_id, get_current_user_id(), $approval_note);
             }
