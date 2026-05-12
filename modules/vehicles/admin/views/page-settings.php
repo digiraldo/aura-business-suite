@@ -226,7 +226,7 @@ $fin_available    = class_exists( 'Aura_Vehicle_Financial_Bridge' )
                     <span class="dashicons dashicons-bell"></span>
                     <div>
                         <h2><?php esc_html_e( 'Notificaciones de Mantenimiento', 'aura-suite' ); ?></h2>
-                        <p><?php esc_html_e( 'Correos adicionales que recibirán alertas de mantenimiento (además de los usuarios con permiso <code>aura_vehicles_alerts</code>).', 'aura-suite' ); ?></p>
+                        <p><?php esc_html_e( 'Correos adicionales que recibirán alertas de mantenimiento (además de los usuarios con permiso <code>aura_vehicles_alerts</code>). Se incluirá automáticamente la información del próximo servicio estimado.', 'aura-suite' ); ?></p>
                     </div>
                 </div>
                 <div class="aura-veh-stcard">
@@ -243,6 +243,25 @@ $fin_available    = class_exists( 'Aura_Vehicle_Financial_Bridge' )
                             <p class="description"><?php esc_html_e( 'Uno o varios correos separados por coma o salto de línea.', 'aura-suite' ); ?></p>
                         </div>
                     </div>
+                </div>
+
+                <!-- Información sobre contenido de notificaciones -->
+                <div class="aura-veh-stcard" style="margin-top:16px;background:#f0f7ff;border-left:4px solid #2271b1;">
+                    <h3 class="aura-veh-stcard__title" style="color:#0a4a8c;margin-bottom:8px;">
+                        <span class="dashicons dashicons-info-outline" style="vertical-align:middle;margin-right:6px;"></span>
+                        <?php esc_html_e( 'Información en notificaciones', 'aura-suite' ); ?>
+                    </h3>
+                    <p class="description" style="margin:0;">
+                        <?php esc_html_e( 'Las notificaciones de mantenimiento incluyen automáticamente:', 'aura-suite' ); ?>
+                    </p>
+                    <ul style="margin:8px 0 0 20px;list-style:disc;">
+                        <li><?php esc_html_e( 'Información del vehículo (placa, marca, modelo)', 'aura-suite' ); ?></li>
+                        <li><?php esc_html_e( 'Tipo y subtipo de mantenimiento', 'aura-suite' ); ?></li>
+                        <li><?php esc_html_e( 'Odómetro actual (retorno)', 'aura-suite' ); ?></li>
+                        <li><?php esc_html_e( 'Próximo servicio estimado (Odómetro retorno + Intervalo km)', 'aura-suite' ); ?></li>
+                        <li><?php esc_html_e( 'Costo real del mantenimiento', 'aura-suite' ); ?></li>
+                        <li><?php esc_html_e( 'Responsable y área asignada', 'aura-suite' ); ?></li>
+                    </ul>
                 </div>
 
                 <!-- Prueba de alerta manual -->

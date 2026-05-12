@@ -1279,6 +1279,149 @@ body.admin-color-coffee   .adp-roadmap__badge--q1 { background: rgba(59,130,246,
 }
 .aura-perm-sticky-total strong { color: #111827; font-size: 15px; }
 
+/* === CBAC: Tabla de usuarios Aura + buscador superior === */
+.aura-user-picker__search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    padding: 8px 10px;
+    max-width: 560px;
+}
+.aura-user-picker__search-wrap .dashicons {
+    color: #6b7280;
+}
+.aura-user-picker__search {
+    border: 0 !important;
+    box-shadow: none !important;
+    outline: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+.aura-selected-user-card {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid #bfdbfe;
+    background: #f0f9ff;
+    border-radius: 12px;
+}
+.aura-selected-user-card--sticky {
+    position: sticky;
+    top: 42px;
+    z-index: 20;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+}
+.aura-selected-user-card--global {
+    margin-top: 10px;
+    margin-bottom: 12px;
+}
+.aura-selected-user-card__avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 2px solid #93c5fd;
+}
+.aura-selected-user-card__meta h3 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.2;
+}
+.aura-selected-user-card__meta p {
+    margin: 4px 0 0;
+    color: #4b5563;
+}
+.aura-selected-user-card__badges {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.aura-users-table-wrap {
+    margin-top: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: auto;
+}
+.aura-users-table {
+    border: 0;
+    margin: 0;
+}
+.aura-users-table-wrap .dataTables_wrapper,
+.aura-users-table-wrap .dt-container {
+    padding: 10px;
+}
+.aura-users-table-wrap .dataTables_filter,
+.aura-users-table-wrap .dt-search {
+    display: none;
+}
+.aura-users-table-wrap .dataTables_length,
+.aura-users-table-wrap .dt-length,
+.aura-users-table-wrap .dataTables_info,
+.aura-users-table-wrap .dt-info,
+.aura-users-table-wrap .dataTables_paginate,
+.aura-users-table-wrap .dt-paging {
+    font-size: 12px;
+}
+.aura-users-table-wrap .dataTables_paginate .paginate_button,
+.aura-users-table-wrap .dt-paging .dt-paging-button {
+    border-radius: 8px !important;
+}
+.aura-users-table thead th {
+    background: #f8fafc;
+}
+.aura-users-table tbody tr.is-selected {
+    background: #eff6ff;
+}
+.aura-users-table__identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.aura-users-table__identity img {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    object-fit: cover;
+}
+.aura-users-table__identity strong {
+    display: block;
+    line-height: 1.2;
+}
+.aura-users-table__identity span {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+}
+.aura-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.aura-count-badge--blue {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+.aura-count-badge--green {
+    background: #dcfce7;
+    color: #15803d;
+}
+
 /* Compat: mantener clases antiguas por si acaso */
 .aura-permissions-grid { display: flex; flex-direction: column; gap: 6px; }
 .aura-permission-module { border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 16px; background: #fff; }
@@ -1311,6 +1454,8 @@ body.admin-color-coffee   .adp-roadmap__badge--q1 { background: rgba(59,130,246,
     .aura-perm-global-controls { width: 100%; justify-content: flex-end; }
     .aura-perm-cap-grid { grid-template-columns: 1fr; }
     .aura-perm-sticky-save { left: 0; padding: 10px 14px; }
+    .aura-selected-user-card--sticky { top: 46px; }
+    .aura-selected-user-card { align-items: flex-start; }
 }
 
 /* === Comparativa === */

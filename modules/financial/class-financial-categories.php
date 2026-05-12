@@ -198,6 +198,7 @@ class Aura_Financial_Categories {
                     'icon' => $row->icon ?: 'dashicons-category',
                     'description' => $row->description ?: '',
                     'is_active' => (bool) $row->is_active,
+                    'integration_modules' => $row->integration_modules ? json_decode($row->integration_modules, true) : array(),
                     'display_order' => intval($row->display_order),
                     'transaction_count' => $this->get_transaction_count(intval($row->id)),
                 );
@@ -246,6 +247,7 @@ class Aura_Financial_Categories {
             'description' => $row->description ?: '',
             'is_active' => (bool) $row->is_active,
             'display_order' => intval($row->display_order),
+            'integration_modules' => $row->integration_modules ? json_decode($row->integration_modules, true) : array(),
         );
         
         wp_send_json_success(array('category' => $category));
@@ -266,13 +268,26 @@ class Aura_Financial_Categories {
         
         // Validar y sanitizar datos
         $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
+        $slug_input = isset($_POST['slug']) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '';
         $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'both';
-        $parent_id = isset($_POST['parent_id']) ? absint($_POST['parent_id']) : 0;
+        $parent_id_raw = isset($_POST['parent_id']) ? absint($_POST['parent_id']) : 0;
+        $parent_id = $parent_id_raw > 0 ? $parent_id_raw : null;
+        $parent_new_name = isset($_POST['parent_new_name']) ? sanitize_text_field( wp_unslash( $_POST['parent_new_name'] ) ) : '';
         $color = isset($_POST['color']) ? sanitize_hex_color($_POST['color']) : '#3498db';
         $icon = isset($_POST['icon']) ? sanitize_text_field($_POST['icon']) : 'dashicons-category';
         $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
         $is_active = isset($_POST['is_active']) && $_POST['is_active'] === 'true' ? 1 : 0;
         $display_order = isset($_POST['display_order']) ? absint($_POST['display_order']) : 0;
+        
+        // Procesar integraciones
+        $integration_modules = array();
+        if (isset($_POST['integration_modules'])) {
+            $modules_json = stripslashes($_POST['integration_modules']);
+            $integration_modules = json_decode($modules_json, true);
+            if (!is_array($integration_modules)) {
+                $integration_modules = array();
+            }
+        }
         
         // Validaciones
         if (empty($name)) {
@@ -282,13 +297,18 @@ class Aura_Financial_Categories {
         if (!in_array($type, array('income', 'expense', 'both'))) {
             wp_send_json_error(array('message' => __('Tipo de categoría inválido.', 'aura-suite')));
         }
+
+        // Crear categoría padre en línea (si no se seleccionó una existente)
+        if ( empty( $parent_id ) && ! empty( $parent_new_name ) ) {
+            $parent_id = $this->get_or_create_parent_category( $parent_new_name, $type );
+        }
         
         if (!$color) {
             $color = '#3498db';
         }
         
-        // Generar slug único
-        $slug = sanitize_title($name);
+        // Generar slug único (usa slug manual si viene informado)
+        $slug = ! empty( $slug_input ) ? $slug_input : sanitize_title($name);
         $original_slug = $slug;
         $counter = 1;
         
@@ -315,6 +335,7 @@ class Aura_Financial_Categories {
             'icon' => $icon,
             'description' => $description,
             'is_active' => $is_active,
+            'integration_modules' => !empty($integration_modules) ? wp_json_encode($integration_modules) : null,
             'display_order' => $display_order,
             'created_at' => current_time('mysql'),
             'updated_at' => current_time('mysql'),
@@ -368,13 +389,26 @@ class Aura_Financial_Categories {
         
         // Validar y sanitizar datos
         $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
+        $slug_input = isset($_POST['slug']) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : '';
         $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : 'both';
-        $parent_id = isset($_POST['parent_id']) ? absint($_POST['parent_id']) : 0;
+        $parent_id_raw = isset($_POST['parent_id']) ? absint($_POST['parent_id']) : 0;
+        $parent_id = $parent_id_raw > 0 ? $parent_id_raw : null;
+        $parent_new_name = isset($_POST['parent_new_name']) ? sanitize_text_field( wp_unslash( $_POST['parent_new_name'] ) ) : '';
         $color = isset($_POST['color']) ? sanitize_hex_color($_POST['color']) : '#3498db';
         $icon = isset($_POST['icon']) ? sanitize_text_field($_POST['icon']) : 'dashicons-category';
         $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
         $is_active = isset($_POST['is_active']) && $_POST['is_active'] === 'true' ? 1 : 0;
         $display_order = isset($_POST['display_order']) ? absint($_POST['display_order']) : 0;
+        
+        // Procesar integraciones
+        $integration_modules = array();
+        if (isset($_POST['integration_modules'])) {
+            $modules_json = stripslashes($_POST['integration_modules']);
+            $integration_modules = json_decode($modules_json, true);
+            if (!is_array($integration_modules)) {
+                $integration_modules = array();
+            }
+        }
         
         // Validaciones
         if (empty($name)) {
@@ -383,6 +417,11 @@ class Aura_Financial_Categories {
         
         if (!in_array($type, array('income', 'expense', 'both'))) {
             wp_send_json_error(array('message' => __('Tipo de categoría inválido.', 'aura-suite')));
+        }
+
+        // Crear/usar categoría padre escrita manualmente (si no se eligió una existente)
+        if ( empty( $parent_id ) && ! empty( $parent_new_name ) ) {
+            $parent_id = $this->get_or_create_parent_category( $parent_new_name, $type );
         }
         
         if (!$color) {
@@ -394,10 +433,15 @@ class Aura_Financial_Categories {
             wp_send_json_error(array('message' => __('La categoría padre seleccionada crearía una jerarquía circular.', 'aura-suite')));
         }
         
-        // Generar nuevo slug si el nombre cambió
+        // Resolver slug (manual o automático por nombre) manteniendo unicidad
         $slug = $existing->slug;
-        if ($name !== $existing->name) {
+        if ( ! empty( $slug_input ) ) {
+            $slug = $slug_input;
+        } elseif ($name !== $existing->name) {
             $slug = sanitize_title($name);
+        }
+
+        if ( $slug !== $existing->slug ) {
             $original_slug = $slug;
             $counter = 1;
             
@@ -421,6 +465,7 @@ class Aura_Financial_Categories {
             'icon' => $icon,
             'description' => $description,
             'is_active' => $is_active,
+            'integration_modules' => !empty($integration_modules) ? wp_json_encode($integration_modules) : null,
             'display_order' => $display_order,
             'updated_at' => current_time('mysql'),
         );
@@ -429,7 +474,7 @@ class Aura_Financial_Categories {
             $table,
             $data,
             array('id' => $category_id),
-            array('%s', '%s', '%s', '%d', '%s', '%s', '%s', '%d', '%d', '%s'),
+            array('%s', '%s', '%s', '%d', '%s', '%s', '%s', '%d', '%s', '%d', '%s'),
             array('%d')
         );
         
@@ -626,6 +671,61 @@ class Aura_Financial_Categories {
         }
         
         return false;
+    }
+
+    /**
+     * Obtiene o crea una categoría principal para usarla como padre.
+     */
+    private function get_or_create_parent_category( $parent_name, $child_type = 'both' ) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_categories';
+
+        $parent_name = sanitize_text_field( $parent_name );
+        if ( $parent_name === '' ) {
+            return null;
+        }
+
+        // Reusar si ya existe una categoría principal con ese nombre.
+        $existing_parent_id = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT id FROM {$table} WHERE name = %s AND (parent_id IS NULL OR parent_id = 0) LIMIT 1",
+                $parent_name
+            )
+        );
+
+        if ( ! empty( $existing_parent_id ) ) {
+            return (int) $existing_parent_id;
+        }
+
+        $base_slug = sanitize_title( $parent_name );
+        $slug = $base_slug;
+        $counter = 1;
+        while ( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE slug = %s", $slug ) ) > 0 ) {
+            $slug = $base_slug . '-' . $counter;
+            $counter++;
+        }
+
+        $parent_type = in_array( $child_type, array( 'income', 'expense', 'both' ), true ) ? $child_type : 'both';
+
+        $wpdb->insert(
+            $table,
+            array(
+                'name' => $parent_name,
+                'slug' => $slug,
+                'type' => $parent_type,
+                'parent_id' => null,
+                'color' => '#64748b',
+                'icon' => 'dashicons-category',
+                'description' => __('Categoría padre creada automáticamente desde el modal.', 'aura-suite'),
+                'is_active' => 1,
+                'display_order' => 0,
+                'created_at' => current_time( 'mysql' ),
+                'updated_at' => current_time( 'mysql' ),
+            ),
+            array( '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%d', '%d', '%s', '%s' )
+        );
+
+        return (int) $wpdb->insert_id;
     }
 }
 

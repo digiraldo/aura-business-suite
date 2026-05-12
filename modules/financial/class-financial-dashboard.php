@@ -39,7 +39,8 @@ class Aura_Financial_Dashboard {
             wp_die( __( 'No tienes permiso para acceder a esta página.', 'aura-suite' ) );
         }
 
-        $can_view_all = current_user_can( 'aura_finance_view_all' );
+        $can_view_all = current_user_can( 'aura_finance_view_all' ) || current_user_can( 'manage_options' );
+        $can_view_own = current_user_can( 'aura_finance_view_own' );
         $can_approve  = current_user_can( 'aura_finance_approve' );
         $tx_list_url      = admin_url( 'admin.php?page=aura-financial-transactions' );
         $pending_list_url = admin_url( 'admin.php?page=aura-financial-pending' );
@@ -80,19 +81,19 @@ class Aura_Financial_Dashboard {
             </div>
 
             <div class="aura-kpis-row">
-                <?php if ( $can_view_all ) : ?>
+                <?php if ( $can_view_all || $can_view_own ) : ?>
                 <div class="aura-kpi aura-kpi--income is-loading">
-                    <div class="aura-kpi__label"><span class="dashicons dashicons-arrow-up-alt"></span><?php esc_html_e( 'Total Ingresos', 'aura-suite' ); ?></div>
+                    <div class="aura-kpi__label"><span class="dashicons dashicons-arrow-up-alt"></span><?php echo $can_view_all ? esc_html__( 'Total Ingresos', 'aura-suite' ) : esc_html__( 'Mis Ingresos', 'aura-suite' ); ?></div>
                     <div class="aura-kpi__value">—</div>
                     <div class="aura-kpi__meta"><span class="aura-kpi__trend" style="display:none"></span></div>
                 </div>
                 <div class="aura-kpi aura-kpi--expense is-loading">
-                    <div class="aura-kpi__label"><span class="dashicons dashicons-arrow-down-alt"></span><?php esc_html_e( 'Total Egresos', 'aura-suite' ); ?></div>
+                    <div class="aura-kpi__label"><span class="dashicons dashicons-arrow-down-alt"></span><?php echo $can_view_all ? esc_html__( 'Total Egresos', 'aura-suite' ) : esc_html__( 'Mis Egresos', 'aura-suite' ); ?></div>
                     <div class="aura-kpi__value">—</div>
                     <div class="aura-kpi__meta"><span class="aura-kpi__trend" style="display:none"></span></div>
                 </div>
                 <div class="aura-kpi aura-kpi--balance is-loading">
-                    <div class="aura-kpi__label"><span class="dashicons dashicons-chart-line"></span><?php esc_html_e( 'Balance Neto', 'aura-suite' ); ?></div>
+                    <div class="aura-kpi__label"><span class="dashicons dashicons-chart-line"></span><?php echo $can_view_all ? esc_html__( 'Balance Neto', 'aura-suite' ) : esc_html__( 'Mi Balance', 'aura-suite' ); ?></div>
                     <div class="aura-kpi__value">—</div>
                     <div class="aura-kpi__meta"><span class="aura-kpi__trend" style="display:none"></span></div>
                 </div>
@@ -108,7 +109,7 @@ class Aura_Financial_Dashboard {
                 <?php endif; ?>
             </div>
 
-            <?php if ( $can_view_all ) : ?>
+            <?php if ( $can_view_all || $can_view_own ) : ?>
             <div class="aura-charts-row">
                 <div class="aura-chart-card">
                     <div class="aura-chart-card__header">
@@ -239,7 +240,10 @@ class Aura_Financial_Dashboard {
         $table = $wpdb->prefix . 'aura_finance_transactions';
         $kpis  = array();
 
-        if ( current_user_can( 'aura_finance_view_all' ) ) {
+                $can_view_all = current_user_can( 'aura_finance_view_all' ) || current_user_can( 'manage_options' );
+                $can_view_own = current_user_can( 'aura_finance_view_own' );
+
+                if ( $can_view_all ) {
             $rows = $wpdb->get_results( $wpdb->prepare(
                 "SELECT transaction_type, SUM(amount) AS total
                    FROM {$table}
@@ -276,7 +280,47 @@ class Aura_Financial_Dashboard {
             $kpis['income']  = array( 'raw' => $income,  'formatted' => self::fmt_money( $income ),  'pct_change' => self::pct_change( $income,  $prev_income ) );
             $kpis['expense'] = array( 'raw' => $expense, 'formatted' => self::fmt_money( $expense ), 'pct_change' => self::pct_change( $expense, $prev_expense ) );
             $kpis['balance'] = array( 'raw' => $income - $expense, 'formatted' => self::fmt_money( $income - $expense ), 'pct_change' => null );
-        }
+                } elseif ( $can_view_own ) {
+                        $uid  = get_current_user_id();
+                        $rows = $wpdb->get_results( $wpdb->prepare(
+                                "SELECT transaction_type, SUM(amount) AS total
+                                     FROM {$table}
+                                    WHERE transaction_date BETWEEN %s AND %s
+                                        AND status = 'approved'
+                                        AND deleted_at IS NULL
+                                        AND created_by = %d
+                                    GROUP BY transaction_type",
+                                $start, $end, $uid
+                        ), ARRAY_A );
+
+                        $income = $expense = 0.0;
+                        foreach ( $rows as $r ) {
+                                if ( $r['transaction_type'] === 'income' )  $income  = (float) $r['total'];
+                                if ( $r['transaction_type'] === 'expense' ) $expense = (float) $r['total'];
+                        }
+
+                        $prev_income = $prev_expense = null;
+                        if ( $prev_start && $prev_end ) {
+                                $prev = $wpdb->get_results( $wpdb->prepare(
+                                        "SELECT transaction_type, SUM(amount) AS total
+                                             FROM {$table}
+                                            WHERE transaction_date BETWEEN %s AND %s
+                                                AND status = 'approved'
+                                                AND deleted_at IS NULL
+                                                AND created_by = %d
+                                            GROUP BY transaction_type",
+                                        $prev_start, $prev_end, $uid
+                                ), ARRAY_A );
+                                foreach ( $prev as $r ) {
+                                        if ( $r['transaction_type'] === 'income' )  $prev_income  = (float) $r['total'];
+                                        if ( $r['transaction_type'] === 'expense' ) $prev_expense = (float) $r['total'];
+                                }
+                        }
+
+                        $kpis['income']  = array( 'raw' => $income,  'formatted' => self::fmt_money( $income ),  'pct_change' => self::pct_change( $income,  $prev_income ) );
+                        $kpis['expense'] = array( 'raw' => $expense, 'formatted' => self::fmt_money( $expense ), 'pct_change' => self::pct_change( $expense, $prev_expense ) );
+                        $kpis['balance'] = array( 'raw' => $income - $expense, 'formatted' => self::fmt_money( $income - $expense ), 'pct_change' => null );
+                }
 
         if ( current_user_can( 'aura_finance_approve' ) ) {
             $pending_count  = (int)   $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status='pending' AND deleted_at IS NULL" );
@@ -300,15 +344,18 @@ class Aura_Financial_Dashboard {
         elseif ( $days <= 92 )  { $date_fmt = '%Y-%u'; }
         else                    { $date_fmt = '%Y-%m'; }
 
-        $rows = $wpdb->get_results( $wpdb->prepare(
-            "SELECT DATE_FORMAT(transaction_date, %s) AS period, transaction_type, SUM(amount) AS total
-               FROM {$table}
-              WHERE transaction_date BETWEEN %s AND %s
-                AND status = 'approved' AND deleted_at IS NULL
-              GROUP BY period, transaction_type
-              ORDER BY period",
-            $date_fmt, $start, $end
-        ), ARRAY_A );
+                $can_view_all = current_user_can( 'aura_finance_view_all' ) || current_user_can( 'manage_options' );
+                $user_filter  = $can_view_all ? '' : $wpdb->prepare( ' AND created_by = %d', get_current_user_id() );
+
+                $rows = $wpdb->get_results( $wpdb->prepare(
+                        "SELECT DATE_FORMAT(transaction_date, %s) AS period, transaction_type, SUM(amount) AS total
+                             FROM {$table}
+                            WHERE transaction_date BETWEEN %s AND %s
+                                AND status = 'approved' AND deleted_at IS NULL{$user_filter}
+                            GROUP BY period, transaction_type
+                            ORDER BY period",
+                        $date_fmt, $start, $end
+                ), ARRAY_A );
 
         $grouped = array();
         foreach ( $rows as $r ) {
@@ -355,12 +402,12 @@ class Aura_Financial_Dashboard {
 
         if ( $prev_start && $prev_end ) {
             $prev_rows = $wpdb->get_results( $wpdb->prepare(
-                "SELECT DATE_FORMAT(transaction_date, %s) AS period, transaction_type, SUM(amount) AS total
-                   FROM {$table}
-                  WHERE transaction_date BETWEEN %s AND %s
-                    AND status = 'approved' AND deleted_at IS NULL
-                  GROUP BY period, transaction_type ORDER BY period",
-                $date_fmt, $prev_start, $prev_end
+                                "SELECT DATE_FORMAT(transaction_date, %s) AS period, transaction_type, SUM(amount) AS total
+                                     FROM {$table}
+                                    WHERE transaction_date BETWEEN %s AND %s
+                                        AND status = 'approved' AND deleted_at IS NULL{$user_filter}
+                                    GROUP BY period, transaction_type ORDER BY period",
+                                $date_fmt, $prev_start, $prev_end
             ), ARRAY_A );
             $pg = array();
             foreach ( $prev_rows as $r ) {
@@ -380,15 +427,18 @@ class Aura_Financial_Dashboard {
         $table     = $wpdb->prefix . 'aura_finance_transactions';
         $cat_table = $wpdb->prefix . 'aura_finance_categories';
 
-        $rows = $wpdb->get_results( $wpdb->prepare(
-            "SELECT t.category_id, c.name AS cat_name, c.color AS cat_color, SUM(t.amount) AS total
-               FROM {$table} t LEFT JOIN {$cat_table} c ON c.id = t.category_id
-              WHERE t.transaction_type = 'expense'
-                AND t.transaction_date BETWEEN %s AND %s
-                AND t.status = 'approved' AND t.deleted_at IS NULL
-              GROUP BY t.category_id ORDER BY total DESC LIMIT 8",
-            $start, $end
-        ), ARRAY_A );
+                $can_view_all   = current_user_can( 'aura_finance_view_all' ) || current_user_can( 'manage_options' );
+                $donut_user_filter = $can_view_all ? '' : $wpdb->prepare( ' AND t.created_by = %d', get_current_user_id() );
+
+                $rows = $wpdb->get_results( $wpdb->prepare(
+                        "SELECT t.category_id, c.name AS cat_name, c.color AS cat_color, SUM(t.amount) AS total
+                             FROM {$table} t LEFT JOIN {$cat_table} c ON c.id = t.category_id
+                            WHERE t.transaction_type = 'expense'
+                                AND t.transaction_date BETWEEN %s AND %s
+                                AND t.status = 'approved' AND t.deleted_at IS NULL{$donut_user_filter}
+                            GROUP BY t.category_id ORDER BY total DESC LIMIT 8",
+                        $start, $end
+                ), ARRAY_A );
 
         if ( ! $rows ) return array( 'labels' => array(), 'amounts' => array(), 'colors' => array(), 'cat_ids' => array() );
 

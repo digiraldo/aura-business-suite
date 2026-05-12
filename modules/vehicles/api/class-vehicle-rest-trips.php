@@ -340,10 +340,25 @@ class Aura_Vehicle_Rest_Trips {
             || current_user_can( 'aura_vehicles_km_update' );
     }
 
-    public static function can_delete(): bool {
+    public static function can_delete( WP_REST_Request $request ): bool {
         if ( ! is_user_logged_in() ) return false;
-        return current_user_can( 'aura_vehicles_delete' )
-            || current_user_can( 'manage_options' );
+
+        if ( current_user_can( 'aura_vehicles_exits_delete_all' )
+            || current_user_can( 'aura_vehicles_delete' )
+            || current_user_can( 'manage_options' ) ) {
+            return true;
+        }
+
+        if ( ! current_user_can( 'aura_vehicles_exits_delete_own' ) ) {
+            return false;
+        }
+
+        $trip = Aura_Vehicle_Trip_Manager::get( absint( $request->get_param( 'id' ) ) );
+        if ( ! $trip ) {
+            return false;
+        }
+
+        return (int) ( $trip['created_by'] ?? 0 ) === (int) get_current_user_id();
     }
 
     // ─────────────────────────────────────────────────────────────

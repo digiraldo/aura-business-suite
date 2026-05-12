@@ -20,7 +20,10 @@ if ( ! current_user_can( 'aura_vehicles_exits_create' )
 $can_create   = current_user_can( 'aura_vehicles_exits_create' )  || current_user_can( 'manage_options' );
 $can_edit_all = current_user_can( 'aura_vehicles_exits_edit_all' ) || current_user_can( 'manage_options' );
 $can_edit_own = current_user_can( 'aura_vehicles_exits_edit_own' );
-$can_delete   = current_user_can( 'aura_vehicles_delete' )         || current_user_can( 'manage_options' );
+$can_delete_all = current_user_can( 'aura_vehicles_exits_delete_all' )
+    || current_user_can( 'aura_vehicles_delete' )
+    || current_user_can( 'manage_options' );
+$can_delete_own = current_user_can( 'aura_vehicles_exits_delete_own' );
 
 // Áreas para filtro
 global $wpdb;
@@ -86,22 +89,24 @@ $areas = $wpdb->get_results(
     </div>
 
     <!-- ── Tabla ──────────────────────────────────────────── -->
-    <table id="aura-trips-table" class="wp-list-table widefat striped">
-        <thead>
-            <tr>
-                <th><?php esc_html_e( 'ID', 'aura-suite' ); ?></th>
-                <th><?php esc_html_e( 'Vehículo', 'aura-suite' ); ?></th>
-                <th><?php esc_html_e( 'Tipo', 'aura-suite' ); ?></th>
-                <th><?php esc_html_e( 'Estado', 'aura-suite' ); ?></th>
-                <th><?php esc_html_e( 'Responsable / Cliente', 'aura-suite' ); ?></th>
-                <th><?php esc_html_e( 'Salida', 'aura-suite' ); ?></th>
-                <th><?php esc_html_e( 'Retorno', 'aura-suite' ); ?></th>
-                <th><?php esc_html_e( 'KM', 'aura-suite' ); ?></th>
-                <th><?php esc_html_e( 'Acciones', 'aura-suite' ); ?></th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <div class="aura-trips-table-wrapper">
+        <table id="aura-trips-table" class="wp-list-table widefat striped aura-trips-table-structured">
+            <thead>
+                <tr>
+                    <th><?php esc_html_e( 'Vehículo', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Tipo', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Responsable / Cliente', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Destino', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Salida', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Retorno', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'KM', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Estado', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Acciones', 'aura-suite' ); ?></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
 <?php
 // ── Assets (DataTables core + Responsive) ───────────────────────
@@ -129,7 +134,8 @@ $trips_cfg = wp_json_encode( array(
     'canCreate'  => $can_create,
     'canEditAll' => $can_edit_all,
     'canEditOwn' => $can_edit_own,
-    'canDelete'  => $can_delete,
+    'canDeleteAll' => $can_delete_all,
+    'canDeleteOwn' => $can_delete_own,
     'txt'        => array(
         'loading'          => __( 'Cargando…', 'aura-suite' ),
         'no_results'       => __( 'No se encontraron salidas.', 'aura-suite' ),
@@ -218,8 +224,27 @@ $trips_cfg = wp_json_encode( array(
                     <input type="number" id="trip-departure_odometer" name="departure_odometer" min="0" value="0">
                 </div>
                 <div class="aura-veh-form-col">
-                    <label for="trip-departure_fuel"><?php esc_html_e( 'Combustible salida (%)', 'aura-suite' ); ?></label>
-                    <input type="number" id="trip-departure_fuel" name="departure_fuel" min="0" max="100" value="100">
+                    <label for="trip-departure_fuel"><strong><?php esc_html_e( 'Nivel de combustible salida', 'aura-suite' ); ?></strong></label>
+                    <select id="trip-departure_fuel" name="departure_fuel">
+                        <option value="0"><?php esc_html_e( 'Vacío', 'aura-suite' ); ?></option>
+                        <option value="25"><?php esc_html_e( '1/4', 'aura-suite' ); ?></option>
+                        <option value="50"><?php esc_html_e( '1/2', 'aura-suite' ); ?></option>
+                        <option value="75"><?php esc_html_e( '3/4', 'aura-suite' ); ?></option>
+                        <option value="100" selected><?php esc_html_e( 'Lleno', 'aura-suite' ); ?></option>
+                    </select>
+                    <div class="aura-trips-fuel-gauge" id="trip-fuel-gauge" data-value="100" aria-hidden="true">
+                        <div class="aura-trips-fuel-gauge__head">
+                            <span class="aura-trips-fuel-gauge__label"><?php esc_html_e( 'Indicador', 'aura-suite' ); ?></span>
+                            <span class="aura-trips-fuel-gauge__state" id="trip-fuel-gauge-state"><?php esc_html_e( 'Lleno', 'aura-suite' ); ?></span>
+                        </div>
+                        <div class="aura-trips-fuel-gauge__track" role="img" aria-label="Indicador de combustible">
+                            <span class="aura-trips-fuel-gauge__mark aura-trips-fuel-gauge__mark--e">E</span>
+                            <div class="aura-trips-fuel-gauge__bar">
+                                <span class="aura-trips-fuel-gauge__fill" id="trip-fuel-gauge-fill" style="width:100%;"></span>
+                            </div>
+                            <span class="aura-trips-fuel-gauge__mark aura-trips-fuel-gauge__mark--f">F</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             </div><!-- /section datos salida -->
@@ -424,8 +449,28 @@ $trips_cfg = wp_json_encode( array(
                     <input type="number" id="checkin-return_odometer" name="return_odometer" min="0" value="0">
                 </div>
                 <div class="aura-veh-form-col">
-                    <label for="checkin-return_fuel"><?php esc_html_e( 'Combustible retorno (%)', 'aura-suite' ); ?></label>
-                    <input type="number" id="checkin-return_fuel" name="return_fuel" min="0" max="100">
+                    <label for="checkin-return_fuel"><strong><?php esc_html_e( 'Nivel de combustible retorno', 'aura-suite' ); ?></strong></label>
+                    <select id="checkin-return_fuel" name="return_fuel">
+                        <option value=""><?php esc_html_e( '— Seleccionar —', 'aura-suite' ); ?></option>
+                        <option value="0"><?php esc_html_e( 'Vacío', 'aura-suite' ); ?></option>
+                        <option value="25"><?php esc_html_e( '1/4', 'aura-suite' ); ?></option>
+                        <option value="50"><?php esc_html_e( '1/2', 'aura-suite' ); ?></option>
+                        <option value="75"><?php esc_html_e( '3/4', 'aura-suite' ); ?></option>
+                        <option value="100"><?php esc_html_e( 'Lleno', 'aura-suite' ); ?></option>
+                    </select>
+                    <div class="aura-trips-fuel-gauge" id="checkin-fuel-gauge" data-value="0" aria-hidden="true">
+                        <div class="aura-trips-fuel-gauge__head">
+                            <span class="aura-trips-fuel-gauge__label"><?php esc_html_e( 'Indicador', 'aura-suite' ); ?></span>
+                            <span class="aura-trips-fuel-gauge__state" id="checkin-fuel-gauge-state"><?php esc_html_e( '—', 'aura-suite' ); ?></span>
+                        </div>
+                        <div class="aura-trips-fuel-gauge__track" role="img" aria-label="Indicador de combustible">
+                            <span class="aura-trips-fuel-gauge__mark aura-trips-fuel-gauge__mark--e">E</span>
+                            <div class="aura-trips-fuel-gauge__bar">
+                                <span class="aura-trips-fuel-gauge__fill" id="checkin-fuel-gauge-fill" style="width:0%;"></span>
+                            </div>
+                            <span class="aura-trips-fuel-gauge__mark aura-trips-fuel-gauge__mark--f">F</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -458,9 +503,41 @@ $trips_cfg = wp_json_encode( array(
                         <input type="number" id="checkin-maint_actual_cost" name="maint_actual_cost" min="0" step="0.01" value="0.00" class="small-text">
                     </div>
                     <div class="aura-veh-form-col">
-                        <label for="checkin-next_service_interval_km"><?php esc_html_e( 'Próximo servicio por kilometraje', 'aura-suite' ); ?></label>
+                        <div style="display:flex;align-items:baseline;gap:6px;">
+                            <label for="checkin-next_service_interval_km" style="margin:0;"><strong><?php esc_html_e( 'Próximo servicio por km', 'aura-suite' ); ?></strong></label>
+                            <button type="button" class="aura-tooltip-trigger" style="margin:0;" aria-label="Ayuda">?
+                                <span class="aura-tooltip"><?php esc_html_e( 'Indique cada cuántos km se debe realizar el próximo servicio. Se suma al odómetro de retorno ingresado arriba.', 'aura-suite' ); ?></span>
+                            </button>
+                        </div>
                         <input type="number" id="checkin-next_service_interval_km" name="next_service_interval_km" min="0" step="1" value="0" class="small-text">
-                        <p class="description"><?php esc_html_e( 'Indique cada cuántos km se debe realizar el próximo servicio. Se suma al odómetro de retorno ingresado arriba.', 'aura-suite' ); ?></p>
+                        <!-- Cálculo dinámico de próximo servicio -->
+                        <!-- Cálculo dinámico de próximo servicio con tooltip mejorado -->
+                        <div class="aura-checkin-next-service-calc" id="checkin-next-service-calc" style="display:none;">
+                            <div class="aura-checkin-next-service-calc__row">
+                                <div class="aura-checkin-next-service-calc__item">
+                                    <label><?php esc_html_e( 'Odómetro retorno', 'aura-suite' ); ?></label>
+                                    <span id="calc-odometer-value" class="aura-calc-value">—</span>
+                                </div>
+                                <div class="aura-checkin-next-service-calc__op">+</div>
+                                <div class="aura-checkin-next-service-calc__item">
+                                    <label><?php esc_html_e( 'Intervalo km', 'aura-suite' ); ?></label>
+                                    <span id="calc-interval-value" class="aura-calc-value">—</span>
+                                </div>
+                                <div class="aura-checkin-next-service-calc__op">=</div>
+                                <div class="aura-checkin-next-service-calc__result">
+                                    <div class="aura-checkin-next-service-calc__result-label"><?php esc_html_e( 'PRÓXIMO', 'aura-suite' ); ?></div>
+                                    <span id="calc-result-value" class="aura-calc-result">—</span>
+                                </div>
+                            </div>
+                            <!-- Tooltip de información -->
+                            <div class="aura-checkin-next-service-tooltip" title="<?php esc_attr_e( 'Próximo servicio estimado basado en odómetro', 'aura-suite' ); ?>">
+                                <span class="dashicons dashicons-info-outline"></span>
+                                <div class="aura-tooltip-content">
+                                    <strong><?php esc_html_e( 'Próximo servicio', 'aura-suite' ); ?></strong><br>
+                                    <span id="tooltip-next-km">—</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="aura-veh-form-col" style="flex:2 1 300px;">
                         <label for="checkin-maint_completion_notes"><?php esc_html_e( 'Notas de finalización', 'aura-suite' ); ?></label>

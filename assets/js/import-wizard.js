@@ -437,10 +437,13 @@
                 if (log.status === 'rolled_back') {
                     rollbackBtn = '—';
                 } else {
-                    // Verificar si aún está dentro de las 24 horas
-                    var importDate = new Date(log.created_at.replace(' ', 'T') + 'Z');
+                    // Verificar si aún está dentro de 1 mes
+                    var importDate = new Date(log.created_at.replace(' ', 'T'));
+                    if (isNaN(importDate.getTime())) {
+                        importDate = new Date(log.created_at);
+                    }
                     var ageMs = Date.now() - importDate.getTime();
-                    if (ageMs <= 86400000) {
+                    if (ageMs <= 30 * 24 * 60 * 60 * 1000) {
                         rollbackBtn = '<button class="button-link aura-hist-rollback" data-batch="' + escHtml(log.batch_id) + '">' + auraImport.txt.undo + '</button>';
                     } else {
                         rollbackBtn = '<span class="description aura-expired-label">' + auraImport.txt.rollback_expired + '</span>';

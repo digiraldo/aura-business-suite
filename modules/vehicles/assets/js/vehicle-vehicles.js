@@ -134,6 +134,7 @@
     function renderActions( row ) {
         var html  = '<div class="aura-veh-actions">';
         var id    = row.id;
+        var qrIcon = CFG.qrIconUrl ? '<span class="aura-veh-qr-icon" aria-hidden="true" style="--qr-icon-url:url(' + escHtml( CFG.qrIconUrl ) + ')"></span>' : '<span class="dashicons dashicons-share"></span>';
 
         html += '<button class="button button-small aura-veh-action aura-veh-action--view" data-action="view" data-id="' + id + '" title="Ver detalle"><span class="dashicons dashicons-visibility"></span></button> ';
 
@@ -155,7 +156,7 @@
 
         // Botón QR (siempre visible para quienes pueden editar)
         if ( CFG.canEdit ) {
-            html += '<button class="button button-small aura-veh-action aura-veh-action--qr" data-action="qr" data-id="' + id + '" data-plate="' + escHtml( row.plate ) + '" data-name="' + escHtml( row.brand + ' ' + row.model ) + '" title="Código QR"><span class="dashicons dashicons-share"></span></button> ';
+            html += '<button class="button button-small aura-veh-action aura-veh-action--qr" data-action="qr" data-id="' + id + '" data-plate="' + escHtml( row.plate ) + '" data-name="' + escHtml( row.brand + ' ' + row.model ) + '" title="Código QR">' + qrIcon + '</button> ';
         }
 
         if ( CFG.canDelete ) {
@@ -331,9 +332,129 @@
                 + '<div class="aura-veh-view-card aura-veh-view-notes">'
                 + '  <h4>Notas</h4>'
                 + '  <p>' + escHtml( v.notes || 'Sin observaciones registradas.' ) + '</p>'
+                + '</div>'
+                + '<div id="aura-veh-view-trips" class="aura-veh-view-card">'
+                + '  <h4>Historial de Salidas</h4>'
+                + '  <div id="aura-veh-trips-loading" style="text-align:center;padding:16px;"><span class="spinner is-active"></span></div>'
+                + '  <div id="aura-veh-trips-list"></div>'
                 + '</div>';
 
             $body.html( html );
+
+            // Cargar historial de salidas
+            api( CFG.apiBase + 'vehicles/trips?vehicle_id=' + vehicleId + '&per_page=5&sort_by=checkout_date&sort_dir=DESC', 'GET' ).done( function ( tripsData ) {
+                var $tripsLoading = $( '#aura-veh-trips-loading' );
+                var $tripsList = $( '#aura-veh-trips-list' );
+                $tripsLoading.hide();
+
+                var trips = tripsData.data || [];
+                if ( ! trips || trips.length === 0 ) {
+                    $tripsList.html( '<p style="color:#6b7280;text-align:center;padding:12px;">Sin salidas registradas</p>' );
+                    return;
+                }
+
+                // Mapeo de estados y tipos de viajes
+                var tripStatusLabels = {
+                    'active': 'Activa',
+                    'returned': 'Retornada',
+                    'cancelled': 'Cancelada'
+                };
+                var tripTypeLabels = {
+                    'rental': 'Renta',
+                    'errand': 'Encargo',
+                    'maintenance': 'Mantenimiento',
+                    'other': 'Otro'
+                };
+                var maintenanceSubtypeLabels = {
+                    'preventive': 'Preventivo',
+                    'corrective': 'Correctivo',
+                    'inspection': 'Inspección'
+                };
+
+                var tripsHtml = '<table class="aura-veh-view-trips-table">'
+                    + '<thead>'
+                    + '<tr>'
+                    + '<th>Fecha</th>'
+                    + '<th>Tipo</th>'
+                    + '<th>Responsable</th>'
+                    + '<th>Destino</th>'
+                    + '<th>KM</th>'
+                    + '<th>Estado</th>'
+                    + '</tr>'
+                    + '</thead>'
+                    + '<tbody>';
+
+                $.each( trips, function ( idx, trip ) {
+                    var tripType = trip.trip_type || 'other';
+                    var tripStatus = trip.trip_status || 'active';
+                    var checkoutDate = trip.checkout_date ? new Date( trip.checkout_date ).toLocaleDateString() : 'N/D';
+                    var responsableName = '';
+
+                    // Determinar responsable según tipo
+                    if ( tripType === 'rental' && trip.client_name ) {
+                        responsableName = trip.client_name;
+                    } else if ( trip.assigned_to_name ) {
+                        responsableName = trip.assigned_to_name;
+                    } else if ( trip.responsible_name ) {
+                        responsableName = trip.responsible_name;
+                    } else {
+                        responsableName = 'N/D';
+                    }
+
+                    var destination = trip.destination || '—';
+                    var km = Number( trip.kilometers || 0 ).toLocaleString();
+                    var tripTypeLabel = tripTypeLabels[ tripType ] || tripType;
+                    var tripSubtype = trip.subtype;
+                    var tripStatusLabel = tripStatusLabels[ tripStatus ] || tripStatus;
+
+                    // Crear badges
+                    var typeBadgeClass = 'aura-badge-' + tripType;
+                    if ( tripType === 'maintenance' ) {
+                        typeBadgeClass = 'aura-badge-maintenance';
+                    } else if ( tripType === 'rental' ) {
+                        typeBadgeClass = 'aura-badge-rental';
+                    } else if ( tripType === 'errand' ) {
+                        typeBadgeClass = 'aura-badge-rental';
+                    }
+
+                    var statusBadgeClass = 'aura-badge-status-' + tripStatus;
+                    var subtypeBadgeClass = '';
+                    var subtypeLabel = '';
+
+                    if ( tripType === 'maintenance' && tripSubtype ) {
+                        if ( tripSubtype === 'preventive' ) {
+                            subtypeBadgeClass = 'aura-badge-preventive';
+                            subtypeLabel = maintenanceSubtypeLabels[ 'preventive' ] || 'Preventivo';
+                        } else if ( tripSubtype === 'corrective' ) {
+                            subtypeBadgeClass = 'aura-badge-corrective';
+                            subtypeLabel = maintenanceSubtypeLabels[ 'corrective' ] || 'Correctivo';
+                        } else if ( tripSubtype === 'inspection' ) {
+                            subtypeBadgeClass = 'aura-badge-inspection';
+                            subtypeLabel = maintenanceSubtypeLabels[ 'inspection' ] || 'Inspección';
+                        }
+                    }
+
+                    tripsHtml += '<tr>'
+                        + '<td><small>' + escHtml( checkoutDate ) + '</small></td>'
+                        + '<td>'
+                        + '<span class="aura-badge ' + typeBadgeClass + '">' + escHtml( tripTypeLabel ) + '</span>'
+                        + ( subtypeLabel ? '<br><span class="aura-badge ' + subtypeBadgeClass + '" style="font-size:10px;margin-top:4px;">' + escHtml( subtypeLabel ) + '</span>' : '' )
+                        + '</td>'
+                        + '<td><small>' + escHtml( responsableName ) + '</small></td>'
+                        + '<td><small>' + escHtml( destination ) + '</small></td>'
+                        + '<td><small>' + escHtml( km ) + ' km</small></td>'
+                        + '<td><span class="aura-badge aura-badge-status-' + tripStatus + '">' + escHtml( tripStatusLabel ) + '</span></td>'
+                        + '</tr>';
+                } );
+
+                tripsHtml += '</tbody></table>';
+                $tripsList.html( tripsHtml );
+            } ).fail( function () {
+                var $tripsLoading = $( '#aura-veh-trips-loading' );
+                $tripsLoading.hide();
+                $( '#aura-veh-trips-list' ).html( '<p style="color:#d32f2f;text-align:center;padding:12px;">Error al cargar historial de salidas</p>' );
+            } );
+
         } ).fail( function ( xhr ) {
             var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : TXT.error;
             $body.html( '<div class="notice notice-error" style="margin:0;"><p>' + escHtml( msg ) + '</p></div>' );
@@ -1168,24 +1289,231 @@
         }
     } );
 
-    // Imprimir QR
+    // Imprimir QR — etiqueta lista para recortar y pegar/colgar en tablero
     $( document ).on( 'click', '#aura-veh-qr-print', function () {
         var $img = $( '#aura-veh-qr-canvas img' ).first();
         if ( ! $img.length ) { return; }
+
         var vehicleName = $( '#aura-veh-qr-vehicle-name' ).text();
-        var w = window.open( '', '_blank', 'width=400,height=500' );
-        w.document.write(
-            '<!DOCTYPE html><html><head><title>QR Vehículo</title><style>'
-            + 'body{font-family:sans-serif;text-align:center;padding:20px;}'
-            + 'h2{font-size:16px;margin:0 0 12px;}'
-            + 'img{display:block;margin:0 auto;border:1px solid #ddd;padding:10px;}'
-            + 'p{font-size:11px;word-break:break-all;color:#555;margin-top:10px;}'
-            + '</style></head><body>'
-            + '<h2>' + vehicleName + '</h2>'
-            + '<img src="' + $img.attr( 'src' ) + '" width="220" height="220">'
-            + '<p>' + _qrUrl + '</p>'
-            + '<script>window.onload=function(){window.print();window.close();}<\/script>'
-            + '</body></html>'
+        var imgSrc      = $img.attr( 'src' );
+        var printQrSrc  = imgSrc;
+        var url         = _qrUrl;
+        var siteName    = document.title.replace( /[–—].*/, '' ).trim() || 'AURA';
+
+        // Preparar QR en alta resolución para impresión (evita pixelado al escalar)
+        var qrCanvasEl = $( '#aura-veh-qr-canvas canvas' ).first().get( 0 );
+        if ( qrCanvasEl ) {
+            try {
+                var hiResCanvas = document.createElement( 'canvas' );
+                hiResCanvas.width = 1024;
+                hiResCanvas.height = 1024;
+                var hiResCtx = hiResCanvas.getContext( '2d' );
+                if ( hiResCtx ) {
+                    hiResCtx.imageSmoothingEnabled = false;
+                    hiResCtx.drawImage( qrCanvasEl, 0, 0, 1024, 1024 );
+                    printQrSrc = hiResCanvas.toDataURL( 'image/png' );
+                }
+            } catch ( e ) {
+                printQrSrc = imgSrc;
+            }
+        }
+
+        // Extraer placa del nombre (formato «PLACA — Marca Modelo»)
+        var plateMatch = vehicleName.match( /^([A-Z0-9\-]+)\s*[–—]/ );
+        var plate      = plateMatch ? plateMatch[1] : vehicleName;
+        var fullName   = vehicleName;
+
+        var w = window.open( '', '_blank', 'width=820,height=640' );
+        if ( ! w ) { return; }
+
+        w.document.write( '<!DOCTYPE html><html lang="es"><head>' +
+            '<meta charset="UTF-8">' +
+            '<title>Etiqueta QR · ' + plate + '</title>' +
+            '<style>' +
+
+            /* ── Reset & base ─────────────────────────────── */
+            '*{box-sizing:border-box;margin:0;padding:0;}' +
+              'body{font-family:"Segoe UI",Arial,sans-serif;background:linear-gradient(180deg,#eef2f7 0%,#e2e8f0 100%);' +
+                  'display:flex;flex-direction:column;align-items:center;padding:18px 10px 10px;min-height:100vh;color:#0f172a;}' +
+
+            /* ── Toolbar de impresión (solo pantalla) ─────── */
+            '.print-toolbar{background:#0f172a;color:#fff;padding:10px 14px;border-radius:12px;' +
+                           'display:flex;align-items:center;gap:10px;margin-bottom:10px;width:100%;max-width:840px;' +
+                           'box-shadow:0 8px 24px rgba(15,23,42,.18);}' +
+            '.print-toolbar h1{font-size:14px;font-weight:700;flex:1;letter-spacing:.2px;}' +
+            '.print-toolbar .tip{font-size:11px;color:#cbd5e1;flex:2;}' +
+            '.print-btn{background:#0e7577;color:#fff;border:none;padding:8px 14px;border-radius:999px;' +
+                       'font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}' +
+            '.print-btn:hover{background:#0b5d5f;}' +
+            '.print-btn svg{width:16px;height:16px;fill:currentColor;}' +
+
+            /* ── Hoja A4 simulada ─────────────────────────── */
+            '.page{background:#fff;width:210mm;max-width:100%;padding:5mm;' +
+                'border-radius:10px;box-shadow:0 8px 32px rgba(15,23,42,.18);}' +
+
+            /* ── Instrucciones (solo pantalla) ────────────── */
+            '.instructions{border:1px dashed #94a3b8;border-radius:8px;padding:8px 10px;' +
+                           'margin-bottom:8px;font-size:10px;color:#475569;line-height:1.45;background:#f8fafc;}' +
+            '.instructions strong{color:#1e293b;}' +
+
+            /* ── Grid de etiquetas ────────────────────────── */
+            '.labels-grid{display:grid;grid-template-columns:repeat(2,auto);justify-content:center;align-items:start;column-gap:3mm;row-gap:2mm;}' +
+
+            /* ── Etiqueta tarjeta (horizontal, tablero) ───── */
+            '.label-card{width:72mm;max-width:72mm;border:1px solid #334155;border-radius:8px;overflow:hidden;' +
+                         'display:flex;flex-direction:column;}' +
+            '.label-card-header{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);color:#fff;padding:4px 6px;' +
+                                'display:flex;align-items:center;justify-content:space-between;}' +
+            '.label-card-header .brand{font-size:9px;font-weight:600;letter-spacing:.35px;opacity:.72;}' +
+            '.label-card-header .plate{font-size:14px;font-weight:800;letter-spacing:1px;}' +
+            '.label-card-body{display:flex;align-items:center;gap:5px;padding:4px 5px;background:#fff;}' +
+            '.label-card-body img{width:70px;height:70px;display:block;flex-shrink:0;}' +
+            '.label-card-info{flex:1;display:flex;flex-direction:column;gap:2px;}' +
+            '.label-card-info .veh-name{font-size:8.7px;font-weight:700;color:#1e293b;line-height:1.2;}' +
+            '.label-card-info .scan-tip{font-size:7.2px;color:#64748b;line-height:1.2;}' +
+            '.label-card-info .url-small{font-size:6.2px;color:#94a3b8;word-break:break-all;margin-top:1px;}' +
+            '.label-card-footer{background:#f1f5f9;padding:2px 5px;' +
+                                'display:flex;align-items:center;justify-content:space-between;}' +
+            '.label-card-footer .site{font-size:6.5px;color:#94a3b8;}' +
+            '.label-card-footer .cut-hint{font-size:6.5px;color:#94a3b8;font-style:italic;}' +
+
+            /* ── Etiqueta colgante (vertical, volante) ─────── */
+            '.label-hang{width:46mm;max-width:46mm;border:1px solid #334155;border-radius:8px;overflow:hidden;' +
+                         'display:flex;flex-direction:column;align-items:center;text-align:center;}' +
+            '.label-hang-hole{width:100%;background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);padding:5px 6px 4px;' +
+                              'display:flex;flex-direction:column;align-items:center;gap:4px;}' +
+            '.label-hang-hole .hole{width:11px;height:11px;border-radius:50%;background:#fff;border:1.3px solid #94a3b8;}' +
+            '.label-hang-hole .plate{font-size:15px;font-weight:800;letter-spacing:1px;color:#fff;}' +
+            '.label-hang-hole .brand{font-size:7px;font-weight:600;color:#94a3b8;letter-spacing:.3px;}' +
+            '.label-hang-body{padding:4px 5px;background:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;}' +
+            '.label-hang-body img{width:98px;height:98px;display:block;image-rendering:crisp-edges;image-rendering:pixelated;}' +
+            '.label-hang-body .veh-name{font-size:8.5px;font-weight:700;color:#1e293b;line-height:1.15;}' +
+            '.label-hang-body .scan-tip{font-size:7px;color:#64748b;line-height:1.2;}' +
+            '.label-hang-body .url-small{font-size:6px;color:#94a3b8;word-break:break-all;}' +
+            '.label-hang-footer{background:#f1f5f9;width:100%;padding:2px 5px;font-size:6.3px;color:#94a3b8;text-align:center;}' +
+
+            /* ── Líneas de corte ──────────────────────────── */
+            '.cut-line{border:0;border-top:1px dashed #94a3b8;margin:2mm 0;position:relative;}' +
+            '.cut-line::before{content:"✂  recorte aquí";position:absolute;top:-8px;left:50%;transform:translateX(-50%);' +
+                               'background:#fff;padding:0 5px;font-size:7px;color:#94a3b8;white-space:nowrap;}' +
+
+            /* ── Media print ──────────────────────────────── */
+            '@page{size:A4 portrait;margin:2mm;}' +
+            '@media print{' +
+                '.print-toolbar,.instructions{display:none!important;}' +
+                'body{background:#fff!important;padding:0;}' +
+                '.page{box-shadow:none;border-radius:0;padding:0.5mm;}' +
+                '.cut-line{border-top:1px dashed #aaa;}' +
+            '}' +
+
+            '</style></head><body>' +
+
+            /* ── Barra de herramientas ──────────────────────── */
+            '<div class="print-toolbar">' +
+                '<h1>Etiqueta QR · ' + plate + '</h1>' +
+                '<span class="tip">Diseño optimizado para recorte rapido con margenes minimos.</span>' +
+                '<button class="print-btn" onclick="window.print()">' +
+                    '<svg viewBox="0 0 24 24"><path d="M6 9V2h12v7H6zm-1 3h14a1 1 0 0 1 1 1v5h-3v3H7v-3H4v-5a1 1 0 0 1 1-1zm11 6v-3H8v3h8z"/></svg>' +
+                    'Imprimir ahora' +
+                '</button>' +
+            '</div>' +
+
+            /* ── Hoja ───────────────────────────────────────── */
+            '<div class="page">' +
+
+                /* Instrucciones */
+                '<div class="instructions">' +
+                    '<strong>Instrucciones:</strong> ' +
+                    'Imprima en papel normal o etiqueta autoadhesiva · ' +
+                    'Recorte por la línea punteada · ' +
+                    '<strong>Tarjeta (izq.)</strong>: pegue en el tablero o guantera · ' +
+                    '<strong>Colgante (der.)</strong>: perfore el círculo y use con hilo o plástico de llave.' +
+                '</div>' +
+
+                /* Grid: tarjeta + colgante */
+                '<div class="labels-grid">' +
+
+                    /* ── Tarjeta (tablero) ─── */
+                    '<div class="label-card">' +
+                        '<div class="label-card-header">' +
+                            '<span class="brand">VEHÍCULO</span>' +
+                            '<span class="plate">' + plate + '</span>' +
+                        '</div>' +
+                        '<div class="label-card-body">' +
+                            '<img src="' + printQrSrc + '" alt="QR">' +
+                            '<div class="label-card-info">' +
+                                '<span class="veh-name">' + fullName + '</span>' +
+                                '<span class="scan-tip">📱 Escanea el QR con tu celular para registrar salidas y retornos.</span>' +
+                                '<span class="url-small">' + url + '</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="label-card-footer">' +
+                            '<span class="site">' + siteName + '</span>' +
+                            '<span class="cut-hint">✂ recorte y pegue en tablero</span>' +
+                        '</div>' +
+                    '</div>' +
+
+                    /* ── Colgante (volante/llavero) ─── */
+                    '<div class="label-hang">' +
+                        '<div class="label-hang-hole">' +
+                            '<div class="hole"></div>' +
+                            '<span class="plate">' + plate + '</span>' +
+                            '<span class="brand">VEHÍCULO</span>' +
+                        '</div>' +
+                        '<div class="label-hang-body">' +
+                            '<img src="' + printQrSrc + '" alt="QR">' +
+                            '<span class="veh-name">' + fullName + '</span>' +
+                            '<span class="scan-tip">📱 Escanea para registrar salidas / retornos</span>' +
+                            '<span class="url-small">' + url + '</span>' +
+                        '</div>' +
+                        '<div class="label-hang-footer">' + siteName + ' · Perfore el círculo para colgar</div>' +
+                    '</div>' +
+
+                '</div>' + /* /labels-grid */
+
+                /* Línea de corte */
+                '<hr class="cut-line">' +
+
+                /* Segunda fila: 2 tarjetas extra para no desperdiciar papel */
+                '<div class="labels-grid">' +
+                    '<div class="label-card">' +
+                        '<div class="label-card-header">' +
+                            '<span class="brand">VEHÍCULO</span>' +
+                            '<span class="plate">' + plate + '</span>' +
+                        '</div>' +
+                        '<div class="label-card-body">' +
+                            '<img src="' + imgSrc + '" alt="QR">' +
+                            '<div class="label-card-info">' +
+                                '<span class="veh-name">' + fullName + '</span>' +
+                                '<span class="scan-tip">📱 Escanea el QR con tu celular para registrar salidas y retornos.</span>' +
+                                '<span class="url-small">' + url + '</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="label-card-footer">' +
+                            '<span class="site">' + siteName + '</span>' +
+                            '<span class="cut-hint">✂ recorte y pegue en tablero</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="label-hang">' +
+                        '<div class="label-hang-hole">' +
+                            '<div class="hole"></div>' +
+                            '<span class="plate">' + plate + '</span>' +
+                            '<span class="brand">VEHÍCULO</span>' +
+                        '</div>' +
+                        '<div class="label-hang-body">' +
+                            '<img src="' + imgSrc + '" alt="QR">' +
+                            '<span class="veh-name">' + fullName + '</span>' +
+                            '<span class="scan-tip">📱 Escanea para registrar salidas / retornos</span>' +
+                            '<span class="url-small">' + url + '</span>' +
+                        '</div>' +
+                        '<div class="label-hang-footer">' + siteName + ' · Perfore el círculo para colgar</div>' +
+                    '</div>' +
+                '</div>' + /* /labels-grid 2 */
+
+            '</div>' + /* /page */
+
+            '<script>window.onload=function(){window.print();}<\/script>' +
+            '</body></html>'
         );
         w.document.close();
     } );

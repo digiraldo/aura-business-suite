@@ -24,6 +24,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Aura_Vehicle_Reports {
 
+    /**
+     * Convierte nivel de combustible numérico (0-100) a escala textual de 5 pasos.
+     */
+    private static function fuel_level_label( $value ): string {
+        if ( null === $value || '' === $value ) {
+            return '—';
+        }
+
+        $numeric = (int) $value;
+        $numeric = max( 0, min( 100, $numeric ) );
+
+        if ( $numeric <= 0 ) {
+            return 'Vacío';
+        }
+        if ( $numeric <= 25 ) {
+            return '1/4';
+        }
+        if ( $numeric <= 50 ) {
+            return '1/2';
+        }
+        if ( $numeric <= 75 ) {
+            return '3/4';
+        }
+
+        return 'Lleno';
+    }
+
     // ─────────────────────────────────────────────────────────────────
     // UTILIDADES INTERNAS
     // ─────────────────────────────────────────────────────────────────
@@ -164,6 +191,8 @@ class Aura_Vehicle_Reports {
                     t.status AS estado,
                     DATE(t.departure_datetime) AS fecha_salida,
                     DATE(t.return_datetime) AS fecha_retorno,
+                    t.departure_fuel AS combustible_salida,
+                    t.return_fuel AS combustible_retorno,
                     t.km_traveled AS km,
                     t.total_amount AS monto,
                     t.total_expenses AS gastos,
@@ -206,10 +235,12 @@ class Aura_Vehicle_Reports {
         foreach ( $rows as $row ) {
             $row->tipo   = $type_labels[ $row->tipo ]   ?? $row->tipo;
             $row->estado = $status_labels[ $row->estado ] ?? $row->estado;
+            $row->combustible_salida  = self::fuel_level_label( $row->combustible_salida );
+            $row->combustible_retorno = self::fuel_level_label( $row->combustible_retorno );
         }
 
         return array(
-            'headers' => array( 'ID', 'Vehículo', 'Placa', 'Área', 'Tipo', 'Estado', 'Fecha Salida', 'Fecha Retorno', 'KM', 'Monto ($)', 'Gastos ($)', 'Persona' ),
+            'headers' => array( 'ID', 'Vehículo', 'Placa', 'Área', 'Tipo', 'Estado', 'Fecha Salida', 'Fecha Retorno', 'Combustible Salida', 'Combustible Retorno', 'KM', 'Monto ($)', 'Gastos ($)', 'Persona' ),
             'rows'    => $rows,
             'totals'  => array(
                 'registros' => count( $rows ),

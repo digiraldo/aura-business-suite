@@ -1,0 +1,67 @@
+Categoria,Categoria Padre
+Donaciones,Sin categoria padre
+Donacion General,Donaciones
+Donacion Especial,Donaciones
+Donacion de Misiones,Donaciones
+Donacion de Construccion,Donaciones
+Donacion de Emergencia,Donaciones
+Donacion de Alimentos,Donaciones
+Donacion de Voluntarios,Donaciones
+Ofrendas,Sin categoria padre
+Ofrenda General,Ofrendas
+Ofrenda Especial,Ofrendas
+Ofrenda de Misiones,Ofrendas
+Ofrenda de Construccion,Ofrendas
+Ofrenda de Emergencia,Ofrendas
+Alquileres y Rentas,Sin categoria padre
+Alquiler de Instalaciones,Alquileres y Rentas
+Alquiler a Iglesias,Alquileres y Rentas
+Alquiler de Equipo de Sonido,Alquileres y Rentas
+Alquiler de Kiosco/Terraza,Alquileres y Rentas
+Inscripciones y Matriculas,Sin categoria padre
+Inscripcion de Estudiantes,Inscripciones y Matriculas
+Cursos y Talleres,Inscripciones y Matriculas
+Sostenimiento Institucional,Sin categoria padre
+Aportes Agencia Misionera,Sostenimiento Institucional
+Fondos de Operacion,Sostenimiento Institucional
+Sostenimiento de Staff / Misioneros,Sostenimiento Institucional
+Proyectos Especiales de la Agencia,Sostenimiento Institucional
+Ventas de Productos,Sin categoria padre
+Ventas de Servicios,Sin categoria padre
+Subvenciones,Sin categoria padre
+Intereses Bancarios,Sin categoria padre
+Otros Ingresos,Sin categoria padre
+Salarios y Sueldos,Sin categoria padre
+Salario,Salarios y Sueldos
+Honorarios,Salarios y Sueldos
+Voluntarios,Salarios y Sueldos
+Servicios Publicos,Sin categoria padre
+Electricidad,Servicios Publicos
+Internet,Servicios Publicos
+Gas,Servicios Publicos
+Agua,Servicios Publicos
+Telefono,Servicios Publicos
+Mantenimiento,Sin categoria padre
+Vehiculos,Mantenimiento
+Instalaciones,Mantenimiento
+Herramientas Electricas,Mantenimiento
+Herramientas de Motor,Mantenimiento
+Equipo de Sonido,Mantenimiento
+Sistema de Riego,Mantenimiento
+Jardineria,Mantenimiento
+Compra de Herramientas y Equipos,Sin categoria padre
+Herramientas Electricas,Compra de Herramientas y Equipos
+Herramientas de Bateria,Compra de Herramientas y Equipos
+Herramientas de Motor,Compra de Herramientas y Equipos
+Equipo de Sonido,Compra de Herramientas y Equipos
+Mobiliario,Compra de Herramientas y Equipos
+Biblioteca,Sin categoria padre
+Adquisicion de Libros,Biblioteca
+Materiales Bibliograficos,Biblioteca
+Suministros de Oficina,Sin categoria padre
+Suministros de Limpieza,Sin categoria padre
+Programas y Proyectos,Sin categoria padre
+Becas y Ayudas,Sin categoria padre
+Marketing,Sin categoria padre
+Tecnologia,Sin categoria padre
+Otros Gastos,Sin categoria padre

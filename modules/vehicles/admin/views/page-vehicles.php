@@ -140,6 +140,7 @@ $veh_cfg = wp_json_encode( array(
     'apiBase'   => rest_url( 'aura/v1/' ),
     'nonce'     => wp_create_nonce( 'wp_rest' ),
     'ajaxurl'   => admin_url( 'admin-ajax.php' ),
+    'qrIconUrl' => AURA_PLUGIN_URL . 'assets/images/qr.svg',
     'vehNonce'  => wp_create_nonce( 'aura_vehicles_nonce' ),
     'canCreate' => $can_create,
     'canEdit'   => $can_edit,
@@ -679,9 +680,9 @@ $veh_cfg = wp_json_encode( array(
                     <span class="dashicons dashicons-clipboard" style="vertical-align:middle;"></span>
                     <?php esc_html_e( 'Copiar URL', 'aura-suite' ); ?>
                 </button>
-                <button type="button" id="aura-veh-qr-print" class="button">
+                <button type="button" id="aura-veh-qr-print" class="button aura-veh-qr-print-btn" title="<?php esc_attr_e( 'Genera una etiqueta lista para recortar y pegar en el tablero o colgar del vehículo', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-printer" style="vertical-align:middle;"></span>
-                    <?php esc_html_e( 'Imprimir', 'aura-suite' ); ?>
+                    <?php esc_html_e( 'Imprimir etiqueta', 'aura-suite' ); ?>
                 </button>
                 <button type="button" id="aura-veh-qr-invalidate" class="button" style="color:#c00;">
                     <span class="dashicons dashicons-update" style="vertical-align:middle;"></span>

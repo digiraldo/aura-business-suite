@@ -1174,7 +1174,7 @@ class Aura_Business_Suite {
                     'completed'       => __('Completado', 'aura-suite'),
                     'rolled_back'     => __('Revertido', 'aura-suite'),
                     'undo'            => __('Deshacer', 'aura-suite'),
-                    'rollback_expired'=> __('Venció 24h', 'aura-suite'),
+                    'rollback_expired'=> __('Venció 1 mes', 'aura-suite'),
                     'auto_cat_note'   => __('Las categorías marcadas con ⚠ se crearán automáticamente si tiene esa opción habilitada.', 'aura-suite'),
                 ),
             ));
@@ -1630,6 +1630,36 @@ class Aura_Business_Suite {
         // Media Uploader para la página de Configuración (logo de la organización)
         if ( $hook === 'aura-suite_page_aura-settings' ) {
             wp_enqueue_media();
+        }
+
+        // DataTables para Gestión de Permisos (CBAC)
+        if ( $hook === 'aura-suite_page_aura-permissions' ) {
+            wp_enqueue_style(
+                'datatables-css',
+                'https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css',
+                array(),
+                '2.2.2'
+            );
+            wp_enqueue_style(
+                'datatables-responsive-css',
+                'https://cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.min.css',
+                array( 'datatables-css' ),
+                '3.0.4'
+            );
+            wp_enqueue_script(
+                'datatables-js',
+                'https://cdn.datatables.net/2.2.2/js/dataTables.min.js',
+                array( 'jquery' ),
+                '2.2.2',
+                true
+            );
+            wp_enqueue_script(
+                'datatables-responsive-js',
+                'https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.min.js',
+                array( 'datatables-js' ),
+                '3.0.4',
+                true
+            );
         }
 
         // ── Assets Inventario — Dashboard ────────────────────────────────────────

@@ -33,7 +33,7 @@
             $('#aura-save-category-btn').on('click', () => this.saveCategory());
             
             // Filtros
-            $('#aura-filter-search').on('input', _.debounce(() => this.loadCategories(), 300));
+            $('#aura-filter-search').on('input', this.debounce(() => this.loadCategories(), 300));
             $('#aura-filter-type, #aura-filter-status, #aura-filter-orderby').on('change', () => this.loadCategories());
             
             // Limpiar filtros
@@ -41,6 +41,31 @@
             
             // Preview de icono en tiempo real
             $('#category-icon').on('input', () => this.updateIconPreview());
+
+            // Slug sugerido desde nombre (solo si no fue editado manualmente)
+            $('#category-name').on('input', () => this.maybeSyncSlugFromName());
+            $('#category-slug').on('input', () => {
+                const hasCustomSlug = $('#category-slug').val().trim() !== '';
+                $('#category-slug').attr('data-manual', hasCustomSlug ? '1' : '0');
+            });
+
+            // Recargar categorías padre cuando cambia el tipo.
+            $('input[name="type"]').on('change', () => {
+                const currentId = $('#category-id').val() || null;
+                const currentParent = $('#category-parent').val() || '0';
+                this.loadParentCategories(currentId, currentParent);
+                this.updateParentPathPreview();
+            });
+
+            $('#category-parent').on('change', () => this.updateParentPathPreview());
+            $('#category-parent-new').on('input', () => {
+                const hasNewParentName = $('#category-parent-new').val().trim() !== '';
+                if (hasNewParentName) {
+                    $('#category-parent').val('0');
+                }
+                this.updateParentCreateBadge();
+                this.updateParentPathPreview();
+            });
             
             // Cerrar modal confirmación
             $('.aura-confirm-delete-close').on('click', () => this.closeConfirmDeleteModal());
@@ -128,54 +153,60 @@
          * Crear fila de categoría
          */
         createCategoryRow: function(category) {
-            const typeIcons = {
-                income: '<span class="dashicons dashicons-arrow-up-alt aura-icon-income" title="Ingresos"></span>',
-                expense: '<span class="dashicons dashicons-arrow-down-alt aura-icon-expense" title="Egresos"></span>',
-                both: '<span class="dashicons dashicons-leftright aura-icon-both" title="Ambos"></span>'
+            const typeLabels = {
+                income: 'Ingresos',
+                expense: 'Egresos',
+                both: 'Ambos'
             };
-            
-            const statusIcon = category.is_active
-                ? '<span class="dashicons dashicons-yes-alt aura-icon-active" title="Activa"></span>'
-                : '<span class="dashicons dashicons-dismiss aura-icon-inactive" title="Inactiva"></span>';
-            
-            const colorBadge = `<span class="aura-color-badge" style="background-color: ${category.color}; border: 1px solid #ccc;"></span>`;
-            
-            const iconPreview = `<span class="dashicons ${category.icon}" style="font-size: 20px; color: ${category.color};"></span>`;
-            
+
+            const typeClasses = {
+                income: 'is-income',
+                expense: 'is-expense',
+                both: 'is-both'
+            };
+
             const parentName = category.parent_name 
-                ? `<span class="aura-parent-name">${category.parent_name}</span>` 
-                : '—';
-            
-            const transactionCount = category.transaction_count > 0
-                ? `<span class="dashicons dashicons-money-alt"></span> ${category.transaction_count}`
-                : '—';
+                ? `<span class="aura-parent-chip">${this.escapeHtml(category.parent_name)}</span>` 
+                : '<span class="aura-parent-empty">Principal</span>';
+
+            const statusBadge = category.is_active
+                ? '<span class="aura-status-badge is-active">Activa</span>'
+                : '<span class="aura-status-badge is-inactive">Inactiva</span>';
+
+            const categoryDescription = category.description
+                ? `<span class="aura-category-description">${this.escapeHtml(category.description)}</span>`
+                : '<span class="aura-category-description is-empty">Sin descripción</span>';
             
             const toggleStatusText = category.is_active ? 'Desactivar' : 'Activar';
             const toggleStatusClass = category.is_active ? 'aura-deactivate' : 'aura-activate';
             
             const row = $(`
-                <tr data-category-id="${category.id}">
+                <tr data-category-id="${category.id}" data-transaction-count="${category.transaction_count}">
                     <td class="column-name">
-                        <strong>${this.escapeHtml(category.name)}</strong>
+                        <div class="aura-category-main">
+                            <span class="aura-color-dot" style="background-color: ${category.color};"></span>
+                            <span class="aura-category-name-wrap">
+                                <strong class="aura-category-name">${this.escapeHtml(category.name)}</strong>
+                                ${categoryDescription}
+                            </span>
+                        </div>
                     </td>
-                    <td class="column-type">${typeIcons[category.type] || ''}</td>
                     <td class="column-parent">${parentName}</td>
-                    <td class="column-color">${colorBadge}</td>
-                    <td class="column-icon">${iconPreview}</td>
-                    <td class="column-status">${statusIcon}</td>
-                    <td class="column-order">${category.display_order}</td>
-                    <td class="column-transactions">${transactionCount}</td>
+                    <td class="column-type"><span class="aura-type-badge ${typeClasses[category.type] || ''}">${typeLabels[category.type] || 'N/A'}</span></td>
+                    <td class="column-slug"><code>${this.escapeHtml(category.slug || 'sin-slug')}</code></td>
+                    <td class="column-order"><span class="aura-order-badge">${category.display_order}</span></td>
+                    <td class="column-status">${statusBadge}</td>
                     <td class="column-actions">
-                        <div class="row-actions">
-                            <span class="edit">
-                                <a href="#" class="aura-edit-category">Editar</a> |
-                            </span>
-                            <span class="toggle-status">
-                                <a href="#" class="aura-toggle-status ${toggleStatusClass}">${toggleStatusText}</a> |
-                            </span>
-                            <span class="delete">
-                                <a href="#" class="aura-delete-category" style="color: #b32d2e;">Eliminar</a>
-                            </span>
+                        <div class="aura-action-buttons" role="group" aria-label="Acciones de categoría">
+                            <button type="button" class="aura-action-btn aura-edit-category" title="Editar categoría">
+                                <span class="dashicons dashicons-edit"></span>
+                            </button>
+                            <button type="button" class="aura-action-btn aura-toggle-status ${toggleStatusClass}" title="${toggleStatusText} categoría">
+                                <span class="dashicons ${category.is_active ? 'dashicons-hidden' : 'dashicons-visibility'}"></span>
+                            </button>
+                            <button type="button" class="aura-action-btn aura-delete-category is-danger" title="Eliminar categoría">
+                                <span class="dashicons dashicons-trash"></span>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -217,6 +248,10 @@
             // Resetear form
             $('#aura-category-form')[0].reset();
             $('#category-id').val('');
+            $('#category-slug').attr('data-manual', '0');
+            $('#category-parent-new').val('');
+            this.updateParentCreateBadge();
+            this.setModalLoading(false);
             
             if (mode === 'create') {
                 $('#aura-modal-title').text('Nueva Categoría');
@@ -224,10 +259,13 @@
                 this.loadParentCategories();
             } else {
                 $('#aura-modal-title').text('Editar Categoría');
-                this.populateForm(categoryData);
+                if (categoryData) {
+                    this.populateForm(categoryData);
+                }
             }
             
-            $('#aura-category-modal').fadeIn(200);
+            // Mostrar modal con display: flex (evitar conflictos con .hide())
+            $('#aura-category-modal').stop(true, true).css('display', 'flex').fadeIn(200);
             $('body').addClass('aura-modal-open');
             
             // Re-inicializar color picker si es necesario
@@ -238,6 +276,7 @@
                     this.initColorPicker();
                 }
                 this.updateIconPreview();
+                this.updateParentPathPreview();
             }, 100);
         },
         
@@ -245,35 +284,79 @@
          * Cerrar modal
          */
         closeModal: function() {
-            $('#aura-category-modal').fadeOut(200);
+            this.setModalLoading(false);
+            $('#aura-category-modal').stop(true, true).fadeOut(200, function() {
+                $(this).css('display', 'none');
+            });
             $('body').removeClass('aura-modal-open');
+        },
+
+        /**
+         * Mostrar/ocultar estado de carga del modal
+         */
+        setModalLoading: function(isLoading, text = 'Cargando categoría...') {
+            const loading = $('#aura-modal-loading');
+            const form = $('#aura-category-form');
+            const footerButtons = $('#aura-modal-footer button, .aura-modal-footer .button');
+
+            if (loading.length) {
+                loading.find('p').text(text);
+            }
+
+            if (isLoading) {
+                loading.show();
+                form.addClass('is-loading').css({ opacity: 0.55, pointerEvents: 'none' });
+                $('#aura-save-category-btn').prop('disabled', true);
+                footerButtons.not('#aura-modal-close-btn').prop('disabled', true);
+            } else {
+                loading.hide();
+                form.removeClass('is-loading').css({ opacity: '', pointerEvents: '' });
+                $('#aura-save-category-btn').prop('disabled', false);
+                footerButtons.prop('disabled', false);
+            }
         },
         
         /**
          * Cargar categorías para el dropdown de padres
          */
-        loadParentCategories: function(excludeId = null) {
+        loadParentCategories: function(excludeId = null, selectedParentId = '0') {
             const data = {
                 action: 'aura_get_categories',
-                nonce: auraCategories.nonce,
-                status: 'active'
+                nonce: auraCategories.nonce
             };
             
-            $.ajax({
+            return $.ajax({
                 url: auraCategories.ajaxUrl,
                 type: 'POST',
                 data: data,
                 success: (response) => {
                     if (response.success) {
                         const select = $('#category-parent');
+                        const selectedType = $('input[name="type"]:checked').val() || 'both';
                         select.empty();
                         select.append('<option value="0">Ninguna (Categoría principal)</option>');
                         
                         response.data.categories.forEach(cat => {
-                            if (cat.id != excludeId) {
-                                select.append(`<option value="${cat.id}">${this.escapeHtml(cat.name)}</option>`);
+                            const isSameCategory = parseInt(cat.id, 10) === parseInt(excludeId || 0, 10);
+                            const isTypeCompatible = (
+                                selectedType === 'both' ||
+                                cat.type === 'both' ||
+                                cat.type === selectedType
+                            );
+
+                            if (!isSameCategory && isTypeCompatible) {
+                                const inactiveHint = cat.is_active ? '' : ' (Inactiva)';
+                                select.append(`<option value="${cat.id}">${this.escapeHtml(cat.name + inactiveHint)}</option>`);
                             }
                         });
+
+                        select.val(String(selectedParentId || '0'));
+
+                        if (select.val() !== String(selectedParentId || '0')) {
+                            select.val('0');
+                        }
+
+                        this.updateParentPathPreview();
                     }
                 }
             });
@@ -288,6 +371,10 @@
                 nonce: auraCategories.nonce,
                 category_id: categoryId
             };
+
+            this.openModal('create');
+            $('#aura-modal-title').text('Editar Categoría');
+            this.setModalLoading(true, 'Cargando categoría...');
             
             $.ajax({
                 url: auraCategories.ajaxUrl,
@@ -295,15 +382,19 @@
                 data: data,
                 success: (response) => {
                     if (response.success) {
-                        this.loadParentCategories(categoryId);
-                        setTimeout(() => {
-                            this.openModal('edit', response.data.category);
-                        }, 200);
+                        this.loadParentCategories(categoryId, response.data.category.parent_id)
+                            .always(() => {
+                                this.populateForm(response.data.category);
+                                this.updateIconPreview();
+                                this.setModalLoading(false);
+                            });
                     } else {
+                        this.setModalLoading(false);
                         this.showError(response.data.message || auraCategories.strings.error);
                     }
                 },
                 error: () => {
+                    this.setModalLoading(false);
                     this.showError(auraCategories.strings.error);
                 }
             });
@@ -315,13 +406,27 @@
         populateForm: function(category) {
             $('#category-id').val(category.id);
             $('#category-name').val(category.name);
+            $('#category-slug').val(category.slug || '').attr('data-manual', category.slug ? '1' : '0');
             $(`input[name="type"][value="${category.type}"]`).prop('checked', true);
             $('#category-parent').val(category.parent_id);
+            $('#category-parent-new').val('');
+            this.updateParentCreateBadge();
             $('#category-color').val(category.color);
             $('#category-icon').val(category.icon);
             $('#category-description').val(category.description);
             $('#category-active').prop('checked', category.is_active);
             $('#category-order').val(category.display_order);
+            
+            // Cargar integraciones
+            $('input[name="integration_modules[]"]').prop('checked', false);
+            if (category.integration_modules) {
+                const modules = Array.isArray(category.integration_modules) ? category.integration_modules : JSON.parse(category.integration_modules || '[]');
+                modules.forEach(module => {
+                    $(`input[name="integration_modules[]"][value="${module}"]`).prop('checked', true);
+                });
+            }
+
+            this.updateParentPathPreview();
         },
         
         /**
@@ -346,18 +451,27 @@
             const categoryId = $('#category-id').val();
             const action = categoryId ? 'aura_update_category' : 'aura_create_category';
             
+            // Recopilar integraciones seleccionadas
+            const integration_modules = [];
+            $('input[name="integration_modules[]"]:checked').each(function() {
+                integration_modules.push($(this).val());
+            });
+            
             const data = {
                 action: action,
                 nonce: auraCategories.nonce,
                 category_id: categoryId,
                 name: name,
+                slug: $('#category-slug').val().trim(),
                 type: $('input[name="type"]:checked').val(),
                 parent_id: $('#category-parent').val(),
+                parent_new_name: $('#category-parent-new').val().trim(),
                 color: color,
                 icon: $('#category-icon').val(),
                 description: $('#category-description').val(),
                 is_active: $('#category-active').is(':checked') ? 'true' : 'false',
-                display_order: $('#category-order').val()
+                display_order: $('#category-order').val(),
+                integration_modules: JSON.stringify(integration_modules)
             };
             
             const btn = $('#aura-save-category-btn');
@@ -386,6 +500,84 @@
                     btn.prop('disabled', false).html(btnText);
                 }
             });
+        },
+
+        /**
+         * Sincronizar slug desde nombre mientras no se haya personalizado.
+         */
+        maybeSyncSlugFromName: function() {
+            const slugInput = $('#category-slug');
+            const isManual = slugInput.attr('data-manual') === '1';
+            if (isManual) {
+                return;
+            }
+
+            const source = $('#category-name').val() || '';
+            const generated = this.slugify(source);
+            slugInput.val(generated);
+        },
+
+        /**
+         * Convertir texto a slug URL-friendly.
+         */
+        slugify: function(value) {
+            return String(value || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .trim()
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+        },
+
+        /**
+         * Mostrar ruta jerárquica estimada según tipo + padre seleccionado/creado.
+         */
+        updateParentPathPreview: function() {
+            const preview = $('#category-parent-path-preview');
+            if (!preview.length) {
+                return;
+            }
+
+            const type = $('input[name="type"]:checked').val() || 'both';
+            const typeLabelMap = {
+                income: 'Ingresos',
+                expense: 'Egresos',
+                both: 'Ambos'
+            };
+            const typeLabel = typeLabelMap[type] || 'Ambos';
+
+            const selectedParentText = $('#category-parent option:selected').text() || '';
+            const selectedParentId = $('#category-parent').val() || '0';
+            const newParentName = ($('#category-parent-new').val() || '').trim();
+
+            let parentLabel = '(Categoría principal)';
+            if (newParentName) {
+                parentLabel = newParentName;
+            } else if (selectedParentId !== '0' && selectedParentText) {
+                parentLabel = selectedParentText.replace(' (Inactiva)', '');
+            }
+
+            preview.text('Ruta jerárquica: ' + typeLabel + ' > ' + parentLabel);
+        },
+
+        /**
+         * Mostrar badge "Se creará" al escribir una categoría padre nueva.
+         */
+        updateParentCreateBadge: function() {
+            const badge = $('#category-parent-create-badge');
+            if (!badge.length) {
+                return;
+            }
+
+            const newParentName = ($('#category-parent-new').val() || '').trim();
+            if (!newParentName) {
+                badge.hide().text('');
+                return;
+            }
+
+            badge.text('Se creará: ' + newParentName).show();
         },
         
         /**
@@ -424,12 +616,12 @@
             
             // Verificar si tiene transacciones
             const row = $(`tr[data-category-id="${categoryId}"]`);
-            const hasTransactions = row.find('.column-transactions .dashicons-money-alt').length > 0;
+            const transactionCount = parseInt(row.attr('data-transaction-count') || '0', 10);
+            const hasTransactions = transactionCount > 0;
             
             if (hasTransactions) {
-                const count = row.find('.column-transactions').text().trim().split(' ')[1];
                 $('#aura-delete-message').html(
-                    auraCategories.strings.confirmDeleteWithTransactions.replace('%d', count)
+                    auraCategories.strings.confirmDeleteWithTransactions.replace('%d', transactionCount)
                 );
                 $('.delete-text').hide();
                 $('.deactivate-text').show();
@@ -515,8 +707,19 @@
             $('#aura-filter-search').val('');
             $('#aura-filter-type').val('');
             $('#aura-filter-status').val('');
-            $('#aura-filter-orderby').val('menu_order');
+            $('#aura-filter-orderby').val('display_order');
             this.loadCategories();
+        },
+
+        /**
+         * Debounce local para evitar dependencia dura de lodash
+         */
+        debounce: function(func, wait) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(...args), wait);
+            };
         },
         
         /**
@@ -543,7 +746,7 @@
         showLoading: function() {
             $('#aura-categories-tbody').html(`
                 <tr class="aura-loading-row">
-                    <td colspan="9" style="text-align: center; padding: 40px;">
+                    <td colspan="7" style="text-align: center; padding: 40px;">
                         <span class="spinner is-active" style="float: none; margin: 0 auto;"></span>
                         <p>${auraCategories.strings.loading}</p>
                     </td>
@@ -617,22 +820,5 @@
     $(document).ready(() => {
         AuraCategories.init();
     });
-    
-    // Debounce function (si no está disponible lodash)
-    if (typeof _ === 'undefined' || !_.debounce) {
-        window._ = {
-            debounce: function(func, wait) {
-                let timeout;
-                return function executedFunction(...args) {
-                    const later = () => {
-                        clearTimeout(timeout);
-                        func(...args);
-                    };
-                    clearTimeout(timeout);
-                    timeout = setTimeout(later, wait);
-                };
-            }
-        };
-    }
     
 })(jQuery);

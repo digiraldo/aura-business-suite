@@ -48,33 +48,44 @@
     }
 
     function closeAllModals() {
-        $( '.aura-veh-modal' ).css( 'display', 'none' );
+        $( '.aura-veh-modal' ).each( function() {
+            if ( $( this ).css( 'display' ) !== 'none' ) {
+                $( this ).addClass( 'is-closing' );
+                var $m = $( this );
+                setTimeout( function() {
+                    $m.css( 'display', 'none' ).removeClass( 'is-closing' );
+                }, 250 );
+            }
+        });
         $( 'body' ).css( 'overflow', '' );
     }
 
     function openModal( $modal ) {
         closeAllModals();
-        $modal.css( 'display', 'flex' );
+        $modal.css( 'display', 'flex' ).removeClass( 'is-closing' );
         $( 'body' ).css( 'overflow', 'hidden' );
-        $modal.find( '.aura-veh-modal-close' ).first().focus();
+        setTimeout( function() {
+            $modal.find( '.aura-veh-modal-close' ).first().focus();
+        }, 350 );
     }
 
     function typeLabel( type ) {
         var map = TXT.type || {};
-        return map[ type ] || type;
+        var label = map[ type ] || type;
+        var badgeClass = 'aura-badge aura-badge-' + type;
+        return '<span class="' + badgeClass + '">' + label + '</span>';
     }
 
     function statusBadge( status ) {
         var map = TXT.status || {};
         var label = map[ status ] || status;
-        var colors = {
-            active:    { bg: '#e9f5fb', border: '#2271b1', text: '#2271b1' },
-            returned:  { bg: '#edfaef', border: '#00a32a', text: '#00a32a' },
-            cancelled: { bg: '#f6f7f7', border: '#787c82', text: '#787c82' }
-        };
-        var c = colors[ status ] || colors.cancelled;
-        return '<span style="border-radius:3px;border:1px solid ' + c.border + ';background:' + c.bg +
-               ';color:' + c.text + ';padding:2px 8px;font-size:12px;white-space:nowrap;">' + label + '</span>';
+        var badgeClass = 'aura-badge aura-badge-status-' + status;
+        return '<span class="' + badgeClass + '">' + label + '</span>';
+    }
+
+    function statusLabel( status ) {
+        var map = TXT.status || {};
+        return map[ status ] || status || '—';
     }
 
     function fmtDate( dt ) {
@@ -92,64 +103,158 @@
                'T' + pad( now.getHours() ) + ':' + pad( now.getMinutes() );
     }
 
+    function normalizeFuelLevel( value ) {
+        var numeric = parseInt( value, 10 );
+        if ( isNaN( numeric ) ) {
+            return 0;
+        }
+        numeric = Math.max( 0, Math.min( 100, numeric ) );
+        if ( numeric <= 0 ) { return 0; }
+        if ( numeric <= 25 ) { return 25; }
+        if ( numeric <= 50 ) { return 50; }
+        if ( numeric <= 75 ) { return 75; }
+        return 100;
+    }
+
+    function fuelLevelLabel( value ) {
+        var labels = {
+            0: 'Vacío',
+            25: '1/4',
+            50: '1/2',
+            75: '3/4',
+            100: 'Lleno'
+        };
+        var level = normalizeFuelLevel( value );
+        return labels[ level ] || '—';
+    }
+
     // ── DataTable ─────────────────────────────────────────────
 
     function initTable() {
         _table = $( '#aura-trips-table' ).DataTable({
             data:       [],
             columns: [
-                { data: 'id',    title: 'ID', width: '60px', responsivePriority: 10000 },
-                { data: null,    title: 'Vehículo', responsivePriority: 1,
+                // 1. Vehículo: Placa (negrita) + Marca/Modelo (pequeño gris)
+                { data: null, title: 'Vehículo', responsivePriority: 1, width: '140px',
                   render: function( row ) {
-                      var v = row;
-                      var plate = v.plate || '';
-                      var brand = v.brand || '';
-                      var model = v.model || '';
-                      return '<strong>' + $( '<span>' ).text( plate ).html() + '</strong>' +
-                             ( brand ? '<br><small>' + $( '<span>' ).text( brand + ' ' + model ).html() + '</small>' : '' );
+                      var plate = row.plate || '';
+                      var brand = row.brand || '';
+                      var model = row.model || '';
+                      return '<div class="aura-trip-veh-cell" style="line-height:1.3;">'
+                           + '<strong style="display:block;font-size:14px;color:#000;">' + $( '<span>' ).text( plate ).html() + '</strong>'
+                           + ( brand ? '<small style="display:block;font-size:11px;color:#666;margin-top:2px;">' + $( '<span>' ).text( brand + ' ' + model ).html() + '</small>' : '' )
+                           + '</div>';
                   }
                 },
-                { data: 'trip_type', title: 'Tipo', responsivePriority: 10000,
-                  render: function( val ) { return typeLabel( val ); }
-                },
-                { data: 'status', title: 'Estado', responsivePriority: 2,
-                  render: function( val ) { return statusBadge( val ); }
-                },
-                { data: null, title: 'Responsable / Cliente', responsivePriority: 10000,
+                // 2. Tipo: Badge tipo principal + badge subtipo mantenimiento debajo
+                { data: null, title: 'Tipo', responsivePriority: 10000, width: '110px',
                   render: function( row ) {
-                      if ( row.trip_type === 'rental' )    { return $( '<span>' ).text( row.client_name || '—' ).html(); }
-                      if ( row.trip_type === 'maintenance' ) {
-                          return $( '<span>' ).text( row.assigned_to_name || row.created_by_name || '—' ).html();
-                      }
-                      return $( '<span>' ).text( row.responsible_name || '—' ).html();
-                  }
-                },
-                { data: 'departure_datetime', title: 'Salida', responsivePriority: 3,
-                  render: function( val ) { return fmtDate( val ); }
-                },
-                { data: 'return_datetime', title: 'Retorno', responsivePriority: 10000,
-                  render: function( val ) { return fmtDate( val ); }
-                },
-                { data: 'km_traveled', title: 'KM', responsivePriority: 10000,
-                  render: function( val ) { return val ? Number( val ).toLocaleString() : '—'; }
-                },
-                { data: null, title: 'Acciones', orderable: false, responsivePriority: 1,
-                  render: function( row ) {
-                      var html = '<div class="aura-trips-actions">';
-                      html += '<button class="button button-small aura-trip-detail" data-id="' + row.id + '" title="Ver detalle">' +
-                              '<span class="dashicons dashicons-visibility" style="margin-top:3px;font-size:14px;"></span></button>';
-                      var canAct = CFG.canEditAll || ( CFG.canEditOwn && row.created_by == CFG.currentUid );
-                      if ( row.status === 'active' ) {
-                          if ( canAct ) {
-                              html += ' <button class="button button-primary button-small aura-trip-checkin" data-id="' + row.id + '" title="Registrar retorno">' +
-                                      '<span class="dashicons dashicons-yes-alt" style="margin-top:3px;font-size:14px;"></span></button>';
-                              html += ' <button class="button button-small aura-trip-cancel" data-id="' + row.id + '" title="Cancelar">' +
-                                      '<span class="dashicons dashicons-dismiss" style="margin-top:3px;font-size:14px;"></span></button>';
+                      var typeHtml = typeLabel( row.trip_type );
+                      // Agregar subtipo si es mantenimiento
+                      if ( row.trip_type === 'maintenance' && row.maint_subtype ) {
+                          var subBadge = '';
+                          switch( row.maint_subtype ) {
+                              case 'preventive':
+                                  subBadge = '<span class="aura-badge aura-badge-preventive">Preventivo</span>';
+                                  break;
+                              case 'corrective':
+                                  subBadge = '<span class="aura-badge aura-badge-corrective">Correctivo</span>';
+                                  break;
+                              case 'inspection':
+                                  subBadge = '<span class="aura-badge aura-badge-inspection">Inspección</span>';
+                                  break;
+                          }
+                          if ( subBadge ) {
+                              typeHtml += '<div style="margin-top:4px;">' + subBadge + '</div>';
                           }
                       }
-                      if ( row.status !== 'active' && CFG.canDelete ) {
-                          html += ' <button class="button button-link-delete button-small aura-trip-delete" data-id="' + row.id + '" title="Eliminar">' +
-                                  '<span class="dashicons dashicons-trash" style="margin-top:3px;font-size:14px;"></span></button>';
+                      return '<div style="line-height:1.2;">' + typeHtml + '</div>';
+                  }
+                },
+                // 3. Responsable/Cliente: Dinámico según trip_type
+                { data: null, title: 'Responsable / Cliente', responsivePriority: 10000, width: '120px',
+                  render: function( row ) {
+                      var name = '—';
+                      if ( row.trip_type === 'rental' ) {
+                          name = row.client_name || '—';
+                      } else if ( row.trip_type === 'maintenance' ) {
+                          name = row.assigned_to_name || row.created_by_name || '—';
+                      } else {
+                          name = row.responsible_name || '—';
+                      }
+                      return $( '<span>' ).text( name ).html();
+                  }
+                },
+                // 4. Destino: Solo si no es rental, sino mostrar "—"
+                { data: null, title: 'Destino', responsivePriority: 10000, width: '120px',
+                  render: function( row ) {
+                      if ( row.trip_type === 'rental' ) {
+                          return '—';
+                      }
+                      return $( '<span>' ).text( row.destination || '—' ).html();
+                  }
+                },
+                // 5. Salida: Fecha+hora (línea 1) + "(odómetro km)" (línea 2 pequeña)
+                { data: null, title: 'Salida', responsivePriority: 3, width: '130px',
+                  render: function( row ) {
+                      var dt = row.departure_datetime ? fmtDate( row.departure_datetime ) : '—';
+                      var odometer = row.departure_odometer ? '(' + Number( row.departure_odometer ).toLocaleString() + ' km)' : '';
+                      return '<div style="line-height:1.4;">'
+                           + '<div>' + dt + '</div>'
+                           + ( odometer ? '<small style="color:#666;font-size:11px;">' + odometer + '</small>' : '' )
+                           + '</div>';
+                  }
+                },
+                // 6. Retorno: Idem Salida, o "—" si no retornó
+                { data: null, title: 'Retorno', responsivePriority: 10000, width: '130px',
+                  render: function( row ) {
+                      if ( !row.return_datetime ) {
+                          return '—';
+                      }
+                      var dt = fmtDate( row.return_datetime );
+                      var odometer = row.return_odometer ? '(' + Number( row.return_odometer ).toLocaleString() + ' km)' : '';
+                      return '<div style="line-height:1.4;">'
+                           + '<div>' + dt + '</div>'
+                           + ( odometer ? '<small style="color:#666;font-size:11px;">' + odometer + '</small>' : '' )
+                           + '</div>';
+                  }
+                },
+                // 7. Km: Kilómetros con formato de miles
+                { data: null, title: 'KM', responsivePriority: 10000, width: '80px',
+                  render: function( row ) {
+                      if ( !row.km_traveled ) {
+                          return '—';
+                      }
+                      return Number( row.km_traveled ).toLocaleString() + ' km';
+                  }
+                },
+                // 8. Estado: Badge del estatus
+                { data: null, title: 'Estado', responsivePriority: 2, width: '100px',
+                  render: function( row ) {
+                      return statusBadge( row.status );
+                  }
+                },
+                // 9. Acciones: Botones circulares contextuales
+                { data: null, title: 'Acciones', orderable: false, responsivePriority: 1, width: '140px',
+                  render: function( row ) {
+                      var html = '<div class="aura-trips-actions" style="display:flex;gap:4px;align-items:center;">';
+                      html += '<button class="button button-small aura-trip-action aura-trip-detail" data-id="' + row.id + '" title="Ver detalles" style="padding:4px 8px;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">' +
+                          '<span class="dashicons dashicons-visibility" style="width:16px;height:16px;"></span></button>';
+                      var canAct = CFG.canEditAll || ( CFG.canEditOwn && row.created_by == CFG.currentUid );
+                      var canDelete = CFG.canDeleteAll || ( CFG.canDeleteOwn && row.created_by == CFG.currentUid );
+                      if ( row.status === 'active' ) {
+                          if ( canAct ) {
+                          html += '<button class="button button-small aura-trip-action aura-trip-edit" data-id="' + row.id + '" title="Editar" style="padding:4px 8px;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">' +
+                              '<span class="dashicons dashicons-edit" style="width:16px;height:16px;"></span></button>';
+                          html += '<button class="button button-small aura-trip-action aura-trip-checkin" data-id="' + row.id + '" title="Registrar retorno" style="padding:4px 8px;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">' +
+                              '<span class="dashicons dashicons-yes-alt" style="width:16px;height:16px;"></span></button>';
+                          html += '<button class="button button-small aura-trip-action aura-trip-cancel" data-id="' + row.id + '" title="Cancelar" style="padding:4px 8px;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">' +
+                              '<span class="dashicons dashicons-dismiss" style="width:16px;height:16px;"></span></button>';
+                          }
+                      }
+                      if ( row.status !== 'active' && canDelete ) {
+                      html += '<button class="button button-small aura-trip-action aura-trip-delete" data-id="' + row.id + '" title="Eliminar" style="padding:4px 8px;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">' +
+                          '<span class="dashicons dashicons-trash" style="width:16px;height:16px;"></span></button>';
                       }
                       html += '</div>';
                       return html;
@@ -161,7 +266,7 @@
             ordering:    true,
             order:       [ [ 0, 'desc' ] ],
             searching:   false,
-            responsive:  true,
+            responsive:  false,
             dom:         '<"aura-dt-top"li>rt<"aura-dt-bottom"p>',
             language: {
                 emptyTable:   TXT.no_results || 'Sin resultados.',
@@ -342,17 +447,38 @@
             } );
     }
 
+    function updateFuelGauge( value, prefix, allowEmpty ) {
+        var isEmpty = allowEmpty && ( value === '' || value === null || value === undefined );
+        prefix = prefix || 'trip';
+
+        if ( isEmpty ) {
+            $( '#' + prefix + '-fuel-gauge' ).attr( 'data-empty', '1' ).attr( 'data-value', 0 );
+            $( '#' + prefix + '-fuel-gauge-fill' ).css( 'width', '0%' );
+            $( '#' + prefix + '-fuel-gauge-state' ).text( '—' );
+            return;
+        }
+
+        var rounded = normalizeFuelLevel( value );
+
+        $( '#' + prefix + '-fuel-gauge' ).removeAttr( 'data-empty' ).attr( 'data-value', rounded );
+        $( '#' + prefix + '-fuel-gauge-fill' ).css( 'width', rounded + '%' );
+        $( '#' + prefix + '-fuel-gauge-state' ).text( fuelLevelLabel( rounded ) );
+    }
+
     // ── Modal: Nueva salida ───────────────────────────────────
 
     function resetFormModal() {
         $( '#aura-trips-form-id' ).val( '' );
         $( '#trip-vehicle_id' ).empty().append( '<option value="">— Seleccionar —</option>' );
+        $( '#trip-vehicle_id' ).prop( 'disabled', false );
         $( '#trip-vehicle-info' ).hide();
         $( '#trip-trip_type' ).val( '' );
+        $( '.aura-trips-type-card' ).css( 'pointer-events', '' ).removeAttr( 'aria-disabled' );
         $( '#trip-area_id' ).val( '0' );
         $( '#trip-departure_datetime' ).val( getNow() );
         $( '#trip-departure_odometer' ).val( '0' );
         $( '#trip-departure_fuel' ).val( '100' );
+        updateFuelGauge( 100 );
         $( '#trip-client_name, #trip-client_phone, #trip-client_email, #trip-client_document' ).val( '' );
         $( '#trip-rate_per_km' ).val( '0.00' );
         $( '#trip-responsible_name' ).val( '' );
@@ -396,6 +522,62 @@
         openModal( $( '#aura-trips-modal-form' ) );
     }
 
+    function openEditModal( tripId ) {
+        resetFormModal();
+        loadUsersDropdown();
+
+        apiFetch( 'GET', 'vehicles/trips/' + tripId )
+            .done( function( resp ) {
+                var trip = resp.trip || resp;
+
+                $( '#aura-trips-form-id' ).val( trip.id );
+                $( '#aura-trips-form-title' ).text( 'Editar Salida #' + trip.id );
+                $( '#aura-trips-form-submit' ).text( 'Guardar cambios' ).prop( 'disabled', false );
+
+                loadAvailableVehicles( trip.trip_type, trip.vehicle_id );
+                $( '#trip-vehicle_id' ).prop( 'disabled', true );
+
+                $( '#trip-trip_type' ).val( trip.trip_type ).trigger( 'change' );
+                $( '.aura-trips-type-card' ).removeClass( 'is-active' );
+                $( '.aura-trips-type-card[data-type="' + trip.trip_type + '"]' ).addClass( 'is-active' );
+                $( '.aura-trips-type-card' ).css( 'pointer-events', 'none' ).attr( 'aria-disabled', 'true' );
+
+                $( '#trip-area_id' ).val( String( trip.area_id || 0 ) );
+                loadTripCatalogs( {
+                    destination: trip.destination || '',
+                    purpose: trip.purpose || ''
+                } );
+
+                $( '#trip-departure_datetime' ).val( ( trip.departure_datetime || '' ).replace( ' ', 'T' ).slice( 0, 16 ) );
+                $( '#trip-departure_odometer' ).val( trip.departure_odometer || 0 );
+                $( '#trip-departure_fuel' ).val( normalizeFuelLevel( trip.departure_fuel || 0 ) );
+                updateFuelGauge( $( '#trip-departure_fuel' ).val(), 'trip' );
+
+                $( '#trip-client_name' ).val( trip.client_name || '' );
+                $( '#trip-client_phone' ).val( trip.client_phone || '' );
+                $( '#trip-client_email' ).val( trip.client_email || '' );
+                $( '#trip-client_document' ).val( trip.client_document || '' );
+                $( '#trip-rate_per_km' ).val( trip.rate_per_km || '0.00' );
+
+                $( '#trip-responsible_name' ).val( trip.responsible_name || '' );
+                $( '#trip-assigned_to' ).val( String( trip.assigned_to || 0 ) );
+                $( '#trip-trip_description' ).val( trip.trip_description || '' );
+
+                $( '#trip-maint_subtype' ).val( trip.maint_subtype || 'preventive' );
+                $( '#trip-maint_priority' ).val( trip.maint_priority || 'medium' );
+                $( '#trip-maint_description' ).val( trip.maint_description || '' );
+                $( '#trip-maint_provider' ).val( trip.maint_provider || '' );
+                $( '#trip-maint_contact' ).val( trip.maint_contact || '' );
+                $( '#trip-maint_estimated_cost' ).val( trip.maint_estimated_cost || '0.00' );
+
+                openModal( $( '#aura-trips-modal-form' ) );
+            } )
+            .fail( function( xhr ) {
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : ( TXT.error || 'Error.' );
+                showNotice( msg, 'error' );
+            } );
+    }
+
     $( document ).on( 'change', '#trip-area_id', function() {
         loadTripCatalogs( {
             destination: $( '#trip-destination' ).val(),
@@ -425,6 +607,16 @@
 
     $( document ).on( 'change', '#trip-vehicle_id', function() {
         showVehicleInfo( $( this ).val() );
+        $( this ).closest( '.aura-veh-form-col' ).removeClass( 'has-error' );
+    } );
+
+    $( document ).on( 'change', '#trip-departure_fuel', function() {
+        updateFuelGauge( $( this ).val(), 'trip' );
+        $( this ).closest( '.aura-veh-form-col' ).removeClass( 'has-error' );
+    } );
+
+    $( document ).on( 'change', '#checkin-return_fuel', function() {
+        updateFuelGauge( $( this ).val(), 'checkin', true );
         $( this ).closest( '.aura-veh-form-col' ).removeClass( 'has-error' );
     } );
 
@@ -472,6 +664,7 @@
         var $btn    = $( this );
         var $err    = $( '#aura-trips-form-error' );
         var data    = collectFormData();
+        var editId  = parseInt( $( '#aura-trips-form-id' ).val(), 10 ) || 0;
         $err.hide().text( '' );
 
         if ( ! data.vehicle_id ) {
@@ -488,16 +681,16 @@
 
         $btn.prop( 'disabled', true ).text( 'Guardando…' );
 
-        apiFetch( 'POST', 'vehicles/trips', data )
+        apiFetch( editId ? 'PUT' : 'POST', editId ? 'vehicles/trips/' + editId : 'vehicles/trips', data )
             .done( function() {
                 closeAllModals();
-                showNotice( TXT.saved || 'Salida registrada.' );
+                showNotice( editId ? ( TXT.updated || 'Salida actualizada.' ) : ( TXT.saved || 'Salida registrada.' ) );
                 loadTrips();
             })
             .fail( function( xhr ) {
                 var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : ( TXT.error || 'Error.' );
                 $err.text( msg ).show();
-                $btn.prop( 'disabled', false ).text( 'Registrar Salida' );
+                $btn.prop( 'disabled', false ).text( editId ? 'Guardar cambios' : 'Registrar Salida' );
             });
     });
 
@@ -505,15 +698,34 @@
 
     function buildCheckinSummary( trip ) {
         var type = trip.trip_type;
-        var lines = [];
-        lines.push( '<strong>Vehículo:</strong> ' + $( '<span>' ).text( (trip.plate || '') + ' — ' + (trip.brand||'') + ' ' + (trip.model||'') ).html() );
-        lines.push( '<strong>Tipo:</strong> ' + typeLabel( type ) );
-        if ( type === 'rental' )   { lines.push( '<strong>Cliente:</strong> ' + $( '<span>' ).text( trip.client_name || '—' ).html() ); }
-        if ( type === 'errand' || type === 'other' ) { lines.push( '<strong>Responsable:</strong> ' + $( '<span>' ).text( trip.responsible_name || '—' ).html() ); }
-        if ( type === 'maintenance' ) { lines.push( '<strong>Trabajo:</strong> ' + $( '<span>' ).text( trip.maint_description || '—' ).html() ); }
-        lines.push( '<strong>Salida:</strong> ' + fmtDate( trip.departure_datetime ) + ' | <strong>Odómetro:</strong> ' + Number( trip.departure_odometer ).toLocaleString() + ' km' );
-        var $div = $( '<div class="aura-trips-checkin-summary-inner" style="background:#f0f7ff;border:1px solid #c3c4c7;border-radius:4px;padding:10px 14px;margin-bottom:12px;font-size:13px;"></div>' );
-        $div.html( lines.join( ' &nbsp;|&nbsp; ' ) );
+        var personLabel = '—';
+        if ( type === 'rental' ) {
+            personLabel = trip.client_name || '—';
+        } else if ( type === 'errand' || type === 'other' ) {
+            personLabel = trip.responsible_name || '—';
+        } else if ( type === 'maintenance' ) {
+            personLabel = trip.assigned_to_name || trip.created_by_name || '—';
+        }
+
+        var $div = $( '<div class="aura-trips-checkin-summary-card"></div>' );
+        $div.html(
+            '<div class="aura-trips-checkin-summary-head">'
+                + '<div class="aura-trips-checkin-summary-veh">'
+                    + '<span class="dashicons dashicons-car"></span>'
+                    + '<div>'
+                        + '<strong>' + $( '<span>' ).text( ( trip.plate || '' ) + ' — ' + ( trip.brand || '' ) + ' ' + ( trip.model || '' ) ).html() + '</strong>'
+                        + '<small>ID salida #' + Number( trip.id || 0 ) + '</small>'
+                    + '</div>'
+                + '</div>'
+                + '<span class="aura-trip-status aura-trip-status--' + ( trip.status || 'active' ) + '">' + typeLabel( type ) + '</span>'
+            + '</div>'
+            + '<div class="aura-trips-checkin-summary-grid">'
+                + '<div><label>Salida</label><strong>' + fmtDate( trip.departure_datetime ) + '</strong></div>'
+                + '<div><label>Odómetro salida</label><strong>' + Number( trip.departure_odometer || 0 ).toLocaleString() + ' km</strong></div>'
+                + '<div><label>Combustible salida</label><strong>' + fuelLevelLabel( trip.departure_fuel ) + '</strong></div>'
+                + '<div><label>Responsable/Cliente</label><strong>' + $( '<span>' ).text( personLabel ).html() + '</strong></div>'
+            + '</div>'
+        );
         return $div;
     }
 
@@ -529,6 +741,7 @@
                 $( '#checkin-return_datetime' ).val( '' );
                 $( '#checkin-return_odometer' ).val( trip.departure_odometer || 0 );
                 $( '#checkin-return_fuel' ).val( '' );
+                updateFuelGauge( '', 'checkin', true );
                 $( '#aura-checkin-preview' ).hide();
                 $( '#checkin-additional_charges, #checkin-discounts' ).val( '0.00' );
                 $( '#checkin-maint_actual_cost' ).val( '0.00' );
@@ -537,6 +750,7 @@
                 $( '#checkin-section-rental' ).toggle( trip.trip_type === 'rental' );
                 $( '#checkin-section-maintenance' ).toggle( trip.trip_type === 'maintenance' );
                 $( '#checkin-section-expenses' ).toggle( trip.trip_type !== 'rental' );
+                updateNextServiceCalc();
                 $( '#checkin-expenses-lines' ).empty();
                 updateExpensesTotal();
                 $( '#aura-checkin-error' ).hide().text( '' );
@@ -566,6 +780,33 @@
     }
 
     $( document ).on( 'input', '#checkin-return_odometer, #checkin-additional_charges, #checkin-discounts', updateCheckinPreview );
+
+    // ── Suma dinámica próximo servicio por km (mantenimiento) ──
+    function updateNextServiceCalc() {
+        var tripType = $( '#aura-checkin-trip-type' ).val();
+        if ( tripType !== 'maintenance' ) {
+            $( '#checkin-next-service-calc' ).hide();
+            return;
+        }
+        var retOdometer = parseInt( $( '#checkin-return_odometer' ).val(), 10 ) || 0;
+        var interval    = parseInt( $( '#checkin-next_service_interval_km' ).val(), 10 ) || 0;
+        var nextService = retOdometer + interval;
+        
+        // Actualizar valores de cálculo
+        $( '#calc-odometer-value' ).text( retOdometer.toLocaleString() + ' km' );
+        $( '#calc-interval-value' ).text( interval > 0 ? interval.toLocaleString() + ' km' : '—' );
+        $( '#tooltip-next-km' ).text( nextService.toLocaleString() + ' km' );
+        
+        if ( interval > 0 ) {
+            $( '#calc-result-value' ).text( nextService.toLocaleString() + ' km' );
+            $( '#checkin-next-service-calc' ).fadeIn( 200 );
+        } else {
+            $( '#checkin-next-service-calc' ).fadeOut( 200 );
+        }
+    }
+
+    $( document ).on( 'input', '#checkin-return_odometer, #checkin-next_service_interval_km', updateNextServiceCalc );
+    $( document ).on( 'change', '#aura-checkin-trip-type', updateNextServiceCalc );
 
     // Expenses detail for errand/maintenance/other
     var _expenseLineCount = 0;
@@ -719,40 +960,77 @@
         apiFetch( 'GET', 'vehicles/trips/' + tripId )
             .done( function( resp ) {
                 var t = resp.trip || resp;
-                var html = '<table class="widefat striped" style="max-width:600px;">';
-                var rows = [
-                    [ 'ID',       t.id ],
-                    [ 'Vehículo', ( t.plate || '' ) + ' — ' + ( t.brand || '' ) + ' ' + ( t.model || '' ) ],
-                    [ 'Tipo',     typeLabel( t.trip_type ) ],
-                    [ 'Estado',   statusBadge( t.status ) ],
-                    [ 'Salida',   fmtDate( t.departure_datetime ) ],
-                    [ 'Odóm. salida', Number( t.departure_odometer ).toLocaleString() + ' km' ],
-                    [ 'Retorno',  fmtDate( t.return_datetime ) ],
-                    [ 'Odóm. retorno', t.return_odometer ? Number( t.return_odometer ).toLocaleString() + ' km' : '—' ],
-                    [ 'KM recorridos', t.km_traveled ? Number( t.km_traveled ).toLocaleString() : '—' ],
-                ];
+                var person = '—';
                 if ( t.trip_type === 'rental' ) {
-                    rows.push( [ 'Cliente',     t.client_name    || '—' ] );
-                    rows.push( [ 'Tarifa/km',   t.rate_per_km    || '—' ] );
-                    rows.push( [ 'Total',        t.total_amount  || '—' ] );
+                    person = t.client_name || '—';
                 } else if ( t.trip_type === 'maintenance' ) {
-                    rows.push( [ 'Descripción',  t.maint_description  || '—' ] );
-                    rows.push( [ 'Subtipo',      t.maint_subtype      || '—' ] );
-                    rows.push( [ 'Prioridad',    t.maint_priority     || '—' ] );
-                    rows.push( [ 'Costo real',   t.maint_actual_cost  || '—' ] );
+                    person = t.assigned_to_name || t.created_by_name || '—';
                 } else {
-                    rows.push( [ 'Responsable',  t.responsible_name   || '—' ] );
-                    rows.push( [ 'Destino',      t.destination        || '—' ] );
-                    rows.push( [ 'Propósito',    t.purpose            || '—' ] );
+                    person = t.responsible_name || '—';
                 }
-                rows.push( [ 'Registrado por', t.created_by_name || '—' ] );
-                if ( t.cancellation_reason ) { rows.push( [ 'Motivo cancelación', t.cancellation_reason ] ); }
 
-                rows.forEach( function( pair ) {
-                    html += '<tr><th style="width:180px;">' + pair[0] + '</th>' +
-                            '<td>' + ( pair[1] !== null && pair[1] !== undefined ? pair[1] : '—' ) + '</td></tr>';
-                });
-                html += '</table>';
+                var html = '<div class="aura-trip-detail">'
+                    + '<div class="aura-trip-detail-head">'
+                        + '<div class="aura-trip-detail-veh">'
+                            + '<span class="dashicons dashicons-car"></span>'
+                            + '<div>'
+                                + '<strong>' + $( '<span>' ).text( ( t.plate || '' ) + ' — ' + ( t.brand || '' ) + ' ' + ( t.model || '' ) ).html() + '</strong>'
+                                + '<small>Salida #' + Number( t.id || 0 ) + '</small>'
+                            + '</div>'
+                        + '</div>'
+                        + '<div class="aura-trip-detail-badges">'
+                            + '<span class="aura-trip-status aura-trip-status--' + ( t.status || 'active' ) + '">' + statusLabel( t.status ) + '</span>'
+                            + '<span class="aura-trip-pill">' + typeLabel( t.trip_type ) + '</span>'
+                        + '</div>'
+                    + '</div>'
+                    + '<div class="aura-trip-detail-grid">'
+                        + '<div><label>Fecha salida</label><strong>' + fmtDate( t.departure_datetime ) + '</strong></div>'
+                        + '<div><label>Fecha retorno</label><strong>' + fmtDate( t.return_datetime ) + '</strong></div>'
+                        + '<div><label>Odómetro salida</label><strong>' + Number( t.departure_odometer || 0 ).toLocaleString() + ' km</strong></div>'
+                        + '<div><label>Odómetro retorno</label><strong>' + ( t.return_odometer ? Number( t.return_odometer ).toLocaleString() + ' km' : '—' ) + '</strong></div>'
+                        + '<div><label>Combustible salida</label><strong>' + fuelLevelLabel( t.departure_fuel ) + '</strong></div>'
+                        + '<div><label>Combustible retorno</label><strong>' + ( t.return_fuel === null || t.return_fuel === undefined ? '—' : fuelLevelLabel( t.return_fuel ) ) + '</strong></div>'
+                        + '<div><label>KM recorridos</label><strong>' + ( t.km_traveled ? Number( t.km_traveled ).toLocaleString() : '—' ) + '</strong></div>'
+                        + '<div><label>Persona</label><strong>' + $( '<span>' ).text( person ).html() + '</strong></div>'
+                    + '</div>';
+
+                if ( t.trip_type === 'rental' ) {
+                    html += '<div class="aura-trip-detail-section">'
+                        + '<h4>Datos de renta</h4>'
+                        + '<div class="aura-trip-detail-grid">'
+                            + '<div><label>Cliente</label><strong>' + $( '<span>' ).text( t.client_name || '—' ).html() + '</strong></div>'
+                            + '<div><label>Tarifa/km</label><strong>' + ( t.rate_per_km || '—' ) + '</strong></div>'
+                            + '<div><label>Total</label><strong>' + ( t.total_amount || '—' ) + '</strong></div>'
+                            + '<div><label>Gastos</label><strong>' + ( t.total_expenses || '—' ) + '</strong></div>'
+                        + '</div>'
+                    + '</div>';
+                } else if ( t.trip_type === 'maintenance' ) {
+                    html += '<div class="aura-trip-detail-section">'
+                        + '<h4>Datos de mantenimiento</h4>'
+                        + '<div class="aura-trip-detail-grid">'
+                            + '<div><label>Descripción</label><strong>' + $( '<span>' ).text( t.maint_description || '—' ).html() + '</strong></div>'
+                            + '<div><label>Subtipo</label><strong>' + $( '<span>' ).text( t.maint_subtype || '—' ).html() + '</strong></div>'
+                            + '<div><label>Prioridad</label><strong>' + $( '<span>' ).text( t.maint_priority || '—' ).html() + '</strong></div>'
+                            + '<div><label>Costo real</label><strong>' + ( t.maint_actual_cost || '—' ) + '</strong></div>'
+                        + '</div>'
+                    + '</div>';
+                } else {
+                    html += '<div class="aura-trip-detail-section">'
+                        + '<h4>Datos operativos</h4>'
+                        + '<div class="aura-trip-detail-grid">'
+                            + '<div><label>Responsable</label><strong>' + $( '<span>' ).text( t.responsible_name || '—' ).html() + '</strong></div>'
+                            + '<div><label>Destino</label><strong>' + $( '<span>' ).text( t.destination || '—' ).html() + '</strong></div>'
+                            + '<div><label>Propósito</label><strong>' + $( '<span>' ).text( t.purpose || '—' ).html() + '</strong></div>'
+                            + '<div><label>Registrado por</label><strong>' + $( '<span>' ).text( t.created_by_name || '—' ).html() + '</strong></div>'
+                        + '</div>'
+                    + '</div>';
+                }
+
+                if ( t.cancellation_reason ) {
+                    html += '<div class="aura-trip-detail-note"><strong>Motivo cancelación:</strong> ' + $( '<span>' ).text( t.cancellation_reason ).html() + '</div>';
+                }
+
+                html += '</div>';
                 $( '#aura-trips-detail-content' ).html( html );
                 openModal( $( '#aura-trips-modal-detail' ) );
             })
@@ -769,6 +1047,10 @@
 
     $( document ).on( 'click', '.aura-trip-checkin', function() {
         openCheckinModal( $( this ).data( 'id' ) );
+    });
+
+    $( document ).on( 'click', '.aura-trip-edit', function() {
+        openEditModal( $( this ).data( 'id' ) );
     });
 
     $( document ).on( 'click', '.aura-trip-cancel', function() {

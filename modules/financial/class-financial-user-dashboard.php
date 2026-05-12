@@ -45,6 +45,7 @@ class Aura_Financial_User_Dashboard {
     public static function register_wp_widget(): void {
         if (
             ! current_user_can( 'aura_finance_view_user_summary' ) &&
+            ! current_user_can( 'aura_finance_view_own' ) &&
             ! current_user_can( 'aura_finance_view_all' ) &&
             ! current_user_can( 'manage_options' )
         ) {
@@ -176,6 +177,7 @@ class Aura_Financial_User_Dashboard {
         // Verificar acceso
         if (
             ! current_user_can( 'aura_finance_view_user_summary' ) &&
+            ! current_user_can( 'aura_finance_view_own' ) &&
             ! current_user_can( 'aura_finance_view_all' ) &&
             ! current_user_can( 'manage_options' )
         ) {
@@ -209,6 +211,7 @@ class Aura_Financial_User_Dashboard {
         } else {
             if (
                 ! current_user_can( 'aura_finance_view_user_summary' ) &&
+                ! current_user_can( 'aura_finance_view_own' ) &&
                 ! current_user_can( 'aura_finance_view_all' ) &&
                 ! current_user_can( 'manage_options' )
             ) {
@@ -221,13 +224,13 @@ class Aura_Financial_User_Dashboard {
 
         // Totales aprobados por tipo
         $totals = $wpdb->get_results( $wpdb->prepare(
-            "SELECT transaction_type, SUM(amount) as total, COUNT(*) as count
-             FROM {$table}
-             WHERE related_user_id = %d
-               AND status = 'approved'
-               AND deleted_at IS NULL
-             GROUP BY transaction_type",
-            $user_id
+                        "SELECT transaction_type, SUM(amount) as total, COUNT(*) as count
+                         FROM {$table}
+                         WHERE (related_user_id = %d OR (related_user_id IS NULL AND created_by = %d))
+                             AND status = 'approved'
+                             AND deleted_at IS NULL
+                         GROUP BY transaction_type",
+                        $user_id, $user_id
         ) );
 
         return [
@@ -244,9 +247,10 @@ class Aura_Financial_User_Dashboard {
         $table = $wpdb->prefix . 'aura_finance_transactions';
 
         $count = $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$table}
-             WHERE related_user_id = %d AND status = 'pending' AND deleted_at IS NULL",
-            $user_id
+                        "SELECT COUNT(*) FROM {$table}
+                         WHERE (related_user_id = %d OR (related_user_id IS NULL AND created_by = %d))
+                             AND status = 'pending' AND deleted_at IS NULL",
+                        $user_id, $user_id
         ) );
 
         return (int) $count;
@@ -263,7 +267,7 @@ class Aura_Financial_User_Dashboard {
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_transactions';
 
-        $where  = $wpdb->prepare( 'related_user_id = %d AND deleted_at IS NULL', $user_id );
+        $where  = $wpdb->prepare( '(related_user_id = %d OR (related_user_id IS NULL AND created_by = %d)) AND deleted_at IS NULL', $user_id, $user_id );
         $params = [];
 
         if ( ! empty( $filters['date_from'] ) ) {
@@ -303,7 +307,7 @@ class Aura_Financial_User_Dashboard {
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_transactions';
 
-        $where = $wpdb->prepare( 'related_user_id = %d AND deleted_at IS NULL', $user_id );
+        $where = $wpdb->prepare( '(related_user_id = %d OR (related_user_id IS NULL AND created_by = %d)) AND deleted_at IS NULL', $user_id, $user_id );
 
         if ( ! empty( $filters['date_from'] ) ) {
             $where .= $wpdb->prepare( ' AND transaction_date >= %s', $filters['date_from'] );

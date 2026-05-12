@@ -92,6 +92,41 @@ $selected_user = $selected_user_id ? get_user_by('id', $selected_user_id) : null
 // Obtener todos los usuarios
 $all_users = get_users(array('orderby' => 'display_name'));
 
+// Usuarios que hacen parte de Aura Suite (por capabilities Aura o por asignación a áreas)
+$aura_caps_map  = Aura_Roles_Manager::get_all_capabilities();
+$aura_caps_flat = array();
+foreach ( $aura_caps_map as $module_caps ) {
+    foreach ( $module_caps as $cap_key => $cap_label ) {
+        $aura_caps_flat[] = $cap_key;
+    }
+}
+
+$aura_users = array();
+foreach ( $all_users as $listed_user ) {
+    $aura_caps_count = 0;
+    foreach ( $aura_caps_flat as $aura_cap_key ) {
+        if ( user_can( $listed_user, $aura_cap_key ) ) {
+            $aura_caps_count++;
+        }
+    }
+
+    $user_areas_for_list = Aura_Areas_Setup::get_user_areas( $listed_user->ID );
+    $areas_count = is_array( $user_areas_for_list ) ? count( $user_areas_for_list ) : 0;
+
+    if ( $aura_caps_count === 0 && $areas_count === 0 ) {
+        continue;
+    }
+
+    $aura_users[] = array(
+        'user'            => $listed_user,
+        'avatar'          => get_avatar_url( $listed_user->ID, array( 'size' => 44 ) ),
+        'caps_count'      => $aura_caps_count,
+        'areas_count'     => $areas_count,
+        'roles'           => implode( ', ', array_map( 'ucfirst', $listed_user->roles ) ),
+        'is_selected'     => (int) $selected_user_id === (int) $listed_user->ID,
+    );
+}
+
 ?>
 
 <div class="wrap">
@@ -111,6 +146,35 @@ $all_users = get_users(array('orderby' => 'display_name'));
             <strong><?php _e('Usuario creado exitosamente.', 'aura-suite'); ?></strong>
             <?php printf(__('Ahora puedes asignar los permisos de %s.', 'aura-suite'), esc_html($selected_user->display_name)); ?>
         </p>
+    </div>
+    <?php endif; ?>
+
+    <?php if ( $selected_user ) :
+        $selected_avatar = get_avatar_url( $selected_user->ID, array( 'size' => 64 ) );
+        $selected_caps_count = 0;
+        $selected_caps_ui = Aura_Roles_Manager::get_capabilities_for_ui();
+        foreach ( $selected_caps_ui as $selected_module_caps ) {
+            foreach ( $selected_module_caps['capabilities'] as $selected_cap_name => $selected_cap_info ) {
+                if ( ! empty( $selected_user->allcaps[ $selected_cap_name ] ) ) {
+                    $selected_caps_count++;
+                }
+            }
+        }
+        $selected_user_areas = Aura_Areas_Setup::get_user_areas( $selected_user->ID );
+        $selected_areas_count = is_array( $selected_user_areas ) ? count( $selected_user_areas ) : 0;
+    ?>
+    <div class="aura-selected-user-card aura-selected-user-card--sticky aura-selected-user-card--global">
+        <img src="<?php echo esc_url( $selected_avatar ); ?>"
+             alt="<?php echo esc_attr( $selected_user->display_name ); ?>"
+             class="aura-selected-user-card__avatar" />
+        <div class="aura-selected-user-card__meta">
+            <h3><?php echo esc_html( $selected_user->display_name ); ?></h3>
+            <p><?php echo esc_html( $selected_user->user_email ); ?></p>
+            <div class="aura-selected-user-card__badges">
+                <span class="aura-count-badge aura-count-badge--blue"><?php printf( esc_html__( 'Permisos activos: %d', 'aura-suite' ), (int) $selected_caps_count ); ?></span>
+                <span class="aura-count-badge aura-count-badge--green"><?php printf( esc_html__( 'Áreas: %d', 'aura-suite' ), (int) $selected_areas_count ); ?></span>
+            </div>
+        </div>
     </div>
     <?php endif; ?>
 
@@ -178,57 +242,73 @@ $all_users = get_users(array('orderby' => 'display_name'));
     </div>
     <?php endif; ?>
 
-    <!-- Selector de Usuario -->
     <div class="aura-config-section">
-        <h2><?php _e('1️⃣ Seleccionar Usuario', 'aura-suite'); ?></h2>
-        <form method="get" action="">
-            <input type="hidden" name="page" value="aura-permissions">
-            <table class="form-table">
-                <tr>
-                    <th scope="row">
-                        <label for="user_select"><?php _e('Usuario', 'aura-suite'); ?></label>
-                    </th>
-                    <td>
-                        <select id="user_select" name="user_id" class="regular-text" onchange="this.form.submit()" style="min-width:400px;">
-                            <option value=""><?php _e('-- Seleccionar Usuario --', 'aura-suite'); ?></option>
-                            <?php foreach ($all_users as $user): 
-                                $avatar_url = get_avatar_url($user->ID, ['size' => 32]);
-                            ?>
-                                <option value="<?php echo $user->ID; ?>" 
-                                        <?php selected($selected_user_id, $user->ID); ?>
-                                        data-avatar="<?php echo esc_url($avatar_url); ?>">
-                                    <?php echo esc_html($user->display_name . ' (' . $user->user_email . ')'); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        
-                        <?php if ($selected_user): 
-                            $selected_avatar = get_avatar_url($selected_user->ID, ['size' => 64]);
+        <h2><?php _e('1️⃣ Usuarios Activos en Aura Suite', 'aura-suite'); ?></h2>
+        <p class="description"><?php _e('Usa esta tabla como flujo único: busca el usuario y haz clic en "Editar permisos".', 'aura-suite'); ?></p>
+
+        <div class="aura-user-picker__search-wrap" style="margin-top:10px; max-width:460px;">
+            <span class="dashicons dashicons-search"></span>
+            <input type="text" id="aura-users-table-search" class="aura-user-picker__search"
+                   placeholder="<?php esc_attr_e('Buscar por nombre, correo o rol...', 'aura-suite'); ?>">
+        </div>
+
+        <div class="aura-users-table-wrap">
+            <table id="aura-users-table" class="widefat fixed striped aura-users-table display nowrap" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th><?php _e('Usuario', 'aura-suite'); ?></th>
+                        <th><?php _e('Rol(es)', 'aura-suite'); ?></th>
+                        <th><?php _e('Permisos Aura', 'aura-suite'); ?></th>
+                        <th><?php _e('Áreas', 'aura-suite'); ?></th>
+                        <th><?php _e('Acción', 'aura-suite'); ?></th>
+                    </tr>
+                </thead>
+                <tbody id="aura-users-table-body">
+                    <?php if ( ! empty( $aura_users ) ) : ?>
+                        <?php foreach ( $aura_users as $aura_row ) :
+                            $row_user = $aura_row['user'];
+                            $row_url  = add_query_arg(
+                                array(
+                                    'page'    => 'aura-permissions',
+                                    'user_id' => (int) $row_user->ID,
+                                ),
+                                admin_url( 'admin.php' )
+                            );
+                            $row_search = strtolower( $row_user->display_name . ' ' . $row_user->user_email . ' ' . $aura_row['roles'] );
                         ?>
-                        <div id="selected-user-info" style="margin-top:15px; display:flex; align-items:center; gap:15px; padding:15px; background:#f9fafb; border-left:4px solid #2271b1; border-radius:4px;">
-                            <img src="<?php echo esc_url($selected_avatar); ?>" 
-                                 alt="<?php echo esc_attr($selected_user->display_name); ?>" 
-                                 style="width:64px; height:64px; border-radius:50%; border:3px solid #2271b1; box-shadow:0 2px 4px rgba(0,0,0,0.1);" />
-                            <div>
-                                <h3 style="margin:0 0 5px 0; font-size:18px;"><?php echo esc_html($selected_user->display_name); ?></h3>
-                                <p style="margin:0; color:#6b7280; font-size:14px;">
-                                    <span class="dashicons dashicons-email" style="font-size:14px; margin-right:3px;"></span>
-                                    <?php echo esc_html($selected_user->user_email); ?>
-                                </p>
-                                <p style="margin:5px 0 0 0; color:#6b7280; font-size:13px;">
-                                    <span class="dashicons dashicons-admin-users" style="font-size:13px; margin-right:3px;"></span>
-                                    <?php 
-                                    $roles = $selected_user->roles;
-                                    echo esc_html(implode(', ', array_map('ucfirst', $roles)));
-                                    ?>
-                                </p>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                    </td>
-                </tr>
+                        <tr data-user-search="<?php echo esc_attr( $row_search ); ?>" class="<?php echo $aura_row['is_selected'] ? 'is-selected' : ''; ?>">
+                            <td>
+                                <div class="aura-users-table__identity">
+                                    <img src="<?php echo esc_url( $aura_row['avatar'] ); ?>" alt="<?php echo esc_attr( $row_user->display_name ); ?>">
+                                    <div>
+                                        <strong><?php echo esc_html( $row_user->display_name ); ?></strong>
+                                        <span><?php echo esc_html( $row_user->user_email ); ?></span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><?php echo esc_html( $aura_row['roles'] ?: '—' ); ?></td>
+                            <td>
+                                <span class="aura-count-badge aura-count-badge--blue"><?php echo (int) $aura_row['caps_count']; ?></span>
+                            </td>
+                            <td>
+                                <span class="aura-count-badge aura-count-badge--green"><?php echo (int) $aura_row['areas_count']; ?></span>
+                            </td>
+                            <td>
+                                <a href="<?php echo esc_url( $row_url ); ?>" class="button button-secondary">
+                                    <?php _e( 'Editar permisos', 'aura-suite' ); ?>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php else : ?>
+                        <tr>
+                            <td colspan="5"><?php _e( 'Aún no hay usuarios con permisos o asignaciones de Aura Suite.', 'aura-suite' ); ?></td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
             </table>
-        </form>
+        </div>
+
     </div>
     
     <?php if ($selected_user): ?>
@@ -452,7 +532,12 @@ $all_users = get_users(array('orderby' => 'display_name'));
                 echo '<strong>' . $total_active . '</strong> ' . _n('permiso activo', 'permisos activos', $total_active, 'aura-suite');
                 ?>
             </span>
-            <button type="button" id="aura-perm-sticky-btn" class="button button-primary button-hero">
+            <button type="submit"
+                    id="aura-perm-sticky-btn"
+                    name="aura_assign_permissions"
+                    value="1"
+                    form="aura-perm-form"
+                    class="button button-primary button-hero">
                 <span class="dashicons dashicons-saved" style="margin-top:6px;"></span>
                 <?php _e('Guardar Permisos', 'aura-suite'); ?>
             </button>
@@ -519,6 +604,97 @@ $all_users = get_users(array('orderby' => 'display_name'));
 
 <script>
 jQuery(document).ready(function($) {
+
+    var auraUsersDt = null;
+    var auraPermDtStateKey = 'aura_perm_users_dt_state_<?php echo (int) get_current_user_id(); ?>';
+    var auraPermSearchKey  = 'aura_perm_users_search_<?php echo (int) get_current_user_id(); ?>';
+
+    if ( $.fn.DataTable && $('#aura-users-table').length ) {
+        auraUsersDt = $('#aura-users-table').DataTable({
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+            order: [[0, 'asc']],
+            responsive: true,
+            autoWidth: false,
+            stateSave: true,
+            stateDuration: -1,
+            stateSaveCallback: function(settings, data) {
+                try {
+                    // Persistimos solo lo solicitado: página, orden y tamaño.
+                    var compactState = {
+                        start: data.start,
+                        length: data.length,
+                        order: data.order || [[0, 'asc']]
+                    };
+                    localStorage.setItem(auraPermDtStateKey, JSON.stringify(compactState));
+                } catch (e) {
+                    // Silencioso si el navegador bloquea localStorage.
+                }
+            },
+            stateLoadCallback: function() {
+                try {
+                    var raw = localStorage.getItem(auraPermDtStateKey);
+                    if (!raw) return null;
+                    var saved = JSON.parse(raw);
+                    return {
+                        time: +new Date(),
+                        start: typeof saved.start === 'number' ? saved.start : 0,
+                        length: typeof saved.length === 'number' ? saved.length : 10,
+                        order: Array.isArray(saved.order) ? saved.order : [[0, 'asc']]
+                    };
+                } catch (e) {
+                    return null;
+                }
+            },
+            columnDefs: [
+                { orderable: false, targets: [4] }
+            ],
+            language: {
+                search: 'Buscar:',
+                lengthMenu: 'Mostrar _MENU_ usuarios',
+                info: 'Mostrando _START_ a _END_ de _TOTAL_ usuarios',
+                infoEmpty: 'Mostrando 0 a 0 de 0 usuarios',
+                infoFiltered: '(filtrado de _MAX_ usuarios)',
+                zeroRecords: 'No se encontraron usuarios',
+                paginate: {
+                    first: 'Primero',
+                    last: 'Último',
+                    next: 'Siguiente',
+                    previous: 'Anterior'
+                }
+            }
+        });
+    }
+
+    // ═══ FILTRO DE USUARIOS (tabla Aura, flujo único) ═══════════
+    $('#aura-users-table-search').on('input', function() {
+        var term = ($(this).val() || '').toLowerCase().trim();
+
+        try {
+            localStorage.setItem(auraPermSearchKey, term);
+        } catch (e) {
+            // Silencioso si localStorage no está disponible.
+        }
+
+        if ( auraUsersDt ) {
+            auraUsersDt.search(term).draw();
+        } else {
+            $('#aura-users-table-body tr[data-user-search]').each(function() {
+                var haystack = ($(this).attr('data-user-search') || '').toLowerCase();
+                $(this).toggle(!term || haystack.indexOf(term) !== -1);
+            });
+        }
+    });
+
+    // Restaurar filtro superior de usuarios al volver a la página.
+    try {
+        var savedSearch = localStorage.getItem(auraPermSearchKey);
+        if (savedSearch) {
+            $('#aura-users-table-search').val(savedSearch).trigger('input');
+        }
+    } catch (e) {
+        // No-op
+    }
 
     // ═══ ACCORDION ════════════════════════════════════════════
     $(document).on('click', '.aura-perm-module-header', function() {
@@ -606,9 +782,6 @@ jQuery(document).ready(function($) {
     if ($stickyBar.length) {
         $(window).on('scroll.stickyPerm', function() {
             $stickyBar.toggleClass('is-visible', $(this).scrollTop() > 250);
-        });
-        $('#aura-perm-sticky-btn').on('click', function() {
-            $('#aura-perm-form').trigger('submit');
         });
     }
 

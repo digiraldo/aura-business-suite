@@ -193,60 +193,180 @@ body.aura-veh-modal-open {
     filter: brightness(0.96);
 }
 
+.aura-veh-action > * {
+    display: block;
+    margin: 0;
+    flex: 0 0 auto;
+}
+
 .aura-veh-action .dashicons {
+    display: block;
     font-size: 14px;
     width: 14px;
     height: 14px;
-    line-height: 1.4;
+    line-height: 1;
 }
 
+.aura-veh-qr-icon {
+    width: 16px;
+    height: 16px;
+    background-color: currentColor;
+    -webkit-mask-image: var(--qr-icon-url);
+    mask-image: var(--qr-icon-url);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+/* Botón "Imprimir etiqueta" dentro del modal QR */
+.aura-veh-qr-print-btn {
+    background: #0e7577 !important;
+    border-color: #0c6365 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+.aura-veh-qr-print-btn:hover,
+.aura-veh-qr-print-btn:focus {
+    background: #0a5658 !important;
+    border-color: #094a4c !important;
+    color: #fff !important;
+}
+.aura-veh-qr-print-btn .dashicons {
+    color: #fff;
+}
+
+/* Ver — azul información */
 .aura-veh-action--view {
-    background: #eaf4ff !important;
-    border-color: #a8d1ff !important;
-    color: #0a5ea8 !important;
+    background: #eef5ff !important;
+    border-color: #b8d4f5 !important;
+    color: #1a5fa8 !important;
 }
 
+/* Editar — verde acción segura */
 .aura-veh-action--edit {
-    background: #eefcf6 !important;
-    border-color: #aae9cd !important;
-    color: #067647 !important;
+    background: #edfaf3 !important;
+    border-color: #a8dfc2 !important;
+    color: #0a6e40 !important;
 }
 
+/* Áreas — índigo organizacional */
 .aura-veh-action--areas {
-    background: #eef2ff !important;
-    border-color: #c8d4ff !important;
-    color: #3a4cb1 !important;
+    background: #eef0ff !important;
+    border-color: #c2cbf8 !important;
+    color: #3847b0 !important;
 }
 
+/* Fotos — naranja media */
 .aura-veh-action--photos {
-    background: #fff8e8 !important;
-    border-color: #ffe0a3 !important;
-    color: #a45b05 !important;
+    background: #fff5ea !important;
+    border-color: #f5ccaa !important;
+    color: #b05210 !important;
 }
 
-.aura-veh-action--unavailable,
-.aura-veh-action--delete {
-    background: #fff1f2 !important;
-    border-color: #ffc6cc !important;
-    color: #b42318 !important;
+/* Dar de baja — ámbar alerta */
+.aura-veh-action--unavailable {
+    background: #fffbe6 !important;
+    border-color: #f5d87a !important;
+    color: #966300 !important;
 }
 
+/* Restaurar — verde esmeralda recuperación */
 .aura-veh-action--restore {
-    background: #ecfdf3 !important;
-    border-color: #a6f4c5 !important;
-    color: #067647 !important;
+    background: #e8fdf3 !important;
+    border-color: #84e0b5 !important;
+    color: #06734a !important;
 }
 
+/* Transferir — violeta movimiento */
 .aura-veh-action--transfer {
-    background: #f5f3ff !important;
-    border-color: #dbd2fe !important;
-    color: #6d28d9 !important;
+    background: #f3f0ff !important;
+    border-color: #ccc0f8 !important;
+    color: #5934c8 !important;
 }
 
+/* QR — teal tecnológico */
 .aura-veh-action--qr {
-    background: #f3e8ff !important;
-    border-color: #e3c6ff !important;
-    color: #7e22ce !important;
+    background: #e8fafa !important;
+    border-color: #8dd8da !important;
+    color: #0e7577 !important;
+}
+
+/* Eliminar — rojo destructivo */
+.aura-veh-action--delete {
+    background: #fff0f0 !important;
+    border-color: #f5b8b8 !important;
+    color: #b52020 !important;
+}
+
+/* ── Esquema oscuro WP admin (midnight / coffee) ─────────────── */
+
+body.admin-color-midnight .aura-veh-action--view,
+body.admin-color-coffee .aura-veh-action--view {
+    background: #0c1f38 !important;
+    border-color: #1f4a82 !important;
+    color: #78b8ff !important;
+}
+
+body.admin-color-midnight .aura-veh-action--edit,
+body.admin-color-coffee .aura-veh-action--edit {
+    background: #082618 !important;
+    border-color: #145c35 !important;
+    color: #5ddc9c !important;
+}
+
+body.admin-color-midnight .aura-veh-action--areas,
+body.admin-color-coffee .aura-veh-action--areas {
+    background: #10163a !important;
+    border-color: #2a3982 !important;
+    color: #95abff !important;
+}
+
+body.admin-color-midnight .aura-veh-action--photos,
+body.admin-color-coffee .aura-veh-action--photos {
+    background: #2e1a04 !important;
+    border-color: #7a4510 !important;
+    color: #ffb85c !important;
+}
+
+/* Dar de baja — ámbar oscuro */
+body.admin-color-midnight .aura-veh-action--unavailable,
+body.admin-color-coffee .aura-veh-action--unavailable {
+    background: #2e2200 !important;
+    border-color: #8a6200 !important;
+    color: #ffd84d !important;
+}
+
+body.admin-color-midnight .aura-veh-action--restore,
+body.admin-color-coffee .aura-veh-action--restore {
+    background: #052c1a !important;
+    border-color: #117a48 !important;
+    color: #4de8a6 !important;
+}
+
+body.admin-color-midnight .aura-veh-action--transfer,
+body.admin-color-coffee .aura-veh-action--transfer {
+    background: #140d32 !important;
+    border-color: #3e28a0 !important;
+    color: #b09cff !important;
+}
+
+/* QR — teal oscuro */
+body.admin-color-midnight .aura-veh-action--qr,
+body.admin-color-coffee .aura-veh-action--qr {
+    background: #052626 !important;
+    border-color: #0f6c6e !important;
+    color: #3de0e4 !important;
+}
+
+/* Eliminar — rojo oscuro */
+body.admin-color-midnight .aura-veh-action--delete,
+body.admin-color-coffee .aura-veh-action--delete {
+    background: #300a0a !important;
+    border-color: #8a1f1f !important;
+    color: #ff8080 !important;
 }
 
 /* ── Modal detalle de vehículo ───────────────────────────────── */
@@ -2361,6 +2481,401 @@ body.aura-veh-modal-open {
     flex-shrink: 0;
 }
 
+/* ── Indicador de combustible en modal de salida ─────────────── */
+.aura-trips-fuel-gauge {
+    margin-top: 8px;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+}
+
+.aura-trips-fuel-gauge__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.aura-trips-fuel-gauge__label {
+    font-size: 11px;
+    color: #4f5d6b;
+    font-weight: 600;
+}
+
+.aura-trips-fuel-gauge__state {
+    font-size: 11px;
+    color: #0b5cab;
+    font-weight: 700;
+}
+
+.aura-trips-fuel-gauge__track {
+    display: grid;
+    grid-template-columns: 14px 1fr 14px;
+    align-items: center;
+    gap: 7px;
+}
+
+.aura-trips-fuel-gauge__mark {
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.aura-trips-fuel-gauge__mark--e { color: #c64040; }
+.aura-trips-fuel-gauge__mark--f { color: #1f8f58; }
+
+.aura-trips-fuel-gauge__bar {
+    position: relative;
+    height: 12px;
+    border-radius: 999px;
+    border: 1px solid #c4d4e7;
+    background: repeating-linear-gradient(
+        90deg,
+        #ecf2fa 0,
+        #ecf2fa 18%,
+        #ffffff 18%,
+        #ffffff 20%
+    );
+    overflow: hidden;
+}
+
+.aura-trips-fuel-gauge__fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #d94f4f 0%, #e7a837 38%, #3ca96a 100%);
+    transition: width .24s ease;
+}
+
+.aura-trips-fuel-gauge[data-value="0"] .aura-trips-fuel-gauge__state { color: #b42318; }
+.aura-trips-fuel-gauge[data-value="25"] .aura-trips-fuel-gauge__state { color: #b54708; }
+.aura-trips-fuel-gauge[data-value="50"] .aura-trips-fuel-gauge__state { color: #a15c00; }
+.aura-trips-fuel-gauge[data-value="75"] .aura-trips-fuel-gauge__state { color: #0c6f45; }
+.aura-trips-fuel-gauge[data-value="100"] .aura-trips-fuel-gauge__state { color: #067647; }
+
+.aura-trips-fuel-gauge[data-empty="1"] .aura-trips-fuel-gauge__state { color: #64748b; }
+
+body.admin-color-midnight .aura-trips-fuel-gauge,
+body.admin-color-coffee .aura-trips-fuel-gauge {
+    background: linear-gradient(180deg, #1b2430 0%, #131a23 100%);
+    border-color: #2f3f53;
+}
+
+body.admin-color-midnight .aura-trips-fuel-gauge__label,
+body.admin-color-coffee .aura-trips-fuel-gauge__label {
+    color: #c7d2df;
+}
+
+body.admin-color-midnight .aura-trips-fuel-gauge__bar,
+body.admin-color-coffee .aura-trips-fuel-gauge__bar {
+    border-color: #43556d;
+    background: repeating-linear-gradient(
+        90deg,
+        #29374a 0,
+        #29374a 18%,
+        #1b2430 18%,
+        #1b2430 20%
+    );
+}
+
+/* ── Tabla de salidas (look moderno) ─────────────────────────── */
+#aura-trips-table {
+    width: 100% !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 10px;
+    border: 1px solid #d9e2ec;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#aura-trips-table thead th {
+    background: linear-gradient(135deg, #0f4c8a 0%, #2271b1 100%);
+    color: #fff;
+    font-weight: 700;
+    padding: 10px 12px;
+    border-bottom: none;
+}
+
+#aura-trips-table tbody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid #edf2f7;
+}
+
+#aura-trips-table tbody tr:nth-child(even) { background: #fbfdff; }
+#aura-trips-table tbody tr:hover { background: #eef5ff; }
+
+.aura-trip-veh-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.aura-trip-veh-plate {
+    font-weight: 700;
+    color: #0f2c4d;
+}
+
+.aura-trip-veh-name {
+    color: #5b6673;
+    font-size: 11.5px;
+}
+
+.aura-trip-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.aura-trip-status--active {
+    background: #e8f4ff;
+    border-color: #9ec9ef;
+    color: #0b5cab;
+}
+
+.aura-trip-status--returned {
+    background: #eaf9ef;
+    border-color: #9dd9b0;
+    color: #067647;
+}
+
+.aura-trip-status--cancelled {
+    background: #f5f7fa;
+    border-color: #c3ccd5;
+    color: #4b5563;
+}
+
+.aura-trips-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-trip-action {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #c9d2dc !important;
+    background: #fff !important;
+}
+
+.aura-trip-action .dashicons {
+    width: 15px;
+    height: 15px;
+    font-size: 15px;
+    line-height: 1;
+}
+
+.aura-trip-action--detail { color: #1d4ed8 !important; border-color: #9dc0ff !important; background: #eef4ff !important; }
+.aura-trip-action--edit { color: #0f766e !important; border-color: #95ddd7 !important; background: #e8fbf8 !important; }
+.aura-trip-action--checkin { color: #067647 !important; border-color: #8fd7b1 !important; background: #e7fbf0 !important; }
+.aura-trip-action--cancel { color: #b54708 !important; border-color: #f4ba8a !important; background: #fff3e8 !important; }
+.aura-trip-action--delete { color: #b42318 !important; border-color: #f2a4a0 !important; background: #fff1f0 !important; }
+
+/* ── Check-in summary moderno ─────────────────────────────────── */
+.aura-trips-checkin-summary-card {
+    margin-bottom: 12px;
+    border: 1px solid #d8e3ef;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f8fbff 0%, #f2f7fd 100%);
+    padding: 10px 12px;
+}
+
+.aura-trips-checkin-summary-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.aura-trips-checkin-summary-veh {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-trips-checkin-summary-veh .dashicons {
+    color: #2271b1;
+}
+
+.aura-trips-checkin-summary-veh strong {
+    display: block;
+    color: #173b60;
+}
+
+.aura-trips-checkin-summary-veh small {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.aura-trips-checkin-summary-grid,
+.aura-trip-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.aura-trips-checkin-summary-grid > div,
+.aura-trip-detail-grid > div {
+    background: #fff;
+    border: 1px solid #e4ebf2;
+    border-radius: 8px;
+    padding: 7px 9px;
+}
+
+.aura-trips-checkin-summary-grid label,
+.aura-trip-detail-grid label {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.aura-trips-checkin-summary-grid strong,
+.aura-trip-detail-grid strong {
+    color: #0f2c4d;
+    font-size: 12.5px;
+}
+
+#aura-checkin-preview {
+    border-radius: 10px !important;
+    border-color: #9ac4ec !important;
+    background: #eef6ff !important;
+}
+
+/* ── Modal detalle moderno ───────────────────────────────────── */
+.aura-trip-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.aura-trip-detail-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #d8e3ef;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f8fbff 0%, #f3f8ff 100%);
+}
+
+.aura-trip-detail-veh {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-trip-detail-veh .dashicons {
+    color: #2271b1;
+}
+
+.aura-trip-detail-veh strong {
+    display: block;
+    color: #173b60;
+}
+
+.aura-trip-detail-veh small {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.aura-trip-detail-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-trip-pill {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #bfd3e8;
+    background: #fff;
+    color: #1f4f7d;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.aura-trip-detail-section {
+    border: 1px solid #dfe7ef;
+    border-radius: 10px;
+    padding: 10px;
+    background: #fff;
+}
+
+.aura-trip-detail-section h4 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: #1f4f7d;
+}
+
+.aura-trip-detail-note {
+    border-left: 3px solid #b42318;
+    background: #fff2f1;
+    color: #6b0d07;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+@media (max-width: 782px) {
+    .aura-trips-checkin-summary-grid,
+    .aura-trip-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+body.admin-color-midnight #aura-trips-table,
+body.admin-color-coffee #aura-trips-table {
+    border-color: #344557;
+}
+
+body.admin-color-midnight #aura-trips-table tbody tr:nth-child(even),
+body.admin-color-coffee #aura-trips-table tbody tr:nth-child(even) {
+    background: #1b2430;
+}
+
+body.admin-color-midnight #aura-trips-table tbody tr:hover,
+body.admin-color-coffee #aura-trips-table tbody tr:hover {
+    background: #233244;
+}
+
+body.admin-color-midnight .aura-trips-checkin-summary-card,
+body.admin-color-coffee .aura-trips-checkin-summary-card,
+body.admin-color-midnight .aura-trip-detail-head,
+body.admin-color-coffee .aura-trip-detail-head {
+    background: linear-gradient(180deg, #1b2430 0%, #141c25 100%);
+    border-color: #344557;
+}
+
+body.admin-color-midnight .aura-trips-checkin-summary-grid > div,
+body.admin-color-coffee .aura-trips-checkin-summary-grid > div,
+body.admin-color-midnight .aura-trip-detail-grid > div,
+body.admin-color-coffee .aura-trip-detail-grid > div,
+body.admin-color-midnight .aura-trip-detail-section,
+body.admin-color-coffee .aura-trip-detail-section {
+    background: #141c25;
+    border-color: #2f4053;
+}
+
 /* ── Campos con error de validación ──────────────────────────── */
 .aura-veh-form-col.has-error > input,
 .aura-veh-form-col.has-error > select,
@@ -2410,4 +2925,888 @@ table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > td.dtr-control::
 table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::before {
     content: "\f343" !important;
     background-color: #646970 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE 4: MEJORAS PREMIUM — TABLA STICKY + ACCIONES FIJAS
+══════════════════════════════════════════════════════════════ */
+
+/* Envolvente para hacer sticky el header */
+.aura-trips-table-wrapper {
+    position: relative;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Tabla sticky header */
+#aura-trips-table {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin-top: 0 !important;
+    table-layout: fixed;
+}
+
+/* Header sticky al top */
+#aura-trips-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+#aura-trips-table thead th {
+    background: linear-gradient(180deg, #2271b1 0%, #1a5fa8 100%) !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    padding: 12px 8px !important;
+    white-space: nowrap !important;
+    text-align: left !important;
+    border-bottom: 2px solid #0f3f7f !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1) !important;
+}
+
+/* Columnas body con padding top para no ser ocultadas por header sticky */
+#aura-trips-table tbody td {
+    padding: 18px 8px 8px !important;
+    vertical-align: top !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+#aura-trips-table tbody tr:nth-child(even) {
+    background: #fafbfc !important;
+}
+
+#aura-trips-table tbody tr:hover {
+    background: #eff6ff !important;
+    transition: background .15s ease !important;
+}
+
+/* Última columna (Acciones) — STICKY a la derecha */
+#aura-trips-table th:last-child,
+#aura-trips-table td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 99;
+}
+
+#aura-trips-table th:last-child {
+    background: linear-gradient(180deg, #2271b1 0%, #1a5fa8 100%) !important;
+    box-shadow: -4px 2px 4px rgba(0,0,0,.1), inset -2px 0 4px rgba(0,0,0,.05) !important;
+}
+
+#aura-trips-table tbody td:last-child {
+    background: inherit !important;
+    box-shadow: -4px 0 8px rgba(0,0,0,.06), inset -2px 0 2px rgba(0,0,0,.02) !important;
+}
+
+#aura-trips-table tbody tr:hover td:last-child {
+    background: inherit !important;
+    box-shadow: -4px 0 12px rgba(34,113,177,.15), inset -2px 0 2px rgba(0,0,0,.02) !important;
+}
+
+/* Ancho mínimo de tabla para scroll */
+#aura-trips-table {
+    min-width: 1100px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MEJORAS PREMIUM — FILTROS EN CHIPS
+══════════════════════════════════════════════════════════════ */
+
+/* Conversión de filtros select a chips visuales */
+.aura-veh-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 16px 0 12px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #f6f7f7 0%, #f0f4f9 100%);
+    border: 1px solid #e0e5eb;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+
+.aura-veh-filters-bar select {
+    appearance: none;
+    height: 36px;
+    padding: 6px 12px;
+    border: 2px solid #d0d8e0;
+    border-radius: 20px;
+    background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%232271b1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') right 8px center / 16px 16px no-repeat;
+    padding-right: 32px;
+    font-size: 13px;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+.aura-veh-filters-bar select:hover {
+    border-color: #2271b1;
+    background-color: #f0f6ff;
+    box-shadow: 0 2px 8px rgba(34,113,177,.1);
+}
+
+.aura-veh-filters-bar select:focus {
+    outline: none;
+    border-color: #2271b1;
+    background-color: #f0f6ff;
+    box-shadow: 0 0 0 3px rgba(34,113,177,.15);
+}
+
+.aura-veh-filters-bar input[type="search"] {
+    height: 36px;
+    padding: 6px 14px;
+    border: 2px solid #d0d8e0;
+    border-radius: 20px;
+    font-size: 13px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.aura-veh-filters-bar input[type="search"]:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 3px rgba(34,113,177,.15);
+}
+
+.aura-veh-filters-bar input[type="date"] {
+    height: 36px;
+    padding: 6px 10px;
+    border: 2px solid #d0d8e0;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color .2s ease;
+}
+
+.aura-veh-filters-bar input[type="date"]:focus {
+    outline: none;
+    border-color: #2271b1;
+}
+
+.aura-veh-filters-bar button {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .2s ease;
+}
+
+.aura-veh-filters-bar #aura-trips-filter-apply {
+    background: linear-gradient(135deg, #2271b1 0%, #1a5fa8 100%);
+    border: none;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(34,113,177,.2);
+}
+
+.aura-veh-filters-bar #aura-trips-filter-apply:hover {
+    background: linear-gradient(135deg, #1a5fa8 0%, #0f3f7f 100%);
+    box-shadow: 0 4px 12px rgba(34,113,177,.3);
+    transform: translateY(-1px);
+}
+
+.aura-veh-filters-bar #aura-trips-filter-clear {
+    background: #f0f1f2;
+    border: 1px solid #d0d8e0;
+    color: #50575e;
+}
+
+.aura-veh-filters-bar #aura-trips-filter-clear:hover {
+    background: #e8ecf0;
+    border-color: #72777c;
+    color: #1d2327;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MEJORAS PREMIUM — ANIMACIONES SUAVES MODAL
+══════════════════════════════════════════════════════════════ */
+
+/* Animación de entrada y salida del overlay */
+@keyframes aura-modal-fade-in {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(2px);
+    }
+}
+
+@keyframes aura-modal-fade-out {
+    from {
+        opacity: 1;
+        backdrop-filter: blur(2px);
+    }
+    to {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+}
+
+/* Animación de entrada del contenido modal */
+@keyframes aura-modal-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Animación de salida del contenido modal */
+@keyframes aura-modal-slide-down {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(30px) scale(.95);
+    }
+}
+
+/* Modal overlay — fade suave */
+.aura-veh-modal-overlay {
+    animation: aura-modal-fade-in .3s ease-out;
+}
+
+.aura-veh-modal.is-closing .aura-veh-modal-overlay {
+    animation: aura-modal-fade-out .2s ease-in forwards;
+}
+
+/* Modal contenido — slide-up suave */
+.aura-veh-modal-content {
+    animation: aura-modal-slide-up .35s cubic-bezier(.16, 1, .3, 1);
+}
+
+.aura-veh-modal.is-closing .aura-veh-modal-content {
+    animation: aura-modal-slide-down .25s ease-in forwards;
+}
+
+/* Transición suave al cambiar estado de fila */
+@keyframes aura-row-highlight {
+    0% { background-color: inherit; }
+    50% { background-color: #fffacd; }
+    100% { background-color: inherit; }
+}
+
+#aura-trips-table tbody tr.is-updated {
+    animation: aura-row-highlight .8s ease-in-out;
+}
+
+/* Transición suave de badges de estado */
+.aura-trip-status {
+    transition: all .2s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MEJORAS MANTENIMIENTO — SUMA DINÁMICA PRÓXIMO SERVICIO
+══════════════════════════════════════════════════════════════ */
+
+/* Contenedor para la suma dinámica próximo servicio */
+.aura-checkin-next-service-calc {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr 12px 1fr;
+    gap: 8px;
+    align-items: flex-end;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #f0f7ff;
+    border: 1px solid #b8d4f5;
+    border-radius: 6px;
+}
+
+.aura-checkin-next-service-calc__input {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-checkin-next-service-calc__input label {
+    font-size: 11px;
+    color: #50575e;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.aura-checkin-next-service-calc__input input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #d0d8e0;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+}
+
+.aura-checkin-next-service-calc__op {
+    text-align: center;
+    font-weight: 700;
+    color: #2271b1;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.aura-checkin-next-service-calc__result {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+    background: #2271b1;
+    border-radius: 4px;
+    color: #fff;
+    text-align: center;
+}
+
+.aura-checkin-next-service-calc__result-label {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: .85;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.aura-checkin-next-service-calc__result-value {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Tooltip para descripción larga */
+.aura-tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
+    padding: 0;
+    border: 1px solid #2271b1;
+    border-radius: 50%;
+    background: #f0f6ff;
+    color: #2271b1;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: help;
+    transition: all .2s ease;
+    position: relative;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.aura-tooltip-trigger:hover {
+    background: #2271b1;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(34,113,177,.3);
+}
+
+/* Tooltip popup */
+.aura-tooltip {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1d2327;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: normal;
+    max-width: 240px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all .2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+}
+
+.aura-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #1d2327;
+}
+
+.aura-tooltip-trigger:hover .aura-tooltip,
+.aura-tooltip-trigger:focus .aura-tooltip {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* En tema oscuro */
+body.admin-color-midnight .aura-tooltip,
+body.admin-color-coffee .aura-tooltip {
+    background: #e2e8f0;
+    color: #1d2327;
+}
+
+body.admin-color-midnight .aura-tooltip::after,
+body.admin-color-coffee .aura-tooltip::after {
+    border-top-color: #e2e8f0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NUEVA ESTRUCTURA DE TABLA DE SALIDAS (9 COLUMNAS)
+══════════════════════════════════════════════════════════════ */
+
+/* Wrapper de tabla con scroll horizontal y sticky header */
+.aura-trips-table-wrapper {
+    overflow-x: auto;
+    overflow-y: visible;
+    min-width: 100%;
+    max-width: 100%;
+    margin-top: 16px;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.aura-trips-table-structured {
+    width: 100% !important;
+    min-width: 1100px;
+    border-collapse: collapse !important;
+}
+
+/* Header sticky */
+.aura-trips-table-structured thead {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #2271b1;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.aura-trips-table-structured thead th {
+    background: #2271b1;
+    color: #fff;
+    font-weight: 700;
+    text-align: left;
+    padding: 12px 8px !important;
+    border: none !important;
+    font-size: 13px;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+/* Filas con altura mínima */
+.aura-trips-table-structured tbody tr {
+    min-height: 56px;
+    vertical-align: top;
+    border-bottom: 1px solid #e5e5e5 !important;
+}
+
+.aura-trips-table-structured tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Celdas */
+.aura-trips-table-structured td {
+    padding: 12px 8px !important;
+    vertical-align: top;
+    border: none !important;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Columna de Acciones sticky a la derecha */
+.aura-trips-table-structured th:last-child,
+.aura-trips-table-structured td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 99;
+    background: #fff;
+}
+
+.aura-trips-table-structured thead th:last-child {
+    background: #2271b1;
+}
+
+.aura-trips-table-structured tbody tr:hover td:last-child {
+    background: #f9f9f9;
+}
+
+/* Badges del sistema */
+.aura-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+
+/* Badges de Tipo */
+.aura-badge-rental {
+    background: #e7f3ff;
+    color: #0a4a8c;
+    border: 1px solid #0a4a8c;
+}
+
+.aura-badge-errand {
+    background: #e7f3ff;
+    color: #0a4a8c;
+    border: 1px solid #0a4a8c;
+}
+
+.aura-badge-maintenance {
+    background: #fff0e6;
+    color: #fff;
+    border: none;
+    background: #ff7e2a;
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(255,126,42,.3);
+}
+
+.aura-badge-other {
+    background: #f0f0f0;
+    color: #666;
+    border: 1px solid #ccc;
+}
+
+/* Badges de Subtipo */
+.aura-badge-preventive {
+    background: #e6f9f0;
+    color: #0b7c4c;
+    border: 1px solid #0b7c4c;
+}
+
+.aura-badge-corrective {
+    background: #ffe6e6;
+    color: #c3112d;
+    border: 1px solid #c3112d;
+}
+
+.aura-badge-inspection {
+    background: #e7f3ff;
+    color: #0a4a8c;
+    border: 1px solid #0a4a8c;
+}
+
+/* Badges de Estado */
+.aura-badge-status-active {
+    background: #e7f3ff;
+    color: #0a4a8c;
+    border: 1px solid #0a4a8c;
+}
+
+.aura-badge-status-returned {
+    background: #e6f9f0;
+    color: #0b7c4c;
+    border: 1px solid #0b7c4c;
+}
+
+.aura-badge-status-cancelled {
+    background: #f0f0f0;
+    color: #666;
+    border: 1px solid #ccc;
+}
+
+/* Botones de acciones circulares */
+.aura-trips-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.aura-trips-actions .button {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    padding: 4px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    color: #666;
+    transition: all .2s ease;
+}
+
+.aura-trips-actions .button:hover {
+    background: #2271b1;
+    color: #fff;
+    border-color: #2271b1;
+    box-shadow: 0 2px 8px rgba(34,113,177,.3);
+}
+
+.aura-trips-actions .button .dashicons {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 16px !important;
+}
+
+/* Información de vehículo en tabla */
+.aura-trip-veh-cell {
+    display: block;
+    line-height: 1.3;
+}
+
+.aura-trip-veh-cell strong {
+    display: block;
+    font-size: 14px;
+    color: #000;
+    font-weight: 700;
+}
+
+.aura-trip-veh-cell small {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+    font-weight: 400;
+}
+
+/* Responsivos - Ajustes para pantallas pequeñas */
+@media (max-width: 1200px) {
+    .aura-trips-table-structured {
+        min-width: 900px;
+    }
+    
+    .aura-trips-table-structured th,
+    .aura-trips-table-structured td {
+        padding: 10px 6px !important;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .aura-trips-table-wrapper {
+        margin-top: 12px;
+        border-radius: 0;
+    }
+    
+    .aura-trips-table-structured {
+        min-width: 800px;
+    }
+    
+    .aura-trips-table-structured thead th {
+        padding: 8px 4px !important;
+        font-size: 11px;
+    }
+    
+    .aura-trips-table-structured td {
+        padding: 8px 4px !important;
+        font-size: 11px;
+    }
+    
+    .aura-trips-actions .button {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        min-height: 28px;
+    }
+    
+    .aura-trips-actions .button .dashicons {
+        width: 14px !important;
+        height: 14px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CÁLCULO DINÁMICO DE PRÓXIMO SERVICIO (Mejorado)
+══════════════════════════════════════════════════════════════ */
+
+.aura-checkin-next-service-calc {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f3ff 100%);
+    border: 2px solid #2271b1;
+    border-radius: 8px;
+    padding: 14px 12px;
+    margin-top: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
+    animation: aura-calc-fadeIn 0.3s ease-out;
+}
+
+.aura-checkin-next-service-calc__row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.aura-checkin-next-service-calc__item,
+.aura-checkin-next-service-calc__result {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-checkin-next-service-calc__item label,
+.aura-checkin-next-service-calc__result .aura-checkin-next-service-calc__result-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0a4a8c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aura-calc-value,
+.aura-calc-result {
+    font-weight: 700;
+    font-size: 16px;
+    color: #2271b1;
+}
+
+.aura-calc-result {
+    font-size: 18px;
+    color: #fff;
+    background: #2271b1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    min-width: 100px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(34, 113, 177, 0.3);
+}
+
+.aura-checkin-next-service-calc__op {
+    font-weight: 700;
+    color: #0a4a8c;
+    font-size: 14px;
+}
+
+/* Tooltip mejorado */
+.aura-checkin-next-service-tooltip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: help;
+}
+
+.aura-checkin-next-service-tooltip .dashicons {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    color: #2271b1;
+    transition: all 0.2s ease;
+}
+
+.aura-checkin-next-service-tooltip:hover .dashicons {
+    color: #fff;
+    background: #2271b1;
+    border-radius: 50%;
+    padding: 2px;
+}
+
+.aura-tooltip-content {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: #1d2327;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    margin-bottom: 8px;
+}
+
+.aura-tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 0;
+    border-top: 6px solid #1d2327;
+}
+
+.aura-checkin-next-service-tooltip:hover .aura-tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}
+
+@keyframes aura-calc-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HISTORIAL DE SALIDAS — Tabla de viajes en modal de detalles
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-view-trips-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.aura-veh-view-trips-table thead {
+    background: #f5f5f5;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.aura-veh-view-trips-table th {
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: #1d2327;
+    white-space: nowrap;
+}
+
+.aura-veh-view-trips-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e5e5e5;
+    vertical-align: middle;
+}
+
+.aura-veh-view-trips-table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+.aura-veh-view-trips-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.aura-veh-view-trips-table small {
+    color: #6b7280;
+    display: block;
+}
+
+.aura-veh-view-trips-table .aura-badge {
+    padding: 3px 7px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 4px;
 }

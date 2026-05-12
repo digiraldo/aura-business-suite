@@ -709,6 +709,7 @@ class Aura_Financial_Categories_CPT {
             description TEXT,
             is_active BOOLEAN DEFAULT 1,
             always_require_approval BOOLEAN DEFAULT 0,
+            integration_modules JSON DEFAULT NULL COMMENT 'Modulos integrados JSON array',
             display_order INT DEFAULT 0,
             created_by BIGINT UNSIGNED NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -722,11 +723,12 @@ class Aura_Financial_Categories_CPT {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
         
-        // Migración: Agregar columna always_require_approval si no existe
+        // Migraciones
         self::migrate_add_always_require_approval_column();
+        self::migrate_add_integration_modules_column();
         
         // Registrar versión de la tabla
-        add_option('aura_finance_categories_db_version', '1.1');
+        add_option('aura_finance_categories_db_version', '1.2');
     }
     
     /**
@@ -762,6 +764,41 @@ class Aura_Financial_Categories_CPT {
             );
         }
     }
+
+    /**
+     * Migración: Agregar columna integration_modules
+     * 
+     * Esta columna almacena un JSON array con los módulos que están integrados con esta categoría.
+     * Ejemplo: ["vehicles", "inventory", "students"]
+     * 
+     * @since 1.2.0
+     */
+    private static function migrate_add_integration_modules_column() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . self::TABLE_NAME;
+        
+        // Verificar si la columna ya existe
+        $column_exists = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+                 WHERE TABLE_SCHEMA = %s 
+                 AND TABLE_NAME = %s 
+                 AND COLUMN_NAME = 'integration_modules'",
+                DB_NAME,
+                $wpdb->prefix . self::TABLE_NAME
+            )
+        );
+        
+        // Si no existe, crearla
+        if (empty($column_exists)) {
+            $wpdb->query(
+                "ALTER TABLE $table_name 
+                 ADD COLUMN integration_modules JSON DEFAULT NULL 
+                 COMMENT 'JSON array de módulos integrados: [\"vehicles\", \"inventory\", \"students\"]'
+                 AFTER always_require_approval"
+            );
+        }
+    }
     
     /**
      * Verificar y ejecutar migraciones de base de datos
@@ -778,6 +815,12 @@ class Aura_Financial_Categories_CPT {
         if (version_compare($current_db_version, '1.1', '<')) {
             self::migrate_add_always_require_approval_column();
             update_option('aura_finance_categories_db_version', '1.1');
+        }
+        
+        // Si la versión es menor a 1.2, ejecutar migración de integration_modules
+        if (version_compare($current_db_version, '1.2', '<')) {
+            self::migrate_add_integration_modules_column();
+            update_option('aura_finance_categories_db_version', '1.2');
         }
     }
     

@@ -436,7 +436,7 @@ class Aura_Vehicle_Trip_Manager {
         global $wpdb;
 
         $trip = $wpdb->get_row( $wpdb->prepare(
-            "SELECT id, status FROM {$wpdb->prefix}" . self::TABLE . " WHERE id = %d AND deleted = 0",
+            "SELECT id, status, created_by FROM {$wpdb->prefix}" . self::TABLE . " WHERE id = %d AND deleted = 0",
             $id
         ) );
 
@@ -446,6 +446,22 @@ class Aura_Vehicle_Trip_Manager {
 
         if ( self::STATUS_ACTIVE === $trip->status ) {
             return new WP_Error( 'still_active', __( 'No se puede eliminar una salida activa. Cancélela primero.', 'aura-suite' ) );
+        }
+
+        $current_user = get_current_user_id();
+        $can_delete_all = current_user_can( 'aura_vehicles_exits_delete_all' )
+            || current_user_can( 'aura_vehicles_delete' )
+            || current_user_can( 'manage_options' );
+        $can_delete_own = current_user_can( 'aura_vehicles_exits_delete_own' );
+
+        if ( ! $can_delete_all ) {
+            if ( ! $can_delete_own || (int) $trip->created_by !== (int) $current_user ) {
+                return new WP_Error(
+                    'permission_denied',
+                    __( 'No tienes permiso para eliminar esta salida.', 'aura-suite' ),
+                    array( 'status' => 403 )
+                );
+            }
         }
 
         $wpdb->update(

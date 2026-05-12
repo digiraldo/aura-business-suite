@@ -405,7 +405,7 @@ class Aura_Financial_Import {
 
     public static function ajax_rollback() {
         check_ajax_referer( 'aura_import_nonce', 'nonce' );
-        if ( ! current_user_can( 'aura_finance_delete_all' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_finance_create' ) && ! current_user_can( 'aura_finance_delete_all' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Sin permisos para deshacer importaciones', 'aura-suite' ) ], 403 );
         }
 
@@ -418,34 +418,45 @@ class Aura_Financial_Import {
         $tx_table  = $wpdb->prefix . 'aura_finance_transactions';
         $log_table = $wpdb->prefix . 'aura_finance_import_log';
 
-        // Verificar que el lote pertenezca al usuario actual o sea admin
-        if ( ! current_user_can( 'manage_options' ) ) {
-            $log = $wpdb->get_row( $wpdb->prepare( "SELECT imported_by FROM {$log_table} WHERE batch_id = %s", $batch_id ) );
-            if ( ! $log || (int) $log->imported_by !== get_current_user_id() ) {
-                wp_send_json_error( [ 'message' => __( 'No tienes permiso para deshacer esta importación', 'aura-suite' ) ] );
-            }
-        }
-
-        // Verificar que sea reciente (< 24h)
-        $log = $wpdb->get_row( $wpdb->prepare( "SELECT created_at, status FROM {$log_table} WHERE batch_id = %s", $batch_id ) );
+        $log = $wpdb->get_row( $wpdb->prepare( "SELECT imported_by, created_at, status FROM {$log_table} WHERE batch_id = %s", $batch_id ) );
         if ( ! $log ) {
             wp_send_json_error( [ 'message' => __( 'Importación no encontrada', 'aura-suite' ) ] );
         }
+
+        // Verificar que el lote pertenezca al usuario actual o sea admin
+        if ( ! current_user_can( 'manage_options' ) && (int) $log->imported_by !== get_current_user_id() ) {
+            wp_send_json_error( [ 'message' => __( 'No tienes permiso para deshacer esta importación', 'aura-suite' ) ] );
+        }
+
         if ( $log->status === 'rolled_back' ) {
             wp_send_json_error( [ 'message' => __( 'Esta importación ya fue revertida', 'aura-suite' ) ] );
         }
-        $age = time() - strtotime( $log->created_at );
-        if ( $age > 86400 ) {
-            wp_send_json_error( [ 'message' => __( 'Solo se puede revertir dentro de las 24 horas siguientes a la importación', 'aura-suite' ) ] );
+
+        // Verificar que sea reciente (< 1 mes)
+        $created_ts = strtotime( $log->created_at );
+        if ( ! $created_ts ) {
+            wp_send_json_error( [ 'message' => __( 'No se pudo validar la fecha de importación', 'aura-suite' ) ] );
         }
 
-        $count = $wpdb->update(
-            $tx_table,
-            [ 'deleted_at' => current_time( 'mysql' ), 'deleted_by' => get_current_user_id() ],
-            [ 'import_batch_id' => $batch_id, 'deleted_at' => null ],
-            [ '%s', '%d' ],
-            [ '%s', null ]
+        $age = time() - $created_ts;
+        if ( $age > MONTH_IN_SECONDS ) {
+            wp_send_json_error( [ 'message' => __( 'Solo se puede revertir dentro del mes siguiente a la importación', 'aura-suite' ) ] );
+        }
+
+        $count = $wpdb->query(
+            $wpdb->prepare(
+                "UPDATE {$tx_table}
+                 SET deleted_at = %s, deleted_by = %d
+                 WHERE import_batch_id = %s",
+                current_time( 'mysql' ),
+                get_current_user_id(),
+                $batch_id
+            )
         );
+
+        if ( false === $count ) {
+            wp_send_json_error( [ 'message' => __( 'No se pudo revertir la importación', 'aura-suite' ) ] );
+        }
 
         $wpdb->update( $log_table, [ 'status' => 'rolled_back' ], [ 'batch_id' => $batch_id ], [ '%s' ], [ '%s' ] );
 
