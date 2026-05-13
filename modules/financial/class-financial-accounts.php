@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 class Aura_Financial_Accounts {
 
     const DB_VERSION_OPTION = 'aura_finance_accounts_db_version';
-    const DB_VERSION = '1.3.0';
+    const DB_VERSION = '1.5.0';
     const BUDGET_IMPORT_MAX_ROWS = 300;
     const BUDGET_IMPORT_TRANSIENT_PREFIX = 'aura_budget_import_';
     const PETTY_CASH_DEFAULT_DUE_DAYS = 5;
@@ -42,6 +42,11 @@ class Aura_Financial_Accounts {
         add_action('wp_ajax_aura_finance_reimbursements_list', array(__CLASS__, 'ajax_list_reimbursements'));
         add_action('wp_ajax_aura_finance_reimbursements_create', array(__CLASS__, 'ajax_create_reimbursement'));
         add_action('wp_ajax_aura_finance_reimbursements_pay', array(__CLASS__, 'ajax_pay_reimbursement'));
+        add_action('wp_ajax_aura_finance_third_parties_list', array(__CLASS__, 'ajax_list_third_parties'));
+        add_action('wp_ajax_aura_finance_third_parties_create', array(__CLASS__, 'ajax_create_third_party'));
+        add_action('wp_ajax_aura_finance_third_parties_update', array(__CLASS__, 'ajax_update_third_party'));
+        add_action('wp_ajax_aura_finance_third_parties_toggle', array(__CLASS__, 'ajax_toggle_third_party'));
+        add_action('wp_ajax_aura_finance_third_parties_convert_user', array(__CLASS__, 'ajax_convert_third_party_to_user'));
         add_action('wp_ajax_aura_finance_accounts_report', array(__CLASS__, 'ajax_get_accounts_report'));
         add_action('wp_ajax_aura_finance_budget_get', array(__CLASS__, 'ajax_get_budget'));
         add_action('wp_ajax_aura_finance_budget_save', array(__CLASS__, 'ajax_save_budget'));
@@ -57,6 +62,8 @@ class Aura_Financial_Accounts {
             self::create_tables();
             self::migrate_transactions_columns();
             self::migrate_settlements_phase3_columns();
+            self::migrate_reimbursements_counterparty_model();
+            self::migrate_third_parties_phase2_columns();
             update_option(self::DB_VERSION_OPTION, self::DB_VERSION, false);
         }
 
@@ -73,6 +80,7 @@ class Aura_Financial_Accounts {
         $movements = $wpdb->prefix . 'aura_finance_account_movements';
         $settlements = $wpdb->prefix . 'aura_finance_petty_cash_settlements';
         $reimbursements = $wpdb->prefix . 'aura_finance_reimbursements';
+        $third_parties = $wpdb->prefix . 'aura_finance_third_parties';
         $budget_envelopes = $wpdb->prefix . 'aura_finance_budget_envelopes';
         $budget_monthly = $wpdb->prefix . 'aura_finance_budget_monthly';
 
@@ -147,7 +155,8 @@ class Aura_Financial_Accounts {
 
         $sql_reimbursements = "CREATE TABLE {$reimbursements} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-            person_user_id BIGINT UNSIGNED NOT NULL,
+            person_user_id BIGINT UNSIGNED NULL,
+            counterparty_id BIGINT UNSIGNED NULL,
             origin_transaction_id BIGINT UNSIGNED NULL,
             owed_amount DECIMAL(18,2) NOT NULL DEFAULT 0,
             paid_amount DECIMAL(18,2) NOT NULL DEFAULT 0,
@@ -159,8 +168,27 @@ class Aura_Financial_Accounts {
             updated_at DATETIME NULL,
             PRIMARY KEY (id),
             KEY idx_person (person_user_id),
+            KEY idx_counterparty (counterparty_id),
             KEY idx_status (status),
             KEY idx_origin_tx (origin_transaction_id)
+        ) {$charset_collate};";
+
+        $sql_third_parties = "CREATE TABLE {$third_parties} (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            full_name VARCHAR(191) NOT NULL,
+            document_id VARCHAR(80) NULL,
+            phone VARCHAR(50) NULL,
+            email VARCHAR(100) NULL,
+            notes TEXT NULL,
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            wp_user_id BIGINT UNSIGNED NULL,
+            created_by BIGINT UNSIGNED NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NULL,
+            PRIMARY KEY (id),
+            KEY idx_name (full_name),
+            KEY idx_active (is_active),
+            KEY idx_wp_user (wp_user_id)
         ) {$charset_collate};";
 
         $sql_budget_envelopes = "CREATE TABLE {$budget_envelopes} (
@@ -198,8 +226,82 @@ class Aura_Financial_Accounts {
         dbDelta($sql_movements);
         dbDelta($sql_settlements);
         dbDelta($sql_reimbursements);
+        dbDelta($sql_third_parties);
         dbDelta($sql_budget_envelopes);
         dbDelta($sql_budget_monthly);
+    }
+
+    private static function migrate_reimbursements_counterparty_model() {
+        global $wpdb;
+
+        $reimbursements = $wpdb->prefix . 'aura_finance_reimbursements';
+        $third_parties = $wpdb->prefix . 'aura_finance_third_parties';
+
+        $columns = $wpdb->get_col("SHOW COLUMNS FROM {$reimbursements}", 0);
+        if (!is_array($columns)) {
+            return;
+        }
+
+        if (!in_array('counterparty_id', $columns, true)) {
+            $wpdb->query("ALTER TABLE {$reimbursements} ADD COLUMN counterparty_id BIGINT UNSIGNED NULL AFTER person_user_id");
+            $wpdb->query("ALTER TABLE {$reimbursements} ADD KEY idx_counterparty (counterparty_id)");
+        }
+
+        $person_user_col = $wpdb->get_row("SHOW COLUMNS FROM {$reimbursements} LIKE 'person_user_id'", ARRAY_A);
+        if (is_array($person_user_col) && isset($person_user_col['Null']) && strtoupper((string) $person_user_col['Null']) === 'NO') {
+            $wpdb->query("ALTER TABLE {$reimbursements} MODIFY person_user_id BIGINT UNSIGNED NULL");
+        }
+
+        // Backfill: convert legacy person_user_id rows into third-party references.
+        $legacy_rows = $wpdb->get_results(
+            "SELECT r.id, r.person_user_id, u.display_name
+             FROM {$reimbursements} r
+             LEFT JOIN {$wpdb->users} u ON u.ID = r.person_user_id
+             WHERE r.counterparty_id IS NULL
+               AND r.person_user_id IS NOT NULL
+               AND r.person_user_id > 0
+             LIMIT 10000",
+            ARRAY_A
+        );
+
+        if (empty($legacy_rows)) {
+            return;
+        }
+
+        foreach ($legacy_rows as $row) {
+            $full_name = sanitize_text_field((string) ($row['display_name'] ?? ''));
+            if ($full_name === '') {
+                continue;
+            }
+
+            $counterparty_id = self::ensure_third_party($full_name, array(), get_current_user_id());
+            if ($counterparty_id <= 0) {
+                continue;
+            }
+
+            $wpdb->update(
+                $reimbursements,
+                array('counterparty_id' => $counterparty_id),
+                array('id' => (int) $row['id']),
+                array('%d'),
+                array('%d')
+            );
+        }
+    }
+
+    private static function migrate_third_parties_phase2_columns() {
+        global $wpdb;
+
+        $table = $wpdb->prefix . 'aura_finance_third_parties';
+        $columns = $wpdb->get_col("SHOW COLUMNS FROM {$table}", 0);
+        if (!is_array($columns)) {
+            return;
+        }
+
+        if (!in_array('wp_user_id', $columns, true)) {
+            $wpdb->query("ALTER TABLE {$table} ADD COLUMN wp_user_id BIGINT UNSIGNED NULL AFTER is_active");
+            $wpdb->query("ALTER TABLE {$table} ADD KEY idx_wp_user (wp_user_id)");
+        }
     }
 
     private static function migrate_transactions_columns() {
@@ -380,41 +482,78 @@ class Aura_Financial_Accounts {
         $table = $wpdb->prefix . 'aura_finance_accounts';
 
         $id = isset($_POST['id']) ? absint($_POST['id']) : 0;
-        $data = array(
-            'name' => sanitize_text_field(wp_unslash($_POST['name'] ?? '')),
-            'account_type' => sanitize_key(wp_unslash($_POST['account_type'] ?? 'bank_account')),
-            'currency' => strtoupper(sanitize_text_field(wp_unslash($_POST['currency'] ?? 'COP'))),
-            'owner_user_id' => !empty($_POST['owner_user_id']) ? absint($_POST['owner_user_id']) : null,
-            'institution' => sanitize_text_field(wp_unslash($_POST['institution'] ?? '')),
-            'account_number_masked' => sanitize_text_field(wp_unslash($_POST['account_number_masked'] ?? '')),
-            'initial_balance' => isset($_POST['initial_balance']) ? floatval($_POST['initial_balance']) : 0,
-            'current_balance' => isset($_POST['current_balance']) ? floatval($_POST['current_balance']) : 0,
-            'is_active' => isset($_POST['is_active']) ? 1 : 0,
-        );
+        $name = sanitize_text_field(wp_unslash($_POST['name'] ?? ''));
+        $account_type = sanitize_key(wp_unslash($_POST['account_type'] ?? 'bank_account'));
+        $currency = strtoupper(sanitize_text_field(wp_unslash($_POST['currency'] ?? 'COP')));
+        $owner_user_id = !empty($_POST['owner_user_id']) ? absint($_POST['owner_user_id']) : null;
+        $institution = sanitize_text_field(wp_unslash($_POST['institution'] ?? ''));
+        $account_number_masked = sanitize_text_field(wp_unslash($_POST['account_number_masked'] ?? ''));
+        $initial_balance = isset($_POST['initial_balance']) ? floatval($_POST['initial_balance']) : 0;
+        $current_balance = isset($_POST['current_balance']) ? floatval($_POST['current_balance']) : 0;
+        $is_active = isset($_POST['is_active']) ? 1 : 0;
 
-        if (empty($data['name'])) {
+        if (empty($name)) {
             wp_send_json_error(array('message' => __('El nombre de la cuenta es obligatorio.', 'aura-suite')));
         }
 
         $valid_types = array('bank_account', 'petty_cash', 'contributions_fund', 'usd_cash', 'custom');
-        if (!in_array($data['account_type'], $valid_types, true)) {
-            $data['account_type'] = 'custom';
+        if (!in_array($account_type, $valid_types, true)) {
+            $account_type = 'custom';
         }
 
         if ($id > 0) {
-            $data['updated_at'] = current_time('mysql');
-            $ok = $wpdb->update($table, $data, array('id' => $id), null, array('%d'));
-            if ($ok === false) {
-                wp_send_json_error(array('message' => __('No se pudo actualizar la cuenta.', 'aura-suite')));
+            error_log("[AURA] UPDATE Account $id: " . json_encode(array(
+                'name' => $name,
+                'current_balance' => $current_balance,
+            )));
+
+            $update_result = $wpdb->update(
+                $table,
+                array(
+                    'name' => $name,
+                    'account_type' => $account_type,
+                    'currency' => $currency,
+                    'owner_user_id' => $owner_user_id,
+                    'institution' => $institution,
+                    'account_number_masked' => $account_number_masked,
+                    'initial_balance' => $initial_balance,
+                    'current_balance' => $current_balance,
+                    'is_active' => $is_active,
+                    'updated_at' => current_time('mysql'),
+                ),
+                array('id' => $id),
+                array('%s', '%s', '%s', '%d', '%s', '%s', '%f', '%f', '%d', '%s'),
+                array('%d')
+            );
+
+            error_log("[AURA] UPDATE Result: $update_result, Error: " . $wpdb->last_error);
+
+            if ($update_result === false) {
+                wp_send_json_error(array('message' => __('Error al actualizar la cuenta: ' . $wpdb->last_error, 'aura-suite')));
             }
-            wp_send_json_success(array('id' => $id));
+
+            wp_send_json_success(array('id' => $id, 'message' => __('Cuenta actualizada correctamente.', 'aura-suite')));
         }
 
-        $data['created_by'] = get_current_user_id();
-        $data['created_at'] = current_time('mysql');
+        $insert_result = $wpdb->insert(
+            $table,
+            array(
+                'name' => $name,
+                'account_type' => $account_type,
+                'currency' => $currency,
+                'owner_user_id' => $owner_user_id,
+                'institution' => $institution,
+                'account_number_masked' => $account_number_masked,
+                'initial_balance' => $initial_balance,
+                'current_balance' => $current_balance,
+                'is_active' => $is_active,
+                'created_by' => get_current_user_id(),
+                'created_at' => current_time('mysql'),
+            ),
+            array('%s', '%s', '%s', '%d', '%s', '%s', '%f', '%f', '%d', '%d', '%s')
+        );
 
-        $ok = $wpdb->insert($table, $data);
-        if (!$ok) {
+        if (!$insert_result) {
             wp_send_json_error(array('message' => __('No se pudo crear la cuenta.', 'aura-suite')));
         }
 
@@ -679,16 +818,19 @@ class Aura_Financial_Accounts {
         $table = $wpdb->prefix . 'aura_finance_reimbursements';
         $tx_table = $wpdb->prefix . 'aura_finance_transactions';
         $accounts = $wpdb->prefix . 'aura_finance_accounts';
+        $third_parties = $wpdb->prefix . 'aura_finance_third_parties';
         $users = $wpdb->users;
 
         $rows = $wpdb->get_results(
-            "SELECT r.id, r.person_user_id, r.origin_transaction_id, r.owed_amount, r.paid_amount,
+                "SELECT r.id, r.person_user_id, r.counterparty_id, r.origin_transaction_id, r.owed_amount, r.paid_amount,
                     r.status, r.paying_account_id, r.notes, r.created_at, r.updated_at,
-                    u.display_name AS person_name,
+                    COALESCE(tp.full_name, u.display_name) AS person_name,
+                    tp.document_id AS person_document,
                     a.name AS paying_account_name,
                     t.description AS origin_description,
                     t.transaction_date AS origin_date
              FROM {$table} r
+                 LEFT JOIN {$third_parties} tp ON tp.id = r.counterparty_id
              LEFT JOIN {$users} u ON u.ID = r.person_user_id
              LEFT JOIN {$accounts} a ON a.id = r.paying_account_id
              LEFT JOIN {$tx_table} t ON t.id = r.origin_transaction_id
@@ -708,6 +850,249 @@ class Aura_Financial_Accounts {
         wp_send_json_success(array(
             'reimbursements' => $rows,
             'paying_accounts' => $paying_accounts,
+            'third_parties' => self::get_active_third_parties(),
+        ));
+    }
+
+    public static function ajax_list_third_parties() {
+        self::check_ajax_permissions();
+
+        $include_inactive = !empty($_POST['include_inactive']);
+
+        wp_send_json_success(array(
+            'third_parties' => self::get_third_parties($include_inactive),
+        ));
+    }
+
+    public static function ajax_create_third_party() {
+        self::check_ajax_permissions();
+
+        $full_name = sanitize_text_field(wp_unslash($_POST['full_name'] ?? ''));
+        $document_id = sanitize_text_field(wp_unslash($_POST['document_id'] ?? ''));
+        $phone = sanitize_text_field(wp_unslash($_POST['phone'] ?? ''));
+        $email = sanitize_email(wp_unslash($_POST['email'] ?? ''));
+        $notes = sanitize_textarea_field(wp_unslash($_POST['notes'] ?? ''));
+
+        if ($full_name === '') {
+            wp_send_json_error(array('message' => __('Debes indicar el nombre del tercero.', 'aura-suite')));
+        }
+
+        if ($email !== '' && !is_email($email)) {
+            wp_send_json_error(array('message' => __('El correo del tercero no es válido.', 'aura-suite')));
+        }
+
+        $counterparty_id = self::ensure_third_party(
+            $full_name,
+            array(
+                'document_id' => $document_id,
+                'phone' => $phone,
+                'email' => $email,
+                'notes' => $notes,
+            ),
+            get_current_user_id()
+        );
+
+        if ($counterparty_id <= 0) {
+            wp_send_json_error(array('message' => __('No se pudo registrar el tercero.', 'aura-suite')));
+        }
+
+        wp_send_json_success(array(
+            'id' => $counterparty_id,
+            'message' => __('Tercero registrado correctamente.', 'aura-suite'),
+            'third_parties' => self::get_active_third_parties(),
+        ));
+    }
+
+    public static function ajax_update_third_party() {
+        self::check_ajax_permissions();
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_third_parties';
+
+        $id = absint($_POST['id'] ?? 0);
+        $full_name = sanitize_text_field(wp_unslash($_POST['full_name'] ?? ''));
+        $document_id = sanitize_text_field(wp_unslash($_POST['document_id'] ?? ''));
+        $phone = sanitize_text_field(wp_unslash($_POST['phone'] ?? ''));
+        $email = sanitize_email(wp_unslash($_POST['email'] ?? ''));
+        $notes = sanitize_textarea_field(wp_unslash($_POST['notes'] ?? ''));
+
+        if ($id <= 0) {
+            wp_send_json_error(array('message' => __('Tercero inválido.', 'aura-suite')));
+        }
+
+        if ($full_name === '') {
+            wp_send_json_error(array('message' => __('Debes indicar el nombre del tercero.', 'aura-suite')));
+        }
+
+        if ($email !== '' && !is_email($email)) {
+            wp_send_json_error(array('message' => __('El correo del tercero no es válido.', 'aura-suite')));
+        }
+
+        $exists = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$table} WHERE id = %d", $id));
+        if ($exists <= 0) {
+            wp_send_json_error(array('message' => __('El tercero no existe.', 'aura-suite')));
+        }
+
+        $ok = $wpdb->update(
+            $table,
+            array(
+                'full_name' => $full_name,
+                'document_id' => $document_id,
+                'phone' => $phone,
+                'email' => $email,
+                'notes' => $notes,
+                'updated_at' => current_time('mysql'),
+            ),
+            array('id' => $id),
+            array('%s', '%s', '%s', '%s', '%s', '%s'),
+            array('%d')
+        );
+
+        if ($ok === false) {
+            wp_send_json_error(array('message' => __('No se pudo actualizar el tercero.', 'aura-suite')));
+        }
+
+        wp_send_json_success(array(
+            'message' => __('Tercero actualizado correctamente.', 'aura-suite'),
+            'third_parties' => self::get_third_parties(true),
+        ));
+    }
+
+    public static function ajax_toggle_third_party() {
+        self::check_ajax_permissions();
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_third_parties';
+
+        $id = absint($_POST['id'] ?? 0);
+        $is_active = isset($_POST['is_active']) ? absint($_POST['is_active']) : -1;
+
+        if ($id <= 0 || !in_array($is_active, array(0, 1), true)) {
+            wp_send_json_error(array('message' => __('Datos inválidos para actualizar el tercero.', 'aura-suite')));
+        }
+
+        $ok = $wpdb->update(
+            $table,
+            array(
+                'is_active' => $is_active,
+                'updated_at' => current_time('mysql'),
+            ),
+            array('id' => $id),
+            array('%d', '%s'),
+            array('%d')
+        );
+
+        if ($ok === false) {
+            wp_send_json_error(array('message' => __('No se pudo cambiar el estado del tercero.', 'aura-suite')));
+        }
+
+        wp_send_json_success(array(
+            'message' => $is_active === 1
+                ? __('Tercero reactivado correctamente.', 'aura-suite')
+                : __('Tercero desactivado correctamente.', 'aura-suite'),
+            'third_parties' => self::get_third_parties(true),
+        ));
+    }
+
+    public static function ajax_convert_third_party_to_user() {
+        self::check_ajax_permissions();
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_third_parties';
+
+        $id = absint($_POST['id'] ?? 0);
+        $role = sanitize_key(wp_unslash($_POST['role'] ?? 'subscriber'));
+        $send_invite = !empty($_POST['send_invite']);
+
+        if ($id <= 0) {
+            wp_send_json_error(array('message' => __('Tercero inválido para convertir.', 'aura-suite')));
+        }
+
+        $third_party = $wpdb->get_row($wpdb->prepare(
+            "SELECT id, full_name, email, wp_user_id, is_active FROM {$table} WHERE id = %d LIMIT 1",
+            $id
+        ), ARRAY_A);
+
+        if (!$third_party) {
+            wp_send_json_error(array('message' => __('No se encontró el tercero.', 'aura-suite')));
+        }
+
+        $existing_user_id = absint($third_party['wp_user_id'] ?? 0);
+        if ($existing_user_id > 0 && get_user_by('id', $existing_user_id)) {
+            wp_send_json_success(array(
+                'message' => __('Este tercero ya está vinculado a un usuario de WordPress.', 'aura-suite'),
+                'user_id' => $existing_user_id,
+                'third_parties' => self::get_third_parties(true),
+            ));
+        }
+
+        $email = sanitize_email((string) ($third_party['email'] ?? ''));
+        if ($email === '' || !is_email($email)) {
+            wp_send_json_error(array('message' => __('Debes registrar un correo válido en el tercero antes de convertirlo a usuario WP.', 'aura-suite')));
+        }
+
+        $user = get_user_by('email', $email);
+        if ($user) {
+            $user_id = (int) $user->ID;
+        } else {
+            $base_login = sanitize_user(remove_accents((string) $third_party['full_name']), true);
+            $base_login = trim(preg_replace('/\s+/', '', $base_login));
+            if ($base_login === '') {
+                $base_login = 'tercero' . $id;
+            }
+
+            $login = $base_login;
+            $suffix = 1;
+            while (username_exists($login)) {
+                $suffix++;
+                $login = $base_login . $suffix;
+            }
+
+            $user_id = wp_create_user($login, wp_generate_password(18, true, true), $email);
+            if (is_wp_error($user_id)) {
+                wp_send_json_error(array('message' => $user_id->get_error_message()));
+            }
+
+            wp_update_user(array(
+                'ID' => (int) $user_id,
+                'display_name' => sanitize_text_field((string) $third_party['full_name']),
+            ));
+
+            if (function_exists('wp_roles')) {
+                $roles = wp_roles();
+                if (!$roles || !isset($roles->roles[$role])) {
+                    $role = 'subscriber';
+                }
+            }
+            $user_obj = get_user_by('id', $user_id);
+            if ($user_obj) {
+                $user_obj->set_role($role);
+            }
+
+            if ($send_invite && function_exists('wp_send_new_user_notifications')) {
+                wp_send_new_user_notifications((int) $user_id, 'user');
+            }
+        }
+
+        $ok = $wpdb->update(
+            $table,
+            array(
+                'wp_user_id' => (int) $user_id,
+                'updated_at' => current_time('mysql'),
+            ),
+            array('id' => $id),
+            array('%d', '%s'),
+            array('%d')
+        );
+
+        if ($ok === false) {
+            wp_send_json_error(array('message' => __('Se creó/vinculó el usuario, pero no se pudo guardar el vínculo con el tercero.', 'aura-suite')));
+        }
+
+        wp_send_json_success(array(
+            'message' => __('Tercero vinculado correctamente con usuario WordPress.', 'aura-suite'),
+            'user_id' => (int) $user_id,
+            'third_parties' => self::get_third_parties(true),
         ));
     }
 
@@ -725,13 +1110,25 @@ class Aura_Financial_Accounts {
     public static function ajax_create_reimbursement() {
         self::check_ajax_permissions();
 
+        $counterparty_id = absint($_POST['counterparty_id'] ?? 0);
         $person_user_id = absint($_POST['person_user_id'] ?? 0);
         $owed_amount = isset($_POST['owed_amount']) ? (float) $_POST['owed_amount'] : 0;
         $origin_transaction_id = absint($_POST['origin_transaction_id'] ?? 0);
         $notes = sanitize_textarea_field(wp_unslash($_POST['notes'] ?? ''));
 
-        if ($person_user_id <= 0 || !get_user_by('id', $person_user_id)) {
-            wp_send_json_error(array('message' => __('Debes seleccionar una persona válida para el reembolso.', 'aura-suite')));
+        if ($counterparty_id <= 0 && $person_user_id > 0) {
+            $person = get_user_by('id', $person_user_id);
+            if ($person) {
+                $counterparty_id = self::ensure_third_party(
+                    (string) $person->display_name,
+                    array('email' => (string) $person->user_email),
+                    get_current_user_id()
+                );
+            }
+        }
+
+        if ($counterparty_id <= 0 || !self::get_third_party_by_id($counterparty_id)) {
+            wp_send_json_error(array('message' => __('Debes seleccionar un tercero válido para el reembolso.', 'aura-suite')));
         }
 
         if ($owed_amount <= 0) {
@@ -739,6 +1136,7 @@ class Aura_Financial_Accounts {
         }
 
         $inserted_id = self::create_reimbursement(array(
+            'counterparty_id' => $counterparty_id,
             'person_user_id' => $person_user_id,
             'origin_transaction_id' => $origin_transaction_id > 0 ? $origin_transaction_id : null,
             'owed_amount' => $owed_amount,
@@ -831,30 +1229,52 @@ class Aura_Financial_Accounts {
         global $wpdb;
 
         $table = $wpdb->prefix . 'aura_finance_reimbursements';
+        $counterparty_id = absint($args['counterparty_id'] ?? 0);
         $person_user_id = absint($args['person_user_id'] ?? 0);
         $owed_amount = isset($args['owed_amount']) ? (float) $args['owed_amount'] : 0;
         $origin_transaction_id = absint($args['origin_transaction_id'] ?? 0);
         $notes = sanitize_textarea_field($args['notes'] ?? '');
         $created_by = absint($args['created_by'] ?? get_current_user_id());
 
-        if ($person_user_id <= 0 || $owed_amount <= 0) {
+        if ($counterparty_id <= 0 && $person_user_id > 0) {
+            $person = get_user_by('id', $person_user_id);
+            if ($person) {
+                $counterparty_id = self::ensure_third_party(
+                    (string) $person->display_name,
+                    array('email' => (string) $person->user_email),
+                    $created_by
+                );
+            }
+        }
+
+        if ($counterparty_id <= 0 || $owed_amount <= 0) {
             return false;
+        }
+
+        $insert_data = array(
+            'counterparty_id' => $counterparty_id,
+            'origin_transaction_id' => $origin_transaction_id > 0 ? $origin_transaction_id : null,
+            'owed_amount' => $owed_amount,
+            'paid_amount' => 0,
+            'status' => 'pending',
+            'notes' => $notes,
+            'created_by' => $created_by > 0 ? $created_by : get_current_user_id(),
+            'created_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql'),
+        );
+
+        $insert_format = array('%d', '%d', '%f', '%f', '%s', '%s', '%d', '%s', '%s');
+
+        // Mantener compatibilidad con integraciones legacy que aún envían person_user_id.
+        if ($person_user_id > 0) {
+            $insert_data['person_user_id'] = $person_user_id;
+            $insert_format[] = '%d';
         }
 
         $ok = $wpdb->insert(
             $table,
-            array(
-                'person_user_id' => $person_user_id,
-                'origin_transaction_id' => $origin_transaction_id > 0 ? $origin_transaction_id : null,
-                'owed_amount' => $owed_amount,
-                'paid_amount' => 0,
-                'status' => 'pending',
-                'notes' => $notes,
-                'created_by' => $created_by > 0 ? $created_by : get_current_user_id(),
-                'created_at' => current_time('mysql'),
-                'updated_at' => current_time('mysql'),
-            ),
-            array('%d', '%d', '%f', '%f', '%s', '%s', '%d', '%s', '%s')
+            $insert_data,
+            $insert_format
         );
 
         if (!$ok) {
@@ -907,6 +1327,86 @@ class Aura_Financial_Accounts {
         }
 
         return 'partial';
+    }
+
+    private static function get_third_parties($include_inactive = false) {
+        global $wpdb;
+
+        $table = $wpdb->prefix . 'aura_finance_third_parties';
+        $users = $wpdb->users;
+        $where = $include_inactive ? '1=1' : 'tp.is_active = 1';
+
+        return $wpdb->get_results(
+            "SELECT tp.id, tp.full_name, tp.document_id, tp.phone, tp.email, tp.notes, tp.is_active, tp.wp_user_id,
+                    u.user_login AS wp_user_login, u.display_name AS wp_user_display
+             FROM {$table} tp
+             LEFT JOIN {$users} u ON u.ID = tp.wp_user_id
+             WHERE {$where}
+             ORDER BY tp.full_name ASC
+             LIMIT 1000",
+            ARRAY_A
+        );
+    }
+
+    private static function get_active_third_parties() {
+        return self::get_third_parties(false);
+    }
+
+    private static function get_third_party_by_id($id) {
+        $id = absint($id);
+        if ($id <= 0) {
+            return null;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_third_parties';
+
+        return $wpdb->get_row(
+            $wpdb->prepare("SELECT id, full_name FROM {$table} WHERE id = %d AND is_active = 1", $id),
+            ARRAY_A
+        );
+    }
+
+    private static function ensure_third_party($full_name, $extra = array(), $created_by = 0) {
+        $full_name = sanitize_text_field((string) $full_name);
+        if ($full_name === '') {
+            return 0;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_third_parties';
+
+        $existing_id = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$table} WHERE LOWER(full_name) = LOWER(%s) AND is_active = 1 LIMIT 1",
+            $full_name
+        ));
+
+        if ($existing_id > 0) {
+            return $existing_id;
+        }
+
+        $created_by = absint($created_by);
+        $inserted = $wpdb->insert(
+            $table,
+            array(
+                'full_name' => $full_name,
+                'document_id' => sanitize_text_field((string) ($extra['document_id'] ?? '')),
+                'phone' => sanitize_text_field((string) ($extra['phone'] ?? '')),
+                'email' => sanitize_email((string) ($extra['email'] ?? '')),
+                'notes' => sanitize_textarea_field((string) ($extra['notes'] ?? '')),
+                'is_active' => 1,
+                'created_by' => $created_by > 0 ? $created_by : get_current_user_id(),
+                'created_at' => current_time('mysql'),
+                'updated_at' => current_time('mysql'),
+            ),
+            array('%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s', '%s')
+        );
+
+        if (!$inserted) {
+            return 0;
+        }
+
+        return (int) $wpdb->insert_id;
     }
 
     public static function scan_overdue_petty_cash_settlements() {
@@ -1670,18 +2170,6 @@ class Aura_Financial_Accounts {
             ARRAY_A
         );
 
-        $excel_blocks = $wpdb->get_results($wpdb->prepare(
-            "SELECT COALESCE(excel_block, 'sin_bloque') AS excel_block,
-                    COUNT(*) AS total_transactions,
-                    COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END),0) AS total_income,
-                    COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END),0) AS total_expense
-             FROM {$transactions_table}
-             WHERE deleted_at IS NULL AND status = 'approved' AND YEAR(transaction_date) = %d
-             GROUP BY COALESCE(excel_block, 'sin_bloque')
-             ORDER BY excel_block ASC",
-            $year
-        ), ARRAY_A);
-
         $budget_envelope = $wpdb->get_row($wpdb->prepare(
             "SELECT id, annual_limit, exceed_policy
              FROM {$env_table}
@@ -1816,7 +2304,6 @@ class Aura_Financial_Accounts {
             'accounts' => $accounts,
             'currency_summary' => $currency_summary,
             'type_summary' => $type_summary,
-            'excel_blocks' => $excel_blocks,
             'cash_flow_totals' => $cash_flow_totals,
             'budget' => array(
                 'annual_limit' => !empty($budget_envelope['annual_limit']) ? (float) $budget_envelope['annual_limit'] : 0,
@@ -1976,7 +2463,11 @@ class Aura_Financial_Accounts {
             }
         }
 
-        self::recalculate_account_balance((int) $usd_account->id);
+        // Solo recalcular cuando realmente se migraron filas nuevas.
+        // Si no hay nuevas filas del ledger legacy, no debemos pisar ajustes manuales del saldo.
+        if ($migrated > 0) {
+            self::recalculate_account_balance((int) $usd_account->id);
+        }
 
         $already_migrated_total = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$movements_table}

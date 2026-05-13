@@ -701,6 +701,8 @@
             transaction_date: formattedDate,
             description: $('#description').val(),
             payment_method: $('#payment_method').val(),
+            source_account_id: $('#source_account_id').val(),
+            destination_account_id: $('#destination_account_id').val(),
             reference_number: $('#reference_number').val(),
             recipient_payer: $('#recipient_payer').val(),
             related_user_id: $('#related_user_id').val(),
@@ -1312,6 +1314,8 @@
             transaction_date: $('#transaction_date').val(),
             description: $('#description').val(),
             payment_method: $('#payment_method').val(),
+            source_account_id: $('#source_account_id').val(),
+            destination_account_id: $('#destination_account_id').val(),
             reference_number: $('#reference_number').val(),
             recipient_payer: $('#recipient_payer').val(),
             related_user_id: $('#related_user_id').val(),
@@ -1355,6 +1359,12 @@
                 $('#recipient_payer').val(draft.recipient_payer);
                 if (draft.related_user_id) {
                     $('#related_user_id').val(draft.related_user_id);
+                }
+                if (typeof draft.source_account_id !== 'undefined') {
+                    $('#source_account_id').val(draft.source_account_id);
+                }
+                if (typeof draft.destination_account_id !== 'undefined') {
+                    $('#destination_account_id').val(draft.destination_account_id);
                 }
                 if (draft.related_user_concept) {
                     $('#related_user_concept').val(draft.related_user_concept);

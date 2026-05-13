@@ -1065,6 +1065,116 @@ jQuery(function ($) {
         $sel.html(opts.join(''));
     }
 
+    function fillThirdPartyOptions(thirdParties, selectedId) {
+        const $sel = $('#aura-reimburse-person');
+        if (!$sel.length) {
+            return;
+        }
+
+        const opts = ['<option value="">Selecciona un tercero...</option>'];
+        (thirdParties || []).forEach(function (p) {
+            const id = parseInt(p.id, 10);
+            if (!id) {
+                return;
+            }
+            const label = p.document_id
+                ? (p.full_name + ' (' + p.document_id + ')')
+                : (p.full_name || 'Tercero #' + id);
+            opts.push('<option value="' + id + '">' + escapeHtml(label) + '</option>');
+        });
+
+        $sel.html(opts.join(''));
+        if (selectedId) {
+            $sel.val(String(selectedId));
+        }
+    }
+
+    function showThirdPartyManageFeedback(message, isOk) {
+        const $box = $('#aura-third-party-manage-feedback');
+        if (!$box.length) {
+            return;
+        }
+
+        if (!message) {
+            $box.hide().removeClass('is-error is-success').text('');
+            return;
+        }
+
+        $box
+            .show()
+            .removeClass('is-error is-success')
+            .addClass(isOk ? 'is-success' : 'is-error')
+            .text(message);
+    }
+
+    function renderThirdPartyManageTable(rows) {
+        const $tbody = $('#aura-third-party-manage-table tbody');
+        if (!$tbody.length) {
+            return;
+        }
+
+        if (!rows || !rows.length) {
+            $tbody.html('<tr><td colspan="7">Sin terceros registrados.</td></tr>');
+            return;
+        }
+
+        const html = rows.map(function (p) {
+            const id = parseInt(p.id, 10) || 0;
+            const active = parseInt(p.is_active, 10) === 1;
+            const hasWpUser = parseInt(p.wp_user_id, 10) > 0;
+            const wpLabel = hasWpUser
+                ? (p.wp_user_display || p.wp_user_login || ('Usuario #' + p.wp_user_id))
+                : 'No vinculado';
+
+            const actions = [
+                '<button type="button" class="button button-small aura-third-party-edit" data-id="' + id + '">Editar</button>',
+                '<button type="button" class="button button-small aura-third-party-toggle" data-id="' + id + '" data-active="' + (active ? '1' : '0') + '">' + (active ? 'Desactivar' : 'Reactivar') + '</button>'
+            ];
+
+            if (!hasWpUser) {
+                actions.push('<button type="button" class="button button-small button-primary aura-third-party-convert" data-id="' + id + '">Convertir a usuario WP</button>');
+            }
+
+            return '<tr>' +
+                '<td><strong>' + escapeHtml(p.full_name || '') + '</strong></td>' +
+                '<td>' + escapeHtml(p.document_id || '-') + '</td>' +
+                '<td>' + escapeHtml(p.phone || '-') + '</td>' +
+                '<td>' + escapeHtml(p.email || '-') + '</td>' +
+                '<td>' + (active ? '<span class="aura-pill aura-pill--ok">Activo</span>' : '<span class="aura-pill aura-pill--muted">Inactivo</span>') + '</td>' +
+                '<td>' + escapeHtml(wpLabel) + '</td>' +
+                '<td><div class="aura-third-party-actions">' + actions.join('') + '</div></td>' +
+                '</tr>';
+        });
+
+        $tbody.html(html.join(''));
+    }
+
+    function loadThirdPartiesManagement() {
+        $.post(auraFinancialAccounts.ajaxUrl, {
+            action: 'aura_finance_third_parties_list',
+            nonce: auraFinancialAccounts.nonce,
+            include_inactive: 1
+        }).done(function (res) {
+            if (res && res.success) {
+                const data = res.data || {};
+                window.auraThirdPartiesManagementCache = data.third_parties || [];
+
+                const activeOnly = (window.auraThirdPartiesManagementCache || []).filter(function (p) {
+                    return parseInt(p.is_active, 10) === 1;
+                });
+                window.auraThirdPartiesCache = activeOnly;
+
+                renderThirdPartyManageTable(window.auraThirdPartiesManagementCache);
+                fillThirdPartyOptions(window.auraThirdPartiesCache);
+                return;
+            }
+
+            showThirdPartyManageFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
+        }).fail(function () {
+            showThirdPartyManageFeedback(auraFinancialAccounts.i18n.error, false);
+        });
+    }
+
     function renderReimbursementsTable(rows) {
         if (!$reimbursementsTableBody.length) {
             return;
@@ -1089,7 +1199,7 @@ jQuery(function ($) {
 
             return '<tr>' +
                 '<td>' + escapeHtml(String(r.created_at || '').slice(0, 10)) + '</td>' +
-                '<td>' + escapeHtml(r.person_name || ('Usuario #' + r.person_user_id)) + '</td>' +
+                '<td>' + escapeHtml(r.person_name || ('Tercero #' + (r.counterparty_id || r.person_user_id || 'N/A'))) + '</td>' +
                 '<td><strong>' + escapeHtml(originText) + '</strong><br><small>' + escapeHtml(r.origin_description || '') + '</small></td>' +
                 '<td>' + escapeHtml(formatNumber(owed)) + '</td>' +
                 '<td>' + escapeHtml(formatNumber(paid)) + '</td>' +
@@ -1126,6 +1236,8 @@ jQuery(function ($) {
                 window.auraReimbursementsCache = data.reimbursements || [];
                 renderReimbursementsTable(window.auraReimbursementsCache);
                 fillReimburseAccountOptions(data.paying_accounts || []);
+                window.auraThirdPartiesCache = data.third_parties || [];
+                fillThirdPartyOptions(window.auraThirdPartiesCache);
                 return;
             }
             showFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
@@ -1135,10 +1247,16 @@ jQuery(function ($) {
     }
 
     function createReimbursement() {
+        const counterpartyId = parseInt($('#aura-reimburse-person').val(), 10);
+        if (!counterpartyId) {
+            showFeedback('Selecciona un tercero para registrar la deuda.', false);
+            return;
+        }
+
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_reimbursements_create',
             nonce: auraFinancialAccounts.nonce,
-            person_user_id: $('#aura-reimburse-person').val(),
+            counterparty_id: counterpartyId,
             owed_amount: $('#aura-reimburse-owed').val(),
             origin_transaction_id: $('#aura-reimburse-origin').val(),
             notes: $('#aura-reimburse-notes').val()
@@ -1153,6 +1271,264 @@ jQuery(function ($) {
             showFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
         }).fail(function () {
             showFeedback(auraFinancialAccounts.i18n.error, false);
+        });
+    }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+    }
+
+    function showThirdPartyFeedback(message, isOk) {
+        const $box = $('#aura-third-party-feedback');
+        if (!$box.length) {
+            return;
+        }
+        if (!message) {
+            $box.hide().removeClass('is-error is-success').text('');
+            return;
+        }
+
+        $box
+            .show()
+            .removeClass('is-error is-success')
+            .addClass(isOk ? 'is-success' : 'is-error')
+            .text(message);
+    }
+
+    function setThirdPartyFieldError(fieldId, message) {
+        const $field = $('#' + fieldId);
+        const $error = $('#' + fieldId + '-error');
+
+        if (!$field.length || !$error.length) {
+            return;
+        }
+
+        if (!message) {
+            $field.removeClass('aura-input-invalid');
+            $error.removeClass('is-visible').text('');
+            return;
+        }
+
+        $field.addClass('aura-input-invalid');
+        $error.addClass('is-visible').text(message);
+    }
+
+    function validateThirdPartyField(fieldId) {
+        const value = String($('#' + fieldId).val() || '').trim();
+
+        if (fieldId === 'aura-third-party-name') {
+            if (value.length < 3) {
+                setThirdPartyFieldError(fieldId, 'El nombre debe tener al menos 3 caracteres.');
+                return false;
+            }
+            setThirdPartyFieldError(fieldId, '');
+            return true;
+        }
+
+        if (fieldId === 'aura-third-party-email') {
+            if (value !== '' && !isValidEmail(value)) {
+                setThirdPartyFieldError(fieldId, 'Ingresa un correo válido.');
+                return false;
+            }
+            setThirdPartyFieldError(fieldId, '');
+            return true;
+        }
+
+        if (fieldId === 'aura-third-party-phone') {
+            const digits = value.replace(/\D/g, '');
+            if (value !== '' && digits.length < 7) {
+                setThirdPartyFieldError(fieldId, 'El teléfono debe tener al menos 7 dígitos.');
+                return false;
+            }
+            setThirdPartyFieldError(fieldId, '');
+            return true;
+        }
+
+        if (fieldId === 'aura-third-party-document') {
+            setThirdPartyFieldError(fieldId, '');
+            return true;
+        }
+
+        return true;
+    }
+
+    function validateThirdPartyForm() {
+        const fields = [
+            'aura-third-party-name',
+            'aura-third-party-document',
+            'aura-third-party-phone',
+            'aura-third-party-email'
+        ];
+
+        let valid = true;
+        fields.forEach(function (fieldId) {
+            if (!validateThirdPartyField(fieldId)) {
+                valid = false;
+            }
+        });
+
+        return valid;
+    }
+
+    function resetThirdPartyForm() {
+        const $formLocal = $('#aura-third-party-form');
+        if ($formLocal.length && $formLocal[0]) {
+            $formLocal[0].reset();
+        }
+
+        $('#aura-third-party-id').val('0');
+        $('#aura-third-party-mode').val('create');
+        $('#aura-third-party-modal-title').text('Nuevo tercero');
+        $('#aura-third-party-save-btn').text('Guardar tercero');
+
+        ['aura-third-party-name', 'aura-third-party-document', 'aura-third-party-phone', 'aura-third-party-email'].forEach(function (fieldId) {
+            setThirdPartyFieldError(fieldId, '');
+        });
+
+        showThirdPartyFeedback('', false);
+    }
+
+    function openThirdPartyEditForm(id) {
+        const list = window.auraThirdPartiesManagementCache || [];
+        const row = list.find(function (p) { return parseInt(p.id, 10) === parseInt(id, 10); });
+        if (!row) {
+            return;
+        }
+
+        resetThirdPartyForm();
+
+        $('#aura-third-party-id').val(parseInt(row.id, 10) || 0);
+        $('#aura-third-party-mode').val('edit');
+        $('#aura-third-party-modal-title').text('Editar tercero');
+        $('#aura-third-party-save-btn').text('Guardar cambios');
+
+        $('#aura-third-party-name').val(row.full_name || '');
+        $('#aura-third-party-document').val(row.document_id || '');
+        $('#aura-third-party-phone').val(row.phone || '');
+        $('#aura-third-party-email').val(row.email || '');
+
+        openFinanceModal('aura-finance-third-party-modal');
+    }
+
+    function createThirdPartyFromModal() {
+        if (!validateThirdPartyForm()) {
+            showThirdPartyFeedback('Corrige los campos marcados para continuar.', false);
+            return;
+        }
+
+        const mode = String($('#aura-third-party-mode').val() || 'create');
+        const thirdPartyId = parseInt($('#aura-third-party-id').val(), 10) || 0;
+        const isEdit = mode === 'edit' && thirdPartyId > 0;
+
+        const payload = {
+            action: isEdit ? 'aura_finance_third_parties_update' : 'aura_finance_third_parties_create',
+            nonce: auraFinancialAccounts.nonce,
+            full_name: String($('#aura-third-party-name').val() || '').trim(),
+            document_id: String($('#aura-third-party-document').val() || '').trim(),
+            phone: String($('#aura-third-party-phone').val() || '').trim(),
+            email: String($('#aura-third-party-email').val() || '').trim()
+        };
+
+        if (isEdit) {
+            payload.id = thirdPartyId;
+        }
+
+        $('#aura-third-party-save-btn').prop('disabled', true).text('Guardando...');
+
+        $.post(auraFinancialAccounts.ajaxUrl, payload).done(function (res) {
+            if (res && res.success) {
+                const data = res.data || {};
+                const list = data.third_parties || [];
+                window.auraThirdPartiesManagementCache = list;
+
+                const activeOnly = list.filter(function (p) {
+                    return parseInt(p.is_active, 10) === 1;
+                });
+                window.auraThirdPartiesCache = activeOnly;
+                fillThirdPartyOptions(window.auraThirdPartiesCache, data.id || (isEdit ? thirdPartyId : null));
+                renderThirdPartyManageTable(window.auraThirdPartiesManagementCache);
+
+                showThirdPartyFeedback((data.message) || (isEdit ? 'Tercero actualizado.' : 'Tercero registrado.'), true);
+                showThirdPartyManageFeedback((data.message) || (isEdit ? 'Tercero actualizado.' : 'Tercero registrado.'), true);
+
+                window.setTimeout(function () {
+                    closeFinanceModal('aura-finance-third-party-modal');
+                    showFeedback((data.message) || (isEdit ? 'Tercero actualizado.' : 'Tercero registrado.'), true);
+                }, 350);
+                return;
+            }
+
+            showThirdPartyFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
+        }).fail(function () {
+            showThirdPartyFeedback(auraFinancialAccounts.i18n.error, false);
+        }).always(function () {
+            const modeNow = String($('#aura-third-party-mode').val() || 'create');
+            $('#aura-third-party-save-btn').prop('disabled', false).text(modeNow === 'edit' ? 'Guardar cambios' : 'Guardar tercero');
+        });
+    }
+
+    function toggleThirdParty(id, currentlyActive) {
+        const activate = !currentlyActive;
+        const question = activate
+            ? '¿Reactivar este tercero?' : '¿Desactivar este tercero?';
+
+        if (!window.confirm(question)) {
+            return;
+        }
+
+        $.post(auraFinancialAccounts.ajaxUrl, {
+            action: 'aura_finance_third_parties_toggle',
+            nonce: auraFinancialAccounts.nonce,
+            id: id,
+            is_active: activate ? 1 : 0
+        }).done(function (res) {
+            if (res && res.success) {
+                const data = res.data || {};
+                const list = data.third_parties || [];
+                window.auraThirdPartiesManagementCache = list;
+                const activeOnly = list.filter(function (p) {
+                    return parseInt(p.is_active, 10) === 1;
+                });
+                window.auraThirdPartiesCache = activeOnly;
+                renderThirdPartyManageTable(window.auraThirdPartiesManagementCache);
+                fillThirdPartyOptions(window.auraThirdPartiesCache);
+                showThirdPartyManageFeedback((data.message) || 'Estado actualizado.', true);
+                return;
+            }
+            showThirdPartyManageFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
+        }).fail(function () {
+            showThirdPartyManageFeedback(auraFinancialAccounts.i18n.error, false);
+        });
+    }
+
+    function convertThirdPartyToWpUser(id) {
+        if (!window.confirm('¿Convertir este tercero en usuario WordPress con rol Suscriptor?')) {
+            return;
+        }
+
+        $.post(auraFinancialAccounts.ajaxUrl, {
+            action: 'aura_finance_third_parties_convert_user',
+            nonce: auraFinancialAccounts.nonce,
+            id: id,
+            role: 'subscriber',
+            send_invite: 1
+        }).done(function (res) {
+            if (res && res.success) {
+                const data = res.data || {};
+                const list = data.third_parties || [];
+                window.auraThirdPartiesManagementCache = list;
+                const activeOnly = list.filter(function (p) {
+                    return parseInt(p.is_active, 10) === 1;
+                });
+                window.auraThirdPartiesCache = activeOnly;
+                renderThirdPartyManageTable(window.auraThirdPartiesManagementCache);
+                fillThirdPartyOptions(window.auraThirdPartiesCache);
+                showThirdPartyManageFeedback((data.message) || 'Tercero convertido a usuario WP.', true);
+                return;
+            }
+            showThirdPartyManageFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
+        }).fail(function () {
+            showThirdPartyManageFeedback(auraFinancialAccounts.i18n.error, false);
         });
     }
 
@@ -1198,7 +1574,6 @@ jQuery(function ($) {
         const accounts = data.accounts || [];
         const currencies = data.currency_summary || [];
         const types = data.type_summary || [];
-        const blocks = data.excel_blocks || [];
         const budget = data.budget || {};
         const months = budget.months || [];
         const audit = data.audit || {};
@@ -1239,11 +1614,6 @@ jQuery(function ($) {
         renderSimpleRows($('#aura-report-type-table tbody'), types, 3, function (row) {
             return '<tr><td>' + typeBadge(row.account_type || 'custom') + '</td><td>' +
                 escapeHtml(row.account_count) + '</td><td>' + escapeHtml(formatNumber(row.total_balance || 0)) + '</td></tr>';
-        });
-
-        renderSimpleRows($('#aura-report-blocks-table tbody'), blocks, 4, function (row) {
-            return '<tr><td><strong>' + escapeHtml(row.excel_block || 'sin_bloque') + '</strong></td><td>' +
-                escapeHtml(row.total_transactions) + '</td><td>' + escapeHtml(formatNumber(row.total_income || 0)) + '</td><td>' + escapeHtml(formatNumber(row.total_expense || 0)) + '</td></tr>';
         });
 
         $('#aura-report-budget-summary').html(
@@ -1316,6 +1686,7 @@ jQuery(function ($) {
         if ($reimbursementsForm.length && $reimbursementsForm[0]) {
             $reimbursementsForm[0].reset();
         }
+        fillThirdPartyOptions(window.auraThirdPartiesCache || []);
         openFinanceModal('aura-finance-reimburse-modal');
     });
 
@@ -1453,6 +1824,62 @@ jQuery(function ($) {
     $reimbursementsForm.on('submit', function (e) {
         e.preventDefault();
         createReimbursement();
+    });
+
+    $('#aura-third-party-new-btn').on('click', function (e) {
+        e.preventDefault();
+        resetThirdPartyForm();
+        openFinanceModal('aura-finance-third-party-modal');
+        window.setTimeout(function () {
+            $('#aura-third-party-name').trigger('focus');
+        }, 80);
+    });
+
+    $('#aura-third-party-manage-btn').on('click', function (e) {
+        e.preventDefault();
+        showThirdPartyManageFeedback('', false);
+        openFinanceModal('aura-finance-third-party-manage-modal');
+        loadThirdPartiesManagement();
+    });
+
+    $('#aura-third-party-manage-new-inline').on('click', function (e) {
+        e.preventDefault();
+        resetThirdPartyForm();
+        openFinanceModal('aura-finance-third-party-modal');
+    });
+
+    $('#aura-third-party-form').on('submit', function (e) {
+        e.preventDefault();
+        createThirdPartyFromModal();
+    });
+
+    $('#aura-third-party-name, #aura-third-party-document, #aura-third-party-phone, #aura-third-party-email').on('input blur', function () {
+        validateThirdPartyField($(this).attr('id'));
+    });
+
+    $(document).on('click', '.aura-third-party-edit', function () {
+        const id = parseInt($(this).data('id'), 10);
+        if (!id) {
+            return;
+        }
+        openThirdPartyEditForm(id);
+    });
+
+    $(document).on('click', '.aura-third-party-toggle', function () {
+        const id = parseInt($(this).data('id'), 10);
+        const active = parseInt($(this).data('active'), 10) === 1;
+        if (!id) {
+            return;
+        }
+        toggleThirdParty(id, active);
+    });
+
+    $(document).on('click', '.aura-third-party-convert', function () {
+        const id = parseInt($(this).data('id'), 10);
+        if (!id) {
+            return;
+        }
+        convertThirdPartyToWpUser(id);
     });
 
     $reimbursementsPayForm.on('submit', function (e) {

@@ -215,7 +215,7 @@ if (!defined('ABSPATH')) {
                         <th><?php _e('Fecha', 'aura-suite'); ?></th>
                         <th><?php _e('Vence', 'aura-suite'); ?></th>
                         <th><?php _e('Cuenta', 'aura-suite'); ?></th>
-                        <th><?php _e('Responsable', 'aura-suite'); ?></th>
+                        <th><?php _e('Responsable interno', 'aura-suite'); ?></th>
                         <th><?php _e('Entregado', 'aura-suite'); ?></th>
                         <th><?php _e('Gastado', 'aura-suite'); ?></th>
                         <th><?php _e('Devuelto', 'aura-suite'); ?></th>
@@ -262,7 +262,7 @@ if (!defined('ABSPATH')) {
                 <thead>
                     <tr>
                         <th><?php _e('Fecha', 'aura-suite'); ?></th>
-                        <th><?php _e('Persona', 'aura-suite'); ?></th>
+                        <th><?php _e('Tercero', 'aura-suite'); ?></th>
                         <th><?php _e('Origen', 'aura-suite'); ?></th>
                         <th><?php _e('Adeudado', 'aura-suite'); ?></th>
                         <th><?php _e('Pagado', 'aura-suite'); ?></th>
@@ -510,7 +510,7 @@ if (!defined('ABSPATH')) {
                             </p>
 
                             <p>
-                                <label for="aura-petty-responsible"><strong><?php _e('Responsable', 'aura-suite'); ?></strong></label>
+                                <label for="aura-petty-responsible"><strong><?php _e('Responsable interno', 'aura-suite'); ?></strong></label>
                                 <select id="aura-petty-responsible" required>
                                     <option value=""><?php _e('Selecciona responsable...', 'aura-suite'); ?></option>
                                     <?php foreach (get_users(array('fields' => array('ID', 'display_name'))) as $user) : ?>
@@ -596,13 +596,15 @@ if (!defined('ABSPATH')) {
             <form id="aura-reimbursements-form" class="aura-reimburse-form-box aura-finance-modal__form">
                     <h3><?php _e('Registrar deuda', 'aura-suite'); ?></h3>
                     <p>
-                        <label for="aura-reimburse-person"><strong><?php _e('Persona', 'aura-suite'); ?></strong></label>
+                        <label for="aura-reimburse-person"><strong><?php _e('Tercero', 'aura-suite'); ?></strong></label>
                         <select id="aura-reimburse-person" required>
-                            <option value=""><?php _e('Selecciona una persona...', 'aura-suite'); ?></option>
-                            <?php foreach (get_users(array('fields' => array('ID', 'display_name'))) as $user) : ?>
-                                <option value="<?php echo esc_attr((int) $user->ID); ?>"><?php echo esc_html($user->display_name); ?></option>
-                            <?php endforeach; ?>
+                            <option value=""><?php _e('Selecciona un tercero...', 'aura-suite'); ?></option>
                         </select>
+                    </p>
+                    <p>
+                        <button type="button" class="button" id="aura-third-party-new-btn"><?php _e('Registrar nuevo tercero', 'aura-suite'); ?></button>
+                        <button type="button" class="button" id="aura-third-party-manage-btn"><?php _e('Gestionar terceros', 'aura-suite'); ?></button>
+                        <span class="description"><?php _e('Úsalo cuando la persona no existe en el catálogo.', 'aura-suite'); ?></span>
                     </p>
                     <p>
                         <label for="aura-reimburse-owed"><strong><?php _e('Valor adeudado', 'aura-suite'); ?></strong></label>
@@ -655,6 +657,96 @@ if (!defined('ABSPATH')) {
                     </p>
                     <p class="description"><?php _e('Tip: selecciona una deuda en la tabla para precargar este formulario.', 'aura-suite'); ?></p>
             </form>
+        </div>
+    </div>
+
+    <div id="aura-finance-third-party-modal" class="aura-finance-modal aura-finance-modal--mini" style="display:none;" aria-hidden="true">
+        <div class="aura-finance-modal__backdrop" data-modal-close="aura-finance-third-party-modal"></div>
+        <div class="aura-finance-modal__dialog aura-finance-modal__dialog--mini" role="dialog" aria-modal="true" aria-labelledby="aura-third-party-modal-title">
+            <div class="aura-finance-modal__head">
+                <div>
+                    <h2 id="aura-third-party-modal-title"><?php _e('Nuevo tercero', 'aura-suite'); ?></h2>
+                    <p><?php _e('Registra a la persona para usarla en deudas y pagos de reembolso.', 'aura-suite'); ?></p>
+                </div>
+                <button type="button" class="button-link" data-modal-close="aura-finance-third-party-modal" aria-label="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>">✕</button>
+            </div>
+
+            <form id="aura-third-party-form" class="aura-finance-modal__form">
+                <input type="hidden" id="aura-third-party-id" value="0">
+                <input type="hidden" id="aura-third-party-mode" value="create">
+
+                <div class="aura-third-party-grid">
+                    <p class="aura-third-party-span-2">
+                        <label for="aura-third-party-name"><strong><?php _e('Nombre completo', 'aura-suite'); ?></strong></label>
+                        <input type="text" id="aura-third-party-name" maxlength="191" required>
+                        <span class="aura-field-error" id="aura-third-party-name-error"></span>
+                    </p>
+
+                    <p>
+                        <label for="aura-third-party-document"><strong><?php _e('Documento', 'aura-suite'); ?></strong></label>
+                        <input type="text" id="aura-third-party-document" maxlength="80">
+                        <span class="aura-field-error" id="aura-third-party-document-error"></span>
+                    </p>
+
+                    <p>
+                        <label for="aura-third-party-phone"><strong><?php _e('Teléfono', 'aura-suite'); ?></strong></label>
+                        <input type="text" id="aura-third-party-phone" maxlength="50">
+                        <span class="aura-field-error" id="aura-third-party-phone-error"></span>
+                    </p>
+
+                    <p class="aura-third-party-span-2">
+                        <label for="aura-third-party-email"><strong><?php _e('Correo', 'aura-suite'); ?></strong></label>
+                        <input type="email" id="aura-third-party-email" maxlength="100" placeholder="correo@dominio.com">
+                        <span class="aura-field-error" id="aura-third-party-email-error"></span>
+                    </p>
+                </div>
+
+                <div id="aura-third-party-feedback" class="aura-inline-feedback" style="display:none"></div>
+
+                <div class="aura-modal-wizard__actions">
+                    <button type="button" class="button" data-modal-close="aura-finance-third-party-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                    <button type="submit" class="button button-primary" id="aura-third-party-save-btn"><?php _e('Guardar tercero', 'aura-suite'); ?></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="aura-finance-third-party-manage-modal" class="aura-finance-modal" style="display:none;" aria-hidden="true">
+        <div class="aura-finance-modal__backdrop" data-modal-close="aura-finance-third-party-manage-modal"></div>
+        <div class="aura-finance-modal__dialog aura-finance-modal__dialog--large" role="dialog" aria-modal="true" aria-labelledby="aura-third-party-manage-title">
+            <div class="aura-finance-modal__head">
+                <div>
+                    <h2 id="aura-third-party-manage-title"><?php _e('Gestión de Terceros', 'aura-suite'); ?></h2>
+                    <p><?php _e('Administra terceros sin ir al módulo de permisos. Puedes editar, activar/desactivar y convertir a usuario WordPress.', 'aura-suite'); ?></p>
+                </div>
+                <button type="button" class="button-link" data-modal-close="aura-finance-third-party-manage-modal" aria-label="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>">✕</button>
+            </div>
+
+            <div id="aura-third-party-manage-feedback" class="aura-inline-feedback" style="display:none"></div>
+
+            <div class="aura-third-party-manage-table-wrap">
+                <table class="widefat striped" id="aura-third-party-manage-table">
+                    <thead>
+                        <tr>
+                            <th><?php _e('Nombre', 'aura-suite'); ?></th>
+                            <th><?php _e('Documento', 'aura-suite'); ?></th>
+                            <th><?php _e('Teléfono', 'aura-suite'); ?></th>
+                            <th><?php _e('Correo', 'aura-suite'); ?></th>
+                            <th><?php _e('Estado', 'aura-suite'); ?></th>
+                            <th><?php _e('Usuario WP', 'aura-suite'); ?></th>
+                            <th><?php _e('Acciones', 'aura-suite'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="7"><?php _e('Cargando terceros...', 'aura-suite'); ?></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="aura-modal-wizard__actions">
+                <button type="button" class="button" id="aura-third-party-manage-new-inline"><?php _e('Nuevo tercero', 'aura-suite'); ?></button>
+                <button type="button" class="button" data-modal-close="aura-finance-third-party-manage-modal"><?php _e('Cerrar', 'aura-suite'); ?></button>
+            </div>
         </div>
     </div>
 
@@ -729,23 +821,6 @@ if (!defined('ABSPATH')) {
                             </table>
                         </div>
                     </div>
-                </div>
-            </section>
-
-            <section class="aura-report-panel">
-                <h3><?php _e('Bloques Excel', 'aura-suite'); ?></h3>
-                <div class="aura-report-table-wrap">
-                    <table class="widefat striped" id="aura-report-blocks-table">
-                        <thead>
-                            <tr>
-                                <th><?php _e('Bloque', 'aura-suite'); ?></th>
-                                <th><?php _e('Movimientos', 'aura-suite'); ?></th>
-                                <th><?php _e('Ingresos', 'aura-suite'); ?></th>
-                                <th><?php _e('Gastos', 'aura-suite'); ?></th>
-                            </tr>
-                        </thead>
-                        <tbody><tr><td colspan="4"><?php _e('Cargando...', 'aura-suite'); ?></td></tr></tbody>
-                    </table>
                 </div>
             </section>
 
