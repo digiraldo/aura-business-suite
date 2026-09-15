@@ -1,0 +1,257 @@
+/**
+ * Estilos del Módulo de Calendario y Horarios Académicos — Aura Suite
+ * Design System Compliance (Protocolo P.E.E.)
+ */
+
+:root {
+    --fc-border-color: var(--aura-border, #e2e8f0);
+    --fc-today-bg-color: rgba(99, 102, 241, 0.05);
+    --fc-event-bg-color: var(--aura-primary, #6366f1);
+    --fc-event-border-color: var(--aura-primary, #6366f1);
+    --fc-event-text-color: #ffffff;
+}
+
+/* ── ADAPTACIÓN DE FULLCALENDAR ── */
+.fc {
+    font-family: inherit;
+    color: var(--aura-text-primary, #1e293b);
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.25rem !important;
+    font-weight: 700;
+    color: var(--aura-text-primary, #1e293b);
+}
+
+.fc .fc-button {
+    background: var(--aura-surface, #ffffff) !important;
+    color: var(--aura-text-secondary, #475569) !important;
+    border: 1px solid var(--aura-border, #cbd5e1) !important;
+    border-radius: 8px !important;
+    padding: 6px 14px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    box-shadow: var(--aura-shadow-sm, 0 1px 2px rgba(0,0,0,0.05)) !important;
+    text-transform: capitalize !important;
+    transition: all 0.2s ease !important;
+}
+
+.fc .fc-button:hover {
+    background: var(--aura-surface-alt, #f8fafc) !important;
+    color: var(--aura-primary, #6366f1) !important;
+    border-color: var(--aura-primary, #6366f1) !important;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    background: var(--aura-primary, #6366f1) !important;
+    color: #ffffff !important;
+    border-color: var(--aura-primary, #6366f1) !important;
+}
+
+.fc-theme-standard td, .fc-theme-standard th {
+    border-color: var(--aura-border, #e2e8f0) !important;
+}
+
+.fc .fc-col-header-cell {
+    background: var(--aura-surface-alt, #f8fafc);
+    padding: 8px 0;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--aura-text-secondary, #64748b);
+}
+
+.fc .fc-event {
+    border-radius: 6px !important;
+    padding: 2px 5px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fc .fc-event:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.fc .fc-timegrid-slot {
+    height: 2.2em !important;
+}
+
+.fc .fc-timegrid-now-indicator-line {
+    border-color: #ef4444 !important;
+    border-width: 2px !important;
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+    border-color: #ef4444 !important;
+}
+
+/* ── MODALES DEL SISTEMA (AURA MODALS) ── */
+.aura-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 100050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: auraFadeIn 0.2s ease-out;
+}
+
+.aura-modal-container {
+    background: var(--aura-surface, #ffffff);
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--aura-border, #e2e8f0);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    animation: auraSlideUp 0.25s ease-out;
+}
+
+.aura-modal-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--aura-border, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--aura-surface, #ffffff);
+}
+
+.aura-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--aura-text-muted, #94a3b8);
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.aura-modal-close:hover {
+    color: var(--aura-text-primary, #0f172a);
+}
+
+.aura-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--aura-border, #e2e8f0);
+    background: var(--aura-surface-alt, #f8fafc);
+}
+
+/* ── PILL BUTTONS DÍAS RECURRENTES ── */
+.btn-day-pill input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--aura-primary, #6366f1);
+}
+
+.btn-day-pill:has(input:checked) {
+    background: var(--aura-primary, #6366f1);
+    color: #ffffff;
+    border-color: var(--aura-primary, #6366f1);
+}
+
+/* ── ASISTENCIA: BOTONES DE ESTADO ── */
+.att-status-btn-group {
+    display: inline-flex;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--aura-border, #cbd5e1);
+}
+
+.att-btn {
+    background: var(--aura-surface, #ffffff);
+    border: none;
+    border-right: 1px solid var(--aura-border, #cbd5e1);
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: var(--aura-text-secondary, #64748b);
+}
+
+.att-btn:last-child {
+    border-right: none;
+}
+
+.att-btn.active-present {
+    background: #10b981 !important;
+    color: #ffffff !important;
+}
+
+.att-btn.active-late {
+    background: #f59e0b !important;
+    color: #ffffff !important;
+}
+
+.att-btn.active-unexcused {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+.att-btn.active-excused {
+    background: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+/* ── TOAST NOTIFICATIONS ── */
+.aura-cal-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1e293b;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 100060;
+    animation: auraSlideInRight 0.3s ease-out;
+}
+
+.aura-cal-toast.toast-success {
+    background: #065f46;
+}
+
+.aura-cal-toast.toast-error {
+    background: #991b1b;
+}
+
+/* ── ANIMACIONES ── */
+@keyframes auraFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes auraSlideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes auraSlideInRight {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}

@@ -1331,6 +1331,57 @@
             $( '#default-currency' ).val( $( this ).val() );
         } );
 
+        // Botón auto-crear / vincular páginas del portal
+        $( '#btn-st-auto-create-pages' ).on( 'click', function () {
+            var $btn = $( this );
+            var origHtml = $btn.html();
+            $btn.prop( 'disabled', true ).html( '<span class="dashicons dashicons-update" style="animation:auraSpin .7s linear infinite;font-size:16px;width:16px;height:16px;margin-top:2px;"></span> Creando páginas...' );
+
+            Students.ajax( 'aura_students_create_portal_pages', {}, function ( res ) {
+                $btn.prop( 'disabled', false ).html( origHtml );
+                if ( res && res.pages ) {
+                    if ( res.pages.login_page_id ) {
+                        var pLogin = res.pages.login_page_id;
+                        var $selLogin = $( '#login-page-id' );
+                        if ( ! $selLogin.find( 'option[value="' + pLogin.id + '"]' ).length ) {
+                            $selLogin.append( '<option value="' + pLogin.id + '">' + pLogin.title + ' (ID: ' + pLogin.id + ')</option>' );
+                        }
+                        $selLogin.val( pLogin.id );
+                        $( '#link-login-page' ).attr( 'href', pLogin.url ).show();
+                    }
+                    if ( res.pages.portal_page_id ) {
+                        var pPortal = res.pages.portal_page_id;
+                        var $selPortal = $( '#portal-page-id' );
+                        if ( ! $selPortal.find( 'option[value="' + pPortal.id + '"]' ).length ) {
+                            $selPortal.append( '<option value="' + pPortal.id + '">' + pPortal.title + ' (ID: ' + pPortal.id + ')</option>' );
+                        }
+                        $selPortal.val( pPortal.id );
+                        $( '#link-portal-page' ).attr( 'href', pPortal.url ).show();
+                    }
+                    if ( res.pages.enrollment_page_id ) {
+                        var pEnroll = res.pages.enrollment_page_id;
+                        var $selEnroll = $( '#enrollment-page-id' );
+                        if ( ! $selEnroll.find( 'option[value="' + pEnroll.id + '"]' ).length ) {
+                            $selEnroll.append( '<option value="' + pEnroll.id + '">' + pEnroll.title + ' (ID: ' + pEnroll.id + ')</option>' );
+                        }
+                        $selEnroll.val( pEnroll.id );
+                        $( '#link-enrollment-page' ).attr( 'href', pEnroll.url ).show();
+                    }
+                }
+
+                var $notice = $( '#st-settings-notice' );
+                if ( $notice.length ) {
+                    $( '#st-settings-notice-msg' ).text( '✨ ' + ( ( res && res.message ) ? res.message : 'Páginas creadas y vinculadas con éxito.' ) );
+                    $notice.removeClass( 'alert-danger' ).addClass( 'alert-success' ).show();
+                    setTimeout( function () { $notice.fadeOut(); }, 5000 );
+                } else {
+                    Students.notify( '✨ Páginas creadas y vinculadas con éxito.' );
+                }
+            }, function () {
+                $btn.prop( 'disabled', false ).html( origHtml );
+            } );
+        } );
+
         $( '#btn-st-save-settings' ).on( 'click', saveSettings );
     }
 

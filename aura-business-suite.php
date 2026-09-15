@@ -238,6 +238,18 @@ class Aura_Business_Suite {
         require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-notifications.php';
         require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-reports.php';
         require_once AURA_PLUGIN_DIR . 'modules/forms/class-forms-settings.php';
+
+        // ── Módulo de Calendario y Horarios Académicos ────────────
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-setup.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-google-sync.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-programs.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-subjects.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-events.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-attendance.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-grades.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-tasks.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-admin.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-frontend.php';
     }
     
     /**
@@ -431,6 +443,18 @@ class Aura_Business_Suite {
 
         // Módulo de Biblioteca — Fase 1
         Aura_Library_Module::get_instance();
+
+        // ── Módulo de Calendario y Horarios Académicos ────────────
+        Aura_Calendar_Setup::init();
+        Aura_Calendar_Google_Sync::init();
+        Aura_Calendar_Programs::init();
+        Aura_Calendar_Subjects::init();
+        Aura_Calendar_Events::init();
+        Aura_Calendar_Attendance::init();
+        Aura_Calendar_Grades::init();
+        Aura_Calendar_Tasks::init();
+        Aura_Calendar_Admin::init();
+        Aura_Calendar_Frontend::init();
     }
 
     /**
@@ -450,6 +474,7 @@ class Aura_Business_Suite {
         Aura_Forms_Setup::create_tables();
         Aura_Vehicle_Setup::create_tables();
         Aura_Library_Setup::create_tables();
+        Aura_Calendar_Setup::create_tables();
         
         // Instalar categorías financieras predeterminadas
         $this->install_default_categories();

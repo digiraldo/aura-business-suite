@@ -86,6 +86,9 @@ $photo_url = $student->photo_url ?? '';
         <button class="aura-portal-tab-btn" data-target="forms">
             📋 <?php esc_html_e( 'Mis Formularios', 'aura-suite' ); ?>
         </button>
+        <button class="aura-portal-tab-btn" data-target="schedule">
+            📅 <?php esc_html_e( 'Mi Horario', 'aura-suite' ); ?>
+        </button>
     </nav>
 
     <!-- ══════════════ PESTAÑA: MIS CURSOS ══════════════ -->
@@ -120,6 +123,11 @@ $photo_url = $student->photo_url ?? '';
         </div>
         <div id="aura-forms-container" style="display:none;"></div>
         <p id="aura-forms-error" style="display:none;color:#dc2626;"></p>
+    </div>
+
+    <!-- ══════════════ PESTAÑA: MI HORARIO Y CALENDARIO ══════════════ -->
+    <div id="aura-tab-schedule" class="aura-portal-tab-content" data-tab="schedule" style="display:none;">
+        <?php echo do_shortcode( '[aura_student_schedule]' ); ?>
     </div>
 
 </div><!-- /aura-student-portal -->
