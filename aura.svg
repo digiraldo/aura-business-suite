@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Contorno triangular A -->
+  <path fill="white" d="M128 20 
+                         L230 210 
+                         L180 210 
+                         L160 170 
+                         L96 170 
+                         L76 210 
+                         L26 210 
+                         Z"/>
+
+  <!-- División superior izquierda -->
+  <polygon fill="white" points="128,20 128,120 70,170"/>
+
+  <!-- División superior derecha -->
+  <polygon fill="white" points="128,20 186,170 128,120"/>
+
+  <!-- División inferior izquierda -->
+  <polygon fill="white" points="70,170 128,120 128,210"/>
+
+  <!-- División inferior derecha -->
+  <polygon fill="white" points="128,120 186,170 128,210"/>
+
+</svg>

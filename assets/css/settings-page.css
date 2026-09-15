@@ -1,0 +1,1115 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ESTILOS DE LA PÁGINA DE CONFIGURACIÓN GLOBAL — AURA BUSINESS SUITE
+ * Estandarizado según prompt-maestro.md (UX/UI, Input Groups, Dark Mode, Responsivo)
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+/* ── 1. CABECERA HERO GLASS CARD ────────────────────────────────────────── */
+.aura-settings-wrap .aura-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    border-radius: var(--aura-radius-xl, 16px);
+    background: var(--aura-hero-bg, linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%));
+    box-shadow: var(--aura-shadow-md, 0 10px 25px -5px rgba(37, 99, 235, 0.25));
+    color: #ffffff;
+    box-sizing: border-box;
+}
+
+.aura-settings-wrap .aura-page-header__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.aura-settings-wrap .aura-page-header__icon .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #ffffff;
+}
+
+.aura-settings-wrap .aura-page-header__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.aura-settings-wrap .aura-page-header__content h1 {
+    margin: 0;
+    color: #ffffff !important;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.aura-settings-wrap .aura-page-header__content p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.aura-settings-wrap .aura-page-header__badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.aura-settings-wrap .badge,
+.aura-settings-wrap .aura-badge {
+    border-radius: 9999px !important;
+}
+
+.aura-settings-wrap .aura-page-header__badges .aura-badge,
+.aura-settings-wrap .aura-page-header__badges .badge {
+    cursor: default;
+}
+
+/* ── 2. BARRA DE NAVEGACIÓN DE PESTAÑAS (TABS NAVBAR) ──────────────────── */
+.aura-settings-wrap .aura-navbar {
+    display: flex;
+    gap: 6px;
+    padding: 8px 12px;
+    margin-bottom: 20px;
+    background: var(--aura-surface, #ffffff);
+    border: 1px solid var(--aura-border, #e2e8f0);
+    border-radius: var(--aura-radius-lg, 12px);
+    box-shadow: var(--aura-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+}
+
+.aura-settings-wrap .aura-navbar .aura-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--aura-text-muted, #64748b);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    outline: none;
+    text-decoration: none;
+}
+
+.aura-settings-wrap .aura-navbar .aura-tab-btn .dashicons,
+.aura-settings-wrap .aura-navbar .aura-tab-btn .tab-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--aura-text-muted, #94a3b8);
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-settings-wrap .aura-navbar .aura-tab-btn:hover {
+    background: var(--aura-surface-hover, #f1f5f9);
+    color: var(--aura-text, #1e293b);
+}
+
+.aura-settings-wrap .aura-navbar .aura-tab-btn:hover .dashicons {
+    color: var(--aura-primary, #2563eb);
+}
+
+.aura-settings-wrap .aura-navbar .aura-tab-btn.active {
+    background: var(--aura-primary, #2563eb) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.aura-settings-wrap .aura-navbar .aura-tab-btn.active .dashicons,
+.aura-settings-wrap .aura-navbar .aura-tab-btn.active .tab-icon {
+    color: #ffffff !important;
+}
+
+/* Paneles de Contenido */
+.aura-settings-wrap .aura-tab-panel {
+    display: none;
+    animation: auraFadeIn 0.25s ease-out forwards;
+}
+
+.aura-settings-wrap .aura-tab-panel.active {
+    display: block;
+}
+
+@keyframes auraFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 3. TARJETAS Y CONTENEDORES (GLASS CARDS) ───────────────────────────── */
+.aura-settings-wrap .aura-glass-card {
+    background: var(--aura-surface, #ffffff);
+    border: 1px solid var(--aura-border, #e2e8f0);
+    border-radius: var(--aura-radius-lg, 14px);
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--aura-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05));
+    box-sizing: border-box;
+}
+
+.aura-settings-wrap .aura-section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--aura-text, #0f172a);
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aura-settings-wrap .aura-section-title .dashicons {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    color: var(--aura-primary, #2563eb);
+}
+
+.aura-settings-wrap .aura-desc {
+    font-size: 13px;
+    color: var(--aura-text-muted, #64748b);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── 4. AYUDAS CONTEXTUALES Y TOOLTIPS ──────────────────────────────────── */
+.aura-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: var(--aura-surface-hover, #e2e8f0);
+    color: var(--aura-text-muted, #475569);
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 6px;
+    cursor: help;
+    transition: all 0.2s ease;
+    vertical-align: middle;
+    user-select: none;
+    border: none;
+    padding: 0;
+}
+
+.aura-help-icon:hover {
+    background: var(--aura-primary, #2563eb);
+    color: #ffffff;
+}
+
+.aura-settings-wrap .aura-label {
+    display: inline-flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--aura-text, #334155);
+    margin-bottom: 6px;
+}
+
+/* ── 5. INPUT GROUPS INTEGRADOS ESTILO BOOTSTRAP ────────────────────────── */
+.aura-settings-wrap .aura-input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aura-settings-wrap .aura-input-group-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1;
+    color: #64748b;
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    flex-shrink: 0;
+    min-width: 42px;
+    box-sizing: border-box;
+}
+
+.aura-settings-wrap .aura-input-group-text .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #64748b;
+}
+
+.aura-settings-wrap .aura-input-group-text.currency-symbol {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f766e;
+    background-color: #f0fdf4;
+    border-left: 3px solid #10b981;
+    min-width: 44px;
+}
+
+.aura-settings-wrap .aura-input-group > input,
+.aura-settings-wrap .aura-input-group > select {
+    position: relative;
+    flex: 1 1 auto;
+    width: 1% !important;
+    min-width: 0;
+    margin: 0 !important;
+    height: 40px !important;
+    line-height: 38px !important;
+    padding: 0 12px !important;
+    border-radius: 0 8px 8px 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    box-sizing: border-box !important;
+    font-size: 13.5px;
+}
+
+.aura-settings-wrap .aura-input-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+    border-radius: 8px;
+}
+
+.aura-settings-wrap .aura-input-group:focus-within .aura-input-group-text {
+    background-color: #eff6ff !important;
+    border-color: #3b82f6 !important;
+    color: #2563eb !important;
+}
+
+.aura-settings-wrap .aura-input-group:focus-within .aura-input-group-text .dashicons {
+    color: #2563eb !important;
+}
+
+.aura-settings-wrap .aura-input-group:focus-within > input,
+.aura-settings-wrap .aura-input-group:focus-within > select {
+    border-color: #3b82f6 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    z-index: 2 !important;
+}
+
+/* Campos sueltos (textarea / select / input) */
+.aura-settings-wrap .aura-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 13px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 13.5px;
+    color: #1e293b;
+    background: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.aura-settings-wrap .aura-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    outline: none;
+}
+
+/* ── 6. TOGGLES Y SWITCHES MODERNOS ─────────────────────────────────────── */
+.aura-settings-wrap .aura-toggle-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.aura-settings-wrap .aura-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.aura-settings-wrap .aura-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.aura-settings-wrap .aura-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 24px;
+}
+
+.aura-settings-wrap .aura-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.aura-settings-wrap .aura-toggle input:checked + .aura-toggle-slider {
+    background-color: #2563eb;
+}
+
+.aura-settings-wrap .aura-toggle input:checked + .aura-toggle-slider:before {
+    transform: translateX(20px);
+}
+
+/* ── 7. TARJETAS KPI Y ESTADÍSTICAS ─────────────────────────────────────── */
+.aura-settings-wrap .aura-stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.aura-settings-wrap .aura-stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border-color: #cbd5e1;
+}
+
+.aura-settings-wrap .aura-stat-val {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.aura-settings-wrap .aura-stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+/* ── 8. FILAS DE EXCEPCIONES DE CATEGORÍAS ──────────────────────────────── */
+.aura-settings-wrap .aura-category-exception-box {
+    max-height: 270px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 6px;
+}
+
+.aura-settings-wrap .aura-category-exception-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    border: 1px solid transparent;
+    user-select: none;
+}
+
+.aura-settings-wrap .aura-category-exception-item:hover {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+.aura-settings-wrap .aura-category-exception-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #2563eb;
+    margin: 0;
+}
+
+.aura-settings-wrap .aura-category-exception-item span.cat-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+    flex: 1;
+}
+
+/* ── 9. SELECTOR DE ALMACENAMIENTO (GOOGLE DRIVE) ───────────────────────── */
+.aura-settings-wrap .aura-storage-type-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.aura-settings-wrap .aura-storage-type-card:hover {
+    border-color: #93c5fd;
+    background: #f8fafc;
+}
+
+.aura-settings-wrap .aura-storage-type-card.is-selected {
+    border-color: #2563eb;
+    background: rgba(37, 99, 235, 0.04);
+}
+
+.aura-settings-wrap .aura-storage-type-card .card-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-settings-wrap .aura-storage-type-card .card-desc {
+    font-size: 12px;
+    margin-top: 4px;
+    line-height: 1.45;
+    color: #64748b;
+}
+
+/* ── 10. BLOQUES INFORMATIVOS (.aura-info-box) ──────────────────────────── */
+.aura-settings-wrap .aura-info-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: #166534;
+    font-size: 13px;
+    line-height: 1.55;
+    box-sizing: border-box;
+}
+
+.aura-settings-wrap .aura-info-box.neutral {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #334155;
+}
+
+.aura-settings-wrap .aura-info-box.info {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.aura-settings-wrap .aura-info-box strong,
+.aura-settings-wrap .aura-info-box p {
+    color: inherit;
+}
+
+.aura-settings-wrap .aura-info-box code {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: inherit;
+    font-size: 12px;
+}
+
+/* ── 11. BARRA DE GUARDADO FIJA (.aura-sticky-bar) ──────────────────────── */
+.aura-settings-wrap .aura-sticky-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 99;
+    background: var(--aura-frosted-bg, rgba(255, 255, 255, 0.88));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--aura-border, #e2e8f0);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: var(--aura-shadow-lg, 0 -4px 20px rgba(0, 0, 0, 0.06));
+    border-radius: 0 0 var(--aura-radius-lg, 14px) var(--aura-radius-lg, 14px);
+    margin-top: 20px;
+    box-sizing: border-box;
+}
+
+.aura-settings-wrap .aura-sticky-bar .save-hint {
+    font-size: 13px;
+    color: var(--aura-text-muted, #64748b);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-settings-wrap .aura-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--aura-primary, #2563eb), var(--aura-primary-hover, #1d4ed8));
+    color: #ffffff !important;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 10px 22px;
+    border-radius: var(--aura-radius-md, 8px);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.aura-settings-wrap .aura-btn-primary:hover {
+    background: linear-gradient(135deg, var(--aura-primary-hover, #1d4ed8), var(--aura-primary, #2563eb));
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+.aura-settings-wrap .aura-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--aura-surface, #ffffff);
+    color: var(--aura-text, #334155);
+    border: 1px solid var(--aura-border, #cbd5e1);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--aura-radius-md, 8px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.aura-settings-wrap .aura-btn-secondary:hover {
+    background: var(--aura-surface-hover, #f8fafc);
+    border-color: var(--aura-border-strong, #94a3b8);
+    color: var(--aura-text, #0f172a);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   12. 🌙 SOPORTE NATIVO PARA MODO OSCURO (DARK MODE)
+   ═══════════════════════════════════════════════════════════════════════════ */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-glass-card,
+html.wp-dark-mode-active .aura-settings-wrap .aura-glass-card,
+body.wp-dark-mode-active .aura-settings-wrap .aura-glass-card,
+body.aura-dark-mode .aura-settings-wrap .aura-glass-card,
+body[data-theme="dark"] .aura-settings-wrap .aura-glass-card,
+[data-theme="dark"] .aura-settings-wrap .aura-glass-card,
+body.admin-color-midnight .aura-settings-wrap .aura-glass-card,
+body.admin-color-coffee .aura-settings-wrap .aura-glass-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+/* Títulos y textos en Dark Mode */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-section-title,
+html.wp-dark-mode-active .aura-settings-wrap .aura-section-title,
+body.wp-dark-mode-active .aura-settings-wrap .aura-section-title,
+body.aura-dark-mode .aura-settings-wrap .aura-section-title,
+[data-theme="dark"] .aura-settings-wrap .aura-section-title {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-label,
+html.wp-dark-mode-active .aura-settings-wrap .aura-label,
+body.wp-dark-mode-active .aura-settings-wrap .aura-label,
+body.aura-dark-mode .aura-settings-wrap .aura-label,
+[data-theme="dark"] .aura-settings-wrap .aura-label {
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-desc,
+html.wp-dark-mode-active .aura-settings-wrap .aura-desc,
+body.wp-dark-mode-active .aura-settings-wrap .aura-desc,
+body.aura-dark-mode .aura-settings-wrap .aura-desc,
+[data-theme="dark"] .aura-settings-wrap .aura-desc {
+    color: #94a3b8 !important;
+}
+
+/* Navbar en Dark Mode */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-navbar,
+html.wp-dark-mode-active .aura-settings-wrap .aura-navbar,
+body.wp-dark-mode-active .aura-settings-wrap .aura-navbar,
+body.aura-dark-mode .aura-settings-wrap .aura-navbar,
+[data-theme="dark"] .aura-settings-wrap .aura-navbar {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-navbar .aura-tab-btn,
+html.wp-dark-mode-active .aura-settings-wrap .aura-navbar .aura-tab-btn,
+body.wp-dark-mode-active .aura-settings-wrap .aura-navbar .aura-tab-btn,
+body.aura-dark-mode .aura-settings-wrap .aura-navbar .aura-tab-btn,
+[data-theme="dark"] .aura-settings-wrap .aura-navbar .aura-tab-btn {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-navbar .aura-tab-btn:hover,
+html.wp-dark-mode-active .aura-settings-wrap .aura-navbar .aura-tab-btn:hover,
+body.wp-dark-mode-active .aura-settings-wrap .aura-navbar .aura-tab-btn:hover,
+body.aura-dark-mode .aura-settings-wrap .aura-navbar .aura-tab-btn:hover,
+[data-theme="dark"] .aura-settings-wrap .aura-navbar .aura-tab-btn:hover {
+    background: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-navbar .aura-tab-btn.active,
+html.wp-dark-mode-active .aura-settings-wrap .aura-navbar .aura-tab-btn.active,
+body.wp-dark-mode-active .aura-settings-wrap .aura-navbar .aura-tab-btn.active,
+body.aura-dark-mode .aura-settings-wrap .aura-navbar .aura-tab-btn.active,
+[data-theme="dark"] .aura-settings-wrap .aura-navbar .aura-tab-btn.active {
+    background: #2563eb !important;
+    color: #ffffff !important;
+}
+
+/* Inputs y Addons en Dark Mode */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-input,
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-input-group > input,
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-input-group > select,
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap textarea.aura-input,
+html.wp-dark-mode-active .aura-settings-wrap .aura-input,
+html.wp-dark-mode-active .aura-settings-wrap .aura-input-group > input,
+html.wp-dark-mode-active .aura-settings-wrap .aura-input-group > select,
+body.aura-dark-mode .aura-settings-wrap .aura-input,
+[data-theme="dark"] .aura-settings-wrap .aura-input {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+    color-scheme: dark !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-input-group-text,
+html.wp-dark-mode-active .aura-settings-wrap .aura-input-group-text,
+body.aura-dark-mode .aura-settings-wrap .aura-input-group-text,
+[data-theme="dark"] .aura-settings-wrap .aura-input-group-text {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-input-group-text.currency-symbol,
+html.wp-dark-mode-active .aura-settings-wrap .aura-input-group-text.currency-symbol,
+body.aura-dark-mode .aura-settings-wrap .aura-input-group-text.currency-symbol,
+[data-theme="dark"] .aura-settings-wrap .aura-input-group-text.currency-symbol {
+    background: #064e3b !important;
+    border-color: #047857 !important;
+    color: #6ee7b7 !important;
+}
+
+/* Stat Cards en Dark Mode */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-stat-card,
+html.wp-dark-mode-active .aura-settings-wrap .aura-stat-card,
+body.aura-dark-mode .aura-settings-wrap .aura-stat-card,
+[data-theme="dark"] .aura-settings-wrap .aura-stat-card {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+/* Info Boxes en Dark Mode */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-info-box,
+html.wp-dark-mode-active .aura-settings-wrap .aura-info-box,
+body.aura-dark-mode .aura-settings-wrap .aura-info-box,
+[data-theme="dark"] .aura-settings-wrap .aura-info-box {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-info-box.info,
+html.wp-dark-mode-active .aura-settings-wrap .aura-info-box.info,
+body.aura-dark-mode .aura-settings-wrap .aura-info-box.info,
+[data-theme="dark"] .aura-settings-wrap .aura-info-box.info {
+    background: rgba(37, 99, 235, 0.12) !important;
+    border-color: rgba(37, 99, 235, 0.35) !important;
+    color: #93c5fd !important;
+}
+
+/* Excepciones de Categoría en Dark Mode */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-category-exception-item:hover,
+html.wp-dark-mode-active .aura-settings-wrap .aura-category-exception-item:hover,
+body.aura-dark-mode .aura-settings-wrap .aura-category-exception-item:hover,
+[data-theme="dark"] .aura-settings-wrap .aura-category-exception-item:hover {
+    background: #334155 !important;
+    border-color: #475569 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-category-exception-item span.cat-title,
+html.wp-dark-mode-active .aura-settings-wrap .aura-category-exception-item span.cat-title,
+body.aura-dark-mode .aura-settings-wrap .aura-category-exception-item span.cat-title,
+[data-theme="dark"] .aura-settings-wrap .aura-category-exception-item span.cat-title {
+    color: #e2e8f0 !important;
+}
+
+/* Storage Cards en Dark Mode */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-storage-type-card,
+html.wp-dark-mode-active .aura-settings-wrap .aura-storage-type-card,
+body.aura-dark-mode .aura-settings-wrap .aura-storage-type-card,
+[data-theme="dark"] .aura-settings-wrap .aura-storage-type-card {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-storage-type-card.is-selected,
+html.wp-dark-mode-active .aura-settings-wrap .aura-storage-type-card.is-selected,
+body.aura-dark-mode .aura-settings-wrap .aura-storage-type-card.is-selected,
+[data-theme="dark"] .aura-settings-wrap .aura-storage-type-card.is-selected {
+    background: rgba(37, 99, 235, 0.15) !important;
+    border-color: #3b82f6 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-storage-type-card .card-title,
+html.wp-dark-mode-active .aura-settings-wrap .aura-storage-type-card .card-title,
+body.aura-dark-mode .aura-settings-wrap .aura-storage-type-card .card-title,
+[data-theme="dark"] .aura-settings-wrap .aura-storage-type-card .card-title {
+    color: #f8fafc !important;
+}
+
+/* Sticky Save Bar en Dark Mode */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-sticky-bar,
+html.wp-dark-mode-active .aura-settings-wrap .aura-sticky-bar,
+body.aura-dark-mode .aura-settings-wrap .aura-sticky-bar,
+[data-theme="dark"] .aura-settings-wrap .aura-sticky-bar {
+    background: rgba(30, 41, 59, 0.95) !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-btn-secondary,
+html.wp-dark-mode-active .aura-settings-wrap .aura-btn-secondary,
+body.aura-dark-mode .aura-settings-wrap .aura-btn-secondary,
+[data-theme="dark"] .aura-settings-wrap .aura-btn-secondary {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-btn-secondary:hover,
+html.wp-dark-mode-active .aura-settings-wrap .aura-btn-secondary:hover,
+body.aura-dark-mode .aura-settings-wrap .aura-btn-secondary:hover,
+[data-theme="dark"] .aura-settings-wrap .aura-btn-secondary:hover {
+    background: #1e293b !important;
+    border-color: #475569 !important;
+    color: #ffffff !important;
+}
+
+/* ── 12. COMPONENTES DE FINANZAS Y EXCEPCIONES INTERACTIVAS ───────────── */
+.aura-settings-wrap .aura-presets-card {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.04) 0%, rgba(16, 185, 129, 0.04) 100%);
+    border: 1px solid rgba(37, 99, 235, 0.18);
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.aura-settings-wrap .aura-btn-preset {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.aura-settings-wrap .aura-btn-preset:hover {
+    border-color: #3b82f6;
+    background: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1);
+}
+
+.aura-settings-wrap .aura-btn-preset.is-active {
+    background: rgba(37, 99, 235, 0.08);
+    border-color: #2563eb;
+    color: #1d4ed8;
+    font-weight: 600;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+}
+
+/* Tarjetas de Política de Aprobación */
+.aura-settings-wrap .aura-policy-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.aura-settings-wrap .aura-policy-card:hover {
+    border-color: #93c5fd;
+    background: rgba(248, 250, 252, 0.8);
+}
+
+.aura-settings-wrap .aura-policy-card.is-selected {
+    border-color: #2563eb;
+    background: rgba(37, 99, 235, 0.04);
+    box-shadow: 0 0 0 1.5px #2563eb;
+}
+
+.aura-settings-wrap .aura-policy-card input[type="radio"] {
+    margin-top: 3px;
+    flex-shrink: 0;
+    accent-color: #2563eb;
+}
+
+.aura-settings-wrap .aura-policy-card__content {
+    flex: 1;
+}
+
+.aura-settings-wrap .aura-policy-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.aura-settings-wrap .aura-policy-card__desc {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.45;
+}
+
+/* Botones de Acción Rápida para Excepciones */
+.aura-settings-wrap .aura-btn-quick {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.aura-settings-wrap .aura-btn-quick:hover {
+    border-color: #94a3b8;
+    background: #f1f5f9;
+}
+
+/* Items de Categoría con Checkbox */
+.aura-settings-wrap .aura-category-exception-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.aura-settings-wrap .aura-category-exception-item:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.aura-settings-wrap .aura-category-exception-item.is-checked {
+    background: rgba(37, 99, 235, 0.05);
+    border-color: #3b82f6;
+    font-weight: 600;
+}
+
+.aura-settings-wrap .aura-category-exception-item input[type="checkbox"] {
+    accent-color: #2563eb;
+    cursor: pointer;
+}
+
+/* Dark Mode para Nuevos Componentes */
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-presets-card,
+html.wp-dark-mode-active .aura-settings-wrap .aura-presets-card,
+body.aura-dark-mode .aura-settings-wrap .aura-presets-card,
+[data-theme="dark"] .aura-settings-wrap .aura-presets-card {
+    background: rgba(30, 41, 59, 0.7) !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-presets-card strong,
+html.wp-dark-mode-active .aura-settings-wrap .aura-presets-card strong,
+body.aura-dark-mode .aura-settings-wrap .aura-presets-card strong,
+[data-theme="dark"] .aura-settings-wrap .aura-presets-card strong {
+    color: #f1f5f9 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-btn-preset,
+html.wp-dark-mode-active .aura-settings-wrap .aura-btn-preset,
+body.aura-dark-mode .aura-settings-wrap .aura-btn-preset,
+[data-theme="dark"] .aura-settings-wrap .aura-btn-preset {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-btn-preset.is-active,
+html.wp-dark-mode-active .aura-settings-wrap .aura-btn-preset.is-active,
+body.aura-dark-mode .aura-settings-wrap .aura-btn-preset.is-active,
+[data-theme="dark"] .aura-settings-wrap .aura-btn-preset.is-active {
+    background: rgba(37, 99, 235, 0.25) !important;
+    border-color: #3b82f6 !important;
+    color: #93c5fd !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-policy-card,
+html.wp-dark-mode-active .aura-settings-wrap .aura-policy-card,
+body.aura-dark-mode .aura-settings-wrap .aura-policy-card,
+[data-theme="dark"] .aura-settings-wrap .aura-policy-card {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-policy-card.is-selected,
+html.wp-dark-mode-active .aura-settings-wrap .aura-policy-card.is-selected,
+body.aura-dark-mode .aura-settings-wrap .aura-policy-card.is-selected,
+[data-theme="dark"] .aura-settings-wrap .aura-policy-card.is-selected {
+    border-color: #3b82f6 !important;
+    background: rgba(37, 99, 235, 0.15) !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-policy-card__desc,
+html.wp-dark-mode-active .aura-settings-wrap .aura-policy-card__desc,
+body.aura-dark-mode .aura-settings-wrap .aura-policy-card__desc,
+[data-theme="dark"] .aura-settings-wrap .aura-policy-card__desc {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-rule-summary-box,
+html.wp-dark-mode-active .aura-settings-wrap .aura-rule-summary-box,
+body.aura-dark-mode .aura-settings-wrap .aura-rule-summary-box,
+[data-theme="dark"] .aura-settings-wrap .aura-rule-summary-box {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-rule-summary-box strong,
+html.wp-dark-mode-active .aura-settings-wrap .aura-rule-summary-box strong,
+body.aura-dark-mode .aura-settings-wrap .aura-rule-summary-box strong,
+[data-theme="dark"] .aura-settings-wrap .aura-rule-summary-box strong {
+    color: #f1f5f9 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-rule-summary-box div[style*="background:#ffffff"],
+html.wp-dark-mode-active .aura-settings-wrap .aura-rule-summary-box div[style*="background:#ffffff"],
+body.aura-dark-mode .aura-settings-wrap .aura-rule-summary-box div[style*="background:#ffffff"],
+[data-theme="dark"] .aura-settings-wrap .aura-rule-summary-box div[style*="background:#ffffff"] {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-cat-filter-bar,
+html.wp-dark-mode-active .aura-settings-wrap .aura-cat-filter-bar,
+body.aura-dark-mode .aura-settings-wrap .aura-cat-filter-bar,
+[data-theme="dark"] .aura-settings-wrap .aura-cat-filter-bar {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-btn-quick,
+html.wp-dark-mode-active .aura-settings-wrap .aura-btn-quick,
+body.aura-dark-mode .aura-settings-wrap .aura-btn-quick,
+[data-theme="dark"] .aura-settings-wrap .aura-btn-quick {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-category-exception-item,
+html.wp-dark-mode-active .aura-settings-wrap .aura-category-exception-item,
+body.aura-dark-mode .aura-settings-wrap .aura-category-exception-item,
+[data-theme="dark"] .aura-settings-wrap .aura-category-exception-item {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-category-exception-item.is-checked,
+html.wp-dark-mode-active .aura-settings-wrap .aura-category-exception-item.is-checked,
+body.aura-dark-mode .aura-settings-wrap .aura-category-exception-item.is-checked,
+[data-theme="dark"] .aura-settings-wrap .aura-category-exception-item.is-checked {
+    background: rgba(37, 99, 235, 0.2) !important;
+    border-color: #3b82f6 !important;
+}
+
+/* ── 13. RESPONSIVE BREAKPOINTS ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .aura-settings-wrap .aura-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+        gap: 14px;
+    }
+
+    .aura-settings-wrap .aura-page-header__badges {
+        width: 100%;
+    }
+
+    .aura-settings-wrap .aura-navbar {
+        flex-wrap: nowrap;
+        padding: 6px 8px;
+    }
+
+    .aura-settings-wrap .aura-field-group.cols-2,
+    .aura-settings-wrap .aura-field-group[style*="grid-template-columns:1fr 1fr"],
+    .aura-settings-wrap .aura-field-group[style*="grid-template-columns: 1fr 1fr"],
+    .aura-settings-wrap [style*="grid-template-columns:1fr 1fr"],
+    .aura-settings-wrap [style*="grid-template-columns: 1fr 1fr"],
+    .aura-settings-wrap [style*="grid-template-columns:repeat(2,1fr)"],
+    .aura-settings-wrap [style*="grid-template-columns:repeat(3,1fr)"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    .aura-settings-wrap .aura-sticky-bar {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        padding: 14px;
+    }
+
+    .aura-settings-wrap .aura-sticky-bar .aura-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}

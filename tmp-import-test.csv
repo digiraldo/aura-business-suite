@@ -1,0 +1,3 @@
+transaction_date,transaction_type,category,amount,description,notes,payment_method,reference_number
+11/05/2026,income,Ventas,1234.56,Ingreso prueba rollback,Lote prueba mayo,transferencia,TEST-UNDO-001
+11/05/2026,expense,Suministros,78.90,Gasto prueba rollback,Lote prueba mayo,efectivo,TEST-UNDO-002

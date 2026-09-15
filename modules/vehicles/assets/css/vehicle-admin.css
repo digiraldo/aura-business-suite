@@ -1,0 +1,3812 @@
+/**
+ * Aura Vehicles Module — Admin Styles
+ * Fase 1 y Fase 2: estilos base + modales + tabla de vehículos.
+ *
+ * @package Aura_Business_Suite\Vehicles
+ */
+
+/* ── Contenedor principal ────────────────────────────────────── */
+.wrap[class*="aura-vehicles"] .notice.inline {
+    margin-top: 16px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SISTEMA DE MODALES
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 160000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-veh-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    cursor: pointer;
+}
+
+.aura-veh-modal-content {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    width: 560px;
+    max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.aura-veh-modal-content.aura-veh-modal-large {
+    width: 860px;
+}
+
+.aura-veh-modal-content.aura-veh-modal-sm {
+    width: 420px;
+}
+
+.aura-veh-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #ddd;
+    background: #f6f7f7;
+    flex-shrink: 0;
+}
+
+.aura-veh-modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-veh-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #787c82;
+    font-size: 20px;
+    padding: 0;
+    line-height: 1;
+    transition: color .15s;
+}
+.aura-veh-modal-close:hover { color: #d63638; }
+
+.aura-veh-modal-body {
+    padding: 18px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.aura-veh-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid #ddd;
+    background: #f6f7f7;
+    flex-shrink: 0;
+}
+
+/* Scroll lock cuando un modal está abierto */
+body.aura-veh-modal-open {
+    overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BARRA DE FILTROS
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 16px 0 12px;
+    padding: 12px 14px;
+    background: #f6f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.aura-veh-filters-bar input[type="search"],
+.aura-veh-filters-bar select {
+    height: 32px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TABLA / DATATABLES
+══════════════════════════════════════════════════════════════ */
+
+#aura-veh-table {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin-top: 8px;
+}
+
+#aura-veh-table thead th {
+    background: #2271b1;
+    color: #fff;
+    font-weight: 600;
+    padding: 8px 12px;
+    white-space: nowrap;
+}
+
+#aura-veh-table tbody td {
+    padding: 8px 12px;
+    vertical-align: middle;
+}
+
+#aura-veh-table tbody tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+#aura-veh-table tbody tr:hover {
+    background: #e8f0fe;
+}
+
+/* ── Badges de estado ────────────────────────────────────────── */
+.aura-veh-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #fff;
+}
+
+/* ── Botones de acción pequeños ──────────────────────────────── */
+.aura-veh-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+.aura-veh-action {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    min-width: 30px;
+    min-height: 30px !important;
+    height: 30px !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    border-radius: 999px !important;
+    border: 1px solid transparent !important;
+    transition: transform .15s ease, filter .15s ease;
+}
+
+.aura-veh-action:hover {
+    transform: translateY(-1px);
+    filter: brightness(0.96);
+}
+
+.aura-veh-action > * {
+    display: block;
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.aura-veh-action .dashicons {
+    display: block;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1;
+}
+
+.aura-veh-qr-icon {
+    width: 16px;
+    height: 16px;
+    background-color: currentColor;
+    -webkit-mask-image: var(--qr-icon-url);
+    mask-image: var(--qr-icon-url);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+/* Botón "Imprimir etiqueta" dentro del modal QR */
+.aura-veh-qr-print-btn {
+    background: #0e7577 !important;
+    border-color: #0c6365 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+.aura-veh-qr-print-btn:hover,
+.aura-veh-qr-print-btn:focus {
+    background: #0a5658 !important;
+    border-color: #094a4c !important;
+    color: #fff !important;
+}
+.aura-veh-qr-print-btn .dashicons {
+    color: #fff;
+}
+
+/* Ver — azul información */
+.aura-veh-action--view {
+    background: #eef5ff !important;
+    border-color: #b8d4f5 !important;
+    color: #1a5fa8 !important;
+}
+
+/* Editar — verde acción segura */
+.aura-veh-action--edit {
+    background: #edfaf3 !important;
+    border-color: #a8dfc2 !important;
+    color: #0a6e40 !important;
+}
+
+/* Áreas — índigo organizacional */
+.aura-veh-action--areas {
+    background: #eef0ff !important;
+    border-color: #c2cbf8 !important;
+    color: #3847b0 !important;
+}
+
+/* Fotos — naranja media */
+.aura-veh-action--photos {
+    background: #fff5ea !important;
+    border-color: #f5ccaa !important;
+    color: #b05210 !important;
+}
+
+/* Dar de baja — ámbar alerta */
+.aura-veh-action--unavailable {
+    background: #fffbe6 !important;
+    border-color: #f5d87a !important;
+    color: #966300 !important;
+}
+
+/* Restaurar — verde esmeralda recuperación */
+.aura-veh-action--restore {
+    background: #e8fdf3 !important;
+    border-color: #84e0b5 !important;
+    color: #06734a !important;
+}
+
+/* Transferir — violeta movimiento */
+.aura-veh-action--transfer {
+    background: #f3f0ff !important;
+    border-color: #ccc0f8 !important;
+    color: #5934c8 !important;
+}
+
+/* QR — teal tecnológico */
+.aura-veh-action--qr {
+    background: #e8fafa !important;
+    border-color: #8dd8da !important;
+    color: #0e7577 !important;
+}
+
+/* Eliminar — rojo destructivo */
+.aura-veh-action--delete {
+    background: #fff0f0 !important;
+    border-color: #f5b8b8 !important;
+    color: #b52020 !important;
+}
+
+/* ── Esquema oscuro WP admin (midnight / coffee) ─────────────── */
+
+body.admin-color-midnight .aura-veh-action--view,
+body.admin-color-coffee .aura-veh-action--view {
+    background: #0c1f38 !important;
+    border-color: #1f4a82 !important;
+    color: #78b8ff !important;
+}
+
+body.admin-color-midnight .aura-veh-action--edit,
+body.admin-color-coffee .aura-veh-action--edit {
+    background: #082618 !important;
+    border-color: #145c35 !important;
+    color: #5ddc9c !important;
+}
+
+body.admin-color-midnight .aura-veh-action--areas,
+body.admin-color-coffee .aura-veh-action--areas {
+    background: #10163a !important;
+    border-color: #2a3982 !important;
+    color: #95abff !important;
+}
+
+body.admin-color-midnight .aura-veh-action--photos,
+body.admin-color-coffee .aura-veh-action--photos {
+    background: #2e1a04 !important;
+    border-color: #7a4510 !important;
+    color: #ffb85c !important;
+}
+
+/* Dar de baja — ámbar oscuro */
+body.admin-color-midnight .aura-veh-action--unavailable,
+body.admin-color-coffee .aura-veh-action--unavailable {
+    background: #2e2200 !important;
+    border-color: #8a6200 !important;
+    color: #ffd84d !important;
+}
+
+body.admin-color-midnight .aura-veh-action--restore,
+body.admin-color-coffee .aura-veh-action--restore {
+    background: #052c1a !important;
+    border-color: #117a48 !important;
+    color: #4de8a6 !important;
+}
+
+body.admin-color-midnight .aura-veh-action--transfer,
+body.admin-color-coffee .aura-veh-action--transfer {
+    background: #140d32 !important;
+    border-color: #3e28a0 !important;
+    color: #b09cff !important;
+}
+
+/* QR — teal oscuro */
+body.admin-color-midnight .aura-veh-action--qr,
+body.admin-color-coffee .aura-veh-action--qr {
+    background: #052626 !important;
+    border-color: #0f6c6e !important;
+    color: #3de0e4 !important;
+}
+
+/* Eliminar — rojo oscuro */
+body.admin-color-midnight .aura-veh-action--delete,
+body.admin-color-coffee .aura-veh-action--delete {
+    background: #300a0a !important;
+    border-color: #8a1f1f !important;
+    color: #ff8080 !important;
+}
+
+/* ── Modal detalle de vehículo ───────────────────────────────── */
+.aura-veh-view-modal-content {
+    width: 900px;
+}
+
+.aura-veh-view-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 70%, #2563eb 100%);
+    border-bottom: 0;
+}
+
+.aura-veh-view-header h2,
+.aura-veh-view-header .aura-veh-modal-close {
+    color: #fff;
+}
+
+.aura-veh-view-body {
+    background: radial-gradient(circle at top right, #eff6ff 0%, #ffffff 45%);
+}
+
+.aura-veh-view-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    color: #334155;
+}
+
+.aura-veh-view-loading p {
+    margin-top: 10px;
+}
+
+.aura-veh-view-hero {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.aura-veh-view-photo {
+    width: 100%;
+    min-height: 165px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #e2e8f0;
+}
+
+.aura-veh-view-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+}
+
+.aura-veh-view-photo-empty {
+    min-height: 165px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+}
+
+.aura-veh-view-photo-empty .dashicons {
+    font-size: 34px;
+    width: 34px;
+    height: 34px;
+}
+
+.aura-veh-view-main h3 {
+    margin: 0;
+    font-size: 24px;
+    color: #0f172a;
+}
+
+.aura-veh-license-plate {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 8px 0 10px;
+    padding: 8px 18px;
+    min-height: 52px;
+    border: 3px solid #111827;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #fef9c3 0%, #fde047 100%);
+    color: #0f172a;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-family: "Trebuchet MS", "Arial Black", sans-serif;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.5), 0 4px 12px rgba(15, 23, 42, .2);
+}
+
+.aura-veh-view-subtitle {
+    margin: 6px 0 10px;
+    color: #475569;
+}
+
+.aura-veh-view-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.aura-veh-view-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    color: #1e293b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.aura-veh-view-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.aura-veh-view-card {
+    background: #fff;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .05);
+}
+
+.aura-veh-view-card h4 {
+    margin: 0 0 10px;
+    color: #0f172a;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-veh-view-card dl {
+    margin: 0;
+}
+
+.aura-veh-view-card dl > div {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.aura-veh-view-card dl > div:last-child {
+    border-bottom: 0;
+}
+
+.aura-veh-view-card dt {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.aura-veh-view-card dd {
+    margin: 0;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.aura-veh-view-chip {
+    display: inline-block;
+    margin: 0 6px 6px 0;
+    padding: 2px 9px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.aura-veh-view-notes p {
+    margin: 0;
+    color: #334155;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 820px) {
+    .aura-veh-view-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-veh-view-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-veh-license-plate {
+        font-size: 24px;
+        letter-spacing: 3px;
+    }
+
+    .aura-veh-lightbox-toolbar {
+        order: 2;
+        margin: 8px 0 0;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ── Lightbox imagen detalle ─────────────────────────────────── */
+.aura-veh-lightbox .aura-veh-modal-overlay {
+    background: rgba(2, 6, 23, .9);
+}
+
+.aura-veh-lightbox-content {
+    width: min(1100px, calc(100vw - 30px));
+    max-width: min(1100px, calc(100vw - 30px));
+    max-height: calc(100vh - 30px);
+    background: #0f172a;
+    border: 1px solid #1e293b;
+}
+
+.aura-veh-lightbox-header {
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+}
+
+.aura-veh-lightbox-header h2,
+.aura-veh-lightbox-header .aura-veh-modal-close {
+    color: #e2e8f0;
+}
+
+.aura-veh-lightbox-toolbar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.aura-veh-lightbox-toolbar .button {
+    min-width: 34px;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #111827;
+    color: #e2e8f0;
+    border-color: #334155;
+}
+
+.aura-veh-lightbox-toolbar .button[disabled] {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+#aura-veh-lightbox-counter {
+    font-size: 12px;
+    color: #cbd5e1;
+    min-width: 54px;
+    text-align: center;
+}
+
+.aura-veh-lightbox-body {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+    background: #020617;
+}
+
+#aura-veh-lightbox-img {
+    max-width: 100%;
+    max-height: calc(100vh - 140px);
+    width: auto;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, .5);
+}
+
+.aura-veh-lightbox-thumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    overflow-x: auto;
+    background: #0b1220;
+    border-top: 1px solid #1e293b;
+}
+
+.aura-veh-lightbox-thumb {
+    width: 74px;
+    height: 54px;
+    border-radius: 8px;
+    padding: 0;
+    border: 2px solid #334155;
+    background: #111827;
+    cursor: pointer;
+    overflow: hidden;
+    flex: 0 0 auto;
+    transition: border-color .15s ease, transform .15s ease;
+}
+
+.aura-veh-lightbox-thumb:hover {
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+}
+
+.aura-veh-lightbox-thumb.is-active {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, .2);
+}
+
+.aura-veh-lightbox-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FORMULARIO (modal)
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-form-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.aura-veh-form-col {
+    flex: 1 1 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-veh-form-col label {
+    font-size: 12px;
+    color: #50575e;
+}
+
+.aura-veh-form-col input,
+.aura-veh-form-col select,
+.aura-veh-form-col textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GALERÍA DE FOTOS
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-photos-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    min-height: 40px;
+}
+
+.aura-veh-photo-item {
+    text-align: center;
+}
+
+.aura-veh-photo-upload-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UX: FORM SECTIONS (Fase 2 / Fase 3)
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-form-section {
+    border: 1px solid #dde0e4;
+    border-radius: 6px;
+    padding: 12px 14px 6px;
+    margin-bottom: 14px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.aura-veh-form-section-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: -12px -14px 12px;
+    padding: 8px 14px;
+    background: #f0f4f9;
+    border-bottom: 1px solid #dde0e4;
+    border-radius: 6px 6px 0 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #1a487f;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-veh-form-section-title .dashicons {
+    color: #2271b1;
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* ── Vehículo: layout dos columnas (form + sidebar foto) ────────── */
+.aura-veh-form-layout {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.aura-veh-form-main  { flex: 1 1 0; min-width: 0; }
+.aura-veh-form-sidebar { width: 210px; flex-shrink: 0; }
+
+@media (max-width: 700px) {
+    .aura-veh-form-layout  { flex-direction: column; }
+    .aura-veh-form-sidebar { width: 100%; }
+}
+
+/* ── Trips: tarjetas de tipo de salida ──────────────────────── */
+.aura-trips-type-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+@media (max-width: 520px) {
+    .aura-trips-type-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+.aura-trips-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 14px 8px 10px;
+    border: 2px solid #dde0e4;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    text-align: center;
+    font-family: inherit;
+    transition: border-color .18s, background .18s, box-shadow .15s;
+}
+
+.aura-trips-type-card:hover {
+    border-color: #2271b1;
+    background: #f0f6ff;
+}
+
+.aura-trips-type-card.is-active {
+    border-color: #2271b1;
+    background: #2271b1;
+    box-shadow: 0 3px 10px rgba(34,113,177,.3);
+}
+
+.aura-trips-type-card .dashicons {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    color: #2271b1;
+}
+
+.aura-trips-type-card.is-active .dashicons { color: #fff; }
+
+.aura-trips-type-card > span {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1d2327;
+}
+
+.aura-trips-type-card.is-active > span { color: #fff; }
+
+.aura-trips-type-card > small {
+    font-size: 10px;
+    color: #72777c;
+    line-height: 1.3;
+}
+
+.aura-trips-type-card.is-active > small { color: rgba(255,255,255,.8); }
+/* ══════════════════════════════════════════════════════════════
+   FASE 4: CATÁLOGOS
+══════════════════════════════════════════════════════════════ */
+
+/* Pestañas de tipo */
+.aura-cat-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 16px 0 0;
+    border-bottom: 2px solid #dcdcdc;
+    padding-bottom: 0;
+}
+
+.aura-cat-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background: #f6f7f7;
+    color: #50575e;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    position: relative;
+    top: 2px;
+}
+
+.aura-cat-tab:hover {
+    background: #e9ecef;
+    color: #1d2327;
+}
+
+.aura-cat-tab.is-active {
+    background: #fff;
+    border-color: #dcdcdc;
+    border-bottom-color: #fff;
+    color: #2271b1;
+    font-weight: 600;
+}
+
+.aura-cat-tab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Panel de cada pestaña */
+.aura-cat-panel {
+    background: #fff;
+    border: 1px solid #dcdcdc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    padding: 16px;
+}
+
+.aura-cat-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.aura-cat-panel-desc {
+    margin: 0;
+    color: #50575e;
+    font-size: 13px;
+    line-height: 1.5;
+    flex: 1;
+}
+
+/* Tabla de ítems */
+.aura-cat-table {
+    width: 100%;
+}
+
+.aura-cat-th-handle { width: 32px; text-align: center; }
+.aura-cat-th-icon   { width: 56px; text-align: center; }
+.aura-cat-th-area   { width: 140px; }
+.aura-cat-th-status { width: 90px; }
+.aura-cat-th-actions { width: 110px; text-align: right; }
+
+.aura-cat-handle {
+    text-align: center;
+    cursor: grab;
+    color: #a7aaad;
+}
+
+.aura-cat-handle:active { cursor: grabbing; }
+
+.aura-cat-row-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #f0f4f9;
+    border-radius: 6px;
+    color: #2271b1;
+    font-size: 18px;
+}
+
+.aura-cat-no-icon {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    text-align: center;
+    line-height: 32px;
+    color: #c3c4c7;
+    font-size: 18px;
+}
+
+.aura-cat-td-name strong { color: #1d2327; }
+
+.aura-cat-desc {
+    color: #72777c;
+    font-size: 11.5px;
+}
+
+.aura-cat-row-inactive td { opacity: .55; }
+.aura-cat-row-inactive .aura-cat-td-name strong { text-decoration: line-through; }
+
+/* Badges */
+.aura-cat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.aura-cat-badge-active {
+    background: #edfaef;
+    color: #1a7734;
+    border: 1px solid #b7ebc0;
+}
+
+.aura-cat-badge-inactive {
+    background: #fef0f0;
+    color: #a01010;
+    border: 1px solid #f8c0c0;
+}
+
+.aura-cat-global-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: #f0f4f9;
+    color: #50575e;
+    border: 1px solid #dcdcdc;
+}
+
+.aura-cat-area-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    background: #fef8ee;
+    color: #7a5500;
+    border: 1px solid #f5d080;
+}
+
+/* Acciones de fila */
+.aura-cat-actions {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.aura-cat-actions .button {
+    padding: 2px 6px;
+    min-height: 26px;
+    line-height: 22px;
+}
+
+.aura-cat-actions .is-destructive {
+    color: #b32d2e;
+    border-color: #e4b1b1;
+}
+
+.aura-cat-actions .is-destructive:hover {
+    background: #fef0f0;
+    border-color: #b32d2e;
+}
+
+/* Celda vacía */
+.aura-cat-empty {
+    text-align: center;
+    padding: 32px;
+    color: #72777c;
+    font-size: 13px;
+}
+
+.aura-cat-empty .dashicons {
+    display: block;
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 8px;
+    color: #c3c4c7;
+}
+
+/* Filas en proceso de carga */
+#aura-catalogs-page.is-loading .aura-cat-tbody-row {
+    opacity: .5;
+    pointer-events: none;
+}
+
+/* ── Modal de catálogos ────────────────────────────────────── */
+
+/* Selector de ícono */
+.aura-cat-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 6px;
+    padding: 10px;
+    background: #f6f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.aura-icon-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 4px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    gap: 2px;
+    min-height: 52px;
+}
+
+.aura-icon-option:hover {
+    border-color: #2271b1;
+    background: #e8f0f8;
+}
+
+.aura-icon-option.is-selected {
+    border-color: #2271b1;
+    background: #2271b1;
+    color: #fff;
+}
+
+.aura-icon-option.is-selected .dashicons { color: #fff; }
+.aura-icon-option.is-selected small { color: rgba(255,255,255,.85); }
+
+.aura-icon-option .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #2271b1;
+}
+
+.aura-icon-option small {
+    font-size: 9px;
+    text-align: center;
+    line-height: 1.2;
+    color: #72777c;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 60px;
+}
+
+/* Radio grupo para el ámbito */
+.aura-cat-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.aura-cat-radio-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.aura-cat-radio-option input[type="radio"] { margin: 0; }
+
+.aura-cat-radio-option .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #2271b1;
+}
+
+/* Sortable drag ghost */
+.sortable-ghost {
+    opacity: .4;
+    background: #e8f0f8 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE 5: DASHBOARD Y KPIs
+══════════════════════════════════════════════════════════════ */
+
+/* ── Barra de controles ──────────────────────────────────────── */
+.aura-dash-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin: 16px 0 20px;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.aura-dash-controls-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #50575e;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    flex-shrink: 0;
+}
+
+.aura-dash-period-group,
+.aura-dash-area-group,
+.aura-dash-refresh-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-dash-refresh-wrap {
+    margin-left: auto;
+}
+
+.aura-dash-period-btns {
+    display: flex;
+    gap: 4px;
+}
+
+.aura-dash-period-btn {
+    padding: 5px 12px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #f6f7f7;
+    color: #50575e;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+
+.aura-dash-period-btn:hover {
+    background: #e8f0f8;
+    border-color: #2271b1;
+    color: #2271b1;
+}
+
+.aura-dash-period-btn.is-active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(34,113,177,.3);
+}
+
+.aura-dash-area-select {
+    min-width: 180px;
+    height: 32px;
+    font-size: 13px;
+}
+
+.aura-dash-last-update {
+    font-size: 11px;
+    color: #72777c;
+}
+
+/* ── Aviso de dashboard ──────────────────────────────────────── */
+.aura-dash-notice {
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.aura-dash-notice.is-success {
+    background: #edfaef;
+    color: #1a7734;
+    border-left: 4px solid #00ba88;
+}
+
+.aura-dash-notice.is-error {
+    background: #fef0f0;
+    color: #a01010;
+    border-left: 4px solid #d63638;
+}
+
+/* ── Spinner de carga ────────────────────────────────────────── */
+.aura-dash-loader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    font-size: 13px;
+    color: #72777c;
+}
+
+/* ── Título de sección ───────────────────────────────────────── */
+.aura-dash-section-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 18px 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a487f;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.aura-dash-section-title .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #2271b1;
+}
+
+/* ── Grid de KPIs ────────────────────────────────────────────── */
+.aura-dash-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+#aura-dash-kpis-activity {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+@media (max-width: 900px) {
+    .aura-dash-kpis                { grid-template-columns: repeat(2, 1fr); }
+    #aura-dash-kpis-activity       { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 520px) {
+    .aura-dash-kpis,
+    #aura-dash-kpis-activity       { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Tarjeta KPI ─────────────────────────────────────────────── */
+.aura-dash-kpi-card {
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 8px;
+    padding: 16px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    border-left-width: 4px;
+    border-left-style: solid;
+    transition: box-shadow .2s;
+}
+
+.aura-dash-kpi-card:hover {
+    box-shadow: 0 3px 10px rgba(0,0,0,.1);
+}
+
+.aura-dash-kpi-available    { border-left-color: #00ba88; }
+.aura-dash-kpi-rented       { border-left-color: #2271b1; }
+.aura-dash-kpi-maintenance  { border-left-color: #f0b849; }
+.aura-dash-kpi-unavailable  { border-left-color: #a7aaad; }
+.aura-dash-kpi-active-trips { border-left-color: #0ea5e9; }
+.aura-dash-kpi-trips-today  { border-left-color: #7c3aed; }
+.aura-dash-kpi-km           { border-left-color: #f59e0b; }
+.aura-dash-kpi-income       { border-left-color: #10b981; }
+.aura-dash-kpi-costs        { border-left-color: #ef4444; }
+
+.aura-dash-kpi-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #f0f4f9;
+    flex-shrink: 0;
+}
+
+.aura-dash-kpi-icon .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #2271b1;
+}
+
+.aura-dash-kpi-available .aura-dash-kpi-icon .dashicons    { color: #00ba88; }
+.aura-dash-kpi-rented .aura-dash-kpi-icon .dashicons       { color: #2271b1; }
+.aura-dash-kpi-maintenance .aura-dash-kpi-icon .dashicons  { color: #f0b849; }
+.aura-dash-kpi-unavailable .aura-dash-kpi-icon .dashicons  { color: #a7aaad; }
+.aura-dash-kpi-active-trips .aura-dash-kpi-icon .dashicons { color: #0ea5e9; }
+.aura-dash-kpi-trips-today .aura-dash-kpi-icon .dashicons  { color: #7c3aed; }
+.aura-dash-kpi-km .aura-dash-kpi-icon .dashicons           { color: #f59e0b; }
+.aura-dash-kpi-income .aura-dash-kpi-icon .dashicons       { color: #10b981; }
+.aura-dash-kpi-costs .aura-dash-kpi-icon .dashicons        { color: #ef4444; }
+
+.aura-dash-kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1d2327;
+    line-height: 1.1;
+    min-height: 34px;
+}
+
+.aura-dash-kpi-label {
+    font-size: 11.5px;
+    color: #72777c;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+/* Estado cargando — valores pulsantes */
+#aura-veh-dashboard-page.is-loading .aura-dash-kpi-value {
+    color: #c3c4c7;
+}
+
+/* ── Filas de gráficas ───────────────────────────────────────── */
+.aura-dash-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0 0;
+}
+
+@media (max-width: 900px) {
+    .aura-dash-charts-row { grid-template-columns: 1fr; }
+}
+
+/* ── Caja de gráfica ─────────────────────────────────────────── */
+.aura-dash-chart-box {
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 8px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    display: flex;
+    flex-direction: column;
+}
+
+.aura-dash-chart-sm { /* doughnut — un tercio del ancho aprox. */ }
+.aura-dash-chart-lg { /* bar — el resto */ }
+
+/* Primera fila: sm + lg a 1/3 + 2/3 */
+.aura-dash-charts-row:first-of-type .aura-dash-chart-sm {
+    grid-column: 1;
+}
+.aura-dash-charts-row:first-of-type .aura-dash-chart-lg {
+    grid-column: 2;
+}
+
+/* Gráfica full-width (costos vs ingresos) */
+.aura-dash-chart-full {
+    grid-column: 1 / -1;
+}
+
+.aura-dash-chart-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f1f2;
+}
+
+.aura-dash-chart-header .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: #2271b1;
+}
+
+.aura-dash-chart-header h3 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-dash-chart-wrap {
+    flex: 1;
+    position: relative;
+    height: 280px;
+}
+
+.aura-dash-chart-wrap-wide {
+    height: 240px;
+}
+
+/* Estado vacío de una gráfica */
+.aura-dash-chart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 180px;
+    color: #c3c4c7;
+    text-align: center;
+    gap: 8px;
+}
+
+.aura-dash-chart-empty .dashicons {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    color: #dde0e4;
+}
+
+.aura-dash-chart-empty p {
+    margin: 0;
+    font-size: 13px;
+    color: #a7aaad;
+}}
+
+/* ════════════════════════════════════════════════════════════════
+   FASE 6: REPORTES Y EXPORTACIÓN
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Tabs de tipo de reporte ─────────────────────────────────── */
+.aura-rep-type-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 0;
+    padding: 0;
+}
+
+.aura-rep-type-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+    color: #50575e;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+}
+
+.aura-rep-type-btn .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+
+.aura-rep-type-btn:hover,
+.aura-rep-type-btn:focus {
+    background: #f0f6fc;
+    border-color: #2271b1;
+    color: #135e96;
+    outline: none;
+}
+
+.aura-rep-type-btn.is-active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ── Panel de filtros ────────────────────────────────────────── */
+.aura-rep-filters-panel {
+    margin: 12px 0 16px;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.aura-rep-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 12px 16px;
+    margin-bottom: 14px;
+}
+
+.aura-rep-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-rep-filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #50575e;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-rep-filter-group select,
+.aura-rep-filter-group input[type="date"] {
+    padding: 5px 8px;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #1d2327;
+    background: #fff;
+    width: 100%;
+}
+
+.aura-rep-filter-group select:focus,
+.aura-rep-filter-group input[type="date"]:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+/* ── Botones de acción ───────────────────────────────────────── */
+.aura-rep-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid #f0f0f1;
+    padding-top: 12px;
+}
+
+.aura-rep-actions .button .dashicons {
+    margin-right: 3px;
+}
+
+.aura-rep-spinner {
+    float: none;
+    margin: 0;
+}
+
+/* ── Notificación ────────────────────────────────────────────── */
+.aura-rep-notice {
+    margin: 0 0 12px;
+}
+
+/* ── Barra de totales ────────────────────────────────────────── */
+.aura-rep-totals-bar {
+    background: #f6f7f7;
+    border: 1px solid #dde0e4;
+    border-radius: 4px;
+    padding: 10px 16px;
+    margin: 0 0 14px;
+}
+
+.aura-rep-totals-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+}
+
+.aura-rep-total-item {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+}
+
+.aura-rep-total-label {
+    color: #72777c;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-rep-total-value {
+    font-size: 16px;
+    color: #1d2327;
+    line-height: 1.3;
+}
+
+/* ── Previsualización ────────────────────────────────────────── */
+.aura-rep-preview-container {
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    padding: 16px 18px;
+    overflow-x: auto;
+}
+
+.aura-rep-preview-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.aura-rep-preview-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.aura-rep-row-count {
+    font-size: 12px;
+    color: #72777c;
+}
+
+.aura-rep-table-wrap {
+    overflow-x: auto;
+}
+
+.aura-rep-no-data {
+    text-align: center;
+    padding: 24px;
+    color: #72777c;
+    font-style: italic;
+}
+
+/* ── DataTables overrides (reports page) ─────────────────────── */
+.aura-rep-dt-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.aura-rep-dt-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+/* ── DataTables — layout estándar (todas las tablas del módulo) ── */
+.aura-dt-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 4px 0;
+}
+
+.aura-dt-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 4px 0;
+}
+
+/* ── Tooltip de imagen ampliada (columna Foto en Vehículos) ─────── */
+.aura-img-preview {
+    position: relative;
+    display: inline-block;
+    cursor: zoom-in;
+}
+
+.aura-img-preview .aura-thumb {
+    width: 56px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    display: block;
+}
+
+.aura-img-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    top: 50%;
+    left: calc(100% + 8px);
+    transform: translateY(-50%);
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    padding: 4px;
+}
+
+.aura-img-tooltip img {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
+}
+
+.aura-img-preview:hover .aura-img-tooltip {
+    display: block;
+}
+
+.aura-img-preview.tooltip-left .aura-img-tooltip {
+    left: auto;
+    right: calc(100% + 8px);
+}
+
+#aura-rep-table th {
+    background: #2271b1;
+    color: #fff;
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 8px 10px;
+}
+
+#aura-rep-table td {
+    font-size: 12px;
+    padding: 6px 10px;
+    vertical-align: middle;
+}
+
+
+/* ════════════════════════════════════════════════════════════════
+   FASE 7: AUDITORÍA
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Filtros ─────────────────────────────────────────────────── */
+.aura-audit-filters {
+    margin: 14px 0 16px;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid #dde0e4;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+.aura-audit-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px 16px;
+    margin-bottom: 14px;
+}
+
+.aura-audit-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-audit-filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #50575e;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.aura-audit-filter-group select,
+.aura-audit-filter-group input[type="text"],
+.aura-audit-filter-group input[type="date"],
+.aura-audit-filter-group input[type="number"] {
+    padding: 5px 8px;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #1d2327;
+    background: #fff;
+    width: 100%;
+}
+
+/* ── Acciones ────────────────────────────────────────────────── */
+.aura-audit-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid #f0f0f1;
+    padding-top: 12px;
+}
+
+.aura-audit-actions .aura-aud-btn-danger {
+    background: #f6f7f7;
+    border-color: #d63638;
+    color: #d63638;
+}
+
+.aura-audit-actions .aura-aud-btn-danger:hover {
+    background: #d63638;
+    color: #fff;
+}
+
+#aura-aud-spinner {
+    float: none;
+    margin: 0;
+}
+
+/* ── Resumen ─────────────────────────────────────────────────── */
+.aura-audit-summary {
+    font-size: 12px;
+    color: #50575e;
+    margin: 0 0 10px;
+    padding: 6px 0;
+}
+
+/* ── Tabla ───────────────────────────────────────────────────── */
+.aura-audit-table-wrap {
+    overflow-x: auto;
+}
+
+#aura-aud-table th {
+    font-size: 12px;
+    font-weight: 600;
+    background: #f6f7f7;
+    padding: 8px 10px;
+}
+
+#aura-aud-table td {
+    padding: 6px 10px;
+    vertical-align: middle;
+}
+
+/* ── Badge de operación ──────────────────────────────────────── */
+.aura-aud-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    line-height: 1.6;
+}
+
+/* ── Paginación ──────────────────────────────────────────────── */
+.aura-audit-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #50575e;
+}
+
+.aura-audit-pag-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#aura-aud-page-indicator {
+    padding: 0 6px;
+}
+
+/* ── Advertencia en modal de limpieza ────────────────────────── */
+.aura-audit-warning {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #d63638;
+    font-weight: 600;
+    font-size: 13px;
+    margin: 8px 0 0;
+}
+
+.aura-audit-warning .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   FASE 9: CONFIGURACIÓN — UX Refresh + Catálogos
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Hero Header ────────────────────────────────────────────────── */
+.aura-veh-settings-hero {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 26px;
+    background: linear-gradient(135deg, #1d2d44 0%, #2271b1 100%);
+    border-radius: 8px;
+    margin-bottom: 22px;
+    color: #fff;
+}
+
+.aura-veh-settings-hero__icon {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    background: rgba(255,255,255,.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-veh-settings-hero__icon .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #fff;
+}
+
+.aura-veh-settings-hero__text h1 {
+    margin: 0 0 4px;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.aura-veh-settings-hero__text p {
+    margin: 0;
+    color: rgba(255,255,255,.80);
+    font-size: 13px;
+}
+
+/* ── Layout sidebar + main ──────────────────────────────────────── */
+.aura-veh-settings-layout {
+    display: flex;
+    gap: 0;
+    align-items: flex-start;
+    max-width: 1080px;
+}
+
+/* ── Sidebar de navegación ──────────────────────────────────────── */
+.aura-veh-settings-sidebar {
+    flex-shrink: 0;
+    width: 200px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px 0 0 8px;
+    padding: 12px 0;
+    border-right: none;
+}
+
+.aura-veh-settings-sidebar__group {
+    padding: 0 0 8px;
+}
+
+.aura-veh-settings-sidebar__group + .aura-veh-settings-sidebar__group {
+    border-top: 1px solid #e8eaed;
+    padding-top: 8px;
+}
+
+.aura-veh-settings-sidebar__label {
+    padding: 6px 16px 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #8c8f94;
+}
+
+.aura-veh-settings-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 16px;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    color: #3c434a;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none;
+    transition: background .15s, color .15s, border-color .15s;
+}
+
+.aura-veh-settings-tab:hover {
+    background: #f0f6fc;
+    color: #2271b1;
+}
+
+.aura-veh-settings-tab.is-active,
+.aura-veh-settings-tab.nav-tab-active {
+    background: #f0f6fc;
+    color: #2271b1;
+    border-left-color: #2271b1;
+    font-weight: 600;
+}
+
+.aura-veh-settings-tab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    opacity: .75;
+    flex-shrink: 0;
+}
+
+.aura-veh-settings-tab.is-active .dashicons,
+.aura-veh-settings-tab.nav-tab-active .dashicons {
+    opacity: 1;
+}
+
+/* Catalog tabs — accent distinto */
+.aura-veh-tab-catalog.is-active,
+.aura-veh-tab-catalog.nav-tab-active {
+    color: #0a6b3b;
+    border-left-color: #0a6b3b;
+    background: #f0faf5;
+}
+
+.aura-veh-tab-catalog:hover {
+    color: #0a6b3b;
+    background: #f0faf5;
+}
+
+/* ── Panel principal ────────────────────────────────────────────── */
+.aura-veh-settings-main {
+    flex: 1;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 0 8px 8px 0;
+    padding: 28px 28px 0;
+}
+
+/* Necesario para que el body no agregue borde doble */
+.aura-veh-settings-body {
+    /* contenedor transparente, sin estilos propios */
+}
+
+/* ── Panel header ────────────────────────────────────────────────── */
+.aura-veh-stpanel-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.aura-veh-stpanel-header > .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #2271b1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.aura-veh-stpanel-header h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1d2327;
+}
+
+.aura-veh-stpanel-header p {
+    margin: 0;
+    font-size: 13px;
+    color: #646970;
+}
+
+/* ── Cards de configuración ─────────────────────────────────────── */
+.aura-veh-stcard {
+    background: #f9f9f9;
+    border: 1px solid #e8eaed;
+    border-radius: 6px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.aura-veh-stcard__title {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* ── Filas de configuración ─────────────────────────────────────── */
+.aura-veh-strow {
+    display: flex;
+    gap: 20px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e8eaed;
+}
+
+.aura-veh-strow:last-child {
+    border-bottom: none;
+}
+
+.aura-veh-strow__label {
+    flex-shrink: 0;
+    width: 200px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #2c3338;
+    padding-top: 4px;
+    line-height: 1.4;
+}
+
+.aura-veh-strow__control {
+    flex: 1;
+    min-width: 0;
+}
+
+.aura-veh-strow__control .description {
+    color: #646970;
+    font-size: 12px;
+    margin: 5px 0 0;
+}
+
+/* ── Inputs con afijo (prefix/suffix) ───────────────────────────── */
+.aura-veh-input-affix {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-veh-input-affix__prefix,
+.aura-veh-input-affix__suffix {
+    font-size: 13px;
+    color: #646970;
+    user-select: none;
+}
+
+/* ── Toggle switch ──────────────────────────────────────────────── */
+.aura-veh-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.aura-veh-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.aura-veh-toggle__track {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    background: #c3c4c7;
+    border-radius: 20px;
+    flex-shrink: 0;
+    transition: background .2s;
+}
+
+.aura-veh-toggle__track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+
+.aura-veh-toggle input:checked + .aura-veh-toggle__track {
+    background: #2271b1;
+}
+
+.aura-veh-toggle input:checked + .aura-veh-toggle__track::after {
+    transform: translateX(16px);
+}
+
+.aura-veh-toggle__label {
+    font-size: 13px;
+    color: #3c434a;
+    line-height: 1.4;
+}
+
+/* ── Info box ───────────────────────────────────────────────────── */
+.aura-veh-info-box {
+    padding: 14px 18px;
+    background: #f0f6fc;
+    border-left: 4px solid #2271b1;
+    border-radius: 0 4px 4px 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #2c3338;
+}
+
+/* ── Barra de guardado sticky ───────────────────────────────────── */
+.aura-veh-settings-save-bar {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    background: #fff;
+    border-top: 1px solid #e0e1e3;
+    margin-top: 28px;
+    z-index: 10;
+}
+
+/* ── Catálogos: toolbar ─────────────────────────────────────────── */
+.aura-veh-catalog-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.aura-veh-catalog-filter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #50575e;
+    cursor: pointer;
+}
+
+/* ── Catálogos: contenedor y tabla ─────────────────────────────── */
+.aura-veh-catalog-container {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.aura-veh-cat-table {
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+.aura-veh-cat-table th {
+    font-weight: 600;
+    font-size: 12px;
+    background: #f6f7f7;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e8eaed;
+    color: #3c434a;
+}
+
+.aura-veh-cat-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.aura-veh-cat-desc {
+    color: #646970;
+    font-size: 12px;
+}
+
+.aura-veh-cat-loading {
+    padding: 24px;
+    text-align: center;
+    color: #50575e;
+    font-size: 13px;
+}
+
+.aura-veh-cat-empty {
+    padding: 28px 16px;
+    text-align: center;
+    color: #8c8f94;
+    font-size: 13px;
+}
+
+.aura-veh-cat-empty .dashicons {
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* ── Badges de estado ───────────────────────────────────────────── */
+.aura-veh-cat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+
+.aura-veh-cat-badge--active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.aura-veh-cat-badge--inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+/* ── Botones de acción en tabla ─────────────────────────────────── */
+.aura-veh-cat-table .button-small {
+    padding: 3px 7px;
+    min-height: 28px;
+}
+
+.aura-veh-cat-table .button-small .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.aura-veh-cat-table .aura-veh-cat-delete-btn {
+    border-color: #d63638;
+    color: #d63638;
+}
+
+.aura-veh-cat-table .aura-veh-cat-delete-btn:hover {
+    background: #d63638;
+    color: #fff;
+}
+
+/* ── Error en modal de catálogo ─────────────────────────────────── */
+.aura-veh-scat-error {
+    padding: 8px 12px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 4px;
+    color: #991b1b;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+/* ── Card de prueba de alertas ──────────────────────────────────── */
+.aura-veh-stcard {
+    padding: 0;
+}
+
+/* Override para las cards de notificaciones y alerts que tienen padding directo */
+#tab-notif .aura-veh-stcard + .aura-veh-stcard {
+    padding: 18px 20px;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media screen and (max-width: 900px) {
+    .aura-veh-settings-layout {
+        flex-direction: column;
+    }
+
+    .aura-veh-settings-sidebar {
+        width: 100%;
+        border-radius: 8px 8px 0 0;
+        border-right: 1px solid #c3c4c7;
+        border-bottom: none;
+        display: flex;
+        flex-wrap: wrap;
+        padding: 8px;
+    }
+
+    .aura-veh-settings-sidebar__group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
+        padding: 0;
+    }
+
+    .aura-veh-settings-sidebar__group + .aura-veh-settings-sidebar__group {
+        border-top: none;
+        padding-top: 0;
+    }
+
+    .aura-veh-settings-sidebar__label {
+        display: none;
+    }
+
+    .aura-veh-settings-tab {
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        border-radius: 4px 4px 0 0;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .aura-veh-settings-tab.is-active,
+    .aura-veh-settings-tab.nav-tab-active {
+        border-bottom-color: #2271b1;
+        border-left: none;
+    }
+
+    .aura-veh-settings-main {
+        border-radius: 0 0 8px 8px;
+        padding: 18px 16px 0;
+    }
+
+    .aura-veh-strow {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .aura-veh-strow__label {
+        width: 100%;
+    }
+}
+
+
+
+/* ══════════════════════════════════════════════════════════════
+   MODAL NUEVA SALIDA — UX MEJORADA
+══════════════════════════════════════════════════════════════ */
+
+/* ── Panel de info del vehículo seleccionado ─────────────────── */
+.aura-trips-vehicle-info {
+    margin-top: 6px;
+    padding: 7px 10px;
+    background: #f0f6ff;
+    border: 1px solid #b8d4f0;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #1a487f;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    line-height: 1.5;
+}
+
+.aura-trips-vehicle-info .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 1.2;
+    color: #2271b1;
+    flex-shrink: 0;
+}
+
+/* ── Indicador de combustible en modal de salida ─────────────── */
+.aura-trips-fuel-gauge {
+    margin-top: 8px;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+}
+
+.aura-trips-fuel-gauge__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.aura-trips-fuel-gauge__label {
+    font-size: 11px;
+    color: #4f5d6b;
+    font-weight: 600;
+}
+
+.aura-trips-fuel-gauge__state {
+    font-size: 11px;
+    color: #0b5cab;
+    font-weight: 700;
+}
+
+.aura-trips-fuel-gauge__track {
+    display: grid;
+    grid-template-columns: 14px 1fr 14px;
+    align-items: center;
+    gap: 7px;
+}
+
+.aura-trips-fuel-gauge__mark {
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.aura-trips-fuel-gauge__mark--e { color: #c64040; }
+.aura-trips-fuel-gauge__mark--f { color: #1f8f58; }
+
+.aura-trips-fuel-gauge__bar {
+    position: relative;
+    height: 12px;
+    border-radius: 999px;
+    border: 1px solid #c4d4e7;
+    background: repeating-linear-gradient(
+        90deg,
+        #ecf2fa 0,
+        #ecf2fa 18%,
+        #ffffff 18%,
+        #ffffff 20%
+    );
+    overflow: hidden;
+}
+
+.aura-trips-fuel-gauge__fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #d94f4f 0%, #e7a837 38%, #3ca96a 100%);
+    transition: width .24s ease;
+}
+
+.aura-trips-fuel-gauge[data-value="0"] .aura-trips-fuel-gauge__state { color: #b42318; }
+.aura-trips-fuel-gauge[data-value="25"] .aura-trips-fuel-gauge__state { color: #b54708; }
+.aura-trips-fuel-gauge[data-value="50"] .aura-trips-fuel-gauge__state { color: #a15c00; }
+.aura-trips-fuel-gauge[data-value="75"] .aura-trips-fuel-gauge__state { color: #0c6f45; }
+.aura-trips-fuel-gauge[data-value="100"] .aura-trips-fuel-gauge__state { color: #067647; }
+
+.aura-trips-fuel-gauge[data-empty="1"] .aura-trips-fuel-gauge__state { color: #64748b; }
+
+body.admin-color-midnight .aura-trips-fuel-gauge,
+body.admin-color-coffee .aura-trips-fuel-gauge {
+    background: linear-gradient(180deg, #1b2430 0%, #131a23 100%);
+    border-color: #2f3f53;
+}
+
+body.admin-color-midnight .aura-trips-fuel-gauge__label,
+body.admin-color-coffee .aura-trips-fuel-gauge__label {
+    color: #c7d2df;
+}
+
+body.admin-color-midnight .aura-trips-fuel-gauge__bar,
+body.admin-color-coffee .aura-trips-fuel-gauge__bar {
+    border-color: #43556d;
+    background: repeating-linear-gradient(
+        90deg,
+        #29374a 0,
+        #29374a 18%,
+        #1b2430 18%,
+        #1b2430 20%
+    );
+}
+
+/* ── Tabla de salidas (look moderno) ─────────────────────────── */
+#aura-trips-table {
+    width: 100% !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 10px;
+    border: 1px solid #d9e2ec;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#aura-trips-table thead th {
+    background: linear-gradient(135deg, #0f4c8a 0%, #2271b1 100%);
+    color: #fff;
+    font-weight: 700;
+    padding: 10px 12px;
+    border-bottom: none;
+}
+
+#aura-trips-table tbody td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid #edf2f7;
+}
+
+#aura-trips-table tbody tr:nth-child(even) { background: #fbfdff; }
+#aura-trips-table tbody tr:hover { background: #eef5ff; }
+
+.aura-trip-veh-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.aura-trip-veh-plate {
+    font-weight: 700;
+    color: #0f2c4d;
+}
+
+.aura-trip-veh-name {
+    color: #5b6673;
+    font-size: 11.5px;
+}
+
+.aura-trip-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.aura-trip-status--active {
+    background: #e8f4ff;
+    border-color: #9ec9ef;
+    color: #0b5cab;
+}
+
+.aura-trip-status--returned {
+    background: #eaf9ef;
+    border-color: #9dd9b0;
+    color: #067647;
+}
+
+.aura-trip-status--cancelled {
+    background: #f5f7fa;
+    border-color: #c3ccd5;
+    color: #4b5563;
+}
+
+.aura-trips-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-trip-action {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #c9d2dc !important;
+    background: #fff !important;
+}
+
+.aura-trip-action .dashicons {
+    width: 15px;
+    height: 15px;
+    font-size: 15px;
+    line-height: 1;
+}
+
+.aura-trip-action--detail { color: #1d4ed8 !important; border-color: #9dc0ff !important; background: #eef4ff !important; }
+.aura-trip-action--edit { color: #0f766e !important; border-color: #95ddd7 !important; background: #e8fbf8 !important; }
+.aura-trip-action--checkin { color: #067647 !important; border-color: #8fd7b1 !important; background: #e7fbf0 !important; }
+.aura-trip-action--cancel { color: #b54708 !important; border-color: #f4ba8a !important; background: #fff3e8 !important; }
+.aura-trip-action--delete { color: #b42318 !important; border-color: #f2a4a0 !important; background: #fff1f0 !important; }
+
+/* ── Check-in summary moderno ─────────────────────────────────── */
+.aura-trips-checkin-summary-card {
+    margin-bottom: 12px;
+    border: 1px solid #d8e3ef;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f8fbff 0%, #f2f7fd 100%);
+    padding: 10px 12px;
+}
+
+.aura-trips-checkin-summary-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.aura-trips-checkin-summary-veh {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-trips-checkin-summary-veh .dashicons {
+    color: #2271b1;
+}
+
+.aura-trips-checkin-summary-veh strong {
+    display: block;
+    color: #173b60;
+}
+
+.aura-trips-checkin-summary-veh small {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.aura-trips-checkin-summary-grid,
+.aura-trip-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.aura-trips-checkin-summary-grid > div,
+.aura-trip-detail-grid > div {
+    background: #fff;
+    border: 1px solid #e4ebf2;
+    border-radius: 8px;
+    padding: 7px 9px;
+}
+
+.aura-trips-checkin-summary-grid label,
+.aura-trip-detail-grid label {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.aura-trips-checkin-summary-grid strong,
+.aura-trip-detail-grid strong {
+    color: #0f2c4d;
+    font-size: 12.5px;
+}
+
+#aura-checkin-preview {
+    border-radius: 10px !important;
+    border-color: #9ac4ec !important;
+    background: #eef6ff !important;
+}
+
+/* ── Modal detalle moderno ───────────────────────────────────── */
+.aura-trip-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.aura-trip-detail-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #d8e3ef;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #f8fbff 0%, #f3f8ff 100%);
+}
+
+.aura-trip-detail-veh {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-trip-detail-veh .dashicons {
+    color: #2271b1;
+}
+
+.aura-trip-detail-veh strong {
+    display: block;
+    color: #173b60;
+}
+
+.aura-trip-detail-veh small {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.aura-trip-detail-badges {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-trip-pill {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #bfd3e8;
+    background: #fff;
+    color: #1f4f7d;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.aura-trip-detail-section {
+    border: 1px solid #dfe7ef;
+    border-radius: 10px;
+    padding: 10px;
+    background: #fff;
+}
+
+.aura-trip-detail-section h4 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: #1f4f7d;
+}
+
+.aura-trip-detail-note {
+    border-left: 3px solid #b42318;
+    background: #fff2f1;
+    color: #6b0d07;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+@media (max-width: 782px) {
+    .aura-trips-checkin-summary-grid,
+    .aura-trip-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+body.admin-color-midnight #aura-trips-table,
+body.admin-color-coffee #aura-trips-table {
+    border-color: #344557;
+}
+
+body.admin-color-midnight #aura-trips-table tbody tr:nth-child(even),
+body.admin-color-coffee #aura-trips-table tbody tr:nth-child(even) {
+    background: #1b2430;
+}
+
+body.admin-color-midnight #aura-trips-table tbody tr:hover,
+body.admin-color-coffee #aura-trips-table tbody tr:hover {
+    background: #233244;
+}
+
+body.admin-color-midnight .aura-trips-checkin-summary-card,
+body.admin-color-coffee .aura-trips-checkin-summary-card,
+body.admin-color-midnight .aura-trip-detail-head,
+body.admin-color-coffee .aura-trip-detail-head {
+    background: linear-gradient(180deg, #1b2430 0%, #141c25 100%);
+    border-color: #344557;
+}
+
+body.admin-color-midnight .aura-trips-checkin-summary-grid > div,
+body.admin-color-coffee .aura-trips-checkin-summary-grid > div,
+body.admin-color-midnight .aura-trip-detail-grid > div,
+body.admin-color-coffee .aura-trip-detail-grid > div,
+body.admin-color-midnight .aura-trip-detail-section,
+body.admin-color-coffee .aura-trip-detail-section {
+    background: #141c25;
+    border-color: #2f4053;
+}
+
+/* ── Campos con error de validación ──────────────────────────── */
+.aura-veh-form-col.has-error > input,
+.aura-veh-form-col.has-error > select,
+.aura-veh-form-col.has-error > textarea {
+    border-color: #d63638 !important;
+    box-shadow: 0 0 0 1px #d63638;
+}
+
+.aura-veh-form-col.has-error > label,
+.aura-veh-form-col.has-error > strong {
+    color: #d63638;
+}
+
+
+/* ── DataTables Responsive — botón expandir/colapsar con dashicons ── */
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+    position: relative !important;
+    padding-left: 36px !important;
+    cursor: pointer !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
+    content: "\f344" !important;
+    font-family: "dashicons" !important;
+    position: absolute !important;
+    left: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    background-color: #2271b1 !important;
+    color: #fff !important;
+    border-radius: 50% !important;
+    border: none !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important;
+    z-index: 10 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+    margin: 0 !important;
+    text-indent: 0 !important;
+}
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > td.dtr-control::before,
+table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::before {
+    content: "\f343" !important;
+    background-color: #646970 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE 4: MEJORAS PREMIUM — TABLA STICKY + ACCIONES FIJAS
+══════════════════════════════════════════════════════════════ */
+
+/* Envolvente para hacer sticky el header */
+.aura-trips-table-wrapper {
+    position: relative;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Tabla sticky header */
+#aura-trips-table {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin-top: 0 !important;
+    table-layout: fixed;
+}
+
+/* Header sticky al top */
+#aura-trips-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+#aura-trips-table thead th {
+    background: linear-gradient(180deg, #2271b1 0%, #1a5fa8 100%) !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    padding: 12px 8px !important;
+    white-space: nowrap !important;
+    text-align: left !important;
+    border-bottom: 2px solid #0f3f7f !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1) !important;
+}
+
+/* Columnas body con padding top para no ser ocultadas por header sticky */
+#aura-trips-table tbody td {
+    padding: 18px 8px 8px !important;
+    vertical-align: top !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+}
+
+#aura-trips-table tbody tr:nth-child(even) {
+    background: #fafbfc !important;
+}
+
+#aura-trips-table tbody tr:hover {
+    background: #eff6ff !important;
+    transition: background .15s ease !important;
+}
+
+/* Última columna (Acciones) — STICKY a la derecha */
+#aura-trips-table th:last-child,
+#aura-trips-table td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 99;
+}
+
+#aura-trips-table th:last-child {
+    background: linear-gradient(180deg, #2271b1 0%, #1a5fa8 100%) !important;
+    box-shadow: -4px 2px 4px rgba(0,0,0,.1), inset -2px 0 4px rgba(0,0,0,.05) !important;
+}
+
+#aura-trips-table tbody td:last-child {
+    background: inherit !important;
+    box-shadow: -4px 0 8px rgba(0,0,0,.06), inset -2px 0 2px rgba(0,0,0,.02) !important;
+}
+
+#aura-trips-table tbody tr:hover td:last-child {
+    background: inherit !important;
+    box-shadow: -4px 0 12px rgba(34,113,177,.15), inset -2px 0 2px rgba(0,0,0,.02) !important;
+}
+
+/* Ancho mínimo de tabla para scroll */
+#aura-trips-table {
+    min-width: 1100px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MEJORAS PREMIUM — FILTROS EN CHIPS
+══════════════════════════════════════════════════════════════ */
+
+/* Conversión de filtros select a chips visuales */
+.aura-veh-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 16px 0 12px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #f6f7f7 0%, #f0f4f9 100%);
+    border: 1px solid #e0e5eb;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+
+.aura-veh-filters-bar select {
+    appearance: none;
+    height: 36px;
+    padding: 6px 12px;
+    border: 2px solid #d0d8e0;
+    border-radius: 20px;
+    background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%232271b1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') right 8px center / 16px 16px no-repeat;
+    padding-right: 32px;
+    font-size: 13px;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+.aura-veh-filters-bar select:hover {
+    border-color: #2271b1;
+    background-color: #f0f6ff;
+    box-shadow: 0 2px 8px rgba(34,113,177,.1);
+}
+
+.aura-veh-filters-bar select:focus {
+    outline: none;
+    border-color: #2271b1;
+    background-color: #f0f6ff;
+    box-shadow: 0 0 0 3px rgba(34,113,177,.15);
+}
+
+.aura-veh-filters-bar input[type="search"] {
+    height: 36px;
+    padding: 6px 14px;
+    border: 2px solid #d0d8e0;
+    border-radius: 20px;
+    font-size: 13px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.aura-veh-filters-bar input[type="search"]:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 3px rgba(34,113,177,.15);
+}
+
+.aura-veh-filters-bar input[type="date"] {
+    height: 36px;
+    padding: 6px 10px;
+    border: 2px solid #d0d8e0;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color .2s ease;
+}
+
+.aura-veh-filters-bar input[type="date"]:focus {
+    outline: none;
+    border-color: #2271b1;
+}
+
+.aura-veh-filters-bar button {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .2s ease;
+}
+
+.aura-veh-filters-bar #aura-trips-filter-apply {
+    background: linear-gradient(135deg, #2271b1 0%, #1a5fa8 100%);
+    border: none;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(34,113,177,.2);
+}
+
+.aura-veh-filters-bar #aura-trips-filter-apply:hover {
+    background: linear-gradient(135deg, #1a5fa8 0%, #0f3f7f 100%);
+    box-shadow: 0 4px 12px rgba(34,113,177,.3);
+    transform: translateY(-1px);
+}
+
+.aura-veh-filters-bar #aura-trips-filter-clear {
+    background: #f0f1f2;
+    border: 1px solid #d0d8e0;
+    color: #50575e;
+}
+
+.aura-veh-filters-bar #aura-trips-filter-clear:hover {
+    background: #e8ecf0;
+    border-color: #72777c;
+    color: #1d2327;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MEJORAS PREMIUM — ANIMACIONES SUAVES MODAL
+══════════════════════════════════════════════════════════════ */
+
+/* Animación de entrada y salida del overlay */
+@keyframes aura-modal-fade-in {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(2px);
+    }
+}
+
+@keyframes aura-modal-fade-out {
+    from {
+        opacity: 1;
+        backdrop-filter: blur(2px);
+    }
+    to {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+}
+
+/* Animación de entrada del contenido modal */
+@keyframes aura-modal-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Animación de salida del contenido modal */
+@keyframes aura-modal-slide-down {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(30px) scale(.95);
+    }
+}
+
+/* Modal overlay — fade suave */
+.aura-veh-modal-overlay {
+    animation: aura-modal-fade-in .3s ease-out;
+}
+
+.aura-veh-modal.is-closing .aura-veh-modal-overlay {
+    animation: aura-modal-fade-out .2s ease-in forwards;
+}
+
+/* Modal contenido — slide-up suave */
+.aura-veh-modal-content {
+    animation: aura-modal-slide-up .35s cubic-bezier(.16, 1, .3, 1);
+}
+
+.aura-veh-modal.is-closing .aura-veh-modal-content {
+    animation: aura-modal-slide-down .25s ease-in forwards;
+}
+
+/* Transición suave al cambiar estado de fila */
+@keyframes aura-row-highlight {
+    0% { background-color: inherit; }
+    50% { background-color: #fffacd; }
+    100% { background-color: inherit; }
+}
+
+#aura-trips-table tbody tr.is-updated {
+    animation: aura-row-highlight .8s ease-in-out;
+}
+
+/* Transición suave de badges de estado */
+.aura-trip-status {
+    transition: all .2s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MEJORAS MANTENIMIENTO — SUMA DINÁMICA PRÓXIMO SERVICIO
+══════════════════════════════════════════════════════════════ */
+
+/* Contenedor para la suma dinámica próximo servicio */
+.aura-checkin-next-service-calc {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr 12px 1fr;
+    gap: 8px;
+    align-items: flex-end;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #f0f7ff;
+    border: 1px solid #b8d4f5;
+    border-radius: 6px;
+}
+
+.aura-checkin-next-service-calc__input {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-checkin-next-service-calc__input label {
+    font-size: 11px;
+    color: #50575e;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.aura-checkin-next-service-calc__input input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #d0d8e0;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+}
+
+.aura-checkin-next-service-calc__op {
+    text-align: center;
+    font-weight: 700;
+    color: #2271b1;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.aura-checkin-next-service-calc__result {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+    background: #2271b1;
+    border-radius: 4px;
+    color: #fff;
+    text-align: center;
+}
+
+.aura-checkin-next-service-calc__result-label {
+    font-size: 10px;
+    font-weight: 600;
+    opacity: .85;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.aura-checkin-next-service-calc__result-value {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Tooltip para descripción larga */
+.aura-tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
+    padding: 0;
+    border: 1px solid #2271b1;
+    border-radius: 50%;
+    background: #f0f6ff;
+    color: #2271b1;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: help;
+    transition: all .2s ease;
+    position: relative;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.aura-tooltip-trigger:hover {
+    background: #2271b1;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(34,113,177,.3);
+}
+
+/* Tooltip popup */
+.aura-tooltip {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1d2327;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: normal;
+    max-width: 240px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all .2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+}
+
+.aura-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #1d2327;
+}
+
+.aura-tooltip-trigger:hover .aura-tooltip,
+.aura-tooltip-trigger:focus .aura-tooltip {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* En tema oscuro */
+body.admin-color-midnight .aura-tooltip,
+body.admin-color-coffee .aura-tooltip {
+    background: #e2e8f0;
+    color: #1d2327;
+}
+
+body.admin-color-midnight .aura-tooltip::after,
+body.admin-color-coffee .aura-tooltip::after {
+    border-top-color: #e2e8f0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NUEVA ESTRUCTURA DE TABLA DE SALIDAS (9 COLUMNAS)
+══════════════════════════════════════════════════════════════ */
+
+/* Wrapper de tabla con scroll horizontal y sticky header */
+.aura-trips-table-wrapper {
+    overflow-x: auto;
+    overflow-y: visible;
+    min-width: 100%;
+    max-width: 100%;
+    margin-top: 16px;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.aura-trips-table-structured {
+    width: 100% !important;
+    min-width: 1100px;
+    border-collapse: collapse !important;
+}
+
+/* Header sticky */
+.aura-trips-table-structured thead {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #2271b1;
+    box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+
+.aura-trips-table-structured thead th {
+    background: #2271b1;
+    color: #fff;
+    font-weight: 700;
+    text-align: left;
+    padding: 12px 8px !important;
+    border: none !important;
+    font-size: 13px;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+/* Filas con altura mínima */
+.aura-trips-table-structured tbody tr {
+    min-height: 56px;
+    vertical-align: top;
+    border-bottom: 1px solid #e5e5e5 !important;
+}
+
+.aura-trips-table-structured tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Celdas */
+.aura-trips-table-structured td {
+    padding: 12px 8px !important;
+    vertical-align: top;
+    border: none !important;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* Columna de Acciones sticky a la derecha */
+.aura-trips-table-structured th:last-child,
+.aura-trips-table-structured td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 99;
+    background: #fff;
+}
+
+.aura-trips-table-structured thead th:last-child {
+    background: #2271b1;
+}
+
+.aura-trips-table-structured tbody tr:hover td:last-child {
+    background: #f9f9f9;
+}
+
+/* Badges del sistema */
+.aura-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    margin-right: 8px;
+}
+
+/* Badges de Tipo */
+.aura-badge-rental {
+    background: #e7f3ff;
+    color: #0a4a8c;
+    border: 1px solid #0a4a8c;
+}
+
+.aura-badge-errand {
+    background: #e7f3ff;
+    color: #0a4a8c;
+    border: 1px solid #0a4a8c;
+}
+
+.aura-badge-maintenance {
+    background: #fff0e6;
+    color: #fff;
+    border: none;
+    background: #ff7e2a;
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(255,126,42,.3);
+}
+
+.aura-badge-other {
+    background: #f0f0f0;
+    color: #666;
+    border: 1px solid #ccc;
+}
+
+/* Badges de Subtipo */
+.aura-badge-preventive {
+    background: #e6f9f0;
+    color: #0b7c4c;
+    border: 1px solid #0b7c4c;
+}
+
+.aura-badge-corrective {
+    background: #ffe6e6;
+    color: #c3112d;
+    border: 1px solid #c3112d;
+}
+
+.aura-badge-inspection {
+    background: #e7f3ff;
+    color: #0a4a8c;
+    border: 1px solid #0a4a8c;
+}
+
+/* Badges de Estado */
+.aura-badge-status-active {
+    background: #e7f3ff;
+    color: #0a4a8c;
+    border: 1px solid #0a4a8c;
+}
+
+.aura-badge-status-returned {
+    background: #e6f9f0;
+    color: #0b7c4c;
+    border: 1px solid #0b7c4c;
+}
+
+.aura-badge-status-cancelled {
+    background: #f0f0f0;
+    color: #666;
+    border: 1px solid #ccc;
+}
+
+/* Botones de acciones circulares */
+.aura-trips-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.aura-trips-actions .button {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    padding: 4px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    color: #666;
+    transition: all .2s ease;
+}
+
+.aura-trips-actions .button:hover {
+    background: #2271b1;
+    color: #fff;
+    border-color: #2271b1;
+    box-shadow: 0 2px 8px rgba(34,113,177,.3);
+}
+
+.aura-trips-actions .button .dashicons {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 16px !important;
+}
+
+/* Información de vehículo en tabla */
+.aura-trip-veh-cell {
+    display: block;
+    line-height: 1.3;
+}
+
+.aura-trip-veh-cell strong {
+    display: block;
+    font-size: 14px;
+    color: #000;
+    font-weight: 700;
+}
+
+.aura-trip-veh-cell small {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 2px;
+    font-weight: 400;
+}
+
+/* Responsivos - Ajustes para pantallas pequeñas */
+@media (max-width: 1200px) {
+    .aura-trips-table-structured {
+        min-width: 900px;
+    }
+    
+    .aura-trips-table-structured th,
+    .aura-trips-table-structured td {
+        padding: 10px 6px !important;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .aura-trips-table-wrapper {
+        margin-top: 12px;
+        border-radius: 0;
+    }
+    
+    .aura-trips-table-structured {
+        min-width: 800px;
+    }
+    
+    .aura-trips-table-structured thead th {
+        padding: 8px 4px !important;
+        font-size: 11px;
+    }
+    
+    .aura-trips-table-structured td {
+        padding: 8px 4px !important;
+        font-size: 11px;
+    }
+    
+    .aura-trips-actions .button {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        min-height: 28px;
+    }
+    
+    .aura-trips-actions .button .dashicons {
+        width: 14px !important;
+        height: 14px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CÁLCULO DINÁMICO DE PRÓXIMO SERVICIO (Mejorado)
+══════════════════════════════════════════════════════════════ */
+
+.aura-checkin-next-service-calc {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f3ff 100%);
+    border: 2px solid #2271b1;
+    border-radius: 8px;
+    padding: 14px 12px;
+    margin-top: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
+    animation: aura-calc-fadeIn 0.3s ease-out;
+}
+
+.aura-checkin-next-service-calc__row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.aura-checkin-next-service-calc__item,
+.aura-checkin-next-service-calc__result {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-checkin-next-service-calc__item label,
+.aura-checkin-next-service-calc__result .aura-checkin-next-service-calc__result-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0a4a8c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aura-calc-value,
+.aura-calc-result {
+    font-weight: 700;
+    font-size: 16px;
+    color: #2271b1;
+}
+
+.aura-calc-result {
+    font-size: 18px;
+    color: #fff;
+    background: #2271b1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    min-width: 100px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(34, 113, 177, 0.3);
+}
+
+.aura-checkin-next-service-calc__op {
+    font-weight: 700;
+    color: #0a4a8c;
+    font-size: 14px;
+}
+
+/* Tooltip mejorado */
+.aura-checkin-next-service-tooltip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: help;
+}
+
+.aura-checkin-next-service-tooltip .dashicons {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    color: #2271b1;
+    transition: all 0.2s ease;
+}
+
+.aura-checkin-next-service-tooltip:hover .dashicons {
+    color: #fff;
+    background: #2271b1;
+    border-radius: 50%;
+    padding: 2px;
+}
+
+.aura-tooltip-content {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: #1d2327;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    margin-bottom: 8px;
+}
+
+.aura-tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 0;
+    border-top: 6px solid #1d2327;
+}
+
+.aura-checkin-next-service-tooltip:hover .aura-tooltip-content {
+    opacity: 1;
+    visibility: visible;
+}
+
+@keyframes aura-calc-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HISTORIAL DE SALIDAS — Tabla de viajes en modal de detalles
+══════════════════════════════════════════════════════════════ */
+
+.aura-veh-view-trips-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.aura-veh-view-trips-table thead {
+    background: #f5f5f5;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.aura-veh-view-trips-table th {
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: #1d2327;
+    white-space: nowrap;
+}
+
+.aura-veh-view-trips-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e5e5e5;
+    vertical-align: middle;
+}
+
+.aura-veh-view-trips-table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+.aura-veh-view-trips-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.aura-veh-view-trips-table small {
+    color: #6b7280;
+    display: block;
+}
+
+.aura-veh-view-trips-table .aura-badge {
+    padding: 3px 7px;
+    font-size: 10px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 4px;
+}

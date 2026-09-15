@@ -1,0 +1,67 @@
+Categoria,Categoria Padre,Tipo,Slug,Orden
+Donaciones,Sin categoria padre,income,donaciones,10
+Donacion General,Donaciones,income,donacion-general,0
+Donacion Especial,Donaciones,income,donacion-especial,0
+Donacion de Misiones,Donaciones,income,donacion-misiones,0
+Donacion de Construccion,Donaciones,income,donacion-construccion,0
+Donacion de Emergencia,Donaciones,income,donacion-emergencia,0
+Donacion de Alimentos,Donaciones,income,donacion-alimentos,0
+Donacion de Voluntarios,Donaciones,income,donacion-voluntarios,0
+Ofrendas,Sin categoria padre,income,ofrendas,20
+Ofrenda General,Ofrendas,income,ofrenda-general,0
+Ofrenda Especial,Ofrendas,income,ofrenda-especial,0
+Ofrenda de Misiones,Ofrendas,income,ofrenda-misiones,0
+Ofrenda de Construccion,Ofrendas,income,ofrenda-construccion,0
+Ofrenda de Emergencia,Ofrendas,income,ofrenda-emergencia,0
+Alquileres y Rentas,Sin categoria padre,income,alquileres-rentas,30
+Alquiler de Instalaciones,Alquileres y Rentas,income,alquiler-instalaciones,0
+Alquiler a Iglesias,Alquileres y Rentas,income,alquiler-iglesias,0
+Alquiler de Equipo de Sonido,Alquileres y Rentas,income,alquiler-equipo-sonido,0
+Alquiler de Kiosco/Terraza,Alquileres y Rentas,income,alquiler-kiosco-terraza,0
+Inscripciones y Matriculas,Sin categoria padre,income,inscripciones-matriculas,40
+Inscripcion de Estudiantes,Inscripciones y Matriculas,income,inscripcion-estudiantes,0
+Cursos y Talleres,Inscripciones y Matriculas,income,cursos-talleres,0
+Sostenimiento Institucional,Sin categoria padre,income,sostenimiento-institucional,45
+Aportes Agencia Misionera,Sostenimiento Institucional,income,aportes-agencia-misionera,0
+Fondos de Operacion,Sostenimiento Institucional,income,fondos-operacion,0
+Sostenimiento de Staff / Misioneros,Sostenimiento Institucional,income,sostenimiento-staff-misioneros,0
+Proyectos Especiales de la Agencia,Sostenimiento Institucional,income,proyectos-especiales-agencia,0
+Ventas de Productos,Sin categoria padre,income,ventas-productos,50
+Ventas de Servicios,Sin categoria padre,income,ventas-servicios,60
+Subvenciones,Sin categoria padre,income,subvenciones,70
+Intereses Bancarios,Sin categoria padre,income,intereses-bancarios,80
+Otros Ingresos,Sin categoria padre,income,otros-ingresos,90
+Salarios y Sueldos,Sin categoria padre,expense,salarios-sueldos,10
+Salario,Salarios y Sueldos,expense,salario,0
+Honorarios,Salarios y Sueldos,expense,honorarios,0
+Voluntarios,Salarios y Sueldos,expense,voluntarios,0
+Servicios Publicos,Sin categoria padre,expense,servicios-publicos,20
+Electricidad,Servicios Publicos,expense,servicios-electricidad,0
+Internet,Servicios Publicos,expense,servicios-internet,0
+Gas,Servicios Publicos,expense,servicios-gas,0
+Agua,Servicios Publicos,expense,servicios-agua,0
+Telefono,Servicios Publicos,expense,servicios-telefono,0
+Mantenimiento,Sin categoria padre,expense,mantenimiento,30
+Vehiculos,Mantenimiento,expense,mantenimiento-vehiculos,0
+Instalaciones,Mantenimiento,expense,mantenimiento-instalaciones,0
+Herramientas Electricas,Mantenimiento,expense,mantenimiento-herramientas-electricas,0
+Herramientas de Motor,Mantenimiento,expense,mantenimiento-herramientas-motor,0
+Equipo de Sonido,Mantenimiento,expense,mantenimiento-equipo-sonido,0
+Sistema de Riego,Mantenimiento,expense,mantenimiento-sistema-riego,0
+Jardineria,Mantenimiento,expense,mantenimiento-jardineria,0
+Compra de Herramientas y Equipos,Sin categoria padre,expense,compra-herramientas-equipos,40
+Herramientas Electricas,Compra de Herramientas y Equipos,expense,compra-herramientas-electricas,0
+Herramientas de Bateria,Compra de Herramientas y Equipos,expense,compra-herramientas-bateria,0
+Herramientas de Motor,Compra de Herramientas y Equipos,expense,compra-herramientas-motor,0
+Equipo de Sonido,Compra de Herramientas y Equipos,expense,compra-equipo-sonido,0
+Mobiliario,Compra de Herramientas y Equipos,expense,compra-mobiliario,0
+Biblioteca,Sin categoria padre,expense,biblioteca,50
+Adquisicion de Libros,Biblioteca,expense,adquisicion-libros,0
+Materiales Bibliograficos,Biblioteca,expense,materiales-bibliograficos,0
+Suministros de Oficina,Sin categoria padre,expense,suministros-oficina,60
+Suministros de Limpieza,Sin categoria padre,expense,suministros-limpieza,70
+Programas y Proyectos,Sin categoria padre,expense,programas-proyectos,80
+Becas y Ayudas,Sin categoria padre,expense,becas-ayudas,90
+Marketing,Sin categoria padre,expense,marketing,100
+Tecnologia,Sin categoria padre,expense,tecnologia,110
+Otros Gastos,Sin categoria padre,expense,otros-gastos,120

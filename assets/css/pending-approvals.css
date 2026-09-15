@@ -1,0 +1,2737 @@
+/**
+ * Estilos para Página de Aprobaciones Pendientes
+ * Modernización UX/UI, Dark Mode, Child Rows, Tooltips e Impresión Oficial
+ *
+ * @package AuraBusinessSuite
+ * @subpackage Financial
+ * @since 1.0.0
+ */
+
+/* ========================================
+   ENCABEZADO HERO GLASS CARD GLOBAL
+======================================== */
+
+.aura-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
+    color: #ffffff;
+    box-sizing: border-box;
+}
+
+.aura-page-header__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.aura-page-header__icon .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #ffffff;
+}
+
+.aura-page-header__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.aura-page-header__content h1 {
+    margin: 0 !important;
+    color: #ffffff !important;
+    font-size: 1.45rem !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+.aura-page-header__content p {
+    margin: 6px 0 0 !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-size: 0.88rem !important;
+    line-height: 1.5 !important;
+}
+
+.aura-page-header__badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.aura-page-header__badges .aura-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    white-space: nowrap;
+}
+
+.aura-page-header__badges .aura-badge .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+
+.aura-badge-emerald {
+    background: rgba(16, 185, 129, 0.35) !important;
+    border-color: rgba(110, 231, 183, 0.5) !important;
+    color: #ffffff !important;
+}
+
+.aura-print-action-btn {
+    background: rgba(245, 158, 11, 0.9) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(253, 230, 138, 0.5) !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    height: 34px !important;
+    padding: 0 14px !important;
+    border-radius: 999px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    transition: background 0.15s ease, transform 0.15s ease !important;
+    cursor: pointer !important;
+}
+
+.aura-print-action-btn:hover {
+    background: #d97706 !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}
+
+/* ========================================
+   TARJETAS KPI DE RESUMEN
+======================================== */
+
+.aura-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.aura-stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.aura-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.aura-stat-card .stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.aura-stat-card .stat-icon .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.aura-stat-card .stat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.aura-stat-card .stat-label-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+}
+
+.aura-stat-card .stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aura-stat-card .stat-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.aura-stat-card .stat-sub {
+    font-size: 11.5px;
+    color: #94a3b8;
+}
+
+/* ========================================
+   BARRA DE NAVEGACIÓN DE PESTAÑAS (TABS NAVBAR)
+======================================== */
+
+.aura-navbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    margin-bottom: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+}
+
+.aura-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.aura-tab-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.aura-tab-btn:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.aura-tab-btn:hover .dashicons {
+    color: #1e293b;
+}
+
+.aura-tab-btn.active,
+.aura-tab-btn.is-active {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.aura-tab-btn.active .dashicons,
+.aura-tab-btn.is-active .dashicons {
+    color: #ffffff !important;
+}
+
+.aura-tab-count-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(0, 0, 0, 0.06);
+    color: inherit;
+}
+
+.aura-tab-btn.active .aura-tab-count-pill,
+.aura-tab-btn.is-active .aura-tab-count-pill {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+/* ========================================
+   INPUT GROUPS ESTILO BOOTSTRAP
+======================================== */
+
+.aura-input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aura-input-group-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    color: #64748b;
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    flex-shrink: 0;
+    min-width: 42px;
+    box-sizing: border-box;
+}
+
+.aura-input-group-text .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #64748b;
+}
+
+.aura-input-group .currency-symbol {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f766e;
+    background-color: #f0fdf4;
+    border-left: 3px solid #10b981;
+    min-width: 42px;
+}
+
+.aura-input-group > input,
+.aura-input-group > select {
+    position: relative;
+    flex: 1 1 auto;
+    width: 1% !important;
+    min-width: 0;
+    margin: 0 !important;
+    height: 38px !important;
+    line-height: 36px !important;
+    padding: 0 12px !important;
+    border-radius: 0 8px 8px 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    box-sizing: border-box !important;
+    font-size: 13px !important;
+}
+
+.aura-input-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+    border-radius: 8px;
+}
+
+.aura-input-group:focus-within .aura-input-group-text {
+    background-color: #eff6ff !important;
+    border-color: #3b82f6 !important;
+    color: #2563eb !important;
+}
+
+.aura-input-group:focus-within .aura-input-group-text .dashicons {
+    color: #2563eb !important;
+}
+
+.aura-input-group:focus-within > input,
+.aura-input-group:focus-within > select {
+    border-color: #3b82f6 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    z-index: 2 !important;
+}
+
+.aura-filter-submit-btn {
+    height: 38px !important;
+    padding: 0 16px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+
+.aura-pending-inline-notice {
+    margin: 12px 0 20px;
+    border-left: 4px solid #2563eb !important;
+    border-radius: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
+    padding: 12px 16px;
+}
+
+.aura-pending-notice-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aura-pending-notice-icon {
+    color: #2563eb;
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.aura-pending-notice-text {
+    flex: 1;
+    color: #1e3a5f;
+    font-size: 13px;
+}
+
+.aura-pending-notice-sub {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* ========================================
+   TOOLTIPS Y AYUDAS CONTEXTUALES
+======================================== */
+
+.aura-tooltip-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    outline: none;
+}
+
+.aura-type-wrap {
+    cursor: pointer;
+}
+
+.aura-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    cursor: help;
+    transition: transform 0.15s ease;
+    vertical-align: middle;
+}
+
+.aura-help-icon:hover {
+    transform: scale(1.15);
+}
+
+.aura-tooltip-box {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #0f172a;
+    color: #ffffff !important;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    line-height: 1.45;
+    font-weight: 500;
+    white-space: normal;
+    min-width: 180px;
+    max-width: 280px;
+    text-align: left;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10000;
+    border: 1px solid #334155;
+}
+
+.aura-tooltip-box::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #0f172a transparent transparent transparent;
+}
+
+.aura-tooltip-wrap:hover .aura-tooltip-box,
+.aura-tooltip-wrap:focus .aura-tooltip-box,
+.aura-tooltip-wrap:focus-within .aura-tooltip-box {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Tooltip especializado para el Tipo de Transacción */
+.aura-type-tooltip-box {
+    min-width: 220px;
+    max-width: 320px;
+    padding: 10px 12px;
+}
+
+.aura-type-tooltip-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.aura-type-tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #60a5fa;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aura-type-tooltip-header .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.aura-type-tooltip-desc {
+    font-size: 12px;
+    color: #f8fafc;
+    word-break: break-word;
+}
+
+.aura-type-tooltip-nature {
+    font-size: 11px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* ========================================
+   BARRA DE FILTROS MODERNA
+======================================== */
+
+.aura-filters-bar {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin: 12px 0 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.aura-filters-bar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+}
+
+.aura-filters-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    padding: 0;
+    line-height: 1;
+}
+
+.aura-filters-toggle:hover {
+    color: #2563eb;
+}
+
+.aura-filters-toggle .dashicons-filter {
+    color: #2563eb;
+}
+
+.active-filters-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #2563eb;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 1px 6px;
+}
+
+.clear-filters-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #dc2626;
+    text-decoration: none;
+}
+
+.clear-filters-link:hover {
+    color: #b91c1c;
+    text-decoration: underline;
+}
+
+.aura-filters-bar__body {
+    padding: 0 18px 18px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.filters-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-end;
+    margin-top: 14px;
+}
+
+.fi-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 140px;
+    flex: 1 1 auto;
+}
+
+.fi-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fi-group select,
+.fi-group input {
+    height: 36px;
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #ffffff;
+    color: #1e293b;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.fi-group select:focus,
+.fi-group input:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.fi-range {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.fi-range input {
+    width: 100%;
+    min-width: 80px;
+}
+
+.fi-range-sep {
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+.fi-actions {
+    display: flex;
+    align-items: center;
+}
+
+.fi-actions button {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.fi-actions button:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-1px);
+}
+
+/* ========================================
+   ESTADO VACÍO (EMPTY STATE)
+======================================== */
+
+.aura-empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.aura-empty-state__icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #10b981;
+    margin-bottom: 12px;
+    display: inline-block;
+}
+
+.aura-empty-state__title {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.aura-empty-state__desc {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* ========================================
+   TARJETA DE TABLA Y ESTILOS LIST TABLE
+======================================== */
+
+.aura-pending-table-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.aura-pending-views-bar {
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.aura-pending-views-bar .subsubsub {
+    margin: 0;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-pending-views-bar .subsubsub li {
+    margin: 0;
+}
+
+.aura-pending-views-bar .subsubsub a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.aura-pending-views-bar .subsubsub a:hover {
+    background: #f1f5f9;
+    color: #2563eb;
+}
+
+.aura-pending-views-bar .subsubsub a.current {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.aura-pending-views-bar .subsubsub a .count {
+    font-weight: 700;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+.aura-table-responsive-wrap {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.aura-pending-table-card .wp-list-table {
+    border-collapse: collapse;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    border: none;
+    box-shadow: none;
+    table-layout: auto;
+}
+
+.aura-pending-table-card .wp-list-table thead th {
+    background: #1e3a5f !important;
+    color: #ffffff !important;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 14px;
+    border: none;
+}
+
+.aura-pending-table-card .wp-list-table thead th a,
+.aura-pending-table-card .wp-list-table thead th span {
+    color: #ffffff !important;
+}
+
+.aura-pending-table-card .wp-list-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.15s ease;
+}
+
+.aura-pending-table-card .wp-list-table tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.aura-pending-table-card .wp-list-table tbody tr:hover {
+    background: #f1f5f9;
+}
+
+.aura-pending-table-card .wp-list-table tbody td {
+    padding: 12px 14px;
+    vertical-align: middle;
+    color: #1e293b;
+}
+
+/* Badges de Tipo */
+.transaction-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.transaction-type .dashicons {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+}
+
+.transaction-type.type-income {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.transaction-type.type-expense {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* Montos */
+.transaction-amount {
+    font-weight: 700;
+    font-family: monospace;
+    font-size: 13px;
+}
+
+.transaction-amount.amount-income {
+    color: #15803d;
+}
+
+.transaction-amount.amount-expense {
+    color: #b91c1c;
+}
+
+/* ========================================
+   SISTEMA DE FILAS EXPANDIBLES (CHILD ROWS)
+======================================== */
+
+.aura-row-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    color: #3730a3;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-right: 6px;
+    padding: 0;
+}
+
+.aura-row-toggle:hover {
+    background: #e0e7ff;
+    border-color: #818cf8;
+    transform: scale(1.08);
+}
+
+.aura-row-toggle.is-active .dashicons {
+    transform: rotate(180deg);
+}
+
+.aura-row-toggle .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s ease;
+}
+
+.aura-txn-id {
+    font-weight: 700;
+    color: #2563eb;
+    font-family: monospace;
+}
+
+.aura-child-row {
+    background: #f8fafc !important;
+}
+
+.aura-child-row-cell {
+    padding: 0 14px 16px 14px !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.aura-child-card-wrapper {
+    margin-top: 6px;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+.aura-child-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+.aura-child-hero-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.aura-child-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.aura-child-hero-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    word-break: break-word;
+}
+
+.aura-child-sections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.aura-child-subcard {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden;
+}
+
+.aura-subcard-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.aura-subcard-header h4 {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.aura-subcard-header .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: #2563eb;
+}
+
+.aura-child-meta-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 5px;
+    gap: 8px;
+}
+
+.aura-child-meta-label {
+    color: #64748b;
+}
+
+.aura-child-meta-value {
+    font-weight: 600;
+    color: #0f172a;
+    text-align: right;
+}
+
+.aura-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.aura-pill-badge .dashicons {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+}
+
+.aura-code-pill {
+    background: #e2e8f0;
+    color: #1e3a5f;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+.aura-type-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.aura-type-pill.income {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.aura-type-pill.expense {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* ========================================
+   MONOSPACE ID PILL WITH TYPE BADGE
+======================================== */
+.aura-id-cell-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aura-txn-id-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    line-height: 1.2;
+    cursor: help;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.aura-txn-id-pill:hover {
+    transform: scale(1.04);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.aura-txn-id-pill .txn-type-icon {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.aura-txn-id-pill .txn-id-num {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.aura-txn-id-pill .txn-type-tag {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1px 4px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 4px;
+}
+
+/* Dark Mode para ID Pill */
+html[data-wp-dark-mode-scheme="dark"] .aura-txn-id-pill .txn-id-num,
+html.wp-dark-mode-active .aura-txn-id-pill .txn-id-num,
+body.aura-dark-mode .aura-txn-id-pill .txn-id-num,
+[data-theme="dark"] .aura-txn-id-pill .txn-id-num {
+    color: #f8fafc;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-txn-id-pill .txn-type-tag,
+html.wp-dark-mode-active .aura-txn-id-pill .txn-type-tag,
+body.aura-dark-mode .aura-txn-id-pill .txn-type-tag,
+[data-theme="dark"] .aura-txn-id-pill .txn-type-tag {
+    background: rgba(0, 0, 0, 0.35);
+}
+
+/* ========================================
+   ENRICHED INTERACTIVE TOOLTIP FOR ID PILL
+======================================== */
+.aura-txn-pill-tooltip-wrap {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    cursor: help;
+}
+
+.aura-txn-pill-tooltip-wrap:hover,
+.aura-txn-pill-tooltip-wrap:focus-within {
+    z-index: 999999 !important;
+}
+
+.aura-txn-id-tooltip-box {
+    position: absolute !important;
+    bottom: calc(100% + 8px) !important;
+    left: 0 !important;
+    transform: translateY(4px) !important;
+    min-width: 220px;
+    max-width: 320px;
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15) !important;
+    z-index: 999999999 !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+    white-space: normal !important;
+    text-align: left;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid #334155 !important;
+}
+
+/* Flecha inferior del tooltip */
+.aura-txn-id-tooltip-box::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #0f172a transparent transparent transparent;
+}
+
+.aura-txn-pill-tooltip-wrap:hover .aura-txn-id-tooltip-box,
+.aura-txn-pill-tooltip-wrap:focus-within .aura-txn-id-tooltip-box,
+.aura-txn-pill-tooltip-wrap:active .aura-txn-id-tooltip-box {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+}
+
+/* Primeras filas: mostrar hacia abajo para que el thead no lo tape */
+.wp-list-table tbody tr:first-child .aura-txn-id-tooltip-box,
+.wp-list-table tbody tr:nth-child(2) .aura-txn-id-tooltip-box,
+.wp-list-table tbody tr:first-child .aura-type-tooltip-box,
+.wp-list-table tbody tr:nth-child(2) .aura-type-tooltip-box,
+.wp-list-table tbody tr:first-child .aura-tooltip-box,
+.wp-list-table tbody tr:nth-child(2) .aura-tooltip-box {
+    bottom: auto !important;
+    top: calc(100% + 8px) !important;
+}
+
+.wp-list-table tbody tr:first-child .aura-txn-id-tooltip-box::after,
+.wp-list-table tbody tr:nth-child(2) .aura-txn-id-tooltip-box::after,
+.wp-list-table tbody tr:first-child .aura-type-tooltip-box::after,
+.wp-list-table tbody tr:nth-child(2) .aura-type-tooltip-box::after,
+.wp-list-table tbody tr:first-child .aura-tooltip-box::after,
+.wp-list-table tbody tr:nth-child(2) .aura-tooltip-box::after {
+    top: auto !important;
+    bottom: 100% !important;
+    border-width: 0 5px 5px 5px !important;
+    border-color: transparent transparent #0f172a transparent !important;
+}
+
+.aura-txn-tt-header {
+    font-weight: 700;
+    font-size: 11.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding-bottom: 5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aura-txn-tt-desc {
+    font-size: 12px;
+    color: #e2e8f0;
+    word-break: break-word;
+    line-height: 1.35;
+}
+
+.aura-txn-tt-cat {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aura-txn-tt-cat .dashicons {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+}
+
+/* ========================================
+   TABLENAV & PAGINATION FIX (CLEAN & INTEGRATED)
+======================================== */
+.aura-pending-transactions-page .tablenav,
+.aura-pending-table-card .tablenav {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 10px 14px !important;
+    height: auto !important;
+    min-height: 48px !important;
+    padding: 10px 14px !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    margin: 12px 0 !important;
+    float: none !important;
+    clear: both !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+}
+
+.aura-pending-transactions-page .tablenav.bottom,
+.aura-pending-table-card .tablenav.bottom {
+    margin-top: 14px !important;
+    margin-bottom: 16px !important;
+}
+
+/* Dark Mode para Tablenav */
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-table-card .tablenav,
+html.wp-dark-mode-active .aura-pending-table-card .tablenav,
+body.aura-dark-mode .aura-pending-table-card .tablenav,
+[data-theme="dark"] .aura-pending-table-card .tablenav {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+}
+
+.aura-pending-table-card .tablenav .alignleft.actions,
+.aura-pending-table-card .tablenav .bulkactions {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    float: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.aura-pending-table-card .tablenav .tablenav-pages {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    float: none !important;
+    margin: 0 !important;
+}
+
+.aura-child-action-dock {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.aura-action-dock-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-action-dock-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-btn-dock {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    height: 36px !important;
+    padding: 0 14px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+}
+
+.aura-btn-dock--view {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+}
+
+.aura-btn-dock--view:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+.aura-btn-dock--approve {
+    background: #10b981 !important;
+    border: 1px solid #059669 !important;
+    color: #ffffff !important;
+}
+
+.aura-btn-dock--approve:hover {
+    background: #059669 !important;
+    color: #ffffff !important;
+}
+
+.aura-btn-dock--reject {
+    background: #fff1f2 !important;
+    border: 1px solid #fecdd3 !important;
+    color: #e11d48 !important;
+}
+
+.aura-btn-dock--reject:hover {
+    background: #ffe4e6 !important;
+    border-color: #fda4af !important;
+    color: #be123c !important;
+}
+
+.aura-btn-dock--edit {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1d4ed8 !important;
+}
+
+.aura-btn-dock--edit:hover {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+}
+
+/* ========================================
+   MODALES DE APROBACIÓN / RECHAZO
+======================================== */
+
+.aura-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+}
+
+.aura-modal-hidden,
+.aura-modal.is-hidden,
+.aura-modal[style*="display: none"] {
+    display: none !important;
+}
+
+.aura-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
+}
+
+.aura-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 540px;
+    margin: 80px auto;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: auraModalSlide 0.25s ease-out;
+    box-sizing: border-box;
+}
+
+@keyframes auraModalSlide {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.aura-modal-header {
+    color: #ffffff;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.aura-modal-header--primary {
+    background: #1e3a5f;
+}
+
+.aura-modal-header--danger {
+    background: #991b1b;
+}
+
+.aura-modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-modal-close {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    opacity: 0.8;
+    padding: 4px;
+}
+
+.aura-modal-close:hover {
+    opacity: 1;
+}
+
+.aura-modal-body {
+    padding: 20px;
+}
+
+.aura-modal-info-box {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.aura-modal-info-box--primary {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+}
+
+.aura-modal-info-box--danger {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+.aura-modal-info-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.aura-modal-info-box--primary .aura-modal-info-icon {
+    color: #2563eb;
+}
+
+.aura-modal-info-box--danger .aura-modal-info-icon {
+    color: #dc2626;
+}
+
+.aura-modal-info-title {
+    margin: 0 0 6px 0;
+    font-weight: 700;
+    font-size: 13.5px;
+}
+
+.aura-modal-info-box--primary .aura-modal-info-title {
+    color: #1e3a5f;
+}
+
+.aura-modal-info-box--danger .aura-modal-info-title {
+    color: #991b1b;
+}
+
+.aura-modal-info-summary {
+    font-size: 13px;
+    color: #334155;
+}
+
+.aura-modal-field {
+    margin-top: 12px;
+}
+
+.aura-modal-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+}
+
+.aura-modal-required {
+    color: #dc2626;
+    margin-left: 2px;
+}
+
+.aura-modal-textarea {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    padding: 8px 10px;
+    font-size: 13px;
+    box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: #ffffff;
+    color: #1e293b;
+}
+
+.aura-modal-textarea:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.aura-char-count-text {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.aura-modal-footer {
+    background: #f8fafc;
+    padding: 14px 20px;
+    text-align: right;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.aura-btn-modal--approve {
+    background: #10b981 !important;
+    border-color: #059669 !important;
+}
+
+.aura-btn-modal--approve:hover {
+    background: #059669 !important;
+}
+
+.aura-btn-modal--danger {
+    background: #dc2626 !important;
+    border-color: #b91c1c !important;
+}
+
+.aura-btn-modal--danger:hover:not(:disabled) {
+    background: #b91c1c !important;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN (BREAKPOINTS)
+======================================== */
+
+/* Pantallas medianas y Laptops con sidebar de WP (<= 1360px) */
+@media (max-width: 1360px) {
+    .aura-pending-table-card .wp-list-table th.column-created_at,
+    .aura-pending-table-card .wp-list-table td.column-created_at {
+        display: none !important;
+    }
+}
+
+/* Laptops y pantallas intermedias (<= 1200px) */
+@media (max-width: 1200px) {
+    .aura-pending-table-card .wp-list-table th.column-created_by,
+    .aura-pending-table-card .wp-list-table td.column-created_by {
+        display: none !important;
+    }
+
+    .aura-child-sections-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Tablets (<= 1024px) */
+@media (max-width: 1024px) {
+    .aura-col-tablet-hidden,
+    .column-created_at,
+    .column-created_by,
+    .column-category {
+        display: none !important;
+    }
+
+    .filters-inline .fi-group {
+        flex: 1 1 calc(50% - 14px);
+    }
+
+    .aura-table-responsive-wrap {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .aura-pending-table-card .wp-list-table {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: auto !important;
+    }
+
+    .aura-child-sections-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+}
+
+/* Móviles y Smartphones (<= 768px) - ZERO HORIZONTAL SCROLL */
+@media (max-width: 768px) {
+    /* Ocultamiento estricto de columnas secundarias y extensas en fila principal móvil */
+    .aura-col-mobile-hidden,
+    .column-cb,
+    th.check-column,
+    td.check-column,
+    .column-type,
+    th.column-type,
+    td.column-type,
+    .column-description,
+    th.column-description,
+    td.column-description,
+    .column-category,
+    th.column-category,
+    td.column-category,
+    .column-created_by,
+    th.column-created_by,
+    td.column-created_by,
+    .column-created_at,
+    th.column-created_at,
+    td.column-created_at,
+    .column-acciones,
+    th.column-acciones,
+    td.column-acciones,
+    .column-actions,
+    th.column-actions,
+    td.column-actions {
+        display: none !important;
+        width: 0 !important;
+        max-width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+    }
+
+    /* Adaptación fluida del contenedor sin desbordamiento */
+    .aura-app-wrapper,
+    .aura-pending-transactions-page {
+        padding: 8px 4px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    .aura-page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        padding: 16px !important;
+        gap: 14px !important;
+    }
+
+    .aura-page-header__badges {
+        width: 100% !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        justify-content: flex-start !important;
+    }
+
+    .aura-page-header__badges .aura-badge,
+    .aura-page-header__badges .aura-print-action-btn {
+        flex: 1 1 auto !important;
+        justify-content: center !important;
+    }
+
+    .aura-kpi-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .aura-stat-card {
+        padding: 12px 14px !important;
+        gap: 12px !important;
+    }
+
+    .aura-navbar {
+        padding: 6px 8px !important;
+        gap: 6px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .aura-tab-btn {
+        padding: 8px 12px !important;
+        font-size: 12.5px !important;
+    }
+
+    .aura-filters-bar__header {
+        padding: 10px 12px;
+    }
+
+    .filters-inline {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .fi-group {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .fi-range {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .fi-range-sep {
+        display: none;
+    }
+
+    .fi-actions {
+        width: 100%;
+    }
+
+    .fi-actions button {
+        width: 100%;
+        justify-content: center;
+        height: 40px;
+    }
+
+    /* Tarjeta de tabla y ajuste 100% sin scroll inferior */
+    .aura-pending-table-card {
+        padding: 8px 6px !important;
+        border-radius: 8px;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    .aura-table-responsive-wrap {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important; /* Cero barra de scroll inferior */
+        box-sizing: border-box !important;
+    }
+
+    .aura-pending-table-card .wp-list-table {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: auto !important;
+    }
+
+    /* 3 Columnas esenciales visibles en móvil: #, Fecha, Monto */
+    .column-id,
+    th.column-id,
+    td.column-id {
+        display: table-cell !important;
+        width: auto !important;
+        padding: 8px 6px !important;
+        vertical-align: middle !important;
+    }
+
+    .column-id .aura-id-cell-wrapper {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    .column-id .aura-row-toggle {
+        margin-right: 2px !important;
+        width: 22px !important;
+        height: 22px !important;
+    }
+
+    .column-transaction_date,
+    th.column-transaction_date,
+    td.column-transaction_date {
+        display: table-cell !important;
+        width: 95px !important;
+        max-width: 105px !important;
+        padding: 8px 4px !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        font-size: 11.5px !important;
+        vertical-align: middle !important;
+    }
+
+    .column-amount,
+    th.column-amount,
+    td.column-amount {
+        display: table-cell !important;
+        width: 95px !important;
+        max-width: 105px !important;
+        padding: 8px 6px !important;
+        text-align: right !important;
+        white-space: nowrap !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        vertical-align: middle !important;
+    }
+
+    .aura-pending-table-card .wp-list-table thead th {
+        padding: 10px 6px !important;
+        font-size: 11px !important;
+    }
+
+    /* 🌟 Fila Hija Expandible (Child Row) 100% adaptada al Viewport */
+    .aura-child-row-cell {
+        padding: 0 2px 10px 2px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-child-card-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        margin: 4px 0 0 0 !important;
+    }
+
+    .aura-child-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 12px 10px !important;
+        border-radius: 8px !important;
+    }
+
+    .aura-child-hero-bar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-child-hero-left {
+        width: 100% !important;
+        gap: 8px !important;
+    }
+
+    .aura-child-hero-title {
+        font-size: 13px !important;
+        line-height: 1.35 !important;
+    }
+
+    .aura-child-hero-right {
+        width: 100% !important;
+    }
+
+    .aura-child-amount-card {
+        text-align: left !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background: #f8fafc;
+        padding: 8px 10px !important;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .aura-child-sections-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-child-subcard {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 10px 10px !important;
+    }
+
+    .aura-child-meta-item {
+        font-size: 11.5px !important;
+    }
+
+    .aura-child-action-dock {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-action-dock-left,
+    .aura-action-dock-right {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .aura-btn-dock {
+        width: 100% !important;
+        justify-content: center !important;
+        height: 38px !important;
+        font-size: 12.5px !important;
+    }
+
+    .aura-modal-content {
+        width: 95%;
+        margin: 15px auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .aura-modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .aura-modal-footer button {
+        width: 100%;
+        justify-content: center;
+        height: 40px;
+    }
+
+    /* Corrección de Tablenav y Paginación en Móvil (Cero superposición / Captura 2) */
+    .aura-pending-transactions-page .tablenav,
+    .aura-pending-table-card .tablenav,
+    .wrap .tablenav {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 12px 10px !important;
+        height: auto !important;
+        min-height: unset !important;
+        box-sizing: border-box !important;
+        float: none !important;
+        clear: both !important;
+    }
+
+    .aura-pending-table-card .tablenav .alignleft.actions,
+    .aura-pending-table-card .tablenav .bulkactions {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        float: none !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-pending-table-card .tablenav .bulkactions select {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: 38px !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-pending-table-card .tablenav .bulkactions .button.action,
+    .aura-pending-table-card #doaction,
+    .aura-pending-table-card #doaction2 {
+        flex-shrink: 0 !important;
+        height: 38px !important;
+        padding: 0 14px !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-pending-table-card .tablenav .tablenav-pages {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        float: none !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-pending-table-card .tablenav .tablenav-pages .displaying-num {
+        font-size: 11.5px !important;
+        padding: 3px 10px !important;
+    }
+
+    .aura-pending-table-card .tablenav .pagination-links {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    .aura-pending-table-card .tablenav .pagination-links .button,
+    .aura-pending-table-card .tablenav .tablenav-pages-navspan {
+        min-width: 32px !important;
+        height: 32px !important;
+        line-height: 30px !important;
+        font-size: 13px !important;
+    }
+}
+
+/* Smartphones estrechos (<= 480px) */
+@media (max-width: 480px) {
+    .aura-pending-transactions-page .wp-heading-inline {
+        font-size: 1.25rem;
+    }
+
+    .aura-pending-hero__main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .aura-pending-table-card .wp-list-table thead th,
+    .aura-pending-table-card .wp-list-table tbody td {
+        padding: 8px 3px !important;
+        font-size: 11.5px !important;
+    }
+
+    .column-type {
+        width: 68px !important;
+        max-width: 72px !important;
+    }
+
+    .column-amount {
+        width: 75px !important;
+        max-width: 80px !important;
+        font-size: 11px !important;
+    }
+
+    .aura-tooltip-box {
+        max-width: 200px;
+        min-width: 150px;
+        font-size: 11px;
+    }
+}
+
+/* ========================================
+   SOPORTE GLOBAL MODO OSCURO (DARK MODE)
+======================================== */
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-transactions-page,
+html.wp-dark-mode-active .aura-pending-transactions-page,
+body.wp-dark-mode-active .aura-pending-transactions-page,
+body.aura-dark-mode .aura-pending-transactions-page,
+body[data-theme="dark"] .aura-pending-transactions-page,
+[data-theme="dark"] .aura-pending-transactions-page,
+body.admin-color-midnight .aura-pending-transactions-page,
+body.admin-color-coffee .aura-pending-transactions-page {
+    color: #f8fafc;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-hero,
+html[data-wp-dark-mode-scheme="dark"] .aura-filters-bar,
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-table-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-empty-state,
+html.wp-dark-mode-active .aura-pending-hero,
+html.wp-dark-mode-active .aura-filters-bar,
+html.wp-dark-mode-active .aura-pending-table-card,
+html.wp-dark-mode-active .aura-child-card,
+html.wp-dark-mode-active .aura-empty-state,
+body.aura-dark-mode .aura-pending-hero,
+body.aura-dark-mode .aura-filters-bar,
+body.aura-dark-mode .aura-pending-table-card,
+body.aura-dark-mode .aura-child-card,
+body.aura-dark-mode .aura-empty-state,
+[data-theme="dark"] .aura-pending-hero,
+[data-theme="dark"] .aura-filters-bar,
+[data-theme="dark"] .aura-pending-table-card,
+[data-theme="dark"] .aura-child-card,
+[data-theme="dark"] .aura-empty-state,
+body.admin-color-midnight .aura-pending-hero,
+body.admin-color-midnight .aura-filters-bar,
+body.admin-color-midnight .aura-pending-table-card,
+body.admin-color-midnight .aura-child-card,
+body.admin-color-midnight .aura-empty-state,
+body.admin-color-coffee .aura-pending-hero,
+body.admin-color-coffee .aura-filters-bar,
+body.admin-color-coffee .aura-pending-table-card,
+body.admin-color-coffee .aura-child-card,
+body.admin-color-coffee .aura-empty-state {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .wp-heading-inline,
+html.wp-dark-mode-active .wp-heading-inline,
+body.aura-dark-mode .wp-heading-inline,
+[data-theme="dark"] .wp-heading-inline,
+body.admin-color-midnight .wp-heading-inline,
+body.admin-color-coffee .wp-heading-inline {
+    color: #ffffff !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-intro,
+html.wp-dark-mode-active .aura-pending-intro,
+body.aura-dark-mode .aura-pending-intro,
+[data-theme="dark"] .aura-pending-intro,
+body.admin-color-midnight .aura-pending-intro,
+body.admin-color-coffee .aura-pending-intro {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-hero__icon,
+html.wp-dark-mode-active .aura-pending-hero__icon,
+body.aura-dark-mode .aura-pending-hero__icon,
+[data-theme="dark"] .aura-pending-hero__icon,
+body.admin-color-midnight .aura-pending-hero__icon,
+body.admin-color-coffee .aura-pending-hero__icon {
+    background: #0f172a !important;
+    color: #60a5fa !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-inline-notice,
+html.wp-dark-mode-active .aura-pending-inline-notice,
+body.aura-dark-mode .aura-pending-inline-notice,
+[data-theme="dark"] .aura-pending-inline-notice,
+body.admin-color-midnight .aura-pending-inline-notice,
+body.admin-color-coffee .aura-pending-inline-notice {
+    background: #0f172a !important;
+    border-color: #1e3a5f !important;
+    border-left-color: #3b82f6 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-notice-text,
+html.wp-dark-mode-active .aura-pending-notice-text,
+body.aura-dark-mode .aura-pending-notice-text,
+[data-theme="dark"] .aura-pending-notice-text {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-notice-sub,
+html.wp-dark-mode-active .aura-pending-notice-sub,
+body.aura-dark-mode .aura-pending-notice-sub,
+[data-theme="dark"] .aura-pending-notice-sub {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-filters-toggle,
+html.wp-dark-mode-active .aura-filters-toggle,
+body.aura-dark-mode .aura-filters-toggle,
+[data-theme="dark"] .aura-filters-toggle {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .fi-group label,
+html.wp-dark-mode-active .fi-group label,
+body.aura-dark-mode .fi-group label,
+[data-theme="dark"] .fi-group label {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .fi-group select,
+html[data-wp-dark-mode-scheme="dark"] .fi-group input,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-textarea,
+html.wp-dark-mode-active .fi-group select,
+html.wp-dark-mode-active .fi-group input,
+html.wp-dark-mode-active .aura-modal-textarea,
+body.aura-dark-mode .fi-group select,
+body.aura-dark-mode .fi-group input,
+body.aura-dark-mode .aura-modal-textarea,
+[data-theme="dark"] .fi-group select,
+[data-theme="dark"] .fi-group input,
+[data-theme="dark"] .aura-modal-textarea,
+body.admin-color-midnight .fi-group select,
+body.admin-color-midnight .fi-group input,
+body.admin-color-coffee .fi-group select,
+body.admin-color-coffee .fi-group input {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+    color-scheme: dark !important;
+}
+
+/* Modo Oscuro: KPI Grid & Stat Cards */
+html[data-wp-dark-mode-scheme="dark"] .aura-kpi-grid .aura-stat-card,
+html.wp-dark-mode-active .aura-kpi-grid .aura-stat-card,
+body.aura-dark-mode .aura-kpi-grid .aura-stat-card,
+[data-theme="dark"] .aura-kpi-grid .aura-stat-card,
+body.admin-color-midnight .aura-kpi-grid .aura-stat-card,
+body.admin-color-coffee .aura-kpi-grid .aura-stat-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-kpi-grid .stat-label,
+html.wp-dark-mode-active .aura-kpi-grid .stat-label,
+body.aura-dark-mode .aura-kpi-grid .stat-label,
+[data-theme="dark"] .aura-kpi-grid .stat-label {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-kpi-grid .stat-sub,
+html.wp-dark-mode-active .aura-kpi-grid .stat-sub,
+body.aura-dark-mode .aura-kpi-grid .stat-sub,
+[data-theme="dark"] .aura-kpi-grid .stat-sub {
+    color: #64748b !important;
+}
+
+/* Modo Oscuro: Tabs Navbar */
+html[data-wp-dark-mode-scheme="dark"] .aura-navbar,
+html.wp-dark-mode-active .aura-navbar,
+body.aura-dark-mode .aura-navbar,
+[data-theme="dark"] .aura-navbar,
+body.admin-color-midnight .aura-navbar,
+body.admin-color-coffee .aura-navbar {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-tab-btn,
+html.wp-dark-mode-active .aura-tab-btn,
+body.aura-dark-mode .aura-tab-btn,
+[data-theme="dark"] .aura-tab-btn {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-tab-btn:hover,
+html.wp-dark-mode-active .aura-tab-btn:hover,
+body.aura-dark-mode .aura-tab-btn:hover,
+[data-theme="dark"] .aura-tab-btn:hover {
+    background: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-tab-btn.active,
+html[data-wp-dark-mode-scheme="dark"] .aura-tab-btn.is-active,
+html.wp-dark-mode-active .aura-tab-btn.active,
+html.wp-dark-mode-active .aura-tab-btn.is-active,
+body.aura-dark-mode .aura-tab-btn.active,
+body.aura-dark-mode .aura-tab-btn.is-active,
+[data-theme="dark"] .aura-tab-btn.active,
+[data-theme="dark"] .aura-tab-btn.is-active {
+    background: #2563eb !important;
+    color: #ffffff !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-tab-count-pill,
+html.wp-dark-mode-active .aura-tab-count-pill,
+body.aura-dark-mode .aura-tab-count-pill,
+[data-theme="dark"] .aura-tab-count-pill {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #cbd5e1 !important;
+}
+
+/* Modo Oscuro: Input Groups */
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group-text,
+html.wp-dark-mode-active .aura-input-group-text,
+body.aura-dark-mode .aura-input-group-text,
+[data-theme="dark"] .aura-input-group-text {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group:focus-within .aura-input-group-text,
+html.wp-dark-mode-active .aura-input-group:focus-within .aura-input-group-text,
+body.aura-dark-mode .aura-input-group:focus-within .aura-input-group-text,
+[data-theme="dark"] .aura-input-group:focus-within .aura-input-group-text {
+    background-color: #1e293b !important;
+    border-color: #3b82f6 !important;
+    color: #60a5fa !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group .currency-symbol,
+html.wp-dark-mode-active .aura-input-group .currency-symbol,
+body.aura-dark-mode .aura-input-group .currency-symbol,
+[data-theme="dark"] .aura-input-group .currency-symbol {
+    background-color: #064e3b !important;
+    border-color: #059669 !important;
+    color: #a7f3d0 !important;
+    border-left: 3px solid #10b981 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-table-card .wp-list-table thead th,
+html.wp-dark-mode-active .aura-pending-table-card .wp-list-table thead th,
+body.aura-dark-mode .aura-pending-table-card .wp-list-table thead th,
+[data-theme="dark"] .aura-pending-table-card .wp-list-table thead th,
+body.admin-color-midnight .aura-pending-table-card .wp-list-table thead th,
+body.admin-color-coffee .aura-pending-table-card .wp-list-table thead th {
+    background: #0f172a !important;
+    color: #ffffff !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-table-card .wp-list-table tbody tr,
+html.wp-dark-mode-active .aura-pending-table-card .wp-list-table tbody tr,
+body.aura-dark-mode .aura-pending-table-card .wp-list-table tbody tr,
+[data-theme="dark"] .aura-pending-table-card .wp-list-table tbody tr {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-table-card .wp-list-table tbody tr:nth-child(even),
+html.wp-dark-mode-active .aura-pending-table-card .wp-list-table tbody tr:nth-child(even),
+body.aura-dark-mode .aura-pending-table-card .wp-list-table tbody tr:nth-child(even),
+[data-theme="dark"] .aura-pending-table-card .wp-list-table tbody tr:nth-child(even) {
+    background: #0f172a !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-pending-table-card .wp-list-table tbody td,
+html.wp-dark-mode-active .aura-pending-table-card .wp-list-table tbody td,
+body.aura-dark-mode .aura-pending-table-card .wp-list-table tbody td,
+[data-theme="dark"] .aura-pending-table-card .wp-list-table tbody td {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-empty-state__title,
+html.wp-dark-mode-active .aura-empty-state__title,
+body.aura-dark-mode .aura-empty-state__title,
+[data-theme="dark"] .aura-empty-state__title {
+    color: #ffffff !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-empty-state__desc,
+html.wp-dark-mode-active .aura-empty-state__desc,
+body.aura-dark-mode .aura-empty-state__desc,
+[data-theme="dark"] .aura-empty-state__desc {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-child-subcard,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-amount-card,
+html.wp-dark-mode-active .aura-child-subcard,
+html.wp-dark-mode-active .aura-child-amount-card,
+body.aura-dark-mode .aura-child-subcard,
+body.aura-dark-mode .aura-child-amount-card,
+[data-theme="dark"] .aura-child-subcard,
+[data-theme="dark"] .aura-child-amount-card {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-child-hero-title,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-value,
+html.wp-dark-mode-active .aura-child-hero-title,
+html.wp-dark-mode-active .aura-child-meta-value,
+body.aura-dark-mode .aura-child-hero-title,
+body.aura-dark-mode .aura-child-meta-value,
+[data-theme="dark"] .aura-child-hero-title,
+[data-theme="dark"] .aura-child-meta-value {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-label,
+html.wp-dark-mode-active .aura-child-meta-label,
+body.aura-dark-mode .aura-child-meta-label,
+[data-theme="dark"] .aura-child-meta-label {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-subcard-header h4,
+html.wp-dark-mode-active .aura-subcard-header h4,
+body.aura-dark-mode .aura-subcard-header h4,
+[data-theme="dark"] .aura-subcard-header h4 {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-content,
+html.wp-dark-mode-active .aura-modal-content,
+body.aura-dark-mode .aura-modal-content,
+[data-theme="dark"] .aura-modal-content {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-info-box--primary,
+html.wp-dark-mode-active .aura-modal-info-box--primary,
+body.aura-dark-mode .aura-modal-info-box--primary,
+[data-theme="dark"] .aura-modal-info-box--primary {
+    background: #0f172a !important;
+    border-color: #1e3a5f !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-info-box--danger,
+html.wp-dark-mode-active .aura-modal-info-box--danger,
+body.aura-dark-mode .aura-modal-info-box--danger,
+[data-theme="dark"] .aura-modal-info-box--danger {
+    background: #0f172a !important;
+    border-color: #7f1d1d !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-info-title,
+html.wp-dark-mode-active .aura-modal-info-title,
+body.aura-dark-mode .aura-modal-info-title,
+[data-theme="dark"] .aura-modal-info-title {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-info-summary,
+html.wp-dark-mode-active .aura-modal-info-summary,
+body.aura-dark-mode .aura-modal-info-summary,
+[data-theme="dark"] .aura-modal-info-summary {
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-label,
+html.wp-dark-mode-active .aura-modal-label,
+body.aura-dark-mode .aura-modal-label,
+[data-theme="dark"] .aura-modal-label {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-footer,
+html.wp-dark-mode-active .aura-modal-footer,
+body.aura-dark-mode .aura-modal-footer,
+[data-theme="dark"] .aura-modal-footer {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+/* ========================================
+   MOTOR DE IMPRESIÓN OFICIAL (@media print)
+======================================== */
+
+.aura-print-header,
+.aura-print-footer {
+    display: none;
+}
+
+@page {
+    size: A4 portrait;
+    margin: 10mm 12mm 12mm 12mm;
+}
+
+@media print {
+    #adminmenuback,
+    #adminmenuwrap,
+    #adminmenu,
+    #wpadminbar,
+    #wpfooter,
+    .aura-pending-hero__actions,
+    .aura-filters-bar,
+    .aura-pending-views-bar,
+    .tablenav,
+    .row-actions,
+    .aura-view-transaction-btn,
+    .approve-transaction,
+    .reject-transaction,
+    .check-column,
+    .column-cb,
+    .column-acciones,
+    .aura-modal,
+    .notice,
+    .screen-reader-text,
+    .aura-tooltip-box,
+    .aura-help-icon,
+    .aura-row-toggle {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    html, body, #wpwrap, #wpcontent, #wpbody, #wpbody-content, .aura-app-wrapper, .aura-pending-transactions-page {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        float: none !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Membrete Corporativo Oficial */
+    .aura-print-header {
+        display: grid !important;
+        grid-template-columns: 1.1fr 1.2fr 1.1fr !important;
+        gap: 16px !important;
+        align-items: center !important;
+        border-bottom: 2.5px solid #1e3a5f !important;
+        padding-bottom: 12px !important;
+        margin-bottom: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .aura-print-header__brand-box {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    .aura-print-logo {
+        max-height: 48px !important;
+        width: auto !important;
+    }
+
+    .aura-print-header__brand-text h2 {
+        margin: 0 !important;
+        font-size: 13.5pt !important;
+        font-weight: 800 !important;
+        color: #1e3a5f !important;
+        line-height: 1.1 !important;
+    }
+
+    .aura-print-header__tagline {
+        font-size: 7.5pt !important;
+        color: #475569 !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        display: block !important;
+        margin-top: 2px !important;
+    }
+
+    .aura-print-header__report-card {
+        text-align: center !important;
+        border-left: 1px solid #cbd5e1 !important;
+        border-right: 1px solid #cbd5e1 !important;
+        padding: 0 10px !important;
+    }
+
+    .aura-print-header__report-card h1 {
+        margin: 0 0 4px 0 !important;
+        font-size: 12pt !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .aura-print-period-pill {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 20px !important;
+        padding: 2px 10px !important;
+        font-size: 8pt !important;
+        font-weight: 700 !important;
+        color: #1e3a5f !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .aura-print-header__meta-box {
+        text-align: right !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+    }
+
+    .aura-print-meta-item {
+        font-size: 8pt !important;
+        color: #475569 !important;
+    }
+
+    .aura-print-meta-value {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }
+
+    .aura-print-badge-official {
+        display: inline-block !important;
+        background: #fef3c7 !important;
+        color: #92400e !important;
+        border: 1px solid #fde68a !important;
+        border-radius: 4px !important;
+        padding: 1px 6px !important;
+        font-size: 7.5pt !important;
+        font-weight: 700 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .aura-pending-hero {
+        display: none !important;
+    }
+
+    .aura-pending-table-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .aura-pending-table-card .wp-list-table {
+        min-width: 100% !important;
+        width: 100% !important;
+        font-size: 8.5pt !important;
+    }
+
+    .aura-pending-table-card .wp-list-table thead th {
+        background: #1e3a5f !important;
+        color: #ffffff !important;
+        font-size: 8pt !important;
+        padding: 5px 8px !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .aura-pending-table-card .wp-list-table tbody tr td {
+        padding: 5px 6px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        font-size: 8pt !important;
+        color: #0f172a !important;
+    }
+
+    .aura-print-footer {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-top: 20px !important;
+        padding-top: 8px !important;
+        border-top: 1px solid #cbd5e1 !important;
+        font-size: 7.5pt !important;
+        color: #475569 !important;
+        page-break-inside: avoid !important;
+        width: 100% !important;
+    }
+}
+

@@ -1,0 +1,2689 @@
+/**
+ * CSS para el Formulario de Transacciones
+ * 
+ * @package AuraBusinessSuite
+ * @subpackage Financial
+ */
+
+/* ========================================
+   Contenedor Principal
+   ======================================== */
+.aura-transaction-form-wrap {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.aura-transaction-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 24px;
+    margin-top: 20px;
+    align-items: start;
+}
+
+.aura-transaction-context-note {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #dbe7ff;
+    background: #f5f9ff;
+    color: #1f3b63;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.aura-transaction-context-note strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.aura-transaction-form-wrap.type-income .aura-transaction-context-note {
+    border-color: #bfe3c3;
+    background: #f3fbf4;
+    color: #215c2c;
+}
+
+.aura-transaction-form-wrap.type-expense .aura-transaction-context-note {
+    border-color: #ffd5bf;
+    background: #fff7f2;
+    color: #8a3b12;
+}
+
+.aura-account-field.is-hidden-by-type {
+    opacity: 0.82;
+}
+
+.aura-account-field.is-active-field {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.aura-account-field.is-account-selected {
+    border-left: 3px solid #2f9e44;
+    padding-left: 10px;
+    background: #f7fff8;
+}
+
+.aura-account-field .description {
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+.aura-account-impact {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border: 1px solid #d9e6ff;
+    border-radius: 8px;
+    background: #f6f9ff;
+    display: grid;
+    gap: 3px;
+    font-size: 12px;
+    color: #1f3b63;
+}
+
+.aura-account-impact.has-impact strong {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.aura-account-impact__estimate.is-up {
+    color: #1f7a34;
+}
+
+.aura-account-impact__estimate.is-down {
+    color: #9f2e25;
+}
+
+@media (max-width: 1200px) {
+    .aura-transaction-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   Mensajes
+   ======================================== */
+#aura-transaction-messages {
+    margin-top: 20px;
+}
+
+.aura-validation-summary {
+    position: sticky;
+    top: 14px;
+    z-index: 25;
+    margin: 12px 0 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #d14e3a;
+    background: #fff4f2;
+    box-shadow: 0 8px 22px rgba(102, 25, 15, 0.12);
+}
+
+.aura-validation-summary.is-hidden {
+    display: none;
+}
+
+.aura-validation-summary.is-visible {
+    display: block;
+    animation: auraSummaryIn 0.22s ease;
+}
+
+.aura-validation-summary__title {
+    font-weight: 700;
+    color: #7c271d;
+    margin-bottom: 8px;
+}
+
+.aura-validation-summary ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.aura-validation-summary li {
+    margin: 0 0 4px;
+    color: #7c271d;
+}
+
+.aura-validation-link {
+    border: 0;
+    background: transparent;
+    color: #9a2f20;
+    cursor: pointer;
+    text-decoration: underline;
+    font: inherit;
+    padding: 0;
+}
+
+.aura-validation-link:hover,
+.aura-validation-link:focus {
+    color: #5e1b13;
+    outline: none;
+}
+
+/* ========================================
+   Formulario Principal
+   ======================================== */
+.aura-transaction-form-main {
+    background: #ffffff;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: all 0.3s ease;
+}
+
+.aura-transaction-form-main:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+}
+
+.aura-form-section {
+    margin-bottom: 35px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #f1f5f9;
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Solo ocultar inicialmente cuando el JS de animación está activo */
+.aura-transaction-form-wrap.aura-entrance-ready .aura-form-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: none;
+}
+
+.aura-transaction-form-wrap.aura-entrance-ready .aura-form-section.aura-section-visible {
+    animation: auraSectionIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--aura-section-delay, 0ms);
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Filas internas: escalonar después de que la sección aparece */
+.aura-transaction-form-wrap.aura-entrance-ready .aura-form-section.aura-section-visible .aura-form-row {
+    animation: auraRowIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--aura-section-delay, 0ms) + var(--aura-row-delay, 0ms) + 80ms);
+}
+
+/* Contenido del collapsible al abrirse */
+.aura-collapsible-content {
+    overflow: visible;
+}
+
+.aura-collapsible-content .aura-form-row {
+    opacity: 1;
+    transform: none;
+}
+
+.aura-collapsible-open .aura-collapsible-content .aura-form-row {
+    opacity: 1;
+    transform: none;
+}
+
+.aura-form-section:last-child {
+    border-bottom: none;
+}
+
+.aura-form-section h2 {
+    font-size: 19px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 24px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f1f5f9;
+    letter-spacing: -0.3px;
+}
+
+/* ========================================
+   Toggle Switch - Tipo de Transacción
+   ======================================== */
+.aura-transaction-type-selector {
+    text-align: center;
+    padding: 20px 0 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.aura-toggle-switch {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+    max-width: 520px;
+    min-height: 52px;
+    background: #f1f5f9;
+    border-radius: 16px;
+    padding: 5px;
+    box-sizing: border-box;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.aura-toggle-switch input[type="radio"] {
+    display: none;
+}
+
+.aura-toggle-switch label {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    z-index: 2;
+    color: #64748b;
+    border-radius: 12px;
+    padding: 6px 10px;
+    margin: 0;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.aura-toggle-switch label .dashicons {
+    margin-right: 5px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.aura-toggle-switch .toggle-slider {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: calc((100% - 10px) / 3);
+    height: calc(100% - 10px);
+    background: #ffffff;
+    border-radius: 12px;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0,0,0,0.05);
+    z-index: 1;
+}
+
+.aura-toggle-switch input#type-income:checked ~ .toggle-slider {
+    left: 5px;
+    background: #10b981;
+}
+
+.aura-toggle-switch input#type-expense:checked ~ .toggle-slider {
+    left: calc(5px + ((100% - 10px) / 3));
+    background: #ef4444;
+}
+
+.aura-toggle-switch input#type-capital:checked ~ .toggle-slider {
+    left: calc(5px + (((100% - 10px) / 3) * 2));
+    background: #f59e0b;
+}
+
+.aura-toggle-switch input#type-income:checked ~ .income-label,
+.aura-toggle-switch input#type-expense:checked ~ .expense-label,
+.aura-toggle-switch input#type-capital:checked ~ .capital-label {
+    color: #ffffff;
+}
+
+/* Estado del formulario según tipo */
+.type-income .preview-badge .badge-type {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+}
+
+.type-expense .preview-badge .badge-type {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.type-capital .preview-badge .badge-type {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.type-income .aura-amount-field {
+    border-left-color: #10b981;
+}
+
+.type-expense .aura-amount-field {
+    border-left-color: #ef4444;
+}
+
+.type-capital .aura-amount-field {
+    border-left-color: #f59e0b;
+}
+
+/* Mostrar/ocultar labels según tipo */
+.label-income,
+.label-expense,
+.label-capital {
+    display: none;
+}
+
+.type-income .label-income {
+    display: inline;
+}
+
+.type-expense .label-expense {
+    display: inline;
+}
+
+.type-capital .label-capital {
+    display: inline;
+}
+
+/* ========================================
+   Campos del Formulario
+   ======================================== */
+.aura-form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.aura-form-field {
+    position: relative;
+    flex: 1;
+}
+
+.aura-form-field.aura-field-100 {
+    width: 100%;
+}
+
+.aura-form-field.aura-field-50 {
+    width: calc(50% - 10px);
+}
+
+@media (max-width: 768px) {
+    .aura-form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .aura-form-field.aura-field-50 {
+        width: 100%;
+    }
+
+    .aura-validation-summary {
+        top: 8px;
+        margin-top: 10px;
+    }
+}
+.aura-form-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.aura-form-field label.required::after {
+    content: ' *';
+    color: #e74c3c;
+}
+
+.aura-form-field input[type="text"],
+.aura-form-field input[type="number"],
+.aura-form-field select,
+.aura-form-field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14.5px;
+    color: #0f172a;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+}
+
+.aura-form-field input[type="text"]:focus,
+.aura-form-field input[type="number"]:focus,
+.aura-form-field select:focus,
+.aura-form-field textarea:focus {
+    background: #ffffff;
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+.aura-form-field input.error,
+.aura-form-field select.error,
+.aura-form-field textarea.error,
+.aura-form-field .aura-field-invalid {
+    border-color: #d04b38;
+    box-shadow: 0 0 0 3px rgba(208, 75, 56, 0.12);
+}
+
+.aura-form-field .aura-field-success {
+    border-color: #1f9d65;
+    box-shadow: 0 0 0 3px rgba(31, 157, 101, 0.1);
+}
+
+.aura-form-field.has-success label {
+    color: #166a46;
+}
+
+.aura-form-field.has-error label {
+    color: #8f2b1e;
+}
+
+.aura-form-field.aura-shake {
+    animation: auraFieldShake 0.35s ease;
+}
+
+.aura-form-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* ==========================================================================
+   INPUT GROUPS PROFESIONALES (Estilo Bootstrap Prepend Addon)
+   ========================================================================== */
+.aura-input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aura-input-group-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    color: #64748b;
+    text-align: center;
+    white-space: nowrap;
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-right: none;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    flex-shrink: 0;
+    min-width: 42px;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.aura-input-group-text .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.aura-input-group-text.currency-symbol {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f766e;
+    background-color: #f0fdf4;
+    border-color: #cbd5e1;
+    border-left: 3px solid #10b981;
+    min-width: 44px;
+}
+
+.aura-input-group > input[type="text"],
+.aura-input-group > input[type="number"],
+.aura-input-group > select {
+    position: relative;
+    flex: 1 1 auto;
+    width: 1% !important;
+    min-width: 0;
+    margin: 0 !important;
+    height: 42px !important;
+    line-height: 40px !important;
+    padding: 0 12px !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-top-right-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    box-sizing: border-box !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+.aura-input-group.aura-amount-group > input[type="number"] {
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    color: #0f172a !important;
+}
+
+/* Focus Within State */
+.aura-input-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+    border-radius: 8px;
+}
+
+.aura-input-group:focus-within .aura-input-group-text {
+    background-color: #eff6ff !important;
+    border-color: #3b82f6 !important;
+    color: #2563eb !important;
+}
+
+.aura-input-group:focus-within .aura-input-group-text .dashicons {
+    color: #2563eb !important;
+}
+
+.aura-input-group:focus-within > input,
+.aura-input-group:focus-within > select {
+    border-color: #3b82f6 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    z-index: 2 !important;
+}
+
+.aura-input-group.aura-amount-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+}
+
+.aura-input-group.aura-amount-group:focus-within .aura-input-group-text {
+    background-color: #ecfdf5 !important;
+    border-color: #10b981 !important;
+    color: #059669 !important;
+}
+
+.aura-input-group.aura-amount-group:focus-within > input {
+    border-color: #10b981 !important;
+}
+
+/* Validación / Errores */
+.aura-form-field.has-error .aura-input-group,
+.aura-input-group.has-error {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.aura-form-field.has-error .aura-input-group-text,
+.aura-input-group.has-error .aura-input-group-text {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+    color: #ef4444 !important;
+}
+
+.aura-form-field.has-error .aura-input-group-text .dashicons,
+.aura-input-group.has-error .aura-input-group-text .dashicons {
+    color: #ef4444 !important;
+}
+
+.aura-form-field.has-error .aura-input-group > input,
+.aura-form-field.has-error .aura-input-group > select,
+.aura-input-group.has-error > input,
+.aura-input-group.has-error > select {
+    border-color: #ef4444 !important;
+}
+
+/* Contador de caracteres */
+.char-counter {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #999;
+}
+
+.char-counter.valid {
+    color: #27ae60;
+}
+
+/* ========================================
+   Upload de Archivos
+   ======================================== */
+.aura-file-upload {
+    position: relative;
+}
+
+.aura-file-upload input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.file-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.file-upload-label:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.file-upload-label .dashicons {
+    margin-right: 10px;
+    font-size: 24px;
+    color: #3498db;
+}
+
+.file-preview {
+    position: relative;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.aura-receipt-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    min-height: 48px;
+}
+
+.aura-receipt-thumb-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.aura-receipt-thumb-wrap .preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.aura-receipt-thumb-wrap .preview-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.aura-receipt-thumb-wrap .preview-icon-wrap .dashicons {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+}
+
+.aura-receipt-info {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.4;
+    text-align: left;
+}
+
+.aura-receipt-filename {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 380px;
+}
+
+.aura-receipt-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+    font-size: 11.5px;
+}
+
+.aura-receipt-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aura-receipt-badge.badge-drive {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.aura-receipt-badge.badge-local {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+.aura-receipt-type {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.aura-receipt-size {
+    color: #94a3b8;
+}
+
+.aura-receipt-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.aura-receipt-actions .aura-receipt-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    height: 32px;
+    line-height: 22px;
+}
+
+.aura-receipt-actions .aura-receipt-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 6px;
+    color: #ef4444 !important;
+    border-color: #fca5a5 !important;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.aura-receipt-actions .aura-receipt-remove-btn:hover {
+    background: #fef2f2 !important;
+    border-color: #ef4444 !important;
+    color: #b91c1c !important;
+}
+
+/* ========================================
+   Sección Colapsable
+   ======================================== */
+.aura-collapsible-header {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.aura-collapsible-header:hover {
+    color: #3498db;
+}
+
+.aura-collapsible-header .dashicons {
+    margin-right: 5px;
+    transition: transform 0.3s ease;
+}
+
+.aura-collapsible-content {
+    padding-top: 15px;
+}
+
+/* ========================================
+   Acciones del Formulario
+   ======================================== */
+.aura-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    margin-top: 35px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.aura-form-actions .primary-actions {
+    display: flex;
+    gap: 14px;
+}
+
+.aura-form-actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.aura-form-actions button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.aura-form-actions button.button-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border: none;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.aura-form-actions button.button-primary:hover {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+}
+
+.aura-form-actions button .dashicons {
+    margin-right: 0;
+}
+
+@media (max-width: 768px) {
+    .aura-form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .aura-form-actions .primary-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .aura-form-actions button {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   Panel de Vista Previa y Consejos (Sidebar)
+   ======================================== */
+.aura-transaction-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 32px;
+    align-self: start;
+    width: 100%;
+}
+
+.preview-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    overflow: hidden;
+    position: relative;
+    top: auto;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.preview-card:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+.preview-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 18px 24px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.3px;
+}
+
+.preview-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px;
+}
+
+.preview-badge {
+    margin-bottom: 4px;
+}
+
+.preview-badge .badge-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.preview-badge .badge-type.income {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+}
+
+.preview-badge .badge-type.expense {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+}
+
+.preview-badge .badge-type.capital {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+}
+
+.preview-badge .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.preview-amount {
+    font-size: 32px;
+    font-weight: 800;
+    color: #0f172a;
+    text-align: left;
+    padding: 4px 0 10px;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    word-break: break-all;
+}
+
+.preview-amount .amount-symbol {
+    font-size: 22px;
+    font-weight: 600;
+    color: #64748b;
+    margin-right: 2px;
+}
+
+.preview-category,
+.preview-description,
+.preview-date,
+.preview-tags,
+.preview-area,
+.preview-expense-category,
+.preview-payment,
+.preview-recipient,
+.preview-reference {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    color: #334155;
+}
+
+.preview-category .dashicons,
+.preview-description .dashicons,
+.preview-date .dashicons,
+.preview-tags .dashicons,
+.preview-area .dashicons,
+.preview-expense-category .dashicons,
+.preview-payment .dashicons,
+.preview-recipient .dashicons,
+.preview-reference .dashicons {
+    color: #94a3b8;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.preview-category .category-name,
+.preview-expense-category .expense-category-name,
+.preview-payment .payment-name,
+.preview-recipient .recipient-name,
+.preview-reference .reference-text,
+.preview-area .area-name {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.preview-description .description-text {
+    color: #475569;
+    font-style: italic;
+}
+
+.preview-tags .tags-list {
+    color: #2563eb;
+    font-weight: 500;
+}
+
+.preview-footer {
+    padding: 12px 20px;
+    border-top: 1px dashed #e2e8f0;
+    background: #f8fafc;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 11.5px;
+}
+
+/* ========================================
+   Tips y Ayuda
+   ======================================== */
+.preview-tips {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    position: relative;
+    top: auto;
+    width: 100%;
+}
+
+.preview-tips h4 {
+    margin: 0 0 14px 0;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.preview-tips h4 .dashicons {
+    color: #f59e0b;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.preview-tips ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.preview-tips li {
+    position: relative;
+    padding-left: 18px;
+    font-size: 12.5px;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.preview-tips li::before {
+    content: '•';
+    position: absolute;
+    left: 4px;
+    color: #f59e0b;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* ========================================
+   Animaciones
+   ======================================== */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes auraFieldShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-4px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(1px); }
+}
+
+@keyframes auraSummaryIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes auraSectionIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes auraRowIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes auraPreviewIn {
+    from {
+        opacity: 0;
+        transform: translateX(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.dashicons.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* ========================================
+   Utilidades
+   ======================================== */
+.notice {
+    position: relative;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border-left: 4px solid;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.notice-success {
+    border-left-color: #27ae60;
+    background: #d4edda;
+    color: #155724;
+}
+
+.notice-error {
+    border-left-color: #e74c3c;
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.notice-warning {
+    border-left-color: #f39c12;
+    background: #fff3cd;
+    color: #856404;
+}
+
+.notice-info {
+    border-left-color: #3498db;
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.notice p {
+    margin: 0;
+}
+
+.notice .button {
+    margin-top: 10px;
+    margin-right: 5px;
+}
+
+/* ========================================
+   UX Refresh (Fase UI)
+   ======================================== */
+.aura-transaction-form-wrap {
+    --aura-bg-soft: linear-gradient(140deg, #eef4fb 0%, #f6f9fc 45%, #f4f7f3 100%);
+    --aura-card: #ffffff;
+    --aura-text: #1e2630;
+    --aura-muted: #5f6b7a;
+    --aura-border: #d7dee8;
+    --aura-focus: #0a7ea4;
+    --aura-income: #1f9d65;
+    --aura-expense: #d04b38;
+    background: var(--aura-bg-soft);
+    border: 1px solid #dce6f2;
+    border-radius: 14px;
+}
+
+.aura-transaction-form-wrap .wp-heading-inline {
+    color: #16314a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aura-transaction-ux-head {
+    margin-top: 18px;
+    margin-bottom: 20px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: #16314a;
+    color: #fff;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+}
+
+.aura-transaction-ux-head h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #fff;
+}
+
+.aura-transaction-ux-head p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.aura-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.aura-progress-track {
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+}
+
+.aura-progress-fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #67d38a 0%, #2cc3d6 100%);
+    transition: width 0.3s ease;
+}
+
+.aura-transaction-form-main {
+    border: 1px solid #dde5ef;
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(20, 46, 74, 0.08);
+}
+
+.aura-form-section {
+    border-bottom: 1px solid #e6edf5;
+}
+
+.aura-form-section h2 {
+    color: var(--aura-text);
+}
+
+.aura-section-help {
+    margin: -8px 0 16px;
+    color: var(--aura-muted);
+    font-size: 13px;
+}
+
+.aura-form-field label {
+    color: #22374b;
+}
+
+.aura-form-field input[type="text"],
+.aura-form-field input[type="number"],
+.aura-form-field select,
+.aura-form-field textarea {
+    border: 1px solid var(--aura-border);
+    border-radius: 9px;
+    min-height: 42px;
+    background: #fff;
+}
+
+.aura-form-field textarea {
+    min-height: 95px;
+}
+
+.aura-form-field input[type="text"]:focus,
+.aura-form-field input[type="number"]:focus,
+.aura-form-field select:focus,
+.aura-form-field textarea:focus {
+    border-color: var(--aura-focus);
+    box-shadow: 0 0 0 3px rgba(10, 126, 164, 0.14);
+}
+
+.aura-form-field .description {
+    margin: 6px 0 0;
+    color: #65758a;
+    font-size: 12px;
+}
+
+.aura-amount-field {
+    border-color: var(--aura-border);
+    border-radius: 9px;
+}
+
+.type-income .aura-amount-field {
+    border-left-color: #10b981;
+}
+
+.type-expense .aura-amount-field {
+    border-left-color: #ef4444;
+}
+
+.type-capital .aura-amount-field {
+    border-left-color: #f59e0b;
+}
+
+.aura-form-actions {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to top, #fff 80%, rgba(255, 255, 255, 0.85));
+    padding: 16px 0 10px;
+    z-index: 10;
+}
+
+.aura-form-actions .button {
+    min-height: 40px;
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-form-actions .button.button-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+    transition: all 0.25s ease;
+}
+
+.aura-form-actions .button.button-primary:hover {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+.aura-transaction-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 32px;
+    align-self: start;
+    width: 100%;
+}
+
+.aura-transaction-preview .preview-card,
+.aura-transaction-preview .preview-tips {
+    border-radius: 16px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    opacity: 1;
+    transform: none;
+    position: relative !important;
+    top: auto !important;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.preview-card h3 {
+    border-bottom: 1px solid #e2e8f0;
+    color: #1e293b;
+    background: #f8fafc;
+}
+
+.preview-badge .badge-type.income {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+}
+
+.preview-badge .badge-type.expense {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+}
+
+.preview-badge .badge-type.capital {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+}
+
+.preview-amount {
+    color: #0f172a;
+    background: transparent;
+    padding: 6px 0 12px;
+}
+
+.preview-category,
+.preview-description,
+.preview-date,
+.preview-tags,
+.preview-area,
+.preview-expense-category,
+.preview-payment,
+.preview-recipient,
+.preview-reference {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #f1f5f9;
+    border-radius: 0;
+}
+
+.preview-description .description-text {
+    font-style: italic;
+    color: #475569;
+}
+
+@media (max-width: 1024px) {
+    .aura-transaction-ux-head {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .aura-transaction-form-wrap {
+        padding: 14px;
+    }
+
+    .aura-transaction-form-main {
+        padding: 18px;
+    }
+
+    .aura-toggle-switch {
+        width: 100%;
+        max-width: 360px;
+    }
+
+    .preview-card {
+        position: static;
+    }
+}
+
+/* ==========================================================================
+   TOOLTIPS INTERACTIVOS FLOTANTES (Gestionados por AuraUI #aura-global-tooltip)
+   ========================================================================== */
+.aura-tooltip-wrap {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    vertical-align: middle !important;
+}
+
+.aura-label-with-help {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    margin-bottom: 8px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+}
+
+.aura-label-with-help .aura-help-icon,
+.aura-help-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #3b82f6 !important;
+    cursor: help !important;
+    opacity: 0.85;
+    transition: transform 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.aura-label-with-help .aura-help-icon:hover,
+.aura-label-with-help .aura-help-icon:focus,
+.aura-help-icon:hover,
+.aura-help-icon:focus {
+    transform: scale(1.18) !important;
+    opacity: 1 !important;
+    color: #2563eb !important;
+    outline: none !important;
+}
+
+/* El elemento en el DOM sirve únicamente como plantilla de datos para AuraUI */
+.aura-tooltip-box {
+    display: none !important;
+}
+
+/* ==========================================================================
+   BANNER INFORMATIVO DE CONCEPTO DE VINCULACIÓN
+   ========================================================================== */
+.aura-concept-info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-top: 10px;
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #2563eb;
+    border-radius: 8px;
+    box-sizing: border-box;
+    animation: auraFadeSlideIn 0.25s ease;
+}
+
+@keyframes auraFadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aura-concept-banner-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #2563eb;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.aura-concept-banner-body {
+    flex: 1 1 auto;
+}
+
+.aura-concept-banner-body strong {
+    display: block;
+    color: #1e3a8a;
+    font-size: 13.5px;
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.aura-concept-banner-body p {
+    margin: 0 !important;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #1e40af;
+}
+
+/* Dark Mode para el Banner Informativo */
+html[data-wp-dark-mode-scheme="dark"] .aura-concept-info-banner,
+html.wp-dark-mode-active .aura-concept-info-banner,
+body.aura-dark-mode .aura-concept-info-banner,
+body.aura-dark-theme .aura-concept-info-banner,
+[data-theme="dark"] .aura-concept-info-banner {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+    border-color: #334155 !important;
+    border-left-color: #3b82f6 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-concept-banner-body strong,
+html.wp-dark-mode-active .aura-concept-banner-body strong,
+body.aura-dark-mode .aura-concept-banner-body strong,
+body.aura-dark-theme .aura-concept-banner-body strong,
+[data-theme="dark"] .aura-concept-banner-body strong {
+    color: #93c5fd !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-concept-banner-body p,
+html.wp-dark-mode-active .aura-concept-banner-body p,
+body.aura-dark-mode .aura-concept-banner-body p,
+body.aura-dark-theme .aura-concept-banner-body p,
+[data-theme="dark"] .aura-concept-banner-body p {
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-concept-banner-icon,
+html.wp-dark-mode-active .aura-concept-banner-icon,
+body.aura-dark-mode .aura-concept-banner-icon,
+body.aura-dark-theme .aura-concept-banner-icon,
+[data-theme="dark"] .aura-concept-banner-icon {
+    color: #60a5fa !important;
+}
+
+/* ============================================================
+   Selector y Creador Interactivo de Etiquetas (Tags)
+   ============================================================ */
+.aura-tags-manager-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.aura-tags-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    padding: 6px 10px;
+    min-height: 44px;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.aura-tags-input-container:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.aura-selected-tags-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.aura-selected-tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    animation: auraTagPop 0.15s ease-out;
+}
+
+@keyframes auraTagPop {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.aura-selected-tag-chip .chip-hash {
+    color: #3b82f6;
+    font-weight: 800;
+}
+
+.aura-selected-tag-chip .btn-remove-tag {
+    background: transparent;
+    border: none;
+    color: #3b82f6;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0 0 0 4px;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: color 0.15s ease;
+}
+
+.aura-selected-tag-chip .btn-remove-tag:hover {
+    color: #dc2626;
+}
+
+.aura-tag-input-inline-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 220px;
+}
+
+.aura-tag-inline-field {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 4px 6px !important;
+    font-size: 13px !important;
+    color: #1e293b !important;
+    flex: 1 !important;
+    min-width: 140px !important;
+    height: auto !important;
+    margin: 0 !important;
+}
+
+.aura-btn-add-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.aura-btn-add-tag:hover {
+    background: #2563eb;
+    border-color: #1d4ed8;
+    color: #ffffff;
+}
+
+.aura-btn-add-tag .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* Panel de Sugerencias y Catálogo Rápido */
+.aura-tags-suggestions-panel {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aura-tags-suggestions-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.aura-tags-cloud-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.aura-tag-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.aura-tag-pill-btn:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.aura-tag-pill-btn.is-selected {
+    background: #2563eb;
+    border-color: #1d4ed8;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.aura-tag-pill-btn .tag-hash {
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+.aura-tag-pill-btn.is-selected .tag-hash {
+    color: #93c5fd;
+}
+
+.aura-tag-pill-btn .tag-cnt {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 1px 5px;
+    margin-left: 2px;
+}
+
+.aura-tag-pill-btn.is-selected .tag-cnt {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+/* Modo Oscuro para el Selector de Tags */
+html[data-wp-dark-mode-scheme="dark"] .aura-tags-input-container,
+body.aura-dark-mode .aura-tags-input-container,
+body[data-theme="dark"] .aura-tags-input-container {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-tag-inline-field,
+body.aura-dark-mode .aura-tag-inline-field,
+body[data-theme="dark"] .aura-tag-inline-field {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-selected-tag-chip,
+body.aura-dark-mode .aura-selected-tag-chip,
+body[data-theme="dark"] .aura-selected-tag-chip {
+    background: rgba(37, 99, 235, 0.25) !important;
+    border-color: rgba(59, 130, 246, 0.4) !important;
+    color: #93c5fd !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-tags-suggestions-panel,
+body.aura-dark-mode .aura-tags-suggestions-panel,
+body[data-theme="dark"] .aura-tags-suggestions-panel {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-tag-pill-btn,
+body.aura-dark-mode .aura-tag-pill-btn,
+body[data-theme="dark"] .aura-tag-pill-btn {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-tag-pill-btn:hover,
+body.aura-dark-mode .aura-tag-pill-btn:hover,
+body[data-theme="dark"] .aura-tag-pill-btn:hover {
+    background: #334155 !important;
+    border-color: #64748b !important;
+    color: #ffffff !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-tag-pill-btn.is-selected,
+body.aura-dark-mode .aura-tag-pill-btn.is-selected,
+body[data-theme="dark"] .aura-tag-pill-btn.is-selected {
+    background: #2563eb !important;
+    border-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-btn-add-tag,
+html.wp-dark-mode-active .aura-btn-add-tag,
+body.wp-dark-mode-active .aura-btn-add-tag,
+body.aura-dark-mode .aura-btn-add-tag,
+body[data-theme="dark"] .aura-btn-add-tag,
+[data-theme="dark"] .aura-btn-add-tag,
+body.admin-color-midnight .aura-btn-add-tag,
+body.admin-color-coffee .aura-btn-add-tag {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+/* ==========================================================================
+   MODO OSCURO GLOBAL — COMPONENTES DE NUEVA TRANSACCIÓN (PROMPT MAESTRO)
+   ========================================================================== */
+
+/* 1. Contenedores y Estructura Principal */
+html[data-wp-dark-mode-scheme="dark"] .aura-transaction-form-wrap,
+html.wp-dark-mode-active .aura-transaction-form-wrap,
+body.wp-dark-mode-active .aura-transaction-form-wrap,
+body.aura-dark-mode .aura-transaction-form-wrap,
+body[data-theme="dark"] .aura-transaction-form-wrap,
+[data-theme="dark"] .aura-transaction-form-wrap,
+body.admin-color-midnight .aura-transaction-form-wrap,
+body.admin-color-coffee .aura-transaction-form-wrap {
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-transaction-form-wrap .wp-heading-inline,
+html.wp-dark-mode-active .aura-transaction-form-wrap .wp-heading-inline,
+body.wp-dark-mode-active .aura-transaction-form-wrap .wp-heading-inline,
+body.aura-dark-mode .aura-transaction-form-wrap .wp-heading-inline,
+body[data-theme="dark"] .aura-transaction-form-wrap .wp-heading-inline,
+[data-theme="dark"] .aura-transaction-form-wrap .wp-heading-inline,
+body.admin-color-midnight .aura-transaction-form-wrap .wp-heading-inline,
+body.admin-color-coffee .aura-transaction-form-wrap .wp-heading-inline {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-transaction-ux-head,
+html.wp-dark-mode-active .aura-transaction-ux-head,
+body.wp-dark-mode-active .aura-transaction-ux-head,
+body.aura-dark-mode .aura-transaction-ux-head,
+body[data-theme="dark"] .aura-transaction-ux-head,
+[data-theme="dark"] .aura-transaction-ux-head,
+body.admin-color-midnight .aura-transaction-ux-head,
+body.admin-color-coffee .aura-transaction-ux-head {
+    background: #0f172a !important;
+    border: 1px solid #334155 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-transaction-form-main,
+html.wp-dark-mode-active .aura-transaction-form-main,
+body.wp-dark-mode-active .aura-transaction-form-main,
+body.aura-dark-mode .aura-transaction-form-main,
+body[data-theme="dark"] .aura-transaction-form-main,
+[data-theme="dark"] .aura-transaction-form-main,
+body.admin-color-midnight .aura-transaction-form-main,
+body.admin-color-coffee .aura-transaction-form-main {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-form-section,
+html.wp-dark-mode-active .aura-form-section,
+body.wp-dark-mode-active .aura-form-section,
+body.aura-dark-mode .aura-form-section,
+body[data-theme="dark"] .aura-form-section,
+[data-theme="dark"] .aura-form-section,
+body.admin-color-midnight .aura-form-section,
+body.admin-color-coffee .aura-form-section {
+    border-bottom-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-form-section h2,
+html.wp-dark-mode-active .aura-form-section h2,
+body.wp-dark-mode-active .aura-form-section h2,
+body.aura-dark-mode .aura-form-section h2,
+body[data-theme="dark"] .aura-form-section h2,
+[data-theme="dark"] .aura-form-section h2,
+body.admin-color-midnight .aura-form-section h2,
+body.admin-color-coffee .aura-form-section h2 {
+    color: #f8fafc !important;
+    border-bottom-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-section-help,
+html.wp-dark-mode-active .aura-section-help,
+body.wp-dark-mode-active .aura-section-help,
+body.aura-dark-mode .aura-section-help,
+body[data-theme="dark"] .aura-section-help,
+[data-theme="dark"] .aura-section-help,
+body.admin-color-midnight .aura-section-help,
+body.admin-color-coffee .aura-section-help {
+    color: #94a3b8 !important;
+}
+
+/* 2. Selector de Tipo de Transacción (3 Vías) */
+html[data-wp-dark-mode-scheme="dark"] .aura-toggle-switch,
+html.wp-dark-mode-active .aura-toggle-switch,
+body.wp-dark-mode-active .aura-toggle-switch,
+body.aura-dark-mode .aura-toggle-switch,
+body[data-theme="dark"] .aura-toggle-switch,
+[data-theme="dark"] .aura-toggle-switch,
+body.admin-color-midnight .aura-toggle-switch,
+body.admin-color-coffee .aura-toggle-switch {
+    background: #0f172a !important;
+    border: 1px solid #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-toggle-switch label,
+html.wp-dark-mode-active .aura-toggle-switch label,
+body.wp-dark-mode-active .aura-toggle-switch label,
+body.aura-dark-mode .aura-toggle-switch label,
+body[data-theme="dark"] .aura-toggle-switch label,
+[data-theme="dark"] .aura-toggle-switch label,
+body.admin-color-midnight .aura-toggle-switch label,
+body.admin-color-coffee .aura-toggle-switch label {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-toggle-switch input#type-income:checked ~ .income-label,
+html[data-wp-dark-mode-scheme="dark"] .aura-toggle-switch input#type-expense:checked ~ .expense-label,
+html[data-wp-dark-mode-scheme="dark"] .aura-toggle-switch input#type-capital:checked ~ .capital-label,
+html.wp-dark-mode-active .aura-toggle-switch input#type-income:checked ~ .income-label,
+html.wp-dark-mode-active .aura-toggle-switch input#type-expense:checked ~ .expense-label,
+html.wp-dark-mode-active .aura-toggle-switch input#type-capital:checked ~ .capital-label,
+body.aura-dark-mode .aura-toggle-switch input#type-income:checked ~ .income-label,
+body.aura-dark-mode .aura-toggle-switch input#type-expense:checked ~ .expense-label,
+body.aura-dark-mode .aura-toggle-switch input#type-capital:checked ~ .capital-label,
+body[data-theme="dark"] .aura-toggle-switch input#type-income:checked ~ .income-label,
+body[data-theme="dark"] .aura-toggle-switch input#type-expense:checked ~ .expense-label,
+body[data-theme="dark"] .aura-toggle-switch input#type-capital:checked ~ .capital-label,
+[data-theme="dark"] .aura-toggle-switch input#type-income:checked ~ .income-label,
+[data-theme="dark"] .aura-toggle-switch input#type-expense:checked ~ .expense-label,
+[data-theme="dark"] .aura-toggle-switch input#type-capital:checked ~ .capital-label {
+    color: #ffffff !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-capital-notice,
+html.wp-dark-mode-active #aura-capital-notice,
+body.wp-dark-mode-active #aura-capital-notice,
+body.aura-dark-mode #aura-capital-notice,
+body[data-theme="dark"] #aura-capital-notice,
+[data-theme="dark"] #aura-capital-notice,
+body.admin-color-midnight #aura-capital-notice,
+body.admin-color-coffee #aura-capital-notice {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(180, 83, 9, 0.18)) !important;
+    border-left: 4px solid #f59e0b !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-capital-notice strong,
+html.wp-dark-mode-active #aura-capital-notice strong,
+body.aura-dark-mode #aura-capital-notice strong,
+body[data-theme="dark"] #aura-capital-notice strong,
+[data-theme="dark"] #aura-capital-notice strong {
+    color: #fcd34d !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-capital-notice p,
+html.wp-dark-mode-active #aura-capital-notice p,
+body.aura-dark-mode #aura-capital-notice p,
+body[data-theme="dark"] #aura-capital-notice p,
+[data-theme="dark"] #aura-capital-notice p {
+    color: #cbd5e1 !important;
+}
+
+/* 3. Inputs, Selects, Labels y Ayudas Contextuales */
+html[data-wp-dark-mode-scheme="dark"] .aura-form-field label,
+html[data-wp-dark-mode-scheme="dark"] .aura-label-with-help,
+html.wp-dark-mode-active .aura-form-field label,
+html.wp-dark-mode-active .aura-label-with-help,
+body.wp-dark-mode-active .aura-form-field label,
+body.wp-dark-mode-active .aura-label-with-help,
+body.aura-dark-mode .aura-form-field label,
+body.aura-dark-mode .aura-label-with-help,
+body[data-theme="dark"] .aura-form-field label,
+body[data-theme="dark"] .aura-label-with-help,
+[data-theme="dark"] .aura-form-field label,
+[data-theme="dark"] .aura-label-with-help,
+body.admin-color-midnight .aura-form-field label,
+body.admin-color-midnight .aura-label-with-help,
+body.admin-color-coffee .aura-form-field label,
+body.admin-color-coffee .aura-label-with-help {
+    color: #f1f5f9 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-form-field input[type="text"],
+html[data-wp-dark-mode-scheme="dark"] .aura-form-field input[type="number"],
+html[data-wp-dark-mode-scheme="dark"] .aura-form-field select,
+html[data-wp-dark-mode-scheme="dark"] .aura-form-field textarea,
+html.wp-dark-mode-active .aura-form-field input[type="text"],
+html.wp-dark-mode-active .aura-form-field input[type="number"],
+html.wp-dark-mode-active .aura-form-field select,
+html.wp-dark-mode-active .aura-form-field textarea,
+body.wp-dark-mode-active .aura-form-field input[type="text"],
+body.wp-dark-mode-active .aura-form-field input[type="number"],
+body.wp-dark-mode-active .aura-form-field select,
+body.wp-dark-mode-active .aura-form-field textarea,
+body.aura-dark-mode .aura-form-field input[type="text"],
+body.aura-dark-mode .aura-form-field input[type="number"],
+body.aura-dark-mode .aura-form-field select,
+body.aura-dark-mode .aura-form-field textarea,
+body[data-theme="dark"] .aura-form-field input[type="text"],
+body[data-theme="dark"] .aura-form-field input[type="number"],
+body[data-theme="dark"] .aura-form-field select,
+body[data-theme="dark"] .aura-form-field textarea,
+[data-theme="dark"] .aura-form-field input[type="text"],
+[data-theme="dark"] .aura-form-field input[type="number"],
+[data-theme="dark"] .aura-form-field select,
+[data-theme="dark"] .aura-form-field textarea,
+body.admin-color-midnight .aura-form-field input[type="text"],
+body.admin-color-midnight .aura-form-field input[type="number"],
+body.admin-color-midnight .aura-form-field select,
+body.admin-color-midnight .aura-form-field textarea,
+body.admin-color-coffee .aura-form-field input[type="text"],
+body.admin-color-coffee .aura-form-field input[type="number"],
+body.admin-color-coffee .aura-form-field select,
+body.admin-color-coffee .aura-form-field textarea {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+    color-scheme: dark !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-form-field input:focus,
+html[data-wp-dark-mode-scheme="dark"] .aura-form-field select:focus,
+html[data-wp-dark-mode-scheme="dark"] .aura-form-field textarea:focus,
+html.wp-dark-mode-active .aura-form-field input:focus,
+html.wp-dark-mode-active .aura-form-field select:focus,
+html.wp-dark-mode-active .aura-form-field textarea:focus,
+body.aura-dark-mode .aura-form-field input:focus,
+body.aura-dark-mode .aura-form-field select:focus,
+body.aura-dark-mode .aura-form-field textarea:focus,
+body[data-theme="dark"] .aura-form-field input:focus,
+body[data-theme="dark"] .aura-form-field select:focus,
+body[data-theme="dark"] .aura-form-field textarea:focus,
+[data-theme="dark"] .aura-form-field input:focus,
+[data-theme="dark"] .aura-form-field select:focus,
+[data-theme="dark"] .aura-form-field textarea:focus {
+    background: #0f172a !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group-text,
+html.wp-dark-mode-active .aura-input-group-text,
+body.wp-dark-mode-active .aura-input-group-text,
+body.aura-dark-mode .aura-input-group-text,
+body[data-theme="dark"] .aura-input-group-text,
+[data-theme="dark"] .aura-input-group-text,
+body.admin-color-midnight .aura-input-group-text,
+body.admin-color-coffee .aura-input-group-text {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group-text .dashicons,
+html.wp-dark-mode-active .aura-input-group-text .dashicons,
+body.aura-dark-mode .aura-input-group-text .dashicons,
+body[data-theme="dark"] .aura-input-group-text .dashicons,
+[data-theme="dark"] .aura-input-group-text .dashicons {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group-text.currency-symbol,
+html.wp-dark-mode-active .aura-input-group-text.currency-symbol,
+body.aura-dark-mode .aura-input-group-text.currency-symbol,
+body[data-theme="dark"] .aura-input-group-text.currency-symbol,
+[data-theme="dark"] .aura-input-group-text.currency-symbol {
+    background-color: rgba(16, 185, 129, 0.15) !important;
+    border-color: #334155 !important;
+    border-left: 3px solid #10b981 !important;
+    color: #6ee7b7 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group > input,
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group > select,
+html.wp-dark-mode-active .aura-input-group > input,
+html.wp-dark-mode-active .aura-input-group > select,
+body.wp-dark-mode-active .aura-input-group > input,
+body.wp-dark-mode-active .aura-input-group > select,
+body.aura-dark-mode .aura-input-group > input,
+body.aura-dark-mode .aura-input-group > select,
+body[data-theme="dark"] .aura-input-group > input,
+body[data-theme="dark"] .aura-input-group > select,
+[data-theme="dark"] .aura-input-group > input,
+[data-theme="dark"] .aura-input-group > select {
+    background-color: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group:focus-within,
+html.wp-dark-mode-active .aura-input-group:focus-within,
+body.aura-dark-mode .aura-input-group:focus-within,
+body[data-theme="dark"] .aura-input-group:focus-within,
+[data-theme="dark"] .aura-input-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group:focus-within .aura-input-group-text,
+html.wp-dark-mode-active .aura-input-group:focus-within .aura-input-group-text,
+body.aura-dark-mode .aura-input-group:focus-within .aura-input-group-text,
+body[data-theme="dark"] .aura-input-group:focus-within .aura-input-group-text,
+[data-theme="dark"] .aura-input-group:focus-within .aura-input-group-text {
+    background-color: #1e293b !important;
+    border-color: #3b82f6 !important;
+    color: #60a5fa !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group:focus-within .aura-input-group-text .dashicons,
+html.wp-dark-mode-active .aura-input-group:focus-within .aura-input-group-text .dashicons,
+body.aura-dark-mode .aura-input-group:focus-within .aura-input-group-text .dashicons,
+body[data-theme="dark"] .aura-input-group:focus-within .aura-input-group-text .dashicons,
+[data-theme="dark"] .aura-input-group:focus-within .aura-input-group-text .dashicons {
+    color: #60a5fa !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group:focus-within > input,
+html[data-wp-dark-mode-scheme="dark"] .aura-input-group:focus-within > select,
+html.wp-dark-mode-active .aura-input-group:focus-within > input,
+html.wp-dark-mode-active .aura-input-group:focus-within > select,
+body.aura-dark-mode .aura-input-group:focus-within > input,
+body.aura-dark-mode .aura-input-group:focus-within > select,
+body[data-theme="dark"] .aura-input-group:focus-within > input,
+body[data-theme="dark"] .aura-input-group:focus-within > select,
+[data-theme="dark"] .aura-input-group:focus-within > input,
+[data-theme="dark"] .aura-input-group:focus-within > select {
+    border-color: #3b82f6 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-form-field .description,
+html.wp-dark-mode-active .aura-form-field .description,
+body.aura-dark-mode .aura-form-field .description,
+body[data-theme="dark"] .aura-form-field .description,
+[data-theme="dark"] .aura-form-field .description {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .char-counter,
+html.wp-dark-mode-active .char-counter,
+body.aura-dark-mode .char-counter,
+body[data-theme="dark"] .char-counter,
+[data-theme="dark"] .char-counter {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #expense-category-desc-hint,
+html.wp-dark-mode-active #expense-category-desc-hint,
+body.aura-dark-mode #expense-category-desc-hint,
+body[data-theme="dark"] #expense-category-desc-hint,
+[data-theme="dark"] #expense-category-desc-hint {
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-left: 3px solid #10b981 !important;
+    color: #6ee7b7 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #expense-category-desc-hint .desc-text,
+html.wp-dark-mode-active #expense-category-desc-hint .desc-text,
+body.aura-dark-mode #expense-category-desc-hint .desc-text,
+body[data-theme="dark"] #expense-category-desc-hint .desc-text,
+[data-theme="dark"] #expense-category-desc-hint .desc-text {
+    color: #a7f3d0 !important;
+}
+
+/* 4. Cuentas e Impacto Contable */
+html[data-wp-dark-mode-scheme="dark"] .aura-account-impact,
+html.wp-dark-mode-active .aura-account-impact,
+body.aura-dark-mode .aura-account-impact,
+body[data-theme="dark"] .aura-account-impact,
+[data-theme="dark"] .aura-account-impact {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-account-field.is-account-selected,
+html.wp-dark-mode-active .aura-account-field.is-account-selected,
+body.aura-dark-mode .aura-account-field.is-account-selected,
+body[data-theme="dark"] .aura-account-field.is-account-selected,
+[data-theme="dark"] .aura-account-field.is-account-selected {
+    background: rgba(16, 185, 129, 0.08) !important;
+    border-left-color: #10b981 !important;
+}
+
+/* 5. Previsualización de Entidades (Terceros y Usuarios) */
+html[data-wp-dark-mode-scheme="dark"] .aura-entity-preview-card,
+html.wp-dark-mode-active .aura-entity-preview-card,
+body.aura-dark-mode .aura-entity-preview-card,
+body[data-theme="dark"] .aura-entity-preview-card,
+[data-theme="dark"] .aura-entity-preview-card {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-entity-preview-card .entity-name,
+html.wp-dark-mode-active .aura-entity-preview-card .entity-name,
+body.aura-dark-mode .aura-entity-preview-card .entity-name,
+body[data-theme="dark"] .aura-entity-preview-card .entity-name,
+[data-theme="dark"] .aura-entity-preview-card .entity-name {
+    color: #f8fafc !important;
+}
+
+/* 6. Subida de Archivos (File Upload) */
+html[data-wp-dark-mode-scheme="dark"] .file-upload-label,
+html.wp-dark-mode-active .file-upload-label,
+body.aura-dark-mode .file-upload-label,
+body[data-theme="dark"] .file-upload-label,
+[data-theme="dark"] .file-upload-label {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .file-upload-label:hover,
+html.wp-dark-mode-active .file-upload-label:hover,
+body.aura-dark-mode .file-upload-label:hover,
+body[data-theme="dark"] .file-upload-label:hover,
+[data-theme="dark"] .file-upload-label:hover {
+    background: #1e293b !important;
+    border-color: #3b82f6 !important;
+    color: #60a5fa !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .file-preview,
+html.wp-dark-mode-active .file-preview,
+body.aura-dark-mode .file-preview,
+body[data-theme="dark"] .file-preview,
+[data-theme="dark"] .file-preview {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-receipt-thumb-wrap,
+html.wp-dark-mode-active .aura-receipt-thumb-wrap,
+body.aura-dark-mode .aura-receipt-thumb-wrap,
+body[data-theme="dark"] .aura-receipt-thumb-wrap,
+[data-theme="dark"] .aura-receipt-thumb-wrap {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-receipt-filename,
+html.wp-dark-mode-active .aura-receipt-filename,
+body.aura-dark-mode .aura-receipt-filename,
+body[data-theme="dark"] .aura-receipt-filename,
+[data-theme="dark"] .aura-receipt-filename {
+    color: #f1f5f9 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-receipt-type,
+html.wp-dark-mode-active .aura-receipt-type,
+body.aura-dark-mode .aura-receipt-type,
+body[data-theme="dark"] .aura-receipt-type,
+[data-theme="dark"] .aura-receipt-type {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-receipt-size,
+html.wp-dark-mode-active .aura-receipt-size,
+body.aura-dark-mode .aura-receipt-size,
+body[data-theme="dark"] .aura-receipt-size,
+[data-theme="dark"] .aura-receipt-size {
+    color: #64748b !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-receipt-badge.badge-drive,
+html.wp-dark-mode-active .aura-receipt-badge.badge-drive,
+body.aura-dark-mode .aura-receipt-badge.badge-drive,
+body[data-theme="dark"] .aura-receipt-badge.badge-drive,
+[data-theme="dark"] .aura-receipt-badge.badge-drive {
+    background: rgba(37, 99, 235, 0.2) !important;
+    color: #93c5fd !important;
+    border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-receipt-badge.badge-local,
+html.wp-dark-mode-active .aura-receipt-badge.badge-local,
+body.aura-dark-mode .aura-receipt-badge.badge-local,
+body[data-theme="dark"] .aura-receipt-badge.badge-local,
+[data-theme="dark"] .aura-receipt-badge.badge-local {
+    background: #1e293b !important;
+    color: #cbd5e1 !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-receipt-actions .aura-receipt-remove-btn,
+html.wp-dark-mode-active .aura-receipt-actions .aura-receipt-remove-btn,
+body.aura-dark-mode .aura-receipt-actions .aura-receipt-remove-btn,
+body[data-theme="dark"] .aura-receipt-actions .aura-receipt-remove-btn,
+[data-theme="dark"] .aura-receipt-actions .aura-receipt-remove-btn {
+    background: #1e293b !important;
+    border-color: #7f1d1d !important;
+    color: #f87171 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-receipt-actions .aura-receipt-remove-btn:hover,
+html.wp-dark-mode-active .aura-receipt-actions .aura-receipt-remove-btn:hover,
+body.aura-dark-mode .aura-receipt-actions .aura-receipt-remove-btn:hover,
+body[data-theme="dark"] .aura-receipt-actions .aura-receipt-remove-btn:hover,
+[data-theme="dark"] .aura-receipt-actions .aura-receipt-remove-btn:hover {
+    background: #450a0a !important;
+    border-color: #ef4444 !important;
+    color: #fca5a5 !important;
+}
+
+/* 7. Barra de Acciones del Formulario */
+html[data-wp-dark-mode-scheme="dark"] .aura-form-actions,
+html.wp-dark-mode-active .aura-form-actions,
+body.wp-dark-mode-active .aura-form-actions,
+body.aura-dark-mode .aura-form-actions,
+body[data-theme="dark"] .aura-form-actions,
+[data-theme="dark"] .aura-form-actions,
+body.admin-color-midnight .aura-form-actions,
+body.admin-color-coffee .aura-form-actions {
+    background: linear-gradient(to top, #1e293b 85%, rgba(30, 41, 59, 0.85)) !important;
+    border-top-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-form-actions button:not(.button-primary),
+html.wp-dark-mode-active .aura-form-actions button:not(.button-primary),
+body.aura-dark-mode .aura-form-actions button:not(.button-primary),
+body[data-theme="dark"] .aura-form-actions button:not(.button-primary),
+[data-theme="dark"] .aura-form-actions button:not(.button-primary) {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-form-actions button:not(.button-primary):hover,
+html.wp-dark-mode-active .aura-form-actions button:not(.button-primary):hover,
+body.aura-dark-mode .aura-form-actions button:not(.button-primary):hover,
+body[data-theme="dark"] .aura-form-actions button:not(.button-primary):hover,
+[data-theme="dark"] .aura-form-actions button:not(.button-primary):hover {
+    background: #334155 !important;
+    color: #ffffff !important;
+}
+
+/* 8. Panel Lateral de Vista Previa (Sticky Preview Card) */
+html[data-wp-dark-mode-scheme="dark"] .preview-card,
+html.wp-dark-mode-active .preview-card,
+body.wp-dark-mode-active .preview-card,
+body.aura-dark-mode .preview-card,
+body[data-theme="dark"] .preview-card,
+[data-theme="dark"] .preview-card,
+body.admin-color-midnight .preview-card,
+body.admin-color-coffee .preview-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .preview-card h3,
+html.wp-dark-mode-active .preview-card h3,
+body.aura-dark-mode .preview-card h3,
+body[data-theme="dark"] .preview-card h3,
+[data-theme="dark"] .preview-card h3 {
+    background: #0f172a !important;
+    border-bottom-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .preview-amount,
+html.wp-dark-mode-active .preview-amount,
+body.aura-dark-mode .preview-amount,
+body[data-theme="dark"] .preview-amount,
+[data-theme="dark"] .preview-amount {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .preview-amount .amount-symbol,
+html.wp-dark-mode-active .preview-amount .amount-symbol,
+body.aura-dark-mode .preview-amount .amount-symbol,
+body[data-theme="dark"] .preview-amount .amount-symbol,
+[data-theme="dark"] .preview-amount .amount-symbol {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .preview-category,
+html[data-wp-dark-mode-scheme="dark"] .preview-description,
+html[data-wp-dark-mode-scheme="dark"] .preview-date,
+html[data-wp-dark-mode-scheme="dark"] .preview-tags,
+html[data-wp-dark-mode-scheme="dark"] .preview-area,
+html[data-wp-dark-mode-scheme="dark"] .preview-expense-category,
+html[data-wp-dark-mode-scheme="dark"] .preview-payment,
+html[data-wp-dark-mode-scheme="dark"] .preview-recipient,
+html[data-wp-dark-mode-scheme="dark"] .preview-reference,
+html.wp-dark-mode-active .preview-category,
+html.wp-dark-mode-active .preview-description,
+html.wp-dark-mode-active .preview-date,
+html.wp-dark-mode-active .preview-tags,
+html.wp-dark-mode-active .preview-area,
+html.wp-dark-mode-active .preview-expense-category,
+html.wp-dark-mode-active .preview-payment,
+html.wp-dark-mode-active .preview-recipient,
+html.wp-dark-mode-active .preview-reference,
+body.aura-dark-mode .preview-category,
+body.aura-dark-mode .preview-description,
+body.aura-dark-mode .preview-date,
+body.aura-dark-mode .preview-tags,
+body.aura-dark-mode .preview-area,
+body.aura-dark-mode .preview-expense-category,
+body.aura-dark-mode .preview-payment,
+body.aura-dark-mode .preview-recipient,
+body.aura-dark-mode .preview-reference,
+body[data-theme="dark"] .preview-category,
+body[data-theme="dark"] .preview-description,
+body[data-theme="dark"] .preview-date,
+body[data-theme="dark"] .preview-tags,
+body[data-theme="dark"] .preview-area,
+body[data-theme="dark"] .preview-expense-category,
+body[data-theme="dark"] .preview-payment,
+body[data-theme="dark"] .preview-recipient,
+body[data-theme="dark"] .preview-reference,
+[data-theme="dark"] .preview-category,
+[data-theme="dark"] .preview-description,
+[data-theme="dark"] .preview-date,
+[data-theme="dark"] .preview-tags,
+[data-theme="dark"] .preview-area,
+[data-theme="dark"] .preview-expense-category,
+[data-theme="dark"] .preview-payment,
+[data-theme="dark"] .preview-recipient,
+[data-theme="dark"] .preview-reference {
+    border-bottom-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .preview-category .category-name,
+html[data-wp-dark-mode-scheme="dark"] .preview-expense-category .expense-category-name,
+html[data-wp-dark-mode-scheme="dark"] .preview-payment .payment-name,
+html[data-wp-dark-mode-scheme="dark"] .preview-recipient .recipient-name,
+html[data-wp-dark-mode-scheme="dark"] .preview-reference .reference-text,
+html[data-wp-dark-mode-scheme="dark"] .preview-area .area-name,
+html.wp-dark-mode-active .preview-category .category-name,
+html.wp-dark-mode-active .preview-expense-category .expense-category-name,
+html.wp-dark-mode-active .preview-payment .payment-name,
+html.wp-dark-mode-active .preview-recipient .recipient-name,
+html.wp-dark-mode-active .preview-reference .reference-text,
+html.wp-dark-mode-active .preview-area .area-name,
+body.aura-dark-mode .preview-category .category-name,
+body.aura-dark-mode .preview-expense-category .expense-category-name,
+body.aura-dark-mode .preview-payment .payment-name,
+body.aura-dark-mode .preview-recipient .recipient-name,
+body.aura-dark-mode .preview-reference .reference-text,
+body.aura-dark-mode .preview-area .area-name,
+body[data-theme="dark"] .preview-category .category-name,
+body[data-theme="dark"] .preview-expense-category .expense-category-name,
+body[data-theme="dark"] .preview-payment .payment-name,
+body[data-theme="dark"] .preview-recipient .recipient-name,
+body[data-theme="dark"] .preview-reference .reference-text,
+body[data-theme="dark"] .preview-area .area-name,
+[data-theme="dark"] .preview-category .category-name,
+[data-theme="dark"] .preview-expense-category .expense-category-name,
+[data-theme="dark"] .preview-payment .payment-name,
+[data-theme="dark"] .preview-recipient .recipient-name,
+[data-theme="dark"] .preview-reference .reference-text,
+[data-theme="dark"] .preview-area .area-name {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .preview-description .description-text,
+html.wp-dark-mode-active .preview-description .description-text,
+body.aura-dark-mode .preview-description .description-text,
+body[data-theme="dark"] .preview-description .description-text,
+[data-theme="dark"] .preview-description .description-text {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .preview-footer,
+html.wp-dark-mode-active .preview-footer,
+body.aura-dark-mode .preview-footer,
+body[data-theme="dark"] .preview-footer,
+[data-theme="dark"] .preview-footer {
+    background: #0f172a !important;
+    border-top-color: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+/* 9. Tarjeta de Consejos (Tips) */
+html[data-wp-dark-mode-scheme="dark"] .preview-tips,
+html.wp-dark-mode-active .preview-tips,
+body.wp-dark-mode-active .preview-tips,
+body.aura-dark-mode .preview-tips,
+body[data-theme="dark"] .preview-tips,
+[data-theme="dark"] .preview-tips,
+body.admin-color-midnight .preview-tips,
+body.admin-color-coffee .preview-tips {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .preview-tips h4,
+html.wp-dark-mode-active .preview-tips h4,
+body.aura-dark-mode .preview-tips h4,
+body[data-theme="dark"] .preview-tips h4,
+[data-theme="dark"] .preview-tips h4 {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .preview-tips li,
+html.wp-dark-mode-active .preview-tips li,
+body.aura-dark-mode .preview-tips li,
+body[data-theme="dark"] .preview-tips li,
+[data-theme="dark"] .preview-tips li {
+    color: #cbd5e1 !important;
+}
+
+/* 10. Resumen de Validación y Notas */
+html[data-wp-dark-mode-scheme="dark"] .aura-validation-summary,
+html.wp-dark-mode-active .aura-validation-summary,
+body.aura-dark-mode .aura-validation-summary,
+body[data-theme="dark"] .aura-validation-summary,
+[data-theme="dark"] .aura-validation-summary {
+    background: rgba(127, 29, 29, 0.25) !important;
+    border-color: #ef4444 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-validation-summary__title,
+html[data-wp-dark-mode-scheme="dark"] .aura-validation-summary li,
+html.wp-dark-mode-active .aura-validation-summary__title,
+html.wp-dark-mode-active .aura-validation-summary li,
+body.aura-dark-mode .aura-validation-summary__title,
+body.aura-dark-mode .aura-validation-summary li,
+body[data-theme="dark"] .aura-validation-summary__title,
+body[data-theme="dark"] .aura-validation-summary li,
+[data-theme="dark"] .aura-validation-summary__title,
+[data-theme="dark"] .aura-validation-summary li {
+    color: #fca5a5 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-validation-link,
+html.wp-dark-mode-active .aura-validation-link,
+body.aura-dark-mode .aura-validation-link,
+body[data-theme="dark"] .aura-validation-link,
+[data-theme="dark"] .aura-validation-link {
+    color: #f87171 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-transaction-context-note,
+html.wp-dark-mode-active .aura-transaction-context-note,
+body.aura-dark-mode .aura-transaction-context-note,
+body[data-theme="dark"] .aura-transaction-context-note,
+[data-theme="dark"] .aura-transaction-context-note {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #93c5fd !important;
+}
+
+

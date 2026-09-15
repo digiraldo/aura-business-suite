@@ -1,0 +1,212 @@
+﻿transaction_date,transaction_type,category,amount,description,notes,payment_method,reference_number,source_account_id,destination_account_id,related_user_id,status
+02/01/2026,expense,Internet,1305.00,Internet Starlink,[Fondo de Operaciones],transfer,ENE26-R5,,,,approved
+06/01/2026,expense,Mantenimiento,201.00,M - Raid x 3 Bodega,[Fondo de Operaciones],transfer,ENE26-R7,,,,approved
+07/01/2026,income,Alojamiento Nacionales,2000.00,Ingreso - deposito de renta para junio - Iglesia Amishadai,[Ingresos],transfer,ENE26-R9,,,,approved
+08/01/2026,expense,Salario Limpieza,200.00,Sal Limp - Angelica limpieza primer piso CEM,[Fondo de Operaciones],transfer,ENE26-R11,,,,approved
+09/01/2026,expense,Productos Limpieza,1077.00,Pro Limp - productos limpieza Costco,[Fondo de Operaciones] F,transfer,ENE26-R13,,,,approved
+10/01/2026,expense,Mantenimiento,600.00,M - limpieza bomba de agua Juan Ramón,[Fondo de Operaciones],transfer,ENE26-R15,,,,approved
+10/01/2026,expense,Basura,100.00,Basura,[Fondo de Propiedad],transfer,ENE26-R17,,,,approved
+04/01/2026,expense,Relaciones Públicas,6192.00,RP - 2 vuelos para Comiban Volaris,[Fondo de Operaciones],transfer,ENE26-R19,,,,approved
+13/01/2026,expense,Seguro Vehiculo,1764.76,Seguro van MAPFRE,[Vehiculo] F,transfer,ENE26-R21,,,,approved
+13/01/2026,expense,Gastos Equipo,919.00,Gastos Equipo - comida Tokai,[Fondo de Operaciones],transfer,ENE26-R23,,,,approved
+14/01/2026,expense,Mantenimiento,1881.00,M - valvula eYSH,[Fondo de Operaciones] F,transfer,ENE26-R25,,,,approved
+14/01/2026,expense,Mantenimiento,510.47,M - valvula eYSH,[Fondo de Operaciones] F,transfer,ENE26-R27,,,,approved
+14/01/2026,expense,Gastos Equipo,1747.00,Gastos Equipo - comida,[Fondo de Operaciones],transfer,ENE26-R29,,,,approved
+15/01/2026,expense,Salario Limpieza,200.00,Sal Limp - limpieza Angelica primer piso CEM,[Fondo de Operaciones],transfer,ENE26-R31,,,,approved
+19/01/2026,expense,Impuestos Propiedad,4827.90,Impuestos propiedad,[Fondo de Propiedad],transfer,ENE26-R33,,,,approved
+19/01/2026,expense,Gastos y Honorarios Contables,293.00,Contables - ISR impuestos,[Fondo de Operaciones],transfer,ENE26-R35,,,,approved
+19/01/2026,expense,Gastos y Honorarios Contables,315.00,Contables - IVA gastos de impuestos,[Fondo de Operaciones],transfer,ENE26-R37,,,,approved
+19/01/2026,expense,Gastos y Honorarios Contables,2790.00,Contable - honorarios por servicios fiscales y contables,[Fondo de Operaciones],transfer,ENE26-R39,,,,approved
+20/01/2026,expense,Mantenimiento,4320.00,M - cables y materiales sonido San Jose Electronicos,[Fondo de Operaciones],transfer,ENE26-R41,,,,approved
+20/01/2026,expense,Mantenimiento,45.00,M - estacionamiento para las vueltas Luna Park Estacionamiento,[Fondo de Operaciones],transfer,ENE26-R43,,,,approved
+20/01/2026,expense,Relaciones Públicas,450.00,RP - comida para dia de vueltas CEM - Tacos el Sam,[Fondo de Operaciones],transfer,ENE26-R45,,,,approved
+22/01/2026,income,Renta Vidal/ Schmidt,4000.00,Ingreso - renta Vidal,[Ingresos],transfer,ENE26-R47,,,,approved
+21/01/2026,expense,Mantenimiento,5015.00,M - deposito para trabajo de Israel Chavira arreglo luz,[Fondo de Operaciones],transfer,ENE26-R49,,,,approved
+22/01/2026,expense,Salario Limpieza,200.00,Limpieza - Angelica,[Fondo de Operaciones],transfer,ENE26-R51,,,,approved
+24/01/2026,income,Alojamiento Int'l,3600.00,Ingreso - donacion de Sarah para CEM,[Ingresos],transfer,ENE26-R53,,,,approved
+27/01/2026,expense,Mantenimiento,215.99,"M - Steren - sinchos para cables, y cables",[Fondo de Operaciones] F,transfer,ENE26-R55,,,,approved
+27/01/2026,expense,Mantenimiento,745.00,"M - metro de cable, contacto, clavija FESOL",[Fondo de Operaciones],transfer,ENE26-R57,,,,approved
+29/01/2026,expense,Agua & Comida,200.00,Agua - 7 garrafones x $27c/u + propina $11,[Fondo de Propiedad],transfer,ENE26-R59,,,,approved
+28/01/2026,expense,Mantenimiento,1430.10,M - 2 escaleras Costco,[Fondo de Operaciones],transfer,ENE26-R61,,,,approved
+29/01/2026,expense,Mantenimiento,3000.00,M - esterilizar gatos Clinica Veterinaria La Venta,[Fondo de Operaciones],transfer,ENE26-R63,,,,approved
+29/01/2026,expense,Salario Limpieza,200.00,Sal Limp - Angelica limpieza primer piso CEM,[Fondo de Operaciones],transfer,ENE26-R65,,,,approved
+30/01/2026,capital,Gastos de Capital,61397.41,CA - anticipo sistema solar,[Gastos Capital],transfer,ENE26-R67,,,,approved
+31/01/2026,expense,Salario Voluntariado NUEVO Enero 2022,10500.00,Sal Vol - Giraldo,[Fondo de Operaciones],transfer,ENE26-R69,,,,approved
+31/01/2026,income,Alojamiento Nacionales,2000.00,Ingreso - deposito renta Abril 24-26,[Ingresos],transfer,ENE26-R71,,,,approved
+31/01/2026,income,Renta Vidal/ Schmidt,6000.00,Ingreso - renta Jen,[Ingresos],transfer,ENE26-R73,,,,approved
+30/01/2026,capital,Gastos de Capital,95000.00,"Ingreso - venta de la camioneta ($100,000 - $5000 comisión)",[Gastos Capital],transfer,ENE26-R76,,,,approved
+31/01/2026,expense,Comisiones Bancarias,83.20,Bank Expenses - IVA,[Fondo de Operaciones],transfer,ENE26-R84,,,,approved
+31/01/2026,expense,Comisiones Bancarias,520.00,Bank Expenses - monthly fee,[Fondo de Operaciones],transfer,ENE26-R86,,,,approved
+31/01/2026,income,Interes Banco/Reemplazo & Otros Ingresos,5537.93,Bank Interest Income,[Ingresos],transfer,ENE26-R88,,,,approved
+15/02/2026,expense,Relaciones Públicas,700.00,RP - Tomas & Isra inscripcion COMIMEX,[Fondo de Operaciones],transfer,FEB26-R7,,,,approved
+01/02/2026,expense,Relaciones Públicas,3800.00,RP - hotel COMIMEX,[Fondo de Operaciones],transfer,FEB26-R9,,,,approved
+01/02/2026,expense,Relaciones Públicas,299.00,RP - pastel cumple CEM Soriana,[Fondo de Operaciones],transfer,FEB26-R11,,,,approved
+01/02/2026,income,Alojamiento Nacionales,20850.00,"Ingreso - renta ICPM (aloj retiro 14,650 + culto unido 5000 + extra asamblea 750 (10x75) + ropa de cama 450 (9x50) + 2 cargas de leña 400 + 18 garrafones de agua 630)",[Ingresos],transfer,FEB26-R13,,,,approved
+01/02/2026,expense,Mantenimiento,400.00,"Ingreso - renta ICPM (aloj retiro 14,650 + culto unido 5000 + extra asamblea 750 (10x75) + ropa de cama 450 (9x50) + 2 cargas de leña 400 + 18 garrafones de agua 630)",[Fondo de Operaciones],transfer,FEB26-R13,,,,approved
+01/02/2026,expense,Agua & Comida,630.00,"Ingreso - renta ICPM (aloj retiro 14,650 + culto unido 5000 + extra asamblea 750 (10x75) + ropa de cama 450 (9x50) + 2 cargas de leña 400 + 18 garrafones de agua 630)",[Fondo de Propiedad],transfer,FEB26-R13,,,,approved
+02/02/2026,expense,Basura,100.00,Basura,[Fondo de Propiedad],transfer,FEB26-R15,,,,approved
+02/02/2026,expense,Basura,200.00,Basura - gasolina para camioneta prestada,[Fondo de Propiedad],transfer,FEB26-R17,,,,approved
+02/02/2026,expense,Mantenimiento,147.00,M - utensilios cocina IKEA,[Fondo de Operaciones] F,transfer,FEB26-R19,,,,approved
+02/02/2026,expense,Internet,1305.00,Internet Starlink,[Fondo de Operaciones] F,transfer,FEB26-R21,,,,approved
+04/02/2026,expense,Mantenimiento,1190.00,M - sonido Electrónica San Jose,[Fondo de Operaciones] F,transfer,FEB26-R23,,,,approved
+04/02/2026,expense,Agua & Comida,500.00,Agua - 18 garrafones (27 c/u) + propina 14,[Fondo de Propiedad],transfer,FEB26-R25,,,,approved
+05/02/2026,expense,Propano,3505.06,Vela Gas,[Fondo de Propiedad] F,transfer,FEB26-R27,,,,approved
+05/02/2026,expense,Mantenimiento,3720.00,M - resto de reparaciones electricas Israel Chavira,[Fondo de Operaciones],transfer,FEB26-R29,,,,approved
+05/02/2026,expense,Salario Limpieza,200.00,Sal Limp - Angelica primer piso CEM,[Fondo de Operaciones],transfer,FEB26-R31,,,,approved
+05/02/2026,expense,Mantenimiento,625.00,M - luces Link Bits,[Fondo de Operaciones] F,transfer,FEB26-R33,,,,approved
+05/02/2026,capital,Gastos de Capital,26313.09,CA - paneles solares Rafael Ocampo Vargas,[Gastos Capital] F,transfer,FEB26-R35,,,,approved
+05/02/2026,income,Alojamiento Nacionales,2000.00,Ingreso - deposito retiro de familias Campo Real,[Ingresos],transfer,FEB26-R37,,,,approved
+05/02/2026,income,Alojamiento Nacionales,2000.00,Ingreso - deposito evento Neftali,[Ingresos],transfer,FEB26-R39,,,,approved
+06/02/2026,expense,Mantenimiento,980.00,M - focos Global Iluminacion,[Fondo de Operaciones],transfer,FEB26-R41,,,,approved
+06/02/2026,expense,Mantenimiento,60.00,M - matahormigas x2 Ferretodo Plus,[Fondo de Operaciones],transfer,FEB26-R43,,,,approved
+06/02/2026,expense,Mantenimiento,175.00,M - papel higienico suites Bodega,[Fondo de Operaciones],transfer,FEB26-R45,,,,approved
+08/02/2026,expense,Relaciones Públicas,1565.00,RP - Tomas viaticos Tijuana COMIMEX,[Fondo de Operaciones],transfer,FEB26-R47,,,,approved
+10/02/2026,income,Alojamiento Nacionales,2000.00,Ingreso - renta 22-24 mayo,[Ingresos],transfer,FEB26-R49,,,,approved
+10/02/2026,expense,Mantenimiento,238.00,M - arreglo de tuberia Manos a la Obra,[Fondo de Operaciones] F,transfer,FEB26-R51,,,,approved
+11/02/2026,expense,Mantenimiento,405.00,M - arreglo agua Konkreto,[Fondo de Operaciones],transfer,FEB26-R53,,,,approved
+11/02/2026,expense,Mantenimiento,300.00,M - arreglo agua Konkreto,[Fondo de Operaciones],transfer,FEB26-R55,,,,approved
+11/02/2026,expense,Mantenimiento,160.00,"M - cople, codo, reduccion bushing Manos a la Obra",[Fondo de Operaciones],transfer,FEB26-R57,,,,approved
+11/02/2026,expense,Mantenimiento,1733.70,M - arreglo agua eYSH,[Fondo de Operaciones] F,transfer,FEB26-R59,,,,approved
+11/02/2026,expense,Mantenimiento,1532.65,M - arreglo agua eYSH,[Fondo de Operaciones] F,transfer,FEB26-R61,,,,approved
+11/02/2026,expense,Mantenimiento,1577.66,M - arreglo agua eYSH,[Fondo de Operaciones] F,transfer,FEB26-R63,,,,approved
+12/02/2026,expense,Salario Limpieza,200.00,Sal Limp - Angelica primer piso CEM,[Fondo de Operaciones],transfer,FEB26-R65,,,,approved
+12/02/2026,income,Alojamiento Nacionales,2000.00,Ingreso - deposito Gaby Casa de Dios,[Ingresos],transfer,FEB26-R67,,,,approved
+12/02/2026,expense,Mantenimiento,125.00,M - guantes x5 Bodega,[Fondo de Operaciones],transfer,FEB26-R69,,,,approved
+12/02/2026,expense,Mantenimiento,377.11,M - sonido,[Fondo de Operaciones],transfer,FEB26-R71,,,,approved
+12/02/2026,expense,Mantenimiento,872.50,"M - rodilleras, codos, etc Manos a la Obra",[Fondo de Operaciones] F,transfer,FEB26-R73,,,,approved
+13/02/2026,expense,Mantenimiento,6400.00,M - 4 días trabajo x 2 personas Hernandez,[Fondo de Operaciones],transfer,FEB26-R75,,,,approved
+13/02/2026,expense,Mantenimiento,175.06,M - adaptador y pvc eYSH,[Fondo de Operaciones] F,transfer,FEB26-R77,,,,approved
+16/02/2026,expense,Agua & Comida,449.00,Comida - café Costco,[Fondo de Propiedad] F,transfer,FEB26-R79,,,,approved
+16/02/2026,expense,Mantenimiento,649.99,M - guantes Ferreterías Calzada,[Fondo de Operaciones] F,transfer,FEB26-R81,,,,approved
+17/02/2026,expense,Mantenimiento,70.00,M - jabón en polvo Bodega,[Fondo de Operaciones],transfer,FEB26-R83,,,,approved
+17/02/2026,expense,Mantenimiento,613.00,M - agua FESOL,[Fondo de Operaciones],transfer,FEB26-R85,,,,approved
+19/02/2026,expense,Salario Limpieza,200.00,Sal Limp - Angelica limpieza primer piso CEM,[Fondo de Operaciones],transfer,FEB26-R87,,,,approved
+20/02/2026,expense,Mantenimiento,8000.00,M - 5 días trabajo x 2 personas x 800 pesos Hernandez,[Fondo de Operaciones],transfer,FEB26-R89,,,,approved
+21/02/2026,expense,Perro,780.00,P - perrón,[Fondo de Operaciones],transfer,FEB26-R91,,,,approved
+21/02/2026,expense,Mantenimiento,122.00,M - pistola para riego Ferretodo Plus,[Fondo de Operaciones],transfer,FEB26-R93,,,,approved
+21/02/2026,income,Renta Vidal/ Schmidt,6000.00,Ingreso - renta Vidal,[Ingresos],transfer,FEB26-R95,,,,approved
+21/02/2026,expense,Luz,6332.00,Luz CFE,[Fondo de Propiedad],transfer,FEB26-R97,,,,approved
+23/02/2026,expense,Gastos y Honorarios Contables,2930.01,Contable - honorarios por servicios fiscales y contables,[Fondo de Operaciones],transfer,FEB26-R99,,,,approved
+23/02/2026,expense,Gastos y Honorarios Contables,312.00,Contables - IVA gastos de impuestos,[Fondo de Operaciones],transfer,FEB26-R101,,,,approved
+23/02/2026,expense,Gastos y Honorarios Contables,293.00,Contables - ISR impuestos,[Fondo de Operaciones],transfer,FEB26-R103,,,,approved
+23/02/2026,expense,Comisiones Bancarias,2124.00,Contables - ISR impuestos,[Fondo de Operaciones],transfer,FEB26-R105,,,,approved
+24/02/2026,expense,Mantenimiento,650.00,M - manto podadora de mano (cambio de inyector y cabeza) RYL Forestal,[Fondo de Operaciones],transfer,FEB26-R107,,,,approved
+25/02/2026,expense,Perro,71.00,P - collar Bodega,[Fondo de Operaciones],transfer,FEB26-R109,,,,approved
+25/02/2026,income,Renta Vidal/ Schmidt,6000.00,Ingreso - renta Jen,[Ingresos],transfer,FEB26-R111,,,,approved
+25/02/2026,expense,Mantenimiento,10836.20,M - tanque azul Hidro Shop,[Fondo de Operaciones] F,transfer,FEB26-R114,,,,approved
+25/02/2026,expense,Asoc. Civil,3200.00,AC - 900 ley antilavado; 2300 socios sin RFC,[Fondo de Propiedad],transfer,FEB26-R116,,,,approved
+26/02/2026,expense,Salario Limpieza,200.00,Sal Limp - Angelica limpieza primer piso CEM,[Fondo de Operaciones],transfer,FEB26-R118,,,,approved
+26/02/2026,income,Alojamiento Nacionales,100.00,Ingreso - hospedaje 1 noche Eli y Steward Falk,[Ingresos],transfer,FEB26-R120,,,,approved
+27/02/2026,expense,Salario Voluntariado NUEVO Enero 2022,10500.00,"Salario - sandy y Didier, febrero",[Fondo de Operaciones],transfer,FEB26-R124,,,,approved
+28/02/2026,expense,Comisiones Bancarias,520.00,Bank Expenses - IVA,[Fondo de Operaciones],transfer,FEB26-R132,,,,approved
+28/02/2026,expense,Comisiones Bancarias,104.08,Bank Expenses - monthly fee,[Fondo de Operaciones],transfer,FEB26-R134,,,,approved
+28/02/2026,income,Interes Banco/Reemplazo & Otros Ingresos,4468.66,Bank Interest Income,[Ingresos],transfer,FEB26-R136,,,,approved
+02/03/2026,capital,Gastos de Capital,1800.00,Camioneta NUEVA - Van - permiso para transitar sin placas,[Gastos Capital],transfer,MAR26-R5,,,,approved
+03/03/2026,expense,Internet,1305.00,Internet - Starlink,[Fondo de Operaciones],transfer,MAR26-R7,,,,approved
+03/03/2026,expense,Gasolina Vehiculo,500.00,Gasolina para la Camioneta Nueva,[Vehiculo],transfer,MAR26-R9,,,,approved
+03/03/2026,expense,Gastos y Honorarios Contables,2930.01,Contable - honorarios por servicios fiscales y contables,[Fondo de Operaciones],transfer,MAR26-R11,,,,approved
+04/03/2026,expense,Mantenimiento,101.99,"M - tapones para arreglo de casa de Tomas | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R13,,,,approved
+04/03/2026,expense,Mantenimiento,12900.00,"M . Impermabilizante | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R15,,,,approved
+04/03/2026,capital,Gastos de Capital,865000.00,Camioneta Nueva (en dos pagos se hizo una factura),[Gastos Capital],transfer,MAR26-R17,,,,approved
+05/03/2026,expense,Mantenimiento,115.00,"M - saco de pega Azulejo | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R19,,,,approved
+05/03/2026,expense,Mantenimiento,480.00,"M - tubo solar - calentador solar de dormitorios que se tronó cuando se hizo mantenimeinto | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R21,,,,approved
+05/03/2026,expense,Mantenimiento,150.00,"M - tubo de cobre para taponear la fuga de agua en el baño publico | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R23,,,,approved
+05/03/2026,expense,Salario Limpieza,200.00,"Limpieza Angelica - primer piso | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R25,,,,approved
+06/03/2026,expense,Mantenimiento,6400.00,"Manto - salarios Hernandez - 4 dias | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R27,,,,approved
+06/03/2026,expense,Alberca,2005.00,"Alberca- 4 sacos de sal, bajar PH",[Fondo de Operaciones],transfer,MAR26-R29,,,,approved
+06/03/2026,expense,Alberca,811.16,"Alberca - Dicloro Klaren | April 20,2026",[Fondo de Operaciones] F,transfer,MAR26-R31,,,,approved
+06/03/2026,expense,Mantenimiento,69.46,M - pasadores para baños de mujeres,[Fondo de Operaciones],transfer,MAR26-R33,,,,approved
+06/03/2026,capital,Gastos de Capital,15000.00,Camionet Nueva - papeles y placas a Alex Diaz,[Gastos Capital],transfer,MAR26-R35,,,,approved
+10/03/2026,expense,Agua & Comida,420.00,"Agua - 15 garafones de agua mas propina | April 20,2026",[Fondo de Propiedad],transfer,MAR26-R37,,,,approved
+10/03/2026,expense,Mantenimiento,167.00,"M - junteador para arreglo de baño publico | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R39,,,,approved
+10/03/2026,expense,Mantenimiento,800.00,"M - 1 día de trabajo x 1 persona Ismael Hernandez | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R41,,,,approved
+10/03/2026,expense,Mantenimiento,107.99,"M - remache y cinta masking Aceros y Materiales Constructivo | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R43,,,,approved
+12/03/2026,expense,Mantenimiento,8299.00,"M - hidrolavadora Coscto | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R45,,,,approved
+13/03/2026,expense,Alberca,1080.00,"A - peroxido de hidrogeno | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R47,,,,approved
+14/03/2026,expense,Mantenimiento,156.00,"M - acido muriatico Ferretería Franco | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R49,,,,approved
+15/03/2026,expense,Agua & Comida,385.00,Ingreso - garrafones de agua grupo de renta Iglesia Amor y Gracia,[Fondo de Propiedad],transfer,MAR26-R51,,,,approved
+15/03/2026,expense,Mantenimiento,583.00,"M - llaves, thinner, resanador, valvula Sodimac | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R53,,,,approved
+17/03/2026,expense,Productos Limpieza,240.00,Pro Limp - mas color,[Fondo de Operaciones],transfer,MAR26-R55,,,,approved
+17/03/2026,expense,Mantenimiento,150.00,M - gasolina,[Fondo de Operaciones],transfer,MAR26-R57,,,,approved
+17/03/2026,expense,Mantenimiento,11.00,M - empaques de pvc FESOL,[Fondo de Operaciones],transfer,MAR26-R59,,,,approved
+17/03/2026,expense,Mantenimiento,592.00,"M - llave, conector, guardapolvo, adaptores FESOL | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R61,,,,approved
+17/03/2026,expense,Gastos y Honorarios Contables,307.00,Contables - ISR impuestos,[Fondo de Operaciones],transfer,MAR26-R63,,,,approved
+18/03/2026,expense,Gastos y Honorarios Contables,328.00,Contables - IVA gastos de impuestos,[Fondo de Operaciones],transfer,MAR26-R65,,,,approved
+18/03/2026,expense,Basura,100.00,Basura,[Fondo de Propiedad],transfer,MAR26-R67,,,,approved
+18/03/2026,expense,Alberca,15723.88,A - celda sin carcaza y servicio y/o instalación AcuaTecnia,[Fondo de Operaciones],transfer,MAR26-R69,,,,approved
+18/03/2026,income,Alojamiento Nacionales,8000.00,Ingreso - renta Iglesia Amor y Gracia,[Ingresos],transfer,MAR26-R71,,,,approved
+18/03/2026,income,Alojamiento Nacionales,6920.00,Ingreso - renta Iglesia Amor y Gracia,[Ingresos],transfer,MAR26-R73,,,,approved
+19/03/2026,income,Interes Banco/Reemplazo & Otros Ingresos,187.00,Ingreso - venta chatarra y reciclaje,[Ingresos],transfer,MAR26-R75,,,,approved
+19/03/2026,expense,Salario Limpieza,400.00,"Sal Limp - Angelica primer piso CEM 2 semanas | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R77,,,,approved
+20/03/2026,capital,Gastos de Capital,403.22,CA - wire fees from bank account 347.60 + 55.62,[Gastos Capital],transfer,MAR26-R79,,,,approved
+23/03/2026,expense,Mantenimiento,52.50,M - resanalack Maderería Rivera,[Fondo de Operaciones],transfer,MAR26-R81,,,,approved
+23/03/2026,expense,Mantenimiento,75.00,"M - soldadura FESOL | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R83,,,,approved
+23/03/2026,expense,Alberca,290.00,A - kit cl y pH Albercas Kreativas,[Fondo de Operaciones],transfer,MAR26-R85,,,,approved
+23/03/2026,expense,Mantenimiento,200.00,M - gasolina para auto compras productos alberca Tala y La Venta,[Fondo de Operaciones],transfer,MAR26-R87,,,,approved
+24/03/2026,expense,Mantenimiento,500.00,"M - Lukat comida para gatos | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R89,,,,approved
+24/03/2026,expense,Mantenimiento,500.00,M - Lukat comida para gatos,[Fondo de Operaciones],transfer,MAR26-R91,,,,approved
+24/03/2026,expense,Mantenimiento,153.00,M - juego de conectores y llave de esfera de latón FESOL,[Fondo de Operaciones],transfer,MAR26-R93,,,,approved
+26/03/2026,expense,Agua & Comida,425.00,Agua - 15 garrafones x $27 c/u + propina $20,[Fondo de Propiedad],transfer,MAR26-R97,,,,approved
+26/03/2026,expense,Alberca,2785.54,A - quimico Innovation en Albercas y Tecnología para el Agua,[Fondo de Operaciones],transfer,MAR26-R99,,,,approved
+26/03/2026,expense,Salario Limpieza,200.00,"Sal Limp - limpieza primer piso CEM Angelica | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R101,,,,approved
+27/03/2026,income,Renta Vidal/ Schmidt,5000.00,Ingreso - renta Vidal,[Ingresos],transfer,MAR26-R103,,,,approved
+27/03/2026,expense,Seguro Vehiculo,4106.44,Seguro van (nuevo) MAPFRE,[Vehiculo],transfer,MAR26-R105,,,,approved
+27/03/2026,expense,Asoc. Civil,4700.00,"AC - ley antilavado (más costoso este mes por la compra de la van) | April 20,2026",[Fondo de Propiedad],transfer,MAR26-R107,,,,approved
+31/03/2026,income,Interes Banco/Reemplazo & Otros Ingresos,940.00,Ingreso - venta de playeras,[Ingresos],transfer,MAR26-R109,,,,approved
+31/03/2026,expense,Salario Voluntariado NUEVO Enero 2022,10500.00,"Salario Voluntarios - Giraldo | April 20,2026",[Fondo de Operaciones],transfer,MAR26-R111,,,,approved
+31/03/2026,income,Renta Vidal/ Schmidt,6000.00,Ingreso - renta de Jen en marzo,[Ingresos],transfer,MAR26-R115,,,,approved
+31/03/2026,expense,Comisiones Bancarias,83.20,Bank Expenses - IVA,[Fondo de Operaciones],transfer,MAR26-R121,,,,approved
+31/03/2026,expense,Comisiones Bancarias,520.00,Bank Expenses - monthly fee,[Fondo de Operaciones],transfer,MAR26-R123,,,,approved
+31/03/2026,income,Interes Banco/Reemplazo & Otros Ingresos,3669.54,Bank Interest Income,[Ingresos],transfer,MAR26-R125,,,,approved
+02/04/2026,expense,Agua & Comida,420.00,Agua - 15 garrafones,[Fondo de Propiedad],transfer,ABR26-R5,,,,approved
+01/04/2026,income,Alojamiento Int'l,32200.00,Ingreso - renta 20 personas x 7 noches x 230 pesos por noche - depositado a la cuenta en Marzo de crossway,[Ingresos],transfer,ABR26-R7,,,,approved
+01/04/2026,expense,Internet,1305.00,Internet - Starlink,[Fondo de Operaciones],transfer,ABR26-R8,,,,approved
+07/04/2026,income,Alojamiento Nacionales,6590.00,"Ingreso - 27 adultos, x 200 pesos x 1 noche + 7 niños x 170 x 1 noche - depositado a la cuenta en Marzo de Crossway",[Ingresos],transfer,ABR26-R10,,,,approved
+08/04/2026,expense,Seguro Vehiculo,1817.00,Van - permiso para transitar sin placas,[Vehiculo],transfer,ABR26-R11,,,,approved
+09/04/2026,expense,Perro,780.00,Perro - dog food,[Fondo de Operaciones],transfer,ABR26-R13,,,,approved
+09/04/2026,expense,Salario Limpieza,200.00,Limpieza - Angelica Primer piso,[Fondo de Operaciones],transfer,ABR26-R15,,,,approved
+09/04/2026,expense,Mantenimiento,2899.99,M - rain bird 4 estaciones,[Fondo de Operaciones],transfer,ABR26-R17,,,,approved
+09/04/2026,expense,Mantenimiento,234.74,M - rain bird 4 - assurant - 4 años,[Fondo de Operaciones],transfer,ABR26-R19,,,,approved
+09/04/2026,expense,Agua & Comida,342.63,Comida - hospedaje de comida - CCM y Multiply,[Fondo de Propiedad],transfer,ABR26-R21,,,,approved
+10/04/2026,expense,Alberca,1345.60,Alberca - analisis,[Fondo de Operaciones],transfer,ABR26-R23,,,,approved
+10/04/2026,expense,Mantenimiento,1014.00,M - amperimetro de gancho,[Fondo de Operaciones],transfer,ABR26-R25,,,,approved
+10/04/2026,expense,Mantenimiento,30.00,M - estacionamiento,[Fondo de Operaciones],transfer,ABR26-R27,,,,approved
+10/04/2026,expense,Productos Limpieza,1983.60,Productos de limpieza - SIL,[Fondo de Operaciones],transfer,ABR26-R29,,,,approved
+11/04/2026,expense,Alberca,90.00,Alberca - botelas para el analisis,[Fondo de Operaciones],transfer,ABR26-R31,,,,approved
+13/04/2026,income,Interes Banco/Reemplazo & Otros Ingresos,50.00,Ingreso - de reciclaje,[Ingresos],transfer,ABR26-R33,,,,approved
+13/04/2026,income,Alojamiento Nacionales,1000.00,Ingreso - Steward & Eli en CEM en marzo,[Ingresos],transfer,ABR26-R35,,,,approved
+14/04/2026,expense,Luz,77.00,Luz - CFE,[Fondo de Propiedad],transfer,ABR26-R37,,,,approved
+15/04/2026,expense,Mantenimiento,150.00,M - gasolina para las maquinas,[Fondo de Operaciones],transfer,ABR26-R39,,,,approved
+15/04/2026,expense,Mantenimiento,1583.00,"M - rodillos, paint supplies para impermabilizar",[Fondo de Operaciones],transfer,ABR26-R41,,,,approved
+16/04/2026,expense,Mantenimiento,700.00,M - juan Ramon arreglo de la bomba,[Fondo de Operaciones],transfer,ABR26-R43,,,,approved
+16/04/2026,expense,Gasolina Vehiculo,851.70,Camioneta - gas para la van,[Vehiculo],transfer,ABR26-R45,,,,approved
+16/04/2026,expense,Seguro Vehiculo,50.00,Camioneta - estacionamiento para los. Papeles,[Vehiculo],transfer,ABR26-R47,,,,approved
+16/04/2026,expense,Mantenimiento,8000.00,M - salarios Hernandez 5 dias x 2 personas x 800 pesos,[Fondo de Operaciones],transfer,ABR26-R49,,,,approved
+17/04/2026,capital,Gastos de Capital,6500.00,CA - Alex Diaz apoyo mas 1500 pesos por papel brincado,[Gastos Capital],transfer,ABR26-R51,,,,approved
+17/04/2026,expense,Mantenimiento,344.00,M - arreglo rainbird,[Fondo de Operaciones],transfer,ABR26-R53,,,,approved
+17/04/2026,income,Renta Vidal/ Schmidt,6000.00,Ingreso - Jen renta en Abril,[Ingresos],transfer,ABR26-R55,,,,approved
+17/04/2026,income,Alojamiento Int'l,10000.00,"Ingreso - Crossway - dinero extra - 856 de agua, 4000 para playeras compradas, 10000 donacion extra al hospedaje",[Ingresos],transfer,ABR26-R58,,,,approved
+17/04/2026,expense,Relaciones Públicas,4000.00,"Ingreso - Crossway - dinero extra - 856 de agua, 4000 para playeras compradas, 10000 donacion extra al hospedaje",[Fondo de Operaciones],transfer,ABR26-R58,,,,approved
+17/04/2026,expense,Agua & Comida,856.00,"Ingreso - Crossway - dinero extra - 856 de agua, 4000 para playeras compradas, 10000 donacion extra al hospedaje",[Fondo de Propiedad],transfer,ABR26-R58,,,,approved
+17/04/2026,income,Alojamiento Int'l,4500.00,Ingreso - Crossway - donacion extra por liderazgo mexicana hospedaje,[Ingresos],transfer,ABR26-R60,,,,approved
+20/04/2026,expense,Agua & Comida,474.00,Agua - 17 garafones de agua,[Fondo de Propiedad],transfer,ABR26-R62,,,,approved
+21/04/2026,expense,Mantenimiento,5550.00,M - 3 botes de imperm casther,[Fondo de Operaciones],transfer,ABR26-R64,,,,approved
+21/04/2026,expense,Gastos y Honorarios Contables,316.00,Cont - Impuestos ISR,[Fondo de Operaciones],transfer,ABR26-R66,,,,approved
+21/04/2026,expense,Gastos y Honorarios Contables,328.00,Cont - Impuestos IVA,[Fondo de Operaciones],transfer,ABR26-R68,,,,approved
+21/04/2026,expense,Gastos y Honorarios Contables,2930.01,Conta- honorarios por gastos fiscales y contables,[Fondo de Operaciones],transfer,ABR26-R70,,,,approved
+22/04/2026,expense,Mantenimiento,157.00,M - arreglo conexión hidrolavadora,[Fondo de Operaciones],transfer,ABR26-R72,,,,approved
+22/04/2026,expense,Mantenimiento,803.00,"M - selantes, cintas",[Fondo de Operaciones],transfer,ABR26-R74,,,,approved
+23/04/2026,expense,Salario Limpieza,400.00,Limpieza Angelica - 2 semanas,[Fondo de Operaciones],transfer,ABR26-R76,,,,approved
+24/04/2026,expense,Mantenimiento,6400.00,M - salarios Hernandez 4 dias x 2 personas x 800 pesos,[Fondo de Operaciones],transfer,ABR26-R78,,,,approved
+26/04/2026,income,Alojamiento Int'l,4820.00,Ingreso - renta 5ta IAFCJ Guadalajara,[Ingresos],transfer,ABR26-R80,,,,approved
+26/04/2026,expense,Agua & Comida,385.00,Ingreso - renta 5ta IAFCJ Guadalajara,[Fondo de Propiedad],transfer,ABR26-R80,,,,approved
+26/04/2026,income,Alojamiento Int'l,8000.00,Ingreso - renta 5ta IAFCJ Guadalajara,[Ingresos],transfer,ABR26-R82,,,,approved
+28/04/2026,expense,Salario Voluntariado NUEVO Enero 2022,10500.00,Salarios - Giraldo de abril,[Fondo de Operaciones],transfer,ABR26-R84,,,,approved
+29/04/2026,expense,Agua & Comida,420.00,Agua - 15 garafones de agua,[Fondo de Propiedad],transfer,ABR26-R86,,,,approved
+30/04/2026,expense,Propano,3000.00,Gas - propano,[Fondo de Propiedad],transfer,ABR26-R88,,,,approved
+30/04/2026,expense,Alberca,1048.20,Alberca- probador de sal para alberca,[Fondo de Operaciones],transfer,ABR26-R90,,,,approved
+30/04/2026,expense,Salario Limpieza,200.00,Limpieza - Angelica - primer piso,[Fondo de Operaciones],transfer,ABR26-R92,,,,approved
+30/04/2026,expense,Asoc. Civil,4540.00,"AC - 900 ley antilavado, 2640 Inversion Extranjera, 1000 declaracion anual Eleazar",[Fondo de Propiedad],transfer,ABR26-R94,,,,approved
+30/04/2026,expense,Mantenimiento,479.80,M - gasolina para podadores,[Fondo de Operaciones],transfer,ABR26-R97,,,,approved
+30/04/2026,expense,Mantenimiento,131.00,M - veneno para el jardin,[Fondo de Operaciones],transfer,ABR26-R99,,,,approved
+30/04/2026,expense,Alberca,1780.00,M - 5 sacos de sal (los ultimos se hecharon a perder),[Fondo de Operaciones],transfer,ABR26-R101,,,,approved

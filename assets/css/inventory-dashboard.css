@@ -1,0 +1,400 @@
+/**
+ * Aura Business Suite — Inventory Dashboard CSS
+ * FASE 4: Dashboard con KPIs, gráficas ApexCharts, calendario y widget WP
+ */
+
+/* ── KPI Grid ──────────────────────────────────────────────── */
+.aura-dash-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+/* ── Chart Row ────────────────────────────────────────────── */
+.aura-dash-charts-row {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+/* ── Chart Card ───────────────────────────────────────────── */
+.aura-dash-chart-card {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    padding: 16px;
+    flex: 1;
+    min-width: 260px;
+    box-sizing: border-box;
+}
+
+.aura-dash-chart-card.aura-dash-chart-wide {
+    flex: 2;
+}
+
+/* ── Chart Card Header ────────────────────────────────────── */
+.aura-dash-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.aura-dash-chart-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* ── Period Tabs ──────────────────────────────────────────── */
+.aura-dash-period-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.aura-dash-period-tabs button {
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #50575e;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    line-height: 1.4;
+}
+
+.aura-dash-period-tabs button:hover {
+    background: #dcdcde;
+    color: #1d2327;
+}
+
+.aura-dash-period-tabs button.active {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+
+/* ── Chart Spinner ────────────────────────────────────────── */
+.aura-dash-chart-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #dcdcde;
+    border-top-color: #2271b1;
+    border-radius: 50%;
+    animation: aura-spin .6s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes aura-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── ApexChart Container ──────────────────────────────────── */
+.aura-dash-apexchart {
+    min-height: 280px;
+}
+
+/* ── Full-width section cards ─────────────────────────────── */
+.aura-dash-section-card {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    padding: 16px;
+    margin: 20px 0;
+}
+
+.aura-dash-section-card h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* ── Legend ───────────────────────────────────────────────── */
+.aura-dash-legend {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.aura-dash-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #50575e;
+}
+
+.aura-dash-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.aura-dash-legend-dot.overdue  { background: #d63638; }
+.aura-dash-legend-dot.urgent   { background: #d67709; }
+.aura-dash-legend-dot.warning  { background: #dba617; }
+.aura-dash-legend-dot.ok       { background: #00a32a; }
+
+/* ── Calendar List ────────────────────────────────────────── */
+.aura-dash-calendar-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.aura-dash-calendar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-left: 4px solid #dcdcde;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 6px;
+    background: #f9f9fb;
+    font-size: 13px;
+}
+
+.aura-dash-calendar-item.overdue {
+    border-left-color: #d63638;
+    background: #fcf0f1;
+}
+
+.aura-dash-calendar-item.urgent {
+    border-left-color: #d67709;
+    background: #fef8ee;
+}
+
+.aura-dash-calendar-item.warning {
+    border-left-color: #dba617;
+    background: #fefbee;
+}
+
+.aura-dash-calendar-item.ok {
+    border-left-color: #00a32a;
+    background: #f0fdf4;
+}
+
+.aura-dash-cal-badge {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: #dcdcde;
+    color: #50575e;
+}
+
+.aura-dash-calendar-item.overdue .aura-dash-cal-badge {
+    background: #d63638;
+    color: #fff;
+}
+
+.aura-dash-calendar-item.urgent .aura-dash-cal-badge {
+    background: #d67709;
+    color: #fff;
+}
+
+.aura-dash-calendar-item.warning .aura-dash-cal-badge {
+    background: #dba617;
+    color: #fff;
+}
+
+.aura-dash-calendar-item.ok .aura-dash-cal-badge {
+    background: #00a32a;
+    color: #fff;
+}
+
+.aura-dash-cal-name {
+    flex: 1;
+    font-weight: 500;
+    color: #1d2327;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aura-dash-cal-date {
+    font-size: 12px;
+    color: #646970;
+    flex-shrink: 0;
+}
+
+.aura-dash-cal-action {
+    flex-shrink: 0;
+}
+
+.aura-dash-cal-action a {
+    font-size: 11px;
+    text-decoration: none;
+    color: #2271b1;
+}
+
+.aura-dash-cal-action a:hover {
+    text-decoration: underline;
+}
+
+.aura-dash-empty {
+    text-align: center;
+    color: #646970;
+    padding: 20px;
+    font-size: 13px;
+}
+
+/* ── Critical Sections ────────────────────────────────────── */
+.aura-dash-critical-wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.aura-dash-critical-section {
+    background: #f9f9fb;
+    border: 1px solid #dcdcde;
+    border-radius: 5px;
+    padding: 12px;
+}
+
+.aura-dash-critical-section h4 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-dash-critical-count {
+    background: #d63638;
+    color: #fff;
+    font-size: 11px;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-weight: 700;
+}
+
+.aura-dash-critical-count.orange {
+    background: #d67709;
+}
+
+.aura-dash-critical-list-ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.aura-dash-critical-list-ul li {
+    padding: 5px 0;
+    border-bottom: 1px solid #ebebec;
+    font-size: 12px;
+    color: #50575e;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.aura-dash-critical-list-ul li:last-child {
+    border-bottom: none;
+}
+
+.aura-dash-critical-list-ul a {
+    font-weight: 500;
+    color: #1d2327;
+    text-decoration: none;
+}
+
+.aura-dash-critical-list-ul a:hover {
+    color: #2271b1;
+    text-decoration: underline;
+}
+
+.aura-dash-critical-list-ul .aura-dash-sub {
+    color: #646970;
+    font-size: 11px;
+}
+
+/* ── Quick Links Grid ─────────────────────────────────────── */
+.aura-dash-quick-links {
+    margin: 20px 0 0;
+}
+
+.aura-dash-quick-links h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1d2327;
+    margin-bottom: 10px;
+}
+
+.aura-dash-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.aura-dash-quick-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px;
+    background: #f0f0f1;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    color: #1d2327;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    transition: background .15s, border-color .15s;
+}
+
+.aura-dash-quick-card:hover {
+    background: #e0e0e2;
+    border-color: #c3c4c7;
+    color: #2271b1;
+}
+
+.aura-dash-quick-card .dashicons {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media screen and (max-width: 1200px) {
+    .aura-dash-charts-row {
+        flex-direction: column;
+    }
+    .aura-dash-chart-card.aura-dash-chart-wide {
+        flex: 1;
+    }
+}
+
+@media screen and (max-width: 782px) {
+    .aura-dash-kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .aura-dash-quick-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .aura-dash-critical-wrap {
+        grid-template-columns: 1fr;
+    }
+}

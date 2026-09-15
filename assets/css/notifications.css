@@ -1,0 +1,632 @@
+/* ============================================================
+   Notifications — Aura Business Suite
+   Sistema de Diseno Moderno y Modo Oscuro Universal
+   ============================================================ */
+
+/* ---- Variables Base ---- */
+:root {
+    --notif-surface:        var(--bg-surface, #ffffff);
+    --notif-surface-alt:    var(--bg-surface-alt, #f8fafc);
+    --notif-bg:             var(--bg-body, #f1f5f9);
+    --notif-border:         var(--border, #e2e8f0);
+    --notif-text:           var(--tx-primary, #0f172a);
+    --notif-muted:          var(--tx-muted, #64748b);
+    --notif-radius:         var(--radius-lg, 12px);
+    --notif-radius-sm:      var(--radius-sm, 8px);
+    --notif-shadow-sm:      var(--shadow-sm, 0 1px 3px rgba(0,0,0,.05));
+    --notif-shadow-md:      var(--shadow-md, 0 4px 16px rgba(0,0,0,.06));
+    --notif-shadow-lg:      var(--shadow-lg, 0 10px 28px rgba(0,0,0,.10));
+    --notif-unread-bg:      rgba(37, 99, 235, 0.05);
+    --notif-unread-border:  var(--aura-blue, #2563eb);
+    --notif-blue:           var(--aura-blue, #2563eb);
+    --notif-blue-hover:     var(--aura-blue-hover, #1d4ed8);
+}
+
+.aura-notif-wrap {
+    max-width: 1400px;
+    font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+    color: var(--notif-text);
+}
+
+/* ============================================================
+   Layout Principal
+   ============================================================ */
+.aura-notif-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 1024px) {
+    .aura-notif-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================
+   Card Compartida y Glassmorphism
+   ============================================================ */
+.aura-notif-card {
+    background: var(--notif-surface);
+    border: 1px solid var(--notif-border);
+    border-radius: var(--notif-radius);
+    padding: 20px 24px;
+    box-shadow: var(--notif-shadow-md);
+}
+
+.aura-notif-card__title {
+    margin: 0 0 16px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--notif-text);
+    border-bottom: 1px solid var(--notif-border);
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ============================================================
+   Toolbar de Filtros y Acciones
+   ============================================================ */
+.aura-notif-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    background: var(--notif-surface);
+    border: 1px solid var(--notif-border);
+    border-radius: var(--notif-radius);
+    box-shadow: var(--notif-shadow-sm);
+    margin-bottom: 20px;
+}
+
+.aura-notif-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.aura-notif-filters select.aura-input,
+.aura-notif-filters select {
+    min-width: 180px;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: var(--notif-radius-sm);
+    border: 1px solid var(--notif-border);
+    background: var(--notif-surface-alt);
+    color: var(--notif-text);
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.aura-notif-filters select:focus {
+    border-color: var(--notif-blue);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37,99,235,.2);
+}
+
+.aura-notif-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-notif-actions .aura-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: var(--notif-radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+    box-sizing: border-box;
+}
+
+.aura-notif-actions .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+}
+
+/* ============================================================
+   Badge Título Página
+   ============================================================ */
+.aura-notif-badge-title {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin-left: 6px;
+    vertical-align: middle;
+    box-shadow: 0 2px 6px rgba(239,68,68,.3);
+}
+
+/* ============================================================
+   Lista de Notificaciones
+   ============================================================ */
+.aura-notif-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.aura-notif-item-bulk-head {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    margin-bottom: 8px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--notif-muted);
+}
+
+.aura-notif-item-bulk-head label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.aura-notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px;
+    border: 1px solid var(--notif-border);
+    border-radius: var(--notif-radius);
+    margin-bottom: 10px;
+    background: var(--notif-surface);
+    box-shadow: var(--notif-shadow-sm);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+    position: relative;
+}
+
+.aura-notif-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--notif-shadow-md);
+    border-color: #cbd5e1;
+}
+
+.aura-notif-item.is-unread {
+    background: var(--notif-unread-bg);
+    border-left: 4px solid var(--notif-unread-border);
+}
+
+.aura-notif-item.is-read {
+    opacity: .88;
+}
+
+.aura-notif-select-wrap {
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
+.aura-notif-select-wrap input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Punto de Color Semántico */
+.aura-notif-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px rgba(0,0,0,.15);
+}
+
+/* Cuerpo de la Notificación */
+.aura-notif-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.aura-notif-title {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--notif-text);
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.aura-notif-msg {
+    margin: 0 0 8px;
+    font-size: 0.88rem;
+    color: var(--notif-muted);
+    line-height: 1.5;
+}
+
+.aura-notif-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.aura-notif-type-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+}
+
+.aura-notif-time {
+    font-size: 0.78rem;
+    color: var(--notif-muted);
+}
+
+/* Acciones por Ítem */
+.aura-notif-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    align-items: flex-end;
+}
+
+.aura-notif-item-actions .button,
+.aura-notif-item-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    min-height: 30px;
+    border-radius: var(--notif-radius-sm, 6px);
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid var(--notif-border);
+    background: var(--notif-surface-alt);
+    color: var(--notif-text);
+    transition: all .2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.aura-notif-item-actions .button:hover,
+.aura-notif-item-actions .btn:hover {
+    background: var(--notif-border);
+    color: var(--notif-text);
+    transform: translateY(-1px);
+}
+
+.aura-notif-item-actions .btn-delete-notif:hover {
+    background: rgba(225, 29, 72, 0.12) !important;
+    border-color: rgba(225, 29, 72, 0.35) !important;
+    color: var(--aura-rose, #e11d48) !important;
+}
+
+.aura-notif-item-actions .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    line-height: 1;
+}
+
+/* ============================================================
+   Paginación
+   ============================================================ */
+#notif-pagination .page-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 2px;
+    border: 1px solid var(--notif-border);
+    border-radius: var(--notif-radius-sm);
+    cursor: pointer;
+    background: var(--notif-surface);
+    color: var(--notif-text);
+    font-size: 0.86rem;
+    font-weight: 600;
+    transition: all .2s;
+}
+
+#notif-pagination .page-btn.active {
+    background: var(--notif-blue);
+    color: #fff;
+    border-color: var(--notif-blue);
+    box-shadow: 0 2px 8px rgba(37,99,235,.3);
+}
+
+#notif-pagination .page-btn:hover:not(.active) {
+    background: var(--notif-border);
+}
+
+/* ============================================================
+   Preferencias Sidebar
+   ============================================================ */
+.aura-notif-prefs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+    margin-bottom: 16px;
+}
+
+.aura-notif-prefs-table th {
+    text-align: left;
+    padding: 8px 10px;
+    background: var(--notif-surface-alt);
+    color: var(--notif-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border-bottom: 1px solid var(--notif-border);
+}
+
+.aura-notif-prefs-table td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--notif-border);
+    vertical-align: middle;
+}
+
+.aura-notif-prefs-table tr:last-child td {
+    border-bottom: none;
+}
+
+.aura-pref-desc {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--notif-muted);
+    margin-top: 2px;
+}
+
+/* Toggle Switch */
+.aura-toggle {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 22px;
+}
+
+.aura-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.aura-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #cbd5e1;
+    border-radius: 20px;
+    transition: background .25s ease;
+}
+
+.aura-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    bottom: 3px;
+    background: #ffffff;
+    border-radius: 50%;
+    transition: transform .25s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+.aura-toggle input:checked + .aura-toggle-slider {
+    background: var(--notif-blue);
+}
+
+.aura-toggle input:checked + .aura-toggle-slider::before {
+    transform: translateX(16px);
+}
+
+/* Secciones Preferencias */
+.aura-notif-pref-section {
+    margin: 16px 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--notif-border);
+}
+
+.aura-notif-pref-title {
+    display: block;
+    font-size: 0.86rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--notif-text);
+}
+
+.aura-radio-group,
+.aura-checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aura-radio-label,
+.aura-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.84rem;
+    color: var(--notif-text);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background .15s;
+}
+
+.aura-radio-label:hover,
+.aura-checkbox-label:hover {
+    background: var(--notif-surface-alt);
+}
+
+/* ============================================================
+   Admin Bar Bell
+   ============================================================ */
+#wp-admin-bar-aura-notifications-bell .ab-icon.dashicons {
+    font-size: 18px;
+    height: 32px;
+    line-height: 32px;
+    margin-right: 4px;
+}
+
+#wp-admin-bar-aura-notifications-bell .aura-bell-badge,
+.aura-bell-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #dc3232 !important;
+    color: #fff !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    border-radius: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    min-height: 18px !important;
+    max-width: 18px !important;
+    max-height: 18px !important;
+    padding: 0 !important;
+    margin-left: 2px !important;
+    vertical-align: middle !important;
+    position: relative !important;
+    top: -2px !important;
+    box-sizing: border-box !important;
+}
+
+/* ============================================================
+   MODO OSCURO UNIVERSAL
+   ============================================================ */
+html[data-wp-dark-mode-scheme="dark"] .aura-notif-wrap,
+html.wp-dark-mode-active .aura-notif-wrap,
+body.wp-dark-mode-active .aura-notif-wrap,
+body.aura-dark-mode .aura-notif-wrap,
+body[data-theme="dark"] .aura-notif-wrap,
+[data-theme="dark"] .aura-notif-wrap,
+body.admin-color-midnight .aura-notif-wrap,
+body.admin-color-coffee .aura-notif-wrap {
+    --notif-surface:        #1e293b;
+    --notif-surface-alt:    #0f172a;
+    --notif-bg:             #0f172a;
+    --notif-border:         #334155;
+    --notif-text:           #f8fafc;
+    --notif-muted:          #94a3b8;
+    --notif-unread-bg:      rgba(37, 99, 235, 0.15);
+    --notif-unread-border:  #3b82f6;
+    --notif-shadow-sm:      0 1px 3px rgba(0,0,0,.30);
+    --notif-shadow-md:      0 4px 16px rgba(0,0,0,.40);
+    --notif-shadow-lg:      0 10px 28px rgba(0,0,0,.60);
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-notif-item:hover,
+html.wp-dark-mode-active .aura-notif-item:hover,
+body.wp-dark-mode-active .aura-notif-item:hover,
+body.aura-dark-mode .aura-notif-item:hover,
+body[data-theme="dark"] .aura-notif-item:hover,
+[data-theme="dark"] .aura-notif-item:hover,
+body.admin-color-midnight .aura-notif-item:hover,
+body.admin-color-coffee .aura-notif-item:hover {
+    background: #273549;
+    border-color: #475569;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-toggle-slider,
+html.wp-dark-mode-active .aura-toggle-slider,
+body.wp-dark-mode-active .aura-toggle-slider,
+body.aura-dark-mode .aura-toggle-slider,
+body[data-theme="dark"] .aura-toggle-slider,
+[data-theme="dark"] .aura-toggle-slider,
+body.admin-color-midnight .aura-toggle-slider,
+body.admin-color-coffee .aura-toggle-slider {
+    background: #475569;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-notif-item-actions .button,
+html[data-wp-dark-mode-scheme="dark"] .aura-notif-item-actions .btn,
+[data-theme="dark"] .aura-notif-item-actions .button,
+[data-theme="dark"] .aura-notif-item-actions .btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f8fafc;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-notif-item-actions .button:hover,
+html[data-wp-dark-mode-scheme="dark"] .aura-notif-item-actions .btn:hover,
+[data-theme="dark"] .aura-notif-item-actions .button:hover,
+[data-theme="dark"] .aura-notif-item-actions .btn:hover {
+    background: #334155;
+    border-color: #475569;
+    color: #ffffff;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #notif-pagination .page-btn,
+[data-theme="dark"] #notif-pagination .page-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f8fafc;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #notif-pagination .page-btn:hover:not(.active),
+[data-theme="dark"] #notif-pagination .page-btn:hover:not(.active) {
+    background: #334155;
+}
+
+/* ============================================================
+   RESPONSIVE (Móviles y Tablets)
+   ============================================================ */
+@media (max-width: 768px) {
+    .aura-notif-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .aura-notif-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .aura-notif-filters select {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .aura-notif-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .aura-notif-actions .aura-btn {
+        width: 100%;
+    }
+
+    .aura-notif-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .aura-notif-item-actions {
+        flex-direction: row;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+

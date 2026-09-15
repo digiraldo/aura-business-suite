@@ -1,0 +1,1175 @@
+/**
+ * Aura Business Suite - Módulo de Permisos Granulares (CBAC)
+ * Estilos dedicados estandarizados según prompt-maestro.md
+ * @version 1.0.0
+ */
+
+/* ==========================================================================
+   1. CONTENEDOR PRINCIPAL Y HERO GLASS CARD
+   ========================================================================== */
+.aura-permissions-wrap {
+    max-width: 1440px;
+    margin: 20px auto 40px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    color: #1e293b;
+}
+
+/* Hero Glass Card Header */
+.aura-permissions-wrap .aura-page-header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%) !important;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.25), 0 8px 10px -6px rgba(37, 99, 235, 0.15);
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.aura-permissions-wrap .aura-page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.aura-permissions-wrap .aura-header-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    z-index: 1;
+}
+
+.aura-permissions-wrap .aura-header-icon-box {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.aura-permissions-wrap .aura-header-icon-box .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #ffffff;
+}
+
+.aura-permissions-wrap .aura-header-text h1 {
+    margin: 0 0 6px 0 !important;
+    padding: 0 !important;
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    letter-spacing: -0.025em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1.25;
+}
+
+.aura-permissions-wrap .aura-header-text p {
+    margin: 0 !important;
+    font-size: 0.88rem !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    max-width: 650px;
+    line-height: 1.45;
+}
+
+.aura-permissions-wrap .aura-header-badges {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.aura-permissions-wrap .aura-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1;
+}
+
+.aura-permissions-wrap .aura-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1;
+}
+
+/* ==========================================================================
+   2. KPI GRID (TARJETAS DE RESUMEN DESIGN SYSTEM)
+   ========================================================================== */
+.aura-permissions-wrap .aura-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* Regla de limpieza: Ayuda exclusivamente en el tooltip */
+.aura-permissions-wrap .aura-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    cursor: help;
+    transition: color 0.15s ease;
+}
+
+.aura-permissions-wrap .aura-help-icon:hover {
+    color: #2563eb;
+}
+
+.aura-permissions-wrap .aura-help-icon .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* ==========================================================================
+   3. BARRA DE NAVEGACIÓN DE PESTAÑAS (AURA NAVBAR)
+   ========================================================================== */
+.aura-permissions-wrap .aura-navbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.aura-permissions-wrap .aura-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none !important;
+}
+
+.aura-permissions-wrap .aura-tab-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.aura-permissions-wrap .aura-tab-btn.is-active {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.aura-permissions-wrap .aura-tab-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.aura-permissions-wrap .aura-tab-badge {
+    background: #e2e8f0;
+    color: #334155;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.aura-permissions-wrap .aura-tab-btn.is-active .aura-tab-badge {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   4. INPUT GROUPS (ESTILO BOOTSTRAP CON :focus-within)
+   ========================================================================== */
+.aura-permissions-wrap .aura-input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.aura-permissions-wrap .aura-input-group:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.aura-permissions-wrap .aura-input-group-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    background: #f8fafc;
+    color: #64748b;
+    border-right: 1px solid #cbd5e1;
+    font-size: 13px;
+}
+
+.aura-permissions-wrap .aura-input-group-text .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+.aura-permissions-wrap .aura-input-control {
+    flex: 1;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 8px 12px !important;
+    font-size: 13.5px !important;
+    color: #1e293b !important;
+    background: transparent !important;
+    min-width: 0;
+}
+
+.aura-permissions-wrap .aura-input-control::placeholder {
+    color: #94a3b8;
+}
+
+/* ==========================================================================
+   5. SECCIONES Y TARJETAS DE CONTENIDO (GLASS CARD)
+   ========================================================================== */
+.aura-permissions-wrap .aura-config-section {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.aura-permissions-wrap .aura-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.aura-permissions-wrap .aura-section-header h2 {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    color: #0f172a !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-permissions-wrap .aura-section-header .description {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin: 4px 0 0;
+}
+
+/* ==========================================================================
+   6. TABLAS, CHILD ROWS Y CERO SCROLL HORIZONTAL
+   ========================================================================== */
+.aura-permissions-wrap .aura-users-table-wrap {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 14px;
+}
+
+.aura-permissions-wrap table.aura-users-table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+    border: none !important;
+    margin: 0 !important;
+}
+
+.aura-permissions-wrap table.aura-users-table thead th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    padding: 12px 14px !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    vertical-align: middle !important;
+}
+
+.aura-permissions-wrap table.aura-users-table tbody td {
+    padding: 12px 14px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    vertical-align: middle !important;
+    font-size: 13.5px !important;
+    color: #1e293b !important;
+}
+
+.aura-permissions-wrap table.aura-users-table tbody tr:hover td {
+    background: #f8fafc !important;
+}
+
+.aura-permissions-wrap table.aura-users-table tbody tr.is-selected td {
+    background: #eff6ff !important;
+}
+
+/* Botón Chevron interactivo */
+.aura-permissions-wrap .aura-row-toggle {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.aura-permissions-wrap .aura-row-toggle:hover {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+.aura-permissions-wrap .aura-row-toggle.is-expanded {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+    transform: rotate(180deg);
+}
+
+/* Identidad del Usuario en la Tabla */
+.aura-permissions-wrap .aura-user-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aura-permissions-wrap .aura-user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.aura-permissions-wrap .aura-user-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.aura-permissions-wrap .aura-user-name {
+    font-weight: 700;
+    color: #0f172a;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aura-permissions-wrap .aura-user-email {
+    font-size: 12px;
+    color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Fila Hija WOW (.aura-child-row / .aura-child-card) */
+.aura-permissions-wrap tr.aura-child-row {
+    background: #f8fafc !important;
+}
+
+.aura-permissions-wrap tr.aura-child-row td {
+    padding: 0 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.aura-permissions-wrap .aura-child-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin: 12px 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.aura-permissions-wrap .aura-child-hero {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #ffffff;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.aura-permissions-wrap .aura-child-hero-title {
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-permissions-wrap .aura-child-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    padding: 16px;
+}
+
+.aura-permissions-wrap .aura-child-subcard {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.aura-permissions-wrap .aura-child-subcard-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-permissions-wrap .aura-child-dock {
+    padding: 12px 16px;
+    background: #f1f5f9;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* ==========================================================================
+   7. TARJETA DEL USUARIO SELECCIONADO (STICKY HEADER)
+   ========================================================================== */
+.aura-permissions-wrap .aura-selected-user-card {
+    background: #ffffff;
+    border: 1px solid #bfdbfe;
+    border-left: 5px solid #2563eb;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.aura-permissions-wrap .aura-selected-user-card__avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #eff6ff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.aura-permissions-wrap .aura-selected-user-card__meta {
+    flex: 1;
+}
+
+.aura-permissions-wrap .aura-count-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.aura-permissions-wrap .aura-count-badge--blue {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.aura-permissions-wrap .aura-count-badge--green {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* Píldoras de Áreas */
+.aura-permissions-wrap .aura-user-areas-pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.aura-permissions-wrap .aura-area-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid var(--area-accent, #3b82f6);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.aura-permissions-wrap .aura-area-badge-logo {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    object-fit: cover;
+}
+
+/* ==========================================================================
+   8. PLANTILLAS DE PERFILES (CARDS & FILTERS)
+   ========================================================================== */
+.aura-permissions-wrap .aura-templates-filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.aura-permissions-wrap .aura-templates-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.aura-permissions-wrap .aura-template-filter-btn {
+    padding: 6px 12px;
+    border-radius: 9999px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.aura-permissions-wrap .aura-template-filter-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+.aura-permissions-wrap .aura-template-filter-btn.is-active {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.aura-permissions-wrap .aura-templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.aura-permissions-wrap .aura-template-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid var(--role-color, #2563eb);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.aura-permissions-wrap .aura-template-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+    border-color: var(--role-color, #2563eb);
+}
+
+.aura-permissions-wrap .aura-template-card__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.aura-permissions-wrap .aura-template-card__icon-box {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: var(--role-color, #2563eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-permissions-wrap .aura-template-card__title {
+    margin: 0 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+}
+
+.aura-permissions-wrap .aura-template-card__desc {
+    font-size: 12.5px;
+    color: #64748b;
+    margin: 0 0 12px;
+    flex: 1;
+    line-height: 1.4;
+}
+
+.aura-permissions-wrap .aura-template-card__footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.aura-permissions-wrap .aura-template-card__btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   9. ASIGNACIÓN DE ÁREAS (GRID)
+   ========================================================================== */
+.aura-permissions-wrap .aura-areas-assign-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+
+.aura-permissions-wrap .aura-area-assign-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid var(--area-color, #2271b1);
+    transition: all 0.2s ease;
+}
+
+.aura-permissions-wrap .aura-area-assign-card.is-assigned {
+    background: #f0fdf4;
+    border-color: #86efac;
+}
+
+.aura-permissions-wrap .aura-area-icon-wrap {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 8px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-permissions-wrap .aura-area-logo-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+/* ==========================================================================
+   10. ACORDEÓN DE CAPABILITIES GRANULARES
+   ========================================================================== */
+.aura-permissions-wrap .aura-perm-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.aura-permissions-wrap .aura-perm-global-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.aura-permissions-wrap .aura-perm-group-header {
+    background: #f1f5f9;
+    border-left: 4px solid #2563eb;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin: 20px 0 10px;
+}
+
+.aura-permissions-wrap .aura-perm-group-title {
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    letter-spacing: 0.02em;
+}
+
+.aura-permissions-wrap .aura-perm-module {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.aura-permissions-wrap .aura-perm-module.is-open {
+    border-color: #93c5fd;
+}
+
+.aura-permissions-wrap .aura-perm-module-header {
+    padding: 12px 16px;
+    background: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+}
+
+.aura-permissions-wrap .aura-perm-module-header:hover {
+    background: #f8fafc;
+}
+
+.aura-permissions-wrap .aura-perm-module.is-open .aura-perm-module-header {
+    background: #eff6ff;
+    border-bottom: 1px solid #dbeafe;
+}
+
+.aura-permissions-wrap .aura-perm-module-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aura-permissions-wrap .aura-perm-module-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.aura-permissions-wrap .aura-perm-module-badge {
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 9999px;
+}
+
+.aura-permissions-wrap .aura-perm-module-badge--active {
+    background: #10b981;
+    color: #ffffff;
+}
+
+.aura-permissions-wrap .aura-perm-chevron {
+    transition: transform 0.2s ease;
+}
+
+.aura-permissions-wrap .aura-perm-module.is-open .aura-perm-chevron {
+    transform: rotate(180deg);
+}
+
+.aura-permissions-wrap .aura-perm-module-body {
+    display: none;
+    padding: 16px;
+    background: #ffffff;
+}
+
+.aura-permissions-wrap .aura-perm-module.is-open .aura-perm-module-body {
+    display: block;
+}
+
+.aura-permissions-wrap .aura-perm-cap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 8px;
+}
+
+.aura-permissions-wrap .aura-perm-cap-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    font-size: 12.5px;
+    transition: all 0.15s ease;
+}
+
+.aura-permissions-wrap .aura-perm-cap-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.aura-permissions-wrap .aura-perm-cap-item.is-active {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1e40af;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   11. BARRA STICKY DE GUARDADO
+   ========================================================================== */
+.aura-permissions-wrap .aura-perm-sticky-save {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    z-index: 999;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 9999px;
+    padding: 8px 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    display: none;
+    align-items: center;
+    gap: 14px;
+    color: #ffffff;
+}
+
+.aura-permissions-wrap .aura-perm-sticky-save.is-visible {
+    display: flex;
+    animation: auraFadeInUp 0.25s ease-out;
+}
+
+@keyframes auraFadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   12. ESTADO VACÍO (EMPTY STATE WOW)
+   ========================================================================== */
+.aura-permissions-wrap .aura-empty-state {
+    padding: 40px 20px;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+    margin: 16px 0;
+}
+
+.aura-permissions-wrap .aura-empty-state-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+}
+
+.aura-permissions-wrap .aura-empty-state-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #334155;
+    margin: 0 0 4px;
+}
+
+.aura-permissions-wrap .aura-empty-state-desc {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+}
+
+/* ==========================================================================
+   13. SOPORTE INTEGRAL PARA MODO OSCURO (DARK MODE)
+   ========================================================================== */
+[data-theme="dark"] .aura-permissions-wrap,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap,
+body.aura-dark-mode .aura-permissions-wrap {
+    color: var(--tx-primary, #f8fafc);
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-stat-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-stat-card,
+body.aura-dark-mode .aura-permissions-wrap .aura-stat-card,
+[data-theme="dark"] .aura-permissions-wrap .aura-navbar,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-navbar,
+body.aura-dark-mode .aura-permissions-wrap .aura-navbar,
+[data-theme="dark"] .aura-permissions-wrap .aura-config-section,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-config-section,
+body.aura-dark-mode .aura-permissions-wrap .aura-config-section,
+[data-theme="dark"] .aura-permissions-wrap .aura-users-table-wrap,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-users-table-wrap,
+body.aura-dark-mode .aura-permissions-wrap .aura-users-table-wrap,
+[data-theme="dark"] .aura-permissions-wrap .aura-template-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-template-card,
+body.aura-dark-mode .aura-permissions-wrap .aura-template-card,
+[data-theme="dark"] .aura-permissions-wrap .aura-area-assign-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-area-assign-card,
+body.aura-dark-mode .aura-permissions-wrap .aura-area-assign-card,
+[data-theme="dark"] .aura-permissions-wrap .aura-perm-module,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-perm-module,
+body.aura-dark-mode .aura-permissions-wrap .aura-perm-module,
+[data-theme="dark"] .aura-permissions-wrap .aura-selected-user-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-selected-user-card,
+body.aura-dark-mode .aura-permissions-wrap .aura-selected-user-card,
+[data-theme="dark"] .aura-permissions-wrap .aura-child-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-child-card,
+body.aura-dark-mode .aura-permissions-wrap .aura-child-card,
+[data-theme="dark"] .aura-modal-container,
+[data-theme="dark"] .aura-permissions-wrap .aura-wp-user-card {
+    background: var(--bg-card, #1e293b) !important;
+    border-color: var(--border-color, #334155) !important;
+    color: var(--tx-primary, #f8fafc) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-stat-value,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-stat-value,
+body.aura-dark-mode .aura-permissions-wrap .aura-stat-value,
+[data-theme="dark"] .aura-permissions-wrap .aura-section-header h2,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-section-header h2,
+body.aura-dark-mode .aura-permissions-wrap .aura-section-header h2,
+[data-theme="dark"] .aura-permissions-wrap .aura-user-name,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-user-name,
+body.aura-dark-mode .aura-permissions-wrap .aura-user-name,
+[data-theme="dark"] .aura-permissions-wrap .aura-template-card__title,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-template-card__title,
+body.aura-dark-mode .aura-permissions-wrap .aura-template-card__title,
+[data-theme="dark"] .aura-permissions-wrap .aura-perm-module-name,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-perm-module-name,
+body.aura-dark-mode .aura-permissions-wrap .aura-perm-module-name,
+[data-theme="dark"] .aura-modal-header h3 {
+    color: var(--tx-primary, #f8fafc) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-stat-label,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-stat-label,
+body.aura-dark-mode .aura-permissions-wrap .aura-stat-label,
+[data-theme="dark"] .aura-permissions-wrap .aura-tab-btn,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-tab-btn,
+body.aura-dark-mode .aura-permissions-wrap .aura-tab-btn,
+[data-theme="dark"] .aura-permissions-wrap .aura-user-email,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-user-email,
+body.aura-dark-mode .aura-permissions-wrap .aura-user-email,
+[data-theme="dark"] .aura-permissions-wrap .aura-template-card__desc,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-template-card__desc,
+body.aura-dark-mode .aura-permissions-wrap .aura-template-card__desc,
+[data-theme="dark"] .aura-modal-header p {
+    color: var(--tx-muted, #94a3b8) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-input-group,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-input-group,
+body.aura-dark-mode .aura-permissions-wrap .aura-input-group,
+[data-theme="dark"] .aura-modal-container .aura-input-group {
+    background: var(--bg-alt, #0f172a) !important;
+    border-color: var(--border-color, #334155) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-input-group-text,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-input-group-text,
+body.aura-dark-mode .aura-permissions-wrap .aura-input-group-text,
+[data-theme="dark"] .aura-modal-container .aura-input-group-text {
+    background: var(--bg-card, #1e293b) !important;
+    border-color: var(--border-color, #334155) !important;
+    color: var(--tx-muted, #94a3b8) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-input-control,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-input-control,
+body.aura-dark-mode .aura-permissions-wrap .aura-input-control,
+[data-theme="dark"] .aura-modal-container .aura-input-control {
+    color: var(--tx-primary, #f8fafc) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap table.aura-users-table thead th,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap table.aura-users-table thead th,
+body.aura-dark-mode .aura-permissions-wrap table.aura-users-table thead th {
+    background: var(--bg-alt, #0f172a) !important;
+    color: var(--tx-secondary, #94a3b8) !important;
+    border-bottom-color: var(--border-color, #334155) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap table.aura-users-table tbody td,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap table.aura-users-table tbody td,
+body.aura-dark-mode .aura-permissions-wrap table.aura-users-table tbody td {
+    border-bottom-color: var(--border-color, #334155) !important;
+    color: var(--tx-primary, #f8fafc) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap table.aura-users-table tbody tr:hover td,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap table.aura-users-table tbody tr:hover td,
+body.aura-dark-mode .aura-permissions-wrap table.aura-users-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-perm-module-header,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-perm-module-header,
+body.aura-dark-mode .aura-permissions-wrap .aura-perm-module-header,
+[data-theme="dark"] .aura-permissions-wrap .aura-perm-module-body,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-perm-module-body,
+body.aura-dark-mode .aura-permissions-wrap .aura-perm-module-body {
+    background: var(--bg-card, #1e293b) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-perm-module.is-open .aura-perm-module-header {
+    background: rgba(37, 99, 235, 0.15) !important;
+    border-bottom-color: rgba(37, 99, 235, 0.3) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-perm-cap-item,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-perm-cap-item,
+body.aura-dark-mode .aura-permissions-wrap .aura-perm-cap-item {
+    background: var(--bg-alt, #0f172a) !important;
+    border-color: var(--border-color, #334155) !important;
+    color: var(--tx-secondary, #cbd5e1) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-perm-cap-item.is-active,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-perm-cap-item.is-active,
+body.aura-dark-mode .aura-permissions-wrap .aura-perm-cap-item.is-active {
+    background: rgba(37, 99, 235, 0.25) !important;
+    border-color: #3b82f6 !important;
+    color: #93c5fd !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-row-toggle,
+html[data-wp-dark-mode-scheme="dark"] .aura-permissions-wrap .aura-row-toggle,
+body.aura-dark-mode .aura-permissions-wrap .aura-row-toggle {
+    background: var(--bg-alt, #0f172a) !important;
+    border-color: var(--border-color, #334155) !important;
+    color: var(--tx-secondary, #cbd5e1) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-area-badge-pill {
+    background: var(--bg-alt, #0f172a) !important;
+    border-color: var(--border-color, #334155) !important;
+    color: var(--tx-primary, #f8fafc) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-empty-state,
+[data-theme="dark"] .aura-permissions-wrap .aura-perm-group-header {
+    background: var(--bg-alt, #0f172a) !important;
+    border-color: var(--border-color, #334155) !important;
+    color: var(--tx-secondary, #cbd5e1) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-child-subcard {
+    background: var(--bg-alt, #0f172a) !important;
+    border-color: var(--border-color, #334155) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-child-dock {
+    background: var(--bg-card, #1e293b) !important;
+    border-top-color: var(--border-color, #334155) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-template-filter-btn {
+    background: var(--bg-alt, #0f172a) !important;
+    border-color: var(--border-color, #334155) !important;
+    color: var(--tx-secondary, #94a3b8) !important;
+}
+
+[data-theme="dark"] .aura-permissions-wrap .aura-template-filter-btn.is-active {
+    background: var(--aura-blue, #2563eb) !important;
+    color: #ffffff !important;
+    border-color: var(--aura-blue, #2563eb) !important;
+}
+
+/* ==========================================================================
+   14. RESPONSIVE Y ZERO HORIZONTAL SCROLL EN MÓVIL (<= 768px)
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+    .aura-permissions-wrap {
+        padding: 0 10px;
+    }
+
+    .aura-permissions-wrap .aura-page-header {
+        padding: 18px 16px;
+    }
+
+    .aura-permissions-wrap .aura-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .aura-permissions-wrap .aura-stat-card {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+
+    .aura-permissions-wrap .aura-stat-value {
+        font-size: 1.45rem;
+    }
+
+    .aura-permissions-wrap .aura-col-mobile-hidden {
+        display: none !important;
+    }
+
+    .aura-permissions-wrap .aura-templates-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .aura-permissions-wrap .aura-perm-sticky-save {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        justify-content: space-between;
+        border-radius: 14px;
+    }
+}

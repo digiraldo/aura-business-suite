@@ -1,0 +1,1071 @@
+/**
+ * Análisis Visual – Fase 3, Item 3.3
+ * Estilos para la página de gráficos interactivos avanzados
+ * Modernización UX/UI, Dark Mode, Tooltips e Impresión Oficial
+ *
+ * @package AuraBusinessSuite
+ * @subpackage Financial
+ * @since 1.0.0
+ */
+
+/* ================================================================ */
+/* ENCABEZADO Y HERO PRINCIPAL                                       */
+/* ================================================================ */
+
+.aura-analytics-page .wp-heading-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.aura-analytics-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.aura-analytics-hero__main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.aura-analytics-hero__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.aura-analytics-hero__icon .dashicons {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+}
+
+.aura-analytics-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2563eb;
+    margin: 0 0 2px;
+}
+
+.aura-analytics-intro {
+    color: #64748b;
+    margin: 4px 0 0;
+    font-size: 13px;
+}
+
+.aura-analytics-hero__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ================================================================ */
+/* FILTROS GLOBALES Y CHIPS                                          */
+/* ================================================================ */
+
+.aura-analytics-global-filters {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.aura-filters-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.aura-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aura-filter-field label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.aura-filters-row input[type="date"] {
+    height: 36px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    background: #ffffff;
+    color: #1e293b;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.aura-filters-row input[type="date"]:focus {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.aura-chip-btn {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.aura-chip-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.aura-chip-btn.active {
+    background: #2563eb;
+    border-color: #1d4ed8;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.aura-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* ================================================================ */
+/* NAVEGACIÓN DE TABS                                               */
+/* ================================================================ */
+
+.aura-analytics-tabs {
+    border-bottom: 1px solid #cbd5e1 !important;
+    border-radius: 10px 10px 0 0 !important;
+    background: #ffffff;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.aura-analytics-tabs .nav-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 16px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #64748b;
+    background: transparent;
+    transition: border-color .15s, color .15s;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.aura-analytics-tabs .nav-tab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #64748b;
+}
+
+.aura-analytics-tabs .nav-tab-active,
+.aura-analytics-tabs .nav-tab:hover {
+    border-bottom-color: #2563eb !important;
+    color: #2563eb !important;
+    background: transparent !important;
+}
+
+.aura-analytics-tabs .nav-tab-active .dashicons {
+    color: #2563eb !important;
+}
+
+/* ================================================================ */
+/* CONTENIDO DE TABS                                                */
+/* ================================================================ */
+
+.aura-tab-content {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    padding: 20px;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* ================================================================ */
+/* TOOLTIPS Y AYUDAS CONTEXTUALES                                    */
+/* ================================================================ */
+
+.aura-tooltip-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.aura-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+    transition: transform 0.15s ease;
+}
+
+.aura-help-icon:hover {
+    transform: scale(1.2);
+}
+
+.aura-tooltip-box {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #0f172a;
+    color: #ffffff !important;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 500;
+    white-space: normal;
+    min-width: 180px;
+    max-width: 260px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10000;
+}
+
+.aura-tooltip-box::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #0f172a transparent transparent transparent;
+}
+
+.aura-tooltip-wrap:hover .aura-tooltip-box {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ================================================================ */
+/* BARRA DE HERRAMIENTAS DEL GRÁFICO                                */
+/* ================================================================ */
+
+.aura-chart-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.aura-toolbar-left,
+.aura-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.aura-toolbar-left label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.aura-btn-group {
+    display: inline-flex;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.aura-btn-toggle {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background: #f8fafc;
+    border: none;
+    border-right: 1px solid #cbd5e1;
+    cursor: pointer;
+    transition: all .15s;
+    color: #334155;
+    line-height: 1.4;
+}
+
+.aura-btn-toggle:last-child {
+    border-right: none;
+}
+
+.aura-btn-toggle:hover {
+    background: #e2e8f0;
+}
+
+.aura-btn-toggle.active {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* ================================================================ */
+/* CONTENEDOR DEL GRÁFICO                                           */
+/* ================================================================ */
+
+.aura-chart-container {
+    min-height: 420px;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.aura-chart-container.short {
+    min-height: 260px;
+}
+
+/* ================================================================ */
+/* LEYENDA DEL GRÁFICO                                              */
+/* ================================================================ */
+
+.aura-chart-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #334155;
+    font-weight: 600;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-item.income  .legend-dot { background: #10b981; }
+.legend-item.expense .legend-dot { background: #ef4444; }
+.legend-item.balance .legend-dot { background: #3b82f6; }
+.legend-item.projection .legend-dot {
+    background: transparent;
+    border: 2px dashed #8b5cf6;
+}
+
+/* ================================================================ */
+/* TABLAS DE ANÁLISIS (COMPARACIÓN, OUTLIERS, PRESUPUESTO)           */
+/* ================================================================ */
+
+.aura-table-responsive-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.aura-comparison-table,
+.aura-outliers-table,
+.aura-budget-table {
+    border-collapse: collapse;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+}
+
+.aura-comparison-table thead th,
+.aura-outliers-table thead th,
+.aura-budget-table thead th {
+    background: #1e3a5f !important;
+    color: #ffffff !important;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 14px;
+    border: none;
+}
+
+.aura-comparison-table tbody tr,
+.aura-outliers-table tbody tr,
+.aura-budget-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.15s ease;
+}
+
+.aura-comparison-table tbody tr:nth-child(even),
+.aura-outliers-table tbody tr:nth-child(even),
+.aura-budget-table tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.aura-comparison-table tbody tr:hover,
+.aura-outliers-table tbody tr:hover,
+.aura-budget-table tbody tr:hover {
+    background: #f1f5f9;
+}
+
+.aura-comparison-table tbody td,
+.aura-outliers-table tbody td,
+.aura-budget-table tbody td {
+    padding: 10px 14px;
+    vertical-align: middle;
+    color: #1e293b;
+    font-size: 13px;
+}
+
+.aura-comparison-table td.positive { color: #10b981; font-weight: 700; }
+.aura-comparison-table td.negative { color: #dc2626; font-weight: 700; }
+.aura-budget-table tr.over-budget td { background: #fef2f2; color: #b91c1c; }
+
+/* ================================================================ */
+/* TAB COMPARACIONES                                                */
+/* ================================================================ */
+
+.aura-comparison-periods {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.period-picker h3 {
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1e3a5f;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: uppercase;
+}
+
+.period-vs {
+    font-size: 16px;
+    font-weight: 800;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid #bfdbfe;
+    align-self: center;
+}
+
+/* ================================================================ */
+/* TAB PATRONES Y CARDS                                             */
+/* ================================================================ */
+
+.aura-patterns-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 960px) {
+    .aura-patterns-grid { grid-template-columns: 1fr; }
+}
+
+.aura-pattern-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.aura-pattern-card h3 {
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0 0 14px;
+    color: #0f172a;
+}
+
+.aura-fullscreen-btn-wrap {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+}
+
+/* ================================================================ */
+/* MODALES (OCULTOS POR DEFECTO CON DISPLAY: NONE)                  */
+/* ================================================================ */
+
+.aura-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+}
+
+.aura-modal-hidden {
+    display: none !important;
+}
+
+.aura-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.aura-modal-content {
+    position: relative;
+    width: 90%;
+    max-width: 540px;
+    margin: 80px auto;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: auraModalSlide 0.25s ease-out;
+}
+
+@keyframes auraModalSlide {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.aura-modal-header {
+    color: #ffffff;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.aura-modal-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-modal-close {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.aura-modal-close:hover {
+    opacity: 1;
+}
+
+.aura-modal-body {
+    padding: 20px;
+}
+
+/* ================================================================ */
+/* FULLSCREEN OVERLAY (PANTALLA COMPLETA)                           */
+/* ================================================================ */
+
+.aura-fullscreen-overlay {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: #ffffff !important;
+    z-index: 999999 !important;
+    flex-direction: column !important;
+    padding: 24px 32px !important;
+    box-sizing: border-box !important;
+    overflow: auto !important;
+}
+
+.aura-exit-fullscreen {
+    align-self: flex-end;
+    margin-bottom: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    background: #ef4444;
+    color: #ffffff !important;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+    transition: all 0.15s ease;
+    z-index: 1000000;
+}
+
+.aura-exit-fullscreen:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.45);
+}
+
+.aura-exit-fullscreen .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+#aura-fullscreen-chart {
+    flex: 1;
+    width: 100%;
+    min-height: calc(100vh - 120px);
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-fullscreen-overlay,
+html.wp-dark-mode-active .aura-fullscreen-overlay,
+body.aura-dark-mode .aura-fullscreen-overlay,
+[data-theme="dark"] .aura-fullscreen-overlay {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+/* ================================================================ */
+/* TOOLTIP APEXCHARTS CUSTOM                                        */
+/* ================================================================ */
+
+.aura-apex-tooltip {
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    min-width: 180px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    border: 1px solid #334155;
+}
+
+.aura-apex-tooltip strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #ffffff;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 4px;
+}
+
+.tt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    line-height: 1.8;
+}
+
+.tt-name { color: #94a3b8; }
+.tt-val  { font-weight: 700; color: #f8fafc; }
+
+/* ================================================================ */
+/* SOPORTE GLOBAL MODO OSCURO (DARK MODE)                           */
+/* ================================================================ */
+
+html[data-wp-dark-mode-scheme="dark"] .aura-analytics-page,
+html.wp-dark-mode-active .aura-analytics-page,
+body.wp-dark-mode-active .aura-analytics-page,
+body.aura-dark-mode .aura-analytics-page,
+body[data-theme="dark"] .aura-analytics-page,
+[data-theme="dark"] .aura-analytics-page {
+    color: #f8fafc;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-analytics-hero,
+html[data-wp-dark-mode-scheme="dark"] .aura-analytics-global-filters,
+html[data-wp-dark-mode-scheme="dark"] .aura-analytics-tabs,
+html[data-wp-dark-mode-scheme="dark"] .aura-tab-content,
+html[data-wp-dark-mode-scheme="dark"] .aura-pattern-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-outliers-wrap,
+html.wp-dark-mode-active .aura-analytics-hero,
+html.wp-dark-mode-active .aura-analytics-global-filters,
+html.wp-dark-mode-active .aura-analytics-tabs,
+html.wp-dark-mode-active .aura-tab-content,
+html.wp-dark-mode-active .aura-pattern-card,
+html.wp-dark-mode-active .aura-outliers-wrap,
+body.aura-dark-mode .aura-analytics-hero,
+body.aura-dark-mode .aura-analytics-global-filters,
+body.aura-dark-mode .aura-analytics-tabs,
+body.aura-dark-mode .aura-tab-content,
+body.aura-dark-mode .aura-pattern-card,
+body.aura-dark-mode .aura-outliers-wrap,
+[data-theme="dark"] .aura-analytics-hero,
+[data-theme="dark"] .aura-analytics-global-filters,
+[data-theme="dark"] .aura-analytics-tabs,
+[data-theme="dark"] .aura-tab-content,
+[data-theme="dark"] .aura-pattern-card,
+[data-theme="dark"] .aura-outliers-wrap {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .wp-heading-inline,
+html.wp-dark-mode-active .wp-heading-inline,
+body.aura-dark-mode .wp-heading-inline,
+[data-theme="dark"] .wp-heading-inline {
+    color: #ffffff !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-analytics-hero__icon,
+html.wp-dark-mode-active .aura-analytics-hero__icon,
+body.aura-dark-mode .aura-analytics-hero__icon,
+[data-theme="dark"] .aura-analytics-hero__icon {
+    background: #0f172a !important;
+    color: #60a5fa !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-chart-legend,
+html[data-wp-dark-mode-scheme="dark"] .aura-comparison-periods,
+html.wp-dark-mode-active .aura-chart-legend,
+html.wp-dark-mode-active .aura-comparison-periods,
+body.aura-dark-mode .aura-chart-legend,
+body.aura-dark-mode .aura-comparison-periods,
+[data-theme="dark"] .aura-chart-legend,
+[data-theme="dark"] .aura-comparison-periods {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] input[type="date"],
+html[data-wp-dark-mode-scheme="dark"] select,
+html[data-wp-dark-mode-scheme="dark"] textarea,
+html.wp-dark-mode-active input[type="date"],
+html.wp-dark-mode-active select,
+html.wp-dark-mode-active textarea,
+body.aura-dark-mode input[type="date"],
+body.aura-dark-mode select,
+body.aura-dark-mode textarea,
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+    color-scheme: dark !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-comparison-table thead th,
+html[data-wp-dark-mode-scheme="dark"] .aura-outliers-table thead th,
+html[data-wp-dark-mode-scheme="dark"] .aura-budget-table thead th,
+html.wp-dark-mode-active .aura-comparison-table thead th,
+html.wp-dark-mode-active .aura-outliers-table thead th,
+html.wp-dark-mode-active .aura-budget-table thead th,
+body.aura-dark-mode .aura-comparison-table thead th,
+body.aura-dark-mode .aura-outliers-table thead th,
+body.aura-dark-mode .aura-budget-table thead th,
+[data-theme="dark"] .aura-comparison-table thead th,
+[data-theme="dark"] .aura-outliers-table thead th,
+[data-theme="dark"] .aura-budget-table thead th {
+    background: #0f172a !important;
+    color: #ffffff !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-comparison-table tbody tr,
+html[data-wp-dark-mode-scheme="dark"] .aura-outliers-table tbody tr,
+html[data-wp-dark-mode-scheme="dark"] .aura-budget-table tbody tr,
+html.wp-dark-mode-active .aura-comparison-table tbody tr,
+html.wp-dark-mode-active .aura-outliers-table tbody tr,
+html.wp-dark-mode-active .aura-budget-table tbody tr,
+body.aura-dark-mode .aura-comparison-table tbody tr,
+body.aura-dark-mode .aura-outliers-table tbody tr,
+body.aura-dark-mode .aura-budget-table tbody tr,
+[data-theme="dark"] .aura-comparison-table tbody tr,
+[data-theme="dark"] .aura-outliers-table tbody tr,
+[data-theme="dark"] .aura-budget-table tbody tr {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-comparison-table tbody tr:nth-child(even),
+html[data-wp-dark-mode-scheme="dark"] .aura-outliers-table tbody tr:nth-child(even),
+html[data-wp-dark-mode-scheme="dark"] .aura-budget-table tbody tr:nth-child(even),
+html.wp-dark-mode-active .aura-comparison-table tbody tr:nth-child(even),
+html.wp-dark-mode-active .aura-outliers-table tbody tr:nth-child(even),
+html.wp-dark-mode-active .aura-budget-table tbody tr:nth-child(even),
+body.aura-dark-mode .aura-comparison-table tbody tr:nth-child(even),
+body.aura-dark-mode .aura-outliers-table tbody tr:nth-child(even),
+body.aura-dark-mode .aura-budget-table tbody tr:nth-child(even),
+[data-theme="dark"] .aura-comparison-table tbody tr:nth-child(even),
+[data-theme="dark"] .aura-outliers-table tbody tr:nth-child(even),
+[data-theme="dark"] .aura-budget-table tbody tr:nth-child(even) {
+    background: #0f172a !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-comparison-table tbody td,
+html[data-wp-dark-mode-scheme="dark"] .aura-outliers-table tbody td,
+html[data-wp-dark-mode-scheme="dark"] .aura-budget-table tbody td,
+html.wp-dark-mode-active .aura-comparison-table tbody td,
+html.wp-dark-mode-active .aura-outliers-table tbody td,
+html.wp-dark-mode-active .aura-budget-table tbody td,
+body.aura-dark-mode .aura-comparison-table tbody td,
+body.aura-dark-mode .aura-outliers-table tbody td,
+body.aura-dark-mode .aura-budget-table tbody td,
+[data-theme="dark"] .aura-comparison-table tbody td,
+[data-theme="dark"] .aura-outliers-table tbody td,
+[data-theme="dark"] .aura-budget-table tbody td {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-content,
+html.wp-dark-mode-active .aura-modal-content,
+body.aura-dark-mode .aura-modal-content,
+[data-theme="dark"] .aura-modal-content {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+/* ================================================================ */
+/* MOTOR DE IMPRESIÓN OFICIAL (@media print)                        */
+/* ================================================================ */
+
+.aura-print-header,
+.aura-print-footer {
+    display: none;
+}
+
+@page {
+    size: A4 portrait;
+    margin: 10mm 12mm 12mm 12mm;
+}
+
+@media print {
+    #adminmenuback,
+    #adminmenuwrap,
+    #adminmenu,
+    #wpadminbar,
+    #wpfooter,
+    .aura-analytics-hero__actions,
+    .aura-analytics-global-filters,
+    .aura-analytics-tabs,
+    .aura-chart-toolbar,
+    .aura-fullscreen-btn,
+    .aura-add-annotation,
+    .aura-modal,
+    .notice,
+    .screen-reader-text {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    html, body, #wpwrap, #wpcontent, #wpbody, #wpbody-content, .aura-app-wrapper, .aura-analytics-page {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        float: none !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-print-header {
+        display: grid !important;
+        grid-template-columns: 1.1fr 1.2fr 1.1fr !important;
+        gap: 16px !important;
+        align-items: center !important;
+        border-bottom: 2.5px solid #1e3a5f !important;
+        padding-bottom: 12px !important;
+        margin-bottom: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .aura-print-header__brand-box {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    .aura-print-logo {
+        max-height: 48px !important;
+        width: auto !important;
+    }
+
+    .aura-print-header__brand-text h2 {
+        margin: 0 !important;
+        font-size: 13.5pt !important;
+        font-weight: 800 !important;
+        color: #1e3a5f !important;
+        line-height: 1.1 !important;
+    }
+
+    .aura-print-header__tagline {
+        font-size: 7.5pt !important;
+        color: #475569 !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        display: block !important;
+        margin-top: 2px !important;
+    }
+
+    .aura-print-header__report-card {
+        text-align: center !important;
+        border-left: 1px solid #cbd5e1 !important;
+        border-right: 1px solid #cbd5e1 !important;
+        padding: 0 10px !important;
+    }
+
+    .aura-print-header__report-card h1 {
+        margin: 0 0 4px 0 !important;
+        font-size: 12pt !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .aura-print-period-pill {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 20px !important;
+        padding: 2px 10px !important;
+        font-size: 8pt !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .aura-print-header__meta-box {
+        text-align: right !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+    }
+
+    .aura-print-meta-item {
+        font-size: 8pt !important;
+        color: #475569 !important;
+    }
+
+    .aura-print-meta-value {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }
+
+    .aura-print-badge-official {
+        display: inline-block !important;
+        background: #fef3c7 !important;
+        color: #92400e !important;
+        border: 1px solid #fde68a !important;
+        border-radius: 4px !important;
+        padding: 1px 6px !important;
+        font-size: 7.5pt !important;
+        font-weight: 700 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .aura-analytics-hero {
+        display: none !important;
+    }
+
+    .aura-tab-content {
+        display: block !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-bottom: 24px !important;
+        page-break-inside: avoid !important;
+    }
+
+    .aura-chart-container {
+        min-height: 280px !important;
+    }
+
+    .aura-print-footer {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-top: 20px !important;
+        padding-top: 8px !important;
+        border-top: 1px solid #cbd5e1 !important;
+        font-size: 7.5pt !important;
+        color: #475569 !important;
+        page-break-inside: avoid !important;
+        width: 100% !important;
+    }
+}

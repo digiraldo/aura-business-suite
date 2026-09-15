@@ -1,0 +1,368 @@
+/**
+ * Library Dashboard & Reports CSS — Fase 6
+ *
+ * @package AuraBusinessSuite
+ */
+
+/* ── KPI Grid ─────────────────────────────────────────────────── */
+.aura-lib-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    gap: 16px;
+    margin: 20px 0 24px;
+}
+
+.aura-lib-kpi-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .07);
+    transition: box-shadow .2s;
+}
+
+.aura-lib-kpi-card:hover {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .12);
+}
+
+.aura-lib-kpi-card--alert {
+    border-left: 4px solid #d63638;
+}
+
+.aura-lib-kpi-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.aura-lib-kpi-icon .dashicons {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    line-height: 1;
+}
+
+.aura-lib-kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: #1e1e1e;
+}
+
+.aura-lib-kpi-label {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+}
+
+/* ── Chart Row ────────────────────────────────────────────────── */
+.aura-lib-charts-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1100px) {
+    .aura-lib-charts-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .aura-lib-charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aura-lib-chart-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .07);
+}
+
+.aura-lib-chart-wide {
+    grid-column: 1 / 2;
+}
+
+.aura-lib-chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.aura-lib-chart-header h3 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.aura-lib-chart-spinner {
+    visibility: visible;
+}
+
+/* ── Lists Row ────────────────────────────────────────────────── */
+.aura-lib-lists-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 900px) {
+    .aura-lib-lists-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .aura-lib-lists-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aura-lib-list-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .07);
+    display: flex;
+    flex-direction: column;
+}
+
+.aura-lib-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.aura-lib-list-header h3 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e1e1e;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-lib-list-footer-link {
+    display: block;
+    font-size: 12px;
+    text-align: right;
+    margin-top: auto;
+    padding-top: 10px;
+    color: #2271b1;
+    text-decoration: none;
+}
+
+.aura-lib-list-footer-link:hover {
+    text-decoration: underline;
+}
+
+/* ── Quick List ───────────────────────────────────────────────── */
+.aura-lib-quick-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.aura-lib-quick-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+}
+
+.aura-lib-quick-item:last-child {
+    border-bottom: none;
+}
+
+.aura-lib-quick-item--alert .aura-lib-quick-icon {
+    color: #d63638;
+}
+
+.aura-lib-quick-icon {
+    flex-shrink: 0;
+    color: #666;
+    font-size: 16px;
+    width: 18px;
+    height: 18px;
+}
+
+.aura-lib-quick-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.aura-lib-quick-info strong {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+}
+
+.aura-lib-quick-info span {
+    font-size: 11px;
+    color: #666;
+}
+
+.aura-lib-quick-badge {
+    flex-shrink: 0;
+    background: #e8f4fd;
+    color: #2271b1;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.aura-lib-badge--red   { background: #fce8e8; color: #d63638; }
+.aura-lib-badge--green { background: #edfaed; color: #00a32a; }
+.aura-lib-badge--yellow{ background: #fef8e7; color: #996800; }
+
+.aura-lib-thumb {
+    width: 32px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
+}
+
+.aura-lib-thumb--placeholder {
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 20px;
+}
+
+.aura-lib-empty {
+    color: #777;
+    font-style: italic;
+    font-size: 12px;
+    padding: 8px 0;
+}
+
+.aura-lib-loading {
+    color: #999;
+    font-size: 12px;
+}
+
+/* ── Dashboard title ──────────────────────────────────────────── */
+.aura-lib-dash-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px !important;
+}
+
+.aura-lib-dash-title .dashicons {
+    color: #2271b1;
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+}
+
+/* ── Reports ──────────────────────────────────────────────────── */
+.aura-lib-tabs {
+    margin-top: 8px;
+}
+
+.aura-lib-tab-panel {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    padding: 20px;
+    border-radius: 0 0 6px 6px;
+}
+
+.aura-lib-report-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.aura-lib-export-btns {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+}
+
+.aura-lib-export-btns .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+    margin-right: 3px;
+}
+
+.aura-lib-summary-cards {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.aura-lib-summary-card {
+    background: #f9f9f9;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    padding: 12px 20px;
+    min-width: 140px;
+    text-align: center;
+}
+
+.aura-lib-summary-val {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.aura-lib-summary-lbl {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.aura-lib-two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 800px) {
+    .aura-lib-two-cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aura-lib-report-table {
+    font-size: 13px;
+    margin-top: 0 !important;
+}
+
+.aura-lib-report-table th {
+    font-size: 12px;
+}

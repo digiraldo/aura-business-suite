@@ -1,0 +1,1797 @@
+/**
+ * Estilos para Gestión de Áreas y Tipos de Área (Admin)
+ * Cumple rigurosamente con el Prompt Maestro Global de UX/UI, Responsive Design y Dark Mode.
+ *
+ * @package AuraBusinessSuite
+ */
+
+/* ── 1. CABECERA DE PÁGINA (HERO GLASS CARD) ───────────────────────── */
+.aura-areas-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
+    color: #ffffff;
+}
+
+.aura-areas-page-header__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.aura-areas-page-header__icon .dashicons {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: #ffffff;
+}
+
+.aura-areas-page-header__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.aura-areas-page-header__content h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.aura-areas-page-header__content p {
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.aura-areas-page-header__badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.aura-areas-page-header__badges .aura-badge {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+/* ── 2. NAVEGACIÓN Y TABS ───────────────────────────────────────────── */
+.aura-areas-navbar {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    margin-bottom: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.aura-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.aura-tab-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.aura-tab-btn:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.aura-tab-btn.active {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.aura-tab-btn.active .dashicons {
+    color: #ffffff;
+}
+
+.aura-tab-panel {
+    display: none;
+    animation: auraFadeIn 0.25s ease-out forwards;
+}
+
+.aura-tab-panel.active {
+    display: block;
+}
+
+@keyframes auraFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 3. STAT / KPI CARDS CANÓNICAS ULTRA-COMPACTAS (SOFT UI) ────────── */
+.aura-areas-kpi-grid,
+.aura-areas-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.aura-areas-kpi-grid--types {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 1024px) {
+    .aura-areas-kpi-grid,
+    .aura-areas-summary-grid,
+    .aura-areas-kpi-grid--types {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+}
+
+@media (max-width: 540px) {
+    .aura-areas-kpi-grid,
+    .aura-areas-summary-grid,
+    .aura-areas-kpi-grid--types {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aura-areas-kpi-grid .aura-tp-kpi-card,
+.aura-areas-stat-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 7px 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+    min-height: 52px !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease !important;
+}
+
+.aura-areas-kpi-grid .aura-tp-kpi-card:hover,
+.aura-areas-stat-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Barra semafórica lateral izquierda */
+.aura-areas-kpi-grid .aura-tp-kpi-card::before,
+.aura-areas-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 3.5px;
+    border-radius: 10px 0 0 10px;
+    background: #3b82f6;
+}
+
+.aura-areas-kpi-grid .aura-tp-kpi-card:nth-child(1)::before { background: #10b981; }
+.aura-areas-kpi-grid .aura-tp-kpi-card:nth-child(2)::before { background: #64748b; }
+.aura-areas-kpi-grid .aura-tp-kpi-card:nth-child(3)::before { background: #2563eb; }
+.aura-areas-kpi-grid .aura-tp-kpi-card:nth-child(4)::before { background: #8b5cf6; }
+
+.aura-areas-kpi-grid--types .aura-tp-kpi-card:nth-child(1)::before { background: #2563eb; }
+.aura-areas-kpi-grid--types .aura-tp-kpi-card:nth-child(2)::before { background: #f59e0b; }
+.aura-areas-kpi-grid--types .aura-tp-kpi-card:nth-child(3)::before { background: #10b981; }
+
+.aura-tp-kpi-card__info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+.aura-tp-kpi-card__label-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9.5px !important;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.35px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aura-tp-kpi-card__value {
+    font-size: 1.25rem !important;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+    margin-top: 1px !important;
+    font-variant-numeric: tabular-nums;
+}
+
+.aura-tp-kpi-card__icon-wrap {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 7px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    margin-left: 8px;
+}
+
+.aura-tp-kpi-card:hover .aura-tp-kpi-card__icon-wrap {
+    transform: scale(1.08);
+}
+
+.aura-tp-kpi-card__icon-wrap .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}
+
+.aura-areas-stat-card p {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #64748b;
+    line-height: 1.45;
+}
+
+/* ── 4. AYUDAS CONTEXTUALES Y TOOLTIPS UNIVERSALES ──────────────────── */
+.aura-help-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: help;
+    flex-shrink: 0;
+    margin-left: 6px;
+    vertical-align: middle;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    border: none;
+    text-decoration: none;
+}
+
+.aura-help-icon .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-help-icon:hover {
+    background: #2563eb;
+    color: #ffffff;
+    transform: scale(1.12);
+}
+
+/* Tooltip flotante universal con elevación máxima */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #0f172a;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: normal;
+    min-width: 140px;
+    max-width: 260px;
+    text-align: center;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    border: 1px solid #334155;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+    z-index: 999999999 !important;
+}
+
+[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    border-width: 6px 6px 0 6px;
+    border-style: solid;
+    border-color: #0f172a transparent transparent transparent;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+    z-index: 999999999 !important;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:hover::before,
+[data-tooltip]:focus::after,
+[data-tooltip]:focus::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Tooltips de cabecera de tabla / tarjetas superiores se orientan hacia abajo si es necesario */
+.aura-dt-wrapper th [data-tooltip]::after,
+.aura-areas-summary-grid .aura-areas-stat-card:first-child [data-tooltip]::after {
+    top: calc(100% + 8px);
+    bottom: auto;
+    transform: translateX(-50%) translateY(-4px);
+}
+.aura-dt-wrapper th [data-tooltip]::before,
+.aura-areas-summary-grid .aura-areas-stat-card:first-child [data-tooltip]::before {
+    top: calc(100% + 2px);
+    bottom: auto;
+    border-width: 0 6px 6px 6px;
+    border-color: transparent transparent #0f172a transparent;
+    transform: translateX(-50%) translateY(-4px);
+}
+.aura-dt-wrapper th [data-tooltip]:hover::after,
+.aura-dt-wrapper th [data-tooltip]:hover::before {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ── 5. SECCIÓN Y CONTENEDOR CRUD ───────────────────────────────────── */
+.aura-areas-section-card {
+    padding: 24px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+}
+
+.aura-areas-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.aura-areas-section-head h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.aura-areas-section-head p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.aura-areas-head-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Botones con estilo premium */
+.aura-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 18px;
+    height: 38px;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    border: 1px solid #1d4ed8;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    transition: all 0.18s ease;
+    text-decoration: none;
+}
+
+.aura-btn-primary:hover {
+    background: #1d4ed8;
+    border-color: #1e40af;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.aura-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    height: 38px;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-decoration: none;
+}
+
+.aura-btn-secondary:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+/* ── 6. FILTROS Y BÚSQUEDA ──────────────────────────────────────────── */
+.aura-areas-filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 18px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+    align-items: end;
+}
+
+.aura-areas-filters-grid--types {
+    grid-template-columns: 2fr auto;
+}
+
+.aura-areas-filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.aura-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.aura-label {
+    display: flex;
+    align-items: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.aura-input,
+select.aura-input,
+textarea.aura-input {
+    width: 100%;
+    height: 38px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 13.5px;
+    box-sizing: border-box;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+textarea.aura-input {
+    height: auto;
+    min-height: 80px;
+}
+
+.aura-input:focus,
+select.aura-input:focus,
+textarea.aura-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    outline: none;
+}
+
+/* Grupos de Entrada Bootstrap-Style */
+.aura-input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    position: relative;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    overflow: hidden;
+}
+
+.aura-input-group:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.aura-input-group-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    background: #f8fafc;
+    color: #64748b;
+    border-right: 1px solid #cbd5e1;
+    flex-shrink: 0;
+}
+
+.aura-input-group-text .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+}
+
+.aura-input-group .aura-input,
+.aura-input-group select.aura-input,
+.aura-input-group textarea.aura-input {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    flex: 1 1 auto;
+    width: 1%;
+    margin: 0;
+    border-radius: 0 !important;
+}
+
+.aura-input-group .aura-input:focus,
+.aura-input-group select.aura-input:focus,
+.aura-input-group textarea.aura-input:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* ── 7. TABLA DATATABLES PROFESIONAL ────────────────────────────────── */
+.aura-areas-table-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.aura-areas-table {
+    width: 100% !important;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.aura-areas-table thead th {
+    background: #1e3a5f !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 16px !important;
+    border: none !important;
+    white-space: nowrap !important;
+}
+
+.aura-areas-table tbody td {
+    padding: 14px 16px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 13.5px;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.aura-areas-table tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.aura-areas-table tbody tr:hover {
+    background: #eff6ff !important;
+}
+
+/* Badges y Celdas de Tabla */
+.aura-areas-table .aura-area-name-cell {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.aura-areas-table .aura-area-name {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.aura-areas-table .aura-area-parent {
+    font-size: 11.5px;
+    color: #2563eb;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.aura-logo-toggle-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-row-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.aura-row-toggle:hover {
+    background: #2563eb;
+    border-color: #1d4ed8;
+    color: #ffffff;
+    transform: scale(1.06);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.aura-row-toggle .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aura-row-toggle.is-active,
+tr.shown .aura-row-toggle,
+tr.is-expanded .aura-row-toggle {
+    background: #2563eb;
+    border-color: #1d4ed8;
+    color: #ffffff;
+}
+
+.aura-row-toggle.is-active .dashicons,
+tr.shown .aura-row-toggle .dashicons,
+tr.is-expanded .aura-row-toggle .dashicons {
+    transform: rotate(90deg);
+}
+
+.aura-areas-table .aura-area-description {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.4;
+    margin-top: 3px;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#aura-areas-table th.column-actions,
+#aura-areas-table td:last-child {
+    white-space: nowrap !important;
+    min-width: 148px;
+    width: 148px;
+    text-align: right;
+}
+
+#aura-types-table th:last-child,
+#aura-types-table td:last-child {
+    white-space: nowrap !important;
+    min-width: 96px;
+    width: 96px;
+    text-align: right;
+}
+
+.aura-type-swatch {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.aura-type-swatch:hover {
+    transform: scale(1.15);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25) !important;
+}
+
+.aura-type-title {
+    transition: color 0.15s ease;
+}
+.aura-type-title:hover {
+    color: #2563eb !important;
+}
+
+.aura-areas-table td .aura-type-desc {
+    max-width: 260px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.aura-areas-table .aura-status-badge,
+.aura-areas-table .aura-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.aura-areas-table .aura-status-active {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.aura-areas-table .aura-status-archived {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.aura-areas-table .aura-type-badge {
+    background: #e0e7ff;
+    color: #3730a3;
+    border: 1px solid #c7d2fe;
+}
+
+.aura-areas-table .aura-users-stack {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.aura-areas-table .aura-user-av {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.aura-areas-table .aura-user-av:hover {
+    transform: scale(1.15);
+    z-index: 10;
+}
+
+.aura-areas-table .aura-user-av img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.aura-areas-table .aura-users-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.aura-areas-table .aura-users-more:hover {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #1d4ed8;
+    transform: scale(1.1);
+}
+
+.aura-areas-table .aura-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    text-decoration: none;
+    margin-right: 4px;
+    transition: all 0.18s ease;
+}
+
+.aura-areas-table .aura-action-btn:hover {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+    transform: translateY(-1px);
+}
+
+.aura-areas-table .aura-action-btn.danger:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+.aura-areas-table .aura-action-btn.success:hover {
+    background: #f0fdf4;
+    border-color: #16a34a;
+    color: #16a34a;
+}
+
+/* ── TOOLTIP ENRIQUECIDO (AURA TIP CARD) ───────────────────────────── */
+.aura-tip-card {
+    min-width: 230px;
+    max-width: 290px;
+    padding: 12px 14px;
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: 10px;
+    font-size: 12px;
+    box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.45);
+    text-align: left;
+    border: 1px solid #334155;
+    box-sizing: border-box;
+}
+
+.aura-tip-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #334155;
+    margin-bottom: 8px;
+}
+
+.aura-tip-avatar-large img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #38bdf8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    display: block;
+}
+
+.aura-tip-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.aura-tip-title {
+    font-weight: 700;
+    font-size: 13px;
+    color: #ffffff;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aura-tip-subtitle {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aura-tip-badges {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.aura-tip-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.aura-tip-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.aura-tip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #cbd5e1;
+    gap: 8px;
+}
+
+.aura-tip-row span {
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.aura-tip-row strong {
+    color: #ffffff;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── CHILD ROWS PERSONALIZADAS (DATATABLES RESPONSIVE) ──────────────── */
+.aura-areas-table tr.child td.child {
+    padding: 14px 16px !important;
+    background: #f8fafc !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.aura-child-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.aura-child-hero-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+}
+
+.aura-child-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aura-child-hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.aura-child-hero-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.aura-child-hero-parent {
+    font-size: 0.8rem;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aura-child-hero-parent .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+.aura-child-hero-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-child-sections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.aura-child-subcard {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aura-child-subcard-full {
+    grid-column: 1 / -1;
+}
+
+.aura-child-subcard-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #475569;
+}
+
+.aura-child-subcard-header .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: #2563eb;
+}
+
+.aura-child-description {
+    margin: 0;
+    font-size: 0.86rem;
+    color: #475569;
+    line-height: 1.45;
+}
+
+.aura-child-meta-item {
+    font-size: 0.82rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+}
+
+.aura-child-budget-val {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #059669;
+}
+
+.aura-child-inline-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aura-child-inline-link:hover {
+    text-decoration: underline;
+}
+
+.aura-child-users-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.aura-child-user-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.aura-child-user-av {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.aura-child-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.aura-child-user-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.aura-child-user-email {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.aura-child-empty-text {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.aura-child-action-dock {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+}
+
+.aura-btn-sm {
+    height: 32px;
+    padding: 4px 12px;
+    font-size: 12.5px;
+}
+
+/* ── 8. SISTEMA UNIVERSAL DE MODALES (CENTRADO PERFECTO Y BLUR) ─────── */
+.aura-modal-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    background: rgba(15, 23, 42, 0.75) !important;
+    backdrop-filter: blur(10px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(180%) !important;
+    z-index: 999999 !important;
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, visibility .2s ease;
+}
+
+/* ── COMPATIBILIDAD CON VENTANA DE MEDIOS DE WORDPRESS (WP.MEDIA) ── */
+.media-modal-backdrop {
+    z-index: 1000000 !important;
+}
+
+.media-modal,
+.media-frame,
+.media-frame.mode-select,
+.media-frame.wp-core-ui {
+    z-index: 1000001 !important;
+}
+
+/* Modal de Recorte (Crop Modal) siempre por encima de todos */
+#aura-crop-modal {
+    z-index: 1000005 !important;
+}
+
+.aura-modal-overlay.active,
+.aura-modal-overlay[aria-hidden="false"] {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.aura-modal-overlay[style*="display: none"],
+.aura-modal-overlay[aria-hidden="true"],
+.aura-modal-overlay.is-hidden {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Caja Modal Interior */
+.aura-modal-content,
+.aura-areas-modal-content {
+    position: relative !important;
+    margin: auto !important;
+    background: #ffffff !important;
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.35) !important;
+    width: 94% !important;
+    max-width: 780px !important;
+    height: auto !important;
+    max-height: min(88vh, calc(100dvh - 32px)) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    animation: auraModalPop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.aura-areas-modal-content--compact {
+    max-width: 620px !important;
+}
+
+@keyframes auraModalPop {
+    from { opacity: 0; transform: scale(0.96) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.aura-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+    flex: 0 0 auto;
+}
+
+.aura-modal-header h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.aura-modal-subtitle {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.aura-modal-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+}
+
+.aura-modal-close:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #dc2626;
+    transform: rotate(90deg);
+}
+
+.aura-modal-body {
+    padding: 24px;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.aura-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    flex: 0 0 auto;
+}
+
+/* Campos de Formulario en Modal */
+.aura-field-group.cols-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.aura-areas-logo-preview {
+    width: 100%;
+    max-width: 160px;
+    aspect-ratio: 1 / 1;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.aura-areas-logo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.aura-areas-logo-widget {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.aura-areas-logo-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.aura-areas-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    color: #334155;
+    cursor: pointer;
+}
+
+/* ── 9. POPUP FLOTANTE GLOBAL DE IMAGEN ─────────────────────────────── */
+.aura-floating-img-preview {
+    position: fixed;
+    display: none;
+    pointer-events: none;
+    z-index: 9999999;
+    background: #ffffff;
+    padding: 8px;
+    border-radius: 14px;
+    box-shadow: 0 20px 45px -8px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+
+.aura-floating-img-preview.is-visible {
+    display: block;
+    opacity: 1;
+    transform: scale(1);
+}
+
+.aura-floating-img-preview img {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+    background: #f8fafc;
+}
+
+.aura-floating-img-title {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    text-align: center;
+    margin-top: 6px;
+    padding: 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+/* ── 10. MODO OSCURO (DARK MODE COMPATIBILITY) ──────────────────────── */
+html[data-wp-dark-mode-scheme="dark"],
+html.wp-dark-mode-active,
+body.wp-dark-mode-active,
+body.aura-dark-mode,
+body[data-theme="dark"],
+[data-theme="dark"],
+body.admin-color-midnight,
+body.admin-color-coffee {
+    /* Navbar & Tabs */
+    .aura-areas-navbar {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .aura-tab-btn {
+        color: #94a3b8;
+    }
+    .aura-tab-btn:hover {
+        background: #334155;
+        color: #f8fafc;
+    }
+    .aura-tab-btn.active {
+        background: #2563eb;
+        color: #ffffff;
+    }
+
+    /* Stat Cards / KPIs Dark Mode */
+    .aura-areas-kpi-grid .aura-tp-kpi-card,
+    .aura-areas-stat-card {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+    }
+    .aura-tp-kpi-card__label-wrap,
+    .aura-areas-stat-card__label {
+        color: #94a3b8 !important;
+    }
+    .aura-tp-kpi-card__value,
+    .aura-areas-stat-card strong {
+        color: #f8fafc !important;
+    }
+    .aura-areas-stat-card p {
+        color: #94a3b8;
+    }
+    .aura-tp-kpi-card__icon-wrap {
+        filter: brightness(1.2);
+    }
+
+    /* Stat Icon Wrap in Dark Mode */
+    .aura-stat-icon-wrap.primary {
+        background: rgba(37, 99, 235, 0.2);
+        color: #60a5fa;
+        border-color: rgba(37, 99, 235, 0.4);
+    }
+    .aura-stat-icon-wrap.success {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+        border-color: rgba(16, 185, 129, 0.4);
+    }
+    .aura-stat-icon-wrap.warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
+        border-color: rgba(245, 158, 11, 0.4);
+    }
+    .aura-stat-icon-wrap.info {
+        background: rgba(14, 165, 233, 0.2);
+        color: #38bdf8;
+        border-color: rgba(14, 165, 233, 0.4);
+    }
+    .aura-stat-icon-wrap.purple {
+        background: rgba(147, 51, 234, 0.2);
+        color: #c084fc;
+        border-color: rgba(147, 51, 234, 0.4);
+    }
+
+    /* Section Cards & Head */
+    .aura-areas-section-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .aura-areas-section-head h2 {
+        color: #f8fafc;
+    }
+    .aura-areas-section-head p {
+        color: #94a3b8;
+    }
+
+    /* Filters */
+    .aura-areas-filters-grid {
+        background: #0f172a;
+        border-color: #334155;
+    }
+    .aura-label {
+        color: #94a3b8;
+    }
+    .aura-input,
+    select.aura-input,
+    textarea.aura-input {
+        background: #0f172a;
+        border-color: #334155;
+        color: #f8fafc;
+        color-scheme: dark;
+    }
+    .aura-input:focus,
+    select.aura-input:focus,
+    textarea.aura-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Input Groups Dark Mode */
+    .aura-input-group {
+        background: #0f172a;
+        border-color: #334155;
+    }
+    .aura-input-group:focus-within {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+    .aura-input-group-text {
+        background: #1e293b;
+        color: #94a3b8;
+        border-color: #334155;
+    }
+
+    .aura-btn-secondary {
+        background: #1e293b;
+        color: #f8fafc;
+        border-color: #475569;
+    }
+    .aura-btn-secondary:hover {
+        background: #334155;
+        border-color: #64748b;
+    }
+
+    /* Table */
+    .aura-areas-table-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .aura-areas-table thead th {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+    }
+    .aura-areas-table tbody td {
+        background: #1e293b;
+        border-color: #334155 !important;
+        color: #f8fafc;
+    }
+    .aura-areas-table tbody tr:nth-child(even) td {
+        background: #182234;
+    }
+    .aura-areas-table tbody tr:hover td {
+        background: #1e3a5f !important;
+    }
+    .aura-areas-table .aura-area-name {
+        color: #f8fafc;
+    }
+    .aura-areas-table .aura-area-description {
+        color: #94a3b8;
+    }
+    .aura-type-title {
+        color: #f8fafc !important;
+    }
+    .aura-type-title:hover {
+        color: #60a5fa !important;
+    }
+    .aura-areas-table td .aura-type-desc {
+        color: #94a3b8;
+    }
+    .aura-row-toggle {
+        background: #0f172a;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+    .aura-row-toggle:hover,
+    .aura-row-toggle.is-active,
+    tr.shown .aura-row-toggle,
+    tr.is-expanded .aura-row-toggle {
+        background: #2563eb;
+        border-color: #3b82f6;
+        color: #ffffff;
+    }
+    .aura-areas-table .aura-users-more {
+        background: #0f172a;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+    .aura-areas-table .aura-users-more:hover {
+        background: #2563eb;
+        border-color: #3b82f6;
+        color: #ffffff;
+    }
+    .aura-areas-table .aura-action-btn {
+        background: #0f172a;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+    .aura-areas-table .aura-action-btn:hover {
+        background: #1e3a5f;
+        border-color: #3b82f6;
+        color: #93c5fd;
+    }
+    .aura-areas-table .aura-status-archived {
+        background: #334155;
+        color: #94a3b8;
+        border-color: #475569;
+    }
+
+    /* Child Rows Dark Mode */
+    .aura-areas-table tr.child td.child {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+    .aura-child-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .aura-child-hero-bar {
+        border-color: #334155;
+    }
+    .aura-child-hero-title {
+        color: #f8fafc;
+    }
+    .aura-child-hero-parent {
+        color: #60a5fa;
+    }
+    .aura-child-subcard {
+        background: #0f172a;
+        border-color: #334155;
+    }
+    .aura-child-subcard-header {
+        color: #94a3b8;
+    }
+    .aura-child-subcard-header .dashicons {
+        color: #60a5fa;
+    }
+    .aura-child-description {
+        color: #cbd5e1;
+    }
+    .aura-child-meta-item {
+        color: #94a3b8;
+    }
+    .aura-child-budget-val {
+        color: #34d399;
+    }
+    .aura-child-user-item {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .aura-child-user-name {
+        color: #f8fafc;
+    }
+    .aura-child-user-email {
+        color: #94a3b8;
+    }
+    .aura-child-action-dock {
+        border-color: #334155;
+    }
+
+    /* Modals */
+    .aura-modal-content,
+    .aura-areas-modal-content {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+    }
+    .aura-modal-header {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .aura-modal-header h2 {
+        color: #f8fafc;
+    }
+    .aura-modal-subtitle {
+        color: #94a3b8;
+    }
+    .aura-modal-close {
+        background: #0f172a;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+    .aura-modal-footer {
+        background: #0f172a;
+        border-color: #334155;
+    }
+    .aura-areas-logo-preview {
+        background: #0f172a;
+        border-color: #334155;
+    }
+    .aura-areas-checkbox-row {
+        color: #cbd5e1;
+    }
+
+    /* Tooltip Help Icon */
+    .aura-help-icon {
+        background: #334155;
+        color: #cbd5e1;
+    }
+    .aura-help-icon:hover {
+        background: #3b82f6;
+        color: #ffffff;
+    }
+
+    /* Floating Image Preview */
+    .aura-floating-img-preview {
+        background: #1e293b;
+        box-shadow: 0 20px 45px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px #334155;
+    }
+    .aura-floating-img-preview img {
+        background: #0f172a;
+    }
+    .aura-floating-img-title {
+        color: #f8fafc;
+    }
+}
+
+/* ── 11. RESPONSIVE BREAKPOINTS ─────────────────────────────────────── */
+@media (max-width: 767px) {
+    .aura-areas-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    .aura-areas-page-header__badges {
+        width: 100%;
+    }
+
+    .aura-areas-section-card {
+        padding: 16px;
+    }
+
+    .aura-areas-head-actions,
+    .aura-areas-filter-actions,
+    .aura-areas-logo-actions,
+    .aura-modal-footer {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .aura-field-group.cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-areas-modal-content {
+        width: 100% !important;
+        margin: 8px !important;
+        max-height: calc(100dvh - 16px) !important;
+    }
+
+    .aura-child-action-dock {
+        justify-content: stretch;
+    }
+
+    .aura-child-action-dock .aura-btn {
+        flex: 1 1 100%;
+    }
+
+    .aura-areas-table-card {
+        overflow-x: hidden !important;
+    }
+}

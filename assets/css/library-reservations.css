@@ -1,0 +1,174 @@
+/**
+ * library-reservations.css — Reservas de Libros (Fase 4)
+ * Aura Business Suite
+ *
+ * Estilos específicos de la vista de reservas.
+ * Los estilos base (badges, modales, paginación, filtros) están en library-loans.css.
+ */
+
+/* ── Barra de filtros ── */
+.aura-library-reservations-list .aura-lib-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* ── Tabla ── */
+#aura-lib-reservations-table th:nth-child(4),
+#aura-lib-reservations-table td:nth-child(4) {
+    text-align: center;
+}
+
+/* ── Badges (se reutilizan de library-loans.css; se redefinen por si carga sola) ── */
+.aura-lib-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    white-space: nowrap;
+}
+.aura-lib-badge-green  { background: #d1e8d0; color: #1a5c1a; }
+.aura-lib-badge-orange { background: #fde8d0; color: #7a3a00; }
+.aura-lib-badge-blue   { background: #dbeafe; color: #1e40af; }
+.aura-lib-badge-gray   { background: #e9ecef; color: #555; }
+
+/* ── Botones de acción ── */
+.aura-lib-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.aura-lib-btn-action {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #c3c4c7;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s, border-color .15s;
+}
+.aura-lib-btn-action:hover {
+    background: #f0f0f0;
+    border-color: #0073aa;
+    color: #0073aa;
+}
+.aura-lib-btn-action.aura-lib-btn-danger {
+    border-color: #d63638;
+    color: #d63638;
+}
+.aura-lib-btn-action.aura-lib-btn-danger:hover {
+    background: #fde8e8;
+}
+
+/* ── Modal base ── */
+.aura-lib-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.aura-lib-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+}
+.aura-lib-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.25);
+    min-width: 440px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1;
+}
+.aura-lib-modal-large { max-width: 720px; }
+.aura-lib-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #ddd;
+    background: #f9f9f9;
+    border-radius: 6px 6px 0 0;
+}
+.aura-lib-modal-header h2 { margin: 0; font-size: 16px; }
+.aura-lib-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 22px;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+}
+.aura-lib-modal-close:hover { color: #d63638; }
+.aura-lib-modal-body { padding: 20px; }
+.aura-lib-modal-footer {
+    display: flex;
+    gap: 8px;
+    padding: 16px 0 4px;
+    border-top: 1px solid #eee;
+    margin-top: 16px;
+}
+body.aura-lib-modal-open { overflow: hidden; }
+
+/* ── Tabla de detalle ── */
+.aura-lib-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.aura-lib-detail-table th,
+.aura-lib-detail-table td {
+    padding: 8px 12px;
+    border: 1px solid #e1e1e1;
+    vertical-align: top;
+}
+.aura-lib-detail-table th {
+    background: #f9f9f9;
+    font-weight: 600;
+    width: 35%;
+}
+
+/* ── Paginación ── */
+.aura-lib-pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.aura-lib-count { color: #666; font-size: 13px; }
+.aura-lib-page-btns { display: flex; gap: 4px; }
+.aura-lib-page-btn.button-primary { pointer-events: none; }
+
+/* ── Botón Reservar en catálogo (F4.4) ── */
+.aura-lib-btn-reserve {
+    border-color: #0073aa;
+    color: #0073aa;
+}
+.aura-lib-btn-reserve:hover {
+    background: #dbeafe;
+}
+
+/* ── Modal Reservar (desde catálogo) ── */
+#aura-lib-reserve-modal .aura-lib-modal-content {
+    max-width: 460px;
+}
