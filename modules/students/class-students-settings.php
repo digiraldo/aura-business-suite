@@ -141,9 +141,9 @@ class Aura_Students_Settings {
 
         $pages_def = [
             'login_page_id' => [
-                'title'     => __( 'Acceso de Estudiantes', 'aura-suite' ),
-                'slug'      => 'acceso-estudiantes',
-                'shortcode' => '[aura_student_login]',
+                'title'     => __( 'Acceso a la Plataforma', 'aura-suite' ),
+                'slug'      => 'acceso',
+                'shortcode' => '[aura_login]',
             ],
             'portal_page_id' => [
                 'title'     => __( 'Portal del Estudiante', 'aura-suite' ),

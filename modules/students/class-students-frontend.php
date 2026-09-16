@@ -32,6 +32,7 @@ class Aura_Students_Frontend {
 
     public static function init(): void {
         // Shortcodes
+        add_shortcode( 'aura_login',                  [ __CLASS__, 'shortcode_login' ] );
         add_shortcode( 'aura_student_login',          [ __CLASS__, 'shortcode_login' ] );
         add_shortcode( 'aura_student_portal',         [ __CLASS__, 'shortcode_portal' ] );
         add_shortcode( 'aura_enrollment_form',        [ __CLASS__, 'shortcode_enrollment_form' ] );
@@ -65,6 +66,7 @@ class Aura_Students_Frontend {
         if ( ! $post || ! is_a( $post, 'WP_Post' ) ) return;
 
         $has_sc = (
+            has_shortcode( $post->post_content, 'aura_login' )              ||
             has_shortcode( $post->post_content, 'aura_student_login' )      ||
             has_shortcode( $post->post_content, 'aura_student_portal' )     ||
             has_shortcode( $post->post_content, 'aura_enrollment_form' )    ||
@@ -149,10 +151,14 @@ class Aura_Students_Frontend {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // SHORTCODE: LOGIN
+    // SHORTCODE: LOGIN (UNIFICADO EN [aura_login] Y ALIAS [aura_student_login])
     // ─────────────────────────────────────────────────────────────
 
-    public static function shortcode_login( array $atts ): string {
+    public static function shortcode_login( array $atts = [] ): string {
+        if ( class_exists( 'Aura_Calendar_Frontend' ) && method_exists( 'Aura_Calendar_Frontend', 'shortcode_login' ) ) {
+            return Aura_Calendar_Frontend::shortcode_login( (array) $atts );
+        }
+
         $atts = shortcode_atts( [
             'redirect' => '',
         ], $atts, 'aura_student_login' );
@@ -657,20 +663,20 @@ class Aura_Students_Frontend {
     /**
      * Obtiene la URL de la página del portal desde opciones.
      */
-    private static function get_portal_page_url(): string {
+    public static function get_portal_page_url(): string {
         $settings = get_option( 'aura_students_settings', [] );
         $page_id  = (int) ( $settings['portal_page_id'] ?? 0 );
         if ( $page_id ) {
             $url = get_permalink( $page_id );
             if ( $url ) return $url;
         }
-        return home_url( '/mi-portal/' );
+        return home_url( '/portal-estudiante/' );
     }
 
     /**
      * Obtiene la URL del login del portal.
      */
-    private static function get_login_page_url(): string {
+    public static function get_login_page_url(): string {
         $settings = get_option( 'aura_students_settings', [] );
         $page_id  = (int) ( $settings['login_page_id'] ?? 0 );
         if ( $page_id ) {

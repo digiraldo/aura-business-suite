@@ -22,7 +22,8 @@ class Aura_Calendar_Frontend {
      * Inicializar shortcodes y endpoints
      */
     public static function init(): void {
-        add_shortcode( 'aura_community_login',  [ __CLASS__, 'shortcode_community_login' ] );
+        add_shortcode( 'aura_login',           [ __CLASS__, 'shortcode_login' ] );
+        add_shortcode( 'aura_community_login', [ __CLASS__, 'shortcode_login' ] );
         add_shortcode( 'aura_teacher_portal',   [ __CLASS__, 'shortcode_teacher_portal' ] );
         add_shortcode( 'aura_student_schedule', [ __CLASS__, 'shortcode_student_schedule' ] );
         add_action( 'wp_enqueue_scripts',       [ __CLASS__, 'enqueue_frontend_assets' ] );
@@ -38,7 +39,9 @@ class Aura_Calendar_Frontend {
         }
 
         $has_shortcode = (
+            has_shortcode( $post->post_content, 'aura_login' ) ||
             has_shortcode( $post->post_content, 'aura_community_login' ) ||
+            has_shortcode( $post->post_content, 'aura_student_login' ) ||
             has_shortcode( $post->post_content, 'aura_teacher_portal' ) ||
             has_shortcode( $post->post_content, 'aura_student_schedule' )
         );
@@ -104,41 +107,64 @@ class Aura_Calendar_Frontend {
     }
 
     /**
-     * Shortcode: [aura_community_login]
-     * Formulario unificado de acceso por rol
+     * Shortcode Maestro Unificado: [aura_login]
+     * También funciona como alias para [aura_student_login] y [aura_community_login]
+     *
+     * @param array $atts
+     * @return string
      */
-    public static function shortcode_community_login(): string {
+    public static function shortcode_login( $atts = [] ): string {
+        $atts = shortcode_atts( [
+            'redirect' => '',
+        ], (array) $atts, 'aura_login' );
+
         ob_start();
 
-        // Si ya está logueado
+        // ── SI YA ESTÁ LOGUEADO ──
         if ( is_user_logged_in() ) {
             $user       = wp_get_current_user();
             $portal_url = '';
 
-            // Detectar si existe página del portal del estudiante
+            // 1. Detectar página del portal del estudiante
             if ( class_exists( 'Aura_Students_Settings' ) ) {
                 $st_page_id = (int) Aura_Students_Settings::get( 'portal_page_id' );
                 if ( $st_page_id > 0 ) {
                     $portal_url = get_permalink( $st_page_id );
                 }
             }
+            if ( empty( $portal_url ) && class_exists( 'Aura_Students_Frontend' ) && method_exists( 'Aura_Students_Frontend', 'get_portal_page_url' ) ) {
+                $portal_url = Aura_Students_Frontend::get_portal_page_url();
+            }
             if ( empty( $portal_url ) ) {
-                $portal_url = home_url( '/portal-del-estudiante/' );
+                $portal_url = home_url( '/portal-estudiante/' );
             }
 
-            // Comprobar si tiene acceso a administración o backend
+            // 2. Comprobar si tiene acceso a administración o backend de WP
             $can_admin = (
                 current_user_can( 'manage_options' ) ||
+                current_user_can( 'aura_manage_calendar' ) ||
                 current_user_can( 'aura_view_calendar' ) ||
                 current_user_can( 'aura_manage_finances' ) ||
-                current_user_can( 'aura_inventory_view_all' )
+                current_user_can( 'aura_financial_view_reports' ) ||
+                current_user_can( 'aura_inventory_view_all' ) ||
+                current_user_can( 'aura_students_manage' ) ||
+                current_user_can( 'edit_posts' )
             );
 
-            // Comprobar si es profesor
+            // 3. Comprobar si es profesor/instructor
             $is_teacher = current_user_can( 'aura_teach_calendar' );
+
+            // 4. Comprobar si es estudiante
+            $is_student = current_user_can( 'aura_students_view_own' ) || current_user_can( 'aura_student_portal_access' );
+
+            // Si vino un redirect explícito y no es administrador, redirigir automáticamente
+            if ( ! empty( $atts['redirect'] ) && ! $can_admin ) {
+                wp_safe_redirect( $atts['redirect'] );
+                exit;
+            }
             ?>
             <div class="aura-portal-wrap" style="max-width: 520px; margin: 40px auto; padding: 0 16px;">
-                <div class="adp-card" style="text-align: center; padding: 36px 28px;">
+                <div class="adp-card" style="text-align: center; padding: 36px 28px; border-radius: 16px; box-shadow: var(--aura-shadow-md);">
                     <div style="width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; background: var(--aura-primary-alpha, rgba(99, 102, 241, 0.12)); display: flex; align-items: center; justify-content: center; font-size: 28px;">
                         👋
                     </div>
@@ -150,23 +176,23 @@ class Aura_Calendar_Frontend {
                     </p>
 
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <?php if ( $is_teacher ) : ?>
-                            <a href="<?php echo esc_url( home_url( '/portal-instructor/' ) ); ?>" class="btn btn-indigo btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 15px; font-weight: 600; text-decoration: none;">
-                                👨‍🏫 <?php esc_html_e( 'Ir a mi Portal de Instructor', 'aura' ); ?>
-                            </a>
-                        <?php endif; ?>
-
-                        <a href="<?php echo esc_url( $portal_url ); ?>" class="btn btn-indigo btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 15px; font-weight: 600; text-decoration: none;">
-                            🎓 <?php esc_html_e( 'Ir a mi Portal de Estudiante', 'aura' ); ?>
-                        </a>
-
                         <?php if ( $can_admin ) : ?>
-                            <a href="<?php echo esc_url( admin_url() ); ?>" class="btn btn-emerald btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 15px; font-weight: 600; text-decoration: none;">
+                            <a href="<?php echo esc_url( admin_url() ); ?>" class="btn btn-emerald btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 15px; font-weight: 600; text-decoration: none; justify-content: center;">
                                 ⚡ <?php esc_html_e( 'Acceder al Panel Administrativo', 'aura' ); ?>
                             </a>
                         <?php endif; ?>
 
-                        <a href="<?php echo esc_url( wp_logout_url( get_permalink() ) ); ?>" class="btn btn-ghost" style="padding: 10px 16px; font-size: 14px; text-decoration: none; margin-top: 8px;">
+                        <?php if ( $is_teacher ) : ?>
+                            <a href="<?php echo esc_url( home_url( '/portal-instructor/' ) ); ?>" class="btn btn-indigo btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 15px; font-weight: 600; text-decoration: none; justify-content: center;">
+                                👨‍🏫 <?php esc_html_e( 'Ir a mi Portal de Instructor', 'aura' ); ?>
+                            </a>
+                        <?php endif; ?>
+
+                        <a href="<?php echo esc_url( $portal_url ); ?>" class="btn btn-indigo btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 15px; font-weight: 600; text-decoration: none; justify-content: center;">
+                            🎓 <?php esc_html_e( 'Ir a mi Portal de Estudiante', 'aura' ); ?>
+                        </a>
+
+                        <a href="<?php echo esc_url( wp_logout_url( get_permalink() ) ); ?>" class="btn btn-ghost" style="padding: 10px 16px; font-size: 14px; text-decoration: none; margin-top: 8px; justify-content: center;">
                             🚪 <?php esc_html_e( 'Cerrar Sesión', 'aura' ); ?>
                         </a>
                     </div>
@@ -176,7 +202,7 @@ class Aura_Calendar_Frontend {
             return ob_get_clean();
         }
 
-        // Proceso de Login POST
+        // ── PROCESO DE LOGIN POST ──
         $login_error = '';
         if ( isset( $_POST['aura_login_submit'] ) && wp_verify_nonce( $_POST['aura_login_nonce'] ?? '', 'aura_login_action' ) ) {
             $user_login = sanitize_text_field( $_POST['log'] ?? '' );
@@ -193,41 +219,59 @@ class Aura_Calendar_Frontend {
             if ( is_wp_error( $signon ) ) {
                 $login_error = __( 'Credenciales incorrectas o usuario no encontrado.', 'aura' );
             } else {
-                wp_safe_redirect( $_SERVER['REQUEST_URI'] );
+                $target_redirect = sanitize_text_field( $_POST['redirect_to'] ?? '' );
+                if ( empty( $target_redirect ) && ! empty( $atts['redirect'] ) ) {
+                    $target_redirect = $atts['redirect'];
+                }
+                if ( ! empty( $target_redirect ) ) {
+                    wp_safe_redirect( $target_redirect );
+                } else {
+                    wp_safe_redirect( $_SERVER['REQUEST_URI'] );
+                }
                 exit;
             }
         }
+
+        $org_logo = get_option( 'aura_org_logo_url', '' );
         ?>
         <div class="aura-portal-wrap" style="max-width: 440px; margin: 40px auto; padding: 0 16px;">
             <div class="adp-card" style="padding: 36px 32px; border-radius: 16px; box-shadow: var(--aura-shadow-md);">
                 <div style="text-align: center; margin-bottom: 24px;">
-                    <span class="adp-badge badge-indigo has-dot" style="margin-bottom: 12px;">
-                        <span class="pulse-dot"></span> <?php esc_html_e( 'Acceso a la Comunidad', 'aura' ); ?>
+                    <?php if ( ! empty( $org_logo ) ) : ?>
+                        <div style="margin-bottom: 16px;">
+                            <img src="<?php echo esc_url( $org_logo ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" style="max-height: 60px; max-width: 100%; height: auto; margin: 0 auto; display: block; object-fit: contain;">
+                        </div>
+                    <?php endif; ?>
+                    <span class="adp-badge badge-indigo has-dot" style="margin-bottom: 12px; display: inline-flex;">
+                        <span class="pulse-dot"></span> <?php esc_html_e( 'Acceso a la Plataforma', 'aura' ); ?>
                     </span>
                     <h2 class="adp-card-title" style="font-size: 24px; margin-bottom: 6px;">
                         <?php esc_html_e( 'Iniciar Sesión', 'aura' ); ?>
                     </h2>
                     <p class="adp-card-desc" style="font-size: 14px;">
-                        <?php esc_html_e( 'Ingresa con tu correo institucional o usuario.', 'aura' ); ?>
+                        <?php esc_html_e( 'Ingresa con tu correo o usuario institucional.', 'aura' ); ?>
                     </p>
                 </div>
 
                 <?php if ( ! empty( $login_error ) ) : ?>
-                    <div class="alert-card alert-danger" style="margin-bottom: 20px; padding: 12px 16px; font-size: 14px;">
+                    <div class="alert-card alert-danger" style="margin-bottom: 20px; padding: 12px 16px; font-size: 14px; border-radius: 8px;">
                         ⚠️ <?php echo esc_html( $login_error ); ?>
                     </div>
                 <?php endif; ?>
 
                 <form method="post" action="" style="display: flex; flex-direction: column; gap: 16px;">
                     <?php wp_nonce_field( 'aura_login_action', 'aura_login_nonce' ); ?>
+                    <?php if ( ! empty( $atts['redirect'] ) ) : ?>
+                        <input type="hidden" name="redirect_to" value="<?php echo esc_url( $atts['redirect'] ); ?>">
+                    <?php endif; ?>
 
                     <div class="form-group">
                         <label class="form-label" style="font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block;">
                             <?php esc_html_e( 'Correo o Usuario', 'aura' ); ?>
                         </label>
-                        <div class="input-group">
-                            <span class="input-prefix">👤</span>
-                            <input type="text" name="log" class="form-control" required placeholder="<?php esc_attr_e( 'ejemplo@institucion.org', 'aura' ); ?>" style="width: 100%; border-radius: 8px; padding: 10px 12px 10px 38px;">
+                        <div class="input-group" style="position: relative;">
+                            <span class="input-prefix" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; z-index: 2;">👤</span>
+                            <input type="text" name="log" class="form-control" required placeholder="<?php esc_attr_e( 'ejemplo@institucion.org', 'aura' ); ?>" style="width: 100%; border-radius: 8px; padding: 10px 12px 10px 38px; border: 1px solid var(--aura-border); background: var(--aura-surface); color: var(--aura-text-primary);">
                         </div>
                     </div>
 
@@ -235,14 +279,17 @@ class Aura_Calendar_Frontend {
                         <label class="form-label" style="font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block;">
                             <?php esc_html_e( 'Contraseña', 'aura' ); ?>
                         </label>
-                        <div class="input-group">
-                            <span class="input-prefix">🔒</span>
-                            <input type="password" name="pwd" class="form-control" required placeholder="••••••••" style="width: 100%; border-radius: 8px; padding: 10px 12px 10px 38px;">
+                        <div class="input-group" style="position: relative;">
+                            <span class="input-prefix" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; z-index: 2;">🔒</span>
+                            <input type="password" name="pwd" id="aura-login-pass-input" class="form-control" required placeholder="••••••••" style="width: 100%; border-radius: 8px; padding: 10px 38px 10px 38px; border: 1px solid var(--aura-border); background: var(--aura-surface); color: var(--aura-text-primary);">
+                            <button type="button" onclick="const p=document.getElementById('aura-login-pass-input');p.type=p.type==='password'?'text':'password';this.innerText=p.type==='password'?'👁':'🔒';" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; padding: 4px; color: var(--aura-text-secondary);" title="<?php esc_attr_e( 'Mostrar/Ocultar contraseña', 'aura' ); ?>">
+                                👁
+                            </button>
                         </div>
                     </div>
 
                     <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
-                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--aura-text-secondary);">
                             <input type="checkbox" name="rememberme" value="1">
                             <?php esc_html_e( 'Recordarme', 'aura' ); ?>
                         </label>
@@ -251,14 +298,24 @@ class Aura_Calendar_Frontend {
                         </a>
                     </div>
 
-                    <button type="submit" name="aura_login_submit" value="1" class="btn btn-indigo btn-shimmer btn-lift" style="width: 100%; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 8px; margin-top: 8px;">
-                        🚀 <?php esc_html_e( 'Ingresar al Portal', 'aura' ); ?>
+                    <button type="submit" name="aura_login_submit" value="1" class="btn btn-indigo btn-shimmer btn-lift" style="width: 100%; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 8px; margin-top: 8px; justify-content: center;">
+                        🚀 <?php esc_html_e( 'Ingresar a la Plataforma', 'aura' ); ?>
                     </button>
                 </form>
             </div>
         </div>
         <?php
         return ob_get_clean();
+    }
+
+    /**
+     * Alias retrocompatible para [aura_community_login]
+     *
+     * @param array $atts
+     * @return string
+     */
+    public static function shortcode_community_login( $atts = [] ): string {
+        return self::shortcode_login( (array) $atts );
     }
 
     /**

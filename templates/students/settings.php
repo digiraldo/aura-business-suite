@@ -151,7 +151,7 @@ $active_fields    = is_array( $s['enrollment_form_fields'] ?? null ) ? $s['enrol
                                 </a>
                             </div>
                             <p style="margin:0 0 10px;font-size:12px;color:var(--aura-text-secondary, #64748b);">
-                                <?php esc_html_e( 'Shortcode:', 'aura-suite' ); ?> <code>[aura_student_login]</code>
+                                <?php esc_html_e( 'Shortcode maestro:', 'aura-suite' ); ?> <code>[aura_login]</code> <span style="font-size:11px;opacity:0.8;">(alias: <code>[aura_student_login]</code>)</span>
                             </p>
                             <div class="input-group">
                                 <span class="input-group-text">📄</span>
