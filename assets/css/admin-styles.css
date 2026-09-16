@@ -589,6 +589,7 @@
 .adp-module-card--electricity { border-top: 4px solid #eab308; }
 .adp-module-card--forms       { border-top: 4px solid #f59e0b; }
 .adp-module-card--inventory   { border-top: 4px solid #8b5cf6; }
+.adp-module-card--calendar    { border-top: 4px solid #6366f1; }
 .adp-module-card--library     { border-top: 4px solid #ec4899; }
 .adp-module-card--students    { border-top: 4px solid #06b6d4; }
 .adp-module-card--certificates { border-top: 4px solid #f97316; }

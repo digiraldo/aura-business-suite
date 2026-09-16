@@ -35,6 +35,8 @@ class Aura_Calendar_Admin {
             current_user_can( 'aura_create_calendar_events' ) ||
             current_user_can( 'aura_manage_calendar' ) ||
             current_user_can( 'aura_teach_calendar' ) ||
+            current_user_can( 'aura_cal_view_calendar' ) ||
+            current_user_can( 'aura_cal_manage_calendar' ) ||
             current_user_can( 'manage_options' )
         );
 
@@ -42,7 +44,7 @@ class Aura_Calendar_Admin {
             return;
         }
 
-        // Menú principal de Calendario
+        // Menú principal de Calendario (Posición 3.25: debajo de Inventario 3.2 y antes de Estudiantes 3.3)
         add_menu_page(
             __( 'Calendario Académico — AURA', 'aura-suite' ),
             __( 'Calendario', 'aura-suite' ),
@@ -50,7 +52,7 @@ class Aura_Calendar_Admin {
             'aura-calendar',
             [ __CLASS__, 'render_main' ],
             'dashicons-calendar-alt',
-            3.6
+            3.25
         );
 
         // Submenú 1: Vista del Calendario (página por defecto)

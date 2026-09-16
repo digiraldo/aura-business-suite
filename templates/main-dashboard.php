@@ -60,9 +60,9 @@ $org_tagline  = get_option('aura_org_tagline', '');
 
 // ── Módulos accesibles ────────────────────────────────────────────────────────
 // Módulos lanzados (desplegados y en producción)
-$deployed_modules = ['finance', 'inventory', 'students', 'certificates', 'forms', 'vehicles', 'library'];
-// Total del roadmap completo del plugin (7 activos + 1 planificado)
-$total_planned    = 8;
+$deployed_modules = ['finance', 'inventory', 'calendar', 'students', 'certificates', 'forms', 'vehicles', 'library'];
+// Total del roadmap completo del plugin (8 activos + 1 planificado)
+$total_planned    = 9;
 // Cuántos módulos desplegados puede ver este usuario
 $active_count     = 0;
 foreach ($deployed_modules as $mk) {
@@ -187,6 +187,40 @@ if (Aura_Roles_Manager::user_can_view_module('inventory')) {
                   WHERE actual_return_date IS NULL"
             );
         }
+    }
+}
+
+// ── Calendario: estadísticas ──────────────────────────────────────────────────
+$cal_events_month    = 0;
+$cal_today_events    = 0;
+$cal_active_programs = 0;
+$cal_can_view_all    = false;
+
+if ( Aura_Roles_Manager::user_can_view_module( 'calendar' ) || current_user_can( 'manage_options' ) ) {
+    $cal_can_view_all = current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' );
+
+    $t_cal_ev   = $wpdb->prefix . 'aura_cal_events';
+    $t_cal_prog = $wpdb->prefix . 'aura_cal_programs';
+
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_cal_ev}'" ) === $t_cal_ev ) {
+        $cal_events_month = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$t_cal_ev}
+              WHERE deleted_at IS NULL
+                AND start_datetime >= %s",
+            date( 'Y-m-01 00:00:00' )
+        ) );
+
+        $cal_today_events = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$t_cal_ev}
+              WHERE deleted_at IS NULL
+                AND DATE(start_datetime) = CURDATE()"
+        );
+    }
+
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_cal_prog}'" ) === $t_cal_prog ) {
+        $cal_active_programs = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$t_cal_prog} WHERE status = 'active' AND deleted_at IS NULL"
+        );
     }
 }
 
@@ -599,6 +633,67 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
                     <a href="<?php echo admin_url('admin.php?page=aura-inventory-maintenance'); ?>" class="btn btn-rose btn-glow btn-sm adp-btn">
                         <span class="dashicons dashicons-warning"></span>
                         <span><?php printf(__('%d con alerta', 'aura-suite'), $inv_maint_alert); ?></span>
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ── CALENDARIO ACADÉMICO ── (Activo - Entre Inventario y Estudiantes) -->
+            <?php if ( Aura_Roles_Manager::user_can_view_module( 'calendar' ) || current_user_can( 'manage_options' ) ) : ?>
+            <div class="aura-glass-card adp-module-card adp-module-card--calendar card-lift mini-dash-card accent-indigo">
+                <div class="adp-module-card__header">
+                    <div class="adp-module-card__icon-row">
+                        <span class="adp-module-card__icon">📅</span>
+                        <span class="badge badge-emerald adp-badge"><span class="pulse-dot dot-emerald"></span> <?php _e( 'Activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <h3 class="adp-module-card__title"><?php _e( 'Calendario', 'aura-suite' ); ?></h3>
+                    <p class="adp-module-card__desc"><?php _e( 'Horarios de clases, programas, materias, asistencia y Google Calendar', 'aura-suite' ); ?></p>
+                </div>
+
+                <div class="adp-mini-stats">
+                    <?php if ( $cal_can_view_all || current_user_can( 'aura_cal_view_calendar' ) || current_user_can( 'aura_view_calendar' ) ) : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value"><?php echo $cal_events_month; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Clases este mes', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value"><?php echo $cal_active_programs; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Programas activos', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value <?php echo $cal_today_events > 0 ? 'adp-text--success' : ''; ?>"><?php echo $cal_today_events; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Clases hoy', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php else : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value adp-mini-stat__value--icon">📅</span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Módulo activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="adp-module-card__actions">
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-calendar' ); ?>" class="btn btn-indigo btn-shimmer adp-btn">
+                        <span class="dashicons dashicons-calendar-alt"></span>
+                        <span><?php _e( 'Ver calendario', 'aura-suite' ); ?></span>
+                    </a>
+                    <?php if ( current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-calendar&action=new' ); ?>" class="btn btn-secondary btn-sm btn-lift adp-btn">
+                        <span class="dashicons dashicons-plus-alt"></span>
+                        <span><?php _e( 'Agendar clase', 'aura-suite' ); ?></span>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ( current_user_can( 'aura_manage_calendar' ) || current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-calendar-programs' ); ?>" class="btn btn-secondary btn-sm btn-lift adp-btn">
+                        <span class="dashicons dashicons-welcome-learn-more"></span>
+                        <span><?php _e( 'Programas', 'aura-suite' ); ?></span>
+                    </a>
+                    <?php endif; ?>
+                    <?php if ( $cal_today_events > 0 ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-calendar' ); ?>" class="btn btn-rose btn-glow btn-sm adp-btn">
+                        <span class="dashicons dashicons-clock"></span>
+                        <span><?php printf( _n( '%d clase hoy', '%d clases hoy', $cal_today_events, 'aura-suite' ), $cal_today_events ); ?></span>
                     </a>
                     <?php endif; ?>
                 </div>
@@ -1070,6 +1165,17 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
                 </a>
                 <?php endif; ?>
 
+                <?php if ( current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
+                <a href="<?php echo admin_url( 'admin.php?page=aura-calendar&action=new' ); ?>" class="adp-quick-btn card-lift">
+                    <span class="adp-quick-btn__icon">📅</span>
+                    <div>
+                        <strong><?php _e( 'Agendar Clase', 'aura-suite' ); ?></strong>
+                        <span><?php _e( 'Programar clase o evento en el calendario', 'aura-suite' ); ?></span>
+                    </div>
+                    <span class="adp-quick-btn__arrow">→</span>
+                </a>
+                <?php endif; ?>
+
                 <?php if ( current_user_can( 'aura_students_create' ) || current_user_can( 'manage_options' ) ) : ?>
                 <a href="<?php echo admin_url( 'admin.php?page=aura-students-new' ); ?>" class="adp-quick-btn card-lift">
                     <span class="adp-quick-btn__icon">🎓</span>
@@ -1186,6 +1292,10 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
                     <li data-tooltip="<?php esc_attr_e('Control de equipos, trazabilidad, mantenimientos y préstamos.', 'aura-suite'); ?>">
                         <span class="badge badge-emerald adp-roadmap__badge"><span class="pulse-dot dot-emerald"></span> Listo</span>
                         <span>📦 <?php _e('Módulo Inventario', 'aura-suite'); ?></span>
+                    </li>
+                    <li data-tooltip="<?php esc_attr_e('Horarios de clases, programas académicos, materias, control de asistencia y sincronización con Google Calendar.', 'aura-suite'); ?>">
+                        <span class="badge badge-emerald adp-roadmap__badge"><span class="pulse-dot dot-emerald"></span> Listo</span>
+                        <span>📅 <?php _e('Módulo Calendario', 'aura-suite'); ?></span>
                     </li>
                     <li data-tooltip="<?php esc_attr_e('Gestión académica, inscripciones, becas y pagos de participantes.', 'aura-suite'); ?>">
                         <span class="badge badge-emerald adp-roadmap__badge"><span class="pulse-dot dot-emerald"></span> Listo</span>
