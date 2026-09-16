@@ -34,6 +34,7 @@ class Aura_Students_Frontend {
         // Shortcodes
         add_shortcode( 'aura_login',                  [ __CLASS__, 'shortcode_login' ] );
         add_shortcode( 'aura_student_login',          [ __CLASS__, 'shortcode_login' ] );
+        add_shortcode( 'aura_portal',                 [ __CLASS__, 'shortcode_portal' ] );
         add_shortcode( 'aura_student_portal',         [ __CLASS__, 'shortcode_portal' ] );
         add_shortcode( 'aura_enrollment_form',        [ __CLASS__, 'shortcode_enrollment_form' ] );
         add_shortcode( 'aura_student_paz_salvo_check',[ __CLASS__, 'shortcode_paz_salvo_check' ] );
@@ -68,6 +69,7 @@ class Aura_Students_Frontend {
         $has_sc = (
             has_shortcode( $post->post_content, 'aura_login' )              ||
             has_shortcode( $post->post_content, 'aura_student_login' )      ||
+            has_shortcode( $post->post_content, 'aura_portal' )             ||
             has_shortcode( $post->post_content, 'aura_student_portal' )     ||
             has_shortcode( $post->post_content, 'aura_enrollment_form' )    ||
             has_shortcode( $post->post_content, 'aura_student_paz_salvo_check' )
@@ -585,27 +587,32 @@ class Aura_Students_Frontend {
 
         $certs = [];
 
-        // Si el módulo de certificados existe, consultar su tabla
-        $tci = $wpdb->prefix . 'aura_certificate_issued';
+        // Consultar la tabla activa de certificados (módulo certificates)
+        $t_certs = $wpdb->prefix . 'aura_certificates';
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $tci ) ) ) {
-            $tc = $wpdb->prefix . 'aura_student_courses';
-            $ta = $wpdb->prefix . 'aura_areas';
-            $areas_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $ta ) );
-            $area_join = $areas_exists ? "LEFT JOIN `{$ta}` ar ON ar.id = c.area_id" : '';
-            $area_col  = $areas_exists ? 'ar.name AS area_name' : "'' AS area_name";
-
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            $certs = $wpdb->get_results( $wpdb->prepare(
-                "SELECT ci.id, ci.issued_date, ci.certificate_url, ci.qr_url,
-                        c.name AS course_name, {$area_col}
-                 FROM {$tci} ci
-                 JOIN {$tc} c ON c.id = ci.course_id
-                 {$area_join}
-                 WHERE ci.student_id = %d
-                 ORDER BY ci.issued_date DESC",
+        if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $t_certs ) ) ) {
+            $certs_raw = $wpdb->get_results( $wpdb->prepare(
+                "SELECT folio, course_name, program_name, issued_at, status, verify_url
+                 FROM {$t_certs}
+                 WHERE student_id = %d AND status = 'active'
+                 ORDER BY issued_at DESC",
                 $student->id
             ) );
+
+            foreach ( ( $certs_raw ?: [] ) as $c ) {
+                $certs[] = [
+                    'id'              => $c->folio,
+                    'course_name'     => $c->course_name,
+                    'area_name'       => $c->program_name,
+                    'issued_date'     => date_i18n( get_option( 'date_format', 'd/m/Y' ), strtotime( $c->issued_at ) ),
+                    'certificate_url' => add_query_arg( [
+                        'action' => 'aura_cert_download',
+                        'folio'  => $c->folio,
+                        'nonce'  => wp_create_nonce( 'aura_download_' . $c->folio ),
+                    ], admin_url( 'admin-ajax.php' ) ),
+                    'qr_url'          => $c->verify_url,
+                ];
+            }
         }
 
         wp_send_json_success( [ 'certificates' => $certs ] );

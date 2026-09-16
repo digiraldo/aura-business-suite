@@ -322,8 +322,10 @@ class Aura_Forms_Frontend {
         if (
             is_a( $post, 'WP_Post' ) &&
             (
-                has_shortcode( $post->post_content, 'aura_form' ) ||
-                has_shortcode( $post->post_content, 'aura_form_portal' )
+                has_shortcode( $post->post_content, 'aura_form' )           ||
+                has_shortcode( $post->post_content, 'aura_form_portal' )    ||
+                has_shortcode( $post->post_content, 'aura_portal' )         ||
+                has_shortcode( $post->post_content, 'aura_student_portal' )
             )
         ) {
             self::enqueue_assets( null );

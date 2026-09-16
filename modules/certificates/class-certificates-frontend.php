@@ -103,7 +103,17 @@ class Aura_Certificates_Frontend {
     // ─────────────────────────────────────────────────────────────
 
     public static function enqueue_frontend_assets(): void {
-        if ( ! is_page() && ! has_shortcode( get_post_field( 'post_content', get_the_ID() ), 'aura_portal_estudiante' ) ) {
+        global $post;
+        if ( ! $post || ! is_a( $post, 'WP_Post' ) ) return;
+
+        $has_sc = (
+            has_shortcode( $post->post_content, 'aura_portal' )          ||
+            has_shortcode( $post->post_content, 'aura_student_portal' )  ||
+            has_shortcode( $post->post_content, 'aura_mis_certificados' )||
+            has_shortcode( $post->post_content, 'aura_portal_estudiante' )
+        );
+
+        if ( ! $has_sc ) {
             return;
         }
 
@@ -164,7 +174,9 @@ class Aura_Certificates_Frontend {
             ];
         }
 
-        $template = plugin_dir_path( dirname( __DIR__ ) . '/templates/' ) . '../templates/certificates/frontend/my-certificates.php';
+        $template = defined( 'AURA_PLUGIN_DIR' )
+            ? AURA_PLUGIN_DIR . 'templates/certificates/frontend/my-certificates.php'
+            : plugin_dir_path( dirname( __DIR__ ) . '/templates/' ) . '../templates/certificates/frontend/my-certificates.php';
 
         if ( file_exists( $template ) ) {
             include $template;

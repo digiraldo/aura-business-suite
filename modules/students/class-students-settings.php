@@ -148,7 +148,7 @@ class Aura_Students_Settings {
             'portal_page_id' => [
                 'title'     => __( 'Portal del Estudiante', 'aura-suite' ),
                 'slug'      => 'portal-estudiante',
-                'shortcode' => '[aura_student_portal]',
+                'shortcode' => '[aura_portal]',
             ],
             'enrollment_page_id' => [
                 'title'     => __( 'Inscripción a Programas', 'aura-suite' ),

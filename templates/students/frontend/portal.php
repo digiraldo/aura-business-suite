@@ -77,6 +77,9 @@ $photo_url = $student->photo_url ?? '';
         <button class="aura-portal-tab-btn active" data-target="courses">
             📚 <?php esc_html_e( 'Mis Cursos', 'aura-suite' ); ?>
         </button>
+        <button class="aura-portal-tab-btn" data-target="schedule">
+            📅 <?php esc_html_e( 'Mi Horario', 'aura-suite' ); ?>
+        </button>
         <button class="aura-portal-tab-btn" data-target="payments">
             💰 <?php esc_html_e( 'Mis Pagos', 'aura-suite' ); ?>
         </button>
@@ -84,14 +87,11 @@ $photo_url = $student->photo_url ?? '';
             🏅 <?php esc_html_e( 'Mis Certificados', 'aura-suite' ); ?>
         </button>
         <button class="aura-portal-tab-btn" data-target="forms">
-            📋 <?php esc_html_e( 'Mis Formularios', 'aura-suite' ); ?>
-        </button>
-        <button class="aura-portal-tab-btn" data-target="schedule">
-            📅 <?php esc_html_e( 'Mi Horario', 'aura-suite' ); ?>
+            📋 <?php esc_html_e( 'Mis Encuestas', 'aura-suite' ); ?>
         </button>
     </nav>
 
-    <!-- ══════════════ PESTAÑA: MIS CURSOS ══════════════ -->
+    <!-- ══════════════ PESTAÑA 1: MIS CURSOS ══════════════ -->
     <div id="aura-tab-courses" class="aura-portal-tab-content" data-tab="courses">
         <div id="aura-courses-loading" class="aura-loading">
             <?php esc_html_e( 'Cargando cursos…', 'aura-suite' ); ?>
@@ -102,32 +102,38 @@ $photo_url = $student->photo_url ?? '';
         </p>
     </div>
 
-    <!-- ══════════════ PESTAÑA: MIS PAGOS ══════════════ -->
-    <?php include AURA_PLUGIN_DIR . 'templates/students/frontend/payment-history.php'; ?>
-
-    <!-- ══════════════ PESTAÑA: MIS CERTIFICADOS ══════════════ -->
-    <div id="aura-tab-certs" class="aura-portal-tab-content" data-tab="certs" style="display:none;">
-        <div id="aura-certs-loading" class="aura-loading">
-            <?php esc_html_e( 'Cargando certificados…', 'aura-suite' ); ?>
-        </div>
-        <div id="aura-certs-container" style="display:none;"></div>
-        <p id="aura-certs-empty" style="display:none;color:#6b7280;">
-            <?php esc_html_e( 'Aún no tienes certificados emitidos.', 'aura-suite' ); ?>
-        </p>
-    </div>
-
-    <!-- ══════════════ PESTAÑA: MIS FORMULARIOS ══════════════ -->
-    <div id="aura-tab-forms" class="aura-portal-tab-content" data-tab="forms" style="display:none;">
-        <div id="aura-forms-loading" class="aura-loading">
-            <?php esc_html_e( 'Cargando formularios…', 'aura-suite' ); ?>
-        </div>
-        <div id="aura-forms-container" style="display:none;"></div>
-        <p id="aura-forms-error" style="display:none;color:#dc2626;"></p>
-    </div>
-
-    <!-- ══════════════ PESTAÑA: MI HORARIO Y CALENDARIO ══════════════ -->
+    <!-- ══════════════ PESTAÑA 2: MI HORARIO Y CALENDARIO ══════════════ -->
     <div id="aura-tab-schedule" class="aura-portal-tab-content" data-tab="schedule" style="display:none;">
         <?php echo do_shortcode( '[aura_student_schedule]' ); ?>
+    </div>
+
+    <!-- ══════════════ PESTAÑA 3: MIS PAGOS ══════════════ -->
+    <?php include AURA_PLUGIN_DIR . 'templates/students/frontend/payment-history.php'; ?>
+
+    <!-- ══════════════ PESTAÑA 4: MIS CERTIFICADOS ══════════════ -->
+    <div id="aura-tab-certs" class="aura-portal-tab-content" data-tab="certs" style="display:none;">
+        <div id="aura-certs-container" data-loaded="true">
+            <?php
+            if ( class_exists( 'Aura_Certificates_Frontend' ) ) {
+                echo Aura_Certificates_Frontend::shortcode_mis_certificados();
+            } else {
+                echo do_shortcode( '[aura_mis_certificados]' );
+            }
+            ?>
+        </div>
+    </div>
+
+    <!-- ══════════════ PESTAÑA 5: MIS ENCUESTAS Y FORMULARIOS ══════════════ -->
+    <div id="aura-tab-forms" class="aura-portal-tab-content" data-tab="forms" style="display:none;">
+        <div id="aura-forms-container" data-loaded="true">
+            <?php
+            if ( class_exists( 'Aura_Forms_Frontend' ) ) {
+                echo Aura_Forms_Frontend::shortcode_portal( [] );
+            } else {
+                echo do_shortcode( '[aura_form_portal]' );
+            }
+            ?>
+        </div>
     </div>
 
 </div><!-- /aura-student-portal -->
