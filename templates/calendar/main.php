@@ -28,7 +28,9 @@ $base_url = admin_url( 'admin.php?page=aura-calendar' );
 $gcal_is_ready = Aura_Calendar_Google_Sync::is_enabled();
 $cal_name      = Aura_Calendar_Google_Sync::get_calendar_name();
 $cal_id        = get_option( Aura_Calendar_Google_Sync::CAL_ID_OPTION, '' );
+$programs      = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 100 ] );
 ?>
+
 
 <div class="wrap aura-portal-wrap adp-settings-wrap" style="max-width: 1400px; margin: 20px auto; padding: 0 16px;">
 
@@ -61,7 +63,7 @@ $cal_id        = get_option( Aura_Calendar_Google_Sync::CAL_ID_OPTION, '' );
             <!-- Acciones Rápidas del Header -->
             <div style="display: flex; gap: 10px; align-items: center;">
                 <?php if ( current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-                    <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-top-create-event">
+                    <button type="button" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" id="btn-top-create-event">
                         ➕ <?php esc_html_e( 'Agendar Clase', 'aura' ); ?>
                     </button>
                 <?php endif; ?>
@@ -129,6 +131,11 @@ $cal_id        = get_option( Aura_Calendar_Google_Sync::CAL_ID_OPTION, '' );
         }
         ?>
     </main>
+
+    <?php
+    // Modales centralizados para todo el módulo (Agendar Clase, Detalle, Asistencia)
+    include AURA_PLUGIN_DIR . 'templates/calendar/modal-partials.php';
+    ?>
 
     <!-- ── FOOTER PROTOCOLO P.E.E. ── -->
     <footer class="adp-footer" style="margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--aura-border, #e2e8f0); text-align: center; font-size: 13px; color: var(--aura-text-muted, #94a3b8);">

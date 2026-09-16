@@ -28,23 +28,56 @@
         }, 4000);
     }
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     function openModal(selector) {
-        $(selector).css('display', 'flex');
+        var $modal = $(selector);
+        if (!$modal.length) return;
+        $modal.removeClass('is-hidden')
+              .addClass('active is-active')
+              .attr('style', 'display: flex !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;');
+        $('body').addClass('aura-modal-open');
     }
 
     function closeModal(selector) {
-        $(selector).hide();
+        var $modal = $(selector);
+        if (!$modal.length) return;
+        $modal.removeClass('active is-active')
+              .addClass('is-hidden')
+              .attr('style', 'display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;');
+        if ($('.aura-modal-overlay.active:visible, .aura-modal-overlay.is-active:visible').length === 0) {
+            $('body').removeClass('aura-modal-open');
+        }
     }
 
-    // Cerrar modales con botones de clase o clic fuera
-    $(document).on('click', '[data-close-modal]', function() {
+    // Cerrar modales con botones de clase, clic fuera o tecla Escape
+    $(document).on('click', '[data-close-modal], .aura-modal-close', function(e) {
+        e.preventDefault();
         var target = $(this).data('close-modal');
-        closeModal(target);
+        if (target) {
+            closeModal(target);
+        } else {
+            closeModal($(this).closest('.aura-modal-overlay'));
+        }
     });
 
     $(document).on('click', '.aura-modal-overlay', function(e) {
         if ($(e.target).hasClass('aura-modal-overlay')) {
-            $(this).hide();
+            closeModal(this);
+        }
+    });
+
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal('.aura-modal-overlay');
         }
     });
 
@@ -100,6 +133,14 @@
                 }).fail(failureCallback);
             },
 
+            // Tooltip HTML enriquecido al pasar el cursor
+            eventMouseEnter: function(info) {
+                showEventTooltip(info.event, info.el, info.jsEvent);
+            },
+            eventMouseLeave: function(info) {
+                hideEventTooltip();
+            },
+
             // Clic en fecha para agendar
             select: function(info) {
                 if (!auraCalData.user_can_edit) return;
@@ -111,24 +152,187 @@
 
             // Clic en evento para ver detalles
             eventClick: function(info) {
+                hideEventTooltip();
                 openEventDetail(info.event);
             },
 
             // Drag & Drop de evento
             eventDrop: function(info) {
                 if (!auraCalData.user_can_edit) return;
+                hideEventTooltip();
                 updateEventDates(info.event);
             },
 
             // Redimensionamiento de evento
             eventResize: function(info) {
                 if (!auraCalData.user_can_edit) return;
+                hideEventTooltip();
                 updateEventDates(info.event);
             }
         });
 
         calendar.render();
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // TOOLTIPS FLOTANTES ENRIQUECIDOS PARA EVENTOS
+    // ─────────────────────────────────────────────────────────────
+
+    function showEventTooltip(event, el, jsEvent) {
+        var p = event.extendedProps || {};
+        var $tt = $('#aura-cal-event-tooltip');
+        if (!$tt.length) {
+            $tt = $('<div id="aura-cal-event-tooltip" class="aura-cal-floating-tooltip"></div>');
+            $('body').append($tt);
+        }
+
+        var typeLabels = {
+            'class': '📖 Clase Regular',
+            'exam': '📝 Examen / Evaluación',
+            'workshop': '🔬 Taller / Práctica',
+            'activity': '🎯 Actividad',
+            'break': '☕ Receso',
+            'other': '📍 Evento'
+        };
+        var typeLabel = typeLabels[p.event_type] || '📖 ' + (p.event_type || 'Clase');
+
+        var statusBadges = {
+            'scheduled': '<span class="adp-badge badge-indigo" style="font-size:10px;padding:2px 7px;">Programado</span>',
+            'completed': '<span class="adp-badge badge-emerald" style="font-size:10px;padding:2px 7px;">Completado</span>',
+            'cancelled': '<span class="adp-badge" style="font-size:10px;padding:2px 7px;background:#ef4444;color:#fff;">Cancelado</span>',
+            'postponed': '<span class="adp-badge badge-amber" style="font-size:10px;padding:2px 7px;">Pospuesto</span>'
+        };
+        var statusBadge = statusBadges[p.status] || '';
+
+        var gcalChip = (p.gcal_sync_status === 'synced') 
+            ? '<span class="adp-badge badge-emerald" style="font-size:10px;padding:2px 7px;" title="Sincronizado con Google Calendar">✓ GCal</span>' 
+            : '';
+
+        var startStr = event.start ? event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var endStr = event.end ? event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var timeRange = startStr ? (startStr + (endStr ? ' — ' + endStr : '')) : '';
+        var dateStr = event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+
+        var teachersHtml = '';
+        if (p.instructors && p.instructors.length) {
+            var names = p.instructors.map(function(inst) { return inst.name; }).join(', ');
+            teachersHtml = '<div class="tooltip-meta-row"><strong>👨‍🏫 Docente:</strong> <span>' + escapeHtml(names) + '</span></div>';
+        }
+
+        var locHtml = '';
+        if (p.location) {
+            locHtml += '<div class="tooltip-meta-row"><strong>📍 Aula:</strong> <span>' + escapeHtml(p.location) + '</span></div>';
+        }
+        if (p.online_url) {
+            locHtml += '<div class="tooltip-meta-row"><strong>💻 Virtual:</strong> <span style="color:#818cf8;text-decoration:underline;">Enlace disponible</span></div>';
+        }
+
+        var descHtml = '';
+        if (p.description) {
+            var cleanDesc = p.description.length > 120 ? p.description.substring(0, 117) + '...' : p.description;
+            descHtml = '<div class="tooltip-desc">' + escapeHtml(cleanDesc) + '</div>';
+        }
+
+        var html = '' +
+            '<div class="tooltip-header">' +
+                '<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;">' +
+                    '<span class="adp-badge badge-indigo" style="font-size:11px;font-weight:700;">' + typeLabel + '</span>' +
+                    statusBadge +
+                    gcalChip +
+                '</div>' +
+                '<div class="tooltip-date">' + dateStr + '</div>' +
+            '</div>' +
+            '<div class="tooltip-title">' + escapeHtml(p.raw_title || event.title) + '</div>' +
+            '<div class="tooltip-meta-grid">' +
+                (p.program_name ? '<div class="tooltip-meta-row"><strong>🎓 Programa:</strong> <span>' + escapeHtml(p.program_name) + '</span></div>' : '') +
+                (p.subject_name ? '<div class="tooltip-meta-row"><strong>📚 Materia:</strong> <span>' + escapeHtml(p.subject_name) + '</span></div>' : '') +
+                (timeRange ? '<div class="tooltip-meta-row"><strong>🕐 Horario:</strong> <span>' + timeRange + '</span></div>' : '') +
+                teachersHtml +
+                locHtml +
+            '</div>' +
+            descHtml +
+            '<div class="tooltip-footer">💡 Clic para opciones, asistencia y detalles</div>';
+
+        $tt.html(html);
+
+        var rect = el.getBoundingClientRect();
+        var ttWidth = 320;
+        var ttHeight = $tt.outerHeight() || 180;
+        var padding = 12;
+
+        var left = rect.right + padding;
+        var top = rect.top;
+
+        if (left + ttWidth > window.innerWidth - 10) {
+            left = rect.left - ttWidth - padding;
+        }
+        if (left < 10) {
+            left = Math.max(10, (jsEvent ? jsEvent.clientX : rect.left) + 12);
+        }
+
+        if (top + ttHeight > window.innerHeight - 10) {
+            top = Math.max(10, window.innerHeight - ttHeight - 15);
+        }
+
+        $tt.css({
+            top: top + 'px',
+            left: left + 'px',
+            display: 'block'
+        }).addClass('is-visible');
+    }
+
+    function hideEventTooltip() {
+        var $tt = $('#aura-cal-event-tooltip');
+        if ($tt.length) {
+            $tt.removeClass('is-visible').hide();
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // PANTALLA COMPLETA DEL CALENDARIO
+    // ─────────────────────────────────────────────────────────────
+
+    function toggleFullscreen() {
+        var $container = $('.aura-calendar-view-container');
+        var $btn = $('#btn-toggle-fullscreen');
+        var isFullscreen = $container.hasClass('aura-calendar-is-fullscreen');
+
+        if (!isFullscreen) {
+            $container.addClass('aura-calendar-is-fullscreen');
+            $btn.html('🗗 ' + (auraCalData.i18n && auraCalData.i18n.exit_fullscreen ? auraCalData.i18n.exit_fullscreen : 'Salir de Pantalla Completa'))
+                .addClass('btn-indigo').removeClass('btn-ghost');
+            $('body').addClass('aura-cal-fullscreen-active');
+            showToast('Pantalla completa activada. Presiona ESC para salir.');
+        } else {
+            $container.removeClass('aura-calendar-is-fullscreen');
+            $btn.html('⛶ ' + (auraCalData.i18n && auraCalData.i18n.fullscreen ? auraCalData.i18n.fullscreen : 'Pantalla Completa'))
+                .removeClass('btn-indigo').addClass('btn-ghost');
+            $('body').removeClass('aura-cal-fullscreen-active');
+        }
+
+        if (calendar) {
+            setTimeout(function() {
+                calendar.updateSize();
+            }, 120);
+        }
+    }
+
+    $(document).on('click', '#btn-toggle-fullscreen', function(e) {
+        e.preventDefault();
+        toggleFullscreen();
+    });
+
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            if ($('.aura-modal-overlay:visible').length) {
+                $('.aura-modal-overlay:visible').hide();
+                return;
+            }
+            if ($('.aura-calendar-view-container').hasClass('aura-calendar-is-fullscreen')) {
+                toggleFullscreen();
+            }
+        }
+    });
 
     function updateEventDates(event) {
         var startStr = event.start.toISOString();
@@ -219,7 +423,14 @@
 
     function openEventEditor(data) {
         data = data || {};
-        var form = $('#form-event-editor')[0];
+        var form = document.getElementById('form-event-editor');
+        if (!form) {
+            if (auraCalData && auraCalData.calendar_url) {
+                window.location.href = auraCalData.calendar_url + '&action=create';
+            }
+            return;
+        }
+
         form.reset();
 
         $('#evt-id').val(data.id || '0');
@@ -235,29 +446,57 @@
         $('#box-recurrence-details').hide();
         $('#box-single-datetime').show();
 
-        // Si viene fecha inicial
-        if (data.start) {
-            var s = data.start.substring(0, 16);
-            $('#evt-start-dt').val(s);
-            $('#rec-date-start').val(s.substring(0, 10));
-            $('#rec-time-start').val(s.substring(11, 16) || '09:00');
-        }
-        if (data.end) {
-            var e = data.end.substring(0, 16);
-            $('#evt-end-dt').val(e);
-            $('#rec-date-end').val(e.substring(0, 10));
-            $('#rec-time-end').val(e.substring(11, 16) || '12:00');
+        // Fechas por defecto si no vienen
+        var now = new Date();
+        var nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0);
+        var endHour = new Date(nextHour.getTime() + 2 * 60 * 60 * 1000);
+
+        function formatLocalDT(d) {
+            var year = d.getFullYear();
+            var month = String(d.getMonth() + 1).padStart(2, '0');
+            var day = String(d.getDate()).padStart(2, '0');
+            var hours = String(d.getHours()).padStart(2, '0');
+            var mins = String(d.getMinutes()).padStart(2, '0');
+            return year + '-' + month + '-' + day + 'T' + hours + ':' + mins;
         }
 
-        // Si ya hay un filtro de programa seleccionado, preseleccionarlo
+        var startVal = data.start ? data.start.substring(0, 16) : formatLocalDT(nextHour);
+        var endVal = data.end ? data.end.substring(0, 16) : formatLocalDT(endHour);
+
+        $('#evt-start-dt').val(startVal);
+        $('#evt-end-dt').val(endVal);
+
+        $('#rec-date-start').val(startVal.substring(0, 10));
+        $('#rec-date-end').val(endVal.substring(0, 10));
+        $('#rec-time-start').val(startVal.substring(11, 16) || '09:00');
+        $('#rec-time-end').val(endVal.substring(11, 16) || '11:00');
+
+        // Valores de texto y selects si se proveen (ej: al editar o precargar)
+        if (data.title) $('#evt-title').val(data.title);
+        if (data.event_type) $('#evt-type').val(data.event_type);
+        if (data.status) $('#evt-status').val(data.status);
+        if (data.location) $('#evt-location').val(data.location);
+        if (data.online_url) $('#evt-online-url').val(data.online_url);
+        if (data.color) $('#evt-color').val(data.color);
+        if (data.description) $('#evt-description').val(data.description);
+
+        // Preseleccionar programa si hay filtro activo o si viene en data
         var activeProgFilter = $('#filter-program').val();
-        if (activeProgFilter) {
+        if (data.program_id) {
+            $('#evt-program-id').val(data.program_id).trigger('change');
+        } else if (activeProgFilter) {
             $('#evt-program-id').val(activeProgFilter).trigger('change');
         }
 
         renderTeacherCheckboxes(data.teacher_ids || []);
         openModal('#modal-event-editor');
     }
+
+    // Delegación global para botones de agendar clase
+    $(document).on('click', '#btn-top-create-event, #btn-create-event-modal, .btn-trigger-agendar, [data-action="create-event"]', function(e) {
+        e.preventDefault();
+        openEventEditor();
+    });
 
     // Toggle recurrencia
     $('#evt-is-recurring').on('change', function() {
@@ -292,11 +531,6 @@
                 }
             });
         }
-    });
-
-    // Botones de acción superior
-    $('#btn-top-create-event').on('click', function() {
-        openEventEditor();
     });
 
     // Submit Guardar Evento
@@ -1073,6 +1307,14 @@
     // ─────────────────────────────────────────────────────────────
     $(document).ready(function() {
         initFullCalendar();
+
+        // Si la URL contiene action=create, abrir el editor automáticamente
+        var urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('action') === 'create') {
+            setTimeout(function() {
+                openEventEditor();
+            }, 250);
+        }
     });
 
 })(jQuery);

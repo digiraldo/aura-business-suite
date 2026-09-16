@@ -156,12 +156,14 @@ class Aura_Calendar_Admin {
             true
         );
 
+        $cal_ver = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/js/calendar-admin.js' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/js/calendar-admin.js' ) : time() );
+
         // Estilos propios del módulo de calendario
         wp_enqueue_style(
             'aura-calendar-admin',
             AURA_PLUGIN_URL . 'assets/css/calendar-admin.css',
             [ 'aura-design-system' ],
-            AURA_VERSION
+            $cal_ver
         );
 
         // Script administrativo del módulo de calendario
@@ -169,7 +171,7 @@ class Aura_Calendar_Admin {
             'aura-calendar-admin',
             AURA_PLUGIN_URL . 'assets/js/calendar-admin.js',
             [ 'jquery', 'fullcalendar-bundle' ],
-            AURA_VERSION,
+            $cal_ver,
             true
         );
 
@@ -195,6 +197,7 @@ class Aura_Calendar_Admin {
 
         wp_localize_script( 'aura-calendar-admin', 'auraCalData', [
             'ajax_url'            => admin_url( 'admin-ajax.php' ),
+            'calendar_url'        => admin_url( 'admin.php?page=aura-calendar' ),
             'nonce'               => wp_create_nonce( 'aura_cal_nonce' ),
             'current_user_id'     => get_current_user_id(),
             'user_can_edit'       => current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ),
@@ -218,6 +221,8 @@ class Aura_Calendar_Admin {
                 'week'                  => __( 'Semana', 'aura' ),
                 'day'                   => __( 'Día', 'aura' ),
                 'list'                  => __( 'Agenda', 'aura' ),
+                'fullscreen'            => __( 'Pantalla Completa', 'aura' ),
+                'exit_fullscreen'       => __( 'Salir de Pantalla Completa', 'aura' ),
             ],
         ] );
     }
