@@ -17,7 +17,7 @@ if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
 }
 
 // Archivos y directorios a incluir
-$filesToInclude = ['aura-business-suite.php', 'composer.json', 'LICENSE', 'aura-icono.svg'];
+$filesToInclude = ['aura-business-suite.php', 'composer.json', 'readme.txt', 'LICENSE', 'aura-icono.svg'];
 // IMPORTANTE: Incluimos 'vendor' porque añadimos 'google/apiclient'. 
 // Es necesario subirlo esta vez para que el servidor tenga las nuevas dependencias.
 $dirsToInclude = ['assets', 'modules', 'templates', 'vendor'];

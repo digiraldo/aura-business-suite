@@ -1,7 +1,7 @@
 {
   "name": "aura/business-suite",
   "description": "Suite modular de gestión empresarial para WordPress con sistema de permisos granulares",
-  "version": "1.0.0",
+  "version": "1.8.1",
   "type": "wordpress-plugin",
   "keywords": [
     "wordpress",

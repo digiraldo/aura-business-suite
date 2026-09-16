@@ -2902,16 +2902,16 @@ jQuery(function ($) {
     function setReimbursePayMode(mode) {
         if (mode === 'direct' || !mode || mode === 0) {
             $('#aura-reimburse-pay-id').val('0');
-            $('#aura-reimburse-pay-summary').hide();
-            $('#aura-reimburse-pay-direct-person-wrap').show();
+            $('#aura-reimburse-pay-summary').hide().addClass('is-hidden');
+            $('#aura-reimburse-pay-direct-person-wrap').show().removeClass('is-hidden');
             if (!$('#aura-reimburse-pay-concept').val()) {
                 $('#aura-reimburse-pay-concept').val('Pago de reembolso directo');
             }
         } else {
             const id = parseInt(mode, 10);
             $('#aura-reimburse-pay-id').val(id);
-            $('#aura-reimburse-pay-direct-person-wrap').hide();
-            $('#aura-reimburse-pay-summary').show();
+            $('#aura-reimburse-pay-direct-person-wrap').hide().addClass('is-hidden');
+            $('#aura-reimburse-pay-summary').show().removeClass('is-hidden');
 
             const cache = window.auraReimbursementsCache || [];
             const r = cache.find(function (item) { return parseInt(item.id, 10) === id; });
@@ -3208,7 +3208,7 @@ jQuery(function ($) {
         }
     });
 
-    $('#aura-reimburse-open-btn, #aura-reimburse-open-inline-btn').on('click', function () {
+    $(document).on('click', '#aura-reimburse-open-btn, #aura-reimburse-open-inline-btn', function () {
         if ($reimbursementsForm.length && $reimbursementsForm[0]) {
             $reimbursementsForm[0].reset();
         }
@@ -3216,7 +3216,7 @@ jQuery(function ($) {
         window.AuraUI.openModal('aura-finance-reimburse-modal');
     });
 
-    $('#aura-reimburse-pay-open-btn, #aura-reimburse-pay-open-inline-btn').on('click', function () {
+    $(document).on('click', '#aura-reimburse-pay-open-btn, #aura-reimburse-pay-open-inline-btn', function () {
         if ($reimbursementsPayForm.length && $reimbursementsPayForm[0]) {
             $reimbursementsPayForm[0].reset();
         }

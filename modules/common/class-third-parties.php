@@ -7,7 +7,7 @@
  *
  * @package AuraBusinessSuite
  * @subpackage Common
- * @since 1.7.9
+ * @since 1.8.1
  */
 
 if (!defined('ABSPATH')) {

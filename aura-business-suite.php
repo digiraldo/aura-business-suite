@@ -3,7 +3,7 @@
  * Plugin Name: Aura Business Suite
  * Plugin URI: https://profiles.wordpress.org/digiraldo/
  * Description: Suite modular de gestion empresarial con permisos granulares (CBAC) - Modulos: Finanzas, Vehiculos, Formularios, Electricidad, Areas/Programas Multi-Usuario
- * Version: 1.7.9
+ * Version: 1.8.1
  * Author: DiGiraldo
  * Author URI: https://github.com/digiraldo/aura-business-suite
  * Text Domain: aura-suite
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Constantes del plugin
-define('AURA_VERSION', '1.7.9');
+define('AURA_VERSION', '1.8.1');
 define('AURA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AURA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('AURA_PLUGIN_BASENAME', plugin_basename(__FILE__));

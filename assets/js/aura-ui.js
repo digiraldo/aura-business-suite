@@ -831,11 +831,11 @@ const AuraUI = {
     openModal: function(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
-            modal.classList.add('active');
+            modal.classList.add('active', 'is-active');
             modal.setAttribute('aria-hidden', 'false');
-            // Manejar modales tipo aura-finance-modal que usan display:none inline
+            // Manejar modales tipo aura-finance-modal y aura-modal-overlay
             if (modal.classList.contains('aura-finance-modal') || modal.classList.contains('aura-modal-overlay')) {
-                modal.style.display = '';
+                modal.style.display = 'flex';
             }
             document.body.style.overflow = 'hidden'; // prevenir scroll
         }
@@ -844,10 +844,10 @@ const AuraUI = {
     closeModal: function(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
-            modal.classList.remove('active');
+            modal.classList.remove('active', 'is-active');
             modal.setAttribute('aria-hidden', 'true');
-            // Ocultar modales tipo aura-finance-modal que usan display:none inline
-            if (modal.classList.contains('aura-finance-modal')) {
+            // Ocultar modales tipo aura-finance-modal y aura-modal-overlay
+            if (modal.classList.contains('aura-finance-modal') || modal.classList.contains('aura-modal-overlay')) {
                 modal.style.display = 'none';
             }
             document.body.style.overflow = '';

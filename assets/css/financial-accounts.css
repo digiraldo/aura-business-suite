@@ -2720,6 +2720,23 @@ body.aura-modal-open {
     z-index: 999999 !important;
 }
 
+.aura-financial-accounts-page .aura-modal-overlay.active,
+.aura-financial-accounts-page .aura-modal-overlay.is-active,
+.aura-financial-accounts-page .aura-modal-overlay[aria-hidden="false"],
+.aura-financial-accounts-page .aura-modal-overlay[style*="display: flex"] {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.aura-financial-accounts-page .aura-modal-overlay[style*="display: none"],
+.aura-financial-accounts-page .aura-modal-overlay[aria-hidden="true"],
+.aura-financial-accounts-page .aura-modal-overlay.is-hidden {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
 /* ── Desbloqueo de ancho y márgenes para Modales de Finanzas ── */
 .aura-modal-content.aura-finance-modal__dialog--medium,
 .aura-app-context .aura-modal-content.aura-finance-modal__dialog--medium {
@@ -2804,6 +2821,14 @@ body.aura-modal-open {
     flex-direction: column !important;
     gap: 6px !important;
     min-width: 0 !important;
+}
+
+.aura-modal-body .aura-field[style*="display: none"],
+.aura-modal-body .aura-field.is-hidden,
+.aura-modal-body div[style*="display: none"],
+.aura-petty-panel .aura-form-field[style*="display: none"],
+.aura-petty-panel .aura-form-field.is-hidden {
+    display: none !important;
 }
 
 .aura-modal-body .aura-label,

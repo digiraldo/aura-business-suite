@@ -4577,6 +4577,8 @@ html[data-wp-dark-mode-scheme="dark"] .btn-glass:hover {
 }
 
 .aura-modal-overlay.is-active,
+.aura-modal-overlay.active,
+.aura-modal-overlay[aria-hidden="false"],
 .aura-modal-overlay[style*="display: flex"],
 .aura-modal-overlay[style*="display: block"] {
     display: flex !important;
