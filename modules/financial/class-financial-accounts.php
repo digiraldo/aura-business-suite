@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
 class Aura_Financial_Accounts {
 
     const DB_VERSION_OPTION = 'aura_finance_accounts_db_version';
-    const DB_VERSION = '1.7.0';
+    const DB_VERSION = '1.8.1';
     const BUDGET_IMPORT_MAX_ROWS = 300;
     const BUDGET_IMPORT_TRANSIENT_PREFIX = 'aura_budget_import_';
     const PETTY_CASH_DEFAULT_DUE_DAYS = 5;
@@ -79,6 +79,7 @@ class Aura_Financial_Accounts {
             update_option(self::DB_VERSION_OPTION, self::DB_VERSION, false);
         }
 
+        self::migrate_settlements_phase3_columns();
         self::migrate_currency_exchanges_table();
         self::migrate_usd_ledger_to_accounts();
         self::migrate_petty_cash_counterparty_model();
@@ -438,17 +439,17 @@ class Aura_Financial_Accounts {
         }
     }
 
-    private static function migrate_settlements_phase3_columns() {
+    public static function migrate_settlements_phase3_columns() {
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_petty_cash_settlements';
 
         $columns = $wpdb->get_col("SHOW COLUMNS FROM {$table}", 0);
-        if (!is_array($columns)) {
+        if (!is_array($columns) || empty($columns)) {
             return;
         }
 
         if (!in_array('due_date', $columns, true)) {
-            $wpdb->query("ALTER TABLE {$table} ADD COLUMN due_date DATETIME NULL AFTER status");
+            $wpdb->query("ALTER TABLE {$table} ADD COLUMN due_date DATETIME NULL");
             $wpdb->query($wpdb->prepare(
                 "UPDATE {$table}
                  SET due_date = DATE_ADD(created_at, INTERVAL %d DAY)
@@ -458,18 +459,21 @@ class Aura_Financial_Accounts {
         }
 
         if (!in_array('last_overdue_alert_at', $columns, true)) {
-            $wpdb->query("ALTER TABLE {$table} ADD COLUMN last_overdue_alert_at DATETIME NULL AFTER due_date");
+            $wpdb->query("ALTER TABLE {$table} ADD COLUMN last_overdue_alert_at DATETIME NULL");
         }
 
         if (!in_array('delivery_type', $columns, true)) {
-            $wpdb->query("ALTER TABLE {$table} ADD COLUMN delivery_type VARCHAR(50) NOT NULL DEFAULT 'purchase_errand' AFTER counterparty_id");
-            $wpdb->query("ALTER TABLE {$table} ADD KEY idx_delivery_type (delivery_type)");
+            $wpdb->query("ALTER TABLE {$table} ADD COLUMN delivery_type VARCHAR(50) NOT NULL DEFAULT 'purchase_errand'");
+            $existing_indices = $wpdb->get_results("SHOW INDEX FROM {$table} WHERE Key_name = 'idx_delivery_type'", ARRAY_A);
+            if (empty($existing_indices)) {
+                $wpdb->query("ALTER TABLE {$table} ADD KEY idx_delivery_type (delivery_type)");
+            }
 
             // Retrocompatibilidad: marcar registros existentes de programas como 'program_budget' y ampliar vigencia a 6 meses
             $wpdb->query("UPDATE {$table} 
                           SET delivery_type = 'program_budget',
                               due_date = DATE_ADD(created_at, INTERVAL 180 DAY)
-                          WHERE LOWER(notes) LIKE '%programa%' OR id = 3");
+                          WHERE LOWER(notes) LIKE '%programa%'");
         }
     }
 
@@ -1646,36 +1650,46 @@ class Aura_Financial_Accounts {
 
     public static function ajax_list_petty_cash_settlements() {
         self::check_ajax_permissions();
+        self::migrate_settlements_phase3_columns();
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_petty_cash_settlements';
         $accounts = $wpdb->prefix . 'aura_finance_accounts';
         $users = $wpdb->users;
-
         $third_parties = $wpdb->prefix . 'aura_finance_third_parties';
+
+        // Verificación dinámica de la columna delivery_type para máxima resiliencia
+        $columns = $wpdb->get_col("SHOW COLUMNS FROM {$table}", 0);
+        $has_delivery_type = is_array($columns) && in_array('delivery_type', $columns, true);
+        $delivery_type_select = $has_delivery_type
+            ? "COALESCE(s.delivery_type, 'purchase_errand') AS delivery_type,"
+            : "'purchase_errand' AS delivery_type,";
 
         $rows = $wpdb->get_results(
             "SELECT s.id, s.petty_cash_account_id, s.responsible_user_id, s.counterparty_id,
-                    COALESCE(s.delivery_type, 'purchase_errand') AS delivery_type,
+                    {$delivery_type_select}
                     s.delivered_amount, s.spent_amount, s.returned_amount,
                     s.status, s.due_date, s.evidence_json, s.notes, s.created_at, s.updated_at,
                     CASE
                         WHEN s.status IN ('open', 'submitted') AND s.due_date IS NOT NULL AND s.due_date < NOW() THEN 1
                         ELSE 0
                     END AS is_overdue,
-                    a.name AS account_name,
-                    COALESCE(u.display_name, tp.full_name) AS responsible_name,
+                    COALESCE(a.name, 'Caja Chica') AS account_name,
+                    COALESCE(u.display_name, tp.full_name, 'Responsable') AS responsible_name,
                     tp.logo_id AS tp_logo_id,
                     tp.wp_user_id AS tp_wp_user_id
              FROM {$table} s
-             INNER JOIN {$accounts} a ON a.id = s.petty_cash_account_id
+             LEFT JOIN {$accounts} a ON a.id = s.petty_cash_account_id
              LEFT JOIN {$users} u ON u.ID = s.responsible_user_id
              LEFT JOIN {$third_parties} tp ON tp.id = s.counterparty_id
-             WHERE a.deleted_at IS NULL
+             WHERE (a.deleted_at IS NULL OR a.id IS NULL)
              ORDER BY s.created_at DESC, s.id DESC
              LIMIT 200",
             ARRAY_A
         );
+        if (!is_array($rows)) {
+            $rows = array();
+        }
 
         $expenses_table = $wpdb->prefix . 'aura_finance_petty_cash_expenses';
         $categories_table = $wpdb->prefix . 'aura_finance_categories';
@@ -1745,6 +1759,7 @@ class Aura_Financial_Accounts {
 
     public static function ajax_create_petty_cash_settlement() {
         self::check_ajax_permissions();
+        self::migrate_settlements_phase3_columns();
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_petty_cash_settlements';
@@ -1826,26 +1841,30 @@ class Aura_Financial_Accounts {
             $delivery_type = 'purchase_errand';
         }
 
-        $ok = $wpdb->insert(
-            $table,
-            array(
-                'petty_cash_account_id' => $petty_cash_account_id,
-                'responsible_user_id' => $responsible_user_id,
-                'counterparty_id' => $counterparty_id,
-                'delivery_type' => $delivery_type,
-                'delivered_amount' => $delivered_amount,
-                'spent_amount' => 0,
-                'returned_amount' => 0,
-                'status' => 'open',
-                'due_date' => self::resolve_petty_cash_due_date(wp_unslash($_POST['due_date'] ?? ''), $delivery_type),
-                'evidence_json' => $evidence_payload,
-                'notes' => $notes,
-                'created_by' => get_current_user_id(),
-                'created_at' => current_time('mysql'),
-                'updated_at' => current_time('mysql'),
-            ),
-            array('%d', '%d', '%d', '%s', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%d', '%s', '%s')
+        $insert_data = array(
+            'petty_cash_account_id' => $petty_cash_account_id,
+            'responsible_user_id' => $responsible_user_id,
+            'counterparty_id' => $counterparty_id,
+            'delivered_amount' => $delivered_amount,
+            'spent_amount' => 0,
+            'returned_amount' => 0,
+            'status' => 'open',
+            'due_date' => self::resolve_petty_cash_due_date(wp_unslash($_POST['due_date'] ?? ''), $delivery_type),
+            'evidence_json' => $evidence_payload,
+            'notes' => $notes,
+            'created_by' => get_current_user_id(),
+            'created_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql'),
         );
+        $insert_formats = array('%d', '%d', '%d', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%d', '%s', '%s');
+
+        $cols_check = $wpdb->get_col("SHOW COLUMNS FROM {$table}", 0);
+        if (is_array($cols_check) && in_array('delivery_type', $cols_check, true)) {
+            $insert_data['delivery_type'] = $delivery_type;
+            $insert_formats[] = '%s';
+        }
+
+        $ok = $wpdb->insert($table, $insert_data, $insert_formats);
 
         if (!$ok) {
             wp_send_json_error(array('message' => __('No se pudo crear la rendición de caja chica.', 'aura-suite')));
@@ -3064,14 +3083,20 @@ class Aura_Financial_Accounts {
         $users = $wpdb->users;
         $third_parties = $wpdb->prefix . 'aura_finance_third_parties';
 
+        $columns = $wpdb->get_col("SHOW COLUMNS FROM {$table}", 0);
+        $has_delivery_type = is_array($columns) && in_array('delivery_type', $columns, true);
+        $delivery_type_col = $has_delivery_type ? "COALESCE(s.delivery_type, 'purchase_errand') AS delivery_type," : "'purchase_errand' AS delivery_type,";
+
         $rows = $wpdb->get_results(
-            "SELECT s.id, s.petty_cash_account_id, s.responsible_user_id, s.counterparty_id, s.delivered_amount, s.due_date,
+            "SELECT s.id, s.petty_cash_account_id, s.responsible_user_id, s.counterparty_id,
+                    {$delivery_type_col}
+                    s.delivered_amount, s.due_date,
                     s.status, s.notes, s.last_overdue_alert_at,
-                    a.name AS account_name,
-                    COALESCE(u.display_name, tp.full_name) AS responsible_name,
+                    COALESCE(a.name, 'Caja Chica') AS account_name,
+                    COALESCE(u.display_name, tp.full_name, 'Responsable') AS responsible_name,
                     COALESCE(u.user_email, tp.email) AS responsible_email
              FROM {$table} s
-             INNER JOIN {$accounts} a ON a.id = s.petty_cash_account_id
+             LEFT JOIN {$accounts} a ON a.id = s.petty_cash_account_id
              LEFT JOIN {$users} u ON u.ID = s.responsible_user_id
              LEFT JOIN {$third_parties} tp ON tp.id = s.counterparty_id
              WHERE s.status IN ('open', 'submitted')
