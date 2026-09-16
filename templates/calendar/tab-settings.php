@@ -81,6 +81,22 @@ $auto_sync       = get_option( Aura_Calendar_Google_Sync::AUTO_SYNC_OPTION, '1' 
                     <?php esc_html_e( 'ID del Calendario Resuelto en Google (Calendar ID)', 'aura' ); ?>
                 </label>
                 <input type="text" readonly value="<?php echo esc_attr( $cal_id ?: __( 'No resuelto todavía (haz clic en "Probar Conexión")', 'aura' ) ); ?>" class="form-control" style="width: 100%; border-radius: 8px; background: var(--aura-surface-alt, #f8fafc); color: var(--aura-text-secondary); font-family: monospace;">
+                
+                <?php if ( ! empty( $cal_id ) ) : 
+                    $gcal_subscribe_url = 'https://calendar.google.com/calendar/render?cid=' . rawurlencode( $cal_id );
+                    $shared_accounts    = get_option( 'aura_gcal_share_email', '' ) ?: get_option( 'admin_email', '' );
+                ?>
+                    <div style="margin-top: 10px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; background: rgba(99, 102, 241, 0.06); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.2);">
+                        <div style="font-size: 12px; color: var(--aura-text-secondary); max-width: 580px;">
+                            <strong><?php esc_html_e( '¿No ves el calendario en tu cuenta personal?', 'aura' ); ?></strong><br>
+                            <?php esc_html_e( 'Google Calendar requiere que aceptes la suscripción. Está compartido con:', 'aura' ); ?>
+                            <code><?php echo esc_html( $shared_accounts ); ?></code>
+                        </div>
+                        <a href="<?php echo esc_url( $gcal_subscribe_url ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-indigo btn-sm btn-lift" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; padding: 6px 14px;">
+                            📅 <?php esc_html_e( 'Añadir a mi Google Calendar', 'aura' ); ?> ↗
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="form-group" style="padding-top: 6px;">
