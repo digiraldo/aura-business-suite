@@ -158,28 +158,31 @@
 }
 
 .aura-modal-container {
-    background: var(--aura-surface, #ffffff) !important;
+    background: var(--aura-surface, var(--bg-surface, #ffffff)) !important;
+    color: var(--aura-text-primary, #1e293b);
     width: 100%;
     max-width: 680px;
     border-radius: 16px !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
     border: 1px solid var(--aura-border, #e2e8f0) !important;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: calc(100vh - 40px) !important;
+    height: auto !important;
     animation: auraSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     z-index: 1000501 !important;
 }
 
 .aura-modal-header {
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--aura-border, #e2e8f0);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--aura-surface, #ffffff);
+    padding: 16px 24px !important;
+    border-bottom: 1px solid var(--aura-border, #e2e8f0) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: inherit !important;
+    flex-shrink: 0 !important;
 }
 
 .aura-modal-close {
@@ -199,14 +202,52 @@
     background: var(--aura-surface-alt, #f1f5f9);
 }
 
+.aura-modal-form {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.aura-modal-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    padding: 20px 24px !important;
+}
+
+/* Scrollbar estilizado para el cuerpo del modal */
+.aura-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+.aura-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.aura-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 6px;
+}
+.aura-modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.6);
+}
+
 .aura-modal-footer {
-    padding: 16px 24px;
-    border-top: 1px solid var(--aura-border, #e2e8f0);
-    background: var(--aura-surface-alt, #f8fafc);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
+    padding: 14px 24px !important;
+    border-top: 1px solid var(--aura-border, #e2e8f0) !important;
+    background: var(--aura-surface-alt, var(--bg-surface-alt, #f8fafc)) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 10 !important;
 }
 
 /* ── PILL BUTTONS DÍAS RECURRENTES ── */
