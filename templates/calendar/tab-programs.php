@@ -92,8 +92,12 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
                                     <span>🗓️ <?php echo esc_html( date_i18n( 'j M Y', strtotime( $p->start_date ) ) . ' - ' . date_i18n( 'j M Y', strtotime( $p->end_date ) ) ); ?></span>
                                 <?php endif; ?>
 
-                                <?php if ( ! empty( $p->coordinator_name ) ) : ?>
-                                    <span>👤 <strong><?php esc_html_e( 'Coordinador:', 'aura' ); ?></strong> <?php echo esc_html( $p->coordinator_name ); ?></span>
+                                <?php 
+                                $coords_display = ! empty( $p->coordinators_names ) ? $p->coordinators_names : ( ! empty( $p->coordinator_name ) ? $p->coordinator_name : '' );
+                                if ( ! empty( $coords_display ) ) : 
+                                    $is_multiple = ! empty( $p->coordinator_ids ) && count( $p->coordinator_ids ) > 1;
+                                ?>
+                                    <span>👤 <strong><?php echo $is_multiple ? esc_html__( 'Coordinadores:', 'aura' ) : esc_html__( 'Coordinador:', 'aura' ); ?></strong> <?php echo esc_html( $coords_display ); ?></span>
                                 <?php endif; ?>
 
                                 <span>📚 <strong><?php echo intval( $p->subjects_count ); ?></strong> <?php esc_html_e( 'materias', 'aura' ); ?></span>
@@ -138,9 +142,13 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
                                             <div style="font-size: 14px; font-weight: 600; color: var(--aura-text-primary);">
                                                 <?php echo esc_html( $s->name ); ?>
                                             </div>
-                                            <?php if ( ! empty( $s->default_teacher_name ) ) : ?>
+                                            <?php 
+                                            $teachers_display = ! empty( $s->teachers_names ) ? $s->teachers_names : ( ! empty( $s->default_teacher_name ) ? $s->default_teacher_name : '' );
+                                            if ( ! empty( $teachers_display ) ) : 
+                                                $is_multiple_teach = ! empty( $s->teacher_ids ) && count( $s->teacher_ids ) > 1;
+                                            ?>
                                                 <div style="font-size: 12px; color: var(--aura-text-secondary); margin-top: 2px;">
-                                                    👨‍🏫 <?php echo esc_html( $s->default_teacher_name ); ?>
+                                                    👨‍🏫 <strong><?php echo $is_multiple_teach ? esc_html__( 'Profesores:', 'aura' ) : esc_html__( 'Profesor:', 'aura' ); ?></strong> <?php echo esc_html( $teachers_display ); ?>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
@@ -176,73 +184,83 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
             <button type="button" class="aura-modal-close" data-close-modal="#modal-program-editor">&times;</button>
         </div>
 
-        <form id="form-program-editor" style="padding: 20px 24px;">
-            <input type="hidden" name="id" id="prog-id" value="0">
+        <form id="form-program-editor" class="aura-modal-form">
+            <div class="aura-modal-body">
+                <input type="hidden" name="id" id="prog-id" value="0">
 
-            <div style="display: flex; flex-direction: column; gap: 14px;">
-                <div class="form-group">
-                    <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                        <?php esc_html_e( 'Nombre del Programa / Capacitación', 'aura' ); ?> <span style="color: #ef4444;">*</span>
-                    </label>
-                    <input type="text" name="name" id="prog-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Capacitación Ministerial Hadime 2025', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
-                </div>
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                            <?php esc_html_e( 'Nombre del Programa / Capacitación', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="text" name="name" id="prog-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Capacitación Ministerial Hadime 2025', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                    </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Código Corto', 'aura' ); ?>
-                        </label>
-                        <input type="text" name="code" id="prog-code" class="form-control" placeholder="<?php esc_attr_e( 'HADIME25', 'aura' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                <?php esc_html_e( 'Código Corto', 'aura' ); ?>
+                            </label>
+                            <input type="text" name="code" id="prog-code" class="form-control" placeholder="<?php esc_attr_e( 'HADIME25', 'aura' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                <?php esc_html_e( 'Período Académico', 'aura' ); ?>
+                            </label>
+                            <input type="text" name="academic_period" id="prog-period" class="form-control" placeholder="<?php esc_attr_e( '2025-1 / Ene-Jun', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Período Académico', 'aura' ); ?>
-                        </label>
-                        <input type="text" name="academic_period" id="prog-period" class="form-control" placeholder="<?php esc_attr_e( '2025-1 / Ene-Jun', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
-                    </div>
-                </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Fecha Inicio', 'aura' ); ?>
-                        </label>
-                        <input type="date" name="start_date" id="prog-start-date" class="form-control" style="width: 100%; border-radius: 8px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                <?php esc_html_e( 'Fecha Inicio', 'aura' ); ?>
+                            </label>
+                            <input type="date" name="start_date" id="prog-start-date" class="form-control" style="width: 100%; border-radius: 8px;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                <?php esc_html_e( 'Fecha Fin', 'aura' ); ?>
+                            </label>
+                            <input type="date" name="end_date" id="prog-end-date" class="form-control" style="width: 100%; border-radius: 8px;">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Fecha Fin', 'aura' ); ?>
-                        </label>
-                        <input type="date" name="end_date" id="prog-end-date" class="form-control" style="width: 100%; border-radius: 8px;">
-                    </div>
-                </div>
 
-                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: start;">
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            🎨 <?php esc_html_e( 'Color', 'aura' ); ?>
+                            🎨 <?php esc_html_e( 'Color del Programa', 'aura' ); ?>
                         </label>
-                        <input type="color" name="color" id="prog-color" value="#6366f1" style="width: 100%; height: 42px; border-radius: 8px; border: 1px solid var(--aura-border); cursor: pointer;">
+                        <div class="aura-color-picker-box">
+                            <div class="aura-color-picker-row">
+                                <input type="color" name="color" id="prog-color" value="#5D5FEF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura' ); ?>">
+                                <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura' ); ?></span>
+                            </div>
+                            <?php echo Aura_Calendar_Admin::render_color_palette( 'prog-color', '#5D5FEF' ); ?>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            👤 <?php esc_html_e( 'Coordinador del Programa', 'aura' ); ?>
-                        </label>
-                        <select name="coordinator_id" id="prog-coord-id" class="form-control" style="width: 100%; border-radius: 8px; padding: 10px 12px;">
-                            <option value=""><?php esc_html_e( 'Sin coordinador asignado', 'aura' ); ?></option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                        <?php esc_html_e( 'Descripción u Objetivos', 'aura' ); ?>
-                    </label>
-                    <textarea name="description" id="prog-desc" rows="2" class="form-control" placeholder="<?php esc_attr_e( 'Breve descripción del programa...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                            👥 <?php esc_html_e( 'Coordinador(es) del Programa', 'aura' ); ?>
+                        </label>
+                        <div id="prog-coordinators-container" class="aura-user-chips-container">
+                            <!-- Inyectado dinámicamente con checkboxes desde JS -->
+                        </div>
+                        <small style="font-size: 11.5px; color: var(--aura-text-muted); display: block; margin-top: 4px;">
+                            <?php esc_html_e( 'Puedes seleccionar uno o varios coordinadores para este programa.', 'aura' ); ?>
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                            <?php esc_html_e( 'Descripción u Objetivos', 'aura' ); ?>
+                        </label>
+                        <textarea name="description" id="prog-desc" rows="2" class="form-control" placeholder="<?php esc_attr_e( 'Breve descripción del programa...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
+                    </div>
                 </div>
             </div>
 
-            <div class="aura-modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <div class="aura-modal-footer">
                 <button type="button" class="btn btn-ghost" data-close-modal="#modal-program-editor">
                     <?php esc_html_e( 'Cancelar', 'aura' ); ?>
                 </button>
@@ -266,57 +284,67 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
             <button type="button" class="aura-modal-close" data-close-modal="#modal-subject-editor">&times;</button>
         </div>
 
-        <form id="form-subject-editor" style="padding: 20px 24px;">
-            <input type="hidden" name="id" id="subj-id" value="0">
-            <input type="hidden" name="program_id" id="subj-prog-id" value="0">
+        <form id="form-subject-editor" class="aura-modal-form">
+            <div class="aura-modal-body">
+                <input type="hidden" name="id" id="subj-id" value="0">
+                <input type="hidden" name="program_id" id="subj-prog-id" value="0">
 
-            <div style="display: flex; flex-direction: column; gap: 14px;">
-                <div>
-                    <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Programa:', 'aura' ); ?></span>
-                    <strong id="subj-prog-name-display" style="display: block; font-size: 14px; color: var(--aura-primary);"></strong>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                        <?php esc_html_e( 'Nombre de la Materia', 'aura' ); ?> <span style="color: #ef4444;">*</span>
-                    </label>
-                    <input type="text" name="name" id="subj-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Teología Sistemática I', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Código de Materia', 'aura' ); ?>
-                        </label>
-                        <input type="text" name="code" id="subj-code" class="form-control" placeholder="<?php esc_attr_e( 'TEO101', 'aura' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                        <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Programa:', 'aura' ); ?></span>
+                        <strong id="subj-prog-name-display" style="display: block; font-size: 14px; color: var(--aura-primary);"></strong>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Horas Académicas', 'aura' ); ?>
-                        </label>
-                        <input type="number" name="total_hours" id="subj-hours" value="30" min="0" class="form-control" style="width: 100%; border-radius: 8px;">
-                    </div>
-                </div>
 
-                <div style="display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: start;">
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            🎨 <?php esc_html_e( 'Color', 'aura' ); ?>
+                            <?php esc_html_e( 'Nombre de la Materia', 'aura' ); ?> <span style="color: #ef4444;">*</span>
                         </label>
-                        <input type="color" name="color" id="subj-color" value="#3b82f6" style="width: 100%; height: 42px; border-radius: 8px; border: 1px solid var(--aura-border); cursor: pointer;">
+                        <input type="text" name="name" id="subj-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Teología Sistemática I', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
                     </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                <?php esc_html_e( 'Código de Materia', 'aura' ); ?>
+                            </label>
+                            <input type="text" name="code" id="subj-code" class="form-control" placeholder="<?php esc_attr_e( 'TEO101', 'aura' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                <?php esc_html_e( 'Horas Académicas', 'aura' ); ?>
+                            </label>
+                            <input type="number" name="total_hours" id="subj-hours" value="30" min="0" class="form-control" style="width: 100%; border-radius: 8px;">
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            👨‍🏫 <?php esc_html_e( 'Profesor Titular', 'aura' ); ?>
+                            🎨 <?php esc_html_e( 'Color de la Materia', 'aura' ); ?>
                         </label>
-                        <select name="default_teacher_id" id="subj-teacher-id" class="form-control" style="width: 100%; border-radius: 8px; padding: 10px 12px;">
-                            <option value=""><?php esc_html_e( 'Por asignar en cada clase', 'aura' ); ?></option>
-                        </select>
+                        <div class="aura-color-picker-box">
+                            <div class="aura-color-picker-row">
+                                <input type="color" name="color" id="subj-color" value="#3A86FF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura' ); ?>">
+                                <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura' ); ?></span>
+                            </div>
+                            <?php echo Aura_Calendar_Admin::render_color_palette( 'subj-color', '#3A86FF' ); ?>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                            👨‍🏫 <?php esc_html_e( 'Profesor(es) Titular(es)', 'aura' ); ?>
+                        </label>
+                        <div id="subj-teachers-container" class="aura-user-chips-container">
+                            <!-- Inyectado dinámicamente con checkboxes desde JS -->
+                        </div>
+                        <small style="font-size: 11.5px; color: var(--aura-text-muted); display: block; margin-top: 4px;">
+                            <?php esc_html_e( 'Puedes seleccionar uno o varios profesores titulares para esta materia.', 'aura' ); ?>
+                        </small>
                     </div>
                 </div>
             </div>
 
-            <div class="aura-modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <div class="aura-modal-footer">
                 <button type="button" class="btn btn-ghost" data-close-modal="#modal-subject-editor">
                     <?php esc_html_e( 'Cancelar', 'aura' ); ?>
                 </button>

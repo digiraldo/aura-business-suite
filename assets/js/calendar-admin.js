@@ -411,8 +411,75 @@
     // 3. MODAL EDITOR DE EVENTOS (AGENDAR / EDITAR)
     // ─────────────────────────────────────────────────────────────
 
+    // ─────────────────────────────────────────────────────────────
+    // 3. PALETA DE 20 COLORES (COLORES20.JSON) Y USUARIOS
+    // ─────────────────────────────────────────────────────────────
+
+    function syncColorPalette(inputSelector, hex) {
+        if (!hex) return;
+        var $input = $(inputSelector);
+        if ($input.length) {
+            $input.val(hex);
+        }
+
+        var hexUpper = hex.toUpperCase();
+        var $palette = $('.aura-color-palette[data-target-input="' + inputSelector + '"]');
+        if ($palette.length) {
+            $palette.find('.aura-swatch').each(function() {
+                var swatchColor = ($(this).data('color') || '').toUpperCase();
+                if (swatchColor === hexUpper) {
+                    $(this).addClass('is-selected');
+                } else {
+                    $(this).removeClass('is-selected');
+                }
+            });
+        }
+    }
+
+    // Clic en muestra de la paleta predefinida
+    $(document).on('click', '.aura-swatch', function(e) {
+        e.preventDefault();
+        var color = $(this).data('color');
+        var $palette = $(this).closest('.aura-color-palette');
+        var targetInputSelector = $palette.data('target-input');
+
+        $palette.find('.aura-swatch').removeClass('is-selected');
+        $(this).addClass('is-selected');
+
+        if (targetInputSelector) {
+            $(targetInputSelector).val(color).trigger('input').trigger('change');
+        }
+    });
+
+    // Sincronización cuando se usa el input type="color" libre
+    $(document).on('input change', '#prog-color, #subj-color, #evt-color', function() {
+        var hex = $(this).val();
+        var inputId = '#' + $(this).attr('id');
+        var hexUpper = (hex || '').toUpperCase();
+        var $palette = $('.aura-color-palette[data-target-input="' + inputId + '"]');
+        if ($palette.length) {
+            $palette.find('.aura-swatch').each(function() {
+                var swatchColor = ($(this).data('color') || '').toUpperCase();
+                if (swatchColor === hexUpper) {
+                    $(this).addClass('is-selected');
+                } else {
+                    $(this).removeClass('is-selected');
+                }
+            });
+        }
+    });
+
+    // Toggle visual para chips de usuarios (coordinadores / profesores)
+    $(document).on('change', '.aura-user-chip input[type="checkbox"]', function() {
+        if ($(this).is(':checked')) {
+            $(this).closest('.aura-user-chip').addClass('is-checked');
+        } else {
+            $(this).closest('.aura-user-chip').removeClass('is-checked');
+        }
+    });
+
     function renderTeacherCheckboxes(selectedIds) {
-        selectedIds = selectedIds || [];
+        selectedIds = (selectedIds || []).map(function(id) { return parseInt(id, 10); });
         var container = $('#evt-teachers-container');
         container.empty();
 
@@ -422,14 +489,61 @@
         }
 
         $.each(auraCalData.teachers, function(i, t) {
-            var isChecked = selectedIds.indexOf(parseInt(t.id, 10)) !== -1;
+            var tid = parseInt(t.id, 10);
+            var isChecked = selectedIds.indexOf(tid) !== -1;
             var pill = $(
-                '<label style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1px solid var(--aura-border);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;">' +
+                '<label class="aura-user-chip ' + (isChecked ? 'is-checked' : '') + '">' +
                 '<input type="checkbox" name="teacher_ids[]" value="' + t.id + '" ' + (isChecked ? 'checked' : '') + '> ' +
-                t.name +
+                '<span>' + t.name + '</span>' +
                 '</label>'
             );
             container.append(pill);
+        });
+    }
+
+    function renderCoordinatorCheckboxes(selectedIds) {
+        selectedIds = (selectedIds || []).map(function(id) { return parseInt(id, 10); });
+        var container = $('#prog-coordinators-container');
+        container.empty();
+
+        if (!auraCalData.teachers || !auraCalData.teachers.length) {
+            container.append('<span style="font-size:12px;color:var(--aura-text-muted);">No hay usuarios registrados como coordinadores o docentes.</span>');
+            return;
+        }
+
+        $.each(auraCalData.teachers, function(i, t) {
+            var tid = parseInt(t.id, 10);
+            var isChecked = selectedIds.indexOf(tid) !== -1;
+            var chip = $(
+                '<label class="aura-user-chip ' + (isChecked ? 'is-checked' : '') + '">' +
+                '<input type="checkbox" name="coordinator_ids[]" value="' + t.id + '" ' + (isChecked ? 'checked' : '') + '> ' +
+                '<span>' + t.name + '</span>' +
+                '</label>'
+            );
+            container.append(chip);
+        });
+    }
+
+    function renderSubjectTeacherCheckboxes(selectedIds) {
+        selectedIds = (selectedIds || []).map(function(id) { return parseInt(id, 10); });
+        var container = $('#subj-teachers-container');
+        container.empty();
+
+        if (!auraCalData.teachers || !auraCalData.teachers.length) {
+            container.append('<span style="font-size:12px;color:var(--aura-text-muted);">No hay profesores disponibles en el sistema.</span>');
+            return;
+        }
+
+        $.each(auraCalData.teachers, function(i, t) {
+            var tid = parseInt(t.id, 10);
+            var isChecked = selectedIds.indexOf(tid) !== -1;
+            var chip = $(
+                '<label class="aura-user-chip ' + (isChecked ? 'is-checked' : '') + '">' +
+                '<input type="checkbox" name="teacher_ids[]" value="' + t.id + '" ' + (isChecked ? 'checked' : '') + '> ' +
+                '<span>' + t.name + '</span>' +
+                '</label>'
+            );
+            container.append(chip);
         });
     }
 
@@ -489,7 +603,11 @@
         if (data.status) $('#evt-status').val(data.status);
         if (data.location) $('#evt-location').val(data.location);
         if (data.online_url) $('#evt-online-url').val(data.online_url);
-        if (data.color) $('#evt-color').val(data.color);
+        
+        var evtColor = data.color || '#5D5FEF';
+        $('#evt-color').val(evtColor);
+        syncColorPalette('#evt-color', evtColor);
+
         if (data.description) $('#evt-description').val(data.description);
 
         // Preseleccionar programa si hay filtro activo o si viene en data
@@ -897,12 +1015,8 @@
         $('#prog-id').val('0');
         $('#modal-prog-title').text('🎓 Nuevo Programa Académico');
 
-        // Llenar select coordinadores
-        var $coord = $('#prog-coord-id');
-        $coord.html('<option value="">Sin coordinador asignado</option>');
-        $.each(auraCalData.teachers || [], function(i, t) {
-            $coord.append($('<option>', { value: t.id, text: t.name }));
-        });
+        renderCoordinatorCheckboxes([]);
+        syncColorPalette('#prog-color', '#5D5FEF');
 
         openModal('#modal-program-editor');
     });
@@ -923,18 +1037,15 @@
                 $('#prog-period').val(p.academic_period || '');
                 $('#prog-start-date').val(p.start_date || '');
                 $('#prog-end-date').val(p.end_date || '');
-                $('#prog-color').val(p.color || '#6366f1');
+                
+                var progColor = p.color || '#5D5FEF';
+                $('#prog-color').val(progColor);
+                syncColorPalette('#prog-color', progColor);
+
                 $('#prog-desc').val(p.description || '');
 
-                var $coord = $('#prog-coord-id');
-                $coord.html('<option value="">Sin coordinador asignado</option>');
-                $.each(auraCalData.teachers || [], function(i, t) {
-                    $coord.append($('<option>', {
-                        value: t.id,
-                        text: t.name,
-                        selected: parseInt(t.id, 10) === parseInt(p.coordinator_id, 10)
-                    }));
-                });
+                var coordIds = p.coordinator_ids || (p.coordinator_id ? [parseInt(p.coordinator_id, 10)] : []);
+                renderCoordinatorCheckboxes(coordIds);
 
                 openModal('#modal-program-editor');
             }
@@ -1006,11 +1117,8 @@
         $('#subj-prog-name-display').text(progName);
         $('#modal-subj-title').text('📚 Añadir Materia');
 
-        var $teacher = $('#subj-teacher-id');
-        $teacher.html('<option value="">Por asignar en cada clase</option>');
-        $.each(auraCalData.teachers || [], function(i, t) {
-            $teacher.append($('<option>', { value: t.id, text: t.name }));
-        });
+        renderSubjectTeacherCheckboxes([]);
+        syncColorPalette('#subj-color', '#3A86FF');
 
         openModal('#modal-subject-editor');
     });
@@ -1032,17 +1140,13 @@
                 $('#subj-name').val(s.name);
                 $('#subj-code').val(s.code);
                 $('#subj-hours').val(s.total_hours || 30);
-                $('#subj-color').val(s.color || '#3b82f6');
+                
+                var subjColor = s.color || '#3A86FF';
+                $('#subj-color').val(subjColor);
+                syncColorPalette('#subj-color', subjColor);
 
-                var $teacher = $('#subj-teacher-id');
-                $teacher.html('<option value="">Por asignar en cada clase</option>');
-                $.each(auraCalData.teachers || [], function(i, t) {
-                    $teacher.append($('<option>', {
-                        value: t.id,
-                        text: t.name,
-                        selected: parseInt(t.id, 10) === parseInt(s.default_teacher_id, 10)
-                    }));
-                });
+                var teacherIds = s.teacher_ids || (s.default_teacher_id ? [parseInt(s.default_teacher_id, 10)] : []);
+                renderSubjectTeacherCheckboxes(teacherIds);
 
                 openModal('#modal-subject-editor');
             }

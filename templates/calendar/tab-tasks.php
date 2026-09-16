@@ -113,65 +113,67 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
             <button type="button" class="aura-modal-close" data-close-modal="#modal-task-editor">&times;</button>
         </div>
 
-        <form id="form-task-editor" style="padding: 20px 24px;">
-            <input type="hidden" name="id" id="tsk-id" value="0">
+        <form id="form-task-editor" class="aura-modal-form">
+            <div class="aura-modal-body">
+                <input type="hidden" name="id" id="tsk-id" value="0">
 
-            <div style="display: flex; flex-direction: column; gap: 14px;">
-                <div class="form-group">
-                    <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                        <?php esc_html_e( 'Título de la Tarea', 'aura' ); ?> <span style="color: #ef4444;">*</span>
-                    </label>
-                    <input type="text" name="title" id="tsk-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Ensayo sobre la Gracia y la Redención', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div style="display: flex; flex-direction: column; gap: 14px;">
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            🎓 <?php esc_html_e( 'Programa', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                            <?php esc_html_e( 'Título de la Tarea', 'aura' ); ?> <span style="color: #ef4444;">*</span>
                         </label>
-                        <select name="program_id" id="tsk-prog-id" required class="form-control" style="width: 100%; border-radius: 8px;">
-                            <option value=""><?php esc_html_e( 'Seleccionar...', 'aura' ); ?></option>
-                            <?php foreach ( $programs as $p ) : ?>
-                                <option value="<?php echo esc_attr( $p->id ); ?>"><?php echo esc_html( $p->name ); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <input type="text" name="title" id="tsk-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Ensayo sobre la Gracia y la Redención', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                🎓 <?php esc_html_e( 'Programa', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                            </label>
+                            <select name="program_id" id="tsk-prog-id" required class="form-control" style="width: 100%; border-radius: 8px;">
+                                <option value=""><?php esc_html_e( 'Seleccionar...', 'aura' ); ?></option>
+                                <?php foreach ( $programs as $p ) : ?>
+                                    <option value="<?php echo esc_attr( $p->id ); ?>"><?php echo esc_html( $p->name ); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                📚 <?php esc_html_e( 'Materia', 'aura' ); ?>
+                            </label>
+                            <select name="subject_id" id="tsk-subj-id" class="form-control" style="width: 100%; border-radius: 8px;">
+                                <option value=""><?php esc_html_e( 'General / Opcional', 'aura' ); ?></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                ⏰ <?php esc_html_e( 'Fecha y Hora Límite', 'aura' ); ?>
+                            </label>
+                            <input type="datetime-local" name="due_datetime" id="tsk-due" class="form-control" style="width: 100%; border-radius: 8px;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                <?php esc_html_e( 'Puntaje Máximo', 'aura' ); ?>
+                            </label>
+                            <input type="number" step="0.1" name="max_score" id="tsk-max-score" value="100" class="form-control" style="width: 100%; border-radius: 8px;">
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            📚 <?php esc_html_e( 'Materia', 'aura' ); ?>
+                            <?php esc_html_e( 'Instrucciones y Requisitos', 'aura' ); ?>
                         </label>
-                        <select name="subject_id" id="tsk-subj-id" class="form-control" style="width: 100%; border-radius: 8px;">
-                            <option value=""><?php esc_html_e( 'General / Opcional', 'aura' ); ?></option>
-                        </select>
+                        <textarea name="description" id="tsk-desc" rows="3" class="form-control" placeholder="<?php esc_attr_e( 'Escribe detalladamente las instrucciones de la tarea...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
                     </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            ⏰ <?php esc_html_e( 'Fecha y Hora Límite', 'aura' ); ?>
-                        </label>
-                        <input type="datetime-local" name="due_datetime" id="tsk-due" class="form-control" style="width: 100%; border-radius: 8px;">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Puntaje Máximo', 'aura' ); ?>
-                        </label>
-                        <input type="number" step="0.1" name="max_score" id="tsk-max-score" value="100" class="form-control" style="width: 100%; border-radius: 8px;">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                        <?php esc_html_e( 'Instrucciones y Requisitos', 'aura' ); ?>
-                    </label>
-                    <textarea name="description" id="tsk-desc" rows="3" class="form-control" placeholder="<?php esc_attr_e( 'Escribe detalladamente las instrucciones de la tarea...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
                 </div>
             </div>
 
-            <div class="aura-modal-footer" style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <div class="aura-modal-footer">
                 <button type="button" class="btn btn-ghost" data-close-modal="#modal-task-editor">
                     <?php esc_html_e( 'Cancelar', 'aura' ); ?>
                 </button>

@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Aura_Calendar_Setup {
 
     /** Versión actual del esquema de base de datos del módulo */
-    const DB_VERSION = '1.1.0';
+    const DB_VERSION = '1.2.0';
 
     /** Clave de opción en wp_options para almacenar la versión instalada */
     const DB_VERSION_OPTION = 'aura_calendar_db_version';
@@ -76,6 +76,7 @@ class Aura_Calendar_Setup {
   color VARCHAR(20) DEFAULT '#6366f1',
   status VARCHAR(20) NOT NULL DEFAULT 'active',
   coordinator_id BIGINT UNSIGNED DEFAULT NULL,
+  coordinators TEXT DEFAULT NULL,
   created_by BIGINT UNSIGNED NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -96,6 +97,7 @@ class Aura_Calendar_Setup {
   description TEXT DEFAULT NULL,
   color VARCHAR(20) DEFAULT '#3b82f6',
   default_teacher_id BIGINT UNSIGNED DEFAULT NULL,
+  teachers TEXT DEFAULT NULL,
   total_hours DECIMAL(6,2) NOT NULL DEFAULT 0.00,
   status VARCHAR(20) NOT NULL DEFAULT 'active',
   order_index INT NOT NULL DEFAULT 0,
@@ -243,6 +245,17 @@ class Aura_Calendar_Setup {
         dbDelta( $sql_grades );
         dbDelta( $sql_tasks );
         dbDelta( $sql_submissions );
+
+        // Asegurar columnas para múltiples coordinadores y profesores si la tabla ya existía
+        $col_coord = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_programs}` LIKE 'coordinators'" );
+        if ( empty( $col_coord ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_programs}` ADD COLUMN `coordinators` TEXT DEFAULT NULL AFTER `coordinator_id`" );
+        }
+
+        $col_teach = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_subjects}` LIKE 'teachers'" );
+        if ( empty( $col_teach ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `teachers` TEXT DEFAULT NULL AFTER `default_teacher_id`" );
+        }
 
         update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
     }

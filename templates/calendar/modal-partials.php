@@ -205,20 +205,26 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                         </div>
                     </div>
 
-                    <!-- Color y Descripción -->
-                    <div style="display: grid; grid-template-columns: 140px 1fr; gap: 14px; align-items: start;">
-                        <div class="form-group">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                🎨 <?php esc_html_e( 'Color Distintivo', 'aura' ); ?>
-                            </label>
-                            <input type="color" name="color" id="evt-color" value="#6366f1" style="width: 100%; height: 42px; border-radius: 8px; border: 1px solid var(--aura-border); cursor: pointer;">
+                    <!-- Color Distintivo con Paleta Oficial -->
+                    <div class="form-group" style="margin-bottom: 4px;">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                            🎨 <?php esc_html_e( 'Color Distintivo de la Clase', 'aura' ); ?>
+                        </label>
+                        <div class="aura-color-picker-box">
+                            <div class="aura-color-picker-row">
+                                <input type="color" name="color" id="evt-color" value="#5D5FEF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura' ); ?>">
+                                <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura' ); ?></span>
+                            </div>
+                            <?php echo Aura_Calendar_Admin::render_color_palette( 'evt-color', '#5D5FEF' ); ?>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                📝 <?php esc_html_e( 'Descripción y Temario', 'aura' ); ?>
-                            </label>
-                            <textarea name="description" id="evt-description" rows="2" class="form-control" placeholder="<?php esc_attr_e( 'Detalles de la sesión, lecturas recomendadas...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
-                        </div>
+                    </div>
+
+                    <!-- Descripción y Temario -->
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                            📝 <?php esc_html_e( 'Descripción y Temario', 'aura' ); ?>
+                        </label>
+                        <textarea name="description" id="evt-description" rows="2" class="form-control" placeholder="<?php esc_attr_e( 'Detalles de la sesión, lecturas recomendadas...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
                     </div>
 
                 </div>

@@ -80,7 +80,55 @@ class Aura_Calendar_Programs {
         $params[] = intval( $r['offset'] );
 
         $results = $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
-        return is_array( $results ) ? $results : [];
+        $programs = is_array( $results ) ? $results : [];
+        return self::populate_coordinators( $programs );
+    }
+
+    /**
+     * Enriquecer lista de programas con la resolución de múltiples coordinadores
+     *
+     * @param array $programs
+     * @return array
+     */
+    private static function populate_coordinators( array $programs ): array {
+        if ( empty( $programs ) ) {
+            return [];
+        }
+
+        foreach ( $programs as &$p ) {
+            $ids = [];
+            if ( ! empty( $p->coordinators ) ) {
+                $decoded = json_decode( $p->coordinators, true );
+                if ( is_array( $decoded ) ) {
+                    $ids = array_values( array_unique( array_filter( array_map( 'intval', $decoded ) ) ) );
+                }
+            }
+
+            if ( empty( $ids ) && ! empty( $p->coordinator_id ) ) {
+                $ids = [ intval( $p->coordinator_id ) ];
+            }
+
+            $p->coordinator_ids   = $ids;
+            $p->coordinators_data = [];
+            $names                = [];
+
+            foreach ( $ids as $uid ) {
+                $user = get_userdata( $uid );
+                if ( $user ) {
+                    $p->coordinators_data[] = [
+                        'id'    => $user->ID,
+                        'name'  => $user->display_name,
+                        'email' => $user->user_email,
+                    ];
+                    $names[] = $user->display_name;
+                }
+            }
+
+            $p->coordinators_names = ! empty( $names ) ? implode( ', ', $names ) : ( $p->coordinator_name ?: '' );
+        }
+        unset( $p );
+
+        return $programs;
     }
 
     /**
@@ -101,7 +149,12 @@ class Aura_Calendar_Programs {
             $id
         ) );
 
-        return $row ?: null;
+        if ( ! $row ) {
+            return null;
+        }
+
+        $populated = self::populate_coordinators( [ $row ] );
+        return ! empty( $populated ) ? $populated[0] : $row;
     }
 
     /**
@@ -142,6 +195,26 @@ class Aura_Calendar_Programs {
             $color = '#6366f1'; // Default Indigo
         }
 
+        // Procesar coordinadores múltiples
+        $coord_ids = [];
+        if ( isset( $data['coordinator_ids'] ) ) {
+            if ( is_array( $data['coordinator_ids'] ) ) {
+                $coord_ids = array_values( array_unique( array_filter( array_map( 'intval', $data['coordinator_ids'] ) ) ) );
+            } elseif ( is_string( $data['coordinator_ids'] ) && ! empty( $data['coordinator_ids'] ) ) {
+                $decoded = json_decode( stripslashes( $data['coordinator_ids'] ), true );
+                if ( is_array( $decoded ) ) {
+                    $coord_ids = array_values( array_unique( array_filter( array_map( 'intval', $decoded ) ) ) );
+                } else {
+                    $coord_ids = array_values( array_unique( array_filter( array_map( 'intval', explode( ',', $data['coordinator_ids'] ) ) ) ) );
+                }
+            }
+        } elseif ( ! empty( $data['coordinator_id'] ) ) {
+            $coord_ids = [ intval( $data['coordinator_id'] ) ];
+        }
+
+        $primary_coordinator = ! empty( $coord_ids ) ? $coord_ids[0] : null;
+        $coordinators_json   = ! empty( $coord_ids ) ? wp_json_encode( $coord_ids ) : null;
+
         $fields = [
             'name'            => $name,
             'code'            => $code,
@@ -151,7 +224,8 @@ class Aura_Calendar_Programs {
             'end_date'        => ! empty( $data['end_date'] ) ? sanitize_text_field( $data['end_date'] ) : null,
             'color'           => $color,
             'status'          => in_array( $data['status'] ?? '', [ 'active', 'archived', 'draft' ], true ) ? $data['status'] : 'active',
-            'coordinator_id'  => ! empty( $data['coordinator_id'] ) ? intval( $data['coordinator_id'] ) : null,
+            'coordinator_id'  => $primary_coordinator,
+            'coordinators'    => $coordinators_json,
             'updated_at'      => current_time( 'mysql' ),
         ];
 
@@ -168,6 +242,7 @@ class Aura_Calendar_Programs {
             $fields['end_date'] !== null ? '%s' : null,
             '%s', '%s',
             $fields['coordinator_id'] !== null ? '%d' : null,
+            $fields['coordinators'] !== null ? '%s' : null,
             '%s',
         ];
 

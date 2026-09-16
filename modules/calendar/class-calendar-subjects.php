@@ -86,7 +86,55 @@ class Aura_Calendar_Subjects {
         $params[] = intval( $r['offset'] );
 
         $results = $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
-        return is_array( $results ) ? $results : [];
+        $subjects = is_array( $results ) ? $results : [];
+        return self::populate_teachers( $subjects );
+    }
+
+    /**
+     * Enriquecer lista de materias con la resolución de múltiples profesores titulares
+     *
+     * @param array $subjects
+     * @return array
+     */
+    private static function populate_teachers( array $subjects ): array {
+        if ( empty( $subjects ) ) {
+            return [];
+        }
+
+        foreach ( $subjects as &$s ) {
+            $ids = [];
+            if ( ! empty( $s->teachers ) ) {
+                $decoded = json_decode( $s->teachers, true );
+                if ( is_array( $decoded ) ) {
+                    $ids = array_values( array_unique( array_filter( array_map( 'intval', $decoded ) ) ) );
+                }
+            }
+
+            if ( empty( $ids ) && ! empty( $s->default_teacher_id ) ) {
+                $ids = [ intval( $s->default_teacher_id ) ];
+            }
+
+            $s->teacher_ids   = $ids;
+            $s->teachers_data = [];
+            $names            = [];
+
+            foreach ( $ids as $uid ) {
+                $user = get_userdata( $uid );
+                if ( $user ) {
+                    $s->teachers_data[] = [
+                        'id'    => $user->ID,
+                        'name'  => $user->display_name,
+                        'email' => $user->user_email,
+                    ];
+                    $names[] = $user->display_name;
+                }
+            }
+
+            $s->teachers_names = ! empty( $names ) ? implode( ', ', $names ) : ( $s->default_teacher_name ?: '' );
+        }
+        unset( $s );
+
+        return $subjects;
     }
 
     /**
@@ -110,7 +158,12 @@ class Aura_Calendar_Subjects {
             $id
         ) );
 
-        return $row ?: null;
+        if ( ! $row ) {
+            return null;
+        }
+
+        $populated = self::populate_teachers( [ $row ] );
+        return ! empty( $populated ) ? $populated[0] : $row;
     }
 
     /**
@@ -145,6 +198,26 @@ class Aura_Calendar_Subjects {
             $color = '#3b82f6'; // Default Blue
         }
 
+        // Procesar profesores titulares múltiples
+        $teacher_ids = [];
+        if ( isset( $data['teacher_ids'] ) ) {
+            if ( is_array( $data['teacher_ids'] ) ) {
+                $teacher_ids = array_values( array_unique( array_filter( array_map( 'intval', $data['teacher_ids'] ) ) ) );
+            } elseif ( is_string( $data['teacher_ids'] ) && ! empty( $data['teacher_ids'] ) ) {
+                $decoded = json_decode( stripslashes( $data['teacher_ids'] ), true );
+                if ( is_array( $decoded ) ) {
+                    $teacher_ids = array_values( array_unique( array_filter( array_map( 'intval', $decoded ) ) ) );
+                } else {
+                    $teacher_ids = array_values( array_unique( array_filter( array_map( 'intval', explode( ',', $data['teacher_ids'] ) ) ) ) );
+                }
+            }
+        } elseif ( ! empty( $data['default_teacher_id'] ) ) {
+            $teacher_ids = [ intval( $data['default_teacher_id'] ) ];
+        }
+
+        $primary_teacher = ! empty( $teacher_ids ) ? $teacher_ids[0] : null;
+        $teachers_json   = ! empty( $teacher_ids ) ? wp_json_encode( $teacher_ids ) : null;
+
         $fields = [
             'program_id'         => $program_id,
             'name'               => $name,
@@ -152,7 +225,8 @@ class Aura_Calendar_Subjects {
             'description'        => sanitize_textarea_field( $data['description'] ?? '' ),
             'total_hours'        => max( 0, intval( $data['total_hours'] ?? 0 ) ),
             'color'              => $color,
-            'default_teacher_id' => ! empty( $data['default_teacher_id'] ) ? intval( $data['default_teacher_id'] ) : null,
+            'default_teacher_id' => $primary_teacher,
+            'teachers'           => $teachers_json,
             'status'             => in_array( $data['status'] ?? '', [ 'active', 'inactive' ], true ) ? $data['status'] : 'active',
             'order_index'        => intval( $data['order_index'] ?? 0 ),
             'updated_at'         => current_time( 'mysql' ),
@@ -161,6 +235,7 @@ class Aura_Calendar_Subjects {
         $formats = [
             '%d', '%s', '%s', '%s', '%d', '%s',
             $fields['default_teacher_id'] !== null ? '%d' : null,
+            $fields['teachers'] !== null ? '%s' : null,
             '%s', '%d', '%s',
         ];
 

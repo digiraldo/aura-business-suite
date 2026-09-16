@@ -210,6 +210,7 @@ class Aura_Calendar_Admin {
             'gcal_name'           => Aura_Calendar_Google_Sync::get_calendar_name(),
             'programs'            => $programs,
             'teachers'            => $teachers_clean,
+            'paletteColors'       => self::get_palette_colors(),
             'i18n'                => [
                 'confirm_delete'        => __( '¿Estás seguro de eliminar este elemento? Esta acción no se puede deshacer.', 'aura' ),
                 'confirm_delete_series' => __( '¿Deseas eliminar únicamente esta clase o TODAS las clases futuras de esta serie?', 'aura' ),
@@ -286,5 +287,73 @@ class Aura_Calendar_Admin {
         update_option( Aura_Calendar_Google_Sync::AUTO_SYNC_OPTION, $auto_sync );
 
         wp_send_json_success( [ 'message' => __( 'Ajustes guardados correctamente.', 'aura' ) ] );
+    }
+
+    /**
+     * Obtener los 20 colores predeterminados del archivo colores20.json
+     *
+     * @return array
+     */
+    public static function get_palette_colors(): array {
+        $json_file = AURA_PLUGIN_DIR . 'colores20.json';
+        if ( file_exists( $json_file ) ) {
+            $content = file_get_contents( $json_file );
+            $decoded = json_decode( $content, true );
+            if ( is_array( $decoded ) && ! empty( $decoded ) ) {
+                return $decoded;
+            }
+        }
+
+        // Fallback canónico de los 20 colores
+        return [
+            [ 'id' => 1,  'hex' => '#5D5FEF', 'name' => 'Azul Eléctrico (Principal)' ],
+            [ 'id' => 2,  'hex' => '#E05300', 'name' => 'Naranja Intenso' ],
+            [ 'id' => 3,  'hex' => '#00B67A', 'name' => 'Verde Esmeralda' ],
+            [ 'id' => 4,  'hex' => '#FF9F1C', 'name' => 'Amarillo Caléndula' ],
+            [ 'id' => 5,  'hex' => '#3A86FF', 'name' => 'Azul Brillante' ],
+            [ 'id' => 6,  'hex' => '#9B5DE5', 'name' => 'Violeta Vibrante' ],
+            [ 'id' => 7,  'hex' => '#06B6D4', 'name' => 'Turquesa Cyan' ],
+            [ 'id' => 8,  'hex' => '#F15BB5', 'name' => 'Rosa Neón/Fucsia' ],
+            [ 'id' => 9,  'hex' => '#00F5D4', 'name' => 'Aguamarina Eléctrico' ],
+            [ 'id' => 10, 'hex' => '#FF006E', 'name' => 'Magenta Vivo' ],
+            [ 'id' => 11, 'hex' => '#70E000', 'name' => 'Verde Lima Neón' ],
+            [ 'id' => 12, 'hex' => '#FFBE0B', 'name' => 'Amarillo Oro' ],
+            [ 'id' => 13, 'hex' => '#FB5607', 'name' => 'Naranja Rojizo' ],
+            [ 'id' => 14, 'hex' => '#8338EC', 'name' => 'Púrpura Profundo' ],
+            [ 'id' => 15, 'hex' => '#0077B6', 'name' => 'Azul Océano' ],
+            [ 'id' => 16, 'hex' => '#00F5D4', 'name' => 'Verde Menta Vivo' ],
+            [ 'id' => 17, 'hex' => '#FF70A6', 'name' => 'Salmón Encendido' ],
+            [ 'id' => 18, 'hex' => '#A2D2FF', 'name' => 'Azul Pastel Brillante' ],
+            [ 'id' => 19, 'hex' => '#D90429', 'name' => 'Rojo Carmín' ],
+            [ 'id' => 20, 'hex' => '#4CC9F0', 'name' => 'Azul Cielo Eléctrico' ],
+        ];
+    }
+
+    /**
+     * Renderizar la paleta de 20 colores en HTML vinculada a un input de tipo color
+     *
+     * @param string $target_input_id ID del input color (sin #)
+     * @param string $current_color Hexadecimal actual
+     * @return string HTML
+     */
+    public static function render_color_palette( string $target_input_id, string $current_color = '#5D5FEF' ): string {
+        $colors = self::get_palette_colors();
+        $current_upper = strtoupper( trim( $current_color ) );
+
+        $html = '<div class="aura-color-palette" data-target-input="#' . esc_attr( $target_input_id ) . '" role="group" aria-label="' . esc_attr__( 'Paleta de colores predefinida', 'aura' ) . '">';
+        foreach ( $colors as $c ) {
+            $hex_upper = strtoupper( trim( $c['hex'] ) );
+            $is_active = ( $hex_upper === $current_upper );
+            $html .= sprintf(
+                '<button type="button" class="aura-swatch %s" data-color="%s" title="%s" style="background-color: %s;" aria-label="%s"></button>',
+                $is_active ? 'is-selected' : '',
+                esc_attr( $c['hex'] ),
+                esc_attr( $c['name'] . ' (' . $c['hex'] . ')' ),
+                esc_attr( $c['hex'] ),
+                esc_attr( $c['name'] )
+            );
+        }
+        $html .= '</div>';
+        return $html;
     }
 }
