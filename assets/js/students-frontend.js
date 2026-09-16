@@ -82,7 +82,9 @@
         // Mostrar/ocultar contraseña
         $( document ).on( 'click', '.aura-toggle-pass', function () {
             var $inp = $( this ).siblings( 'input' );
-            $inp.attr( 'type', $inp.attr( 'type' ) === 'password' ? 'text' : 'password' );
+            var isPass = $inp.attr( 'type' ) === 'password';
+            $inp.attr( 'type', isPass ? 'text' : 'password' );
+            $( this ).find( '.dashicons' ).toggleClass( 'dashicons-visibility dashicons-hidden' );
         } );
 
         // Submit AJAX

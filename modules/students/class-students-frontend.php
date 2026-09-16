@@ -75,14 +75,37 @@ class Aura_Students_Frontend {
             has_shortcode( $post->post_content, 'aura_student_paz_salvo_check' )
         );
 
-        if ( ! $has_sc ) return;
+        // Cargar Dashicons oficiales de WordPress
+        if ( ! wp_style_is( 'dashicons', 'enqueued' ) ) {
+            wp_enqueue_style( 'dashicons' );
+        }
 
         wp_enqueue_style(
             'aura-students-frontend',
             AURA_PLUGIN_URL . 'assets/css/students-frontend.css',
-            [],
+            [ 'dashicons' ],
             AURA_VERSION
         );
+
+        // Cargar Estilos de Modo Oscuro y Tema en Frontend
+        if ( ! wp_style_is( 'aura-frontend-dark-mode', 'enqueued' ) ) {
+            wp_enqueue_style(
+                'aura-frontend-dark-mode',
+                AURA_PLUGIN_URL . 'assets/css/aura-frontend-dark-mode.css',
+                [ 'dashicons', 'aura-students-frontend' ],
+                AURA_VERSION
+            );
+        }
+
+        if ( ! wp_script_is( 'aura-frontend-theme', 'enqueued' ) ) {
+            wp_enqueue_script(
+                'aura-frontend-theme',
+                AURA_PLUGIN_URL . 'assets/js/aura-frontend-theme.js',
+                [],
+                AURA_VERSION,
+                false
+            );
+        }
 
         wp_register_script(
             'aura-students-frontend',

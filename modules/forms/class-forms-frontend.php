@@ -347,12 +347,35 @@ class Aura_Forms_Frontend {
     public static function enqueue_assets( ?object $form ): void {
         $ver = AURA_VERSION;
 
+        if ( ! wp_style_is( 'dashicons', 'enqueued' ) ) {
+            wp_enqueue_style( 'dashicons' );
+        }
+
         wp_enqueue_style(
             'aura-forms-frontend',
             AURA_PLUGIN_URL . 'assets/css/forms-frontend.css',
-            [],
+            [ 'dashicons' ],
             $ver
         );
+
+        if ( ! wp_style_is( 'aura-frontend-dark-mode', 'enqueued' ) ) {
+            wp_enqueue_style(
+                'aura-frontend-dark-mode',
+                AURA_PLUGIN_URL . 'assets/css/aura-frontend-dark-mode.css',
+                [ 'dashicons', 'aura-forms-frontend' ],
+                $ver
+            );
+        }
+
+        if ( ! wp_script_is( 'aura-frontend-theme', 'enqueued' ) ) {
+            wp_enqueue_script(
+                'aura-frontend-theme',
+                AURA_PLUGIN_URL . 'assets/js/aura-frontend-theme.js',
+                [],
+                $ver,
+                false
+            );
+        }
 
         wp_enqueue_script(
             'aura-forms-frontend',

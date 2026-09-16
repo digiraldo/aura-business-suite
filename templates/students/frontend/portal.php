@@ -49,10 +49,11 @@ $photo_url = $student->photo_url ?? '';
             <?php endif; ?>
         </div>
         <div class="aura-portal-greeting">
-            <h2><?php
+            <h2 style="display: flex; align-items: center; gap: 8px;"><?php
+                echo '<span class="dashicons dashicons-admin-users" style="font-size: 22px; width: 22px; height: 22px;"></span>';
                 printf(
                     /* translators: %s: first name */
-                    esc_html__( '👋 Hola, %s', 'aura-suite' ),
+                    esc_html__( 'Hola, %s', 'aura-suite' ),
                     esc_html( $student->first_name ?? '' )
                 );
             ?></h2>
@@ -64,30 +65,40 @@ $photo_url = $student->photo_url ?? '';
                 </span>
             </p>
         </div>
-        <div class="aura-portal-logout">
+        <div class="aura-portal-logout" style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" class="aura-theme-toggle" aria-label="<?php esc_attr_e( 'Cambiar tema', 'aura-suite' ); ?>">
+                <span class="dashicons dashicons-moon"></span>
+                <span class="aura-theme-toggle-label"><?php esc_html_e( 'Modo oscuro', 'aura-suite' ); ?></span>
+            </button>
             <a href="<?php echo esc_url( wp_logout_url( home_url() ) ); ?>"
-               class="aura-btn aura-btn-secondary aura-btn-sm">
-                <?php esc_html_e( 'Cerrar sesión', 'aura-suite' ); ?>
+               class="aura-btn aura-btn-secondary aura-btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                <span class="dashicons dashicons-migrate"></span>
+                <span><?php esc_html_e( 'Cerrar sesión', 'aura-suite' ); ?></span>
             </a>
         </div>
     </div>
 
     <!-- ══════════════ NAVEGACIÓN DE PESTAÑAS ══════════════ -->
     <nav class="aura-portal-nav">
-        <button class="aura-portal-tab-btn active" data-target="courses">
-            📚 <?php esc_html_e( 'Mis Cursos', 'aura-suite' ); ?>
+        <button class="aura-portal-tab-btn active" data-target="courses" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="dashicons dashicons-book-alt"></span>
+            <span><?php esc_html_e( 'Mis Cursos', 'aura-suite' ); ?></span>
         </button>
-        <button class="aura-portal-tab-btn" data-target="schedule">
-            📅 <?php esc_html_e( 'Mi Horario', 'aura-suite' ); ?>
+        <button class="aura-portal-tab-btn" data-target="schedule" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="dashicons dashicons-calendar-alt"></span>
+            <span><?php esc_html_e( 'Mi Horario', 'aura-suite' ); ?></span>
         </button>
-        <button class="aura-portal-tab-btn" data-target="payments">
-            💰 <?php esc_html_e( 'Mis Pagos', 'aura-suite' ); ?>
+        <button class="aura-portal-tab-btn" data-target="payments" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="dashicons dashicons-money-alt"></span>
+            <span><?php esc_html_e( 'Mis Pagos', 'aura-suite' ); ?></span>
         </button>
-        <button class="aura-portal-tab-btn" data-target="certs">
-            🏅 <?php esc_html_e( 'Mis Certificados', 'aura-suite' ); ?>
+        <button class="aura-portal-tab-btn" data-target="certs" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="dashicons dashicons-awards"></span>
+            <span><?php esc_html_e( 'Mis Certificados', 'aura-suite' ); ?></span>
         </button>
-        <button class="aura-portal-tab-btn" data-target="forms">
-            📋 <?php esc_html_e( 'Mis Encuestas', 'aura-suite' ); ?>
+        <button class="aura-portal-tab-btn" data-target="forms" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="dashicons dashicons-clipboard"></span>
+            <span><?php esc_html_e( 'Mis Encuestas', 'aura-suite' ); ?></span>
         </button>
     </nav>
 
