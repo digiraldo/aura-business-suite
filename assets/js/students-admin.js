@@ -313,6 +313,13 @@
         $( '#form-course' ).serializeArray().forEach( function ( f ) { formData[ f.name ] = f.value; } );
         var id = $( '#course-id' ).val();
         if ( id ) { formData.id = id; }
+
+        if ( formData.start_date && formData.end_date && formData.end_date < formData.start_date ) {
+            Students.notify( 'La fecha de fin no puede ser anterior a la de inicio.', 'error' );
+            $( '#course-end' ).focus();
+            return;
+        }
+
         Students.ajax( 'aura_students_save_course', formData, function () {
             Students.notify( auraStudents.i18n.saved || 'Guardado.' );
             closeStuModal( 'modal-course' );
@@ -336,6 +343,28 @@
 
     function initCourses() {
         loadCourses( 1 );
+
+        $( '#course-start' ).on( 'change', function () {
+            var val = $( this ).val();
+            if ( val ) {
+                $( '#course-end' ).attr( 'min', val );
+                var endVal = $( '#course-end' ).val();
+                if ( endVal && endVal < val ) {
+                    $( '#course-end' ).val( val );
+                }
+            } else {
+                $( '#course-end' ).removeAttr( 'min' );
+            }
+        } );
+
+        $( '#course-end' ).on( 'change', function () {
+            var endVal = $( this ).val();
+            var startVal = $( '#course-start' ).val();
+            if ( startVal && endVal && endVal < startVal ) {
+                Students.notify( 'La fecha de fin no puede ser anterior a la de inicio.', 'warning' );
+                $( this ).val( startVal );
+            }
+        } );
 
         $( '#btn-apply-filters' ).on( 'click', function () {
             courseFilters = {

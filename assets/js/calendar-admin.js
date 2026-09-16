@@ -533,9 +533,56 @@
         }
     });
 
+    // Sincronización dinámica de fechas y horas en el editor de eventos
+    $('#evt-start-dt').on('change', function() {
+        var startVal = $(this).val();
+        if (startVal) {
+            $('#evt-end-dt').attr('min', startVal);
+            var endVal = $('#evt-end-dt').val();
+            if (endVal && endVal < startVal) {
+                $('#evt-end-dt').val(startVal);
+            }
+        } else {
+            $('#evt-end-dt').removeAttr('min');
+        }
+    });
+
+    $('#rec-date-start').on('change', function() {
+        var startVal = $(this).val();
+        if (startVal) {
+            $('#rec-date-end').attr('min', startVal);
+            var endVal = $('#rec-date-end').val();
+            if (endVal && endVal < startVal) {
+                $('#rec-date-end').val(startVal);
+            }
+        } else {
+            $('#rec-date-end').removeAttr('min');
+        }
+    });
+
     // Submit Guardar Evento
     $('#form-event-editor').on('submit', function(e) {
         e.preventDefault();
+
+        // Validar rangos coherentes
+        if ($('#evt-is-recurring').is(':checked')) {
+            var rStart = $('#rec-date-start').val();
+            var rEnd = $('#rec-date-end').val();
+            if (rStart && rEnd && rEnd < rStart) {
+                showToast('La fecha fin de la recurrencia no puede ser anterior a la de inicio.', 'error');
+                $('#rec-date-end').focus();
+                return false;
+            }
+        } else {
+            var dtStart = $('#evt-start-dt').val();
+            var dtEnd = $('#evt-end-dt').val();
+            if (dtStart && dtEnd && dtEnd < dtStart) {
+                showToast('La fecha y hora de fin debe ser posterior a la de inicio.', 'error');
+                $('#evt-end-dt').focus();
+                return false;
+            }
+        }
+
         var formData = $(this).serializeArray();
         formData.push({ name: 'action', value: 'aura_cal_save_event' });
         formData.push({ name: 'nonce', value: auraCalData.nonce });
@@ -882,8 +929,41 @@
         });
     });
 
+    // Sincronización dinámica de fechas del programa
+    $('#prog-start-date').on('change', function() {
+        var startVal = $(this).val();
+        if (startVal) {
+            $('#prog-end-date').attr('min', startVal);
+            var endVal = $('#prog-end-date').val();
+            if (endVal && endVal < startVal) {
+                $('#prog-end-date').val(startVal);
+                showToast('La fecha de fin se ajustó para no ser anterior a la de inicio.', 'info');
+            }
+        } else {
+            $('#prog-end-date').removeAttr('min');
+        }
+    });
+
+    $('#prog-end-date').on('change', function() {
+        var endVal = $(this).val();
+        var startVal = $('#prog-start-date').val();
+        if (startVal && endVal && endVal < startVal) {
+            showToast('La fecha de fin no puede ser anterior a la fecha de inicio.', 'warning');
+            $(this).val(startVal);
+        }
+    });
+
     $('#form-program-editor').on('submit', function(e) {
         e.preventDefault();
+
+        var startDate = $('#prog-start-date').val();
+        var endDate = $('#prog-end-date').val();
+        if (startDate && endDate && endDate < startDate) {
+            showToast('La fecha de fin no puede ser anterior a la fecha de inicio.', 'error');
+            $('#prog-end-date').focus();
+            return false;
+        }
+
         var formData = $(this).serializeArray();
         formData.push({ name: 'action', value: 'aura_cal_save_program' });
         formData.push({ name: 'nonce', value: auraCalData.nonce });

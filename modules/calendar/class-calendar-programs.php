@@ -155,6 +155,13 @@ class Aura_Calendar_Programs {
             'updated_at'      => current_time( 'mysql' ),
         ];
 
+        // Validar coherencia de rango de fechas
+        if ( ! empty( $fields['start_date'] ) && ! empty( $fields['end_date'] ) ) {
+            if ( strtotime( $fields['end_date'] ) < strtotime( $fields['start_date'] ) ) {
+                return new WP_Error( 'invalid_dates', __( 'La fecha de fin no puede ser anterior a la fecha de inicio.', 'aura' ) );
+            }
+        }
+
         $formats = [
             '%s', '%s', '%s', '%s',
             $fields['start_date'] !== null ? '%s' : null,

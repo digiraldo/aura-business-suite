@@ -403,6 +403,10 @@ class Aura_Calendar_Events {
             return new WP_Error( 'missing_dates', __( 'Debe indicar fecha/hora de inicio y fin.', 'aura' ) );
         }
 
+        if ( strtotime( $end_dt ) < strtotime( $start_dt ) ) {
+            return new WP_Error( 'invalid_dates', __( 'La fecha y hora de fin debe ser posterior a la de inicio.', 'aura' ) );
+        }
+
         $fields = [
             'program_id'     => $program_id,
             'subject_id'     => $subject_id,

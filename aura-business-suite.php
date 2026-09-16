@@ -1905,7 +1905,7 @@ class Aura_Business_Suite {
                 'aura-admin-scripts',
                 AURA_PLUGIN_URL . 'assets/js/admin-scripts.js',
                 array('jquery', 'chartjs'),
-                AURA_VERSION,
+                file_exists( AURA_PLUGIN_DIR . 'assets/js/admin-scripts.js' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/js/admin-scripts.js' ) : AURA_VERSION,
                 true
             );
 

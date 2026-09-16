@@ -624,6 +624,12 @@ $can_manage = current_user_can( 'aura_students_courses_manage' ) || current_user
             finance_cat_id : $('#course-finance-cat').val()
         };
 
+        if ( data.start_date && data.end_date && data.end_date < data.start_date ){
+            AuraStudents.notify('<?php _e( "La fecha de fin no puede ser anterior a la fecha de inicio.", "aura-suite" ); ?>', 'error');
+            $('#course-end').focus();
+            return;
+        }
+
         $.post(ajaxUrl, data, function(res){
             $btn.prop('disabled', false).text('<?php _e( "Guardar curso", "aura-suite" ); ?>');
             if ( res.success ){
@@ -705,6 +711,28 @@ $can_manage = current_user_can( 'aura_students_courses_manage' ) || current_user
             var id = $(this).data('id');
             closeModals();
             setTimeout(function(){ openEditModal(id); }, 200);
+        });
+
+        // Sincronización de fechas de curso
+        $('#course-start').on('change', function(){
+            var val = $(this).val();
+            if (val) {
+                $('#course-end').attr('min', val);
+                var endVal = $('#course-end').val();
+                if (endVal && endVal < val) {
+                    $('#course-end').val(val);
+                }
+            } else {
+                $('#course-end').removeAttr('min');
+            }
+        });
+        $('#course-end').on('change', function(){
+            var endVal = $(this).val();
+            var startVal = $('#course-start').val();
+            if (startVal && endVal && endVal < startVal) {
+                AuraStudents.notify('<?php _e( "La fecha de fin no puede ser anterior a la fecha de inicio.", "aura-suite" ); ?>', 'warning');
+                $(this).val(startVal);
+            }
         });
 
         // Guardar
