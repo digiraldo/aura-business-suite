@@ -1353,11 +1353,91 @@ jQuery(function ($) {
         }
     });
 
-    // Atajos de días para fecha límite (+3d, +5d, +7d, +15d)
+    // Atajos de días para fecha límite (+3d, +5d, +7d, +15d o +1m, +3m, +6m, +1a)
     $(document).on('click', '.aura-petty-shortcut-btn', function (e) {
         e.preventDefault();
         const days = parseInt($(this).data('days'), 10) || 5;
         $('#aura-petty-due-date').val(toLocalDateInput(days));
+    });
+
+    function updatePettyTypeUI(type) {
+        const isProgram = (type === 'program_budget');
+        const $cards = $('.aura-petty-type-card');
+        $cards.removeClass('is-selected').each(function () {
+            const cardType = $(this).data('type');
+            if (cardType === type) {
+                $(this).addClass('is-selected');
+                $(this).css({
+                    'border-color': '#2563eb',
+                    'background': '#eff6ff'
+                });
+            } else {
+                $(this).css({
+                    'border-color': '#cbd5e1',
+                    'background': '#ffffff'
+                });
+            }
+        });
+
+        const $label = $('#aura-petty-due-date-label');
+        const $shortcuts = $('#aura-petty-shortcuts-container');
+        const $help = $('#aura-petty-due-date-help');
+
+        if (isProgram) {
+            if ($label.length) {
+                $label.html('<strong>Fecha estimada fin de programa</strong>');
+            }
+            if ($shortcuts.length) {
+                $shortcuts.html(
+                    '<button type="button" class="aura-petty-shortcut-btn" data-days="30">+1m</button>' +
+                    '<button type="button" class="aura-petty-shortcut-btn" data-days="90">+3m</button>' +
+                    '<button type="button" class="aura-petty-shortcut-btn" data-days="180">+6m</button>' +
+                    '<button type="button" class="aura-petty-shortcut-btn" data-days="365">+1a</button>'
+                );
+            }
+            if ($help.length) {
+                $help.text('Presupuesto de mediano/largo plazo (ej. 6 meses). Se rinde de forma continua sin alarmas de vencimiento de corto plazo.');
+            }
+            const curVal = $('#aura-petty-due-date').val();
+            const fiveDaysVal = toLocalDateInput(parseInt(auraFinancialAccounts.defaultDueDays, 10) || 5);
+            if (!curVal || curVal === fiveDaysVal) {
+                $('#aura-petty-due-date').val(toLocalDateInput(180));
+            }
+        } else {
+            if ($label.length) {
+                $label.html('<strong>Fecha límite rendición</strong>');
+            }
+            if ($shortcuts.length) {
+                $shortcuts.html(
+                    '<button type="button" class="aura-petty-shortcut-btn" data-days="3">+3d</button>' +
+                    '<button type="button" class="aura-petty-shortcut-btn" data-days="5">+5d</button>' +
+                    '<button type="button" class="aura-petty-shortcut-btn" data-days="7">+7d</button>' +
+                    '<button type="button" class="aura-petty-shortcut-btn" data-days="15">+15d</button>'
+                );
+            }
+            if ($help.length) {
+                $help.text('Plazo límite para compra y devolución (SLA normal: 3 a 5 días).');
+            }
+            const curVal = $('#aura-petty-due-date').val();
+            const sixMonthsVal = toLocalDateInput(180);
+            if (!curVal || curVal === sixMonthsVal) {
+                $('#aura-petty-due-date').val(toLocalDateInput(parseInt(auraFinancialAccounts.defaultDueDays, 10) || 5));
+            }
+        }
+    }
+
+    $(document).on('change', 'input[name="aura_petty_type"]', function () {
+        updatePettyTypeUI($(this).val());
+    });
+
+    $(document).on('click', '.aura-petty-type-card', function (e) {
+        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+            return;
+        }
+        const $radio = $(this).find('input[name="aura_petty_type"]');
+        if ($radio.length && !$radio.prop('checked')) {
+            $radio.prop('checked', true).trigger('change');
+        }
     });
 
     function resetPettyForm() {
@@ -1376,6 +1456,8 @@ jQuery(function ($) {
         $('#aura-petty-spent').val('0');
         $('#aura-petty-returned').val('0');
         $('#aura-petty-excedent-msg').text('');
+        $('input[name="aura_petty_type"][value="purchase_errand"]').prop('checked', true);
+        updatePettyTypeUI('purchase_errand');
         $('#aura-petty-due-date').val(toLocalDateInput(parseInt(auraFinancialAccounts.defaultDueDays, 10) || 5));
         $('#aura-petty-evidence-files').val('');
         $('#aura-petty-settle-notes').val('');
@@ -1470,6 +1552,7 @@ jQuery(function ($) {
         const custodian = $('#aura-petty-filter-custodian').val() || '';
         const status = $('#aura-petty-filter-status').val() || '';
         const overdue = $('#aura-petty-filter-overdue').val() || '';
+        const deliveryType = $('#aura-petty-filter-delivery-type').val() || '';
 
         const allRows = window.auraPettyCashCache || [];
         let activeFiltersCount = 0;
@@ -1477,6 +1560,7 @@ jQuery(function ($) {
         if (custodian) activeFiltersCount++;
         if (status) activeFiltersCount++;
         if (overdue) activeFiltersCount++;
+        if (deliveryType) activeFiltersCount++;
 
         const filtered = allRows.filter(function (r) {
             if (search) {
@@ -1487,7 +1571,8 @@ jQuery(function ($) {
                     r.created_at || '',
                     r.due_date || '',
                     r.delivered_amount || '',
-                    pettyStatusLabel(r.status) || ''
+                    pettyStatusLabel(r.status) || '',
+                    (r.delivery_type === 'program_budget' ? 'programa presupuesto' : 'compra diligencia')
                 ].join(' ').toLowerCase();
                 if (!hay.includes(search)) {
                     return false;
@@ -1503,6 +1588,10 @@ jQuery(function ($) {
             }
 
             if (status && r.status !== status) {
+                return false;
+            }
+
+            if (deliveryType && (r.delivery_type || 'purchase_errand') !== deliveryType) {
                 return false;
             }
 
@@ -1562,9 +1651,42 @@ jQuery(function ($) {
     }
 
     function renderPettyDueTip(r) {
+        const isProgram = (r.delivery_type === 'program_budget');
         const isOverdue = parseInt(r.is_overdue, 10) === 1 && r.status !== 'approved' && r.status !== 'closed';
         const dueDate = (r.due_date || '').slice(0, 10) || 'Sin fecha fija';
         const createdDate = (r.created_at || '').slice(0, 10) || '—';
+
+        if (isProgram) {
+            return '<div class="aura-tip-card">' +
+                '<div class="aura-tip-card-header">' +
+                    '<div class="aura-tip-avatar-box" style="background:' + (isOverdue ? 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)' : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)') + ';">' +
+                        (isOverdue ? '⚠️' : '📦') +
+                    '</div>' +
+                    '<div class="aura-tip-card-title-box">' +
+                        '<div class="aura-tip-card-name">' + (isOverdue ? 'Vigencia de Programa Expirada' : 'Presupuesto de Programa Activo') + '</div>' +
+                        '<div class="aura-tip-card-badges">' +
+                            '<span class="aura-tip-badge" style="background:' + (isOverdue ? 'rgba(239,68,68,0.2)' : 'rgba(37,99,235,0.2)') + ';color:' + (isOverdue ? '#fca5a5' : '#93c5fd') + ';font-size:10.5px;padding:2px 8px;border-radius:999px;">' +
+                                (isOverdue ? 'Período Finalizado' : 'En Ejecución Operativa') +
+                            '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="aura-tip-card-body">' +
+                    '<div class="aura-tip-stat-grid">' +
+                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Fecha Apertura</span><span class="aura-tip-stat-value">' + createdDate + '</span></div>' +
+                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Cierre Programa</span><span class="aura-tip-stat-value" style="color:' + (isOverdue ? '#fca5a5' : '#93c5fd') + ';">' + dueDate + '</span></div>' +
+                    '</div>' +
+                    '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' +
+                        (isOverdue 
+                            ? 'El período previsto para este programa ya finalizó. Se recomienda proceder con el cierre y conciliación de la caja.' 
+                            : 'Fondo de programa a mediano/largo plazo (ej. 6 meses). Se rinde de forma continua contra el presupuesto asignado sin alarmas de vencimiento de corto plazo.') +
+                    '</div>' +
+                '</div>' +
+                '<div class="aura-tip-card-footer">' +
+                    '<span>Responsable: ' + escapeHtml(r.responsible_name || '—') + '</span>' +
+                '</div>' +
+            '</div>';
+        }
 
         return '<div class="aura-tip-card">' +
             '<div class="aura-tip-card-header">' +
@@ -1587,7 +1709,7 @@ jQuery(function ($) {
                 '</div>' +
                 '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' +
                     (isOverdue 
-                        ? 'Este fondo superó su fecha límite sin haber justificado los comprobantes o devuelto el cambio. Requiere contacto prioritario con el responsable.' 
+                        ? 'Este fondo de compra superó su fecha límite sin haber justificado los comprobantes o devuelto el cambio. Requiere contacto prioritario con el responsable.' 
                         : 'El custodio se encuentra dentro de los plazos establecidos para presentar facturas de compra y reintegrar el sobrante.') +
                 '</div>' +
             '</div>' +
@@ -1717,73 +1839,148 @@ jQuery(function ($) {
         '</div>';
     }
 
-    function renderPettyChildCard(r, buttons, canSubmit, canApprove, canClose, evidenceCount, isThirdParty, respBadge, isOverdue, dueDateDisplay) {
+    function renderPettyChildCard(r, canSubmit, canApprove, canClose, evidenceCount, isThirdParty, respBadge, isOverdue, dueDateDisplay, isProgram) {
         const balance = parseFloat(r.delivered_amount || 0) - parseFloat(r.spent_amount || 0) - parseFloat(r.returned_amount || 0);
         const statusBadge = pettyStatusBadge(r.status);
         const overdueBadge = isOverdue ? '<span class="aura-badge aura-badge-red" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;">⚠️ Vencida</span>' : '';
-        const evidenceBadge = evidenceCount > 0 ? '<span class="aura-badge" style="background:#e0f2fe;color:#0284c7;border:1px solid #bae6fd;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">' + evidenceCount + ' recibo(s)</span>' : '';
+        const evidenceBadge = evidenceCount > 0 ? '<span class="aura-badge" style="background:#e0f2fe;color:#0284c7;border:1px solid #bae6fd;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">' + evidenceCount + ' comprobante(s)</span>' : '';
 
-        return '<div class="aura-child-card">' +
-            '<div class="aura-child-hero-bar">' +
-                '<div class="aura-child-hero-left">' +
-                    '<div class="aura-child-icon-box" style="background:rgba(2,132,199,0.12);color:#0284c7;">' +
-                        '📦' +
-                    '</div>' +
-                    '<div class="aura-child-hero-titles">' +
-                        '<div class="aura-child-hero-title" style="font-weight:700;font-size:15px;color:#0f172a;">' +
-                            'Entrega #' + r.id + ': ' + escapeHtml(r.responsible_name || 'Responsable') +
-                        '</div>' +
-                        '<div class="aura-child-hero-subtitle" style="font-size:12.5px;color:#64748b;">' +
-                            'Caja Asignada: <strong>' + escapeHtml(r.account_name || 'Caja Chica') + '</strong>' +
-                        '</div>' +
-                    '</div>' +
+        const typeHeroBadge = isProgram
+            ? '<span class="aura-pill aura-pill--program-lg" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-portfolio"></span> Presupuesto de Programa</span>'
+            : '<span class="aura-pill aura-pill--errand-lg" style="background:#f8fafc;color:#475569;border:1px solid #e2e8f0;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-cart"></span> Compra puntual / Diligencia</span>';
+
+        const hasDriveOrReceipt = /https?:\/\/[^\s,;]+/i.test(r.notes || '');
+
+        // ── BOTONES DEL PANEL LATERAL IZQUIERDO ──
+        const sidebarButtons = [];
+        sidebarButtons.push(
+            '<button type="button" class="button button-primary aura-child-side-btn aura-child-side-btn--primary aura-petty-pick" data-id="' + r.id + '" title="Cargar facturas y rendir gastos">' +
+                '<span class="dashicons dashicons-edit"></span>' +
+                '<span>Rendir Gastos</span>' +
+            '</button>'
+        );
+
+        if (evidenceCount > 0 || (r.evidence_json && String(r.evidence_json).trim() !== '') || hasDriveOrReceipt) {
+            sidebarButtons.push(
+                '<button type="button" class="button aura-child-side-btn aura-child-side-btn--evidence aura-petty-view-evidence" data-id="' + r.id + '" title="Ver comprobantes y respaldos adjuntos">' +
+                    '<span class="dashicons dashicons-visibility"></span>' +
+                    '<span>Comprobantes (' + Math.max(1, evidenceCount) + ')</span>' +
+                '</button>'
+            );
+        }
+
+        if (canSubmit) {
+            sidebarButtons.push(
+                '<button type="button" class="button button-secondary aura-child-side-btn aura-child-side-btn--submit aura-petty-action" data-id="' + r.id + '" data-status="submitted" title="Enviar rendición para revisión">' +
+                    '<span class="dashicons dashicons-yes-alt"></span>' +
+                    '<span>Enviar a Revisión</span>' +
+                '</button>'
+            );
+            sidebarButtons.push(
+                '<button type="button" class="button button-link-delete aura-child-side-btn aura-child-side-btn--delete aura-petty-delete" data-id="' + r.id + '" title="Eliminar este registro">' +
+                    '<span class="dashicons dashicons-trash"></span>' +
+                    '<span>Eliminar Entrega</span>' +
+                '</button>'
+            );
+        }
+
+        if (canApprove) {
+            sidebarButtons.push(
+                '<button type="button" class="button aura-child-side-btn aura-child-side-btn--approve aura-petty-action" data-id="' + r.id + '" data-status="approved" title="Aprobar rendición (paz y salvo)">' +
+                    '<span class="dashicons dashicons-yes"></span>' +
+                    '<span>Aprobar Rendición</span>' +
+                '</button>'
+            );
+            sidebarButtons.push(
+                '<button type="button" class="button button-secondary aura-child-side-btn aura-child-side-btn--reject aura-petty-action" data-id="' + r.id + '" data-status="rejected" title="Rechazar rendición">' +
+                    '<span class="dashicons dashicons-no"></span>' +
+                    '<span>Rechazar</span>' +
+                '</button>'
+            );
+        }
+
+        if (canClose) {
+            sidebarButtons.push(
+                '<button type="button" class="button button-secondary aura-child-side-btn aura-child-side-btn--close aura-petty-action" data-id="' + r.id + '" data-status="closed" title="Cerrar definitivamente la caja">' +
+                    '<span class="dashicons dashicons-lock"></span>' +
+                    '<span>Cerrar Definitivamente</span>' +
+                '</button>'
+            );
+        }
+
+        return '<div class="aura-child-card aura-child-card--sidebar-layout">' +
+            '<!-- Panel Lateral Izquierdo: Acciones Rápidas -->' +
+            '<div class="aura-child-actions-sidebar">' +
+                '<div class="aura-child-sidebar-header">' +
+                    '<span class="dashicons dashicons-admin-generic"></span>' +
+                    '<span>Acciones Rápidas</span>' +
                 '</div>' +
-                '<div class="aura-child-hero-badges" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
-                    respBadge +
-                    statusBadge +
-                    overdueBadge +
-                    evidenceBadge +
-                    '<div class="aura-child-amount-card" style="margin-left:auto;padding:6px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;text-align:right;">' +
-                        '<span style="display:block;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;">Entregado</span>' +
-                        '<strong style="font-size:16px;color:#0f172a;">$' + escapeHtml(formatNumber(r.delivered_amount || 0)) + '</strong>' +
-                    '</div>' +
+                '<div class="aura-child-sidebar-buttons">' +
+                    sidebarButtons.join('') +
                 '</div>' +
             '</div>' +
 
-            '<div class="aura-child-sections-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:16px;">' +
-                '<div class="aura-child-subcard" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;">' +
-                    '<div class="aura-child-subcard-header" style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
-                        '<span class="dashicons dashicons-calendar-alt" style="font-size:15px;color:#0284c7;"></span> Cronograma y Plazos' +
+            '<!-- Contenido Principal -->' +
+            '<div class="aura-child-main-panel">' +
+                '<div class="aura-child-hero-bar">' +
+                    '<div class="aura-child-hero-left">' +
+                        '<div class="aura-child-icon-box" style="background:' + (isProgram ? 'rgba(79,70,229,0.12);color:#4f46e5;' : 'rgba(2,132,199,0.12);color:#0284c7;') + '">' +
+                            (isProgram ? '📦' : '🛒') +
+                        '</div>' +
+                        '<div class="aura-child-hero-titles">' +
+                            '<div class="aura-child-hero-title" style="font-weight:700;font-size:15px;color:#0f172a;">' +
+                                'Entrega #' + r.id + ': ' + escapeHtml(r.responsible_name || 'Responsable') +
+                            '</div>' +
+                            '<div class="aura-child-hero-subtitle" style="font-size:12.5px;color:#64748b;">' +
+                                'Caja Asignada: <strong>' + escapeHtml(r.account_name || 'Caja Chica') + '</strong>' +
+                            '</div>' +
+                        '</div>' +
                     '</div>' +
-                    '<div class="aura-child-subcard-body" style="font-size:12.5px;line-height:1.6;">' +
-                        '<div><span style="color:#64748b;">Fecha de entrega:</span> <strong>' + escapeHtml(r.created_at || '—') + '</strong></div>' +
-                        '<div><span style="color:#64748b;">Fecha límite:</span> ' + dueDateDisplay + '</div>' +
+                    '<div class="aura-child-hero-badges" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+                        typeHeroBadge +
+                        respBadge +
+                        statusBadge +
+                        overdueBadge +
+                        evidenceBadge +
+                        '<div class="aura-child-amount-card" style="margin-left:auto;padding:6px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;text-align:right;">' +
+                            '<span style="display:block;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;">Entregado</span>' +
+                            '<strong style="font-size:16px;color:#0f172a;">$' + escapeHtml(formatNumber(r.delivered_amount || 0)) + '</strong>' +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
 
-                '<div class="aura-child-subcard" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;">' +
-                    '<div class="aura-child-subcard-header" style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
-                        '<span class="dashicons dashicons-money-alt" style="font-size:15px;color:#10b981;"></span> Liquidación Contable' +
+                '<div class="aura-child-sections-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px;">' +
+                    '<div class="aura-child-subcard" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;">' +
+                        '<div class="aura-child-subcard-header" style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
+                            '<span class="dashicons dashicons-calendar-alt" style="font-size:15px;color:#0284c7;"></span> Cronograma y Plazos' +
+                        '</div>' +
+                        '<div class="aura-child-subcard-body" style="font-size:12.5px;line-height:1.6;">' +
+                            '<div><span style="color:#64748b;">Modalidad:</span> <strong>' + (isProgram ? 'Presupuesto Programa (Largo Plazo)' : 'Compra puntual / Diligencia') + '</strong></div>' +
+                            '<div><span style="color:#64748b;">Fecha entrega:</span> <strong>' + escapeHtml(r.created_at || '—') + '</strong></div>' +
+                            '<div><span style="color:#64748b;">Fecha límite:</span> ' + dueDateDisplay + '</div>' +
+                        '</div>' +
                     '</div>' +
-                    '<div class="aura-child-subcard-body" style="font-size:12.5px;line-height:1.6;">' +
-                        '<div><span style="color:#64748b;">Gastado comprobado:</span> <strong style="color:#4f46e5;">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</strong></div>' +
-                        '<div><span style="color:#64748b;">Efectivo reintegrado:</span> <strong style="color:#059669;">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</strong></div>' +
-                        '<div><span style="color:#64748b;">Diferencia:</span> <strong style="color:' + (balance > 0.01 ? '#dc2626' : '#059669') + '">$' + escapeHtml(formatNumber(balance)) + '</strong></div>' +
+
+                    '<div class="aura-child-subcard" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;">' +
+                        '<div class="aura-child-subcard-header" style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
+                            '<span class="dashicons dashicons-money-alt" style="font-size:15px;color:#10b981;"></span> Liquidación Contable' +
+                        '</div>' +
+                        '<div class="aura-child-subcard-body" style="font-size:12.5px;line-height:1.6;">' +
+                            '<div><span style="color:#64748b;">Gastado comprobado:</span> <strong style="color:#4f46e5;">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</strong></div>' +
+                            '<div><span style="color:#64748b;">Efectivo reintegrado:</span> <strong style="color:#059669;">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</strong></div>' +
+                            '<div><span style="color:#64748b;">Saldo pendiente:</span> <strong style="color:' + (balance > 0.01 ? '#dc2626' : '#059669') + '">$' + escapeHtml(formatNumber(balance)) + '</strong></div>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<div class="aura-child-subcard aura-child-subcard-full" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;grid-column:1 / -1;">' +
+                        '<div class="aura-child-subcard-header" style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
+                            '<span class="dashicons dashicons-clipboard" style="font-size:15px;color:#f59e0b;"></span> Propósito y Observaciones' +
+                        '</div>' +
+                        '<div class="aura-child-subcard-body" style="font-size:13px;color:#334155;line-height:1.5;">' +
+                            (r.notes ? escapeHtml(r.notes).replace(/\n/g, '<br>') : '<em style="color:#94a3b8;">Sin notas u observaciones registradas.</em>') +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
-
-                '<div class="aura-child-subcard aura-child-subcard-full" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;grid-column:1 / -1;">' +
-                    '<div class="aura-child-subcard-header" style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
-                        '<span class="dashicons dashicons-clipboard" style="font-size:15px;color:#f59e0b;"></span> Propósito y Observaciones' +
-                    '</div>' +
-                    '<div class="aura-child-subcard-body" style="font-size:13px;color:#334155;line-height:1.5;">' +
-                        (r.notes ? escapeHtml(r.notes).replace(/\n/g, '<br>') : '<em style="color:#94a3b8;">Sin notas u observaciones registradas.</em>') +
-                    '</div>' +
-                '</div>' +
-            '</div>' +
-
-            '<div class="aura-child-action-dock" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #f1f5f9;">' +
-                buttons.join('') +
             '</div>' +
         '</div>';
     }
@@ -1798,43 +1995,32 @@ jQuery(function ($) {
 
         let linksHtml = '';
         if (urlMatches.length > 0) {
-            linksHtml = '<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.12);">' +
-                '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#94a3b8;margin-bottom:6px;">' +
-                    '<span class="dashicons dashicons-paperclip" style="font-size:12px;width:12px;height:12px;line-height:12px;vertical-align:middle;margin-right:2px;"></span> Comprobante(s) Adjunto(s):' +
-                '</div>' +
-                '<div style="display:flex;flex-direction:column;gap:5px;">';
-            urlMatches.forEach(function (u, i) {
-                const isDrive = u.indexOf('drive.google.com') !== -1;
-                linksHtml += '<a href="' + escapeHtml(u) + '" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(2,132,199,0.18);border:1px solid rgba(56,189,248,0.3);border-radius:6px;color:#38bdf8;font-size:11.5px;font-weight:600;text-decoration:none;" onclick="event.stopPropagation()">' +
-                    '<span class="dashicons ' + (isDrive ? 'dashicons-cloud-saved' : 'dashicons-media-document') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span> ' +
-                    (isDrive ? 'Ver en Google Drive' : 'Ver Comprobante #' + (i + 1)) +
-                    ' <span class="dashicons dashicons-external" style="font-size:11px;width:11px;height:11px;line-height:11px;margin-left:auto;"></span>' +
-                '</a>';
-            });
-            linksHtml += '</div></div>';
+            linksHtml = '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">' +
+                '<strong style="font-size:11px;color:#38bdf8;display:block;margin-bottom:4px;">📎 Enlaces / Soportes adjuntos:</strong>' +
+                urlMatches.map(function(url, idx) {
+                    return '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;text-decoration:underline;display:block;font-size:11.5px;word-break:break-all;margin-bottom:2px;">🔗 Soporte #' + (idx + 1) + '</a>';
+                }).join('') +
+            '</div>';
         }
 
         return '<div class="aura-tip-card">' +
             '<div class="aura-tip-card-header">' +
-                '<div class="aura-tip-avatar-box" style="background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">' +
-                    '📌' +
+                '<div class="aura-tip-avatar-box" style="background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">' +
+                    '📋' +
                 '</div>' +
                 '<div class="aura-tip-card-title-box">' +
-                    '<div class="aura-tip-card-name">Propósito / Diligencia</div>' +
+                    '<div class="aura-tip-card-name">Propósito y Diligencia</div>' +
                     '<div class="aura-tip-card-badges">' +
-                        '<span class="aura-tip-badge" style="background:rgba(255,255,255,0.15);color:#ffffff;font-size:10.5px;padding:2px 8px;border-radius:999px;">Entrega #' + r.id + '</span>' +
+                        '<span class="aura-tip-badge" style="background:rgba(245,158,11,0.25);color:#fde68a;font-size:10.5px;padding:2px 8px;border-radius:999px;">Justificación de Gasto</span>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
             '<div class="aura-tip-card-body">' +
-                '<div style="font-size:12px;color:#f8fafc;line-height:1.5;white-space:pre-line;">' +
-                    escapeHtml(cleanText) +
-                '</div>' +
+                '<div style="font-size:12px;color:#f1f5f9;line-height:1.5;white-space:pre-wrap;">' + escapeHtml(cleanText) + '</div>' +
                 linksHtml +
             '</div>' +
             '<div class="aura-tip-card-footer">' +
                 '<span>Responsable: ' + escapeHtml(r.responsible_name || '—') + '</span>' +
-                '<span>Caja: ' + escapeHtml(r.account_name || '—') + '</span>' +
             '</div>' +
         '</div>';
     }
@@ -1851,13 +2037,14 @@ jQuery(function ($) {
 
         const html = [];
         rows.forEach(function (r) {
+            const isProgram = (r.delivery_type === 'program_budget');
             const canSubmit = r.status === 'open' || r.status === 'rejected';
             const canApprove = pettyCashCanApprove && r.status === 'submitted';
             const canClose = pettyCashCanApprove && r.status === 'approved';
             const evidenceCount = getEvidenceCount(r.evidence_json);
             const hasDriveOrReceipt = /https?:\/\/[^\s,;]+/i.test(r.notes || '');
 
-            // Botones de acción: SOLO ICONOS para ancho compacto y cero scroll
+            // Botones de acción compactos para la fila principal
             const buttons = [
                 '<button type="button" class="button button-small aura-btn-action-icon aura-petty-pick" data-id="' + r.id + '" title="Cargar y rendir entrega #' + r.id + '" aria-label="Rendir"><span class="dashicons dashicons-edit"></span></button>'
             ];
@@ -1878,21 +2065,31 @@ jQuery(function ($) {
 
             const isThirdParty = (r.counterparty_id && parseInt(r.counterparty_id, 10) > 0);
             const respBadge = isThirdParty 
-                ? '<span class="aura-pill aura-pill--info" style="font-size:10px;margin-left:6px;padding:2px 6px;border-radius:6px;font-weight:600;">Tercero</span>' 
-                : '<span class="aura-pill aura-pill--muted" style="font-size:10px;margin-left:6px;padding:2px 6px;border-radius:6px;font-weight:600;">Interno</span>';
+                ? '<span class="aura-pill aura-pill--info" style="font-size:10px;margin-left:4px;padding:1px 5px;border-radius:5px;font-weight:600;">Tercero</span>' 
+                : '<span class="aura-pill aura-pill--muted" style="font-size:10px;margin-left:4px;padding:1px 5px;border-radius:5px;font-weight:600;">Interno</span>';
+
+            const typeBadge = isProgram
+                ? '<span class="aura-pill aura-pill--program" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:700;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;" title="Presupuesto de Programa (Largo plazo)"><span class="dashicons dashicons-portfolio" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Programa</span>'
+                : '<span class="aura-pill aura-pill--errand" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:600;background:#f8fafc;color:#475569;border:1px solid #e2e8f0;" title="Compra puntual / Diligencia (Corto plazo)"><span class="dashicons dashicons-cart" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Compra</span>';
 
             const isOverdue = parseInt(r.is_overdue, 10) === 1 && r.status !== 'approved' && r.status !== 'closed';
-            const dueDateDisplay = isOverdue
-                ? '<span style="color:#ef4444;font-weight:700;"><span class="dashicons dashicons-warning" style="font-size:13px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml((r.due_date || '').slice(0, 10)) + '</span>'
-                : '<span style="color:#64748b;">' + escapeHtml((r.due_date || '').slice(0, 10) || '—') + '</span>';
+            const dueDateStr = (r.due_date || '').slice(0, 10) || '—';
+            let dueDateDisplay = '';
+            if (isOverdue) {
+                dueDateDisplay = '<span style="color:#ef4444;font-weight:700;"><span class="dashicons dashicons-warning" style="font-size:13px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(dueDateStr) + '</span>';
+            } else if (isProgram) {
+                dueDateDisplay = '<span style="color:#0284c7;font-weight:600;"><span class="dashicons dashicons-calendar-alt" style="font-size:13px;vertical-align:middle;margin-right:2px;color:#0284c7;"></span>' + escapeHtml(dueDateStr) + '</span>';
+            } else {
+                dueDateDisplay = '<span style="color:#64748b;">' + escapeHtml(dueDateStr) + '</span>';
+            }
 
             const tipCardHtml = renderPettyResponsibleTip(r);
-            const childCardHtml = renderPettyChildCard(r, buttons, canSubmit, canApprove, canClose, evidenceCount, isThirdParty, respBadge, isOverdue, dueDateDisplay);
+            const childCardHtml = renderPettyChildCard(r, canSubmit, canApprove, canClose, evidenceCount, isThirdParty, respBadge, isOverdue, dueDateDisplay, isProgram);
 
             // ── Columna Fecha: icono + formato compacto
             const dateVal = r.created_at ? r.created_at.slice(0, 10) : '';
             const dateDisplay = dateVal
-                ? '<span style="display:inline-flex;align-items:center;gap:4px;color:#475569;font-size:12px;">' +
+                ? '<span style="display:inline-flex;align-items:center;gap:3px;color:#475569;font-size:12px;">' +
                     '<span class="dashicons dashicons-calendar-alt" style="font-size:13px;width:13px;height:13px;color:#94a3b8;flex-shrink:0;"></span>' +
                     escapeHtml(dateVal) +
                   '</span>'
@@ -1902,11 +2099,10 @@ jQuery(function ($) {
             const respName = r.responsible_name || '?';
             let avatarHtml = '';
             if (r.responsible_avatar_url && String(r.responsible_avatar_url).trim() !== '') {
-                avatarHtml = '<img src="' + escapeHtml(r.responsible_avatar_url) + '" alt="' + escapeHtml(respName) + '" class="aura-responsible-avatar-img" style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-right:6px;border:1px solid #cbd5e1;" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'inline-flex\';">' +
-                    '<span class="aura-responsible-avatar-icon" style="display:none;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';flex-shrink:0;margin-right:6px;"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:15px;width:15px;height:15px;line-height:15px;"></span></span>';
+                avatarHtml = '<img src="' + escapeHtml(r.responsible_avatar_url) + '" alt="' + escapeHtml(respName) + '" class="aura-responsible-avatar-img" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-right:5px;border:1px solid #cbd5e1;" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'inline-flex\';">' +
+                    '<span class="aura-responsible-avatar-icon" style="display:none;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';flex-shrink:0;margin-right:5px;"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span></span>';
             } else {
-                // Icono predeterminado según sea Tercero o Usuario Interno
-                avatarHtml = '<span class="aura-responsible-avatar-icon" style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';flex-shrink:0;margin-right:6px;"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:15px;width:15px;height:15px;line-height:15px;"></span></span>';
+                avatarHtml = '<span class="aura-responsible-avatar-icon" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';flex-shrink:0;margin-right:5px;"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span></span>';
             }
 
             // ── Barra micro de progreso entregado vs gastado
@@ -1920,8 +2116,8 @@ jQuery(function ($) {
 
             // ── Badge comprobantes enriquecido
             const evBadge = (evidenceCount > 0 || hasDriveOrReceipt)
-                ? '<span class="aura-petty-overdue-mark is-evidence" title="' + Math.max(1, evidenceCount) + ' comprobante(s)" style="margin-left:4px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:700;">' +
-                    '<span class="dashicons dashicons-paperclip" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>' + Math.max(1, evidenceCount) +
+                ? '<span class="aura-petty-overdue-mark is-evidence" title="' + Math.max(1, evidenceCount) + ' comprobante(s)" style="margin-left:3px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:999px;padding:1px 5px;font-size:9.5px;font-weight:700;">' +
+                    '<span class="dashicons dashicons-paperclip" style="font-size:9px;width:9px;height:9px;line-height:9px;vertical-align:middle;margin-right:1px;"></span>' + Math.max(1, evidenceCount) +
                   '</span>'
                 : '';
 
@@ -1932,13 +2128,13 @@ jQuery(function ($) {
                 .replace(/Comprobante\s*(Entrega|Egreso|Transferencia)?\s*:?/gi, '')
                 .trim();
             const shortSummary = cleanSummaryText
-                ? (cleanSummaryText.length > 32 ? escapeHtml(cleanSummaryText.substring(0, 30)) + '...' : escapeHtml(cleanSummaryText))
+                ? (cleanSummaryText.length > 28 ? escapeHtml(cleanSummaryText.substring(0, 26)) + '...' : escapeHtml(cleanSummaryText))
                 : (hasDriveOrReceipt ? 'Comprobante adjunto' : '<span style="color:#94a3b8;font-style:italic;">Sin propósito</span>');
 
             const purposeDisplay = '<span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyPurposeTip(r)) + '" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">' +
-                '<span class="dashicons dashicons-editor-quote" style="font-size:13px;width:13px;height:13px;color:#94a3b8;flex-shrink:0;"></span>' +
-                '<span style="font-size:12.5px;color:#334155;max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + shortSummary + '</span>' +
-                (hasDriveOrReceipt ? '<span class="dashicons dashicons-paperclip" style="font-size:12px;width:12px;height:12px;color:#0284c7;flex-shrink:0;" title="Tiene comprobante adjunto"></span>' : '') +
+                '<span class="dashicons dashicons-editor-quote" style="font-size:12px;width:12px;height:12px;color:#94a3b8;flex-shrink:0;"></span>' +
+                '<span style="font-size:12px;color:#334155;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + shortSummary + '</span>' +
+                (hasDriveOrReceipt ? '<span class="dashicons dashicons-paperclip" style="font-size:11px;width:11px;height:11px;color:#0284c7;flex-shrink:0;" title="Tiene comprobante adjunto"></span>' : '') +
             '</span>';
 
             // Fila principal con clase .aura-parent-row
@@ -1947,41 +2143,42 @@ jQuery(function ($) {
                     '<button type="button" class="aura-row-toggle" data-id="' + r.id + '" aria-expanded="false" title="Expandir detalles de entrega #' + r.id + '">' +
                         '<span class="dashicons dashicons-arrow-right-alt2"></span>' +
                     '</button>' +
-                    '<span class="aura-txn-id-pill" style="font-weight:700;font-size:11.5px;color:#475569;margin-left:2px;">#' + r.id + '</span>' +
+                    '<span class="aura-txn-id-pill" style="font-weight:700;font-size:11px;color:#475569;margin-left:2px;">#' + r.id + '</span>' +
                 '</td>' +
                 '<td class="column-date" style="white-space:nowrap;">' + dateDisplay + '</td>' +
                 '<td class="column-due aura-col-desktop" style="white-space:nowrap;"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyDueTip(r)) + '" style="cursor:help;">' + dueDateDisplay + '</span></td>' +
                 '<td class="column-account aura-col-desktop"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyAccountTip(r)) + '" style="cursor:help;">' +
-                    '<span style="display:inline-flex;align-items:center;gap:5px;">' +
-                        '<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:#e0f2fe;flex-shrink:0;">' +
-                            '<span class="dashicons dashicons-money-alt" style="font-size:13px;width:13px;height:13px;color:#0284c7;"></span>' +
+                    '<span style="display:inline-flex;align-items:center;gap:4px;">' +
+                        '<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:#e0f2fe;flex-shrink:0;">' +
+                            '<span class="dashicons dashicons-money-alt" style="font-size:12px;width:12px;height:12px;color:#0284c7;"></span>' +
                         '</span>' +
-                        '<span style="font-size:12.5px;font-weight:600;color:#0f172a;">' + escapeHtml(r.account_name || '') + '</span>' +
+                        '<span style="font-size:12px;font-weight:600;color:#0f172a;">' + escapeHtml(r.account_name || '') + '</span>' +
                     '</span>' +
                 '</span></td>' +
                 '<td class="column-responsible"><span class="aura-responsible-cell aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCardHtml) + '" style="cursor:pointer;display:inline-flex;align-items:center;">' +
                     avatarHtml +
                     '<span>' +
-                        '<strong style="font-size:12.5px;color:#0f172a;">' + escapeHtml(r.responsible_name || '') + '</strong>' +
+                        '<strong style="font-size:12px;color:#0f172a;">' + escapeHtml(r.responsible_name || '') + '</strong>' +
                         respBadge +
+                        typeBadge +
                     '</span>' +
                 '</span></td>' +
                 '<td class="column-purpose aura-col-desktop">' + purposeDisplay + '</td>' +
                 '<td class="column-delivered" style="text-align:right;"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyMoneyTip(r, 'delivered')) + '" style="cursor:help;">' +
-                    '<strong style="font-size:13px;color:#0f172a;display:block;">$' + escapeHtml(formatNumber(r.delivered_amount || 0)) + '</strong>' +
+                    '<strong style="font-size:12.5px;color:#0f172a;display:block;">$' + escapeHtml(formatNumber(r.delivered_amount || 0)) + '</strong>' +
                     microBar +
                 '</span></td>' +
                 '<td class="column-spent aura-col-desktop" style="text-align:right;"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyMoneyTip(r, 'spent')) + '" style="cursor:help;">' +
-                    '<strong style="font-size:13px;color:' + (spentAmt > delivAmt ? '#ef4444' : '#4f46e5') + ';">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</strong>' +
-                    '<span style="display:block;font-size:10px;color:' + barColor + ';font-weight:700;">' + pctSpent + '% usado</span>' +
+                    '<strong style="font-size:12.5px;color:' + (spentAmt > delivAmt ? '#ef4444' : '#4f46e5') + ';">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</strong>' +
+                    '<span style="display:block;font-size:9.5px;color:' + barColor + ';font-weight:700;">' + pctSpent + '% usado</span>' +
                 '</span></td>' +
-                '<td class="column-returned aura-col-desktop" style="text-align:right;"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyMoneyTip(r, 'returned')) + '" style="cursor:help;font-weight:600;color:#059669;">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</span></td>' +
+                '<td class="column-returned aura-col-desktop" style="text-align:right;"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyMoneyTip(r, 'returned')) + '" style="cursor:help;font-weight:600;color:#059669;font-size:12px;">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</span></td>' +
                 '<td class="column-status" style="text-align:center;"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyStatusTip(r)) + '" style="cursor:pointer;display:inline-block;">' +
                     pettyStatusBadge(r.status) +
-                    (isOverdue ? ' <span class="aura-petty-overdue-mark" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:3px;">⚠ Vencida</span>' : '') +
+                    (isOverdue ? ' <span class="aura-petty-overdue-mark" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:999px;padding:1px 5px;font-size:9.5px;font-weight:700;margin-left:2px;">⚠ Vencida</span>' : '') +
                     evBadge +
                 '</span></td>' +
-                '<td class="column-actions aura-col-desktop" style="white-space:nowrap;text-align:right;"><div class="aura-petty-actions">' + buttons.join('') + '</div></td>' +
+                '<td class="column-actions aura-col-desktop" style="white-space:nowrap;text-align:center;"><div class="aura-petty-actions">' + buttons.join('') + '</div></td>' +
             '</tr>');
 
             // Fila Hija (Child Row) colapsada por defecto
@@ -2030,6 +2227,7 @@ jQuery(function ($) {
         fd.append('origin_account_id', $('#aura-petty-origin-account').val() || '');
         fd.append('responsible_user_id', $('#aura-petty-responsible').val());
         fd.append('delivered_amount', $('#aura-petty-delivered').val());
+        fd.append('delivery_type', $('input[name="aura_petty_type"]:checked').val() || 'purchase_errand');
         fd.append('due_date', $('#aura-petty-due-date').val());
         fd.append('notes', $('#aura-petty-notes').val());
         fd.append('delivery_receipt_url', $('#aura-petty-delivery-receipt-url').val() || '');
@@ -4902,12 +5100,13 @@ jQuery(function ($) {
 
     // Listeners interactivos de Caja Chica
     $(document).on('input', '#aura-petty-search', filterPettyCash);
-    $(document).on('change', '#aura-petty-filter-custodian, #aura-petty-filter-status, #aura-petty-filter-overdue', filterPettyCash);
+    $(document).on('change', '#aura-petty-filter-custodian, #aura-petty-filter-status, #aura-petty-filter-overdue, #aura-petty-filter-delivery-type', filterPettyCash);
     $(document).on('click', '#aura-petty-filter-reset', function () {
         $('#aura-petty-search').val('');
         $('#aura-petty-filter-custodian').val('');
         $('#aura-petty-filter-status').val('');
         $('#aura-petty-filter-overdue').val('');
+        $('#aura-petty-filter-delivery-type').val('');
         filterPettyCash();
     });
     $(document).on('click', '#aura-petty-refresh-btn', function () {

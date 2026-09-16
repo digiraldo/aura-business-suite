@@ -415,6 +415,17 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </div>
 
                         <div class="aura-input-group aura-petty-filter-item">
+                            <span class="aura-input-group-text" id="addon-petty-delivery-type">
+                                <span class="dashicons dashicons-portfolio"></span>
+                            </span>
+                            <select id="aura-petty-filter-delivery-type" class="aura-input" aria-describedby="addon-petty-delivery-type">
+                                <option value=""><?php _e('Todos los Fondos', 'aura-suite'); ?></option>
+                                <option value="purchase_errand"><?php _e('🛒 Compras / Diligencias', 'aura-suite'); ?></option>
+                                <option value="program_budget"><?php _e('📦 Presupuestos de Programa', 'aura-suite'); ?></option>
+                            </select>
+                        </div>
+
+                        <div class="aura-input-group aura-petty-filter-item">
                             <span class="aura-input-group-text" id="addon-petty-overdue">
                                 <span class="dashicons dashicons-clock"></span>
                             </span>
@@ -1071,6 +1082,36 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     </div>
                                 </div>
 
+                                <div class="aura-form-field aura-form-field--span2">
+                                    <label style="margin-bottom:6px;font-weight:600;display:block;">
+                                        <strong><?php _e('Naturaleza / Tipo de Fondo *', 'aura-suite'); ?></strong>
+                                    </label>
+                                    <div class="aura-petty-type-selector" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:10px;">
+                                        <label class="aura-petty-type-card is-selected" data-type="purchase_errand" style="border:2px solid #2563eb;background:#eff6ff;border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;transition:all 0.2s;">
+                                            <input type="radio" name="aura_petty_type" value="purchase_errand" checked style="margin-top:2px;">
+                                            <div style="line-height:1.3;">
+                                                <div style="font-weight:700;font-size:13px;color:#1e3a8a;display:flex;align-items:center;gap:4px;">
+                                                    🛒 <?php _e('Compra puntual / Diligencia', 'aura-suite'); ?>
+                                                </div>
+                                                <div style="font-size:11.5px;color:#475569;margin-top:3px;">
+                                                    <?php _e('Dinero para compra rápida o trámite específico. Requiere facturas y reintegro en pocos días.', 'aura-suite'); ?>
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label class="aura-petty-type-card" data-type="program_budget" style="border:2px solid #cbd5e1;background:#ffffff;border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;transition:all 0.2s;">
+                                            <input type="radio" name="aura_petty_type" value="program_budget" style="margin-top:2px;">
+                                            <div style="line-height:1.3;">
+                                                <div style="font-weight:700;font-size:13px;color:#0f172a;display:flex;align-items:center;gap:4px;">
+                                                    📦 <?php _e('Presupuesto de Programa / Fondo Fijo', 'aura-suite'); ?>
+                                                </div>
+                                                <div style="font-size:11.5px;color:#475569;margin-top:3px;">
+                                                    <?php _e('Traspaso o entrega de presupuesto a otra caja/usuario para programas de 1 a 6 meses o más. No vence a corto plazo.', 'aura-suite'); ?>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <div class="aura-form-field">
                                     <label for="aura-petty-delivered"><strong><?php _e('Monto a Entregar *', 'aura-suite'); ?></strong></label>
                                     <div class="aura-input-with-icon">
@@ -1080,9 +1121,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 </div>
 
                                 <div class="aura-form-field">
-                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                                        <label for="aura-petty-due-date" style="margin-bottom:0;"><strong><?php _e('Fecha límite rendición', 'aura-suite'); ?></strong></label>
-                                        <div class="aura-petty-shortcuts">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:4px;">
+                                        <label for="aura-petty-due-date" id="aura-petty-due-date-label" style="margin-bottom:0;"><strong><?php _e('Fecha límite rendición', 'aura-suite'); ?></strong></label>
+                                        <div class="aura-petty-shortcuts" id="aura-petty-shortcuts-container">
                                             <button type="button" class="aura-petty-shortcut-btn" data-days="3">+3d</button>
                                             <button type="button" class="aura-petty-shortcut-btn" data-days="5">+5d</button>
                                             <button type="button" class="aura-petty-shortcut-btn" data-days="7">+7d</button>
@@ -1090,6 +1131,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         </div>
                                     </div>
                                     <input type="date" id="aura-petty-due-date" class="aura-input">
+                                    <small id="aura-petty-due-date-help" class="description" style="display:block;margin-top:4px;color:#64748b;font-size:11.5px;">
+                                        <?php _e('Plazo límite para compra y devolución.', 'aura-suite'); ?>
+                                    </small>
                                 </div>
                             </div>
                         </div>

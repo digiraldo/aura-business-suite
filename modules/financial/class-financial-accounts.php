@@ -149,6 +149,7 @@ class Aura_Financial_Accounts {
             petty_cash_account_id BIGINT UNSIGNED NOT NULL,
             responsible_user_id BIGINT UNSIGNED NULL,
             counterparty_id BIGINT UNSIGNED NULL,
+            delivery_type VARCHAR(50) NOT NULL DEFAULT 'purchase_errand',
             category_id BIGINT UNSIGNED NULL,
             delivered_amount DECIMAL(18,2) NOT NULL DEFAULT 0,
             spent_amount DECIMAL(18,2) NOT NULL DEFAULT 0,
@@ -167,6 +168,7 @@ class Aura_Financial_Accounts {
             KEY idx_account (petty_cash_account_id),
             KEY idx_responsible (responsible_user_id),
             KEY idx_counterparty (counterparty_id),
+            KEY idx_delivery_type (delivery_type),
             KEY idx_status (status),
             KEY idx_due_date (due_date)
         ) {$charset_collate};";
@@ -457,6 +459,17 @@ class Aura_Financial_Accounts {
 
         if (!in_array('last_overdue_alert_at', $columns, true)) {
             $wpdb->query("ALTER TABLE {$table} ADD COLUMN last_overdue_alert_at DATETIME NULL AFTER due_date");
+        }
+
+        if (!in_array('delivery_type', $columns, true)) {
+            $wpdb->query("ALTER TABLE {$table} ADD COLUMN delivery_type VARCHAR(50) NOT NULL DEFAULT 'purchase_errand' AFTER counterparty_id");
+            $wpdb->query("ALTER TABLE {$table} ADD KEY idx_delivery_type (delivery_type)");
+
+            // Retrocompatibilidad: marcar registros existentes de programas como 'program_budget' y ampliar vigencia a 6 meses
+            $wpdb->query("UPDATE {$table} 
+                          SET delivery_type = 'program_budget',
+                              due_date = DATE_ADD(created_at, INTERVAL 180 DAY)
+                          WHERE LOWER(notes) LIKE '%programa%' OR id = 3");
         }
     }
 
@@ -1642,7 +1655,9 @@ class Aura_Financial_Accounts {
         $third_parties = $wpdb->prefix . 'aura_finance_third_parties';
 
         $rows = $wpdb->get_results(
-            "SELECT s.id, s.petty_cash_account_id, s.responsible_user_id, s.counterparty_id, s.delivered_amount, s.spent_amount, s.returned_amount,
+            "SELECT s.id, s.petty_cash_account_id, s.responsible_user_id, s.counterparty_id,
+                    COALESCE(s.delivery_type, 'purchase_errand') AS delivery_type,
+                    s.delivered_amount, s.spent_amount, s.returned_amount,
                     s.status, s.due_date, s.evidence_json, s.notes, s.created_at, s.updated_at,
                     CASE
                         WHEN s.status IN ('open', 'submitted') AND s.due_date IS NOT NULL AND s.due_date < NOW() THEN 1
@@ -1806,24 +1821,30 @@ class Aura_Financial_Accounts {
             ));
         }
 
+        $delivery_type = sanitize_text_field($_POST['delivery_type'] ?? 'purchase_errand');
+        if (!in_array($delivery_type, array('purchase_errand', 'program_budget'), true)) {
+            $delivery_type = 'purchase_errand';
+        }
+
         $ok = $wpdb->insert(
             $table,
             array(
                 'petty_cash_account_id' => $petty_cash_account_id,
                 'responsible_user_id' => $responsible_user_id,
                 'counterparty_id' => $counterparty_id,
+                'delivery_type' => $delivery_type,
                 'delivered_amount' => $delivered_amount,
                 'spent_amount' => 0,
                 'returned_amount' => 0,
                 'status' => 'open',
-                'due_date' => self::resolve_petty_cash_due_date(wp_unslash($_POST['due_date'] ?? '')),
+                'due_date' => self::resolve_petty_cash_due_date(wp_unslash($_POST['due_date'] ?? ''), $delivery_type),
                 'evidence_json' => $evidence_payload,
                 'notes' => $notes,
                 'created_by' => get_current_user_id(),
                 'created_at' => current_time('mysql'),
                 'updated_at' => current_time('mysql'),
             ),
-            array('%d', '%d', '%d', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%d', '%s', '%s')
+            array('%d', '%d', '%d', '%s', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%d', '%s', '%s')
         );
 
         if (!$ok) {
@@ -3078,14 +3099,20 @@ class Aura_Financial_Accounts {
     }
 
     private static function notify_petty_cash_overdue($row) {
+        $is_program = (!empty($row['delivery_type']) && $row['delivery_type'] === 'program_budget');
         $subject = sprintf(
-            __('[Aura Suite] Rendición vencida #%d', 'aura-suite'),
+            $is_program 
+                ? __('[Aura Suite] Presupuesto de Programa vencido #%d', 'aura-suite')
+                : __('[Aura Suite] Rendición de compra vencida #%d', 'aura-suite'),
             (int) ($row['id'] ?? 0)
         );
 
+        $type_label = $is_program ? __('Presupuesto de Programa', 'aura-suite') : __('Compra puntual / Diligencia', 'aura-suite');
+
         $message = sprintf(
-            "Rendición vencida detectada.\n\nID: #%d\nCuenta: %s\nResponsable: %s\nEstado: %s\nVence: %s\nEntregado: %s\n\nRevisa en: %s",
+            "Alerta de vencimiento contable.\n\nID: #%d\nTipo: %s\nCuenta: %s\nResponsable: %s\nEstado: %s\nVence: %s\nEntregado: %s\n\nRevisa en: %s",
             (int) ($row['id'] ?? 0),
+            $type_label,
             sanitize_text_field($row['account_name'] ?? ''),
             sanitize_text_field($row['responsible_name'] ?? ''),
             sanitize_text_field($row['status'] ?? ''),
@@ -3107,7 +3134,7 @@ class Aura_Financial_Accounts {
         do_action('aura_finance_petty_cash_overdue_alert_sent', $row);
     }
 
-    private static function resolve_petty_cash_due_date($raw_due_date) {
+    private static function resolve_petty_cash_due_date($raw_due_date, $delivery_type = 'purchase_errand') {
         $raw_due_date = sanitize_text_field((string) $raw_due_date);
         if (!empty($raw_due_date)) {
             $dt = date_create($raw_due_date);
@@ -3119,7 +3146,13 @@ class Aura_Financial_Accounts {
 
         $dt = new DateTime('now', wp_timezone());
         $dt->setTime(23, 59, 59);
-        $dt->modify('+' . self::PETTY_CASH_DEFAULT_DUE_DAYS . ' days');
+        if ($delivery_type === 'program_budget') {
+            // Presupuesto de programa: 180 días (6 meses) por defecto
+            $dt->modify('+180 days');
+        } else {
+            // Compra puntual / diligencia: 5 días por defecto
+            $dt->modify('+' . self::PETTY_CASH_DEFAULT_DUE_DAYS . ' days');
+        }
         return $dt->format('Y-m-d H:i:s');
     }
 
