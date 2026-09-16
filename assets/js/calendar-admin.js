@@ -69,10 +69,22 @@
         }
     });
 
+    // Evitar que seleccionar texto o arrastrar el cursor dentro de un input/modal cierre el modal al soltar el ratón en el overlay
+    var isBackdropMouseDown = false;
+
+    $(document).on('mousedown', '.aura-modal-overlay', function(e) {
+        if (e.target === this) {
+            isBackdropMouseDown = true;
+        } else {
+            isBackdropMouseDown = false;
+        }
+    });
+
     $(document).on('click', '.aura-modal-overlay', function(e) {
-        if ($(e.target).hasClass('aura-modal-overlay')) {
+        if (isBackdropMouseDown && e.target === this) {
             closeModal(this);
         }
+        isBackdropMouseDown = false;
     });
 
     $(document).on('keydown', function(e) {

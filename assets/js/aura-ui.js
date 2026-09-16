@@ -602,6 +602,12 @@ const AuraUI = {
             });
         });
 
+        let isBackdropMouseDown = false;
+
+        document.addEventListener('mousedown', (e) => {
+            isBackdropMouseDown = e.target.classList && e.target.classList.contains('aura-modal-overlay');
+        });
+
         // Cerrar modales (botones con clase aura-modal-close)
         document.addEventListener('click', (e) => {
             if (e.target.closest('.aura-modal-close')) {
@@ -609,10 +615,11 @@ const AuraUI = {
                 if (modal) this.closeModal(modal.id);
             }
             
-            // Cerrar al hacer clic en el overlay (fuera del contenido)
-            if (e.target.classList.contains('aura-modal-overlay')) {
+            // Cerrar al hacer clic en el overlay (fuera del contenido) SOLO si el mousedown inició en el overlay
+            if (isBackdropMouseDown && e.target.classList && e.target.classList.contains('aura-modal-overlay')) {
                 this.closeModal(e.target.id);
             }
+            isBackdropMouseDown = false;
         });
         
         // Cerrar con Escape
