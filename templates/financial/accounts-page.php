@@ -16,19 +16,39 @@ if ( ! defined( 'ABSPATH' ) ) {
         <h1 class="wp-heading-inline screen-reader-text"><?php _e('Bancos y Cuentas', 'aura-suite'); ?></h1>
         <hr class="wp-header-end">
         <div id="aura-wp-notices-container" class="aura-wp-notices-container"></div>
-        <!-- ── HEADER RESPONSIVE ── -->
-        <div class="aura-glass-card aura-page-header aura-accounts-hero">
-            <div class="aura-accounts-hero__icon">🏦</div>
-            <div class="aura-accounts-hero__content">
-                <h1 class="aura-title-with-help aura-accounts-hero__title">
-                    <?php _e('Bancos y Cuentas', 'aura-suite'); ?>
-                    <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Aquí ves saldos, movimientos clave y accesos rápidos. Usa los botones de arriba para registrar y esta pantalla para revisar.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
-                </h1>
-                <p class="aura-accounts-hero__text">
-                    <?php _e('Administra dónde está el dinero, monitorea saldos por moneda y define topes presupuestales desde una sola pantalla.', 'aura-suite'); ?>
-                </p>
+        <!-- ── CABECERA PRINCIPAL CANÓNICA (HERO GLASS CARD) ──────────── -->
+        <header class="aura-page-header hero-card aura-glass-card fade-up">
+            <div class="aura-header-left" style="display: flex; align-items: center; gap: 18px; flex: 1 1 auto; min-width: 0;">
+                <div class="aura-page-header__icon">
+                    <span class="dashicons dashicons-bank" style="font-size: 26px; width: 26px; height: 26px;"></span>
+                </div>
+                <div class="aura-header-text" style="flex: 1 1 auto; min-width: 0;">
+                    <div class="aura-title-with-badge" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <h1 class="aura-page-title" style="margin: 0; color: #ffffff !important; font-weight: 800; font-size: 1.45rem; line-height: 1.25;">
+                            <?php _e('Bancos y Cuentas', 'aura-suite'); ?>
+                        </h1>
+                        <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Aquí ves saldos, movimientos clave y accesos rápidos. Usa los botones de arriba para registrar y esta pantalla para revisar.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>" style="color: #ffffff; border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15);">?</button>
+                        <span class="badge badge-blue">
+                            <span class="pulse-dot"></span>
+                            <?php _e('Tesorería & Cajas', 'aura-suite'); ?>
+                        </span>
+                        <span class="badge badge-emerald">
+                            <span class="pulse-dot"></span>
+                            <?php _e('Multi-divisa (COP/USD/EUR)', 'aura-suite'); ?>
+                        </span>
+                    </div>
+                    <p class="aura-page-subtitle hero-desc" style="margin: 6px 0 0; color: rgba(255, 255, 255, 0.88) !important; font-size: 0.88rem; line-height: 1.45;">
+                        <?php _e('Administra dónde está el dinero, monitorea saldos por moneda, gestiona cajas chicas y define topes presupuestales desde una sola pantalla.', 'aura-suite'); ?>
+                    </p>
+                </div>
             </div>
-        </div>
+            <div class="aura-header-right" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-left: auto; z-index: 10;">
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-financial-dashboard' ) ); ?>" class="btn btn-glass btn-lift">
+                    <span class="dashicons dashicons-arrow-left-alt"></span>
+                    <span><?php esc_html_e( 'Volver al Dashboard', 'aura-suite' ); ?></span>
+                </a>
+            </div>
+        </header>
         <div class="aura-layout">
         <!-- ── NAVBAR ── -->
         <nav class="aura-navbar aura-nav aura-glass-card">
@@ -63,39 +83,56 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <h2 class="aura-title-with-help"><?php _e('Listado de cuentas', 'aura-suite'); ?></h2>
                     </div>
                     <div class="aura-section-actions">
-                        <button type="button" class="button button-secondary" id="aura-accounts-export-btn">
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-accounts-export-btn">
                             <span class="dashicons dashicons-download" style="vertical-align:middle;"></span>
                             <?php _e('Exportar CSV', 'aura-suite'); ?>
                         </button>
-                        <button type="button" class="button" id="aura-exchange-open-btn"><?php _e('Cambiar Divisa', 'aura-suite'); ?></button>
-                        <button type="button" class="button button-primary" id="aura-account-new-btn"><?php _e('Nueva Cuenta', 'aura-suite'); ?></button>
+                        <button type="button" class="btn btn-indigo btn-lift" id="aura-exchange-open-btn">
+                            <span class="dashicons dashicons-money-alt" style="vertical-align:middle;"></span>
+                            <?php _e('Cambiar Divisa', 'aura-suite'); ?>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-account-new-btn">
+                            <span class="dashicons dashicons-plus-alt2" style="vertical-align:middle;"></span>
+                            <?php _e('Nueva Cuenta', 'aura-suite'); ?>
+                        </button>
                     </div>
                 </div>
                 <!-- KPIs de Cuentas -->
                 <div class="aura-report-kpis aura-kpis-top-spacer">
-                    <div class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Total Cuentas', 'aura-suite'); ?></span>
-                        <strong id="aura-kpi-total-accounts">0</strong>
+                    <div class="kpi-card kpi-indigo card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-bank"></span></div>
+                        <span class="kpi-label"><?php _e('Total Cuentas', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-total-accounts">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Registradas', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Cuentas Activas', 'aura-suite'); ?></span>
-                        <strong id="aura-kpi-active-accounts">0</strong>
+                    <div class="kpi-card kpi-emerald card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-yes-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Cuentas Activas', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-active-accounts">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Operativas', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Saldo Total (COP)', 'aura-suite'); ?></span>
-                        <strong id="aura-kpi-balance-cop">0</strong>
+                    <div class="kpi-card kpi-blue card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-money-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Saldo Total (COP)', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-balance-cop">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Moneda Local', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Saldo Total (USD)', 'aura-suite'); ?></span>
-                        <strong id="aura-kpi-balance-usd">0</strong>
+                    <div class="kpi-card kpi-cyan card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-chart-line"></span></div>
+                        <span class="kpi-label"><?php _e('Saldo Total (USD)', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-balance-usd">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Divisa Extranjera', 'aura-suite'); ?></div>
                     </div>
                 </div>
 
                 <!-- Filtros para cuentas -->
                 <div class="aura-filters-bar">
-                    <div class="aura-filters-group">
-                        <input type="text" id="aura-accounts-search" class="aura-input" placeholder="<?php esc_attr_e('Buscar...', 'aura-suite'); ?>">
-                        <select id="aura-filter-type" class="aura-input">
+                    <div class="aura-filters-group" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <div class="input-group" style="min-width: 220px; max-width: 320px;">
+                            <span class="input-group-text">🔍</span>
+                            <input type="text" id="aura-accounts-search" class="form-control" placeholder="<?php esc_attr_e('Buscar...', 'aura-suite'); ?>">
+                        </div>
+                        <select id="aura-filter-type" class="form-control" style="width: auto;">
                             <option value=""><?php _e('Todos los tipos', 'aura-suite'); ?></option>
                             <option value="bank_account"><?php _e('Banco', 'aura-suite'); ?></option>
                             <option value="petty_cash"><?php _e('Caja Chica', 'aura-suite'); ?></option>
@@ -106,20 +143,20 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <option value="foreign_cash"><?php _e('Caja Divisa Extranjera', 'aura-suite'); ?></option>
                             <option value="custom"><?php _e('Personalizada', 'aura-suite'); ?></option>
                         </select>
-                        <select id="aura-filter-currency" class="aura-input">
+                        <select id="aura-filter-currency" class="form-control" style="width: auto;">
                             <option value=""><?php _e('Todas las monedas', 'aura-suite'); ?></option>
                             <option value="MXN">MXN</option>
                             <option value="USD">USD</option>
                             <option value="EUR">EUR</option>
                             <option value="CAD">CAD</option>
                         </select>
-                        <select id="aura-filter-status" class="aura-input">
+                        <select id="aura-filter-status" class="form-control" style="width: auto;">
                             <option value=""><?php _e('Cualquier estado', 'aura-suite'); ?></option>
                             <option value="1"><?php _e('Activa', 'aura-suite'); ?></option>
                             <option value="0"><?php _e('Inactiva', 'aura-suite'); ?></option>
                         </select>
-                        <span id="aura-filter-count" class="aura-filter-count aura-hidden"></span>
-                        <button type="button" id="aura-filter-reset" class="aura-filter-reset-btn aura-hidden" aria-label="<?php esc_attr_e('Limpiar filtros', 'aura-suite'); ?>">
+                        <span id="aura-filter-count" class="badge badge-gray aura-hidden"></span>
+                        <button type="button" id="aura-filter-reset" class="btn btn-secondary btn-sm aura-filter-reset-btn aura-hidden" aria-label="<?php esc_attr_e('Limpiar filtros', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-dismiss"></span>
                             <?php _e('Limpiar', 'aura-suite'); ?>
                         </button>
@@ -130,12 +167,12 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <table class="dataTable display responsive nowrap aura-table-fullwidth" id="aura-accounts-table">
                         <thead>
                             <tr>
-                                <th><?php _e('Cuenta', 'aura-suite'); ?></th>
-                                <th><?php _e('Tipo', 'aura-suite'); ?></th>
-                                <th><?php _e('Moneda', 'aura-suite'); ?></th>
-                                <th><?php _e('Saldo actual', 'aura-suite'); ?></th>
-                                <th><?php _e('Estado', 'aura-suite'); ?></th>
-                                <th><?php _e('Acciones', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-bank" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Cuenta', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Nombre de la cuenta bancaria o caja y su entidad financiera.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-category" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Tipo', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Clasificación operativa: Banco, Caja Menor, Tarjeta, etc.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Moneda', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Moneda base de la cuenta (COP, USD, EUR, etc.).', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-chart-area" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Saldo actual', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Saldo disponible consolidado y número enmascarado.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-yes-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Estado', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Condición de operatividad: Activa o Inactiva.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-admin-generic" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Acciones', 'aura-suite'); ?></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -153,32 +190,32 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </h2>
                     </div>
                     <div class="aura-section-actions">
-                        <select id="aura-global-budget-year" class="aura-input aura-input-year" title="<?php esc_attr_e('Seleccionar año fiscal', 'aura-suite'); ?>">
+                        <select id="aura-global-budget-year" class="form-control aura-input-year" style="width:auto; display:inline-block; font-weight:700;" title="<?php esc_attr_e('Seleccionar año fiscal', 'aura-suite'); ?>">
                             <?php for ($y = (int) current_time('Y') + 2; $y >= 2020; $y--) : ?>
                             <option value="<?php echo esc_attr($y); ?>" <?php selected($y, (int) current_time('Y')); ?>><?php echo esc_html($y); ?></option>
                             <?php endfor; ?>
                         </select>
-                        <button type="button" class="button button-primary aura-btn-icon-left" id="aura-budget-new-year-btn">
+                        <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-budget-new-year-btn">
                             <span class="dashicons dashicons-plus-alt2"></span>
                             <span><?php _e('Nuevo Año', 'aura-suite'); ?></span>
                         </button>
-                        <button type="button" class="button aura-btn-icon-left" id="aura-budget-open-inline-btn">
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-budget-open-inline-btn">
                             <span class="dashicons dashicons-edit"></span>
                             <span><?php _e('Configurar Año', 'aura-suite'); ?></span>
                         </button>
                         <a
                             href="<?php echo esc_url(admin_url('admin-ajax.php?action=aura_finance_budget_export_all&nonce=' . wp_create_nonce('aura_financial_accounts_nonce'))); ?>"
-                            class="button aura-btn-icon-left"
+                            class="btn btn-secondary btn-lift"
                             id="aura-budget-export-all-btn"
                             title="<?php esc_attr_e('Descarga una copia de seguridad en CSV de todos los presupuestos de todos los años', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-download"></span>
                             <span><?php _e('Exportar / Backup (CSV)', 'aura-suite'); ?></span>
                         </a>
-                        <button type="button" class="button aura-btn-icon-left" id="aura-budget-open-import-btn" title="<?php esc_attr_e('Importar presupuestos desde archivo CSV o Excel', 'aura-suite'); ?>">
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-budget-open-import-btn" title="<?php esc_attr_e('Importar presupuestos desde archivo CSV o Excel', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-upload"></span>
                             <span><?php _e('Importar Plantilla', 'aura-suite'); ?></span>
                         </button>
-                        <button type="button" class="button aura-btn-icon-left" id="aura-budget-delete-year-btn" style="color:#ef4444;" title="<?php esc_attr_e('Eliminar presupuesto del año seleccionado', 'aura-suite'); ?>">
+                        <button type="button" class="btn btn-danger btn-shimmer btn-lift" id="aura-budget-delete-year-btn" title="<?php esc_attr_e('Eliminar presupuesto del año seleccionado', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-trash"></span>
                             <span><?php _e('Eliminar Año', 'aura-suite'); ?></span>
                         </button>
@@ -187,26 +224,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                 <!-- KPIs de Presupuesto Anual -->
                 <div class="aura-report-kpis aura-budget-overview">
-                    <article class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Tope anual', 'aura-suite'); ?></span>
-                        <strong id="aura-budget-kpi-annual">0.00</strong>
-                    </article>
-                    <article class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Suma Mensual Asignada', 'aura-suite'); ?></span>
-                        <strong id="aura-budget-kpi-monthly">0.00</strong>
-                    </article>
-                    <article class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Total Ejecutado Real', 'aura-suite'); ?></span>
-                        <strong id="aura-budget-kpi-spent">0.00</strong>
-                    </article>
-                    <article class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Disponible restante', 'aura-suite'); ?></span>
-                        <strong id="aura-budget-kpi-remaining">0.00</strong>
-                    </article>
-                    <article class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Política Exceso', 'aura-suite'); ?></span>
-                        <strong id="aura-budget-kpi-policy">Advertir</strong>
-                    </article>
+                    <div class="kpi-card kpi-indigo card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-calendar-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Tope anual', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-budget-kpi-annual">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Año Fiscal', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-blue card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-calculator"></span></div>
+                        <span class="kpi-label"><?php _e('Suma Mensual Asignada', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-budget-kpi-monthly">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('12 Meses', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-rose card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-money-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Total Ejecutado Real', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-budget-kpi-spent">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Aprobado', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-emerald card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-vault"></span></div>
+                        <span class="kpi-label"><?php _e('Disponible restante', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-budget-kpi-remaining">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Saldo Libre', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-amber card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-shield"></span></div>
+                        <span class="kpi-label"><?php _e('Política Exceso', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-budget-kpi-policy">Advertir</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Regla de Control', 'aura-suite'); ?></div>
+                    </div>
                 </div>
 
                 <!-- Barra de Progreso de Ejecución Anual -->
@@ -224,13 +271,13 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <div class="aura-budget-monthly-section" style="margin-top:20px;">
                     <div class="aura-card-head" style="margin-bottom:12px;">
                         <div>
-                            <h3 style="margin:0; font-size:16px; font-weight:700; color:#0f172a;">
+                            <h3 style="margin:0; font-size:16px; font-weight:700; color:var(--aura-text-primary, #0f172a);">
                                 📅 <?php _e('Distribución y Ejecución Mensual', 'aura-suite'); ?> — <span id="aura-budget-active-year-label"><?php echo esc_html(current_time('Y')); ?></span>
                             </h3>
                             <p class="description" style="margin:2px 0 0;"><?php _e('Monitorea mes a mes el presupuesto asignado frente al gasto real aprobado en transacciones.', 'aura-suite'); ?></p>
                         </div>
                         <div class="aura-section-actions">
-                            <button type="button" class="button aura-btn-icon-left" id="aura-budget-quick-distribute-btn">
+                            <button type="button" class="btn btn-secondary btn-lift" id="aura-budget-quick-distribute-btn">
                                 <span class="dashicons dashicons-calculator"></span>
                                 <span><?php _e('Distribuir Tope Parejo (÷12)', 'aura-suite'); ?></span>
                             </button>
@@ -241,13 +288,13 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <table class="dataTable display responsive nowrap aura-table-fullwidth aura-budget-monthly-table" id="aura-budget-monthly-breakdown-table">
                             <thead>
                                 <tr>
-                                    <th><?php _e('Mes', 'aura-suite'); ?></th>
-                                    <th><?php _e('Presupuesto Asignado', 'aura-suite'); ?></th>
-                                    <th><?php _e('Ejecutado Real', 'aura-suite'); ?></th>
-                                    <th><?php _e('Disponible', 'aura-suite'); ?></th>
-                                    <th><?php _e('% Ejecución', 'aura-suite'); ?></th>
-                                    <th><?php _e('Estado', 'aura-suite'); ?></th>
-                                    <th><?php _e('Acciones', 'aura-suite'); ?></th>
+                                    <th><span class="dashicons dashicons-calendar-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Mes', 'aura-suite'); ?></th>
+                                    <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Presupuesto Asignado', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Tope mensual presupuestado para gastos y egresos.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                    <th><span class="dashicons dashicons-chart-line" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Ejecutado Real', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Suma acumulada de gastos reales ejecutados en el mes.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                    <th><span class="dashicons dashicons-vault" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Disponible', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Margen remanente antes de alcanzar el tope mensual.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                    <th><span class="dashicons dashicons-performance" style="vertical-align:middle;margin-right:4px;"></span><?php _e('% Ejecución', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Porcentaje consumido con micro-barra de progreso semafórico.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                    <th><span class="dashicons dashicons-flag" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Estado', 'aura-suite'); ?></th>
+                                    <th><span class="dashicons dashicons-admin-generic" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Acciones', 'aura-suite'); ?></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -272,13 +319,13 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <table class="dataTable display responsive nowrap aura-table-fullwidth" id="aura-budget-configured-years-table">
                             <thead>
                                 <tr>
-                                    <th><?php _e('Año Fiscal', 'aura-suite'); ?></th>
-                                    <th><?php _e('Tope Anual', 'aura-suite'); ?></th>
-                                    <th><?php _e('Suma Mensual', 'aura-suite'); ?></th>
-                                    <th><?php _e('Total Ejecutado', 'aura-suite'); ?></th>
-                                    <th><?php _e('Política de Exceso', 'aura-suite'); ?></th>
-                                    <th><?php _e('Estado', 'aura-suite'); ?></th>
-                                    <th><?php _e('Acciones', 'aura-suite'); ?></th>
+                                    <th><span class="dashicons dashicons-calendar" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Año Fiscal', 'aura-suite'); ?></th>
+                                    <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Tope Anual', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Límite máximo general para el ejercicio contable completo.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                    <th><span class="dashicons dashicons-calculator" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Suma Mensual', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Sumatoria de las asignaciones de los 12 meses del año.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                    <th><span class="dashicons dashicons-chart-pie" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Total Ejecutado', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Gasto consolidado devengado durante el año fiscal.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                    <th><span class="dashicons dashicons-shield" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Política de Exceso', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Comportamiento ante sobrecostos: Bloquear transacciones o solo advertir.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                    <th><span class="dashicons dashicons-yes-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Estado', 'aura-suite'); ?></th>
+                                    <th><span class="dashicons dashicons-admin-generic" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Acciones', 'aura-suite'); ?></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -302,11 +349,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </p>
                     </div>
                     <div class="aura-section-actions">
-                        <button type="button" class="button button-secondary" id="aura-petty-refresh-btn" title="<?php esc_attr_e('Actualizar registros', 'aura-suite'); ?>">
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-petty-refresh-btn" title="<?php esc_attr_e('Actualizar registros', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-update" style="vertical-align:middle;font-size:16px;"></span>
                             <?php _e('Refrescar', 'aura-suite'); ?>
                         </button>
-                        <button type="button" class="button button-primary aura-btn-gradient" id="aura-petty-open-inline-btn">
+                        <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-petty-open-inline-btn">
                             <span class="dashicons dashicons-plus-alt2" style="vertical-align:middle;margin-right:2px;"></span>
                             <?php _e('Nueva Entrega / Anticipo', 'aura-suite'); ?>
                         </button>
@@ -327,66 +374,59 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                 <!-- KPIs Ejecutivos de Caja Chica con Ayudas Contextuales Obligatorias -->
                 <div class="aura-report-kpis aura-petty-kpis-grid">
-                    <div class="aura-report-kpi aura-kpi-petty--delivered">
-                        <div class="aura-report-kpi__icon">📦</div>
-                        <div>
-                            <span class="aura-report-kpi__label">
-                                <?php _e('Total Entregado', 'aura-suite'); ?>
-                                <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Monto total otorgado en efectivo para compras o fondos operativos en circulación.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
-                            </span>
-                            <strong id="aura-kpi-petty-delivered">$0.00</strong>
-                        </div>
+                    <div class="kpi-card kpi-indigo card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-portfolio"></span></div>
+                        <span class="kpi-label">
+                            <?php _e('Total Entregado', 'aura-suite'); ?>
+                            <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Monto total otorgado en efectivo para compras o fondos operativos en circulación.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
+                        </span>
+                        <div class="kpi-value"><strong id="aura-kpi-petty-delivered">$0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Capital entregado', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi aura-kpi-petty--spent">
-                        <div class="aura-report-kpi__icon">🧾</div>
-                        <div>
-                            <span class="aura-report-kpi__label">
-                                <?php _e('Total Comprobado (Gastado)', 'aura-suite'); ?>
-                                <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Suma total de compras justificadas mediante facturas y recibos tributarios válidos.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
-                            </span>
-                            <strong id="aura-kpi-petty-spent">$0.00</strong>
-                        </div>
+                    <div class="kpi-card kpi-emerald card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-media-document"></span></div>
+                        <span class="kpi-label">
+                            <?php _e('Total Comprobado (Gastado)', 'aura-suite'); ?>
+                            <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Suma total de compras justificadas mediante facturas y recibos tributarios válidos.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
+                        </span>
+                        <div class="kpi-value"><strong id="aura-kpi-petty-spent">$0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Justificado', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi aura-kpi-petty--returned">
-                        <div class="aura-report-kpi__icon">💵</div>
-                        <div>
-                            <span class="aura-report-kpi__label">
-                                <?php _e('Efectivo Reintegrado', 'aura-suite'); ?>
-                                <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Dinero físico sobrante de compras que ha sido devuelto a la caja de seguridad.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
-                            </span>
-                            <strong id="aura-kpi-petty-returned">$0.00</strong>
-                        </div>
+                    <div class="kpi-card kpi-cyan card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-vault"></span></div>
+                        <span class="kpi-label">
+                            <?php _e('Efectivo Reintegrado', 'aura-suite'); ?>
+                            <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Dinero físico sobrante de compras que ha sido devuelto a la caja de seguridad.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
+                        </span>
+                        <div class="kpi-value"><strong id="aura-kpi-petty-returned">$0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Sobrante en caja', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi aura-kpi-petty--active">
-                        <div class="aura-report-kpi__icon">⏳</div>
-                        <div>
-                            <span class="aura-report-kpi__label">
-                                <?php _e('Entregas Activas', 'aura-suite'); ?>
-                                <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Cantidad de fondos en poder de custodios pendientes de rendición o pendientes de aprobación.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
-                            </span>
-                            <strong id="aura-kpi-petty-active">0</strong>
-                        </div>
+                    <div class="kpi-card kpi-amber card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-clock"></span></div>
+                        <span class="kpi-label">
+                            <?php _e('Entregas Activas', 'aura-suite'); ?>
+                            <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Cantidad de fondos en poder de custodios pendientes de rendición o pendientes de aprobación.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
+                        </span>
+                        <div class="kpi-value"><strong id="aura-kpi-petty-active">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('En circulación', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi aura-kpi-petty--overdue" id="aura-kpi-petty-overdue-box">
-                        <div class="aura-report-kpi__icon">⚠️</div>
-                        <div>
-                            <span class="aura-report-kpi__label">
-                                <?php _e('Entregas Vencidas', 'aura-suite'); ?>
-                                <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Fondos que han superado su fecha límite de liquidación sin justificar facturas ni devolver el cambio.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
-                            </span>
-                            <strong id="aura-kpi-petty-overdue">0</strong>
-                        </div>
+                    <div class="kpi-card kpi-rose card-lift" id="aura-kpi-petty-overdue-box">
+                        <div class="kpi-icon"><span class="dashicons dashicons-warning"></span></div>
+                        <span class="kpi-label">
+                            <?php _e('Entregas Vencidas', 'aura-suite'); ?>
+                            <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Fondos que han superado su fecha límite de liquidación sin justificar facturas ni devolver el cambio.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
+                        </span>
+                        <div class="kpi-value"><strong id="aura-kpi-petty-overdue">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Plazo superado', 'aura-suite'); ?></div>
                     </div>
                 </div>
 
                 <!-- Filtros Interactivos Compactos (Tablenav Horizontal Datatables) -->
                 <div class="aura-filters-bar aura-petty-filters-bar">
                     <div class="aura-petty-filters-left">
-                        <div class="aura-input-group aura-petty-search-group">
-                            <span class="aura-input-group-text" id="addon-petty-search">
-                                <span class="dashicons dashicons-search"></span>
-                            </span>
-                            <input type="text" id="aura-petty-search" class="aura-input" placeholder="<?php esc_attr_e('Buscar responsable, caja, propósito...', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Buscar', 'aura-suite'); ?>" aria-describedby="addon-petty-search">
+                        <div class="input-group aura-petty-search-group" style="min-width: 260px;">
+                            <span class="input-group-text" id="addon-petty-search">🔍</span>
+                            <input type="text" id="aura-petty-search" class="form-control" placeholder="<?php esc_attr_e('Buscar responsable, caja, propósito...', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Buscar', 'aura-suite'); ?>" aria-describedby="addon-petty-search">
                         </div>
 
                         <div class="aura-input-group aura-petty-filter-item">
@@ -439,7 +479,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                     <div class="aura-petty-filters-right">
                         <span id="aura-petty-filter-count" class="aura-filter-count aura-hidden"></span>
-                        <button type="button" id="aura-petty-filter-reset" class="button button-small aura-filter-reset-btn aura-hidden" aria-label="<?php esc_attr_e('Limpiar filtros', 'aura-suite'); ?>">
+                        <button type="button" id="aura-petty-filter-reset" class="btn btn-secondary btn-sm aura-filter-reset-btn aura-hidden" aria-label="<?php esc_attr_e('Limpiar filtros', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-dismiss"></span>
                             <?php _e('Limpiar', 'aura-suite'); ?>
                         </button>
@@ -451,47 +491,47 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <thead>
                             <tr>
                                 <th class="column-toggle" style="width:50px;text-align:center;">
-                                    #
+                                    <span class="dashicons dashicons-editor-ol" style="vertical-align:middle;"></span> #
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Identificador y expansor de detalles completos en dispositivos móviles.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-date">
-                                    <?php _e('Fecha', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-calendar-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Fecha', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Fecha y hora en que se entregó el fondo.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-due aura-col-desktop">
-                                    <?php _e('Vence', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-clock" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Vence', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Fecha límite para rendir cuentas con facturas y devolver el cambio.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-account aura-col-desktop">
-                                    <?php _e('Cuenta Caja', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-vault" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Cuenta Caja', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Caja chica o cuenta puente de custodia donde radica el dinero.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-responsible">
-                                    <?php _e('Responsable / Tercero', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-businessman" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Responsable / Tercero', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Custodio del dinero: [Tercero] para compras/diligencias, [Interno] para responsable de área.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-purpose aura-col-desktop">
-                                    <?php _e('Propósito / Diligencia', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-location-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Propósito / Diligencia', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Objetivo o misión para la cual se autorizó la entrega de efectivo.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-delivered" style="text-align:right;">
-                                    <?php _e('Entregado', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-arrow-down-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Entregado', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Monto total inicial otorgado al custodio o tercero.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-spent aura-col-desktop" style="text-align:right;">
-                                    <?php _e('Gastado', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-cart" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Gastado', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Total de compras respaldadas con facturas o recibos cargados.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-returned aura-col-desktop" style="text-align:right;">
-                                    <?php _e('Devuelto', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-undo" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Devuelto', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Efectivo sobrante reintegrado físicamente a la caja.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-status" style="text-align:center;">
-                                    <?php _e('Estado', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-flag" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Estado', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Fase contable: Abierta, Rendida (por aprobar), Aprobada (paz y salvo) o Cerrada.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                                 <th class="column-actions aura-col-desktop" style="text-align:center;">
-                                    <?php _e('Acciones', 'aura-suite'); ?>
+                                    <span class="dashicons dashicons-admin-generic" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Acciones', 'aura-suite'); ?>
                                     <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Acciones disponibles: Rendir facturas, ver comprobantes, aprobar, rechazar o eliminar.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
                                 </th>
                             </tr>
@@ -508,22 +548,28 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <h2 class="aura-title-with-help"><?php _e('Reembolsos a Personas', 'aura-suite'); ?></h2>
                     </div>
                     <div class="aura-section-actions">
-                        <button type="button" class="button button-primary" id="aura-reimburse-open-inline-btn"><?php _e('Registrar deuda', 'aura-suite'); ?></button>
-                        <button type="button" class="button" id="aura-reimburse-pay-open-inline-btn"><?php _e('Registrar pago', 'aura-suite'); ?></button>
+                        <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-reimburse-open-inline-btn">
+                            <span class="dashicons dashicons-plus-alt2" style="vertical-align:middle;margin-right:2px;"></span>
+                            <?php _e('Registrar deuda', 'aura-suite'); ?>
+                        </button>
+                        <button type="button" class="btn btn-indigo btn-lift" id="aura-reimburse-pay-open-inline-btn">
+                            <span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:2px;"></span>
+                            <?php _e('Registrar pago', 'aura-suite'); ?>
+                        </button>
                     </div>
                 </div>
                 <div class="aura-dt-wrapper">
                     <table class="dataTable display responsive nowrap aura-table-fullwidth" id="aura-reimbursements-table">
                         <thead>
                             <tr>
-                                <th><?php _e('Fecha', 'aura-suite'); ?></th>
-                                <th><?php _e('Tercero', 'aura-suite'); ?></th>
-                                <th><?php _e('Origen', 'aura-suite'); ?></th>
-                                <th><?php _e('Adeudado', 'aura-suite'); ?></th>
-                                <th><?php _e('Pagado', 'aura-suite'); ?></th>
-                                <th><?php _e('Pendiente', 'aura-suite'); ?></th>
-                                <th><?php _e('Estado', 'aura-suite'); ?></th>
-                                <th><?php _e('Acciones', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-calendar-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Fecha', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-businessman" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Tercero', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Beneficiario a quien se adeuda el reembolso de fondos.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-tag" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Origen', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Movimiento de origen o registro manual del adeudo.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Adeudado', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Monto total inicialmente reconocido para reembolso.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-yes-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Pagado', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Monto amortizado o pagado efectivamente al beneficiario.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-clock" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Pendiente', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Saldo remanente pendiente de liquidación.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-flag" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Estado', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-admin-generic" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Acciones', 'aura-suite'); ?></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -538,29 +584,40 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <h2 class="aura-title-with-help"><?php _e('Reportería y Cierre', 'aura-suite'); ?><button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Consolida flujo, presupuesto y auditoría. Cambia el año para analizar periodos anteriores.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></h2>
                         <p><?php _e('Consolida flujo por cuenta, saldos por moneda/tipo, bloque Excel, ejecución presupuestal y auditoría cruzada.', 'aura-suite'); ?></p>
                     </div>
-                    <div class="aura-report-actions">
-                        <input type="number" id="aura-report-year" class="aura-input aura-report-year-input" min="2000" max="2100" value="<?php echo esc_attr((int) current_time('Y')); ?>">
-                        <button type="button" class="button" id="aura-report-refresh-btn"><?php _e('Actualizar reportes', 'aura-suite'); ?></button>
+                    <div class="aura-report-actions" style="display:flex; align-items:center; gap:8px;">
+                        <input type="number" id="aura-report-year" class="form-control aura-report-year-input" min="2000" max="2100" value="<?php echo esc_attr((int) current_time('Y')); ?>" style="width:110px; font-weight:700;">
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-report-refresh-btn">
+                            <span class="dashicons dashicons-update" style="vertical-align:middle;"></span>
+                            <?php _e('Actualizar reportes', 'aura-suite'); ?>
+                        </button>
                     </div>
                 </div>
 
                 <div class="aura-report-kpis">
-                    <article class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Entradas por cuenta', 'aura-suite'); ?></span>
-                        <strong id="aura-report-kpi-inflows">0.00</strong>
-                    </article>
-                    <article class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Salidas por cuenta', 'aura-suite'); ?></span>
-                        <strong id="aura-report-kpi-outflows">0.00</strong>
-                    </article>
-                    <article class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Ejecutado anual', 'aura-suite'); ?></span>
-                        <strong id="aura-report-kpi-budget">0.00</strong>
-                    </article>
-                    <article class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Hallazgos auditoría', 'aura-suite'); ?></span>
-                        <strong id="aura-report-kpi-audit">0</strong>
-                    </article>
+                    <div class="kpi-card kpi-emerald card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-arrow-down-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Entradas por cuenta', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-report-kpi-inflows">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Ingresos', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-rose card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-arrow-up-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Salidas por cuenta', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-report-kpi-outflows">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Egresos', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-indigo card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-chart-pie"></span></div>
+                        <span class="kpi-label"><?php _e('Ejecutado anual', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-report-kpi-budget">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Presupuesto', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-amber card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-visibility"></span></div>
+                        <span class="kpi-label"><?php _e('Hallazgos auditoría', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-report-kpi-audit">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Alertas', 'aura-suite'); ?></div>
+                    </div>
                 </div>
 
                 <div class="aura-report-grid">
@@ -570,11 +627,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <table class="widefat striped" id="aura-report-accounts-table">
                                 <thead>
                                     <tr>
-                                        <th><?php _e('Cuenta', 'aura-suite'); ?></th>
-                                        <th><?php _e('Moneda', 'aura-suite'); ?></th>
-                                        <th><?php _e('Entradas', 'aura-suite'); ?></th>
-                                        <th><?php _e('Salidas', 'aura-suite'); ?></th>
-                                        <th><?php _e('Saldo', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-bank" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Cuenta', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Moneda', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-arrow-down-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Entradas', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-arrow-up-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Salidas', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-vault" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Saldo', 'aura-suite'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody><tr><td colspan="5"><?php _e('Cargando reporte...', 'aura-suite'); ?></td></tr></tbody>
@@ -589,7 +646,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 <h4><?php _e('Monedas', 'aura-suite'); ?></h4>
                                 <div class="aura-report-table-wrap">
                                     <table class="widefat striped" id="aura-report-currency-table">
-                                        <thead><tr><th><?php _e('Moneda', 'aura-suite'); ?></th><th><?php _e('Cuentas', 'aura-suite'); ?></th><th><?php _e('Saldo', 'aura-suite'); ?></th></tr></thead>
+                                        <thead><tr><th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Moneda', 'aura-suite'); ?></th><th><span class="dashicons dashicons-portfolio" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Cuentas', 'aura-suite'); ?></th><th><span class="dashicons dashicons-vault" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Saldo', 'aura-suite'); ?></th></tr></thead>
                                         <tbody><tr><td colspan="3"><?php _e('Cargando...', 'aura-suite'); ?></td></tr></tbody>
                                     </table>
                                 </div>
@@ -598,7 +655,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 <h4><?php _e('Tipos de cuenta', 'aura-suite'); ?></h4>
                                 <div class="aura-report-table-wrap">
                                     <table class="widefat striped" id="aura-report-type-table">
-                                        <thead><tr><th><?php _e('Tipo', 'aura-suite'); ?></th><th><?php _e('Cuentas', 'aura-suite'); ?></th><th><?php _e('Saldo', 'aura-suite'); ?></th></tr></thead>
+                                        <thead><tr><th><span class="dashicons dashicons-category" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Tipo', 'aura-suite'); ?></th><th><span class="dashicons dashicons-portfolio" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Cuentas', 'aura-suite'); ?></th><th><span class="dashicons dashicons-vault" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Saldo', 'aura-suite'); ?></th></tr></thead>
                                         <tbody><tr><td colspan="3"><?php _e('Cargando...', 'aura-suite'); ?></td></tr></tbody>
                                     </table>
                                 </div>
@@ -609,19 +666,19 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <section class="aura-report-panel aura-report-panel--full">
                         <h3><?php _e('Presupuesto: anual vs mensual', 'aura-suite'); ?></h3>
                         <div id="aura-inline-budget-actions" class="aura-inline-actions-row">
-                            <button type="button" class="button" id="aura-inline-budget-edit-btn"><?php _e('Editar límites', 'aura-suite'); ?></button>
-                            <button type="button" class="button button-primary aura-hidden" id="aura-inline-budget-save-btn"><?php _e('Guardar Cambios', 'aura-suite'); ?></button>
+                            <button type="button" class="btn btn-secondary btn-lift" id="aura-inline-budget-edit-btn"><?php _e('Editar límites', 'aura-suite'); ?></button>
+                            <button type="button" class="btn btn-primary btn-shimmer btn-lift aura-hidden" id="aura-inline-budget-save-btn"><?php _e('Guardar Cambios', 'aura-suite'); ?></button>
                         </div>
                         <div class="aura-report-budget-summary" id="aura-report-budget-summary"></div>
                         <div class="aura-report-table-wrap">
                             <table class="widefat striped" id="aura-report-budget-table">
                                 <thead>
                                     <tr>
-                                        <th><?php _e('Mes', 'aura-suite'); ?></th>
-                                        <th><?php _e('Límite', 'aura-suite'); ?></th>
-                                        <th><?php _e('Ejecutado', 'aura-suite'); ?></th>
-                                        <th><?php _e('Disponible', 'aura-suite'); ?></th>
-                                        <th><?php _e('Progreso', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-calendar-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Mes', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Límite', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-chart-line" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Ejecutado', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-vault" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Disponible', 'aura-suite'); ?></th>
+                                        <th><span class="dashicons dashicons-performance" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Progreso', 'aura-suite'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody><tr><td colspan="5"><?php _e('Cargando...', 'aura-suite'); ?></td></tr></tbody>
@@ -649,11 +706,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </p>
                     </div>
                     <div class="aura-section-actions">
-                        <button type="button" class="button button-secondary" id="aura-exchanges-export-btn">
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-exchanges-export-btn">
                             <span class="dashicons dashicons-download" style="vertical-align:middle;"></span>
                             <?php _e('Exportar CSV', 'aura-suite'); ?>
                         </button>
-                        <button type="button" class="button button-primary" id="aura-tab-exchange-new-btn">
+                        <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-tab-exchange-new-btn">
                             <span class="dashicons dashicons-money-alt" style="vertical-align:middle;"></span>
                             <?php _e('Nuevo Cambio de Divisa', 'aura-suite'); ?>
                         </button>
@@ -662,49 +719,56 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                 <!-- KPIs de Cambio de Divisas (prompt-maestro.md) -->
                 <div class="aura-report-kpis aura-kpis-top-spacer">
-                    <div class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Total Operaciones', 'aura-suite'); ?></span>
-                        <strong id="aura-kpi-exchange-total">0</strong>
-                        <small style="font-size: 11px; color: var(--aura-text-muted, #94a3b8); display: block; margin-top: 3px;"><?php _e('Cambios ejecutados', 'aura-suite'); ?></small>
+                    <div class="kpi-card kpi-indigo card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-money-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Total Operaciones', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-exchange-total">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Cambios ejecutados', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Total Divisa Comprada', 'aura-suite'); ?></span>
-                        <strong id="aura-kpi-exchange-bought" style="color: #10b981;">0.00</strong>
-                        <small style="font-size: 11px; color: var(--aura-text-muted, #94a3b8); display: block; margin-top: 3px;"><?php _e('Local ➔ Caja Extranjera', 'aura-suite'); ?></small>
+                    <div class="kpi-card kpi-emerald card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-arrow-down-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Total Divisa Comprada', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-exchange-bought" style="color: #10b981;">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Local ➔ Extranjera', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Total Divisa Vendida', 'aura-suite'); ?></span>
-                        <strong id="aura-kpi-exchange-sold" style="color: #6366f1;">0.00</strong>
-                        <small style="font-size: 11px; color: var(--aura-text-muted, #94a3b8); display: block; margin-top: 3px;"><?php _e('Caja Extranjera ➔ Local', 'aura-suite'); ?></small>
+                    <div class="kpi-card kpi-blue card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-arrow-up-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Total Divisa Vendida', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-exchange-sold" style="color: #6366f1;">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Extranjera ➔ Local', 'aura-suite'); ?></div>
                     </div>
-                    <div class="aura-report-kpi">
-                        <span class="aura-report-kpi__label"><?php _e('Tasa Promedio', 'aura-suite'); ?></span>
-                        <strong id="aura-kpi-exchange-avg-rate">0.00</strong>
-                        <small style="font-size: 11px; color: var(--aura-text-muted, #94a3b8); display: block; margin-top: 3px;"><?php _e('Tasa ponderada', 'aura-suite'); ?></small>
+                    <div class="kpi-card kpi-amber card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-chart-line"></span></div>
+                        <span class="kpi-label"><?php _e('Tasa Promedio', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-exchange-avg-rate">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Tasa ponderada', 'aura-suite'); ?></div>
                     </div>
                 </div>
 
                 <!-- Filtros para Auditoría de Divisas -->
                 <div class="aura-filters-bar">
-                    <div class="aura-filters-group">
-                        <input type="text" id="aura-exchanges-search" class="aura-input" placeholder="<?php esc_attr_e('Buscar por cuenta, notas o auditor...', 'aura-suite'); ?>" style="min-width: 220px;">
-                        <select id="aura-filter-exchange-currency" class="aura-input">
+                    <div class="aura-filters-group" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <div class="input-group" style="min-width: 240px;">
+                            <span class="input-group-text">🔍</span>
+                            <input type="text" id="aura-exchanges-search" class="form-control" placeholder="<?php esc_attr_e('Buscar por cuenta, notas o auditor...', 'aura-suite'); ?>">
+                        </div>
+                        <select id="aura-filter-exchange-currency" class="form-control" style="width:auto;">
                             <option value=""><?php _e('Todas las divisas', 'aura-suite'); ?></option>
                             <option value="USD">USD ($)</option>
                             <option value="EUR">EUR (€)</option>
                             <option value="CAD">CAD (C$)</option>
                         </select>
-                        <select id="aura-filter-exchange-dir" class="aura-input">
+                        <select id="aura-filter-exchange-dir" class="form-control" style="width:auto;">
                             <option value=""><?php _e('Todas las operaciones', 'aura-suite'); ?></option>
                             <option value="buy"><?php _e('Compras (Local ➔ Divisa)', 'aura-suite'); ?></option>
                             <option value="sell"><?php _e('Ventas (Divisa ➔ Local)', 'aura-suite'); ?></option>
                         </select>
-                        <select id="aura-filter-exchange-status" class="aura-input">
+                        <select id="aura-filter-exchange-status" class="form-control" style="width:auto;">
                             <option value=""><?php _e('Todos los estados', 'aura-suite'); ?></option>
                             <option value="completed"><?php _e('Completadas', 'aura-suite'); ?></option>
                             <option value="reverted"><?php _e('Revertidas / Anuladas', 'aura-suite'); ?></option>
                         </select>
-                        <button type="button" id="aura-exchanges-refresh-btn" class="button" title="<?php esc_attr_e('Recargar historial', 'aura-suite'); ?>">
+                        <button type="button" id="aura-exchanges-refresh-btn" class="btn btn-secondary btn-lift" title="<?php esc_attr_e('Recargar historial', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-update" style="vertical-align: middle;"></span>
                             <?php _e('Actualizar', 'aura-suite'); ?>
                         </button>
@@ -716,15 +780,15 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <table class="dataTable display responsive nowrap aura-table-fullwidth" id="aura-exchanges-table">
                         <thead>
                             <tr>
-                                <th><?php _e('Fecha / Hora', 'aura-suite'); ?></th>
-                                <th><?php _e('Operación', 'aura-suite'); ?></th>
-                                <th><?php _e('Cuenta Origen (Salida)', 'aura-suite'); ?></th>
-                                <th><?php _e('Tasa Cambio', 'aura-suite'); ?></th>
-                                <th><?php _e('Cuenta Destino (Entrada)', 'aura-suite'); ?></th>
-                                <th><?php _e('Auditor / Usuario', 'aura-suite'); ?></th>
-                                <th><?php _e('Notas / Referencia', 'aura-suite'); ?></th>
-                                <th><?php _e('Estado', 'aura-suite'); ?></th>
-                                <th class="aura-actions-col" style="text-align: right; width: 120px;"><?php _e('Acciones', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-clock" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Fecha / Hora', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-randomize" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Operación', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Sentido de la conversión: Compra de divisa extranjera o Venta hacia moneda local.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-arrow-up-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Cuenta Origen (Salida)', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-chart-line" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Tasa Cambio', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Tasa de cambio pactada para la conversión entre divisas.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-arrow-down-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Cuenta Destino (Entrada)', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-admin-users" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Auditor / Usuario', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-edit" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Notas / Referencia', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-flag" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Estado', 'aura-suite'); ?></th>
+                                <th class="aura-actions-col" style="text-align: right; width: 120px;"><span class="dashicons dashicons-admin-generic" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Acciones', 'aura-suite'); ?></th>
                             </tr>
                         </thead>
                         <tbody id="aura-exchanges-tbody">
@@ -736,7 +800,12 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </tbody>
                     </table>
                 </div>
-            </div>
+                <!-- ── FOOTER CANÓNICO GLOBAL ──────────────────────────────── -->
+                <div class="adp-footer" style="margin-top: 24px;">
+                    <div>
+                        Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Diego Giraldo</a></strong> &bull; Versión <?php echo esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0' ); ?> &bull; Aura Business Suite &copy; <?php echo date('Y'); ?>
+                    </div>
+                </div>
         </main>
         </div><!-- .aura-layout -->
 
@@ -819,17 +888,17 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </div>
                     </div>
                     <div id="aura-budget-even-tools" style="display:flex; align-items:flex-end; gap:8px; align-self:flex-end;">
-                        <button type="button" class="button button-primary aura-btn-icon-left" id="aura-budget-apply-even-btn" style="height:44px; padding:0 18px; font-weight:600;">
+                        <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-budget-apply-even-btn" style="height:40px; padding:0 18px; font-weight:600;">
                             <span class="dashicons dashicons-update"></span>
                             <span><?php _e('Dividir Tope en 12 Meses', 'aura-suite'); ?></span>
                         </button>
                     </div>
                     <div id="aura-budget-manual-tools" class="aura-hidden" style="display:flex; align-items:flex-end; gap:8px; align-self:flex-end;">
-                        <button type="button" class="button aura-btn-icon-left" id="aura-budget-sum-to-annual-btn" style="height:44px; padding:0 14px; font-weight:600;" title="<?php esc_attr_e('Calcula la suma de los 12 meses y actualiza el tope anual', 'aura-suite'); ?>">
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-budget-sum-to-annual-btn" style="height:40px; padding:0 14px; font-weight:600;" title="<?php esc_attr_e('Calcula la suma de los 12 meses y actualiza el tope anual', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-calculator"></span>
                             <span><?php _e('Actualizar Tope desde Meses', 'aura-suite'); ?></span>
                         </button>
-                        <button type="button" class="button aura-btn-icon-left" id="aura-budget-clear-all-btn" style="height:44px; padding:0 12px; color:#ef4444;" title="<?php esc_attr_e('Poner 0 en todos los meses', 'aura-suite'); ?>">
+                        <button type="button" class="btn btn-danger btn-shimmer btn-lift" id="aura-budget-clear-all-btn" style="height:40px; padding:0 12px;" title="<?php esc_attr_e('Poner 0 en todos los meses', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-trash"></span>
                             <span><?php _e('Poner en Cero', 'aura-suite'); ?></span>
                         </button>
@@ -840,10 +909,10 @@ if ( ! defined( 'ABSPATH' ) ) {
             <!-- Desglose de los 12 Meses (Mes a Mes) -->
             <div class="aura-budget-months-section" style="margin-bottom:20px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h3 style="margin:0; font-size:14px; font-weight:700; color:#0f172a;">
+                    <h3 style="margin:0; font-size:14px; font-weight:700; color:var(--aura-text-primary, #0f172a);">
                         🗓️ <?php _e('Asignación Mes a Mes (Enero — Diciembre)', 'aura-suite'); ?>
                     </h3>
-                    <span id="aura-budget-monthly-hint" style="font-size:12px; color:#64748b;">
+                    <span id="aura-budget-monthly-hint" style="font-size:12px; color:var(--aura-text-muted, #64748b);">
                         <?php _e('Edita cualquier mes directamente para ajustar montos específicos.', 'aura-suite'); ?>
                     </span>
                 </div>
@@ -858,15 +927,15 @@ if ( ! defined( 'ABSPATH' ) ) {
                     );
                     foreach ($month_labels as $m_num => $m_name) :
                     ?>
-                    <div class="aura-budget-month-card" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 10px; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+                    <div class="aura-budget-month-card" style="background:var(--aura-card-bg, #fff); border:1px solid var(--aura-border, #e2e8f0); border-radius:8px; padding:8px 10px; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <label for="aura-budget-month-<?php echo esc_attr($m_num); ?>" style="font-weight:700; font-size:12px; color:#334155;">
+                            <label for="aura-budget-month-<?php echo esc_attr($m_num); ?>" style="font-weight:700; font-size:12px; color:var(--aura-text-primary, #334155);">
                                 <?php echo esc_html($m_name); ?>
                             </label>
-                            <span class="aura-budget-month-idx" style="font-size:10px; color:#94a3b8; font-weight:600;">M<?php echo esc_html($m_num); ?></span>
+                            <span class="aura-budget-month-idx" style="font-size:10px; color:var(--aura-text-muted, #94a3b8); font-weight:600;">M<?php echo esc_html($m_num); ?></span>
                         </div>
                         <div style="position:relative;">
-                            <span style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:13px; font-weight:600; color:#94a3b8;">$</span>
+                            <span style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:13px; font-weight:600; color:var(--aura-text-muted, #94a3b8);">$</span>
                             <input
                                 type="number"
                                 id="aura-budget-month-<?php echo esc_attr($m_num); ?>"
@@ -883,35 +952,35 @@ if ( ! defined( 'ABSPATH' ) ) {
             </div>
 
             <!-- Resumen de Cuadre en Vivo -->
-            <div class="aura-budget-summary-box" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; margin-bottom:20px;">
+            <div class="aura-budget-summary-box" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; background:var(--aura-soft, #f8fafc); border:1px solid var(--aura-border, #e2e8f0); border-radius:10px; padding:12px 16px; margin-bottom:20px;">
                 <div style="text-align:left;">
-                    <span style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; display:block;"><?php _e('Presupuesto Anual', 'aura-suite'); ?></span>
-                    <strong id="aura-budget-modal-annual-ref" style="font-size:16px; color:#0f172a; display:block; margin-top:2px;">$0.00</strong>
+                    <span style="font-size:11px; font-weight:600; color:var(--aura-text-muted, #64748b); text-transform:uppercase; display:block;"><?php _e('Presupuesto Anual', 'aura-suite'); ?></span>
+                    <strong id="aura-budget-modal-annual-ref" style="font-size:16px; color:var(--aura-text-primary, #0f172a); display:block; margin-top:2px;">$0.00</strong>
                 </div>
                 <div style="text-align:center;">
-                    <span style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; display:block;"><?php _e('Suma 12 Meses', 'aura-suite'); ?></span>
-                    <strong id="aura-budget-monthly-total" style="font-size:16px; color:#0f172a; display:block; margin-top:2px;">$0.00</strong>
+                    <span style="font-size:11px; font-weight:600; color:var(--aura-text-muted, #64748b); text-transform:uppercase; display:block;"><?php _e('Suma 12 Meses', 'aura-suite'); ?></span>
+                    <strong id="aura-budget-monthly-total" style="font-size:16px; color:var(--aura-text-primary, #0f172a); display:block; margin-top:2px;">$0.00</strong>
                 </div>
                 <div style="text-align:right;">
-                    <span style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; display:block;"><?php _e('Estado / Diferencia', 'aura-suite'); ?></span>
+                    <span style="font-size:11px; font-weight:600; color:var(--aura-text-muted, #64748b); text-transform:uppercase; display:block;"><?php _e('Estado / Diferencia', 'aura-suite'); ?></span>
                     <strong id="aura-budget-modal-diff" style="font-size:14px; color:#10b981; display:block; margin-top:2px;">$0.00 (Cuadrado exacto)</strong>
                 </div>
             </div>
 
             <!-- Acordeón Desplegable para Importación desde Excel/CSV (Opcional / Copia de Seguridad) -->
-            <details id="aura-budget-import-details-accordion" class="aura-budget-import-details" style="background:#fff; border:1px dashed #cbd5e1; border-radius:8px; padding:12px 16px; margin-bottom:20px;">
-                <summary style="font-size:13px; font-weight:700; color:#334155; cursor:pointer; user-select:none; display:flex; justify-content:space-between; align-items:center;">
+            <details id="aura-budget-import-details-accordion" class="aura-budget-import-details" style="background:var(--aura-card-bg, #fff); border:1px dashed var(--aura-border, #cbd5e1); border-radius:8px; padding:12px 16px; margin-bottom:20px;">
+                <summary style="font-size:13px; font-weight:700; color:var(--aura-text-primary, #334155); cursor:pointer; user-select:none; display:flex; justify-content:space-between; align-items:center;">
                     <span>📂 <?php _e('Importar Plantilla CSV / XLSX o Copia de Seguridad', 'aura-suite'); ?></span>
-                    <span style="font-size:11px; font-weight:normal; color:#64748b;"><?php _e('year,annual_limit,exceed_policy,jan..dec', 'aura-suite'); ?></span>
+                    <span style="font-size:11px; font-weight:normal; color:var(--aura-text-muted, #64748b);"><?php _e('year,annual_limit,exceed_policy,jan..dec', 'aura-suite'); ?></span>
                 </summary>
-                <div style="margin-top:12px; padding-top:12px; border-top:1px solid #f1f5f9;">
-                    <p class="description" style="margin:0 0 12px; font-size:12px; color:#475569;">
+                <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--aura-border, #f1f5f9);">
+                    <p class="description" style="margin:0 0 12px; font-size:12px; color:var(--aura-text-muted, #475569);">
                         <?php _e('Puedes descargar la plantilla oficial con el formato exacto o una copia de seguridad completa con todos los años para modificarlos o importarlos masivamente.', 'aura-suite'); ?>
                     </p>
                     <div class="aura-budget-import-actions" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                         <a
                             href="<?php echo esc_url(admin_url('admin-ajax.php?action=aura_finance_budget_template&nonce=' . wp_create_nonce('aura_financial_accounts_nonce'))); ?>"
-                            class="button aura-btn-icon-left"
+                            class="btn btn-secondary btn-lift"
                             id="aura-budget-download-template"
                             title="<?php esc_attr_e('Descargar plantilla vacía con formato exacto', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-media-spreadsheet"></span>
@@ -919,7 +988,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </a>
                         <a
                             href="<?php echo esc_url(admin_url('admin-ajax.php?action=aura_finance_budget_export_all&nonce=' . wp_create_nonce('aura_financial_accounts_nonce'))); ?>"
-                            class="button aura-btn-icon-left"
+                            class="btn btn-secondary btn-lift"
                             id="aura-budget-modal-backup-btn"
                             title="<?php esc_attr_e('Descarga copia de seguridad de todos los años configurados', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-download"></span>
@@ -927,7 +996,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </a>
                         <div style="display:flex; align-items:center; gap:8px; margin-left:auto;">
                             <input type="file" id="aura-budget-import-file" accept=".csv,.xlsx" style="font-size:12px;">
-                            <button type="button" class="button button-primary aura-btn-icon-left" id="aura-budget-import-btn">
+                            <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-budget-import-btn">
                                 <span class="dashicons dashicons-upload"></span>
                                 <span><?php _e('Analizar e Importar', 'aura-suite'); ?></span>
                             </button>
@@ -950,8 +1019,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                             </div>
                         </div>
                         <div class="aura-budget-import-wizard-actions" style="margin-top:10px; display:flex; gap:8px;">
-                            <button type="button" class="button" id="aura-budget-validate-btn"><?php _e('Validar datos', 'aura-suite'); ?></button>
-                            <button type="button" class="button button-primary" id="aura-budget-confirm-btn" disabled><?php _e('Confirmar importación', 'aura-suite'); ?></button>
+                            <button type="button" class="btn btn-secondary btn-lift" id="aura-budget-validate-btn"><?php _e('Validar datos', 'aura-suite'); ?></button>
+                            <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-budget-confirm-btn" disabled><?php _e('Confirmar importación', 'aura-suite'); ?></button>
                         </div>
                         <div id="aura-budget-import-validation" class="aura-budget-import-validation aura-hidden"></div>
                     </div>
@@ -959,9 +1028,9 @@ if ( ! defined( 'ABSPATH' ) ) {
             </details>
 
             <!-- Acciones Finales del Modal -->
-            <div class="aura-modal-actions" style="display:flex; justify-content:flex-end; gap:10px; padding-top:12px; border-top:1px solid #e2e8f0;">
-                <button type="button" class="button" data-modal-close="aura-finance-budget-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
-                <button type="submit" class="button button-primary" id="aura-budget-save-btn" style="height:38px; padding:0 22px; font-weight:700; font-size:14px;">
+            <div class="aura-modal-actions" style="display:flex; justify-content:flex-end; gap:10px; padding-top:12px; border-top:1px solid var(--aura-border, #e2e8f0);">
+                <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-budget-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                <button type="submit" class="btn btn-primary btn-shimmer btn-lift" id="aura-budget-save-btn" style="height:38px; padding:0 22px; font-weight:700; font-size:14px;">
                     <span class="dashicons dashicons-saved" style="margin-right:4px; vertical-align:text-bottom;"></span>
                     <?php _e('Guardar Presupuesto', 'aura-suite'); ?>
                 </button>
@@ -1054,7 +1123,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         <label for="aura-petty-responsible-name" style="margin-bottom:0;font-weight:600;">
                                             <strong><?php _e('Responsable / Beneficiario *', 'aura-suite'); ?></strong>
                                         </label>
-                                        <button type="button" class="button button-secondary aura-btn-open-tp-explorer" 
+                                        <button type="button" class="btn btn-secondary btn-lift aura-btn-open-tp-explorer" 
                                                 data-target-input="#aura-petty-responsible-name" 
                                                 data-target-hidden="#aura-petty-responsible" 
                                                 data-target-avatar="#aura-petty-responsible-preview-avatar"
@@ -1087,24 +1156,24 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         <strong><?php _e('Naturaleza / Tipo de Fondo *', 'aura-suite'); ?></strong>
                                     </label>
                                     <div class="aura-petty-type-selector" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:10px;">
-                                        <label class="aura-petty-type-card is-selected" data-type="purchase_errand" style="border:2px solid #2563eb;background:#eff6ff;border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;transition:all 0.2s;">
+                                        <label class="aura-petty-type-card is-selected" data-type="purchase_errand" style="border:2px solid var(--aura-primary, #2563eb);background:var(--aura-primary-subtle, rgba(37,99,235,0.08));border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;transition:all 0.2s;">
                                             <input type="radio" name="aura_petty_type" value="purchase_errand" checked style="margin-top:2px;">
                                             <div style="line-height:1.3;">
-                                                <div style="font-weight:700;font-size:13px;color:#1e3a8a;display:flex;align-items:center;gap:4px;">
+                                                <div style="font-weight:700;font-size:13px;color:var(--aura-primary, #1e3a8a);display:flex;align-items:center;gap:4px;">
                                                     🛒 <?php _e('Compra puntual / Diligencia', 'aura-suite'); ?>
                                                 </div>
-                                                <div style="font-size:11.5px;color:#475569;margin-top:3px;">
+                                                <div style="font-size:11.5px;color:var(--aura-text-muted, #475569);margin-top:3px;">
                                                     <?php _e('Dinero para compra rápida o trámite específico. Requiere facturas y reintegro en pocos días.', 'aura-suite'); ?>
                                                 </div>
                                             </div>
                                         </label>
-                                        <label class="aura-petty-type-card" data-type="program_budget" style="border:2px solid #cbd5e1;background:#ffffff;border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;transition:all 0.2s;">
+                                        <label class="aura-petty-type-card" data-type="program_budget" style="border:2px solid var(--aura-border, #cbd5e1);background:var(--aura-card-bg, #ffffff);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;transition:all 0.2s;">
                                             <input type="radio" name="aura_petty_type" value="program_budget" style="margin-top:2px;">
                                             <div style="line-height:1.3;">
-                                                <div style="font-weight:700;font-size:13px;color:#0f172a;display:flex;align-items:center;gap:4px;">
+                                                <div style="font-weight:700;font-size:13px;color:var(--aura-text-primary, #0f172a);display:flex;align-items:center;gap:4px;">
                                                     📦 <?php _e('Presupuesto de Programa / Fondo Fijo', 'aura-suite'); ?>
                                                 </div>
-                                                <div style="font-size:11.5px;color:#475569;margin-top:3px;">
+                                                <div style="font-size:11.5px;color:var(--aura-text-muted, #475569);margin-top:3px;">
                                                     <?php _e('Traspaso o entrega de presupuesto a otra caja/usuario para programas de 1 a 6 meses o más. No vence a corto plazo.', 'aura-suite'); ?>
                                                 </div>
                                             </div>
@@ -1201,11 +1270,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
 
                     <div class="aura-petty-actions">
-                        <button type="submit" class="button button-primary" id="aura-petty-create-btn">
+                        <button type="submit" class="btn btn-primary btn-shimmer btn-lift" id="aura-petty-create-btn">
                             <span class="dashicons dashicons-plus-alt2" style="vertical-align:middle;margin-right:2px;"></span>
                             <?php _e('Registrar Entrega de Fondo', 'aura-suite'); ?>
                         </button>
-                        <button type="button" class="button" id="aura-petty-reset-btn"><?php _e('Limpiar', 'aura-suite'); ?></button>
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-petty-reset-btn"><?php _e('Limpiar', 'aura-suite'); ?></button>
                     </div>
                 </form>
             </div>
@@ -1297,7 +1366,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <?php _e('Registra cada gasto individual con su respectiva categoría contable y concepto.', 'aura-suite'); ?>
                                 </p>
                             </div>
-                            <button type="button" class="button button-primary" id="aura-petty-add-expense-btn" style="display:inline-flex;align-items:center;gap:4px;">
+                            <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-petty-add-expense-btn" style="display:inline-flex;align-items:center;gap:4px;">
                                 <span class="dashicons dashicons-plus-alt2" style="font-size:15px;width:15px;height:15px;line-height:15px;"></span>
                                 <?php _e('Añadir Gasto', 'aura-suite'); ?>
                             </button>
@@ -1343,7 +1412,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <input type="text" class="aura-petty-expense-concept aura-input" placeholder="<?php esc_attr_e('Ej: Compra de papelería, taxi a notaría, suministros...', 'aura-suite'); ?>" required>
                                 </td>
                                 <td style="width:45px;text-align:center;">
-                                    <button type="button" class="button button-link-delete aura-petty-expense-remove" title="<?php esc_attr_e('Eliminar este gasto', 'aura-suite'); ?>">
+                                    <button type="button" class="btn btn-danger btn-sm aura-petty-expense-remove" title="<?php esc_attr_e('Eliminar este gasto', 'aura-suite'); ?>">
                                         <span class="dashicons dashicons-trash"></span>
                                     </button>
                                 </td>
@@ -1402,11 +1471,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
 
                     <div class="aura-petty-actions">
-                        <button type="submit" class="button button-primary" id="aura-petty-submit-btn" disabled>
+                        <button type="submit" class="btn btn-primary btn-shimmer btn-lift" id="aura-petty-submit-btn" disabled>
                             <span class="dashicons dashicons-saved" style="vertical-align:middle;margin-right:2px;"></span>
                             <?php _e('Enviar Rendición para Aprobación', 'aura-suite'); ?>
                         </button>
-                        <button type="button" class="button" id="aura-petty-clear-settle-btn"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-petty-clear-settle-btn"><?php _e('Cancelar', 'aura-suite'); ?></button>
                     </div>
                 </form>
             </div>
@@ -1602,8 +1671,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </div>
 
                 <div class="aura-modal-footer aura-modal-footer-spaced aura-modal-footer-end">
-                    <button type="button" class="button" data-modal-close="aura-finance-exchange-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
-                    <button type="submit" class="button button-primary" id="aura-exchange-save-btn"><?php _e('Confirmar Cambio de Divisa', 'aura-suite'); ?></button>
+                    <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-exchange-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                    <button type="submit" class="btn btn-primary btn-shimmer btn-lift" id="aura-exchange-save-btn"><?php _e('Confirmar Cambio de Divisa', 'aura-suite'); ?></button>
                 </div>
             </form>
         </div>
@@ -1632,7 +1701,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </div>
             </div>
             <div class="aura-modal-footer aura-modal-footer-end">
-                <button type="button" class="button" data-modal-close="aura-finance-exchange-detail-modal"><?php _e('Cerrar', 'aura-suite'); ?></button>
+                <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-exchange-detail-modal"><?php _e('Cerrar', 'aura-suite'); ?></button>
             </div>
         </div>
     </div>
@@ -1693,8 +1762,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </div>
 
                 <div class="aura-modal-footer aura-modal-footer-spaced aura-modal-footer-end" style="margin-top: 16px; padding: 0;">
-                    <button type="button" class="button" data-modal-close="aura-finance-exchange-edit-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
-                    <button type="submit" class="button button-primary" id="aura-exchange-edit-save-btn"><?php _e('Guardar y Rebalancear', 'aura-suite'); ?></button>
+                    <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-exchange-edit-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                    <button type="submit" class="btn btn-primary btn-shimmer btn-lift" id="aura-exchange-edit-save-btn"><?php _e('Guardar y Rebalancear', 'aura-suite'); ?></button>
                 </div>
             </form>
         </div>
@@ -1723,8 +1792,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <textarea id="aura-exchange-revert-reason" class="aura-input" name="revert_reason" rows="3" required placeholder="<?php esc_attr_e('Ej: Operación duplicada por error, tasa errónea, fondos devueltos...', 'aura-suite'); ?>"></textarea>
                 </div>
                 <div class="aura-modal-footer aura-modal-footer-spaced aura-modal-footer-end" style="margin-top: 16px; padding: 0;">
-                    <button type="button" class="button" data-modal-close="aura-finance-exchange-revert-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
-                    <button type="submit" class="button button-primary" id="aura-exchange-revert-save-btn" style="background: #dc2626; border-color: #dc2626;"><?php _e('Confirmar Reversión', 'aura-suite'); ?></button>
+                    <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-exchange-revert-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                    <button type="submit" class="btn btn-danger btn-shimmer btn-lift" id="aura-exchange-revert-save-btn"><?php _e('Confirmar Reversión', 'aura-suite'); ?></button>
                 </div>
             </form>
         </div>
@@ -1787,8 +1856,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                 </div>
                 <div class="aura-modal-footer aura-modal-footer-spaced">
-                    <button type="button" class="button" data-modal-close="aura-finance-account-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
-                    <button type="submit" class="button button-primary" id="aura-account-save-btn"><?php _e('Guardar cuenta', 'aura-suite'); ?></button>
+                    <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-account-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                    <button type="submit" class="btn btn-primary btn-shimmer btn-lift" id="aura-account-save-btn"><?php _e('Guardar cuenta', 'aura-suite'); ?></button>
                 </div>
             </form>
         </div>
@@ -1812,7 +1881,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <label for="aura-reimburse-person-name" class="aura-label" style="margin-bottom:0;font-weight:600;">
                                 <strong><?php _e('Tercero / Responsable', 'aura-suite'); ?></strong>
                             </label>
-                            <button type="button" class="button button-secondary aura-btn-open-tp-explorer" 
+                            <button type="button" class="btn btn-secondary btn-lift aura-btn-open-tp-explorer" 
                                     data-target-input="#aura-reimburse-person-name" 
                                     data-target-hidden="#aura-reimburse-person" 
                                     data-target-avatar="#aura-reimburse-preview-avatar"
@@ -1853,8 +1922,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                 </div>
                 <div class="aura-modal-footer aura-modal-footer-spaced">
-                    <button type="button" class="button" data-modal-close="aura-finance-reimburse-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
-                    <button type="submit" class="button button-primary" id="aura-reimburse-save-btn"><?php _e('Guardar Deuda', 'aura-suite'); ?></button>
+                    <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-reimburse-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                    <button type="submit" class="btn btn-primary btn-shimmer btn-lift" id="aura-reimburse-save-btn"><?php _e('Guardar Deuda', 'aura-suite'); ?></button>
                 </div>
             </form>
         </div>
@@ -1895,7 +1964,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <label for="aura-reimburse-pay-person-name" class="aura-label" style="margin-bottom:0;font-weight:600;">
                                 <strong><?php _e('Beneficiario (Tercero o Usuario WP) *', 'aura-suite'); ?></strong>
                             </label>
-                            <button type="button" class="button button-secondary aura-btn-open-tp-explorer" 
+                            <button type="button" class="btn btn-secondary btn-lift aura-btn-open-tp-explorer" 
                                     data-target-input="#aura-reimburse-pay-person-name" 
                                     data-target-hidden="#aura-reimburse-pay-person" 
                                     data-target-avatar="#aura-reimburse-pay-preview-avatar"
@@ -2040,8 +2109,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                 </div>
                 <div class="aura-modal-footer aura-modal-footer-spaced">
-                    <button type="button" class="button" data-modal-close="aura-finance-reimburse-pay-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
-                    <button type="submit" class="button button-primary" id="aura-reimburse-pay-save-btn">
+                    <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-reimburse-pay-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                    <button type="submit" class="btn btn-primary btn-shimmer btn-lift" id="aura-reimburse-pay-save-btn">
                         <span class="dashicons dashicons-saved" style="margin-right:4px;vertical-align:text-bottom;"></span>
                         <?php _e('Aplicar Pago y Contabilizar', 'aura-suite'); ?>
                     </button>

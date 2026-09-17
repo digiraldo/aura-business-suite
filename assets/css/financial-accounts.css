@@ -89,55 +89,7 @@
     border: 1px solid #e2e8f0;
 }
 
-/* Esta página no debe heredar el header horizontal global de aura-page-header. */
-.aura-financial-accounts-page .aura-page-header.aura-accounts-hero {
-    display: block;
-}
-
-.aura-financial-accounts-page .aura-page-header.aura-accounts-hero > div:first-child {
-    margin-bottom: 10px;
-}
-
-.aura-accounts-hero__icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.2);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    flex-shrink: 0;
-}
-
-.aura-accounts-hero__content {
-    min-width: 0;
-}
-
-.aura-accounts-hero__title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 800;
-    color: #fff;
-    line-height: 1.2;
-}
-
-.aura-accounts-hero {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-}
-
-.aura-accounts-hero__text {
-    margin: 4px 0 0;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 13px;
-    max-width: 760px;
-}
-
+/* Hero canónico gestionado por aura-design-system.css */
 .aura-kpis-top-spacer {
     margin-top: 15px;
 }
@@ -1748,6 +1700,72 @@ table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::
     max-width: 140px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+}
+
+#aura-petty-cash-table .aura-responsible-cell {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    max-width: 100% !important;
+}
+
+#aura-petty-cash-table .aura-responsible-avatar-wrap {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    max-width: 26px !important;
+    min-height: 26px !important;
+    max-height: 26px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    margin-right: 6px !important;
+    border: 1px solid #cbd5e1 !important;
+    box-sizing: border-box !important;
+    background: #f1f5f9;
+}
+
+#aura-petty-cash-table .aura-responsible-avatar-img,
+#aura-petty-cash-table td.column-responsible img,
+#aura-petty-cash-table td.column-responsible .aura-responsible-cell img {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    max-width: 26px !important;
+    min-height: 26px !important;
+    max-height: 26px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+#aura-petty-cash-table .aura-responsible-avatar-icon {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    max-width: 26px !important;
+    min-height: 26px !important;
+    max-height: 26px !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-petty-cash-table .aura-responsible-avatar-wrap,
+html.wp-dark-mode-active #aura-petty-cash-table .aura-responsible-avatar-wrap,
+body.aura-dark-mode #aura-petty-cash-table .aura-responsible-avatar-wrap,
+[data-theme="dark"] #aura-petty-cash-table .aura-responsible-avatar-wrap {
+    border-color: #475569 !important;
+    background: #1e293b !important;
 }
 
 #aura-petty-cash-table th.column-purpose,

@@ -3665,6 +3665,7 @@ html[data-wp-dark-mode-scheme="dark"] .kpi-card.card-lift:hover {
 
 .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
 .avatar-sm { width: 32px; height: 32px; font-size: 12px; }
+.avatar-xs { width: 26px; height: 26px; min-width: 26px; max-width: 26px; min-height: 26px; max-height: 26px; font-size: 11px; }
 .avatar-lg { width: 60px; height: 60px; font-size: 22px; }
 .avatar-primary { background: linear-gradient(135deg,var(--aura-indigo),var(--aura-violet)); color: #fff; }
 .avatar-green   { background: linear-gradient(135deg,#059669,#10b981); color: #fff; }
@@ -5549,6 +5550,10 @@ html[data-wp-dark-mode-scheme="dark"] .input-group > .button:hover {
     will-change: transform;
     flex-shrink: 0 !important;
     box-sizing: border-box !important;
+    width: var(--avatar-size, 32px);
+    height: var(--avatar-size, 32px);
+    max-width: var(--avatar-size, 32px);
+    max-height: var(--avatar-size, 32px);
 }
 
 .avatar-zoomable:hover,
@@ -5562,18 +5567,18 @@ html[data-wp-dark-mode-scheme="dark"] .input-group > .button:hover {
 .avatar-zoomable img,
 .avatar-hover-zoom img,
 .aura-avatar-zoom img,
-img.avatar-zoomable,
-img.avatar-hover-zoom,
-img.aura-avatar-zoom,
 .avatar img,
+.aura-responsible-avatar-wrap img,
 img.adp-user-avatar {
-    width: 100% !important;
-    height: 100% !important;
-    aspect-ratio: 1 / 1 !important;
-    object-fit: cover !important;
-    border-radius: 50% !important;
-    display: block !important;
-    flex-shrink: 0 !important;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    flex-shrink: 0;
 }
 
 /* ==========================================================================

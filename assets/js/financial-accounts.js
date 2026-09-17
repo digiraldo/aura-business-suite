@@ -120,20 +120,61 @@ jQuery(function ($) {
     }
 
     function typeBadge(type) {
-        return '<span class="aura-account-badge is-' + escapeHtml(type) + '">' + escapeHtml(typeLabel(type)) + '</span>';
+        let color = 'indigo';
+        let icon = 'dashicons-bank';
+        switch (String(type).toLowerCase()) {
+            case 'bank':
+                color = 'indigo';
+                icon = 'dashicons-bank';
+                break;
+            case 'cash':
+            case 'petty_cash':
+                color = 'emerald';
+                icon = 'dashicons-money-alt';
+                break;
+            case 'card':
+            case 'credit_card':
+                color = 'amber';
+                icon = 'dashicons-cart';
+                break;
+            case 'savings':
+                color = 'cyan';
+                icon = 'dashicons-vault';
+                break;
+            case 'investment':
+                color = 'violet';
+                icon = 'dashicons-chart-area';
+                break;
+            default:
+                color = 'slate';
+                icon = 'dashicons-category';
+        }
+        return '<span class="badge badge-' + color + '" style="display:inline-flex;align-items:center;gap:4px;">' +
+            '<span class="dashicons ' + icon + '" style="font-size:12px;width:12px;height:12px;line-height:12px;"></span>' +
+            '<span>' + escapeHtml(typeLabel(type)) + '</span>' +
+        '</span>';
     }
 
     function statusBadge(active) {
         const isActive = parseInt(active, 10) === 1;
-        return '<span class="aura-account-status ' + (isActive ? 'is-active' : 'is-inactive') + '">' + escapeHtml(statusLabel(active)) + '</span>';
+        if (isActive) {
+            return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
+                '<span class="traffic-dot traffic-dot-success"></span>' +
+                '<span class="badge badge-emerald">Activa</span>' +
+            '</span>';
+        }
+        return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
+            '<span class="traffic-dot traffic-dot-danger"></span>' +
+            '<span class="badge badge-rose">Inactiva</span>' +
+        '</span>';
     }
 
     function renderActionButtons(id) {
-        return '<div class="aura-account-actions">' +
-            '<button type="button" class="button button-small aura-account-action is-edit aura-account-edit" data-id="' + id + '" title="Editar">' +
+        return '<div class="aura-account-actions" style="display:inline-flex;gap:6px;align-items:center;">' +
+            '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-account-action is-edit aura-account-edit" data-id="' + id + '" data-tooltip="Editar detalles de la cuenta" aria-label="Editar">' +
                 '<span class="dashicons dashicons-edit"></span>' +
             '</button>' +
-            '<button type="button" class="button button-small aura-account-action is-delete aura-account-delete" data-id="' + id + '" title="Eliminar">' +
+            '<button type="button" class="btn btn-sm btn-danger btn-lift aura-account-action is-delete aura-account-delete" data-id="' + id + '" data-tooltip="Eliminar cuenta bancaria" aria-label="Eliminar">' +
                 '<span class="dashicons dashicons-trash"></span>' +
             '</button>' +
         '</div>';
@@ -235,45 +276,45 @@ jQuery(function ($) {
             const remaining = limit - spent;
             const pct = limit > 0 ? (spent / limit) * 100 : (spent > 0 ? 100 : 0);
 
-            let statusBadge = '<span class="aura-badge aura-badge--neutral">Sin asignar</span>';
-            let barColor = '#10b981';
+            let statusBadge = '<span class="badge badge-slate">Sin asignar</span>';
+            let fillModifier = 'micro-progress-fill--emerald';
 
             if (limit > 0) {
                 if (spent > limit) {
-                    statusBadge = '<span class="aura-badge aura-badge--danger">Excedido</span>';
-                    barColor = '#ef4444';
+                    statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-danger"></span><span class="badge badge-rose">Excedido</span></span>';
+                    fillModifier = 'micro-progress-fill--rose';
                 } else if (pct >= 85) {
-                    statusBadge = '<span class="aura-badge aura-badge--warning">Cerca del límite</span>';
-                    barColor = '#f59e0b';
+                    statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-warning"></span><span class="badge badge-amber">Cerca del límite</span></span>';
+                    fillModifier = 'micro-progress-fill--amber';
                 } else {
-                    statusBadge = '<span class="aura-badge aura-badge--success">Normal</span>';
-                    barColor = '#10b981';
+                    statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-success"></span><span class="badge badge-emerald">Normal</span></span>';
+                    fillModifier = 'micro-progress-fill--emerald';
                 }
             } else if (spent > 0) {
-                statusBadge = '<span class="aura-badge aura-badge--danger">Sin límite fijado</span>';
-                barColor = '#ef4444';
+                statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-danger"></span><span class="badge badge-rose">Sin límite fijado</span></span>';
+                fillModifier = 'micro-progress-fill--rose';
             }
 
             const clampedPct = Math.min(Math.round(pct), 100);
 
             rowsHtml += `
-                <tr>
+                <tr class="table-row-hover-lift">
                     <td><strong>${monthName}</strong></td>
-                    <td style="font-weight:600; color:#0f172a;">$${formatNumber(limit)}</td>
-                    <td style="color:${spent > 0 ? '#0f172a' : '#94a3b8'};">$${formatNumber(spent)}</td>
+                    <td style="font-weight:600; color:var(--aura-text-heading,#0f172a);">$${formatNumber(limit)}</td>
+                    <td style="color:${spent > 0 ? 'var(--aura-text-heading,#0f172a)' : '#94a3b8'};">$${formatNumber(spent)}</td>
                     <td style="font-weight:600; color:${remaining < 0 ? '#ef4444' : '#10b981'};">$${formatNumber(remaining)}</td>
                     <td style="min-width:140px;">
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="aura-mini-progress-track" style="flex:1; height:7px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
-                                <div style="width:${clampedPct}%; height:100%; background:${barColor}; border-radius:4px; transition:width 0.3s ease;"></div>
+                            <div class="micro-progress-bar" style="flex:1;">
+                                <div class="micro-progress-fill ${fillModifier}" style="width:${clampedPct}%;"></div>
                             </div>
-                            <span style="font-size:12px; font-weight:600; min-width:38px; text-align:right; color:#475569;">${pct.toFixed(0)}%</span>
+                            <span style="font-size:12px; font-weight:700; min-width:38px; text-align:right; color:var(--aura-text-muted,#475569);">${pct.toFixed(0)}%</span>
                         </div>
                     </td>
                     <td>${statusBadge}</td>
                     <td>
-                        <button type="button" class="button button-small aura-budget-quick-edit-month" data-month="${i + 1}" title="Modificar monto de ${monthName}">
-                            <span class="dashicons dashicons-edit" style="font-size:15px; width:15px; height:15px; line-height:15px; vertical-align:text-bottom;"></span>
+                        <button type="button" class="btn btn-sm btn-secondary btn-lift aura-budget-quick-edit-month" data-month="${i + 1}" data-tooltip="Modificar monto de ${monthName}" aria-label="Editar">
+                            <span class="dashicons dashicons-edit"></span>
                         </button>
                     </td>
                 </tr>
@@ -304,28 +345,28 @@ jQuery(function ($) {
             const policyText = row.exceed_policy === 'block' ? 'Bloquear gastos' : 'Solo advertir';
 
             rowsHtml += `
-                <tr style="${isSelected ? 'background-color:#eff6ff;' : ''}">
+                <tr class="table-row-hover-lift" style="${isSelected ? 'background-color:rgba(59, 130, 246, 0.08);' : ''}">
                     <td>
-                        <strong style="font-size:14px; color:#0f172a;">${yr}</strong>
-                        ${isSelected ? ' <span class="aura-badge aura-badge--primary" style="font-size:10px; padding:2px 6px; margin-left:4px;">Activo</span>' : ''}
+                        <strong style="font-size:14px; color:var(--aura-text-heading,#0f172a);">${yr}</strong>
+                        ${isSelected ? ' <span class="badge badge-primary" style="font-size:10px; padding:2px 6px; margin-left:4px;">Activo</span>' : ''}
                     </td>
-                    <td style="font-weight:600; color:#0f172a;">$${formatNumber(annualLimit)}</td>
-                    <td style="color:#475569;">$${formatNumber(monthlyTotal)}</td>
-                    <td style="font-weight:600; color:#0f172a;">$${formatNumber(annualSpent)}</td>
-                    <td><span style="font-size:12px; color:#64748b;">${policyText}</span></td>
+                    <td style="font-weight:600; color:var(--aura-text-heading,#0f172a);">$${formatNumber(annualLimit)}</td>
+                    <td style="color:var(--aura-text-muted,#475569);">$${formatNumber(monthlyTotal)}</td>
+                    <td style="font-weight:600; color:var(--aura-text-heading,#0f172a);">$${formatNumber(annualSpent)}</td>
+                    <td><span class="badge badge-slate">${policyText}</span></td>
                     <td>
-                        ${row.is_active == 1 ? '<span class="aura-badge aura-badge--success">Habilitado</span>' : '<span class="aura-badge aura-badge--neutral">Inactivo</span>'}
+                        ${row.is_active == 1 ? '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-success"></span><span class="badge badge-emerald">Habilitado</span></span>' : '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-danger"></span><span class="badge badge-slate">Inactivo</span></span>'}
                     </td>
                     <td>
-                        <div style="display:flex; gap:4px;">
-                            <button type="button" class="button button-small aura-budget-year-select-btn" data-year="${yr}" title="Cargar y ver datos de ${yr}">
-                                Cargar
+                        <div style="display:inline-flex; gap:6px; align-items:center;">
+                            <button type="button" class="btn btn-sm btn-primary btn-lift aura-budget-year-select-btn" data-year="${yr}" data-tooltip="Cargar y ver datos de ${yr}">
+                                <span class="dashicons dashicons-visibility"></span> <span>Cargar</span>
                             </button>
-                            <button type="button" class="button button-small aura-budget-year-clone-btn" data-year="${yr}" title="Clonar presupuesto de ${yr} a otro año">
-                                <span class="dashicons dashicons-admin-page" style="font-size:15px; width:15px; height:15px; line-height:15px; vertical-align:text-bottom;"></span>
+                            <button type="button" class="btn btn-sm btn-secondary btn-lift aura-budget-year-clone-btn" data-year="${yr}" data-tooltip="Clonar presupuesto de ${yr} a otro año" aria-label="Clonar">
+                                <span class="dashicons dashicons-admin-page"></span>
                             </button>
-                            <button type="button" class="button button-small aura-budget-year-delete-btn" data-year="${yr}" style="color:#ef4444;" title="Eliminar presupuesto del año ${yr}">
-                                <span class="dashicons dashicons-trash" style="font-size:15px; width:15px; height:15px; line-height:15px; vertical-align:text-bottom;"></span>
+                            <button type="button" class="btn btn-sm btn-danger btn-lift aura-budget-year-delete-btn" data-year="${yr}" data-tooltip="Eliminar presupuesto del año ${yr}" aria-label="Eliminar">
+                                <span class="dashicons dashicons-trash"></span>
                             </button>
                         </div>
                     </td>
@@ -780,11 +821,11 @@ jQuery(function ($) {
         const rows = accounts.map(function (a) {
             const balance = formatNumber(a.current_balance || 0);
 
-            return '<tr>' +
-                '<td><div class="aura-account-name"><strong>' + escapeHtml(a.name) + '</strong><small>' + escapeHtml(a.institution || 'Sin institución') + '</small></div></td>' +
+            return '<tr class="table-row-hover-lift">' +
+                '<td><div class="aura-account-name"><strong>' + escapeHtml(a.name) + '</strong><small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.institution || 'Sin institución') + '</small></div></td>' +
                 '<td>' + typeBadge(a.account_type) + '</td>' +
-                '<td><strong>' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</strong></td>' +
-                '<td><div class="aura-account-balance"><strong>' + escapeHtml(balance) + '</strong><small>' + escapeHtml(a.account_number_masked || 'Sin número visible') + '</small></div></td>' +
+                '<td><span class="badge badge-slate" style="font-weight:700;">' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</span></td>' +
+                '<td><div class="aura-account-balance"><strong style="font-size:13px;color:var(--aura-text-heading,#0f172a);">' + escapeHtml(balance) + '</strong><small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.account_number_masked || 'Sin número visible') + '</small></div></td>' +
                 '<td>' + statusBadge(a.is_active) + '</td>' +
                 '<td>' + renderActionButtons(a.id) + '</td>' +
                 '</tr>';
@@ -1141,9 +1182,20 @@ jQuery(function ($) {
         }
     }
 
+    let isEvidenceBackdropMouseDown = false;
+    $(document).on('mousedown', '#aura-petty-evidence-modal-backdrop', function (e) {
+        isEvidenceBackdropMouseDown = (e.target === this);
+    });
+
     $(document).on('click', '#aura-petty-evidence-modal-close, #aura-petty-evidence-modal-backdrop', function (e) {
         e.preventDefault();
+        if (this.id === 'aura-petty-evidence-modal-backdrop') {
+            if (!isEvidenceBackdropMouseDown || e.target !== this) {
+                return;
+            }
+        }
         closeEvidenceModal();
+        isEvidenceBackdropMouseDown = false;
     });
 
     function switchPettyTab(tabName) {
@@ -1624,10 +1676,14 @@ jQuery(function ($) {
             : '<span class="aura-tip-badge aura-tip-badge--role" style="background:rgba(148,163,184,0.25);color:#cbd5e1;border:1px solid rgba(148,163,184,0.4);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;">🏢 Personal Interno (Área)</span>';
         const balance = parseFloat(r.delivered_amount || 0) - parseFloat(r.spent_amount || 0) - parseFloat(r.returned_amount || 0);
 
+        const avatarContent = (r.responsible_avatar_url && String(r.responsible_avatar_url).trim() !== '')
+            ? '<img src="' + escapeHtml(r.responsible_avatar_url) + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:block;">'
+            : (isThirdParty ? '👤' : '🏢');
+
         return '<div class="aura-tip-card">' +
             '<div class="aura-tip-card-header">' +
                 '<div class="aura-tip-avatar-box" style="background:' + (isThirdParty ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : 'linear-gradient(135deg, #475569 0%, #334155 100%)') + ';">' +
-                    (isThirdParty ? '👤' : '🏢') +
+                    avatarContent +
                 '</div>' +
                 '<div class="aura-tip-card-title-box">' +
                     '<div class="aura-tip-card-name">' + escapeHtml(r.responsible_name || 'Sin responsable') + '</div>' +
@@ -1854,7 +1910,7 @@ jQuery(function ($) {
         // ── BOTONES DEL PANEL LATERAL IZQUIERDO ──
         const sidebarButtons = [];
         sidebarButtons.push(
-            '<button type="button" class="button button-primary aura-child-side-btn aura-child-side-btn--primary aura-petty-pick" data-id="' + r.id + '" title="Cargar facturas y rendir gastos">' +
+            '<button type="button" class="btn btn-sm btn-primary btn-shimmer btn-lift aura-child-side-btn aura-child-side-btn--primary aura-petty-pick" data-id="' + r.id + '" data-tooltip="Cargar facturas y rendir gastos">' +
                 '<span class="dashicons dashicons-edit"></span>' +
                 '<span>Rendir Gastos</span>' +
             '</button>'
@@ -1862,7 +1918,7 @@ jQuery(function ($) {
 
         if (evidenceCount > 0 || (r.evidence_json && String(r.evidence_json).trim() !== '') || hasDriveOrReceipt) {
             sidebarButtons.push(
-                '<button type="button" class="button aura-child-side-btn aura-child-side-btn--evidence aura-petty-view-evidence" data-id="' + r.id + '" title="Ver comprobantes y respaldos adjuntos">' +
+                '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-child-side-btn aura-child-side-btn--evidence aura-petty-view-evidence" data-id="' + r.id + '" data-tooltip="Ver comprobantes y respaldos adjuntos">' +
                     '<span class="dashicons dashicons-visibility"></span>' +
                     '<span>Comprobantes (' + Math.max(1, evidenceCount) + ')</span>' +
                 '</button>'
@@ -1871,13 +1927,13 @@ jQuery(function ($) {
 
         if (canSubmit) {
             sidebarButtons.push(
-                '<button type="button" class="button button-secondary aura-child-side-btn aura-child-side-btn--submit aura-petty-action" data-id="' + r.id + '" data-status="submitted" title="Enviar rendición para revisión">' +
+                '<button type="button" class="btn btn-sm btn-emerald btn-lift aura-child-side-btn aura-child-side-btn--submit aura-petty-action" data-id="' + r.id + '" data-status="submitted" data-tooltip="Enviar rendición para revisión">' +
                     '<span class="dashicons dashicons-yes-alt"></span>' +
                     '<span>Enviar a Revisión</span>' +
                 '</button>'
             );
             sidebarButtons.push(
-                '<button type="button" class="button button-link-delete aura-child-side-btn aura-child-side-btn--delete aura-petty-delete" data-id="' + r.id + '" title="Eliminar este registro">' +
+                '<button type="button" class="btn btn-sm btn-danger btn-lift aura-child-side-btn aura-child-side-btn--delete aura-petty-delete" data-id="' + r.id + '" data-tooltip="Eliminar este registro">' +
                     '<span class="dashicons dashicons-trash"></span>' +
                     '<span>Eliminar Entrega</span>' +
                 '</button>'
@@ -1886,13 +1942,13 @@ jQuery(function ($) {
 
         if (canApprove) {
             sidebarButtons.push(
-                '<button type="button" class="button aura-child-side-btn aura-child-side-btn--approve aura-petty-action" data-id="' + r.id + '" data-status="approved" title="Aprobar rendición (paz y salvo)">' +
+                '<button type="button" class="btn btn-sm btn-emerald btn-shimmer btn-lift aura-child-side-btn aura-child-side-btn--approve aura-petty-action" data-id="' + r.id + '" data-status="approved" data-tooltip="Aprobar rendición (paz y salvo)">' +
                     '<span class="dashicons dashicons-yes"></span>' +
                     '<span>Aprobar Rendición</span>' +
                 '</button>'
             );
             sidebarButtons.push(
-                '<button type="button" class="button button-secondary aura-child-side-btn aura-child-side-btn--reject aura-petty-action" data-id="' + r.id + '" data-status="rejected" title="Rechazar rendición">' +
+                '<button type="button" class="btn btn-sm btn-rose btn-lift aura-child-side-btn aura-child-side-btn--reject aura-petty-action" data-id="' + r.id + '" data-status="rejected" data-tooltip="Rechazar rendición">' +
                     '<span class="dashicons dashicons-no"></span>' +
                     '<span>Rechazar</span>' +
                 '</button>'
@@ -1901,7 +1957,7 @@ jQuery(function ($) {
 
         if (canClose) {
             sidebarButtons.push(
-                '<button type="button" class="button button-secondary aura-child-side-btn aura-child-side-btn--close aura-petty-action" data-id="' + r.id + '" data-status="closed" title="Cerrar definitivamente la caja">' +
+                '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-child-side-btn aura-child-side-btn--close aura-petty-action" data-id="' + r.id + '" data-status="closed" data-tooltip="Cerrar definitivamente la caja">' +
                     '<span class="dashicons dashicons-lock"></span>' +
                     '<span>Cerrar Definitivamente</span>' +
                 '</button>'
@@ -2046,31 +2102,31 @@ jQuery(function ($) {
 
             // Botones de acción compactos para la fila principal
             const buttons = [
-                '<button type="button" class="button button-small aura-btn-action-icon aura-petty-pick" data-id="' + r.id + '" title="Cargar y rendir entrega #' + r.id + '" aria-label="Rendir"><span class="dashicons dashicons-edit"></span></button>'
+                '<button type="button" class="btn btn-sm btn-primary btn-lift aura-btn-action-icon aura-petty-pick" data-id="' + r.id + '" data-tooltip="Cargar y rendir entrega #' + r.id + '" aria-label="Rendir"><span class="dashicons dashicons-edit"></span></button>'
             ];
             if (evidenceCount > 0 || (r.evidence_json && String(r.evidence_json).trim() !== '') || hasDriveOrReceipt) {
-                buttons.push('<button type="button" class="button button-small aura-btn-action-icon aura-btn-action-evidence aura-petty-view-evidence" data-id="' + r.id + '" title="Ver comprobante(s) (' + Math.max(1, evidenceCount) + ')" aria-label="Comprobantes"><span class="dashicons dashicons-visibility"></span>' + (evidenceCount > 0 ? '<span class="aura-btn-badge-count">' + evidenceCount + '</span>' : '') + '</button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-secondary btn-lift aura-btn-action-icon aura-btn-action-evidence aura-petty-view-evidence" data-id="' + r.id + '" data-tooltip="Ver comprobante(s) (' + Math.max(1, evidenceCount) + ')" aria-label="Comprobantes"><span class="dashicons dashicons-visibility"></span>' + (evidenceCount > 0 ? '<span class="aura-btn-badge-count">' + evidenceCount + '</span>' : '') + '</button>');
             }
             if (canSubmit) {
-                buttons.push('<button type="button" class="button button-small aura-btn-action-icon aura-btn-action-submit aura-petty-action" data-id="' + r.id + '" data-status="submitted" title="Enviar para aprobación" aria-label="Enviar"><span class="dashicons dashicons-yes-alt"></span></button>');
-                buttons.push('<button type="button" class="button button-small button-link-delete aura-btn-action-icon aura-petty-delete" data-id="' + r.id + '" title="Eliminar entrega #' + r.id + '" aria-label="Eliminar"><span class="dashicons dashicons-trash"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-emerald btn-lift aura-btn-action-icon aura-btn-action-submit aura-petty-action" data-id="' + r.id + '" data-status="submitted" data-tooltip="Enviar para aprobación" aria-label="Enviar"><span class="dashicons dashicons-yes-alt"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-danger btn-lift aura-btn-action-icon aura-petty-delete" data-id="' + r.id + '" data-tooltip="Eliminar entrega #' + r.id + '" aria-label="Eliminar"><span class="dashicons dashicons-trash"></span></button>');
             }
             if (canApprove) {
-                buttons.push('<button type="button" class="button button-small aura-btn-action-icon aura-btn-action-approve aura-petty-action" data-id="' + r.id + '" data-status="approved" title="Aprobar rendición" aria-label="Aprobar"><span class="dashicons dashicons-yes"></span></button>');
-                buttons.push('<button type="button" class="button button-small aura-btn-action-icon aura-btn-action-reject aura-petty-action" data-id="' + r.id + '" data-status="rejected" title="Rechazar rendición" aria-label="Rechazar"><span class="dashicons dashicons-no"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-emerald btn-shimmer btn-lift aura-btn-action-icon aura-btn-action-approve aura-petty-action" data-id="' + r.id + '" data-status="approved" data-tooltip="Aprobar rendición" aria-label="Aprobar"><span class="dashicons dashicons-yes"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-rose btn-lift aura-btn-action-icon aura-btn-action-reject aura-petty-action" data-id="' + r.id + '" data-status="rejected" data-tooltip="Rechazar rendición" aria-label="Rechazar"><span class="dashicons dashicons-no"></span></button>');
             }
             if (canClose) {
-                buttons.push('<button type="button" class="button button-small aura-btn-action-icon aura-btn-action-close aura-petty-action" data-id="' + r.id + '" data-status="closed" title="Cerrar definitivamente" aria-label="Cerrar"><span class="dashicons dashicons-lock"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-secondary btn-lift aura-btn-action-icon aura-btn-action-close aura-petty-action" data-id="' + r.id + '" data-status="closed" data-tooltip="Cerrar definitivamente" aria-label="Cerrar"><span class="dashicons dashicons-lock"></span></button>');
             }
 
             const isThirdParty = (r.counterparty_id && parseInt(r.counterparty_id, 10) > 0);
             const respBadge = isThirdParty 
-                ? '<span class="aura-pill aura-pill--info" style="font-size:10px;margin-left:4px;padding:1px 5px;border-radius:5px;font-weight:600;">Tercero</span>' 
-                : '<span class="aura-pill aura-pill--muted" style="font-size:10px;margin-left:4px;padding:1px 5px;border-radius:5px;font-weight:600;">Interno</span>';
+                ? '<span class="badge badge-indigo" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:600;">Tercero</span>' 
+                : '<span class="badge badge-slate" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:600;">Interno</span>';
 
             const typeBadge = isProgram
-                ? '<span class="aura-pill aura-pill--program" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:700;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;" title="Presupuesto de Programa (Largo plazo)"><span class="dashicons dashicons-portfolio" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Programa</span>'
-                : '<span class="aura-pill aura-pill--errand" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:600;background:#f8fafc;color:#475569;border:1px solid #e2e8f0;" title="Compra puntual / Diligencia (Corto plazo)"><span class="dashicons dashicons-cart" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Compra</span>';
+                ? '<span class="badge badge-blue" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:700;" title="Presupuesto de Programa (Largo plazo)"><span class="dashicons dashicons-portfolio" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Programa</span>'
+                : '<span class="badge badge-slate" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:600;" title="Compra puntual / Diligencia (Corto plazo)"><span class="dashicons dashicons-cart" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Compra</span>';
 
             const isOverdue = parseInt(r.is_overdue, 10) === 1 && r.status !== 'approved' && r.status !== 'closed';
             const dueDateStr = (r.due_date || '').slice(0, 10) || '—';
@@ -2099,10 +2155,12 @@ jQuery(function ($) {
             const respName = r.responsible_name || '?';
             let avatarHtml = '';
             if (r.responsible_avatar_url && String(r.responsible_avatar_url).trim() !== '') {
-                avatarHtml = '<img src="' + escapeHtml(r.responsible_avatar_url) + '" alt="' + escapeHtml(respName) + '" class="aura-responsible-avatar-img" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;margin-right:5px;border:1px solid #cbd5e1;" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'inline-flex\';">' +
-                    '<span class="aura-responsible-avatar-icon" style="display:none;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';flex-shrink:0;margin-right:5px;"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span></span>';
+                avatarHtml = '<span class="aura-responsible-avatar-wrap" title="' + escapeHtml(respName) + '">' +
+                    '<img src="' + escapeHtml(r.responsible_avatar_url) + '" alt="' + escapeHtml(respName) + '" class="aura-responsible-avatar-img" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'inline-flex\';">' +
+                    '<span class="aura-responsible-avatar-icon" style="display:none;background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span></span>' +
+                '</span>';
             } else {
-                avatarHtml = '<span class="aura-responsible-avatar-icon" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';flex-shrink:0;margin-right:5px;"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span></span>';
+                avatarHtml = '<span class="aura-responsible-avatar-wrap" style="background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';"><span class="aura-responsible-avatar-icon"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span></span></span>';
             }
 
             // ── Barra micro de progreso entregado vs gastado
@@ -2137,8 +2195,8 @@ jQuery(function ($) {
                 (hasDriveOrReceipt ? '<span class="dashicons dashicons-paperclip" style="font-size:11px;width:11px;height:11px;color:#0284c7;flex-shrink:0;" title="Tiene comprobante adjunto"></span>' : '') +
             '</span>';
 
-            // Fila principal con clase .aura-parent-row
-            html.push('<tr class="aura-parent-row" data-id="' + r.id + '">' +
+            // Fila principal con clase .aura-parent-row y elevación .table-row-hover-lift
+            html.push('<tr class="aura-parent-row table-row-hover-lift" data-id="' + r.id + '">' +
                 '<td class="column-toggle" style="text-align:center;white-space:nowrap;">' +
                     '<button type="button" class="aura-row-toggle" data-id="' + r.id + '" aria-expanded="false" title="Expandir detalles de entrega #' + r.id + '">' +
                         '<span class="dashicons dashicons-arrow-right-alt2"></span>' +
@@ -2439,7 +2497,30 @@ jQuery(function ($) {
     }
 
     function reimbursementStatusBadge(status) {
-        return '<span class="aura-reimburse-status is-' + escapeHtml(status) + '">' + escapeHtml(reimbursementStatusLabel(status)) + '</span>';
+        switch (String(status).toLowerCase()) {
+            case 'paid':
+                return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
+                    '<span class="traffic-dot traffic-dot-success"></span>' +
+                    '<span class="badge badge-emerald">Pagado</span>' +
+                '</span>';
+            case 'partial':
+                return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
+                    '<span class="traffic-dot traffic-dot-warning"></span>' +
+                    '<span class="badge badge-amber">Parcial</span>' +
+                '</span>';
+            case 'pending':
+                return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
+                    '<span class="traffic-dot traffic-dot-danger"></span>' +
+                    '<span class="badge badge-rose">Pendiente</span>' +
+                '</span>';
+            case 'cancelled':
+                return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
+                    '<span class="traffic-dot traffic-dot-danger"></span>' +
+                    '<span class="badge badge-slate">Cancelado</span>' +
+                '</span>';
+            default:
+                return '<span class="badge badge-slate">' + escapeHtml(reimbursementStatusLabel(status)) + '</span>';
+        }
     }
 
     function fillReimburseAccountOptions(accounts) {
@@ -2633,7 +2714,7 @@ jQuery(function ($) {
         }
 
         if (!rows || !rows.length) {
-            $reimbursementsTableBody.html('<tr><td colspan="8">Sin reembolsos registrados.</td></tr>');
+            $reimbursementsTableBody.html('<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--aura-text-muted,#64748b);">Sin reembolsos registrados.</td></tr>');
             return;
         }
 
@@ -2646,18 +2727,20 @@ jQuery(function ($) {
             const actions = [];
 
             if (canPay && remaining > 0) {
-                actions.push('<button type="button" class="button button-small aura-reimburse-pay-pick" data-id="' + r.id + '" data-remaining="' + remaining + '" title="Registrar pago"><span class="dashicons dashicons-money-alt"></span></button>');
+                actions.push('<button type="button" class="btn btn-sm btn-primary btn-shimmer btn-lift aura-reimburse-pay-pick" data-id="' + r.id + '" data-remaining="' + remaining + '" data-tooltip="Registrar pago ($' + escapeHtml(formatNumber(remaining)) + ')" aria-label="Pagar">' +
+                    '<span class="dashicons dashicons-money-alt"></span> <span>Pagar</span>' +
+                '</button>');
             }
 
-            return '<tr>' +
-                '<td>' + escapeHtml(String(r.created_at || '').slice(0, 10)) + '</td>' +
-                '<td>' + escapeHtml(r.person_name || ('Tercero #' + (r.counterparty_id || r.person_user_id || 'N/A'))) + '</td>' +
-                '<td><strong>' + escapeHtml(originText) + '</strong><br><small>' + escapeHtml(r.origin_description || '') + '</small></td>' +
-                '<td>' + escapeHtml(formatNumber(owed)) + '</td>' +
-                '<td>' + escapeHtml(formatNumber(paid)) + '</td>' +
-                '<td><strong>' + escapeHtml(formatNumber(remaining)) + '</strong></td>' +
+            return '<tr class="table-row-hover-lift">' +
+                '<td style="white-space:nowrap;font-size:12px;color:var(--aura-text-muted,#64748b);"><span class="dashicons dashicons-calendar-alt" style="font-size:13px;width:13px;height:13px;color:#94a3b8;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(String(r.created_at || '').slice(0, 10)) + '</td>' +
+                '<td><strong style="color:var(--aura-text-heading,#0f172a);font-size:13px;">' + escapeHtml(r.person_name || ('Tercero #' + (r.counterparty_id || r.person_user_id || 'N/A'))) + '</strong></td>' +
+                '<td><span class="badge badge-slate" style="font-weight:700;">' + escapeHtml(originText) + '</span><br><small style="color:var(--aura-text-muted,#64748b);display:block;margin-top:2px;">' + escapeHtml(r.origin_description || '') + '</small></td>' +
+                '<td style="font-weight:600;color:var(--aura-text-heading,#0f172a);">$ ' + escapeHtml(formatNumber(owed)) + '</td>' +
+                '<td style="color:#10b981;font-weight:600;">$ ' + escapeHtml(formatNumber(paid)) + '</td>' +
+                '<td><strong style="color:' + (remaining > 0 ? '#ef4444' : '#10b981') + ';font-size:13px;">$ ' + escapeHtml(formatNumber(remaining)) + '</strong></td>' +
                 '<td>' + reimbursementStatusBadge(r.status) + '</td>' +
-                '<td><div class="aura-reimburse-actions">' + actions.join('') + '</div></td>' +
+                '<td><div class="aura-reimburse-actions" style="display:inline-flex;gap:6px;align-items:center;">' + actions.join('') + '</div></td>' +
                 '</tr>';
         });
 
@@ -3253,23 +3336,23 @@ jQuery(function ($) {
         );
 
         renderSimpleRows($('#aura-report-accounts-table tbody'), accounts, 5, function (row) {
-            return '<tr>' +
-                '<td><strong>' + escapeHtml(row.name || '') + '</strong><br><small>' + escapeHtml(typeLabel(row.account_type || 'custom')) + '</small></td>' +
-                '<td>' + escapeHtml(String(row.currency || '').toUpperCase()) + '</td>' +
+            return '<tr class="table-row-hover-lift">' +
+                '<td><strong>' + escapeHtml(row.name || '') + '</strong><br><small style="color:var(--aura-text-muted,#64748b);">' + escapeHtml(typeLabel(row.account_type || 'custom')) + '</small></td>' +
+                '<td><span class="badge badge-slate" style="font-weight:700;">' + escapeHtml(String(row.currency || '').toUpperCase()) + '</span></td>' +
                 '<td>' + escapeHtml(formatNumber(row.inflows || 0)) + '</td>' +
                 '<td>' + escapeHtml(formatNumber(row.outflows || 0)) + '</td>' +
-                '<td><strong>' + escapeHtml(formatNumber(row.current_balance || 0)) + '</strong></td>' +
+                '<td><strong style="color:var(--aura-text-heading,#0f172a);">' + escapeHtml(formatNumber(row.current_balance || 0)) + '</strong></td>' +
                 '</tr>';
         });
 
         renderSimpleRows($('#aura-report-currency-table tbody'), currencies, 3, function (row) {
-            return '<tr><td><strong>' + escapeHtml(String(row.currency || '').toUpperCase()) + '</strong></td><td>' +
-                escapeHtml(row.account_count) + '</td><td>' + escapeHtml(formatNumber(row.total_balance || 0)) + '</td></tr>';
+            return '<tr class="table-row-hover-lift"><td><span class="badge badge-indigo" style="font-weight:700;">' + escapeHtml(String(row.currency || '').toUpperCase()) + '</span></td><td>' +
+                escapeHtml(row.account_count) + '</td><td><strong style="color:var(--aura-text-heading,#0f172a);">' + escapeHtml(formatNumber(row.total_balance || 0)) + '</strong></td></tr>';
         });
 
         renderSimpleRows($('#aura-report-type-table tbody'), types, 3, function (row) {
-            return '<tr><td>' + typeBadge(row.account_type || 'custom') + '</td><td>' +
-                escapeHtml(row.account_count) + '</td><td>' + escapeHtml(formatNumber(row.total_balance || 0)) + '</td></tr>';
+            return '<tr class="table-row-hover-lift"><td>' + typeBadge(row.account_type || 'custom') + '</td><td>' +
+                escapeHtml(row.account_count) + '</td><td><strong style="color:var(--aura-text-heading,#0f172a);">' + escapeHtml(formatNumber(row.total_balance || 0)) + '</strong></td></tr>';
         });
 
         window.auraBudgetReportCache = budget; // Store for inline editing
@@ -3295,12 +3378,7 @@ jQuery(function ($) {
             const ratioSafe = Math.max(0, ratio);
             const fill = Math.min(100, ratioSafe);
 
-            let toneClass = 'is-green';
-            if (ratioSafe >= 90) {
-                toneClass = 'is-red';
-            } else if (ratioSafe >= 70) {
-                toneClass = 'is-orange';
-            }
+            const fillModifier = ratioSafe >= 90 ? 'micro-progress-fill--rose' : (ratioSafe >= 70 ? 'micro-progress-fill--amber' : 'micro-progress-fill--emerald');
 
             const percentText = (Math.round(ratioSafe * 10) / 10).toFixed(1).replace('.0', '') + '%';
             const progressHint = limit > 0
@@ -3312,14 +3390,14 @@ jQuery(function ($) {
                 limitHtml = '<input type="number" class="aura-inline-budget-month" data-month="' + row.month_num + '" value="' + (row.limit || 0) + '" style="width:100px;">';
             }
 
-            return '<tr>' +
+            return '<tr class="table-row-hover-lift">' +
                 '<td><strong>' + escapeHtml(monthNames[(parseInt(row.month_num, 10) || 1) - 1]) + '</strong></td>' +
                 '<td>' + limitHtml + '</td>' +
                 '<td>' + escapeHtml(formatNumber(row.spent || 0)) + '</td>' +
-                '<td><span class="' + (isNegative ? 'aura-report-negative' : 'aura-report-positive') + '">' + escapeHtml(formatNumber(row.remaining || 0)) + '</span></td>' +
-                '<td><div class="aura-budget-progress ' + toneClass + '" title="' + escapeHtml(progressHint) + '">' +
-                '<span class="aura-budget-progress__bar-wrap"><span class="aura-budget-progress__bar" style="width:' + fill + '%"></span></span>' +
-                '<span class="aura-budget-progress__label">' + escapeHtml(percentText) + '</span>' +
+                '<td><span class="' + (isNegative ? 'badge badge-rose' : 'badge badge-emerald') + '">' + escapeHtml(formatNumber(row.remaining || 0)) + '</span></td>' +
+                '<td><div style="display:flex;align-items:center;gap:8px;" data-tooltip="' + escapeHtml(progressHint) + '">' +
+                '<div class="micro-progress-bar" style="flex:1;"><div class="micro-progress-fill ' + fillModifier + '" style="width:' + fill + '%;"></div></div>' +
+                '<span style="font-size:12px;font-weight:700;color:var(--aura-text-muted,#475569);min-width:38px;text-align:right;">' + escapeHtml(percentText) + '</span>' +
                 '</div></td>' +
                 '</tr>';
         });
@@ -3778,8 +3856,19 @@ jQuery(function ($) {
         $('#aura-reimburse-pay-receipt-preview').hide();
     });
 
-    $(document).on('click', '[data-modal-close]', function () {
+    let isBackdropMouseDown = false;
+    $(document).on('mousedown', '.aura-modal-overlay, .aura-finance-modal__backdrop', function (e) {
+        isBackdropMouseDown = (e.target === this);
+    });
+
+    $(document).on('click', '[data-modal-close]', function (e) {
+        if ($(this).hasClass('aura-modal-overlay') || $(this).hasClass('aura-finance-modal__backdrop')) {
+            if (!isBackdropMouseDown || e.target !== this) {
+                return;
+            }
+        }
         window.AuraUI.closeModal($(this).data('modal-close'));
+        isBackdropMouseDown = false;
     });
 
     $(document).on('keydown', function (e) {
@@ -4183,66 +4272,76 @@ jQuery(function ($) {
             const foreignCurr = String(rec.foreign_currency || 'USD').toUpperCase();
             const foreignMeta = getForeignCurrencyMeta(foreignCurr);
             const isBuy = rec.direction === 'local_to_usd' || rec.direction.indexOf('to_' + foreignCurr.toLowerCase()) !== -1;
-            const badgeClass = isBuy ? 'aura-badge-green' : 'aura-badge-indigo';
+            const badgeClass = isBuy ? 'badge-emerald' : 'badge-indigo';
+            const badgeIcon = isBuy ? 'dashicons-cart' : 'dashicons-money-alt';
             const badgeLabel = isBuy ? ('Compra (Local ➔ ' + foreignCurr + ')') : ('Venta (' + foreignCurr + ' ➔ Local)');
             const isReverted = rec.status === 'reverted';
             
             const foreignAmt = parseFloat(rec.amount_foreign || rec.amount_usd || 0);
             const sourceAmountHtml = isBuy
-                ? '<span style="color:#dc2626;font-weight:700;">- ' + formatNumber(rec.amount_local) + ' ' + escapeHtml(rec.source_currency) + '</span>'
-                : '<span style="color:#dc2626;font-weight:700;">- ' + foreignMeta.symbol + ' ' + formatNumber(foreignAmt) + ' ' + foreignCurr + '</span>';
+                ? '<span style="color:#ef4444;font-weight:700;">- ' + formatNumber(rec.amount_local) + ' ' + escapeHtml(rec.source_currency) + '</span>'
+                : '<span style="color:#ef4444;font-weight:700;">- ' + foreignMeta.symbol + ' ' + formatNumber(foreignAmt) + ' ' + foreignCurr + '</span>';
 
             const targetAmountHtml = isBuy
-                ? '<span style="color:#16a34a;font-weight:700;">+ ' + foreignMeta.symbol + ' ' + formatNumber(foreignAmt) + ' ' + foreignCurr + '</span>'
-                : '<span style="color:#16a34a;font-weight:700;">+ ' + formatNumber(rec.amount_local) + ' ' + escapeHtml(rec.target_currency) + '</span>';
+                ? '<span style="color:#10b981;font-weight:700;">+ ' + foreignMeta.symbol + ' ' + formatNumber(foreignAmt) + ' ' + foreignCurr + '</span>'
+                : '<span style="color:#10b981;font-weight:700;">+ ' + formatNumber(rec.amount_local) + ' ' + escapeHtml(rec.target_currency) + '</span>';
 
             const rateHtml = '1 ' + foreignCurr + ' = ' + formatNumber(rec.exchange_rate) + ' ' + escapeHtml(isBuy ? rec.source_currency : rec.target_currency);
 
-            // Estado Badge
-            let statusBadgeHtml = '<span class="aura-badge aura-badge-green" style="font-size:11px;padding:3px 8px;border-radius:6px;font-weight:600;">Completada</span>';
+            // Estado Badge con Semáforo Canónico
+            let statusBadgeHtml = '<span class="status-traffic-light" data-tooltip="Operación contable confirmada y conciliada">' +
+                '<span class="traffic-dot traffic-dot-success"></span>' +
+                '<span class="badge badge-emerald"><span class="dashicons dashicons-yes-alt" style="font-size:12px;width:12px;height:12px;margin-right:3px;vertical-align:middle;"></span>Completada</span>' +
+            '</span>';
             if (isReverted) {
-                const revertTooltip = 'Revertida por ' + escapeHtml(rec.reverted_by_name || 'Auditor') + (rec.reverted_at ? ' el ' + escapeHtml(rec.reverted_at) : '') + (rec.revert_reason ? ': ' + escapeHtml(rec.revert_reason) : '');
-                statusBadgeHtml = '<span class="aura-badge aura-badge-red" style="font-size:11px;padding:3px 8px;border-radius:6px;font-weight:600;cursor:help;" title="' + revertTooltip + '">Revertida</span>';
+                const revertTooltip = 'Revertida por ' + (rec.reverted_by_name || 'Auditor') + (rec.reverted_at ? ' el ' + rec.reverted_at : '') + (rec.revert_reason ? ': ' + rec.revert_reason : '');
+                statusBadgeHtml = '<span class="status-traffic-light" data-tooltip="' + escapeHtml(revertTooltip) + '">' +
+                    '<span class="traffic-dot traffic-dot-danger"></span>' +
+                    '<span class="badge badge-rose"><span class="dashicons dashicons-undo" style="font-size:12px;width:12px;height:12px;margin-right:3px;vertical-align:middle;"></span>Revertida</span>' +
+                '</span>';
             }
 
-            // Acciones
-            let actionsHtml = '<div style="display:inline-flex;gap:4px;justify-content:flex-end;">';
+            // Acciones con botones WOW del Design System
+            let actionsHtml = '<div style="display:inline-flex;gap:6px;justify-content:flex-end;align-items:center;">';
             // 1. Ver Detalle (siempre disponible)
-            actionsHtml += '<button type="button" class="button button-small aura-exchange-action-view" data-id="' + rec.id + '" title="Ver detalle y auditoría contable">' +
-                '<span class="dashicons dashicons-visibility" style="vertical-align:middle;font-size:15px;width:15px;height:15px;"></span>' +
+            actionsHtml += '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-exchange-action-view" data-id="' + rec.id + '" data-tooltip="Ver detalle y auditoría contable" aria-label="Ver detalle">' +
+                '<span class="dashicons dashicons-visibility" style="vertical-align:middle;font-size:14px;width:14px;height:14px;"></span>' +
             '</button>';
 
             // 2. Editar Justificación o Datos
             if (canEdit && !isReverted) {
-                actionsHtml += '<button type="button" class="button button-small aura-exchange-action-edit" data-id="' + rec.id + '" title="Editar operación o notas">' +
-                    '<span class="dashicons dashicons-edit" style="vertical-align:middle;font-size:15px;width:15px;height:15px;color:#0284c7;"></span>' +
+                actionsHtml += '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-exchange-action-edit" data-id="' + rec.id + '" data-tooltip="Editar justificación o notas" aria-label="Editar">' +
+                    '<span class="dashicons dashicons-edit" style="vertical-align:middle;font-size:14px;width:14px;height:14px;color:#0284c7;"></span>' +
                 '</button>';
             }
 
             // 3. Revertir Operación
             if (canDelete && !isReverted) {
-                actionsHtml += '<button type="button" class="button button-small aura-exchange-action-revert" data-id="' + rec.id + '" title="Anular y revertir saldos contables" style="color:#dc2626;">' +
-                    '<span class="dashicons dashicons-undo" style="vertical-align:middle;font-size:15px;width:15px;height:15px;"></span>' +
+                actionsHtml += '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-exchange-action-revert" data-id="' + rec.id + '" data-tooltip="Anular y revertir saldos contables" aria-label="Revertir" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">' +
+                    '<span class="dashicons dashicons-undo" style="vertical-align:middle;font-size:14px;width:14px;height:14px;"></span>' +
                 '</button>';
             }
 
             // 4. Eliminar Registro definitivo si ya está revertido
             if (canDelete && isReverted) {
-                actionsHtml += '<button type="button" class="button button-small aura-exchange-action-delete" data-id="' + rec.id + '" title="Eliminar definitivamente este registro" style="color:#94a3b8;">' +
-                    '<span class="dashicons dashicons-trash" style="vertical-align:middle;font-size:15px;width:15px;height:15px;"></span>' +
+                actionsHtml += '<button type="button" class="btn btn-sm btn-danger btn-lift aura-exchange-action-delete" data-id="' + rec.id + '" data-tooltip="Eliminar definitivamente este registro" aria-label="Eliminar">' +
+                    '<span class="dashicons dashicons-trash" style="vertical-align:middle;font-size:14px;width:14px;height:14px;"></span>' +
                 '</button>';
             }
 
             actionsHtml += '</div>';
 
-            const rowClass = isReverted ? ' class="aura-row-reverted" style="opacity:0.75;"' : '';
+            const rowClass = 'table-row-hover-lift' + (isReverted ? ' aura-row-reverted' : '');
+            const rowStyle = isReverted ? ' style="opacity:0.75;"' : '';
 
-            const rowHtml = '<tr' + rowClass + '>' +
-                '<td style="white-space:nowrap;font-size:12px;color:var(--aura-text-muted,#64748b);">' +
+            const rowHtml = '<tr class="' + rowClass + '"' + rowStyle + '>' +
+                '<td style="white-space:nowrap;font-size:12px;color:var(--aura-text-muted,#64748b);font-variant-numeric:tabular-nums;">' +
+                    '<span class="dashicons dashicons-calendar-alt" style="font-size:13px;width:13px;height:13px;margin-right:4px;vertical-align:middle;color:#94a3b8;"></span>' +
                     escapeHtml(rec.created_at || '—') +
                 '</td>' +
                 '<td>' +
-                    '<span class="aura-badge ' + badgeClass + '" style="font-size:11.5px;padding:3px 8px;border-radius:6px;font-weight:600;">' +
+                    '<span class="badge ' + badgeClass + '" style="font-size:11.5px;padding:3px 8px;border-radius:6px;font-weight:600;">' +
+                        '<span class="dashicons ' + badgeIcon + '" style="font-size:13px;width:13px;height:13px;margin-right:4px;vertical-align:middle;"></span>' +
                         escapeHtml(badgeLabel) +
                     '</span>' +
                 '</td>' +
@@ -4251,18 +4350,18 @@ jQuery(function ($) {
                     '<div style="font-size:12px;margin-top:2px;">' + sourceAmountHtml + '</div>' +
                 '</td>' +
                 '<td style="white-space:nowrap;font-weight:600;font-size:12.5px;color:var(--aura-text-heading,#0f172a);">' +
-                    rateHtml +
+                    '<span class="badge badge-slate" data-tooltip="Tasa pactada para la conversión contable" style="font-size:11.5px;font-weight:600;"><span class="dashicons dashicons-randomize" style="font-size:12px;width:12px;height:12px;margin-right:3px;vertical-align:middle;"></span>' + rateHtml + '</span>' +
                 '</td>' +
                 '<td>' +
                     '<strong>' + escapeHtml(rec.target_name || '—') + '</strong>' +
                     '<div style="font-size:12px;margin-top:2px;">' + targetAmountHtml + '</div>' +
                 '</td>' +
                 '<td style="font-size:12px;">' +
-                    '<span class="dashicons dashicons-admin-users" style="vertical-align:middle;font-size:15px;color:var(--aura-text-muted,#64748b);"></span> ' +
-                    escapeHtml(rec.user_name || 'Sistema') +
+                    '<div style="display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-admin-users" style="vertical-align:middle;font-size:15px;width:15px;height:15px;color:var(--aura-text-muted,#64748b);"></span> <span style="font-weight:500;">' +
+                    escapeHtml(rec.user_name || 'Sistema') + '</span></div>' +
                 '</td>' +
                 '<td style="font-size:12px;color:var(--aura-text-muted,#64748b);max-width:180px;word-break:break-word;">' +
-                    escapeHtml(rec.notes || '—') +
+                    (rec.notes ? '<span data-tooltip="' + escapeHtml(rec.notes) + '" style="cursor:help;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + escapeHtml(rec.notes) + '</span>' : '<span style="color:var(--aura-text-muted,#94a3b8);">—</span>') +
                 '</td>' +
                 '<td style="white-space:nowrap;">' +
                     statusBadgeHtml +
