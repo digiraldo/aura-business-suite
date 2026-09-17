@@ -149,7 +149,7 @@ jQuery(function ($) {
                 color = 'slate';
                 icon = 'dashicons-category';
         }
-        return '<span class="badge badge-' + color + '" style="display:inline-flex;align-items:center;gap:4px;">' +
+        return '<span class="badge badge-' + color + ' aura-tooltip-trigger" data-tooltip="Clasificación: ' + escapeHtml(typeLabel(type)) + '" style="display:inline-flex;align-items:center;gap:4px;cursor:help;">' +
             '<span class="dashicons ' + icon + '" style="font-size:12px;width:12px;height:12px;line-height:12px;"></span>' +
             '<span>' + escapeHtml(typeLabel(type)) + '</span>' +
         '</span>';
@@ -158,12 +158,12 @@ jQuery(function ($) {
     function statusBadge(active) {
         const isActive = parseInt(active, 10) === 1;
         if (isActive) {
-            return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
+            return '<span class="status-traffic-light aura-tooltip-trigger" data-tooltip="Cuenta activa y disponible para operaciones" style="display:inline-flex;align-items:center;gap:6px;cursor:help;">' +
                 '<span class="traffic-dot traffic-dot-success"></span>' +
                 '<span class="badge badge-emerald">Activa</span>' +
             '</span>';
         }
-        return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
+        return '<span class="status-traffic-light aura-tooltip-trigger" data-tooltip="Cuenta deshabilitada para operaciones" style="display:inline-flex;align-items:center;gap:6px;cursor:help;">' +
             '<span class="traffic-dot traffic-dot-danger"></span>' +
             '<span class="badge badge-rose">Inactiva</span>' +
         '</span>';
@@ -805,8 +805,63 @@ jQuery(function ($) {
         });
     }
 
+    function renderAccountTip(a) {
+        const typeLabels = {
+            'bank_account': 'Cuenta Bancaria',
+            'petty_cash': 'Caja Chica / Menor',
+            'contributions_fund': 'Fondo de Aportes',
+            'usd_cash': 'Efectivo USD',
+            'eur_cash': 'Efectivo EUR',
+            'cad_cash': 'Efectivo CAD',
+            'foreign_cash': 'Efectivo Divisas',
+            'custom': 'Personalizada'
+        };
+        const typeIcons = {
+            'bank_account': 'dashicons-building',
+            'petty_cash': 'dashicons-portfolio',
+            'contributions_fund': 'dashicons-groups',
+            'usd_cash': 'dashicons-money-alt',
+            'eur_cash': 'dashicons-money-alt',
+            'cad_cash': 'dashicons-money-alt',
+            'foreign_cash': 'dashicons-translation',
+            'custom': 'dashicons-admin-generic'
+        };
+        const tLabel = typeLabels[a.account_type] || a.account_type || 'Cuenta';
+        const tIcon = typeIcons[a.account_type] || 'dashicons-money-alt';
+        const curr = String(a.currency || 'COP').toUpperCase();
+        const initBal = parseFloat(a.initial_balance || 0);
+        const curBal = parseFloat(a.current_balance || 0);
+        const diffBal = curBal - initBal;
+        const isActive = parseInt(a.is_active, 10) === 1;
+
+        return '<div class="aura-tooltip-card" style="padding:12px;min-width:240px;max-width:300px;font-family:inherit;">' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e2e8f0;">' +
+                '<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#e0f2fe;color:#0284c7;flex-shrink:0;">' +
+                    '<span class="dashicons ' + tIcon + '" style="font-size:16px;width:16px;height:16px;"></span>' +
+                '</span>' +
+                '<div style="min-width:0;flex:1;">' +
+                    '<strong style="font-size:13px;color:#0f172a;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(a.name) + '</strong>' +
+                    '<small style="font-size:11px;color:#64748b;">' + escapeHtml(a.institution || 'Entidad financiera') + (a.account_number_masked ? ' • ' + escapeHtml(a.account_number_masked) : '') + '</small>' +
+                '</div>' +
+            '</div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11.5px;margin-bottom:8px;">' +
+                '<div><span style="color:#64748b;display:block;font-size:10px;text-transform:uppercase;font-weight:600;">Tipo</span><span style="color:#0f172a;font-weight:600;">' + escapeHtml(tLabel) + '</span></div>' +
+                '<div><span style="color:#64748b;display:block;font-size:10px;text-transform:uppercase;font-weight:600;">Moneda</span><span style="color:#0f172a;font-weight:600;">' + escapeHtml(curr) + '</span></div>' +
+                '<div><span style="color:#64748b;display:block;font-size:10px;text-transform:uppercase;font-weight:600;">Saldo Inicial</span><span style="color:#475569;">$' + escapeHtml(formatNumber(initBal)) + '</span></div>' +
+                '<div><span style="color:#64748b;display:block;font-size:10px;text-transform:uppercase;font-weight:600;">Saldo Actual</span><strong style="color:#0f172a;">$' + escapeHtml(formatNumber(curBal)) + '</strong></div>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid #e2e8f0;font-size:11px;">' +
+                '<span style="color:' + (diffBal >= 0 ? '#10b981' : '#ef4444') + ';font-weight:600;">' + (diffBal >= 0 ? '▲ +$' : '▼ -$') + escapeHtml(formatNumber(Math.abs(diffBal))) + ' variación</span>' +
+                '<span class="badge ' + (isActive ? 'badge-success' : 'badge-slate') + '" style="font-size:10px;padding:1px 6px;">' + (isActive ? '● Activa' : '○ Inactiva') + '</span>' +
+            '</div>' +
+        '</div>';
+    }
+
     function renderTable(accounts) {
         updateAccountsKpis(accounts);
+        if (!$tableBody.length) {
+            return;
+        }
 
         if ($.fn.DataTable && $.fn.DataTable.isDataTable('#aura-accounts-table')) {
             $('#aura-accounts-table').DataTable().destroy();
@@ -820,12 +875,16 @@ jQuery(function ($) {
 
         const rows = accounts.map(function (a) {
             const balance = formatNumber(a.current_balance || 0);
+            const tipCard = renderAccountTip(a);
 
             return '<tr class="table-row-hover-lift">' +
-                '<td><div class="aura-account-name"><strong>' + escapeHtml(a.name) + '</strong><small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.institution || 'Sin institución') + '</small></div></td>' +
+                '<td><div class="aura-account-name aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCard) + '" style="cursor:pointer;">' +
+                    '<strong>' + escapeHtml(a.name) + '</strong>' +
+                    '<small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.institution || 'Sin institución') + '</small>' +
+                '</div></td>' +
                 '<td>' + typeBadge(a.account_type) + '</td>' +
-                '<td><span class="badge badge-slate" style="font-weight:700;">' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</span></td>' +
-                '<td><div class="aura-account-balance"><strong style="font-size:13px;color:var(--aura-text-heading,#0f172a);">' + escapeHtml(balance) + '</strong><small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.account_number_masked || 'Sin número visible') + '</small></div></td>' +
+                '<td><span class="badge badge-slate aura-tooltip-trigger" data-tooltip="Moneda de registro: ' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '" style="font-weight:700;cursor:help;">' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</span></td>' +
+                '<td><div class="aura-account-balance aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCard) + '" style="cursor:pointer;"><strong style="font-size:13px;color:var(--aura-text-heading,#0f172a);">' + escapeHtml(balance) + '</strong><small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.account_number_masked || 'Sin número visible') + '</small></div></td>' +
                 '<td>' + statusBadge(a.is_active) + '</td>' +
                 '<td>' + renderActionButtons(a.id) + '</td>' +
                 '</tr>';
@@ -2121,12 +2180,12 @@ jQuery(function ($) {
 
             const isThirdParty = (r.counterparty_id && parseInt(r.counterparty_id, 10) > 0);
             const respBadge = isThirdParty 
-                ? '<span class="badge badge-indigo" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:600;">Tercero</span>' 
-                : '<span class="badge badge-slate" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:600;">Interno</span>';
+                ? '<span class="badge badge-indigo" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:600;">Tercero</span>' 
+                : '<span class="badge badge-slate" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:600;">Interno</span>';
 
             const typeBadge = isProgram
-                ? '<span class="badge badge-blue" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:700;" title="Presupuesto de Programa (Largo plazo)"><span class="dashicons dashicons-portfolio" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Programa</span>'
-                : '<span class="badge badge-slate" style="font-size:10px;margin-left:4px;padding:1px 6px;border-radius:5px;font-weight:600;" title="Compra puntual / Diligencia (Corto plazo)"><span class="dashicons dashicons-cart" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Compra</span>';
+                ? '<span class="badge badge-success" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:700;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;" title="Presupuesto de Programa (Largo plazo)"><span class="dashicons dashicons-portfolio" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Programa</span>'
+                : '<span class="badge badge-danger" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:700;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;" title="Compra puntual / Diligencia (Corto plazo)"><span class="dashicons dashicons-cart" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Compra</span>';
 
             const isOverdue = parseInt(r.is_overdue, 10) === 1 && r.status !== 'approved' && r.status !== 'closed';
             const dueDateStr = (r.due_date || '').slice(0, 10) || '—';
@@ -2151,16 +2210,18 @@ jQuery(function ($) {
                   '</span>'
                 : '<span style="color:#94a3b8;">—</span>';
 
-            // ── Avatar / Imagen de perfil o Icono predeterminado
+            // ── Avatar / Imagen de perfil con Aro Rojo (Compras) o Verde (Programas)
+            const ringClass = isProgram ? 'aura-avatar-ring--program' : 'aura-avatar-ring--purchase';
+            const ringTitle = isProgram ? 'Presupuesto de Programa' : 'Compras / Diligencias';
             const respName = r.responsible_name || '?';
             let avatarHtml = '';
             if (r.responsible_avatar_url && String(r.responsible_avatar_url).trim() !== '') {
-                avatarHtml = '<span class="aura-responsible-avatar-wrap" title="' + escapeHtml(respName) + '">' +
+                avatarHtml = '<span class="aura-responsible-avatar-wrap ' + ringClass + '" title="' + escapeHtml(respName) + ' (' + ringTitle + ')">' +
                     '<img src="' + escapeHtml(r.responsible_avatar_url) + '" alt="' + escapeHtml(respName) + '" class="aura-responsible-avatar-img" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'inline-flex\';">' +
                     '<span class="aura-responsible-avatar-icon" style="display:none;background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span></span>' +
                 '</span>';
             } else {
-                avatarHtml = '<span class="aura-responsible-avatar-wrap" style="background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';"><span class="aura-responsible-avatar-icon"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span></span></span>';
+                avatarHtml = '<span class="aura-responsible-avatar-wrap ' + ringClass + '" title="' + escapeHtml(respName) + ' (' + ringTitle + ')" style="background:' + (isThirdParty ? '#e0e7ff' : '#e0f2fe') + ';color:' + (isThirdParty ? '#4f46e5' : '#0284c7') + ';"><span class="aura-responsible-avatar-icon"><span class="dashicons ' + (isThirdParty ? 'dashicons-businessman' : 'dashicons-admin-users') + '" style="font-size:14px;width:14px;height:14px;line-height:14px;"></span></span></span>';
             }
 
             // ── Barra micro de progreso entregado vs gastado
@@ -2213,13 +2274,15 @@ jQuery(function ($) {
                         '<span style="font-size:12px;font-weight:600;color:#0f172a;">' + escapeHtml(r.account_name || '') + '</span>' +
                     '</span>' +
                 '</span></td>' +
-                '<td class="column-responsible"><span class="aura-responsible-cell aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCardHtml) + '" style="cursor:pointer;display:inline-flex;align-items:center;">' +
+                '<td class="column-responsible"><span class="aura-responsible-cell aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCardHtml) + '" style="cursor:pointer;">' +
                     avatarHtml +
-                    '<span>' +
-                        '<strong style="font-size:12px;color:#0f172a;">' + escapeHtml(r.responsible_name || '') + '</strong>' +
-                        respBadge +
-                        typeBadge +
-                    '</span>' +
+                    '<div style="display:flex;flex-direction:column;min-width:0;line-height:1.25;">' +
+                        '<strong style="font-size:12px;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;" title="' + escapeHtml(r.responsible_name || '') + '">' + escapeHtml(r.responsible_name || '') + '</strong>' +
+                        '<div style="display:flex;align-items:center;gap:4px;margin-top:2px;">' +
+                            respBadge +
+                            typeBadge +
+                        '</div>' +
+                    '</div>' +
                 '</span></td>' +
                 '<td class="column-purpose aura-col-desktop">' + purposeDisplay + '</td>' +
                 '<td class="column-delivered" style="text-align:right;"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyMoneyTip(r, 'delivered')) + '" style="cursor:help;">' +
@@ -2732,13 +2795,32 @@ jQuery(function ($) {
                 '</button>');
             }
 
+            if (paid === 0) {
+                actions.push('<button type="button" class="btn btn-sm btn-danger btn-lift aura-reimburse-delete" data-id="' + r.id + '" data-tooltip="Eliminar este reembolso" aria-label="Eliminar">' +
+                    '<span class="dashicons dashicons-trash"></span>' +
+                '</button>');
+            }
+
+            const personTip = '<div class="aura-tooltip-card" style="padding:10px;min-width:210px;">' +
+                '<div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:4px;">' + escapeHtml(r.person_name || 'Beneficiario') + '</div>' +
+                '<div style="font-size:11px;color:#64748b;margin-bottom:6px;">' + (r.counterparty_id ? 'Tercero Registrado' : 'Usuario Interno') + '</div>' +
+                (r.notes ? '<div style="font-size:11px;color:#475569;border-top:1px solid #e2e8f0;padding-top:6px;">' + escapeHtml(r.notes) + '</div>' : '') +
+            '</div>';
+
+            const debtTip = '<div class="aura-tooltip-card" style="padding:10px;min-width:220px;">' +
+                '<div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:6px;">Balance de Reembolso #' + r.id + '</div>' +
+                '<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;"><span>Monto Solicitado:</span><strong style="color:#0f172a;">$' + escapeHtml(formatNumber(owed)) + '</strong></div>' +
+                '<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;"><span>Total Pagado:</span><strong style="color:#10b981;">$' + escapeHtml(formatNumber(paid)) + '</strong></div>' +
+                '<div style="display:flex;justify-content:space-between;font-size:11.5px;border-top:1px solid #e2e8f0;padding-top:4px;margin-top:4px;"><span>Saldo Remanente:</span><strong style="color:' + (remaining > 0 ? '#ef4444' : '#10b981') + ';">$' + escapeHtml(formatNumber(remaining)) + '</strong></div>' +
+            '</div>';
+
             return '<tr class="table-row-hover-lift">' +
                 '<td style="white-space:nowrap;font-size:12px;color:var(--aura-text-muted,#64748b);"><span class="dashicons dashicons-calendar-alt" style="font-size:13px;width:13px;height:13px;color:#94a3b8;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(String(r.created_at || '').slice(0, 10)) + '</td>' +
-                '<td><strong style="color:var(--aura-text-heading,#0f172a);font-size:13px;">' + escapeHtml(r.person_name || ('Tercero #' + (r.counterparty_id || r.person_user_id || 'N/A'))) + '</strong></td>' +
-                '<td><span class="badge badge-slate" style="font-weight:700;">' + escapeHtml(originText) + '</span><br><small style="color:var(--aura-text-muted,#64748b);display:block;margin-top:2px;">' + escapeHtml(r.origin_description || '') + '</small></td>' +
-                '<td style="font-weight:600;color:var(--aura-text-heading,#0f172a);">$ ' + escapeHtml(formatNumber(owed)) + '</td>' +
-                '<td style="color:#10b981;font-weight:600;">$ ' + escapeHtml(formatNumber(paid)) + '</td>' +
-                '<td><strong style="color:' + (remaining > 0 ? '#ef4444' : '#10b981') + ';font-size:13px;">$ ' + escapeHtml(formatNumber(remaining)) + '</strong></td>' +
+                '<td><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(personTip) + '" style="cursor:pointer;"><strong style="color:var(--aura-text-heading,#0f172a);font-size:13px;">' + escapeHtml(r.person_name || ('Tercero #' + (r.counterparty_id || r.person_user_id || 'N/A'))) + '</strong></span></td>' +
+                '<td><span class="badge badge-slate aura-tooltip-trigger" data-tooltip="Origen: ' + escapeHtml(originText) + '" style="font-weight:700;cursor:help;">' + escapeHtml(originText) + '</span><br><small style="color:var(--aura-text-muted,#64748b);display:block;margin-top:2px;">' + escapeHtml(r.origin_description || '') + '</small></td>' +
+                '<td style="font-weight:600;color:var(--aura-text-heading,#0f172a);"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(debtTip) + '" style="cursor:pointer;">$ ' + escapeHtml(formatNumber(owed)) + '</span></td>' +
+                '<td style="color:#10b981;font-weight:600;"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(debtTip) + '" style="cursor:pointer;">$ ' + escapeHtml(formatNumber(paid)) + '</span></td>' +
+                '<td><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(debtTip) + '" style="cursor:pointer;"><strong style="color:' + (remaining > 0 ? '#ef4444' : '#10b981') + ';font-size:13px;">$ ' + escapeHtml(formatNumber(remaining)) + '</strong></span></td>' +
                 '<td>' + reimbursementStatusBadge(r.status) + '</td>' +
                 '<td><div class="aura-reimburse-actions" style="display:inline-flex;gap:6px;align-items:center;">' + actions.join('') + '</div></td>' +
                 '</tr>';
@@ -3854,6 +3936,33 @@ jQuery(function ($) {
         e.preventDefault();
         $('#aura-reimburse-pay-receipt').val('');
         $('#aura-reimburse-pay-receipt-preview').hide();
+    });
+
+    $(document).on('click', '.aura-reimburse-delete', function (e) {
+        e.preventDefault();
+        const id = parseInt($(this).data('id'), 10);
+        if (!id) {
+            return;
+        }
+
+        if (!window.confirm('¿Estás seguro de que deseas eliminar este reembolso? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        $.post(auraFinancialAccounts.ajaxUrl, {
+            action: 'aura_finance_reimbursements_delete',
+            id: id,
+            nonce: auraFinancialAccounts.nonce
+        }).done(function (res) {
+            if (res && res.success) {
+                showFeedback(res.data && res.data.message ? res.data.message : 'Reembolso eliminado correctamente.', true);
+                loadReimbursements();
+            } else {
+                showFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
+            }
+        }).fail(function () {
+            showFeedback(auraFinancialAccounts.i18n.error, false);
+        });
     });
 
     let isBackdropMouseDown = false;

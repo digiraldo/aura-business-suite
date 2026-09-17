@@ -43,6 +43,7 @@ class Aura_Financial_Accounts {
         add_action('wp_ajax_aura_finance_reimbursements_list', array(__CLASS__, 'ajax_list_reimbursements'));
         add_action('wp_ajax_aura_finance_reimbursements_create', array(__CLASS__, 'ajax_create_reimbursement'));
         add_action('wp_ajax_aura_finance_reimbursements_pay', array(__CLASS__, 'ajax_pay_reimbursement'));
+        add_action('wp_ajax_aura_finance_reimbursements_delete', array(__CLASS__, 'ajax_delete_reimbursement'));
         add_action('wp_ajax_aura_finance_third_parties_list', array(__CLASS__, 'ajax_list_third_parties'));
         add_action('wp_ajax_aura_finance_third_parties_search', array(__CLASS__, 'ajax_search_third_parties'));
         add_action('wp_ajax_aura_finance_third_parties_create', array(__CLASS__, 'ajax_create_third_party'));
@@ -2909,6 +2910,37 @@ class Aura_Financial_Accounts {
             'transaction_id' => $created_tx_id,
             'receipt_url'    => $receipt_url,
         ));
+    }
+
+    public static function ajax_delete_reimbursement() {
+        self::check_ajax_permissions();
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_reimbursements';
+
+        $id = isset($_POST['id']) ? absint($_POST['id']) : 0;
+
+        if ($id <= 0) {
+            wp_send_json_error(array('message' => __('ID inválido.', 'aura-suite')));
+        }
+
+        $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id = %d", $id));
+
+        if (!$row) {
+            wp_send_json_error(array('message' => __('El reembolso no existe o ya fue eliminado.', 'aura-suite')));
+        }
+
+        if ((float) $row->paid_amount > 0) {
+            wp_send_json_error(array('message' => __('No se puede eliminar un reembolso que ya tiene pagos registrados para mantener la integridad contable.', 'aura-suite')));
+        }
+
+        $deleted = $wpdb->delete($table, array('id' => $id), array('%d'));
+
+        if ($deleted === false) {
+            wp_send_json_error(array('message' => __('Error al eliminar el reembolso de la base de datos.', 'aura-suite')));
+        }
+
+        wp_send_json_success(array('message' => __('Reembolso eliminado correctamente.', 'aura-suite')));
     }
 
     public static function create_reimbursement($args) {

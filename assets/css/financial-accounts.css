@@ -1697,46 +1697,58 @@ table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::
 
 #aura-petty-cash-table th.column-responsible,
 #aura-petty-cash-table td.column-responsible {
-    max-width: 140px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    width: 240px !important;
+    min-width: 220px !important;
+    max-width: 260px !important;
+    overflow: visible !important;
+    white-space: normal !important;
 }
 
 #aura-petty-cash-table .aura-responsible-cell {
-    display: inline-flex !important;
+    display: flex !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 8px !important;
     max-width: 100% !important;
 }
 
 #aura-petty-cash-table .aura-responsible-avatar-wrap {
-    width: 26px !important;
-    height: 26px !important;
-    min-width: 26px !important;
-    max-width: 26px !important;
-    min-height: 26px !important;
-    max-height: 26px !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    max-width: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
     border-radius: 50% !important;
     overflow: hidden !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     flex-shrink: 0 !important;
-    margin-right: 6px !important;
-    border: 1px solid #cbd5e1 !important;
+    margin-right: 2px !important;
+    border: 1.5px solid #cbd5e1 !important;
     box-sizing: border-box !important;
     background: #f1f5f9;
+}
+
+#aura-petty-cash-table .aura-responsible-avatar-wrap.aura-avatar-ring--purchase {
+    border: 2.5px solid #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+}
+
+#aura-petty-cash-table .aura-responsible-avatar-wrap.aura-avatar-ring--program {
+    border: 2.5px solid #10b981 !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
 }
 
 #aura-petty-cash-table .aura-responsible-avatar-img,
 #aura-petty-cash-table td.column-responsible img,
 #aura-petty-cash-table td.column-responsible .aura-responsible-cell img {
-    width: 26px !important;
-    height: 26px !important;
-    min-width: 26px !important;
-    max-width: 26px !important;
-    min-height: 26px !important;
-    max-height: 26px !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
     border-radius: 50% !important;
     object-fit: cover !important;
     display: block !important;
@@ -1746,14 +1758,14 @@ table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::
 }
 
 #aura-petty-cash-table .aura-responsible-avatar-icon {
-    width: 26px !important;
-    height: 26px !important;
-    min-width: 26px !important;
-    max-width: 26px !important;
-    min-height: 26px !important;
-    max-height: 26px !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
     border-radius: 50% !important;
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     justify-content: center !important;
     flex-shrink: 0 !important;

@@ -1222,7 +1222,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <textarea id="aura-petty-notes" class="aura-input" rows="2" placeholder="<?php esc_attr_e('Ej: Gastos operativos de programa, viáticos de transporte, suministros de emergencia...', 'aura-suite'); ?>" required></textarea>
                                 </div>
 
-                                <div class="aura-form-field aura-form-field--span2">
+                                <div class="aura-form-field aura-form-field--span2" style="display:none;">
                                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
                                         <label for="aura-petty-delivery-receipt" style="margin-bottom:0;">
                                             <strong><?php _e('Comprobante de Egreso / Transferencia Inicial', 'aura-suite'); ?></strong>
@@ -1420,54 +1420,39 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </template>
                     </div>
 
-                    <!-- ZONA DE COMPROBANTES DIGITALES (NUBE GOOGLE DRIVE / LOCAL) -->
-                    <div class="aura-petty-cloud-section">
+                    <!-- AVISO: COMPROBANTES SE GESTIONAN EN TRANSACCIONES -->
+                    <div class="aura-callout aura-callout--info" style="margin-top:16px;padding:12px 16px;border-radius:8px;background:#f0f9ff;border:1px solid #bae6fd;display:flex;align-items:center;gap:12px;">
+                        <span class="dashicons dashicons-info" style="color:#0284c7;font-size:22px;width:22px;height:22px;line-height:22px;flex-shrink:0;"></span>
+                        <div style="font-size:12px;color:#0369a1;line-height:1.45;">
+                            <strong><?php _e('Comprobantes y Soportes:', 'aura-suite'); ?></strong>
+                            <?php _e('No es necesario adjuntar comprobantes o facturas en esta pantalla; estos se anexan y concilian directamente en el módulo de Transacciones.', 'aura-suite'); ?>
+                        </div>
+                    </div>
+
+                    <!-- Referencias adicionales / Observaciones -->
+                    <div class="aura-petty-settle-notes-wrap" style="margin-top:14px;">
+                        <label for="aura-petty-settle-notes"><strong><?php _e('Observaciones Generales de la Rendición', 'aura-suite'); ?></strong> <small class="description"><?php _e('(opcional)', 'aura-suite'); ?></small></label>
+                        <textarea id="aura-petty-settle-notes" class="aura-input" rows="2" placeholder="<?php esc_attr_e('Detalles adicionales, conceptos o aclaraciones de la rendición...', 'aura-suite'); ?>"></textarea>
+                        <input type="hidden" id="aura-petty-evidence" value="">
+                    </div>
+
+                    <!-- ZONA DE COMPROBANTES DIGITALES OCULTA (Mantenida en DOM para compatibilidad técnica de scripts) -->
+                    <div class="aura-petty-cloud-section" style="display:none !important;">
                         <div class="aura-petty-cloud-header">
                             <div>
                                 <h4 style="margin:0;font-size:13px;font-weight:700;color:var(--aura-text-main,#1e293b);">
                                     <span class="dashicons dashicons-paperclip" style="vertical-align:middle;margin-right:4px;"></span>
-                                    <?php _e('Comprobantes y Soportes Digitales (Facturas / Recibos)', 'aura-suite'); ?>
+                                    <?php _e('Comprobantes y Soportes Digitales', 'aura-suite'); ?>
                                 </h4>
-                                <p class="description" style="margin:2px 0 0;font-size:11.5px;">
-                                    <?php _e('Sube fotos claras o archivos PDF de cada factura o recibo emitido.', 'aura-suite'); ?>
-                                </p>
                             </div>
-                            <?php if ($petty_drive_ready): ?>
-                                <span class="aura-petty-cloud-tag is-drive">
-                                    <span class="dashicons dashicons-cloud-saved"></span>
-                                    <?php _e('Google Drive Conectado', 'aura-suite'); ?>
-                                </span>
-                            <?php else: ?>
-                                <span class="aura-petty-cloud-tag is-local">
-                                    <span class="dashicons dashicons-portfolio"></span>
-                                    <?php _e('Almacenamiento Local', 'aura-suite'); ?>
-                                </span>
-                            <?php endif; ?>
                         </div>
-
-                        <!-- Dropzone Drag and Drop -->
                         <div class="aura-petty-dropzone" id="aura-petty-dropzone">
                             <input type="file" id="aura-petty-evidence-files" multiple accept=".jpg,.jpeg,.png,.pdf,.webp" style="display:none;">
                             <div class="aura-petty-dropzone-content">
                                 <span class="dashicons dashicons-cloud-upload aura-petty-dropzone-icon"></span>
-                                <div class="aura-petty-dropzone-text">
-                                    <strong><?php _e('Haz clic aquí para seleccionar archivos', 'aura-suite'); ?></strong> <?php _e('o arrástralos directamente a esta área', 'aura-suite'); ?>
-                                </div>
-                                <div class="aura-petty-dropzone-formats">
-                                    <?php _e('Admite múltiples archivos: JPG, PNG, WEBP o PDF (se optimizan automáticamente)', 'aura-suite'); ?>
-                                </div>
                             </div>
                         </div>
-
-                        <!-- Lista visual de archivos seleccionados -->
                         <div id="aura-petty-files-preview-list" class="aura-petty-files-list"></div>
-
-                        <!-- Referencias adicionales / Observaciones -->
-                        <div class="aura-petty-settle-notes-wrap" style="margin-top:12px;">
-                            <label for="aura-petty-settle-notes"><strong><?php _e('Observaciones Generales de la Rendición', 'aura-suite'); ?></strong> <small class="description"><?php _e('(opcional)', 'aura-suite'); ?></small></label>
-                            <textarea id="aura-petty-settle-notes" class="aura-input" rows="2" placeholder="<?php esc_attr_e('Detalles adicionales, número de radicado o aclaraciones de la rendición...', 'aura-suite'); ?>"></textarea>
-                            <input type="hidden" id="aura-petty-evidence" value="">
-                        </div>
                     </div>
 
                     <div class="aura-petty-actions">
