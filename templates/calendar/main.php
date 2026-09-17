@@ -62,13 +62,13 @@ $programs      = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit
 
             <!-- Acciones Rápidas del Header -->
             <div style="display: flex; gap: 10px; align-items: center;">
-                <?php if ( current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                <?php if ( current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
                     <button type="button" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" id="btn-top-create-event">
                         ➕ <?php esc_html_e( 'Agendar Clase', 'aura' ); ?>
                     </button>
                 <?php endif; ?>
 
-                <?php if ( $gcal_is_ready && ( current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) ) : ?>
+                <?php if ( $gcal_is_ready && ( current_user_can( 'aura_cal_sync_gcal' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) ) : ?>
                     <button type="button" class="btn btn-emerald btn-shimmer btn-lift" id="btn-top-sync-gcal" title="<?php esc_attr_e( 'Sincronizar eventos con Google Calendar', 'aura' ); ?>">
                         🔄 <?php esc_html_e( 'Sincronizar GCal', 'aura' ); ?>
                     </button>
@@ -83,22 +83,28 @@ $programs      = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit
                style="text-decoration: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px 8px 0 0; display: inline-flex; align-items: center; gap: 6px;">
                 🗓️ <?php esc_html_e( 'Calendario', 'aura' ); ?>
             </a>
-            <a href="<?php echo esc_url( add_query_arg( 'tab', 'programs', $base_url ) ); ?>"
-               class="adp-tab-btn <?php echo $tab === 'programs' ? 'active' : ''; ?>"
-               style="text-decoration: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px 8px 0 0; display: inline-flex; align-items: center; gap: 6px;">
-                🎓 <?php esc_html_e( 'Programas y Materias', 'aura' ); ?>
-            </a>
-            <a href="<?php echo esc_url( add_query_arg( 'tab', 'grades', $base_url ) ); ?>"
-               class="adp-tab-btn <?php echo $tab === 'grades' ? 'active' : ''; ?>"
-               style="text-decoration: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px 8px 0 0; display: inline-flex; align-items: center; gap: 6px;">
-                📊 <?php esc_html_e( 'Calificaciones', 'aura' ); ?>
-            </a>
-            <a href="<?php echo esc_url( add_query_arg( 'tab', 'tasks', $base_url ) ); ?>"
-               class="adp-tab-btn <?php echo $tab === 'tasks' ? 'active' : ''; ?>"
-               style="text-decoration: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px 8px 0 0; display: inline-flex; align-items: center; gap: 6px;">
-                📝 <?php esc_html_e( 'Tareas y Evaluaciones', 'aura' ); ?>
-            </a>
-            <?php if ( current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
+            <?php if ( current_user_can( 'aura_cal_view_programs' ) || current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
+                <a href="<?php echo esc_url( add_query_arg( 'tab', 'programs', $base_url ) ); ?>"
+                   class="adp-tab-btn <?php echo $tab === 'programs' ? 'active' : ''; ?>"
+                   style="text-decoration: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px 8px 0 0; display: inline-flex; align-items: center; gap: 6px;">
+                    🎓 <?php esc_html_e( 'Programas y Materias', 'aura' ); ?>
+                </a>
+            <?php endif; ?>
+            <?php if ( current_user_can( 'aura_cal_view_grades' ) || current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'manage_options' ) ) : ?>
+                <a href="<?php echo esc_url( add_query_arg( 'tab', 'grades', $base_url ) ); ?>"
+                   class="adp-tab-btn <?php echo $tab === 'grades' ? 'active' : ''; ?>"
+                   style="text-decoration: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px 8px 0 0; display: inline-flex; align-items: center; gap: 6px;">
+                    📊 <?php esc_html_e( 'Calificaciones', 'aura' ); ?>
+                </a>
+            <?php endif; ?>
+            <?php if ( current_user_can( 'aura_cal_view_tasks' ) || current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_cal_grade_tasks' ) || current_user_can( 'aura_cal_submit_tasks' ) || current_user_can( 'manage_options' ) ) : ?>
+                <a href="<?php echo esc_url( add_query_arg( 'tab', 'tasks', $base_url ) ); ?>"
+                   class="adp-tab-btn <?php echo $tab === 'tasks' ? 'active' : ''; ?>"
+                   style="text-decoration: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px 8px 0 0; display: inline-flex; align-items: center; gap: 6px;">
+                    📝 <?php esc_html_e( 'Tareas y Evaluaciones', 'aura' ); ?>
+                </a>
+            <?php endif; ?>
+            <?php if ( current_user_can( 'aura_cal_manage_settings' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
                 <a href="<?php echo esc_url( add_query_arg( 'tab', 'settings', $base_url ) ); ?>"
                    class="adp-tab-btn <?php echo $tab === 'settings' ? 'active' : ''; ?>"
                    style="text-decoration: none; padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 8px 8px 0 0; display: inline-flex; align-items: center; gap: 6px;">

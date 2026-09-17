@@ -31,12 +31,12 @@ class Aura_Calendar_Admin {
      */
     public static function register_menus(): void {
         $has_access = (
+            current_user_can( 'aura_cal_view_calendar' ) ||
             current_user_can( 'aura_view_calendar' ) ||
+            current_user_can( 'aura_cal_manage_calendar' ) ||
             current_user_can( 'aura_create_calendar_events' ) ||
             current_user_can( 'aura_manage_calendar' ) ||
             current_user_can( 'aura_teach_calendar' ) ||
-            current_user_can( 'aura_cal_view_calendar' ) ||
-            current_user_can( 'aura_cal_manage_calendar' ) ||
             current_user_can( 'manage_options' )
         );
 
@@ -66,7 +66,7 @@ class Aura_Calendar_Admin {
         );
 
         // Submenú 2: Programas y Materias
-        if ( current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) {
+        if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) {
             add_submenu_page(
                 'aura-calendar',
                 __( 'Programas y Materias — AURA', 'aura-suite' ),
@@ -78,7 +78,7 @@ class Aura_Calendar_Admin {
         }
 
         // Submenú 3: Calificaciones
-        if ( current_user_can( 'aura_record_grades' ) || current_user_can( 'aura_view_calendar' ) || current_user_can( 'manage_options' ) ) {
+        if ( current_user_can( 'aura_cal_view_grades' ) || current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'manage_options' ) ) {
             add_submenu_page(
                 'aura-calendar',
                 __( 'Calificaciones — AURA', 'aura-suite' ),
@@ -90,7 +90,7 @@ class Aura_Calendar_Admin {
         }
 
         // Submenú 4: Tareas y Evaluaciones
-        if ( current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) {
+        if ( current_user_can( 'aura_cal_view_tasks' ) || current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_cal_grade_tasks' ) || current_user_can( 'aura_cal_submit_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ) ) {
             add_submenu_page(
                 'aura-calendar',
                 __( 'Tareas y Evaluaciones — AURA', 'aura-suite' ),
@@ -102,7 +102,7 @@ class Aura_Calendar_Admin {
         }
 
         // Submenú 5: Configuración
-        if ( current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) {
+        if ( current_user_can( 'aura_cal_manage_settings' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) {
             add_submenu_page(
                 'aura-calendar',
                 __( 'Configuración de Calendario — AURA', 'aura-suite' ),
@@ -202,10 +202,12 @@ class Aura_Calendar_Admin {
             'calendar_url'        => admin_url( 'admin.php?page=aura-calendar' ),
             'nonce'               => wp_create_nonce( 'aura_cal_nonce' ),
             'current_user_id'     => get_current_user_id(),
-            'user_can_edit'       => current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ),
-            'user_can_delete'     => current_user_can( 'aura_delete_calendar_events' ) || current_user_can( 'manage_options' ),
-            'user_can_attendance' => current_user_can( 'aura_take_attendance' ) || current_user_can( 'manage_options' ),
-            'user_can_grade'      => current_user_can( 'aura_record_grades' ) || current_user_can( 'manage_options' ),
+            'user_can_edit'       => current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ),
+            'user_can_delete'     => current_user_can( 'aura_cal_delete_events' ) || current_user_can( 'aura_delete_calendar_events' ) || current_user_can( 'manage_options' ),
+            'user_can_attendance' => current_user_can( 'aura_cal_take_attendance' ) || current_user_can( 'aura_take_attendance' ) || current_user_can( 'manage_options' ),
+            'user_can_grade'      => current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'manage_options' ),
+            'user_can_programs'   => current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ),
+            'user_can_tasks'      => current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_cal_grade_tasks' ) || current_user_can( 'manage_options' ),
             'gcal_enabled'        => Aura_Calendar_Google_Sync::is_enabled(),
             'gcal_name'           => Aura_Calendar_Google_Sync::get_calendar_name(),
             'programs'            => $programs,
@@ -276,7 +278,7 @@ class Aura_Calendar_Admin {
     public static function ajax_save_settings(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 

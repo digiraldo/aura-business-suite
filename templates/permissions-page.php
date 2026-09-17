@@ -486,7 +486,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                     <?php endif; ?>
                                 </td>
                                 <td style="text-align:right;">
-                                    <a href="<?php echo esc_url($row_url); ?>" class="btn btn-primary btn-sm btn-shimmer">
+                                    <a href="<?php echo esc_url($row_url); ?>" class="btn btn-primary btn-sm btn-shimmer aura-btn-edit-user">
                                         <span class="dashicons dashicons-admin-generic"></span>
                                         <span><?php _e('Editar permisos', 'aura-suite'); ?></span>
                                     </a>
@@ -560,7 +560,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                         </div>
 
                                         <div class="aura-child-dock">
-                                            <a href="<?php echo esc_url($row_url); ?>" class="btn btn-primary btn-shimmer">
+                                            <a href="<?php echo esc_url($row_url); ?>" class="btn btn-primary btn-shimmer aura-btn-dock-action">
                                                 <span class="dashicons dashicons-admin-generic"></span>
                                                 <span><?php _e('Configurar Permisos y Áreas', 'aura-suite'); ?></span>
                                             </a>
@@ -701,7 +701,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                     </span>
                                 </td>
                                 <td style="text-align:right;">
-                                    <a href="<?php echo esc_url($activate_url); ?>" class="btn btn-emerald btn-sm btn-shimmer">
+                                    <a href="<?php echo esc_url($activate_url); ?>" class="btn btn-emerald btn-sm btn-shimmer aura-btn-activate-user">
                                         <span class="dashicons dashicons-plus-alt"></span>
                                         <span><?php _e('Activar y Asignar Permisos', 'aura-suite'); ?></span>
                                     </a>
@@ -746,7 +746,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                         </div>
 
                                         <div class="aura-child-dock">
-                                            <a href="<?php echo esc_url($activate_url); ?>" class="btn btn-emerald btn-shimmer">
+                                            <a href="<?php echo esc_url($activate_url); ?>" class="btn btn-emerald btn-shimmer aura-btn-dock-action">
                                                 <span class="dashicons dashicons-plus-alt"></span>
                                                 <span><?php _e('Activar y Asignar Permisos Ahora', 'aura-suite'); ?></span>
                                             </a>

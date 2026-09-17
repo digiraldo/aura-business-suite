@@ -216,7 +216,7 @@ class Aura_Calendar_Grades {
     public static function ajax_get_grades(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 
@@ -234,7 +234,7 @@ class Aura_Calendar_Grades {
     public static function ajax_save_grade(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para registrar notas.', 'aura' ) ] );
         }
 
@@ -252,7 +252,7 @@ class Aura_Calendar_Grades {
     public static function ajax_delete_grade(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 
@@ -275,8 +275,8 @@ class Aura_Calendar_Grades {
         $student_id = intval( $_POST['student_id'] ?? 0 );
         $program_id = ! empty( $_POST['program_id'] ) ? intval( $_POST['program_id'] ) : null;
 
-        // Si es el propio estudiante consultando su boletín
-        if ( ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
+        // Si es el propio estudiante consultando su boletín o un rol con gestión de calificaciones
+        if ( ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
             // Validar que el estudiante corresponda al usuario actual
             global $wpdb;
             $table_stud = $wpdb->prefix . 'aura_students';

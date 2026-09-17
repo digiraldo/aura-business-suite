@@ -89,22 +89,45 @@ class Aura_Calendar_Events {
             $params[] = intval( $filters['teacher_id'] );
         }
 
-        // ── FILTRADO CBAC SEGÚN ROL DEL USUARIO ──
-        $is_admin = current_user_can( 'manage_options' ) || current_user_can( 'aura_manage_calendar' );
-        if ( ! $is_admin && $user_id > 0 ) {
-            $is_teacher = current_user_can( 'aura_teach_calendar' );
-            $is_student = current_user_can( 'aura_student_portal_access' );
+        // ── FILTRADO CBAC Y POR ÁREAS SEGÚN ROL/PERMISOS DEL USUARIO ──
+        $can_manage_all = current_user_can( 'manage_options' ) ||
+                          current_user_can( 'aura_cal_manage_calendar' ) ||
+                          current_user_can( 'aura_manage_calendar' );
 
-            if ( $is_teacher && ! $is_student ) {
-                // El profesor ve sólo los eventos donde está asignado como instructor o coordina el programa
-                $where[]  = "(EXISTS (SELECT 1 FROM {$table_inst} ei_cbac WHERE ei_cbac.event_id = e.id AND ei_cbac.teacher_id = %d) OR p.coordinator_id = %d)";
+        if ( ! $can_manage_all && $user_id > 0 ) {
+            $is_restricted_view = current_user_can( 'aura_cal_view_own' ) || current_user_can( 'aura_teach_calendar' );
+            $is_student         = current_user_can( 'aura_student_portal_access' );
+
+            // Si es un líder de área o tiene asignadas áreas específicas en wp_aura_area_users
+            $user_areas = [];
+            $table_area_users = $wpdb->prefix . 'aura_area_users';
+            $has_area_users_tbl = $wpdb->get_var( "SHOW TABLES LIKE '{$table_area_users}'" ) === $table_area_users;
+            if ( $has_area_users_tbl ) {
+                $user_areas = $wpdb->get_col( $wpdb->prepare(
+                    "SELECT area_id FROM {$table_area_users} WHERE user_id = %d",
+                    $user_id
+                ) );
+            }
+
+            if ( ! empty( $user_areas ) && ! $is_restricted_view && ! $is_student ) {
+                // Líder o coordinador de área: ve eventos de programas vinculados a sus áreas asignadas o sin área
+                $area_ids_sql = implode( ',', array_map( 'intval', $user_areas ) );
+                $where[] = "(p.area_id IN ({$area_ids_sql}) OR p.area_id IS NULL)";
+            } elseif ( $is_restricted_view && ! $is_student ) {
+                // Profesor o usuario con vista propia: eventos donde es instructor, coordina el programa o programas de su área
+                $area_clause = '';
+                if ( ! empty( $user_areas ) ) {
+                    $area_ids_sql = implode( ',', array_map( 'intval', $user_areas ) );
+                    $area_clause = " OR p.area_id IN ({$area_ids_sql})";
+                }
+                $where[]  = "(EXISTS (SELECT 1 FROM {$table_inst} ei_cbac WHERE ei_cbac.event_id = e.id AND ei_cbac.teacher_id = %d) OR p.coordinator_id = %d OR p.coordinators LIKE %s{$area_clause})";
                 $params[] = $user_id;
                 $params[] = $user_id;
+                $params[] = '%"' . $user_id . '"%';
             } elseif ( $is_student ) {
-                // El estudiante ve los eventos de los programas donde está inscrito activamente
+                // Estudiante ve los eventos de los programas donde está inscrito activamente
                 $table_enroll = $wpdb->prefix . 'aura_students_enrollments';
                 $table_stud   = $wpdb->prefix . 'aura_students';
-                // Comprobamos si las tablas de estudiantes existen
                 $has_students = $wpdb->get_var( "SHOW TABLES LIKE '{$table_stud}'" ) === $table_stud;
 
                 if ( $has_students ) {
@@ -582,7 +605,7 @@ class Aura_Calendar_Events {
     public static function ajax_get_events(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 
@@ -603,6 +626,10 @@ class Aura_Calendar_Events {
     public static function ajax_get_event(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
+        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
             wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
@@ -619,7 +646,7 @@ class Aura_Calendar_Events {
     public static function ajax_save_event(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para crear o editar eventos.', 'aura' ) ] );
         }
 
@@ -634,7 +661,7 @@ class Aura_Calendar_Events {
     public static function ajax_delete_event(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_delete_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_delete_events' ) && ! current_user_can( 'aura_delete_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para eliminar eventos.', 'aura' ) ] );
         }
 
@@ -656,8 +683,8 @@ class Aura_Calendar_Events {
     public static function ajax_update_event_dates(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_edit_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_edit_calendar_events' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para reprogramar eventos.', 'aura' ) ] );
         }
 
         $id       = intval( $_POST['id'] ?? 0 );

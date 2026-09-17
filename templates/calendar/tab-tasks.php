@@ -30,7 +30,7 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
             </p>
         </div>
 
-        <?php if ( current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
+        <?php if ( current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
             <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-task">
                 ➕ <?php esc_html_e( 'Nueva Tarea', 'aura' ); ?>
             </button>
@@ -45,9 +45,11 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
             <p style="color: var(--aura-text-secondary); max-width: 460px; margin: 0 auto 20px;">
                 <?php esc_html_e( 'Crea una tarea o trabajo práctico para que los estudiantes puedan entregar sus respuestas desde el portal.', 'aura' ); ?>
             </p>
-            <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-first-task">
-                ➕ <?php esc_html_e( 'Crear Primera Tarea', 'aura' ); ?>
-            </button>
+            <?php if ( current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
+                <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-first-task">
+                    ➕ <?php esc_html_e( 'Crear Primera Tarea', 'aura' ); ?>
+                </button>
+            <?php endif; ?>
         </div>
     <?php else : ?>
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px;">

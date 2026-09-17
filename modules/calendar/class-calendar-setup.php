@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Aura_Calendar_Setup {
 
     /** Versión actual del esquema de base de datos del módulo */
-    const DB_VERSION = '1.2.0';
+    const DB_VERSION = '1.3.0';
 
     /** Clave de opción en wp_options para almacenar la versión instalada */
     const DB_VERSION_OPTION = 'aura_calendar_db_version';
@@ -33,8 +33,24 @@ class Aura_Calendar_Setup {
      * Inicializar hooks de instalación y actualización.
      */
     public static function init(): void {
+        self::maybe_add_area_id_column();
         if ( self::needs_update() ) {
             add_action( 'admin_init', [ __CLASS__, 'create_tables' ] );
+        }
+    }
+
+    /**
+     * Asegura la columna area_id en wp_aura_cal_programs si no existe.
+     */
+    public static function maybe_add_area_id_column(): void {
+        global $wpdb;
+        $t_programs = $wpdb->prefix . 'aura_cal_programs';
+        $table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$t_programs}'" );
+        if ( $table_exists === $t_programs ) {
+            $col_area = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_programs}` LIKE 'area_id'" );
+            if ( empty( $col_area ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_programs}` ADD COLUMN `area_id` BIGINT UNSIGNED DEFAULT NULL AFTER `deleted_at`, ADD KEY `area_id` (`area_id`)" );
+            }
         }
     }
 
@@ -81,10 +97,12 @@ class Aura_Calendar_Setup {
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at DATETIME DEFAULT NULL,
+  area_id BIGINT UNSIGNED DEFAULT NULL,
   PRIMARY KEY  (id),
   KEY code (code),
   KEY status (status),
   KEY dates (start_date, end_date),
+  KEY area_id (area_id),
   KEY deleted_at (deleted_at)
 ) {$charset_collate};";
 
@@ -250,6 +268,11 @@ class Aura_Calendar_Setup {
         $col_coord = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_programs}` LIKE 'coordinators'" );
         if ( empty( $col_coord ) ) {
             $wpdb->query( "ALTER TABLE `{$t_programs}` ADD COLUMN `coordinators` TEXT DEFAULT NULL AFTER `coordinator_id`" );
+        }
+
+        $col_area = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_programs}` LIKE 'area_id'" );
+        if ( empty( $col_area ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_programs}` ADD COLUMN `area_id` BIGINT UNSIGNED DEFAULT NULL AFTER `deleted_at`, ADD KEY `area_id` (`area_id`)" );
         }
 
         $col_teach = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_subjects}` LIKE 'teachers'" );

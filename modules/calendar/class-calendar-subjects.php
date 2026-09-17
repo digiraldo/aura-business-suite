@@ -299,7 +299,7 @@ class Aura_Calendar_Subjects {
     public static function ajax_get_subjects(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 
@@ -315,6 +315,10 @@ class Aura_Calendar_Subjects {
 
     public static function ajax_get_subject(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
@@ -332,7 +336,7 @@ class Aura_Calendar_Subjects {
     public static function ajax_save_subject(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para gestionar materias.', 'aura' ) ] );
         }
 
@@ -350,7 +354,7 @@ class Aura_Calendar_Subjects {
     public static function ajax_delete_subject(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_delete_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_delete_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 

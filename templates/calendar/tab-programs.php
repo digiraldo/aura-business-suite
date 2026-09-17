@@ -14,7 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-$programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] );
+$programs  = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] );
+$all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_areas() : [];
 ?>
 
 <div class="aura-programs-view-container">
@@ -26,11 +27,11 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
                 🎓 <?php esc_html_e( 'Programas y Cursos de Capacitación', 'aura' ); ?>
             </h2>
             <p class="adp-card-desc" style="margin: 4px 0 0 0;">
-                <?php esc_html_e( 'Administra los programas de formación, sus materias curriculares y la asignación de profesores.', 'aura' ); ?>
+                <?php esc_html_e( 'Administra los programas de formación, sus materias curriculares, vinculación a áreas institucionales y la asignación de profesores.', 'aura' ); ?>
             </p>
         </div>
 
-        <?php if ( current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+        <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
             <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-program">
                 ➕ <?php esc_html_e( 'Nuevo Programa', 'aura' ); ?>
             </button>
@@ -45,9 +46,11 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
             <p style="color: var(--aura-text-secondary); max-width: 460px; margin: 0 auto 20px;">
                 <?php esc_html_e( 'Crea tu primer programa de formación para comenzar a estructurar las materias y horarios de clases.', 'aura' ); ?>
             </p>
-            <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-first-program">
-                ➕ <?php esc_html_e( 'Crear Primer Programa', 'aura' ); ?>
-            </button>
+            <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-first-program">
+                    ➕ <?php esc_html_e( 'Crear Primer Programa', 'aura' ); ?>
+                </button>
+            <?php endif; ?>
         </div>
     <?php else : ?>
         <div style="display: flex; flex-direction: column; gap: 20px;">
@@ -58,7 +61,7 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
                 <div class="adp-card program-card" data-program-id="<?php echo esc_attr( $p->id ); ?>" style="border-radius: 12px; border-left: 6px solid <?php echo esc_attr( $p_color ); ?>; padding: 22px;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
                         <div>
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap;">
                                 <span class="adp-badge badge-slate" style="font-weight: 700; font-size: 12px; letter-spacing: 0.5px;">
                                     <?php echo esc_html( $p->code ); ?>
                                 </span>
@@ -68,6 +71,14 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
                                     <span class="adp-badge badge-slate"><?php esc_html_e( 'Archivado', 'aura' ); ?></span>
                                 <?php else : ?>
                                     <span class="adp-badge badge-amber"><?php esc_html_e( 'Borrador', 'aura' ); ?></span>
+                                <?php endif; ?>
+
+                                <?php if ( ! empty( $p->area_name ) ) : 
+                                    $area_badge_color = ! empty( $p->area_color ) ? $p->area_color : '#6366f1';
+                                ?>
+                                    <span class="adp-badge" style="font-weight: 600; font-size: 12px; background: <?php echo esc_attr( $area_badge_color . '18' ); ?>; color: <?php echo esc_attr( $area_badge_color ); ?>; border: 1px solid <?php echo esc_attr( $area_badge_color . '35' ); ?>;">
+                                        🏢 <?php echo esc_html( $p->area_name ); ?>
+                                    </span>
                                 <?php endif; ?>
 
                                 <?php if ( ! empty( $p->academic_period ) ) : ?>
@@ -106,14 +117,16 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
                         </div>
 
                         <!-- Botones de Acción del Programa -->
-                        <div style="display: flex; gap: 8px;">
-                            <button type="button" class="btn btn-ghost btn-edit-program" data-program-id="<?php echo esc_attr( $p->id ); ?>" style="font-size: 13px; padding: 6px 12px;">
-                                ✏️ <?php esc_html_e( 'Editar', 'aura' ); ?>
-                            </button>
-                            <button type="button" class="btn btn-indigo btn-lift btn-add-subject" data-program-id="<?php echo esc_attr( $p->id ); ?>" data-program-name="<?php echo esc_attr( $p->name ); ?>" style="font-size: 13px; padding: 6px 12px;">
-                                ➕ <?php esc_html_e( 'Añadir Materia', 'aura' ); ?>
-                            </button>
-                        </div>
+                        <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-ghost btn-edit-program" data-program-id="<?php echo esc_attr( $p->id ); ?>" style="font-size: 13px; padding: 6px 12px;">
+                                    ✏️ <?php esc_html_e( 'Editar', 'aura' ); ?>
+                                </button>
+                                <button type="button" class="btn btn-indigo btn-lift btn-add-subject" data-program-id="<?php echo esc_attr( $p->id ); ?>" data-program-name="<?php echo esc_attr( $p->name ); ?>" style="font-size: 13px; padding: 6px 12px;">
+                                    ➕ <?php esc_html_e( 'Añadir Materia', 'aura' ); ?>
+                                </button>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <!-- ── SUB-TABLA DE MATERIAS ASOCIADAS ── -->
@@ -237,6 +250,23 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] 
                             </div>
                             <?php echo Aura_Calendar_Admin::render_color_palette( 'prog-color', '#5D5FEF' ); ?>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                            🏢 <?php esc_html_e( 'Área Institucional (Opcional)', 'aura' ); ?>
+                        </label>
+                        <select name="area_id" id="prog-area-id" class="form-control" style="width: 100%; border-radius: 8px;">
+                            <option value=""><?php esc_html_e( '— Ninguna / Programa General —', 'aura' ); ?></option>
+                            <?php foreach ( $all_areas as $area ) : ?>
+                                <option value="<?php echo esc_attr( $area->id ); ?>">
+                                    <?php echo esc_html( $area->name . ( ! empty( $area->code ) ? ' (' . $area->code . ')' : '' ) ); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small style="font-size: 11.5px; color: var(--aura-text-muted); display: block; margin-top: 4px;">
+                            <?php esc_html_e( 'Vincular el programa a un área habilita permisos y presupuestos descentralizados para sus coordinadores y líderes de área.', 'aura' ); ?>
+                        </small>
                     </div>
 
                     <div class="form-group">

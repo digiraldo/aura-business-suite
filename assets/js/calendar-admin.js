@@ -1013,6 +1013,7 @@
     $('#btn-create-program, #btn-create-first-program').on('click', function() {
         $('#form-program-editor')[0].reset();
         $('#prog-id').val('0');
+        $('#prog-area-id').val('');
         $('#modal-prog-title').text('🎓 Nuevo Programa Académico');
 
         renderCoordinatorCheckboxes([]);
@@ -1037,6 +1038,7 @@
                 $('#prog-period').val(p.academic_period || '');
                 $('#prog-start-date').val(p.start_date || '');
                 $('#prog-end-date').val(p.end_date || '');
+                $('#prog-area-id').val(p.area_id || '');
                 
                 var progColor = p.color || '#5D5FEF';
                 $('#prog-color').val(progColor);

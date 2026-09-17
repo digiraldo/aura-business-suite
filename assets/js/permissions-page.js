@@ -58,13 +58,10 @@ jQuery(document).ready(function($) {
     }
 
     // ==========================================================================
-    // 2. FILAS EXPANDIBLES (CHILD ROWS WOW CON .aura-row-toggle)
+    // 2. FILAS EXPANDIBLES (CHILD ROWS WOW CON .aura-row-toggle Y .aura-user-identity)
     // ==========================================================================
-    $(document).on('click', '.aura-row-toggle', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const $btn = $(this);
+    function toggleChildRow($btn) {
+        if (!$btn || !$btn.length) return;
         const $row = $btn.closest('tr');
         const $childRow = $row.next('.aura-child-row');
 
@@ -80,6 +77,24 @@ jQuery(document).ready(function($) {
                     $btn.attr('aria-expanded', 'true');
                 });
             }
+        }
+    }
+
+    $(document).on('click', '.aura-row-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleChildRow($(this));
+    });
+
+    // En móviles y desktop: Permitir que un toque o clic en la identidad del usuario (.aura-user-identity) también abra/cierre los detalles
+    $(document).on('click', '.aura-parent-row .aura-user-identity', function(e) {
+        if ($(e.target).closest('a, button, input, select, textarea').length) {
+            return;
+        }
+        const $btn = $(this).closest('tr').find('.aura-row-toggle');
+        if ($btn.length) {
+            e.preventDefault();
+            toggleChildRow($btn);
         }
     });
 

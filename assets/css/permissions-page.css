@@ -309,8 +309,10 @@
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-top: 14px;
+    width: 100%;
 }
 
 .aura-permissions-wrap table.aura-users-table {
@@ -386,6 +388,13 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.15s ease;
+}
+
+.aura-permissions-wrap .aura-user-identity:hover {
+    opacity: 0.88;
 }
 
 .aura-permissions-wrap .aura-user-avatar {
@@ -1131,7 +1140,7 @@ body.aura-dark-mode .aura-permissions-wrap .aura-row-toggle {
 }
 
 /* ==========================================================================
-   14. RESPONSIVE Y ZERO HORIZONTAL SCROLL EN MÓVIL (<= 768px)
+   14. RESPONSIVE Y ZERO HORIZONTAL SCROLL EN MÓVIL (<= 768px y <= 480px)
    ========================================================================== */
 @media screen and (max-width: 768px) {
     .aura-permissions-wrap {
@@ -1160,6 +1169,148 @@ body.aura-dark-mode .aura-permissions-wrap .aura-row-toggle {
         display: none !important;
     }
 
+    /* Tabla de Usuarios en Móvil */
+    .aura-permissions-wrap .aura-users-table-wrap {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-radius: 10px !important;
+        margin-top: 12px !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .aura-permissions-wrap table.aura-users-table {
+        min-width: 480px; /* Evita que las columnas colapsen una encima de otra */
+    }
+
+    .aura-permissions-wrap table.aura-users-table thead th,
+    .aura-permissions-wrap table.aura-users-table tbody td {
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+
+    .aura-permissions-wrap .aura-user-identity {
+        gap: 10px;
+    }
+
+    .aura-permissions-wrap .aura-user-avatar {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+    }
+
+    .aura-permissions-wrap .aura-user-name {
+        font-size: 13px;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .aura-permissions-wrap .aura-user-email {
+        font-size: 11.5px;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Botón Editar permisos en fila principal */
+    .aura-permissions-wrap .aura-btn-edit-user,
+    .aura-permissions-wrap .aura-btn-activate-user {
+        padding: 7px 12px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        border-radius: 6px !important;
+    }
+
+    .aura-permissions-wrap .aura-btn-edit-user .dashicons,
+    .aura-permissions-wrap .aura-btn-activate-user .dashicons {
+        font-size: 14px !important;
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    /* Fila Desplegable Hija WOW (.aura-child-card) en Móvil */
+    .aura-permissions-wrap tr.aura-child-row td {
+        padding: 0 !important;
+    }
+
+    .aura-permissions-wrap .aura-child-card {
+        margin: 8px 6px !important;
+        border-radius: 10px !important;
+        border: 1.5px solid var(--aura-blue, #2563eb) !important;
+        background: #ffffff !important;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08) !important;
+        overflow: visible !important;
+    }
+
+    .aura-permissions-wrap .aura-child-hero {
+        padding: 10px 14px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+    }
+
+    .aura-permissions-wrap .aura-child-hero-title {
+        font-size: 13px !important;
+        line-height: 1.35 !important;
+    }
+
+    .aura-permissions-wrap .aura-child-hero .badge {
+        font-size: 11px !important;
+        padding: 2px 8px !important;
+    }
+
+    .aura-permissions-wrap .aura-child-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        padding: 12px !important;
+    }
+
+    .aura-permissions-wrap .aura-child-subcard {
+        padding: 10px 12px !important;
+    }
+
+    .aura-permissions-wrap .aura-child-subcard-title {
+        font-size: 11.5px !important;
+        margin-bottom: 6px !important;
+    }
+
+    /* Dock de acciones: Botón prominente, ancho completo, 100% visible */
+    .aura-permissions-wrap .aura-child-dock {
+        padding: 12px 14px !important;
+        background: #f8fafc !important;
+        border-top: 1px solid #e2e8f0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: center !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .aura-permissions-wrap .aura-child-dock .btn,
+    .aura-permissions-wrap .aura-child-dock .aura-btn-dock-action {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 12px 16px !important;
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        min-height: 44px !important;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25) !important;
+        box-sizing: border-box !important;
+    }
+
     .aura-permissions-wrap .aura-templates-filter-bar {
         flex-direction: column;
         align-items: stretch;
@@ -1171,5 +1322,25 @@ body.aura-dark-mode .aura-permissions-wrap .aura-row-toggle {
         bottom: 16px;
         justify-content: space-between;
         border-radius: 14px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .aura-permissions-wrap table.aura-users-table {
+        min-width: 420px;
+    }
+
+    .aura-permissions-wrap table.aura-users-table thead th,
+    .aura-permissions-wrap table.aura-users-table tbody td {
+        padding: 8px 8px !important;
+        font-size: 12px !important;
+    }
+
+    .aura-permissions-wrap .aura-user-name {
+        max-width: 120px;
+    }
+
+    .aura-permissions-wrap .aura-user-email {
+        max-width: 120px;
     }
 }

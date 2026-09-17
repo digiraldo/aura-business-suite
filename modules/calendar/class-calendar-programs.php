@@ -34,13 +34,15 @@ class Aura_Calendar_Programs {
      */
     public static function get_all( array $args = [] ): array {
         global $wpdb;
-        $table_prog = $wpdb->prefix . 'aura_cal_programs';
-        $table_subj = $wpdb->prefix . 'aura_cal_subjects';
-        $table_evts = $wpdb->prefix . 'aura_cal_events';
+        $table_prog  = $wpdb->prefix . 'aura_cal_programs';
+        $table_subj  = $wpdb->prefix . 'aura_cal_subjects';
+        $table_evts  = $wpdb->prefix . 'aura_cal_events';
+        $table_areas = $wpdb->prefix . 'aura_areas';
 
         $defaults = [
             'status'  => '', // active, archived, draft o vacío para no eliminados
             'search'  => '',
+            'area_id' => null,
             'orderby' => 'p.created_at',
             'order'   => 'DESC',
             'limit'   => 100,
@@ -64,14 +66,21 @@ class Aura_Calendar_Programs {
             $params[] = $like;
         }
 
+        if ( $r['area_id'] !== null && $r['area_id'] !== '' ) {
+            $where[]  = 'p.area_id = %d';
+            $params[] = intval( $r['area_id'] );
+        }
+
         $where_sql = implode( ' AND ', $where );
         $orderby   = in_array( strtoupper( $r['order'] ), [ 'ASC', 'DESC' ], true ) ? strtoupper( $r['order'] ) : 'DESC';
 
         $sql = "SELECT p.*, u.display_name AS coordinator_name, u.user_email AS coordinator_email,
+                       a.name AS area_name, a.code AS area_code, a.color AS area_color,
                        (SELECT COUNT(*) FROM {$table_subj} s WHERE s.program_id = p.id AND s.deleted_at IS NULL) AS subjects_count,
                        (SELECT COUNT(*) FROM {$table_evts} e WHERE e.program_id = p.id AND e.deleted_at IS NULL) AS events_count
                 FROM {$table_prog} p
                 LEFT JOIN {$wpdb->users} u ON u.ID = p.coordinator_id
+                LEFT JOIN {$table_areas} a ON a.id = p.area_id
                 WHERE {$where_sql}
                 ORDER BY {$r['orderby']} {$orderby}
                 LIMIT %d OFFSET %d";
@@ -139,12 +148,15 @@ class Aura_Calendar_Programs {
      */
     public static function get( int $id ): ?object {
         global $wpdb;
-        $table_prog = $wpdb->prefix . 'aura_cal_programs';
+        $table_prog  = $wpdb->prefix . 'aura_cal_programs';
+        $table_areas = $wpdb->prefix . 'aura_areas';
 
         $row = $wpdb->get_row( $wpdb->prepare(
-            "SELECT p.*, u.display_name AS coordinator_name, u.user_email AS coordinator_email
+            "SELECT p.*, u.display_name AS coordinator_name, u.user_email AS coordinator_email,
+                    a.name AS area_name, a.code AS area_code, a.color AS area_color
              FROM {$table_prog} p
              LEFT JOIN {$wpdb->users} u ON u.ID = p.coordinator_id
+             LEFT JOIN {$table_areas} a ON a.id = p.area_id
              WHERE p.id = %d AND p.deleted_at IS NULL",
             $id
         ) );
@@ -195,6 +207,9 @@ class Aura_Calendar_Programs {
             $color = '#6366f1'; // Default Indigo
         }
 
+        // Procesar área institucional (opcional)
+        $area_id = ! empty( $data['area_id'] ) ? intval( $data['area_id'] ) : null;
+
         // Procesar coordinadores múltiples
         $coord_ids = [];
         if ( isset( $data['coordinator_ids'] ) ) {
@@ -226,6 +241,7 @@ class Aura_Calendar_Programs {
             'status'          => in_array( $data['status'] ?? '', [ 'active', 'archived', 'draft' ], true ) ? $data['status'] : 'active',
             'coordinator_id'  => $primary_coordinator,
             'coordinators'    => $coordinators_json,
+            'area_id'         => $area_id,
             'updated_at'      => current_time( 'mysql' ),
         ];
 
@@ -243,6 +259,7 @@ class Aura_Calendar_Programs {
             '%s', '%s',
             $fields['coordinator_id'] !== null ? '%d' : null,
             $fields['coordinators'] !== null ? '%s' : null,
+            $fields['area_id'] !== null ? '%d' : null,
             '%s',
         ];
 
@@ -309,13 +326,16 @@ class Aura_Calendar_Programs {
     public static function ajax_get_programs(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para ver programas.', 'aura' ) ] );
         }
 
+        $area_id = isset( $_POST['area_id'] ) && $_POST['area_id'] !== '' ? intval( $_POST['area_id'] ) : null;
+
         $programs = self::get_all( [
-            'status' => sanitize_text_field( $_POST['status'] ?? '' ),
-            'search' => sanitize_text_field( $_POST['search'] ?? '' ),
+            'status'  => sanitize_text_field( $_POST['status'] ?? '' ),
+            'search'  => sanitize_text_field( $_POST['search'] ?? '' ),
+            'area_id' => $area_id,
         ] );
 
         wp_send_json_success( [ 'programs' => $programs ] );
@@ -323,6 +343,10 @@ class Aura_Calendar_Programs {
 
     public static function ajax_get_program(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
@@ -340,7 +364,7 @@ class Aura_Calendar_Programs {
     public static function ajax_save_program(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para gestionar programas.', 'aura' ) ] );
         }
 
@@ -358,8 +382,8 @@ class Aura_Calendar_Programs {
     public static function ajax_delete_program(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_delete_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        if ( ! current_user_can( 'aura_cal_delete_events' ) && ! current_user_can( 'aura_delete_calendar_events' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para eliminar programas.', 'aura' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
