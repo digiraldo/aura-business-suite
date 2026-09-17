@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Aura_Calendar_Setup {
 
     /** Versión actual del esquema de base de datos del módulo */
-    const DB_VERSION = '1.3.0';
+    const DB_VERSION = '1.4.0';
 
     /** Clave de opción en wp_options para almacenar la versión instalada */
     const DB_VERSION_OPTION = 'aura_calendar_db_version';
@@ -34,6 +34,7 @@ class Aura_Calendar_Setup {
      */
     public static function init(): void {
         self::maybe_add_area_id_column();
+        self::maybe_add_task_library_columns();
         if ( self::needs_update() ) {
             add_action( 'admin_init', [ __CLASS__, 'create_tables' ] );
         }
@@ -50,6 +51,29 @@ class Aura_Calendar_Setup {
             $col_area = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_programs}` LIKE 'area_id'" );
             if ( empty( $col_area ) ) {
                 $wpdb->query( "ALTER TABLE `{$t_programs}` ADD COLUMN `area_id` BIGINT UNSIGNED DEFAULT NULL AFTER `deleted_at`, ADD KEY `area_id` (`area_id`)" );
+            }
+        }
+    }
+
+    /**
+     * Asegura las columnas book_id, submission_type y min_words en wp_aura_cal_tasks para sincronización con Biblioteca.
+     */
+    public static function maybe_add_task_library_columns(): void {
+        global $wpdb;
+        $t_tasks = $wpdb->prefix . 'aura_cal_tasks';
+        $table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$t_tasks}'" );
+        if ( $table_exists === $t_tasks ) {
+            $col_book = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_tasks}` LIKE 'book_id'" );
+            if ( empty( $col_book ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_tasks}` ADD COLUMN `book_id` BIGINT UNSIGNED DEFAULT NULL AFTER `event_id`, ADD KEY `book_id` (`book_id`)" );
+            }
+            $col_type = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_tasks}` LIKE 'submission_type'" );
+            if ( empty( $col_type ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_tasks}` ADD COLUMN `submission_type` VARCHAR(30) NOT NULL DEFAULT 'text_or_file' AFTER `attachment_urls`" );
+            }
+            $col_words = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_tasks}` LIKE 'min_words'" );
+            if ( empty( $col_words ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_tasks}` ADD COLUMN `min_words` INT UNSIGNED DEFAULT 0 AFTER `submission_type`" );
             }
         }
     }
@@ -217,12 +241,15 @@ class Aura_Calendar_Setup {
   program_id BIGINT UNSIGNED NOT NULL,
   subject_id BIGINT UNSIGNED DEFAULT NULL,
   event_id BIGINT UNSIGNED DEFAULT NULL,
+  book_id BIGINT UNSIGNED DEFAULT NULL,
   title VARCHAR(255) NOT NULL,
   description TEXT DEFAULT NULL,
   due_datetime DATETIME NOT NULL,
   max_score DECIMAL(5,2) NOT NULL DEFAULT 100.00,
   weight DECIMAL(5,2) NOT NULL DEFAULT 1.00,
   attachment_urls LONGTEXT DEFAULT NULL,
+  submission_type VARCHAR(30) NOT NULL DEFAULT 'text_or_file',
+  min_words INT UNSIGNED DEFAULT 0,
   status VARCHAR(20) NOT NULL DEFAULT 'published',
   created_by BIGINT UNSIGNED NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -231,6 +258,7 @@ class Aura_Calendar_Setup {
   PRIMARY KEY  (id),
   KEY program_id (program_id),
   KEY subject_id (subject_id),
+  KEY book_id (book_id),
   KEY due_date (due_datetime),
   KEY deleted_at (deleted_at)
 ) {$charset_collate};";
@@ -279,6 +307,8 @@ class Aura_Calendar_Setup {
         if ( empty( $col_teach ) ) {
             $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `teachers` TEXT DEFAULT NULL AFTER `default_teacher_id`" );
         }
+
+        self::maybe_add_task_library_columns();
 
         update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
     }

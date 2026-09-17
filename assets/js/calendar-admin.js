@@ -1438,7 +1438,9 @@
             action: 'aura_cal_save_settings',
             nonce: auraCalData.nonce,
             cal_name: $('#set-cal-name').val(),
-            auto_sync: $('#set-auto-sync').is(':checked') ? '1' : '0'
+            auto_sync: $('#set-auto-sync').is(':checked') ? '1' : '0',
+            teacher_portal_page_id: $('#set-teacher-portal-page').val(),
+            teacher_code_prefix: $('#set-teacher-code-prefix').val()
         }, function(res) {
             $btn.prop('disabled', false).text('💾 Guardar Ajustes');
             if (res && res.success) {
@@ -1446,6 +1448,41 @@
             } else {
                 showToast(res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error, 'error');
             }
+        });
+    });
+
+    // Auto-crear página con el Portal del Instructor [aura_teacher_portal]
+    $('#btn-create-teacher-portal-page').on('click', function(e) {
+        e.preventDefault();
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Creando página...');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_create_teacher_portal_page',
+            nonce: auraCalData.nonce
+        }, function(res) {
+            $btn.prop('disabled', false).text('🪄 Crear Página Automáticamente');
+            if (res && res.success) {
+                showToast(res.data.message);
+                if (res.data.page_id) {
+                    var $select = $('#set-teacher-portal-page');
+                    var exists = $select.find('option[value="' + res.data.page_id + '"]').length > 0;
+                    if (!exists) {
+                        $select.append($('<option>', {
+                            value: res.data.page_id,
+                            text: 'Portal del Docente (ID: ' + res.data.page_id + ')'
+                        }));
+                    }
+                    $select.val(res.data.page_id);
+                }
+                setTimeout(function() { location.reload(); }, 1000);
+            } else {
+                var err = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
+                showToast(err, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).text('🪄 Crear Página Automáticamente');
+            showToast('Error de red al crear la página', 'error');
         });
     });
 

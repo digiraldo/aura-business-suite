@@ -17,13 +17,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Aura_Calendar_Admin {
 
+    const OPTION_TEACHER_PORTAL_PAGE = 'aura_cal_teacher_portal_page_id';
+    const OPTION_TEACHER_CODE_PREFIX = 'aura_cal_teacher_code_prefix';
+
     /**
      * Inicializar hooks de administración
      */
     public static function init(): void {
-        add_action( 'admin_menu',            [ __CLASS__, 'register_menus' ] );
-        add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
-        add_action( 'wp_ajax_aura_cal_save_settings', [ __CLASS__, 'ajax_save_settings' ] );
+        add_action( 'admin_menu',                          [ __CLASS__, 'register_menus' ] );
+        add_action( 'admin_enqueue_scripts',               [ __CLASS__, 'enqueue_assets' ] );
+        add_action( 'wp_ajax_aura_cal_save_settings',             [ __CLASS__, 'ajax_save_settings' ] );
+        add_action( 'wp_ajax_aura_cal_create_teacher_portal_page', [ __CLASS__, 'ajax_create_teacher_portal_page' ] );
     }
 
     /**
@@ -180,28 +184,19 @@ class Aura_Calendar_Admin {
         // Obtener programas activos para los selectores
         $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 100 ] );
 
-        // Obtener usuarios profesores / coordinadores / administradores
-        $teacher_users = get_users( [
-            'role__in' => [ 'administrator', 'editor', 'author', 'subscriber' ],
-            'orderby'  => 'display_name',
-            'order'    => 'ASC',
-            'number'   => 200,
-        ] );
+        // Obtener profesores / instructores estandarizados
+        $teachers_clean = self::get_instructors();
 
-        $teachers_clean = [];
-        foreach ( $teacher_users as $tu ) {
-            $teachers_clean[] = [
-                'id'    => $tu->ID,
-                'name'  => $tu->display_name,
-                'email' => $tu->user_email,
-            ];
-        }
+        $teacher_portal_page_id = self::get_teacher_portal_page_id();
+        $teacher_portal_url     = $teacher_portal_page_id > 0 ? get_permalink( $teacher_portal_page_id ) : home_url( '/portal-instructor/' );
 
         wp_localize_script( 'aura-calendar-admin', 'auraCalData', [
             'ajax_url'            => admin_url( 'admin-ajax.php' ),
             'calendar_url'        => admin_url( 'admin.php?page=aura-calendar' ),
             'nonce'               => wp_create_nonce( 'aura_cal_nonce' ),
             'current_user_id'     => get_current_user_id(),
+            'teacher_portal_url'  => $teacher_portal_url,
+            'teacher_code_prefix' => self::get_teacher_code_prefix(),
             'user_can_edit'       => current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ),
             'user_can_delete'     => current_user_can( 'aura_cal_delete_events' ) || current_user_can( 'aura_delete_calendar_events' ) || current_user_can( 'manage_options' ),
             'user_can_attendance' => current_user_can( 'aura_cal_take_attendance' ) || current_user_can( 'aura_take_attendance' ) || current_user_can( 'manage_options' ),
@@ -285,10 +280,185 @@ class Aura_Calendar_Admin {
         $cal_name  = sanitize_text_field( $_POST['cal_name'] ?? '' );
         $auto_sync = ! empty( $_POST['auto_sync'] ) ? '1' : '0';
 
+        $teacher_portal_page_id = intval( $_POST['teacher_portal_page_id'] ?? 0 );
+        $teacher_code_prefix    = strtoupper( sanitize_text_field( $_POST['teacher_code_prefix'] ?? 'CEM-PROF' ) );
+
         update_option( Aura_Calendar_Google_Sync::CAL_NAME_OPTION, $cal_name );
         update_option( Aura_Calendar_Google_Sync::AUTO_SYNC_OPTION, $auto_sync );
+        update_option( self::OPTION_TEACHER_PORTAL_PAGE, $teacher_portal_page_id );
+        update_option( self::OPTION_TEACHER_CODE_PREFIX, $teacher_code_prefix );
 
         wp_send_json_success( [ 'message' => __( 'Ajustes guardados correctamente.', 'aura' ) ] );
+    }
+
+    /**
+     * Obtener ID de la página asignada al Portal del Instructor
+     *
+     * @return int
+     */
+    public static function get_teacher_portal_page_id(): int {
+        $saved = (int) get_option( self::OPTION_TEACHER_PORTAL_PAGE, 0 );
+        if ( $saved > 0 && get_post_status( $saved ) === 'publish' ) {
+            return $saved;
+        }
+
+        // Búsqueda automática si no está configurado explícitamente
+        global $wpdb;
+        $found_id = (int) $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = 'page' AND post_content LIKE '%[aura_teacher_portal%' LIMIT 1" );
+        if ( $found_id > 0 ) {
+            update_option( self::OPTION_TEACHER_PORTAL_PAGE, $found_id );
+            return $found_id;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Obtener prefijo de código de instructor
+     *
+     * @return string
+     */
+    public static function get_teacher_code_prefix(): string {
+        return (string) get_option( self::OPTION_TEACHER_CODE_PREFIX, 'CEM-PROF' );
+    }
+
+    /**
+     * Obtener listado de usuarios que califican como Instructores en Aura Suite
+     *
+     * @return array
+     */
+    public static function get_instructors(): array {
+        global $wpdb;
+        $prefix = self::get_teacher_code_prefix();
+
+        $all_users = get_users( [
+            'orderby' => 'display_name',
+            'order'   => 'ASC',
+            'number'  => 300,
+        ] );
+
+        $instructors = [];
+
+        // Áreas asignadas por usuario si el módulo de áreas está activo
+        $t_area_users   = $wpdb->prefix . 'aura_area_users';
+        $t_areas        = $wpdb->prefix . 'aura_areas';
+        $user_areas_map = [];
+
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_area_users}'" ) === $t_area_users && $wpdb->get_var( "SHOW TABLES LIKE '{$t_areas}'" ) === $t_areas ) {
+            $area_rows = $wpdb->get_results(
+                "SELECT au.user_id, a.id AS area_id, a.name AS area_name, a.color AS area_color
+                 FROM {$t_area_users} au
+                 JOIN {$t_areas} a ON a.id = au.area_id
+                 WHERE a.status = 'active'"
+            );
+            if ( is_array( $area_rows ) ) {
+                foreach ( $area_rows as $ar ) {
+                    $user_areas_map[ $ar->user_id ][] = [
+                        'id'    => (int) $ar->area_id,
+                        'name'  => $ar->area_name,
+                        'color' => $ar->area_color,
+                    ];
+                }
+            }
+        }
+
+        // Revisar si existen en wp_aura_students con profile_type = 'teacher'
+        $t_students              = $wpdb->prefix . 'aura_students';
+        $teacher_students_wp_ids = [];
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_students}'" ) === $t_students ) {
+            $stu_teachers = $wpdb->get_results( "SELECT wp_user_id, id_number, phone, photo_url FROM {$t_students} WHERE profile_type = 'teacher'" );
+            if ( is_array( $stu_teachers ) ) {
+                foreach ( $stu_teachers as $st ) {
+                    if ( ! empty( $st->wp_user_id ) ) {
+                        $teacher_students_wp_ids[ $st->wp_user_id ] = $st;
+                    }
+                }
+            }
+        }
+
+        foreach ( $all_users as $u ) {
+            $is_instructor = (
+                user_can( $u->ID, 'aura_cal_view_calendar' ) ||
+                user_can( $u->ID, 'aura_teach_calendar' ) ||
+                user_can( $u->ID, 'manage_options' ) ||
+                in_array( 'academic_teacher', (array) $u->roles, true ) ||
+                in_array( 'administrator', (array) $u->roles, true ) ||
+                in_array( 'editor', (array) $u->roles, true ) ||
+                isset( $teacher_students_wp_ids[ $u->ID ] )
+            );
+
+            if ( ! $is_instructor ) {
+                continue;
+            }
+
+            $meta_code = get_user_meta( $u->ID, 'aura_teacher_code', true );
+            if ( empty( $meta_code ) && isset( $teacher_students_wp_ids[ $u->ID ] ) && ! empty( $teacher_students_wp_ids[ $u->ID ]->id_number ) ) {
+                $meta_code = $teacher_students_wp_ids[ $u->ID ]->id_number;
+            }
+            if ( empty( $meta_code ) ) {
+                $meta_code = $prefix . '-' . str_pad( (string) $u->ID, 3, '0', STR_PAD_LEFT );
+            }
+
+            $avatar_url = get_avatar_url( $u->ID, [ 'size' => 64 ] );
+            if ( isset( $teacher_students_wp_ids[ $u->ID ] ) && ! empty( $teacher_students_wp_ids[ $u->ID ]->photo_url ) ) {
+                $avatar_url = $teacher_students_wp_ids[ $u->ID ]->photo_url;
+            }
+
+            $instructors[] = [
+                'id'     => (int) $u->ID,
+                'name'   => $u->display_name,
+                'email'  => $u->user_email,
+                'code'   => $meta_code,
+                'avatar' => $avatar_url,
+                'areas'  => $user_areas_map[ $u->ID ] ?? [],
+            ];
+        }
+
+        return $instructors;
+    }
+
+    /**
+     * AJAX: Crear página de WordPress para el Portal del Instructor automáticamente
+     */
+    public static function ajax_create_teacher_portal_page(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        // Comprobar si ya existe
+        $existing_id = self::get_teacher_portal_page_id();
+        if ( $existing_id > 0 ) {
+            wp_send_json_success( [
+                'message'   => __( 'Ya existe una página configurada para el Portal del Instructor.', 'aura' ),
+                'page_id'   => $existing_id,
+                'permalink' => get_permalink( $existing_id ),
+            ] );
+        }
+
+        $page_data = [
+            'post_title'   => __( 'Portal del Instructor', 'aura' ),
+            'post_name'    => 'portal-instructor',
+            'post_content' => '<!-- wp:shortcode -->[aura_teacher_portal]<!-- /wp:shortcode -->',
+            'post_status'  => 'publish',
+            'post_type'    => 'page',
+            'post_author'  => get_current_user_id(),
+        ];
+
+        $page_id = wp_insert_post( $page_data );
+
+        if ( is_wp_error( $page_id ) || ! $page_id ) {
+            wp_send_json_error( [ 'message' => __( 'Error al crear la página en WordPress.', 'aura' ) ] );
+        }
+
+        update_option( self::OPTION_TEACHER_PORTAL_PAGE, (int) $page_id );
+
+        wp_send_json_success( [
+            'message'   => __( '¡Página del Portal del Instructor creada con éxito!', 'aura' ),
+            'page_id'   => (int) $page_id,
+            'permalink' => get_permalink( $page_id ),
+        ] );
     }
 
     /**

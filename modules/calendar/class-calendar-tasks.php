@@ -20,13 +20,14 @@ class Aura_Calendar_Tasks {
      * Inicializar hooks y AJAX
      */
     public static function init(): void {
-        add_action( 'wp_ajax_aura_cal_get_tasks',         [ __CLASS__, 'ajax_get_tasks' ] );
-        add_action( 'wp_ajax_aura_cal_get_task',          [ __CLASS__, 'ajax_get_task' ] );
-        add_action( 'wp_ajax_aura_cal_save_task',         [ __CLASS__, 'ajax_save_task' ] );
-        add_action( 'wp_ajax_aura_cal_delete_task',       [ __CLASS__, 'ajax_delete_task' ] );
-        add_action( 'wp_ajax_aura_cal_get_submissions',   [ __CLASS__, 'ajax_get_submissions' ] );
-        add_action( 'wp_ajax_aura_cal_grade_submission',  [ __CLASS__, 'ajax_grade_submission' ] );
-        add_action( 'wp_ajax_aura_cal_submit_task',       [ __CLASS__, 'ajax_submit_task' ] );
+        add_action( 'wp_ajax_aura_cal_get_tasks',              [ __CLASS__, 'ajax_get_tasks' ] );
+        add_action( 'wp_ajax_aura_cal_get_task',               [ __CLASS__, 'ajax_get_task' ] );
+        add_action( 'wp_ajax_aura_cal_save_task',              [ __CLASS__, 'ajax_save_task' ] );
+        add_action( 'wp_ajax_aura_cal_delete_task',            [ __CLASS__, 'ajax_delete_task' ] );
+        add_action( 'wp_ajax_aura_cal_get_submissions',        [ __CLASS__, 'ajax_get_submissions' ] );
+        add_action( 'wp_ajax_aura_cal_grade_submission',       [ __CLASS__, 'ajax_grade_submission' ] );
+        add_action( 'wp_ajax_aura_cal_submit_task',            [ __CLASS__, 'ajax_submit_task' ] );
+        add_action( 'wp_ajax_aura_cal_search_library_books',   [ __CLASS__, 'ajax_search_library_books' ] );
     }
 
     /**
@@ -41,6 +42,7 @@ class Aura_Calendar_Tasks {
         $table_prog  = $wpdb->prefix . 'aura_cal_programs';
         $table_subj  = $wpdb->prefix . 'aura_cal_subjects';
         $table_subs  = $wpdb->prefix . 'aura_cal_task_submissions';
+        $table_books = $wpdb->prefix . 'aura_library_books';
 
         $defaults = [
             'program_id' => 0,
@@ -79,12 +81,15 @@ class Aura_Calendar_Tasks {
         $sql = "SELECT t.*, p.name AS program_name, p.code AS program_code,
                        s.name AS subject_name, s.code AS subject_code,
                        u.display_name AS author_name,
+                       b.title AS book_title, b.author AS book_author, b.dewey_number AS book_dewey,
+                       b.isbn AS book_isbn, b.cover_image_id AS book_cover_id,
                        (SELECT COUNT(*) FROM {$table_subs} sub WHERE sub.task_id = t.id) AS submissions_count,
                        (SELECT COUNT(*) FROM {$table_subs} sub WHERE sub.task_id = t.id AND sub.status IN ('submitted','late')) AS pending_grade_count
                 FROM {$table_tasks} t
                 LEFT JOIN {$table_prog} p ON p.id = t.program_id
                 LEFT JOIN {$table_subj} s ON s.id = t.subject_id
                 LEFT JOIN {$wpdb->users} u ON u.ID = t.created_by
+                LEFT JOIN {$table_books} b ON b.id = t.book_id
                 WHERE {$where_sql}
                 ORDER BY t.due_datetime DESC, t.id DESC
                 LIMIT %d OFFSET %d";
@@ -107,15 +112,19 @@ class Aura_Calendar_Tasks {
         $table_tasks = $wpdb->prefix . 'aura_cal_tasks';
         $table_prog  = $wpdb->prefix . 'aura_cal_programs';
         $table_subj  = $wpdb->prefix . 'aura_cal_subjects';
+        $table_books = $wpdb->prefix . 'aura_library_books';
 
         $row = $wpdb->get_row( $wpdb->prepare(
             "SELECT t.*, p.name AS program_name, p.code AS program_code,
                     s.name AS subject_name, s.code AS subject_code,
-                    u.display_name AS author_name
+                    u.display_name AS author_name,
+                    b.title AS book_title, b.author AS book_author, b.dewey_number AS book_dewey,
+                    b.isbn AS book_isbn, b.cover_image_id AS book_cover_id
              FROM {$table_tasks} t
              LEFT JOIN {$table_prog} p ON p.id = t.program_id
              LEFT JOIN {$table_subj} s ON s.id = t.subject_id
              LEFT JOIN {$wpdb->users} u ON u.ID = t.created_by
+             LEFT JOIN {$table_books} b ON b.id = t.book_id
              WHERE t.id = %d AND t.deleted_at IS NULL",
             $id
         ) );
@@ -124,6 +133,12 @@ class Aura_Calendar_Tasks {
             $row->attachments = json_decode( $row->attachment_urls, true ) ?: [];
         } elseif ( $row ) {
             $row->attachments = [];
+        }
+
+        if ( $row && ! empty( $row->book_cover_id ) ) {
+            $row->book_cover_url = wp_get_attachment_image_url( (int) $row->book_cover_id, 'thumbnail' );
+        } else {
+            $row->book_cover_url = '';
         }
 
         return $row;
@@ -143,6 +158,7 @@ class Aura_Calendar_Tasks {
         $program_id = ! empty( $data['program_id'] ) ? intval( $data['program_id'] ) : 0;
         $subject_id = ! empty( $data['subject_id'] ) ? intval( $data['subject_id'] ) : null;
         $event_id   = ! empty( $data['event_id'] ) ? intval( $data['event_id'] ) : null;
+        $book_id    = ! empty( $data['book_id'] ) ? intval( $data['book_id'] ) : null;
         $title      = sanitize_text_field( $data['title'] ?? '' );
 
         if ( empty( $title ) ) {
@@ -158,6 +174,12 @@ class Aura_Calendar_Tasks {
             $due_dt = date( 'Y-m-d 23:59:59', strtotime( '+7 days' ) );
         }
 
+        $submission_type = ! empty( $data['submission_type'] ) && in_array( $data['submission_type'], [ 'text_only', 'file_only', 'text_or_file' ], true )
+            ? sanitize_text_field( $data['submission_type'] )
+            : 'text_or_file';
+
+        $min_words = ! empty( $data['min_words'] ) ? max( 0, intval( $data['min_words'] ) ) : 0;
+
         $attachments_json = null;
         if ( ! empty( $data['attachment_urls'] ) ) {
             if ( is_array( $data['attachment_urls'] ) ) {
@@ -172,28 +194,62 @@ class Aura_Calendar_Tasks {
             'program_id'      => $program_id,
             'subject_id'      => $subject_id,
             'event_id'        => $event_id,
+            'book_id'         => $book_id,
             'title'           => $title,
             'description'     => wp_kses_post( $data['description'] ?? '' ),
             'due_datetime'    => $due_dt,
             'max_score'       => floatval( $data['max_score'] ?? 100 ),
             'weight'          => floatval( $data['weight'] ?? 1.0 ),
             'attachment_urls' => $attachments_json,
+            'submission_type' => $submission_type,
+            'min_words'       => $min_words,
             'status'          => in_array( $data['status'] ?? '', [ 'published', 'draft', 'closed' ], true ) ? $data['status'] : 'published',
             'updated_at'      => current_time( 'mysql' ),
         ];
 
-        $formats = [ '%d', '%d', '%d', '%s', '%s', '%s', '%f', '%f', '%s', '%s', '%s' ];
+        $formats = [
+            '%d', // program_id
+            $subject_id !== null ? '%d' : null,
+            $event_id !== null ? '%d' : null,
+            $book_id !== null ? '%d' : null,
+            '%s', // title
+            '%s', // description
+            '%s', // due_datetime
+            '%f', // max_score
+            '%f', // weight
+            $attachments_json !== null ? '%s' : null,
+            '%s', // submission_type
+            '%d', // min_words
+            '%s', // status
+            '%s', // updated_at
+        ];
+
+        // Limpiar formatos null si wpdb los espera alineados
+        $clean_fields  = [];
+        $clean_formats = [];
+        $idx = 0;
+        foreach ( $fields as $k => $v ) {
+            $fmt = $formats[ $idx ] ?? '%s';
+            if ( $v === null ) {
+                $clean_fields[ $k ] = null;
+                $clean_formats[]    = null;
+            } else {
+                $clean_fields[ $k ] = $v;
+                $clean_formats[]    = $fmt ?: '%s';
+            }
+            $idx++;
+        }
 
         if ( $id > 0 ) {
-            $wpdb->update( $table_tasks, $fields, [ 'id' => $id ], $formats, [ '%d' ] );
+            $wpdb->update( $table_tasks, $clean_fields, [ 'id' => $id ], $clean_formats, [ '%d' ] );
             return $id;
         } else {
-            $fields['created_by'] = get_current_user_id();
-            $formats[]            = '%d';
-            $fields['created_at'] = current_time( 'mysql' );
-            $formats[]            = '%s';
+            $clean_fields['created_by'] = get_current_user_id();
+            $clean_formats[]            = '%d';
+            $clean_fields['created_at'] = current_time( 'mysql' );
+            $clean_formats[]            = '%s';
 
-            $wpdb->insert( $table_tasks, $fields, $formats );
+            $wpdb->insert( $table_tasks, $clean_fields, $clean_formats );
             return (int) $wpdb->insert_id;
         }
     }
@@ -422,12 +478,38 @@ class Aura_Calendar_Tasks {
             wp_send_json_error( [ 'message' => __( 'La tarea no existe o ya está cerrada.', 'aura' ) ] );
         }
 
-        $now_str = current_time( 'mysql' );
-        $is_late = strtotime( $now_str ) > strtotime( $task->due_datetime );
-        $sub_status = $is_late ? 'late' : 'submitted';
-
         $submission_text = sanitize_textarea_field( $_POST['submission_text'] ?? '' );
         $attachments     = sanitize_text_field( $_POST['attachment_urls'] ?? '' );
+
+        // Validaciones académicas por modalidad de entrega y mínimo de palabras
+        $submission_type = $task->submission_type ?? 'text_or_file';
+        $min_words       = intval( $task->min_words ?? 0 );
+
+        if ( $submission_type === 'text_only' && empty( trim( $submission_text ) ) ) {
+            wp_send_json_error( [ 'message' => __( 'Esta tarea exige la entrega de un resumen por escrito en la plataforma.', 'aura' ) ] );
+        }
+
+        if ( $submission_type === 'file_only' && empty( trim( $attachments ) ) ) {
+            wp_send_json_error( [ 'message' => __( 'Esta tarea exige adjuntar un archivo (PDF o documento).', 'aura' ) ] );
+        }
+
+        if ( $min_words > 0 ) {
+            $words_arr   = preg_split( '/\s+/u', trim( $submission_text ), -1, PREG_SPLIT_NO_EMPTY );
+            $words_count = is_array( $words_arr ) ? count( $words_arr ) : 0;
+            if ( $words_count < $min_words ) {
+                wp_send_json_error( [
+                    'message' => sprintf(
+                        __( 'El resumen requiere un mínimo de %1$d palabras. Actualmente tu texto cuenta con %2$d palabras.', 'aura' ),
+                        $min_words,
+                        $words_count
+                    ),
+                ] );
+            }
+        }
+
+        $now_str = current_time( 'mysql' );
+        $is_late = ! empty( $task->due_datetime ) && ( strtotime( $now_str ) > strtotime( $task->due_datetime ) );
+        $sub_status = $is_late ? 'late' : 'submitted';
 
         $existing_sub_id = $wpdb->get_var( $wpdb->prepare(
             "SELECT id FROM {$table_subs} WHERE task_id = %d AND student_id = %d",
@@ -464,5 +546,68 @@ class Aura_Calendar_Tasks {
         }
 
         wp_send_json_success( [ 'message' => __( '¡Tarea entregada correctamente!', 'aura' ) ] );
+    }
+
+    /**
+     * AJAX: Búsqueda reactiva de libros en el módulo de Biblioteca para asignar a tareas
+     */
+    public static function ajax_search_library_books(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_tasks' ) && ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        global $wpdb;
+        $table_books = $wpdb->prefix . 'aura_library_books';
+        $has_table   = $wpdb->get_var( "SHOW TABLES LIKE '{$table_books}'" ) === $table_books;
+
+        if ( ! $has_table ) {
+            wp_send_json_success( [ 'books' => [] ] );
+        }
+
+        $term   = sanitize_text_field( $_POST['term'] ?? '' );
+        $where  = [ 'deleted_at IS NULL' ];
+        $params = [];
+
+        if ( ! empty( $term ) ) {
+            $like     = '%' . $wpdb->esc_like( $term ) . '%';
+            $where[]  = '(title LIKE %s OR author LIKE %s OR dewey_number LIKE %s OR isbn LIKE %s)';
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+        }
+
+        $where_sql = implode( ' AND ', $where );
+        $sql = "SELECT id, title, author, dewey_number, isbn, cover_image_id, status, available_copies
+                FROM {$table_books}
+                WHERE {$where_sql}
+                ORDER BY title ASC
+                LIMIT 50";
+
+        $rows = ! empty( $params ) ? $wpdb->get_results( $wpdb->prepare( $sql, $params ) ) : $wpdb->get_results( $sql );
+        $books = [];
+
+        if ( is_array( $rows ) ) {
+            foreach ( $rows as $b ) {
+                $cover_url = '';
+                if ( ! empty( $b->cover_image_id ) ) {
+                    $cover_url = wp_get_attachment_image_url( (int) $b->cover_image_id, 'thumbnail' );
+                }
+                $books[] = [
+                    'id'               => (int) $b->id,
+                    'title'            => $b->title,
+                    'author'           => $b->author,
+                    'dewey'            => $b->dewey_number,
+                    'isbn'             => $b->isbn,
+                    'cover_url'        => $cover_url,
+                    'status'           => $b->status,
+                    'available_copies' => (int) $b->available_copies,
+                ];
+            }
+        }
+
+        wp_send_json_success( [ 'books' => $books ] );
     }
 }

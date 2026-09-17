@@ -92,6 +92,10 @@ $photo_url = $student->photo_url ?? '';
             <span class="dashicons dashicons-money-alt"></span>
             <span><?php esc_html_e( 'Mis Pagos', 'aura-suite' ); ?></span>
         </button>
+        <button class="aura-portal-tab-btn" data-target="tasks" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="dashicons dashicons-welcome-write-blog"></span>
+            <span><?php esc_html_e( 'Mis Tareas y Lecturas', 'aura-suite' ); ?></span>
+        </button>
         <button class="aura-portal-tab-btn" data-target="certs" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
             <span class="dashicons dashicons-awards"></span>
             <span><?php esc_html_e( 'Mis Certificados', 'aura-suite' ); ?></span>
@@ -121,7 +125,16 @@ $photo_url = $student->photo_url ?? '';
     <!-- ══════════════ PESTAÑA 3: MIS PAGOS ══════════════ -->
     <?php include AURA_PLUGIN_DIR . 'templates/students/frontend/payment-history.php'; ?>
 
-    <!-- ══════════════ PESTAÑA 4: MIS CERTIFICADOS ══════════════ -->
+    <!-- ══════════════ PESTAÑA 4: MIS TAREAS Y CONTROLES DE LECTURA ══════════════ -->
+    <div id="aura-tab-tasks" class="aura-portal-tab-content" data-tab="tasks" style="display:none;">
+        <?php
+        if ( file_exists( AURA_PLUGIN_DIR . 'templates/students/frontend/tasks.php' ) ) {
+            include AURA_PLUGIN_DIR . 'templates/students/frontend/tasks.php';
+        }
+        ?>
+    </div>
+
+    <!-- ══════════════ PESTAÑA 5: MIS CERTIFICADOS ══════════════ -->
     <div id="aura-tab-certs" class="aura-portal-tab-content" data-tab="certs" style="display:none;">
         <div id="aura-certs-container" data-loaded="true">
             <?php
@@ -134,7 +147,7 @@ $photo_url = $student->photo_url ?? '';
         </div>
     </div>
 
-    <!-- ══════════════ PESTAÑA 5: MIS ENCUESTAS Y FORMULARIOS ══════════════ -->
+    <!-- ══════════════ PESTAÑA 6: MIS ENCUESTAS Y FORMULARIOS ══════════════ -->
     <div id="aura-tab-forms" class="aura-portal-tab-content" data-tab="forms" style="display:none;">
         <div id="aura-forms-container" data-loaded="true">
             <?php

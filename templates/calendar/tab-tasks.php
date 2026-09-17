@@ -16,6 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $tasks = Aura_Calendar_Tasks::get_tasks();
 $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 100 ] );
+
+global $wpdb;
+$library_table = $wpdb->prefix . 'aura_library_books';
+$books = [];
+if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) {
+    $books = $wpdb->get_results( "SELECT id, title, author, isbn, call_number FROM {$library_table} ORDER BY title ASC LIMIT 300" );
+}
 ?>
 
 <div class="aura-tasks-view-container">
@@ -79,6 +86,27 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
                             </div>
                         <?php endif; ?>
 
+                        <?php if ( ! empty( $t->book_title ) ) : ?>
+                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: 8px; padding: 8px 10px; margin-bottom: 10px;">
+                                <span style="font-size: 18px;">📖</span>
+                                <div style="font-size: 12px; line-height: 1.3;">
+                                    <strong style="color: var(--aura-text-primary);"><?php echo esc_html( $t->book_title ); ?></strong>
+                                    <?php if ( ! empty( $t->book_author ) ) : ?>
+                                        <div style="color: var(--aura-text-muted); font-size: 11px;"><?php echo esc_html( $t->book_author ); ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ( ! empty( $t->submission_type ) && $t->submission_type === 'text_only' ) : ?>
+                            <div style="font-size: 11px; color: #6366f1; font-weight: 600; margin-bottom: 8px;">
+                                ✍️ <?php esc_html_e( 'Entrega por escrito en plataforma', 'aura' ); ?>
+                                <?php if ( ! empty( $t->min_words ) ) : ?>
+                                    (mín. <?php echo intval( $t->min_words ); ?> palabras)
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+
                         <?php if ( ! empty( $t->description ) ) : ?>
                             <p style="font-size: 13px; color: var(--aura-text-secondary); margin: 0 0 14px 0; max-height: 60px; overflow: hidden; text-overflow: ellipsis;">
                                 <?php echo esc_html( wp_strip_all_tags( $t->description ) ); ?>
@@ -107,7 +135,7 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
      MODAL: CREAR / EDITAR TAREA
      ══════════════════════════════════════════════════════════════════ -->
 <div id="modal-task-editor" class="aura-modal-overlay" style="display: none;">
-    <div class="aura-modal-container" style="max-width: 600px;">
+    <div class="aura-modal-container" style="max-width: 620px;">
         <div class="aura-modal-header">
             <h3 id="modal-task-title" class="adp-card-title" style="margin: 0; font-size: 18px;">
                 📝 <?php esc_html_e( 'Nueva Tarea / Evaluación', 'aura' ); ?>
@@ -147,6 +175,44 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
                             <select name="subject_id" id="tsk-subj-id" class="form-control" style="width: 100%; border-radius: 8px;">
                                 <option value=""><?php esc_html_e( 'General / Opcional', 'aura' ); ?></option>
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Vincular con Libro de Biblioteca -->
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                            📖 <?php esc_html_e( 'Libro Asociado de la Biblioteca (Opcional para Resumen / Control de Lectura)', 'aura' ); ?>
+                        </label>
+                        <select name="book_id" id="tsk-book-id" class="form-control" style="width: 100%; border-radius: 8px;">
+                            <option value=""><?php esc_html_e( '-- Ninguno (Tarea Estándar) --', 'aura' ); ?></option>
+                            <?php foreach ( $books as $bk ) : ?>
+                                <option value="<?php echo esc_attr( $bk->id ); ?>">
+                                    <?php echo esc_html( $bk->title . ( $bk->author ? ' — ' . $bk->author : '' ) ); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small style="color: var(--aura-text-muted); font-size: 11px; display: block; margin-top: 4px;">
+                            <?php esc_html_e( 'Si asocias un libro, los estudiantes verán la ficha del ejemplar y podrán redactar y enviar su resumen directamente en el portal.', 'aura' ); ?>
+                        </small>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                ✍️ <?php esc_html_e( 'Modalidad de Entrega', 'aura' ); ?>
+                            </label>
+                            <select name="submission_type" id="tsk-submission-type" class="form-control" style="width: 100%; border-radius: 8px;">
+                                <option value="text_or_file"><?php esc_html_e( 'Texto Escrito o Archivo (Flexible)', 'aura' ); ?></option>
+                                <option value="text_only"><?php esc_html_e( 'Solo Resumen Escrito en Plataforma', 'aura' ); ?></option>
+                                <option value="file_only"><?php esc_html_e( 'Solo Archivo Adjunto (PDF / Doc)', 'aura' ); ?></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                📏 <?php esc_html_e( 'Palabras Mínimas (0 = Sin límite)', 'aura' ); ?>
+                            </label>
+                            <input type="number" name="min_words" id="tsk-min-words" value="0" min="0" step="10" class="form-control" placeholder="Ej: 300" style="width: 100%; border-radius: 8px;">
                         </div>
                     </div>
 
