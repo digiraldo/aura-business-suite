@@ -115,25 +115,47 @@ class Aura_Calendar_Frontend {
             true
         );
 
+        $teacher_portal_page_id = class_exists( 'Aura_Calendar_Admin' ) ? Aura_Calendar_Admin::get_teacher_portal_page_id() : 0;
+        $teacher_portal_url     = $teacher_portal_page_id > 0 ? get_permalink( $teacher_portal_page_id ) : home_url( '/portal-instructor/' );
+        $students_clean         = class_exists( 'Aura_Calendar_Admin' ) ? Aura_Calendar_Admin::get_students_candidates() : [];
+        $student_roles          = class_exists( 'Aura_Calendar_Events' ) ? Aura_Calendar_Events::get_student_roles() : [];
+        $teachers_clean         = class_exists( 'Aura_Calendar_Admin' ) ? Aura_Calendar_Admin::get_instructors() : [];
+        $programs               = class_exists( 'Aura_Calendar_Programs' ) ? Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 100 ] ) : [];
+
         wp_localize_script( 'aura-calendar-frontend', 'auraCalData', [
             'ajax_url'            => admin_url( 'admin-ajax.php' ),
+            'calendar_url'        => admin_url( 'admin.php?page=aura-calendar' ),
             'nonce'               => wp_create_nonce( 'aura_cal_nonce' ),
             'current_user_id'     => get_current_user_id(),
-            'user_can_edit'       => current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
+            'teacher_portal_url'  => $teacher_portal_url,
+            'teacher_code_prefix' => class_exists( 'Aura_Calendar_Admin' ) ? Aura_Calendar_Admin::get_teacher_code_prefix() : '',
+            'user_can_edit'       => current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
             'user_can_tasks'      => current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
-            'user_can_attendance' => current_user_can( 'aura_take_attendance' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
-            'user_can_grade'      => current_user_can( 'aura_record_grades' ) || current_user_can( 'aura_cal_grade_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),
+            'user_can_attendance' => current_user_can( 'aura_cal_take_attendance' ) || current_user_can( 'aura_take_attendance' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),
+            'user_can_grade'      => current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'aura_cal_grade_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),
             'gcal_enabled'        => Aura_Calendar_Google_Sync::is_enabled(),
-            'programs'            => class_exists( 'Aura_Calendar_Programs' ) ? Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 100 ] ) : [],
-            'teachers'            => class_exists( 'Aura_Calendar_Admin' ) ? Aura_Calendar_Admin::get_instructors() : [],
+            'programs'            => $programs,
+            'teachers'            => $teachers_clean,
+            'students'            => $students_clean,
+            'student_roles'       => $student_roles,
+            'last_sync_version'   => (int) get_option( Aura_Calendar_Events::OPTION_SYNC_VERSION, time() ),
+            'paletteColors'       => class_exists( 'Aura_Calendar_Admin' ) ? Aura_Calendar_Admin::get_palette_colors() : [],
             'i18n'                => [
-                'today'  => __( 'Hoy', 'aura' ),
-                'month'  => __( 'Mes', 'aura' ),
-                'week'   => __( 'Semana', 'aura' ),
-                'day'    => __( 'Día', 'aura' ),
-                'list'   => __( 'Agenda', 'aura' ),
-                'saved'  => __( 'Guardado exitosamente.', 'aura' ),
-                'error'  => __( 'Error al procesar la solicitud.', 'aura' ),
+                'today'                 => __( 'Hoy', 'aura' ),
+                'month'                 => __( 'Mes', 'aura' ),
+                'week'                  => __( 'Semana', 'aura' ),
+                'day'                   => __( 'Día', 'aura' ),
+                'list'                  => __( 'Agenda', 'aura' ),
+                'saved'                 => __( 'Guardado exitosamente.', 'aura' ),
+                'error'                 => __( 'Error al procesar la solicitud.', 'aura' ),
+                'fullscreen'            => __( 'Pantalla Completa', 'aura' ),
+                'exit_fullscreen'       => __( 'Salir de Pantalla Completa', 'aura' ),
+                'live_updated'          => __( 'El calendario fue actualizado por otro colaborador.', 'aura' ),
+                'live_sync_active'      => __( 'Sincronización en vivo activa', 'aura' ),
+                'add_leader'            => __( 'Asignar Estudiante', 'aura' ),
+                'select_student'        => __( 'Seleccionar estudiante...', 'aura' ),
+                'select_role'           => __( 'Seleccionar responsabilidad...', 'aura' ),
+                'confirm_delete'        => __( '¿Estás seguro de eliminar este elemento?', 'aura' ),
             ],
         ] );
     }
@@ -500,17 +522,19 @@ class Aura_Calendar_Frontend {
         $table_books = $wpdb->prefix . 'aura_library_books';
         $table_subs  = $wpdb->prefix . 'aura_cal_task_submissions';
 
-        // Materias a cargo del profesor
+        // Materias a cargo del profesor (titular directo o en equipo de profesores titulares)
         $has_subj_table = $wpdb->get_var( "SHOW TABLES LIKE '{$table_subj}'" ) === $table_subj;
         $my_subjects = [];
         if ( $has_subj_table ) {
+            $user_id_like = '%' . $wpdb->esc_like( '"' . $user_id . '"' ) . '%';
             $my_subjects = $wpdb->get_results( $wpdb->prepare(
                 "SELECT s.*, p.name AS program_name, p.code AS program_code
                  FROM {$table_subj} s
                  LEFT JOIN {$table_prog} p ON p.id = s.program_id
-                 WHERE s.teacher_id = %d AND s.deleted_at IS NULL
+                 WHERE (s.teacher_id = %d OR s.teacher_ids LIKE %s) AND s.deleted_at IS NULL
                  ORDER BY s.name ASC",
-                $user_id
+                $user_id,
+                $user_id_like
             ) );
         }
 
@@ -521,6 +545,7 @@ class Aura_Calendar_Frontend {
         if ( $has_tasks_table ) {
             $book_join = $has_books_table ? "LEFT JOIN {$table_books} b ON b.id = t.book_id" : "";
             $book_cols = $has_books_table ? ", b.title AS book_title, b.author AS book_author, b.isbn AS book_isbn" : "";
+            $user_id_like = '%' . $wpdb->esc_like( '"' . $user_id . '"' ) . '%';
 
             $my_tasks = $wpdb->get_results( $wpdb->prepare(
                 "SELECT t.*, p.name AS program_name, p.code AS program_code, s.name AS subject_name
@@ -530,10 +555,11 @@ class Aura_Calendar_Frontend {
                  LEFT JOIN {$table_prog} p ON p.id = t.program_id
                  LEFT JOIN {$table_subj} s ON s.id = t.subject_id
                  {$book_join}
-                 WHERE (t.created_by = %d OR s.teacher_id = %d) AND t.deleted_at IS NULL
+                 WHERE (t.created_by = %d OR s.teacher_id = %d OR s.teacher_ids LIKE %s) AND t.deleted_at IS NULL
                  ORDER BY t.created_at DESC",
                 $user_id,
-                $user_id
+                $user_id,
+                $user_id_like
             ) );
         }
 
@@ -664,9 +690,17 @@ class Aura_Calendar_Frontend {
                             <p><?php esc_html_e( 'Aún no tienes asignaturas registradas a tu nombre. El coordinador te asignará materias desde el módulo Calendario.', 'aura' ); ?></p>
                         </div>
                     <?php else : ?>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
-                            <?php foreach ( $my_subjects as $s ) : ?>
-                                <div class="aura-teacher-item-card">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px;">
+                            <?php foreach ( $my_subjects as $s ) : 
+                                $t_materials = ! empty( $s->teacher_materials ) ? json_decode( $s->teacher_materials, true ) : [];
+                                if ( ! is_array( $t_materials ) ) $t_materials = [];
+                                $s_materials = ! empty( $s->student_materials ) ? json_decode( $s->student_materials, true ) : [];
+                                if ( ! is_array( $s_materials ) ) $s_materials = [];
+                                $t_count = count( $t_materials );
+                                $s_count = count( $s_materials );
+                                $collapse_id = 't-mat-collapse-' . $s->id;
+                            ?>
+                                <div class="aura-teacher-item-card" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="display: flex; flex-direction: column; justify-content: space-between;">
                                     <div>
                                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                                             <span class="adp-badge badge-indigo"><?php echo esc_html( $s->code ?: 'MAT' ); ?></span>
@@ -674,17 +708,95 @@ class Aura_Calendar_Frontend {
                                                 <span class="adp-badge badge-slate" style="font-size: 11px;"><?php echo esc_html( $s->program_name ); ?></span>
                                             <?php endif; ?>
                                         </div>
-                                        <h4 class="aura-teacher-item-title">
+                                        <h4 class="aura-teacher-item-title" style="margin-bottom: 6px;">
                                             <?php echo esc_html( $s->name ); ?>
                                         </h4>
                                         <?php if ( ! empty( $s->description ) ) : ?>
-                                            <p class="aura-teacher-item-desc">
+                                            <p class="aura-teacher-item-desc" style="margin-bottom: 12px;">
                                                 <?php echo esc_html( wp_strip_all_tags( $s->description ) ); ?>
                                             </p>
                                         <?php endif; ?>
+
+                                        <!-- Resumen de Materiales Docente / Alumnos -->
+                                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                                            <span class="adp-badge badge-amber" title="<?php esc_attr_e( 'Material pedagógico de cátedra exclusivo para instructores', 'aura' ); ?>" style="font-size: 11.5px; padding: 4px 8px;">
+                                                📁 <?php esc_html_e( 'Cátedra:', 'aura' ); ?> <strong><?php echo $t_count; ?></strong>
+                                            </span>
+                                            <span class="adp-badge badge-emerald" title="<?php esc_attr_e( 'Material de estudio descargable por estudiantes', 'aura' ); ?>" style="font-size: 11.5px; padding: 4px 8px;">
+                                                📖 <?php esc_html_e( 'Alumnos:', 'aura' ); ?> <strong><?php echo $s_count; ?></strong>
+                                            </span>
+                                        </div>
+
+                                        <!-- Panel Desplegable de Materiales -->
+                                        <div id="<?php echo esc_attr( $collapse_id ); ?>" class="aura-teacher-materials-panel" style="display: none; background: var(--at-bg-card-alt, #f8fafc); border: 1px solid var(--at-border); border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 12px;">
+                                            <!-- Sección 1: Material Pedagógico (Cátedra) -->
+                                            <div style="margin-bottom: 12px;">
+                                                <div style="font-weight: 700; color: #b45309; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                                    <span>📁 <?php esc_html_e( 'Material de Cátedra (Pedagógico)', 'aura' ); ?></span>
+                                                    <span style="font-size: 10px; color: var(--at-text-muted); font-weight: normal;"><?php esc_html_e( 'Heredable', 'aura' ); ?></span>
+                                                </div>
+                                                <?php if ( empty( $t_materials ) ) : ?>
+                                                    <p style="font-size: 11px; color: var(--at-text-muted); margin: 0 0 4px 0;"><?php esc_html_e( 'Sin documentos de referencia aún.', 'aura' ); ?></p>
+                                                <?php else : ?>
+                                                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                                                        <?php foreach ( $t_materials as $t_mat ) : 
+                                                            $view_link = ! empty( $t_mat['view_url'] ) ? $t_mat['view_url'] : ( ! empty( $t_mat['url'] ) ? $t_mat['url'] : '' );
+                                                            $is_drive = ! empty( $t_mat['drive_file_id'] ) || ( ! empty( $t_mat['storage'] ) && $t_mat['storage'] === 'google_drive' );
+                                                        ?>
+                                                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px; background: var(--at-bg-card); border: 1px solid var(--at-border); border-radius: 6px;">
+                                                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px;" title="<?php echo esc_attr( $t_mat['name'] ?? 'Documento' ); ?>">
+                                                                    <?php echo $is_drive ? '☁️' : '📄'; ?> <?php echo esc_html( $t_mat['name'] ?? 'Documento' ); ?>
+                                                                </span>
+                                                                <?php if ( $view_link ) : ?>
+                                                                    <a href="<?php echo esc_url( $view_link ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" style="padding: 2px 6px; font-size: 10.5px; text-decoration: none;">
+                                                                        📥 <?php esc_html_e( 'Ver', 'aura' ); ?>
+                                                                    </a>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <!-- Sección 2: Material para Estudiantes -->
+                                            <div>
+                                                <div style="font-weight: 700; color: #047857; margin-bottom: 6px;">
+                                                    📖 <?php esc_html_e( 'Material para Alumnos', 'aura' ); ?>
+                                                </div>
+                                                <?php if ( empty( $s_materials ) ) : ?>
+                                                    <p style="font-size: 11px; color: var(--at-text-muted); margin: 0 0 4px 0;"><?php esc_html_e( 'Sin lecturas o guías publicadas.', 'aura' ); ?></p>
+                                                <?php else : ?>
+                                                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                                                        <?php foreach ( $s_materials as $s_mat ) : 
+                                                            $s_link = ! empty( $s_mat['view_url'] ) ? $s_mat['view_url'] : ( ! empty( $s_mat['url'] ) ? $s_mat['url'] : '' );
+                                                            $s_is_drive = ! empty( $s_mat['drive_file_id'] ) || ( ! empty( $s_mat['storage'] ) && $s_mat['storage'] === 'google_drive' );
+                                                        ?>
+                                                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 8px; background: var(--at-bg-card); border: 1px solid var(--at-border); border-radius: 6px;">
+                                                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px;" title="<?php echo esc_attr( $s_mat['name'] ?? 'Documento' ); ?>">
+                                                                    <?php echo $s_is_drive ? '☁️' : '📄'; ?> <?php echo esc_html( $s_mat['name'] ?? 'Documento' ); ?>
+                                                                </span>
+                                                                <?php if ( $s_link ) : ?>
+                                                                    <a href="<?php echo esc_url( $s_link ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" style="padding: 2px 6px; font-size: 10.5px; text-decoration: none;">
+                                                                        📥 <?php esc_html_e( 'Ver', 'aura' ); ?>
+                                                                    </a>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div style="border-top: 1px solid var(--at-border); padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--at-text-muted);">
-                                        <span><?php echo intval( $s->credits ?? 3 ); ?> <?php esc_html_e( 'Créditos', 'aura' ); ?></span>
+
+                                    <div style="border-top: 1px solid var(--at-border); padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--at-text-muted); flex-wrap: wrap; gap: 6px;">
+                                        <div style="display: flex; gap: 6px;">
+                                            <button type="button" class="btn btn-ghost btn-toggle-mat-panel" data-target="#<?php echo esc_attr( $collapse_id ); ?>" style="font-size: 11px; padding: 4px 8px;">
+                                                📂 <?php esc_html_e( 'Recursos', 'aura' ); ?> (<?php echo $t_count + $s_count; ?>)
+                                            </button>
+                                            <button type="button" class="btn btn-ghost btn-open-upload-mat" data-subject-id="<?php echo esc_attr( $s->id ); ?>" data-subject-name="<?php echo esc_attr( $s->name ); ?>" style="font-size: 11px; padding: 4px 8px; color: #4f46e5;">
+                                                ☁️ <?php esc_html_e( 'Subir', 'aura' ); ?>
+                                            </button>
+                                        </div>
                                         <button type="button" class="btn btn-ghost btn-new-task-for-subject" data-program-id="<?php echo esc_attr( $s->program_id ); ?>" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="font-size: 11px; padding: 4px 8px;">
                                             ➕ <?php esc_html_e( 'Crear Tarea', 'aura' ); ?>
                                         </button>
@@ -941,6 +1053,79 @@ class Aura_Calendar_Frontend {
                 </div>
             </div>
 
+            <!-- ══════════════════════════════════════════════════════════════
+                 MODAL DOCENTE: SUBIR MATERIAL DE ESTUDIO (DRIVE / LOCAL)
+                 ══════════════════════════════════════════════════════════════ -->
+            <div id="modal-teacher-material" class="aura-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+                <div class="aura-modal-container aura-teacher-modal" style="max-width: 540px; width: 100%; overflow: hidden;">
+                    <div class="aura-teacher-modal-header">
+                        <h3 id="t-mat-modal-title" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--at-text-primary);">
+                            ☁️ <?php esc_html_e( 'Subir Material de Estudio o Cátedra', 'aura' ); ?>
+                        </h3>
+                        <button type="button" class="btn-close-modal" data-close="#modal-teacher-material" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--at-text-muted);">&times;</button>
+                    </div>
+
+                    <form id="form-teacher-upload-mat" enctype="multipart/form-data">
+                        <input type="hidden" name="subject_id" id="t-mat-subject-id" value="0">
+                        <div class="aura-teacher-modal-body" style="display: flex; flex-direction: column; gap: 14px;">
+                            <div class="form-group">
+                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
+                                    📚 <?php esc_html_e( 'Materia Destino', 'aura' ); ?>
+                                </label>
+                                <input type="text" id="t-mat-subject-name" readonly class="form-control" style="width: 100%; background: var(--at-bg-card-alt, #f8fafc); font-weight: 600;" value="">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
+                                    🎯 <?php esc_html_e( 'Destino del Material', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                                </label>
+                                <select name="material_type" id="t-mat-type" class="form-control" required style="width: 100%;">
+                                    <option value="teacher">📁 <?php esc_html_e( 'Material Pedagógico de Cátedra (Exclusivo Docente / Heredable)', 'aura' ); ?></option>
+                                    <option value="student">📖 <?php esc_html_e( 'Material de Estudio para Estudiantes (Público alumnos)', 'aura' ); ?></option>
+                                </select>
+                                <span style="font-size: 11px; color: var(--at-text-muted); display: block; margin-top: 4px;">
+                                    <?php esc_html_e( 'El material docente se conservará como documentación de referencia si la materia se asigna a otro instructor.', 'aura' ); ?>
+                                </span>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
+                                    📎 <?php esc_html_e( 'Subir Archivo (Se guardará en Google Drive / Nube)', 'aura' ); ?>
+                                </label>
+                                <input type="file" name="material_file" id="t-mat-file" class="form-control" style="width: 100%;">
+                            </div>
+
+                            <div style="text-align: center; font-size: 12px; color: var(--at-text-muted); font-weight: 600; margin: -4px 0;">
+                                — <?php esc_html_e( 'O BIEN VINCULAR ENLACE DRIVE EXISTENTE', 'aura' ); ?> —
+                            </div>
+
+                            <div class="form-group">
+                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
+                                    🔗 <?php esc_html_e( 'Enlace Compartido de Google Drive / Nube', 'aura' ); ?>
+                                </label>
+                                <input type="url" name="drive_link" id="t-mat-drive-link" class="form-control" placeholder="https://drive.google.com/file/d/..." style="width: 100%;">
+                            </div>
+
+                            <div class="form-group">
+                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
+                                    🏷️ <?php esc_html_e( 'Título descriptivo del recurso', 'aura' ); ?>
+                                </label>
+                                <input type="text" name="material_title" id="t-mat-title" class="form-control" placeholder="<?php esc_attr_e( 'Ej: Guía didáctica Módulo 2 o Sílabo oficial', 'aura' ); ?>" style="width: 100%;">
+                            </div>
+                        </div>
+
+                        <div class="aura-teacher-modal-footer">
+                            <button type="button" class="btn btn-ghost btn-close-modal" data-close="#modal-teacher-material">
+                                <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                            </button>
+                            <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-submit-teacher-mat">
+                                ☁️ <?php esc_html_e( 'Guardar Material', 'aura' ); ?>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
         </div>
 
         <!-- SCRIPT INTERACTIVO DEL PORTAL DOCENTE -->
@@ -1144,7 +1329,66 @@ class Aura_Calendar_Frontend {
                 });
             });
 
-            // 5. FullCalendar para el Instructor
+            // 5. Gestión de Materiales (Docente / Alumnos)
+            $('.btn-toggle-mat-panel').on('click', function() {
+                var target = $(this).data('target');
+                $(target).slideToggle(180);
+            });
+
+            $('.btn-open-upload-mat').on('click', function() {
+                var subjId = $(this).data('subject-id');
+                var subjName = $(this).data('subject-name');
+                $('#t-mat-subject-id').val(subjId);
+                $('#t-mat-subject-name').val(subjName);
+                $('#form-teacher-upload-mat')[0].reset();
+                $('#t-mat-subject-id').val(subjId);
+                $('#t-mat-subject-name').val(subjName);
+                openTeacherModal('#modal-teacher-material');
+            });
+
+            $('#form-teacher-upload-mat').on('submit', function(e) {
+                e.preventDefault();
+                var subjId = $('#t-mat-subject-id').val();
+                var fileVal = $('#t-mat-file').val();
+                var driveLink = $('#t-mat-drive-link').val();
+
+                if (!fileVal && !driveLink) {
+                    alert('Por favor selecciona un archivo o ingresa un enlace de Google Drive.');
+                    return;
+                }
+
+                var $btn = $('#btn-submit-teacher-mat');
+                $btn.prop('disabled', true).text('Subiendo a Drive...');
+
+                var formData = new FormData(this);
+                formData.append('action', 'aura_cal_upload_subject_material');
+                formData.append('nonce', auraCalData.nonce);
+
+                $.ajax({
+                    url: auraCalData.ajax_url,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        $btn.prop('disabled', false).text('☁️ Guardar Material');
+                        if (res && res.success) {
+                            alert(res.data.message || 'Material guardado correctamente en la nube.');
+                            closeTeacherModal('#modal-teacher-material');
+                            location.reload();
+                        } else {
+                            var msg = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
+                            alert('⚠️ ' + msg);
+                        }
+                    },
+                    error: function() {
+                        $btn.prop('disabled', false).text('☁️ Guardar Material');
+                        alert('Error al subir material a la nube.');
+                    }
+                });
+            });
+
+            // 6. FullCalendar para el Instructor
             var calEl = document.getElementById('aura-teacher-fullcalendar');
             if (calEl && typeof FullCalendar !== 'undefined') {
                 window.teacherCalendarInstance = new FullCalendar.Calendar(calEl, {
@@ -1166,6 +1410,31 @@ class Aura_Calendar_Frontend {
                     slotMaxTime: '22:00:00',
                     allDaySlot: false,
                     nowIndicator: true,
+                    eventContent: function(arg) {
+                        var p = arg.event.extendedProps || {};
+                        var title = p.raw_title || arg.event.title;
+                        var timeText = arg.timeText;
+                        
+                        var avatarImg = '';
+                        if (p.primary_avatar) {
+                            avatarImg = '<img src="' + p.primary_avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" />';
+                        }
+
+                        var leadersBadge = '';
+                        if (p.student_leaders && p.student_leaders.length > 0) {
+                            var firstLeader = p.student_leaders[0];
+                            leadersBadge = '<span style="font-size:10px;background:rgba(255,255,255,0.28);border-radius:8px;padding:1px 5px;margin-left:auto;white-space:nowrap;font-weight:600;">⭐ ' + (firstLeader.name ? firstLeader.name.split(' ')[0] : 'Líder') + '</span>';
+                        }
+
+                        return {
+                            html: '<div style="display:flex;align-items:center;gap:5px;width:100%;overflow:hidden;padding:1px 2px;">' +
+                                  avatarImg +
+                                  (timeText ? '<span style="font-weight:700;font-size:11px;flex-shrink:0;">' + timeText + '</span>' : '') +
+                                  '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;font-size:12px;">' + title + '</span>' +
+                                  leadersBadge +
+                                  '</div>'
+                        };
+                    },
                     events: function(info, successCallback, failureCallback) {
                         $.post(auraCalData.ajax_url, {
                             action: 'aura_cal_get_events',
@@ -1182,12 +1451,19 @@ class Aura_Calendar_Frontend {
                         }).fail(failureCallback);
                     },
                     eventClick: function(info) {
-                        var p = info.event.extendedProps;
-                        var msg = info.event.title + '\n' +
+                        var p = info.event.extendedProps || {};
+                        var leadersTxt = '';
+                        if (p.student_leaders && p.student_leaders.length > 0) {
+                            leadersTxt = '\n⭐ Estudiantes con Responsabilidad:\n' + p.student_leaders.map(function(l) {
+                                return ' • ' + l.name + ' — ' + (l.role_label || l.role);
+                            }).join('\n');
+                        }
+                        var msg = '📚 ' + info.event.title + '\n' +
                                   (p.subject_name ? 'Materia: ' + p.subject_name + '\n' : '') +
-                                  (p.location ? 'Aula: ' + p.location + '\n' : '') +
+                                  (p.location ? 'Aula / Salón: ' + p.location + '\n' : '') +
                                   (p.online_url ? 'Enlace Virtual: ' + p.online_url + '\n' : '') +
-                                  (p.description ? 'Nota: ' + p.description : '');
+                                  (p.description ? 'Nota: ' + p.description + '\n' : '') +
+                                  leadersTxt;
                         alert(msg);
                     }
                 });
@@ -1214,27 +1490,101 @@ class Aura_Calendar_Frontend {
      */
     public static function shortcode_student_schedule(): string {
         if ( ! is_user_logged_in() ) {
-            return self::shortcode_community_login();
+            return self::shortcode_login();
         }
+
+        $current_user_id = get_current_user_id();
 
         ob_start();
         ?>
         <div class="aura-student-schedule-wrap" style="margin: 20px 0;">
             <div class="adp-card" style="padding: 20px; border-radius: 12px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                     <h3 class="adp-card-title" style="font-size: 18px; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
-                        <span class="dashicons dashicons-calendar-alt" style="font-size: 20px; width: 20px; height: 20px;"></span>
+                        <span class="dashicons dashicons-calendar-alt" style="font-size: 20px; width: 20px; height: 20px; color: #6366f1;"></span>
                         <span><?php esc_html_e( 'Mi Calendario de Clases y Actividades', 'aura' ); ?></span>
                     </h3>
+                    <div style="font-size: 12px; color: var(--at-text-muted, #64748b);">
+                        💡 <?php esc_html_e( 'Las clases con una estrella (⭐) indican que tienes o hay compañeros con roles de liderazgo asignados.', 'aura' ); ?>
+                    </div>
                 </div>
-                <div id="aura-student-calendar" style="min-height: 500px;"></div>
+                <div id="aura-student-calendar" style="min-height: 540px;"></div>
+            </div>
+
+            <!-- MODAL DE DETALLE DE CLASE PARA ESTUDIANTE -->
+            <div id="modal-student-event-detail" class="aura-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+                <div class="aura-modal-container" style="max-width: 520px; width: 100%; background: var(--aura-surface-card, #ffffff); border-radius: 14px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); border: 1px solid var(--aura-border, #e2e8f0);">
+                    <div style="padding: 16px 20px; border-bottom: 1px solid var(--aura-border, #e2e8f0); display: flex; justify-content: space-between; align-items: center; background: var(--aura-surface-alt, #f8fafc);">
+                        <h4 id="st-det-title" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--aura-text-primary, #0f172a);">
+                            Detalle de Clase
+                        </h4>
+                        <button type="button" class="btn-close-st-modal" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--aura-text-muted, #64748b); line-height: 1;">&times;</button>
+                    </div>
+
+                    <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;">
+                        <!-- Banner destacado si el alumno es líder de la sesión -->
+                        <div id="st-det-my-role-banner" style="display: none; padding: 12px 14px; border-radius: 10px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #b45309; font-size: 13px; font-weight: 600;">
+                            🌟 <span id="st-det-my-role-text">Tienes una responsabilidad asignada en esta clase</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
+                            <div>
+                                <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block;">Materia</span>
+                                <strong id="st-det-subject" style="color: var(--aura-text-primary, #0f172a);">-</strong>
+                            </div>
+                            <div>
+                                <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block;">Horario</span>
+                                <strong id="st-det-time" style="color: var(--aura-text-primary, #0f172a);">-</strong>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 13px;">
+                            <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block;">Profesor Titular</span>
+                            <div id="st-det-teacher" style="margin-top: 4px; display: flex; align-items: center; gap: 8px;">-</div>
+                        </div>
+
+                        <div id="st-det-location-box" style="font-size: 13px;">
+                            <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block;">Salón / Ubicación</span>
+                            <div id="st-det-location" style="margin-top: 2px;">-</div>
+                        </div>
+
+                        <div id="st-det-online-box" style="display: none; padding: 10px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2);">
+                            <span style="font-size: 12px; font-weight: 600; color: #4f46e5; display: block; margin-bottom: 4px;">💻 Clase Virtual En Línea</span>
+                            <a id="st-det-online-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-indigo" style="font-size: 12px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                                🚀 Unirse a la Clase Virtual
+                            </a>
+                        </div>
+
+                        <!-- Sección de Líderes y Monitores Estudiantiles -->
+                        <div id="st-det-leaders-box" style="display: none; border-top: 1px solid var(--aura-border, #e2e8f0); padding-top: 12px;">
+                            <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 8px;">
+                                ⭐ Estudiantes Asignados a la Actividad
+                            </span>
+                            <div id="st-det-leaders-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                        </div>
+                    </div>
+
+                    <div style="padding: 12px 20px; border-top: 1px solid var(--aura-border, #e2e8f0); background: var(--aura-surface-alt, #f8fafc); text-align: right;">
+                        <button type="button" class="btn btn-ghost btn-close-st-modal">
+                            <?php esc_html_e( 'Cerrar', 'aura' ); ?>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
         <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var $ = jQuery;
             var calEl = document.getElementById('aura-student-calendar');
             if (!calEl || typeof FullCalendar === 'undefined') return;
+
+            var currentUserId = <?php echo intval( $current_user_id ); ?>;
+
+            function closeStModal() {
+                $('#modal-student-event-detail').fadeOut(150);
+            }
+            $('.btn-close-st-modal').on('click', closeStModal);
 
             var calendar = new FullCalendar.Calendar(calEl, {
                 initialView: 'timeGridWeek',
@@ -1248,8 +1598,47 @@ class Aura_Calendar_Frontend {
                 slotMaxTime: '21:00:00',
                 allDaySlot: false,
                 nowIndicator: true,
+                eventContent: function(arg) {
+                    var p = arg.event.extendedProps || {};
+                    var title = p.raw_title || arg.event.title;
+                    var timeText = arg.timeText;
+                    
+                    var avatarImg = '';
+                    if (p.primary_avatar) {
+                        avatarImg = '<img src="' + p.primary_avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" />';
+                    }
+
+                    var isMeLeader = false;
+                    var leaderLabel = '';
+                    if (p.student_leaders && p.student_leaders.length > 0) {
+                        $.each(p.student_leaders, function(idx, ld) {
+                            if (parseInt(ld.student_id, 10) === currentUserId) {
+                                isMeLeader = true;
+                                leaderLabel = ld.role_label || 'Líder';
+                            }
+                        });
+                        if (!leaderLabel) {
+                            leaderLabel = p.student_leaders[0].name ? p.student_leaders[0].name.split(' ')[0] : 'Líder';
+                        }
+                    }
+
+                    var leadersBadge = '';
+                    if (leaderLabel) {
+                        var bg = isMeLeader ? 'background:#f59e0b;color:#ffffff;' : 'background:rgba(255,255,255,0.3);color:inherit;';
+                        leadersBadge = '<span style="font-size:10px;' + bg + 'border-radius:8px;padding:1px 5px;margin-left:auto;white-space:nowrap;font-weight:700;">⭐ ' + leaderLabel + '</span>';
+                    }
+
+                    return {
+                        html: '<div style="display:flex;align-items:center;gap:5px;width:100%;overflow:hidden;padding:1px 2px;">' +
+                              avatarImg +
+                              (timeText ? '<span style="font-weight:700;font-size:11px;flex-shrink:0;">' + timeText + '</span>' : '') +
+                              '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;font-size:12px;">' + title + '</span>' +
+                              leadersBadge +
+                              '</div>'
+                    };
+                },
                 events: function(info, successCallback, failureCallback) {
-                    jQuery.post(auraCalData.ajax_url, {
+                    $.post(auraCalData.ajax_url, {
                         action: 'aura_cal_get_events',
                         nonce: auraCalData.nonce,
                         start: info.startStr,
@@ -1263,13 +1652,69 @@ class Aura_Calendar_Frontend {
                     }).fail(failureCallback);
                 },
                 eventClick: function(info) {
-                    var p = info.event.extendedProps;
-                    var details = info.event.title + '\n' +
-                                  (p.subject_name ? 'Materia: ' + p.subject_name + '\n' : '') +
-                                  (p.location ? 'Salón: ' + p.location + '\n' : '') +
-                                  (p.online_url ? 'Enlace: ' + p.online_url + '\n' : '') +
-                                  (p.description ? '\n' + p.description : '');
-                    alert(details);
+                    var p = info.event.extendedProps || {};
+                    var d = info.event;
+
+                    $('#st-det-title').text(d.title);
+                    $('#st-det-subject').text(p.subject_name || 'General');
+
+                    var startFormatted = d.start ? d.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    var endFormatted = d.end ? d.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    $('#st-det-time').text(startFormatted + (endFormatted ? ' - ' + endFormatted : ''));
+
+                    // Instructor con Avatar
+                    if (p.primary_name) {
+                        var teacherAvatar = p.primary_avatar ? '<img src="' + p.primary_avatar + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">' : '👨‍🏫';
+                        $('#st-det-teacher').html(teacherAvatar + ' <strong>' + p.primary_name + '</strong>');
+                    } else {
+                        $('#st-det-teacher').text('Por designar');
+                    }
+
+                    // Ubicación
+                    if (p.location) {
+                        $('#st-det-location').text(p.location);
+                        $('#st-det-location-box').show();
+                    } else {
+                        $('#st-det-location-box').hide();
+                    }
+
+                    // Enlace Virtual
+                    if (p.online_url) {
+                        $('#st-det-online-link').attr('href', p.online_url);
+                        $('#st-det-online-box').show();
+                    } else {
+                        $('#st-det-online-box').hide();
+                    }
+
+                    // Roles de Liderazgo
+                    var myRole = null;
+                    if (p.student_leaders && p.student_leaders.length > 0) {
+                        var html = '';
+                        $.each(p.student_leaders, function(i, l) {
+                            if (parseInt(l.student_id, 10) === currentUserId) {
+                                myRole = l.role_label || l.role;
+                            }
+                            var lAvatar = l.avatar_url ? '<img src="' + l.avatar_url + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;">' : '👤';
+                            html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--aura-surface-alt,#f8fafc);border-radius:8px;border:1px solid var(--aura-border,#e2e8f0);font-size:12px;">';
+                            html += '  <div style="display:flex;align-items:center;gap:6px;">' + lAvatar + ' <strong>' + l.name + '</strong></div>';
+                            html += '  <span style="background:rgba(99,102,241,0.12);color:#4f46e5;font-weight:600;padding:2px 8px;border-radius:6px;font-size:11px;">' + (l.role_label || l.role) + '</span>';
+                            html += '</div>';
+                        });
+                        $('#st-det-leaders-list').html(html);
+                        $('#st-det-leaders-box').show();
+                    } else {
+                        $('#st-det-leaders-box').hide();
+                    }
+
+                    // Banner personal
+                    if (myRole) {
+                        $('#st-det-my-role-text').html('🎯 <strong>¡Fuiste asignado como ' + myRole + ' para esta sesión!</strong> Prepárate para guiar y colaborar con el grupo.');
+                        $('#st-det-my-role-banner').show();
+                    } else {
+                        $('#st-det-my-role-banner').hide();
+                    }
+
+                    $('#modal-student-event-detail').css({ display: 'flex' }).hide().fadeIn(150);
                 }
             });
             calendar.render();

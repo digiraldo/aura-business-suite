@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Aura_Calendar_Setup {
 
     /** Versión actual del esquema de base de datos del módulo */
-    const DB_VERSION = '1.4.0';
+    const DB_VERSION = '1.5.0';
 
     /** Clave de opción en wp_options para almacenar la versión instalada */
     const DB_VERSION_OPTION = 'aura_calendar_db_version';
@@ -35,6 +35,7 @@ class Aura_Calendar_Setup {
     public static function init(): void {
         self::maybe_add_area_id_column();
         self::maybe_add_task_library_columns();
+        self::maybe_add_materials_and_leaders_columns();
         if ( self::needs_update() ) {
             add_action( 'admin_init', [ __CLASS__, 'create_tables' ] );
         }
@@ -74,6 +75,40 @@ class Aura_Calendar_Setup {
             $col_words = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_tasks}` LIKE 'min_words'" );
             if ( empty( $col_words ) ) {
                 $wpdb->query( "ALTER TABLE `{$t_tasks}` ADD COLUMN `min_words` INT UNSIGNED DEFAULT 0 AFTER `submission_type`" );
+            }
+        }
+    }
+
+    /**
+     * Asegura las columnas para materiales docentes, de estudiantes y carpeta Google Drive en materias,
+     * y estudiantes líderes en eventos.
+     */
+    public static function maybe_add_materials_and_leaders_columns(): void {
+        global $wpdb;
+        $t_subjects = $wpdb->prefix . 'aura_cal_subjects';
+        $t_events   = $wpdb->prefix . 'aura_cal_events';
+
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_subjects}'" ) === $t_subjects ) {
+            $col_tm = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_subjects}` LIKE 'teacher_materials'" );
+            if ( empty( $col_tm ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `teacher_materials` LONGTEXT DEFAULT NULL AFTER `teachers`" );
+            }
+
+            $col_sm = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_subjects}` LIKE 'student_materials'" );
+            if ( empty( $col_sm ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `student_materials` LONGTEXT DEFAULT NULL AFTER `teacher_materials`" );
+            }
+
+            $col_gdf = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_subjects}` LIKE 'gdrive_folder_id'" );
+            if ( empty( $col_gdf ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `gdrive_folder_id` VARCHAR(255) DEFAULT NULL AFTER `student_materials`" );
+            }
+        }
+
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_events}'" ) === $t_events ) {
+            $col_sl = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_events}` LIKE 'student_leaders'" );
+            if ( empty( $col_sl ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_events}` ADD COLUMN `student_leaders` LONGTEXT DEFAULT NULL AFTER `description`" );
             }
         }
     }
@@ -140,6 +175,9 @@ class Aura_Calendar_Setup {
   color VARCHAR(20) DEFAULT '#3b82f6',
   default_teacher_id BIGINT UNSIGNED DEFAULT NULL,
   teachers TEXT DEFAULT NULL,
+  teacher_materials LONGTEXT DEFAULT NULL,
+  student_materials LONGTEXT DEFAULT NULL,
+  gdrive_folder_id VARCHAR(255) DEFAULT NULL,
   total_hours DECIMAL(6,2) NOT NULL DEFAULT 0.00,
   status VARCHAR(20) NOT NULL DEFAULT 'active',
   order_index INT NOT NULL DEFAULT 0,
@@ -161,6 +199,7 @@ class Aura_Calendar_Setup {
   title VARCHAR(255) NOT NULL,
   event_type VARCHAR(30) NOT NULL DEFAULT 'class',
   description TEXT DEFAULT NULL,
+  student_leaders LONGTEXT DEFAULT NULL,
   location VARCHAR(255) DEFAULT NULL,
   online_url VARCHAR(500) DEFAULT NULL,
   start_datetime DATETIME NOT NULL,

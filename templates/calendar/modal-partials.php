@@ -116,6 +116,36 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                         </div>
                     </div>
 
+                    <!-- Estudiantes Líderes / Responsables de la Actividad -->
+                    <div class="form-group" style="background: rgba(93,95,239,0.04); border: 1px solid rgba(93,95,239,0.15); border-radius: 8px; padding: 12px;">
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                            <span>🌟 <?php esc_html_e( 'Asignar Estudiantes a Actividad (Liderazgo / Roles)', 'aura' ); ?></span>
+                            <span style="font-size: 11px; font-weight: normal; color: var(--aura-text-muted);"><?php esc_html_e( 'Líderes de programa, expositores, monitores', 'aura' ); ?></span>
+                        </label>
+                        
+                        <!-- Mini selector para añadir estudiante con rol -->
+                        <div style="display: grid; grid-template-columns: 1.4fr 1.2fr auto; gap: 8px; margin-bottom: 10px; align-items: center;">
+                            <select id="select-add-leader-user" class="form-control" style="font-size: 12.5px; padding: 6px 10px; border-radius: 6px;">
+                                <option value=""><?php esc_html_e( 'Seleccionar estudiante...', 'aura' ); ?></option>
+                            </select>
+                            <select id="select-add-leader-role" class="form-control" style="font-size: 12.5px; padding: 6px 10px; border-radius: 6px;">
+                                <option value="activity_leader"><?php esc_html_e( '🎯 Líder de Actividad', 'aura' ); ?></option>
+                                <option value="program_leader"><?php esc_html_e( '👑 Líder de Programa', 'aura' ); ?></option>
+                                <option value="presenter"><?php esc_html_e( '🗣️ Expositor / Dar Clase', 'aura' ); ?></option>
+                                <option value="monitor"><?php esc_html_e( '🛡️ Monitor / Moderador', 'aura' ); ?></option>
+                            </select>
+                            <button type="button" id="btn-add-leader-to-event" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px; white-space: nowrap;">
+                                ➕ <?php esc_html_e( 'Asignar', 'aura' ); ?>
+                            </button>
+                        </div>
+                        
+                        <!-- Lista de líderes asignados con chips y avatar -->
+                        <div id="evt-student-leaders-list" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 28px; align-items: center;">
+                            <!-- Inyectado dinámicamente desde JS -->
+                        </div>
+                        <input type="hidden" name="student_leaders_json" id="evt-student-leaders-json" value="[]">
+                    </div>
+
                     <!-- ── SECCIÓN DE RECURRENCIA (SÓLO CREACIÓN) ── -->
                     <div id="sec-recurrence-toggle" style="background: var(--aura-primary-alpha, rgba(99, 102, 241, 0.06)); border: 1px dashed var(--aura-primary, #6366f1); border-radius: 10px; padding: 14px;">
                         <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; user-select: none;">
@@ -265,7 +295,14 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <div>🎓 <strong><?php esc_html_e( 'Programa:', 'aura' ); ?></strong> <span id="det-program"></span></div>
                     <div>📚 <strong><?php esc_html_e( 'Materia:', 'aura' ); ?></strong> <span id="det-subject"></span></div>
                     <div>🕐 <strong><?php esc_html_e( 'Horario:', 'aura' ); ?></strong> <span id="det-time"></span></div>
-                    <div id="row-det-teachers" style="display: none;">👨‍🏫 <strong><?php esc_html_e( 'Profesor(es):', 'aura' ); ?></strong> <span id="det-teachers"></span></div>
+                    <div id="row-det-teachers" style="display: none;">
+                        👨‍🏫 <strong><?php esc_html_e( 'Profesor(es):', 'aura' ); ?></strong> 
+                        <span id="det-teachers" style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-left: 4px;"></span>
+                    </div>
+                    <div id="row-det-leaders" style="display: none;">
+                        🌟 <strong><?php esc_html_e( 'Estudiantes con Responsabilidad:', 'aura' ); ?></strong>
+                        <div id="det-leaders" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;"></div>
+                    </div>
                     <div id="row-det-location" style="display: none;">📍 <strong><?php esc_html_e( 'Aula:', 'aura' ); ?></strong> <span id="det-location"></span></div>
                     <div id="row-det-online" style="display: none;">💻 <strong><?php esc_html_e( 'Enlace Virtual:', 'aura' ); ?></strong> <a id="det-online" href="#" target="_blank" style="color: var(--aura-primary); text-decoration: underline;"></a></div>
                 </div>

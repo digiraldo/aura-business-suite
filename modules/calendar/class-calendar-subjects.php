@@ -20,10 +20,12 @@ class Aura_Calendar_Subjects {
      * Inicializar hooks y AJAX
      */
     public static function init(): void {
-        add_action( 'wp_ajax_aura_cal_get_subjects',   [ __CLASS__, 'ajax_get_subjects' ] );
-        add_action( 'wp_ajax_aura_cal_get_subject',    [ __CLASS__, 'ajax_get_subject' ] );
-        add_action( 'wp_ajax_aura_cal_save_subject',   [ __CLASS__, 'ajax_save_subject' ] );
-        add_action( 'wp_ajax_aura_cal_delete_subject', [ __CLASS__, 'ajax_delete_subject' ] );
+        add_action( 'wp_ajax_aura_cal_get_subjects',            [ __CLASS__, 'ajax_get_subjects' ] );
+        add_action( 'wp_ajax_aura_cal_get_subject',             [ __CLASS__, 'ajax_get_subject' ] );
+        add_action( 'wp_ajax_aura_cal_save_subject',            [ __CLASS__, 'ajax_save_subject' ] );
+        add_action( 'wp_ajax_aura_cal_delete_subject',          [ __CLASS__, 'ajax_delete_subject' ] );
+        add_action( 'wp_ajax_aura_cal_upload_subject_material', [ __CLASS__, 'ajax_upload_material' ] );
+        add_action( 'wp_ajax_aura_cal_delete_subject_material', [ __CLASS__, 'ajax_delete_material' ] );
     }
 
     /**
@@ -131,6 +133,27 @@ class Aura_Calendar_Subjects {
             }
 
             $s->teachers_names = ! empty( $names ) ? implode( ', ', $names ) : ( $s->default_teacher_name ?: '' );
+
+            // Decodificar listas de materiales docentes y estudiantiles
+            $s->teacher_materials_list = [];
+            if ( ! empty( $s->teacher_materials ) ) {
+                $dec_tm = json_decode( $s->teacher_materials, true );
+                if ( is_array( $dec_tm ) ) {
+                    $s->teacher_materials_list = $dec_tm;
+                }
+            }
+
+            $s->student_materials_list = [];
+            if ( ! empty( $s->student_materials ) ) {
+                $dec_sm = json_decode( $s->student_materials, true );
+                if ( is_array( $dec_sm ) ) {
+                    $s->student_materials_list = $dec_sm;
+                }
+            }
+
+            $s->teacher_materials_count = count( $s->teacher_materials_list );
+            $s->student_materials_count = count( $s->student_materials_list );
+            $s->total_materials_count   = $s->teacher_materials_count + $s->student_materials_count;
         }
         unset( $s );
 
@@ -218,6 +241,27 @@ class Aura_Calendar_Subjects {
         $primary_teacher = ! empty( $teacher_ids ) ? $teacher_ids[0] : null;
         $teachers_json   = ! empty( $teacher_ids ) ? wp_json_encode( $teacher_ids ) : null;
 
+        // Procesar listas de materiales docentes y estudiantiles
+        $teacher_materials_val = null;
+        if ( isset( $data['teacher_materials'] ) ) {
+            if ( is_array( $data['teacher_materials'] ) ) {
+                $teacher_materials_val = wp_json_encode( $data['teacher_materials'] );
+            } elseif ( is_string( $data['teacher_materials'] ) ) {
+                $teacher_materials_val = stripslashes( $data['teacher_materials'] );
+            }
+        }
+
+        $student_materials_val = null;
+        if ( isset( $data['student_materials'] ) ) {
+            if ( is_array( $data['student_materials'] ) ) {
+                $student_materials_val = wp_json_encode( $data['student_materials'] );
+            } elseif ( is_string( $data['student_materials'] ) ) {
+                $student_materials_val = stripslashes( $data['student_materials'] );
+            }
+        }
+
+        $gdrive_folder_id = ! empty( $data['gdrive_folder_id'] ) ? sanitize_text_field( $data['gdrive_folder_id'] ) : null;
+
         $fields = [
             'program_id'         => $program_id,
             'name'               => $name,
@@ -227,6 +271,9 @@ class Aura_Calendar_Subjects {
             'color'              => $color,
             'default_teacher_id' => $primary_teacher,
             'teachers'           => $teachers_json,
+            'teacher_materials'  => $teacher_materials_val,
+            'student_materials'  => $student_materials_val,
+            'gdrive_folder_id'   => $gdrive_folder_id,
             'status'             => in_array( $data['status'] ?? '', [ 'active', 'inactive' ], true ) ? $data['status'] : 'active',
             'order_index'        => intval( $data['order_index'] ?? 0 ),
             'updated_at'         => current_time( 'mysql' ),
@@ -236,6 +283,9 @@ class Aura_Calendar_Subjects {
             '%d', '%s', '%s', '%s', '%d', '%s',
             $fields['default_teacher_id'] !== null ? '%d' : null,
             $fields['teachers'] !== null ? '%s' : null,
+            $fields['teacher_materials'] !== null ? '%s' : null,
+            $fields['student_materials'] !== null ? '%s' : null,
+            $fields['gdrive_folder_id'] !== null ? '%s' : null,
             '%s', '%d', '%s',
         ];
 
@@ -369,5 +419,251 @@ class Aura_Calendar_Subjects {
         } else {
             wp_send_json_error( [ 'message' => __( 'No se pudo eliminar la materia.', 'aura' ) ] );
         }
+    }
+
+    /**
+     * AJAX: Subir material de estudio (Docente o Estudiante) a Google Drive o almacenamiento local
+     */
+    public static function ajax_upload_material(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        $can_manage = current_user_can( 'aura_cal_manage_programs' ) ||
+                      current_user_can( 'aura_cal_manage_calendar' ) ||
+                      current_user_can( 'aura_create_calendar_events' ) ||
+                      current_user_can( 'manage_options' );
+
+        $subject_id = intval( $_POST['subject_id'] ?? 0 );
+        $user_id    = get_current_user_id();
+
+        // Si no tiene capabilities administrativas, verificar si es docente asignado a esta materia
+        if ( ! $can_manage && $subject_id > 0 ) {
+            $subject = self::get( $subject_id );
+            if ( $subject && ! empty( $subject->teacher_ids ) && in_array( $user_id, $subject->teacher_ids, true ) ) {
+                $can_manage = true;
+            }
+        }
+
+        if ( ! $can_manage ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para subir material.', 'aura' ) ] );
+        }
+
+        $audience     = sanitize_text_field( $_POST['audience'] ?? 'student' );
+        if ( ! in_array( $audience, [ 'teacher', 'student' ], true ) ) {
+            $audience = 'student';
+        }
+
+        $title        = sanitize_text_field( $_POST['title'] ?? '' );
+        $external_url = esc_url_raw( $_POST['external_url'] ?? '' );
+
+        // Incluir gestor de Google Drive si existe
+        if ( ! class_exists( 'Aura_Drive_Manager' ) ) {
+            $gdrive_path = defined( 'AURA_PLUGIN_DIR' ) ? AURA_PLUGIN_DIR . 'modules/financial/class-google-drive-manager.php' : '';
+            if ( ! empty( $gdrive_path ) && file_exists( $gdrive_path ) ) {
+                require_once $gdrive_path;
+            }
+        }
+
+        $file_entry = null;
+
+        // ── CASO A: SUBIDA DE ARCHIVO FÍSICO ──
+        if ( ! empty( $_FILES['material_file'] ) && ! empty( $_FILES['material_file']['name'] ) ) {
+            $file      = $_FILES['material_file'];
+            $file_name = sanitize_file_name( $file['name'] );
+            $file_tmp  = $file['tmp_name'];
+            $file_size = intval( $file['size'] );
+            $file_type = wp_check_filetype( $file_name );
+            $mime_type = ! empty( $file_type['type'] ) ? $file_type['type'] : 'application/octet-stream';
+
+            if ( empty( $title ) ) {
+                $title = pathinfo( $file_name, PATHINFO_FILENAME );
+            }
+
+            $uploaded_to_drive = false;
+
+            // Intentar subir a Google Drive si está configurado
+            if ( class_exists( 'Aura_Drive_Manager' ) ) {
+                $drive = new \Aura_Drive_Manager();
+                if ( $drive->is_ready() ) {
+                    $drive_res = $drive->upload_file( $file_tmp, $file_name, $mime_type, 'Academico_Materias' );
+                    if ( $drive_res && ! empty( $drive_res['url'] ) ) {
+                        $file_id      = $drive_res['file_id'] ?? \Aura_Drive_Manager::extract_file_id( $drive_res['url'] );
+                        $preview_url  = ! empty( $drive_res['preview_url'] ) ? $drive_res['preview_url'] : \Aura_Drive_Manager::get_preview_url( $drive_res['url'] );
+                        $download_url = ! empty( $drive_res['download_url'] ) ? $drive_res['download_url'] : \Aura_Drive_Manager::get_download_url( $drive_res['url'] );
+
+                        $file_entry = [
+                            'id'             => uniqid( 'mat_' ),
+                            'name'           => $file_name,
+                            'title'          => $title,
+                            'url'            => $drive_res['url'],
+                            'file_id'        => $file_id,
+                            'preview_url'    => $preview_url,
+                            'download_url'   => $download_url,
+                            'storage'        => 'gdrive',
+                            'size_formatted' => size_format( $file_size ),
+                            'mime'           => $mime_type,
+                            'uploaded_at'    => current_time( 'mysql' ),
+                            'uploaded_by'    => $user_id,
+                            'uploader_name'  => wp_get_current_user()->display_name,
+                        ];
+                        $uploaded_to_drive = true;
+                    }
+                }
+            }
+
+            // Fallback a almacenamiento local de WordPress si Google Drive no está disponible
+            if ( ! $uploaded_to_drive ) {
+                require_once ABSPATH . 'wp-admin/includes/file.php';
+                $overrides = [ 'test_form' => false ];
+                $upload    = wp_handle_upload( $file, $overrides );
+
+                if ( isset( $upload['error'] ) ) {
+                    wp_send_json_error( [ 'message' => $upload['error'] ] );
+                }
+
+                $local_url = $upload['url'];
+                $preview   = $local_url;
+                if ( in_array( $mime_type, [ 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ], true ) ) {
+                    $preview = 'https://docs.google.com/viewer?url=' . rawurlencode( $local_url ) . '&embedded=true';
+                }
+
+                $file_entry = [
+                    'id'             => uniqid( 'mat_' ),
+                    'name'           => $file_name,
+                    'title'          => $title,
+                    'url'            => $local_url,
+                    'file_id'        => '',
+                    'preview_url'    => $preview,
+                    'download_url'   => $local_url,
+                    'storage'        => 'local',
+                    'size_formatted' => size_format( $file_size ),
+                    'mime'           => $mime_type,
+                    'uploaded_at'    => current_time( 'mysql' ),
+                    'uploaded_by'    => $user_id,
+                    'uploader_name'  => wp_get_current_user()->display_name,
+                ];
+            }
+        }
+        // ── CASO B: ENLACE WEB O GOOGLE DRIVE DIRECTO ──
+        elseif ( ! empty( $external_url ) ) {
+            if ( empty( $title ) ) {
+                $title = __( 'Documento de Estudio en la Nube', 'aura' );
+            }
+
+            $is_drive = class_exists( 'Aura_Drive_Manager' ) && \Aura_Drive_Manager::is_drive_url( $external_url );
+            $file_id  = $is_drive ? \Aura_Drive_Manager::extract_file_id( $external_url ) : '';
+            $preview  = $is_drive ? \Aura_Drive_Manager::get_preview_url( $external_url ) : $external_url;
+            $download = $is_drive ? \Aura_Drive_Manager::get_download_url( $external_url ) : $external_url;
+
+            $file_entry = [
+                'id'             => uniqid( 'mat_' ),
+                'name'           => $title,
+                'title'          => $title,
+                'url'            => $external_url,
+                'file_id'        => $file_id,
+                'preview_url'    => $preview,
+                'download_url'   => $download,
+                'storage'        => $is_drive ? 'gdrive' : 'external',
+                'size_formatted' => '—',
+                'mime'           => 'link',
+                'uploaded_at'    => current_time( 'mysql' ),
+                'uploaded_by'    => $user_id,
+                'uploader_name'  => wp_get_current_user()->display_name,
+            ];
+        } else {
+            wp_send_json_error( [ 'message' => __( 'Debe adjuntar un archivo o ingresar una URL de Google Drive.', 'aura' ) ] );
+        }
+
+        // Si la materia ya existe en la base de datos, guardar el archivo en su registro de inmediato
+        if ( $subject_id > 0 && ! empty( $file_entry ) ) {
+            global $wpdb;
+            $table = $wpdb->prefix . 'aura_cal_subjects';
+            $field = $audience === 'teacher' ? 'teacher_materials' : 'student_materials';
+
+            $current_raw = $wpdb->get_var( $wpdb->prepare( "SELECT {$field} FROM {$table} WHERE id = %d", $subject_id ) );
+            $list = [];
+            if ( ! empty( $current_raw ) ) {
+                $dec = json_decode( $current_raw, true );
+                if ( is_array( $dec ) ) {
+                    $list = $dec;
+                }
+            }
+            $list[] = $file_entry;
+
+            $wpdb->update(
+                $table,
+                [ $field => wp_json_encode( $list ) ],
+                [ 'id' => $subject_id ],
+                [ '%s' ],
+                [ '%d' ]
+            );
+        }
+
+        wp_send_json_success( [
+            'material' => $file_entry,
+            'audience' => $audience,
+            'message'  => __( 'Material registrado exitosamente.', 'aura' ),
+        ] );
+    }
+
+    /**
+     * AJAX: Eliminar material de estudio de una materia
+     */
+    public static function ajax_delete_material(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        $can_manage = current_user_can( 'aura_cal_manage_programs' ) ||
+                      current_user_can( 'aura_cal_manage_calendar' ) ||
+                      current_user_can( 'aura_delete_calendar_events' ) ||
+                      current_user_can( 'manage_options' );
+
+        $subject_id  = intval( $_POST['subject_id'] ?? 0 );
+        $material_id = sanitize_text_field( $_POST['material_id'] ?? '' );
+        $audience    = sanitize_text_field( $_POST['audience'] ?? 'student' );
+        $user_id     = get_current_user_id();
+
+        if ( ! in_array( $audience, [ 'teacher', 'student' ], true ) ) {
+            $audience = 'student';
+        }
+
+        if ( ! $can_manage && $subject_id > 0 ) {
+            $subject = self::get( $subject_id );
+            if ( $subject && ! empty( $subject->teacher_ids ) && in_array( $user_id, $subject->teacher_ids, true ) ) {
+                $can_manage = true;
+            }
+        }
+
+        if ( ! $can_manage ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        if ( $subject_id > 0 && ! empty( $material_id ) ) {
+            global $wpdb;
+            $table = $wpdb->prefix . 'aura_cal_subjects';
+            $field = $audience === 'teacher' ? 'teacher_materials' : 'student_materials';
+
+            $current_raw = $wpdb->get_var( $wpdb->prepare( "SELECT {$field} FROM {$table} WHERE id = %d", $subject_id ) );
+            if ( ! empty( $current_raw ) ) {
+                $list = json_decode( $current_raw, true );
+                if ( is_array( $list ) ) {
+                    $filtered = array_values( array_filter( $list, function( $item ) use ( $material_id ) {
+                        return ( $item['id'] ?? '' ) !== $material_id;
+                    } ) );
+
+                    $wpdb->update(
+                        $table,
+                        [ $field => wp_json_encode( $filtered ) ],
+                        [ 'id' => $subject_id ],
+                        [ '%s' ],
+                        [ '%d' ]
+                    );
+                }
+            }
+        }
+
+        wp_send_json_success( [
+            'material_id' => $material_id,
+            'audience'    => $audience,
+            'message'     => __( 'Material eliminado correctamente.', 'aura' ),
+        ] );
     }
 }

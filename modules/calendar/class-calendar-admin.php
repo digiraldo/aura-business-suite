@@ -190,6 +190,9 @@ class Aura_Calendar_Admin {
         $teacher_portal_page_id = self::get_teacher_portal_page_id();
         $teacher_portal_url     = $teacher_portal_page_id > 0 ? get_permalink( $teacher_portal_page_id ) : home_url( '/portal-instructor/' );
 
+        // Obtener estudiantes candidatos para roles de liderazgo
+        $students_clean = self::get_students_candidates();
+
         wp_localize_script( 'aura-calendar-admin', 'auraCalData', [
             'ajax_url'            => admin_url( 'admin-ajax.php' ),
             'calendar_url'        => admin_url( 'admin.php?page=aura-calendar' ),
@@ -207,6 +210,9 @@ class Aura_Calendar_Admin {
             'gcal_name'           => Aura_Calendar_Google_Sync::get_calendar_name(),
             'programs'            => $programs,
             'teachers'            => $teachers_clean,
+            'students'            => $students_clean,
+            'student_roles'       => Aura_Calendar_Events::get_student_roles(),
+            'last_sync_version'   => (int) get_option( Aura_Calendar_Events::OPTION_SYNC_VERSION, time() ),
             'paletteColors'       => self::get_palette_colors(),
             'i18n'                => [
                 'confirm_delete'        => __( '¿Estás seguro de eliminar este elemento? Esta acción no se puede deshacer.', 'aura' ),
@@ -223,6 +229,11 @@ class Aura_Calendar_Admin {
                 'list'                  => __( 'Agenda', 'aura' ),
                 'fullscreen'            => __( 'Pantalla Completa', 'aura' ),
                 'exit_fullscreen'       => __( 'Salir de Pantalla Completa', 'aura' ),
+                'live_updated'          => __( 'El calendario fue actualizado por otro colaborador.', 'aura' ),
+                'live_sync_active'      => __( 'Sincronización en vivo activa', 'aura' ),
+                'add_leader'            => __( 'Asignar Estudiante', 'aura' ),
+                'select_student'        => __( 'Seleccionar estudiante...', 'aura' ),
+                'select_role'           => __( 'Seleccionar responsabilidad...', 'aura' ),
             ],
         ] );
     }
@@ -528,4 +539,130 @@ class Aura_Calendar_Admin {
         $html .= '</div>';
         return $html;
     }
+
+    /**
+     * Obtener lista de estudiantes candidatos para roles de liderazgo
+     *
+     * @return array
+     */
+    public static function get_students_candidates(): array {
+        global $wpdb;
+        $students = [];
+        $t_students = $wpdb->prefix . 'aura_students';
+        $seen_ids   = [];
+
+        // 1. Obtener desde wp_aura_students si existe la tabla
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_students}'" ) === $t_students ) {
+            $rows = $wpdb->get_results(
+                "SELECT id, wp_user_id, first_name, last_name, email, photo_url
+                 FROM {$t_students}
+                 WHERE deleted_at IS NULL AND status IN ('active','applicant','approved')
+                 ORDER BY first_name ASC, last_name ASC LIMIT 200"
+            );
+
+            if ( is_array( $rows ) ) {
+                foreach ( $rows as $r ) {
+                    $uid = ! empty( $r->wp_user_id ) ? (int) $r->wp_user_id : (int) $r->id;
+                    $name = trim( $r->first_name . ' ' . $r->last_name );
+                    if ( empty( $name ) ) {
+                        $name = $r->email;
+                    }
+
+                    $avatar = ! empty( $r->photo_url ) ? $r->photo_url : ( ! empty( $r->wp_user_id ) ? get_avatar_url( $r->wp_user_id, [ 'size' => 48 ] ) : '' );
+                    if ( empty( $avatar ) && ! empty( $r->email ) ) {
+                        $avatar = 'https://www.gravatar.com/avatar/' . md5( strtolower( trim( $r->email ) ) ) . '?s=48&d=mp';
+                    }
+
+                    $students[] = [
+                        'id'         => $uid,
+                        'student_id' => (int) $r->id,
+                        'wp_user_id' => ! empty( $r->wp_user_id ) ? (int) $r->wp_user_id : 0,
+                        'name'       => $name,
+                        'email'      => $r->email,
+                        'avatar'     => $avatar,
+                    ];
+                    if ( ! empty( $r->wp_user_id ) ) {
+                        $seen_ids[ $r->wp_user_id ] = true;
+                    }
+                }
+            }
+        }
+
+        // 2. Si no hay suficientes en tabla o para complementar, usuarios con rol student o subscriber
+        $wp_users = get_users( [
+            'role__in' => [ 'student', 'subscriber', 'customer' ],
+            'number'   => 150,
+            'orderby'  => 'display_name',
+            'order'    => 'ASC',
+        ] );
+
+        foreach ( $wp_users as $u ) {
+            if ( isset( $seen_ids[ $u->ID ] ) ) {
+                continue;
+            }
+            $students[] = [
+                'id'         => (int) $u->ID,
+                'student_id' => 0,
+                'wp_user_id' => (int) $u->ID,
+                'name'       => $u->display_name,
+                'email'      => $u->user_email,
+                'avatar'     => get_avatar_url( $u->ID, [ 'size' => 48 ] ),
+            ];
+            $seen_ids[ $u->ID ] = true;
+        }
+
+        return $students;
+    }
+
+    /**
+     * Helper para renderizar avatar de usuario con imagen o inicial
+     *
+     * @param int|WP_User $user ID o WP_User
+     * @param int $size Tamaño en px
+     * @param bool $show_name Si mostrar el nombre
+     * @param string $extra_badge Badge opcional
+     * @return string HTML
+     */
+    public static function get_user_avatar_html( $user, int $size = 28, bool $show_name = false, string $extra_badge = '' ): string {
+        $user_obj = is_object( $user ) ? $user : get_userdata( (int) $user );
+        if ( ! $user_obj ) {
+            return '';
+        }
+
+        $avatar_url = get_avatar_url( $user_obj->ID, [ 'size' => $size * 2, 'default' => 'identicon' ] );
+        $name       = esc_attr( $user_obj->display_name );
+        $initials   = strtoupper( mb_substr( $user_obj->first_name ?: $user_obj->display_name, 0, 1 ) );
+
+        $img_html = sprintf(
+            '<img src="%s" alt="%s" class="aura-avatar-img" width="%d" height="%d" style="width:%dpx;height:%dpx;border-radius:50%%;object-fit:cover;flex-shrink:0;vertical-align:middle;display:inline-block;" onerror="this.style.display=\'none\';if(this.nextElementSibling){this.nextElementSibling.style.display=\'inline-flex\';}" /><span class="aura-avatar-fallback" style="display:none;width:%dpx;height:%dpx;border-radius:50%%;background:var(--aura-primary,#5d5fef);color:#fff;font-size:%dpx;font-weight:700;align-items:center;justify-content:center;">%s</span>',
+            esc_url( $avatar_url ),
+            $name,
+            $size,
+            $size,
+            $size,
+            $size,
+            $size,
+            $size,
+            max( 10, (int) ( $size * 0.42 ) ),
+            esc_html( $initials )
+        );
+
+        if ( ! $show_name && empty( $extra_badge ) ) {
+            return sprintf(
+                '<span class="aura-user-avatar" title="%s" style="display:inline-flex;align-items:center;vertical-align:middle;">%s</span>',
+                $name,
+                $img_html
+            );
+        }
+
+        $badge_html = ! empty( $extra_badge ) ? sprintf( '<span class="aura-badge aura-badge--sm" style="font-size:10px;padding:2px 6px;margin-left:4px;border-radius:8px;background:rgba(93,95,239,0.12);color:var(--aura-primary,#5d5fef);font-weight:600;">%s</span>', esc_html( $extra_badge ) ) : '';
+
+        return sprintf(
+            '<span class="aura-user-chip" style="display:inline-flex;align-items:center;gap:6px;max-width:100%%;vertical-align:middle;">%s<span class="aura-user-name" style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">%s</span>%s</span>',
+            $img_html,
+            esc_html( $user_obj->display_name ),
+            $badge_html
+        );
+    }
 }
+

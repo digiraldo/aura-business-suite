@@ -108,7 +108,18 @@ $all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_area
                                 if ( ! empty( $coords_display ) ) : 
                                     $is_multiple = ! empty( $p->coordinator_ids ) && count( $p->coordinator_ids ) > 1;
                                 ?>
-                                    <span>👤 <strong><?php echo $is_multiple ? esc_html__( 'Coordinadores:', 'aura' ) : esc_html__( 'Coordinador:', 'aura' ); ?></strong> <?php echo esc_html( $coords_display ); ?></span>
+                                    <span style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <strong><?php echo $is_multiple ? esc_html__( 'Coordinadores:', 'aura' ) : esc_html__( 'Coordinador:', 'aura' ); ?></strong>
+                                        <?php
+                                        if ( ! empty( $p->coordinator_ids ) && is_array( $p->coordinator_ids ) ) {
+                                            foreach ( $p->coordinator_ids as $c_id ) {
+                                                echo Aura_Calendar_Admin::get_user_avatar_html( (int) $c_id, 22, true );
+                                            }
+                                        } else {
+                                            echo esc_html( $coords_display );
+                                        }
+                                        ?>
+                                    </span>
                                 <?php endif; ?>
 
                                 <span>📚 <strong><?php echo intval( $p->subjects_count ); ?></strong> <?php esc_html_e( 'materias', 'aura' ); ?></span>
@@ -143,6 +154,8 @@ $all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_area
                             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
                                 <?php foreach ( $subjects as $s ) : 
                                     $s_color = ! empty( $s->color ) ? $s->color : '#3b82f6';
+                                    $t_mat_count = ! empty( $s->teacher_materials_count ) ? (int) $s->teacher_materials_count : 0;
+                                    $st_mat_count = ! empty( $s->student_materials_count ) ? (int) $s->student_materials_count : 0;
                                 ?>
                                     <div style="background: var(--aura-surface-alt, #f8fafc); border: 1px solid var(--aura-border, #e2e8f0); border-left: 4px solid <?php echo esc_attr( $s_color ); ?>; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
                                         <div>
@@ -160,8 +173,28 @@ $all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_area
                                             if ( ! empty( $teachers_display ) ) : 
                                                 $is_multiple_teach = ! empty( $s->teacher_ids ) && count( $s->teacher_ids ) > 1;
                                             ?>
-                                                <div style="font-size: 12px; color: var(--aura-text-secondary); margin-top: 2px;">
-                                                    👨‍🏫 <strong><?php echo $is_multiple_teach ? esc_html__( 'Profesores:', 'aura' ) : esc_html__( 'Profesor:', 'aura' ); ?></strong> <?php echo esc_html( $teachers_display ); ?>
+                                                <div style="font-size: 12px; color: var(--aura-text-secondary); margin-top: 4px; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                                    <span style="font-weight: 600;"><?php echo $is_multiple_teach ? esc_html__( 'Profesores:', 'aura' ) : esc_html__( 'Profesor:', 'aura' ); ?></span>
+                                                    <?php
+                                                    if ( ! empty( $s->teacher_ids ) && is_array( $s->teacher_ids ) ) {
+                                                        foreach ( $s->teacher_ids as $t_id ) {
+                                                            echo Aura_Calendar_Admin::get_user_avatar_html( (int) $t_id, 20, true );
+                                                        }
+                                                    } else {
+                                                        echo esc_html( $teachers_display );
+                                                    }
+                                                    ?>
+                                                </div>
+                                            <?php endif; ?>
+
+                                            <?php if ( $t_mat_count > 0 || $st_mat_count > 0 ) : ?>
+                                                <div style="margin-top: 6px; display: flex; gap: 6px; font-size: 11px; flex-wrap: wrap;">
+                                                    <?php if ( $t_mat_count > 0 ) : ?>
+                                                        <span class="aura-badge aura-badge--sm" title="<?php esc_attr_e( 'Material Pedagógico Docente', 'aura-suite' ); ?>" style="background: rgba(93,95,239,0.1); color: var(--aura-primary,#5d5fef); padding: 2px 6px; border-radius: 6px;">📁 <?php echo $t_mat_count; ?> <?php esc_html_e( 'docente', 'aura' ); ?></span>
+                                                    <?php endif; ?>
+                                                    <?php if ( $st_mat_count > 0 ) : ?>
+                                                        <span class="aura-badge aura-badge--sm" title="<?php esc_attr_e( 'Material para Estudiantes', 'aura-suite' ); ?>" style="background: rgba(16,185,129,0.1); color: #10b981; padding: 2px 6px; border-radius: 6px;">📖 <?php echo $st_mat_count; ?> <?php esc_html_e( 'alumnos', 'aura' ); ?></span>
+                                                    <?php endif; ?>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
@@ -303,10 +336,10 @@ $all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_area
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════
-     MODAL B: CREAR / EDITAR MATERIA
+     MODAL B: CREAR / EDITAR MATERIA + MATERIALES PEDAGÓGICOS
      ══════════════════════════════════════════════════════════════════ -->
 <div id="modal-subject-editor" class="aura-modal-overlay" style="display: none;">
-    <div class="aura-modal-container" style="max-width: 520px;">
+    <div class="aura-modal-container" style="max-width: 660px;">
         <div class="aura-modal-header">
             <h3 id="modal-subj-title" class="adp-card-title" style="margin: 0; font-size: 18px;">
                 📚 <?php esc_html_e( 'Añadir Materia', 'aura' ); ?>
@@ -314,64 +347,133 @@ $all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_area
             <button type="button" class="aura-modal-close" data-close-modal="#modal-subject-editor">&times;</button>
         </div>
 
+        <!-- Sub-navegación de pestañas en modal de materia -->
+        <div class="aura-modal-subtabs" style="display: flex; gap: 4px; border-bottom: 1px solid var(--aura-border, #e2e8f0); padding: 0 20px; background: var(--aura-surface-alt, #f8fafc);">
+            <button type="button" class="aura-modal-subtab-btn active" data-subtab="subj-tab-general" style="padding: 10px 14px; font-size: 13px; font-weight: 600; border: none; background: transparent; border-bottom: 2px solid var(--aura-primary, #5d5fef); color: var(--aura-primary, #5d5fef); cursor: pointer;">
+                ℹ️ <?php esc_html_e( 'General', 'aura' ); ?>
+            </button>
+            <button type="button" class="aura-modal-subtab-btn" data-subtab="subj-tab-teacher-mat" style="padding: 10px 14px; font-size: 13px; font-weight: 600; border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--aura-text-secondary, #64748b); cursor: pointer;">
+                📁 <?php esc_html_e( 'Material Docente (Cátedra)', 'aura' ); ?>
+            </button>
+            <button type="button" class="aura-modal-subtab-btn" data-subtab="subj-tab-student-mat" style="padding: 10px 14px; font-size: 13px; font-weight: 600; border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--aura-text-secondary, #64748b); cursor: pointer;">
+                📖 <?php esc_html_e( 'Material para Alumnos', 'aura' ); ?>
+            </button>
+        </div>
+
         <form id="form-subject-editor" class="aura-modal-form">
-            <div class="aura-modal-body">
+            <div class="aura-modal-body" style="max-height: 70vh; overflow-y: auto;">
                 <input type="hidden" name="id" id="subj-id" value="0">
                 <input type="hidden" name="program_id" id="subj-prog-id" value="0">
 
-                <div style="display: flex; flex-direction: column; gap: 14px;">
-                    <div>
-                        <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Programa:', 'aura' ); ?></span>
-                        <strong id="subj-prog-name-display" style="display: block; font-size: 14px; color: var(--aura-primary);"></strong>
-                    </div>
+                <!-- ── TAB 1: INFORMACIÓN GENERAL ── -->
+                <div id="subj-tab-general" class="aura-modal-subtab-pane">
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div>
+                            <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Programa:', 'aura' ); ?></span>
+                            <strong id="subj-prog-name-display" style="display: block; font-size: 14px; color: var(--aura-primary);"></strong>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Nombre de la Materia', 'aura' ); ?> <span style="color: #ef4444;">*</span>
-                        </label>
-                        <input type="text" name="name" id="subj-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Teología Sistemática I', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Código de Materia', 'aura' ); ?>
+                                <?php esc_html_e( 'Nombre de la Materia', 'aura' ); ?> <span style="color: #ef4444;">*</span>
                             </label>
-                            <input type="text" name="code" id="subj-code" class="form-control" placeholder="<?php esc_attr_e( 'TEO101', 'aura' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
+                            <input type="text" name="name" id="subj-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Teología Sistemática I', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Horas Académicas', 'aura' ); ?>
-                            </label>
-                            <input type="number" name="total_hours" id="subj-hours" value="30" min="0" class="form-control" style="width: 100%; border-radius: 8px;">
-                        </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            🎨 <?php esc_html_e( 'Color de la Materia', 'aura' ); ?>
-                        </label>
-                        <div class="aura-color-picker-box">
-                            <div class="aura-color-picker-row">
-                                <input type="color" name="color" id="subj-color" value="#3A86FF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura' ); ?>">
-                                <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura' ); ?></span>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                    <?php esc_html_e( 'Código de Materia', 'aura' ); ?>
+                                </label>
+                                <input type="text" name="code" id="subj-code" class="form-control" placeholder="<?php esc_attr_e( 'TEO101', 'aura' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
                             </div>
-                            <?php echo Aura_Calendar_Admin::render_color_palette( 'subj-color', '#3A86FF' ); ?>
+                            <div class="form-group">
+                                <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                    <?php esc_html_e( 'Horas Académicas', 'aura' ); ?>
+                                </label>
+                                <input type="number" name="total_hours" id="subj-hours" value="30" min="0" class="form-control" style="width: 100%; border-radius: 8px;">
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            👨‍🏫 <?php esc_html_e( 'Profesor(es) Titular(es)', 'aura' ); ?>
-                        </label>
-                        <div id="subj-teachers-container" class="aura-user-chips-container">
-                            <!-- Inyectado dinámicamente con checkboxes desde JS -->
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                🎨 <?php esc_html_e( 'Color de la Materia', 'aura' ); ?>
+                            </label>
+                            <div class="aura-color-picker-box">
+                                <div class="aura-color-picker-row">
+                                    <input type="color" name="color" id="subj-color" value="#3A86FF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura' ); ?>">
+                                    <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura' ); ?></span>
+                                </div>
+                                <?php echo Aura_Calendar_Admin::render_color_palette( 'subj-color', '#3A86FF' ); ?>
+                            </div>
                         </div>
-                        <small style="font-size: 11.5px; color: var(--aura-text-muted); display: block; margin-top: 4px;">
-                            <?php esc_html_e( 'Puedes seleccionar uno o varios profesores titulares para esta materia.', 'aura' ); ?>
-                        </small>
+
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                👨‍🏫 <?php esc_html_e( 'Profesor(es) Titular(es)', 'aura' ); ?>
+                            </label>
+                            <div id="subj-teachers-container" class="aura-user-chips-container">
+                                <!-- Inyectado dinámicamente con checkboxes desde JS -->
+                            </div>
+                            <small style="font-size: 11.5px; color: var(--aura-text-muted); display: block; margin-top: 4px;">
+                                <?php esc_html_e( 'Puedes seleccionar uno o varios profesores titulares para esta materia.', 'aura' ); ?>
+                            </small>
+                        </div>
                     </div>
                 </div>
+
+                <!-- ── TAB 2: MATERIAL DOCENTE (CÁTEDRA) ── -->
+                <div id="subj-tab-teacher-mat" class="aura-modal-subtab-pane" style="display: none;">
+                    <div style="background: rgba(93,95,239,0.06); border: 1px solid rgba(93,95,239,0.2); border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 12.5px; color: var(--aura-text-secondary);">
+                        <strong style="color: var(--aura-primary); display: block; margin-bottom: 3px;">ℹ️ <?php esc_html_e( 'Material Pedagógico de Cátedra', 'aura' ); ?></strong>
+                        <?php esc_html_e( 'Este material es exclusivo para el instructor. Al reasignar esta materia a otro profesor en el futuro, el nuevo docente tendrá acceso a estos documentos, guías de clase y presentaciones para continuar la enseñanza sin perder información.', 'aura' ); ?>
+                    </div>
+
+                    <!-- Botones de Acción de Material -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                        <input type="file" id="upload-teacher-file-input" style="display: none;">
+                        <button type="button" class="btn btn-outline btn-upload-material" data-type="teacher" style="font-size: 12px; padding: 6px 12px;">
+                            ☁️ <?php esc_html_e( 'Subir Archivo (Drive / Nube)', 'aura' ); ?>
+                        </button>
+                        <button type="button" class="btn btn-ghost btn-add-drive-link" data-type="teacher" style="font-size: 12px; padding: 6px 12px;">
+                            🔗 <?php esc_html_e( 'Añadir Enlace Google Drive', 'aura' ); ?>
+                        </button>
+                    </div>
+
+                    <!-- Lista de Materiales Docente -->
+                    <div id="subj-teacher-materials-list" class="aura-materials-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        <p class="aura-empty-hint" style="font-size: 12px; color: var(--aura-text-muted); font-style: italic;">
+                            <?php esc_html_e( 'No hay materiales de cátedra cargados aún.', 'aura' ); ?>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ── TAB 3: MATERIAL PARA ESTUDIANTES ── -->
+                <div id="subj-tab-student-mat" class="aura-modal-subtab-pane" style="display: none;">
+                    <div style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 12.5px; color: var(--aura-text-secondary);">
+                        <strong style="color: #10b981; display: block; margin-bottom: 3px;">📖 <?php esc_html_e( 'Material de Estudio para Alumnos', 'aura' ); ?></strong>
+                        <?php esc_html_e( 'Lecturas requeridas, guías de estudio, cuestionarios y documentos que los estudiantes matriculados en esta materia podrán consultar y descargar directamente desde su portal.', 'aura' ); ?>
+                    </div>
+
+                    <!-- Botones de Acción de Material Estudiantes -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                        <input type="file" id="upload-student-file-input" style="display: none;">
+                        <button type="button" class="btn btn-outline btn-upload-material" data-type="student" style="font-size: 12px; padding: 6px 12px;">
+                            ☁️ <?php esc_html_e( 'Subir Archivo para Alumnos', 'aura' ); ?>
+                        </button>
+                        <button type="button" class="btn btn-ghost btn-add-drive-link" data-type="student" style="font-size: 12px; padding: 6px 12px;">
+                            🔗 <?php esc_html_e( 'Añadir Enlace Google Drive', 'aura' ); ?>
+                        </button>
+                    </div>
+
+                    <!-- Lista de Materiales Estudiantes -->
+                    <div id="subj-student-materials-list" class="aura-materials-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        <p class="aura-empty-hint" style="font-size: 12px; color: var(--aura-text-muted); font-style: italic;">
+                            <?php esc_html_e( 'No hay materiales para alumnos cargados aún.', 'aura' ); ?>
+                        </p>
+                    </div>
+                </div>
+
             </div>
 
             <div class="aura-modal-footer">
@@ -385,3 +487,4 @@ $all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_area
         </form>
     </div>
 </div>
+

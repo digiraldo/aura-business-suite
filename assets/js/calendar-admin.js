@@ -126,6 +126,34 @@
             selectable: !!auraCalData.user_can_edit,
             selectMirror: true,
 
+            // Renderizado personalizado de la tarjeta de evento con micro-avatar del docente y badge de líder
+            eventContent: function(arg) {
+                var p = arg.event.extendedProps || {};
+                var title = p.raw_title || arg.event.title;
+                var timeText = arg.timeText;
+                
+                var avatarImg = '';
+                if (p.primary_avatar) {
+                    avatarImg = '<img src="' + escapeHtml(p.primary_avatar) + '" alt="' + escapeHtml(p.primary_name || '') + '" title="' + escapeHtml(p.primary_name || '') + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" onerror="this.style.display=\'none\';" />';
+                }
+
+                var leadersBadge = '';
+                if (p.student_leaders && p.student_leaders.length > 0) {
+                    var lCount = p.student_leaders.length;
+                    var firstLeader = p.student_leaders[0];
+                    leadersBadge = '<span class="aura-event-leader-tag" title="' + escapeHtml(firstLeader.name + ' (' + firstLeader.role_label + ')') + (lCount > 1 ? ' +' + (lCount - 1) : '') + '" style="font-size:10px;background:rgba(255,255,255,0.28);color:inherit;border-radius:8px;padding:1px 5px;margin-left:auto;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;font-weight:600;">⭐ ' + escapeHtml(firstLeader.name.split(' ')[0]) + '</span>';
+                }
+
+                var html = '<div class="fc-event-custom-row" style="display:flex;align-items:center;gap:5px;width:100%;overflow:hidden;padding:1px 2px;">' +
+                    avatarImg +
+                    (timeText ? '<span class="fc-event-time" style="font-weight:700;font-size:11px;flex-shrink:0;">' + escapeHtml(timeText) + '</span>' : '') +
+                    '<span class="fc-event-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;font-size:12px;">' + escapeHtml(title) + '</span>' +
+                    leadersBadge +
+                '</div>';
+
+                return { html: html };
+            },
+
             // Carga de eventos con filtros
             events: function(info, successCallback, failureCallback) {
                 $.post(auraCalData.ajax_url, {
@@ -227,8 +255,20 @@
 
         var teachersHtml = '';
         if (p.instructors && p.instructors.length) {
-            var names = p.instructors.map(function(inst) { return inst.name; }).join(', ');
-            teachersHtml = '<div class="tooltip-meta-row"><strong>👨‍🏫 Docente:</strong> <span>' + escapeHtml(names) + '</span></div>';
+            var instChips = p.instructors.map(function(inst) {
+                var avHtml = inst.avatar ? '<img src="' + escapeHtml(inst.avatar) + '" style="width:16px;height:16px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;" />' : '';
+                return '<span style="display:inline-flex;align-items:center;margin-right:6px;">' + avHtml + escapeHtml(inst.name) + '</span>';
+            }).join(' ');
+            teachersHtml = '<div class="tooltip-meta-row" style="align-items:flex-start;"><strong>👨‍🏫 Docente:</strong> <div style="display:flex;flex-wrap:wrap;gap:4px;">' + instChips + '</div></div>';
+        }
+
+        var leadersHtml = '';
+        if (p.student_leaders && p.student_leaders.length) {
+            var leadChips = p.student_leaders.map(function(ldr) {
+                var avHtml = ldr.avatar ? '<img src="' + escapeHtml(ldr.avatar) + '" style="width:16px;height:16px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;" />' : '';
+                return '<span style="display:inline-flex;align-items:center;background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:8px;font-size:11px;margin-right:4px;">' + avHtml + escapeHtml(ldr.name) + ' <em style="opacity:0.8;margin-left:3px;">(' + escapeHtml(ldr.role_label) + ')</em></span>';
+            }).join(' ');
+            leadersHtml = '<div class="tooltip-meta-row" style="align-items:flex-start;"><strong>🌟 Liderazgo:</strong> <div style="display:flex;flex-wrap:wrap;gap:4px;">' + leadChips + '</div></div>';
         }
 
         var locHtml = '';
@@ -547,6 +587,121 @@
         });
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // ESTUDIANTES LÍDERES / ROLES DE ACTIVIDAD
+    // ─────────────────────────────────────────────────────────────
+    var currentEventLeaders = [];
+
+    function initStudentLeadersSelect() {
+        var $sel = $('#select-add-leader-user');
+        $sel.html('<option value="">' + (auraCalData.i18n.select_student || 'Seleccionar estudiante...') + '</option>');
+
+        if (auraCalData.students && auraCalData.students.length) {
+            $.each(auraCalData.students, function(i, st) {
+                $sel.append($('<option>', {
+                    value: st.id,
+                    text: st.name + (st.email ? ' (' + st.email + ')' : '')
+                }));
+            });
+        }
+    }
+
+    function renderStudentLeadersList() {
+        var $box = $('#evt-student-leaders-list');
+        $box.empty();
+
+        if (!currentEventLeaders || !currentEventLeaders.length) {
+            $box.html('<span style="font-size:12px;color:var(--aura-text-muted);font-style:italic;">No hay estudiantes con responsabilidad asignada en esta actividad.</span>');
+            $('#evt-student-leaders-json').val('[]');
+            return;
+        }
+
+        var roleBadges = {
+            'program_leader': '👑 Líder Programa',
+            'activity_leader': '🎯 Líder Actividad',
+            'presenter': '🗣️ Expositor / Clase',
+            'monitor': '🛡️ Monitor'
+        };
+
+        $.each(currentEventLeaders, function(idx, ldr) {
+            var roleText = roleBadges[ldr.role] || ldr.role_label || ldr.role;
+            var avImg = ldr.avatar
+                ? '<img src="' + escapeHtml(ldr.avatar) + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;" />'
+                : '<span style="width:22px;height:22px;border-radius:50%;background:var(--aura-primary,#5d5fef);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">' + escapeHtml((ldr.name || 'E').substring(0, 1).toUpperCase()) + '</span>';
+
+            var $chip = $(
+                '<div class="aura-user-chip is-checked" style="display:inline-flex;align-items:center;gap:6px;padding:3px 8px 3px 4px;border-radius:18px;background:var(--aura-surface,#fff);border:1px solid var(--aura-border,#cbd5e1);font-size:12px;">' +
+                    avImg +
+                    '<span style="font-weight:600;">' + escapeHtml(ldr.name) + '</span>' +
+                    '<span class="aura-badge" style="font-size:10.5px;padding:2px 6px;border-radius:10px;background:rgba(93,95,239,0.12);color:var(--aura-primary,#5d5fef);font-weight:600;">' + escapeHtml(roleText) + '</span>' +
+                    '<button type="button" class="btn-remove-leader" data-index="' + idx + '" title="Remover" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:14px;line-height:1;padding:0 2px;">&times;</button>' +
+                '</div>'
+            );
+            $box.append($chip);
+        });
+
+        $('#evt-student-leaders-json').val(JSON.stringify(currentEventLeaders));
+    }
+
+    // Añadir líder desde selector
+    $(document).on('click', '#btn-add-leader-to-event', function(e) {
+        e.preventDefault();
+        var uid = parseInt($('#select-add-leader-user').val(), 10);
+        var role = $('#select-add-leader-role').val() || 'activity_leader';
+
+        if (!uid) {
+            showToast('Por favor selecciona un estudiante.', 'warning');
+            $('#select-add-leader-user').focus();
+            return;
+        }
+
+        // Buscar datos del estudiante
+        var studentData = null;
+        if (auraCalData.students && auraCalData.students.length) {
+            for (var i = 0; i < auraCalData.students.length; i++) {
+                if (parseInt(auraCalData.students[i].id, 10) === uid) {
+                    studentData = auraCalData.students[i];
+                    break;
+                }
+            }
+        }
+
+        var stName = studentData ? studentData.name : 'Estudiante #' + uid;
+        var stAvatar = studentData ? studentData.avatar : '';
+
+        // Verificar si ya fue añadido con ese rol
+        var already = currentEventLeaders.some(function(l) {
+            return parseInt(l.user_id, 10) === uid && l.role === role;
+        });
+
+        if (already) {
+            showToast('Este estudiante ya tiene este rol asignado en la actividad.', 'info');
+            return;
+        }
+
+        currentEventLeaders.push({
+            user_id: uid,
+            name: stName,
+            avatar: stAvatar,
+            role: role,
+            role_label: $('#select-add-leader-role option:selected').text(),
+            assigned_at: new Date().toISOString()
+        });
+
+        renderStudentLeadersList();
+        $('#select-add-leader-user').val('');
+    });
+
+    // Remover líder de la lista
+    $(document).on('click', '.btn-remove-leader', function(e) {
+        e.preventDefault();
+        var idx = parseInt($(this).data('index'), 10);
+        if (idx >= 0 && idx < currentEventLeaders.length) {
+            currentEventLeaders.splice(idx, 1);
+            renderStudentLeadersList();
+        }
+    });
+
     function openEventEditor(data) {
         data = data || {};
         var form = document.getElementById('form-event-editor');
@@ -619,6 +774,12 @@
         }
 
         renderTeacherCheckboxes(data.teacher_ids || []);
+
+        // Cargar líderes de la sesión si existen
+        currentEventLeaders = Array.isArray(data.student_leaders) ? data.student_leaders.slice() : [];
+        initStudentLeadersSelect();
+        renderStudentLeadersList();
+
         openModal('#modal-event-editor');
     }
 
@@ -762,13 +923,34 @@
         }
         $('#det-time').text(timeStr);
 
-        // Profesores
+        // Profesores con avatar
         if (p.instructors && p.instructors.length) {
-            var names = p.instructors.map(function(inst) { return inst.name; }).join(', ');
-            $('#det-teachers').text(names);
+            var teachHtml = p.instructors.map(function(inst) {
+                var av = inst.avatar ? '<img src="' + escapeHtml(inst.avatar) + '" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;" />' : '';
+                return '<span class="aura-user-chip-sm" style="display:inline-flex;align-items:center;background:var(--aura-surface,#fff);border:1px solid var(--aura-border,#cbd5e1);padding:2px 8px;border-radius:12px;font-size:12px;">' + av + escapeHtml(inst.name) + '</span>';
+            }).join(' ');
+            $('#det-teachers').html(teachHtml);
             $('#row-det-teachers').show();
         } else {
             $('#row-det-teachers').hide();
+        }
+
+        // Estudiantes Líderes / Responsables de la Actividad
+        if (p.student_leaders && p.student_leaders.length) {
+            var leadHtml = p.student_leaders.map(function(ldr) {
+                var av = ldr.avatar
+                    ? '<img src="' + escapeHtml(ldr.avatar) + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" />'
+                    : '<span style="width:22px;height:22px;border-radius:50%;background:var(--aura-primary,#5d5fef);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-right:6px;">' + escapeHtml((ldr.name||'E').charAt(0).toUpperCase()) + '</span>';
+                return '<div class="aura-leader-chip" style="display:inline-flex;align-items:center;background:var(--aura-surface,#fff);border:1px solid var(--aura-border,#cbd5e1);padding:3px 10px;border-radius:18px;font-size:12.5px;">' +
+                    av +
+                    '<span style="font-weight:600;margin-right:6px;">' + escapeHtml(ldr.name) + '</span>' +
+                    '<span class="aura-badge aura-badge--sm" style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(93,95,239,0.12);color:var(--aura-primary,#5d5fef);font-weight:600;">' + escapeHtml(ldr.role_label || 'Líder') + '</span>' +
+                '</div>';
+            }).join(' ');
+            $('#det-leaders').html(leadHtml);
+            $('#row-det-leaders').show();
+        } else {
+            $('#row-det-leaders').hide();
         }
 
         // Ubicación
@@ -852,7 +1034,8 @@
             online_url: p.online_url,
             color: ev.backgroundColor,
             description: p.description,
-            teacher_ids: teacherIds
+            teacher_ids: teacherIds,
+            student_leaders: p.student_leaders || []
         });
 
         // Preseleccionar valores
@@ -925,8 +1108,12 @@
                     var status = st.attendance_status || 'present';
                     var notes = st.attendance_notes || '';
 
+                    var avHtml = st.photo_url
+                        ? '<img src="' + escapeHtml(st.photo_url) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;vertical-align:middle;" onerror="this.style.display=\'none\';" />'
+                        : '<span style="width:28px;height:28px;border-radius:50%;background:var(--aura-primary,#5d5fef);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">' + escapeHtml((st.first_name || 'E').substring(0, 1).toUpperCase()) + '</span>';
+
                     tbody += '<tr data-student-id="' + st.student_id + '" style="border-bottom: 1px solid var(--aura-border);">';
-                    tbody += '<td style="padding: 10px 14px;"><strong>' + st.last_name + ', ' + st.first_name + '</strong><br><small style="color:var(--aura-text-muted);">' + (st.student_code || st.email) + '</small></td>';
+                    tbody += '<td style="padding: 10px 14px;"><div style="display:flex;align-items:center;gap:10px;">' + avHtml + '<div><strong>' + escapeHtml(st.last_name + ', ' + st.first_name) + '</strong><br><small style="color:var(--aura-text-muted);">' + escapeHtml(st.student_code || st.email) + '</small></div></div></td>';
                     tbody += '<td style="padding: 10px 14px; text-align: center;">';
                     tbody += '<div class="att-status-btn-group">';
                     tbody += '<button type="button" class="att-btn ' + (status === 'present' ? 'active-present' : '') + '" data-status="present">P</button>';
@@ -1108,6 +1295,196 @@
         });
     });
 
+    // ─────────────────────────────────────────────────────────────
+    // SUB-PESTAÑAS EN MODAL DE MATERIA Y MATERIALES DE ESTUDIO
+    // ─────────────────────────────────────────────────────────────
+    $(document).on('click', '.aura-modal-subtab-btn', function(e) {
+        e.preventDefault();
+        var target = $(this).data('subtab');
+        var $modal = $(this).closest('.aura-modal-container');
+        $modal.find('.aura-modal-subtab-btn').removeClass('active').css({
+            'border-bottom-color': 'transparent',
+            'color': 'var(--aura-text-secondary, #64748b)'
+        });
+        $(this).addClass('active').css({
+            'border-bottom-color': 'var(--aura-primary, #5d5fef)',
+            'color': 'var(--aura-primary, #5d5fef)'
+        });
+        $modal.find('.aura-modal-subtab-pane').hide();
+        $('#' + target).show();
+    });
+
+    var currentTeacherMaterials = [];
+    var currentStudentMaterials = [];
+
+    function renderSubjectMaterialsList(type) {
+        var list = (type === 'teacher') ? currentTeacherMaterials : currentStudentMaterials;
+        var containerId = (type === 'teacher') ? '#subj-teacher-materials-list' : '#subj-student-materials-list';
+        var $container = $(containerId);
+        $container.empty();
+
+        if (!list || !list.length) {
+            var emptyHint = (type === 'teacher')
+                ? 'No hay materiales de cátedra cargados aún.'
+                : 'No hay materiales para alumnos cargados aún.';
+            $container.html('<p class="aura-empty-hint" style="font-size:12px;color:var(--aura-text-muted);font-style:italic;margin:6px 0;">' + emptyHint + '</p>');
+            return;
+        }
+
+        $.each(list, function(idx, item) {
+            var isDrive = (item.storage === 'gdrive' || (item.file_url && item.file_url.indexOf('drive.google.com') !== -1));
+            var icon = isDrive ? '☁️' : '📁';
+            var sizeStr = item.file_size_formatted || (item.file_size ? (Math.round(item.file_size / 1024) + ' KB') : '');
+            var link = item.download_url || item.file_url || item.url || '#';
+
+            var $card = $(
+                '<div class="aura-material-item" style="display:flex;align-items:center;justify-content:space-between;background:var(--aura-surface,#fff);border:1px solid var(--aura-border,#cbd5e1);padding:8px 12px;border-radius:8px;font-size:13px;">' +
+                    '<div style="display:flex;align-items:center;gap:8px;overflow:hidden;flex:1;margin-right:10px;">' +
+                        '<span style="font-size:16px;">' + icon + '</span>' +
+                        '<div style="overflow:hidden;">' +
+                            '<a href="' + escapeHtml(link) + '" target="_blank" style="font-weight:600;color:var(--aura-primary,#5d5fef);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                                escapeHtml(item.title || item.file_name) +
+                            '</a>' +
+                            '<span style="font-size:11px;color:var(--aura-text-muted);">' +
+                                (isDrive ? 'Google Drive (Nube)' : 'Almacenamiento Local') +
+                                (sizeStr ? ' &bull; ' + sizeStr : '') +
+                            '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="display:flex;align-items:center;gap:6px;">' +
+                        '<a href="' + escapeHtml(link) + '" target="_blank" class="btn btn-ghost" style="padding:4px 8px;font-size:11.5px;" title="Descargar / Abrir">📥</a>' +
+                        '<button type="button" class="btn btn-ghost btn-remove-material" data-type="' + type + '" data-id="' + escapeHtml(item.id) + '" style="padding:4px 8px;font-size:11.5px;color:#ef4444;" title="Eliminar">&times;</button>' +
+                    '</div>' +
+                '</div>'
+            );
+            $container.append($card);
+        });
+    }
+
+    // Disparar input de archivo
+    $(document).on('click', '.btn-upload-material', function(e) {
+        e.preventDefault();
+        var type = $(this).data('type') || 'teacher';
+        var subjId = parseInt($('#subj-id').val(), 10);
+        if (!subjId) {
+            showToast('Por favor guarda la materia primero antes de subir archivos adjuntos.', 'warning');
+            return;
+        }
+        $('#upload-' + type + '-file-input').click();
+    });
+
+    // Subir archivo al seleccionar
+    $(document).on('change', '#upload-teacher-file-input, #upload-student-file-input', function() {
+        var file = this.files[0];
+        if (!file) return;
+
+        var type = $(this).attr('id').indexOf('teacher') !== -1 ? 'teacher' : 'student';
+        var subjId = parseInt($('#subj-id').val(), 10);
+        var inputEl = this;
+
+        showToast('Subiendo archivo a la nube / Google Drive...', 'info');
+
+        var formData = new FormData();
+        formData.append('action', 'aura_cal_upload_subject_material');
+        formData.append('nonce', auraCalData.nonce);
+        formData.append('subject_id', subjId);
+        formData.append('material_type', type);
+        formData.append('material_file', file);
+
+        $.ajax({
+            url: auraCalData.ajax_url,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                inputEl.value = '';
+                if (res && res.success && res.data && res.data.material) {
+                    showToast(res.data.message || 'Archivo subido con éxito.');
+                    if (type === 'teacher') {
+                        currentTeacherMaterials.push(res.data.material);
+                    } else {
+                        currentStudentMaterials.push(res.data.material);
+                    }
+                    renderSubjectMaterialsList(type);
+                } else {
+                    showToast(res && res.data && res.data.message ? res.data.message : 'Error al subir archivo.', 'error');
+                }
+            },
+            error: function() {
+                inputEl.value = '';
+                showToast('Error en la llamada de subida de archivo.', 'error');
+            }
+        });
+    });
+
+    // Añadir enlace directo a Google Drive
+    $(document).on('click', '.btn-add-drive-link', function(e) {
+        e.preventDefault();
+        var type = $(this).data('type') || 'teacher';
+        var subjId = parseInt($('#subj-id').val(), 10);
+        if (!subjId) {
+            showToast('Por favor guarda la materia primero antes de añadir enlaces.', 'warning');
+            return;
+        }
+
+        var driveUrl = prompt('Introduce el enlace de Google Drive (URL compartida del archivo o carpeta):');
+        if (!driveUrl || !driveUrl.trim()) return;
+
+        var docTitle = prompt('Nombre o título descriptivo para este documento:', '') || 'Documento en Google Drive';
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_upload_subject_material',
+            nonce: auraCalData.nonce,
+            subject_id: subjId,
+            material_type: type,
+            drive_link: driveUrl.trim(),
+            file_name: docTitle.trim()
+        }, function(res) {
+            if (res && res.success && res.data && res.data.material) {
+                showToast(res.data.message || 'Enlace de Google Drive registrado con éxito.');
+                if (type === 'teacher') {
+                    currentTeacherMaterials.push(res.data.material);
+                } else {
+                    currentStudentMaterials.push(res.data.material);
+                }
+                renderSubjectMaterialsList(type);
+            } else {
+                showToast(res && res.data && res.data.message ? res.data.message : 'Error al vincular enlace de Drive.', 'error');
+            }
+        });
+    });
+
+    // Eliminar material de materia
+    $(document).on('click', '.btn-remove-material', function(e) {
+        e.preventDefault();
+        if (!confirm('¿Deseas eliminar este material de la materia?')) return;
+
+        var type = $(this).data('type') || 'teacher';
+        var matId = $(this).data('id');
+        var subjId = parseInt($('#subj-id').val(), 10);
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_delete_subject_material',
+            nonce: auraCalData.nonce,
+            subject_id: subjId,
+            material_type: type,
+            material_id: matId
+        }, function(res) {
+            if (res && res.success) {
+                showToast(res.data.message || 'Material eliminado.');
+                if (type === 'teacher') {
+                    currentTeacherMaterials = currentTeacherMaterials.filter(function(m) { return m.id !== matId; });
+                } else {
+                    currentStudentMaterials = currentStudentMaterials.filter(function(m) { return m.id !== matId; });
+                }
+                renderSubjectMaterialsList(type);
+            } else {
+                showToast(res && res.data && res.data.message ? res.data.message : 'Error al eliminar material.', 'error');
+            }
+        });
+    });
+
     // Añadir Materia
     $('.btn-add-subject').on('click', function() {
         var progId = $(this).data('program-id');
@@ -1121,6 +1498,12 @@
 
         renderSubjectTeacherCheckboxes([]);
         syncColorPalette('#subj-color', '#3A86FF');
+
+        currentTeacherMaterials = [];
+        currentStudentMaterials = [];
+        renderSubjectMaterialsList('teacher');
+        renderSubjectMaterialsList('student');
+        $('.aura-modal-subtab-btn[data-subtab="subj-tab-general"]').click();
 
         openModal('#modal-subject-editor');
     });
@@ -1149,6 +1532,12 @@
 
                 var teacherIds = s.teacher_ids || (s.default_teacher_id ? [parseInt(s.default_teacher_id, 10)] : []);
                 renderSubjectTeacherCheckboxes(teacherIds);
+
+                currentTeacherMaterials = s.teacher_materials_list || [];
+                currentStudentMaterials = s.student_materials_list || [];
+                renderSubjectMaterialsList('teacher');
+                renderSubjectMaterialsList('student');
+                $('.aura-modal-subtab-btn[data-subtab="subj-tab-general"]').click();
 
                 openModal('#modal-subject-editor');
             }
@@ -1538,10 +1927,50 @@
     });
 
     // ─────────────────────────────────────────────────────────────
+    // SINCRONIZACIÓN COLABORATIVA EN TIEMPO REAL (LIVE SYNC)
+    // ─────────────────────────────────────────────────────────────
+    var lastSyncVersion = auraCalData.last_sync_version || 0;
+
+    function initLiveCollaboration() {
+        if (!calendar) return;
+
+        // Añadir indicador verde en la barra superior si no existe
+        if (!$('#aura-live-sync-indicator').length) {
+            var $indicator = $('<div id="aura-live-sync-indicator" title="' + escapeHtml(auraCalData.i18n.live_sync_active || 'Sincronización en vivo activa') + '" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--aura-text-secondary,#475569);padding:4px 10px;border-radius:20px;background:var(--aura-surface-alt,#f8fafc);border:1px solid var(--aura-border,#e2e8f0);margin-left:8px;"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,0.25);"></span> <span style="font-weight:600;">En vivo</span></div>');
+            $('.adp-section-header, .aura-calendar-toolbar-right, .aura-cal-header-left, .tab-navigation').first().append($indicator);
+        }
+
+        setInterval(function() {
+            // No refrescar automáticamente si hay algún modal de edición abierto para no interrumpir al usuario
+            var hasModalOpen = $('.aura-modal-overlay.active:visible, .aura-modal-overlay.is-active:visible').length > 0;
+
+            $.post(auraCalData.ajax_url, {
+                action: 'aura_cal_heartbeat_sync',
+                nonce: auraCalData.nonce,
+                last_version: lastSyncVersion
+            }, function(res) {
+                if (res && res.success && res.data) {
+                    if (res.data.has_updates) {
+                        lastSyncVersion = res.data.current_version;
+                        if (!hasModalOpen) {
+                            calendar.refetchEvents();
+                            var byUser = res.data.updated_by ? ' por ' + res.data.updated_by : '';
+                            showToast('🔄 Calendario actualizado' + byUser, 'info');
+                        }
+                    } else if (res.data.current_version) {
+                        lastSyncVersion = res.data.current_version;
+                    }
+                }
+            });
+        }, 6500);
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // INICIALIZACIÓN AL CARGAR DOM
     // ─────────────────────────────────────────────────────────────
     $(document).ready(function() {
         initFullCalendar();
+        initLiveCollaboration();
 
         // Si la URL contiene action=create, abrir el editor automáticamente
         var urlParams = new URLSearchParams(window.location.search);
@@ -1553,3 +1982,4 @@
     });
 
 })(jQuery);
+

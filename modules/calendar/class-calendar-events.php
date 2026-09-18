@@ -26,6 +26,7 @@ class Aura_Calendar_Events {
         add_action( 'wp_ajax_aura_cal_save_event',          [ __CLASS__, 'ajax_save_event' ] );
         add_action( 'wp_ajax_aura_cal_delete_event',        [ __CLASS__, 'ajax_delete_event' ] );
         add_action( 'wp_ajax_aura_cal_update_event_dates',  [ __CLASS__, 'ajax_update_event_dates' ] );
+        add_action( 'wp_ajax_aura_cal_heartbeat_sync',       [ __CLASS__, 'ajax_heartbeat_sync' ] );
     }
 
     /**
@@ -171,16 +172,24 @@ class Aura_Calendar_Events {
             );
             foreach ( $inst_rows as $ir ) {
                 $instructors_by_event[ $ir->event_id ][] = [
-                    'id'    => (int) $ir->teacher_id,
-                    'name'  => $ir->display_name,
-                    'email' => $ir->user_email,
-                    'role'  => $ir->role,
+                    'id'     => (int) $ir->teacher_id,
+                    'name'   => $ir->display_name,
+                    'email'  => $ir->user_email,
+                    'role'   => $ir->role,
+                    'avatar' => get_avatar_url( (int) $ir->teacher_id, [ 'size' => 64, 'default' => 'identicon' ] ),
                 ];
             }
         }
 
         // Mapear al formato esperado por FullCalendar
         $fc_events = [];
+        $roles_map = [
+            'program_leader'  => __( 'Líder de Programa', 'aura' ),
+            'activity_leader' => __( 'Líder de Actividad', 'aura' ),
+            'presenter'       => __( 'Expositor / Dar Clase', 'aura' ),
+            'monitor'         => __( 'Monitor / Moderador', 'aura' ),
+        ];
+
         foreach ( $rows as $row ) {
             // Determinar color de fondo
             $bg_color = ! empty( $row->color ) ? $row->color : ( ! empty( $row->subject_color ) ? $row->subject_color : ( ! empty( $row->program_color ) ? $row->program_color : '#6366f1' ) );
@@ -197,6 +206,34 @@ class Aura_Calendar_Events {
             }
 
             $inst_list = $instructors_by_event[ $row->id ] ?? [];
+
+            // Decodificar líderes estudiantiles asignados
+            $student_leaders_list = [];
+            if ( ! empty( $row->student_leaders ) ) {
+                $raw_leaders = json_decode( $row->student_leaders, true );
+                if ( is_array( $raw_leaders ) ) {
+                    foreach ( $raw_leaders as $sl ) {
+                        $sid = intval( $sl['student_id'] ?? 0 );
+                        if ( ! $sid ) {
+                            continue;
+                        }
+                        $s_user = get_userdata( $sid );
+                        $s_name = $s_user ? $s_user->display_name : ( $sl['student_name'] ?? ( '#' . $sid ) );
+                        $role_k = $sl['role'] ?? 'activity_leader';
+                        $student_leaders_list[] = [
+                            'student_id' => $sid,
+                            'name'       => $s_name,
+                            'role'       => $role_k,
+                            'role_label' => $roles_map[ $role_k ] ?? $role_k,
+                            'notes'      => $sl['notes'] ?? '',
+                            'avatar'     => get_avatar_url( $sid, [ 'size' => 64, 'default' => 'identicon' ] ),
+                        ];
+                    }
+                }
+            }
+
+            $primary_avatar = ! empty( $inst_list[0]['avatar'] ) ? $inst_list[0]['avatar'] : ( ! empty( $student_leaders_list[0]['avatar'] ) ? $student_leaders_list[0]['avatar'] : '' );
+            $primary_name   = ! empty( $inst_list[0]['name'] ) ? $inst_list[0]['name'] : ( ! empty( $student_leaders_list[0]['name'] ) ? $student_leaders_list[0]['name'] : '' );
 
             $fc_events[] = [
                 'id'              => (string) $row->id,
@@ -224,6 +261,9 @@ class Aura_Calendar_Events {
                     'gcal_sync_status'    => $row->gcal_sync_status,
                     'attendance_taken'    => intval( $row->attendance_count ) > 0,
                     'instructors'         => $inst_list,
+                    'student_leaders'     => $student_leaders_list,
+                    'primary_avatar'      => $primary_avatar,
+                    'primary_name'        => $primary_name,
                 ],
             ];
         }
@@ -259,7 +299,7 @@ class Aura_Calendar_Events {
             return null;
         }
 
-        // Obtener instructores asociados
+        // Obtener instructores asociados con sus avatares
         $instructors = $wpdb->get_results( $wpdb->prepare(
             "SELECT ei.*, u.display_name, u.user_email
              FROM {$table_inst} ei
@@ -268,7 +308,45 @@ class Aura_Calendar_Events {
             $id
         ) );
 
+        if ( is_array( $instructors ) ) {
+            foreach ( $instructors as &$inst ) {
+                $inst->avatar = get_avatar_url( (int) $inst->teacher_id, [ 'size' => 64, 'default' => 'identicon' ] );
+            }
+            unset( $inst );
+        }
         $row->instructors = is_array( $instructors ) ? $instructors : [];
+
+        // Decodificar líderes estudiantiles asociados con avatares y etiquetas de rol
+        $row->student_leaders_list = [];
+        if ( ! empty( $row->student_leaders ) ) {
+            $raw_leaders = json_decode( $row->student_leaders, true );
+            if ( is_array( $raw_leaders ) ) {
+                $roles_map = [
+                    'program_leader'  => __( 'Líder de Programa', 'aura' ),
+                    'activity_leader' => __( 'Líder de Actividad', 'aura' ),
+                    'presenter'       => __( 'Expositor / Dar Clase', 'aura' ),
+                    'monitor'         => __( 'Monitor / Moderador', 'aura' ),
+                ];
+                foreach ( $raw_leaders as $sl ) {
+                    $sid = intval( $sl['student_id'] ?? 0 );
+                    if ( ! $sid ) {
+                        continue;
+                    }
+                    $s_user = get_userdata( $sid );
+                    $s_name = $s_user ? $s_user->display_name : ( $sl['student_name'] ?? ( '#' . $sid ) );
+                    $role_k = $sl['role'] ?? 'activity_leader';
+                    $row->student_leaders_list[] = [
+                        'student_id' => $sid,
+                        'name'       => $s_name,
+                        'email'      => $s_user ? $s_user->user_email : '',
+                        'role'       => $role_k,
+                        'role_label' => $roles_map[ $role_k ] ?? $role_k,
+                        'notes'      => $sl['notes'] ?? '',
+                        'avatar'     => get_avatar_url( $sid, [ 'size' => 64, 'default' => 'identicon' ] ),
+                    ];
+                }
+            }
+        }
 
         return $row;
     }
@@ -311,6 +389,28 @@ class Aura_Calendar_Events {
                 $teacher_ids = array_unique( array_filter( array_map( 'intval', $data['teacher_ids'] ) ) );
             } else {
                 $teacher_ids = array_unique( array_filter( array_map( 'intval', explode( ',', $data['teacher_ids'] ) ) ) );
+            }
+        }
+
+        // Procesar líderes estudiantiles asignados
+        $student_leaders_json = null;
+        if ( isset( $data['student_leaders'] ) ) {
+            if ( is_array( $data['student_leaders'] ) ) {
+                $clean_leaders = [];
+                foreach ( $data['student_leaders'] as $sl ) {
+                    $sid = intval( $sl['student_id'] ?? 0 );
+                    if ( $sid > 0 ) {
+                        $clean_leaders[] = [
+                            'student_id'   => $sid,
+                            'role'         => sanitize_text_field( $sl['role'] ?? 'activity_leader' ),
+                            'notes'        => sanitize_text_field( $sl['notes'] ?? '' ),
+                            'student_name' => sanitize_text_field( $sl['student_name'] ?? '' ),
+                        ];
+                    }
+                }
+                $student_leaders_json = ! empty( $clean_leaders ) ? wp_json_encode( $clean_leaders ) : null;
+            } elseif ( is_string( $data['student_leaders'] ) && ! empty( $data['student_leaders'] ) ) {
+                $student_leaders_json = stripslashes( $data['student_leaders'] );
             }
         }
 
@@ -362,6 +462,7 @@ class Aura_Calendar_Events {
                             'subject_id'          => $subject_id,
                             'title'               => $title,
                             'description'         => $description,
+                            'student_leaders'     => $student_leaders_json,
                             'event_type'          => $event_type,
                             'start_datetime'      => $evt_start,
                             'end_datetime'        => $evt_end,
@@ -376,7 +477,7 @@ class Aura_Calendar_Events {
                             'created_at'          => current_time( 'mysql' ),
                             'updated_at'          => current_time( 'mysql' ),
                         ],
-                        [ '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s' ]
+                        [ '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s' ]
                     );
 
                     $new_evt_id = (int) $wpdb->insert_id;
@@ -411,6 +512,8 @@ class Aura_Calendar_Events {
                 }
             }
 
+            self::bump_sync_version();
+
             return [
                 'ids'     => $created_event_ids,
                 'count'   => count( $created_event_ids ),
@@ -431,21 +534,22 @@ class Aura_Calendar_Events {
         }
 
         $fields = [
-            'program_id'     => $program_id,
-            'subject_id'     => $subject_id,
-            'title'          => $title,
-            'description'    => $description,
-            'event_type'     => $event_type,
-            'start_datetime' => $start_dt,
-            'end_datetime'   => $end_dt,
-            'location'       => $location,
-            'online_url'     => $online_url,
-            'color'          => $color,
-            'status'         => $status,
-            'updated_at'     => current_time( 'mysql' ),
+            'program_id'      => $program_id,
+            'subject_id'      => $subject_id,
+            'title'           => $title,
+            'description'     => $description,
+            'student_leaders' => $student_leaders_json,
+            'event_type'      => $event_type,
+            'start_datetime'  => $start_dt,
+            'end_datetime'    => $end_dt,
+            'location'        => $location,
+            'online_url'      => $online_url,
+            'color'           => $color,
+            'status'          => $status,
+            'updated_at'      => current_time( 'mysql' ),
         ];
 
-        $formats = [ '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' ];
+        $formats = [ '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' ];
 
         if ( $id > 0 ) {
             // Actualizar evento existente
@@ -471,6 +575,8 @@ class Aura_Calendar_Events {
             if ( Aura_Calendar_Google_Sync::is_auto_sync() ) {
                 Aura_Calendar_Google_Sync::sync_event( $event_id );
             }
+
+            self::bump_sync_version();
 
             return [
                 'ids'     => [ $event_id ],
@@ -505,6 +611,8 @@ class Aura_Calendar_Events {
             if ( Aura_Calendar_Google_Sync::is_auto_sync() ) {
                 Aura_Calendar_Google_Sync::sync_event( $event_id );
             }
+
+            self::bump_sync_version();
 
             return [
                 'ids'     => [ $event_id ],
@@ -561,6 +669,8 @@ class Aura_Calendar_Events {
             );
         }
 
+        self::bump_sync_version();
+
         return true;
     }
 
@@ -592,10 +702,40 @@ class Aura_Calendar_Events {
             if ( Aura_Calendar_Google_Sync::is_auto_sync() ) {
                 Aura_Calendar_Google_Sync::sync_event( $id );
             }
+            self::bump_sync_version();
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Incrementar versión de sincronización del calendario para colaboración en tiempo real
+     */
+    public static function bump_sync_version(): void {
+        update_option( 'aura_cal_sync_version', time() );
+        $user = wp_get_current_user();
+        update_option( 'aura_cal_sync_author', $user ? $user->display_name : 'Usuario' );
+    }
+
+    /**
+     * AJAX: Heartbeat de sincronización en tiempo real
+     */
+    public static function ajax_heartbeat_sync(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        $client_version = intval( $_POST['last_sync'] ?? 0 );
+        $server_version = intval( get_option( 'aura_cal_sync_version', 0 ) );
+        $author         = get_option( 'aura_cal_sync_author', '' );
+
+        $has_updates = $server_version > $client_version;
+
+        wp_send_json_success( [
+            'has_updates'  => $has_updates,
+            'sync_version' => $server_version,
+            'author'       => $author,
+            'server_time'  => time(),
+        ] );
     }
 
     // ─────────────────────────────────────────────────────────────
