@@ -463,6 +463,40 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             );
         }
 
+        // Badge de origen de flujo (Caja Chica / Reembolso)
+        $origin_badge_html = '';
+        $concept_raw = ! empty( $item->related_user_concept ) ? (string) $item->related_user_concept : '';
+        if ( $concept_raw === 'petty_cash_settlement' || strpos( strtolower( (string) $item->description ), 'rendición caja chica' ) !== false ) {
+            // Extraer ID si existe en description (ej: #4)
+            $settle_ref = '';
+            if ( preg_match( '/#(\d+)/', (string) $item->description, $m_id ) ) {
+                $settle_ref = ' #' . $m_id[1];
+            }
+            $origin_badge_html = sprintf(
+                '<a href="%s" class="aura-txn-origin-badge aura-has-tooltip" data-tooltip="%s" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;gap:3px;text-decoration:none;margin-left:2px;">'
+                . '<span class="dashicons dashicons-archive" style="font-size:12px;width:12px;height:12px;line-height:12px;"></span>'
+                . '<span>Caja%s</span>'
+                . '</a>',
+                esc_url( admin_url( 'admin.php?page=aura-financial-accounts#petty-cash' ) ),
+                esc_attr( __( 'Transacción originada automáticamente por Rendición de Caja Chica aprobada.', 'aura-suite' ) ),
+                esc_html( $settle_ref )
+            );
+        } elseif ( $concept_raw === 'expense_reimbursement' || strpos( strtolower( (string) $item->description ), 'reembolso' ) !== false ) {
+            $reimb_ref = '';
+            if ( preg_match( '/#(\d+)/', (string) $item->description, $m_id ) ) {
+                $reimb_ref = ' #' . $m_id[1];
+            }
+            $origin_badge_html = sprintf(
+                '<a href="%s" class="aura-txn-origin-badge aura-has-tooltip" data-tooltip="%s" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;gap:3px;text-decoration:none;margin-left:2px;">'
+                . '<span class="dashicons dashicons-businessman" style="font-size:12px;width:12px;height:12px;line-height:12px;"></span>'
+                . '<span>Reemb%s</span>'
+                . '</a>',
+                esc_url( admin_url( 'admin.php?page=aura-financial-accounts#reimbursements' ) ),
+                esc_attr( __( 'Transacción originada por pago de Reembolso a Persona.', 'aura-suite' ) ),
+                esc_html( $reimb_ref )
+            );
+        }
+
         return sprintf(
             '<div class="aura-id-cell-wrapper" style="display:inline-flex;align-items:center;gap:4px;">'
             . '%s'
@@ -471,6 +505,7 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             . '<span class="txn-id-num">#%d</span>'
             . '<span class="txn-type-tag" style="color:%s;">%s</span>'
             . '</div>'
+            . '%s'
             . '%s'
             . '</div>',
             $toggle_btn,
@@ -482,7 +517,8 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             $item->id,
             esc_attr( $color ),
             esc_html( $badge_text ),
-            $receipt_badge_html
+            $receipt_badge_html,
+            $origin_badge_html
         );
     }
 

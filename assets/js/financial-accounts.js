@@ -2056,6 +2056,18 @@ jQuery(function ($) {
             );
         }
 
+        const spentAmtChild = parseFloat(r.spent_amount || 0);
+        const delivAmtChild = parseFloat(r.delivered_amount || 0);
+        if (spentAmtChild > delivAmtChild) {
+            const excedentVal = spentAmtChild - delivAmtChild;
+            sidebarButtons.push(
+                '<button type="button" class="btn btn-sm btn-indigo btn-shimmer btn-lift aura-child-side-btn aura-petty-pay-excedent" data-id="' + r.id + '" data-tooltip="Pagar o reembolsar excedente comprobado al custodio">' +
+                    '<span class="dashicons dashicons-money-alt"></span>' +
+                    '<span>Liquidar Excedente ($' + formatNumber(excedentVal) + ')</span>' +
+                '</button>'
+            );
+        }
+
         return '<div class="aura-child-card aura-child-card--sidebar-layout">' +
             '<!-- Panel Lateral Izquierdo: Acciones Rápidas -->' +
             '<div class="aura-child-actions-sidebar">' +
@@ -2209,6 +2221,13 @@ jQuery(function ($) {
             }
             if (canClose) {
                 buttons.push('<button type="button" class="btn btn-sm btn-secondary btn-lift aura-btn-action-icon aura-btn-action-close aura-petty-action" data-id="' + r.id + '" data-status="closed" data-tooltip="Cerrar definitivamente" aria-label="Cerrar"><span class="dashicons dashicons-lock"></span></button>');
+            }
+
+            const spentAmtMain = parseFloat(r.spent_amount || 0);
+            const delivAmtMain = parseFloat(r.delivered_amount || 0);
+            if (spentAmtMain > delivAmtMain) {
+                const excedentRow = spentAmtMain - delivAmtMain;
+                buttons.push('<button type="button" class="btn btn-sm btn-indigo btn-lift aura-btn-action-icon aura-petty-pay-excedent" data-id="' + r.id + '" data-tooltip="Liquidar excedente de $' + formatNumber(excedentRow) + ' a favor del custodio" aria-label="Liquidar Excedente"><span class="dashicons dashicons-money-alt"></span></button>');
             }
 
             const isThirdParty = (r.counterparty_id && parseInt(r.counterparty_id, 10) > 0);
@@ -2565,11 +2584,39 @@ jQuery(function ($) {
     }
 
     function updatePettyStatus(id, status) {
+        let note = '';
+        if (status === 'rejected') {
+            const reason = window.prompt('Indica el motivo del rechazo de esta rendición (obligatorio):');
+            if (reason === null) {
+                return; // Cancelado por el usuario
+            }
+            if (!reason.trim()) {
+                showFeedback('Debes ingresar un motivo para rechazar la rendición.', false);
+                return;
+            }
+            note = reason.trim();
+        } else if (status === 'approved') {
+            const confirmMsg = '¿Deseas aprobar esta rendición y publicar automáticamente sus transacciones de egreso en el Libro Mayor?';
+            if (!window.confirm(confirmMsg)) {
+                return;
+            }
+            const optNote = window.prompt('Observación o nota de aprobación para auditoría (opcional):', '');
+            if (optNote !== null && optNote.trim() !== '') {
+                note = optNote.trim();
+            }
+        } else if (status === 'closed') {
+            if (!window.confirm('¿Deseas cerrar definitivamente esta entrega de caja chica?')) {
+                return;
+            }
+        }
+
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_petty_cash_status',
             nonce: auraFinancialAccounts.nonce,
             id: id,
-            status: status
+            status: status,
+            note: note,
+            reason: note
         }).done(function (res) {
             if (res && res.success) {
                 showFeedback((res.data && res.data.message) || 'Estado actualizado.', true);
@@ -3999,6 +4046,47 @@ jQuery(function ($) {
         const id = parseInt($(this).data('id'), 10);
         if (!id) return;
         deletePettyCash(id);
+    });
+
+    $(document).on('click', '.aura-petty-pay-excedent', function () {
+        const id = parseInt($(this).data('id'), 10);
+        const list = window.auraPettyCashCache || [];
+        const row = list.find(function (item) { return parseInt(item.id, 10) === id; });
+        if (!row) return;
+
+        const spentAmt = parseFloat(row.spent_amount || 0);
+        const delivAmt = parseFloat(row.delivered_amount || 0);
+        const excedent = Math.max(0, spentAmt - delivAmt);
+
+        if (excedent <= 0) {
+            showFeedback('Esta entrega no presenta excedente a favor del custodio.', false);
+            return;
+        }
+
+        if ($reimbursementsPayForm.length && $reimbursementsPayForm[0]) {
+            $reimbursementsPayForm[0].reset();
+        }
+
+        const personIdPrefixed = (row.counterparty_id && parseInt(row.counterparty_id, 10) > 0)
+            ? ('tp:' + row.counterparty_id)
+            : ((row.responsible_user_id && parseInt(row.responsible_user_id, 10) > 0) ? ('wp:' + row.responsible_user_id) : '');
+
+        $('#aura-reimburse-pay-id').val('0');
+        $('#aura-reimburse-pay-person').val(personIdPrefixed);
+        $('#aura-reimburse-pay-person-name').val(row.responsible_name || '');
+        $('#aura-reimburse-pay-amount').val(excedent.toFixed(2));
+        $('#aura-reimburse-pay-concept').val('Reembolso de excedente de Caja Chica #' + row.id + ' - ' + (row.responsible_name || ''));
+        $('#aura-reimburse-pay-notes').val('Liquidación de excedente en rendición de Caja Chica #' + row.id);
+        $('#aura-reimburse-pay-create-tx').prop('checked', true);
+        $('#aura-reimburse-pay-tx-fields').show();
+
+        if (typeof setReimbursePayMode === 'function') {
+            setReimbursePayMode('direct');
+        }
+        $('#aura-reimburse-pay-debt-select').val('direct');
+
+        window.AuraUI.openModal('aura-finance-reimburse-pay-modal');
+        showFeedback('Preparando liquidación del excedente ($' + formatNumber(excedent) + ') para ' + (row.responsible_name || 'el custodio') + '.', true);
     });
 
     $(document).on('click', '.aura-petty-view-evidence', function () {

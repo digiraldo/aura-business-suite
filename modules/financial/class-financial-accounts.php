@@ -2095,6 +2095,13 @@ class Aura_Financial_Accounts {
             $format[] = '%s';
         }
 
+        $review_note = sanitize_text_field(wp_unslash($_POST['note'] ?? $_POST['reason'] ?? ''));
+        if (!empty($review_note)) {
+            $prev_notes = (string) $row->notes;
+            $data['notes'] = $prev_notes . "\n[" . current_time('Y-m-d H:i') . ' ' . $labels[$new_status] . ']: ' . $review_note;
+            $format[] = '%s';
+        }
+
         $ok = $wpdb->update($table, $data, array('id' => $id), $format, array('%d'));
         if ($ok === false) {
             wp_send_json_error(array('message' => __('No se pudo actualizar el estado.', 'aura-suite')));
@@ -2136,28 +2143,28 @@ class Aura_Financial_Accounts {
                     $tx_type = $is_capex ? 'capital' : 'expense';
 
                     $exp_receipt = !empty($exp->receipt_url) ? $exp->receipt_url : $general_evidence;
+                    $expense_notes = !empty($exp->notes) ? $exp->notes : '';
 
                     $transaction_data = array(
-                        'transaction_type'   => $tx_type,
-                        'category_id'        => $exp->category_id,
-                        'amount'             => $exp->amount,
-                        'transaction_date'   => current_time('Y-m-d'),
-                        'description'        => sprintf(__('Rendición Caja Chica #%d - %s', 'aura-suite'), $id, $cat ? $cat->name : ''),
-                        'notes'              => $row->notes . ($exp_receipt ? "\n" . sprintf(__('Evidencia: %s', 'aura-suite'), $exp_receipt) : ""),
-                        'status'             => 'approved',
-                        'payment_method'     => 'Efectivo',
-                        'source_account_id'  => $row->petty_cash_account_id,
-                        'counterparty_id'    => $row->counterparty_id > 0 ? (int) $row->counterparty_id : null,
-                        'user_id'            => $row->responsible_user_id > 0 ? (int) $row->responsible_user_id : null,
-                        'concept_link_id'    => 'petty_cash_settlement',
-                        'business_reason'    => sprintf(__('Rendición de fondos Caja Chica #%d', 'aura-suite'), $id),
-                        'receipt_path'       => $exp_receipt,
-                        'receipt_file'       => $exp_receipt,
-                        'created_by'         => get_current_user_id(),
-                        'approved_by'        => get_current_user_id(),
-                        'approved_at'        => current_time('mysql'),
-                        'created_at'         => current_time('mysql'),
-                        'updated_at'         => current_time('mysql'),
+                        'transaction_type'     => $tx_type,
+                        'category_id'          => (int) $exp->category_id,
+                        'expense_category_id'  => (int) $exp->category_id,
+                        'amount'               => (float) $exp->amount,
+                        'transaction_date'     => current_time('Y-m-d'),
+                        'description'          => sprintf(__('Rendición Caja Chica #%d - %s', 'aura-suite'), $id, $cat ? $cat->name : ($expense_notes ?: __('Gasto', 'aura-suite'))),
+                        'notes'                => trim($expense_notes . ($exp_receipt ? "\n" . sprintf(__('Evidencia: %s', 'aura-suite'), $exp_receipt) : '')),
+                        'status'               => 'approved',
+                        'payment_method'       => 'Efectivo',
+                        'source_account_id'    => (int) $row->petty_cash_account_id,
+                        'third_party_id'       => $row->counterparty_id > 0 ? (int) $row->counterparty_id : null,
+                        'related_user_id'      => $row->responsible_user_id > 0 ? (int) $row->responsible_user_id : null,
+                        'related_user_concept' => 'petty_cash_settlement',
+                        'receipt_file'         => $exp_receipt,
+                        'created_by'           => get_current_user_id(),
+                        'approved_by'          => get_current_user_id(),
+                        'approved_at'          => current_time('mysql'),
+                        'created_at'           => current_time('mysql'),
+                        'updated_at'           => current_time('mysql'),
                     );
                     
                     $wpdb->insert($wpdb->prefix . 'aura_finance_transactions', $transaction_data);
@@ -2182,26 +2189,25 @@ class Aura_Financial_Accounts {
                 $tx_type = $is_capex ? 'capital' : 'expense';
 
                 $transaction_data = array(
-                    'transaction_type'   => $tx_type,
-                    'category_id'        => $row->category_id,
-                    'amount'             => $row->spent_amount,
-                    'transaction_date'   => current_time('Y-m-d'),
-                    'description'        => sprintf(__('Rendición de Caja Chica (Ref: #%d) - %s', 'aura-suite'), $id, $cat ? $cat->name : ''),
-                    'notes'              => $row->notes . ($general_evidence ? "\n" . sprintf(__('Evidencia: %s', 'aura-suite'), $general_evidence) : ""),
-                    'status'             => 'approved',
-                    'payment_method'     => 'Efectivo',
-                    'source_account_id'  => $row->petty_cash_account_id,
-                    'counterparty_id'    => $row->counterparty_id > 0 ? (int) $row->counterparty_id : null,
-                    'user_id'            => $row->responsible_user_id > 0 ? (int) $row->responsible_user_id : null,
-                    'concept_link_id'    => 'petty_cash_settlement',
-                    'business_reason'    => sprintf(__('Rendición de fondos Caja Chica #%d', 'aura-suite'), $id),
-                    'receipt_path'       => $general_evidence,
-                    'receipt_file'       => $general_evidence,
-                    'created_by'         => get_current_user_id(),
-                    'approved_by'        => get_current_user_id(),
-                    'approved_at'        => current_time('mysql'),
-                    'created_at'         => current_time('mysql'),
-                    'updated_at'         => current_time('mysql'),
+                    'transaction_type'     => $tx_type,
+                    'category_id'          => (int) $row->category_id,
+                    'expense_category_id'  => (int) $row->category_id,
+                    'amount'               => (float) $row->spent_amount,
+                    'transaction_date'     => current_time('Y-m-d'),
+                    'description'          => sprintf(__('Rendición de Caja Chica (Ref: #%d) - %s', 'aura-suite'), $id, $cat ? $cat->name : ''),
+                    'notes'                => trim($row->notes . ($general_evidence ? "\n" . sprintf(__('Evidencia: %s', 'aura-suite'), $general_evidence) : '')),
+                    'status'               => 'approved',
+                    'payment_method'       => 'Efectivo',
+                    'source_account_id'    => (int) $row->petty_cash_account_id,
+                    'third_party_id'       => $row->counterparty_id > 0 ? (int) $row->counterparty_id : null,
+                    'related_user_id'      => $row->responsible_user_id > 0 ? (int) $row->responsible_user_id : null,
+                    'related_user_concept' => 'petty_cash_settlement',
+                    'receipt_file'         => $general_evidence,
+                    'created_by'           => get_current_user_id(),
+                    'approved_by'          => get_current_user_id(),
+                    'approved_at'          => current_time('mysql'),
+                    'created_at'           => current_time('mysql'),
+                    'updated_at'           => current_time('mysql'),
                 );
                 
                 $wpdb->insert($wpdb->prefix . 'aura_finance_transactions', $transaction_data);
@@ -2887,27 +2893,26 @@ class Aura_Financial_Accounts {
             }
 
             $tx_data = array(
-                'transaction_type'   => $tx_type,
-                'category_id'        => $category_id > 0 ? $category_id : null,
-                'amount'             => $payment_amount,
-                'transaction_date'   => $payment_date,
-                'description'        => $tx_desc,
-                'notes'              => $tx_notes,
-                'status'             => 'approved',
-                'payment_method'     => ucfirst($payment_method),
-                'source_account_id'  => $paying_account_id,
-                'counterparty_id'    => $row->counterparty_id > 0 ? $row->counterparty_id : null,
-                'user_id'            => $row->person_user_id > 0 ? $row->person_user_id : null,
-                'area_id'            => $area_id > 0 ? $area_id : null,
-                'concept_link_id'    => 'expense_reimbursement',
-                'business_reason'    => sprintf(__('Reembolso de gastos deuda #%d', 'aura-suite'), $id),
-                'receipt_path'       => $receipt_url,
-                'receipt_file'       => $receipt_url,
-                'created_by'         => get_current_user_id(),
-                'approved_by'        => get_current_user_id(),
-                'approved_at'        => current_time('mysql'),
-                'created_at'         => current_time('mysql'),
-                'updated_at'         => current_time('mysql'),
+                'transaction_type'     => $tx_type,
+                'category_id'          => $category_id > 0 ? (int) $category_id : null,
+                'expense_category_id'  => $category_id > 0 ? (int) $category_id : null,
+                'amount'               => (float) $payment_amount,
+                'transaction_date'     => $payment_date,
+                'description'          => $tx_desc,
+                'notes'                => $tx_notes,
+                'status'               => 'approved',
+                'payment_method'       => ucfirst($payment_method),
+                'source_account_id'    => (int) $paying_account_id,
+                'third_party_id'       => $row->counterparty_id > 0 ? (int) $row->counterparty_id : null,
+                'related_user_id'      => $row->person_user_id > 0 ? (int) $row->person_user_id : null,
+                'area_id'              => $area_id > 0 ? (int) $area_id : null,
+                'related_user_concept' => 'expense_reimbursement',
+                'receipt_file'         => $receipt_url,
+                'created_by'           => get_current_user_id(),
+                'approved_by'          => get_current_user_id(),
+                'approved_at'          => current_time('mysql'),
+                'created_at'           => current_time('mysql'),
+                'updated_at'           => current_time('mysql'),
             );
 
             $inserted = $wpdb->insert($wpdb->prefix . 'aura_finance_transactions', $tx_data);
