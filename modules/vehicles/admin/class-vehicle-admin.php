@@ -65,19 +65,6 @@ class Aura_Vehicle_Admin {
             }
         }
 
-        // También conceder si el usuario pertenece a al menos un área.
-        $user_id = isset( $args[1] ) ? (int) $args[1] : get_current_user_id();
-        if ( $user_id > 0 ) {
-            global $wpdb;
-            $count = (int) $wpdb->get_var( $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$wpdb->prefix}aura_area_users WHERE user_id = %d",
-                $user_id
-            ) );
-            if ( $count > 0 ) {
-                $allcaps['aura_vehicles_access'] = true;
-            }
-        }
-
         return $allcaps;
     }
 

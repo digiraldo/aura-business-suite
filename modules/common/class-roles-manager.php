@@ -1215,6 +1215,8 @@ class Aura_Roles_Manager {
         foreach ($capabilities as $cap) {
             $user->add_cap($cap);
         }
+
+        update_user_meta( $user_id, 'aura_cbac_profile_template', $template_id );
         
         return true;
     }
@@ -1322,8 +1324,18 @@ class Aura_Roles_Manager {
             return $redirect_to;
         }
 
-        if ( $user->has_cap( 'administrator' ) || self::user_has_any_aura_capability_for_user( $user ) ) {
+        $access = self::get_user_portal_access( $user );
+
+        if ( $access['can_admin'] ) {
             return admin_url();
+        }
+
+        if ( $access['is_teacher'] && ! empty( $access['teacher_portal_url'] ) ) {
+            return $access['teacher_portal_url'];
+        }
+
+        if ( $access['is_student'] && ! empty( $access['student_portal_url'] ) ) {
+            return $access['student_portal_url'];
         }
 
         return $redirect_to;
@@ -1341,8 +1353,18 @@ class Aura_Roles_Manager {
             return $redirect;
         }
 
-        if ( $user->has_cap( 'administrator' ) || self::user_has_any_aura_capability_for_user( $user ) ) {
+        $access = self::get_user_portal_access( $user );
+
+        if ( $access['can_admin'] ) {
             return admin_url();
+        }
+
+        if ( $access['is_teacher'] && ! empty( $access['teacher_portal_url'] ) ) {
+            return $access['teacher_portal_url'];
+        }
+
+        if ( $access['is_student'] && ! empty( $access['student_portal_url'] ) ) {
+            return $access['student_portal_url'];
         }
 
         return $redirect;
@@ -1616,5 +1638,311 @@ class Aura_Roles_Manager {
         }
 
         return get_users( $args );
+    }
+
+    /**
+     * Evalúa y devuelve de forma centralizada todos los accesos a portales,
+     * roles primarios y permisos para la sincronización entre CBAC y Frontend/Login.
+     *
+     * @param WP_User|int|null $user Usuario a evaluar o null para el usuario actual.
+     * @return array Mapa de capacidades, flags y URLs de destino.
+     */
+    public static function get_user_portal_access( $user = null ): array {
+        if ( null === $user ) {
+            $user = wp_get_current_user();
+        } elseif ( is_numeric( $user ) ) {
+            $user = get_user_by( 'id', (int) $user );
+        }
+
+        if ( ! ( $user instanceof WP_User ) || empty( $user->ID ) ) {
+            return [
+                'logged_in'          => false,
+                'user'               => null,
+                'user_id'            => 0,
+                'can_admin'          => false,
+                'is_teacher'         => false,
+                'is_student'         => false,
+                'can_student_portal' => false,
+                'has_certificates'   => false,
+                'has_forms'          => false,
+                'primary_role'       => [
+                    'slug'        => 'guest',
+                    'label'       => __( 'Invitado', 'aura-suite' ),
+                    'badge_class' => 'badge-slate',
+                    'icon'        => 'dashicons-admin-users',
+                    'color'       => '#64748b',
+                    'bg'          => 'rgba(100, 116, 139, 0.12)',
+                ],
+                'admin_panel_url'    => admin_url(),
+                'teacher_portal_url' => home_url( '/portal-del-instructor/' ),
+                'student_portal_url' => home_url( '/portal-del-estudiante/' ),
+                'certificates_url'   => '',
+                'forms_portal_url'   => '',
+                'logout_url'         => wp_logout_url( home_url() ),
+            ];
+        }
+
+        $user_id = $user->ID;
+        global $wpdb;
+
+        // 1. URLs dinámicas de portales
+        $student_portal_url = '';
+        if ( class_exists( 'Aura_Students_Settings' ) ) {
+            $st_page_id = (int) Aura_Students_Settings::get( 'portal_page_id' );
+            if ( $st_page_id > 0 ) {
+                $student_portal_url = get_permalink( $st_page_id );
+            }
+        }
+        if ( empty( $student_portal_url ) && class_exists( 'Aura_Students_Frontend' ) && method_exists( 'Aura_Students_Frontend', 'get_portal_page_url' ) ) {
+            $student_portal_url = Aura_Students_Frontend::get_portal_page_url();
+        }
+        if ( empty( $student_portal_url ) ) {
+            $st_page_id = (int) $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = 'page' AND (post_content LIKE '%[aura_student_portal%' OR post_content LIKE '%[aura_portal%') LIMIT 1" );
+            if ( $st_page_id > 0 ) {
+                $student_portal_url = get_permalink( $st_page_id );
+            } else {
+                $student_portal_url = home_url( '/portal-del-estudiante/' );
+            }
+        }
+
+        $teacher_portal_url = '';
+        $teacher_page_id = (int) $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = 'page' AND post_content LIKE '%[aura_teacher_portal%' LIMIT 1" );
+        if ( $teacher_page_id > 0 ) {
+            $teacher_portal_url = get_permalink( $teacher_page_id );
+        } else {
+            $teacher_portal_url = home_url( '/portal-del-instructor/' );
+        }
+
+        $certificates_url = '';
+        $cert_page_id = (int) $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = 'page' AND post_content LIKE '%[aura_mis_certificados%' LIMIT 1" );
+        if ( $cert_page_id > 0 ) {
+            $certificates_url = get_permalink( $cert_page_id );
+        }
+
+        $forms_portal_url = '';
+        $form_page_id = (int) $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = 'page' AND post_content LIKE '%[aura_form_portal%' LIMIT 1" );
+        if ( $form_page_id > 0 ) {
+            $forms_portal_url = get_permalink( $form_page_id );
+        }
+
+        // 2. Ficha de estudiante/profesor
+        $student_record = null;
+        if ( class_exists( 'Aura_Students_Frontend' ) && method_exists( 'Aura_Students_Frontend', 'get_student_by_wp_user' ) ) {
+            $student_record = Aura_Students_Frontend::get_student_by_wp_user( $user_id );
+        } elseif ( $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}aura_students'" ) === "{$wpdb->prefix}aura_students" ) {
+            $student_record = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}aura_students WHERE wp_user_id = %d AND deleted_at IS NULL LIMIT 1", $user_id ) );
+        }
+
+        // 3. Asignación como profesor en materias de calendario
+        $is_assigned_as_teacher = false;
+        $table_subj = $wpdb->prefix . 'aura_cal_subjects';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table_subj}'" ) === $table_subj ) {
+            $user_id_like = '%"' . $user_id . '"%';
+            $subj_count = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table_subj} WHERE (teacher_id = %d OR teacher_ids LIKE %s) AND status = 'active'",
+                $user_id,
+                $user_id_like
+            ) );
+            if ( $subj_count > 0 ) {
+                $is_assigned_as_teacher = true;
+            }
+        }
+
+        // 4. Determinar roles y flags CBAC
+        $is_admin = (
+            user_can( $user_id, 'manage_options' ) ||
+            user_can( $user_id, 'administrator' ) ||
+            in_array( 'administrator', (array) $user->roles, true )
+        );
+
+        // Capacidades administrativas o de gestión en módulos Aura
+        $staff_caps = [
+            'aura_admin_users_manage', 'aura_admin_users_create', 'aura_admin_permissions_assign',
+            'aura_admin_settings', 'aura_admin_gdrive_config', 'aura_admin_notifications_view',
+            'aura_admin_modules_enable', 'aura_admin_backup', 'aura_admin_logs',
+            'aura_finance_create', 'aura_finance_edit_own', 'aura_finance_edit_all',
+            'aura_finance_delete_own', 'aura_finance_delete_all', 'aura_finance_approve',
+            'aura_finance_view_all', 'aura_finance_charts', 'aura_finance_export',
+            'aura_finance_category_manage', 'aura_finance_bulk_edit', 'aura_finance_link_user',
+            'aura_finance_user_ledger', 'aura_finance_integrations', 'aura_finance_audit',
+            'aura_finance_import', 'aura_finance_budgets', 'aura_finance_tags',
+            'aura_finance_accounts_manage', 'aura_finance_petty_cash_approve',
+            'aura_vehicles_create', 'aura_vehicles_edit', 'aura_vehicles_delete',
+            'aura_vehicles_exits_create', 'aura_vehicles_exits_edit_own', 'aura_vehicles_exits_edit_all',
+            'aura_vehicles_exits_delete_own', 'aura_vehicles_exits_delete_all', 'aura_vehicles_km_update',
+            'aura_vehicles_view_all', 'aura_vehicles_reports', 'aura_vehicles_alerts',
+            'aura_vehicles_audit', 'aura_vehicles_settings',
+            'aura_inventory_create', 'aura_inventory_edit', 'aura_inventory_delete',
+            'aura_inventory_view_all', 'aura_inventory_checkout', 'aura_inventory_checkin',
+            'aura_inventory_loan_edit', 'aura_inventory_loan_delete', 'aura_inventory_maintenance_create',
+            'aura_inventory_maintenance_edit', 'aura_inventory_maintenance_delete',
+            'aura_inventory_maintenance_schedule', 'aura_inventory_maintenance_view',
+            'aura_inventory_maintenance_alerts', 'aura_inventory_reports', 'aura_inventory_categories',
+            'aura_areas_manage', 'aura_areas_types_manage', 'aura_areas_view_all', 'aura_areas_view_own',
+            'aura_areas_budget_manage', 'aura_areas_budget_view', 'aura_areas_assign_user',
+            'aura_areas_forms_manage', 'aura_areas_enrollment_manage',
+            'aura_third_parties_view', 'aura_third_parties_create', 'aura_third_parties_edit',
+            'aura_third_parties_delete', 'aura_third_parties_create_wp_user',
+            'aura_students_create', 'aura_students_edit', 'aura_students_delete',
+            'aura_students_view_all', 'aura_students_approve', 'aura_students_enrollments_manage',
+            'aura_students_scholarships_view', 'aura_students_scholarships_assign',
+            'aura_students_payments_register', 'aura_students_payments_view_all',
+            'aura_students_quotas_config', 'aura_students_status_view', 'aura_students_courses_manage',
+            'aura_students_reports', 'aura_students_settings',
+            'aura_cal_manage_calendar', 'aura_cal_delete_events', 'aura_cal_manage_programs',
+            'aura_cal_sync_gcal', 'aura_cal_manage_settings',
+            'aura_library_create', 'aura_library_edit', 'aura_library_delete',
+            'aura_library_loan_create', 'aura_library_loan_return', 'aura_library_loan_extend',
+            'aura_library_loan_edit', 'aura_library_loan_delete', 'aura_library_view_loans_all',
+            'aura_library_reports', 'aura_library_alerts', 'aura_library_settings', 'aura_library_audit',
+            'aura_cert_template_view', 'aura_cert_template_create', 'aura_cert_template_edit',
+            'aura_cert_template_delete', 'aura_cert_issue', 'aura_cert_revoke',
+            'aura_cert_view_all', 'aura_cert_download_any', 'aura_cert_signatures_manage',
+            'aura_cert_settings', 'aura_cert_reports',
+            'aura_forms_create', 'aura_forms_edit', 'aura_forms_delete',
+            'aura_forms_view_responses_all', 'aura_forms_export', 'aura_forms_analytics',
+            'aura_forms_assign', 'aura_forms_enrollment_review', 'aura_forms_settings', 'aura_forms_reports',
+        ];
+
+        $has_staff_cap = false;
+        foreach ( $staff_caps as $scap ) {
+            if ( user_can( $user_id, $scap ) ) {
+                $has_staff_cap = true;
+                break;
+            }
+        }
+
+        $can_admin = $is_admin || user_can( $user_id, 'edit_posts' ) || $has_staff_cap;
+
+        // Docente / Instructor
+        $is_teacher = (
+            $is_admin ||
+            user_can( $user_id, 'aura_cal_take_attendance' ) ||
+            user_can( $user_id, 'aura_cal_manage_grades' ) ||
+            user_can( $user_id, 'aura_cal_grade_tasks' ) ||
+            user_can( $user_id, 'aura_cal_manage_tasks' ) ||
+            in_array( 'academic_teacher', (array) $user->roles, true ) ||
+            get_user_meta( $user_id, 'aura_cbac_profile_template', true ) === 'academic_teacher' ||
+            ( ! empty( $student_record ) && ( $student_record->profile_type ?? '' ) === 'teacher' ) ||
+            $is_assigned_as_teacher
+        );
+
+        // Estudiante
+        $is_student = (
+            user_can( $user_id, 'aura_students_view_own' ) ||
+            user_can( $user_id, 'aura_students_payments_view_own' ) ||
+            user_can( $user_id, 'aura_cal_submit_tasks' ) ||
+            in_array( 'academic_student', (array) $user->roles, true ) ||
+            get_user_meta( $user_id, 'aura_cbac_profile_template', true ) === 'academic_student' ||
+            ( ! empty( $student_record ) && ( $student_record->profile_type ?? '' ) !== 'teacher' )
+        );
+
+        $can_student_portal = $is_student || $is_admin;
+
+        $has_certificates = ! empty( $certificates_url ) && (
+            $is_admin ||
+            user_can( $user_id, 'aura_cert_download_own' ) ||
+            user_can( $user_id, 'aura_cert_view_all' )
+        );
+
+        $has_forms = ! empty( $forms_portal_url ) && (
+            $is_admin ||
+            user_can( $user_id, 'aura_forms_submit' ) ||
+            user_can( $user_id, 'aura_forms_view_responses_own' )
+        );
+
+        // 5. Determinar etiqueta, icono y badge de Rol Principal
+        if ( $is_admin ) {
+            $role_info = [
+                'slug'        => 'administrator',
+                'label'       => __( 'Director / Administrador', 'aura-suite' ),
+                'badge_class' => 'badge-emerald',
+                'icon'        => 'dashicons-businessperson',
+                'color'       => '#10b981',
+                'bg'          => 'rgba(16, 185, 129, 0.12)',
+            ];
+        } elseif ( $is_teacher ) {
+            $role_info = [
+                'slug'        => 'academic_teacher',
+                'label'       => __( 'Profesor / Instructor', 'aura-suite' ),
+                'badge_class' => 'badge-indigo',
+                'icon'        => 'dashicons-welcome-learn-more',
+                'color'       => '#4f46e5',
+                'bg'          => 'rgba(79, 70, 229, 0.12)',
+            ];
+        } elseif ( user_can( $user_id, 'aura_finance_view_all' ) || user_can( $user_id, 'aura_finance_create' ) || user_can( $user_id, 'aura_finance_approve' ) ) {
+            $role_info = [
+                'slug'        => 'financial_manager',
+                'label'       => __( 'Gestor Financiero / Tesorería', 'aura-suite' ),
+                'badge_class' => 'badge-amber',
+                'icon'        => 'dashicons-chart-bar',
+                'color'       => '#d97706',
+                'bg'          => 'rgba(217, 119, 6, 0.12)',
+            ];
+        } elseif ( user_can( $user_id, 'aura_vehicles_view_all' ) || user_can( $user_id, 'aura_vehicles_create' ) ) {
+            $role_info = [
+                'slug'        => 'logistics_manager',
+                'label'       => __( 'Coordinador de Logística y Flota', 'aura-suite' ),
+                'badge_class' => 'badge-amber',
+                'icon'        => 'dashicons-car',
+                'color'       => '#ea580c',
+                'bg'          => 'rgba(234, 88, 12, 0.12)',
+            ];
+        } elseif ( user_can( $user_id, 'aura_library_view_loans_all' ) || user_can( $user_id, 'aura_library_create' ) ) {
+            $role_info = [
+                'slug'        => 'librarian',
+                'label'       => __( 'Bibliotecario / Documental', 'aura-suite' ),
+                'badge_class' => 'badge-emerald',
+                'icon'        => 'dashicons-book-alt',
+                'color'       => '#16a34a',
+                'bg'          => 'rgba(22, 163, 74, 0.12)',
+            ];
+        } elseif ( user_can( $user_id, 'aura_students_approve' ) || user_can( $user_id, 'aura_students_create' ) ) {
+            $role_info = [
+                'slug'        => 'academic_coordinator',
+                'label'       => __( 'Coordinador Académico', 'aura-suite' ),
+                'badge_class' => 'badge-cyan',
+                'icon'        => 'dashicons-welcome-learn-more',
+                'color'       => '#0891b2',
+                'bg'          => 'rgba(8, 145, 178, 0.12)',
+            ];
+        } elseif ( $is_student ) {
+            $role_info = [
+                'slug'        => 'academic_student',
+                'label'       => __( 'Estudiante', 'aura-suite' ),
+                'badge_class' => 'badge-violet',
+                'icon'        => 'dashicons-id-alt',
+                'color'       => '#8b5cf6',
+                'bg'          => 'rgba(139, 92, 246, 0.12)',
+            ];
+        } else {
+            $role_info = [
+                'slug'        => 'user',
+                'label'       => __( 'Miembro Institucional', 'aura-suite' ),
+                'badge_class' => 'badge-slate',
+                'icon'        => 'dashicons-admin-users',
+                'color'       => '#6366f1',
+                'bg'          => 'rgba(99, 102, 241, 0.12)',
+            ];
+        }
+
+        return [
+            'logged_in'          => true,
+            'user'               => $user,
+            'user_id'            => $user_id,
+            'can_admin'          => $can_admin,
+            'is_teacher'         => $is_teacher,
+            'is_student'         => $is_student,
+            'can_student_portal' => $can_student_portal,
+            'has_certificates'   => $has_certificates,
+            'has_forms'          => $has_forms,
+            'primary_role'       => $role_info,
+            'admin_panel_url'    => admin_url(),
+            'teacher_portal_url' => $teacher_portal_url,
+            'student_portal_url' => $student_portal_url,
+            'certificates_url'   => $certificates_url,
+            'forms_portal_url'   => $forms_portal_url,
+            'logout_url'         => wp_logout_url( get_permalink() ?: home_url() ),
+        ];
     }
 }

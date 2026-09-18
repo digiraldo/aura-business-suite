@@ -176,59 +176,60 @@ class Aura_Calendar_Frontend {
 
         // ── SI YA ESTÁ LOGUEADO ──
         if ( is_user_logged_in() ) {
-            $user       = wp_get_current_user();
-            $user_id    = $user->ID;
-            $portal_url = '';
+            $user    = wp_get_current_user();
+            $user_id = $user->ID;
 
-            // 1. Detectar página del portal del estudiante
-            if ( class_exists( 'Aura_Students_Settings' ) ) {
-                $st_page_id = (int) Aura_Students_Settings::get( 'portal_page_id' );
-                if ( $st_page_id > 0 ) {
-                    $portal_url = get_permalink( $st_page_id );
-                }
-            }
-            if ( empty( $portal_url ) && class_exists( 'Aura_Students_Frontend' ) && method_exists( 'Aura_Students_Frontend', 'get_portal_page_url' ) ) {
-                $portal_url = Aura_Students_Frontend::get_portal_page_url();
-            }
-            if ( empty( $portal_url ) ) {
-                $portal_url = home_url( '/portal-estudiante/' );
-            }
+            // Sincronización completa y centralizada con el sistema CBAC
+            $access = class_exists( 'Aura_Roles_Manager' )
+                ? Aura_Roles_Manager::get_user_portal_access( $user )
+                : [
+                    'can_admin'          => current_user_can( 'manage_options' ),
+                    'is_teacher'         => current_user_can( 'manage_options' ),
+                    'is_student'         => current_user_can( 'aura_students_view_own' ),
+                    'can_student_portal' => current_user_can( 'manage_options' ) || current_user_can( 'aura_students_view_own' ),
+                    'has_certificates'   => false,
+                    'has_forms'          => false,
+                    'primary_role'       => [
+                        'label'       => __( 'Miembro Institucional', 'aura' ),
+                        'badge_class' => 'badge-indigo',
+                        'icon'        => 'dashicons-admin-users',
+                        'color'       => '#4f46e5',
+                        'bg'          => 'rgba(79, 70, 229, 0.12)',
+                    ],
+                    'admin_panel_url'    => admin_url(),
+                    'teacher_portal_url' => home_url( '/portal-del-instructor/' ),
+                    'student_portal_url' => home_url( '/portal-del-estudiante/' ),
+                    'certificates_url'   => '',
+                    'forms_portal_url'   => '',
+                    'logout_url'         => wp_logout_url( get_permalink() ?: home_url() ),
+                ];
 
-            // 2. Detectar página del portal del profesor / instructor
-            global $wpdb;
-            $teacher_portal_url = '';
-            $teacher_page_id    = (int) $wpdb->get_var( "SELECT ID FROM {$wpdb->posts} WHERE post_status = 'publish' AND post_type = 'page' AND post_content LIKE '%[aura_teacher_portal%' LIMIT 1" );
-            if ( $teacher_page_id > 0 ) {
-                $teacher_portal_url = get_permalink( $teacher_page_id );
-            } else {
-                $teacher_portal_url = home_url( '/portal-instructor/' );
-            }
+            $can_admin          = $access['can_admin'];
+            $is_teacher         = $access['is_teacher'];
+            $is_student         = $access['is_student'];
+            $can_student_portal = $access['can_student_portal'];
+            $has_certificates   = $access['has_certificates'];
+            $has_forms          = $access['has_forms'];
+            $role_info          = $access['primary_role'];
+            $role_name          = $role_info['label'];
+            $role_badge         = $role_info['badge_class'];
+            $role_icon          = $role_info['icon'];
+            $icon_color         = $role_info['color'];
+            $icon_bg            = $role_info['bg'];
+            $portal_url         = $access['student_portal_url'];
+            $teacher_portal_url = $access['teacher_portal_url'];
+            $certificates_url   = $access['certificates_url'];
+            $forms_portal_url   = $access['forms_portal_url'];
+            $logout_url         = $access['logout_url'];
 
-            // 3. Comprobar roles y capacidades
-            $can_admin = (
-                current_user_can( 'manage_options' ) ||
-                current_user_can( 'aura_manage_calendar' ) ||
-                current_user_can( 'aura_view_calendar' ) ||
-                current_user_can( 'aura_manage_finances' ) ||
-                current_user_can( 'aura_financial_view_reports' ) ||
-                current_user_can( 'aura_inventory_view_all' ) ||
-                current_user_can( 'aura_students_manage' ) ||
-                current_user_can( 'edit_posts' )
-            );
+            // Determinar si tiene Imagen de Perfil real o si mostramos Ícono Predeterminado por Rol
+            $profile_photo_url = '';
 
-            $is_teacher = current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' );
-
-            // Comprobar si tiene ficha o rol de estudiante
+            // a) Desde ficha de estudiante
             $student_record = null;
             if ( class_exists( 'Aura_Students_Frontend' ) && method_exists( 'Aura_Students_Frontend', 'get_student_by_wp_user' ) ) {
                 $student_record = Aura_Students_Frontend::get_student_by_wp_user( $user_id );
             }
-            $is_student = ( ! empty( $student_record ) ) || current_user_can( 'aura_students_view_own' ) || current_user_can( 'aura_student_portal_access' );
-
-            // 4. Determinar si tiene Imagen de Perfil real o si mostramos Ícono Predeterminado por Rol
-            $profile_photo_url = '';
-
-            // a) Desde ficha de estudiante
             if ( ! empty( $student_record->photo_url ) ) {
                 $profile_photo_url = $student_record->photo_url;
             }
@@ -258,27 +259,6 @@ class Aura_Calendar_Frontend {
                 if ( ! empty( $avatar_data['found_avatar'] ) && ! empty( $avatar_data['url'] ) ) {
                     $profile_photo_url = $avatar_data['url'];
                 }
-            }
-
-            // 5. Configurar ícono predeterminado según el rol si no tiene foto de perfil
-            if ( $can_admin ) {
-                $role_name  = __( 'Director / Administrador', 'aura' );
-                $role_badge = 'badge-emerald';
-                $role_icon  = 'dashicons-businessperson';
-                $icon_color = '#10b981';
-                $icon_bg    = 'rgba(16, 185, 129, 0.12)';
-            } elseif ( $is_teacher ) {
-                $role_name  = __( 'Profesor / Instructor', 'aura' );
-                $role_badge = 'badge-indigo';
-                $role_icon  = 'dashicons-welcome-learn-more';
-                $icon_color = '#4f46e5';
-                $icon_bg    = 'rgba(79, 70, 229, 0.12)';
-            } else {
-                $role_name  = __( 'Estudiante', 'aura' );
-                $role_badge = 'badge-violet';
-                $role_icon  = 'dashicons-id-alt';
-                $icon_color = '#8b5cf6';
-                $icon_bg    = 'rgba(139, 92, 246, 0.12)';
             }
 
             // Si vino un redirect explícito y no es administrador, redirigir automáticamente
@@ -322,7 +302,7 @@ class Aura_Calendar_Frontend {
 
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <?php if ( $can_admin ) : ?>
-                            <a href="<?php echo esc_url( admin_url() ); ?>" class="btn btn-emerald btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 14px; font-weight: 600; text-decoration: none; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
+                            <a href="<?php echo esc_url( $access['admin_panel_url'] ); ?>" class="btn btn-emerald btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 14px; font-weight: 600; text-decoration: none; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
                                 <span class="dashicons dashicons-dashboard"></span>
                                 <span><?php esc_html_e( 'Acceder al Panel Administrativo', 'aura' ); ?></span>
                             </a>
@@ -335,14 +315,28 @@ class Aura_Calendar_Frontend {
                             </a>
                         <?php endif; ?>
 
-                        <?php if ( $is_student || $can_admin ) : ?>
+                        <?php if ( $can_student_portal ) : ?>
                             <a href="<?php echo esc_url( $portal_url ); ?>" class="btn btn-violet btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 14px; font-weight: 600; text-decoration: none; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
                                 <span class="dashicons dashicons-id-alt"></span>
                                 <span><?php esc_html_e( 'Ir a mi Portal de Estudiante', 'aura' ); ?></span>
                             </a>
                         <?php endif; ?>
 
-                        <a href="<?php echo esc_url( wp_logout_url( get_permalink() ) ); ?>" class="btn btn-ghost" style="padding: 10px 16px; font-size: 13px; text-decoration: none; margin-top: 8px; justify-content: center; display: inline-flex; align-items: center; gap: 6px;">
+                        <?php if ( $has_certificates && ! empty( $certificates_url ) ) : ?>
+                            <a href="<?php echo esc_url( $certificates_url ); ?>" class="btn btn-amber btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 14px; font-weight: 600; text-decoration: none; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
+                                <span class="dashicons dashicons-awards"></span>
+                                <span><?php esc_html_e( 'Mis Certificados y Diplomas', 'aura' ); ?></span>
+                            </a>
+                        <?php endif; ?>
+
+                        <?php if ( $has_forms && ! empty( $forms_portal_url ) ) : ?>
+                            <a href="<?php echo esc_url( $forms_portal_url ); ?>" class="btn btn-cyan btn-shimmer btn-lift" style="padding: 12px 20px; font-size: 14px; font-weight: 600; text-decoration: none; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
+                                <span class="dashicons dashicons-feedback"></span>
+                                <span><?php esc_html_e( 'Portal de Formularios y Encuestas', 'aura' ); ?></span>
+                            </a>
+                        <?php endif; ?>
+
+                        <a href="<?php echo esc_url( $logout_url ); ?>" class="btn btn-ghost" style="padding: 10px 16px; font-size: 13px; text-decoration: none; margin-top: 8px; justify-content: center; display: inline-flex; align-items: center; gap: 6px;">
                             <span class="dashicons dashicons-migrate"></span>
                             <span><?php esc_html_e( 'Cerrar Sesión', 'aura' ); ?></span>
                         </a>

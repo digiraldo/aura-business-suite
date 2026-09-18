@@ -323,12 +323,23 @@ class Aura_Students_Frontend {
             wp_send_json_error( [ 'message' => __( 'Usuario o contraseña incorrectos.', 'aura-suite' ) ] );
         }
 
-        if (
-            ! user_can( $user->ID, 'aura_students_view_own' ) &&
-            ! user_can( $user->ID, 'manage_options' )
-        ) {
-            wp_logout();
-            wp_send_json_error( [ 'message' => __( 'Tu cuenta no tiene acceso al portal de estudiantes.', 'aura-suite' ) ] );
+        $access = class_exists( 'Aura_Roles_Manager' ) && method_exists( 'Aura_Roles_Manager', 'get_user_portal_access' )
+            ? Aura_Roles_Manager::get_user_portal_access( $user )
+            : null;
+
+        if ( $access ) {
+            if ( ! empty( $redirect ) ) {
+                $target_url = $redirect;
+            } elseif ( ! empty( $access['is_teacher'] ) && empty( $access['is_student'] ) && ! empty( $access['urls']['instructor_url'] ) ) {
+                $target_url = $access['urls']['instructor_url'];
+            } elseif ( ! empty( $access['can_student_portal'] ) && ! empty( $access['urls']['student_url'] ) ) {
+                $target_url = $access['urls']['student_url'];
+            } elseif ( ! empty( $access['can_admin'] ) && ! empty( $access['urls']['admin_url'] ) ) {
+                $target_url = $access['urls']['admin_url'];
+            } else {
+                $target_url = self::get_portal_page_url() ?: home_url();
+            }
+            wp_send_json_success( [ 'redirect' => $target_url ] );
         }
 
         $portal_url = $redirect ?: self::get_portal_page_url();

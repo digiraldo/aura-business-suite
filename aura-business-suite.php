@@ -2593,42 +2593,46 @@ class Aura_Business_Suite {
                 );
             }
 
-            add_submenu_page(
-                'aura-financial-dashboard',
-                __('Etiquetas', 'aura-suite'),
-                __('Etiquetas', 'aura-suite'),
-                'read',
-                'aura-financial-tags',
-                array($this, 'render_tags_page')
-            );
+            if (current_user_can('aura_finance_tags') || current_user_can('manage_options')) {
+                add_submenu_page(
+                    'aura-financial-dashboard',
+                    __('Etiquetas', 'aura-suite'),
+                    __('Etiquetas', 'aura-suite'),
+                    'read',
+                    'aura-financial-tags',
+                    array($this, 'render_tags_page')
+                );
+            }
 
-            add_submenu_page(
-                'aura-financial-dashboard',
-                __('Búsqueda Avanzada', 'aura-suite'),
-                __('Búsqueda Avanzada', 'aura-suite'),
-                'read',
-                'aura-financial-search',
-                array($this, 'render_search_page')
-            );
+            if (current_user_can('aura_finance_view_own') || current_user_can('aura_finance_view_all') || current_user_can('manage_options')) {
+                add_submenu_page(
+                    'aura-financial-dashboard',
+                    __('Búsqueda Avanzada', 'aura-suite'),
+                    __('Búsqueda Avanzada', 'aura-suite'),
+                    'read',
+                    'aura-financial-search',
+                    array($this, 'render_search_page')
+                );
+            }
 
-            // ── GRUPO 6: Administración (solo admins/auditores) ───
-            if (current_user_can('manage_options') || current_user_can('aura_auditor')) {
+            // ── GRUPO 6: Administración (admins/auditores/integraciones) ───
+            if (current_user_can('manage_options') || current_user_can('aura_auditor') || current_user_can('aura_finance_audit') || current_user_can('aura_admin_logs')) {
                 add_submenu_page(
                     'aura-financial-dashboard',
                     __('Auditoría', 'aura-suite'),
                     __('Auditoría', 'aura-suite'),
-                    'manage_options',
+                    'read',
                     'aura-financial-audit',
                     array($this, 'render_audit_page')
                 );
             }
 
-            if (current_user_can('manage_options')) {
+            if (current_user_can('manage_options') || current_user_can('aura_finance_integrations')) {
                 add_submenu_page(
                     'aura-financial-dashboard',
                     __('Integraciones Contables', 'aura-suite'),
                     __('Integraciones Cont.', 'aura-suite'),
-                    'manage_options',
+                    'read',
                     'aura-financial-integrations',
                     array($this, 'render_integrations_page')
                 );
