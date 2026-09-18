@@ -77,6 +77,37 @@ $list_url    = admin_url( 'admin.php?page=aura-students-list' );
                     <div class="aura-sfp-panel active" id="sfp-tab-personal">
                         <div style="display: flex; flex-direction: column; gap: var(--aura-space-4, 16px);">
 
+                            <!-- Vinculación con Usuario WordPress -->
+                            <div class="aura-card" style="background: var(--aura-surface-alt, #f8fafc); border: 1px solid var(--aura-border, #e2e8f0); padding: 16px; border-radius: var(--aura-radius-md, 8px);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                                    <label style="font-weight: 700; font-size: 13px; color: var(--aura-text-primary, #1e293b); display: flex; align-items: center; gap: 8px; margin: 0;">
+                                        <span class="dashicons dashicons-admin-users" style="color:var(--aura-primary, #4f46e5);"></span>
+                                        <?php _e( 'Vinculación con Cuenta de WordPress', 'aura-suite' ); ?>
+                                    </label>
+                                    <span class="aura-badge aura-badge-subtle" style="font-size: 11px; padding: 2px 8px;"><?php _e( 'Integración AURA CBAC', 'aura-suite' ); ?></span>
+                                </div>
+                                <div style="display:grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;">
+                                    <div>
+                                        <select id="sfp-wp-user-id" name="wp_user_id" class="aura-form-control aura-select" style="width:100%;">
+                                            <option value=""><?php _e( '— Seleccionar usuario existente de WordPress o ninguno —', 'aura-suite' ); ?></option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <button type="button" id="sfp-btn-fill-wp-user" class="aura-btn aura-btn-secondary" style="white-space:nowrap; font-size:12px; padding: 8px 12px;" disabled>
+                                            <span class="dashicons dashicons-update" style="font-size:15px; width:15px; height:15px; vertical-align:middle;"></span>
+                                            <?php _e( '⚡ Rellenar datos', 'aura-suite' ); ?>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="sfp-create-wp-user" name="create_wp_user" value="1" style="margin:0;">
+                                    <label for="sfp-create-wp-user" style="font-size: 12.5px; color: var(--aura-text-secondary, #64748b); cursor: pointer; margin:0;">
+                                        <?php _e( 'Crear automáticamente usuario de WordPress con rol Estudiante si no se selecciona uno existente.', 'aura-suite' ); ?>
+                                    </label>
+                                </div>
+                                <div id="sfp-wp-user-feedback" style="margin-top: 8px; font-size: 12px; display: none;"></div>
+                            </div>
+
                             <div class="aura-sfp-row" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
                                 <div class="aura-sfp-field">
                                     <label for="sfp-first-name" class="aura-sfp-label" style="display:block; font-size: var(--aura-text-xs, 0.75rem); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--aura-text-secondary, #64748b); margin-bottom: 6px;">
@@ -368,13 +399,36 @@ $list_url    = admin_url( 'admin.php?page=aura-students-list' );
     <?php endif; ?>
 
     var currentTabIdx = 0;
+    var wpUsersMap    = {};
 
     // ── INICIO ──────────────────────────────────────────────────
     $(function(){
         loadPrograms();
+        loadWpUsers();
         updateNavButtons();
         bindEvents();
     });
+
+    // ── CARGAR USUARIOS WORDPRESS ───────────────────────────────
+    function loadWpUsers(){
+        $.post(ajaxUrl, { action:'aura_students_search_wp_users', nonce:nonce, q:'' }, function(res){
+            if ( ! res.success || ! res.data.users ) return;
+            var $sel = $('#sfp-wp-user-id');
+            $sel.find('option:not(:first)').remove();
+            $.each(res.data.users, function(i, u){
+                wpUsersMap[u.id] = u;
+                var label = u.display_name + ' (@' + u.login + ' - ' + u.email + ')';
+                if ( u.is_linked ){
+                    label += ' [Ya vinculado: #' + u.student_id + ' ' + u.student_name + ']';
+                }
+                var $opt = $('<option>').val(u.id).text(label);
+                if ( u.is_linked ){
+                    $opt.prop('disabled', true);
+                }
+                $sel.append($opt);
+            });
+        });
+    }
 
     // ── CARGAR PROGRAMAS ────────────────────────────────────────
     function loadPrograms(){
@@ -467,6 +521,8 @@ $list_url    = admin_url( 'admin.php?page=aura-students-list' );
             action          : 'aura_students_save',
             nonce           : nonce,
             id              : 0,
+            wp_user_id      : $('#sfp-wp-user-id').val() || 0,
+            create_wp_user  : $('#sfp-create-wp-user').is(':checked') ? 1 : 0,
             first_name      : firstName,
             last_name       : lastName,
             email           : email,
@@ -543,6 +599,47 @@ $list_url    = admin_url( 'admin.php?page=aura-students-list' );
         // Navegación anterior/siguiente
         $('#sfp-btn-prev').on('click', function(){ switchToTab(currentTabIdx - 1); });
         $('#sfp-btn-next').on('click', function(){ switchToTab(currentTabIdx + 1); });
+
+        // Selector usuario WP cambio
+        $('#sfp-wp-user-id').on('change', function(){
+            var uid = parseInt($(this).val()) || 0;
+            var user = wpUsersMap[uid];
+            var $btn = $('#sfp-btn-fill-wp-user');
+            var $fb  = $('#sfp-wp-user-feedback');
+
+            if ( uid > 0 && user ){
+                $btn.prop('disabled', false);
+                $('#sfp-create-wp-user').prop('checked', false).prop('disabled', true);
+                $fb.html('<span style="color:#059669;font-weight:600;">✔ Usuario seleccionado: <strong>' + user.display_name + '</strong> (' + user.email + '). Rol: ' + user.roles + '</span>').show();
+            } else {
+                $btn.prop('disabled', true);
+                $('#sfp-create-wp-user').prop('disabled', false);
+                $fb.hide();
+            }
+        });
+
+        // Checkbox crear usuario WP
+        $('#sfp-create-wp-user').on('change', function(){
+            if ( $(this).is(':checked') ){
+                $('#sfp-wp-user-id').val('').trigger('change');
+            }
+        });
+
+        // Botón autorellenar datos desde WP
+        $('#sfp-btn-fill-wp-user').on('click', function(){
+            var uid = parseInt($('#sfp-wp-user-id').val()) || 0;
+            var user = wpUsersMap[uid];
+            if ( ! user ) return;
+            if ( user.first_name ) $('#sfp-first-name').val(user.first_name);
+            if ( user.last_name )  $('#sfp-last-name').val(user.last_name);
+            if ( ! user.first_name && ! user.last_name && user.display_name ){
+                var parts = user.display_name.split(' ');
+                $('#sfp-first-name').val(parts[0] || '');
+                $('#sfp-last-name').val(parts.slice(1).join(' ') || parts[0] || '');
+            }
+            if ( user.email ) $('#sfp-email').val(user.email);
+            $('#sfp-wp-user-feedback').html('<span style="color:#2563eb;font-weight:600;">⚡ Datos personales rellenados a partir de @' + user.login + '.</span>').show();
+        });
 
         // Guardar
         $('#sfp-btn-save').on('click', saveStudent);

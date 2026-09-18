@@ -14,7 +14,6 @@ $can_delete  = current_user_can( 'aura_students_delete' )   || current_user_can(
 $can_view_all= current_user_can( 'aura_students_view_all' ) || current_user_can( 'manage_options' );
 $can_approve = current_user_can( 'aura_students_approve' )  || current_user_can( 'manage_options' );
 $can_notes   = current_user_can( 'aura_students_view_all' ) || current_user_can( 'manage_options' );
-?>
 
 global $wpdb;
 $t_stu = $wpdb->prefix . 'aura_students';
@@ -260,6 +259,37 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
 
                 <!-- ── SECCIÓN 1: DATOS PERSONALES ───────────── -->
                 <div class="aura-stu-tab-panel active" id="tab-personal">
+
+                    <!-- Vinculación con Usuario WordPress -->
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:12px 14px; border-radius:8px; margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <label style="font-weight:700; font-size:12.5px; color:#1e293b; display:flex; align-items:center; gap:6px; margin:0;">
+                                <span class="dashicons dashicons-admin-users" style="color:#4f46e5;font-size:16px;width:16px;height:16px;"></span>
+                                <?php _e( 'Cuenta de WordPress', 'aura-suite' ); ?>
+                            </label>
+                            <span class="aura-badge aura-badge-subtle" style="font-size:10px; padding:1px 6px;"><?php _e( 'Integración CBAC', 'aura-suite' ); ?></span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;">
+                            <div>
+                                <select id="stu-wp-user-id" name="wp_user_id" class="aura-stu-select" style="width:100%; font-size:13px;">
+                                    <option value=""><?php _e( '— Seleccionar usuario de WordPress o ninguno —', 'aura-suite' ); ?></option>
+                                </select>
+                            </div>
+                            <div>
+                                <button type="button" id="stu-btn-fill-wp-user" class="button button-secondary" style="white-space:nowrap; font-size:12px;" disabled>
+                                    <span class="dashicons dashicons-update" style="font-size:14px; width:14px; height:14px; vertical-align:middle;"></span>
+                                    <?php _e( '⚡ Rellenar datos', 'aura-suite' ); ?>
+                                </button>
+                            </div>
+                        </div>
+                        <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" id="stu-create-wp-user" name="create_wp_user" value="1" style="margin:0;">
+                            <label for="stu-create-wp-user" style="font-size:12px; color:#64748b; cursor:pointer; margin:0;">
+                                <?php _e( 'Crear automáticamente cuenta en WordPress con rol Estudiante.', 'aura-suite' ); ?>
+                            </label>
+                        </div>
+                        <div id="stu-wp-user-feedback" style="margin-top:6px; font-size:11.5px; display:none;"></div>
+                    </div>
 
                     <div class="aura-stu-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                         <div class="aura-stu-field">
@@ -558,12 +588,36 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
         intern     : '<?php _e( "Practicante",  "aura-suite" ); ?>'
     };
 
+    var wpUsersMap = {};
+
     // ── INICIO ──────────────────────────────────────────────────
     $(function(){
         loadAreas();
+        loadWpUsers();
         loadStudents(1);
         bindEvents();
     });
+
+    // ── CARGAR USUARIOS WORDPRESS ───────────────────────────────
+    function loadWpUsers(){
+        $.post(ajaxUrl, { action:'aura_students_search_wp_users', nonce:nonce, q:'' }, function(res){
+            if ( ! res.success || ! res.data.users ) return;
+            var $sel = $('#stu-wp-user-id');
+            $sel.find('option:not(:first)').remove();
+            $.each(res.data.users, function(i, u){
+                wpUsersMap[u.id] = u;
+                var label = u.display_name + ' (@' + u.login + ' - ' + u.email + ')';
+                if ( u.is_linked ){
+                    label += ' [Ya vinculado: #' + u.student_id + ' ' + u.student_name + ']';
+                }
+                var $opt = $('<option>').val(u.id).text(label);
+                if ( u.is_linked ){
+                    $opt.attr('data-linked-student', u.student_id);
+                }
+                $sel.append($opt);
+            });
+        });
+    }
 
     // ── CARGAR ÁREAS EN FILTRO ──────────────────────────────────
     function loadAreas(){
@@ -656,10 +710,19 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
             }
             actions += '</div>';
 
+            // Chip de Usuario WP vinculado
+            var wpUserChip = '';
+            if ( s.wp_user_id ){
+                var permUrl = (auraStudents.admin_url || '') + 'admin.php?page=aura-permissions&user_id=' + s.wp_user_id + '&tab=user-permissions';
+                wpUserChip = '<div style="margin-top:3px;"><a href="'+esc(permUrl)+'" class="aura-badge aura-badge-success" style="text-decoration:none;font-size:10.5px;padding:2px 7px;display:inline-flex;align-items:center;gap:3px;" title="<?php esc_attr_e( "Usuario WP vinculado - Ver en CBAC", "aura-suite" ); ?>"><span class="dashicons dashicons-admin-users" style="font-size:12px;width:12px;height:12px;"></span> @' + esc(s.wp_user_login || s.wp_user_name || s.wp_user_id) + '</a></div>';
+            } else {
+                wpUserChip = '<div style="margin-top:3px;"><span class="aura-badge aura-badge-neutral" style="font-size:10px;padding:1px 6px;color:#94a3b8;display:inline-flex;align-items:center;gap:3px;"><span class="dashicons dashicons-minus" style="font-size:11px;width:11px;height:11px;"></span> <?php _e( "Sin cuenta WP", "aura-suite" ); ?></span></div>';
+            }
+
             $tbody.append(
                 '<tr data-id="'+s.id+'">' +
                 '<td>'+photo+'</td>' +
-                '<td><strong>'+esc(s.full_name)+'</strong></td>' +
+                '<td><strong>'+esc(s.full_name)+'</strong>' + wpUserChip + '</td>' +
                 '<td>'+esc(s.email)+'</td>' +
                 '<td>'+profile+'</td>' +
                 '<td>'+badge+'</td>' +
@@ -740,6 +803,21 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
             if ( s.photo_url ){
                 html += '<div class="aura-stu-detail-item aura-stu-detail-full" style="text-align:center;">' +
                         '<img src="'+esc(s.photo_url)+'" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #8b5cf6;">' +
+                        '</div>';
+            }
+
+            // Sección Cuenta WordPress
+            if ( s.wp_user_id ){
+                var permUrl = (auraStudents.admin_url || '') + 'admin.php?page=aura-permissions&user_id=' + s.wp_user_id + '&tab=user-permissions';
+                html += '<div class="aura-stu-detail-item aura-stu-detail-full" style="background:#ecfdf5;border:1px solid #a7f3d0;padding:10px 14px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;">' +
+                        '<div><label style="color:#065f46;font-size:11px;text-transform:uppercase;font-weight:700;">🎓 <?php _e( "Cuenta de WordPress", "aura-suite" ); ?></label>' +
+                        '<span style="color:#065f46;font-weight:700;font-size:13px;">@' + esc(s.wp_user_login || '') + ' (' + esc(s.wp_user_email || s.email) + ')</span></div>' +
+                        '<a href="'+esc(permUrl)+'" class="button button-secondary button-small" target="_blank">🔐 <?php _e( "Ver en CBAC", "aura-suite" ); ?></a>' +
+                        '</div>';
+            } else {
+                html += '<div class="aura-stu-detail-item aura-stu-detail-full" style="background:#f8fafc;border:1px solid #e2e8f0;padding:10px 14px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;">' +
+                        '<div><label style="color:#64748b;font-size:11px;text-transform:uppercase;font-weight:700;"><?php _e( "Cuenta de WordPress", "aura-suite" ); ?></label>' +
+                        '<span style="color:#64748b;font-size:12.5px;"><?php _e( "No vinculada a ningún usuario de WordPress.", "aura-suite" ); ?></span></div>' +
                         '</div>';
             }
 
@@ -824,6 +902,16 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
         $('#stu-talent').val(s.talent);
         $('#stu-experience').val(s.experience);
         $('#stu-extra-info').val(s.extra_info);
+
+        // Vinculación WP
+        $('#stu-wp-user-id').val(s.wp_user_id || '').trigger('change');
+        $('#stu-create-wp-user').prop('checked', false);
+        if ( s.wp_user_id ){
+            $('#stu-create-wp-user').prop('disabled', true);
+        } else {
+            $('#stu-create-wp-user').prop('disabled', false);
+        }
+
         if ( canEdit ){
             $('#stu-profile-type').val(s.profile_type);
             $('#stu-status').val(s.status);
@@ -911,6 +999,8 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
             action          : 'aura_students_save',
             nonce           : nonce,
             id              : $('#student-id').val(),
+            wp_user_id      : $('#stu-wp-user-id').val() || 0,
+            create_wp_user  : $('#stu-create-wp-user').is(':checked') ? 1 : 0,
             first_name      : firstName,
             last_name       : lastName,
             email           : email,
@@ -1012,6 +1102,9 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
     function resetStudentForm(){
         $('#form-student')[0].reset();
         $('#student-id').val(0);
+        $('#stu-wp-user-id').val('').trigger('change');
+        $('#stu-create-wp-user').prop('checked', false).prop('disabled', false);
+        $('#stu-wp-user-feedback').hide();
         $('#field-rejection-reason').hide();
         $('#programs-checkboxes').empty();
     }
@@ -1039,6 +1132,52 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
             var id = $(this).data('id');
             closeModals();
             setTimeout(function(){ openEditModal(id); }, 200);
+        });
+
+        // Selector usuario WP en modal
+        $('#stu-wp-user-id').on('change', function(){
+            var uid = parseInt($(this).val()) || 0;
+            var currentStudentId = parseInt($('#student-id').val()) || 0;
+            var user = wpUsersMap[uid];
+            var $btn = $('#stu-btn-fill-wp-user');
+            var $fb  = $('#stu-wp-user-feedback');
+
+            if ( uid > 0 && user ){
+                $btn.prop('disabled', false);
+                $('#stu-create-wp-user').prop('checked', false).prop('disabled', true);
+                if ( user.is_linked && user.student_id !== currentStudentId ){
+                    $fb.html('<span style="color:#ef4444;font-weight:600;">⚠ Ya vinculado al estudiante #' + user.student_id + ' (' + user.student_name + ')</span>').show();
+                } else {
+                    $fb.html('<span style="color:#059669;font-weight:600;">✔ Usuario seleccionado: <strong>' + user.display_name + '</strong> (' + user.email + '). Rol: ' + user.roles + '</span>').show();
+                }
+            } else {
+                $btn.prop('disabled', true);
+                $('#stu-create-wp-user').prop('disabled', false);
+                $fb.hide();
+            }
+        });
+
+        // Checkbox crear usuario WP en modal
+        $('#stu-create-wp-user').on('change', function(){
+            if ( $(this).is(':checked') ){
+                $('#stu-wp-user-id').val('').trigger('change');
+            }
+        });
+
+        // Botón autocompletar en modal
+        $('#stu-btn-fill-wp-user').on('click', function(){
+            var uid = parseInt($('#stu-wp-user-id').val()) || 0;
+            var user = wpUsersMap[uid];
+            if ( ! user ) return;
+            if ( user.first_name ) $('#stu-first-name').val(user.first_name);
+            if ( user.last_name )  $('#stu-last-name').val(user.last_name);
+            if ( ! user.first_name && ! user.last_name && user.display_name ){
+                var parts = user.display_name.split(' ');
+                $('#stu-first-name').val(parts[0] || '');
+                $('#stu-last-name').val(parts.slice(1).join(' ') || parts[0] || '');
+            }
+            if ( user.email ) $('#stu-email').val(user.email);
+            $('#stu-wp-user-feedback').html('<span style="color:#2563eb;font-weight:600;">⚡ Datos personales rellenados a partir de @' + user.login + '.</span>').show();
         });
 
         // Guardar

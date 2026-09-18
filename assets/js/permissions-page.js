@@ -666,4 +666,58 @@ jQuery(document).ready(function($) {
             }
         });
     };
+
+    // ==========================================================================
+    // 7. VINCULACIÓN DIRECTA DE ESTUDIANTE AURA DESDE USUARIO WP
+    // ==========================================================================
+    $(document).on('click', '.btn-sync-wp-as-student', function(e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const userId = $btn.data('user-id');
+        const userName = $btn.data('user-name') || 'el usuario';
+
+        if (!confirm('¿Desea registrar o vincular a "' + userName + '" como Estudiante en Aura Suite?\n\nSe creará su expediente académico y se le asignará el rol de estudiante.')) {
+            return;
+        }
+
+        const origHtml = $btn.html();
+        $btn.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 4px 0 0;visibility:visible;"></span> Sincronizando...');
+
+        $.ajax({
+            url: data.ajaxUrl || ajaxurl,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'aura_students_sync_from_wp_user',
+                nonce: data.permissionsNonce || data.nonce,
+                user_id: userId
+            },
+            success: function(response) {
+                if (response && response.success) {
+                    if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
+                        window.AuraUI.showToast(response.data.message || 'Usuario vinculado como estudiante con éxito.', 'success');
+                    } else {
+                        alert(response.data.message || 'Usuario vinculado como estudiante con éxito.');
+                    }
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    const errorMsg = (response && response.data && response.data.message) ? response.data.message : 'Error al vincular el usuario como estudiante.';
+                    if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
+                        window.AuraUI.showToast(errorMsg, 'error');
+                    } else {
+                        alert(errorMsg);
+                    }
+                    $btn.prop('disabled', false).html(origHtml);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error al sincronizar estudiante:', error);
+                alert('Error de conexión al sincronizar con el módulo de estudiantes.');
+                $btn.prop('disabled', false).html(origHtml);
+            }
+        });
+    });
 });
+

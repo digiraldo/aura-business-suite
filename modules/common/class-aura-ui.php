@@ -60,7 +60,10 @@ class Aura_UI {
             $hour         = (int) current_time('H');
             $greeting     = ($hour >= 6 && $hour < 12) ? __('Buenos días', 'aura-suite') : (($hour >= 12 && $hour < 19) ? __('Buenas tardes', 'aura-suite') : __('Buenas noches', 'aura-suite'));
             $user_roles   = (array) $current_user->roles;
-            $user_role_label = class_exists('Aura_Roles_Manager') ? Aura_Roles_Manager::get_role_label(reset($user_roles) ?: 'subscriber') : (reset($user_roles) ?: 'Usuario');
+            $primary_role = reset($user_roles) ?: 'subscriber';
+            $user_role_label = (class_exists('Aura_Roles_Manager') && method_exists('Aura_Roles_Manager', 'get_role_label'))
+                ? Aura_Roles_Manager::get_role_label($primary_role)
+                : (ucfirst($primary_role) ?: 'Usuario');
             ?>
             <header class="wow-vip-card aura-dashboard-vip-header fade-up">
                 <div class="aura-vip-header__top-row flex items-center justify-between flex-wrap gap-4 mb-4">

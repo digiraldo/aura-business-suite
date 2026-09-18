@@ -223,6 +223,7 @@ class Aura_Students_Admin {
 
         wp_localize_script( 'aura-students-admin', 'auraStudents', [
             'ajax_url'       => admin_url( 'admin-ajax.php' ),
+            'admin_url'      => admin_url(),
             'nonce'          => wp_create_nonce( 'aura_students_nonce' ),
             'library_active' => class_exists( 'Aura_Library_Loans' ) ? '1' : '0',
             'i18n'           => [

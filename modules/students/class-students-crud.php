@@ -21,11 +21,14 @@ class Aura_Students_CRUD {
     // ─────────────────────────────────────────────────────────────
 
     public static function init(): void {
-        add_action( 'wp_ajax_aura_students_save',          [ __CLASS__, 'ajax_save_student' ] );
-        add_action( 'wp_ajax_aura_students_delete',        [ __CLASS__, 'ajax_delete_student' ] );
-        add_action( 'wp_ajax_aura_students_get',           [ __CLASS__, 'ajax_get_student' ] );
-        add_action( 'wp_ajax_aura_students_list',          [ __CLASS__, 'ajax_list_students' ] );
-        add_action( 'wp_ajax_aura_students_get_programs',  [ __CLASS__, 'ajax_get_programs' ] );
+        add_action( 'wp_ajax_aura_students_save',              [ __CLASS__, 'ajax_save_student' ] );
+        add_action( 'wp_ajax_aura_students_delete',            [ __CLASS__, 'ajax_delete_student' ] );
+        add_action( 'wp_ajax_aura_students_get',               [ __CLASS__, 'ajax_get_student' ] );
+        add_action( 'wp_ajax_aura_students_list',              [ __CLASS__, 'ajax_list_students' ] );
+        add_action( 'wp_ajax_aura_students_get_programs',      [ __CLASS__, 'ajax_get_programs' ] );
+        add_action( 'wp_ajax_aura_students_search_wp_users',   [ __CLASS__, 'ajax_search_wp_users' ] );
+        add_action( 'wp_ajax_aura_students_link_wp_user',       [ __CLASS__, 'ajax_link_wp_user' ] );
+        add_action( 'wp_ajax_aura_students_sync_from_wp_user', [ __CLASS__, 'ajax_sync_from_wp_user' ] );
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -91,6 +94,8 @@ class Aura_Students_CRUD {
         $profile_type   = isset( $_POST['profile_type'] )   ? sanitize_text_field( $_POST['profile_type'] )    : 'student';
         $status         = isset( $_POST['status'] )         ? sanitize_text_field( $_POST['status'] )          : 'applicant';
         $notes          = isset( $_POST['notes'] )          ? sanitize_textarea_field( $_POST['notes'] )       : '';
+        $wp_user_id     = isset( $_POST['wp_user_id'] )     ? absint( $_POST['wp_user_id'] )                    : 0;
+        $create_wp_user = ! empty( $_POST['create_wp_user'] );
 
         // preferred_areas: array de IDs enteros recibidos como JSON o como array $_POST
         $preferred_areas_raw = isset( $_POST['preferred_areas'] ) ? $_POST['preferred_areas'] : [];
@@ -131,6 +136,62 @@ class Aura_Students_CRUD {
 
         $birthdate = ( $birthdate && strtotime( $birthdate ) ) ? $birthdate : null;
 
+        // Si se solicitó crear usuario de WordPress y no se proporcionó wp_user_id
+        if ( $create_wp_user && ! $wp_user_id ) {
+            $existing_wp_user = get_user_by( 'email', $email );
+            if ( $existing_wp_user ) {
+                $wp_user_id = (int) $existing_wp_user->ID;
+            } else {
+                $base_login = sanitize_user( strtolower( trim( $first_name . '.' . $last_name ) ), true );
+                if ( empty( $base_login ) ) {
+                    $base_login = sanitize_user( current( explode( '@', $email ) ), true );
+                }
+                $user_login = $base_login;
+                $counter = 1;
+                while ( username_exists( $user_login ) ) {
+                    $user_login = $base_login . $counter;
+                    $counter++;
+                }
+
+                $random_password = wp_generate_password( 12, false );
+                $new_user_id = wp_insert_user( [
+                    'user_login'   => $user_login,
+                    'user_pass'    => $random_password,
+                    'user_email'   => $email,
+                    'first_name'   => $first_name,
+                    'last_name'    => $last_name,
+                    'display_name' => trim( $first_name . ' ' . $last_name ),
+                    'role'         => 'academic_student',
+                ] );
+
+                if ( is_wp_error( $new_user_id ) ) {
+                    wp_send_json_error( [ 'message' => sprintf( __( 'Error al crear usuario de WordPress: %s', 'aura-suite' ), $new_user_id->get_error_message() ) ] );
+                }
+                $wp_user_id = (int) $new_user_id;
+            }
+        }
+
+        // Si viene un usuario WP asignado, validar existencia y unicidad
+        if ( $wp_user_id > 0 ) {
+            $wp_user = get_user_by( 'id', $wp_user_id );
+            if ( ! $wp_user ) {
+                wp_send_json_error( [ 'message' => __( 'El usuario de WordPress seleccionado no existe.', 'aura-suite' ) ] );
+            }
+
+            $existing_linked = $wpdb->get_var( $wpdb->prepare(
+                "SELECT id FROM {$table} WHERE wp_user_id = %d AND id != %d AND deleted_at IS NULL LIMIT 1",
+                $wp_user_id,
+                $id
+            ) );
+            if ( $existing_linked ) {
+                wp_send_json_error( [ 'message' => sprintf( __( 'Este usuario de WordPress ya está vinculado al estudiante #%d.', 'aura-suite' ), $existing_linked ) ] );
+            }
+
+            if ( ! in_array( 'academic_student', (array) $wp_user->roles, true ) ) {
+                $wp_user->add_role( 'academic_student' );
+            }
+        }
+
         // Solo quien puede editar puede cambiar el status
         if ( $id > 0 && ! current_user_can( 'aura_students_edit' ) && ! current_user_can( 'manage_options' ) ) {
             // Re-usar el status existente
@@ -163,6 +224,7 @@ class Aura_Students_CRUD {
             $result = $wpdb->update(
                 $table,
                 [
+                    'wp_user_id'      => $wp_user_id > 0 ? $wp_user_id : null,
                     'first_name'      => $first_name,
                     'last_name'       => $last_name,
                     'email'           => $email,
@@ -214,6 +276,7 @@ class Aura_Students_CRUD {
             $result = $wpdb->insert(
                 $table,
                 [
+                    'wp_user_id'      => $wp_user_id > 0 ? $wp_user_id : null,
                     'first_name'      => $first_name,
                     'last_name'       => $last_name,
                     'email'           => $email,
@@ -313,9 +376,13 @@ class Aura_Students_CRUD {
 
         $row = $wpdb->get_row( $wpdb->prepare(
             "SELECT s.*,
-                    u.display_name AS approver_name
+                    u.display_name AS approver_name,
+                    wu.user_login AS wp_user_login,
+                    wu.display_name AS wp_user_display_name,
+                    wu.user_email AS wp_user_email
              FROM {$wpdb->prefix}aura_students s
              LEFT JOIN {$wpdb->users} u ON u.ID = s.approved_by
+             LEFT JOIN {$wpdb->users} wu ON wu.ID = s.wp_user_id
              WHERE s.id = %d AND s.deleted_at IS NULL",
             $id
         ) );
@@ -424,7 +491,8 @@ class Aura_Students_CRUD {
 
         if ( $search ) {
             $like      = '%' . $wpdb->esc_like( $search ) . '%';
-            $where[]   = '(s.first_name LIKE %s OR s.last_name LIKE %s OR s.email LIKE %s)';
+            $where[]   = '(s.first_name LIKE %s OR s.last_name LIKE %s OR s.email LIKE %s OR wu.user_login LIKE %s)';
+            $params[]  = $like;
             $params[]  = $like;
             $params[]  = $like;
             $params[]  = $like;
@@ -433,7 +501,7 @@ class Aura_Students_CRUD {
         $where_sql = implode( ' AND ', $where );
 
         // Contar total
-        $count_sql = "SELECT COUNT(*) FROM {$wpdb->prefix}aura_students s WHERE {$where_sql}";
+        $count_sql = "SELECT COUNT(*) FROM {$wpdb->prefix}aura_students s LEFT JOIN {$wpdb->users} wu ON wu.ID = s.wp_user_id WHERE {$where_sql}";
         $total     = (int) ( $params
             ? $wpdb->get_var( $wpdb->prepare( $count_sql, ...$params ) )
             : $wpdb->get_var( $count_sql )
@@ -444,12 +512,15 @@ class Aura_Students_CRUD {
         $payments_table    = $wpdb->prefix . 'aura_student_payments';
 
         $data_sql = "SELECT s.*,
+                            wu.user_login AS wp_user_login,
+                            wu.display_name AS wp_user_display_name,
                             (SELECT COUNT(*) FROM {$enrollments_table} e
                              WHERE e.student_id = s.id AND e.status IN ('pending','active')) AS active_enrollments,
                             (SELECT COALESCE(SUM(e2.balance_due), 0)
                              FROM {$enrollments_table} e2
                              WHERE e2.student_id = s.id AND e2.balance_due > 0) AS pending_balance
                      FROM {$wpdb->prefix}aura_students s
+                     LEFT JOIN {$wpdb->users} wu ON wu.ID = s.wp_user_id
                      WHERE {$where_sql}
                      ORDER BY s.created_at DESC
                      LIMIT %d OFFSET %d";
@@ -494,6 +565,178 @@ class Aura_Students_CRUD {
     }
 
     // ─────────────────────────────────────────────────────────────
+    // AJAX: BÚSQUEDA DE USUARIOS WORDPRESS
+    // ─────────────────────────────────────────────────────────────
+
+    public static function ajax_search_wp_users(): void {
+        check_ajax_referer( 'aura_students_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_students_create' ) &&
+             ! current_user_can( 'aura_students_edit' ) &&
+             ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
+        }
+
+        global $wpdb;
+        $search = isset( $_POST['q'] ) ? sanitize_text_field( $_POST['q'] ) : '';
+
+        $students_table = $wpdb->prefix . 'aura_students';
+
+        $user_query_args = [
+            'number'  => 25,
+            'orderby' => 'display_name',
+            'order'   => 'ASC',
+        ];
+
+        if ( ! empty( $search ) ) {
+            $user_query_args['search'] = '*' . $search . '*';
+            $user_query_args['search_columns'] = [ 'user_login', 'user_nicename', 'user_email', 'display_name' ];
+        }
+
+        $user_query = new WP_User_Query( $user_query_args );
+        $users      = $user_query->get_results();
+
+        $results = [];
+        foreach ( $users as $u ) {
+            $linked = $wpdb->get_row( $wpdb->prepare(
+                "SELECT id, first_name, last_name, status FROM {$students_table} WHERE wp_user_id = %d AND deleted_at IS NULL LIMIT 1",
+                $u->ID
+            ) );
+
+            $results[] = [
+                'id'           => (int) $u->ID,
+                'login'        => $u->user_login,
+                'display_name' => $u->display_name,
+                'email'        => $u->user_email,
+                'first_name'   => $u->first_name,
+                'last_name'    => $u->last_name,
+                'roles'        => implode( ', ', array_map( 'ucfirst', (array) $u->roles ) ),
+                'is_linked'    => (bool) $linked,
+                'student_id'   => $linked ? (int) $linked->id : null,
+                'student_name' => $linked ? trim( $linked->first_name . ' ' . $linked->last_name ) : null,
+            ];
+        }
+
+        wp_send_json_success( [ 'users' => $results ] );
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // AJAX: VINCULACIÓN DIRECTA ESTUDIANTE ↔ USUARIO WORDPRESS
+    // ─────────────────────────────────────────────────────────────
+
+    public static function ajax_link_wp_user(): void {
+        check_ajax_referer( 'aura_students_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_students_edit' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
+        }
+
+        $student_id = isset( $_POST['student_id'] ) ? absint( $_POST['student_id'] ) : 0;
+        $wp_user_id = isset( $_POST['wp_user_id'] ) ? absint( $_POST['wp_user_id'] ) : 0;
+
+        if ( ! $student_id ) {
+            wp_send_json_error( [ 'message' => __( 'ID de estudiante inválido.', 'aura-suite' ) ] );
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_students';
+
+        $student = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id, first_name, last_name, wp_user_id FROM {$table} WHERE id = %d AND deleted_at IS NULL",
+            $student_id
+        ) );
+
+        if ( ! $student ) {
+            wp_send_json_error( [ 'message' => __( 'Estudiante no encontrado.', 'aura-suite' ) ] );
+        }
+
+        if ( $wp_user_id > 0 ) {
+            $wp_user = get_user_by( 'id', $wp_user_id );
+            if ( ! $wp_user ) {
+                wp_send_json_error( [ 'message' => __( 'El usuario de WordPress no existe.', 'aura-suite' ) ] );
+            }
+
+            $other = $wpdb->get_var( $wpdb->prepare(
+                "SELECT id FROM {$table} WHERE wp_user_id = %d AND id != %d AND deleted_at IS NULL LIMIT 1",
+                $wp_user_id,
+                $student_id
+            ) );
+            if ( $other ) {
+                wp_send_json_error( [ 'message' => sprintf( __( 'El usuario de WordPress ya está vinculado al estudiante #%d.', 'aura-suite' ), $other ) ] );
+            }
+
+            if ( ! in_array( 'academic_student', (array) $wp_user->roles, true ) ) {
+                $wp_user->add_role( 'academic_student' );
+            }
+
+            $wpdb->update(
+                $table,
+                [ 'wp_user_id' => $wp_user_id, 'updated_at' => current_time( 'mysql' ) ],
+                [ 'id' => $student_id ]
+            );
+
+            wp_send_json_success( [
+                'message'      => __( 'Usuario de WordPress vinculado con éxito al estudiante.', 'aura-suite' ),
+                'student_id'   => $student_id,
+                'wp_user_id'   => $wp_user_id,
+                'display_name' => $wp_user->display_name,
+                'user_login'   => $wp_user->user_login,
+            ] );
+        } else {
+            $wpdb->update(
+                $table,
+                [ 'wp_user_id' => null, 'updated_at' => current_time( 'mysql' ) ],
+                [ 'id' => $student_id ]
+            );
+
+            wp_send_json_success( [
+                'message'    => __( 'Vinculación con WordPress eliminada con éxito.', 'aura-suite' ),
+                'student_id' => $student_id,
+                'wp_user_id' => null,
+            ] );
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // AJAX: SINCRONIZAR O CREAR ESTUDIANTE DESDE USUARIO WP (CBAC)
+    // ─────────────────────────────────────────────────────────────
+
+    public static function ajax_sync_from_wp_user(): void {
+        if ( ! check_ajax_referer( 'aura_students_nonce', 'nonce', false )
+            && ! check_ajax_referer( 'aura_permissions_nonce', 'nonce', false )
+            && ! check_ajax_referer( 'aura_create_user_nonce', 'nonce', false ) ) {
+            wp_send_json_error( [ 'message' => __( 'Nonce de seguridad inválido.', 'aura-suite' ) ] );
+        }
+
+        if ( ! current_user_can( 'aura_students_create' ) 
+            && ! current_user_can( 'aura_admin_users_create' )
+            && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
+        }
+
+        $user_id = isset( $_POST['user_id'] ) ? absint( $_POST['user_id'] ) : 0;
+        if ( ! $user_id ) {
+            wp_send_json_error( [ 'message' => __( 'ID de usuario inválido.', 'aura-suite' ) ] );
+        }
+
+        $user = get_user_by( 'id', $user_id );
+        if ( ! $user ) {
+            wp_send_json_error( [ 'message' => __( 'Usuario de WordPress no encontrado.', 'aura-suite' ) ] );
+        }
+
+        $student_id = Aura_Roles_Manager::sync_student_record_from_user( $user_id );
+        if ( ! $student_id ) {
+            wp_send_json_error( [ 'message' => __( 'No se pudo sincronizar o crear el registro del estudiante.', 'aura-suite' ) ] );
+        }
+
+        wp_send_json_success( [
+            'message'    => sprintf( __( 'Usuario %s vinculado correctamente como Estudiante (Expediente #%d).', 'aura-suite' ), $user->display_name, $student_id ),
+            'student_id' => $student_id,
+            'user_id'    => $user_id,
+        ] );
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // HELPERS PRIVADOS
     // ─────────────────────────────────────────────────────────────
 
@@ -503,6 +746,9 @@ class Aura_Students_CRUD {
     private static function format_student_list_row( object $row ): array {
         return [
             'id'                  => (int)   $row->id,
+            'wp_user_id'          => $row->wp_user_id ? (int) $row->wp_user_id : null,
+            'wp_user_login'       => $row->wp_user_login       ?? '',
+            'wp_user_name'        => $row->wp_user_display_name ?? '',
             'first_name'          =>          $row->first_name,
             'last_name'           =>          $row->last_name,
             'full_name'           => trim( $row->first_name . ' ' . $row->last_name ),
@@ -532,38 +778,41 @@ class Aura_Students_CRUD {
         }
 
         return [
-            'id'               => (int)   $row->id,
-            'wp_user_id'       => $row->wp_user_id ? (int) $row->wp_user_id : null,
-            'profile_type'     =>          $row->profile_type,
-            'first_name'       =>          $row->first_name,
-            'last_name'        =>          $row->last_name,
-            'full_name'        => trim( $row->first_name . ' ' . $row->last_name ),
-            'email'            =>          $row->email,
-            'phone'            =>          $row->phone           ?? '',
-            'phone_country'    =>          $row->phone_country   ?? '',
-            'id_number'        =>          $row->id_number       ?? '',
-            'id_type'          =>          $row->id_type         ?? 'cedula',
-            'birthdate'        =>          $row->birthdate       ?? '',
-            'gender'           =>          $row->gender          ?? '',
-            'address'          =>          $row->address         ?? '',
-            'city'             =>          $row->city            ?? '',
-            'country'          =>          $row->country         ?? '',
-            'photo_url'        =>          $row->photo_url       ?? '',
-            'preferred_areas'  =>          $preferred_areas_ids,
-            'motivation'       =>          $row->motivation      ?? '',
-            'supported_by'     =>          $row->supported_by    ?? '',
-            'talent'           =>          $row->talent          ?? '',
-            'experience'       =>          $row->experience      ?? '',
-            'extra_info'       =>          $row->extra_info      ?? '',
-            'status'           =>          $row->status,
-            'rejection_reason' =>          $row->rejection_reason ?? '',
-            'approved_by'      => $row->approved_by ? (int) $row->approved_by : null,
-            'approver_name'    =>          $row->approver_name   ?? '—',
-            'approved_at'      =>          $row->approved_at     ?? '',
-            'graduated_at'     =>          $row->graduated_at    ?? '',
-            'notes'            =>          $row->notes           ?? '',
-            'created_at'       =>          $row->created_at      ?? '',
-            'updated_at'       =>          $row->updated_at      ?? '',
+            'id'                   => (int)   $row->id,
+            'wp_user_id'           => $row->wp_user_id ? (int) $row->wp_user_id : null,
+            'wp_user_login'        => $row->wp_user_login        ?? null,
+            'wp_user_display_name' => $row->wp_user_display_name ?? null,
+            'wp_user_email'        => $row->wp_user_email        ?? null,
+            'profile_type'         =>          $row->profile_type,
+            'first_name'           =>          $row->first_name,
+            'last_name'            =>          $row->last_name,
+            'full_name'            => trim( $row->first_name . ' ' . $row->last_name ),
+            'email'                =>          $row->email,
+            'phone'                =>          $row->phone           ?? '',
+            'phone_country'        =>          $row->phone_country   ?? '',
+            'id_number'            =>          $row->id_number       ?? '',
+            'id_type'              =>          $row->id_type         ?? 'cedula',
+            'birthdate'            =>          $row->birthdate       ?? '',
+            'gender'               =>          $row->gender          ?? '',
+            'address'              =>          $row->address         ?? '',
+            'city'                 =>          $row->city            ?? '',
+            'country'              =>          $row->country         ?? '',
+            'photo_url'            =>          $row->photo_url       ?? '',
+            'preferred_areas'      =>          $preferred_areas_ids,
+            'motivation'           =>          $row->motivation      ?? '',
+            'supported_by'         =>          $row->supported_by    ?? '',
+            'talent'               =>          $row->talent          ?? '',
+            'experience'           =>          $row->experience      ?? '',
+            'extra_info'           =>          $row->extra_info      ?? '',
+            'status'               =>          $row->status,
+            'rejection_reason'     =>          $row->rejection_reason ?? '',
+            'approved_by'          => $row->approved_by ? (int) $row->approved_by : null,
+            'approver_name'        =>          $row->approver_name   ?? '—',
+            'approved_at'          =>          $row->approved_at     ?? '',
+            'graduated_at'         =>          $row->graduated_at    ?? '',
+            'notes'                =>          $row->notes           ?? '',
+            'created_at'           =>          $row->created_at      ?? '',
+            'updated_at'           =>          $row->updated_at      ?? '',
         ];
     }
 }

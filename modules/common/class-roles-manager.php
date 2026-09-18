@@ -97,6 +97,63 @@ class Aura_Roles_Manager {
             }
         }
     }
+
+    /**
+     * Obtener la etiqueta legible de un rol en español
+     *
+     * @param string $role Nombre o slug del rol
+     * @return string Etiqueta legible
+     */
+    public static function get_role_label( string $role ): string {
+        $role = sanitize_key( $role );
+
+        $role_labels = [
+            'administrator'                 => __( 'Administrador', 'aura-suite' ),
+            'editor'                        => __( 'Editor', 'aura-suite' ),
+            'author'                        => __( 'Autor', 'aura-suite' ),
+            'contributor'                   => __( 'Colaborador', 'aura-suite' ),
+            'subscriber'                    => __( 'Suscriptor', 'aura-suite' ),
+            // Roles y perfiles personalizados de Aura
+            'aura_director'                 => __( 'Director', 'aura-suite' ),
+            'aura_tesorero'                 => __( 'Tesorero', 'aura-suite' ),
+            'aura_contador'                 => __( 'Contador', 'aura-suite' ),
+            'aura_auditor'                  => __( 'Auditor', 'aura-suite' ),
+            'aura_coordinador'              => __( 'Coordinador de Área', 'aura-suite' ),
+            'aura_responsable'              => __( 'Responsable de Área', 'aura-suite' ),
+            'aura_colaborador'              => __( 'Colaborador', 'aura-suite' ),
+            'aura_operador'                 => __( 'Operador', 'aura-suite' ),
+            'aura_viewer'                   => __( 'Observador', 'aura-suite' ),
+            'treasury_assistant'            => __( 'Auxiliar Contable', 'aura-suite' ),
+            'treasurer'                     => __( 'Tesorero / Administrador Financiero', 'aura-suite' ),
+            'director'                      => __( 'Director General / Gerente', 'aura-suite' ),
+            'auditor'                       => __( 'Auditor / Revisor Fiscal', 'aura-suite' ),
+            'project_leader'                => __( 'Líder de Área / Coordinador', 'aura-suite' ),
+            'logistics_manager'             => __( 'Coordinador de Logística y Flota', 'aura-suite' ),
+            'academic_coordinator'          => __( 'Coordinador Académico', 'aura-suite' ),
+            'academic_teacher'              => __( 'Profesor / Docente', 'aura-suite' ),
+            'academic_schedule_coordinator' => __( 'Coordinador de Horarios y Aulas', 'aura-suite' ),
+            'academic_director'             => __( 'Director Académico', 'aura-suite' ),
+            'academic_student'              => __( 'Estudiante / Alumno', 'aura-suite' ),
+            'student'                       => __( 'Estudiante', 'aura-suite' ),
+            'librarian'                     => __( 'Bibliotecario / Documental', 'aura-suite' ),
+            'field_operator'                => __( 'Operador de Campo', 'aura-suite' ),
+            'volunteer'                     => __( 'Voluntario', 'aura-suite' ),
+            'intern'                        => __( 'Pasante / Practicante', 'aura-suite' ),
+            'participant'                   => __( 'Participante', 'aura-suite' ),
+        ];
+
+        if ( isset( $role_labels[ $role ] ) ) {
+            return $role_labels[ $role ];
+        }
+
+        // Si WordPress conoce el rol mediante translate_user_role
+        global $wp_roles;
+        if ( isset( $wp_roles->role_names[ $role ] ) ) {
+            return translate_user_role( $wp_roles->role_names[ $role ] );
+        }
+
+        return ucwords( str_replace( [ 'aura_', 'academic_', '_', '-' ], [ '', '', ' ', ' ' ], $role ) );
+    }
     
     /**
      * Verificar y agregar capabilities si es necesario
@@ -1218,7 +1275,91 @@ class Aura_Roles_Manager {
 
         update_user_meta( $user_id, 'aura_cbac_profile_template', $template_id );
         
+        // Si la plantilla asignada es de estudiante, sincronizar automáticamente en wp_aura_students
+        if ( $template_id === 'academic_student' ) {
+            self::sync_student_record_from_user( $user_id );
+        }
+
         return true;
+    }
+
+    /**
+     * Asegura o sincroniza un registro en wp_aura_students vinculado al usuario de WP.
+     *
+     * @param int $user_id ID del usuario en WordPress
+     * @return int|false ID del estudiante en wp_aura_students o false
+     */
+    public static function sync_student_record_from_user( int $user_id ) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_students';
+
+        if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
+            return false;
+        }
+
+        $user = get_user_by( 'id', $user_id );
+        if ( ! $user ) {
+            return false;
+        }
+
+        // Buscar si ya existe por wp_user_id
+        $existing = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id, status FROM {$table} WHERE wp_user_id = %d AND deleted_at IS NULL",
+            $user_id
+        ) );
+
+        if ( $existing ) {
+            return (int) $existing->id;
+        }
+
+        // Buscar si ya existe por email (ej. postulante previo no vinculado)
+        $by_email = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id, wp_user_id FROM {$table} WHERE email = %s AND deleted_at IS NULL",
+            $user->user_email
+        ) );
+
+        if ( $by_email ) {
+            // Vincularlo y activar
+            $wpdb->update(
+                $table,
+                [
+                    'wp_user_id' => $user_id,
+                    'status'     => 'active',
+                    'updated_at' => current_time( 'mysql' ),
+                ],
+                [ 'id' => $by_email->id ]
+            );
+            return (int) $by_email->id;
+        }
+
+        // Crear registro nuevo en wp_aura_students
+        $first_name = $user->first_name ?: $user->display_name;
+        $last_name  = $user->last_name ?: '';
+        if ( empty( $last_name ) && strpos( $first_name, ' ' ) !== false ) {
+            $parts = explode( ' ', $first_name, 2 );
+            $first_name = $parts[0];
+            $last_name  = $parts[1];
+        }
+
+        $photo_url = get_avatar_url( $user_id, [ 'size' => 192 ] );
+
+        $inserted = $wpdb->insert(
+            $table,
+            [
+                'wp_user_id'   => $user_id,
+                'profile_type' => 'student',
+                'first_name'   => $first_name,
+                'last_name'    => $last_name ?: $user->user_login,
+                'email'        => $user->user_email,
+                'photo_url'    => $photo_url,
+                'status'       => 'active',
+                'created_by'   => get_current_user_id() ?: $user_id,
+                'created_at'   => current_time( 'mysql' ),
+                'updated_at'   => current_time( 'mysql' ),
+            ]
+        );
+
+        return $inserted ? (int) $wpdb->insert_id : false;
     }
 
     /**
