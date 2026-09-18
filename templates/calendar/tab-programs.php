@@ -14,14 +14,37 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-$programs  = Aura_Calendar_Programs::get_all( [ 'status' => '', 'limit' => 100 ] );
-$all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_areas() : [];
+// Filtro activo desde GET (active, archived, all)
+$prog_view_filter = sanitize_key( $_GET['prog_filter'] ?? 'active' );
+if ( ! in_array( $prog_view_filter, [ 'active', 'archived', 'all' ], true ) ) {
+    $prog_view_filter = 'active';
+}
+
+// Construir args para get_all según filtro
+$prog_query_args = [
+    'status' => '',
+    'limit'  => 100,
+];
+if ( $prog_view_filter === 'archived' ) {
+    $prog_query_args['include_archived'] = 'only';
+    $prog_query_args['status']           = 'archived';
+} elseif ( $prog_view_filter === 'all' ) {
+    $prog_query_args['include_archived'] = true;
+}
+
+$programs      = Aura_Calendar_Programs::get_all( $prog_query_args );
+$archived_count = Aura_Calendar_Programs::get_all( [ 'include_archived' => 'only', 'limit' => 100 ] );
+$archived_count = count( $archived_count );
+$all_areas      = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_areas() : [];
+
+// URL base para filtros de tab
+$prog_base_url    = add_query_arg( 'tab', 'programs', admin_url( 'admin.php?page=aura-calendar' ) );
 ?>
 
 <div class="aura-programs-view-container">
 
     <!-- ── BARRA SUPERIOR DE ACCIONES ── -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 16px;">
         <div>
             <h2 class="adp-card-title" style="font-size: 20px; margin: 0;">
                 🎓 <?php esc_html_e( 'Programas y Cursos de Capacitación', 'aura' ); ?>
@@ -31,22 +54,77 @@ $all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_area
             </p>
         </div>
 
-        <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-            <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-program">
-                ➕ <?php esc_html_e( 'Nuevo Programa', 'aura' ); ?>
-            </button>
-        <?php endif; ?>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'manage_options' ) ) : ?>
+                <!-- Botón Sincronizar cursos de Estudiantes -->
+                <button type="button" class="btn btn-ghost btn-lift" id="btn-sync-student-courses"
+                    title="<?php esc_attr_e( 'Importar cursos de Estudiantes como Programas del Calendario', 'aura' ); ?>">
+                    🔄 <?php esc_html_e( 'Sincronizar desde Estudiantes', 'aura' ); ?>
+                </button>
+            <?php endif; ?>
+            <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-program">
+                    ➕ <?php esc_html_e( 'Nuevo Programa', 'aura' ); ?>
+                </button>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- ── BARRA DE FILTROS / TABS ── -->
+    <div style="display: flex; gap: 4px; border-bottom: 2px solid var(--aura-border, #e2e8f0); padding-bottom: 0; margin-bottom: 20px;">
+        <a href="<?php echo esc_url( add_query_arg( 'prog_filter', 'active', $prog_base_url ) ); ?>"
+           style="text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 8px 8px 0 0;
+                  border-bottom: 3px solid <?php echo $prog_view_filter === 'active' ? 'var(--aura-primary,#6366f1)' : 'transparent'; ?>;
+                  color: <?php echo $prog_view_filter === 'active' ? 'var(--aura-primary,#6366f1)' : 'var(--aura-text-secondary,#64748b)'; ?>;
+                  background: <?php echo $prog_view_filter === 'active' ? 'rgba(99,102,241,0.07)' : 'transparent'; ?>">
+            ✅ <?php esc_html_e( 'Activos', 'aura' ); ?>
+        </a>
+        <a href="<?php echo esc_url( add_query_arg( 'prog_filter', 'archived', $prog_base_url ) ); ?>"
+           style="text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 8px 8px 0 0;
+                  border-bottom: 3px solid <?php echo $prog_view_filter === 'archived' ? '#f59e0b' : 'transparent'; ?>;
+                  color: <?php echo $prog_view_filter === 'archived' ? '#d97706' : 'var(--aura-text-secondary,#64748b)'; ?>;
+                  background: <?php echo $prog_view_filter === 'archived' ? 'rgba(245,158,11,0.07)' : 'transparent'; ?>">
+            📦 <?php esc_html_e( 'Archivados', 'aura' ); ?>
+            <?php if ( $archived_count > 0 ) : ?>
+                <span style="margin-left: 5px; background: #f59e0b; color: #fff; border-radius: 10px; font-size: 11px; padding: 1px 6px; font-weight: 700;">
+                    <?php echo intval( $archived_count ); ?>
+                </span>
+            <?php endif; ?>
+        </a>
+        <a href="<?php echo esc_url( add_query_arg( 'prog_filter', 'all', $prog_base_url ) ); ?>"
+           style="text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 8px 8px 0 0;
+                  border-bottom: 3px solid <?php echo $prog_view_filter === 'all' ? '#64748b' : 'transparent'; ?>;
+                  color: <?php echo $prog_view_filter === 'all' ? '#475569' : 'var(--aura-text-secondary,#64748b)'; ?>;
+                  background: <?php echo $prog_view_filter === 'all' ? 'rgba(100,116,139,0.07)' : 'transparent'; ?>">
+            📋 <?php esc_html_e( 'Todos', 'aura' ); ?>
+        </a>
     </div>
 
     <!-- ── LISTA DE PROGRAMAS (CARDS) ── -->
     <?php if ( empty( $programs ) ) : ?>
         <div class="adp-card" style="text-align: center; padding: 48px 24px; border-radius: 12px;">
-            <div style="font-size: 40px; margin-bottom: 12px;">📚</div>
-            <h3 style="font-size: 18px; margin-bottom: 6px;"><?php esc_html_e( 'No hay programas académicos registrados', 'aura' ); ?></h3>
+            <div style="font-size: 40px; margin-bottom: 12px;">
+                <?php echo $prog_view_filter === 'archived' ? '📦' : '📚'; ?>
+            </div>
+            <h3 style="font-size: 18px; margin-bottom: 6px;">
+                <?php
+                if ( $prog_view_filter === 'archived' ) {
+                    esc_html_e( 'No hay programas archivados', 'aura' );
+                } else {
+                    esc_html_e( 'No hay programas académicos registrados', 'aura' );
+                }
+                ?>
+            </h3>
             <p style="color: var(--aura-text-secondary); max-width: 460px; margin: 0 auto 20px;">
-                <?php esc_html_e( 'Crea tu primer programa de formación para comenzar a estructurar las materias y horarios de clases.', 'aura' ); ?>
+                <?php
+                if ( $prog_view_filter === 'archived' ) {
+                    esc_html_e( 'Los programas archivados aparecen aquí. Puedes restaurarlos para que vuelvan a estar activos.', 'aura' );
+                } else {
+                    esc_html_e( 'Crea tu primer programa de formación para comenzar a estructurar las materias y horarios de clases.', 'aura' );
+                }
+                ?>
             </p>
-            <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+            <?php if ( $prog_view_filter !== 'archived' && ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) ) : ?>
                 <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-first-program">
                     ➕ <?php esc_html_e( 'Crear Primer Programa', 'aura' ); ?>
                 </button>
@@ -55,10 +133,26 @@ $all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_area
     <?php else : ?>
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <?php foreach ( $programs as $p ) : 
-                $subjects = Aura_Calendar_Subjects::get_all( [ 'program_id' => $p->id ] );
-                $p_color  = ! empty( $p->color ) ? $p->color : '#6366f1';
+                $subjects = Aura_Calendar_Subjects::get_all( [
+                    'program_id'      => $p->id,
+                    'include_archived' => $prog_view_filter === 'archived',
+                ] );
+                $p_color    = ! empty( $p->color ) ? $p->color : '#6366f1';
+                $is_archived = ! empty( $p->deleted_at ) || $p->status === 'archived';
             ?>
-                <div class="adp-card program-card" data-program-id="<?php echo esc_attr( $p->id ); ?>" style="border-radius: 12px; border-left: 6px solid <?php echo esc_attr( $p_color ); ?>; padding: 22px;">
+                <div class="adp-card program-card" data-program-id="<?php echo esc_attr( $p->id ); ?>"
+                     style="border-radius: 12px; border-left: 6px solid <?php echo esc_attr( $p_color ); ?>; padding: 22px;
+                            <?php echo $is_archived ? 'opacity: 0.8; background: var(--aura-surface-alt, #f8fafc);' : ''; ?>">
+                    <?php if ( $is_archived ) : ?>
+                        <div style="margin-bottom: 10px;">
+                            <span class="adp-badge badge-amber" style="font-size: 11px;">
+                                📦 <?php esc_html_e( 'Archivado', 'aura' ); ?>
+                                <?php if ( ! empty( $p->deleted_at ) ) : ?>
+                                    &mdash; <?php echo esc_html( date_i18n( 'j M Y', strtotime( $p->deleted_at ) ) ); ?>
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                    <?php endif; ?>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
                         <div>
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap;">
@@ -129,13 +223,22 @@ $all_areas = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_area
 
                         <!-- Botones de Acción del Programa -->
                         <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-                            <div style="display: flex; gap: 8px;">
-                                <button type="button" class="btn btn-ghost btn-edit-program" data-program-id="<?php echo esc_attr( $p->id ); ?>" style="font-size: 13px; padding: 6px 12px;">
-                                    ✏️ <?php esc_html_e( 'Editar', 'aura' ); ?>
-                                </button>
-                                <button type="button" class="btn btn-indigo btn-lift btn-add-subject" data-program-id="<?php echo esc_attr( $p->id ); ?>" data-program-name="<?php echo esc_attr( $p->name ); ?>" style="font-size: 13px; padding: 6px 12px;">
-                                    ➕ <?php esc_html_e( 'Añadir Materia', 'aura' ); ?>
-                                </button>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <?php if ( $is_archived ) : ?>
+                                    <!-- Botón Restaurar para programas archivados -->
+                                    <button type="button" class="btn btn-ghost btn-restore-program"
+                                            data-program-id="<?php echo esc_attr( $p->id ); ?>"
+                                            style="font-size: 13px; padding: 6px 12px; color: #10b981; border-color: #10b981;">
+                                        ♻️ <?php esc_html_e( 'Restaurar', 'aura' ); ?>
+                                    </button>
+                                <?php else : ?>
+                                    <button type="button" class="btn btn-ghost btn-edit-program" data-program-id="<?php echo esc_attr( $p->id ); ?>" style="font-size: 13px; padding: 6px 12px;">
+                                        ✏️ <?php esc_html_e( 'Editar', 'aura' ); ?>
+                                    </button>
+                                    <button type="button" class="btn btn-indigo btn-lift btn-add-subject" data-program-id="<?php echo esc_attr( $p->id ); ?>" data-program-name="<?php echo esc_attr( $p->name ); ?>" style="font-size: 13px; padding: 6px 12px;">
+                                        ➕ <?php esc_html_e( 'Añadir Materia', 'aura' ); ?>
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>

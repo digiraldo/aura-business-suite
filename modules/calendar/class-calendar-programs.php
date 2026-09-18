@@ -20,10 +20,12 @@ class Aura_Calendar_Programs {
      * Inicializar hooks y AJAX
      */
     public static function init(): void {
-        add_action( 'wp_ajax_aura_cal_get_programs',   [ __CLASS__, 'ajax_get_programs' ] );
-        add_action( 'wp_ajax_aura_cal_get_program',    [ __CLASS__, 'ajax_get_program' ] );
-        add_action( 'wp_ajax_aura_cal_save_program',   [ __CLASS__, 'ajax_save_program' ] );
-        add_action( 'wp_ajax_aura_cal_delete_program', [ __CLASS__, 'ajax_delete_program' ] );
+        add_action( 'wp_ajax_aura_cal_get_programs',          [ __CLASS__, 'ajax_get_programs' ] );
+        add_action( 'wp_ajax_aura_cal_get_program',           [ __CLASS__, 'ajax_get_program' ] );
+        add_action( 'wp_ajax_aura_cal_save_program',          [ __CLASS__, 'ajax_save_program' ] );
+        add_action( 'wp_ajax_aura_cal_delete_program',        [ __CLASS__, 'ajax_delete_program' ] );
+        add_action( 'wp_ajax_aura_cal_restore_program',       [ __CLASS__, 'ajax_restore_program' ] );
+        add_action( 'wp_ajax_aura_cal_sync_student_courses',  [ __CLASS__, 'ajax_sync_student_courses' ] );
     }
 
     /**
@@ -40,17 +42,25 @@ class Aura_Calendar_Programs {
         $table_areas = $wpdb->prefix . 'aura_areas';
 
         $defaults = [
-            'status'  => '', // active, archived, draft o vacío para no eliminados
-            'search'  => '',
-            'area_id' => null,
-            'orderby' => 'p.created_at',
-            'order'   => 'DESC',
-            'limit'   => 100,
-            'offset'  => 0,
+            'status'           => '', // active, archived, draft o vacío para no eliminados
+            'search'           => '',
+            'area_id'          => null,
+            'orderby'          => 'p.created_at',
+            'order'            => 'DESC',
+            'limit'            => 100,
+            'offset'           => 0,
+            'include_archived' => false, // true: incluye soft-deleted; 'only': solo archivados
         ];
         $r = wp_parse_args( $args, $defaults );
 
-        $where = [ 'p.deleted_at IS NULL' ];
+        // Filtrado de borrado lógico según parámetro include_archived
+        if ( $r['include_archived'] === 'only' ) {
+            $where = [ 'p.deleted_at IS NOT NULL' ];
+        } elseif ( $r['include_archived'] ) {
+            $where = [ '1=1' ]; // Sin filtro de deleted_at
+        } else {
+            $where = [ 'p.deleted_at IS NULL' ];
+        }
         $params = [];
 
         if ( ! empty( $r['status'] ) ) {
@@ -319,6 +329,128 @@ class Aura_Calendar_Programs {
         return $updated !== false;
     }
 
+    /**
+     * Restaurar programa archivado (revertir soft delete)
+     *
+     * @param int $id
+     * @return bool
+     */
+    public static function restore( int $id ): bool {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_cal_programs';
+
+        $updated = $wpdb->update(
+            $table,
+            [
+                'deleted_at' => null,
+                'status'     => 'active',
+                'updated_at' => current_time( 'mysql' ),
+            ],
+            [ 'id' => $id ],
+            [ null, '%s', '%s' ],
+            [ '%d' ]
+        );
+
+        // Restaurar también las materias del programa
+        if ( $updated !== false ) {
+            $table_subj = $wpdb->prefix . 'aura_cal_subjects';
+            $wpdb->query( $wpdb->prepare(
+                "UPDATE {$table_subj} SET deleted_at = NULL, status = 'active' WHERE program_id = %d AND deleted_at IS NOT NULL",
+                $id
+            ) );
+        }
+
+        return $updated !== false;
+    }
+
+    /**
+     * Sincronizar cursos de Estudiantes (wp_aura_student_courses) como Programas de Calendario
+     * Crea en wp_aura_cal_programs los cursos de estudiantes que no tengan ya un programa equivalente.
+     *
+     * @return array { created: int[], skipped: int[] }
+     */
+    public static function sync_from_student_courses(): array {
+        global $wpdb;
+        $t_courses  = $wpdb->prefix . 'aura_student_courses';
+        $t_programs = $wpdb->prefix . 'aura_cal_programs';
+
+        // Verificar que la tabla de cursos exista
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_courses}'" ) !== $t_courses ) {
+            return [ 'created' => [], 'skipped' => [], 'error' => 'Tabla de cursos de estudiantes no encontrada.' ];
+        }
+
+        $courses = $wpdb->get_results(
+            "SELECT id, name, slug, description, area_id, base_cost, status, created_by, created_at
+             FROM {$t_courses}
+             WHERE status = 'active'",
+            ARRAY_A
+        );
+
+        if ( empty( $courses ) ) {
+            return [ 'created' => [], 'skipped' => [] ];
+        }
+
+        $created = [];
+        $skipped = [];
+
+        foreach ( $courses as $course ) {
+            // Verificar si ya existe un programa con este nombre o slug-código
+            $slug_code = strtoupper( preg_replace( '/[^A-Za-z0-9]/', '', $course['slug'] ?? '' ) );
+            if ( empty( $slug_code ) ) {
+                $slug_code = strtoupper( preg_replace( '/[^A-Za-z0-9]/', '', $course['name'] ) );
+            }
+            $slug_code = substr( $slug_code, 0, 20 );
+
+            $exists = $wpdb->get_var( $wpdb->prepare(
+                "SELECT id FROM {$t_programs} WHERE (name = %s OR code = %s) AND deleted_at IS NULL LIMIT 1",
+                $course['name'],
+                $slug_code
+            ) );
+
+            if ( $exists ) {
+                $skipped[] = (int) $course['id'];
+                continue;
+            }
+
+            // Verificar unicidad del código
+            $code_exists = $wpdb->get_var( $wpdb->prepare(
+                "SELECT id FROM {$t_programs} WHERE code = %s AND deleted_at IS NULL LIMIT 1",
+                $slug_code
+            ) );
+            if ( $code_exists ) {
+                $slug_code .= '-SC';
+            }
+
+            $area_id = ! empty( $course['area_id'] ) ? intval( $course['area_id'] ) : null;
+
+            $inserted = $wpdb->insert(
+                $t_programs,
+                [
+                    'code'        => $slug_code,
+                    'name'        => $course['name'],
+                    'description' => $course['description'] ?? '',
+                    'color'       => '#6366f1',
+                    'status'      => 'active',
+                    'area_id'     => $area_id,
+                    'created_by'  => $course['created_by'] ?? get_current_user_id(),
+                    'created_at'  => $course['created_at'] ?? current_time( 'mysql' ),
+                    'updated_at'  => current_time( 'mysql' ),
+                ],
+                [
+                    '%s', '%s', '%s', '%s', '%s',
+                    $area_id !== null ? '%d' : null,
+                    '%d', '%s', '%s',
+                ]
+            );
+
+            if ( $inserted ) {
+                $created[] = (int) $wpdb->insert_id;
+            }
+        }
+
+        return [ 'created' => $created, 'skipped' => $skipped ];
+    }
+
     // ─────────────────────────────────────────────────────────────
     // AJAX HANDLERS
     // ─────────────────────────────────────────────────────────────
@@ -330,12 +462,22 @@ class Aura_Calendar_Programs {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para ver programas.', 'aura' ) ] );
         }
 
-        $area_id = isset( $_POST['area_id'] ) && $_POST['area_id'] !== '' ? intval( $_POST['area_id'] ) : null;
+        $area_id          = isset( $_POST['area_id'] ) && $_POST['area_id'] !== '' ? intval( $_POST['area_id'] ) : null;
+        $include_archived = sanitize_text_field( $_POST['include_archived'] ?? '' );
+
+        // Mapear valor del filtro del frontend
+        $archived_filter = false;
+        if ( $include_archived === 'only' ) {
+            $archived_filter = 'only';
+        } elseif ( $include_archived === 'all' ) {
+            $archived_filter = true;
+        }
 
         $programs = self::get_all( [
-            'status'  => sanitize_text_field( $_POST['status'] ?? '' ),
-            'search'  => sanitize_text_field( $_POST['search'] ?? '' ),
-            'area_id' => $area_id,
+            'status'           => sanitize_text_field( $_POST['status'] ?? '' ),
+            'search'           => sanitize_text_field( $_POST['search'] ?? '' ),
+            'area_id'          => $area_id,
+            'include_archived' => $archived_filter,
         ] );
 
         wp_send_json_success( [ 'programs' => $programs ] );
@@ -397,5 +539,56 @@ class Aura_Calendar_Programs {
         } else {
             wp_send_json_error( [ 'message' => __( 'No se pudo archivar el programa.', 'aura' ) ] );
         }
+    }
+
+    public static function ajax_restore_program(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para restaurar programas.', 'aura' ) ] );
+        }
+
+        $id = intval( $_POST['id'] ?? 0 );
+        if ( ! $id ) {
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+        }
+
+        $ok = self::restore( $id );
+        if ( $ok ) {
+            wp_send_json_success( [ 'message' => __( 'Programa y sus materias han sido restaurados exitosamente.', 'aura' ) ] );
+        } else {
+            wp_send_json_error( [ 'message' => __( 'No se pudo restaurar el programa.', 'aura' ) ] );
+        }
+    }
+
+    public static function ajax_sync_student_courses(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para sincronizar cursos.', 'aura' ) ] );
+        }
+
+        $result = self::sync_from_student_courses();
+
+        $created_count = count( $result['created'] ?? [] );
+        $skipped_count = count( $result['skipped'] ?? [] );
+
+        if ( ! empty( $result['error'] ) ) {
+            wp_send_json_error( [ 'message' => $result['error'] ] );
+        }
+
+        /* translators: %1$d: programas creados, %2$d: cursos ya existentes */
+        $message = sprintf(
+            __( 'Sincronización completada: %1$d programa(s) nuevo(s) importado(s) desde Cursos de Estudiantes. %2$d ya existía(n) en el Calendario.', 'aura' ),
+            $created_count,
+            $skipped_count
+        );
+
+        wp_send_json_success( [
+            'message'  => $message,
+            'created'  => $result['created'],
+            'skipped'  => $result['skipped'],
+            'reload'   => true,
+        ] );
     }
 }

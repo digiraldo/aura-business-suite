@@ -1295,6 +1295,79 @@
         });
     });
 
+    // Restaurar programa archivado
+    $(document).on('click', '.btn-restore-program', function() {
+        var $btn    = $(this);
+        var progId  = $btn.data('program-id');
+        var $card   = $btn.closest('.program-card');
+        var name    = $card.find('h4, strong').first().text().trim() || 'este programa';
+
+        if (!confirm('¿Restaurar "' + name + '"? El programa y sus materias volverán al estado Activo.')) {
+            return;
+        }
+
+        $btn.prop('disabled', true).html('⏳ Restaurando...');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_restore_program',
+            nonce:  auraCalData.nonce,
+            id:     progId
+        }, function(res) {
+            if (res && res.success) {
+                showToast(res.data.message || 'Programa restaurado exitosamente.', 'success');
+                $card.fadeOut(400, function() {
+                    $(this).remove();
+                });
+                // Actualizar contador de archivados en el tab
+                var $badge = $('a[href*="prog_filter=archived"] span');
+                if ($badge.length) {
+                    var cnt = parseInt($badge.text(), 10) - 1;
+                    if (cnt <= 0) {
+                        $badge.remove();
+                    } else {
+                        $badge.text(cnt);
+                    }
+                }
+                setTimeout(function() { location.reload(); }, 800);
+            } else {
+                $btn.prop('disabled', false).html('♻️ Restaurar');
+                showToast((res && res.data && res.data.message) ? res.data.message : 'No se pudo restaurar el programa.', 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html('♻️ Restaurar');
+            showToast('Error de conexión al restaurar el programa.', 'error');
+        });
+    });
+
+    // Sincronizar cursos de Estudiantes → Programas del Calendario
+    $('#btn-sync-student-courses').on('click', function() {
+        var $btn = $(this);
+        if (!confirm('¿Importar los Cursos de Estudiantes activos como Programas del Calendario?\n\nSolo se crearán los que aún no existan. Los programas ya existentes no se modificarán.')) {
+            return;
+        }
+
+        $btn.prop('disabled', true).html('⏳ Sincronizando...');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_sync_student_courses',
+            nonce:  auraCalData.nonce
+        }, function(res) {
+            $btn.prop('disabled', false).html('🔄 Sincronizar desde Estudiantes');
+            if (res && res.success) {
+                showToast(res.data.message || 'Sincronización completada.', 'success');
+                if (res.data.reload) {
+                    setTimeout(function() { location.reload(); }, 1200);
+                }
+            } else {
+                var msg = (res && res.data && res.data.message) ? res.data.message : 'Error al sincronizar los cursos.';
+                showToast(msg, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html('🔄 Sincronizar desde Estudiantes');
+            showToast('Error de conexión al sincronizar.', 'error');
+        });
+    });
+
     // ─────────────────────────────────────────────────────────────
     // SUB-PESTAÑAS EN MODAL DE MATERIA Y MATERIALES DE ESTUDIO
     // ─────────────────────────────────────────────────────────────
