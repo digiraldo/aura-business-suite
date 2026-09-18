@@ -2,29 +2,58 @@
 /**
  * Tab 2: Programas Académicos y Materias
  *
- * CRUD de programas de capacitación (Hadime, Semestrales, Talleres, etc.)
- * y sus materias/asignaturas correspondientes bajo el Design System de Aura.
- *
  * @package AuraBusinessSuite
  * @subpackage Calendar
- * @since 1.6.0
+ * @since 1.8.1
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Filtro activo desde GET (active, archived, all)
+// ─── Helper: avatar para tooltip stack ───────────────────────────────────────
+/**
+ * Genera un avatar pequeño con datos para tooltip enriquecido.
+ * Sin texto inline — la info aparece solo en el tooltip HTML.
+ */
+function aura_avatar_stack_item( int $user_id, string $role_label = '' ): string {
+    $user = get_userdata( $user_id );
+    if ( ! $user ) return '';
+
+    $avatar_url = get_avatar_url( $user_id, [ 'size' => 72, 'default' => 'identicon' ] );
+    $name       = esc_attr( $user->display_name );
+    $email      = esc_attr( $user->user_email );
+    $initials   = strtoupper( mb_substr( $user->first_name ?: $user->display_name, 0, 1 )
+                  . mb_substr( $user->last_name ?: '', 0, 1 ) );
+    $role       = esc_attr( $role_label );
+
+    // Color determinista según inicial
+    $colors = [ 'avatar-primary', 'avatar-green', 'avatar-amber', 'avatar-rose', 'avatar-cyan' ];
+    $color_class = $colors[ ord( $user->display_name ) % count( $colors ) ];
+
+    return sprintf(
+        '<span class="aura-avatar-stack-item %s avatar avatar-sm" '
+        . 'data-av-name="%s" data-av-email="%s" data-av-role="%s" data-av-img="%s" '
+        . 'aria-label="%s">'
+        . '<img src="%s" alt="%s" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'inline\';" />'
+        . '<span style="display:none;">%s</span>'
+        . '</span>',
+        esc_attr( $color_class ),
+        $name, $email, $role,
+        esc_url( $avatar_url ),
+        $name,
+        esc_url( $avatar_url ), $name,
+        esc_html( $initials )
+    );
+}
+
+// ─── Filtro activo ────────────────────────────────────────────────────────────
 $prog_view_filter = sanitize_key( $_GET['prog_filter'] ?? 'active' );
 if ( ! in_array( $prog_view_filter, [ 'active', 'archived', 'all' ], true ) ) {
     $prog_view_filter = 'active';
 }
 
-// Construir args para get_all según filtro
-$prog_query_args = [
-    'status' => '',
-    'limit'  => 100,
-];
+$prog_query_args = [ 'status' => '', 'limit' => 100 ];
 if ( $prog_view_filter === 'archived' ) {
     $prog_query_args['include_archived'] = 'only';
     $prog_query_args['status']           = 'archived';
@@ -32,37 +61,215 @@ if ( $prog_view_filter === 'archived' ) {
     $prog_query_args['include_archived'] = true;
 }
 
-$programs      = Aura_Calendar_Programs::get_all( $prog_query_args );
-$archived_count = Aura_Calendar_Programs::get_all( [ 'include_archived' => 'only', 'limit' => 100 ] );
-$archived_count = count( $archived_count );
+$programs       = Aura_Calendar_Programs::get_all( $prog_query_args );
+$archived_count = count( Aura_Calendar_Programs::get_all( [ 'include_archived' => 'only', 'limit' => 100 ] ) );
 $all_areas      = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all_areas() : [];
-
-// URL base para filtros de tab
-$prog_base_url    = add_query_arg( 'tab', 'programs', admin_url( 'admin.php?page=aura-calendar' ) );
+$prog_base_url  = add_query_arg( 'tab', 'programs', admin_url( 'admin.php?page=aura-calendar' ) );
+$can_manage     = current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'manage_options' );
+$can_edit       = $can_manage || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' );
 ?>
+
+<!-- ══ TOOLTIP GLOBAL (singleton) ══ -->
+<div id="aura-av-tooltip" class="aura-av-tooltip" role="tooltip" aria-hidden="true">
+    <div class="aura-av-tooltip-avatar"></div>
+    <div class="aura-av-tooltip-body">
+        <div class="aura-av-tooltip-name"></div>
+        <div class="aura-av-tooltip-role"></div>
+        <div class="aura-av-tooltip-email"></div>
+    </div>
+</div>
+
+<style>
+/* ── Avatar Stack + Tooltip ─────────────────────────────────────── */
+.aura-avatar-group { display: flex; align-items: center; }
+.aura-avatar-group .aura-avatar-stack-item {
+    position: relative; cursor: pointer;
+    border: 2px solid var(--aura-surface, #fff);
+    margin-left: -8px; transition: transform .2s, z-index 0s;
+    border-radius: 50%; overflow: hidden;
+    width: 30px; height: 30px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+}
+.aura-avatar-group .aura-avatar-stack-item:first-child { margin-left: 0; }
+.aura-avatar-group .aura-avatar-stack-item:hover { transform: translateY(-3px) scale(1.12); z-index: 10; }
+.aura-avatar-group .aura-avatar-stack-item img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%; }
+.aura-av-more {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--glass-bg,rgba(99,102,241,.15));
+    border: 2px solid var(--aura-surface,#fff); margin-left: -8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: var(--aura-primary,#6366f1); flex-shrink: 0;
+}
+/* Ring animado en el último avatar del stack */
+.aura-avatar-group .aura-avatar-stack-item:last-of-type { position: relative; }
+.aura-avatar-group .aura-avatar-stack-item:last-of-type::before {
+    content: ''; position: absolute; inset: -3px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--aura-violet,#7c3aed), var(--aura-cyan,#06b6d4));
+    z-index: -1; animation: ringPulse 2s ease-in-out infinite;
+}
+/* Tooltip enriquecido */
+.aura-av-tooltip {
+    position: fixed; z-index: 99999; pointer-events: none;
+    background: var(--glass-bg, rgba(15,17,32,.92));
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border, rgba(255,255,255,.12));
+    border-radius: 14px; padding: 12px 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.35), 0 0 0 1px rgba(99,102,241,.15);
+    display: flex; align-items: center; gap: 10px; min-width: 200px;
+    opacity: 0; transform: translateY(6px) scale(.97);
+    transition: opacity .18s ease, transform .18s ease;
+    color: #fff;
+}
+.aura-av-tooltip.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: none; }
+.aura-av-tooltip-avatar {
+    width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--aura-indigo,#6366f1), var(--aura-violet,#7c3aed));
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;
+}
+.aura-av-tooltip-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.aura-av-tooltip-name  { font-weight: 700; font-size: 14px; line-height: 1.2; }
+.aura-av-tooltip-role  { font-size: 11px; color: var(--aura-cyan,#06b6d4); font-weight: 600; margin-top: 2px; }
+.aura-av-tooltip-email { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 1px; }
+
+/* ── Program Card ───────────────────────────────────────────────── */
+.aura-prog-card {
+    border-radius: 14px;
+    border: 1px solid var(--aura-border, #e2e8f0);
+    background: var(--bg-surface, #fff);
+    overflow: hidden;
+    transition: box-shadow .2s, transform .2s;
+}
+.aura-prog-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,.1); }
+.aura-prog-card-header {
+    padding: 18px 22px;
+    border-left: 6px solid var(--prog-color, #6366f1);
+    position: relative;
+}
+.aura-prog-card-header.archived-header {
+    opacity: .85;
+    background: var(--aura-surface-alt, #f8fafc);
+}
+.aura-prog-toggle-btn {
+    background: none; border: none; cursor: pointer; padding: 4px 8px;
+    color: var(--aura-text-secondary); transition: transform .25s;
+    font-size: 18px; line-height: 1;
+}
+.aura-prog-toggle-btn.collapsed { transform: rotate(-90deg); }
+.aura-prog-subjects-panel {
+    border-top: 1px solid var(--aura-border, #e2e8f0);
+    padding: 18px 22px;
+    background: var(--aura-surface-alt2, var(--aura-surface-alt, #f8fafc));
+    overflow: hidden;
+    transition: max-height .35s ease, padding .35s ease;
+}
+.aura-prog-subjects-panel.collapsed { max-height: 0 !important; padding-top: 0; padding-bottom: 0; overflow: hidden; }
+
+/* ── Subject Cards in Grid ──────────────────────────────────────── */
+.aura-subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+.aura-subject-card {
+    background: var(--bg-surface, #fff);
+    border: 1px solid var(--aura-border, #e2e8f0);
+    border-top: 3px solid var(--subj-color, #3b82f6);
+    border-radius: 10px;
+    padding: 12px 14px;
+    position: relative;
+    transition: box-shadow .18s, transform .18s;
+}
+.aura-subject-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.09); transform: translateY(-1px); }
+.aura-subject-card-code {
+    font-size: 10px; font-weight: 800; letter-spacing: .8px;
+    color: var(--aura-text-muted); text-transform: uppercase; margin-bottom: 3px;
+}
+.aura-subject-card-name {
+    font-size: 13px; font-weight: 700; color: var(--aura-text-primary); line-height: 1.3;
+    margin-bottom: 6px;
+}
+.aura-subject-card-footer {
+    display: flex; justify-content: space-between; align-items: center; margin-top: 8px;
+}
+.aura-subject-card-actions { display: flex; gap: 3px; opacity: 0; transition: opacity .18s; }
+.aura-subject-card:hover .aura-subject-card-actions { opacity: 1; }
+
+/* ── Export dropdown ────────────────────────────────────────────── */
+.aura-export-dropdown { position: relative; display: inline-flex; }
+.aura-export-menu {
+    position: absolute; top: calc(100% + 6px); right: 0; z-index: 200;
+    background: var(--bg-surface, #fff);
+    border: 1px solid var(--aura-border, #e2e8f0);
+    border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.12);
+    min-width: 190px; overflow: hidden; display: none;
+}
+.aura-export-menu.open { display: block; animation: fadeInDown .15s ease; }
+.aura-export-menu-item {
+    display: flex; align-items: center; gap: 8px; padding: 9px 14px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    color: var(--aura-text-primary); transition: background .12s;
+    border: none; background: none; width: 100%; text-align: left;
+}
+.aura-export-menu-item:hover { background: var(--aura-surface-alt, #f8fafc); }
+.aura-export-menu-sep { border-top: 1px solid var(--aura-border, #e2e8f0); margin: 4px 0; }
+@keyframes fadeInDown { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: translateY(0); } }
+
+/* ── Import modal drag-drop zone ────────────────────────────────── */
+.aura-import-dropzone {
+    border: 2px dashed var(--aura-border, #e2e8f0);
+    border-radius: 12px; padding: 32px 24px; text-align: center;
+    cursor: pointer; transition: border-color .18s, background .18s;
+}
+.aura-import-dropzone.dragover {
+    border-color: var(--aura-primary, #6366f1);
+    background: rgba(99,102,241,.05);
+}
+</style>
 
 <div class="aura-programs-view-container">
 
-    <!-- ── BARRA SUPERIOR DE ACCIONES ── -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 16px;">
+    <!-- ── BARRA SUPERIOR ── -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
         <div>
             <h2 class="adp-card-title" style="font-size: 20px; margin: 0;">
                 🎓 <?php esc_html_e( 'Programas y Cursos de Capacitación', 'aura' ); ?>
             </h2>
-            <p class="adp-card-desc" style="margin: 4px 0 0 0;">
-                <?php esc_html_e( 'Administra los programas de formación, sus materias curriculares, vinculación a áreas institucionales y la asignación de profesores.', 'aura' ); ?>
+            <p class="adp-card-desc" style="margin: 4px 0 0 0; font-size: 13px;">
+                <?php esc_html_e( 'Administra programas de formación, materias, profesores y material pedagógico.', 'aura' ); ?>
             </p>
         </div>
 
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-            <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'manage_options' ) ) : ?>
-                <!-- Botón Sincronizar cursos de Estudiantes -->
+            <?php if ( $can_manage ) : ?>
+                <!-- Botón Sincronizar -->
                 <button type="button" class="btn btn-ghost btn-lift" id="btn-sync-student-courses"
-                    title="<?php esc_attr_e( 'Importar cursos de Estudiantes como Programas del Calendario', 'aura' ); ?>">
-                    🔄 <?php esc_html_e( 'Sincronizar desde Estudiantes', 'aura' ); ?>
+                        title="<?php esc_attr_e( 'Importar cursos de Estudiantes como Programas del Calendario', 'aura' ); ?>">
+                    🔄 <?php esc_html_e( 'Sincronizar', 'aura' ); ?>
                 </button>
+
+                <!-- Botón Importar -->
+                <button type="button" class="btn btn-ghost btn-lift" id="btn-open-import-modal">
+                    📤 <?php esc_html_e( 'Importar JSON', 'aura' ); ?>
+                </button>
+
+                <!-- Dropdown Exportar Todos -->
+                <div class="aura-export-dropdown" id="export-all-dropdown">
+                    <button type="button" class="btn btn-ghost btn-lift" id="btn-export-all-toggle">
+                        📥 <?php esc_html_e( 'Exportar Todos', 'aura' ); ?> ▾
+                    </button>
+                    <div class="aura-export-menu" id="export-all-menu">
+                        <button class="aura-export-menu-item btn-export-all" data-format="json">
+                            📄 JSON <small style="opacity:.6;margin-left:auto;">Jerarquía completa</small>
+                        </button>
+                        <div class="aura-export-menu-sep"></div>
+                        <button class="aura-export-menu-item btn-export-all" data-format="csv">
+                            📊 CSV <small style="opacity:.6;margin-left:auto;">Editable en Excel</small>
+                        </button>
+                    </div>
+                </div>
             <?php endif; ?>
-            <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+
+            <?php if ( $can_edit ) : ?>
                 <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-program">
                     ➕ <?php esc_html_e( 'Nuevo Programa', 'aura' ); ?>
                 </button>
@@ -70,82 +277,71 @@ $prog_base_url    = add_query_arg( 'tab', 'programs', admin_url( 'admin.php?page
         </div>
     </div>
 
-    <!-- ── BARRA DE FILTROS / TABS ── -->
-    <div style="display: flex; gap: 4px; border-bottom: 2px solid var(--aura-border, #e2e8f0); padding-bottom: 0; margin-bottom: 20px;">
+    <!-- ── TABS DE FILTRO ── -->
+    <div style="display: flex; gap: 4px; border-bottom: 2px solid var(--aura-border, #e2e8f0); margin-bottom: 24px;">
         <a href="<?php echo esc_url( add_query_arg( 'prog_filter', 'active', $prog_base_url ) ); ?>"
-           style="text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 8px 8px 0 0;
-                  border-bottom: 3px solid <?php echo $prog_view_filter === 'active' ? 'var(--aura-primary,#6366f1)' : 'transparent'; ?>;
-                  color: <?php echo $prog_view_filter === 'active' ? 'var(--aura-primary,#6366f1)' : 'var(--aura-text-secondary,#64748b)'; ?>;
-                  background: <?php echo $prog_view_filter === 'active' ? 'rgba(99,102,241,0.07)' : 'transparent'; ?>">
+           style="text-decoration:none;padding:8px 16px;font-size:13px;font-weight:600;border-radius:8px 8px 0 0;
+                  border-bottom:3px solid <?php echo $prog_view_filter === 'active' ? 'var(--aura-primary,#6366f1)' : 'transparent'; ?>;
+                  color:<?php echo $prog_view_filter === 'active' ? 'var(--aura-primary,#6366f1)' : 'var(--aura-text-secondary,#64748b)'; ?>;
+                  background:<?php echo $prog_view_filter === 'active' ? 'rgba(99,102,241,.07)' : 'transparent'; ?>">
             ✅ <?php esc_html_e( 'Activos', 'aura' ); ?>
         </a>
         <a href="<?php echo esc_url( add_query_arg( 'prog_filter', 'archived', $prog_base_url ) ); ?>"
-           style="text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 8px 8px 0 0;
-                  border-bottom: 3px solid <?php echo $prog_view_filter === 'archived' ? '#f59e0b' : 'transparent'; ?>;
-                  color: <?php echo $prog_view_filter === 'archived' ? '#d97706' : 'var(--aura-text-secondary,#64748b)'; ?>;
-                  background: <?php echo $prog_view_filter === 'archived' ? 'rgba(245,158,11,0.07)' : 'transparent'; ?>">
+           style="text-decoration:none;padding:8px 16px;font-size:13px;font-weight:600;border-radius:8px 8px 0 0;
+                  border-bottom:3px solid <?php echo $prog_view_filter === 'archived' ? '#f59e0b' : 'transparent'; ?>;
+                  color:<?php echo $prog_view_filter === 'archived' ? '#d97706' : 'var(--aura-text-secondary,#64748b)'; ?>;
+                  background:<?php echo $prog_view_filter === 'archived' ? 'rgba(245,158,11,.07)' : 'transparent'; ?>">
             📦 <?php esc_html_e( 'Archivados', 'aura' ); ?>
             <?php if ( $archived_count > 0 ) : ?>
-                <span style="margin-left: 5px; background: #f59e0b; color: #fff; border-radius: 10px; font-size: 11px; padding: 1px 6px; font-weight: 700;">
-                    <?php echo intval( $archived_count ); ?>
-                </span>
+                <span style="margin-left:5px;background:#f59e0b;color:#fff;border-radius:10px;font-size:11px;padding:1px 6px;font-weight:700;"><?php echo intval( $archived_count ); ?></span>
             <?php endif; ?>
         </a>
         <a href="<?php echo esc_url( add_query_arg( 'prog_filter', 'all', $prog_base_url ) ); ?>"
-           style="text-decoration: none; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 8px 8px 0 0;
-                  border-bottom: 3px solid <?php echo $prog_view_filter === 'all' ? '#64748b' : 'transparent'; ?>;
-                  color: <?php echo $prog_view_filter === 'all' ? '#475569' : 'var(--aura-text-secondary,#64748b)'; ?>;
-                  background: <?php echo $prog_view_filter === 'all' ? 'rgba(100,116,139,0.07)' : 'transparent'; ?>">
+           style="text-decoration:none;padding:8px 16px;font-size:13px;font-weight:600;border-radius:8px 8px 0 0;
+                  border-bottom:3px solid <?php echo $prog_view_filter === 'all' ? '#64748b' : 'transparent'; ?>;
+                  color:<?php echo $prog_view_filter === 'all' ? '#475569' : 'var(--aura-text-secondary,#64748b)'; ?>;
+                  background:<?php echo $prog_view_filter === 'all' ? 'rgba(100,116,139,.07)' : 'transparent'; ?>">
             📋 <?php esc_html_e( 'Todos', 'aura' ); ?>
         </a>
     </div>
 
-    <!-- ── LISTA DE PROGRAMAS (CARDS) ── -->
+    <!-- ── LISTA DE PROGRAMAS ── -->
     <?php if ( empty( $programs ) ) : ?>
-        <div class="adp-card" style="text-align: center; padding: 48px 24px; border-radius: 12px;">
-            <div style="font-size: 40px; margin-bottom: 12px;">
-                <?php echo $prog_view_filter === 'archived' ? '📦' : '📚'; ?>
-            </div>
-            <h3 style="font-size: 18px; margin-bottom: 6px;">
-                <?php
-                if ( $prog_view_filter === 'archived' ) {
-                    esc_html_e( 'No hay programas archivados', 'aura' );
-                } else {
-                    esc_html_e( 'No hay programas académicos registrados', 'aura' );
-                }
-                ?>
+        <div class="adp-card" style="text-align:center;padding:48px 24px;border-radius:14px;">
+            <div style="font-size:48px;margin-bottom:14px;"><?php echo $prog_view_filter === 'archived' ? '📦' : '🎓'; ?></div>
+            <h3 style="font-size:18px;margin-bottom:6px;">
+                <?php $prog_view_filter === 'archived' ? esc_html_e( 'No hay programas archivados', 'aura' ) : esc_html_e( 'No hay programas registrados', 'aura' ); ?>
             </h3>
-            <p style="color: var(--aura-text-secondary); max-width: 460px; margin: 0 auto 20px;">
-                <?php
-                if ( $prog_view_filter === 'archived' ) {
-                    esc_html_e( 'Los programas archivados aparecen aquí. Puedes restaurarlos para que vuelvan a estar activos.', 'aura' );
-                } else {
-                    esc_html_e( 'Crea tu primer programa de formación para comenzar a estructurar las materias y horarios de clases.', 'aura' );
-                }
-                ?>
+            <p style="color:var(--aura-text-secondary);max-width:420px;margin:0 auto 20px;">
+                <?php $prog_view_filter === 'archived'
+                    ? esc_html_e( 'Los programas archivados aparecerán aquí para poder restaurarlos.', 'aura' )
+                    : esc_html_e( 'Crea tu primer programa de formación para empezar a estructurar materias y horarios.', 'aura' ); ?>
             </p>
-            <?php if ( $prog_view_filter !== 'archived' && ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) ) : ?>
+            <?php if ( $prog_view_filter !== 'archived' && $can_edit ) : ?>
                 <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-first-program">
                     ➕ <?php esc_html_e( 'Crear Primer Programa', 'aura' ); ?>
                 </button>
             <?php endif; ?>
         </div>
     <?php else : ?>
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <?php foreach ( $programs as $p ) : 
-                $subjects = Aura_Calendar_Subjects::get_all( [
-                    'program_id'      => $p->id,
-                    'include_archived' => $prog_view_filter === 'archived',
-                ] );
-                $p_color    = ! empty( $p->color ) ? $p->color : '#6366f1';
-                $is_archived = ! empty( $p->deleted_at ) || $p->status === 'archived';
-            ?>
-                <div class="adp-card program-card" data-program-id="<?php echo esc_attr( $p->id ); ?>"
-                     style="border-radius: 12px; border-left: 6px solid <?php echo esc_attr( $p_color ); ?>; padding: 22px;
-                            <?php echo $is_archived ? 'opacity: 0.8; background: var(--aura-surface-alt, #f8fafc);' : ''; ?>">
+
+        <div style="display:flex;flex-direction:column;gap:18px;">
+        <?php foreach ( $programs as $p ) :
+            $subjects    = Aura_Calendar_Subjects::get_all( [ 'program_id' => $p->id, 'include_archived' => $prog_view_filter === 'archived' ] );
+            $p_color     = ! empty( $p->color ) ? $p->color : '#6366f1';
+            $is_archived = ! empty( $p->deleted_at ) || $p->status === 'archived';
+            $subj_count  = count( $subjects );
+        ?>
+            <!-- PROGRAM CARD -->
+            <div class="adp-card aura-prog-card program-card" data-program-id="<?php echo esc_attr( $p->id ); ?>"
+                 style="--prog-color: <?php echo esc_attr( $p_color ); ?>; <?php echo $is_archived ? 'opacity:.82;' : ''; ?>">
+
+                <!-- ── HEADER DEL PROGRAMA ── -->
+                <div class="aura-prog-card-header <?php echo $is_archived ? 'archived-header' : ''; ?>">
+
                     <?php if ( $is_archived ) : ?>
-                        <div style="margin-bottom: 10px;">
-                            <span class="adp-badge badge-amber" style="font-size: 11px;">
+                        <div style="margin-bottom:8px;">
+                            <span class="adp-badge badge-amber" style="font-size:11px;">
                                 📦 <?php esc_html_e( 'Archivado', 'aura' ); ?>
                                 <?php if ( ! empty( $p->deleted_at ) ) : ?>
                                     &mdash; <?php echo esc_html( date_i18n( 'j M Y', strtotime( $p->deleted_at ) ) ); ?>
@@ -153,173 +349,221 @@ $prog_base_url    = add_query_arg( 'tab', 'programs', admin_url( 'admin.php?page
                             </span>
                         </div>
                     <?php endif; ?>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap;">
-                                <span class="adp-badge badge-slate" style="font-weight: 700; font-size: 12px; letter-spacing: 0.5px;">
-                                    <?php echo esc_html( $p->code ); ?>
-                                </span>
-                                <?php if ( $p->status === 'active' ) : ?>
-                                    <span class="adp-badge badge-emerald has-dot"><span class="pulse-dot"></span> <?php esc_html_e( 'Activo', 'aura' ); ?></span>
-                                <?php elseif ( $p->status === 'archived' ) : ?>
-                                    <span class="adp-badge badge-slate"><?php esc_html_e( 'Archivado', 'aura' ); ?></span>
-                                <?php else : ?>
-                                    <span class="adp-badge badge-amber"><?php esc_html_e( 'Borrador', 'aura' ); ?></span>
-                                <?php endif; ?>
 
-                                <?php if ( ! empty( $p->area_name ) ) : 
-                                    $area_badge_color = ! empty( $p->area_color ) ? $p->area_color : '#6366f1';
-                                ?>
-                                    <span class="adp-badge" style="font-weight: 600; font-size: 12px; background: <?php echo esc_attr( $area_badge_color . '18' ); ?>; color: <?php echo esc_attr( $area_badge_color ); ?>; border: 1px solid <?php echo esc_attr( $area_badge_color . '35' ); ?>;">
-                                        🏢 <?php echo esc_html( $p->area_name ); ?>
-                                    </span>
-                                <?php endif; ?>
-
-                                <?php if ( ! empty( $p->academic_period ) ) : ?>
-                                    <span style="font-size: 13px; color: var(--aura-text-secondary);">
-                                        📅 <?php echo esc_html( $p->academic_period ); ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
-
-                            <h3 style="font-size: 19px; font-weight: 700; margin: 0 0 6px 0; color: var(--aura-text-primary);">
-                                <?php echo esc_html( $p->name ); ?>
-                            </h3>
-
-                            <?php if ( ! empty( $p->description ) ) : ?>
-                                <p style="font-size: 13px; color: var(--aura-text-secondary); margin: 0 0 10px 0; max-width: 750px;">
-                                    <?php echo esc_html( $p->description ); ?>
-                                </p>
+                    <!-- Fila superior: badges + botones -->
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <span class="adp-badge badge-slate" style="font-weight:700;font-size:11px;letter-spacing:.5px;"><?php echo esc_html( $p->code ); ?></span>
+                            <?php if ( $p->status === 'active' ) : ?>
+                                <span class="adp-badge badge-emerald has-dot"><span class="pulse-dot"></span> <?php esc_html_e( 'Activo', 'aura' ); ?></span>
+                            <?php elseif ( $p->status !== 'archived' ) : ?>
+                                <span class="adp-badge badge-amber"><?php esc_html_e( 'Borrador', 'aura' ); ?></span>
                             <?php endif; ?>
-
-                            <div style="display: flex; gap: 16px; font-size: 13px; color: var(--aura-text-muted); flex-wrap: wrap;">
-                                <?php if ( ! empty( $p->start_date ) && ! empty( $p->end_date ) ) : ?>
-                                    <span>🗓️ <?php echo esc_html( date_i18n( 'j M Y', strtotime( $p->start_date ) ) . ' - ' . date_i18n( 'j M Y', strtotime( $p->end_date ) ) ); ?></span>
-                                <?php endif; ?>
-
-                                <?php 
-                                $coords_display = ! empty( $p->coordinators_names ) ? $p->coordinators_names : ( ! empty( $p->coordinator_name ) ? $p->coordinator_name : '' );
-                                if ( ! empty( $coords_display ) ) : 
-                                    $is_multiple = ! empty( $p->coordinator_ids ) && count( $p->coordinator_ids ) > 1;
-                                ?>
-                                    <span style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                        <strong><?php echo $is_multiple ? esc_html__( 'Coordinadores:', 'aura' ) : esc_html__( 'Coordinador:', 'aura' ); ?></strong>
-                                        <?php
-                                        if ( ! empty( $p->coordinator_ids ) && is_array( $p->coordinator_ids ) ) {
-                                            foreach ( $p->coordinator_ids as $c_id ) {
-                                                echo Aura_Calendar_Admin::get_user_avatar_html( (int) $c_id, 22, true );
-                                            }
-                                        } else {
-                                            echo esc_html( $coords_display );
-                                        }
-                                        ?>
-                                    </span>
-                                <?php endif; ?>
-
-                                <span>📚 <strong><?php echo intval( $p->subjects_count ); ?></strong> <?php esc_html_e( 'materias', 'aura' ); ?></span>
-                                <span>📅 <strong><?php echo intval( $p->events_count ); ?></strong> <?php esc_html_e( 'clases agendadas', 'aura' ); ?></span>
-                            </div>
+                            <?php if ( ! empty( $p->area_name ) ) :
+                                $ac = ! empty( $p->area_color ) ? $p->area_color : '#6366f1'; ?>
+                                <span class="adp-badge" style="background:<?php echo esc_attr($ac.'18'); ?>;color:<?php echo esc_attr($ac); ?>;border:1px solid <?php echo esc_attr($ac.'35'); ?>;font-size:11px;">
+                                    🏢 <?php echo esc_html( $p->area_name ); ?>
+                                </span>
+                            <?php endif; ?>
+                            <?php if ( ! empty( $p->academic_period ) ) : ?>
+                                <span style="font-size:12px;color:var(--aura-text-secondary);">📅 <?php echo esc_html( $p->academic_period ); ?></span>
+                            <?php endif; ?>
                         </div>
 
-                        <!-- Botones de Acción del Programa -->
-                        <?php if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <!-- Botones de acción -->
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                            <?php if ( $can_edit ) : ?>
                                 <?php if ( $is_archived ) : ?>
-                                    <!-- Botón Restaurar para programas archivados -->
                                     <button type="button" class="btn btn-ghost btn-restore-program"
                                             data-program-id="<?php echo esc_attr( $p->id ); ?>"
-                                            style="font-size: 13px; padding: 6px 12px; color: #10b981; border-color: #10b981;">
+                                            style="font-size:12px;padding:5px 11px;color:#10b981;border-color:#10b981;">
                                         ♻️ <?php esc_html_e( 'Restaurar', 'aura' ); ?>
                                     </button>
                                 <?php else : ?>
-                                    <button type="button" class="btn btn-ghost btn-edit-program" data-program-id="<?php echo esc_attr( $p->id ); ?>" style="font-size: 13px; padding: 6px 12px;">
+                                    <button type="button" class="btn btn-ghost btn-edit-program"
+                                            data-program-id="<?php echo esc_attr( $p->id ); ?>"
+                                            style="font-size:12px;padding:5px 11px;">
                                         ✏️ <?php esc_html_e( 'Editar', 'aura' ); ?>
                                     </button>
-                                    <button type="button" class="btn btn-indigo btn-lift btn-add-subject" data-program-id="<?php echo esc_attr( $p->id ); ?>" data-program-name="<?php echo esc_attr( $p->name ); ?>" style="font-size: 13px; padding: 6px 12px;">
+                                    <button type="button" class="btn btn-indigo btn-lift btn-add-subject"
+                                            data-program-id="<?php echo esc_attr( $p->id ); ?>"
+                                            data-program-name="<?php echo esc_attr( $p->name ); ?>"
+                                            style="font-size:12px;padding:5px 11px;">
                                         ➕ <?php esc_html_e( 'Añadir Materia', 'aura' ); ?>
                                     </button>
                                 <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
+
+                            <?php if ( $can_manage ) : ?>
+                                <!-- Dropdown exportar ESTE programa -->
+                                <div class="aura-export-dropdown">
+                                    <button type="button" class="btn btn-ghost" style="font-size:12px;padding:5px 10px;"
+                                            data-export-toggle="prog-<?php echo esc_attr($p->id); ?>">
+                                        📥 ▾
+                                    </button>
+                                    <div class="aura-export-menu" id="export-prog-menu-<?php echo esc_attr($p->id); ?>">
+                                        <button class="aura-export-menu-item btn-export-program" data-format="json" data-program-id="<?php echo esc_attr($p->id); ?>">
+                                            📄 JSON
+                                        </button>
+                                        <div class="aura-export-menu-sep"></div>
+                                        <button class="aura-export-menu-item btn-export-program" data-format="csv" data-program-id="<?php echo esc_attr($p->id); ?>">
+                                            📊 CSV
+                                        </button>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- Toggle colapsar materias -->
+                            <button type="button" class="aura-prog-toggle-btn" data-prog-panel="panel-<?php echo esc_attr($p->id); ?>"
+                                    title="<?php esc_attr_e('Mostrar/Ocultar materias','aura'); ?>">▾</button>
+                        </div>
                     </div>
 
-                    <!-- ── SUB-TABLA DE MATERIAS ASOCIADAS ── -->
-                    <div style="margin-top: 18px; border-top: 1px solid var(--aura-border, #e2e8f0); padding-top: 14px;">
-                        <h4 style="font-size: 14px; font-weight: 600; margin: 0 0 10px 0; color: var(--aura-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
-                            📚 <?php esc_html_e( 'Materias del Programa', 'aura' ); ?> (<?php echo count( $subjects ); ?>)
+                    <!-- Nombre del programa -->
+                    <h3 style="font-size:18px;font-weight:800;margin:10px 0 4px;color:var(--aura-text-primary);">
+                        <?php echo esc_html( $p->name ); ?>
+                    </h3>
+
+                    <?php if ( ! empty( $p->description ) ) : ?>
+                        <p style="font-size:13px;color:var(--aura-text-secondary);margin:0 0 8px;max-width:720px;line-height:1.5;">
+                            <?php echo esc_html( $p->description ); ?>
+                        </p>
+                    <?php endif; ?>
+
+                    <!-- Meta row -->
+                    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--aura-text-muted);">
+                        <?php if ( ! empty( $p->start_date ) && ! empty( $p->end_date ) ) : ?>
+                            <span>🗓️ <?php echo esc_html( date_i18n( 'j M Y', strtotime( $p->start_date ) ) . ' — ' . date_i18n( 'j M Y', strtotime( $p->end_date ) ) ); ?></span>
+                        <?php endif; ?>
+
+                        <span>📚 <strong><?php echo intval( $p->subjects_count ); ?></strong> <?php esc_html_e( 'materias', 'aura' ); ?></span>
+                        <span>📅 <strong><?php echo intval( $p->events_count ); ?></strong> <?php esc_html_e( 'clases', 'aura' ); ?></span>
+
+                        <!-- Avatares de coordinadores -->
+                        <?php if ( ! empty( $p->coordinator_ids ) && is_array( $p->coordinator_ids ) ) :
+                            $coord_count = count( $p->coordinator_ids );
+                            $max_visible = 4;
+                        ?>
+                            <span style="display:inline-flex;align-items:center;gap:6px;">
+                                <span style="font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">
+                                    <?php echo $coord_count > 1 ? esc_html__('Coords.','aura') : esc_html__('Coord.','aura'); ?>
+                                </span>
+                                <span class="aura-avatar-group">
+                                    <?php
+                                    $shown = 0;
+                                    foreach ( $p->coordinator_ids as $c_id ) {
+                                        if ( $shown >= $max_visible ) break;
+                                        echo aura_avatar_stack_item( (int) $c_id, __('Coordinador','aura') );
+                                        $shown++;
+                                    }
+                                    if ( $coord_count > $max_visible ) : ?>
+                                        <span class="aura-av-more">+<?php echo $coord_count - $max_visible; ?></span>
+                                    <?php endif; ?>
+                                </span>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                </div><!-- /.aura-prog-card-header -->
+
+                <!-- ── PANEL DE MATERIAS (colapsable) ── -->
+                <div class="aura-prog-subjects-panel" id="panel-<?php echo esc_attr($p->id); ?>"
+                     style="max-height: 2000px;">
+
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+                        <h4 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+                                   color:var(--aura-text-muted);margin:0;">
+                            📚 <?php printf( esc_html__( 'Materias del Programa (%d)', 'aura' ), $subj_count ); ?>
                         </h4>
+                    </div>
 
-                        <?php if ( empty( $subjects ) ) : ?>
-                            <p style="font-size: 13px; color: var(--aura-text-muted); font-style: italic; margin: 0;">
-                                <?php esc_html_e( 'Aún no se han agregado materias a este programa.', 'aura' ); ?>
-                            </p>
-                        <?php else : ?>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
-                                <?php foreach ( $subjects as $s ) : 
-                                    $s_color = ! empty( $s->color ) ? $s->color : '#3b82f6';
-                                    $t_mat_count = ! empty( $s->teacher_materials_count ) ? (int) $s->teacher_materials_count : 0;
-                                    $st_mat_count = ! empty( $s->student_materials_count ) ? (int) $s->student_materials_count : 0;
-                                ?>
-                                    <div style="background: var(--aura-surface-alt, #f8fafc); border: 1px solid var(--aura-border, #e2e8f0); border-left: 4px solid <?php echo esc_attr( $s_color ); ?>; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
-                                        <div>
-                                            <div style="font-size: 11px; font-weight: 700; color: var(--aura-text-muted);">
-                                                <?php echo esc_html( $s->code ); ?>
-                                                <?php if ( ! empty( $s->total_hours ) ) : ?>
-                                                    &bull; <?php echo intval( $s->total_hours ); ?> hrs
+                    <?php if ( empty( $subjects ) ) : ?>
+                        <div style="text-align:center;padding:20px;border:2px dashed var(--aura-border,#e2e8f0);border-radius:10px;color:var(--aura-text-muted);font-size:13px;">
+                            <?php esc_html_e( 'Aún no hay materias en este programa.', 'aura' ); ?>
+                            <?php if ( $can_edit && ! $is_archived ) : ?>
+                                <br><button type="button" class="btn btn-ghost btn-add-subject" style="margin-top:10px;font-size:12px;"
+                                            data-program-id="<?php echo esc_attr($p->id); ?>" data-program-name="<?php echo esc_attr($p->name); ?>">
+                                    ➕ <?php esc_html_e( 'Añadir primera materia', 'aura' ); ?>
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    <?php else : ?>
+                        <div class="aura-subjects-grid">
+                            <?php foreach ( $subjects as $s ) :
+                                $s_color     = ! empty( $s->color ) ? $s->color : '#3b82f6';
+                                $t_mat_count = (int) ( $s->teacher_materials_count ?? 0 );
+                                $st_mat_count= (int) ( $s->student_materials_count ?? 0 );
+                            ?>
+                                <div class="aura-subject-card" style="--subj-color: <?php echo esc_attr($s_color); ?>;">
+                                    <div class="aura-subject-card-code">
+                                        <?php echo esc_html( $s->code ); ?>
+                                        <?php if ( ! empty( $s->total_hours ) ) : ?>
+                                            &bull; <?php echo intval( $s->total_hours ); ?> hrs
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="aura-subject-card-name"><?php echo esc_html( $s->name ); ?></div>
+
+                                    <!-- Profesores en avatar stack -->
+                                    <?php if ( ! empty( $s->teacher_ids ) && is_array( $s->teacher_ids ) ) :
+                                        $teach_count = count( $s->teacher_ids );
+                                        $max_teach   = 3;
+                                    ?>
+                                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                                            <span class="aura-avatar-group">
+                                                <?php
+                                                $t_shown = 0;
+                                                foreach ( $s->teacher_ids as $t_id ) {
+                                                    if ( $t_shown >= $max_teach ) break;
+                                                    echo aura_avatar_stack_item( (int) $t_id, __('Profesor','aura') );
+                                                    $t_shown++;
+                                                }
+                                                if ( $teach_count > $max_teach ) : ?>
+                                                    <span class="aura-av-more">+<?php echo $teach_count - $max_teach; ?></span>
                                                 <?php endif; ?>
-                                            </div>
-                                            <div style="font-size: 14px; font-weight: 600; color: var(--aura-text-primary);">
-                                                <?php echo esc_html( $s->name ); ?>
-                                            </div>
-                                            <?php 
-                                            $teachers_display = ! empty( $s->teachers_names ) ? $s->teachers_names : ( ! empty( $s->default_teacher_name ) ? $s->default_teacher_name : '' );
-                                            if ( ! empty( $teachers_display ) ) : 
-                                                $is_multiple_teach = ! empty( $s->teacher_ids ) && count( $s->teacher_ids ) > 1;
-                                            ?>
-                                                <div style="font-size: 12px; color: var(--aura-text-secondary); margin-top: 4px; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                                    <span style="font-weight: 600;"><?php echo $is_multiple_teach ? esc_html__( 'Profesores:', 'aura' ) : esc_html__( 'Profesor:', 'aura' ); ?></span>
-                                                    <?php
-                                                    if ( ! empty( $s->teacher_ids ) && is_array( $s->teacher_ids ) ) {
-                                                        foreach ( $s->teacher_ids as $t_id ) {
-                                                            echo Aura_Calendar_Admin::get_user_avatar_html( (int) $t_id, 20, true );
-                                                        }
-                                                    } else {
-                                                        echo esc_html( $teachers_display );
-                                                    }
-                                                    ?>
-                                                </div>
-                                            <?php endif; ?>
+                                            </span>
+                                        </div>
+                                    <?php elseif ( ! empty( $s->teachers_names ) || ! empty( $s->default_teacher_name ) ) : ?>
+                                        <div style="font-size:11px;color:var(--aura-text-secondary);margin-bottom:4px;">
+                                            👤 <?php echo esc_html( $s->teachers_names ?: $s->default_teacher_name ); ?>
+                                        </div>
+                                    <?php endif; ?>
 
-                                            <?php if ( $t_mat_count > 0 || $st_mat_count > 0 ) : ?>
-                                                <div style="margin-top: 6px; display: flex; gap: 6px; font-size: 11px; flex-wrap: wrap;">
-                                                    <?php if ( $t_mat_count > 0 ) : ?>
-                                                        <span class="aura-badge aura-badge--sm" title="<?php esc_attr_e( 'Material Pedagógico Docente', 'aura-suite' ); ?>" style="background: rgba(93,95,239,0.1); color: var(--aura-primary,#5d5fef); padding: 2px 6px; border-radius: 6px;">📁 <?php echo $t_mat_count; ?> <?php esc_html_e( 'docente', 'aura' ); ?></span>
-                                                    <?php endif; ?>
-                                                    <?php if ( $st_mat_count > 0 ) : ?>
-                                                        <span class="aura-badge aura-badge--sm" title="<?php esc_attr_e( 'Material para Estudiantes', 'aura-suite' ); ?>" style="background: rgba(16,185,129,0.1); color: #10b981; padding: 2px 6px; border-radius: 6px;">📖 <?php echo $st_mat_count; ?> <?php esc_html_e( 'alumnos', 'aura' ); ?></span>
-                                                    <?php endif; ?>
-                                                </div>
+                                    <!-- Material + acciones -->
+                                    <div class="aura-subject-card-footer">
+                                        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                            <?php if ( $t_mat_count > 0 ) : ?>
+                                                <span style="font-size:10px;background:rgba(93,95,239,.1);color:var(--aura-primary,#5d5fef);padding:2px 6px;border-radius:6px;font-weight:600;" title="<?php esc_attr_e('Material Docente','aura'); ?>">
+                                                    📁 <?php echo $t_mat_count; ?>
+                                                </span>
+                                            <?php endif; ?>
+                                            <?php if ( $st_mat_count > 0 ) : ?>
+                                                <span style="font-size:10px;background:rgba(16,185,129,.1);color:#10b981;padding:2px 6px;border-radius:6px;font-weight:600;" title="<?php esc_attr_e('Material Alumnos','aura'); ?>">
+                                                    📖 <?php echo $st_mat_count; ?>
+                                                </span>
                                             <?php endif; ?>
                                         </div>
-                                        <div style="display: flex; gap: 4px;">
-                                            <button type="button" class="btn btn-ghost btn-edit-subject" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="padding: 4px 8px; font-size: 12px;" title="<?php esc_attr_e( 'Editar materia', 'aura' ); ?>">
-                                                ✏️
-                                            </button>
-                                            <button type="button" class="btn btn-ghost btn-delete-subject" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="padding: 4px 8px; font-size: 12px; color: #ef4444;" title="<?php esc_attr_e( 'Eliminar materia', 'aura' ); ?>">
-                                                🗑️
-                                            </button>
+                                        <div class="aura-subject-card-actions">
+                                            <?php if ( $can_edit ) : ?>
+                                                <button type="button" class="btn btn-ghost btn-edit-subject"
+                                                        data-subject-id="<?php echo esc_attr($s->id); ?>"
+                                                        style="padding:3px 7px;font-size:12px;" title="<?php esc_attr_e('Editar','aura'); ?>">✏️</button>
+                                                <button type="button" class="btn btn-ghost btn-delete-subject"
+                                                        data-subject-id="<?php echo esc_attr($s->id); ?>"
+                                                        style="padding:3px 7px;font-size:12px;color:#ef4444;" title="<?php esc_attr_e('Eliminar','aura'); ?>">🗑️</button>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            <?php endforeach; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div><!-- /.aura-prog-subjects-panel -->
+            </div><!-- /.aura-prog-card -->
+        <?php endforeach; ?>
         </div>
-    <?php endif; ?>
 
-</div>
+    <?php endif; ?>
+</div><!-- /.aura-programs-view-container -->
+
 
 <!-- ══════════════════════════════════════════════════════════════════
      MODAL A: CREAR / EDITAR PROGRAMA
@@ -588,6 +832,57 @@ $prog_base_url    = add_query_arg( 'tab', 'programs', admin_url( 'admin.php?page
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL C: IMPORTAR PROGRAMAS (JSON)
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="modal-import-programs" class="aura-modal-overlay" style="display: none;">
+    <div class="aura-modal-container" style="max-width: 500px;">
+        <div class="aura-modal-header">
+            <h3 class="adp-card-title" style="margin: 0; font-size: 18px;">
+                📤 <?php esc_html_e( 'Importar Programas desde JSON', 'aura' ); ?>
+            </h3>
+            <button type="button" class="aura-modal-close" id="btn-cancel-import">&times;</button>
+        </div>
+
+        <div class="aura-modal-body" style="padding: 20px 24px;">
+            <!-- Info box -->
+            <div style="background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2); border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; font-size: 12.5px; color: var(--aura-text-secondary);">
+                <strong style="color: var(--aura-primary); display: block; margin-bottom: 4px;">ℹ️ <?php esc_html_e( '¿Cómo funciona la importación?', 'aura' ); ?></strong>
+                <?php esc_html_e( 'Sube un archivo .json exportado desde Aura. Se importarán los programas y sus materias. Los duplicados se pueden omitir automáticamente.', 'aura' ); ?>
+            </div>
+
+            <!-- Zona Drag & Drop -->
+            <div id="import-dropzone" class="aura-import-dropzone" style="margin-bottom: 16px;">
+                <div style="font-size: 36px; margin-bottom: 10px;">📤</div>
+                <p style="font-size: 14px; font-weight: 600; margin: 0 0 4px;"><?php esc_html_e( 'Arrastra tu archivo JSON aquí', 'aura' ); ?></p>
+                <p style="font-size: 12px; color: var(--aura-text-muted); margin: 0 0 14px;"><?php esc_html_e( 'o haz clic para seleccionar', 'aura' ); ?></p>
+                <label for="import-file-input" class="btn btn-ghost" style="cursor: pointer; font-size: 13px;">
+                    📂 <?php esc_html_e( 'Seleccionar archivo', 'aura' ); ?>
+                </label>
+                <input type="file" id="import-file-input" accept=".json" style="display: none;">
+            </div>
+
+            <!-- Opciones -->
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; margin-bottom: 16px;">
+                <input type="checkbox" id="import-skip-existing" checked style="width: 16px; height: 16px; accent-color: var(--aura-primary);">
+                <span><?php esc_html_e( 'Omitir programas que ya existen (recomendado)', 'aura' ); ?></span>
+            </label>
+
+            <!-- Área de resultado (oculta hasta que se importa) -->
+            <div id="import-result" style="display: none; padding: 14px; background: var(--aura-surface-alt, #f8fafc); border-radius: 10px; border: 1px solid var(--aura-border); margin-bottom: 4px;"></div>
+        </div>
+
+        <div class="aura-modal-footer">
+            <button type="button" class="btn btn-ghost" id="btn-cancel-import-2">
+                <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+            </button>
+            <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-do-import" disabled>
+                📤 <?php esc_html_e( 'Importar', 'aura' ); ?>
+            </button>
+        </div>
     </div>
 </div>
 

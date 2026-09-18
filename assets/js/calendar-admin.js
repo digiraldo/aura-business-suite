@@ -2038,6 +2038,312 @@
         }, 6500);
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    //  AVATARES STACK — TOOLTIP ENRIQUECIDO
+    // ═══════════════════════════════════════════════════════════════
+    (function() {
+        var $tip = $('#aura-av-tooltip');
+        if (!$tip.length) return; // Solo disponible en tab Programas
+
+        var hideTimer;
+
+        $(document).on('mouseenter', '.aura-avatar-stack-item', function(e) {
+            clearTimeout(hideTimer);
+            var $av   = $(this);
+            var name  = $av.data('av-name')  || $av.attr('aria-label') || '';
+            var email = $av.data('av-email') || '';
+            var role  = $av.data('av-role')  || '';
+            var img   = $av.data('av-img')   || '';
+
+            // Poblar tooltip
+            $tip.find('.aura-av-tooltip-name').text(name);
+            $tip.find('.aura-av-tooltip-role').text(role);
+            $tip.find('.aura-av-tooltip-email').text(email);
+
+            var $avatarEl = $tip.find('.aura-av-tooltip-avatar');
+            $avatarEl.empty();
+            if (img) {
+                $avatarEl.html('<img src="' + img + '" alt="' + name + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display=\'none\'">');
+            } else {
+                var initials = name.split(' ').map(function(w){ return w[0] || ''; }).slice(0,2).join('').toUpperCase();
+                $avatarEl.text(initials);
+            }
+
+            // Posicionar
+            var rect = this.getBoundingClientRect();
+            var tipW = 220;
+            var left = rect.left + rect.width / 2 - tipW / 2;
+            left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+            var top  = rect.top - 10;
+
+            $tip.css({ left: left + 'px', top: top + 'px', transform: 'translateY(-100%)' })
+                .attr('aria-hidden', 'false')
+                .addClass('visible');
+        });
+
+        $(document).on('mouseleave', '.aura-avatar-stack-item', function() {
+            hideTimer = setTimeout(function() {
+                $tip.removeClass('visible').attr('aria-hidden', 'true');
+            }, 120);
+        });
+    })();
+
+    // ═══════════════════════════════════════════════════════════════
+    //  PANELES DE MATERIAS — COLAPSAR / EXPANDIR
+    // ═══════════════════════════════════════════════════════════════
+    $(document).on('click', '.aura-prog-toggle-btn', function() {
+        var panelId = $(this).data('prog-panel');
+        var $panel  = $('#' + panelId);
+        var $btn    = $(this);
+
+        if ($panel.hasClass('collapsed')) {
+            $panel.css('max-height', $panel[0].scrollHeight + 'px').removeClass('collapsed');
+            $btn.removeClass('collapsed');
+        } else {
+            $panel.css('max-height', $panel[0].scrollHeight + 'px');
+            requestAnimationFrame(function() {
+                $panel.addClass('collapsed').css('max-height', '');
+            });
+            $btn.addClass('collapsed');
+        }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  DROPDOWNS DE EXPORTACIÓN
+    // ═══════════════════════════════════════════════════════════════
+
+    // Toggle "Exportar Todos"
+    $('#btn-export-all-toggle').on('click', function(e) {
+        e.stopPropagation();
+        $('#export-all-menu').toggleClass('open');
+    });
+
+    // Toggle dropdown por programa
+    $(document).on('click', '[data-export-toggle]', function(e) {
+        e.stopPropagation();
+        var menuId = 'export-prog-menu-' + $(this).data('export-toggle').replace('prog-', '');
+        var $menu  = $('#' + menuId);
+        // Cerrar todos los demás
+        $('.aura-export-menu').not($menu).removeClass('open');
+        $menu.toggleClass('open');
+    });
+
+    // Cerrar dropdowns al hacer clic fuera
+    $(document).on('click', function() {
+        $('.aura-export-menu').removeClass('open');
+    });
+    $(document).on('click', '.aura-export-menu', function(e) {
+        e.stopPropagation();
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  HELPER: Descargar blob como archivo
+    // ═══════════════════════════════════════════════════════════════
+    function downloadBlob(content, filename, mimeType) {
+        // Agregar BOM para UTF-8 en CSV (compatibilidad Excel)
+        var blob = (mimeType === 'text/csv')
+            ? new Blob(['\uFEFF' + content], { type: mimeType + ';charset=utf-8;' })
+            : new Blob([content], { type: mimeType });
+        var url  = URL.createObjectURL(blob);
+        var a    = document.createElement('a');
+        a.href     = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  EXPORTAR TODOS LOS PROGRAMAS
+    // ═══════════════════════════════════════════════════════════════
+    $(document).on('click', '.btn-export-all', function() {
+        var format = $(this).data('format'); // 'json' | 'csv'
+        var $btn   = $(this);
+        $btn.prop('disabled', true).text('⏳ Exportando...');
+        $('#export-all-menu').removeClass('open');
+
+        $.post(auraCalData.ajax_url, {
+            action:     'aura_cal_export_programs',
+            format:     format,
+            program_id: '',           // vacío = todos
+            nonce:      auraCalData.nonce
+        }, function(res) {
+            $btn.prop('disabled', false).html(format === 'json' ? '📄 JSON <small style="opacity:.6;margin-left:auto;">Jerarquía completa</small>' : '📊 CSV <small style="opacity:.6;margin-left:auto;">Editable en Excel</small>');
+            if (res && res.success) {
+                var ts   = new Date().toISOString().slice(0,10);
+                var name = 'aura-programas-' + ts + '.' + format;
+                var mime = (format === 'csv') ? 'text/csv' : 'application/json';
+                downloadBlob(res.data.content, name, mime);
+                showToast('✅ Exportación lista: ' + name, 'success');
+            } else {
+                var msg = (res && res.data && res.data.message) ? res.data.message : 'Error al exportar.';
+                showToast(msg, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false);
+            showToast('Error de conexión al exportar.', 'error');
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  EXPORTAR UN PROGRAMA INDIVIDUAL
+    // ═══════════════════════════════════════════════════════════════
+    $(document).on('click', '.btn-export-program', function() {
+        var format    = $(this).data('format');
+        var programId = $(this).data('program-id');
+        var $btn      = $(this);
+        $btn.prop('disabled', true).text('⏳ ...');
+        $('.aura-export-menu').removeClass('open');
+
+        $.post(auraCalData.ajax_url, {
+            action:     'aura_cal_export_programs',
+            format:     format,
+            program_id: programId,
+            nonce:      auraCalData.nonce
+        }, function(res) {
+            $btn.prop('disabled', false).html(format === 'json' ? '📄 JSON' : '📊 CSV');
+            if (res && res.success) {
+                var ts   = new Date().toISOString().slice(0,10);
+                var name = 'aura-programa-' + programId + '-' + ts + '.' + format;
+                var mime = (format === 'csv') ? 'text/csv' : 'application/json';
+                downloadBlob(res.data.content, name, mime);
+                showToast('✅ Exportado: ' + name, 'success');
+            } else {
+                var msg = (res && res.data && res.data.message) ? res.data.message : 'Error al exportar.';
+                showToast(msg, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html(format === 'json' ? '📄 JSON' : '📊 CSV');
+            showToast('Error de conexión al exportar.', 'error');
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  MODAL DE IMPORTACIÓN + DRAG & DROP
+    // ═══════════════════════════════════════════════════════════════
+
+    // Abrir modal
+    $(document).on('click', '#btn-open-import-modal', function() {
+        $('#modal-import-programs').fadeIn(180);
+    });
+
+    // Cerrar modal
+    $(document).on('click', '#modal-import-programs .aura-modal-close, #btn-cancel-import, #btn-cancel-import-2', function() {
+        $('#modal-import-programs').fadeOut(150);
+        resetImportModal();
+    });
+    $(document).on('click', '#modal-import-programs', function(e) {
+        if ($(e.target).is('#modal-import-programs')) {
+            $(this).fadeOut(150);
+            resetImportModal();
+        }
+    });
+
+    function resetImportModal() {
+        $('#import-file-input').val('');
+        $('#import-dropzone').removeClass('dragover').html(
+            '<div style="font-size:36px;margin-bottom:10px;">📤</div>' +
+            '<p style="font-size:14px;font-weight:600;margin:0 0 4px;">Arrastra tu archivo JSON aquí</p>' +
+            '<p style="font-size:12px;color:var(--aura-text-muted);margin:0 0 14px;">o haz clic para seleccionar</p>' +
+            '<label for="import-file-input" class="btn btn-ghost" style="cursor:pointer;font-size:13px;">📂 Seleccionar archivo</label>' +
+            '<input type="file" id="import-file-input" accept=".json" style="display:none;">'
+        );
+        $('#import-result').hide().empty();
+        $('#btn-do-import').prop('disabled', true).html('📤 Importar');
+        window._importFileData = null;
+    }
+
+    // Drag & Drop sobre la zona
+    $(document).on('dragover dragenter', '#import-dropzone', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).addClass('dragover');
+    });
+    $(document).on('dragleave', '#import-dropzone', function(e) {
+        e.preventDefault();
+        $(this).removeClass('dragover');
+    });
+    $(document).on('drop', '#import-dropzone', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('dragover');
+        var file = e.originalEvent.dataTransfer.files[0];
+        if (file) readImportFile(file);
+    });
+
+    // Clic en la zona → input[file]
+    $(document).on('click', '#import-dropzone', function(e) {
+        if (!$(e.target).is('input')) {
+            $('#import-file-input').trigger('click');
+        }
+    });
+
+    $(document).on('change', '#import-file-input', function() {
+        var file = this.files[0];
+        if (file) readImportFile(file);
+    });
+
+    function readImportFile(file) {
+        if (!file.name.endsWith('.json')) {
+            showToast('Solo se aceptan archivos .json', 'error');
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            window._importFileData = e.target.result;
+            var sizeKb = Math.round(file.size / 1024);
+            $('#import-dropzone').html(
+                '<div style="font-size:28px;margin-bottom:8px;">✅</div>' +
+                '<p style="font-weight:700;margin:0 0 2px;font-size:14px;">' + escapeHtml(file.name) + '</p>' +
+                '<p style="font-size:12px;color:var(--aura-text-secondary);margin:0;">' + sizeKb + ' KB · JSON listo para importar</p>'
+            );
+            $('#btn-do-import').prop('disabled', false);
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    // Ejecutar importación
+    $(document).on('click', '#btn-do-import', function() {
+        if (!window._importFileData) return;
+        var $btn    = $(this);
+        var skipEx  = $('#import-skip-existing').prop('checked') !== false;
+        $btn.prop('disabled', true).html('⏳ Importando...');
+
+        $.post(auraCalData.ajax_url, {
+            action:        'aura_cal_import_programs',
+            json_data:     window._importFileData,
+            skip_existing: skipEx ? '1' : '0',
+            nonce:         auraCalData.nonce
+        }, function(res) {
+            $btn.prop('disabled', false).html('📤 Importar');
+            var $result = $('#import-result');
+            if (res && res.success) {
+                var d   = res.data;
+                var msg = '<div style="text-align:center;">' +
+                    '<div style="font-size:32px;margin-bottom:8px;">🎉</div>' +
+                    '<p style="font-weight:700;font-size:15px;margin:0 0 6px;">Importación completada</p>' +
+                    '<div style="display:flex;gap:16px;justify-content:center;font-size:13px;flex-wrap:wrap;">' +
+                    '<span>✅ <strong>' + (d.created_programs || 0) + '</strong> programas nuevos</span>' +
+                    '<span>📚 <strong>' + (d.created_subjects || 0) + '</strong> materias nuevas</span>' +
+                    '<span>⏭️ <strong>' + (d.skipped || 0) + '</strong> omitidos</span>' +
+                    '</div>' +
+                    (d.errors && d.errors.length ? '<p style="color:#ef4444;font-size:12px;margin-top:8px;">' + d.errors.join('<br>') + '</p>' : '') +
+                    '</div>';
+                $result.html(msg).show();
+                showToast('Importación completada. ' + (d.created_programs || 0) + ' programas, ' + (d.created_subjects || 0) + ' materias.', 'success');
+                setTimeout(function() { location.reload(); }, 2000);
+            } else {
+                var errMsg = (res && res.data && res.data.message) ? res.data.message : 'Error al importar.';
+                $result.html('<p style="color:#ef4444;font-size:13px;text-align:center;">❌ ' + escapeHtml(errMsg) + '</p>').show();
+                showToast(errMsg, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html('📤 Importar');
+            showToast('Error de conexión al importar.', 'error');
+        });
+    });
+
     // ─────────────────────────────────────────────────────────────
     // INICIALIZACIÓN AL CARGAR DOM
     // ─────────────────────────────────────────────────────────────
@@ -2055,4 +2361,5 @@
     });
 
 })(jQuery);
+
 

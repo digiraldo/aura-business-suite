@@ -631,3 +631,55 @@ body.aura-cal-fullscreen-active {
     color: var(--aura-primary, #6366f1);
     font-weight: 600;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ZONA DRAG & DROP — MODAL IMPORTACIÓN
+   ══════════════════════════════════════════════════════════════ */
+.aura-import-dropzone {
+    border: 2px dashed var(--aura-border, #cbd5e1);
+    border-radius: 14px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--aura-surface-alt, #f8fafc);
+    transition: border-color .2s, background .2s, transform .15s;
+    user-select: none;
+}
+
+.aura-import-dropzone:hover {
+    border-color: var(--aura-primary, #6366f1);
+    background: rgba(99, 102, 241, .04);
+}
+
+.aura-import-dropzone.dragover {
+    border-color: var(--aura-primary, #6366f1);
+    background: rgba(99, 102, 241, .08);
+    transform: scale(1.01);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, .12);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COLAPSO ANIMADO DE PANEL DE MATERIAS
+   ══════════════════════════════════════════════════════════════ */
+.aura-prog-subjects-panel {
+    max-height: 9999px;
+    overflow: hidden;
+    transition: max-height .35s ease, opacity .25s ease;
+    opacity: 1;
+}
+
+.aura-prog-subjects-panel.collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+}
+
+/* Icono rotar al colapsar */
+.aura-prog-toggle-btn .toggle-icon {
+    display: inline-block;
+    transition: transform .25s ease;
+}
+
+.aura-prog-toggle-btn.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
