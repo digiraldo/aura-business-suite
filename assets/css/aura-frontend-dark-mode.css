@@ -367,3 +367,369 @@ body[data-theme="dark"] {
     color: #818cf8 !important;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   PORTAL DEL INSTRUCTOR — ADAPTACIÓN MODO CLARO / OSCURO INTEGRAL
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Contenedor general */
+.aura-teacher-portal {
+    --at-bg-card: #ffffff;
+    --at-bg-card-alt: #f8fafc;
+    --at-border: #e2e8f0;
+    --at-border-subtle: #f1f5f9;
+    --at-text-primary: #0f172a;
+    --at-text-secondary: #475569;
+    --at-text-muted: #64748b;
+    --at-primary: #4f46e5;
+    --at-primary-hover: #4338ca;
+    --at-primary-light: #818cf8;
+    --at-nav-bg: #f1f5f9;
+    --at-nav-border: #e2e8f0;
+    --at-tab-color: #64748b;
+    --at-tab-bg-hover: rgba(255, 255, 255, 0.7);
+    --at-tab-color-hover: #0f172a;
+    --at-tab-active-bg: #ffffff;
+    --at-tab-active-color: #3730a3;
+    --at-tab-active-border: #cbd5e1;
+    --at-tab-active-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.08), 0 1px 3px -1px rgba(0, 0, 0, 0.05);
+    --at-badge-bg: #e2e8f0;
+    --at-badge-color: #475569;
+    --at-badge-active-bg: #e0e7ff;
+    --at-badge-active-color: #3730a3;
+    --at-chip-bg: rgba(99, 102, 241, 0.08);
+    --at-chip-border: rgba(99, 102, 241, 0.22);
+    --at-modal-bg: #ffffff;
+    --at-modal-footer: #f8fafc;
+    --at-box-reading-bg: #f8fafc;
+    --at-box-reading-border: #e2e8f0;
+    color: var(--at-text-primary);
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+[data-theme="dark"] .aura-teacher-portal,
+.aura-dark-theme .aura-teacher-portal,
+html[data-theme="dark"] .aura-teacher-portal,
+body[data-theme="dark"] .aura-teacher-portal,
+html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
+.wp-dark-mode-active .aura-teacher-portal,
+.aura-teacher-portal.aura-dark-theme,
+.aura-teacher-portal[data-theme="dark"] {
+    --at-bg-card: #162032;
+    --at-bg-card-alt: #1e293b;
+    --at-border: #2e3d56;
+    --at-border-subtle: #1f2d42;
+    --at-text-primary: #f8fafc;
+    --at-text-secondary: #cbd5e1;
+    --at-text-muted: #94a3b8;
+    --at-primary: #818cf8;
+    --at-primary-hover: #6366f1;
+    --at-primary-light: #a5b4fc;
+    --at-nav-bg: #0f172a;
+    --at-nav-border: #2e3d56;
+    --at-tab-color: #94a3b8;
+    --at-tab-bg-hover: rgba(255, 255, 255, 0.06);
+    --at-tab-color-hover: #f8fafc;
+    --at-tab-active-bg: #1e293b;
+    --at-tab-active-color: #ffffff;
+    --at-tab-active-border: rgba(129, 140, 248, 0.35);
+    --at-tab-active-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(129, 140, 248, 0.25);
+    --at-badge-bg: #273549;
+    --at-badge-color: #cbd5e1;
+    --at-badge-active-bg: rgba(99, 102, 241, 0.3);
+    --at-badge-active-color: #c7d2fe;
+    --at-chip-bg: rgba(99, 102, 241, 0.18);
+    --at-chip-border: rgba(129, 140, 248, 0.35);
+    --at-modal-bg: #162032;
+    --at-modal-footer: #111827;
+    --at-box-reading-bg: #111827;
+    --at-box-reading-border: #2e3d56;
+}
+
+/* Tarjetas Principales del Instructor */
+.aura-teacher-card {
+    background: var(--at-bg-card) !important;
+    border: 1px solid var(--at-border) !important;
+    border-radius: 14px;
+    padding: 22px;
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+[data-theme="dark"] .aura-teacher-card,
+.aura-dark-theme .aura-teacher-card {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Pestañas de Navegación del Portal Docente — Segmented Capsule Bar */
+.aura-teacher-nav {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: var(--at-nav-bg) !important;
+    border: 1px solid var(--at-nav-border) !important;
+    border-radius: 14px !important;
+    padding: 6px !important;
+    margin-bottom: 24px !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
+    scrollbar-width: none !important;
+}
+
+.aura-teacher-nav::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Botón individual de pestaña */
+.teacher-tab-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    border-radius: 9px !important;
+    padding: 9px 18px !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    color: var(--at-tab-color) !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    outline: none !important;
+    white-space: nowrap !important;
+    user-select: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.teacher-tab-btn:hover {
+    color: var(--at-tab-color-hover) !important;
+    background: var(--at-tab-bg-hover) !important;
+}
+
+.teacher-tab-btn.active {
+    background: var(--at-tab-active-bg) !important;
+    color: var(--at-tab-active-color) !important;
+    border-color: var(--at-tab-active-border) !important;
+    box-shadow: var(--at-tab-active-shadow) !important;
+    font-weight: 700 !important;
+}
+
+/* Iconos de Pestaña */
+.teacher-tab-icon {
+    font-size: 18px !important;
+    width: 18px !important;
+    height: 18px !important;
+    line-height: 18px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    color: currentColor !important;
+    opacity: 0.75 !important;
+    transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease !important;
+}
+
+.teacher-tab-btn:hover .teacher-tab-icon {
+    opacity: 1 !important;
+}
+
+.teacher-tab-btn.active .teacher-tab-icon {
+    opacity: 1 !important;
+    transform: scale(1.08) !important;
+    color: var(--at-primary) !important;
+}
+
+/* Contadores / Badges de Pestaña */
+.teacher-tab-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    padding: 0 7px !important;
+    border-radius: 9999px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    background: var(--at-badge-bg) !important;
+    color: var(--at-badge-color) !important;
+    transition: all 0.2s ease !important;
+}
+
+.teacher-tab-btn.active .teacher-tab-badge {
+    background: var(--at-badge-active-bg) !important;
+    color: var(--at-badge-active-color) !important;
+    font-weight: 700 !important;
+}
+
+/* Distinción especial de tareas pendientes */
+.teacher-tab-badge.teacher-tab-badge-tasks {
+    background: rgba(99, 102, 241, 0.12) !important;
+    color: #4f46e5 !important;
+}
+
+[data-theme="dark"] .teacher-tab-badge.teacher-tab-badge-tasks,
+.aura-dark-theme .teacher-tab-badge.teacher-tab-badge-tasks {
+    background: rgba(99, 102, 241, 0.25) !important;
+    color: #a5b4fc !important;
+}
+
+.teacher-tab-btn.active .teacher-tab-badge.teacher-tab-badge-tasks {
+    background: var(--at-badge-active-bg) !important;
+    color: var(--at-badge-active-color) !important;
+}
+
+/* Tarjetas de Materias y Tareas */
+.aura-teacher-item-card {
+    background: var(--at-bg-card-alt);
+    border: 1px solid var(--at-border);
+    border-radius: 12px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.aura-teacher-item-card:hover {
+    border-color: var(--at-primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="dark"] .aura-teacher-item-card:hover {
+    box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45);
+}
+
+.aura-teacher-item-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    color: var(--at-text-primary);
+    line-height: 1.35;
+}
+
+.aura-teacher-item-desc {
+    font-size: 13px;
+    color: var(--at-text-secondary);
+    margin: 0 0 12px 0;
+    line-height: 1.45;
+}
+
+/* Chip / Tarjeta del Libro Asignado */
+.aura-book-assigned-chip {
+    background: var(--at-chip-bg);
+    border: 1px solid var(--at-chip-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.aura-book-assigned-chip .book-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--at-text-primary);
+}
+
+.aura-book-assigned-chip .book-meta {
+    font-size: 11px;
+    color: var(--at-text-muted);
+}
+
+/* Modales del Portal del Instructor */
+.aura-teacher-modal {
+    background: var(--at-modal-bg) !important;
+    border: 1px solid var(--at-border) !important;
+    border-radius: 14px !important;
+    color: var(--at-text-primary) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45) !important;
+}
+
+.aura-teacher-modal-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--at-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.aura-teacher-modal-body {
+    padding: 22px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.aura-teacher-modal-footer {
+    padding: 16px 22px;
+    border-top: 1px solid var(--at-border);
+    background: var(--at-modal-footer) !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Entregas de Estudiantes en el Modal */
+.aura-submission-row {
+    border: 1px solid var(--at-border);
+    border-radius: 10px;
+    padding: 16px;
+    background: var(--at-bg-card-alt);
+    margin-bottom: 14px;
+}
+
+.aura-submission-text-box {
+    background: var(--at-box-reading-bg);
+    border: 1px solid var(--at-box-reading-border);
+    border-radius: 8px;
+    padding: 14px;
+    margin: 10px 0;
+    color: var(--at-text-primary);
+    line-height: 1.6;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Selects, Inputs y Textareas en Modales */
+.aura-teacher-portal select,
+.aura-teacher-portal input[type="text"],
+.aura-teacher-portal input[type="number"],
+.aura-teacher-portal input[type="datetime-local"],
+.aura-teacher-portal input[type="url"],
+.aura-teacher-portal textarea {
+    background: var(--at-bg-card-alt) !important;
+    border: 1px solid var(--at-border) !important;
+    color: var(--at-text-primary) !important;
+    border-radius: 8px !important;
+    padding: 9px 12px !important;
+    font-size: 13px !important;
+}
+
+.aura-teacher-portal select:focus,
+.aura-teacher-portal input:focus,
+.aura-teacher-portal textarea:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+    outline: none !important;
+}
+
+/* FullCalendar dentro del Portal Docente */
+.aura-teacher-portal #aura-teacher-fullcalendar {
+    padding: 8px 0;
+}
+
+[data-theme="dark"] .aura-teacher-portal .fc-timegrid-slot {
+    border-bottom: 1px solid #1f2d42 !important;
+}
+
+[data-theme="dark"] .aura-teacher-portal .fc-event {
+    background-color: #4f46e5 !important;
+    border-color: #6366f1 !important;
+    color: #ffffff !important;
+}
+
+

@@ -554,13 +554,13 @@ class Aura_Calendar_Frontend {
         <div class="aura-portal-wrap aura-teacher-portal" style="max-width: 1200px; margin: 24px auto; padding: 0 16px; font-family: inherit;">
 
             <!-- BARRA SUPERIOR / ENCABEZADO DEL INSTRUCTOR -->
-            <div class="adp-card" style="padding: 24px; margin-bottom: 20px; border-radius: 14px; background: var(--aura-surface); border: 1px solid var(--aura-border);">
+            <div class="adp-card aura-teacher-card" style="margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px;">
                     <div style="display: flex; align-items: center; gap: 16px;">
-                        <img src="<?php echo esc_url( $avatar_url ); ?>" alt="<?php echo esc_attr( $user->display_name ); ?>" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid #6366f1; box-shadow: 0 4px 12px rgba(99,102,241,0.2);">
+                        <img src="<?php echo esc_url( $avatar_url ); ?>" alt="<?php echo esc_attr( $user->display_name ); ?>" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid #6366f1; box-shadow: 0 4px 12px rgba(99,102,241,0.25);">
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                <h1 style="font-size: 20px; font-weight: 700; margin: 0; color: var(--aura-text-primary);">
+                                <h1 style="font-size: 20px; font-weight: 700; margin: 0; color: var(--at-text-primary);">
                                     <?php echo esc_html( $user->display_name ); ?>
                                 </h1>
                                 <span class="adp-badge badge-indigo" style="font-size: 11px; font-weight: 600; font-family: monospace;">
@@ -576,7 +576,7 @@ class Aura_Calendar_Frontend {
                                     </span>
                                 <?php endif; ?>
                             </div>
-                            <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--aura-text-secondary);">
+                            <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--at-text-secondary);">
                                 <?php esc_html_e( 'Portal Docente y Académico — Aura Business Suite', 'aura' ); ?>
                                 <?php if ( ! empty( $my_subjects ) ) : ?>
                                     &bull; <strong><?php echo count( $my_subjects ); ?></strong> <?php esc_html_e( 'asignaturas asignadas', 'aura' ); ?>
@@ -586,8 +586,8 @@ class Aura_Calendar_Frontend {
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <button type="button" class="aura-theme-toggle" aria-label="<?php esc_attr_e( 'Cambiar tema', 'aura' ); ?>" style="padding: 7px 12px; border-radius: 8px; border: 1px solid var(--aura-border); background: var(--aura-surface-alt); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; color: var(--aura-text-primary); font-size: 12px;">
-                            <span class="dashicons dashicons-moon" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                        <button type="button" class="aura-theme-toggle" aria-label="<?php esc_attr_e( 'Cambiar tema', 'aura' ); ?>">
+                            <span class="dashicons dashicons-moon"></span>
                             <span class="aura-theme-toggle-label"><?php esc_html_e( 'Tema', 'aura' ); ?></span>
                         </button>
 
@@ -606,38 +606,41 @@ class Aura_Calendar_Frontend {
             </div>
 
             <?php if ( ! $is_teacher ) : ?>
-                <div class="adp-card" style="padding: 24px; border-radius: 12px; border-left: 4px solid #f59e0b; margin-bottom: 24px; background: rgba(245, 158, 11, 0.06);">
+                <div class="adp-card" style="padding: 22px; border-radius: 12px; border-left: 4px solid #f59e0b; margin-bottom: 22px; background: rgba(245, 158, 11, 0.08);">
                     <h3 style="margin: 0 0 8px 0; color: #b45309; font-size: 16px;">⚠️ <?php esc_html_e( 'Acceso Docente en Espera de Acreditación', 'aura' ); ?></h3>
-                    <p style="margin: 0; font-size: 13px; color: var(--aura-text-secondary); line-height: 1.5;">
+                    <p style="margin: 0; font-size: 13px; color: var(--at-text-secondary); line-height: 1.5;">
                         <?php esc_html_e( 'Tu usuario aún no cuenta con la capability docente (aura_cal_view_calendar o plantilla academic_teacher) asignada por el Coordinador Académico en el módulo de Permisos (CBAC). Si crees que se trata de un error, solicita al administrador que active tu perfil docente.', 'aura' ); ?>
                     </p>
                 </div>
             <?php endif; ?>
 
             <!-- NAVEGACIÓN POR PESTAÑAS (TABS DOCENTES) -->
-            <div style="display: flex; gap: 8px; border-bottom: 2px solid var(--aura-border); margin-bottom: 22px; overflow-x: auto; padding-bottom: 2px;">
-                <button type="button" class="teacher-tab-btn active" data-target="tab-teacher-schedule" style="background: none; border: none; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 3px solid #6366f1; color: #6366f1; display: inline-flex; align-items: center; gap: 8px;">
-                    📅 <span><?php esc_html_e( 'Mis Clases y Horario', 'aura' ); ?></span>
+            <div class="aura-teacher-nav" role="tablist" aria-label="<?php esc_attr_e( 'Navegación del Portal Docente', 'aura' ); ?>">
+                <button type="button" class="teacher-tab-btn active" data-target="tab-teacher-schedule" role="tab" aria-selected="true">
+                    <span class="dashicons dashicons-calendar-alt teacher-tab-icon"></span>
+                    <span class="teacher-tab-text"><?php esc_html_e( 'Mis Clases y Horario', 'aura' ); ?></span>
                 </button>
-                <button type="button" class="teacher-tab-btn" data-target="tab-teacher-subjects" style="background: none; border: none; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; color: var(--aura-text-secondary); display: inline-flex; align-items: center; gap: 8px;">
-                    📚 <span><?php esc_html_e( 'Mis Materias y Grupos', 'aura' ); ?></span>
-                    <span class="adp-badge badge-slate" style="font-size: 10px;"><?php echo count( $my_subjects ); ?></span>
+                <button type="button" class="teacher-tab-btn" data-target="tab-teacher-subjects" role="tab" aria-selected="false">
+                    <span class="dashicons dashicons-book teacher-tab-icon"></span>
+                    <span class="teacher-tab-text"><?php esc_html_e( 'Mis Materias y Grupos', 'aura' ); ?></span>
+                    <span class="teacher-tab-badge"><?php echo count( $my_subjects ); ?></span>
                 </button>
-                <button type="button" class="teacher-tab-btn" data-target="tab-teacher-tasks" style="background: none; border: none; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; color: var(--aura-text-secondary); display: inline-flex; align-items: center; gap: 8px;">
-                    📝 <span><?php esc_html_e( 'Tareas y Evaluaciones', 'aura' ); ?></span>
-                    <span class="adp-badge badge-indigo" style="font-size: 10px;"><?php echo count( $my_tasks ); ?></span>
+                <button type="button" class="teacher-tab-btn" data-target="tab-teacher-tasks" role="tab" aria-selected="false">
+                    <span class="dashicons dashicons-clipboard teacher-tab-icon"></span>
+                    <span class="teacher-tab-text"><?php esc_html_e( 'Tareas y Evaluaciones', 'aura' ); ?></span>
+                    <span class="teacher-tab-badge teacher-tab-badge-tasks"><?php echo count( $my_tasks ); ?></span>
                 </button>
             </div>
 
             <!-- CONTENIDO TAB 1: CALENDARIO DE CLASES -->
             <div id="tab-teacher-schedule" class="teacher-tab-content active">
-                <div class="adp-card" style="padding: 20px; border-radius: 12px; background: var(--aura-surface); border: 1px solid var(--aura-border);">
+                <div class="adp-card aura-teacher-card" style="padding: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                         <h3 class="adp-card-title" style="font-size: 17px; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
                             <span class="dashicons dashicons-calendar-alt" style="color: #6366f1;"></span>
                             <?php esc_html_e( 'Horario Semanal de Sesiones y Evaluaciones', 'aura' ); ?>
                         </h3>
-                        <div style="font-size: 12px; color: var(--aura-text-muted);">
+                        <div style="font-size: 12px; color: var(--at-text-muted);">
                             💡 <?php esc_html_e( 'Haz clic sobre una clase para ver el aula, enlace virtual o tomar lista rápida.', 'aura' ); ?>
                         </div>
                     </div>
@@ -647,23 +650,23 @@ class Aura_Calendar_Frontend {
 
             <!-- CONTENIDO TAB 2: MIS MATERIAS -->
             <div id="tab-teacher-subjects" class="teacher-tab-content" style="display: none;">
-                <div class="adp-card" style="padding: 24px; border-radius: 12px; background: var(--aura-surface); border: 1px solid var(--aura-border);">
+                <div class="adp-card aura-teacher-card">
                     <h3 class="adp-card-title" style="font-size: 18px; margin: 0 0 6px 0;">
                         📚 <?php esc_html_e( 'Cátedras y Asignaturas Asignadas', 'aura' ); ?>
                     </h3>
-                    <p class="adp-card-desc" style="margin: 0 0 20px 0;">
+                    <p class="adp-card-desc" style="margin: 0 0 20px 0; color: var(--at-text-secondary);">
                         <?php esc_html_e( 'Materias académicas bajo tu titularidad docente según el plan de estudios institucional.', 'aura' ); ?>
                     </p>
 
                     <?php if ( empty( $my_subjects ) ) : ?>
-                        <div style="text-align: center; padding: 40px 20px; color: var(--aura-text-muted);">
+                        <div style="text-align: center; padding: 40px 20px; color: var(--at-text-muted);">
                             <div style="font-size: 36px; margin-bottom: 10px;">📖</div>
                             <p><?php esc_html_e( 'Aún no tienes asignaturas registradas a tu nombre. El coordinador te asignará materias desde el módulo Calendario.', 'aura' ); ?></p>
                         </div>
                     <?php else : ?>
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
                             <?php foreach ( $my_subjects as $s ) : ?>
-                                <div style="border: 1px solid var(--aura-border); border-radius: 10px; padding: 18px; background: var(--aura-surface-alt); display: flex; flex-direction: column; justify-content: space-between;">
+                                <div class="aura-teacher-item-card">
                                     <div>
                                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                                             <span class="adp-badge badge-indigo"><?php echo esc_html( $s->code ?: 'MAT' ); ?></span>
@@ -671,16 +674,16 @@ class Aura_Calendar_Frontend {
                                                 <span class="adp-badge badge-slate" style="font-size: 11px;"><?php echo esc_html( $s->program_name ); ?></span>
                                             <?php endif; ?>
                                         </div>
-                                        <h4 style="font-size: 16px; font-weight: 700; margin: 0 0 6px 0; color: var(--aura-text-primary);">
+                                        <h4 class="aura-teacher-item-title">
                                             <?php echo esc_html( $s->name ); ?>
                                         </h4>
                                         <?php if ( ! empty( $s->description ) ) : ?>
-                                            <p style="font-size: 13px; color: var(--aura-text-secondary); margin: 0 0 12px 0;">
+                                            <p class="aura-teacher-item-desc">
                                                 <?php echo esc_html( wp_strip_all_tags( $s->description ) ); ?>
                                             </p>
                                         <?php endif; ?>
                                     </div>
-                                    <div style="border-top: 1px solid var(--aura-border); padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--aura-text-muted);">
+                                    <div style="border-top: 1px solid var(--at-border); padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--at-text-muted);">
                                         <span><?php echo intval( $s->credits ?? 3 ); ?> <?php esc_html_e( 'Créditos', 'aura' ); ?></span>
                                         <button type="button" class="btn btn-ghost btn-new-task-for-subject" data-program-id="<?php echo esc_attr( $s->program_id ); ?>" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="font-size: 11px; padding: 4px 8px;">
                                             ➕ <?php esc_html_e( 'Crear Tarea', 'aura' ); ?>
@@ -695,13 +698,13 @@ class Aura_Calendar_Frontend {
 
             <!-- CONTENIDO TAB 3: TAREAS, CONTROLES DE LECTURA Y EVALUACIONES -->
             <div id="tab-teacher-tasks" class="teacher-tab-content" style="display: none;">
-                <div class="adp-card" style="padding: 24px; border-radius: 12px; background: var(--aura-surface); border: 1px solid var(--aura-border);">
+                <div class="adp-card aura-teacher-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
                         <div>
                             <h3 class="adp-card-title" style="font-size: 18px; margin: 0;">
                                 📝 <?php esc_html_e( 'Tareas, Controles de Lectura y Ensayos', 'aura' ); ?>
                             </h3>
-                            <p class="adp-card-desc" style="margin: 4px 0 0 0;">
+                            <p class="adp-card-desc" style="margin: 4px 0 0 0; color: var(--at-text-secondary);">
                                 <?php esc_html_e( 'Asigna lecturas de la Biblioteca con resúmenes escritos y califica las respuestas de los estudiantes.', 'aura' ); ?>
                             </p>
                         </div>
@@ -711,10 +714,10 @@ class Aura_Calendar_Frontend {
                     </div>
 
                     <?php if ( empty( $my_tasks ) ) : ?>
-                        <div style="text-align: center; padding: 48px 20px; color: var(--aura-text-muted);">
+                        <div style="text-align: center; padding: 48px 20px; color: var(--at-text-muted);">
                             <div style="font-size: 40px; margin-bottom: 12px;">📚</div>
-                            <h4 style="font-size: 17px; margin-bottom: 6px; color: var(--aura-text-primary);"><?php esc_html_e( 'Aún no has creado tareas o actividades', 'aura' ); ?></h4>
-                            <p style="max-width: 480px; margin: 0 auto 18px; font-size: 13px;">
+                            <h4 style="font-size: 17px; margin-bottom: 6px; color: var(--at-text-primary);"><?php esc_html_e( 'Aún no has creado tareas o actividades', 'aura' ); ?></h4>
+                            <p style="max-width: 480px; margin: 0 auto 18px; font-size: 13px; color: var(--at-text-secondary);">
                                 <?php esc_html_e( 'Publica tu primera tarea vinculando un libro de la biblioteca o un ensayo con plazo de entrega.', 'aura' ); ?>
                             </p>
                             <button type="button" class="btn btn-indigo btn-lift" id="btn-teacher-open-first-task">
@@ -724,7 +727,7 @@ class Aura_Calendar_Frontend {
                     <?php else : ?>
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px;">
                             <?php foreach ( $my_tasks as $t ) : ?>
-                                <div style="border: 1px solid var(--aura-border); border-radius: 12px; padding: 20px; background: var(--aura-surface-alt); display: flex; flex-direction: column; justify-content: space-between;">
+                                <div class="aura-teacher-item-card">
                                     <div>
                                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
                                             <span class="adp-badge badge-indigo"><?php echo esc_html( $t->program_code ?: $t->program_name ); ?></span>
@@ -735,30 +738,30 @@ class Aura_Calendar_Frontend {
                                             <?php endif; ?>
                                         </div>
 
-                                        <h4 style="font-size: 16px; font-weight: 700; margin: 0 0 6px 0; color: var(--aura-text-primary);">
+                                        <h4 class="aura-teacher-item-title">
                                             <?php echo esc_html( $t->title ); ?>
                                         </h4>
 
                                         <?php if ( ! empty( $t->subject_name ) ) : ?>
-                                            <div style="font-size: 12px; font-weight: 600; color: var(--aura-text-secondary); margin-bottom: 8px;">
+                                            <div style="font-size: 12px; font-weight: 600; color: var(--at-text-secondary); margin-bottom: 8px;">
                                                 📚 <?php echo esc_html( $t->subject_name ); ?>
                                             </div>
                                         <?php endif; ?>
 
                                         <?php if ( ! empty( $t->book_title ) ) : ?>
-                                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25); border-radius: 8px; padding: 8px 10px; margin-bottom: 10px;">
-                                                <span style="font-size: 18px;">📖</span>
-                                                <div style="font-size: 12px; line-height: 1.3;">
-                                                    <strong style="color: var(--aura-text-primary);"><?php echo esc_html( $t->book_title ); ?></strong>
+                                            <div class="aura-book-assigned-chip">
+                                                <span style="font-size: 20px;">📖</span>
+                                                <div style="line-height: 1.35;">
+                                                    <div class="book-title"><?php echo esc_html( $t->book_title ); ?></div>
                                                     <?php if ( ! empty( $t->book_author ) ) : ?>
-                                                        <div style="color: var(--aura-text-muted); font-size: 11px;"><?php echo esc_html( $t->book_author ); ?></div>
+                                                        <div class="book-meta"><?php echo esc_html( $t->book_author ); ?></div>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
                                         <?php endif; ?>
 
                                         <?php if ( ! empty( $t->submission_type ) && $t->submission_type === 'text_only' ) : ?>
-                                            <div style="font-size: 11px; color: #6366f1; font-weight: 600; margin-bottom: 8px;">
+                                            <div style="font-size: 11px; color: var(--at-primary); font-weight: 600; margin-bottom: 8px;">
                                                 ✍️ <?php esc_html_e( 'Resumen en plataforma', 'aura' ); ?>
                                                 <?php if ( ! empty( $t->min_words ) ) : ?>
                                                     (mín. <?php echo intval( $t->min_words ); ?> palabras)
@@ -767,14 +770,14 @@ class Aura_Calendar_Frontend {
                                         <?php endif; ?>
 
                                         <?php if ( ! empty( $t->description ) ) : ?>
-                                            <p style="font-size: 13px; color: var(--aura-text-secondary); margin: 0 0 14px 0; max-height: 50px; overflow: hidden; text-overflow: ellipsis;">
+                                            <p class="aura-teacher-item-desc" style="max-height: 50px; overflow: hidden; text-overflow: ellipsis;">
                                                 <?php echo esc_html( wp_strip_all_tags( $t->description ) ); ?>
                                             </p>
                                         <?php endif; ?>
                                     </div>
 
-                                    <div style="border-top: 1px solid var(--aura-border); padding-top: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-                                        <div style="font-size: 11px; color: var(--aura-text-muted);">
+                                    <div style="border-top: 1px solid var(--at-border); padding-top: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="font-size: 11px; color: var(--at-text-muted);">
                                             ⏰ <?php esc_html_e( 'Vence:', 'aura' ); ?> <strong><?php echo esc_html( date_i18n( 'j M H:i', strtotime( $t->due_datetime ) ) ); ?></strong>
                                         </div>
                                         <button type="button" class="btn btn-emerald btn-shimmer btn-teacher-view-subs" data-task-id="<?php echo esc_attr( $t->id ); ?>" data-task-title="<?php echo esc_attr( $t->title ); ?>" data-max-score="<?php echo esc_attr( $t->max_score ); ?>" style="font-size: 12px; padding: 5px 12px;">
@@ -791,30 +794,30 @@ class Aura_Calendar_Frontend {
             <!-- ══════════════════════════════════════════════════════════════
                  MODAL DOCENTE: CREAR TAREA O CONTROL DE LECTURA
                  ══════════════════════════════════════════════════════════════ -->
-            <div id="modal-teacher-task" class="aura-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
-                <div class="aura-modal-container" style="background: var(--aura-surface); max-width: 620px; width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); border: 1px solid var(--aura-border);">
-                    <div style="padding: 16px 20px; border-bottom: 1px solid var(--aura-border); display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--aura-text-primary);">
+            <div id="modal-teacher-task" class="aura-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+                <div class="aura-modal-container aura-teacher-modal" style="max-width: 620px; width: 100%; overflow: hidden;">
+                    <div class="aura-teacher-modal-header">
+                        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: var(--at-text-primary);">
                             📝 <?php esc_html_e( 'Asignar Tarea o Control de Lectura', 'aura' ); ?>
                         </h3>
-                        <button type="button" class="btn-close-modal" data-close="#modal-teacher-task" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--aura-text-muted);">&times;</button>
+                        <button type="button" class="btn-close-modal" data-close="#modal-teacher-task" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--at-text-muted);">&times;</button>
                     </div>
 
                     <form id="form-teacher-task-create">
-                        <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;">
+                        <div class="aura-teacher-modal-body" style="display: flex; flex-direction: column; gap: 14px;">
                             <div class="form-group">
-                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">
+                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
                                     <?php esc_html_e( 'Título de la Actividad', 'aura' ); ?> <span style="color: #ef4444;">*</span>
                                 </label>
-                                <input type="text" name="title" id="t-tsk-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Resumen analítico de los capítulos 1 al 4', 'aura' ); ?>" style="width: 100%; border-radius: 8px; padding: 8px 12px; border: 1px solid var(--aura-border); background: var(--aura-surface-alt); color: var(--aura-text-primary);">
+                                <input type="text" name="title" id="t-tsk-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Resumen analítico de los capítulos 1 al 4', 'aura' ); ?>" style="width: 100%;">
                             </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">
+                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
                                         🎓 <?php esc_html_e( 'Programa Académico', 'aura' ); ?> <span style="color: #ef4444;">*</span>
                                     </label>
-                                    <select name="program_id" id="t-tsk-prog" required class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; border: 1px solid var(--aura-border); background: var(--aura-surface-alt); color: var(--aura-text-primary);">
+                                    <select name="program_id" id="t-tsk-prog" required class="form-control" style="width: 100%;">
                                         <option value=""><?php esc_html_e( 'Seleccionar...', 'aura' ); ?></option>
                                         <?php foreach ( $programs as $p ) : ?>
                                             <option value="<?php echo esc_attr( $p->id ); ?>"><?php echo esc_html( $p->name ); ?></option>
@@ -823,10 +826,10 @@ class Aura_Calendar_Frontend {
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">
+                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
                                         📚 <?php esc_html_e( 'Materia / Asignatura', 'aura' ); ?>
                                     </label>
-                                    <select name="subject_id" id="t-tsk-subj" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; border: 1px solid var(--aura-border); background: var(--aura-surface-alt); color: var(--aura-text-primary);">
+                                    <select name="subject_id" id="t-tsk-subj" class="form-control" style="width: 100%;">
                                         <option value=""><?php esc_html_e( 'General / Opcional', 'aura' ); ?></option>
                                         <?php foreach ( $my_subjects as $ms ) : ?>
                                             <option value="<?php echo esc_attr( $ms->id ); ?>" data-prog="<?php echo esc_attr( $ms->program_id ); ?>">
@@ -838,11 +841,11 @@ class Aura_Calendar_Frontend {
                             </div>
 
                             <!-- VINCULACIÓN CON LIBRO DE BIBLIOTECA -->
-                            <div class="form-group" style="background: rgba(99,102,241,0.06); padding: 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.2);">
-                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: #6366f1;">
+                            <div class="form-group" style="background: var(--at-chip-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--at-chip-border);">
+                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-primary);">
                                     📖 <?php esc_html_e( 'Asignar Libro de la Biblioteca (Control de Lectura)', 'aura' ); ?>
                                 </label>
-                                <select name="book_id" id="t-tsk-book" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; border: 1px solid var(--aura-border); background: var(--aura-surface); color: var(--aura-text-primary);">
+                                <select name="book_id" id="t-tsk-book" class="form-control" style="width: 100%;">
                                     <option value=""><?php esc_html_e( '-- Ninguno (Tarea Estándar sin Libro) --', 'aura' ); ?></option>
                                     <?php foreach ( $library_books as $lb ) : ?>
                                         <option value="<?php echo esc_attr( $lb->id ); ?>">
@@ -850,17 +853,17 @@ class Aura_Calendar_Frontend {
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <small style="color: var(--aura-text-muted); font-size: 11px; display: block; margin-top: 4px;">
+                                <small style="color: var(--at-text-muted); font-size: 11px; display: block; margin-top: 4px;">
                                     <?php esc_html_e( 'Los estudiantes verán la ficha del libro asignado en su portal y podrán enviar su resumen escrito.', 'aura' ); ?>
                                 </small>
                             </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">
+                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
                                         ✍️ <?php esc_html_e( 'Tipo de Entrega Exigido', 'aura' ); ?>
                                     </label>
-                                    <select name="submission_type" id="t-tsk-type" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; border: 1px solid var(--aura-border); background: var(--aura-surface-alt); color: var(--aura-text-primary);">
+                                    <select name="submission_type" id="t-tsk-type" class="form-control" style="width: 100%;">
                                         <option value="text_only"><?php esc_html_e( 'Solo Resumen Escrito en Plataforma', 'aura' ); ?></option>
                                         <option value="text_or_file"><?php esc_html_e( 'Texto Escrito o Archivo (Flexible)', 'aura' ); ?></option>
                                         <option value="file_only"><?php esc_html_e( 'Solo Archivo Adjunto (PDF / Doc)', 'aura' ); ?></option>
@@ -868,38 +871,38 @@ class Aura_Calendar_Frontend {
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">
+                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
                                         📏 <?php esc_html_e( 'Palabras Mínimas (0 = Sin límite)', 'aura' ); ?>
                                     </label>
-                                    <input type="number" name="min_words" id="t-tsk-min-words" value="250" min="0" step="25" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; border: 1px solid var(--aura-border); background: var(--aura-surface-alt); color: var(--aura-text-primary);">
+                                    <input type="number" name="min_words" id="t-tsk-min-words" value="250" min="0" step="25" class="form-control" style="width: 100%;">
                                 </div>
                             </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                                 <div class="form-group">
-                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">
+                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
                                         ⏰ <?php esc_html_e( 'Fecha y Hora Límite', 'aura' ); ?> <span style="color: #ef4444;">*</span>
                                     </label>
-                                    <input type="datetime-local" name="due_datetime" id="t-tsk-due" required class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; border: 1px solid var(--aura-border); background: var(--aura-surface-alt); color: var(--aura-text-primary);">
+                                    <input type="datetime-local" name="due_datetime" id="t-tsk-due" required class="form-control" style="width: 100%;">
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">
+                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
                                         🎯 <?php esc_html_e( 'Puntaje Máximo', 'aura' ); ?>
                                     </label>
-                                    <input type="number" step="0.5" name="max_score" id="t-tsk-max-score" value="100" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; border: 1px solid var(--aura-border); background: var(--aura-surface-alt); color: var(--aura-text-primary);">
+                                    <input type="number" step="0.5" name="max_score" id="t-tsk-max-score" value="100" class="form-control" style="width: 100%;">
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">
+                                <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-text-primary);">
                                     <?php esc_html_e( 'Instrucciones y Criterios de Evaluación', 'aura' ); ?>
                                 </label>
-                                <textarea name="description" id="t-tsk-desc" rows="3" class="form-control" placeholder="<?php esc_attr_e( 'Describe las preguntas, objetivos o estructura que debe contener el resumen...', 'aura' ); ?>" style="width: 100%; border-radius: 8px; padding: 8px 12px; border: 1px solid var(--aura-border); background: var(--aura-surface-alt); color: var(--aura-text-primary);"></textarea>
+                                <textarea name="description" id="t-tsk-desc" rows="3" class="form-control" placeholder="<?php esc_attr_e( 'Describe las preguntas, objetivos o estructura que debe contener el resumen...', 'aura' ); ?>" style="width: 100%;"></textarea>
                             </div>
                         </div>
 
-                        <div style="padding: 14px 20px; border-top: 1px solid var(--aura-border); display: flex; justify-content: flex-end; gap: 10px; background: var(--aura-surface-alt);">
+                        <div class="aura-teacher-modal-footer">
                             <button type="button" class="btn btn-ghost btn-close-modal" data-close="#modal-teacher-task">
                                 <?php esc_html_e( 'Cancelar', 'aura' ); ?>
                             </button>
@@ -914,23 +917,23 @@ class Aura_Calendar_Frontend {
             <!-- ══════════════════════════════════════════════════════════════
                  MODAL DOCENTE: REVISIÓN DE ENTREGAS Y CALIFICACIÓN
                  ══════════════════════════════════════════════════════════════ -->
-            <div id="modal-teacher-submissions" class="aura-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
-                <div class="aura-modal-container" style="background: var(--aura-surface); max-width: 780px; width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); border: 1px solid var(--aura-border);">
-                    <div style="padding: 16px 20px; border-bottom: 1px solid var(--aura-border); display: flex; justify-content: space-between; align-items: center;">
+            <div id="modal-teacher-submissions" class="aura-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+                <div class="aura-modal-container aura-teacher-modal" style="max-width: 780px; width: 100%; overflow: hidden;">
+                    <div class="aura-teacher-modal-header">
                         <div>
-                            <h3 id="t-subs-modal-title" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--aura-text-primary);">
+                            <h3 id="t-subs-modal-title" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--at-text-primary);">
                                 📥 <?php esc_html_e( 'Entregas Recibidas', 'aura' ); ?>
                             </h3>
-                            <div id="t-subs-modal-sub" style="font-size: 12px; color: var(--aura-text-muted); margin-top: 2px;"></div>
+                            <div id="t-subs-modal-sub" style="font-size: 12px; color: var(--at-text-muted); margin-top: 2px;"></div>
                         </div>
-                        <button type="button" class="btn-close-modal" data-close="#modal-teacher-submissions" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--aura-text-muted);">&times;</button>
+                        <button type="button" class="btn-close-modal" data-close="#modal-teacher-submissions" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--at-text-muted);">&times;</button>
                     </div>
 
-                    <div id="t-subs-body" style="padding: 20px; max-height: 70vh; overflow-y: auto;">
-                        <p style="text-align: center; color: var(--aura-text-muted);"><?php esc_html_e( 'Cargando entregas...', 'aura' ); ?></p>
+                    <div id="t-subs-body" class="aura-teacher-modal-body">
+                        <p style="text-align: center; color: var(--at-text-muted);"><?php esc_html_e( 'Cargando entregas...', 'aura' ); ?></p>
                     </div>
 
-                    <div style="padding: 12px 20px; border-top: 1px solid var(--aura-border); text-align: right; background: var(--aura-surface-alt);">
+                    <div class="aura-teacher-modal-footer">
                         <button type="button" class="btn btn-ghost btn-close-modal" data-close="#modal-teacher-submissions">
                             <?php esc_html_e( 'Cerrar', 'aura' ); ?>
                         </button>
@@ -946,16 +949,11 @@ class Aura_Calendar_Frontend {
             var $ = jQuery;
 
             // 1. Manejo de Pestañas
-            $('.teacher-tab-btn').on('click', function() {
+            $('.teacher-tab-btn').on('click', function(e) {
+                e.preventDefault();
                 var target = $(this).data('target');
-                $('.teacher-tab-btn').removeClass('active').css({
-                    'border-bottom-color': 'transparent',
-                    'color': 'var(--aura-text-secondary)'
-                });
-                $(this).addClass('active').css({
-                    'border-bottom-color': '#6366f1',
-                    'color': '#6366f1'
-                });
+                $('.teacher-tab-btn').removeClass('active').attr('aria-selected', 'false');
+                $(this).addClass('active').attr('aria-selected', 'true');
 
                 $('.teacher-tab-content').hide();
                 $('#' + target).fadeIn(150);
@@ -1039,7 +1037,7 @@ class Aura_Calendar_Frontend {
 
                 $('#t-subs-modal-title').text('📥 Entregas — ' + taskTitle);
                 $('#t-subs-modal-sub').text('Puntaje máximo de la actividad: ' + maxScore + ' pts');
-                $('#t-subs-body').html('<p style="text-align:center;padding:24px;">Cargando entregas de los estudiantes...</p>');
+                $('#t-subs-body').html('<p style="text-align:center;padding:24px;color:var(--at-text-muted);">Cargando entregas de los estudiantes...</p>');
                 openTeacherModal('#modal-teacher-submissions');
 
                 $.post(auraCalData.ajax_url, {
@@ -1050,7 +1048,7 @@ class Aura_Calendar_Frontend {
                     if (res && res.success && res.data.submissions) {
                         var subs = res.data.submissions;
                         if (!subs.length) {
-                            $('#t-subs-body').html('<div style="text-align:center;padding:32px;color:var(--aura-text-muted);"><div style="font-size:32px;margin-bottom:8px;">📭</div><p>Aún no se han recibido entregas de los estudiantes para esta tarea.</p></div>');
+                            $('#t-subs-body').html('<div style="text-align:center;padding:32px;color:var(--at-text-muted);"><div style="font-size:32px;margin-bottom:8px;">📭</div><p>Aún no se han recibido entregas de los estudiantes para esta tarea.</p></div>');
                             return;
                         }
 
@@ -1066,47 +1064,47 @@ class Aura_Calendar_Frontend {
                                 wordCount = s.submission_text.trim().split(/\s+/).filter(Boolean).length;
                             }
 
-                            html += '<div style="border:1px solid var(--aura-border);border-radius:10px;padding:16px;background:var(--aura-surface-alt);">';
+                            html += '<div class="aura-submission-row">';
                             html += '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">';
                             html += '    <div>';
-                            html += '      <strong style="font-size:15px;color:var(--aura-text-primary);">' + (s.first_name || 'Estudiante') + ' ' + (s.last_name || '') + '</strong>';
+                            html += '      <strong style="font-size:15px;color:var(--at-text-primary);">' + (s.first_name || 'Estudiante') + ' ' + (s.last_name || '') + '</strong>';
                             if (s.student_code) {
-                                html += '      <span style="font-family:monospace;font-size:11px;color:var(--aura-text-muted);margin-left:6px;">(' + s.student_code + ')</span>';
+                                html += '      <span style="font-family:monospace;font-size:11px;color:var(--at-text-muted);margin-left:6px;">(' + s.student_code + ')</span>';
                             }
                             html += '    </div>';
                             html += '    <div>' + statusBadge + '</div>';
                             html += '  </div>';
 
                             if (s.submission_text) {
-                                html += '  <div style="margin-bottom:12px;background:var(--aura-surface);border:1px solid var(--aura-border);border-radius:8px;padding:12px;">';
-                                html += '    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;color:var(--aura-text-muted);">';
+                                html += '  <div class="aura-submission-text-box">';
+                                html += '    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;color:var(--at-text-muted);">';
                                 html += '      <span>✍️ Resumen Escrito:</span>';
                                 html += '      <span><strong>' + wordCount + '</strong> palabras redactadas</span>';
                                 html += '    </div>';
-                                html += '    <div style="font-size:13px;color:var(--aura-text-primary);white-space:pre-wrap;line-height:1.5;">' + $('<div>').text(s.submission_text).html() + '</div>';
+                                html += '    <div style="font-size:13px;color:var(--at-text-primary);white-space:pre-wrap;line-height:1.6;">' + $('<div>').text(s.submission_text).html() + '</div>';
                                 html += '  </div>';
                             }
 
                             if (s.attachment_urls) {
                                 html += '  <div style="margin-bottom:10px;font-size:12px;">';
-                                html += '    📎 <strong>Archivo adjunto:</strong> <a href="' + s.attachment_urls + '" target="_blank" style="color:#6366f1;text-decoration:underline;">Ver documento entregado</a>';
+                                html += '    📎 <strong>Archivo adjunto:</strong> <a href="' + s.attachment_urls + '" target="_blank" style="color:var(--at-primary);text-decoration:underline;">Ver documento entregado</a>';
                                 html += '  </div>';
                             }
 
                             // Formulario de Calificación
-                            html += '  <div style="border-top:1px solid var(--aura-border);padding-top:12px;margin-top:10px;">';
+                            html += '  <div style="border-top:1px solid var(--at-border);padding-top:12px;margin-top:10px;">';
                             html += '    <form class="form-grade-sub" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">';
                             html += '      <input type="hidden" name="submission_id" value="' + s.id + '">';
                             html += '      <div style="flex:0 0 110px;">';
-                            html += '        <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px;">Nota / Calificación:</label>';
-                            html += '        <input type="number" step="0.1" max="' + maxScore + '" min="0" name="score" value="' + (s.score !== null ? s.score : '') + '" placeholder="0 - ' + maxScore + '" required class="form-control" style="width:100%;border-radius:6px;padding:6px 10px;border:1px solid var(--aura-border);background:var(--aura-surface);">';
+                            html += '        <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px;color:var(--at-text-primary);">Nota / Calificación:</label>';
+                            html += '        <input type="number" step="0.1" max="' + maxScore + '" min="0" name="score" value="' + (s.score !== null ? s.score : '') + '" placeholder="0 - ' + maxScore + '" required class="form-control" style="width:100%;">';
                             html += '      </div>';
                             html += '      <div style="flex:1;min-width:200px;">';
-                            html += '        <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px;">Retroalimentación Docente:</label>';
-                            html += '        <input type="text" name="feedback" value="' + (s.feedback || '') + '" placeholder="Ej: Excelente análisis crítico de la lectura..." class="form-control" style="width:100%;border-radius:6px;padding:6px 10px;border:1px solid var(--aura-border);background:var(--aura-surface);">';
+                            html += '        <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px;color:var(--at-text-primary);">Retroalimentación Docente:</label>';
+                            html += '        <input type="text" name="feedback" value="' + (s.feedback || '') + '" placeholder="Ej: Excelente análisis crítico de la lectura..." class="form-control" style="width:100%;">';
                             html += '      </div>';
                             html += '      <div>';
-                            html += '        <button type="submit" class="btn btn-emerald" style="padding:6px 14px;font-size:12px;">';
+                            html += '        <button type="submit" class="btn btn-emerald" style="padding:8px 14px;font-size:12px;">';
                             html += '          ✅ Asignar Nota';
                             html += '        </button>';
                             html += '      </div>';
@@ -1194,6 +1192,15 @@ class Aura_Calendar_Frontend {
                     }
                 });
                 window.teacherCalendarInstance.render();
+
+                // Re-render reactivo instantáneo cuando cambia el tema claro/oscuro
+                window.addEventListener('aura:themeChanged', function() {
+                    if (window.teacherCalendarInstance) {
+                        setTimeout(function() {
+                            window.teacherCalendarInstance.render();
+                        }, 50);
+                    }
+                });
             }
         });
         </script>
