@@ -2256,22 +2256,78 @@ class Aura_Financial_Accounts {
         $users = $wpdb->users;
 
         $rows = $wpdb->get_results(
-                "SELECT r.id, r.person_user_id, r.counterparty_id, r.origin_transaction_id, r.owed_amount, r.paid_amount,
+            "SELECT r.id, r.person_user_id, r.counterparty_id, r.origin_transaction_id, r.owed_amount, r.paid_amount,
                     r.status, r.paying_account_id, r.notes, r.created_at, r.updated_at,
                     COALESCE(tp.full_name, u.display_name) AS person_name,
                     tp.document_id AS person_document,
+                    tp.party_type,
+                    tp.logo_id,
+                    tp.email AS tp_email,
+                    tp.phone AS tp_phone,
+                    u.user_email,
                     a.name AS paying_account_name,
                     t.description AS origin_description,
                     t.transaction_date AS origin_date
              FROM {$table} r
                  LEFT JOIN {$third_parties} tp ON tp.id = r.counterparty_id
-             LEFT JOIN {$users} u ON u.ID = r.person_user_id
-             LEFT JOIN {$accounts} a ON a.id = r.paying_account_id
-             LEFT JOIN {$tx_table} t ON t.id = r.origin_transaction_id
+                 LEFT JOIN {$users} u ON u.ID = r.person_user_id
+                 LEFT JOIN {$accounts} a ON a.id = r.paying_account_id
+                 LEFT JOIN {$tx_table} t ON t.id = r.origin_transaction_id
              ORDER BY FIELD(r.status, 'pending', 'partial', 'paid', 'cancelled'), r.created_at DESC, r.id DESC
              LIMIT 300",
             ARRAY_A
         );
+
+        if ( ! empty( $rows ) ) {
+            foreach ( $rows as &$r ) {
+                $name = trim( (string) ( $r['person_name'] ?? '' ) );
+                $words = preg_split( '/\s+/', $name );
+                $initials = '';
+                if ( ! empty( $words[0] ) ) {
+                    $initials .= mb_substr( $words[0], 0, 1 );
+                }
+                if ( count( $words ) > 1 && ! empty( $words[ count( $words ) - 1 ] ) ) {
+                    $initials .= mb_substr( $words[ count( $words ) - 1 ], 0, 1 );
+                }
+                $r['person_initials'] = mb_strtoupper( $initials ?: 'P' );
+
+                $avatar_url = '';
+                $has_custom = false;
+
+                if ( ! empty( $r['person_user_id'] ) ) {
+                    $uid = (int) $r['person_user_id'];
+                    $avatar_url = get_avatar_url( $uid, array( 'size' => 96, 'default' => 'identicon' ) );
+                    $has_custom = ! empty( $avatar_url );
+                    $r['person_type']       = 'user';
+                    $r['person_type_label'] = __( 'Usuario del Sistema', 'aura-suite' );
+                    $r['person_email']      = $r['user_email'] ?? '';
+                    $r['default_icon']      = 'dashicons-admin-users';
+                } elseif ( ! empty( $r['counterparty_id'] ) ) {
+                    $pt = strtolower( (string) ( $r['party_type'] ?? '' ) );
+                    $is_company = in_array( $pt, array( 'company', 'juridica', 'empresa', 'proveedor' ), true );
+                    $r['person_type']       = $is_company ? 'company' : 'natural';
+                    $r['person_type_label'] = $is_company ? __( 'Empresa / Proveedor', 'aura-suite' ) : __( 'Persona Natural', 'aura-suite' );
+                    $r['person_email']      = $r['tp_email'] ?? '';
+                    $r['default_icon']      = $is_company ? 'dashicons-building' : 'dashicons-businessman';
+
+                    if ( ! empty( $r['logo_id'] ) ) {
+                        $img = wp_get_attachment_image_url( (int) $r['logo_id'], 'thumbnail' );
+                        if ( $img ) {
+                            $avatar_url = $img;
+                            $has_custom = true;
+                        }
+                    }
+                } else {
+                    $r['person_type']       = 'natural';
+                    $r['person_type_label'] = __( 'Beneficiario', 'aura-suite' );
+                    $r['default_icon']      = 'dashicons-businessman';
+                }
+
+                $r['person_avatar']     = $avatar_url;
+                $r['has_custom_avatar'] = $has_custom;
+            }
+            unset( $r );
+        }
 
         $paying_accounts = $wpdb->get_results(
             "SELECT id, name, currency, current_balance

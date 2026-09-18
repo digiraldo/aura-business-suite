@@ -834,25 +834,44 @@ jQuery(function ($) {
         const diffBal = curBal - initBal;
         const isActive = parseInt(a.is_active, 10) === 1;
 
-        return '<div class="aura-tooltip-card" style="padding:12px;min-width:240px;max-width:300px;font-family:inherit;">' +
-            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #e2e8f0;">' +
-                '<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#e0f2fe;color:#0284c7;flex-shrink:0;">' +
-                    '<span class="dashicons ' + tIcon + '" style="font-size:16px;width:16px;height:16px;"></span>' +
-                '</span>' +
-                '<div style="min-width:0;flex:1;">' +
-                    '<strong style="font-size:13px;color:#0f172a;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(a.name) + '</strong>' +
-                    '<small style="font-size:11px;color:#64748b;">' + escapeHtml(a.institution || 'Entidad financiera') + (a.account_number_masked ? ' • ' + escapeHtml(a.account_number_masked) : '') + '</small>' +
+        return '<div class="aura-tip-card" style="min-width:260px;max-width:320px;">' +
+            '<div class="aura-tip-card-header">' +
+                '<div class="aura-tip-avatar-box" style="background:linear-gradient(135deg,#0284c7 0%,#2563eb 100%);">' +
+                    '<span class="dashicons ' + tIcon + '" style="font-size:20px;width:20px;height:20px;"></span>' +
+                '</div>' +
+                '<div class="aura-tip-card-title-box">' +
+                    '<div class="aura-tip-card-name">' + escapeHtml(a.name) + '</div>' +
+                    '<div class="aura-tip-card-badges">' +
+                        '<span class="badge ' + (isActive ? 'badge-emerald' : 'badge-rose') + '" style="font-size:10px;padding:1px 6px;">' + (isActive ? '● Activa' : '○ Inactiva') + '</span>' +
+                        '<span class="badge badge-indigo" style="font-size:10px;padding:1px 6px;">' + escapeHtml(curr) + '</span>' +
+                    '</div>' +
                 '</div>' +
             '</div>' +
-            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11.5px;margin-bottom:8px;">' +
-                '<div><span style="color:#64748b;display:block;font-size:10px;text-transform:uppercase;font-weight:600;">Tipo</span><span style="color:#0f172a;font-weight:600;">' + escapeHtml(tLabel) + '</span></div>' +
-                '<div><span style="color:#64748b;display:block;font-size:10px;text-transform:uppercase;font-weight:600;">Moneda</span><span style="color:#0f172a;font-weight:600;">' + escapeHtml(curr) + '</span></div>' +
-                '<div><span style="color:#64748b;display:block;font-size:10px;text-transform:uppercase;font-weight:600;">Saldo Inicial</span><span style="color:#475569;">$' + escapeHtml(formatNumber(initBal)) + '</span></div>' +
-                '<div><span style="color:#64748b;display:block;font-size:10px;text-transform:uppercase;font-weight:600;">Saldo Actual</span><strong style="color:#0f172a;">$' + escapeHtml(formatNumber(curBal)) + '</strong></div>' +
+            '<div class="aura-tip-card-body">' +
+                '<div style="font-size:11.5px;color:#94a3b8;margin-bottom:2px;">' +
+                    '<span class="dashicons dashicons-location-alt" style="font-size:12px;width:12px;height:12px;vertical-align:middle;margin-right:3px;"></span>' +
+                    escapeHtml(a.institution || 'Entidad financiera') + (a.account_number_masked ? ' • <code>' + escapeHtml(a.account_number_masked) + '</code>' : '') +
+                '</div>' +
+                '<div class="aura-tip-stat-grid">' +
+                    '<div class="aura-tip-stat-item">' +
+                        '<span class="aura-tip-stat-label">Tipo</span>' +
+                        '<span class="aura-tip-stat-value" style="font-size:12px;color:#e2e8f0;">' + escapeHtml(tLabel) + '</span>' +
+                    '</div>' +
+                    '<div class="aura-tip-stat-item">' +
+                        '<span class="aura-tip-stat-label">Saldo Inicial</span>' +
+                        '<span class="aura-tip-stat-value" style="font-size:12px;color:#94a3b8;">$' + escapeHtml(formatNumber(initBal)) + '</span>' +
+                    '</div>' +
+                    '<div class="aura-tip-stat-item span-2">' +
+                        '<span class="aura-tip-stat-label">Saldo Actual</span>' +
+                        '<span class="aura-tip-stat-value is-delivered" style="font-size:15px;color:#38bdf8;">$' + escapeHtml(formatNumber(curBal)) + ' ' + escapeHtml(curr) + '</span>' +
+                    '</div>' +
+                '</div>' +
             '</div>' +
-            '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid #e2e8f0;font-size:11px;">' +
-                '<span style="color:' + (diffBal >= 0 ? '#10b981' : '#ef4444') + ';font-weight:600;">' + (diffBal >= 0 ? '▲ +$' : '▼ -$') + escapeHtml(formatNumber(Math.abs(diffBal))) + ' variación</span>' +
-                '<span class="badge ' + (isActive ? 'badge-success' : 'badge-slate') + '" style="font-size:10px;padding:1px 6px;">' + (isActive ? '● Activa' : '○ Inactiva') + '</span>' +
+            '<div class="aura-tip-card-footer">' +
+                '<span style="color:' + (diffBal >= 0 ? '#34d399' : '#f87171') + ';font-weight:700;">' +
+                    (diffBal >= 0 ? '▲ +$' : '▼ -$') + escapeHtml(formatNumber(Math.abs(diffBal))) + ' variación' +
+                '</span>' +
+                '<span style="color:#94a3b8;font-size:10.5px;">Bancos &amp; Cuentas</span>' +
             '</div>' +
         '</div>';
     }
@@ -877,13 +896,27 @@ jQuery(function ($) {
             const balance = formatNumber(a.current_balance || 0);
             const tipCard = renderAccountTip(a);
 
+            // Tooltip enriquecido para Tipo de Cuenta
+            const typeTip = '<div class="aura-tip-card" style="min-width:210px;padding:10px 12px;">' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-tag" style="color:#38bdf8;"></span>Clasificación Contable</div>' +
+                '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' + escapeHtml(typeLabel(a.account_type)) + '</div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Moneda: ' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</div>' +
+            '</div>';
+
+            // Tooltip enriquecido para Moneda
+            const currTip = '<div class="aura-tip-card" style="min-width:200px;padding:10px 12px;">' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-money-alt" style="color:#34d399;"></span>Divisa de Registro</div>' +
+                '<div style="font-size:11.5px;color:#cbd5e1;">Código ISO: <strong style="color:#38bdf8;">' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</strong></div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Operativa en transferencias y conversiones</div>' +
+            '</div>';
+
             return '<tr class="table-row-hover-lift">' +
                 '<td><div class="aura-account-name aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCard) + '" style="cursor:pointer;">' +
                     '<strong>' + escapeHtml(a.name) + '</strong>' +
                     '<small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.institution || 'Sin institución') + '</small>' +
                 '</div></td>' +
-                '<td>' + typeBadge(a.account_type) + '</td>' +
-                '<td><span class="badge badge-slate aura-tooltip-trigger" data-tooltip="Moneda de registro: ' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '" style="font-weight:700;cursor:help;">' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</span></td>' +
+                '<td><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(typeTip) + '" style="cursor:help;">' + typeBadge(a.account_type) + '</span></td>' +
+                '<td><span class="badge badge-slate aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(currTip) + '" style="font-weight:700;cursor:help;">' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</span></td>' +
                 '<td><div class="aura-account-balance aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCard) + '" style="cursor:pointer;"><strong style="font-size:13px;color:var(--aura-text-heading,#0f172a);">' + escapeHtml(balance) + '</strong><small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.account_number_masked || 'Sin número visible') + '</small></div></td>' +
                 '<td>' + statusBadge(a.is_active) + '</td>' +
                 '<td>' + renderActionButtons(a.id) + '</td>' +
@@ -2785,6 +2818,7 @@ jQuery(function ($) {
             const owed = parseFloat(r.owed_amount || 0);
             const paid = parseFloat(r.paid_amount || 0);
             const remaining = Math.max(0, owed - paid);
+            const percentPaid = owed > 0 ? Math.min(100, Math.round((paid / owed) * 100)) : 100;
             const canPay = r.status === 'pending' || r.status === 'partial';
             const originText = r.origin_transaction_id ? ('#' + r.origin_transaction_id) : 'Manual';
             const actions = [];
@@ -2801,23 +2835,108 @@ jQuery(function ($) {
                 '</button>');
             }
 
-            const personTip = '<div class="aura-tooltip-card" style="padding:10px;min-width:210px;">' +
-                '<div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:4px;">' + escapeHtml(r.person_name || 'Beneficiario') + '</div>' +
-                '<div style="font-size:11px;color:#64748b;margin-bottom:6px;">' + (r.counterparty_id ? 'Tercero Registrado' : 'Usuario Interno') + '</div>' +
-                (r.notes ? '<div style="font-size:11px;color:#475569;border-top:1px solid #e2e8f0;padding-top:6px;">' + escapeHtml(r.notes) + '</div>' : '') +
+            // Avatar o Icono Predeterminado
+            const personName = r.person_name || ('Tercero #' + (r.counterparty_id || r.person_user_id || 'N/A'));
+            let avatarMarkup = '';
+            if (r.person_avatar && r.has_custom_avatar) {
+                avatarMarkup = '<div class="aura-reimburse-avatar-box avatar-hover-zoom aura-avatar-zoom" data-img-url="' + escapeHtml(r.person_avatar) + '" data-preview-title="' + escapeHtml(personName) + '">' +
+                    '<img src="' + escapeHtml(r.person_avatar) + '" alt="' + escapeHtml(personName) + '" class="aura-reimburse-avatar-img">' +
+                '</div>';
+            } else {
+                const iconClass = r.default_icon || 'dashicons-businessman';
+                avatarMarkup = '<div class="aura-reimburse-avatar-box" title="' + escapeHtml(personName) + '">' +
+                    '<span class="dashicons ' + iconClass + ' aura-reimburse-avatar-icon"></span>' +
+                '</div>';
+            }
+
+            // Tarjeta Enriquecida del Beneficiario (.aura-tip-card)
+            const personTip = '<div class="aura-tip-card" style="min-width:270px;max-width:320px;">' +
+                '<div class="aura-tip-card-header">' +
+                    '<div class="aura-tip-avatar-box" style="background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%);">' +
+                        (r.person_avatar && r.has_custom_avatar
+                            ? '<img src="' + escapeHtml(r.person_avatar) + '" alt="' + escapeHtml(personName) + '" style="width:100%;height:100%;object-fit:cover;">'
+                            : '<span class="dashicons ' + (r.default_icon || 'dashicons-businessman') + '" style="font-size:22px;width:22px;height:22px;"></span>'
+                        ) +
+                    '</div>' +
+                    '<div class="aura-tip-card-title-box">' +
+                        '<div class="aura-tip-card-name">' + escapeHtml(personName) + '</div>' +
+                        '<div class="aura-tip-card-badges">' +
+                            '<span class="badge badge-indigo" style="font-size:10px;padding:1px 6px;">' + escapeHtml(r.person_type_label || (r.counterparty_id ? 'Tercero' : 'Usuario')) + '</span>' +
+                            (r.person_document ? '<span class="badge badge-slate" style="font-size:10px;padding:1px 6px;">Doc: ' + escapeHtml(r.person_document) + '</span>' : '') +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="aura-tip-card-body">' +
+                    (r.person_email ? '<div style="font-size:11.5px;color:#94a3b8;margin-bottom:4px;"><span class="dashicons dashicons-email" style="font-size:12px;width:12px;height:12px;vertical-align:middle;margin-right:3px;"></span>' + escapeHtml(r.person_email) + '</div>' : '') +
+                    '<div class="aura-tip-stat-grid">' +
+                        '<div class="aura-tip-stat-item">' +
+                            '<span class="aura-tip-stat-label">Adeudado</span>' +
+                            '<span class="aura-tip-stat-value" style="font-size:12.5px;color:#f8fafc;">$' + escapeHtml(formatNumber(owed)) + '</span>' +
+                        '</div>' +
+                        '<div class="aura-tip-stat-item">' +
+                            '<span class="aura-tip-stat-label">Pagado</span>' +
+                            '<span class="aura-tip-stat-value is-returned" style="font-size:12.5px;color:#34d399;">$' + escapeHtml(formatNumber(paid)) + '</span>' +
+                        '</div>' +
+                        '<div class="aura-tip-stat-item span-2">' +
+                            '<span class="aura-tip-stat-label">Saldo Pendiente</span>' +
+                            '<span class="aura-tip-stat-value" style="font-size:14px;color:' + (remaining > 0 ? '#f87171' : '#34d399') + ';">$' + escapeHtml(formatNumber(remaining)) + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    (r.notes ? '<div style="font-size:11px;color:#cbd5e1;background:rgba(30,41,59,0.5);border:1px solid #334155;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.4;"><strong>Notas:</strong> ' + escapeHtml(r.notes) + '</div>' : '') +
+                '</div>' +
+                '<div class="aura-tip-card-footer">' +
+                    '<span style="color:#94a3b8;">Reembolso #' + r.id + '</span>' +
+                    '<span style="color:#38bdf8;font-weight:700;">' + percentPaid + '% amortizado</span>' +
+                '</div>' +
             '</div>';
 
-            const debtTip = '<div class="aura-tooltip-card" style="padding:10px;min-width:220px;">' +
-                '<div style="font-weight:700;font-size:12.5px;color:#0f172a;margin-bottom:6px;">Balance de Reembolso #' + r.id + '</div>' +
-                '<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;"><span>Monto Solicitado:</span><strong style="color:#0f172a;">$' + escapeHtml(formatNumber(owed)) + '</strong></div>' +
-                '<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px;"><span>Total Pagado:</span><strong style="color:#10b981;">$' + escapeHtml(formatNumber(paid)) + '</strong></div>' +
-                '<div style="display:flex;justify-content:space-between;font-size:11.5px;border-top:1px solid #e2e8f0;padding-top:4px;margin-top:4px;"><span>Saldo Remanente:</span><strong style="color:' + (remaining > 0 ? '#ef4444' : '#10b981') + ';">$' + escapeHtml(formatNumber(remaining)) + '</strong></div>' +
+            // Tarjeta Enriquecida del Balance / Deuda
+            const debtTip = '<div class="aura-tip-card" style="min-width:250px;max-width:300px;">' +
+                '<div class="aura-tip-card-header">' +
+                    '<div class="aura-tip-avatar-box" style="background:linear-gradient(135deg,#059669 0%,#10b981 100%);">' +
+                        '<span class="dashicons dashicons-money-alt" style="font-size:20px;width:20px;height:20px;"></span>' +
+                    '</div>' +
+                    '<div class="aura-tip-card-title-box">' +
+                        '<div class="aura-tip-card-name">Balance Reembolso #' + r.id + '</div>' +
+                        '<div class="aura-tip-card-badges">' +
+                            '<span class="badge ' + (remaining <= 0 ? 'badge-emerald' : (paid > 0 ? 'badge-amber' : 'badge-rose')) + '" style="font-size:10px;padding:1px 6px;">' + (remaining <= 0 ? '● Liquidado' : (paid > 0 ? '● Parcial' : '○ Pendiente')) + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="aura-tip-card-body">' +
+                    '<div class="aura-tip-progress-wrap">' +
+                        '<div class="aura-tip-progress-bar" style="width:' + percentPaid + '%;"></div>' +
+                    '</div>' +
+                    '<div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:6px;">' +
+                        '<span>Amortizado</span><strong>' + percentPaid + '%</strong>' +
+                    '</div>' +
+                    '<div class="aura-tip-stat-grid">' +
+                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Adeudado</span><span class="aura-tip-stat-value" style="font-size:12px;color:#f8fafc;">$' + escapeHtml(formatNumber(owed)) + '</span></div>' +
+                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Pagado</span><span class="aura-tip-stat-value" style="font-size:12px;color:#34d399;">$' + escapeHtml(formatNumber(paid)) + '</span></div>' +
+                        '<div class="aura-tip-stat-item span-2"><span class="aura-tip-stat-label">Saldo Pendiente</span><span class="aura-tip-stat-value" style="font-size:14px;color:' + (remaining > 0 ? '#f87171' : '#34d399') + ';">$' + escapeHtml(formatNumber(remaining)) + '</span></div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+
+            // Tarjeta Enriquecida de Origen
+            const originTip = '<div class="aura-tip-card" style="min-width:240px;padding:10px 12px;">' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-tag" style="color:#f59e0b;"></span>Transacción de Origen</div>' +
+                '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' + (r.origin_description ? escapeHtml(r.origin_description) : 'Registro manual de adeudo') + '</div>' +
+                (r.origin_date ? '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Fecha: ' + escapeHtml(r.origin_date) + '</div>' : '') +
             '</div>';
 
             return '<tr class="table-row-hover-lift">' +
                 '<td style="white-space:nowrap;font-size:12px;color:var(--aura-text-muted,#64748b);"><span class="dashicons dashicons-calendar-alt" style="font-size:13px;width:13px;height:13px;color:#94a3b8;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(String(r.created_at || '').slice(0, 10)) + '</td>' +
-                '<td><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(personTip) + '" style="cursor:pointer;"><strong style="color:var(--aura-text-heading,#0f172a);font-size:13px;">' + escapeHtml(r.person_name || ('Tercero #' + (r.counterparty_id || r.person_user_id || 'N/A'))) + '</strong></span></td>' +
-                '<td><span class="badge badge-slate aura-tooltip-trigger" data-tooltip="Origen: ' + escapeHtml(originText) + '" style="font-weight:700;cursor:help;">' + escapeHtml(originText) + '</span><br><small style="color:var(--aura-text-muted,#64748b);display:block;margin-top:2px;">' + escapeHtml(r.origin_description || '') + '</small></td>' +
+                '<td>' +
+                    '<div class="aura-reimburse-person-cell">' +
+                        avatarMarkup +
+                        '<div class="aura-reimburse-person-info">' +
+                            '<span class="aura-tooltip-trigger aura-reimburse-person-name" data-aura-tooltip="' + encodeURIComponent(personTip) + '" style="cursor:pointer;">' + escapeHtml(personName) + '</span>' +
+                            '<span class="aura-reimburse-person-sub">' + escapeHtml(r.person_type_label || (r.counterparty_id ? 'Tercero' : 'Usuario')) + (r.person_document ? ' • ' + escapeHtml(r.person_document) : '') + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</td>' +
+                '<td><span class="badge badge-slate aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(originTip) + '" style="font-weight:700;cursor:help;">' + escapeHtml(originText) + '</span><br><small style="color:var(--aura-text-muted,#64748b);display:block;margin-top:2px;">' + escapeHtml(r.origin_description || '') + '</small></td>' +
                 '<td style="font-weight:600;color:var(--aura-text-heading,#0f172a);"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(debtTip) + '" style="cursor:pointer;">$ ' + escapeHtml(formatNumber(owed)) + '</span></td>' +
                 '<td style="color:#10b981;font-weight:600;"><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(debtTip) + '" style="cursor:pointer;">$ ' + escapeHtml(formatNumber(paid)) + '</span></td>' +
                 '<td><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(debtTip) + '" style="cursor:pointer;"><strong style="color:' + (remaining > 0 ? '#ef4444' : '#10b981') + ';font-size:13px;">$ ' + escapeHtml(formatNumber(remaining)) + '</strong></span></td>' +
@@ -4440,6 +4559,24 @@ jQuery(function ($) {
 
             actionsHtml += '</div>';
 
+            const opTip = '<div class="aura-tip-card" style="min-width:240px;padding:10px 12px;">' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons ' + badgeIcon + '" style="color:#38bdf8;"></span>' + escapeHtml(badgeLabel) + '</div>' +
+                '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">Conversión ejecutada entre <strong>' + escapeHtml(rec.source_name || 'Origen') + '</strong> y <strong>' + escapeHtml(rec.target_name || 'Destino') + '</strong></div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">ID Operación: #' + rec.id + ' • ' + escapeHtml(rec.created_at || '') + '</div>' +
+            '</div>';
+
+            const rateTip = '<div class="aura-tip-card" style="min-width:220px;padding:10px 12px;">' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-chart-line" style="color:#34d399;"></span>Tasa de Conversión</div>' +
+                '<div style="font-size:13px;font-weight:800;color:#38bdf8;margin:2px 0;">' + rateHtml + '</div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Tasa pactada e inmutable de la operación</div>' +
+            '</div>';
+
+            const userTip = '<div class="aura-tip-card" style="min-width:220px;padding:10px 12px;">' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-admin-users" style="color:#a855f7;"></span>Auditor Responsable</div>' +
+                '<div style="font-size:12px;font-weight:700;color:#e2e8f0;">' + escapeHtml(rec.user_name || 'Sistema') + '</div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Registrado el: ' + escapeHtml(rec.created_at || '—') + '</div>' +
+            '</div>';
+
             const rowClass = 'table-row-hover-lift' + (isReverted ? ' aura-row-reverted' : '');
             const rowStyle = isReverted ? ' style="opacity:0.75;"' : '';
 
@@ -4449,7 +4586,7 @@ jQuery(function ($) {
                     escapeHtml(rec.created_at || '—') +
                 '</td>' +
                 '<td>' +
-                    '<span class="badge ' + badgeClass + '" style="font-size:11.5px;padding:3px 8px;border-radius:6px;font-weight:600;">' +
+                    '<span class="badge ' + badgeClass + ' aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(opTip) + '" style="font-size:11.5px;padding:3px 8px;border-radius:6px;font-weight:600;cursor:pointer;">' +
                         '<span class="dashicons ' + badgeIcon + '" style="font-size:13px;width:13px;height:13px;margin-right:4px;vertical-align:middle;"></span>' +
                         escapeHtml(badgeLabel) +
                     '</span>' +
@@ -4459,14 +4596,14 @@ jQuery(function ($) {
                     '<div style="font-size:12px;margin-top:2px;">' + sourceAmountHtml + '</div>' +
                 '</td>' +
                 '<td style="white-space:nowrap;font-weight:600;font-size:12.5px;color:var(--aura-text-heading,#0f172a);">' +
-                    '<span class="badge badge-slate" data-tooltip="Tasa pactada para la conversión contable" style="font-size:11.5px;font-weight:600;"><span class="dashicons dashicons-randomize" style="font-size:12px;width:12px;height:12px;margin-right:3px;vertical-align:middle;"></span>' + rateHtml + '</span>' +
+                    '<span class="badge badge-slate aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(rateTip) + '" style="font-size:11.5px;font-weight:600;cursor:pointer;"><span class="dashicons dashicons-randomize" style="font-size:12px;width:12px;height:12px;margin-right:3px;vertical-align:middle;"></span>' + rateHtml + '</span>' +
                 '</td>' +
                 '<td>' +
                     '<strong>' + escapeHtml(rec.target_name || '—') + '</strong>' +
                     '<div style="font-size:12px;margin-top:2px;">' + targetAmountHtml + '</div>' +
                 '</td>' +
                 '<td style="font-size:12px;">' +
-                    '<div style="display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-admin-users" style="vertical-align:middle;font-size:15px;width:15px;height:15px;color:var(--aura-text-muted,#64748b);"></span> <span style="font-weight:500;">' +
+                    '<div class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(userTip) + '" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><span class="dashicons dashicons-admin-users" style="vertical-align:middle;font-size:15px;width:15px;height:15px;color:var(--aura-text-muted,#64748b);"></span> <span style="font-weight:500;">' +
                     escapeHtml(rec.user_name || 'Sistema') + '</span></div>' +
                 '</td>' +
                 '<td style="font-size:12px;color:var(--aura-text-muted,#64748b);max-width:180px;word-break:break-word;">' +

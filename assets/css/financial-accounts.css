@@ -4725,6 +4725,24 @@ body.aura-dark-mode #aura-petty-cash-table .aura-parent-row.is-expanded td,
     font-weight: 700 !important;
 }
 
+#aura-global-tooltip .aura-tooltip-card,
+.aura-global-tooltip .aura-tooltip-card {
+    color: #f8fafc !important;
+    background: transparent !important;
+}
+
+#aura-global-tooltip .aura-tooltip-card strong,
+.aura-global-tooltip .aura-tooltip-card strong {
+    color: #38bdf8 !important;
+}
+
+#aura-global-tooltip .aura-tooltip-card small,
+#aura-global-tooltip .aura-tooltip-card span,
+.aura-global-tooltip .aura-tooltip-card small,
+.aura-global-tooltip .aura-tooltip-card span {
+    color: #cbd5e1 !important;
+}
+
 #aura-global-tooltip-arrow,
 .aura-global-tooltip-arrow {
     position: absolute !important;
@@ -5012,7 +5030,7 @@ body.aura-dark-mode .aura-petty-type-card.is-selected,
 
 .aura-child-card--sidebar-layout {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: stretch;
     background: #ffffff;
     border: 1px solid #cbd5e1;
@@ -5021,36 +5039,40 @@ body.aura-dark-mode .aura-petty-type-card.is-selected,
     overflow: hidden;
 }
 
-@media (max-width: 820px) {
-    .aura-child-card--sidebar-layout {
-        flex-direction: column;
-    }
-}
-
-/* Sidebar Izquierda de Acciones Rápidas */
+/* Barra Horizontal Superior de Acciones Rápidas (Desktop) */
 .aura-child-actions-sidebar {
-    width: 210px;
-    min-width: 200px;
+    width: 100%;
+    min-width: 0;
     flex-shrink: 0;
-    background: #f1f5f9;
-    border-right: 1px solid #e2e8f0;
-    padding: 16px 14px;
+    background: #f8fafc;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 18px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+    box-sizing: border-box;
 }
 
 .aura-child-sidebar-header {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: #475569;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+    border-right: 1px solid #cbd5e1;
+    padding-right: 14px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .aura-child-sidebar-header .dashicons {
@@ -5062,22 +5084,25 @@ body.aura-dark-mode .aura-petty-type-card.is-selected,
 
 .aura-child-sidebar-buttons {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
     flex: 1;
 }
 
 .aura-child-side-btn {
-    display: flex !important;
+    display: inline-flex !important;
     align-items: center !important;
-    gap: 8px !important;
-    width: 100% !important;
-    padding: 7px 12px !important;
+    gap: 6px !important;
+    width: auto !important;
+    padding: 6px 14px !important;
     border-radius: 8px !important;
     font-size: 12px !important;
     font-weight: 600 !important;
     text-align: left !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
     line-height: 1.4 !important;
     transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
     cursor: pointer !important;
@@ -5089,8 +5114,37 @@ body.aura-dark-mode .aura-petty-type-card.is-selected,
 }
 
 .aura-child-side-btn:hover {
-    transform: translateX(2px) !important;
+    transform: translateY(-1px) !important;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Pantallas Pequeñas (<768px): Acciones Rápidas en Columna Vertical */
+@media (max-width: 768px) {
+    .aura-child-actions-sidebar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        padding: 12px 14px !important;
+    }
+
+    .aura-child-sidebar-header {
+        border-right: none !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 6px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .aura-child-sidebar-buttons {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 6px !important;
+    }
+
+    .aura-child-side-btn {
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
 }
 
 .aura-child-side-btn .dashicons {
@@ -5239,7 +5293,8 @@ html.wp-dark-mode-active .aura-child-actions-sidebar,
 body.aura-dark-mode .aura-child-actions-sidebar,
 [data-theme="dark"] .aura-child-actions-sidebar {
     background: #0f172a;
-    border-right-color: #334155;
+    border-bottom-color: #334155;
+    border-right: none;
 }
 
 html[data-wp-dark-mode-scheme="dark"] .aura-child-sidebar-header,
@@ -5247,7 +5302,132 @@ html.wp-dark-mode-active .aura-child-sidebar-header,
 body.aura-dark-mode .aura-child-sidebar-header,
 [data-theme="dark"] .aura-child-sidebar-header {
     color: #94a3b8;
-    border-bottom-color: #334155;
+    border-right-color: #334155;
+    border-bottom-color: transparent;
+}
+
+/* ── Estilos de Avatar e Identidad en Reembolsos a Personas ── */
+.aura-reimburse-person-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    vertical-align: middle;
+}
+
+.aura-reimburse-avatar-box {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.aura-reimburse-avatar-box:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    border-color: #38bdf8;
+}
+
+.aura-reimburse-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+}
+
+.aura-reimburse-avatar-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aura-reimburse-avatar-initials {
+    font-size: 12px;
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.aura-reimburse-person-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.aura-reimburse-person-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--aura-text-heading, #0f172a);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aura-reimburse-person-sub {
+    font-size: 11px;
+    color: var(--aura-text-muted, #64748b);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Modo Oscuro para Celdas de Avatar de Reembolsos */
+html[data-wp-dark-mode-scheme="dark"] .aura-reimburse-avatar-box,
+html.wp-dark-mode-active .aura-reimburse-avatar-box,
+body.aura-dark-mode .aura-reimburse-avatar-box,
+[data-theme="dark"] .aura-reimburse-avatar-box {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: #334155;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-reimburse-avatar-initials,
+html.wp-dark-mode-active .aura-reimburse-avatar-initials,
+body.aura-dark-mode .aura-reimburse-avatar-initials,
+[data-theme="dark"] .aura-reimburse-avatar-initials {
+    color: #f8fafc;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-reimburse-avatar-icon,
+html.wp-dark-mode-active .aura-reimburse-avatar-icon,
+body.aura-dark-mode .aura-reimburse-avatar-icon,
+[data-theme="dark"] .aura-reimburse-avatar-icon {
+    color: #94a3b8;
+}
+
+/* Barra de Progreso de Pagos en Tooltips de Reembolsos */
+.aura-tip-progress-wrap {
+    margin: 8px 0 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.aura-tip-progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+    transition: width 0.3s ease;
 }
 
 html[data-wp-dark-mode-scheme="dark"] .aura-child-main-panel,
