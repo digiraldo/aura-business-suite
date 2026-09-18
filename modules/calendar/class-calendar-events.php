@@ -17,6 +17,42 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Aura_Calendar_Events {
 
+    const OPTION_SYNC_VERSION = 'aura_cal_sync_version';
+
+    /**
+     * Catálogo de responsabilidades / roles de liderazgo estudiantil
+     *
+     * @return array
+     */
+    public static function get_student_roles(): array {
+        return [
+            'activity_leader' => [
+                'label'       => __( 'Líder de Actividad', 'aura' ),
+                'badge_color' => '#f59e0b',
+                'icon'        => '🎯',
+                'description' => __( 'Coordina la dinámica de grupo y la participación activa.', 'aura' ),
+            ],
+            'program_leader'  => [
+                'label'       => __( 'Líder de Programa', 'aura' ),
+                'badge_color' => '#6366f1',
+                'icon'        => '👑',
+                'description' => __( 'Representante estudiantil del cohorte o programa académico.', 'aura' ),
+            ],
+            'presenter'       => [
+                'label'       => __( 'Expositor / Dar Clase', 'aura' ),
+                'badge_color' => '#10b981',
+                'icon'        => '🎙️',
+                'description' => __( 'A cargo de la exposición o ponencia principal de la sesión.', 'aura' ),
+            ],
+            'monitor'         => [
+                'label'       => __( 'Monitor / Moderador', 'aura' ),
+                'badge_color' => '#06b6d4',
+                'icon'        => '🛡️',
+                'description' => __( 'Asiste en control de tiempo, preguntas y apoyo al docente.', 'aura' ),
+            ],
+        ];
+    }
+
     /**
      * Inicializar hooks y AJAX
      */
@@ -127,7 +163,7 @@ class Aura_Calendar_Events {
                 $params[] = '%"' . $user_id . '"%';
             } elseif ( $is_student ) {
                 // Estudiante ve los eventos de los programas donde está inscrito activamente
-                $table_enroll = $wpdb->prefix . 'aura_students_enrollments';
+                $table_enroll = $wpdb->prefix . 'aura_student_enrollments';
                 $table_stud   = $wpdb->prefix . 'aura_students';
                 $has_students = $wpdb->get_var( "SHOW TABLES LIKE '{$table_stud}'" ) === $table_stud;
 
@@ -724,17 +760,19 @@ class Aura_Calendar_Events {
     public static function ajax_heartbeat_sync(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        $client_version = intval( $_POST['last_sync'] ?? 0 );
-        $server_version = intval( get_option( 'aura_cal_sync_version', 0 ) );
+        $client_version = intval( $_POST['last_version'] ?? ( $_POST['last_sync'] ?? 0 ) );
+        $server_version = intval( get_option( self::OPTION_SYNC_VERSION, 0 ) );
         $author         = get_option( 'aura_cal_sync_author', '' );
 
         $has_updates = $server_version > $client_version;
 
         wp_send_json_success( [
-            'has_updates'  => $has_updates,
-            'sync_version' => $server_version,
-            'author'       => $author,
-            'server_time'  => time(),
+            'has_updates'     => $has_updates,
+            'current_version' => $server_version,
+            'sync_version'    => $server_version,
+            'updated_by'      => $author,
+            'author'          => $author,
+            'server_time'     => time(),
         ] );
     }
 

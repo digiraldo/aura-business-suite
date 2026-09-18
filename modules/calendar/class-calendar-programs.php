@@ -75,7 +75,7 @@ class Aura_Calendar_Programs {
         $orderby   = in_array( strtoupper( $r['order'] ), [ 'ASC', 'DESC' ], true ) ? strtoupper( $r['order'] ) : 'DESC';
 
         $sql = "SELECT p.*, u.display_name AS coordinator_name, u.user_email AS coordinator_email,
-                       a.name AS area_name, a.code AS area_code, a.color AS area_color,
+                       a.name AS area_name, a.slug AS area_code, a.color AS area_color,
                        (SELECT COUNT(*) FROM {$table_subj} s WHERE s.program_id = p.id AND s.deleted_at IS NULL) AS subjects_count,
                        (SELECT COUNT(*) FROM {$table_evts} e WHERE e.program_id = p.id AND e.deleted_at IS NULL) AS events_count
                 FROM {$table_prog} p
@@ -153,7 +153,7 @@ class Aura_Calendar_Programs {
 
         $row = $wpdb->get_row( $wpdb->prepare(
             "SELECT p.*, u.display_name AS coordinator_name, u.user_email AS coordinator_email,
-                    a.name AS area_name, a.code AS area_code, a.color AS area_color
+                    a.name AS area_name, a.slug AS area_code, a.color AS area_color
              FROM {$table_prog} p
              LEFT JOIN {$wpdb->users} u ON u.ID = p.coordinator_id
              LEFT JOIN {$table_areas} a ON a.id = p.area_id
