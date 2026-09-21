@@ -343,21 +343,23 @@ class Aura_Certificates_Reports {
 
         $certs_table    = $wpdb->prefix . 'aura_certificates';
         $students_table = $wpdb->prefix . 'aura_students';
-        $enroll_table   = $wpdb->prefix . 'aura_enrollments';
+        $enroll_table   = $wpdb->prefix . 'aura_student_enrollments';
+        $courses_table  = $wpdb->prefix . 'aura_student_courses';
 
-        // Inscripciones graduadas sin certificado activo
+        // Inscripciones completadas o graduadas sin certificado activo
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $rows = $wpdb->get_results(
             "SELECT e.id as enrollment_id, CONCAT(s.first_name,' ',s.last_name) as estudiante,
-                    s.email, e.course_name, e.graduation_date
+                    s.email, COALESCE(c.name, 'Programa General') as course_name, COALESCE(s.graduated_at, e.updated_at) as graduation_date
              FROM {$enroll_table} e
              INNER JOIN {$students_table} s ON e.student_id = s.id
-             WHERE e.status = 'graduated'
+             LEFT JOIN {$courses_table} c ON c.id = e.course_id
+             WHERE (e.status = 'completed' OR s.status = 'graduated')
              AND NOT EXISTS (
-                 SELECT 1 FROM {$certs_table} c
-                 WHERE c.enrollment_id = e.id AND c.status = 'active'
+                 SELECT 1 FROM {$certs_table} cert
+                 WHERE cert.enrollment_id = e.id AND cert.status = 'active'
              )
-             ORDER BY e.graduation_date ASC
+             ORDER BY e.id DESC
              LIMIT 500"
         );
 

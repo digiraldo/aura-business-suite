@@ -29,12 +29,14 @@ $recents = $wpdb->get_results(
      ORDER BY c.issued_at DESC LIMIT 10"
 );
 
-// Pendientes de emitir: inscripciones graduadas sin certificado
-$enroll_table   = $wpdb->prefix . 'aura_enrollments';
+// Pendientes de emitir: inscripciones completadas o graduadas sin certificado
+$enroll_table   = $wpdb->prefix . 'aura_student_enrollments';
+$students_table = $wpdb->prefix . 'aura_students';
 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 $pending_count  = (int) $wpdb->get_var(
     "SELECT COUNT(*) FROM {$enroll_table} e
-     WHERE e.status = 'graduated'
+     INNER JOIN {$students_table} s ON e.student_id = s.id
+     WHERE (e.status = 'completed' OR s.status = 'graduated')
      AND NOT EXISTS (
          SELECT 1 FROM {$table} c WHERE c.enrollment_id = e.id AND c.status = 'active'
      )"

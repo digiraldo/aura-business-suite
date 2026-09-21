@@ -798,5 +798,63 @@ body.wp-dark-mode-active .aura-teacher-portal .fc-event {
     color: #ffffff !important;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   COMPONENTES MULTIMODALIDAD Y EQUIPOS — CLARO / OSCURO
+   ══════════════════════════════════════════════════════════════════ */
 
+.aura-target-type-card {
+    transition: all 0.2s ease;
+}
+.aura-target-type-card:hover {
+    border-color: var(--at-primary, #6366f1) !important;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+}
+.aura-target-type-card:has(input:checked) {
+    border-color: var(--at-primary, #6366f1) !important;
+    background: var(--at-chip-bg, rgba(99, 102, 241, 0.08)) !important;
+}
 
+.row-diff-student {
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.row-diff-student:hover {
+    border-color: var(--at-primary, #6366f1) !important;
+}
+
+.aura-submission-row {
+    background: var(--at-bg-card-alt, #f8fafc);
+    border: 1px solid var(--at-border, #e2e8f0);
+    border-radius: 10px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .aura-submission-row {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+/* Herramientas e Inventario en el Portal del Estudiante */
+.aura-student-equipment-wrapper .adp-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.aura-student-equipment-wrapper .adp-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .aura-student-equipment-wrapper .adp-card {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+}
+[data-theme="dark"] .aura-student-equipment-wrapper .adp-card-desc,
+[data-theme="dark"] .aura-student-equipment-wrapper [style*="color: var(--aura-text-secondary)"] {
+    color: #94a3b8 !important;
+}
+[data-theme="dark"] .aura-student-equipment-wrapper [style*="background: var(--aura-surface-alt)"] {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+[data-theme="dark"] .aura-student-equipment-wrapper [style*="color: var(--aura-text-primary)"] {
+    color: #f1f5f9 !important;
+}

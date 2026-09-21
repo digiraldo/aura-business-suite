@@ -28,6 +28,7 @@ class Aura_Calendar_Tasks {
         add_action( 'wp_ajax_aura_cal_grade_submission',       [ __CLASS__, 'ajax_grade_submission' ] );
         add_action( 'wp_ajax_aura_cal_submit_task',            [ __CLASS__, 'ajax_submit_task' ] );
         add_action( 'wp_ajax_aura_cal_search_library_books',   [ __CLASS__, 'ajax_search_library_books' ] );
+        add_action( 'wp_ajax_aura_cal_get_program_students',   [ __CLASS__, 'ajax_get_program_students' ] );
     }
 
     /**
@@ -47,6 +48,7 @@ class Aura_Calendar_Tasks {
         $defaults = [
             'program_id' => 0,
             'subject_id' => 0,
+            'student_id' => 0,
             'status'     => '',
             'search'     => '',
             'limit'      => 100,
@@ -78,8 +80,9 @@ class Aura_Calendar_Tasks {
         }
 
         $where_sql = implode( ' AND ', $where );
-        $sql = "SELECT t.*, p.name AS program_name, p.code AS program_code,
+        $sql = "SELECT t.*, p.name AS program_name, p.code AS program_code, p.area_id,
                        s.name AS subject_name, s.code AS subject_code,
+                       COALESCE(ut.display_name, u.display_name) AS teacher_name,
                        u.display_name AS author_name,
                        b.title AS book_title, b.author AS book_author, b.dewey_number AS book_dewey,
                        b.isbn AS book_isbn, b.cover_image_id AS book_cover_id,
@@ -88,6 +91,7 @@ class Aura_Calendar_Tasks {
                 FROM {$table_tasks} t
                 LEFT JOIN {$table_prog} p ON p.id = t.program_id
                 LEFT JOIN {$table_subj} s ON s.id = t.subject_id
+                LEFT JOIN {$wpdb->users} ut ON ut.ID = s.default_teacher_id
                 LEFT JOIN {$wpdb->users} u ON u.ID = t.created_by
                 LEFT JOIN {$table_books} b ON b.id = t.book_id
                 WHERE {$where_sql}
@@ -98,7 +102,57 @@ class Aura_Calendar_Tasks {
         $params[] = intval( $r['offset'] );
 
         $results = $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
-        return is_array( $results ) ? $results : [];
+        if ( ! is_array( $results ) ) {
+            return [];
+        }
+
+        $student_id = intval( $r['student_id'] ?? 0 );
+        $filtered = [];
+
+        foreach ( $results as $row ) {
+            $row->target_type = ! empty( $row->target_type ) ? $row->target_type : 'all';
+            $target_ids = ! empty( $row->target_student_ids ) ? json_decode( $row->target_student_ids, true ) : [];
+            $row->target_student_ids = is_array( $target_ids ) ? array_map( 'intval', $target_ids ) : [];
+            $row->student_assignments = ! empty( $row->student_assignments ) ? json_decode( $row->student_assignments, true ) : [];
+
+            if ( $student_id > 0 ) {
+                if ( $row->target_type !== 'all' && ! in_array( $student_id, $row->target_student_ids, true ) ) {
+                    continue;
+                }
+                // Si la tarea es diferenciada y este estudiante tiene un libro asignado específico, sobrescribirlo
+                if ( $row->target_type === 'differentiated' && isset( $row->student_assignments[ $student_id ] ) ) {
+                    $sa = $row->student_assignments[ $student_id ];
+                    if ( ! empty( $sa['book_id'] ) ) {
+                        $row->book_id = (int) $sa['book_id'];
+                    }
+                    if ( ! empty( $sa['book_title'] ) ) {
+                        $row->book_title = $sa['book_title'];
+                    }
+                    if ( ! empty( $sa['book_author'] ) ) {
+                        $row->book_author = $sa['book_author'];
+                    }
+                    if ( ! empty( $sa['instructions'] ) ) {
+                        $row->student_specific_instructions = $sa['instructions'];
+                    }
+                }
+            }
+
+            if ( ! empty( $row->attachment_urls ) ) {
+                $row->attachments = json_decode( $row->attachment_urls, true ) ?: [];
+            } else {
+                $row->attachments = [];
+            }
+
+            if ( ! empty( $row->book_cover_id ) ) {
+                $row->book_cover_url = wp_get_attachment_image_url( (int) $row->book_cover_id, 'thumbnail' );
+            } else {
+                $row->book_cover_url = '';
+            }
+
+            $filtered[] = $row;
+        }
+
+        return $filtered;
     }
 
     /**
@@ -115,30 +169,39 @@ class Aura_Calendar_Tasks {
         $table_books = $wpdb->prefix . 'aura_library_books';
 
         $row = $wpdb->get_row( $wpdb->prepare(
-            "SELECT t.*, p.name AS program_name, p.code AS program_code,
+            "SELECT t.*, p.name AS program_name, p.code AS program_code, p.area_id,
                     s.name AS subject_name, s.code AS subject_code,
+                    COALESCE(ut.display_name, u.display_name) AS teacher_name,
                     u.display_name AS author_name,
                     b.title AS book_title, b.author AS book_author, b.dewey_number AS book_dewey,
                     b.isbn AS book_isbn, b.cover_image_id AS book_cover_id
              FROM {$table_tasks} t
              LEFT JOIN {$table_prog} p ON p.id = t.program_id
              LEFT JOIN {$table_subj} s ON s.id = t.subject_id
+             LEFT JOIN {$wpdb->users} ut ON ut.ID = s.default_teacher_id
              LEFT JOIN {$wpdb->users} u ON u.ID = t.created_by
              LEFT JOIN {$table_books} b ON b.id = t.book_id
              WHERE t.id = %d AND t.deleted_at IS NULL",
             $id
         ) );
 
-        if ( $row && ! empty( $row->attachment_urls ) ) {
-            $row->attachments = json_decode( $row->attachment_urls, true ) ?: [];
-        } elseif ( $row ) {
-            $row->attachments = [];
-        }
+        if ( $row ) {
+            $row->target_type = ! empty( $row->target_type ) ? $row->target_type : 'all';
+            $target_ids = ! empty( $row->target_student_ids ) ? json_decode( $row->target_student_ids, true ) : [];
+            $row->target_student_ids = is_array( $target_ids ) ? array_map( 'intval', $target_ids ) : [];
+            $row->student_assignments = ! empty( $row->student_assignments ) ? json_decode( $row->student_assignments, true ) : [];
 
-        if ( $row && ! empty( $row->book_cover_id ) ) {
-            $row->book_cover_url = wp_get_attachment_image_url( (int) $row->book_cover_id, 'thumbnail' );
-        } else {
-            $row->book_cover_url = '';
+            if ( ! empty( $row->attachment_urls ) ) {
+                $row->attachments = json_decode( $row->attachment_urls, true ) ?: [];
+            } else {
+                $row->attachments = [];
+            }
+
+            if ( ! empty( $row->book_cover_id ) ) {
+                $row->book_cover_url = wp_get_attachment_image_url( (int) $row->book_cover_id, 'thumbnail' );
+            } else {
+                $row->book_cover_url = '';
+            }
         }
 
         return $row;
@@ -180,6 +243,55 @@ class Aura_Calendar_Tasks {
 
         $min_words = ! empty( $data['min_words'] ) ? max( 0, intval( $data['min_words'] ) ) : 0;
 
+        $target_type = ! empty( $data['target_type'] ) && in_array( $data['target_type'], [ 'all', 'individual', 'differentiated' ], true )
+            ? sanitize_text_field( $data['target_type'] )
+            : 'all';
+
+        $target_student_ids_json  = null;
+        $student_assignments_json = null;
+
+        if ( $target_type === 'individual' ) {
+            $raw_ids = $data['target_student_ids'] ?? [];
+            if ( is_string( $raw_ids ) ) {
+                $decoded = json_decode( stripslashes( $raw_ids ), true );
+                $raw_ids = is_array( $decoded ) ? $decoded : explode( ',', $raw_ids );
+            }
+            $clean_ids = [];
+            if ( is_array( $raw_ids ) ) {
+                foreach ( $raw_ids as $sid ) {
+                    $sid_int = intval( $sid );
+                    if ( $sid_int > 0 ) {
+                        $clean_ids[] = $sid_int;
+                    }
+                }
+            }
+            $clean_ids = array_values( array_unique( $clean_ids ) );
+            $target_student_ids_json = wp_json_encode( $clean_ids );
+        } elseif ( $target_type === 'differentiated' ) {
+            $raw_assignments = $data['student_assignments'] ?? [];
+            if ( is_string( $raw_assignments ) ) {
+                $raw_assignments = json_decode( stripslashes( $raw_assignments ), true ) ?: [];
+            }
+            $clean_assignments = [];
+            $clean_ids = [];
+            if ( is_array( $raw_assignments ) ) {
+                foreach ( $raw_assignments as $sid => $asgn ) {
+                    $sid_int = intval( $sid );
+                    if ( $sid_int > 0 && is_array( $asgn ) ) {
+                        $clean_assignments[ $sid_int ] = [
+                            'book_id'      => intval( $asgn['book_id'] ?? 0 ),
+                            'book_title'   => sanitize_text_field( $asgn['book_title'] ?? '' ),
+                            'book_author'  => sanitize_text_field( $asgn['book_author'] ?? '' ),
+                            'instructions' => sanitize_textarea_field( $asgn['instructions'] ?? '' ),
+                        ];
+                        $clean_ids[] = $sid_int;
+                    }
+                }
+            }
+            $target_student_ids_json  = wp_json_encode( array_values( array_unique( $clean_ids ) ) );
+            $student_assignments_json = wp_json_encode( $clean_assignments );
+        }
+
         $attachments_json = null;
         if ( ! empty( $data['attachment_urls'] ) ) {
             if ( is_array( $data['attachment_urls'] ) ) {
@@ -191,20 +303,23 @@ class Aura_Calendar_Tasks {
         }
 
         $fields = [
-            'program_id'      => $program_id,
-            'subject_id'      => $subject_id,
-            'event_id'        => $event_id,
-            'book_id'         => $book_id,
-            'title'           => $title,
-            'description'     => wp_kses_post( $data['description'] ?? '' ),
-            'due_datetime'    => $due_dt,
-            'max_score'       => floatval( $data['max_score'] ?? 100 ),
-            'weight'          => floatval( $data['weight'] ?? 1.0 ),
-            'attachment_urls' => $attachments_json,
-            'submission_type' => $submission_type,
-            'min_words'       => $min_words,
-            'status'          => in_array( $data['status'] ?? '', [ 'published', 'draft', 'closed' ], true ) ? $data['status'] : 'published',
-            'updated_at'      => current_time( 'mysql' ),
+            'program_id'          => $program_id,
+            'subject_id'          => $subject_id,
+            'event_id'            => $event_id,
+            'book_id'             => $book_id,
+            'title'               => $title,
+            'description'         => wp_kses_post( $data['description'] ?? '' ),
+            'due_datetime'        => $due_dt,
+            'max_score'           => floatval( $data['max_score'] ?? 100 ),
+            'weight'              => floatval( $data['weight'] ?? 1.0 ),
+            'attachment_urls'     => $attachments_json,
+            'submission_type'     => $submission_type,
+            'min_words'           => $min_words,
+            'target_type'         => $target_type,
+            'target_student_ids'  => $target_student_ids_json,
+            'student_assignments' => $student_assignments_json,
+            'status'              => in_array( $data['status'] ?? '', [ 'published', 'draft', 'closed' ], true ) ? $data['status'] : 'published',
+            'updated_at'          => current_time( 'mysql' ),
         ];
 
         $formats = [
@@ -220,6 +335,9 @@ class Aura_Calendar_Tasks {
             $attachments_json !== null ? '%s' : null,
             '%s', // submission_type
             '%d', // min_words
+            '%s', // target_type
+            $target_student_ids_json !== null ? '%s' : null,
+            $student_assignments_json !== null ? '%s' : null,
             '%s', // status
             '%s', // updated_at
         ];
@@ -274,7 +392,71 @@ class Aura_Calendar_Tasks {
     }
 
     /**
-     * Obtener entregas de una tarea
+     * Obtener listado de estudiantes inscritos en un programa académico
+     *
+     * @param int $program_id
+     * @param int $subject_id
+     * @return array
+     */
+    public static function get_program_students( int $program_id, int $subject_id = 0 ): array {
+        global $wpdb;
+        $table_stud = $wpdb->prefix . 'aura_students';
+        $table_enr  = $wpdb->prefix . 'aura_student_enrollments';
+        $table_crs  = $wpdb->prefix . 'aura_student_courses';
+        $table_prog = $wpdb->prefix . 'aura_cal_programs';
+
+        $has_stud = $wpdb->get_var( "SHOW TABLES LIKE '{$table_stud}'" ) === $table_stud;
+        if ( ! $has_stud ) {
+            return [];
+        }
+
+        $students = [];
+        if ( $program_id > 0 && $wpdb->get_var( "SHOW TABLES LIKE '{$table_enr}'" ) === $table_enr ) {
+            $students_sql = "SELECT DISTINCT st.id AS student_id, st.first_name, st.last_name, 
+                                    COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, 
+                                    st.email, st.photo_url, st.wp_user_id, st.status
+                             FROM {$table_enr} enr
+                             JOIN {$table_stud} st ON st.id = enr.student_id
+                             LEFT JOIN {$table_crs} c ON c.id = enr.course_id
+                             LEFT JOIN {$table_prog} p ON p.id = %d
+                             WHERE (enr.course_id = %d OR (p.name IS NOT NULL AND c.name = p.name))
+                               AND enr.status IN ('active', 'completed', 'pending')
+                             ORDER BY st.last_name ASC, st.first_name ASC";
+            $students = $wpdb->get_results( $wpdb->prepare( $students_sql, $program_id, $program_id ) );
+        }
+
+        if ( empty( $students ) ) {
+            $fallback_sql = "SELECT st.id AS student_id, st.first_name, st.last_name, 
+                                    COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, 
+                                    st.email, st.photo_url, st.wp_user_id, st.status
+                             FROM {$table_stud} st
+                             WHERE st.status IN ('active', 'approved', 'applicant')
+                             ORDER BY st.last_name ASC, st.first_name ASC";
+            $students = $wpdb->get_results( $fallback_sql );
+        }
+
+        $formatted = [];
+        if ( is_array( $students ) ) {
+            foreach ( $students as $s ) {
+                $avatar = ! empty( $s->photo_url ) ? esc_url( $s->photo_url ) : get_avatar_url( $s->email, [ 'size' => 64 ] );
+                $formatted[] = [
+                    'id'           => (int) $s->student_id,
+                    'first_name'   => $s->first_name,
+                    'last_name'    => $s->last_name,
+                    'full_name'    => trim( $s->first_name . ' ' . $s->last_name ),
+                    'student_code' => $s->student_code,
+                    'email'        => $s->email,
+                    'avatar'       => $avatar,
+                ];
+            }
+        }
+
+        return $formatted;
+    }
+
+    /**
+     * Obtener entregas de una tarea con estado completo (entregados y pendientes)
+     * y libro individualizado asignado.
      *
      * @param int $task_id
      * @return array
@@ -289,6 +471,48 @@ class Aura_Calendar_Tasks {
             return [];
         }
 
+        $task = self::get_task( $task_id );
+        if ( ! $task ) {
+            return [];
+        }
+
+        // Determinar qué estudiantes deben realizar la tarea
+        $target_type = $task->target_type ?: 'all';
+        $all_program_students = self::get_program_students( (int) $task->program_id, (int) $task->subject_id );
+        
+        $assigned_students = [];
+        if ( $target_type === 'individual' || $target_type === 'differentiated' ) {
+            $target_ids = array_map( 'intval', $task->target_student_ids ?: [] );
+            foreach ( $all_program_students as $st ) {
+                if ( in_array( (int) $st['id'], $target_ids, true ) ) {
+                    $assigned_students[ (int) $st['id'] ] = $st;
+                }
+            }
+            // Si algún ID no estaba en all_program_students, consultar directo
+            foreach ( $target_ids as $tid ) {
+                if ( ! isset( $assigned_students[ $tid ] ) && $tid > 0 ) {
+                    $row = $wpdb->get_row( $wpdb->prepare( "SELECT id, first_name, last_name, id_number, email, photo_url FROM {$table_stud} WHERE id = %d", $tid ) );
+                    if ( $row ) {
+                        $assigned_students[ $tid ] = [
+                            'id'           => (int) $row->id,
+                            'first_name'   => $row->first_name,
+                            'last_name'    => $row->last_name,
+                            'full_name'    => trim( $row->first_name . ' ' . $row->last_name ),
+                            'student_code' => $row->id_number ?: ( 'EST-' . $row->id ),
+                            'email'        => $row->email,
+                            'avatar'       => ! empty( $row->photo_url ) ? esc_url( $row->photo_url ) : get_avatar_url( $row->email, [ 'size' => 64 ] ),
+                        ];
+                    }
+                }
+            }
+        } else {
+            // Modalidad 'all': todos los estudiantes del programa
+            foreach ( $all_program_students as $st ) {
+                $assigned_students[ (int) $st['id'] ] = $st;
+            }
+        }
+
+        // Obtener entregas existentes
         $sql = "SELECT sub.*, st.first_name, st.last_name, COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, st.email,
                        u.display_name AS graded_by_name
                 FROM {$table_subs} sub
@@ -296,9 +520,90 @@ class Aura_Calendar_Tasks {
                 LEFT JOIN {$wpdb->users} u ON u.ID = sub.graded_by
                 WHERE sub.task_id = %d
                 ORDER BY sub.submitted_at DESC";
+        $existing_subs = $wpdb->get_results( $wpdb->prepare( $sql, $task_id ) );
+        $subs_by_student = [];
+        if ( is_array( $existing_subs ) ) {
+            foreach ( $existing_subs as $es ) {
+                $subs_by_student[ (int) $es->student_id ] = $es;
+            }
+        }
 
-        $rows = $wpdb->get_results( $wpdb->prepare( $sql, $task_id ) );
-        return is_array( $rows ) ? $rows : [];
+        // Fusionar lista completa de asignados con sus entregas y su libro individualizado
+        $final_list = [];
+        $differentiated_assignments = $task->student_assignments ?: [];
+
+        foreach ( $assigned_students as $sid => $st_info ) {
+            $sub = $subs_by_student[ $sid ] ?? null;
+
+            // Determinar libro asignado a este estudiante en particular
+            $book_id          = $task->book_id;
+            $book_title       = $task->book_title;
+            $book_author      = $task->book_author;
+            $custom_instructions = '';
+
+            if ( $target_type === 'differentiated' && isset( $differentiated_assignments[ $sid ] ) ) {
+                $da = $differentiated_assignments[ $sid ];
+                if ( ! empty( $da['book_id'] ) ) {
+                    $book_id = (int) $da['book_id'];
+                }
+                if ( ! empty( $da['book_title'] ) ) {
+                    $book_title = $da['book_title'];
+                }
+                if ( ! empty( $da['book_author'] ) ) {
+                    $book_author = $da['book_author'];
+                }
+                if ( ! empty( $da['instructions'] ) ) {
+                    $custom_instructions = $da['instructions'];
+                }
+            }
+
+            if ( $sub ) {
+                $sub->assigned_book_id          = $book_id;
+                $sub->assigned_book_title       = $book_title;
+                $sub->assigned_book_author      = $book_author;
+                $sub->assigned_instructions     = $custom_instructions;
+                $sub->avatar                    = $st_info['avatar'];
+                $final_list[] = $sub;
+            } else {
+                // Registro sintético de estudiante pendiente
+                $dummy = (object) [
+                    'id'                     => 0,
+                    'task_id'                => $task_id,
+                    'student_id'             => $sid,
+                    'first_name'             => $st_info['first_name'],
+                    'last_name'              => $st_info['last_name'],
+                    'student_code'           => $st_info['student_code'],
+                    'email'                  => $st_info['email'],
+                    'avatar'                 => $st_info['avatar'],
+                    'submission_text'        => null,
+                    'attachment_urls'        => null,
+                    'submitted_at'           => null,
+                    'status'                 => 'pending_submission',
+                    'score'                  => null,
+                    'feedback'               => null,
+                    'graded_by'              => null,
+                    'graded_at'              => null,
+                    'graded_by_name'         => null,
+                    'assigned_book_id'       => $book_id,
+                    'assigned_book_title'    => $book_title,
+                    'assigned_book_author'   => $book_author,
+                    'assigned_instructions'  => $custom_instructions,
+                ];
+                $final_list[] = $dummy;
+            }
+        }
+
+        // Ordenar: primero los que han entregado (para calificar), luego los pendientes
+        usort( $final_list, function( $a, $b ) {
+            $a_has = ( $a->status !== 'pending_submission' ) ? 1 : 0;
+            $b_has = ( $b->status !== 'pending_submission' ) ? 1 : 0;
+            if ( $a_has !== $b_has ) {
+                return $b_has - $a_has;
+            }
+            return strcmp( $a->last_name, $b->last_name );
+        } );
+
+        return $final_list;
     }
 
     /**
@@ -609,5 +914,22 @@ class Aura_Calendar_Tasks {
         }
 
         wp_send_json_success( [ 'books' => $books ] );
+    }
+
+    /**
+     * AJAX: Obtener lista de estudiantes de un programa con su avatar y código
+     */
+    public static function ajax_get_program_students(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_tasks' ) && ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        $program_id = intval( $_POST['program_id'] ?? 0 );
+        $subject_id = intval( $_POST['subject_id'] ?? 0 );
+
+        $students = self::get_program_students( $program_id, $subject_id );
+        wp_send_json_success( [ 'students' => $students ] );
     }
 }

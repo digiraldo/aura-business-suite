@@ -21,31 +21,82 @@ $table_books = $wpdb->prefix . 'aura_library_books';
 $table_subj  = $wpdb->prefix . 'aura_cal_subjects';
 $table_prog  = $wpdb->prefix . 'aura_cal_programs';
 
+$table_areas = $wpdb->prefix . 'aura_cal_areas';
+
 $student_id = intval( $student->id ?? 0 );
 
 $has_tasks_table = $wpdb->get_var( "SHOW TABLES LIKE '{$table_tasks}'" ) === $table_tasks;
 $has_books_table = $wpdb->get_var( "SHOW TABLES LIKE '{$table_books}'" ) === $table_books;
+$has_areas_table = $wpdb->get_var( "SHOW TABLES LIKE '{$table_areas}'" ) === $table_areas;
 
 $tasks = [];
 if ( $has_tasks_table ) {
     $book_join = $has_books_table ? "LEFT JOIN {$table_books} b ON b.id = t.book_id" : "";
     $book_cols = $has_books_table ? ", b.title AS book_title, b.author AS book_author, b.isbn AS book_isbn, b.dewey_number AS book_dewey, b.cover_image_id" : "";
+    $area_join = $has_areas_table ? "LEFT JOIN {$table_areas} a ON (a.id = s.area_id OR a.id = p.area_id)" : "";
+    $area_col  = $has_areas_table ? ", a.name AS area_name" : "";
 
-    $tasks = $wpdb->get_results( $wpdb->prepare(
+    $raw_tasks = $wpdb->get_results( $wpdb->prepare(
         "SELECT t.*,
                 p.name AS program_name, p.code AS program_code,
                 s.name AS subject_name, s.code AS subject_code
+                {$area_col}
                 {$book_cols},
+                u.display_name AS created_by_name,
+                prof.display_name AS teacher_name,
                 sub.id AS submission_id, sub.status AS submission_status, sub.submission_text, sub.attachment_urls, sub.score, sub.feedback, sub.submitted_at
          FROM {$table_tasks} t
          LEFT JOIN {$table_prog} p ON p.id = t.program_id
          LEFT JOIN {$table_subj} s ON s.id = t.subject_id
+         LEFT JOIN {$wpdb->users} u ON u.ID = t.created_by
+         LEFT JOIN {$wpdb->users} prof ON prof.ID = s.teacher_id
+         {$area_join}
          {$book_join}
          LEFT JOIN {$table_subs} sub ON (sub.task_id = t.id AND sub.student_id = %d)
          WHERE t.status = 'published' AND t.deleted_at IS NULL
          ORDER BY (sub.id IS NOT NULL) ASC, t.due_datetime ASC",
         $student_id
     ) );
+
+    // Filtrar tareas que le corresponden al estudiante según modalidad y mapear libros diferenciados
+    $assigned_tasks = [];
+    foreach ( (array) $raw_tasks as $tsk ) {
+        $target_type = $tsk->target_type ?: 'all';
+        $target_ids  = ! empty( $tsk->target_student_ids ) ? json_decode( $tsk->target_student_ids, true ) : [];
+        if ( ! is_array( $target_ids ) ) $target_ids = [];
+        $assignments = ! empty( $tsk->student_assignments ) ? json_decode( $tsk->student_assignments, true ) : [];
+        if ( ! is_array( $assignments ) ) $assignments = [];
+
+        if ( $target_type === 'individual' ) {
+            if ( ! in_array( $student_id, array_map( 'intval', $target_ids ), true ) ) {
+                continue;
+            }
+        } elseif ( $target_type === 'differentiated' ) {
+            if ( ! isset( $assignments[ $student_id ] ) && ! isset( $assignments[ (string) $student_id ] ) ) {
+                continue;
+            }
+            $my_diff = $assignments[ $student_id ] ?? ( $assignments[ (string) $student_id ] ?? [] );
+            if ( ! empty( $my_diff['book_id'] ) ) {
+                $tsk->book_id     = (int) $my_diff['book_id'];
+                $tsk->book_title  = $my_diff['book_title'] ?? $tsk->book_title;
+                $tsk->book_author = $my_diff['book_author'] ?? $tsk->book_author;
+                if ( $has_books_table && ! empty( $tsk->book_id ) ) {
+                    $bk_row = $wpdb->get_row( $wpdb->prepare( "SELECT cover_image_id, isbn, dewey_number FROM {$table_books} WHERE id = %d", $tsk->book_id ) );
+                    if ( $bk_row ) {
+                        $tsk->cover_image_id = $bk_row->cover_image_id;
+                        $tsk->book_isbn      = $bk_row->isbn;
+                        $tsk->book_dewey     = $bk_row->dewey_number;
+                    }
+                }
+            }
+            if ( ! empty( $my_diff['instructions'] ) ) {
+                $tsk->individual_instructions = $my_diff['instructions'];
+            }
+        }
+
+        $assigned_tasks[] = $tsk;
+    }
+    $tasks = $assigned_tasks;
 }
 ?>
 
@@ -62,7 +113,7 @@ if ( $has_tasks_table ) {
             </p>
         </div>
         <div style="font-size: 12px; color: var(--aura-text-muted);">
-            📋 <?php echo count( $tasks ); ?> <?php esc_html_e( 'actividades disponibles', 'aura-suite' ); ?>
+            📋 <?php echo count( $tasks ); ?> <?php esc_html_e( 'actividades asignadas a ti', 'aura-suite' ); ?>
         </div>
     </div>
 
@@ -87,14 +138,22 @@ if ( $has_tasks_table ) {
                 if ( ! empty( $tsk->cover_image_id ) ) {
                     $cover_url = wp_get_attachment_image_url( (int) $tsk->cover_image_id, 'thumbnail' );
                 }
+                $recipient_name = $tsk->teacher_name ?: ( $tsk->created_by_name ?: __( 'Profesor Titular', 'aura-suite' ) );
             ?>
                 <div class="adp-card" style="padding: 20px; border-radius: 12px; background: var(--aura-surface); border: 1px solid var(--aura-border); display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
                         <!-- Encabezado de la Tarjeta -->
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                            <span class="adp-badge badge-indigo">
-                                <?php echo esc_html( $tsk->program_code ?: ( $tsk->program_name ?: 'General' ) ); ?>
-                            </span>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <span class="adp-badge badge-indigo">
+                                    🎓 <?php echo esc_html( $tsk->program_code ?: ( $tsk->program_name ?: 'Programa' ) ); ?>
+                                </span>
+                                <?php if ( ! empty( $tsk->area_name ) ) : ?>
+                                    <span class="adp-badge badge-slate" style="font-size: 11px;">
+                                        🏛️ <?php echo esc_html( $tsk->area_name ); ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
 
                             <?php if ( $is_graded ) : ?>
                                 <span class="adp-badge badge-emerald has-dot">
@@ -119,6 +178,12 @@ if ( $has_tasks_table ) {
                             <?php echo esc_html( $tsk->title ); ?>
                         </h4>
 
+                        <!-- Destinatario / Docente a quien entregar -->
+                        <div style="font-size: 12px; color: var(--aura-text-secondary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                            <span>👤 <strong><?php esc_html_e( 'Entregar a:', 'aura-suite' ); ?></strong></span>
+                            <span><?php echo esc_html( $recipient_name ); ?></span>
+                        </div>
+
                         <?php if ( ! empty( $tsk->subject_name ) ) : ?>
                             <div style="font-size: 12px; font-weight: 600; color: var(--aura-text-secondary); margin-bottom: 8px;">
                                 📚 <?php echo esc_html( $tsk->subject_name ); ?>
@@ -136,7 +201,7 @@ if ( $has_tasks_table ) {
                                     </div>
                                 <?php endif; ?>
                                 <div style="font-size: 12px; line-height: 1.3;">
-                                    <div style="font-size: 10px; text-transform: uppercase; font-weight: 700; color: #6366f1; letter-spacing: 0.5px;"><?php esc_html_e( 'Lectura Asignada', 'aura-suite' ); ?></div>
+                                    <div style="font-size: 10px; text-transform: uppercase; font-weight: 700; color: #6366f1; letter-spacing: 0.5px;"><?php esc_html_e( 'Tu Lectura Asignada', 'aura-suite' ); ?></div>
                                     <strong style="color: var(--aura-text-primary); display: block; margin-top: 1px;"><?php echo esc_html( $tsk->book_title ); ?></strong>
                                     <?php if ( ! empty( $tsk->book_author ) ) : ?>
                                         <div style="color: var(--aura-text-muted); font-size: 11px;"><?php echo esc_html( $tsk->book_author ); ?></div>
@@ -145,6 +210,14 @@ if ( $has_tasks_table ) {
                                         <div style="color: var(--aura-text-muted); font-size: 10px; font-family: monospace;">Dewey: <?php echo esc_html( $tsk->book_dewey ); ?></div>
                                     <?php endif; ?>
                                 </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Instrucción específica para el estudiante (si la tarea es diferenciada) -->
+                        <?php if ( ! empty( $tsk->individual_instructions ) ) : ?>
+                            <div style="background: rgba(99,102,241,0.08); border-left: 3px solid #6366f1; border-radius: 6px; padding: 8px 10px; margin-bottom: 10px; font-size: 12px;">
+                                <strong style="color: #6366f1;">🎯 <?php esc_html_e( 'Instrucción específica para ti:', 'aura-suite' ); ?></strong>
+                                <span style="color: var(--aura-text-primary); display: block; margin-top: 2px;"><?php echo esc_html( $tsk->individual_instructions ); ?></span>
                             </div>
                         <?php endif; ?>
 
@@ -167,8 +240,8 @@ if ( $has_tasks_table ) {
                         <!-- Si ya tiene feedback del profesor -->
                         <?php if ( ! empty( $tsk->feedback ) ) : ?>
                             <div style="background: rgba(16,185,129,0.08); border-left: 3px solid #10b981; border-radius: 6px; padding: 8px 10px; margin-bottom: 10px; font-size: 12px;">
-                                <strong style="color: #10b981;"><?php esc_html_e( 'Docente:', 'aura-suite' ); ?></strong>
-                                <span style="color: var(--aura-text-primary);"><?php echo esc_html( $tsk->feedback ); ?></span>
+                                <strong style="color: #10b981;"><?php esc_html_e( 'Retroalimentación Docente:', 'aura-suite' ); ?></strong>
+                                <span style="color: var(--aura-text-primary); display: block; margin-top: 2px;"><?php echo esc_html( $tsk->feedback ); ?></span>
                             </div>
                         <?php endif; ?>
                     </div>

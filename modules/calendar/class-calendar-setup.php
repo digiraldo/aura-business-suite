@@ -35,6 +35,7 @@ class Aura_Calendar_Setup {
     public static function init(): void {
         self::maybe_add_area_id_column();
         self::maybe_add_task_library_columns();
+        self::maybe_add_task_targeting_columns();
         self::maybe_add_materials_and_leaders_columns();
         if ( self::needs_update() ) {
             add_action( 'admin_init', [ __CLASS__, 'create_tables' ] );
@@ -75,6 +76,32 @@ class Aura_Calendar_Setup {
             $col_words = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_tasks}` LIKE 'min_words'" );
             if ( empty( $col_words ) ) {
                 $wpdb->query( "ALTER TABLE `{$t_tasks}` ADD COLUMN `min_words` INT UNSIGNED DEFAULT 0 AFTER `submission_type`" );
+            }
+        }
+    }
+
+    /**
+     * Asegura las columnas target_type, target_student_ids y student_assignments en wp_aura_cal_tasks.
+     * Permite asignación grupal, individual y diferenciada (un libro/tema por estudiante).
+     */
+    public static function maybe_add_task_targeting_columns(): void {
+        global $wpdb;
+        $t_tasks = $wpdb->prefix . 'aura_cal_tasks';
+        $table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$t_tasks}'" );
+        if ( $table_exists === $t_tasks ) {
+            $col_type = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_tasks}` LIKE 'target_type'" );
+            if ( empty( $col_type ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_tasks}` ADD COLUMN `target_type` VARCHAR(30) NOT NULL DEFAULT 'all' AFTER `min_words`" );
+            }
+
+            $col_students = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_tasks}` LIKE 'target_student_ids'" );
+            if ( empty( $col_students ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_tasks}` ADD COLUMN `target_student_ids` TEXT DEFAULT NULL AFTER `target_type`" );
+            }
+
+            $col_assignments = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_tasks}` LIKE 'student_assignments'" );
+            if ( empty( $col_assignments ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_tasks}` ADD COLUMN `student_assignments` LONGTEXT DEFAULT NULL AFTER `target_student_ids`" );
             }
         }
     }
@@ -289,6 +316,9 @@ class Aura_Calendar_Setup {
   attachment_urls LONGTEXT DEFAULT NULL,
   submission_type VARCHAR(30) NOT NULL DEFAULT 'text_or_file',
   min_words INT UNSIGNED DEFAULT 0,
+  target_type VARCHAR(30) NOT NULL DEFAULT 'all',
+  target_student_ids TEXT DEFAULT NULL,
+  student_assignments LONGTEXT DEFAULT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'published',
   created_by BIGINT UNSIGNED NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

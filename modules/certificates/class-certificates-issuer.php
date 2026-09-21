@@ -114,7 +114,8 @@ class Aura_Certificates_Issuer {
 
         // ── Obtener datos del estudiante / inscripción ──────────────
         $students_table    = $wpdb->prefix . 'aura_students';
-        $enrollments_table = $wpdb->prefix . 'aura_enrollments';
+        $enrollments_table = $wpdb->prefix . 'aura_student_enrollments';
+        $courses_table     = $wpdb->prefix . 'aura_student_courses';
 
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $student = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$students_table} WHERE id = %d", $student_id ) );
@@ -123,9 +124,18 @@ class Aura_Certificates_Issuer {
         }
 
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $enrollment = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$enrollments_table} WHERE id = %d AND student_id = %d", $enrollment_id, $student_id ) );
+        $enrollment = $wpdb->get_row( $wpdb->prepare( 
+            "SELECT e.*, c.name as course_name, c.name as program_name 
+             FROM {$enrollments_table} e 
+             LEFT JOIN {$courses_table} c ON c.id = e.course_id 
+             WHERE e.id = %d AND e.student_id = %d", 
+            $enrollment_id, $student_id 
+        ) );
         if ( ! $enrollment ) {
             return new \WP_Error( 'enrollment_not_found', __( 'Inscripción no encontrada.', 'aura-suite' ) );
+        }
+        if ( empty( $enrollment->graduation_date ) && ! empty( $student->graduated_at ) ) {
+            $enrollment->graduation_date = $student->graduated_at;
         }
 
         // ── Plantilla de diseño ─────────────────────────────────────

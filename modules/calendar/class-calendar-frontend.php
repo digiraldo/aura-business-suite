@@ -571,6 +571,16 @@ class Aura_Calendar_Frontend {
 
         ob_start();
         ?>
+        <script>
+            window.auraTeacherBooks = <?php echo wp_json_encode( array_map( function( $b ) {
+                return [
+                    'id'     => (int) $b->id,
+                    'title'  => $b->title,
+                    'author' => $b->author ?? '',
+                    'isbn'   => $b->isbn ?? '',
+                ];
+            }, $library_books ) ); ?>;
+        </script>
         <div class="aura-portal-wrap aura-teacher-portal" style="max-width: 1200px; margin: 24px auto; padding: 0 16px; font-family: inherit;">
 
             <!-- BARRA SUPERIOR / ENCABEZADO DEL INSTRUCTOR -->
@@ -835,8 +845,17 @@ class Aura_Calendar_Frontend {
                             <?php foreach ( $my_tasks as $t ) : ?>
                                 <div class="aura-teacher-item-card">
                                     <div>
-                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                                            <span class="adp-badge badge-indigo"><?php echo esc_html( $t->program_code ?: $t->program_name ); ?></span>
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+                                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                                <span class="adp-badge badge-indigo"><?php echo esc_html( $t->program_code ?: $t->program_name ); ?></span>
+                                                <?php if ( ! empty( $t->target_type ) && $t->target_type === 'differentiated' ) : ?>
+                                                    <span class="adp-badge badge-purple" title="<?php esc_attr_e( 'Libro o tema diferente por estudiante', 'aura' ); ?>">🎲 <?php esc_html_e( 'Diferenciada', 'aura' ); ?></span>
+                                                <?php elseif ( ! empty( $t->target_type ) && $t->target_type === 'individual' ) : ?>
+                                                    <span class="adp-badge badge-amber" title="<?php esc_attr_e( 'Asignada a estudiantes específicos', 'aura' ); ?>">👤 <?php esc_html_e( 'Individual', 'aura' ); ?></span>
+                                                <?php else : ?>
+                                                    <span class="adp-badge badge-slate" title="<?php esc_attr_e( 'Asignada a toda la cohorte', 'aura' ); ?>">👥 <?php esc_html_e( 'Grupal', 'aura' ); ?></span>
+                                                <?php endif; ?>
+                                            </div>
                                             <?php if ( $t->status === 'published' ) : ?>
                                                 <span class="adp-badge badge-emerald has-dot"><span class="pulse-dot"></span> <?php esc_html_e( 'Publicada', 'aura' ); ?></span>
                                             <?php else : ?>
@@ -946,10 +965,67 @@ class Aura_Calendar_Frontend {
                                 </div>
                             </div>
 
-                            <!-- VINCULACIÓN CON LIBRO DE BIBLIOTECA -->
-                            <div class="form-group" style="background: var(--at-chip-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--at-chip-border);">
+                            <!-- MODALIDAD DE ASIGNACIÓN: GRUPAL / INDIVIDUAL / DIFERENCIADA -->
+                            <div class="form-group" style="background: var(--at-bg-card-alt, #f8fafc); padding: 14px; border-radius: 10px; border: 1px solid var(--at-border);">
+                                <label style="font-weight: 700; font-size: 13px; display: block; margin-bottom: 8px; color: var(--at-text-primary);">
+                                    🎯 <?php esc_html_e( 'Modalidad de Asignación', 'aura' ); ?>
+                                </label>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                                    <label class="aura-target-type-card" style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--at-border); border-radius: 8px; cursor: pointer; background: var(--at-bg-card);">
+                                        <input type="radio" name="target_type" value="all" checked style="margin: 0;">
+                                        <div>
+                                            <div style="font-weight: 600; font-size: 12.5px; color: var(--at-text-primary);">👥 <?php esc_html_e( 'Grupal', 'aura' ); ?></div>
+                                            <div style="font-size: 11px; color: var(--at-text-muted);"><?php esc_html_e( 'Toda la cohorte', 'aura' ); ?></div>
+                                        </div>
+                                    </label>
+                                    <label class="aura-target-type-card" style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--at-border); border-radius: 8px; cursor: pointer; background: var(--at-bg-card);">
+                                        <input type="radio" name="target_type" value="individual" style="margin: 0;">
+                                        <div>
+                                            <div style="font-weight: 600; font-size: 12.5px; color: var(--at-text-primary);">👤 <?php esc_html_e( 'Individual', 'aura' ); ?></div>
+                                            <div style="font-size: 11px; color: var(--at-text-muted);"><?php esc_html_e( 'Alumnos específicos', 'aura' ); ?></div>
+                                        </div>
+                                    </label>
+                                    <label class="aura-target-type-card" style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--at-border); border-radius: 8px; cursor: pointer; background: var(--at-bg-card);">
+                                        <input type="radio" name="target_type" value="differentiated" style="margin: 0;">
+                                        <div>
+                                            <div style="font-weight: 600; font-size: 12.5px; color: var(--at-text-primary);">🎲 <?php esc_html_e( 'Diferenciada', 'aura' ); ?></div>
+                                            <div style="font-size: 11px; color: var(--at-text-muted);"><?php esc_html_e( 'Libro por alumno', 'aura' ); ?></div>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- SECCIÓN TARGETING: INDIVIDUAL -->
+                                <div id="section-targeting-individual" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--at-border);">
+                                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--at-text-primary); display: flex; justify-content: space-between; align-items: center;">
+                                        <span><?php esc_html_e( 'Selecciona los estudiantes que deben realizar esta actividad:', 'aura' ); ?></span>
+                                        <button type="button" class="btn btn-ghost" id="btn-toggle-all-indiv" style="font-size: 11px; padding: 2px 8px;"><?php esc_html_e( 'Marcar todos', 'aura' ); ?></button>
+                                    </div>
+                                    <div id="container-students-individual" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 8px; background: var(--at-bg-card); border-radius: 6px; border: 1px solid var(--at-border);">
+                                        <p style="font-size: 12px; color: var(--at-text-muted); margin: 0; text-align: center; padding: 8px;"><?php esc_html_e( 'Selecciona primero un Programa Académico arriba.', 'aura' ); ?></p>
+                                    </div>
+                                </div>
+
+                                <!-- SECCIÓN TARGETING: DIFERENCIADA -->
+                                <div id="section-targeting-differentiated" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--at-border);">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                                        <div>
+                                            <div style="font-size: 12.5px; font-weight: 700; color: var(--at-text-primary);">🎲 <?php esc_html_e( 'Asignación de Libro o Tema por Alumno', 'aura' ); ?></div>
+                                            <div style="font-size: 11px; color: var(--at-text-muted);"><?php esc_html_e( 'Asigna un libro diferente a cada estudiante para su control de lectura.', 'aura' ); ?></div>
+                                        </div>
+                                        <button type="button" class="btn btn-purple btn-lift" id="btn-auto-assign-books" style="font-size: 11.5px; padding: 4px 10px;">
+                                            🎲 <?php esc_html_e( 'Repartir Libros Aleatoriamente', 'aura' ); ?>
+                                        </button>
+                                    </div>
+                                    <div id="container-students-differentiated" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px; background: var(--at-bg-card); border-radius: 6px; border: 1px solid var(--at-border);">
+                                        <p style="font-size: 12px; color: var(--at-text-muted); margin: 0; text-align: center; padding: 8px;"><?php esc_html_e( 'Selecciona primero un Programa Académico arriba.', 'aura' ); ?></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- VINCULACIÓN CON LIBRO DE BIBLIOTECA (GENERAL / COHORTE) -->
+                            <div id="section-general-book" class="form-group" style="background: var(--at-chip-bg); padding: 14px; border-radius: 10px; border: 1px solid var(--at-chip-border);">
                                 <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px; color: var(--at-primary);">
-                                    📖 <?php esc_html_e( 'Asignar Libro de la Biblioteca (Control de Lectura)', 'aura' ); ?>
+                                    📖 <?php esc_html_e( 'Asignar Libro de la Biblioteca (Control de Lectura Grupal)', 'aura' ); ?>
                                 </label>
                                 <select name="book_id" id="t-tsk-book" class="form-control" style="width: 100%;">
                                     <option value=""><?php esc_html_e( '-- Ninguno (Tarea Estándar sin Libro) --', 'aura' ); ?></option>
@@ -1157,8 +1233,158 @@ class Aura_Calendar_Frontend {
                 closeTeacherModal(sel);
             });
 
+            var currentProgramStudents = [];
+
+            // Alternar secciones según Modalidad de Asignación
+            function updateTargetingUI() {
+                var targetType = $('input[name="target_type"]:checked').val() || 'all';
+                if (targetType === 'all') {
+                    $('#section-targeting-individual').slideUp(150);
+                    $('#section-targeting-differentiated').slideUp(150);
+                    $('#section-general-book').slideDown(150);
+                } else if (targetType === 'individual') {
+                    $('#section-targeting-individual').slideDown(150);
+                    $('#section-targeting-differentiated').slideUp(150);
+                    $('#section-general-book').slideDown(150);
+                    loadProgramStudentsIfNeeded();
+                } else if (targetType === 'differentiated') {
+                    $('#section-targeting-individual').slideUp(150);
+                    $('#section-targeting-differentiated').slideDown(150);
+                    $('#section-general-book').slideUp(150);
+                    loadProgramStudentsIfNeeded();
+                }
+            }
+
+            $('input[name="target_type"]').on('change', updateTargetingUI);
+
+            // Cargar estudiantes del programa seleccionado
+            function loadProgramStudentsIfNeeded() {
+                var progId = $('#t-tsk-prog').val();
+                var subjId = $('#t-tsk-subj').val();
+
+                if (!progId) {
+                    $('#container-students-individual').html('<p style="font-size:12px;color:var(--at-text-muted);text-align:center;padding:8px;">Selecciona primero un Programa Académico arriba.</p>');
+                    $('#container-students-differentiated').html('<p style="font-size:12px;color:var(--at-text-muted);text-align:center;padding:8px;">Selecciona primero un Programa Académico arriba.</p>');
+                    currentProgramStudents = [];
+                    return;
+                }
+
+                $('#container-students-individual').html('<p style="font-size:12px;color:var(--at-text-muted);text-align:center;padding:8px;">⏳ Cargando alumnos matriculados...</p>');
+                $('#container-students-differentiated').html('<p style="font-size:12px;color:var(--at-text-muted);text-align:center;padding:8px;">⏳ Cargando alumnos matriculados...</p>');
+
+                $.post(auraCalData.ajax_url, {
+                    action: 'aura_cal_get_program_students',
+                    nonce: auraCalData.nonce,
+                    program_id: progId,
+                    subject_id: subjId
+                }, function(res) {
+                    if (res && res.success && res.data.students) {
+                        currentProgramStudents = res.data.students;
+                        renderTargetingStudents(currentProgramStudents);
+                    } else {
+                        var msg = (res && res.data && res.data.message) ? res.data.message : 'No se encontraron alumnos en este programa.';
+                        $('#container-students-individual').html('<p style="font-size:12px;color:var(--at-text-muted);text-align:center;padding:8px;">' + msg + '</p>');
+                        $('#container-students-differentiated').html('<p style="font-size:12px;color:var(--at-text-muted);text-align:center;padding:8px;">' + msg + '</p>');
+                    }
+                }).fail(function() {
+                    $('#container-students-individual').html('<p style="font-size:12px;color:#ef4444;text-align:center;padding:8px;">Error al cargar alumnos.</p>');
+                    $('#container-students-differentiated').html('<p style="font-size:12px;color:#ef4444;text-align:center;padding:8px;">Error al cargar alumnos.</p>');
+                });
+            }
+
+            $('#t-tsk-prog, #t-tsk-subj').on('change', function() {
+                var targetType = $('input[name="target_type"]:checked').val() || 'all';
+                if (targetType !== 'all') {
+                    loadProgramStudentsIfNeeded();
+                }
+            });
+
+            // Renderizar listas en los contenedores
+            function renderTargetingStudents(students) {
+                if (!students || !students.length) {
+                    $('#container-students-individual').html('<p style="font-size:12px;color:var(--at-text-muted);text-align:center;padding:8px;">No hay alumnos matriculados en este programa.</p>');
+                    $('#container-students-differentiated').html('<p style="font-size:12px;color:var(--at-text-muted);text-align:center;padding:8px;">No hay alumnos matriculados en este programa.</p>');
+                    return;
+                }
+
+                // 1. Contenedor Individual (Checkboxes)
+                var indHtml = '';
+                $.each(students, function(i, st) {
+                    var codeTag = st.student_code ? ' <span style="font-size:11px;color:var(--at-text-muted);font-family:monospace;">(' + st.student_code + ')</span>' : '';
+                    indHtml += '<label style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 6px;border-radius:4px;cursor:pointer;background:var(--at-bg-card-alt,#f8fafc);">';
+                    indHtml += '  <input type="checkbox" class="chk-indiv-student" value="' + st.id + '" checked style="margin:0;">';
+                    indHtml += '  <span><strong>' + st.first_name + ' ' + st.last_name + '</strong>' + codeTag + '</span>';
+                    indHtml += '</label>';
+                });
+                $('#container-students-individual').html(indHtml);
+
+                // 2. Contenedor Diferenciado (Cada alumno con su libro)
+                var books = window.auraTeacherBooks || [];
+                var diffHtml = '';
+                $.each(students, function(i, st) {
+                    var codeTag = st.student_code ? ' <span style="font-size:11px;color:var(--at-text-muted);font-family:monospace;">(' + st.student_code + ')</span>' : '';
+                    diffHtml += '<div class="row-diff-student" data-student-id="' + st.id + '" style="border:1px solid var(--at-border);border-radius:8px;padding:10px;background:var(--at-bg-card-alt,#f8fafc);display:flex;flex-direction:column;gap:6px;">';
+                    diffHtml += '  <div style="display:flex;justify-content:space-between;align-items:center;">';
+                    diffHtml += '    <div style="font-size:13px;font-weight:700;color:var(--at-text-primary);">👤 ' + st.first_name + ' ' + st.last_name + codeTag + '</div>';
+                    diffHtml += '    <span class="adp-badge badge-slate" style="font-size:10.5px;">Alumno #' + st.id + '</span>';
+                    diffHtml += '  </div>';
+                    diffHtml += '  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+                    diffHtml += '    <div>';
+                    diffHtml += '      <label style="font-size:11px;font-weight:600;display:block;margin-bottom:2px;color:var(--at-primary);">📖 Libro Asignado:</label>';
+                    diffHtml += '      <select class="form-control student-diff-book" style="width:100%;font-size:12px;padding:4px 8px;">';
+                    diffHtml += '        <option value="">-- Sin libro específico --</option>';
+                    $.each(books, function(bi, bk) {
+                        diffHtml += '        <option value="' + bk.id + '" data-title="' + $('<div>').text(bk.title).html() + '" data-author="' + $('<div>').text(bk.author || '').html() + '">' + bk.title + (bk.author ? ' (' + bk.author + ')' : '') + '</option>';
+                    });
+                    diffHtml += '      </select>';
+                    diffHtml += '    </div>';
+                    diffHtml += '    <div>';
+                    diffHtml += '      <label style="font-size:11px;font-weight:600;display:block;margin-bottom:2px;color:var(--at-text-secondary);">📝 Instrucción o Capítulo Específico:</label>';
+                    diffHtml += '      <input type="text" class="form-control student-diff-notes" placeholder="Ej: Leer caps. 1 a 3..." style="width:100%;font-size:12px;padding:4px 8px;">';
+                    diffHtml += '    </div>';
+                    diffHtml += '  </div>';
+                    diffHtml += '</div>';
+                });
+                $('#container-students-differentiated').html(diffHtml);
+            }
+
+            // Marcar / Desmarcar todos en Individual
+            $('#btn-toggle-all-indiv').on('click', function() {
+                var $chks = $('.chk-indiv-student');
+                var anyUnchecked = $chks.filter(':not(:checked)').length > 0;
+                $chks.prop('checked', anyUnchecked);
+                $(this).text(anyUnchecked ? 'Desmarcar todos' : 'Marcar todos');
+            });
+
+            // Botón Repartir Libros Aleatoriamente
+            $('#btn-auto-assign-books').on('click', function() {
+                var books = window.auraTeacherBooks || [];
+                if (!books.length) {
+                    alert('No hay libros registrados en la Biblioteca para repartir.');
+                    return;
+                }
+                var $selects = $('.student-diff-book');
+                if (!$selects.length) {
+                    alert('No hay estudiantes cargados para asignar libros.');
+                    return;
+                }
+
+                // Barajar libros aleatoriamente
+                var shuffled = books.slice().sort(function() { return 0.5 - Math.random(); });
+
+                $selects.each(function(idx) {
+                    var bk = shuffled[idx % shuffled.length];
+                    $(this).val(bk.id).trigger('change');
+                });
+
+                alert('🎲 ¡Se han distribuido ' + books.length + ' libros aleatoriamente entre los ' + $selects.length + ' estudiantes matriculados!');
+            });
+
             $('#btn-teacher-open-task-modal, #btn-teacher-open-first-task').on('click', function() {
                 $('#form-teacher-task-create')[0].reset();
+                $('input[name="target_type"][value="all"]').prop('checked', true);
+                updateTargetingUI();
+
                 // Fijar fecha límite por defecto a 7 días en el futuro a las 23:59
                 var d = new Date();
                 d.setDate(d.getDate() + 7);
@@ -1172,6 +1398,9 @@ class Aura_Calendar_Frontend {
                 var progId = $(this).data('program-id');
                 var subjId = $(this).data('subject-id');
                 $('#form-teacher-task-create')[0].reset();
+                $('input[name="target_type"][value="all"]').prop('checked', true);
+                updateTargetingUI();
+
                 $('#t-tsk-prog').val(progId);
                 $('#t-tsk-subj').val(subjId);
                 var d = new Date();
@@ -1185,12 +1414,63 @@ class Aura_Calendar_Frontend {
             $('#form-teacher-task-create').on('submit', function(e) {
                 e.preventDefault();
                 var $btn = $('#btn-save-teacher-task');
+                var targetType = $('input[name="target_type"]:checked').val() || 'all';
+
+                var targetStudentIds = [];
+                var studentAssignments = {};
+
+                if (targetType === 'individual') {
+                    $('.chk-indiv-student:checked').each(function() {
+                        targetStudentIds.push(parseInt($(this).val(), 10));
+                    });
+                    if (!targetStudentIds.length) {
+                        alert('⚠️ Por favor selecciona al menos un estudiante para la asignación individual.');
+                        return;
+                    }
+                } else if (targetType === 'differentiated') {
+                    var hasAnyBook = false;
+                    $('.row-diff-student').each(function() {
+                        var stId = $(this).data('student-id');
+                        var $bookSel = $(this).find('.student-diff-book');
+                        var bookId = parseInt($bookSel.val(), 10) || 0;
+                        var $selOpt = $bookSel.find('option:selected');
+                        var bookTitle = $selOpt.data('title') || '';
+                        var bookAuthor = $selOpt.data('author') || '';
+                        var notes = $(this).find('.student-diff-notes').val() || '';
+
+                        if (bookId > 0) {
+                            hasAnyBook = true;
+                        }
+
+                        targetStudentIds.push(stId);
+                        studentAssignments[stId] = {
+                            book_id: bookId,
+                            book_title: bookTitle,
+                            book_author: bookAuthor,
+                            instructions: notes
+                        };
+                    });
+
+                    if (!hasAnyBook) {
+                        alert('⚠️ Por favor asigna al menos un libro o usa el botón "Repartir Libros Aleatoriamente" para la modalidad diferenciada.');
+                        return;
+                    }
+                }
+
                 $btn.prop('disabled', true).text('Guardando...');
 
                 var data = $(this).serializeArray();
                 data.push({ name: 'action', value: 'aura_cal_save_task' });
                 data.push({ name: 'nonce', value: auraCalData.nonce });
                 data.push({ name: 'id', value: '0' });
+                data.push({ name: 'target_type', value: targetType });
+
+                if (targetType === 'individual') {
+                    data.push({ name: 'target_student_ids', value: JSON.stringify(targetStudentIds) });
+                } else if (targetType === 'differentiated') {
+                    data.push({ name: 'target_student_ids', value: JSON.stringify(targetStudentIds) });
+                    data.push({ name: 'student_assignments', value: JSON.stringify(studentAssignments) });
+                }
 
                 $.post(auraCalData.ajax_url, data, function(res) {
                     $btn.prop('disabled', false).text('💾 Publicar Tarea');
@@ -1208,7 +1488,7 @@ class Aura_Calendar_Frontend {
                 });
             });
 
-            // 4. Ver Entregas de Tarea y Calificar
+            // 4. Ver Entregas de Tarea y Calificar (incluyendo estudiantes pendientes y libros asignados)
             $('.btn-teacher-view-subs').on('click', function() {
                 var taskId = $(this).data('task-id');
                 var taskTitle = $(this).data('task-title');
@@ -1227,15 +1507,23 @@ class Aura_Calendar_Frontend {
                     if (res && res.success && res.data.submissions) {
                         var subs = res.data.submissions;
                         if (!subs.length) {
-                            $('#t-subs-body').html('<div style="text-align:center;padding:32px;color:var(--at-text-muted);"><div style="font-size:32px;margin-bottom:8px;">📭</div><p>Aún no se han recibido entregas de los estudiantes para esta tarea.</p></div>');
+                            $('#t-subs-body').html('<div style="text-align:center;padding:32px;color:var(--at-text-muted);"><div style="font-size:32px;margin-bottom:8px;">📭</div><p>Aún no se han recibido entregas ni hay estudiantes vinculados a esta tarea.</p></div>');
                             return;
                         }
 
                         var html = '<div style="display:flex;flex-direction:column;gap:16px;">';
                         $.each(subs, function(i, s) {
-                            var statusBadge = s.status === 'graded'
-                                ? '<span class="adp-badge badge-emerald">Calificada</span>'
-                                : (s.status === 'late' ? '<span class="adp-badge badge-amber">Entrega Tardía</span>' : '<span class="adp-badge badge-indigo">Entregada</span>');
+                            var isPending = !!s.is_pending;
+                            var statusBadge = '';
+                            if (isPending) {
+                                statusBadge = '<span class="adp-badge badge-slate" style="font-size:11px;">⏳ Sin Entrega Aún</span>';
+                            } else if (s.status === 'graded') {
+                                statusBadge = '<span class="adp-badge badge-emerald">Calificada</span>';
+                            } else if (s.status === 'late') {
+                                statusBadge = '<span class="adp-badge badge-amber">Entrega Tardía</span>';
+                            } else {
+                                statusBadge = '<span class="adp-badge badge-indigo">Entregada</span>';
+                            }
 
                             // Contar palabras si hay texto
                             var wordCount = 0;
@@ -1243,8 +1531,8 @@ class Aura_Calendar_Frontend {
                                 wordCount = s.submission_text.trim().split(/\s+/).filter(Boolean).length;
                             }
 
-                            html += '<div class="aura-submission-row">';
-                            html += '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">';
+                            html += '<div class="aura-submission-row" style="' + (isPending ? 'opacity:0.85;border-style:dashed;' : '') + '">';
+                            html += '  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
                             html += '    <div>';
                             html += '      <strong style="font-size:15px;color:var(--at-text-primary);">' + (s.first_name || 'Estudiante') + ' ' + (s.last_name || '') + '</strong>';
                             if (s.student_code) {
@@ -1254,41 +1542,57 @@ class Aura_Calendar_Frontend {
                             html += '    <div>' + statusBadge + '</div>';
                             html += '  </div>';
 
-                            if (s.submission_text) {
-                                html += '  <div class="aura-submission-text-box">';
-                                html += '    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;color:var(--at-text-muted);">';
-                                html += '      <span>✍️ Resumen Escrito:</span>';
-                                html += '      <span><strong>' + wordCount + '</strong> palabras redactadas</span>';
-                                html += '    </div>';
-                                html += '    <div style="font-size:13px;color:var(--at-text-primary);white-space:pre-wrap;line-height:1.6;">' + $('<div>').text(s.submission_text).html() + '</div>';
+                            // Libro asignado diferenciado (si aplica)
+                            if (s.assigned_book_title) {
+                                html += '  <div style="font-size:12px;color:var(--at-primary);margin-bottom:8px;padding:4px 8px;background:var(--at-chip-bg);border-radius:6px;display:inline-block;">';
+                                html += '    📖 <strong>Libro Asignado:</strong> ' + s.assigned_book_title + (s.assigned_book_author ? ' (' + s.assigned_book_author + ')' : '');
+                                if (s.assigned_instructions) {
+                                    html += ' &bull; <em>' + s.assigned_instructions + '</em>';
+                                }
                                 html += '  </div>';
                             }
 
-                            if (s.attachment_urls) {
-                                html += '  <div style="margin-bottom:10px;font-size:12px;">';
-                                html += '    📎 <strong>Archivo adjunto:</strong> <a href="' + s.attachment_urls + '" target="_blank" style="color:var(--at-primary);text-decoration:underline;">Ver documento entregado</a>';
+                            if (isPending) {
+                                html += '  <div style="font-size:12px;color:var(--at-text-muted);font-style:italic;padding:8px 0;">';
+                                html += '    El estudiante no ha enviado su resumen o archivo todavía.';
+                                html += '  </div>';
+                            } else {
+                                if (s.submission_text) {
+                                    html += '  <div class="aura-submission-text-box">';
+                                    html += '    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;color:var(--at-text-muted);">';
+                                    html += '      <span>✍️ Resumen Escrito:</span>';
+                                    html += '      <span><strong>' + wordCount + '</strong> palabras redactadas</span>';
+                                    html += '    </div>';
+                                    html += '    <div style="font-size:13px;color:var(--at-text-primary);white-space:pre-wrap;line-height:1.6;">' + $('<div>').text(s.submission_text).html() + '</div>';
+                                    html += '  </div>';
+                                }
+
+                                if (s.attachment_urls) {
+                                    html += '  <div style="margin-bottom:10px;font-size:12px;">';
+                                    html += '    📎 <strong>Archivo adjunto:</strong> <a href="' + s.attachment_urls + '" target="_blank" style="color:var(--at-primary);text-decoration:underline;">Ver documento entregado</a>';
+                                    html += '  </div>';
+                                }
+
+                                // Formulario de Calificación
+                                html += '  <div style="border-top:1px solid var(--at-border);padding-top:12px;margin-top:10px;">';
+                                html += '    <form class="form-grade-sub" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">';
+                                html += '      <input type="hidden" name="submission_id" value="' + s.id + '">';
+                                html += '      <div style="flex:0 0 110px;">';
+                                html += '        <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px;color:var(--at-text-primary);">Nota / Calificación:</label>';
+                                html += '        <input type="number" step="0.1" max="' + maxScore + '" min="0" name="score" value="' + (s.score !== null ? s.score : '') + '" placeholder="0 - ' + maxScore + '" required class="form-control" style="width:100%;">';
+                                html += '      </div>';
+                                html += '      <div style="flex:1;min-width:200px;">';
+                                html += '        <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px;color:var(--at-text-primary);">Retroalimentación Docente:</label>';
+                                html += '        <input type="text" name="feedback" value="' + (s.feedback || '') + '" placeholder="Ej: Excelente análisis crítico de la lectura..." class="form-control" style="width:100%;">';
+                                html += '      </div>';
+                                html += '      <div>';
+                                html += '        <button type="submit" class="btn btn-emerald" style="padding:8px 14px;font-size:12px;">';
+                                html += '          ✅ Asignar Nota';
+                                html += '        </button>';
+                                html += '      </div>';
+                                html += '    </form>';
                                 html += '  </div>';
                             }
-
-                            // Formulario de Calificación
-                            html += '  <div style="border-top:1px solid var(--at-border);padding-top:12px;margin-top:10px;">';
-                            html += '    <form class="form-grade-sub" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">';
-                            html += '      <input type="hidden" name="submission_id" value="' + s.id + '">';
-                            html += '      <div style="flex:0 0 110px;">';
-                            html += '        <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px;color:var(--at-text-primary);">Nota / Calificación:</label>';
-                            html += '        <input type="number" step="0.1" max="' + maxScore + '" min="0" name="score" value="' + (s.score !== null ? s.score : '') + '" placeholder="0 - ' + maxScore + '" required class="form-control" style="width:100%;">';
-                            html += '      </div>';
-                            html += '      <div style="flex:1;min-width:200px;">';
-                            html += '        <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px;color:var(--at-text-primary);">Retroalimentación Docente:</label>';
-                            html += '        <input type="text" name="feedback" value="' + (s.feedback || '') + '" placeholder="Ej: Excelente análisis crítico de la lectura..." class="form-control" style="width:100%;">';
-                            html += '      </div>';
-                            html += '      <div>';
-                            html += '        <button type="submit" class="btn btn-emerald" style="padding:8px 14px;font-size:12px;">';
-                            html += '          ✅ Asignar Nota';
-                            html += '        </button>';
-                            html += '      </div>';
-                            html += '    </form>';
-                            html += '  </div>';
 
                             html += '</div>';
                         });

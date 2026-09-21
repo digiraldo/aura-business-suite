@@ -33,7 +33,19 @@ $profile_labels = [
 $profile_label = $profile_labels[ $student->profile_type ?? 'student' ] ?? ucfirst( $student->profile_type ?? '' );
 
 $full_name = trim( ( $student->first_name ?? '' ) . ' ' . ( $student->last_name ?? '' ) );
-$photo_url = $student->photo_url ?? '';
+global $wpdb;
+$table_enroll = $wpdb->prefix . 'aura_student_enrollments';
+$has_enroll_table = $wpdb->get_var( "SHOW TABLES LIKE '{$table_enroll}'" ) === $table_enroll;
+$enroll_stats = null;
+if ( $has_enroll_table && ! empty( $student->id ) ) {
+    $enroll_stats = $wpdb->get_row( $wpdb->prepare(
+        "SELECT SUM(net_cost) AS total_cost, SUM(total_paid) AS total_paid, SUM(balance_due) AS total_debt,
+                COUNT(*) AS total_courses
+         FROM {$table_enroll}
+         WHERE student_id = %d AND status != 'cancelled'",
+        $student->id
+    ) );
+}
 ?>
 <div class="aura-portal-wrap" id="aura-student-portal">
 
@@ -78,6 +90,43 @@ $photo_url = $student->photo_url ?? '';
         </div>
     </div>
 
+    <!-- ══════════════ BANNER DE ESTADO FINANCIERO Y PAZ Y SALVO ══════════════ -->
+    <?php if ( $enroll_stats && (int) $enroll_stats->total_courses > 0 ) : 
+        $tot_debt = floatval( $enroll_stats->total_debt ?? 0 );
+        $tot_cost = floatval( $enroll_stats->total_cost ?? 0 );
+        $tot_paid = floatval( $enroll_stats->total_paid ?? 0 );
+    ?>
+        <div class="adp-card" style="margin-bottom: 20px; padding: 14px 18px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: <?php echo $tot_debt > 0 ? 'rgba(245, 158, 11, 0.08)' : 'rgba(16, 185, 129, 0.08)'; ?>; border: 1px solid <?php echo $tot_debt > 0 ? '#f59e0b' : '#10b981'; ?>;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 26px;">
+                    <?php echo $tot_debt > 0 ? '💳' : '🎖️'; ?>
+                </div>
+                <div>
+                    <?php if ( $tot_debt > 0 ) : ?>
+                        <div style="font-weight: 700; font-size: 14px; color: #b45309;">
+                            <?php esc_html_e( 'Estado Financiero del Programa: Saldo Pendiente de Pago', 'aura-suite' ); ?>
+                        </div>
+                        <div style="font-size: 12.5px; color: var(--aura-text-secondary, #64748b); margin-top: 2px;">
+                            <?php printf( esc_html__( 'Tienes un saldo pendiente de %s (Abonado: %s de %s en tus inscripciones).', 'aura-suite' ), '<strong>$' . number_format( $tot_debt, 2 ) . '</strong>', '$' . number_format( $tot_paid, 2 ), '$' . number_format( $tot_cost, 2 ) ); ?>
+                        </div>
+                    <?php else : ?>
+                        <div style="font-weight: 700; font-size: 14px; color: #047857;">
+                            ✅ <?php esc_html_e( 'Paz y Salvo Académico y Financiero', 'aura-suite' ); ?>
+                        </div>
+                        <div style="font-size: 12.5px; color: var(--aura-text-secondary, #64748b); margin-top: 2px;">
+                            <?php esc_html_e( '¡Felicitaciones! Te encuentras 100% al día con todos los costos de tus programas académicos.', 'aura-suite' ); ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div>
+                <button type="button" class="btn btn-sm btn-ghost aura-portal-tab-btn" data-target="payments" style="font-size: 12px; padding: 6px 14px;">
+                    💰 <?php esc_html_e( 'Ver Historial de Pagos', 'aura-suite' ); ?>
+                </button>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- ══════════════ NAVEGACIÓN DE PESTAÑAS ══════════════ -->
     <nav class="aura-portal-nav">
         <button class="aura-portal-tab-btn active" data-target="courses" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
@@ -95,6 +144,10 @@ $photo_url = $student->photo_url ?? '';
         <button class="aura-portal-tab-btn" data-target="tasks" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
             <span class="dashicons dashicons-welcome-write-blog"></span>
             <span><?php esc_html_e( 'Mis Tareas y Lecturas', 'aura-suite' ); ?></span>
+        </button>
+        <button class="aura-portal-tab-btn" data-target="equipment" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+            <span class="dashicons dashicons-admin-tools"></span>
+            <span><?php esc_html_e( 'Mis Herramientas', 'aura-suite' ); ?></span>
         </button>
         <button class="aura-portal-tab-btn" data-target="certs" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
             <span class="dashicons dashicons-awards"></span>
@@ -134,7 +187,16 @@ $photo_url = $student->photo_url ?? '';
         ?>
     </div>
 
-    <!-- ══════════════ PESTAÑA 5: MIS CERTIFICADOS ══════════════ -->
+    <!-- ══════════════ PESTAÑA 5: MIS HERRAMIENTAS E INVENTARIO ══════════════ -->
+    <div id="aura-tab-equipment" class="aura-portal-tab-content" data-tab="equipment" style="display:none;">
+        <?php
+        if ( file_exists( AURA_PLUGIN_DIR . 'templates/students/frontend/equipment.php' ) ) {
+            include AURA_PLUGIN_DIR . 'templates/students/frontend/equipment.php';
+        }
+        ?>
+    </div>
+
+    <!-- ══════════════ PESTAÑA 6: MIS CERTIFICADOS ══════════════ -->
     <div id="aura-tab-certs" class="aura-portal-tab-content" data-tab="certs" style="display:none;">
         <div id="aura-certs-container" data-loaded="true">
             <?php
@@ -147,7 +209,7 @@ $photo_url = $student->photo_url ?? '';
         </div>
     </div>
 
-    <!-- ══════════════ PESTAÑA 6: MIS ENCUESTAS Y FORMULARIOS ══════════════ -->
+    <!-- ══════════════ PESTAÑA 7: MIS ENCUESTAS Y FORMULARIOS ══════════════ -->
     <div id="aura-tab-forms" class="aura-portal-tab-content" data-tab="forms" style="display:none;">
         <div id="aura-forms-container" data-loaded="true">
             <?php
