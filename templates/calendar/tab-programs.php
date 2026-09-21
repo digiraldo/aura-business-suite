@@ -107,29 +107,67 @@ $can_edit       = $can_manage || current_user_can( 'aura_cal_manage_calendar' ) 
     background: linear-gradient(135deg, var(--aura-violet,#7c3aed), var(--aura-cyan,#06b6d4));
     z-index: -1; animation: ringPulse 2s ease-in-out infinite;
 }
-/* Tooltip enriquecido */
+/* Tooltip enriquecido adaptativo (Modo Claro / Modo Oscuro) */
 .aura-av-tooltip {
     position: fixed; z-index: 99999; pointer-events: none;
-    background: var(--glass-bg, rgba(15,17,32,.92));
+    background: var(--aura-surface, #ffffff);
     backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-    border: 1px solid var(--glass-border, rgba(255,255,255,.12));
+    border: 1px solid var(--aura-border, #e2e8f0);
     border-radius: 14px; padding: 12px 14px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.35), 0 0 0 1px rgba(99,102,241,.15);
-    display: flex; align-items: center; gap: 10px; min-width: 200px;
+    box-shadow: 0 12px 35px -5px rgba(0,0,0,.15), 0 0 0 1px rgba(99,102,241,.12);
+    display: flex; align-items: center; gap: 10px; min-width: 210px;
     opacity: 0; transform: translateY(6px) scale(.97);
     transition: opacity .18s ease, transform .18s ease;
-    color: #fff;
+    color: var(--aura-text-primary, #0f172a);
 }
 .aura-av-tooltip.visible { opacity: 1; transform: translateY(0) scale(1); pointer-events: none; }
 .aura-av-tooltip-avatar {
     width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
     background: linear-gradient(135deg, var(--aura-indigo,#6366f1), var(--aura-violet,#7c3aed));
     display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;
+    color: #ffffff;
 }
 .aura-av-tooltip-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.aura-av-tooltip-name  { font-weight: 700; font-size: 14px; line-height: 1.2; }
-.aura-av-tooltip-role  { font-size: 11px; color: var(--aura-cyan,#06b6d4); font-weight: 600; margin-top: 2px; }
-.aura-av-tooltip-email { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 1px; }
+.aura-av-tooltip-name  { font-weight: 700; font-size: 14px; line-height: 1.2; color: var(--aura-text-primary, #0f172a); }
+.aura-av-tooltip-role  { font-size: 11px; color: var(--aura-primary, #4f46e5); font-weight: 600; margin-top: 2px; }
+.aura-av-tooltip-email { font-size: 11px; color: var(--aura-text-secondary, #64748b); margin-top: 1px; word-break: break-all; }
+
+/* Adaptación a Modo Oscuro para Tooltip de Avatares y Avatar Stack */
+body.aura-dark-mode .aura-av-tooltip,
+[data-theme="dark"] .aura-av-tooltip,
+.dark .aura-av-tooltip {
+    background: #181b21 !important;
+    border: 1px solid #3c4043 !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,.6), 0 0 0 1px rgba(99,102,241,.25) !important;
+    color: #f1f5f9 !important;
+}
+body.aura-dark-mode .aura-av-tooltip .aura-av-tooltip-name,
+[data-theme="dark"] .aura-av-tooltip .aura-av-tooltip-name,
+.dark .aura-av-tooltip .aura-av-tooltip-name {
+    color: #f8fafc !important;
+}
+body.aura-dark-mode .aura-av-tooltip .aura-av-tooltip-role,
+[data-theme="dark"] .aura-av-tooltip .aura-av-tooltip-role,
+.dark .aura-av-tooltip .aura-av-tooltip-role {
+    color: #38bdf8 !important;
+}
+body.aura-dark-mode .aura-av-tooltip .aura-av-tooltip-email,
+[data-theme="dark"] .aura-av-tooltip .aura-av-tooltip-email,
+.dark .aura-av-tooltip .aura-av-tooltip-email {
+    color: #94a3b8 !important;
+}
+body.aura-dark-mode .aura-avatar-group .aura-avatar-stack-item,
+[data-theme="dark"] .aura-avatar-group .aura-avatar-stack-item,
+.dark .aura-avatar-group .aura-avatar-stack-item {
+    border-color: #20242c !important;
+}
+body.aura-dark-mode .aura-av-more,
+[data-theme="dark"] .aura-av-more,
+.dark .aura-av-more {
+    border-color: #20242c !important;
+    background: rgba(99, 102, 241, 0.25) !important;
+    color: #a5b4fc !important;
+}
 
 /* ── Program Card ───────────────────────────────────────────────── */
 .aura-prog-card {
@@ -883,6 +921,45 @@ $can_edit       = $can_manage || current_user_can( 'aura_cal_manage_calendar' ) 
                 📤 <?php esc_html_e( 'Importar', 'aura' ); ?>
             </button>
         </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL D: AÑADIR ENLACE DE MATERIAL (GOOGLE DRIVE / NUBE / WEB)
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="modal-add-material-link" class="aura-modal-overlay" style="display: none; z-index: 100050;">
+    <div class="aura-modal-container" style="max-width: 480px;">
+        <div class="aura-modal-header">
+            <h3 id="modal-add-link-title" class="adp-card-title" style="margin: 0; font-size: 17px;">
+                🔗 <?php esc_html_e( 'Añadir Enlace de Material', 'aura' ); ?>
+            </h3>
+            <button type="button" class="aura-modal-close" data-close-modal="#modal-add-material-link">&times;</button>
+        </div>
+        <form id="form-add-material-link" class="aura-modal-form">
+            <input type="hidden" id="add-link-type" value="teacher">
+            <div class="aura-modal-body" style="padding: 20px 24px;">
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                        🔗 <?php esc_html_e( 'Enlace Compartido (Google Drive, Dropbox, Web)', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="url" id="add-link-url" required class="form-control" placeholder="https://drive.google.com/file/d/..." style="width: 100%; border-radius: 8px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                        🏷️ <?php esc_html_e( 'Título descriptivo del documento', 'aura' ); ?>
+                    </label>
+                    <input type="text" id="add-link-title" class="form-control" placeholder="<?php esc_attr_e( 'Ej: Sílabo Oficial / Guía de Estudio', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                </div>
+            </div>
+            <div class="aura-modal-footer">
+                <button type="button" class="btn btn-ghost" data-close-modal="#modal-add-material-link">
+                    <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                </button>
+                <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-material-link">
+                    🔗 <?php esc_html_e( 'Añadir Enlace', 'aura' ); ?>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

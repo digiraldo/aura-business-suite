@@ -1438,11 +1438,6 @@
     $(document).on('click', '.btn-upload-material', function(e) {
         e.preventDefault();
         var type = $(this).data('type') || 'teacher';
-        var subjId = parseInt($('#subj-id').val(), 10);
-        if (!subjId) {
-            showToast('Por favor guarda la materia primero antes de subir archivos adjuntos.', 'warning');
-            return;
-        }
         $('#upload-' + type + '-file-input').click();
     });
 
@@ -1452,15 +1447,16 @@
         if (!file) return;
 
         var type = $(this).attr('id').indexOf('teacher') !== -1 ? 'teacher' : 'student';
-        var subjId = parseInt($('#subj-id').val(), 10);
+        var subjId = parseInt($('#subj-id').val(), 10) || 0;
         var inputEl = this;
 
-        showToast('Subiendo archivo a la nube / Google Drive...', 'info');
+        showToast('Subiendo archivo adjunto...', 'info');
 
         var formData = new FormData();
         formData.append('action', 'aura_cal_upload_subject_material');
         formData.append('nonce', auraCalData.nonce);
         formData.append('subject_id', subjId);
+        formData.append('audience', type);
         formData.append('material_type', type);
         formData.append('material_file', file);
 
@@ -1491,31 +1487,48 @@
         });
     });
 
-    // Añadir enlace directo a Google Drive
+    // Abrir modal para añadir enlace de material
     $(document).on('click', '.btn-add-drive-link', function(e) {
         e.preventDefault();
         var type = $(this).data('type') || 'teacher';
-        var subjId = parseInt($('#subj-id').val(), 10);
-        if (!subjId) {
-            showToast('Por favor guarda la materia primero antes de añadir enlaces.', 'warning');
+        $('#add-link-type').val(type);
+        $('#add-link-url').val('');
+        $('#add-link-title').val('');
+        $('#modal-add-link-title').text(type === 'teacher' ? '🔗 Añadir Enlace — Material Docente' : '🔗 Añadir Enlace — Material para Alumnos');
+        openModal('#modal-add-material-link');
+    });
+
+    // Guardar enlace desde modal
+    $('#form-add-material-link').on('submit', function(e) {
+        e.preventDefault();
+        var type = $('#add-link-type').val() || 'teacher';
+        var driveUrl = $('#add-link-url').val().trim();
+        var docTitle = $('#add-link-title').val().trim() || 'Documento en la Nube';
+        var subjId = parseInt($('#subj-id').val(), 10) || 0;
+
+        if (!driveUrl) {
+            showToast('Por favor introduce la URL del material.', 'warning');
             return;
         }
 
-        var driveUrl = prompt('Introduce el enlace de Google Drive (URL compartida del archivo o carpeta):');
-        if (!driveUrl || !driveUrl.trim()) return;
-
-        var docTitle = prompt('Nombre o título descriptivo para este documento:', '') || 'Documento en Google Drive';
+        var $btn = $('#btn-save-material-link');
+        $btn.prop('disabled', true).text('Registrando...');
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_upload_subject_material',
             nonce: auraCalData.nonce,
             subject_id: subjId,
+            audience: type,
             material_type: type,
-            drive_link: driveUrl.trim(),
-            file_name: docTitle.trim()
+            external_url: driveUrl,
+            drive_link: driveUrl,
+            title: docTitle,
+            file_name: docTitle
         }, function(res) {
+            $btn.prop('disabled', false).text('🔗 Añadir Enlace');
             if (res && res.success && res.data && res.data.material) {
-                showToast(res.data.message || 'Enlace de Google Drive registrado con éxito.');
+                showToast(res.data.message || 'Enlace registrado con éxito.');
+                closeModal('#modal-add-material-link');
                 if (type === 'teacher') {
                     currentTeacherMaterials.push(res.data.material);
                 } else {
@@ -1523,8 +1536,11 @@
                 }
                 renderSubjectMaterialsList(type);
             } else {
-                showToast(res && res.data && res.data.message ? res.data.message : 'Error al vincular enlace de Drive.', 'error');
+                showToast(res && res.data && res.data.message ? res.data.message : 'Error al vincular enlace.', 'error');
             }
+        }).fail(function() {
+            $btn.prop('disabled', false).text('🔗 Añadir Enlace');
+            showToast('Error en la comunicación con el servidor.', 'error');
         });
     });
 
@@ -1535,21 +1551,34 @@
 
         var type = $(this).data('type') || 'teacher';
         var matId = $(this).data('id');
-        var subjId = parseInt($('#subj-id').val(), 10);
+        var subjId = parseInt($('#subj-id').val(), 10) || 0;
+
+        if (!subjId) {
+            // Materia no guardada aún: eliminar en memoria
+            if (type === 'teacher') {
+                currentTeacherMaterials = currentTeacherMaterials.filter(function(m) { return String(m.id) !== String(matId); });
+            } else {
+                currentStudentMaterials = currentStudentMaterials.filter(function(m) { return String(m.id) !== String(matId); });
+            }
+            renderSubjectMaterialsList(type);
+            showToast('Material removido.');
+            return;
+        }
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_delete_subject_material',
             nonce: auraCalData.nonce,
             subject_id: subjId,
+            audience: type,
             material_type: type,
             material_id: matId
         }, function(res) {
             if (res && res.success) {
                 showToast(res.data.message || 'Material eliminado.');
                 if (type === 'teacher') {
-                    currentTeacherMaterials = currentTeacherMaterials.filter(function(m) { return m.id !== matId; });
+                    currentTeacherMaterials = currentTeacherMaterials.filter(function(m) { return String(m.id) !== String(matId); });
                 } else {
-                    currentStudentMaterials = currentStudentMaterials.filter(function(m) { return m.id !== matId; });
+                    currentStudentMaterials = currentStudentMaterials.filter(function(m) { return String(m.id) !== String(matId); });
                 }
                 renderSubjectMaterialsList(type);
             } else {
@@ -1623,6 +1652,8 @@
         var formData = $(this).serializeArray();
         formData.push({ name: 'action', value: 'aura_cal_save_subject' });
         formData.push({ name: 'nonce', value: auraCalData.nonce });
+        formData.push({ name: 'teacher_materials', value: JSON.stringify(currentTeacherMaterials || []) });
+        formData.push({ name: 'student_materials', value: JSON.stringify(currentStudentMaterials || []) });
 
         var $btn = $('#btn-save-subject');
         $btn.prop('disabled', true).text('Guardando...');

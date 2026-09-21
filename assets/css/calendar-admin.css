@@ -11,6 +11,66 @@
     --fc-event-text-color: #ffffff;
 }
 
+
+/* ── SUB-NAV TABS (MÓDULO CALENDARIO) ── */
+.adp-nav-tabs {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--aura-border, #e2e8f0);
+    padding-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.adp-tab-btn {
+    padding: 10px 18px;
+    background: var(--aura-surface, #ffffff);
+    border: 1px solid var(--aura-border, #cbd5e1);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--aura-text-secondary, #334155);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.adp-tab-btn:hover {
+    background: var(--aura-surface-alt, #f1f5f9);
+    color: var(--aura-text-primary, #0f172a);
+    border-color: var(--aura-border-focus, #94a3b8);
+}
+
+.adp-tab-btn.is-active,
+.adp-tab-btn.active {
+    background: var(--aura-primary, #6366f1) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border-color: var(--aura-primary, #6366f1) !important;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+/* ── RESALTADO DE SUBMENÚ WP ADMIN PARA CALENDARIO ── */
+#adminmenu #toplevel_page_aura-calendar .wp-submenu li.current a,
+#adminmenu #toplevel_page_aura-calendar .wp-submenu li.current a:hover,
+#adminmenu #toplevel_page_aura-calendar .wp-submenu li.current a:focus {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    background: rgba(99, 102, 241, 0.22) !important;
+    border-left: 3px solid #6366f1 !important;
+}
+
+#adminmenu #toplevel_page_aura-calendar.wp-has-current-submenu > a.wp-has-current-submenu,
+#adminmenu #toplevel_page_aura-calendar.current > a.current {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
 /* ── ADAPTACIÓN DE FULLCALENDAR ── */
 .fc {
     font-family: inherit;
@@ -183,6 +243,14 @@
     justify-content: space-between !important;
     background: inherit !important;
     flex-shrink: 0 !important;
+}
+
+.aura-modal-header h2,
+.aura-modal-header h3,
+.aura-modal-header .adp-card-title {
+    color: var(--aura-text-primary, #0f172a) !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
 }
 
 .aura-modal-close {
@@ -682,4 +750,1185 @@ body.aura-cal-fullscreen-active {
 .aura-prog-toggle-btn.collapsed .toggle-icon {
     transform: rotate(-90deg);
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   GOOGLE CALENDAR DARK MODE (MODO OSCURO NATIVO P.E.E.)
+   ══════════════════════════════════════════════════════════════════ */
+html[data-theme="dark"],
+body[data-theme="dark"],
+html[data-wp-dark-mode-scheme="dark"],
+html.wp-dark-mode-active,
+body.wp-dark-mode-active,
+body.aura-dark-mode,
+.aura-dark-theme,
+[data-aura-theme="dark"] {
+    --aura-surface: #181b21;
+    --aura-surface-alt: #20242c;
+    --aura-border: #3c4043;
+    --aura-border-subtle: #2d3139;
+    --aura-text-primary: #f1f3f4;
+    --aura-text-secondary: #9aa0a6;
+    --aura-text-muted: #70757a;
+    --fc-page-bg-color: #181b21;
+    --fc-neutral-bg-color: #20242c;
+    --fc-neutral-text-color: #9aa0a6;
+    --fc-border-color: #3c4043;
+    --fc-theme-standard-border-color: #3c4043;
+    --fc-today-bg-color: rgba(99, 102, 241, 0.08);
+    --fc-list-event-hover-bg-color: #262b35;
+}
+
+/* ── CONTENEDOR PRINCIPAL Y CABECERA ── */
+html[data-theme="dark"] .adp-header-title,
+body[data-theme="dark"] .adp-header-title,
+html[data-wp-dark-mode-scheme="dark"] .adp-header-title,
+html.wp-dark-mode-active .adp-header-title,
+body.wp-dark-mode-active .adp-header-title,
+body.aura-dark-mode .adp-header-title {
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] .adp-header-desc,
+body[data-theme="dark"] .adp-header-desc,
+html[data-wp-dark-mode-scheme="dark"] .adp-header-desc,
+html.wp-dark-mode-active .adp-header-desc,
+body.wp-dark-mode-active .adp-header-desc,
+body.aura-dark-mode .adp-header-desc {
+    color: #9aa0a6 !important;
+}
+
+html[data-theme="dark"] .adp-card,
+body[data-theme="dark"] .adp-card,
+html[data-wp-dark-mode-scheme="dark"] .adp-card,
+html.wp-dark-mode-active .adp-card,
+body.wp-dark-mode-active .adp-card,
+body.aura-dark-mode .adp-card,
+html[data-theme="dark"] .aura-calendar-card,
+body[data-theme="dark"] .aura-calendar-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-calendar-card,
+html.wp-dark-mode-active .aura-calendar-card,
+body.wp-dark-mode-active .aura-calendar-card,
+body.aura-dark-mode .aura-calendar-card {
+    background: #181b21 !important;
+    border: 1px solid #3c4043 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] .adp-footer,
+body[data-theme="dark"] .adp-footer,
+html[data-wp-dark-mode-scheme="dark"] .adp-footer,
+html.wp-dark-mode-active .adp-footer,
+body.wp-dark-mode-active .adp-footer,
+body.aura-dark-mode .adp-footer {
+    border-top-color: #3c4043 !important;
+    color: #70757a !important;
+}
+
+/* ── SUB-NAV TABS ── */
+html[data-theme="dark"] .adp-nav-tabs,
+body[data-theme="dark"] .adp-nav-tabs,
+html[data-wp-dark-mode-scheme="dark"] .adp-nav-tabs,
+html.wp-dark-mode-active .adp-nav-tabs,
+body.wp-dark-mode-active .adp-nav-tabs,
+body.aura-dark-mode .adp-nav-tabs {
+    border-bottom-color: #3c4043 !important;
+}
+
+html[data-theme="dark"] .adp-tab-btn,
+body[data-theme="dark"] .adp-tab-btn,
+html[data-wp-dark-mode-scheme="dark"] .adp-tab-btn,
+html.wp-dark-mode-active .adp-tab-btn,
+body.wp-dark-mode-active .adp-tab-btn,
+body.aura-dark-mode .adp-tab-btn {
+    background: #20242c !important;
+    border: 1px solid #3c4043 !important;
+    color: #e8eaed !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+}
+
+html[data-theme="dark"] .adp-tab-btn:hover,
+body[data-theme="dark"] .adp-tab-btn:hover,
+html[data-wp-dark-mode-scheme="dark"] .adp-tab-btn:hover,
+html.wp-dark-mode-active .adp-tab-btn:hover,
+body.wp-dark-mode-active .adp-tab-btn:hover,
+body.aura-dark-mode .adp-tab-btn:hover {
+    background: #2b313c !important;
+    border-color: #5f6368 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .adp-tab-btn.is-active,
+html[data-theme="dark"] .adp-tab-btn.active,
+body[data-theme="dark"] .adp-tab-btn.is-active,
+body[data-theme="dark"] .adp-tab-btn.active,
+html[data-wp-dark-mode-scheme="dark"] .adp-tab-btn.active,
+html.wp-dark-mode-active .adp-tab-btn.active,
+body.wp-dark-mode-active .adp-tab-btn.active,
+body.aura-dark-mode .adp-tab-btn.active {
+    background: #6366f1 !important;
+    border-color: #6366f1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4) !important;
+}
+
+/* ── BARRA DE FILTROS SUPERIOR ── */
+html[data-theme="dark"] .aura-calendar-view-container .adp-card label.form-label,
+body[data-theme="dark"] .aura-calendar-view-container .adp-card label.form-label,
+html[data-wp-dark-mode-scheme="dark"] .aura-calendar-view-container .adp-card label.form-label,
+html.wp-dark-mode-active .aura-calendar-view-container .adp-card label.form-label,
+body.wp-dark-mode-active .aura-calendar-view-container .adp-card label.form-label,
+body.aura-dark-mode .aura-calendar-view-container .adp-card label.form-label {
+    color: #9aa0a6 !important;
+}
+
+html[data-theme="dark"] #filter-program,
+html[data-theme="dark"] #filter-subject,
+html[data-theme="dark"] #filter-event-type,
+body[data-theme="dark"] #filter-program,
+body[data-theme="dark"] #filter-subject,
+body[data-theme="dark"] #filter-event-type,
+html[data-wp-dark-mode-scheme="dark"] #filter-program,
+html[data-wp-dark-mode-scheme="dark"] #filter-subject,
+html[data-wp-dark-mode-scheme="dark"] #filter-event-type,
+html.wp-dark-mode-active #filter-program,
+html.wp-dark-mode-active #filter-subject,
+html.wp-dark-mode-active #filter-event-type,
+body.wp-dark-mode-active #filter-program,
+body.wp-dark-mode-active #filter-subject,
+body.wp-dark-mode-active #filter-event-type,
+body.aura-dark-mode #filter-program,
+body.aura-dark-mode #filter-subject,
+body.aura-dark-mode #filter-event-type {
+    background-color: #14171d !important;
+    border: 1px solid #3c4043 !important;
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] select option,
+body[data-theme="dark"] select option,
+html[data-wp-dark-mode-scheme="dark"] select option,
+html.wp-dark-mode-active select option,
+body.wp-dark-mode-active select option,
+body.aura-dark-mode select option {
+    background-color: #181b21 !important;
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] #btn-filter-reset,
+html[data-theme="dark"] #btn-toggle-fullscreen,
+body[data-theme="dark"] #btn-filter-reset,
+body[data-theme="dark"] #btn-toggle-fullscreen,
+html[data-wp-dark-mode-scheme="dark"] #btn-filter-reset,
+html[data-wp-dark-mode-scheme="dark"] #btn-toggle-fullscreen,
+html.wp-dark-mode-active #btn-filter-reset,
+html.wp-dark-mode-active #btn-toggle-fullscreen,
+body.wp-dark-mode-active #btn-filter-reset,
+body.wp-dark-mode-active #btn-toggle-fullscreen,
+body.aura-dark-mode #btn-filter-reset,
+body.aura-dark-mode #btn-toggle-fullscreen {
+    background: #20242c !important;
+    border: 1px solid #3c4043 !important;
+    color: #e8eaed !important;
+}
+
+html[data-theme="dark"] #btn-filter-reset:hover,
+html[data-theme="dark"] #btn-toggle-fullscreen:hover,
+body[data-theme="dark"] #btn-filter-reset:hover,
+body[data-theme="dark"] #btn-toggle-fullscreen:hover,
+html[data-wp-dark-mode-scheme="dark"] #btn-filter-reset:hover,
+html[data-wp-dark-mode-scheme="dark"] #btn-toggle-fullscreen:hover,
+html.wp-dark-mode-active #btn-filter-reset:hover,
+html.wp-dark-mode-active #btn-toggle-fullscreen:hover,
+body.wp-dark-mode-active #btn-filter-reset:hover,
+body.wp-dark-mode-active #btn-toggle-fullscreen:hover,
+body.aura-dark-mode #btn-filter-reset:hover,
+body.aura-dark-mode #btn-toggle-fullscreen:hover {
+    background: #2b313c !important;
+    border-color: #5f6368 !important;
+    color: #ffffff !important;
+}
+
+/* ── FULLCALENDAR GOOGLE CALENDAR DARK MODE ── */
+/* Base FullCalendar */
+html[data-theme="dark"] .fc,
+body[data-theme="dark"] .fc,
+html[data-wp-dark-mode-scheme="dark"] .fc,
+html.wp-dark-mode-active .fc,
+body.wp-dark-mode-active .fc,
+body.aura-dark-mode .fc,
+.aura-dark-theme .fc,
+[data-aura-theme="dark"] .fc {
+    --fc-page-bg-color: #181b21;
+    --fc-neutral-bg-color: #20242c;
+    --fc-neutral-text-color: #9aa0a6;
+    --fc-border-color: #3c4043;
+    --fc-theme-standard-border-color: #3c4043;
+    --fc-today-bg-color: rgba(99, 102, 241, 0.08);
+    --fc-list-event-hover-bg-color: #262b35;
+    color: #f1f3f4;
+    background-color: #181b21;
+}
+
+/* Toolbar Título y Botones */
+html[data-theme="dark"] .fc .fc-toolbar-title,
+body[data-theme="dark"] .fc .fc-toolbar-title,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-toolbar-title,
+html.wp-dark-mode-active .fc .fc-toolbar-title,
+body.wp-dark-mode-active .fc .fc-toolbar-title,
+body.aura-dark-mode .fc .fc-toolbar-title {
+    color: #f1f3f4 !important;
+    font-weight: 600;
+}
+
+html[data-theme="dark"] .fc .fc-button,
+body[data-theme="dark"] .fc .fc-button,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-button,
+html.wp-dark-mode-active .fc .fc-button,
+body.wp-dark-mode-active .fc .fc-button,
+body.aura-dark-mode .fc .fc-button {
+    background: #20242c !important;
+    border: 1px solid #3c4043 !important;
+    color: #e8eaed !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+    transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+}
+
+html[data-theme="dark"] .fc .fc-button:hover,
+body[data-theme="dark"] .fc .fc-button:hover,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-button:hover,
+html.wp-dark-mode-active .fc .fc-button:hover,
+body.wp-dark-mode-active .fc .fc-button:hover,
+body.aura-dark-mode .fc .fc-button:hover {
+    background: #2b313c !important;
+    border-color: #5f6368 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .fc .fc-button-primary:not(:disabled).fc-button-active,
+html[data-theme="dark"] .fc .fc-button-primary:not(:disabled):active,
+body[data-theme="dark"] .fc .fc-button-primary:not(:disabled).fc-button-active,
+body[data-theme="dark"] .fc .fc-button-primary:not(:disabled):active,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-button-primary:not(:disabled).fc-button-active,
+html.wp-dark-mode-active .fc .fc-button-primary:not(:disabled).fc-button-active,
+body.wp-dark-mode-active .fc .fc-button-primary:not(:disabled).fc-button-active,
+body.aura-dark-mode .fc .fc-button-primary:not(:disabled).fc-button-active {
+    background: #6366f1 !important;
+    border-color: #6366f1 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35) !important;
+}
+
+html[data-theme="dark"] .fc .fc-button:disabled,
+body[data-theme="dark"] .fc .fc-button:disabled,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-button:disabled,
+html.wp-dark-mode-active .fc .fc-button:disabled,
+body.wp-dark-mode-active .fc .fc-button:disabled,
+body.aura-dark-mode .fc .fc-button:disabled {
+    background: #181b21 !important;
+    border-color: #2b3038 !important;
+    color: #5f6368 !important;
+    opacity: 0.5 !important;
+}
+
+/* ── CUADRÍCULAS Y BORDES NÍTIDOS ESTILO GOOGLE CALENDAR ── */
+html[data-theme="dark"] .fc .fc-scrollgrid,
+html[data-theme="dark"] .fc-theme-standard th,
+html[data-theme="dark"] .fc-theme-standard td,
+html[data-theme="dark"] .fc-scrollgrid td,
+html[data-theme="dark"] .fc-scrollgrid th,
+html[data-theme="dark"] .fc .fc-daygrid-day,
+html[data-theme="dark"] .fc .fc-timegrid-slot,
+html[data-theme="dark"] .fc .fc-timegrid-axis,
+html[data-theme="dark"] .fc .fc-col-header-cell,
+html[data-theme="dark"] .fc .fc-list-table,
+html[data-theme="dark"] .fc .fc-list-day-cushion,
+html[data-theme="dark"] .fc .fc-list-event td,
+body[data-theme="dark"] .fc .fc-scrollgrid,
+body[data-theme="dark"] .fc-theme-standard th,
+body[data-theme="dark"] .fc-theme-standard td,
+body[data-theme="dark"] .fc-scrollgrid td,
+body[data-theme="dark"] .fc-scrollgrid th,
+body[data-theme="dark"] .fc .fc-daygrid-day,
+body[data-theme="dark"] .fc .fc-timegrid-slot,
+body[data-theme="dark"] .fc .fc-timegrid-axis,
+body[data-theme="dark"] .fc .fc-col-header-cell,
+body[data-theme="dark"] .fc .fc-list-table,
+body[data-theme="dark"] .fc .fc-list-day-cushion,
+body[data-theme="dark"] .fc .fc-list-event td,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-scrollgrid,
+html[data-wp-dark-mode-scheme="dark"] .fc-theme-standard th,
+html[data-wp-dark-mode-scheme="dark"] .fc-theme-standard td,
+html[data-wp-dark-mode-scheme="dark"] .fc-scrollgrid td,
+html[data-wp-dark-mode-scheme="dark"] .fc-scrollgrid th,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-daygrid-day,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-timegrid-slot,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-col-header-cell,
+html.wp-dark-mode-active .fc .fc-scrollgrid,
+html.wp-dark-mode-active .fc-theme-standard th,
+html.wp-dark-mode-active .fc-theme-standard td,
+html.wp-dark-mode-active .fc-scrollgrid td,
+html.wp-dark-mode-active .fc-scrollgrid th,
+html.wp-dark-mode-active .fc .fc-daygrid-day,
+html.wp-dark-mode-active .fc .fc-timegrid-slot,
+html.wp-dark-mode-active .fc .fc-col-header-cell,
+body.wp-dark-mode-active .fc .fc-scrollgrid,
+body.wp-dark-mode-active .fc-theme-standard th,
+body.wp-dark-mode-active .fc-theme-standard td,
+body.wp-dark-mode-active .fc-scrollgrid td,
+body.wp-dark-mode-active .fc-scrollgrid th,
+body.wp-dark-mode-active .fc .fc-daygrid-day,
+body.wp-dark-mode-active .fc .fc-timegrid-slot,
+body.wp-dark-mode-active .fc .fc-col-header-cell,
+body.aura-dark-mode .fc .fc-scrollgrid,
+body.aura-dark-mode .fc-theme-standard th,
+body.aura-dark-mode .fc-theme-standard td,
+body.aura-dark-mode .fc-scrollgrid td,
+body.aura-dark-mode .fc-scrollgrid th,
+body.aura-dark-mode .fc .fc-daygrid-day,
+body.aura-dark-mode .fc .fc-timegrid-slot,
+body.aura-dark-mode .fc .fc-col-header-cell {
+    border-color: #3c4043 !important;
+}
+
+/* Cabeceras de Columna (Días Lunes, Martes, etc.) */
+html[data-theme="dark"] .fc .fc-col-header,
+html[data-theme="dark"] .fc .fc-col-header-cell,
+body[data-theme="dark"] .fc .fc-col-header,
+body[data-theme="dark"] .fc .fc-col-header-cell,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-col-header-cell,
+html.wp-dark-mode-active .fc .fc-col-header-cell,
+body.wp-dark-mode-active .fc .fc-col-header-cell,
+body.aura-dark-mode .fc .fc-col-header-cell {
+    background-color: #20242c !important;
+}
+
+html[data-theme="dark"] .fc .fc-col-header-cell-cushion,
+body[data-theme="dark"] .fc .fc-col-header-cell-cushion,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-col-header-cell-cushion,
+html.wp-dark-mode-active .fc .fc-col-header-cell-cushion,
+body.wp-dark-mode-active .fc .fc-col-header-cell-cushion,
+body.aura-dark-mode .fc .fc-col-header-cell-cushion {
+    color: #e8eaed !important;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 8px 4px !important;
+}
+
+html[data-theme="dark"] .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion,
+body[data-theme="dark"] .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion,
+html.wp-dark-mode-active .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion,
+body.wp-dark-mode-active .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion,
+body.aura-dark-mode .fc .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+    color: #818cf8 !important;
+    font-weight: 700 !important;
+}
+
+/* ── VISTA DE MES (dayGridMonth) ── */
+html[data-theme="dark"] .fc .fc-daygrid-day,
+body[data-theme="dark"] .fc .fc-daygrid-day,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-daygrid-day,
+html.wp-dark-mode-active .fc .fc-daygrid-day,
+body.wp-dark-mode-active .fc .fc-daygrid-day,
+body.aura-dark-mode .fc .fc-daygrid-day {
+    background-color: #181b21 !important;
+    transition: background-color 0.15s ease;
+}
+
+html[data-theme="dark"] .fc .fc-daygrid-day:hover,
+body[data-theme="dark"] .fc .fc-daygrid-day:hover,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-daygrid-day:hover,
+html.wp-dark-mode-active .fc .fc-daygrid-day:hover,
+body.wp-dark-mode-active .fc .fc-daygrid-day:hover,
+body.aura-dark-mode .fc .fc-daygrid-day:hover {
+    background-color: #20242c !important;
+}
+
+/* Días de otros meses */
+html[data-theme="dark"] .fc .fc-daygrid-day.fc-day-other,
+body[data-theme="dark"] .fc .fc-daygrid-day.fc-day-other,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-daygrid-day.fc-day-other,
+html.wp-dark-mode-active .fc .fc-daygrid-day.fc-day-other,
+body.wp-dark-mode-active .fc .fc-daygrid-day.fc-day-other,
+body.aura-dark-mode .fc .fc-daygrid-day.fc-day-other {
+    background-color: #13151b !important;
+}
+
+html[data-theme="dark"] .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number,
+body[data-theme="dark"] .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number,
+html.wp-dark-mode-active .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number,
+body.wp-dark-mode-active .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number,
+body.aura-dark-mode .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+    color: #5f6368 !important;
+}
+
+/* Números de día */
+html[data-theme="dark"] .fc .fc-daygrid-day-number,
+body[data-theme="dark"] .fc .fc-daygrid-day-number,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-daygrid-day-number,
+html.wp-dark-mode-active .fc .fc-daygrid-day-number,
+body.wp-dark-mode-active .fc .fc-daygrid-day-number,
+body.aura-dark-mode .fc .fc-daygrid-day-number {
+    color: #e8eaed !important;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px !important;
+}
+
+/* Día de hoy: Círculo azul Google Calendar */
+html[data-theme="dark"] .fc .fc-daygrid-day.fc-day-today,
+body[data-theme="dark"] .fc .fc-daygrid-day.fc-day-today,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-daygrid-day.fc-day-today,
+html.wp-dark-mode-active .fc .fc-daygrid-day.fc-day-today,
+body.wp-dark-mode-active .fc .fc-daygrid-day.fc-day-today,
+body.aura-dark-mode .fc .fc-daygrid-day.fc-day-today {
+    background-color: rgba(99, 102, 241, 0.08) !important;
+}
+
+html[data-theme="dark"] .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number,
+body[data-theme="dark"] .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number,
+html.wp-dark-mode-active .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number,
+body.wp-dark-mode-active .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number,
+body.aura-dark-mode .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    background-color: #6366f1 !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 700 !important;
+    margin: 3px 5px 0 0 !important;
+    padding: 0 !important;
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.45) !important;
+}
+
+/* ── VISTAS DE SEMANA Y DÍA (timeGridWeek, timeGridDay) ── */
+html[data-theme="dark"] .fc .fc-timegrid-slot,
+body[data-theme="dark"] .fc .fc-timegrid-slot,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-timegrid-slot,
+html.wp-dark-mode-active .fc .fc-timegrid-slot,
+body.wp-dark-mode-active .fc .fc-timegrid-slot,
+body.aura-dark-mode .fc .fc-timegrid-slot {
+    border-bottom: 1px solid #3c4043 !important;
+}
+
+html[data-theme="dark"] .fc .fc-timegrid-slot-lane,
+body[data-theme="dark"] .fc .fc-timegrid-slot-lane,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-timegrid-slot-lane,
+html.wp-dark-mode-active .fc .fc-timegrid-slot-lane,
+body.wp-dark-mode-active .fc .fc-timegrid-slot-lane,
+body.aura-dark-mode .fc .fc-timegrid-slot-lane {
+    background-color: #181b21 !important;
+}
+
+html[data-theme="dark"] .fc .fc-timegrid-slot-minor,
+body[data-theme="dark"] .fc .fc-timegrid-slot-minor,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-timegrid-slot-minor,
+html.wp-dark-mode-active .fc .fc-timegrid-slot-minor,
+body.wp-dark-mode-active .fc .fc-timegrid-slot-minor,
+body.aura-dark-mode .fc .fc-timegrid-slot-minor {
+    border-top-style: dotted !important;
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] .fc .fc-timegrid-slot-label-cushion,
+html[data-theme="dark"] .fc .fc-timegrid-axis-cushion,
+body[data-theme="dark"] .fc .fc-timegrid-slot-label-cushion,
+body[data-theme="dark"] .fc .fc-timegrid-axis-cushion,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-timegrid-slot-label-cushion,
+html.wp-dark-mode-active .fc .fc-timegrid-slot-label-cushion,
+body.wp-dark-mode-active .fc .fc-timegrid-slot-label-cushion,
+body.aura-dark-mode .fc .fc-timegrid-slot-label-cushion {
+    color: #9aa0a6 !important;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+html[data-theme="dark"] .fc .fc-timegrid-col.fc-day-today,
+body[data-theme="dark"] .fc .fc-timegrid-col.fc-day-today,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-timegrid-col.fc-day-today,
+html.wp-dark-mode-active .fc .fc-timegrid-col.fc-day-today,
+body.wp-dark-mode-active .fc .fc-timegrid-col.fc-day-today,
+body.aura-dark-mode .fc .fc-timegrid-col.fc-day-today {
+    background-color: rgba(99, 102, 241, 0.04) !important;
+}
+
+html[data-theme="dark"] .fc .fc-timegrid-now-indicator-line,
+body[data-theme="dark"] .fc .fc-timegrid-now-indicator-line,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-timegrid-now-indicator-line,
+html.wp-dark-mode-active .fc .fc-timegrid-now-indicator-line,
+body.wp-dark-mode-active .fc .fc-timegrid-now-indicator-line,
+body.aura-dark-mode .fc .fc-timegrid-now-indicator-line {
+    border-color: #ea4335 !important;
+    border-width: 2px !important;
+}
+
+html[data-theme="dark"] .fc .fc-timegrid-now-indicator-arrow,
+body[data-theme="dark"] .fc .fc-timegrid-now-indicator-arrow,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-timegrid-now-indicator-arrow,
+html.wp-dark-mode-active .fc .fc-timegrid-now-indicator-arrow,
+body.wp-dark-mode-active .fc .fc-timegrid-now-indicator-arrow,
+body.aura-dark-mode .fc .fc-timegrid-now-indicator-arrow {
+    border-color: #ea4335 !important;
+}
+
+/* ── VISTA DE AGENDA / LISTA (listWeek) ── */
+html[data-theme="dark"] .fc .fc-list-table,
+body[data-theme="dark"] .fc .fc-list-table,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-table,
+html.wp-dark-mode-active .fc .fc-list-table,
+body.wp-dark-mode-active .fc .fc-list-table,
+body.aura-dark-mode .fc .fc-list-table {
+    border: 1px solid #3c4043 !important;
+}
+
+html[data-theme="dark"] .fc .fc-list-day-cushion,
+body[data-theme="dark"] .fc .fc-list-day-cushion,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-day-cushion,
+html.wp-dark-mode-active .fc .fc-list-day-cushion,
+body.wp-dark-mode-active .fc .fc-list-day-cushion,
+body.aura-dark-mode .fc .fc-list-day-cushion {
+    background-color: #20242c !important;
+    border-color: #3c4043 !important;
+}
+
+html[data-theme="dark"] .fc .fc-list-day-text,
+body[data-theme="dark"] .fc .fc-list-day-text,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-day-text,
+html.wp-dark-mode-active .fc .fc-list-day-text,
+body.wp-dark-mode-active .fc .fc-list-day-text,
+body.aura-dark-mode .fc .fc-list-day-text {
+    color: #f1f3f4 !important;
+    font-weight: 700;
+}
+
+html[data-theme="dark"] .fc .fc-list-day-side-text,
+body[data-theme="dark"] .fc .fc-list-day-side-text,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-day-side-text,
+html.wp-dark-mode-active .fc .fc-list-day-side-text,
+body.wp-dark-mode-active .fc .fc-list-day-side-text,
+body.aura-dark-mode .fc .fc-list-day-side-text {
+    color: #9aa0a6 !important;
+}
+
+html[data-theme="dark"] .fc .fc-list-event,
+body[data-theme="dark"] .fc .fc-list-event,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-event,
+html.wp-dark-mode-active .fc .fc-list-event,
+body.wp-dark-mode-active .fc .fc-list-event,
+body.aura-dark-mode .fc .fc-list-event {
+    background-color: #181b21 !important;
+}
+
+html[data-theme="dark"] .fc .fc-list-event td,
+body[data-theme="dark"] .fc .fc-list-event td,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-event td,
+html.wp-dark-mode-active .fc .fc-list-event td,
+body.wp-dark-mode-active .fc .fc-list-event td,
+body.aura-dark-mode .fc .fc-list-event td {
+    border-color: #3c4043 !important;
+}
+
+html[data-theme="dark"] .fc .fc-list-event:hover td,
+body[data-theme="dark"] .fc .fc-list-event:hover td,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-event:hover td,
+html.wp-dark-mode-active .fc .fc-list-event:hover td,
+body.wp-dark-mode-active .fc .fc-list-event:hover td,
+body.aura-dark-mode .fc .fc-list-event:hover td {
+    background-color: #262b35 !important;
+}
+
+html[data-theme="dark"] .fc .fc-list-event-time,
+body[data-theme="dark"] .fc .fc-list-event-time,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-event-time,
+html.wp-dark-mode-active .fc .fc-list-event-time,
+body.wp-dark-mode-active .fc .fc-list-event-time,
+body.aura-dark-mode .fc .fc-list-event-time {
+    color: #9aa0a6 !important;
+    font-weight: 500;
+}
+
+html[data-theme="dark"] .fc .fc-list-event-title a,
+body[data-theme="dark"] .fc .fc-list-event-title a,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-event-title a,
+html.wp-dark-mode-active .fc .fc-list-event-title a,
+body.wp-dark-mode-active .fc .fc-list-event-title a,
+body.aura-dark-mode .fc .fc-list-event-title a {
+    color: #e8eaed !important;
+}
+
+html[data-theme="dark"] .fc .fc-list-empty,
+body[data-theme="dark"] .fc .fc-list-empty,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-list-empty,
+html.wp-dark-mode-active .fc .fc-list-empty,
+body.wp-dark-mode-active .fc .fc-list-empty,
+body.aura-dark-mode .fc .fc-list-empty {
+    background-color: #181b21 !important;
+    color: #9aa0a6 !important;
+}
+
+/* ── EVENTOS Y CHIPS EN CALENDARIO ── */
+html[data-theme="dark"] .fc .fc-event,
+body[data-theme="dark"] .fc .fc-event,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-event,
+html.wp-dark-mode-active .fc .fc-event,
+body.wp-dark-mode-active .fc .fc-event,
+body.aura-dark-mode .fc .fc-event {
+    border-radius: 4px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+    font-weight: 500 !important;
+}
+
+html[data-theme="dark"] .fc .fc-event-title,
+html[data-theme="dark"] .fc .fc-event-time,
+body[data-theme="dark"] .fc .fc-event-title,
+body[data-theme="dark"] .fc .fc-event-time,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-event-title,
+html[data-wp-dark-mode-scheme="dark"] .fc .fc-event-time,
+html.wp-dark-mode-active .fc .fc-event-title,
+html.wp-dark-mode-active .fc .fc-event-time,
+body.wp-dark-mode-active .fc .fc-event-title,
+body.wp-dark-mode-active .fc .fc-event-time,
+body.aura-dark-mode .fc .fc-event-title,
+body.aura-dark-mode .fc .fc-event-time {
+    color: #ffffff !important;
+}
+
+/* ── TOOLTIP FLOTANTE ENRIQUECIDO ── */
+html[data-theme="dark"] #aura-cal-event-tooltip.aura-cal-floating-tooltip,
+body[data-theme="dark"] #aura-cal-event-tooltip.aura-cal-floating-tooltip,
+html[data-wp-dark-mode-scheme="dark"] #aura-cal-event-tooltip.aura-cal-floating-tooltip,
+html.wp-dark-mode-active #aura-cal-event-tooltip.aura-cal-floating-tooltip,
+body.wp-dark-mode-active #aura-cal-event-tooltip.aura-cal-floating-tooltip,
+body.aura-dark-mode #aura-cal-event-tooltip.aura-cal-floating-tooltip {
+    background: #20242c !important;
+    border: 1px solid #3c4043 !important;
+    color: #f1f3f4 !important;
+    box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.65), 0 8px 12px -4px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-theme="dark"] #aura-cal-event-tooltip .tooltip-title,
+body[data-theme="dark"] #aura-cal-event-tooltip .tooltip-title,
+html[data-wp-dark-mode-scheme="dark"] #aura-cal-event-tooltip .tooltip-title,
+html.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-title,
+body.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-title,
+body.aura-dark-mode #aura-cal-event-tooltip .tooltip-title {
+    color: #ffffff !important;
+    border-bottom: 1px solid #3c4043 !important;
+}
+
+html[data-theme="dark"] #aura-cal-event-tooltip .tooltip-meta-row strong,
+body[data-theme="dark"] #aura-cal-event-tooltip .tooltip-meta-row strong,
+html[data-wp-dark-mode-scheme="dark"] #aura-cal-event-tooltip .tooltip-meta-row strong,
+html.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-meta-row strong,
+body.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-meta-row strong,
+body.aura-dark-mode #aura-cal-event-tooltip .tooltip-meta-row strong {
+    color: #9aa0a6 !important;
+}
+
+html[data-theme="dark"] #aura-cal-event-tooltip .tooltip-meta-row span,
+body[data-theme="dark"] #aura-cal-event-tooltip .tooltip-meta-row span,
+html[data-wp-dark-mode-scheme="dark"] #aura-cal-event-tooltip .tooltip-meta-row span,
+html.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-meta-row span,
+body.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-meta-row span,
+body.aura-dark-mode #aura-cal-event-tooltip .tooltip-meta-row span {
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] #aura-cal-event-tooltip .tooltip-desc,
+body[data-theme="dark"] #aura-cal-event-tooltip .tooltip-desc,
+html[data-wp-dark-mode-scheme="dark"] #aura-cal-event-tooltip .tooltip-desc,
+html.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-desc,
+body.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-desc,
+body.aura-dark-mode #aura-cal-event-tooltip .tooltip-desc {
+    background: #181b21 !important;
+    border-left: 2px solid #6366f1 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] #aura-cal-event-tooltip .tooltip-footer,
+body[data-theme="dark"] #aura-cal-event-tooltip .tooltip-footer,
+html[data-wp-dark-mode-scheme="dark"] #aura-cal-event-tooltip .tooltip-footer,
+html.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-footer,
+body.wp-dark-mode-active #aura-cal-event-tooltip .tooltip-footer,
+body.aura-dark-mode #aura-cal-event-tooltip .tooltip-footer {
+    border-top: 1px solid #3c4043 !important;
+    color: #818cf8 !important;
+}
+
+/* ── MODALES DEL SISTEMA EN MODO OSCURO ── */
+html[data-theme="dark"] .aura-modal-overlay,
+body[data-theme="dark"] .aura-modal-overlay,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-overlay,
+html.wp-dark-mode-active .aura-modal-overlay,
+body.wp-dark-mode-active .aura-modal-overlay,
+body.aura-dark-mode .aura-modal-overlay {
+    background: rgba(0, 0, 0, 0.78) !important;
+}
+
+html[data-theme="dark"] .aura-modal-container,
+body[data-theme="dark"] .aura-modal-container,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-container,
+html.wp-dark-mode-active .aura-modal-container,
+body.wp-dark-mode-active .aura-modal-container,
+body.aura-dark-mode .aura-modal-container {
+    background: #1e222b !important;
+    border: 1px solid #3c4043 !important;
+    color: #f1f3f4 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+html[data-theme="dark"] .aura-modal-header,
+body[data-theme="dark"] .aura-modal-header,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-header,
+html.wp-dark-mode-active .aura-modal-header,
+body.wp-dark-mode-active .aura-modal-header,
+body.aura-dark-mode .aura-modal-header {
+    background: #181b21 !important;
+    border-bottom: 1px solid #3c4043 !important;
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] .aura-modal-header h3,
+body[data-theme="dark"] .aura-modal-header h3,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-header h3,
+html.wp-dark-mode-active .aura-modal-header h3,
+body.wp-dark-mode-active .aura-modal-header h3,
+body.aura-dark-mode .aura-modal-header h3 {
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] .aura-modal-close,
+body[data-theme="dark"] .aura-modal-close,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-close,
+html.wp-dark-mode-active .aura-modal-close,
+body.wp-dark-mode-active .aura-modal-close,
+body.aura-dark-mode .aura-modal-close {
+    color: #9aa0a6 !important;
+}
+
+html[data-theme="dark"] .aura-modal-close:hover,
+body[data-theme="dark"] .aura-modal-close:hover,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-close:hover,
+html.wp-dark-mode-active .aura-modal-close:hover,
+body.wp-dark-mode-active .aura-modal-close:hover,
+body.aura-dark-mode .aura-modal-close:hover {
+    background: #2b313c !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .aura-modal-body,
+body[data-theme="dark"] .aura-modal-body,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-body,
+html.wp-dark-mode-active .aura-modal-body,
+body.wp-dark-mode-active .aura-modal-body,
+body.aura-dark-mode .aura-modal-body {
+    background: #1e222b !important;
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] .aura-modal-footer,
+body[data-theme="dark"] .aura-modal-footer,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-footer,
+html.wp-dark-mode-active .aura-modal-footer,
+body.wp-dark-mode-active .aura-modal-footer,
+body.aura-dark-mode .aura-modal-footer {
+    background: #181b21 !important;
+    border-top: 1px solid #3c4043 !important;
+}
+
+/* Campos de Formulario dentro de Modales */
+html[data-theme="dark"] .aura-modal-body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]),
+html[data-theme="dark"] .aura-modal-body select,
+html[data-theme="dark"] .aura-modal-body textarea,
+body[data-theme="dark"] .aura-modal-body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]),
+body[data-theme="dark"] .aura-modal-body select,
+body[data-theme="dark"] .aura-modal-body textarea,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]),
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-body select,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-body textarea,
+html.wp-dark-mode-active .aura-modal-body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]),
+html.wp-dark-mode-active .aura-modal-body select,
+html.wp-dark-mode-active .aura-modal-body textarea,
+body.wp-dark-mode-active .aura-modal-body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]),
+body.wp-dark-mode-active .aura-modal-body select,
+body.wp-dark-mode-active .aura-modal-body textarea,
+body.aura-dark-mode .aura-modal-body input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]),
+body.aura-dark-mode .aura-modal-body select,
+body.aura-dark-mode .aura-modal-body textarea {
+    background: #14171d !important;
+    border: 1px solid #3c4043 !important;
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] .aura-modal-body input:focus,
+html[data-theme="dark"] .aura-modal-body select:focus,
+html[data-theme="dark"] .aura-modal-body textarea:focus,
+body[data-theme="dark"] .aura-modal-body input:focus,
+body[data-theme="dark"] .aura-modal-body select:focus,
+body[data-theme="dark"] .aura-modal-body textarea:focus,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-body input:focus,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-body select:focus,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-body textarea:focus,
+html.wp-dark-mode-active .aura-modal-body input:focus,
+html.wp-dark-mode-active .aura-modal-body select:focus,
+html.wp-dark-mode-active .aura-modal-body textarea:focus,
+body.wp-dark-mode-active .aura-modal-body input:focus,
+body.wp-dark-mode-active .aura-modal-body select:focus,
+body.wp-dark-mode-active .aura-modal-body textarea:focus,
+body.aura-dark-mode .aura-modal-body input:focus,
+body.aura-dark-mode .aura-modal-body select:focus,
+body.aura-dark-mode .aura-modal-body textarea:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+    outline: none !important;
+}
+
+html[data-theme="dark"] .aura-modal-body label,
+body[data-theme="dark"] .aura-modal-body label,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-body label,
+html.wp-dark-mode-active .aura-modal-body label,
+body.wp-dark-mode-active .aura-modal-body label,
+body.aura-dark-mode .aura-modal-body label {
+    color: #e8eaed !important;
+}
+
+/* Cajas y Secciones Internas del Modal */
+html[data-theme="dark"] #sec-recurrence-toggle,
+body[data-theme="dark"] #sec-recurrence-toggle,
+html[data-wp-dark-mode-scheme="dark"] #sec-recurrence-toggle,
+html.wp-dark-mode-active #sec-recurrence-toggle,
+body.wp-dark-mode-active #sec-recurrence-toggle,
+body.aura-dark-mode #sec-recurrence-toggle {
+    background: rgba(99, 102, 241, 0.08) !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+html[data-theme="dark"] #evt-teachers-container,
+html[data-theme="dark"] .aura-user-chips-container,
+body[data-theme="dark"] #evt-teachers-container,
+body[data-theme="dark"] .aura-user-chips-container,
+html[data-wp-dark-mode-scheme="dark"] #evt-teachers-container,
+html[data-wp-dark-mode-scheme="dark"] .aura-user-chips-container,
+html.wp-dark-mode-active #evt-teachers-container,
+html.wp-dark-mode-active .aura-user-chips-container,
+body.wp-dark-mode-active #evt-teachers-container,
+body.wp-dark-mode-active .aura-user-chips-container,
+body.aura-dark-mode #evt-teachers-container,
+body.aura-dark-mode .aura-user-chips-container {
+    background: #14171d !important;
+    border: 1px solid #3c4043 !important;
+}
+
+html[data-theme="dark"] .aura-user-chip,
+body[data-theme="dark"] .aura-user-chip,
+html[data-wp-dark-mode-scheme="dark"] .aura-user-chip,
+html.wp-dark-mode-active .aura-user-chip,
+body.wp-dark-mode-active .aura-user-chip,
+body.aura-dark-mode .aura-user-chip {
+    background: #20242c !important;
+    border: 1px solid #3c4043 !important;
+    color: #e8eaed !important;
+}
+
+html[data-theme="dark"] .aura-user-chip:hover,
+body[data-theme="dark"] .aura-user-chip:hover,
+html[data-wp-dark-mode-scheme="dark"] .aura-user-chip:hover,
+html.wp-dark-mode-active .aura-user-chip:hover,
+body.wp-dark-mode-active .aura-user-chip:hover,
+body.aura-dark-mode .aura-user-chip:hover {
+    border-color: #6366f1 !important;
+    background: rgba(99, 102, 241, 0.15) !important;
+}
+
+html[data-theme="dark"] .aura-user-chip.is-checked,
+body[data-theme="dark"] .aura-user-chip.is-checked,
+html[data-wp-dark-mode-scheme="dark"] .aura-user-chip.is-checked,
+html.wp-dark-mode-active .aura-user-chip.is-checked,
+body.wp-dark-mode-active .aura-user-chip.is-checked,
+body.aura-dark-mode .aura-user-chip.is-checked {
+    background: rgba(99, 102, 241, 0.25) !important;
+    border-color: #6366f1 !important;
+    color: #818cf8 !important;
+}
+
+/* Pastillas de días recurrentes */
+html[data-theme="dark"] .btn-day-pill,
+body[data-theme="dark"] .btn-day-pill,
+html[data-wp-dark-mode-scheme="dark"] .btn-day-pill,
+html.wp-dark-mode-active .btn-day-pill,
+body.wp-dark-mode-active .btn-day-pill,
+body.aura-dark-mode .btn-day-pill {
+    background: #20242c !important;
+    border: 1px solid #3c4043 !important;
+    color: #e8eaed !important;
+}
+
+html[data-theme="dark"] .btn-day-pill:has(input:checked),
+body[data-theme="dark"] .btn-day-pill:has(input:checked),
+html[data-wp-dark-mode-scheme="dark"] .btn-day-pill:has(input:checked),
+html.wp-dark-mode-active .btn-day-pill:has(input:checked),
+body.wp-dark-mode-active .btn-day-pill:has(input:checked),
+body.aura-dark-mode .btn-day-pill:has(input:checked) {
+    background: #6366f1 !important;
+    border-color: #6366f1 !important;
+    color: #ffffff !important;
+}
+
+/* Paleta de Colores en Modal */
+html[data-theme="dark"] .aura-color-palette,
+body[data-theme="dark"] .aura-color-palette,
+html[data-wp-dark-mode-scheme="dark"] .aura-color-palette,
+html.wp-dark-mode-active .aura-color-palette,
+body.wp-dark-mode-active .aura-color-palette,
+body.aura-dark-mode .aura-color-palette {
+    background: #14171d !important;
+    border: 1px solid #3c4043 !important;
+}
+
+/* Modal Detalle de Clase */
+html[data-theme="dark"] #modal-event-detail .aura-modal-body > div > div[style*="background"],
+body[data-theme="dark"] #modal-event-detail .aura-modal-body > div > div[style*="background"],
+html[data-wp-dark-mode-scheme="dark"] #modal-event-detail .aura-modal-body > div > div[style*="background"],
+html.wp-dark-mode-active #modal-event-detail .aura-modal-body > div > div[style*="background"],
+body.wp-dark-mode-active #modal-event-detail .aura-modal-body > div > div[style*="background"],
+body.aura-dark-mode #modal-event-detail .aura-modal-body > div > div[style*="background"] {
+    background: #14171d !important;
+    border: 1px solid #3c4043 !important;
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] #box-det-desc,
+body[data-theme="dark"] #box-det-desc,
+html[data-wp-dark-mode-scheme="dark"] #box-det-desc,
+html.wp-dark-mode-active #box-det-desc,
+body.wp-dark-mode-active #box-det-desc,
+body.aura-dark-mode #box-det-desc {
+    background: #14171d !important;
+    border-left: 3px solid #6366f1 !important;
+    color: #cbd5e1 !important;
+}
+
+/* Modal Asistencia */
+html[data-theme="dark"] .att-status-btn-group,
+body[data-theme="dark"] .att-status-btn-group,
+html[data-wp-dark-mode-scheme="dark"] .att-status-btn-group,
+html.wp-dark-mode-active .att-status-btn-group,
+body.wp-dark-mode-active .att-status-btn-group,
+body.aura-dark-mode .att-status-btn-group {
+    border: 1px solid #3c4043 !important;
+}
+
+html[data-theme="dark"] .att-btn,
+body[data-theme="dark"] .att-btn,
+html[data-wp-dark-mode-scheme="dark"] .att-btn,
+html.wp-dark-mode-active .att-btn,
+body.wp-dark-mode-active .att-btn,
+body.aura-dark-mode .att-btn {
+    background: #20242c !important;
+    border-right: 1px solid #3c4043 !important;
+    color: #9aa0a6 !important;
+}
+
+/* ── OTROS TABS EN WP-ADMIN (PROGRAMAS, CALIFICACIONES, TAREAS, AJUSTES) ── */
+html[data-theme="dark"] .aura-modal-subtabs,
+body[data-theme="dark"] .aura-modal-subtabs,
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-subtabs,
+html.wp-dark-mode-active .aura-modal-subtabs,
+body.wp-dark-mode-active .aura-modal-subtabs,
+body.aura-dark-mode .aura-modal-subtabs {
+    background: #14171d !important;
+    border-bottom: 1px solid #3c4043 !important;
+}
+
+html[data-theme="dark"] .aura-import-dropzone,
+body[data-theme="dark"] .aura-import-dropzone,
+html[data-wp-dark-mode-scheme="dark"] .aura-import-dropzone,
+html.wp-dark-mode-active .aura-import-dropzone,
+body.wp-dark-mode-active .aura-import-dropzone,
+body.aura-dark-mode .aura-import-dropzone {
+    background: #14171d !important;
+    border-color: #3c4043 !important;
+    color: #e8eaed !important;
+}
+
+html[data-theme="dark"] table.adp-table,
+html[data-theme="dark"] .adp-table th,
+html[data-theme="dark"] .adp-table td,
+body[data-theme="dark"] table.adp-table,
+body[data-theme="dark"] .adp-table th,
+body[data-theme="dark"] .adp-table td,
+html[data-wp-dark-mode-scheme="dark"] table.adp-table,
+html[data-wp-dark-mode-scheme="dark"] .adp-table th,
+html[data-wp-dark-mode-scheme="dark"] .adp-table td,
+html.wp-dark-mode-active table.adp-table,
+html.wp-dark-mode-active .adp-table th,
+html.wp-dark-mode-active .adp-table td,
+body.wp-dark-mode-active table.adp-table,
+body.wp-dark-mode-active .adp-table th,
+body.wp-dark-mode-active .adp-table td,
+body.aura-dark-mode table.adp-table,
+body.aura-dark-mode .adp-table th,
+body.aura-dark-mode .adp-table td {
+    border-color: #3c4043 !important;
+}
+
+html[data-theme="dark"] .adp-table th,
+body[data-theme="dark"] .adp-table th,
+html[data-wp-dark-mode-scheme="dark"] .adp-table th,
+html.wp-dark-mode-active .adp-table th,
+body.wp-dark-mode-active .adp-table th,
+body.aura-dark-mode .adp-table th {
+    background-color: #20242c !important;
+    color: #e8eaed !important;
+}
+
+html[data-theme="dark"] .adp-table tr:hover td,
+body[data-theme="dark"] .adp-table tr:hover td,
+html[data-wp-dark-mode-scheme="dark"] .adp-table tr:hover td,
+html.wp-dark-mode-active .adp-table tr:hover td,
+body.wp-dark-mode-active .adp-table tr:hover td,
+body.aura-dark-mode .adp-table tr:hover td {
+    background-color: #262b35 !important;
+}
+
+/* ── FRONTEND TEACHER PORTAL EN MODO OSCURO ── */
+[data-theme="dark"] .aura-teacher-portal,
+body.aura-dark-mode .aura-teacher-portal,
+html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
+html.wp-dark-mode-active .aura-teacher-portal,
+body.wp-dark-mode-active .aura-teacher-portal {
+    color: #f1f3f4;
+}
+
+[data-theme="dark"] .aura-teacher-portal .teacher-tab-btn,
+body.aura-dark-mode .aura-teacher-portal .teacher-tab-btn,
+html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal .teacher-tab-btn,
+html.wp-dark-mode-active .aura-teacher-portal .teacher-tab-btn,
+body.wp-dark-mode-active .aura-teacher-portal .teacher-tab-btn {
+    background: #20242c !important;
+    border: 1px solid #3c4043 !important;
+    color: #e8eaed !important;
+}
+
+[data-theme="dark"] .aura-teacher-portal .teacher-tab-btn.active,
+body.aura-dark-mode .aura-teacher-portal .teacher-tab-btn.active,
+html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal .teacher-tab-btn.active,
+html.wp-dark-mode-active .aura-teacher-portal .teacher-tab-btn.active,
+body.wp-dark-mode-active .aura-teacher-portal .teacher-tab-btn.active {
+    background: #6366f1 !important;
+    border-color: #6366f1 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .aura-teacher-portal .aura-teacher-card,
+[data-theme="dark"] .aura-teacher-portal .aura-teacher-item-card,
+body.aura-dark-mode .aura-teacher-portal .aura-teacher-card,
+body.aura-dark-mode .aura-teacher-portal .aura-teacher-item-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal .aura-teacher-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal .aura-teacher-item-card,
+html.wp-dark-mode-active .aura-teacher-portal .aura-teacher-card,
+html.wp-dark-mode-active .aura-teacher-portal .aura-teacher-item-card,
+body.wp-dark-mode-active .aura-teacher-portal .aura-teacher-card,
+body.wp-dark-mode-active .aura-teacher-portal .aura-teacher-item-card {
+    background: #1e222b !important;
+    border: 1px solid #3c4043 !important;
+    color: #f1f3f4 !important;
+}
+
+/* ── AVATARES STACK & TOOLTIP ENRIQUECIDO (CALENDARIO / PROGRAMAS) ── */
+.aura-av-tooltip {
+    position: fixed;
+    z-index: 99999;
+    pointer-events: none;
+    background: var(--aura-surface, #ffffff);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--aura-border, #e2e8f0);
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 0 12px 35px -5px rgba(0,0,0,.15), 0 0 0 1px rgba(99,102,241,.12);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 210px;
+    opacity: 0;
+    transform: translateY(6px) scale(.97);
+    transition: opacity .18s ease, transform .18s ease;
+    color: var(--aura-text-primary, #0f172a);
+}
+.aura-av-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+.aura-av-tooltip-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--aura-indigo,#6366f1), var(--aura-violet,#7c3aed));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    color: #ffffff;
+}
+.aura-av-tooltip-name {
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.2;
+    color: var(--aura-text-primary, #0f172a);
+}
+.aura-av-tooltip-role {
+    font-size: 11px;
+    color: var(--aura-primary, #4f46e5);
+    font-weight: 600;
+    margin-top: 2px;
+}
+.aura-av-tooltip-email {
+    font-size: 11px;
+    color: var(--aura-text-secondary, #64748b);
+    margin-top: 1px;
+    word-break: break-all;
+}
+
+/* Modo Oscuro para Tooltips de Avatares */
+body.aura-dark-mode .aura-av-tooltip,
+body.wp-dark-mode-active .aura-av-tooltip,
+html[data-theme="dark"] .aura-av-tooltip,
+body[data-theme="dark"] .aura-av-tooltip,
+[data-theme="dark"] .aura-av-tooltip {
+    background: #181b21 !important;
+    border: 1px solid #3c4043 !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,.6), 0 0 0 1px rgba(99,102,241,.25) !important;
+    color: #f1f5f9 !important;
+}
+body.aura-dark-mode .aura-av-tooltip .aura-av-tooltip-name,
+body.wp-dark-mode-active .aura-av-tooltip .aura-av-tooltip-name,
+[data-theme="dark"] .aura-av-tooltip .aura-av-tooltip-name {
+    color: #f8fafc !important;
+}
+body.aura-dark-mode .aura-av-tooltip .aura-av-tooltip-role,
+body.wp-dark-mode-active .aura-av-tooltip .aura-av-tooltip-role,
+[data-theme="dark"] .aura-av-tooltip .aura-av-tooltip-role {
+    color: #38bdf8 !important;
+}
+body.aura-dark-mode .aura-av-tooltip .aura-av-tooltip-email,
+body.wp-dark-mode-active .aura-av-tooltip .aura-av-tooltip-email,
+[data-theme="dark"] .aura-av-tooltip .aura-av-tooltip-email {
+    color: #94a3b8 !important;
+}
+
+
 

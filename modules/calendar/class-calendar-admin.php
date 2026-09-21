@@ -24,8 +24,10 @@ class Aura_Calendar_Admin {
      * Inicializar hooks de administración
      */
     public static function init(): void {
-        add_action( 'admin_menu',                          [ __CLASS__, 'register_menus' ] );
-        add_action( 'admin_enqueue_scripts',               [ __CLASS__, 'enqueue_assets' ] );
+        add_action( 'admin_menu',                                  [ __CLASS__, 'register_menus' ] );
+        add_action( 'admin_enqueue_scripts',                       [ __CLASS__, 'enqueue_assets' ] );
+        add_filter( 'parent_file',                                 [ __CLASS__, 'filter_parent_file' ] );
+        add_filter( 'submenu_file',                                [ __CLASS__, 'filter_submenu_file' ], 10, 2 );
         add_action( 'wp_ajax_aura_cal_save_settings',             [ __CLASS__, 'ajax_save_settings' ] );
         add_action( 'wp_ajax_aura_cal_create_teacher_portal_page', [ __CLASS__, 'ajax_create_teacher_portal_page' ] );
     }
@@ -70,7 +72,7 @@ class Aura_Calendar_Admin {
         );
 
         // Submenú 2: Programas y Materias
-        if ( current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) {
+        if ( current_user_can( 'aura_cal_view_programs' ) || current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) {
             add_submenu_page(
                 'aura-calendar',
                 __( 'Programas y Materias — AURA', 'aura-suite' ),
@@ -106,7 +108,7 @@ class Aura_Calendar_Admin {
         }
 
         // Submenú 5: Configuración
-        if ( current_user_can( 'aura_cal_manage_settings' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) {
+        if ( current_user_can( 'aura_cal_manage_settings' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) {
             add_submenu_page(
                 'aura-calendar',
                 __( 'Configuración de Calendario — AURA', 'aura-suite' ),
@@ -117,6 +119,49 @@ class Aura_Calendar_Admin {
             );
         }
     }
+
+    /**
+     * Asegurar que el menú principal de Calendario se mantenga abierto y activo
+     *
+     * @param string $parent_file
+     * @return string
+     */
+    public static function filter_parent_file( $parent_file ) {
+        global $current_screen;
+        if ( $current_screen && strpos( $current_screen->id, 'aura-calendar' ) !== false ) {
+            return 'aura-calendar';
+        }
+        return $parent_file;
+    }
+
+    /**
+     * Sincronizar el submenú activo del sidebar de WordPress tanto si se navega
+     * por slug de página como si se accede mediante parámetro ?tab=
+     *
+     * @param string $submenu_file
+     * @param string $parent_file
+     * @return string
+     */
+    public static function filter_submenu_file( $submenu_file, $parent_file ) {
+        $page = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : '';
+        $tab  = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : '';
+
+        if ( 'aura-calendar' === $parent_file || strpos( $page, 'aura-calendar' ) === 0 ) {
+            if ( 'aura-calendar-programs' === $page || 'programs' === $tab ) {
+                return 'aura-calendar-programs';
+            } elseif ( 'aura-calendar-grades' === $page || 'grades' === $tab ) {
+                return 'aura-calendar-grades';
+            } elseif ( 'aura-calendar-tasks' === $page || 'tasks' === $tab ) {
+                return 'aura-calendar-tasks';
+            } elseif ( 'aura-calendar-settings' === $page || 'settings' === $tab ) {
+                return 'aura-calendar-settings';
+            } elseif ( 'aura-calendar' === $page || 'calendar' === $tab ) {
+                return 'aura-calendar';
+            }
+        }
+        return $submenu_file;
+    }
+
 
     /**
      * Encolar hojas de estilo y scripts
@@ -143,6 +188,11 @@ class Aura_Calendar_Admin {
             return;
         }
 
+        // Habilitar biblioteca multimedia de WordPress para subida de adjuntos/materiales
+        if ( function_exists( 'wp_enqueue_media' ) ) {
+            wp_enqueue_media();
+        }
+
         // Cargar Design System Base de Aura si no está ya cargado
         if ( ! wp_style_is( 'aura-design-system', 'enqueued' ) ) {
             wp_enqueue_style(
@@ -162,7 +212,7 @@ class Aura_Calendar_Admin {
             true
         );
 
-        $cal_ver = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/js/calendar-admin.js' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/js/calendar-admin.js' ) : time() );
+        $cal_ver = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/css/calendar-admin.css' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/css/calendar-admin.css' ) : time() );
 
         // Estilos propios del módulo de calendario
         wp_enqueue_style(
@@ -198,6 +248,7 @@ class Aura_Calendar_Admin {
             'calendar_url'        => admin_url( 'admin.php?page=aura-calendar' ),
             'nonce'               => wp_create_nonce( 'aura_cal_nonce' ),
             'current_user_id'     => get_current_user_id(),
+            'current_user_name'   => wp_get_current_user()->display_name,
             'teacher_portal_url'  => $teacher_portal_url,
             'teacher_code_prefix' => self::get_teacher_code_prefix(),
             'user_can_edit'       => current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ),

@@ -201,52 +201,110 @@ body[data-theme="dark"] {
     color: #fca5a5 !important;
 }
 
-/* ── FULLCALENDAR EN MODO OSCURO ───────────────────────────────── */
-[data-theme="dark"] .fc {
-    --fc-page-bg-color: #162032;
-    --fc-neutral-bg-color: #111827;
-    --fc-list-event-hover-bg-color: #1e293b;
-    --fc-theme-standard-border-color: #2e3d56;
-    --fc-border-color: #2e3d56;
+/* ── FULLCALENDAR EN MODO OSCURO (ESTILO GOOGLE CALENDAR) ──────── */
+[data-theme="dark"] .fc,
+body.aura-dark-mode .fc,
+html[data-wp-dark-mode-scheme="dark"] .fc,
+html.wp-dark-mode-active .fc,
+body.wp-dark-mode-active .fc {
+    --fc-page-bg-color: #181b21;
+    --fc-neutral-bg-color: #20242c;
+    --fc-list-event-hover-bg-color: #262b35;
+    --fc-theme-standard-border-color: #3c4043;
+    --fc-border-color: #3c4043;
+    background-color: #181b21;
+    color: #f1f3f4;
 }
-[data-theme="dark"] .fc-toolbar-title {
-    color: var(--aura-theme-text-primary, #f8fafc) !important;
+[data-theme="dark"] .fc-toolbar-title,
+body.aura-dark-mode .fc-toolbar-title {
+    color: #f1f3f4 !important;
 }
-[data-theme="dark"] .fc-button {
-    background-color: #1e293b !important;
-    border-color: #334155 !important;
-    color: #f8fafc !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+[data-theme="dark"] .fc-button,
+body.aura-dark-mode .fc-button {
+    background-color: #20242c !important;
+    border-color: #3c4043 !important;
+    color: #e8eaed !important;
+    box-shadow: none !important;
 }
-[data-theme="dark"] .fc-button:hover {
-    background-color: #334155 !important;
-    border-color: #475569 !important;
+[data-theme="dark"] .fc-button:hover,
+body.aura-dark-mode .fc-button:hover {
+    background-color: #2b313c !important;
+    border-color: #5f6368 !important;
     color: #ffffff !important;
 }
 [data-theme="dark"] .fc-button-primary:not(:disabled).fc-button-active,
-[data-theme="dark"] .fc-button-primary:not(:disabled):active {
-    background-color: #4f46e5 !important;
+[data-theme="dark"] .fc-button-primary:not(:disabled):active,
+body.aura-dark-mode .fc-button-primary:not(:disabled).fc-button-active,
+body.aura-dark-mode .fc-button-primary:not(:disabled):active {
+    background-color: #6366f1 !important;
     border-color: #6366f1 !important;
     color: #ffffff !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35) !important;
 }
 [data-theme="dark"] .fc-col-header-cell-cushion,
 [data-theme="dark"] .fc-daygrid-day-number,
-[data-theme="dark"] .fc-timegrid-slot-label-cushion {
-    color: var(--aura-theme-text-secondary, #cbd5e1) !important;
+[data-theme="dark"] .fc-timegrid-slot-label-cushion,
+body.aura-dark-mode .fc-col-header-cell-cushion,
+body.aura-dark-mode .fc-daygrid-day-number,
+body.aura-dark-mode .fc-timegrid-slot-label-cushion {
+    color: #e8eaed !important;
 }
 [data-theme="dark"] .fc-theme-standard th,
-[data-theme="dark"] .fc-theme-standard td {
-    border-color: var(--aura-theme-border-subtle, #1f2d42) !important;
+[data-theme="dark"] .fc-theme-standard td,
+[data-theme="dark"] .fc .fc-scrollgrid,
+[data-theme="dark"] .fc .fc-timegrid-slot,
+[data-theme="dark"] .fc .fc-daygrid-day,
+body.aura-dark-mode .fc-theme-standard th,
+body.aura-dark-mode .fc-theme-standard td,
+body.aura-dark-mode .fc .fc-scrollgrid,
+body.aura-dark-mode .fc .fc-timegrid-slot,
+body.aura-dark-mode .fc .fc-daygrid-day {
+    border-color: #3c4043 !important;
 }
-[data-theme="dark"] .fc-timegrid-now-indicator-line {
-    border-color: #ef4444 !important;
+[data-theme="dark"] .fc .fc-daygrid-day,
+body.aura-dark-mode .fc .fc-daygrid-day {
+    background-color: #181b21 !important;
 }
-[data-theme="dark"] .fc-list-day-cushion {
-    background-color: #111827 !important;
+[data-theme="dark"] .fc .fc-daygrid-day:hover,
+body.aura-dark-mode .fc .fc-daygrid-day:hover {
+    background-color: #20242c !important;
+}
+[data-theme="dark"] .fc .fc-daygrid-day.fc-day-other,
+body.aura-dark-mode .fc .fc-daygrid-day.fc-day-other {
+    background-color: #13151b !important;
+}
+[data-theme="dark"] .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number,
+body.aura-dark-mode .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    background-color: #6366f1 !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 700 !important;
+    margin: 3px 5px 0 0 !important;
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.45) !important;
+}
+[data-theme="dark"] .fc-timegrid-now-indicator-line,
+body.aura-dark-mode .fc-timegrid-now-indicator-line {
+    border-color: #ea4335 !important;
+    border-width: 2px !important;
+}
+[data-theme="dark"] .fc-list-day-cushion,
+body.aura-dark-mode .fc-list-day-cushion {
+    background-color: #20242c !important;
+    border-color: #3c4043 !important;
     color: #f8fafc !important;
 }
-[data-theme="dark"] .fc-list-event:hover td {
-    background-color: #1e293b !important;
+[data-theme="dark"] .fc-list-event td,
+body.aura-dark-mode .fc-list-event td {
+    border-color: #3c4043 !important;
+}
+[data-theme="dark"] .fc-list-event:hover td,
+body.aura-dark-mode .fc-list-event:hover td {
+    background-color: #262b35 !important;
 }
 
 /* ── NOTIFICACIONES Y ALERTAS EN MODO OSCURO ───────────────────── */
@@ -722,14 +780,23 @@ html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
     padding: 8px 0;
 }
 
-[data-theme="dark"] .aura-teacher-portal .fc-timegrid-slot {
-    border-bottom: 1px solid #1f2d42 !important;
+[data-theme="dark"] .aura-teacher-portal .fc-timegrid-slot,
+body.aura-dark-mode .aura-teacher-portal .fc-timegrid-slot,
+html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal .fc-timegrid-slot,
+html.wp-dark-mode-active .aura-teacher-portal .fc-timegrid-slot,
+body.wp-dark-mode-active .aura-teacher-portal .fc-timegrid-slot {
+    border-bottom: 1px solid #3c4043 !important;
 }
 
-[data-theme="dark"] .aura-teacher-portal .fc-event {
-    background-color: #4f46e5 !important;
-    border-color: #6366f1 !important;
+[data-theme="dark"] .aura-teacher-portal .fc-event,
+body.aura-dark-mode .aura-teacher-portal .fc-event,
+html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal .fc-event,
+html.wp-dark-mode-active .aura-teacher-portal .fc-event,
+body.wp-dark-mode-active .aura-teacher-portal .fc-event {
+    background-color: #6366f1 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
     color: #ffffff !important;
 }
+
 
 

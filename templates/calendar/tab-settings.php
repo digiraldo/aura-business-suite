@@ -65,7 +65,7 @@ $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_port
                             <?php esc_html_e( 'Shortcode Oficial para la Vista de Profesores', 'aura' ); ?>
                         </span>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <code style="font-size: 15px; font-weight: 700; background: #fff; border: 1px solid #c7d2fe; color: #3730a3; padding: 4px 10px; border-radius: 6px;">[aura_teacher_portal]</code>
+                            <code style="font-size: 15px; font-weight: 700; background: var(--aura-surface-alt, #f8fafc); border: 1px solid var(--aura-border, #c7d2fe); color: var(--aura-primary, #4f46e5); padding: 4px 10px; border-radius: 6px;">[aura_teacher_portal]</code>
                             <button type="button" class="btn btn-sm btn-ghost" onclick="navigator.clipboard.writeText('[aura_teacher_portal]'); alert('¡Shortcode copiado al portapapeles!');" style="font-size: 12px; padding: 4px 10px;">
                                 📋 <?php esc_html_e( 'Copiar', 'aura' ); ?>
                             </button>

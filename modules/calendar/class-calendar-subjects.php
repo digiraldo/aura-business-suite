@@ -447,13 +447,13 @@ class Aura_Calendar_Subjects {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para subir material.', 'aura' ) ] );
         }
 
-        $audience     = sanitize_text_field( $_POST['audience'] ?? 'student' );
+        $audience     = sanitize_text_field( $_POST['audience'] ?? ( $_POST['material_type'] ?? 'student' ) );
         if ( ! in_array( $audience, [ 'teacher', 'student' ], true ) ) {
             $audience = 'student';
         }
 
-        $title        = sanitize_text_field( $_POST['title'] ?? '' );
-        $external_url = esc_url_raw( $_POST['external_url'] ?? '' );
+        $title        = sanitize_text_field( $_POST['title'] ?? ( $_POST['material_title'] ?? ( $_POST['file_name'] ?? '' ) ) );
+        $external_url = esc_url_raw( $_POST['external_url'] ?? ( $_POST['drive_link'] ?? '' ) );
 
         // Incluir gestor de Google Drive si existe
         if ( ! class_exists( 'Aura_Drive_Manager' ) ) {
