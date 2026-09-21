@@ -414,7 +414,7 @@ class Aura_Calendar_Tasks {
         if ( $program_id > 0 && $wpdb->get_var( "SHOW TABLES LIKE '{$table_enr}'" ) === $table_enr ) {
             $students_sql = "SELECT DISTINCT st.id AS student_id, st.first_name, st.last_name, 
                                     COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, 
-                                    st.email, st.photo_url, st.wp_user_id, st.status
+                                    st.email, st.phone, st.photo_url, st.wp_user_id, st.status
                              FROM {$table_enr} enr
                              JOIN {$table_stud} st ON st.id = enr.student_id
                              LEFT JOIN {$table_crs} c ON c.id = enr.course_id
@@ -428,7 +428,7 @@ class Aura_Calendar_Tasks {
         if ( empty( $students ) ) {
             $fallback_sql = "SELECT st.id AS student_id, st.first_name, st.last_name, 
                                     COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, 
-                                    st.email, st.photo_url, st.wp_user_id, st.status
+                                    st.email, st.phone, st.photo_url, st.wp_user_id, st.status
                              FROM {$table_stud} st
                              WHERE st.status IN ('active', 'approved', 'applicant')
                              ORDER BY st.last_name ASC, st.first_name ASC";
@@ -446,6 +446,7 @@ class Aura_Calendar_Tasks {
                     'full_name'    => trim( $s->first_name . ' ' . $s->last_name ),
                     'student_code' => $s->student_code,
                     'email'        => $s->email,
+                    'phone'        => $s->phone ?? '',
                     'avatar'       => $avatar,
                 ];
             }

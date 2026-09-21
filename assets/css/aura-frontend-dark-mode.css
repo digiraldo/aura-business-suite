@@ -858,3 +858,21 @@ body.wp-dark-mode-active .aura-teacher-portal .fc-event {
 [data-theme="dark"] .aura-student-equipment-wrapper [style*="color: var(--aura-text-primary)"] {
     color: #f1f5f9 !important;
 }
+
+/* Fila de Nómina de Estudiantes del Portal Docente */
+.aura-student-roster-row {
+    transition: all 0.2s ease;
+}
+.aura-student-roster-row:hover {
+    border-color: var(--at-primary, #6366f1) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12);
+    transform: translateY(-1px);
+}
+[data-theme="dark"] .aura-student-roster-row {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+[data-theme="dark"] .aura-student-roster-row:hover {
+    background: #243248 !important;
+    border-color: #6366f1 !important;
+}

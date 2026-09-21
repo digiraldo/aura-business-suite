@@ -793,7 +793,7 @@ class Aura_Calendar_Frontend {
                                     </div>
 
                                     <div style="border-top: 1px solid var(--at-border); padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--at-text-muted); flex-wrap: wrap; gap: 6px;">
-                                        <div style="display: flex; gap: 6px;">
+                                        <div style="display: flex; gap: 6px; align-items: center;">
                                             <button type="button" class="btn btn-ghost btn-toggle-mat-panel" data-target="#<?php echo esc_attr( $collapse_id ); ?>" style="font-size: 11px; padding: 4px 8px;">
                                                 📂 <?php esc_html_e( 'Recursos', 'aura' ); ?> (<?php echo $t_count + $s_count; ?>)
                                             </button>
@@ -801,9 +801,14 @@ class Aura_Calendar_Frontend {
                                                 ☁️ <?php esc_html_e( 'Subir', 'aura' ); ?>
                                             </button>
                                         </div>
-                                        <button type="button" class="btn btn-ghost btn-new-task-for-subject" data-program-id="<?php echo esc_attr( $s->program_id ); ?>" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="font-size: 11px; padding: 4px 8px;">
-                                            ➕ <?php esc_html_e( 'Crear Tarea', 'aura' ); ?>
-                                        </button>
+                                        <div style="display: flex; gap: 6px; align-items: center;">
+                                            <button type="button" class="btn btn-indigo btn-lift btn-teacher-view-students" data-program-id="<?php echo esc_attr( $s->program_id ); ?>" data-subject-id="<?php echo esc_attr( $s->id ); ?>" data-program-name="<?php echo esc_attr( $s->program_name ); ?>" data-subject-name="<?php echo esc_attr( $s->name ); ?>" style="font-size: 11px; padding: 4px 10px; font-weight: 600;">
+                                                👥 <?php esc_html_e( 'Estudiantes', 'aura' ); ?>
+                                            </button>
+                                            <button type="button" class="btn btn-ghost btn-new-task-for-subject" data-program-id="<?php echo esc_attr( $s->program_id ); ?>" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="font-size: 11px; padding: 4px 8px;">
+                                                ➕ <?php esc_html_e( 'Crear Tarea', 'aura' ); ?>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -824,9 +829,16 @@ class Aura_Calendar_Frontend {
                                 <?php esc_html_e( 'Asigna lecturas de la Biblioteca con resúmenes escritos y califica las respuestas de los estudiantes.', 'aura' ); ?>
                             </p>
                         </div>
-                        <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-teacher-open-task-modal">
-                            ➕ <?php esc_html_e( 'Asignar Nueva Tarea', 'aura' ); ?>
-                        </button>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <?php if ( ! empty( $my_subjects ) ) : ?>
+                                <button type="button" class="btn btn-ghost btn-teacher-view-students" data-program-id="<?php echo esc_attr( $my_subjects[0]->program_id ); ?>" data-subject-id="<?php echo esc_attr( $my_subjects[0]->id ); ?>" data-program-name="<?php echo esc_attr( $my_subjects[0]->program_name ); ?>" data-subject-name="<?php echo esc_attr( $my_subjects[0]->name ); ?>" style="font-size: 12.5px; padding: 7px 12px; border: 1px solid var(--at-border);">
+                                    👥 <?php esc_html_e( 'Nómina de Estudiantes', 'aura' ); ?>
+                                </button>
+                            <?php endif; ?>
+                            <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-teacher-open-task-modal">
+                                ➕ <?php esc_html_e( 'Asignar Nueva Tarea', 'aura' ); ?>
+                            </button>
+                        </div>
                     </div>
 
                     <?php if ( empty( $my_tasks ) ) : ?>
@@ -1196,6 +1208,54 @@ class Aura_Calendar_Frontend {
                 </div>
             </div>
 
+            <!-- ══════════════════════════════════════════════════════════════
+                 MODAL DOCENTE: CONSULTA DE ESTUDIANTES Y ASIGNACIÓN POR MATERIA
+                 ══════════════════════════════════════════════════════════════ -->
+            <div id="modal-teacher-students" class="aura-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+                <div class="aura-modal-container aura-teacher-modal" style="max-width: 840px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; border-radius: 14px;">
+                    <div class="aura-teacher-modal-header" style="flex-shrink: 0;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <h3 id="t-stds-modal-title" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--at-text-primary);">
+                                    👥 <?php esc_html_e( 'Nómina de Estudiantes Matriculados', 'aura' ); ?>
+                                </h3>
+                                <span id="t-stds-count-badge" class="adp-badge badge-indigo" style="font-size: 11px;">0 alumnos</span>
+                            </div>
+                            <div id="t-stds-modal-subtitle" style="font-size: 12px; color: var(--at-text-muted); margin-top: 3px;">
+                                <?php esc_html_e( 'Programa y Materia', 'aura' ); ?>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close-modal" data-close="#modal-teacher-students" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--at-text-muted);">&times;</button>
+                    </div>
+
+                    <!-- BARRA DE BÚSQUEDA Y ASIGNACIONES RÁPIDAS -->
+                    <div style="padding: 12px 18px; background: var(--at-bg-card-alt, #f8fafc); border-bottom: 1px solid var(--at-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; flex-shrink: 0;">
+                        <div style="flex: 1; min-width: 220px; max-width: 360px;">
+                            <input type="text" id="t-stds-search" class="form-control" placeholder="<?php esc_attr_e( '🔍 Buscar por nombre, código o correo...', 'aura' ); ?>" style="width: 100%; font-size: 12.5px; padding: 6px 12px;">
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-indigo btn-lift" id="btn-t-stds-assign-all" style="font-size: 11.5px; padding: 6px 12px;">
+                                ➕ <?php esc_html_e( 'Asignar Tarea Grupal', 'aura' ); ?>
+                            </button>
+                            <button type="button" class="btn btn-purple btn-lift" id="btn-t-stds-assign-diff" style="font-size: 11.5px; padding: 6px 12px;">
+                                🎲 <?php esc_html_e( 'Repartir Libros', 'aura' ); ?>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CONTENEDOR CON LA LISTA DE ESTUDIANTES -->
+                    <div id="t-stds-body" class="aura-teacher-modal-body" style="flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;">
+                        <p style="text-align: center; color: var(--at-text-muted); padding: 30px;"><?php esc_html_e( 'Cargando nómina...', 'aura' ); ?></p>
+                    </div>
+
+                    <div class="aura-teacher-modal-footer" style="flex-shrink: 0;">
+                        <button type="button" class="btn btn-ghost btn-close-modal" data-close="#modal-teacher-students">
+                            <?php esc_html_e( 'Cerrar', 'aura' ); ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- SCRIPT INTERACTIVO DEL PORTAL DOCENTE -->
@@ -1234,6 +1294,11 @@ class Aura_Calendar_Frontend {
             });
 
             var currentProgramStudents = [];
+            var activeTeacherProgId = 0;
+            var activeTeacherSubjId = 0;
+            var activeTeacherProgName = '';
+            var activeTeacherSubjName = '';
+            var cachedTeacherStudents = [];
 
             // Alternar secciones según Modalidad de Asignación
             function updateTargetingUI() {
@@ -1258,7 +1323,7 @@ class Aura_Calendar_Frontend {
             $('input[name="target_type"]').on('change', updateTargetingUI);
 
             // Cargar estudiantes del programa seleccionado
-            function loadProgramStudentsIfNeeded() {
+            function loadProgramStudentsIfNeeded(callback) {
                 var progId = $('#t-tsk-prog').val();
                 var subjId = $('#t-tsk-subj').val();
 
@@ -1281,6 +1346,9 @@ class Aura_Calendar_Frontend {
                     if (res && res.success && res.data.students) {
                         currentProgramStudents = res.data.students;
                         renderTargetingStudents(currentProgramStudents);
+                        if (typeof callback === 'function') {
+                            callback(currentProgramStudents);
+                        }
                     } else {
                         var msg = (res && res.data && res.data.message) ? res.data.message : 'No se encontraron alumnos en este programa.';
                         $('#container-students-individual').html('<p style="font-size:12px;color:var(--at-text-muted);text-align:center;padding:8px;">' + msg + '</p>');
@@ -1298,6 +1366,174 @@ class Aura_Calendar_Frontend {
                     loadProgramStudentsIfNeeded();
                 }
             });
+
+            // ══════════════════════════════════════════════════════════════
+            // GESTIÓN DE NÓMINA DE ESTUDIANTES POR MATERIA Y PROGRAMA
+            // ══════════════════════════════════════════════════════════════
+            $('.btn-teacher-view-students').on('click', function() {
+                activeTeacherProgId = $(this).data('program-id') || 0;
+                activeTeacherSubjId = $(this).data('subject-id') || 0;
+                activeTeacherProgName = $(this).data('program-name') || 'Programa General';
+                activeTeacherSubjName = $(this).data('subject-name') || '';
+
+                $('#t-stds-modal-title').text('👥 Nómina de Estudiantes — ' + (activeTeacherSubjName ? activeTeacherSubjName : 'Programa'));
+                $('#t-stds-modal-subtitle').html('🎓 <strong>' + activeTeacherProgName + '</strong>' + (activeTeacherSubjName ? ' &bull; 📚 ' + activeTeacherSubjName : ''));
+                $('#t-stds-search').val('');
+                $('#t-stds-body').html('<p style="text-align:center;padding:30px;color:var(--at-text-muted);">⏳ Consultando estudiantes matriculados en este programa...</p>');
+                $('#t-stds-count-badge').text('Cargando...');
+                openTeacherModal('#modal-teacher-students');
+
+                $.post(auraCalData.ajax_url, {
+                    action: 'aura_cal_get_program_students',
+                    nonce: auraCalData.nonce,
+                    program_id: activeTeacherProgId,
+                    subject_id: activeTeacherSubjId
+                }, function(res) {
+                    if (res && res.success && res.data.students) {
+                        cachedTeacherStudents = res.data.students;
+                        renderTeacherStudentsRoster(cachedTeacherStudents);
+                    } else {
+                        var msg = (res && res.data && res.data.message) ? res.data.message : 'No se encontraron estudiantes matriculados en este programa.';
+                        $('#t-stds-body').html('<div style="text-align:center;padding:36px;color:var(--at-text-muted);"><div style="font-size:36px;margin-bottom:8px;">👥</div><p>' + msg + '</p></div>');
+                        $('#t-stds-count-badge').text('0 alumnos');
+                        cachedTeacherStudents = [];
+                    }
+                }).fail(function() {
+                    $('#t-stds-body').html('<p style="text-align:center;padding:30px;color:#ef4444;">Error de red al consultar estudiantes.</p>');
+                    $('#t-stds-count-badge').text('Error');
+                    cachedTeacherStudents = [];
+                });
+            });
+
+            function renderTeacherStudentsRoster(students) {
+                if (!students || !students.length) {
+                    $('#t-stds-body').html('<div style="text-align:center;padding:30px;color:var(--at-text-muted);"><p>No se encontraron estudiantes que coincidan con la búsqueda.</p></div>');
+                    $('#t-stds-count-badge').text('0 alumnos');
+                    return;
+                }
+
+                $('#t-stds-count-badge').text(students.length + (students.length === 1 ? ' alumno' : ' alumnos'));
+
+                var html = '';
+                $.each(students, function(i, st) {
+                    var codeTag = st.student_code ? ' <span style="font-family:monospace;font-size:11px;color:var(--at-text-muted);background:var(--at-bg-card);padding:1px 6px;border-radius:4px;border:1px solid var(--at-border);">' + st.student_code + '</span>' : '';
+                    var contactItems = [];
+                    if (st.email) {
+                        contactItems.push('✉️ <a href="mailto:' + st.email + '" style="color:var(--at-primary);text-decoration:none;">' + st.email + '</a>');
+                    }
+                    if (st.phone) {
+                        contactItems.push('📞 <a href="https://wa.me/' + st.phone.replace(/[^0-9]/g, '') + '" target="_blank" rel="noopener noreferrer" style="color:var(--at-primary);text-decoration:none;">' + st.phone + '</a>');
+                    }
+
+                    html += '<div class="aura-student-roster-row" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--at-bg-card-alt,#f8fafc);border:1px solid var(--at-border);border-radius:10px;gap:12px;flex-wrap:wrap;">';
+                    html += '  <div style="display:flex;align-items:center;gap:12px;">';
+                    html += '    <img src="' + (st.avatar || '') + '" alt="' + (st.full_name || '') + '" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #6366f1;box-shadow:0 2px 8px rgba(99,102,241,0.2);">';
+                    html += '    <div>';
+                    html += '      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">';
+                    html += '        <strong style="font-size:14px;color:var(--at-text-primary);">' + (st.full_name || st.first_name + ' ' + st.last_name) + '</strong>';
+                    html += codeTag;
+                    html += '      </div>';
+                    if (contactItems.length) {
+                        html += '      <div style="font-size:11.5px;color:var(--at-text-secondary);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;">';
+                        html += contactItems.join(' &bull; ');
+                        html += '      </div>';
+                    }
+                    html += '    </div>';
+                    html += '  </div>';
+
+                    html += '  <div>';
+                    html += '    <button type="button" class="btn btn-indigo btn-lift btn-assign-single-student-task" data-student-id="' + st.id + '" data-student-name="' + (st.full_name || st.first_name) + '" style="font-size:11.5px;padding:6px 12px;">';
+                    html += '      📝 Asignar Tarea / Responsabilidad';
+                    html += '    </button>';
+                    html += '  </div>';
+                    html += '</div>';
+                });
+
+                $('#t-stds-body').html(html);
+
+                // Conectar botón de asignar tarea individual a este estudiante
+                $('.btn-assign-single-student-task').off('click').on('click', function() {
+                    var studentId = $(this).data('student-id');
+                    var studentName = $(this).data('student-name');
+                    openTaskModalForSingleStudent(activeTeacherProgId, activeTeacherSubjId, studentId, studentName);
+                });
+            }
+
+            // Búsqueda en vivo de estudiantes
+            $('#t-stds-search').on('input', function() {
+                var query = $(this).val().toLowerCase().trim();
+                if (!query) {
+                    renderTeacherStudentsRoster(cachedTeacherStudents);
+                    return;
+                }
+                var filtered = cachedTeacherStudents.filter(function(st) {
+                    var full = (st.full_name || (st.first_name + ' ' + st.last_name)).toLowerCase();
+                    var code = (st.student_code || '').toLowerCase();
+                    var mail = (st.email || '').toLowerCase();
+                    var phone = (st.phone || '').toLowerCase();
+                    return full.indexOf(query) !== -1 || code.indexOf(query) !== -1 || mail.indexOf(query) !== -1 || phone.indexOf(query) !== -1;
+                });
+                renderTeacherStudentsRoster(filtered);
+            });
+
+            // Botón Asignar Tarea Grupal desde la nómina
+            $('#btn-t-stds-assign-all').on('click', function() {
+                closeTeacherModal('#modal-teacher-students');
+                $('#form-teacher-task-create')[0].reset();
+                $('input[name="target_type"][value="all"]').prop('checked', true);
+                updateTargetingUI();
+                $('#t-tsk-prog').val(activeTeacherProgId);
+                $('#t-tsk-subj').val(activeTeacherSubjId);
+                var d = new Date();
+                d.setDate(d.getDate() + 7);
+                d.setHours(23, 59, 0, 0);
+                $('#t-tsk-due').val(d.toISOString().slice(0, 16));
+                openTeacherModal('#modal-teacher-task');
+            });
+
+            // Botón Repartir Libros Diferenciados desde la nómina
+            $('#btn-t-stds-assign-diff').on('click', function() {
+                closeTeacherModal('#modal-teacher-students');
+                $('#form-teacher-task-create')[0].reset();
+                $('input[name="target_type"][value="differentiated"]').prop('checked', true);
+                updateTargetingUI();
+                $('#t-tsk-prog').val(activeTeacherProgId);
+                $('#t-tsk-subj').val(activeTeacherSubjId);
+                var d = new Date();
+                d.setDate(d.getDate() + 7);
+                d.setHours(23, 59, 0, 0);
+                $('#t-tsk-due').val(d.toISOString().slice(0, 16));
+                openTeacherModal('#modal-teacher-task');
+                loadProgramStudentsIfNeeded();
+            });
+
+            // Asignación de tarea a un estudiante individual específico
+            function openTaskModalForSingleStudent(progId, subjId, studentId, studentName) {
+                closeTeacherModal('#modal-teacher-students');
+                $('#form-teacher-task-create')[0].reset();
+                $('#t-tsk-prog').val(progId);
+                $('#t-tsk-subj').val(subjId);
+                $('input[name="target_type"][value="individual"]').prop('checked', true);
+                updateTargetingUI();
+
+                var d = new Date();
+                d.setDate(d.getDate() + 7);
+                d.setHours(23, 59, 0, 0);
+                $('#t-tsk-due').val(d.toISOString().slice(0, 16));
+                $('#t-tsk-title').val('').attr('placeholder', 'Ej: Tarea individual / Responsabilidad para ' + studentName);
+
+                openTeacherModal('#modal-teacher-task');
+
+                // Asegurar que los estudiantes se carguen y se marque exclusivamente este alumno
+                loadProgramStudentsIfNeeded(function() {
+                    $('.chk-indiv-student').prop('checked', false);
+                    $('.chk-indiv-student[value="' + studentId + '"]').prop('checked', true);
+                });
+
+                setTimeout(function() {
+                    $('#t-tsk-title').focus();
+                }, 200);
+            }
 
             // Renderizar listas en los contenedores
             function renderTargetingStudents(students) {

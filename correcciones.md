@@ -65,7 +65,34 @@ X Cambia todas las versiones de este plugin de wordpress a la version 1.8.1 y qu
      - **Módulo de Certificados Integrado**: Corregido bug de consulta en `class-certificates-issuer.php`, `class-certificates-reports.php` y `bulk-issue.php` vinculando a `wp_aura_student_enrollments`. El estudiante visualiza y descarga sus diplomas en PDF con código QR y folio desde la pestaña "Mis Certificados".
   3. **Estilos y Dark Mode**: Se agregaron en `assets/css/aura-frontend-dark-mode.css` las reglas para radio-cards de targeting, filas diferenciadas, submission cards y tarjetas de inventario con contraste impecable en modo claro y modo oscuro.
 
-⏳ En el Portal Docente y Académico — Aura Business Suite, donde el Docente o profesor ve el listado de sus estudiantes de acuerdo a cada programa y materia y como este les asigna tareas o responsabilidades?
+✅ En el Portal Docente y Académico — Aura Business Suite, donde el Docente o profesor ve el listado de sus estudiantes de acuerdo a cada programa y materia y como este les asigna tareas o responsabilidades?
+
+- **Resuelto**:
+  1. **Ubicación y Visualización de la Nómina**:
+     - **Pestaña "Mis Materias y Grupos" (`#tab-teacher-subjects`)**: En cada tarjeta de materia a cargo del docente, se implementó el botón destacado `👥 Estudiantes`. Al hacer clic, se abre una ventana modal interactiva (`#modal-teacher-students`) titulada con el nombre de la Materia y el Programa, que consulta en tiempo real mediante AJAX (`aura_cal_get_program_students`) la nómina completa de los alumnos matriculados en dicho programa académico.
+     - **Pestaña "Tareas y Evaluaciones" (`#tab-teacher-tasks`)**: Junto al botón de creación de tareas, se integró el acceso directo `👥 Nómina de Estudiantes` para consultar a los estudiantes de cualquier cátedra sin salir de la gestión de entregas.
+     - **Ficha Integral de cada Estudiante**: El docente visualiza para cada alumno su avatar, nombre completo, código institucional (`student_code`), enlace directo a correo (`mailto:`) y enlace directo a WhatsApp (`📞 wa.me/...`). Además cuenta con una **Barra de Búsqueda en Vivo** para filtrar al instante por nombre, apellido, código o email.
+  2. **Asignación de Tareas y Responsabilidades**:
+     - **Asignación Individual y Directa**: En la misma nómina, cada estudiante cuenta con el botón **`📝 Asignar Tarea / Responsabilidad`**. Al hacer clic, se abre de forma automática el modal de creación de tareas con el Programa y la Materia preseleccionados, la modalidad en **"👤 Individual"** y dicho estudiante marcado y seleccionado de manera exclusiva, colocando el foco listo para redactar el título, instrucciones y fecha de entrega.
+     - **Asignación Grupal**: Botón superior **`➕ Asignar Tarea Grupal`** en la cabecera del modal para publicar actividades dirigidas a toda la cohorte simultáneamente.
+     - **Asignación Diferenciada (Por Libros)**: Botón superior **`🎲 Repartir Libros`** en la cabecera del modal para abrir la asignación diferenciada, permitiendo asignar o barajar aleatoriamente un libro distinto de la biblioteca a cada uno de los alumnos matriculados para sus controles de lectura individuales.
+
+✅ Donde el profesor y director o Coordinador de programa puede ver el listado de los estudiantes y ver sus estadisticas, que deben, que responsabilidades tienen y demas acciones necesarias de acuerdo a su gerarquia como director o coordinador de programa.
+
+- **Resuelto**:
+  1. **Jerarquía del Profesor / Docente Titular (Portal Frontend `[aura_teacher_portal]`)**:
+     - **Listado por Cátedra**: En la pestaña *"Mis Materias y Grupos"* > Botón **`👥 Estudiantes`** en cada asignatura, el profesor consulta la nómina de los alumnos de su cohorte, con avatar, código, email y WhatsApp directo.
+     - **Estadísticas de Entregas y Rendimiento**: En la pestaña *"Tareas y Evaluaciones"* > Botón **`📥 X Entregas`** de cada tarea, audita quién entregó y quién está pendiente (`⏳ Sin Entrega Aún`), lee resúmenes escritos (con conteo de palabras), descarga adjuntos y califica con nota (0-100) y retroalimentación pedagógica.
+     - **Responsabilidades Asignadas**: En el calendario de clases (`#aura-teacher-fullcalendar`), las sesiones con estrellas (`⭐`) indican qué estudiantes tienen asignados roles de liderazgo o responsabilidades de monitoría de sesión.
+     - **Acciones Permitidas**: Asignar tareas individuales directas, publicar tareas grupales, repartir libros diferenciados de la biblioteca y subir material pedagógico a Google Drive / Nube.
+  2. **Jerarquía del Director o Coordinador de Programa (Panel wp-admin `aura-students`)**:
+     - **¿Qué deben los Estudiantes? (Auditoría Financiera y Paz y Salvo)**: En `wp-admin/admin.php?page=aura-students-paz-salvo`, el director audita en tiempo real el **Costo Neto**, **Total Pagado**, **Saldo Pendiente (Deuda)** y **Cuotas Vencidas** de todos los estudiantes, con filtro por cohorte/programa y filtros rápidos (`🔴 Solo morosos` / `✅ Solo al día`), permitiendo enviar recordatorios de cobro a un clic por Email o WhatsApp y exportar el listado a CSV.
+     - **Estadísticas Globales y de Rendimiento**: En `wp-admin/admin.php?page=aura-students` (Dashboard) y `page=aura-students-reports` (Reportes), dispone de métricas de retención, tasa de graduados, nuevos postulantes, gráficos comparativos de pagos recaudados vs. ingresos proyectados y distribución de perfiles/becas.
+     - **Inscripciones y Becas por Cohorte**: En `wp-admin/admin.php?page=aura-students-enrollments`, aprueba postulantes asignando becas porcentuales (0% a 100%) y gestiona los estados de matrícula (`active`, `completed`, `withdrawn`, `suspended`).
+     - **Ficha Integral 360° del Alumno**: En `wp-admin/admin.php?page=aura-students-list`, audita el historial académico, áreas de interés, datos personales y vinculación con su usuario de WordPress.
+     - **Asignación de Materias y Docentes**: En `wp-admin/admin.php?page=aura-calendar&tab=programs`, define la malla curricular de cada programa, matricula cohortes y nombra a los profesores titulares.
+  3. **Tutorial Institucional Creado**:
+     - Se documentó el flujo operativo completo, matriz comparativa y diagramas de arquitectura en [`documentacion/Tutoriales/TUTORIAL-PORTAL-DOCENTE-Y-COORDINACION-ESTUDIANTES.md`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/documentacion/Tutoriales/TUTORIAL-PORTAL-DOCENTE-Y-COORDINACION-ESTUDIANTES.md).
 
 
 ✅ Analiza que de acuerdo a los permisos en Gestión de Permisos y Roles (CBAC), se sincronice bien con el login al iniciar seccion en el frontend, aparezca los botones correspondientes al usuario o que tienen permiso el usuario como: Acceder al Panel Administrativo, Ir a mi Portal de Instructor, Ir a mi Portal de Estudiante y para todos el Cerrar Seccion y demas botones que un usuario tenga permiso en el sistemas de AURA SUITE
