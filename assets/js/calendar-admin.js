@@ -268,43 +268,96 @@
         if (p.instructors && p.instructors.length) {
             var primaryInst = p.instructors[0];
             var otherInsts = p.instructors.slice(1);
-            var avBig = primaryInst.avatar 
-                ? '<img src="' + escapeHtml(primaryInst.avatar) + '" class="tooltip-teacher-avatar-lg" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.2);box-shadow:0 2px 6px rgba(0,0,0,0.25);flex-shrink:0;" />'
-                : '<div class="tooltip-teacher-avatar-lg" style="width:44px;height:44px;border-radius:50%;background:rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👨‍🏫</div>';
-
-            var othersText = '';
-            if (otherInsts.length > 0) {
-                othersText = '<div style="font-size:11px;opacity:0.8;margin-top:2px;">+ ' + otherInsts.map(function(i){ return escapeHtml(i.name); }).join(', ') + '</div>';
+            
+            // Avatar principal con Ring Animado
+            var primaryAvHtml = '';
+            if (primaryInst.avatar) {
+                primaryAvHtml = '<div class="aura-avatar-ring-container">' +
+                    '<img src="' + escapeHtml(primaryInst.avatar) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" alt="' + escapeHtml(primaryInst.name) + '" title="' + escapeHtml(primaryInst.name) + '" />' +
+                '</div>';
+            } else {
+                primaryAvHtml = '<div class="aura-avatar-ring-container">' +
+                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="background:rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;font-size:20px;">👨‍🏫</div>' +
+                '</div>';
             }
 
-            teachersHtml = '<div class="tooltip-teacher-card" style="display:flex;align-items:center;gap:12px;padding:8px 10px;background:rgba(255,255,255,0.06);border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);">' +
-                avBig +
-                '<div style="flex:1;overflow:hidden;">' +
-                    '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;">Docente a Cargo</div>' +
-                    '<div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(primaryInst.name) + '</div>' +
-                    othersText +
+            // Stack de avatares adicionales si hay más instructores
+            var stackedAvatarsHtml = '';
+            var maxStacked = 2;
+            var visibleOthers = otherInsts.slice(0, maxStacked);
+            var remainingCount = otherInsts.length - visibleOthers.length;
+
+            visibleOthers.forEach(function(inst) {
+                if (inst.avatar) {
+                    stackedAvatarsHtml += '<img src="' + escapeHtml(inst.avatar) + '" class="aura-avatar-stacked" alt="' + escapeHtml(inst.name) + '" title="' + escapeHtml(inst.name) + '" />';
+                } else {
+                    var initial = escapeHtml((inst.name || 'P').charAt(0).toUpperCase());
+                    stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#c7d2fe;" title="' + escapeHtml(inst.name) + '">' + initial + '</div>';
+                }
+            });
+
+            if (remainingCount > 0) {
+                stackedAvatarsHtml += '<div class="aura-avatar-more" title="' + otherInsts.slice(maxStacked).map(function(o){ return escapeHtml(o.name); }).join(', ') + '">+' + remainingCount + '</div>';
+            }
+
+            var othersNames = '';
+            if (otherInsts.length > 0) {
+                othersNames = '<div style="font-size:11px;opacity:0.8;margin-top:2px;">+ ' + otherInsts.map(function(i){ return escapeHtml(i.name); }).join(', ') + '</div>';
+            }
+
+            teachersHtml = '<div class="tooltip-teacher-card">' +
+                '<div class="aura-avatar-stack-wrap">' +
+                    '<div class="aura-avatar-stack">' +
+                        primaryAvHtml +
+                        stackedAvatarsHtml +
+                    '</div>' +
+                    '<div style="flex:1;overflow:hidden;min-width:0;">' +
+                        '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;color:#94a3b8;">' + (otherInsts.length > 0 ? 'Equipo Docente' : 'Docente a Cargo') + '</div>' +
+                        '<div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ffffff;">' + escapeHtml(primaryInst.name) + '</div>' +
+                        othersNames +
+                    '</div>' +
                 '</div>' +
             '</div>';
         } else if (p.primary_name) {
             var avBigFallback = p.primary_avatar 
-                ? '<img src="' + escapeHtml(p.primary_avatar) + '" class="tooltip-teacher-avatar-lg" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.2);box-shadow:0 2px 6px rgba(0,0,0,0.25);flex-shrink:0;" />'
-                : '<div class="tooltip-teacher-avatar-lg" style="width:44px;height:44px;border-radius:50%;background:rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👨‍🏫</div>';
-            teachersHtml = '<div class="tooltip-teacher-card" style="display:flex;align-items:center;gap:12px;padding:8px 10px;background:rgba(255,255,255,0.06);border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);">' +
-                avBigFallback +
-                '<div style="flex:1;overflow:hidden;">' +
-                    '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;">Docente</div>' +
-                    '<div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(p.primary_name) + '</div>' +
+                ? '<div class="aura-avatar-ring-container"><img src="' + escapeHtml(p.primary_avatar) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" /></div>'
+                : '<div class="aura-avatar-ring-container"><div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="background:rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;font-size:20px;">👨‍🏫</div></div>';
+            teachersHtml = '<div class="tooltip-teacher-card">' +
+                '<div class="aura-avatar-stack-wrap">' +
+                    '<div class="aura-avatar-stack">' +
+                        avBigFallback +
+                    '</div>' +
+                    '<div style="flex:1;overflow:hidden;min-width:0;">' +
+                        '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;color:#94a3b8;">Docente</div>' +
+                        '<div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ffffff;">' + escapeHtml(p.primary_name) + '</div>' +
+                    '</div>' +
                 '</div>' +
             '</div>';
         }
 
         var leadersHtml = '';
         if (p.student_leaders && p.student_leaders.length) {
-            var leadChips = p.student_leaders.map(function(ldr) {
-                var avHtml = ldr.avatar ? '<img src="' + escapeHtml(ldr.avatar) + '" style="width:16px;height:16px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;" />' : '';
-                return '<span style="display:inline-flex;align-items:center;background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:8px;font-size:11px;margin-right:4px;">' + avHtml + escapeHtml(ldr.name) + ' <em style="opacity:0.8;margin-left:3px;">(' + escapeHtml(ldr.role_label) + ')</em></span>';
-            }).join(' ');
-            leadersHtml = '<div class="tooltip-meta-row" style="align-items:flex-start;"><strong>🌟 Liderazgo:</strong> <div style="display:flex;flex-wrap:wrap;gap:4px;">' + leadChips + '</div></div>';
+            var leadStackHtml = '';
+            var leadNames = [];
+            p.student_leaders.forEach(function(ldr, idx) {
+                leadNames.push(ldr.name + ' (' + (ldr.role_label || ldr.role) + ')');
+                if (idx < 3) {
+                    var lAv = ldr.avatar
+                        ? '<img src="' + escapeHtml(ldr.avatar) + '" class="aura-avatar-stacked" style="width:24px;height:24px;margin-left:' + (idx === 0 ? '0' : '-8px') + ';border:1.5px solid #0f172a;" title="' + escapeHtml(ldr.name + ' - ' + (ldr.role_label || ldr.role)) + '" />'
+                        : '<div class="aura-avatar-stacked" style="width:24px;height:24px;margin-left:' + (idx === 0 ? '0' : '-8px') + ';border:1.5px solid #0f172a;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:#f59e0b;color:#fff;" title="' + escapeHtml(ldr.name) + '">' + escapeHtml((ldr.name||'E').charAt(0)) + '</div>';
+                    leadStackHtml += lAv;
+                }
+            });
+            if (p.student_leaders.length > 3) {
+                leadStackHtml += '<div class="aura-avatar-more" style="width:24px;height:24px;margin-left:-8px;font-size:10px;border:1.5px solid #0f172a;">+' + (p.student_leaders.length - 3) + '</div>';
+            }
+            leadersHtml = '<div class="tooltip-meta-row" style="align-items:center;">' +
+                '<strong>🌟 Liderazgo:</strong>' +
+                '<div style="display:flex;align-items:center;gap:6px;">' +
+                    '<div class="aura-avatar-stack">' + leadStackHtml + '</div>' +
+                    '<span style="font-size:11.5px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(leadNames.join(' • ')) + '">' + escapeHtml(p.student_leaders[0].name) + (p.student_leaders.length > 1 ? ' +' + (p.student_leaders.length - 1) : '') + '</span>' +
+                '</div>' +
+            '</div>';
         }
 
         var locHtml = '';
@@ -376,6 +429,10 @@
             $tt.removeClass('is-visible').hide();
         }
     }
+
+    // Exponer globalmente para los calendarios frontend (Portales de Profesor y Estudiante)
+    window.showEventTooltip = showEventTooltip;
+    window.hideEventTooltip = hideEventTooltip;
 
     // ─────────────────────────────────────────────────────────────
     // PANTALLA COMPLETA DEL CALENDARIO

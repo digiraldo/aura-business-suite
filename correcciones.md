@@ -81,8 +81,8 @@ X Cambia todas las versiones de este plugin de wordpress a la version 1.8.1 y qu
 
 - **Resuelto**:
   1. **Jerarquía del Profesor / Docente Titular (Portal Frontend `[aura_teacher_portal]`)**:
-     - **Listado por Cátedra**: En la pestaña *"Mis Materias y Grupos"* > Botón **`👥 Estudiantes`** en cada asignatura, el profesor consulta la nómina de los alumnos de su cohorte, con avatar, código, email y WhatsApp directo.
-     - **Estadísticas de Entregas y Rendimiento**: En la pestaña *"Tareas y Evaluaciones"* > Botón **`📥 X Entregas`** de cada tarea, audita quién entregó y quién está pendiente (`⏳ Sin Entrega Aún`), lee resúmenes escritos (con conteo de palabras), descarga adjuntos y califica con nota (0-100) y retroalimentación pedagógica.
+     - **Listado por Cátedra**: En la pestaña *"Mis Materias y Grupos"* Botón **`👥 Estudiantes`** en cada asignatura, el profesor consulta la nómina de los alumnos de su cohorte, con avatar, código, email y WhatsApp directo.
+     - **Estadísticas de Entregas y Rendimiento**: En la pestaña *"Tareas y Evaluaciones"* Botón **`📥 X Entregas`** de cada tarea, audita quién entregó y quién está pendiente (`⏳ Sin Entrega Aún`), lee resúmenes escritos (con conteo de palabras), descarga adjuntos y califica con nota (0-100) y retroalimentación pedagógica.
      - **Responsabilidades Asignadas**: En el calendario de clases (`#aura-teacher-fullcalendar`), las sesiones con estrellas (`⭐`) indican qué estudiantes tienen asignados roles de liderazgo o responsabilidades de monitoría de sesión.
      - **Acciones Permitidas**: Asignar tareas individuales directas, publicar tareas grupales, repartir libros diferenciados de la biblioteca y subir material pedagógico a Google Drive / Nube.
   2. **Jerarquía del Director o Coordinador de Programa (Panel wp-admin `aura-students`)**:
@@ -200,8 +200,12 @@ Dejo captura de pantalla de lo que deja ver o muestra, analiza todos los permiso
 Eliminación de la regla agresiva background-color: #6366f1 !important; en modo oscuro para respetar el color de cada evento con contraste legible estilo Google Calendar.
 
 
-⏳ Hay alguna manera de exportar las imagenes de perfil de usuarios y de todo lo correspondiente a areas y terceros, para luego ser importados, que me sugiere, enviar todo a la unidad compartida de drive o existe algo mejor usando lo nativo de wordpress
-
+✅ ⏳ Hay alguna manera de exportar las imagenes de perfil de usuarios y de todo lo correspondiente a areas y terceros, para luego ser importados, que me sugiere, enviar todo a la unidad compartida de drive o existe algo mejor usando lo nativo de wordpress
+[!TIP]
+**Sobre la exportación de imágenes de perfil de usuarios, áreas y terceros (consulta de la línea 203 de `correcciones.md`):**
+Lo más robusto, portable y nativo en WordPress es **aprovechar la biblioteca de medios (`wp_posts` de tipo `attachment`) o generar un archivo ZIP empaquetado descargable**:
+- En WordPress, las fotos de perfil y logos ya se guardan en la carpeta `/wp-content/uploads/` y se vinculan por ID o metadatos (`aura_profile_photo_id`, `aura_area_logo`, etc.).
+- Para respaldar o migrar entre entornos: la mejor solución nativa es una herramienta de **Exportar/Importar Medios** en ZIP (o sincronización directa con Google Drive mediante la integración ya disponible en Aura Suite). Con Drive es ideal como copia de seguridad en la nube, mientras que para restauración local un paquete ZIP con su respectivo manifiesto JSON o CSV es 100% confiable y no depende de APIs externas.
 
 
 ✅ Falta aplicar los Permisos de todo lo relacionado al calendario, por ejemplo, a un usuario le di todos los permisos Capacidades de:
@@ -248,8 +252,10 @@ Se han completado todas las correcciones y mejoras del módulo de Calendario de 
    - Se agregó el botón `⛶ Pantalla Completa` en el Portal Docente y en el Portal Estudiantil ([`modules/calendar/class-calendar-frontend.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php)).
    - Redimensionamiento reactivo con `updateSize()` y soporte para salir con la tecla `Escape`.
 
-7. **Tooltips Enriquecidos con Avatar Grande (44px):**
-   - El tooltip flotante ahora muestra el avatar del profesor destacado a `44px` con sombra y borde, nombre del docente, aula, horario y temario multilínea.
+7. **Tooltips Enriquecidos con Avatar Grande (44px) en formato Stack + Ring Animado:**
+   - El tooltip flotante ahora muestra el avatar destacado a `44px` con un **Ring Animado** (`@keyframes aura-avatar-ring-pulse`), halo de luz concéntrico y gap oscuro tipo offset.
+   - En caso de múltiples docentes o co-instructores, se agrupan en formato **Avatar Stack** (apilados horizontalmente con solapamiento, borde delimitador `#0f172a`, efecto hover flotante y badge `+N`).
+   - Los líderes estudiantiles del evento también se visualizan en un stack compacto de avatares con indicador de roles.
 
 8. **Colores Propios en Modo Oscuro:**
    - Eliminada la sobrescritura `!important` en [`assets/css/aura-frontend-dark-mode.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css). Cada evento mantiene su color asignado en modo claro y oscuro.
@@ -265,16 +271,46 @@ Viewed correcciones.md:212-236
 
 
 
-- En el calendario de google esta sincronizando de esta manera que dejo como ejemplo:
+✅ En el calendario de google esta sincronizando de esta manera que dejo como ejemplo:
 [HAADIME-RA-27] Disciplinas Espirituales: Meditación
 Código Corto del Programa: [HAADIME-RA-27]
 Nombre de la Materia: Disciplinas Espirituales
 Nombre del Evento: Meditación
-- Quiero que el titulo del evento en el Calendario de Google se vea asi:
+✅ Quiero que el titulo del evento en el Calendario de Google se vea asi:
 Meditación: Disciplinas Espirituales [HAADIME-RA-27]
+
+- **Resuelto**:
+
+Se ha actualizado el formato del título para la sincronización con **Google Calendar**:
+
+### 📅 Archivo modificado:
+- [`modules/calendar/class-calendar-google-sync.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-google-sync.php)
+
+### 📌 Formato implementado:
+```
+{Nombre del Evento}: {Nombre de la Materia} [{Código Corto del Programa}]
+```
+
+- **Ejemplo resultante en Google Calendar:**
+  `Meditación: Disciplinas Espirituales [HAADIME-RA-27]`
+
+*(En caso de que un evento no tenga materia asignada o no cuente con código corto, se ajusta elegantemente sin dejar dos puntos ni corchetes vacíos).*
+
+La verificación de sintaxis PHP ha concluido sin errores.
+
+
+
+Al actualizar un evento, agrego o modifico los Profesor(es) o Instructor(es) a Cargo y no me aparecen los seleccionados correspondiente, solo me muestra uno
+
+
+
 
 
 ```bash
 php build-zip.php
 php build-zip-sin-vendor.php
 ```
+
+
+
+
