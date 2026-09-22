@@ -1202,6 +1202,7 @@
         $('#prog-id').val('0');
         $('#prog-area-id').val('');
         $('#modal-prog-title').text('🎓 Nuevo Programa Académico');
+        $('#btn-delete-program-modal').hide();
 
         renderCoordinatorCheckboxes([]);
         syncColorPalette('#prog-color', '#5D5FEF');
@@ -1236,6 +1237,7 @@
                 var coordIds = p.coordinator_ids || (p.coordinator_id ? [parseInt(p.coordinator_id, 10)] : []);
                 renderCoordinatorCheckboxes(coordIds);
 
+                $('#btn-delete-program-modal').show();
                 openModal('#modal-program-editor');
             }
         });
@@ -1336,6 +1338,72 @@
         }).fail(function() {
             $btn.prop('disabled', false).html('♻️ Restaurar');
             showToast('Error de conexión al restaurar el programa.', 'error');
+        });
+    });
+
+    // Eliminar o archivar programa desde tarjeta
+    $(document).on('click', '.btn-delete-program', function() {
+        var progId = $(this).data('program-id');
+        var force  = $(this).data('force') ? 1 : 0;
+        var promptMsg = force
+            ? '¿Estás seguro de eliminar PERMANENTEMENTE este programa y todas sus materias asociadas?\n\nEsta acción no se puede deshacer.'
+            : '¿Archivar este programa?\n\nEl programa y sus materias pasarán al archivo y podrán restaurarse más adelante.';
+
+        if (!confirm(promptMsg)) {
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true);
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_delete_program',
+            nonce:  auraCalData.nonce,
+            id:     progId,
+            force:  force
+        }, function(res) {
+            if (res && res.success) {
+                showToast(res.data.message || 'Operación completada.');
+                setTimeout(function() { location.reload(); }, 600);
+            } else {
+                $btn.prop('disabled', false);
+                showToast((res && res.data && res.data.message) ? res.data.message : auraCalData.i18n.error, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false);
+            showToast('Error de conexión al eliminar el programa.', 'error');
+        });
+    });
+
+    // Eliminar programa desde dentro del modal
+    $('#btn-delete-program-modal').on('click', function() {
+        var progId = $('#prog-id').val();
+        if (!progId || progId === '0') return;
+
+        if (!confirm('¿Archivar este programa y sus materias asociadas?')) {
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Eliminando...');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_delete_program',
+            nonce:  auraCalData.nonce,
+            id:     progId,
+            force:  0
+        }, function(res) {
+            $btn.prop('disabled', false).text('🗑️ Eliminar Programa');
+            if (res && res.success) {
+                showToast(res.data.message || 'Programa archivado.');
+                closeModal('#modal-program-editor');
+                setTimeout(function() { location.reload(); }, 600);
+            } else {
+                showToast((res && res.data && res.data.message) ? res.data.message : auraCalData.i18n.error, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).text('🗑️ Eliminar Programa');
+            showToast('Error de conexión al eliminar el programa.', 'error');
         });
     });
 
@@ -1757,9 +1825,9 @@
 
                     if (grades.length) {
                         $.each(grades, function(gi, g) {
-                            tbody += '<span class="adp-badge badge-slate" style="margin:2px 4px;font-size:11px;" title="' + (g.feedback || '') + '">' +
+                            tbody += '<span class="adp-badge badge-slate grade-chip-item" data-grade-id="' + g.id + '" data-student-name="' + st.first_name + ' ' + st.last_name + '" style="margin:2px 4px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;" title="' + (g.feedback ? g.feedback + ' — Clic para editar/eliminar' : 'Clic para editar o eliminar nota') + '">' +
                                      g.eval_title + ': <strong>' + parseFloat(g.score) + '</strong>/' + parseFloat(g.max_score) +
-                                     '</span>';
+                                     ' <span style="font-size:10px;opacity:0.7;">✏️</span></span>';
                         });
                     } else {
                         tbody += '<span style="color:var(--aura-text-muted);font-size:12px;">Sin evaluaciones</span>';
@@ -1795,8 +1863,78 @@
         $('#grd-subj-id').val(subjId);
         $('#grd-stud-id').val(stId);
         $('#grd-stud-name-display').text(stName);
+        $('#modal-grade-title').text('📝 Registrar Calificación');
+        $('#btn-delete-grade-modal').hide();
 
         openModal('#modal-grade-editor');
+    });
+
+    // Editar nota al hacer clic en el chip de evaluación
+    $(document).on('click', '.grade-chip-item', function() {
+        var gradeId = $(this).data('grade-id');
+        var fallbackStName = $(this).data('student-name') || '';
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_get_grade',
+            nonce:  auraCalData.nonce,
+            id:     gradeId
+        }, function(res) {
+            if (res && res.success && res.data.grade) {
+                var g = res.data.grade;
+                $('#form-grade-editor')[0].reset();
+                $('#grd-id').val(g.id);
+                $('#grd-prog-id').val(g.program_id);
+                $('#grd-subj-id').val(g.subject_id);
+                $('#grd-stud-id').val(g.student_id);
+                $('#grd-stud-name-display').text(fallbackStName);
+                $('#modal-grade-title').text('✏️ Editar Calificación: ' + g.eval_title);
+
+                $('#grd-eval-title').val(g.eval_title);
+                $('#grd-eval-type').val(g.eval_type || 'partial');
+                $('#grd-weight').val(g.weight !== null ? g.weight : '1.0');
+                $('#grd-score').val(g.score);
+                $('#grd-max-score').val(g.max_score || 100);
+                $('#grd-feedback').val(g.feedback || '');
+
+                $('#btn-delete-grade-modal').show();
+                openModal('#modal-grade-editor');
+            } else {
+                showToast('No se pudo cargar la calificación seleccionada.', 'error');
+            }
+        }).fail(function() {
+            showToast('Error de conexión al cargar la calificación.', 'error');
+        });
+    });
+
+    // Eliminar nota desde el modal
+    $('#btn-delete-grade-modal').on('click', function() {
+        var gradeId = $('#grd-id').val();
+        if (!gradeId || gradeId === '0') return;
+
+        if (!confirm('¿Estás seguro de eliminar esta calificación? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Eliminando...');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_delete_grade',
+            nonce:  auraCalData.nonce,
+            id:     gradeId
+        }, function(res) {
+            $btn.prop('disabled', false).text('🗑️ Eliminar Nota');
+            if (res && res.success) {
+                showToast(res.data.message || 'Calificación eliminada.');
+                closeModal('#modal-grade-editor');
+                $('#btn-load-grades').trigger('click');
+            } else {
+                showToast((res && res.data && res.data.message) ? res.data.message : auraCalData.i18n.error, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).text('🗑️ Eliminar Nota');
+            showToast('Error de conexión al eliminar la calificación.', 'error');
+        });
     });
 
     $('#form-grade-editor').on('submit', function(e) {
@@ -1827,7 +1965,131 @@
     $('#btn-create-task, #btn-create-first-task').on('click', function() {
         $('#form-task-editor')[0].reset();
         $('#tsk-id').val('0');
+        $('#modal-task-title').text('📝 Nueva Tarea / Evaluación');
+        $('#btn-delete-task-modal').hide();
+        $('#tsk-subj-id').html('<option value="">General / Opcional</option>');
         openModal('#modal-task-editor');
+    });
+
+    // Editar tarea
+    $(document).on('click', '.btn-edit-task', function() {
+        var taskId = $(this).data('task-id');
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_get_task',
+            nonce:  auraCalData.nonce,
+            id:     taskId
+        }, function(res) {
+            if (res && res.success && res.data.task) {
+                var t = res.data.task;
+                $('#form-task-editor')[0].reset();
+                $('#tsk-id').val(t.id);
+                $('#modal-task-title').text('✏️ Editar Tarea: ' + t.title);
+                $('#tsk-title').val(t.title);
+                $('#tsk-prog-id').val(t.program_id);
+
+                var $subj = $('#tsk-subj-id');
+                $subj.html('<option value="">General / Opcional</option>');
+                if (t.program_id) {
+                    $.post(auraCalData.ajax_url, {
+                        action: 'aura_cal_get_subjects',
+                        nonce:  auraCalData.nonce,
+                        program_id: t.program_id
+                    }, function(sres) {
+                        if (sres && sres.success && sres.data.subjects) {
+                            $.each(sres.data.subjects, function(i, s) {
+                                $subj.append($('<option>', {
+                                    value: s.id,
+                                    text: s.name + (s.code ? ' (' + s.code + ')' : '')
+                                }));
+                            });
+                            if (t.subject_id) {
+                                $subj.val(t.subject_id);
+                            }
+                        }
+                    });
+                }
+
+                $('#tsk-book-id').val(t.book_id || '');
+                $('#tsk-submission-type').val(t.submission_type || 'text_or_file');
+                $('#tsk-min-words').val(t.min_words || 0);
+
+                if (t.due_datetime) {
+                    var dt = t.due_datetime.replace(' ', 'T').substring(0, 16);
+                    $('#tsk-due').val(dt);
+                } else {
+                    $('#tsk-due').val('');
+                }
+
+                $('#tsk-max-score').val(t.max_score || 100);
+                $('#tsk-desc').val(t.description || '');
+
+                $('#btn-delete-task-modal').show();
+                openModal('#modal-task-editor');
+            } else {
+                showToast('No se pudo cargar la información de la tarea.', 'error');
+            }
+        }).fail(function() {
+            showToast('Error de conexión al cargar la tarea.', 'error');
+        });
+    });
+
+    // Eliminar tarea desde tarjeta
+    $(document).on('click', '.btn-delete-task', function() {
+        var taskId = $(this).data('task-id');
+        if (!confirm('¿Estás seguro de eliminar esta tarea? También se eliminarán las entregas de los estudiantes asociadas a ella.')) {
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true);
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_delete_task',
+            nonce:  auraCalData.nonce,
+            id:     taskId
+        }, function(res) {
+            if (res && res.success) {
+                showToast(res.data.message || 'Tarea eliminada exitosamente.');
+                setTimeout(function() { location.reload(); }, 600);
+            } else {
+                $btn.prop('disabled', false);
+                showToast((res && res.data && res.data.message) ? res.data.message : auraCalData.i18n.error, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false);
+            showToast('Error de conexión al eliminar la tarea.', 'error');
+        });
+    });
+
+    // Eliminar tarea desde modal
+    $('#btn-delete-task-modal').on('click', function() {
+        var taskId = $('#tsk-id').val();
+        if (!taskId || taskId === '0') return;
+
+        if (!confirm('¿Estás seguro de eliminar esta tarea y sus entregas asociadas?')) {
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Eliminando...');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_delete_task',
+            nonce:  auraCalData.nonce,
+            id:     taskId
+        }, function(res) {
+            $btn.prop('disabled', false).text('🗑️ Eliminar Tarea');
+            if (res && res.success) {
+                showToast(res.data.message || 'Tarea eliminada.');
+                closeModal('#modal-task-editor');
+                setTimeout(function() { location.reload(); }, 600);
+            } else {
+                showToast((res && res.data && res.data.message) ? res.data.message : auraCalData.i18n.error, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).text('🗑️ Eliminar Tarea');
+            showToast('Error de conexión al eliminar la tarea.', 'error');
+        });
     });
 
     $('#tsk-prog-id').on('change', function() {

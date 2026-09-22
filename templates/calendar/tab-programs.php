@@ -67,6 +67,7 @@ $all_areas      = class_exists( 'Aura_Areas_Setup' ) ? Aura_Areas_Setup::get_all
 $prog_base_url  = add_query_arg( 'tab', 'programs', admin_url( 'admin.php?page=aura-calendar' ) );
 $can_manage     = current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'manage_options' );
 $can_edit       = $can_manage || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' );
+$can_delete     = current_user_can( 'aura_cal_delete_programs' ) || $can_manage;
 ?>
 
 <!-- ══ TOOLTIP GLOBAL (singleton) ══ -->
@@ -417,6 +418,15 @@ body.aura-dark-mode .aura-av-more,
                                             style="font-size:12px;padding:5px 11px;color:#10b981;border-color:#10b981;">
                                         ♻️ <?php esc_html_e( 'Restaurar', 'aura' ); ?>
                                     </button>
+                                    <?php if ( $can_delete ) : ?>
+                                        <button type="button" class="btn btn-ghost btn-delete-program"
+                                                data-program-id="<?php echo esc_attr( $p->id ); ?>"
+                                                data-force="1"
+                                                title="<?php esc_attr_e( 'Eliminar permanentemente este programa archivado', 'aura' ); ?>"
+                                                style="font-size:12px;padding:5px 11px;color:#ef4444;border-color:rgba(239,68,68,0.4);">
+                                            🗑️ <?php esc_html_e( 'Eliminar def.', 'aura' ); ?>
+                                        </button>
+                                    <?php endif; ?>
                                 <?php else : ?>
                                     <button type="button" class="btn btn-ghost btn-edit-program"
                                             data-program-id="<?php echo esc_attr( $p->id ); ?>"
@@ -429,6 +439,15 @@ body.aura-dark-mode .aura-av-more,
                                             style="font-size:12px;padding:5px 11px;">
                                         ➕ <?php esc_html_e( 'Añadir Materia', 'aura' ); ?>
                                     </button>
+                                    <?php if ( $can_delete ) : ?>
+                                        <button type="button" class="btn btn-ghost btn-delete-program"
+                                                data-program-id="<?php echo esc_attr( $p->id ); ?>"
+                                                data-force="0"
+                                                title="<?php esc_attr_e( 'Archivar / Eliminar programa', 'aura' ); ?>"
+                                                style="font-size:12px;padding:5px 11px;color:#ef4444;border-color:rgba(239,68,68,0.4);">
+                                            🗑️ <?php esc_html_e( 'Eliminar', 'aura' ); ?>
+                                        </button>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             <?php endif; ?>
 
@@ -708,13 +727,22 @@ body.aura-dark-mode .aura-av-more,
                 </div>
             </div>
 
-            <div class="aura-modal-footer">
-                <button type="button" class="btn btn-ghost" data-close-modal="#modal-program-editor">
-                    <?php esc_html_e( 'Cancelar', 'aura' ); ?>
-                </button>
-                <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-program">
-                    💾 <?php esc_html_e( 'Guardar Programa', 'aura' ); ?>
-                </button>
+            <div class="aura-modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <?php if ( $can_delete ) : ?>
+                        <button type="button" class="btn btn-ghost" id="btn-delete-program-modal" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); display: none;">
+                            🗑️ <?php esc_html_e( 'Eliminar Programa', 'aura' ); ?>
+                        </button>
+                    <?php endif; ?>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-ghost" data-close-modal="#modal-program-editor">
+                        <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                    </button>
+                    <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-program">
+                        💾 <?php esc_html_e( 'Guardar Programa', 'aura' ); ?>
+                    </button>
+                </div>
             </div>
         </form>
     </div>

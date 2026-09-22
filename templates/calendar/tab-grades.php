@@ -53,7 +53,10 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
                 </div>
             </div>
 
-            <?php if ( current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'manage_options' ) ) : ?>
+            <?php
+            $can_manage_grades = current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'manage_options' );
+            $can_delete_grades = current_user_can( 'aura_cal_delete_grades' ) || $can_manage_grades;
+            if ( $can_manage_grades ) : ?>
                 <div style="align-self: flex-end;">
                     <button type="button" class="btn btn-emerald btn-shimmer btn-lift" id="btn-new-grade" style="display: none; padding: 9px 16px; font-size: 13px;">
                         ➕ <?php esc_html_e( 'Registrar Nota', 'aura' ); ?>
@@ -98,7 +101,7 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
 <div id="modal-grade-editor" class="aura-modal-overlay" style="display: none;">
     <div class="aura-modal-container" style="max-width: 500px;">
         <div class="aura-modal-header">
-            <h3 class="adp-card-title" style="margin: 0; font-size: 18px;">
+            <h3 class="adp-card-title" id="modal-grade-title" style="margin: 0; font-size: 18px;">
                 📝 <?php esc_html_e( 'Registrar Calificación', 'aura' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" data-close-modal="#modal-grade-editor">&times;</button>
@@ -171,13 +174,22 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
                 </div>
             </div>
 
-            <div class="aura-modal-footer">
-                <button type="button" class="btn btn-ghost" data-close-modal="#modal-grade-editor">
-                    <?php esc_html_e( 'Cancelar', 'aura' ); ?>
-                </button>
-                <button type="submit" class="btn btn-emerald btn-shimmer btn-lift" id="btn-save-grade">
-                    💾 <?php esc_html_e( 'Guardar Nota', 'aura' ); ?>
-                </button>
+            <div class="aura-modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <?php if ( $can_delete_grades ) : ?>
+                        <button type="button" class="btn btn-ghost" id="btn-delete-grade-modal" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); display: none;">
+                            🗑️ <?php esc_html_e( 'Eliminar Nota', 'aura' ); ?>
+                        </button>
+                    <?php endif; ?>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-ghost" data-close-modal="#modal-grade-editor">
+                        <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                    </button>
+                    <button type="submit" class="btn btn-emerald btn-shimmer btn-lift" id="btn-save-grade">
+                        💾 <?php esc_html_e( 'Guardar Nota', 'aura' ); ?>
+                    </button>
+                </div>
             </div>
         </form>
     </div>

@@ -204,6 +204,12 @@ Dejo captura de pantalla de lo que deja ver o muestra, analiza todos los permiso
 
 
 
+⏳ Permisos de Crear calendario
+- cuando de click en calendario, abre modal para crear evento, pero no asigna fecha ni hora de la zona de calendario donde se dio clic
+- Cuando se edite un evento, que cargue todo lo correspondiente de las bases de datos
+- Pantalla Completa del calendario del portal de Profesores y Estudiantes
+- Tooltips enriquecidos en los eventos del calendario del portal de Profesores y Estudiantes, que la imagen de perfil de profesores se vea mas grande en el tooltip
+- Sincronización exacta de las horas de eventos del calendario del portal de Profesores y Estudiantes y del backend con la zona horaria del instituto o Aura Suite, o que me recomienda que se sincronice con la zona horaria del navegador web o dispositivo? o mejor la zona horaria donde esta el instituto
 
 
 

@@ -311,9 +311,17 @@ class Aura_Calendar_Programs {
      * @param int $id
      * @return bool
      */
-    public static function delete( int $id ): bool {
+    public static function delete( int $id, bool $force = false ): bool {
         global $wpdb;
-        $table = $wpdb->prefix . 'aura_cal_programs';
+        $table      = $wpdb->prefix . 'aura_cal_programs';
+        $table_subj = $wpdb->prefix . 'aura_cal_subjects';
+
+        if ( $force ) {
+            // Eliminación permanente en cascada
+            $wpdb->delete( $table_subj, [ 'program_id' => $id ], [ '%d' ] );
+            $deleted = $wpdb->delete( $table, [ 'id' => $id ], [ '%d' ] );
+            return $deleted !== false;
+        }
 
         $updated = $wpdb->update(
             $table,
@@ -325,6 +333,14 @@ class Aura_Calendar_Programs {
             [ '%s', '%s' ],
             [ '%d' ]
         );
+
+        if ( $updated !== false ) {
+            $wpdb->query( $wpdb->prepare(
+                "UPDATE {$table_subj} SET deleted_at = %s, status = 'archived' WHERE program_id = %d AND deleted_at IS NULL",
+                current_time( 'mysql' ),
+                $id
+            ) );
+        }
 
         return $updated !== false;
     }
@@ -524,7 +540,7 @@ class Aura_Calendar_Programs {
     public static function ajax_delete_program(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_delete_events' ) && ! current_user_can( 'aura_delete_calendar_events' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_delete_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para eliminar programas.', 'aura' ) ] );
         }
 
@@ -533,11 +549,15 @@ class Aura_Calendar_Programs {
             wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
         }
 
-        $ok = self::delete( $id );
+        $force = ! empty( $_POST['force'] );
+        $ok    = self::delete( $id, $force );
         if ( $ok ) {
-            wp_send_json_success( [ 'message' => __( 'Programa archivado correctamente.', 'aura' ) ] );
+            $msg = $force
+                ? __( 'Programa y sus materias eliminados permanentemente.', 'aura' )
+                : __( 'Programa archivado correctamente.', 'aura' );
+            wp_send_json_success( [ 'message' => $msg ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'No se pudo archivar el programa.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se pudo eliminar el programa.', 'aura' ) ] );
         }
     }
 

@@ -20,7 +20,8 @@ class Aura_Calendar_Grades {
      * Inicializar hooks y AJAX
      */
     public static function init(): void {
-        add_action( 'wp_ajax_aura_cal_get_grades',        [ __CLASS__, 'ajax_get_grades' ] );
+        add_action( 'wp_ajax_aura_cal_get_grades',         [ __CLASS__, 'ajax_get_grades' ] );
+        add_action( 'wp_ajax_aura_cal_get_grade',          [ __CLASS__, 'ajax_get_grade' ] );
         add_action( 'wp_ajax_aura_cal_save_grade',         [ __CLASS__, 'ajax_save_grade' ] );
         add_action( 'wp_ajax_aura_cal_delete_grade',       [ __CLASS__, 'ajax_delete_grade' ] );
         add_action( 'wp_ajax_aura_cal_get_student_report', [ __CLASS__, 'ajax_get_student_report' ] );
@@ -209,6 +210,18 @@ class Aura_Calendar_Grades {
         return $res !== false;
     }
 
+    /**
+     * Obtener una calificación por ID
+     *
+     * @param int $id
+     * @return object|null
+     */
+    public static function get_grade( int $id ): ?object {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_cal_grades';
+        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ) );
+    }
+
     // ─────────────────────────────────────────────────────────────
     // AJAX HANDLERS
     // ─────────────────────────────────────────────────────────────
@@ -249,10 +262,30 @@ class Aura_Calendar_Grades {
         ] );
     }
 
+    public static function ajax_get_grade(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        $id = intval( $_POST['id'] ?? 0 );
+        if ( ! $id ) {
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+        }
+
+        $grade = self::get_grade( $id );
+        if ( ! $grade ) {
+            wp_send_json_error( [ 'message' => __( 'Calificación no encontrada.', 'aura' ) ] );
+        }
+
+        wp_send_json_success( [ 'grade' => $grade ] );
+    }
+
     public static function ajax_delete_grade(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_delete_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 

@@ -37,7 +37,10 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
             </p>
         </div>
 
-        <?php if ( current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
+        <?php
+        $can_manage_tasks = current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' );
+        $can_delete_tasks = current_user_can( 'aura_cal_delete_tasks' ) || $can_manage_tasks;
+        if ( $can_manage_tasks ) : ?>
             <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-task">
                 ➕ <?php esc_html_e( 'Nueva Tarea', 'aura' ); ?>
             </button>
@@ -118,10 +121,20 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
                         <div style="font-size: 12px; color: var(--aura-text-muted);">
                             ⏰ <?php esc_html_e( 'Vence:', 'aura' ); ?> <strong><?php echo esc_html( date_i18n( 'j M H:i', strtotime( $t->due_datetime ) ) ); ?></strong>
                         </div>
-                        <div style="display: flex; gap: 6px;">
+                        <div style="display: flex; gap: 6px; align-items: center;">
                             <button type="button" class="btn btn-ghost btn-view-submissions" data-task-id="<?php echo esc_attr( $t->id ); ?>" data-task-title="<?php echo esc_attr( $t->title ); ?>" style="font-size: 12px; padding: 5px 10px;">
                                 📥 <?php echo intval( $t->submissions_count ); ?> <?php esc_html_e( 'Entregas', 'aura' ); ?>
                             </button>
+                            <?php if ( $can_manage_tasks ) : ?>
+                                <button type="button" class="btn btn-ghost btn-edit-task" data-task-id="<?php echo esc_attr( $t->id ); ?>" style="font-size: 12px; padding: 5px 9px;" title="<?php esc_attr_e( 'Editar Tarea', 'aura' ); ?>">
+                                    ✏️
+                                </button>
+                            <?php endif; ?>
+                            <?php if ( $can_delete_tasks ) : ?>
+                                <button type="button" class="btn btn-ghost btn-delete-task" data-task-id="<?php echo esc_attr( $t->id ); ?>" style="font-size: 12px; padding: 5px 9px; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="<?php esc_attr_e( 'Eliminar Tarea', 'aura' ); ?>">
+                                    🗑️
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -241,13 +254,22 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
                 </div>
             </div>
 
-            <div class="aura-modal-footer">
-                <button type="button" class="btn btn-ghost" data-close-modal="#modal-task-editor">
-                    <?php esc_html_e( 'Cancelar', 'aura' ); ?>
-                </button>
-                <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-task">
-                    💾 <?php esc_html_e( 'Guardar Tarea', 'aura' ); ?>
-                </button>
+            <div class="aura-modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <?php if ( $can_delete_tasks ) : ?>
+                        <button type="button" class="btn btn-ghost" id="btn-delete-task-modal" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); display: none;">
+                            🗑️ <?php esc_html_e( 'Eliminar Tarea', 'aura' ); ?>
+                        </button>
+                    <?php endif; ?>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-ghost" data-close-modal="#modal-task-editor">
+                        <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                    </button>
+                    <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-task">
+                        💾 <?php esc_html_e( 'Guardar Tarea', 'aura' ); ?>
+                    </button>
+                </div>
             </div>
         </form>
     </div>
