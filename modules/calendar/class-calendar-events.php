@@ -87,15 +87,15 @@ class Aura_Calendar_Events {
         $where  = [ 'e.deleted_at IS NULL' ];
         $params = [];
 
-        // Rango de fechas (FullCalendar envía start y end en ISO)
+        // Rango de fechas (FullCalendar envía start y end en ISO, comparamos con hora local del sitio)
         if ( ! empty( $filters['start'] ) ) {
-            $start_dt = gmdate( 'Y-m-d H:i:s', strtotime( $filters['start'] ) );
+            $start_dt = wp_date( 'Y-m-d H:i:s', strtotime( $filters['start'] ) );
             $where[]  = 'e.end_datetime >= %s';
             $params[] = $start_dt;
         }
 
         if ( ! empty( $filters['end'] ) ) {
-            $end_dt   = gmdate( 'Y-m-d H:i:s', strtotime( $filters['end'] ) );
+            $end_dt   = wp_date( 'Y-m-d H:i:s', strtotime( $filters['end'] ) );
             $where[]  = 'e.start_datetime <= %s';
             $params[] = $end_dt;
         }
@@ -291,6 +291,13 @@ class Aura_Calendar_Events {
                     'location'            => $row->location,
                     'online_url'          => $row->online_url,
                     'status'              => $row->status,
+                    'start_raw'           => $row->start_datetime,
+                    'end_raw'             => $row->end_datetime,
+                    'start_local_iso'     => str_replace( ' ', 'T', substr( $row->start_datetime, 0, 16 ) ),
+                    'end_local_iso'       => str_replace( ' ', 'T', substr( $row->end_datetime, 0, 16 ) ),
+                    'start_time_label'    => wp_date( get_option( 'time_format', 'H:i' ), strtotime( $row->start_datetime ) ),
+                    'end_time_label'      => wp_date( get_option( 'time_format', 'H:i' ), strtotime( $row->end_datetime ) ),
+                    'date_label'          => wp_date( get_option( 'date_format', 'd-m-Y' ), strtotime( $row->start_datetime ) ),
                     'description'         => $row->description,
                     'recurrence_group_id' => $row->recurrence_group_id,
                     'gcal_event_id'       => $row->gcal_event_id,
@@ -403,7 +410,7 @@ class Aura_Calendar_Events {
         $subject_id   = ! empty( $data['subject_id'] ) ? intval( $data['subject_id'] ) : null;
         $title        = sanitize_text_field( $data['title'] ?? '' );
         $event_type   = in_array( $data['event_type'] ?? '', [ 'class', 'exam', 'workshop', 'activity', 'break', 'other' ], true ) ? $data['event_type'] : 'class';
-        $description  = sanitize_textarea_field( $data['description'] ?? '' );
+        $description  = sanitize_textarea_field( wp_unslash( $data['description'] ?? '' ) );
         $location     = sanitize_text_field( $data['location'] ?? '' );
         $online_url   = esc_url_raw( $data['online_url'] ?? '' );
         $color        = sanitize_hex_color( $data['color'] ?? '' );
@@ -553,7 +560,7 @@ class Aura_Calendar_Events {
             return [
                 'ids'     => $created_event_ids,
                 'count'   => count( $created_event_ids ),
-                'message' => sprintf( __( 'Se crearon con éxito %d clases en la serie recurrente.', 'aura' ), count( $created_event_ids ) ),
+                'message' => sprintf( __( 'Se crearon con éxito %d eventos en la serie recurrente.', 'aura' ), count( $created_event_ids ) ),
             ];
         }
 
@@ -617,7 +624,7 @@ class Aura_Calendar_Events {
             return [
                 'ids'     => [ $event_id ],
                 'count'   => 1,
-                'message' => __( 'Clase actualizada con éxito.', 'aura' ),
+                'message' => __( 'Evento actualizado con éxito.', 'aura' ),
             ];
         } else {
             // Crear evento individual nuevo
@@ -653,7 +660,7 @@ class Aura_Calendar_Events {
             return [
                 'ids'     => [ $event_id ],
                 'count'   => 1,
-                'message' => __( 'Clase agendada con éxito.', 'aura' ),
+                'message' => __( 'Evento creado con éxito.', 'aura' ),
             ];
         }
     }

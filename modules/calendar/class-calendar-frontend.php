@@ -129,6 +129,10 @@ class Aura_Calendar_Frontend {
             'current_user_id'     => get_current_user_id(),
             'teacher_portal_url'  => $teacher_portal_url,
             'teacher_code_prefix' => class_exists( 'Aura_Calendar_Admin' ) ? Aura_Calendar_Admin::get_teacher_code_prefix() : '',
+            'first_day'           => (int) get_option( 'start_of_week', 1 ),
+            'date_format'         => get_option( 'date_format', 'd-m-Y' ),
+            'time_format'         => get_option( 'time_format', 'H:i' ),
+            'timezone'            => wp_timezone_string(),
             'user_can_edit'       => current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
             'user_can_tasks'      => current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
             'user_can_attendance' => current_user_can( 'aura_cal_take_attendance' ) || current_user_can( 'aura_take_attendance' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),
@@ -670,8 +674,13 @@ class Aura_Calendar_Frontend {
                             <span class="dashicons dashicons-calendar-alt" style="color: #6366f1;"></span>
                             <?php esc_html_e( 'Horario Semanal de Sesiones y Evaluaciones', 'aura' ); ?>
                         </h3>
-                        <div style="font-size: 12px; color: var(--at-text-muted);">
-                            💡 <?php esc_html_e( 'Haz clic sobre una clase para ver el aula, enlace virtual o tomar lista rápida.', 'aura' ); ?>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-teacher-fullscreen" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
+                                <span class="dashicons dashicons-editor-expand" style="font-size: 16px; width: 16px; height: 16px;"></span> <span class="fs-text"><?php esc_html_e( 'Pantalla Completa', 'aura' ); ?></span>
+                            </button>
+                            <div style="font-size: 12px; color: var(--at-text-muted);">
+                                💡 <?php esc_html_e( 'Haz clic sobre una clase para ver el aula, enlace virtual o tomar lista rápida.', 'aura' ); ?>
+                            </div>
                         </div>
                     </div>
                     <div id="aura-teacher-fullcalendar" style="min-height: 600px;"></div>
@@ -1928,6 +1937,7 @@ class Aura_Calendar_Frontend {
                 window.teacherCalendarInstance = new FullCalendar.Calendar(calEl, {
                     initialView: 'timeGridWeek',
                     locale: 'es',
+                    firstDay: parseInt(auraCalData.first_day || 1, 10),
                     headerToolbar: {
                         left: 'prev,next today',
                         center: 'title',
@@ -1944,6 +1954,16 @@ class Aura_Calendar_Frontend {
                     slotMaxTime: '22:00:00',
                     allDaySlot: false,
                     nowIndicator: true,
+                    eventMouseEnter: function(info) {
+                        if (typeof showEventTooltip === 'function') {
+                            showEventTooltip(info.event, info.el, info.jsEvent);
+                        }
+                    },
+                    eventMouseLeave: function(info) {
+                        if (typeof hideEventTooltip === 'function') {
+                            hideEventTooltip();
+                        }
+                    },
                     eventContent: function(arg) {
                         var p = arg.event.extendedProps || {};
                         var title = p.raw_title || arg.event.title;
@@ -1985,6 +2005,9 @@ class Aura_Calendar_Frontend {
                         }).fail(failureCallback);
                     },
                     eventClick: function(info) {
+                        if (typeof hideEventTooltip === 'function') {
+                            hideEventTooltip();
+                        }
                         var p = info.event.extendedProps || {};
                         var leadersTxt = '';
                         if (p.student_leaders && p.student_leaders.length > 0) {
@@ -1992,16 +2015,54 @@ class Aura_Calendar_Frontend {
                                 return ' • ' + l.name + ' — ' + (l.role_label || l.role);
                             }).join('\n');
                         }
-                        var msg = '📚 ' + info.event.title + '\n' +
+                        var timeLabel = (p.date_label ? p.date_label + ' | ' : '') + (p.start_time_label ? p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '') : '');
+                        var msg = '📚 ' + (p.raw_title || info.event.title) + '\n' +
+                                  (timeLabel ? '🕒 Horario: ' + timeLabel + '\n' : '') +
                                   (p.subject_name ? 'Materia: ' + p.subject_name + '\n' : '') +
                                   (p.location ? 'Aula / Salón: ' + p.location + '\n' : '') +
                                   (p.online_url ? 'Enlace Virtual: ' + p.online_url + '\n' : '') +
-                                  (p.description ? 'Nota: ' + p.description + '\n' : '') +
+                                  (p.description ? 'Nota / Temario: ' + p.description + '\n' : '') +
                                   leadersTxt;
                         alert(msg);
                     }
                 });
                 window.teacherCalendarInstance.render();
+
+                // Toggle Pantalla Completa para Docente
+                $('#btn-toggle-teacher-fullscreen').on('click', function() {
+                    var $container = $('#tab-teacher-schedule .adp-card');
+                    var isFs = $container.hasClass('aura-calendar-is-fullscreen');
+                    if (isFs) {
+                        $container.removeClass('aura-calendar-is-fullscreen');
+                        $(this).find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
+                        $(this).find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
+                    } else {
+                        $container.addClass('aura-calendar-is-fullscreen');
+                        $(this).find('.dashicons').removeClass('dashicons-editor-expand').addClass('dashicons-editor-contract');
+                        $(this).find('.fs-text').text(auraCalData.i18n.exit_fullscreen || 'Salir de Pantalla Completa');
+                    }
+                    setTimeout(function() {
+                        if (window.teacherCalendarInstance) {
+                            window.teacherCalendarInstance.updateSize();
+                        }
+                    }, 100);
+                });
+
+                $(document).on('keydown', function(e) {
+                    if (e.key === 'Escape' || e.keyCode === 27) {
+                        var $container = $('#tab-teacher-schedule .adp-card');
+                        if ($container.hasClass('aura-calendar-is-fullscreen')) {
+                            $container.removeClass('aura-calendar-is-fullscreen');
+                            $('#btn-toggle-teacher-fullscreen .dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
+                            $('#btn-toggle-teacher-fullscreen .fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
+                            setTimeout(function() {
+                                if (window.teacherCalendarInstance) {
+                                    window.teacherCalendarInstance.updateSize();
+                                }
+                            }, 100);
+                        }
+                    }
+                });
 
                 // Re-render reactivo instantáneo cuando cambia el tema claro/oscuro
                 window.addEventListener('aura:themeChanged', function() {
@@ -2038,8 +2099,13 @@ class Aura_Calendar_Frontend {
                         <span class="dashicons dashicons-calendar-alt" style="font-size: 20px; width: 20px; height: 20px; color: #6366f1;"></span>
                         <span><?php esc_html_e( 'Mi Calendario de Clases y Actividades', 'aura' ); ?></span>
                     </h3>
-                    <div style="font-size: 12px; color: var(--at-text-muted, #64748b);">
-                        💡 <?php esc_html_e( 'Las clases con una estrella (⭐) indican que tienes o hay compañeros con roles de liderazgo asignados.', 'aura' ); ?>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-student-fullscreen" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
+                            <span class="dashicons dashicons-editor-expand" style="font-size: 16px; width: 16px; height: 16px;"></span> <span class="fs-text"><?php esc_html_e( 'Pantalla Completa', 'aura' ); ?></span>
+                        </button>
+                        <div style="font-size: 12px; color: var(--at-text-muted, #64748b);">
+                            💡 <?php esc_html_e( 'Las clases con una estrella (⭐) indican que tienes o hay compañeros con roles de liderazgo asignados.', 'aura' ); ?>
+                        </div>
                     </div>
                 </div>
                 <div id="aura-student-calendar" style="min-height: 540px;"></div>
@@ -2123,15 +2189,32 @@ class Aura_Calendar_Frontend {
             var calendar = new FullCalendar.Calendar(calEl, {
                 initialView: 'timeGridWeek',
                 locale: 'es',
+                firstDay: parseInt(auraCalData.first_day || 1, 10),
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,listWeek'
                 },
+                buttonText: {
+                    today: 'Hoy',
+                    month: 'Mes',
+                    week:  'Semana',
+                    list:  'Agenda'
+                },
                 slotMinTime: '07:00:00',
                 slotMaxTime: '21:00:00',
                 allDaySlot: false,
                 nowIndicator: true,
+                eventMouseEnter: function(info) {
+                    if (typeof showEventTooltip === 'function') {
+                        showEventTooltip(info.event, info.el, info.jsEvent);
+                    }
+                },
+                eventMouseLeave: function(info) {
+                    if (typeof hideEventTooltip === 'function') {
+                        hideEventTooltip();
+                    }
+                },
                 eventContent: function(arg) {
                     var p = arg.event.extendedProps || {};
                     var title = p.raw_title || arg.event.title;
@@ -2186,15 +2269,19 @@ class Aura_Calendar_Frontend {
                     }).fail(failureCallback);
                 },
                 eventClick: function(info) {
+                    if (typeof hideEventTooltip === 'function') {
+                        hideEventTooltip();
+                    }
                     var p = info.event.extendedProps || {};
                     var d = info.event;
 
-                    $('#st-det-title').text(d.title);
+                    $('#st-det-title').text(p.raw_title || d.title);
                     $('#st-det-subject').text(p.subject_name || 'General');
 
                     var startFormatted = d.start ? d.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                     var endFormatted = d.end ? d.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                    $('#st-det-time').text(startFormatted + (endFormatted ? ' - ' + endFormatted : ''));
+                    var timeFormatted = (p.date_label ? p.date_label + ' | ' : '') + (p.start_time_label ? p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '') : (startFormatted + (endFormatted ? ' - ' + endFormatted : '')));
+                    $('#st-det-time').text(timeFormatted);
 
                     // Instructor con Avatar
                     if (p.primary_name) {
@@ -2252,6 +2339,42 @@ class Aura_Calendar_Frontend {
                 }
             });
             calendar.render();
+
+            // Toggle Pantalla Completa para Estudiante
+            $('#btn-toggle-student-fullscreen').on('click', function() {
+                var $container = $('.aura-student-schedule-wrap .adp-card');
+                var isFs = $container.hasClass('aura-calendar-is-fullscreen');
+                if (isFs) {
+                    $container.removeClass('aura-calendar-is-fullscreen');
+                    $(this).find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
+                    $(this).find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
+                } else {
+                    $container.addClass('aura-calendar-is-fullscreen');
+                    $(this).find('.dashicons').removeClass('dashicons-editor-expand').addClass('dashicons-editor-contract');
+                    $(this).find('.fs-text').text(auraCalData.i18n.exit_fullscreen || 'Salir de Pantalla Completa');
+                }
+                setTimeout(function() {
+                    if (calendar) {
+                        calendar.updateSize();
+                    }
+                }, 100);
+            });
+
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' || e.keyCode === 27) {
+                    var $container = $('.aura-student-schedule-wrap .adp-card');
+                    if ($container.hasClass('aura-calendar-is-fullscreen')) {
+                        $container.removeClass('aura-calendar-is-fullscreen');
+                        $('#btn-toggle-student-fullscreen .dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
+                        $('#btn-toggle-student-fullscreen .fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
+                        setTimeout(function() {
+                            if (calendar) {
+                                calendar.updateSize();
+                            }
+                        }, 100);
+                    }
+                }
+            });
         });
         </script>
         <?php

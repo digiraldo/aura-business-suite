@@ -265,6 +265,10 @@ class Aura_Calendar_Admin {
             'student_roles'       => Aura_Calendar_Events::get_student_roles(),
             'last_sync_version'   => (int) get_option( Aura_Calendar_Events::OPTION_SYNC_VERSION, time() ),
             'paletteColors'       => self::get_palette_colors(),
+            'first_day'           => (int) get_option( 'start_of_week', 1 ),
+            'date_format'         => get_option( 'date_format', 'd-m-Y' ),
+            'time_format'         => get_option( 'time_format', 'H:i' ),
+            'timezone'            => wp_timezone_string(),
             'i18n'                => [
                 'confirm_delete'        => __( '¿Estás seguro de eliminar este elemento? Esta acción no se puede deshacer.', 'aura' ),
                 'confirm_delete_series' => __( '¿Deseas eliminar únicamente esta clase o TODAS las clases futuras de esta serie?', 'aura' ),

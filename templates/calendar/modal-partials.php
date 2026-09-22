@@ -29,7 +29,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
     <div class="aura-modal-container" style="max-width: 680px;">
         <div class="aura-modal-header">
             <h3 id="modal-event-title" class="adp-card-title" style="margin: 0; font-size: 18px;">
-                ➕ <?php esc_html_e( 'Agendar Clase o Actividad', 'aura' ); ?>
+                ➕ <?php esc_html_e( 'Crear Evento', 'aura' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" data-close-modal="#modal-event-editor">&times;</button>
         </div>
@@ -43,11 +43,11 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <!-- Título del Evento -->
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Título o Nombre de la Clase / Sesión', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                            <?php esc_html_e( 'Título o Nombre del Evento', 'aura' ); ?> <span style="color: #ef4444;">*</span>
                         </label>
                         <div class="input-group">
                             <span class="input-prefix">🏷️</span>
-                            <input type="text" name="title" id="evt-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Identidad en Cristo — Módulo 1', 'aura' ); ?>" style="width: 100%; border-radius: 8px; padding-left: 38px;">
+                            <input type="text" name="title" id="evt-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Taller de Liderazgo — Módulo 1', 'aura' ); ?>" style="width: 100%; border-radius: 8px; padding-left: 38px;">
                         </div>
                     </div>
 
@@ -238,7 +238,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <!-- Color Distintivo con Paleta Oficial -->
                     <div class="form-group" style="margin-bottom: 4px;">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            🎨 <?php esc_html_e( 'Color Distintivo de la Clase', 'aura' ); ?>
+                            🎨 <?php esc_html_e( 'Color Distintivo del Evento', 'aura' ); ?>
                         </label>
                         <div class="aura-color-picker-box">
                             <div class="aura-color-picker-row">
@@ -254,7 +254,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
                             📝 <?php esc_html_e( 'Descripción y Temario', 'aura' ); ?>
                         </label>
-                        <textarea name="description" id="evt-description" rows="2" class="form-control" placeholder="<?php esc_attr_e( 'Detalles de la sesión, lecturas recomendadas...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
+                        <textarea name="description" id="evt-description" rows="4" class="form-control" placeholder="<?php esc_attr_e( "Detalles, temario y puntos clave:\n- Texto 1\n- Texto 2\n- Texto 3", 'aura' ); ?>" style="width: 100%; border-radius: 8px; font-family: inherit; line-height: 1.5; white-space: pre-wrap;"></textarea>
                     </div>
 
                 </div>
@@ -266,7 +266,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <?php esc_html_e( 'Cancelar', 'aura' ); ?>
                 </button>
                 <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-event">
-                    💾 <?php esc_html_e( 'Guardar Clase', 'aura' ); ?>
+                    💾 <?php esc_html_e( 'Guardar Evento', 'aura' ); ?>
                 </button>
             </div>
         </form>
@@ -307,13 +307,13 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <div id="row-det-online" style="display: none;">💻 <strong><?php esc_html_e( 'Enlace Virtual:', 'aura' ); ?></strong> <a id="det-online" href="#" target="_blank" style="color: var(--aura-primary); text-decoration: underline;"></a></div>
                 </div>
 
-                <div id="box-det-desc" style="display: none; font-size: 13px; color: var(--aura-text-secondary); background: var(--aura-surface); border-left: 3px solid var(--aura-primary); padding: 10px 14px; border-radius: 0 6px 6px 0;"></div>
+                <div id="box-det-desc" style="display: none; font-size: 13px; color: var(--aura-text-secondary); background: var(--aura-surface); border-left: 3px solid var(--aura-primary); padding: 10px 14px; border-radius: 0 6px 6px 0; white-space: pre-wrap; line-height: 1.5;"></div>
             </div>
         </div>
 
         <div class="aura-modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <div>
-                <?php if ( current_user_can( 'aura_take_attendance' ) || current_user_can( 'manage_options' ) ) : ?>
+                <?php if ( current_user_can( 'aura_cal_take_attendance' ) || current_user_can( 'aura_take_attendance' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
                     <button type="button" class="btn btn-emerald btn-lift" id="btn-det-attendance">
                         📋 <?php esc_html_e( 'Control de Asistencia', 'aura' ); ?>
                     </button>
@@ -321,15 +321,15 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
             </div>
 
             <div style="display: flex; gap: 8px;">
-                <?php if ( current_user_can( 'aura_delete_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                <?php if ( current_user_can( 'aura_cal_delete_events' ) || current_user_can( 'aura_delete_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
                     <button type="button" class="btn btn-ghost" id="btn-det-delete" style="color: #ef4444;">
                         🗑️ <?php esc_html_e( 'Eliminar', 'aura' ); ?>
                     </button>
                 <?php endif; ?>
 
-                <?php if ( current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                <?php if ( current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
                     <button type="button" class="btn btn-indigo btn-lift" id="btn-det-edit">
-                        ✏️ <?php esc_html_e( 'Editar Clase', 'aura' ); ?>
+                        ✏️ <?php esc_html_e( 'Editar Evento', 'aura' ); ?>
                     </button>
                 <?php endif; ?>
             </div>

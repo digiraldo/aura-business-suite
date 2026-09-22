@@ -362,6 +362,7 @@ class Aura_Roles_Manager {
             'calendar' => array(
                 'aura_cal_view_calendar'    => __('Ver calendario de clases y actividades', 'aura-suite'),
                 'aura_cal_manage_calendar'  => __('Crear y editar clases y eventos del calendario', 'aura-suite'),
+                'aura_cal_create_events'    => __('Crear y programar eventos del calendario', 'aura-suite'),
                 'aura_cal_delete_events'    => __('Eliminar eventos del calendario (solo admin)', 'aura-suite'),
                 'aura_cal_manage_programs'  => __('Crear y gestionar programas de capacitación y materias', 'aura-suite'),
                 'aura_cal_delete_programs'  => __('Eliminar programas y materias académicas', 'aura-suite'),

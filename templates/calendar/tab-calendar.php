@@ -70,9 +70,9 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
             <!-- Acciones rápidas de vista -->
             <div style="display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;">
-                <?php if ( current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-                    <button type="button" id="btn-create-event-modal" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-                        ➕ <?php esc_html_e( 'Agendar Clase', 'aura' ); ?>
+                <?php if ( current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <button type="button" id="btn-create-event-modal" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;" title="<?php esc_attr_e( 'Crear nuevo evento en el calendario', 'aura' ); ?>">
+                        ➕ <?php esc_html_e( 'Crear Evento', 'aura' ); ?>
                     </button>
                 <?php endif; ?>
 

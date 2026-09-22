@@ -71,9 +71,9 @@ $programs      = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit
 
             <!-- Acciones Rápidas del Header -->
             <div style="display: flex; gap: 10px; align-items: center;">
-                <?php if ( current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-                    <button type="button" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" id="btn-top-create-event">
-                        ➕ <?php esc_html_e( 'Agendar Clase', 'aura' ); ?>
+                <?php if ( current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <button type="button" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" id="btn-top-create-event" title="<?php esc_attr_e( 'Crear nuevo evento en el calendario', 'aura' ); ?>">
+                        ➕ <?php esc_html_e( 'Crear Evento', 'aura' ); ?>
                     </button>
                 <?php endif; ?>
 

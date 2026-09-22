@@ -197,22 +197,38 @@ Dejo captura de pantalla de lo que deja ver o muestra, analiza todos los permiso
 
 
 
-
+Eliminación de la regla agresiva background-color: #6366f1 !important; en modo oscuro para respetar el color de cada evento con contraste legible estilo Google Calendar.
 
 
 ⏳ Hay alguna manera de exportar las imagenes de perfil de usuarios y de todo lo correspondiente a areas y terceros, para luego ser importados, que me sugiere, enviar todo a la unidad compartida de drive o existe algo mejor usando lo nativo de wordpress
 
 
 
-⏳ Permisos de Crear calendario
-- cuando de click en calendario, abre modal para crear evento, pero no asigna fecha ni hora de la zona de calendario donde se dio clic
-- Cuando se edite un evento, que cargue todo lo correspondiente de las bases de datos
-- Pantalla Completa del calendario del portal de Profesores y Estudiantes
-- Tooltips enriquecidos en los eventos del calendario del portal de Profesores y Estudiantes, que la imagen de perfil de profesores se vea mas grande en el tooltip
-- Sincronización exacta de las horas de eventos del calendario del portal de Profesores y Estudiantes y del backend con la zona horaria del instituto o Aura Suite, o que me recomienda que se sincronice con la zona horaria del navegador web o dispositivo? o mejor la zona horaria donde esta el instituto
+⏳ Falta aplicar los Permisos de todo lo relacionado al calendario, por ejemplo, a un usuario le di todos los permisos Capacidades de:
+di_finance_view_dashboard, di_finance_create, di_finance_manage_accounts, di_finance_manage_counterparties, aura_admin_users_manage, aura_admin_users_create, aura_admin_permissions_assign, aura_admin_settings, aura_admin_gdrive_config, aura_admin_notifications_view, aura_admin_modules_enable, aura_admin_backup, aura_admin_logs, aura_areas_view_own, aura_areas_view_all, aura_areas_budget_view, aura_areas_forms_manage, aura_areas_enrollment_manage, aura_areas_assign_user, aura_areas_budget_manage, aura_areas_types_manage, aura_areas_manage, aura_third_parties_view, aura_third_parties_create, aura_third_parties_edit, aura_third_parties_delete, aura_third_parties_create_wp_user, aura_cal_view_calendar, aura_cal_view_own, aura_cal_manage_calendar, aura_cal_delete_events, aura_cal_manage_programs, aura_cal_delete_programs, aura_cal_view_attendance, aura_cal_take_attendance, aura_cal_view_grades, aura_cal_manage_grades, aura_cal_delete_grades, aura_cal_view_tasks, aura_cal_manage_tasks, aura_cal_delete_tasks, aura_cal_submit_tasks, aura_cal_grade_tasks, aura_cal_sync_gcal, aura_cal_manage_settings
+Y no le sale el boton de Agregar Clase
+⏳ Cuando doy click en uno de los cuadros de un dia en el calendario, abre modal para crear evento, pero no asigna fecha ni hora de la zona de calendario donde se dio clic, deberia aparecer el dia mes y año junto conla hora si se selecciono en modo semana o dia en Inicio (Fecha y Hora) * y tambien la misma fecha pero media hora despues en: Fin (Fecha y Hora) *
+⏳ Que en Descripción y Temario de Agendar Clase o Actividad, pueda guardar texto con este formato:
+- Texto 1
+- Texto 2
+- Texto 3
+- etc
+⏳ Cuando se edite un evento, que cargue todo lo correspondiente de las bases de datos, no aparecen o cargan bien las fechas con horas. 
+⏳ Pantalla Completa del calendario del portal de Profesores y Estudiantes, habilita esto.
+⏳ Tooltips enriquecidos en los eventos del calendario del portal de Profesores y Estudiantes, que la imagen de perfil de profesores se vea mas grande en el tooltip
+⏳ Sincronización exacta de las horas de eventos del calendario del portal de Profesores y Estudiantes y del backend con la zona horaria del instituto de forma local o Aura Suite, no con la zona horaria del navegador web o dispositivo.
+⏳ Cada Evento Creado en Agendar Clase o Actividad, tiene un Color Distintivo de la Clase, que aparezca en el calendario ese color y que este correctamente adaptado a modo claro y oscuro.
+⏳ Analiza de nuevo todo, por favor cambia todo lo correspondiente a Agendar Clase o Actividad o Agendar clase en el calendario, mas bien pon todo generico tipo calendario de google por ejemplo Crear Evento.
 
 
+En el calendario de google esta sincronizando de esta manera que dejo como ejemplo:
+[HAADIME-RA-27] Disciplinas Espirituales: Meditación
+Código Corto del Programa: [HAADIME-RA-27]
+Nombre de la Materia: Disciplinas Espirituales
+Nombre del Evento: Meditación
 
+- Quiero que el titulo del evento en el Calendario de Google se vea asi:
+Meditación: Disciplinas Espirituales [HAADIME-RA-27]
 
 
 ```bash

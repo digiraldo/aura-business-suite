@@ -106,6 +106,7 @@
         calendar = new FullCalendar.Calendar(calEl, {
             initialView: 'timeGridWeek',
             locale: 'es',
+            firstDay: parseInt(auraCalData.first_day || 1, 10),
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -181,12 +182,22 @@
                 hideEventTooltip();
             },
 
-            // Clic en fecha para agendar
+            // Clic en celda para crear evento
+            dateClick: function(info) {
+                if (!auraCalData.user_can_edit) return;
+                openEventEditor({
+                    start: info.dateStr,
+                    allDay: info.allDay
+                });
+            },
+
+            // Clic y arrastre en rango de fechas para agendar
             select: function(info) {
                 if (!auraCalData.user_can_edit) return;
                 openEventEditor({
                     start: info.startStr,
-                    end: info.endStr
+                    end: info.endStr,
+                    allDay: info.allDay
                 });
             },
 
@@ -250,16 +261,41 @@
 
         var startStr = event.start ? event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
         var endStr = event.end ? event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        var timeRange = startStr ? (startStr + (endStr ? ' — ' + endStr : '')) : '';
-        var dateStr = event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+        var timeRange = (p.start_time_label ? p.start_time_label + (p.end_time_label ? ' — ' + p.end_time_label : '') : '') || (startStr ? (startStr + (endStr ? ' — ' + endStr : '')) : '');
+        var dateStr = p.date_label || (event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '');
 
         var teachersHtml = '';
         if (p.instructors && p.instructors.length) {
-            var instChips = p.instructors.map(function(inst) {
-                var avHtml = inst.avatar ? '<img src="' + escapeHtml(inst.avatar) + '" style="width:16px;height:16px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;" />' : '';
-                return '<span style="display:inline-flex;align-items:center;margin-right:6px;">' + avHtml + escapeHtml(inst.name) + '</span>';
-            }).join(' ');
-            teachersHtml = '<div class="tooltip-meta-row" style="align-items:flex-start;"><strong>👨‍🏫 Docente:</strong> <div style="display:flex;flex-wrap:wrap;gap:4px;">' + instChips + '</div></div>';
+            var primaryInst = p.instructors[0];
+            var otherInsts = p.instructors.slice(1);
+            var avBig = primaryInst.avatar 
+                ? '<img src="' + escapeHtml(primaryInst.avatar) + '" class="tooltip-teacher-avatar-lg" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.2);box-shadow:0 2px 6px rgba(0,0,0,0.25);flex-shrink:0;" />'
+                : '<div class="tooltip-teacher-avatar-lg" style="width:44px;height:44px;border-radius:50%;background:rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👨‍🏫</div>';
+
+            var othersText = '';
+            if (otherInsts.length > 0) {
+                othersText = '<div style="font-size:11px;opacity:0.8;margin-top:2px;">+ ' + otherInsts.map(function(i){ return escapeHtml(i.name); }).join(', ') + '</div>';
+            }
+
+            teachersHtml = '<div class="tooltip-teacher-card" style="display:flex;align-items:center;gap:12px;padding:8px 10px;background:rgba(255,255,255,0.06);border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);">' +
+                avBig +
+                '<div style="flex:1;overflow:hidden;">' +
+                    '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;">Docente a Cargo</div>' +
+                    '<div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(primaryInst.name) + '</div>' +
+                    othersText +
+                '</div>' +
+            '</div>';
+        } else if (p.primary_name) {
+            var avBigFallback = p.primary_avatar 
+                ? '<img src="' + escapeHtml(p.primary_avatar) + '" class="tooltip-teacher-avatar-lg" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.2);box-shadow:0 2px 6px rgba(0,0,0,0.25);flex-shrink:0;" />'
+                : '<div class="tooltip-teacher-avatar-lg" style="width:44px;height:44px;border-radius:50%;background:rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👨‍🏫</div>';
+            teachersHtml = '<div class="tooltip-teacher-card" style="display:flex;align-items:center;gap:12px;padding:8px 10px;background:rgba(255,255,255,0.06);border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.08);">' +
+                avBigFallback +
+                '<div style="flex:1;overflow:hidden;">' +
+                    '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;">Docente</div>' +
+                    '<div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(p.primary_name) + '</div>' +
+                '</div>' +
+            '</div>';
         }
 
         var leadersHtml = '';
@@ -281,8 +317,8 @@
 
         var descHtml = '';
         if (p.description) {
-            var cleanDesc = p.description.length > 120 ? p.description.substring(0, 117) + '...' : p.description;
-            descHtml = '<div class="tooltip-desc">' + escapeHtml(cleanDesc) + '</div>';
+            var cleanDesc = p.description.length > 250 ? p.description.substring(0, 247) + '...' : p.description;
+            descHtml = '<div class="tooltip-desc" style="white-space:pre-wrap;line-height:1.5;">' + escapeHtml(cleanDesc) + '</div>';
         }
 
         var html = '' +
@@ -294,13 +330,14 @@
                 '</div>' +
                 '<div class="tooltip-date">' + dateStr + '</div>' +
             '</div>' +
+            teachersHtml +
             '<div class="tooltip-title">' + escapeHtml(p.raw_title || event.title) + '</div>' +
             '<div class="tooltip-meta-grid">' +
                 (p.program_name ? '<div class="tooltip-meta-row"><strong>🎓 Programa:</strong> <span>' + escapeHtml(p.program_name) + '</span></div>' : '') +
                 (p.subject_name ? '<div class="tooltip-meta-row"><strong>📚 Materia:</strong> <span>' + escapeHtml(p.subject_name) + '</span></div>' : '') +
                 (timeRange ? '<div class="tooltip-meta-row"><strong>🕐 Horario:</strong> <span>' + timeRange + '</span></div>' : '') +
-                teachersHtml +
                 locHtml +
+                leadersHtml +
             '</div>' +
             descHtml +
             '<div class="tooltip-footer">💡 Clic para opciones, asistencia y detalles</div>';
@@ -702,6 +739,31 @@
         }
     });
 
+    function loadSubjectsForProgram(progId, selectedSubjectId) {
+        var $subSelect = $('#evt-subject-id');
+        $subSelect.html('<option value="">General / Sin materia específica</option>');
+
+        if (progId) {
+            $.post(auraCalData.ajax_url, {
+                action: 'aura_cal_get_subjects',
+                nonce: auraCalData.nonce,
+                program_id: progId
+            }, function(res) {
+                if (res && res.success && res.data.subjects) {
+                    $.each(res.data.subjects, function(i, s) {
+                        $subSelect.append($('<option>', {
+                            value: s.id,
+                            text: s.name + (s.code ? ' (' + s.code + ')' : '')
+                        }));
+                    });
+                    if (selectedSubjectId) {
+                        $subSelect.val(selectedSubjectId);
+                    }
+                }
+            });
+        }
+    }
+
     function openEventEditor(data) {
         data = data || {};
         var form = document.getElementById('form-event-editor');
@@ -715,7 +777,7 @@
         form.reset();
 
         $('#evt-id').val(data.id || '0');
-        $('#modal-event-title').text(data.id ? '✏️ Editar Clase' : '➕ Agendar Clase o Actividad');
+        $('#modal-event-title').text(data.id ? '✏️ Editar Evento' : '➕ Crear Evento');
 
         if (data.id) {
             $('#sec-recurrence-toggle').hide();
@@ -727,11 +789,6 @@
         $('#box-recurrence-details').hide();
         $('#box-single-datetime').show();
 
-        // Fechas por defecto si no vienen
-        var now = new Date();
-        var nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0);
-        var endHour = new Date(nextHour.getTime() + 2 * 60 * 60 * 1000);
-
         function formatLocalDT(d) {
             var year = d.getFullYear();
             var month = String(d.getMonth() + 1).padStart(2, '0');
@@ -741,8 +798,42 @@
             return year + '-' + month + '-' + day + 'T' + hours + ':' + mins;
         }
 
-        var startVal = data.start ? data.start.substring(0, 16) : formatLocalDT(nextHour);
-        var endVal = data.end ? data.end.substring(0, 16) : formatLocalDT(endHour);
+        var startVal = '';
+        var endVal = '';
+
+        if (data.start_local_iso) {
+            startVal = data.start_local_iso;
+            endVal = data.end_local_iso || '';
+        } else if (data.start) {
+            if (data.start.indexOf('T') !== -1) {
+                startVal = data.start.substring(0, 16);
+            } else {
+                // Clic en celda de día (solo fecha 'YYYY-MM-DD')
+                var nowRef = new Date();
+                var hStr = String(nowRef.getHours()).padStart(2, '0');
+                var mStr = nowRef.getMinutes() < 30 ? '00' : '30';
+                startVal = data.start.substring(0, 10) + 'T' + hStr + ':' + mStr;
+            }
+
+            if (data.end && data.end.indexOf('T') !== -1 && data.end.substring(0, 16) > startVal) {
+                endVal = data.end.substring(0, 16);
+            } else {
+                // Calcular exactamente +30 minutos después de startVal
+                var sDate = new Date(startVal);
+                if (!isNaN(sDate.getTime())) {
+                    var eDate = new Date(sDate.getTime() + 30 * 60 * 1000);
+                    endVal = formatLocalDT(eDate);
+                } else {
+                    endVal = formatLocalDT(new Date(Date.now() + 30 * 60 * 1000));
+                }
+            }
+        } else {
+            var nowDef = new Date();
+            var nextHour = new Date(nowDef.getFullYear(), nowDef.getMonth(), nowDef.getDate(), nowDef.getHours() + 1, 0, 0);
+            startVal = formatLocalDT(nextHour);
+            var eDateDef = new Date(nextHour.getTime() + 30 * 60 * 1000);
+            endVal = formatLocalDT(eDateDef);
+        }
 
         $('#evt-start-dt').val(startVal);
         $('#evt-end-dt').val(endVal);
@@ -750,7 +841,7 @@
         $('#rec-date-start').val(startVal.substring(0, 10));
         $('#rec-date-end').val(endVal.substring(0, 10));
         $('#rec-time-start').val(startVal.substring(11, 16) || '09:00');
-        $('#rec-time-end').val(endVal.substring(11, 16) || '11:00');
+        $('#rec-time-end').val(endVal.substring(11, 16) || '09:30');
 
         // Valores de texto y selects si se proveen (ej: al editar o precargar)
         if (data.title) $('#evt-title').val(data.title);
@@ -765,12 +856,15 @@
 
         if (data.description) $('#evt-description').val(data.description);
 
-        // Preseleccionar programa si hay filtro activo o si viene en data
+        // Preseleccionar programa y cargar materias dinámicamente
         var activeProgFilter = $('#filter-program').val();
-        if (data.program_id) {
-            $('#evt-program-id').val(data.program_id).trigger('change');
-        } else if (activeProgFilter) {
-            $('#evt-program-id').val(activeProgFilter).trigger('change');
+        var progToLoad = data.program_id || activeProgFilter || 0;
+        if (progToLoad) {
+            $('#evt-program-id').val(progToLoad);
+            loadSubjectsForProgram(progToLoad, data.subject_id || 0);
+        } else {
+            $('#evt-program-id').val('');
+            $('#evt-subject-id').html('<option value="">General / Sin materia específica</option>');
         }
 
         renderTeacherCheckboxes(data.teacher_ids || []);
@@ -783,7 +877,7 @@
         openModal('#modal-event-editor');
     }
 
-    // Delegación global para botones de agendar clase
+    // Delegación global para botones de agendar / crear evento
     $(document).on('click', '#btn-top-create-event, #btn-create-event-modal, .btn-trigger-agendar, [data-action="create-event"]', function(e) {
         e.preventDefault();
         openEventEditor();
@@ -803,25 +897,7 @@
     // Cargar materias según programa seleccionado en modal
     $('#evt-program-id').on('change', function() {
         var progId = $(this).val();
-        var $subSelect = $('#evt-subject-id');
-        $subSelect.html('<option value="">General / Sin materia específica</option>');
-
-        if (progId) {
-            $.post(auraCalData.ajax_url, {
-                action: 'aura_cal_get_subjects',
-                nonce: auraCalData.nonce,
-                program_id: progId
-            }, function(res) {
-                if (res && res.success && res.data.subjects) {
-                    $.each(res.data.subjects, function(i, s) {
-                        $subSelect.append($('<option>', {
-                            value: s.id,
-                            text: s.name + (s.code ? ' (' + s.code + ')' : '')
-                        }));
-                    });
-                }
-            });
-        }
+        loadSubjectsForProgram(progId, 0);
     });
 
     // Sincronización dinámica de fechas y horas en el editor de eventos
@@ -882,7 +958,7 @@
         $btn.prop('disabled', true).text('Guardando...');
 
         $.post(auraCalData.ajax_url, formData, function(res) {
-            $btn.prop('disabled', false).text('💾 Guardar Clase');
+            $btn.prop('disabled', false).text('💾 Guardar Evento');
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
                 closeModal('#modal-event-editor');
@@ -891,7 +967,7 @@
                 showToast(res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('💾 Guardar Clase');
+            $btn.prop('disabled', false).text('💾 Guardar Evento');
             showToast(auraCalData.i18n.error, 'error');
         });
     });
@@ -905,7 +981,7 @@
         var p = event.extendedProps || {};
 
         $('#det-title').text(p.raw_title || event.title);
-        $('#det-type-badge').text(p.event_type ? p.event_type.toUpperCase() : 'CLASE');
+        $('#det-type-badge').text(p.event_type ? p.event_type.toUpperCase() : 'EVENTO');
         $('#det-status-badge').text(p.status ? p.status.toUpperCase() : 'PROGRAMADO');
 
         if (p.gcal_sync_status === 'synced') {
@@ -917,9 +993,14 @@
         $('#det-program').text(p.program_name || '—');
         $('#det-subject').text(p.subject_name || '—');
 
-        var timeStr = event.start.toLocaleDateString() + ' ' + event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        if (event.end) {
-            timeStr += ' - ' + event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        var timeStr = '';
+        if (p.date_label && p.start_time_label) {
+            timeStr = p.date_label + ' ' + p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '');
+        } else {
+            timeStr = (event.start ? event.start.toLocaleDateString() + ' ' + event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+            if (event.end) {
+                timeStr += ' - ' + event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
         }
         $('#det-time').text(timeStr);
 
@@ -1028,8 +1109,10 @@
             subject_id: p.subject_id,
             event_type: p.event_type,
             status: p.status,
-            start: ev.start ? ev.start.toISOString() : '',
-            end: ev.end ? ev.end.toISOString() : '',
+            start_local_iso: p.start_local_iso,
+            end_local_iso: p.end_local_iso,
+            start: p.start_local_iso || (ev.start ? ev.start.toISOString() : ''),
+            end: p.end_local_iso || (ev.end ? ev.end.toISOString() : ''),
             location: p.location,
             online_url: p.online_url,
             color: ev.backgroundColor,
@@ -1037,39 +1120,6 @@
             teacher_ids: teacherIds,
             student_leaders: p.student_leaders || []
         });
-
-        // Preseleccionar valores
-        $('#evt-title').val(p.raw_title || ev.title);
-        $('#evt-type').val(p.event_type || 'class');
-        $('#evt-status').val(p.status || 'scheduled');
-        $('#evt-location').val(p.location || '');
-        $('#evt-online-url').val(p.online_url || '');
-        $('#evt-color').val(ev.backgroundColor || '#6366f1');
-        $('#evt-description').val(p.description || '');
-
-        if (p.program_id) {
-            $('#evt-program-id').val(p.program_id);
-            // Cargar materias y luego seleccionar
-            $.post(auraCalData.ajax_url, {
-                action: 'aura_cal_get_subjects',
-                nonce: auraCalData.nonce,
-                program_id: p.program_id
-            }, function(res) {
-                var $subSelect = $('#evt-subject-id');
-                $subSelect.html('<option value="">General / Sin materia específica</option>');
-                if (res && res.success && res.data.subjects) {
-                    $.each(res.data.subjects, function(i, s) {
-                        $subSelect.append($('<option>', {
-                            value: s.id,
-                            text: s.name + (s.code ? ' (' + s.code + ')' : '')
-                        }));
-                    });
-                    if (p.subject_id) {
-                        $subSelect.val(p.subject_id);
-                    }
-                }
-            });
-        }
     });
 
     // ─────────────────────────────────────────────────────────────

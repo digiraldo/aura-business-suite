@@ -681,7 +681,7 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
                     <?php if ( current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
                     <a href="<?php echo admin_url( 'admin.php?page=aura-calendar&action=new' ); ?>" class="btn btn-secondary btn-sm btn-lift adp-btn">
                         <span class="dashicons dashicons-plus-alt"></span>
-                        <span><?php _e( 'Agendar clase', 'aura-suite' ); ?></span>
+                        <span><?php _e( 'Crear Evento', 'aura-suite' ); ?></span>
                     </a>
                     <?php endif; ?>
                     <?php if ( current_user_can( 'aura_manage_calendar' ) || current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'manage_options' ) ) : ?>
@@ -1169,8 +1169,8 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
                 <a href="<?php echo admin_url( 'admin.php?page=aura-calendar&action=new' ); ?>" class="adp-quick-btn card-lift">
                     <span class="adp-quick-btn__icon">📅</span>
                     <div>
-                        <strong><?php _e( 'Agendar Clase', 'aura-suite' ); ?></strong>
-                        <span><?php _e( 'Programar clase o evento en el calendario', 'aura-suite' ); ?></span>
+                        <strong><?php _e( 'Crear Evento', 'aura-suite' ); ?></strong>
+                        <span><?php _e( 'Programar evento o clase en el calendario', 'aura-suite' ); ?></span>
                     </div>
                     <span class="adp-quick-btn__arrow">→</span>
                 </a>
