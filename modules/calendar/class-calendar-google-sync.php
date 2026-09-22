@@ -199,16 +199,15 @@ class Aura_Calendar_Google_Sync {
             }
         }
 
-        // Construir Summary (Título para Google Calendar)
-        $summary_parts = [];
-        if ( ! empty( $event->program_code ) ) {
-            $summary_parts[] = '[' . $event->program_code . ']';
-        }
+        // Construir Summary (Título para Google Calendar: Nombre del Evento: Nombre de la Materia [Código Corto])
+        $summary = $event->title;
         if ( ! empty( $event->subject_name ) ) {
-            $summary_parts[] = $event->subject_name . ':';
+            $summary .= ': ' . $event->subject_name;
         }
-        $summary_parts[] = $event->title;
-        $summary = implode( ' ', $summary_parts );
+        $prog_tag = ! empty( $event->program_code ) ? $event->program_code : ( ! empty( $event->program_name ) ? $event->program_name : '' );
+        if ( ! empty( $prog_tag ) ) {
+            $summary .= ' [' . $prog_tag . ']';
+        }
 
         // Construir Descripción rica
         $desc_lines = [];

@@ -204,29 +204,72 @@ Eliminación de la regla agresiva background-color: #6366f1 !important; en modo 
 
 
 
-⏳ Falta aplicar los Permisos de todo lo relacionado al calendario, por ejemplo, a un usuario le di todos los permisos Capacidades de:
+✅ Falta aplicar los Permisos de todo lo relacionado al calendario, por ejemplo, a un usuario le di todos los permisos Capacidades de:
 di_finance_view_dashboard, di_finance_create, di_finance_manage_accounts, di_finance_manage_counterparties, aura_admin_users_manage, aura_admin_users_create, aura_admin_permissions_assign, aura_admin_settings, aura_admin_gdrive_config, aura_admin_notifications_view, aura_admin_modules_enable, aura_admin_backup, aura_admin_logs, aura_areas_view_own, aura_areas_view_all, aura_areas_budget_view, aura_areas_forms_manage, aura_areas_enrollment_manage, aura_areas_assign_user, aura_areas_budget_manage, aura_areas_types_manage, aura_areas_manage, aura_third_parties_view, aura_third_parties_create, aura_third_parties_edit, aura_third_parties_delete, aura_third_parties_create_wp_user, aura_cal_view_calendar, aura_cal_view_own, aura_cal_manage_calendar, aura_cal_delete_events, aura_cal_manage_programs, aura_cal_delete_programs, aura_cal_view_attendance, aura_cal_take_attendance, aura_cal_view_grades, aura_cal_manage_grades, aura_cal_delete_grades, aura_cal_view_tasks, aura_cal_manage_tasks, aura_cal_delete_tasks, aura_cal_submit_tasks, aura_cal_grade_tasks, aura_cal_sync_gcal, aura_cal_manage_settings
 Y no le sale el boton de Agregar Clase
-⏳ Cuando doy click en uno de los cuadros de un dia en el calendario, abre modal para crear evento, pero no asigna fecha ni hora de la zona de calendario donde se dio clic, deberia aparecer el dia mes y año junto conla hora si se selecciono en modo semana o dia en Inicio (Fecha y Hora) * y tambien la misma fecha pero media hora despues en: Fin (Fecha y Hora) *
-⏳ Que en Descripción y Temario de Agendar Clase o Actividad, pueda guardar texto con este formato:
+✅ Cuando doy click en uno de los cuadros de un dia en el calendario, abre modal para crear evento, pero no asigna fecha ni hora de la zona de calendario donde se dio clic, deberia aparecer el dia mes y año junto conla hora si se selecciono en modo semana o dia en Inicio (Fecha y Hora) * y tambien la misma fecha pero media hora despues en: Fin (Fecha y Hora) *
+✅ Que en Descripción y Temario de Agendar Clase o Actividad, pueda guardar texto con este formato:
 - Texto 1
 - Texto 2
 - Texto 3
 - etc
-⏳ Cuando se edite un evento, que cargue todo lo correspondiente de las bases de datos, no aparecen o cargan bien las fechas con horas. 
-⏳ Pantalla Completa del calendario del portal de Profesores y Estudiantes, habilita esto.
-⏳ Tooltips enriquecidos en los eventos del calendario del portal de Profesores y Estudiantes, que la imagen de perfil de profesores se vea mas grande en el tooltip
-⏳ Sincronización exacta de las horas de eventos del calendario del portal de Profesores y Estudiantes y del backend con la zona horaria del instituto de forma local o Aura Suite, no con la zona horaria del navegador web o dispositivo.
-⏳ Cada Evento Creado en Agendar Clase o Actividad, tiene un Color Distintivo de la Clase, que aparezca en el calendario ese color y que este correctamente adaptado a modo claro y oscuro.
-⏳ Analiza de nuevo todo, por favor cambia todo lo correspondiente a Agendar Clase o Actividad o Agendar clase en el calendario, mas bien pon todo generico tipo calendario de google por ejemplo Crear Evento.
+✅ Cuando se edite un evento, que cargue todo lo correspondiente de las bases de datos, no aparecen o cargan bien las fechas con horas. 
+✅ Pantalla Completa del calendario del portal de Profesores y Estudiantes, habilita esto.
+✅ Tooltips enriquecidos en los eventos del calendario del portal de Profesores y Estudiantes, que la imagen de perfil de profesores se vea mas grande en el tooltip
+✅ Sincronización exacta de las horas de eventos del calendario del portal de Profesores y Estudiantes y del backend con la zona horaria del instituto de forma local o Aura Suite, no con la zona horaria del navegador web o dispositivo.
+✅ Cada Evento Creado en Agendar Clase o Actividad, tiene un Color Distintivo de la Clase, que aparezca en el calendario ese color y que este correctamente adaptado a modo claro y oscuro.
+✅ Analiza de nuevo todo, por favor cambia todo lo correspondiente a Agendar Clase o Actividad o Agendar clase en el calendario, mas bien pon todo generico tipo calendario de google por ejemplo Crear Evento.
+- **Resuelto**:
+Se han completado todas las correcciones y mejoras del módulo de Calendario de acuerdo con el plan aprobado:
+
+### 🛠️ Resumen de lo implementado:
+1. **Permisos y Botón de Creación:**
+   - Corregida la verificación de permisos en las vistas del calendario ([`templates/calendar/main.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/main.php) y [`templates/calendar/tab-calendar.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/tab-calendar.php)) y agregado el alias de capacidad `aura_cal_create_events` en [`modules/common/class-roles-manager.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/common/class-roles-manager.php).
+   - Ahora los usuarios con capacidades de calendario (`aura_cal_manage_calendar`, etc.) ven y pueden usar el botón para crear eventos.
+
+2. **Clic en Celda: Hora Inicial y Fin Automático (+30 min):**
+   - Se añadió `dateClick` y se optimizó el cálculo en [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js).
+   - Al hacer clic en un día o bloque horario, se asigna la fecha y hora de inicio y se calcula automáticamente la hora de **Fin con 30 minutos después** en formato compatible `YYYY-MM-DDTHH:mm`.
+
+3. **Formato Multilínea y Viñetas en Descripción:**
+   - Modificado en [`modules/calendar/class-calendar-events.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-events.php) con `wp_unslash()`.
+   - Se añadió `white-space: pre-wrap; line-height: 1.5;` en [`templates/calendar/modal-partials.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/modal-partials.php) y [`assets/css/calendar-admin.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/calendar-admin.css).
+   - Se preservan las listas con viñetas tanto al guardar como al consultar el detalle y en el tooltip.
+
+4. **Edición sin Desfase Horario y Preselección de Materias:**
+   - Se eliminó la conversión desfasada a UTC (`toISOString()`), sustituyéndola por fechas locales generadas por el servidor (`start_local_iso` / `end_local_iso`).
+   - Se implementó la carga y selección dinámica de materias (`loadSubjectsForProgram`) al abrir la edición de un evento.
+
+5. **Sincronización con WordPress (Semana y Formatos de Fecha/Hora):**
+   - El día de inicio de semana de la cuadrícula (`firstDay`) ahora toma el valor configurado en WordPress (`get_option('start_of_week')`).
+   - Los formatos de fecha y hora se alinean con `get_option('date_format')`, `get_option('time_format')` y la zona horaria institucional de WordPress (`wp_timezone_string()`).
+
+6. **Pantalla Completa en Portales Frontend:**
+   - Se agregó el botón `⛶ Pantalla Completa` en el Portal Docente y en el Portal Estudiantil ([`modules/calendar/class-calendar-frontend.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php)).
+   - Redimensionamiento reactivo con `updateSize()` y soporte para salir con la tecla `Escape`.
+
+7. **Tooltips Enriquecidos con Avatar Grande (44px):**
+   - El tooltip flotante ahora muestra el avatar del profesor destacado a `44px` con sombra y borde, nombre del docente, aula, horario y temario multilínea.
+
+8. **Colores Propios en Modo Oscuro:**
+   - Eliminada la sobrescritura `!important` en [`assets/css/aura-frontend-dark-mode.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css). Cada evento mantiene su color asignado en modo claro y oscuro.
+
+9. **Terminología Genérica:**
+   - Estandarizado a estilo Google Calendar: **"Crear Evento"**, **"Editar Evento"** y **"Guardar Evento"**.
+
+Para más detalles, puedes consultar la guía completa en [walkthrough.md](file:///C:/Users/disan/.gemini/antigravity-ide/brain/a456aa39-3414-4a5f-a597-48172dac2d36/walkthrough.md).
+
+Edited correcciones.md
+Viewed correcciones.md:212-236
 
 
-En el calendario de google esta sincronizando de esta manera que dejo como ejemplo:
+
+
+- En el calendario de google esta sincronizando de esta manera que dejo como ejemplo:
 [HAADIME-RA-27] Disciplinas Espirituales: Meditación
 Código Corto del Programa: [HAADIME-RA-27]
 Nombre de la Materia: Disciplinas Espirituales
 Nombre del Evento: Meditación
-
 - Quiero que el titulo del evento en el Calendario de Google se vea asi:
 Meditación: Disciplinas Espirituales [HAADIME-RA-27]
 
