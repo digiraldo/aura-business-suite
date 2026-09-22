@@ -2167,6 +2167,8 @@ class Aura_Business_Suite {
                 'i18n'      => array(
                     'selectUserAlert'  => __( 'Por favor seleccione un usuario de la lista.', 'aura-suite' ),
                     'requiredFields'   => __( 'Nombre, correo electrónico y contraseña son obligatorios.', 'aura-suite' ),
+                    'invalidEmail'     => __( 'Por favor ingresa un correo electrónico válido.', 'aura-suite' ),
+                    'passwordLength'   => __( 'La contraseña debe tener al menos 8 caracteres.', 'aura-suite' ),
                     'creating'         => __( 'Creando...', 'aura-suite' ),
                     'createAndAssign'  => __( 'Crear y asignar permisos', 'aura-suite' ),
                     'connError'        => __( 'Error de conexión. Inténtalo de nuevo.', 'aura-suite' ),
@@ -2879,13 +2881,13 @@ class Aura_Business_Suite {
 
     /**
      * AJAX: Crear un nuevo usuario de WordPress con rol Suscriptor.
-     * Requiere capability aura_admin_users_create.
+     * Requiere capability aura_admin_users_create, manage_options o create_users.
      */
     public function ajax_create_user() {
         check_ajax_referer( 'aura_create_user_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_admin_users_create' ) ) {
-            wp_send_json_error( array( 'message' => __( 'No tienes permiso para crear usuarios.', 'aura-suite' ) ), 403 );
+        if ( ! current_user_can( 'aura_admin_users_create' ) && ! current_user_can( 'manage_options' ) && ! current_user_can( 'create_users' ) ) {
+            wp_send_json_error( array( 'message' => __( 'No tienes permiso para crear usuarios.', 'aura-suite' ) ) );
         }
 
         $first_name   = sanitize_text_field( $_POST['first_name'] ?? '' );
@@ -2896,25 +2898,25 @@ class Aura_Business_Suite {
         $custom_login = sanitize_user( $_POST['user_login'] ?? '', true );
 
         if ( empty( $first_name ) || empty( $email ) || empty( $password ) ) {
-            wp_send_json_error( array( 'message' => __( 'Nombre, email y contraseña son obligatorios.', 'aura-suite' ) ), 422 );
+            wp_send_json_error( array( 'message' => __( 'Nombre, email y contraseña son obligatorios.', 'aura-suite' ) ) );
         }
 
         if ( ! is_email( $email ) ) {
-            wp_send_json_error( array( 'message' => __( 'El email no es válido.', 'aura-suite' ) ), 422 );
+            wp_send_json_error( array( 'message' => __( 'El correo electrónico no es válido.', 'aura-suite' ) ) );
         }
 
         if ( email_exists( $email ) ) {
-            wp_send_json_error( array( 'message' => __( 'Ya existe un usuario con ese email.', 'aura-suite' ) ), 409 );
+            wp_send_json_error( array( 'message' => __( 'Ya existe un usuario con ese correo electrónico.', 'aura-suite' ) ) );
         }
 
         if ( strlen( $password ) < 8 ) {
-            wp_send_json_error( array( 'message' => __( 'La contraseña debe tener al menos 8 caracteres.', 'aura-suite' ) ), 422 );
+            wp_send_json_error( array( 'message' => __( 'La contraseña debe tener al menos 8 caracteres.', 'aura-suite' ) ) );
         }
 
         // Determinar username (personalizado o autogenerado a partir del email)
         if ( ! empty( $custom_login ) ) {
             if ( username_exists( $custom_login ) ) {
-                wp_send_json_error( array( 'message' => sprintf( __( 'El nombre de usuario "%s" ya existe. Por favor ingresa otro.', 'aura-suite' ), esc_html( $custom_login ) ) ), 409 );
+                wp_send_json_error( array( 'message' => sprintf( __( 'El nombre de usuario "%s" ya existe. Por favor ingresa otro.', 'aura-suite' ), esc_html( $custom_login ) ) ) );
             }
             $username = $custom_login;
         } else {
@@ -2945,7 +2947,7 @@ class Aura_Business_Suite {
         ) );
 
         if ( is_wp_error( $user_id ) ) {
-            wp_send_json_error( array( 'message' => $user_id->get_error_message() ), 500 );
+            wp_send_json_error( array( 'message' => $user_id->get_error_message() ) );
         }
 
         wp_send_json_success( array(

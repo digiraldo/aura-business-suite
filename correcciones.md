@@ -177,13 +177,30 @@ Dejo captura de pantalla de lo que deja ver o muestra, analiza todos los permiso
   2. En `aura-business-suite.php`, se condicionó el submenú de **Etiquetas** a `aura_finance_tags` y se habilitó el acceso a **Auditoría** (`aura_finance_audit`) e **Integraciones Contables** (`aura_finance_integrations`).
   3. En el login del frontend (`[aura_login]`), `@sandram` ve únicamente el botón de "Acceder al Panel Administrativo" (para gestionar sus finanzas) y "Cerrar Sesión", sin ver portales de estudiante ni de instructor.
 
+✅ Al crear un usuario en "Asignar o Crear Usuario" (`admin.php?page=aura-permissions`), salía en el modal "Error de conexión. Inténtalo de nuevo.", con errores en consola:
+- `[DOM] Password field is not contained in a form: <input type="password" id="aura_cu_password"...>`
+- `/wp-admin/admin-ajax.php:1 Failed to load resource: the server responded with a status of 422 ()`
+
+- **Resuelto**:
+  1. **Envoltura en `<form>` Estándar y Accesibilidad DOM (`templates/permissions-page.php`)**:
+     - Se envolvieron todos los campos de la pestaña "+ Crear Nuevo Usuario" en un elemento `<form id="aura-form-create-user" autocomplete="on" onsubmit="return false;">`.
+     - Se asignaron los atributos estándar `name`, `autocomplete` (`given-name`, `family-name`, `email`, `username`, `tel`, `new-password`) y `minlength="8"`.
+     - Esto eliminó por completo la advertencia del navegador `[DOM] Password field is not contained in a form` y permite a los gestores de contraseñas reconocer el formulario, además de permitir el envío del formulario al presionar Enter.
+  2. **Validación Frontend Previa y Experiencia de Usuario (`assets/js/permissions-page.js`)**:
+     - Se añadió validación en tiempo real en el cliente para verificar el formato de correo electrónico y exigir una contraseña de al menos 8 caracteres antes de enviar la petición al servidor.
+     - Si falta alguno o no cumple el mínimo, se muestra inmediatamente el mensaje de error correspondiente y se enfoca el campo defectuoso sin realizar llamadas AJAX infructuosas.
+     - Se vinculó el evento `submit` de `#aura-form-create-user` directamente al botón de acción `#aura-modal-btn-action-create`.
+  3. **Corrección de Códigos HTTP y Manejo de Errores AJAX (`aura-business-suite.php` y `assets/js/permissions-page.js`)**:
+     - En `ajax_create_user()` de `aura-business-suite.php`, se eliminaron los códigos de estado HTTP de error (422, 409, 403, 500) en `wp_send_json_error()`, adoptando el estándar nativo de WordPress AJAX donde las validaciones de negocio retornan JSON con `success: false`. Esto erradica el mensaje rojo en consola `Failed to load resource: the server responded with a status of 422`.
+     - Se ampliaron las verificaciones de permisos en el backend para permitir a usuarios con `aura_admin_users_create`, `manage_options` o `create_users`.
+     - En `assets/js/permissions-page.js`, se mejoró la función `.fail(function(xhr) { ... })` para que, en caso de cualquier eventual fallo de transporte o respuesta HTTP no-200, inspeccione `xhr.responseJSON?.data?.message` o analice `xhr.responseText` antes de recurrir al mensaje genérico de "Error de conexión".
+
+
+
+
+
+
 ⏳ Hay alguna manera de exportar las imagenes de perfil de usuarios y de todo lo correspondiente a areas y terceros, para luego ser importados, que me sugiere, enviar todo a la unidad compartida de drive o existe algo mejor usando lo nativo de wordpress
-
-
-
-
-
-
 
 
 

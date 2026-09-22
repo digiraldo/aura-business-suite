@@ -322,6 +322,19 @@ jQuery(document).ready(function($) {
             return;
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            $err.text(i18n.invalidEmail || 'Por favor ingresa un correo electrónico válido.').show();
+            $('#aura_cu_email').focus();
+            return;
+        }
+
+        if (pwd.length < 8) {
+            $err.text(i18n.passwordLength || 'La contraseña debe tener al menos 8 caracteres.').show();
+            $('#aura_cu_password').focus();
+            return;
+        }
+
         const $btn = $(this).prop('disabled', true).text(i18n.creating || 'Creando...');
 
         $.post(data.ajaxUrl || ajaxurl, {
@@ -337,13 +350,30 @@ jQuery(document).ready(function($) {
             if (res.success) {
                 window.location.href = res.data.redirect_url;
             } else {
-                $err.text(res.data.message).show();
+                const msg = (res.data && res.data.message) ? res.data.message : (i18n.connError || 'Error al procesar la solicitud.');
+                $err.text(msg).show();
                 $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || 'Crear y asignar permisos'));
             }
-        }).fail(function() {
-            $err.text(i18n.connError || 'Error de conexión. Inténtalo de nuevo.').show();
+        }).fail(function(xhr) {
+            let errorMsg = i18n.connError || 'Error de conexión. Inténtalo de nuevo.';
+            if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                errorMsg = xhr.responseJSON.data.message;
+            } else if (xhr.responseText) {
+                try {
+                    const parsed = JSON.parse(xhr.responseText);
+                    if (parsed.data && parsed.data.message) {
+                        errorMsg = parsed.data.message;
+                    }
+                } catch(e) {}
+            }
+            $err.text(errorMsg).show();
             $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || 'Crear y asignar permisos'));
         });
+    });
+
+    $(document).on('submit', '#aura-form-create-user', function(e) {
+        e.preventDefault();
+        $('#aura-modal-btn-action-create').click();
     });
 
     // ==========================================================================

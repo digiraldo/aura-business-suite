@@ -1404,87 +1404,89 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
 
                 <!-- Pestaña 2: Crear Nuevo Usuario con Bootstrap 5.3 Input Groups y emojis -->
                 <div class="aura-modal-tab-panel" id="aura-panel-create-new">
-                    <div id="aura-crear-usuario-error" style="display:none; background:#fef2f2; border-left:4px solid #ef4444; padding:10px 14px; border-radius:6px; margin-bottom:16px; color:#b91c1c; font-size:13px;"></div>
-                    
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div>
-                            <label for="aura_cu_first_name" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
-                                <?php _e('Nombre *', 'aura-suite'); ?>
-                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Nombre de pila del nuevo usuario', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text">👤</span>
-                                <input type="text" id="aura_cu_first_name" class="form-control" placeholder="<?php esc_attr_e('Ej. Carlos', 'aura-suite'); ?>" required>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="aura_cu_last_name" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
-                                <?php _e('Apellido', 'aura-suite'); ?>
-                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Apellido familiar del nuevo usuario', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text">👤</span>
-                                <input type="text" id="aura_cu_last_name" class="form-control" placeholder="<?php esc_attr_e('Ej. Mendoza', 'aura-suite'); ?>">
-                            </div>
-                        </div>
-
-                        <div style="grid-column: 1 / -1;">
-                            <label for="aura_cu_email" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
-                                <?php _e('Correo Electrónico *', 'aura-suite'); ?>
-                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Correo electrónico corporativo para el acceso y notificaciones', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text">✉️</span>
-                                <input type="email" id="aura_cu_email" class="form-control" placeholder="correo@ejemplo.com" required>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <label for="aura_cu_user_login" style="font-weight:700; font-size:12.5px; color:var(--tx-primary, inherit);">
-                                    <?php _e('Nombre de usuario (@login)', 'aura-suite'); ?>
+                    <form id="aura-form-create-user" autocomplete="on" onsubmit="return false;">
+                        <div id="aura-crear-usuario-error" style="display:none; background:#fef2f2; border-left:4px solid #ef4444; padding:10px 14px; border-radius:6px; margin-bottom:16px; color:#b91c1c; font-size:13px;"></div>
+                        
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div>
+                                <label for="aura_cu_first_name" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
+                                    <?php _e('Nombre *', 'aura-suite'); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Nombre de pila del nuevo usuario', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                                 </label>
-                                <label style="font-size:11px; cursor:pointer; color:var(--aura-blue, #2563eb); display:inline-flex; align-items:center; gap:3px;">
-                                    <input type="checkbox" id="aura_cu_auto_username" checked style="margin:0;">
-                                    <span>⚡ <?php _e('Auto de email', 'aura-suite'); ?></span>
+                                <div class="input-group">
+                                    <span class="input-group-text">👤</span>
+                                    <input type="text" id="aura_cu_first_name" name="first_name" autocomplete="given-name" class="form-control" placeholder="<?php esc_attr_e('Ej. Carlos', 'aura-suite'); ?>" required>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="aura_cu_last_name" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
+                                    <?php _e('Apellido', 'aura-suite'); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Apellido familiar del nuevo usuario', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                                 </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">👤</span>
+                                    <input type="text" id="aura_cu_last_name" name="last_name" autocomplete="family-name" class="form-control" placeholder="<?php esc_attr_e('Ej. Mendoza', 'aura-suite'); ?>">
+                                </div>
                             </div>
-                            <div class="input-group">
-                                <span class="input-group-text">🏷️</span>
-                                <input type="text" id="aura_cu_user_login" class="form-control" placeholder="cmendoza">
-                            </div>
-                        </div>
 
-                        <div>
-                            <label for="aura_cu_phone" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
-                                <?php _e('Teléfono / WhatsApp', 'aura-suite'); ?>
-                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Número de contacto opcional para alertas o mensajes', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text">📱</span>
-                                <input type="text" id="aura_cu_phone" class="form-control" placeholder="+57 300 000 0000">
+                            <div style="grid-column: 1 / -1;">
+                                <label for="aura_cu_email" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
+                                    <?php _e('Correo Electrónico *', 'aura-suite'); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Correo electrónico corporativo para el acceso y notificaciones', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">✉️</span>
+                                    <input type="email" id="aura_cu_email" name="email" autocomplete="email" class="form-control" placeholder="correo@ejemplo.com" required>
+                                </div>
                             </div>
-                        </div>
 
-                        <div style="grid-column: 1 / -1;">
-                            <label for="aura_cu_password" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
-                                <?php _e('Contraseña de Acceso *', 'aura-suite'); ?>
-                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Mínimo 8 caracteres, o genere una contraseña segura aleatoria', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
-                            </label>
-                            <div class="input-group">
-                                <span class="input-group-text">🔒</span>
-                                <input type="password" id="aura_cu_password" class="form-control" placeholder="<?php esc_attr_e('Mínimo 8 caracteres', 'aura-suite'); ?>" required>
-                                <button type="button" id="aura-toggle-pwd" class="btn btn-secondary" title="<?php esc_attr_e('Mostrar/ocultar contraseña', 'aura-suite'); ?>">
-                                    <span class="dashicons dashicons-visibility"></span>
-                                </button>
-                                <button type="button" id="aura-generar-pwd" class="btn btn-secondary" title="<?php esc_attr_e('Generar clave aleatoria', 'aura-suite'); ?>">
-                                    <span class="dashicons dashicons-randomize"></span>
-                                    <span><?php _e('Generar', 'aura-suite'); ?></span>
-                                </button>
+                            <div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                    <label for="aura_cu_user_login" style="font-weight:700; font-size:12.5px; color:var(--tx-primary, inherit);">
+                                        <?php _e('Nombre de usuario (@login)', 'aura-suite'); ?>
+                                    </label>
+                                    <label style="font-size:11px; cursor:pointer; color:var(--aura-blue, #2563eb); display:inline-flex; align-items:center; gap:3px;">
+                                        <input type="checkbox" id="aura_cu_auto_username" checked style="margin:0;">
+                                        <span>⚡ <?php _e('Auto de email', 'aura-suite'); ?></span>
+                                    </label>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">🏷️</span>
+                                    <input type="text" id="aura_cu_user_login" name="user_login" autocomplete="username" class="form-control" placeholder="cmendoza">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="aura_cu_phone" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
+                                    <?php _e('Teléfono / WhatsApp', 'aura-suite'); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Número de contacto opcional para alertas o mensajes', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">📱</span>
+                                    <input type="tel" id="aura_cu_phone" name="phone" autocomplete="tel" class="form-control" placeholder="+57 300 000 0000">
+                                </div>
+                            </div>
+
+                            <div style="grid-column: 1 / -1;">
+                                <label for="aura_cu_password" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
+                                    <?php _e('Contraseña de Acceso *', 'aura-suite'); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Mínimo 8 caracteres, o genere una contraseña segura aleatoria', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">🔒</span>
+                                    <input type="password" id="aura_cu_password" name="password" autocomplete="new-password" class="form-control" placeholder="<?php esc_attr_e('Mínimo 8 caracteres', 'aura-suite'); ?>" minlength="8" required>
+                                    <button type="button" id="aura-toggle-pwd" class="btn btn-secondary" title="<?php esc_attr_e('Mostrar/ocultar contraseña', 'aura-suite'); ?>">
+                                        <span class="dashicons dashicons-visibility"></span>
+                                    </button>
+                                    <button type="button" id="aura-generar-pwd" class="btn btn-secondary" title="<?php esc_attr_e('Generar clave aleatoria', 'aura-suite'); ?>">
+                                        <span class="dashicons dashicons-randomize"></span>
+                                        <span><?php _e('Generar', 'aura-suite'); ?></span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
