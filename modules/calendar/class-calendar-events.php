@@ -204,7 +204,8 @@ class Aura_Calendar_Events {
                 "SELECT ei.*, u.display_name, u.user_email
                  FROM {$table_inst} ei
                  JOIN {$wpdb->users} u ON u.ID = COALESCE(NULLIF(ei.teacher_id, 0), ei.instructor_id)
-                 WHERE ei.event_id IN ({$ids_placeholder})"
+                 WHERE ei.event_id IN ({$ids_placeholder})
+                 ORDER BY CASE WHEN ei.role = 'lead' THEN 0 ELSE 1 END, ei.id ASC"
             );
 
             // Cargar fotos de perfil de wp_aura_students si está disponible
@@ -331,6 +332,7 @@ class Aura_Calendar_Events {
                     'student_leaders'     => $student_leaders_list,
                     'primary_avatar'      => $primary_avatar,
                     'primary_name'        => $primary_name,
+                    'primary_teacher_id'  => ! empty( $inst_list[0]['id'] ) ? (int) $inst_list[0]['id'] : 0,
                 ],
             ];
         }
@@ -371,7 +373,8 @@ class Aura_Calendar_Events {
             "SELECT ei.*, u.display_name, u.user_email
              FROM {$table_inst} ei
              JOIN {$wpdb->users} u ON u.ID = COALESCE(NULLIF(ei.teacher_id, 0), ei.instructor_id)
-             WHERE ei.event_id = %d",
+             WHERE ei.event_id = %d
+             ORDER BY CASE WHEN ei.role = 'lead' THEN 0 ELSE 1 END, ei.id ASC",
             $id
         ) );
 
@@ -404,6 +407,7 @@ class Aura_Calendar_Events {
             unset( $inst );
         }
         $row->instructors = is_array( $instructors ) ? $instructors : [];
+        $row->primary_teacher_id = ! empty( $row->instructors ) ? (int) $row->instructors[0]->id : 0;
 
         // Decodificar líderes estudiantiles asociados con avatares y etiquetas de rol
         $row->student_leaders_list = [];
@@ -479,6 +483,13 @@ class Aura_Calendar_Events {
             } else {
                 $teacher_ids = array_unique( array_filter( array_map( 'intval', explode( ',', $data['teacher_ids'] ) ) ) );
             }
+        }
+
+        // Si se especificó un profesor principal, priorizarlo en la primera posición
+        $primary_teacher_id = ! empty( $data['primary_teacher_id'] ) ? intval( $data['primary_teacher_id'] ) : ( ! empty( $teacher_ids ) ? $teacher_ids[0] : 0 );
+        if ( $primary_teacher_id && in_array( $primary_teacher_id, $teacher_ids, true ) ) {
+            $teacher_ids = array_values( array_diff( $teacher_ids, [ $primary_teacher_id ] ) );
+            array_unshift( $teacher_ids, $primary_teacher_id );
         }
         $has_instructor_id_col = (bool) $wpdb->get_results( "SHOW COLUMNS FROM `{$table_inst}` LIKE 'instructor_id'" );
 
@@ -579,7 +590,7 @@ class Aura_Calendar_Events {
                             $inst_payload = [
                                 'event_id'   => $new_evt_id,
                                 'teacher_id' => $tid,
-                                'role'       => 'lead',
+                                'role'       => ( $tid === $primary_teacher_id ) ? 'lead' : 'assistant',
                                 'created_at' => current_time( 'mysql' ),
                             ];
                             $inst_formats = [ '%d', '%d', '%s', '%s' ];
@@ -654,7 +665,7 @@ class Aura_Calendar_Events {
                 $inst_payload = [
                     'event_id'   => $event_id,
                     'teacher_id' => $tid,
-                    'role'       => 'lead',
+                    'role'       => ( $tid === $primary_teacher_id ) ? 'lead' : 'assistant',
                     'created_at' => current_time( 'mysql' ),
                 ];
                 $inst_formats = [ '%d', '%d', '%s', '%s' ];
@@ -693,7 +704,7 @@ class Aura_Calendar_Events {
                 $inst_payload = [
                     'event_id'   => $event_id,
                     'teacher_id' => $tid,
-                    'role'       => 'lead',
+                    'role'       => ( $tid === $primary_teacher_id ) ? 'lead' : 'assistant',
                     'created_at' => current_time( 'mysql' ),
                 ];
                 $inst_formats = [ '%d', '%d', '%s', '%s' ];

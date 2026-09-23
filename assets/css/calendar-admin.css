@@ -868,6 +868,56 @@ body.aura-cal-fullscreen-active {
     font-weight: 600;
 }
 
+.aura-user-chip .aura-primary-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    margin-left: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+    opacity: 0.35;
+    background: transparent;
+    border: none;
+    padding: 0;
+    line-height: 1;
+}
+
+.aura-user-chip .aura-primary-badge:hover {
+    opacity: 1;
+    transform: scale(1.25);
+    color: #f59e0b;
+}
+
+.aura-user-chip.is-primary-teacher {
+    background: rgba(245, 158, 11, 0.12) !important;
+    border-color: #f59e0b !important;
+    color: #b45309 !important;
+    font-weight: 600;
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.35);
+}
+
+.aura-user-chip.is-primary-teacher .aura-primary-badge {
+    opacity: 1;
+    color: #f59e0b;
+    filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.6));
+}
+
+.aura-user-chip .aura-primary-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: #f59e0b;
+    color: #ffffff;
+    padding: 1px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    margin-left: 3px;
+}
+
 /* ══════════════════════════════════════════════════════════════
    ZONA DRAG & DROP — MODAL IMPORTACIÓN
    ══════════════════════════════════════════════════════════════ */
@@ -1827,6 +1877,18 @@ body.aura-dark-mode .aura-user-chip.is-checked {
     background: rgba(99, 102, 241, 0.25) !important;
     border-color: #6366f1 !important;
     color: #818cf8 !important;
+}
+
+html[data-theme="dark"] .aura-user-chip.is-primary-teacher,
+body[data-theme="dark"] .aura-user-chip.is-primary-teacher,
+html[data-wp-dark-mode-scheme="dark"] .aura-user-chip.is-primary-teacher,
+html.wp-dark-mode-active .aura-user-chip.is-primary-teacher,
+body.wp-dark-mode-active .aura-user-chip.is-primary-teacher,
+body.aura-dark-mode .aura-user-chip.is-primary-teacher {
+    background: rgba(245, 158, 11, 0.22) !important;
+    border-color: #f59e0b !important;
+    color: #fbbf24 !important;
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4) !important;
 }
 
 /* Pastillas de días recurrentes */

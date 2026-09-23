@@ -108,10 +108,14 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
                     <!-- Profesores Asignados -->
                     <div class="form-group">
-                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            👨‍🏫 <?php esc_html_e( 'Profesor(es) o Instructor(es) a Cargo', 'aura' ); ?>
+                        <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                            <span>👨‍🏫 <?php esc_html_e( 'Profesor(es) o Instructor(es) a Cargo', 'aura' ); ?></span>
+                            <span style="font-size: 11px; font-weight: normal; color: #d97706; display: inline-flex; align-items: center; gap: 3px;">
+                                ⭐ <?php esc_html_e( 'Clic en la estrella para definir al Titular / Principal', 'aura' ); ?>
+                            </span>
                         </label>
-                        <div id="evt-teachers-container" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 100px; overflow-y: auto; padding: 10px; border: 1px solid var(--aura-border, #cbd5e1); border-radius: 8px; background: var(--aura-surface-alt, #f8fafc);">
+                        <input type="hidden" name="primary_teacher_id" id="evt-primary-teacher-id" value="0">
+                        <div id="evt-teachers-container" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow-y: auto; padding: 10px; border: 1px solid var(--aura-border, #cbd5e1); border-radius: 8px; background: var(--aura-surface-alt, #f8fafc);">
                             <!-- Inyectado dinámicamente con checkboxes desde JS -->
                         </div>
                     </div>

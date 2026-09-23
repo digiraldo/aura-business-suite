@@ -451,15 +451,32 @@ El tutorial contiene:
    - Tabla comparativa de tokens y variables CSS disponibles.
 
 
+### ✅ Selección y Determinación del Profesor/Usuario Principal (Titular de la Clase)
+
+#### 1. ¿Cómo funciona el Usuario Principal en el Calendario?
+- **En la Celda del Calendario (Vista Mes / Semana / Día):** Se proyecta el micro-avatar (18px) del **Profesor Titular** (`role = 'lead'`).
+- **En el Tooltip Enriquecido (Hover):**
+  - **Avatar Principal Grande (44px):** Ostenta el **Ring Animado Pulsante** (`@keyframes aura-avatar-ring-pulse`) con resplandor índigo/dorado y su nombre completo en el encabezado.
+  - **Stack de Co-tutores / Asistentes (28px):** Los demás profesores asignados (`role = 'assistant'`) se apilan en cascada a la derecha con borde perimetral.
+- **En el Modal Moderno de Detalles:** Se muestra el avatar titular destacado junto con los co-instructores y sus roles correspondientes.
+
+#### 2. ¿Cómo se selecciona el Usuario Principal al agregar varios?
+Se incorporó un selector interactivo visual con estrella ⭐ en los chips de selección de docentes del modal:
+1. **Selector de Estrella ⭐ en cada Chip:**
+   - En la lista de chips de profesores (`#evt-teachers-container`), cada docente cuenta con un botón interactivo de estrella (⭐ para el titular activo con etiqueta dorada `TITULAR`, y ☆ para los demás).
+   - **Basta con hacer clic en la estrella ☆ del profesor deseado** para convertirlo al instante en el **Profesor Titular** de la sesión.
+2. **Asignación Automática Inteligente:**
+   - Si no has marcado ninguno y seleccionas el primer profesor, este se designa automáticamente como Titular principal.
+   - Si desmarcas al profesor que era el titular, el sistema promueve de inmediato al siguiente profesor marcado como nuevo titular.
+3. **Persistencia en Base de Datos y Backend:**
+   - El formulario envía `primary_teacher_id` mediante un campo oculto.
+   - En [`modules/calendar/class-calendar-events.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-events.php), la inserción en la tabla de asignaciones (`aura_cal_event_instructors`) guarda al docente seleccionado con `role = 'lead'` y a los acompañantes con `role = 'assistant'`.
+   - Las consultas SQL ordenan siempre con `ORDER BY CASE WHEN ei.role = 'lead' THEN 0 ELSE 1 END, ei.id ASC`, asegurando coherencia absoluta en FullCalendar, tooltips, modales y sincronización con Google Calendar.
 
 
-- Veo que en los usuarios del calendario en el backend como en el frontned, existe un usuario principal, como lo selecciono cuando agrego varios.
+
 
 ```bash
 php build-zip.php
 php build-zip-sin-vendor.php
 ```
-
-
-
-

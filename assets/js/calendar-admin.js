@@ -641,8 +641,17 @@
         }
     });
 
-    function renderTeacherCheckboxes(selectedIds) {
+    function renderTeacherCheckboxes(selectedIds, primaryTeacherId) {
         selectedIds = (selectedIds || []).map(function(id) { return parseInt(id, 10); });
+        primaryTeacherId = parseInt(primaryTeacherId || 0, 10);
+
+        // Si no se pasó primaryTeacherId o no está entre los seleccionados, usar el primero seleccionado si existe
+        if ((!primaryTeacherId || selectedIds.indexOf(primaryTeacherId) === -1) && selectedIds.length > 0) {
+            primaryTeacherId = selectedIds[0];
+        }
+
+        $('#evt-primary-teacher-id').val(primaryTeacherId);
+
         var container = $('#evt-teachers-container');
         container.empty();
 
@@ -654,17 +663,87 @@
         $.each(auraCalData.teachers, function(i, t) {
             var tid = parseInt(t.id, 10);
             var isChecked = selectedIds.indexOf(tid) !== -1;
+            var isPrimary = isChecked && (tid === primaryTeacherId);
             var av = t.avatar ? '<img src="' + escapeHtml(t.avatar) + '" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" />' : '';
+            
+            var primaryBadge = isPrimary
+                ? '<button type="button" class="aura-primary-badge btn-make-primary-teacher is-active" data-tid="' + tid + '" title="Profesor Titular / Principal">⭐</button><span class="aura-primary-tag">Titular</span>'
+                : '<button type="button" class="aura-primary-badge btn-make-primary-teacher" data-tid="' + tid + '" title="Hacer Titular / Principal">☆</button>';
+
             var pill = $(
-                '<label class="aura-user-chip ' + (isChecked ? 'is-checked' : '') + '">' +
+                '<label class="aura-user-chip ' + (isChecked ? 'is-checked' : '') + (isPrimary ? ' is-primary-teacher' : '') + '" data-teacher-id="' + tid + '">' +
                 '<input type="checkbox" name="teacher_ids[]" value="' + t.id + '" ' + (isChecked ? 'checked' : '') + '> ' +
                 av +
-                '<span>' + escapeHtml(t.name) + '</span>' +
+                '<span class="aura-user-chip-name">' + escapeHtml(t.name) + '</span>' +
+                primaryBadge +
                 '</label>'
             );
             container.append(pill);
         });
     }
+
+    // Clic en la estrella para designar profesor titular / principal
+    $(document).on('click', '.btn-make-primary-teacher', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $chip = $(this).closest('.aura-user-chip');
+        var tid = parseInt($(this).data('tid'), 10);
+        var $cb = $chip.find('input[type="checkbox"]');
+
+        // Asegurar que el checkbox esté marcado
+        if (!$cb.is(':checked')) {
+            $cb.prop('checked', true).trigger('change');
+        }
+
+        // Asignar al input oculto
+        $('#evt-primary-teacher-id').val(tid);
+
+        // Actualizar visualmente todos los chips de profesores
+        $('#evt-teachers-container .aura-user-chip').each(function() {
+            var chipTid = parseInt($(this).data('teacher-id'), 10);
+            var isThis = (chipTid === tid);
+            $(this).toggleClass('is-primary-teacher', isThis);
+            var $badge = $(this).find('.btn-make-primary-teacher');
+            var $tag = $(this).find('.aura-primary-tag');
+            if (isThis) {
+                $badge.addClass('is-active').html('⭐').attr('title', 'Profesor Titular / Principal');
+                if (!$tag.length) {
+                    $badge.after('<span class="aura-primary-tag">Titular</span>');
+                }
+            } else {
+                $badge.removeClass('is-active').html('☆').attr('title', 'Hacer Titular / Principal');
+                $tag.remove();
+            }
+        });
+    });
+
+    // Control dinámico del titular al marcar/desmarcar profesores
+    $(document).on('change', '#evt-teachers-container input[type="checkbox"]', function() {
+        var $chip = $(this).closest('.aura-user-chip');
+        var tid = parseInt($chip.data('teacher-id'), 10);
+        var isChecked = $(this).is(':checked');
+        var currentPrimary = parseInt($('#evt-primary-teacher-id').val() || 0, 10);
+
+        if (isChecked) {
+            // Si no hay ningún titular asignado aún, este se vuelve titular automáticamente
+            if (!currentPrimary || !$('#evt-teachers-container input[type="checkbox"][value="' + currentPrimary + '"]').is(':checked')) {
+                $chip.find('.btn-make-primary-teacher').trigger('click');
+            }
+        } else {
+            // Si el que se desmarcó era el titular, elegir el primer marcado restante
+            if (currentPrimary === tid) {
+                var $nextChecked = $('#evt-teachers-container input[type="checkbox"]:checked').first();
+                if ($nextChecked.length) {
+                    $nextChecked.closest('.aura-user-chip').find('.btn-make-primary-teacher').trigger('click');
+                } else {
+                    $('#evt-primary-teacher-id').val(0);
+                    $chip.removeClass('is-primary-teacher');
+                    $chip.find('.btn-make-primary-teacher').removeClass('is-active').html('☆').attr('title', 'Hacer Titular / Principal');
+                    $chip.find('.aura-primary-tag').remove();
+                }
+            }
+        }
+    });
 
     function renderCoordinatorCheckboxes(selectedIds) {
         selectedIds = (selectedIds || []).map(function(id) { return parseInt(id, 10); });
@@ -955,7 +1034,7 @@
             $('#evt-subject-id').html('<option value="">General / Sin materia específica</option>');
         }
 
-        renderTeacherCheckboxes(data.teacher_ids || []);
+        renderTeacherCheckboxes(data.teacher_ids || [], data.primary_teacher_id || 0);
 
         // Cargar líderes de la sesión si existen
         currentEventLeaders = Array.isArray(data.student_leaders) ? data.student_leaders.slice() : [];
@@ -1572,6 +1651,7 @@
             color: ev.backgroundColor,
             description: p.description,
             teacher_ids: teacherIds,
+            primary_teacher_id: p.primary_teacher_id || (teacherIds.length ? teacherIds[0] : 0),
             student_leaders: p.student_leaders || []
         });
     });
