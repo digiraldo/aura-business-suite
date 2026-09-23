@@ -1181,16 +1181,22 @@ body.aura-dark-mode select option {
 
 html[data-theme="dark"] #btn-filter-reset,
 html[data-theme="dark"] #btn-toggle-fullscreen,
+html[data-theme="dark"] .aura-btn-gcal-link,
 body[data-theme="dark"] #btn-filter-reset,
 body[data-theme="dark"] #btn-toggle-fullscreen,
+body[data-theme="dark"] .aura-btn-gcal-link,
 html[data-wp-dark-mode-scheme="dark"] #btn-filter-reset,
 html[data-wp-dark-mode-scheme="dark"] #btn-toggle-fullscreen,
+html[data-wp-dark-mode-scheme="dark"] .aura-btn-gcal-link,
 html.wp-dark-mode-active #btn-filter-reset,
 html.wp-dark-mode-active #btn-toggle-fullscreen,
+html.wp-dark-mode-active .aura-btn-gcal-link,
 body.wp-dark-mode-active #btn-filter-reset,
 body.wp-dark-mode-active #btn-toggle-fullscreen,
+body.wp-dark-mode-active .aura-btn-gcal-link,
 body.aura-dark-mode #btn-filter-reset,
-body.aura-dark-mode #btn-toggle-fullscreen {
+body.aura-dark-mode #btn-toggle-fullscreen,
+body.aura-dark-mode .aura-btn-gcal-link {
     background: #20242c !important;
     border: 1px solid #3c4043 !important;
     color: #e8eaed !important;
@@ -1198,16 +1204,22 @@ body.aura-dark-mode #btn-toggle-fullscreen {
 
 html[data-theme="dark"] #btn-filter-reset:hover,
 html[data-theme="dark"] #btn-toggle-fullscreen:hover,
+html[data-theme="dark"] .aura-btn-gcal-link:hover,
 body[data-theme="dark"] #btn-filter-reset:hover,
 body[data-theme="dark"] #btn-toggle-fullscreen:hover,
+body[data-theme="dark"] .aura-btn-gcal-link:hover,
 html[data-wp-dark-mode-scheme="dark"] #btn-filter-reset:hover,
 html[data-wp-dark-mode-scheme="dark"] #btn-toggle-fullscreen:hover,
+html[data-wp-dark-mode-scheme="dark"] .aura-btn-gcal-link:hover,
 html.wp-dark-mode-active #btn-filter-reset:hover,
 html.wp-dark-mode-active #btn-toggle-fullscreen:hover,
+html.wp-dark-mode-active .aura-btn-gcal-link:hover,
 body.wp-dark-mode-active #btn-filter-reset:hover,
 body.wp-dark-mode-active #btn-toggle-fullscreen:hover,
+body.wp-dark-mode-active .aura-btn-gcal-link:hover,
 body.aura-dark-mode #btn-filter-reset:hover,
-body.aura-dark-mode #btn-toggle-fullscreen:hover {
+body.aura-dark-mode #btn-toggle-fullscreen:hover,
+body.aura-dark-mode .aura-btn-gcal-link:hover {
     background: #2b313c !important;
     border-color: #5f6368 !important;
     color: #ffffff !important;

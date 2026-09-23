@@ -137,6 +137,77 @@
     }
     window.getFcTimeConfig = getFcTimeConfig;
 
+    // ─────────────────────────────────────────────────────────────
+    // GOOGLE CALENDAR DEEP LINKING Y RUTAS BIDIRECCIONALES (u/0/r/...)
+    // ─────────────────────────────────────────────────────────────
+
+    var viewToGoogleMap = {
+        'dayGridMonth': 'month',
+        'timeGridWeek': 'week',
+        'timeGridDay':  'day',
+        'listWeek':     'agenda'
+    };
+
+    var googleToViewMap = {
+        'month':  'dayGridMonth',
+        'week':   'timeGridWeek',
+        'day':    'timeGridDay',
+        'agenda': 'listWeek'
+    };
+
+    function parseCalendarUrlRoute() {
+        var raw = window.location.hash || '';
+        var match = raw.match(/(?:#?\/?(?:u\/\d+\/)?r\/)(month|week|day|agenda)\/(\d{4})\/(\d{1,2})\/(\d{1,2})/i);
+        if (match) {
+            var gView = match[1].toLowerCase();
+            var y = parseInt(match[2], 10);
+            var m = parseInt(match[3], 10);
+            var d = parseInt(match[4], 10);
+            var fcView = googleToViewMap[gView] || 'timeGridWeek';
+            var mStr = (m < 10 ? '0' : '') + m;
+            var dStr = (d < 10 ? '0' : '') + d;
+            return {
+                view: fcView,
+                googleView: gView,
+                dateStr: y + '-' + mStr + '-' + dStr,
+                year: y,
+                month: m,
+                day: d
+            };
+        }
+        return null;
+    }
+    window.parseCalendarUrlRoute = parseCalendarUrlRoute;
+
+    function syncCalendarUrlAndGcalLink(viewType, targetDate) {
+        var gView = viewToGoogleMap[viewType] || 'week';
+        var d = targetDate instanceof Date ? targetDate : new Date(targetDate);
+        if (isNaN(d.getTime())) {
+            d = new Date();
+        }
+        var y = d.getFullYear();
+        var m = d.getMonth() + 1;
+        var day = d.getDate();
+
+        var routePath = 'u/0/r/' + gView + '/' + y + '/' + m + '/' + day;
+        var newHash = '#/' + routePath;
+
+        // 1. Sincronizar URL del navegador de forma reactiva sin recarga
+        if (window.location.hash !== newHash) {
+            if (window.history && window.history.replaceState) {
+                var cleanUrl = window.location.href.split('#')[0];
+                window.history.replaceState(null, '', cleanUrl + newHash);
+            } else {
+                window.location.hash = newHash;
+            }
+        }
+
+        // 2. Actualizar botón directo de Google Calendar
+        var gcalWebUrl = 'https://calendar.google.com/calendar/' + routePath;
+        $('#btn-open-gcal, #btn-open-teacher-gcal, #btn-open-student-gcal').attr('href', gcalWebUrl);
+    }
+    window.syncCalendarUrlAndGcalLink = syncCalendarUrlAndGcalLink;
+
     function initFullCalendar() {
         var calEl = document.getElementById('aura-main-calendar');
         if (!calEl || typeof FullCalendar === 'undefined') {
@@ -144,9 +215,13 @@
         }
 
         var timeFormatConfig = getFcTimeConfig(auraCalData.time_format);
+        var initialRoute = parseCalendarUrlRoute();
+        var initialView = initialRoute ? initialRoute.view : 'timeGridWeek';
+        var initialDate = initialRoute ? initialRoute.dateStr : undefined;
 
         calendar = new FullCalendar.Calendar(calEl, {
-            initialView: 'timeGridWeek',
+            initialView: initialView,
+            initialDate: initialDate,
             locale: 'es',
             firstDay: parseInt(auraCalData.first_day || 1, 10),
             headerToolbar: {
@@ -266,10 +341,29 @@
                 if (!auraCalData.user_can_edit) return;
                 hideEventTooltip();
                 updateEventDates(info.event);
+            },
+
+            // Sincronización continua de la URL y enlace dinámico de Google Calendar al cambiar fechas o vistas
+            datesSet: function(dateInfo) {
+                var anchorDate = dateInfo.view.currentStart || dateInfo.start;
+                syncCalendarUrlAndGcalLink(dateInfo.view.type, anchorDate);
             }
         });
 
         calendar.render();
+
+        // Soporte reactivo a navegación nativa (Atrás / Adelante en historial con #/u/0/r/...)
+        window.addEventListener('hashchange', function() {
+            var r = parseCalendarUrlRoute();
+            if (r && calendar) {
+                var currView = calendar.view ? calendar.view.type : '';
+                if (currView !== r.view) {
+                    calendar.changeView(r.view, r.dateStr);
+                } else {
+                    calendar.gotoDate(r.dateStr);
+                }
+            }
+        });
     }
 
     // ─────────────────────────────────────────────────────────────

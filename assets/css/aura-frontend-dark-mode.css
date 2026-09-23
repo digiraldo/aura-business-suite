@@ -968,6 +968,35 @@ body[data-theme="dark"] #btn-toggle-fullscreen:hover {
     color: #ffffff !important;
 }
 
+/* Enlace directo a Google Calendar */
+.aura-btn-gcal-link {
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+
+[data-theme="dark"] .aura-btn-gcal-link,
+body[data-theme="dark"] .aura-btn-gcal-link,
+.aura-dark-theme .aura-btn-gcal-link {
+    background-color: #1e293b !important;
+    border: 1px solid #475569 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .aura-btn-gcal-link *,
+body[data-theme="dark"] .aura-btn-gcal-link *,
+.aura-dark-theme .aura-btn-gcal-link * {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .aura-btn-gcal-link:hover,
+body[data-theme="dark"] .aura-btn-gcal-link:hover,
+.aura-dark-theme .aura-btn-gcal-link:hover {
+    background-color: #334155 !important;
+    border-color: #64748b !important;
+    color: #ffffff !important;
+}
+
 #btn-toggle-teacher-fullscreen.is-active-fullscreen,
 #btn-toggle-student-fullscreen.is-active-fullscreen,
 #btn-toggle-fullscreen.is-active-fullscreen {

@@ -684,6 +684,9 @@ class Aura_Calendar_Frontend {
                             <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-teacher-fullscreen" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
                                 <span class="dashicons dashicons-editor-expand" style="font-size: 16px; width: 16px; height: 16px;"></span> <span class="fs-text"><?php esc_html_e( 'Pantalla Completa', 'aura' ); ?></span>
                             </button>
+                            <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer" id="btn-open-teacher-gcal" class="btn btn-secondary btn-sm aura-btn-gcal-link" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px; text-decoration: none; color: inherit;" title="<?php esc_attr_e( 'Abrir esta misma fecha y vista en Google Calendar', 'aura' ); ?>">
+                                <span style="font-size: 13px;">📅</span> <?php esc_html_e( 'Google Calendar', 'aura' ); ?> ↗
+                            </a>
                             <div style="font-size: 12px; color: var(--at-text-muted);">
                                 💡 <?php esc_html_e( 'Haz clic sobre una clase para ver el aula, enlace virtual o tomar lista rápida.', 'aura' ); ?>
                             </div>
@@ -1948,8 +1951,13 @@ class Aura_Calendar_Frontend {
                         ? window.getFcTimeConfig(auraCalData.time_format)
                         : (/[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '') ? { hour: 'numeric', minute: '2-digit', hour12: true, meridiem: 'short' } : { hour: '2-digit', minute: '2-digit', hour12: false });
 
+                    var initialRoute = (typeof window.parseCalendarUrlRoute === 'function') ? window.parseCalendarUrlRoute() : null;
+                    var initialView = initialRoute ? initialRoute.view : 'timeGridWeek';
+                    var initialDate = initialRoute ? initialRoute.dateStr : undefined;
+
                     window.teacherCalendarInstance = new FullCalendar.Calendar(calEl, {
-                        initialView: 'timeGridWeek',
+                        initialView: initialView,
+                        initialDate: initialDate,
                         locale: 'es',
                         firstDay: parseInt(auraCalData.first_day || 1, 10),
                         headerToolbar: {
@@ -2038,9 +2046,29 @@ class Aura_Calendar_Frontend {
                         } else if (typeof openEventDetail === 'function') {
                             openEventDetail(info.event);
                         }
+                    },
+                    datesSet: function(dateInfo) {
+                        var anchorDate = dateInfo.view.currentStart || dateInfo.start;
+                        if (typeof window.syncCalendarUrlAndGcalLink === 'function') {
+                            window.syncCalendarUrlAndGcalLink(dateInfo.view.type, anchorDate);
+                        }
                     }
                 });
                 window.teacherCalendarInstance.render();
+
+                window.addEventListener('hashchange', function() {
+                    if (typeof window.parseCalendarUrlRoute === 'function' && window.teacherCalendarInstance) {
+                        var r = window.parseCalendarUrlRoute();
+                        if (r) {
+                            var currView = window.teacherCalendarInstance.view ? window.teacherCalendarInstance.view.type : '';
+                            if (currView !== r.view) {
+                                window.teacherCalendarInstance.changeView(r.view, r.dateStr);
+                            } else {
+                                window.teacherCalendarInstance.gotoDate(r.dateStr);
+                            }
+                        }
+                    }
+                });
             }
 
             // Polling de reintento para garantizar la inicialización aunque el CDN se demore
@@ -2193,6 +2221,9 @@ class Aura_Calendar_Frontend {
                         <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-student-fullscreen" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
                             <span class="dashicons dashicons-editor-expand" style="font-size: 16px; width: 16px; height: 16px;"></span> <span class="fs-text"><?php esc_html_e( 'Pantalla Completa', 'aura' ); ?></span>
                         </button>
+                        <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer" id="btn-open-student-gcal" class="btn btn-secondary btn-sm aura-btn-gcal-link" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px; text-decoration: none; color: inherit;" title="<?php esc_attr_e( 'Abrir esta misma fecha y vista en Google Calendar', 'aura' ); ?>">
+                            <span style="font-size: 13px;">📅</span> <?php esc_html_e( 'Google Calendar', 'aura' ); ?> ↗
+                        </a>
                         <div style="font-size: 12px; color: var(--at-text-muted, #64748b);">
                             💡 <?php esc_html_e( 'Las clases con una estrella (⭐) indican que tienes o hay compañeros con roles de liderazgo asignados.', 'aura' ); ?>
                         </div>
@@ -2227,8 +2258,13 @@ class Aura_Calendar_Frontend {
                     ? window.getFcTimeConfig(auraCalData.time_format)
                     : (/[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '') ? { hour: 'numeric', minute: '2-digit', hour12: true, meridiem: 'short' } : { hour: '2-digit', minute: '2-digit', hour12: false });
 
+                var initialRoute = (typeof window.parseCalendarUrlRoute === 'function') ? window.parseCalendarUrlRoute() : null;
+                var initialView = initialRoute ? initialRoute.view : 'timeGridWeek';
+                var initialDate = initialRoute ? initialRoute.dateStr : undefined;
+
                 window.studentCalendarInstance = new FullCalendar.Calendar(calEl, {
-                    initialView: 'timeGridWeek',
+                    initialView: initialView,
+                    initialDate: initialDate,
                     locale: 'es',
                     firstDay: parseInt(auraCalData.first_day || 1, 10),
                     headerToolbar: {
@@ -2329,9 +2365,29 @@ class Aura_Calendar_Frontend {
                         } else if (typeof openEventDetail === 'function') {
                             openEventDetail(info.event);
                         }
+                    },
+                    datesSet: function(dateInfo) {
+                        var anchorDate = dateInfo.view.currentStart || dateInfo.start;
+                        if (typeof window.syncCalendarUrlAndGcalLink === 'function') {
+                            window.syncCalendarUrlAndGcalLink(dateInfo.view.type, anchorDate);
+                        }
                     }
                 });
                 window.studentCalendarInstance.render();
+
+                window.addEventListener('hashchange', function() {
+                    if (typeof window.parseCalendarUrlRoute === 'function' && window.studentCalendarInstance) {
+                        var r = window.parseCalendarUrlRoute();
+                        if (r) {
+                            var currView = window.studentCalendarInstance.view ? window.studentCalendarInstance.view.type : '';
+                            if (currView !== r.view) {
+                                window.studentCalendarInstance.changeView(r.view, r.dateStr);
+                            } else {
+                                window.studentCalendarInstance.gotoDate(r.dateStr);
+                            }
+                        }
+                    }
+                });
             }
 
             // Polling de reintentos

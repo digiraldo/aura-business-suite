@@ -83,6 +83,10 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                 <button type="button" id="btn-toggle-fullscreen" class="btn btn-ghost" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;" title="<?php esc_attr_e( 'Ver calendario en pantalla completa', 'aura' ); ?>">
                     ⛶ <?php esc_html_e( 'Pantalla Completa', 'aura' ); ?>
                 </button>
+
+                <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer" id="btn-open-gcal" class="btn btn-ghost aura-btn-gcal-link" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: inherit;" title="<?php esc_attr_e( 'Abrir esta misma fecha y vista en Google Calendar', 'aura' ); ?>">
+                    <span style="font-size: 14px;">📅</span> <?php esc_html_e( 'Google Calendar', 'aura' ); ?> ↗
+                </a>
             </div>
         </div>
     </div>

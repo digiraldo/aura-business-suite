@@ -563,7 +563,8 @@ Se incorporó un selector interactivo visual con estrella ⭐ en los chips de se
 
 ---
 
-#### D. Instrucciones para Hostinger:
+#### D. Instrucciones para Hostinger
+
 1. Subir y reemplazar el plugin con el nuevo archivo generado `aura-business-suite.zip`.
 2. En WordPress en Hostinger, simplemente recargar cualquier página del panel de administración (`https://centromateo.org/wp-admin/admin.php?page=aura-calendar`).
    - La base de datos se auto-migrará a la versión `1.7.3` en milisegundos en la primera carga.
@@ -571,10 +572,35 @@ Se incorporó un selector interactivo visual con estrella ⭐ en los chips de se
 3. Los avatares cargarán de inmediato tanto en las celdas del calendario como en los tooltips, modales y portales de profesores y estudiantes.
 4. Las vistas de semana y día mostrarán desde las 06:00 hasta las 24:00 horas.
 
+---
 
+### 27. Navegación y URLs al Estilo Google Calendar (Deep Linking) en Backend y Frontend
 
-- Quiero que implemente los link o url del calendario de google cuando se navega en este, ejemplo:
-    - En Mes: u/0/r/month/2027/1/1
-    - En Semana: u/0/r/week/2027/1/1
-    - En Día: u/0/r/day/2027/1/1
-    - En Agenda: u/0/r/agenda/2027/1/1
+Se implementó el enrutamiento reactivo idéntico al estándar de Google Calendar para todas las vistas y calendarios del sistema:
+
+#### Formato de URLs Soportado
+- **Mes:** `#/u/0/r/month/YYYY/M/D` (ejemplo: `#/u/0/r/month/2027/1/1`)
+- **Semana:** `#/u/0/r/week/YYYY/M/D` (ejemplo: `#/u/0/r/week/2027/1/1`)
+- **Día:** `#/u/0/r/day/YYYY/M/D` (ejemplo: `#/u/0/r/day/2027/1/1`)
+- **Agenda / Lista:** `#/u/0/r/agenda/YYYY/M/D` (ejemplo: `#/u/0/r/agenda/2027/1/1`)
+
+#### Alcance y Funcionamiento en Backend y Frontend
+1. **Sincronización Reactiva en Tiempo Real:**
+   - Cada vez que el usuario cambia de vista (Mes, Semana, Día, Agenda) o navega en las fechas (Siguiente, Anterior, Hoy), el evento `datesSet` actualiza automáticamente la barra de direcciones del navegador utilizando `window.history.replaceState` con el hash `#/u/0/r/{vista}/{año}/{mes}/{día}` sin recargar la página.
+2. **Carga y Enlaces Compartibles (Deep Linking):**
+   - Si un usuario ingresa directamente o comparte un enlace con la ruta (por ejemplo `https://centromateo.org/portal-del-instructor/#/u/0/r/month/2027/1/1` o en el wp-admin `admin.php?page=aura-calendar#/u/0/r/day/2026/10/15`), la función `parseCalendarUrlRoute()` detecta los parámetros de la URL e inicializa FullCalendar directamente en esa fecha y vista.
+3. **Navegación Nativa del Navegador (Atrás / Adelante):**
+   - Se conectó un listener para el evento `hashchange` en Backend, Portal del Docente y Horario del Estudiante. Al pulsar los botones Atrás o Adelante del navegador, el calendario cambia de vista o fecha instantáneamente sin recarga de página.
+4. **Botón Directo a Google Calendar en Barra de Acciones:**
+   - Se añadió un botón en la barra superior de acciones:
+     - **Backend:** `#btn-open-gcal` en `templates/calendar/tab-calendar.php`.
+     - **Frontend Instructor:** `#btn-open-teacher-gcal` en el Portal del Docente.
+     - **Frontend Estudiante:** `#btn-open-student-gcal` en el Horario del Estudiante.
+   - Su enlace (`href`) se sincroniza en vivo para abrir exactamente la misma vista y fecha en la aplicación web real de Google Calendar (`https://calendar.google.com/calendar/u/0/r/{vista}/{año}/{mes}/{día}`).
+5. **Compatibilidad Visual y Modo Oscuro:**
+   - Se diseñaron estilos dedicados para `.aura-btn-gcal-link` en `calendar-admin.css` y `aura-frontend-dark-mode.css`, asegurando legibilidad, bordes, estados hover e integración total con el modo oscuro.
+
+---
+
+- Intento aplicar la Opción B (DIVI 4): En el "Elemento Principal" usando Variables CSS de Aura (Sin Opciones del Tema), del archivo `documentacion\Tutoriales\TUTORIAL-CALENDARIO-TOOLTIPS-MODALES-Y-MODO-OSCURO-DIVI.md`, pero no me sirve o funciona en Divi 4, dejo captura de pantalla.
+- Mejora visualmente las dos primeras filas del calendario del frontend, ya que estan muy separadas verticalmente, elimina el padding superior e inferior y demas para que queden juntos pero sin perder la alineacion de las columnas.
