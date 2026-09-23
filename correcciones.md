@@ -434,6 +434,26 @@ CRUD de Eventos Genéricos en https://centromateo.org/wp-admin/admin.php?page=au
 
 - En wordpress o en Divi, que codigo escribo para que la sección, Fila o modulo tambien cambie de modo claro y oscuro en el frontend.
 
+### Tutorial Completo Creado en `documentacion/Tutoriales`:
+Se creó el tutorial detallado paso a paso en:
+[`documentacion/Tutoriales/TUTORIAL-CALENDARIO-TOOLTIPS-MODALES-Y-MODO-OSCURO-DIVI.md`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/documentacion/Tutoriales/TUTORIAL-CALENDARIO-TOOLTIPS-MODALES-Y-MODO-OSCURO-DIVI.md)
+
+El tutorial contiene:
+1. **Calendario Académico:**
+   - Explicación y funcionamiento de los tooltips enriquecidos (Avatar 44px + Ring animado + Stack de docentes secundarios).
+   - Modal moderno unificado (`modal-event-detail.php`) con glassmorphism, videollamadas, chips de líderes y RBAC.
+   - Preservación inteligente de pantalla completa al cerrar el modal (por "X", botón "Cerrar", overlay o tecla `Escape`).
+2. **Adaptación en WordPress y Divi Builder:**
+   - Fundamento técnico de las etiquetas `html[data-theme="dark"]` y `body.aura-dark-theme`.
+   - Método 1: Uso directo de variables CSS nativas de Aura en el elemento principal del módulo de Divi.
+   - Método 2: Uso de clase personalizada (`.seccion-adaptable-aura`) con reglas de modo claro y oscuro.
+   - Método 3: Estilización global para todo el sitio en Divi.
+   - Tabla comparativa de tokens y variables CSS disponibles.
+
+
+
+
+- Veo que en los usuarios del calendario en el backend como en el frontned, existe un usuario principal, como lo selecciono cuando agrego varios.
 
 ```bash
 php build-zip.php
