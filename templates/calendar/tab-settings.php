@@ -231,6 +231,116 @@ $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_port
             </div>
         </div>
 
+        <!-- ═════════════════════════════════════════════════════════════
+             3. CATÁLOGO DE EVENTOS GENÉRICOS Y RÁPIDOS (CRUD)
+             ═════════════════════════════════════════════════════════════ -->
+        <?php
+        $generic_events = class_exists( 'Aura_Calendar_Generic_Events' ) ? Aura_Calendar_Generic_Events::get_all() : [];
+        $type_labels = [
+            'class'    => __( 'Clase regular', 'aura' ),
+            'exam'     => __( 'Examen / Evaluación', 'aura' ),
+            'workshop' => __( 'Taller / Laboratorio', 'aura' ),
+            'activity' => __( 'Actividad / Devocional / Deporte', 'aura' ),
+            'break'    => __( 'Receso / Descanso / Comida', 'aura' ),
+            'other'    => __( 'Otro', 'aura' ),
+        ];
+        ?>
+        <div class="adp-card" style="padding: 28px; border-radius: 14px; box-shadow: var(--aura-shadow-sm, 0 1px 3px rgba(0,0,0,0.06));">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+                <div>
+                    <span class="adp-badge badge-emerald has-dot" style="margin-bottom: 8px; display: inline-flex;">
+                        <span class="pulse-dot"></span> <?php esc_html_e( 'Agilidad en Planificación', 'aura' ); ?>
+                    </span>
+                    <h3 class="adp-card-title" style="font-size: 19px; margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span>⚡</span> <?php esc_html_e( 'Catálogo de Eventos Genéricos y Rápidos', 'aura' ); ?>
+                    </h3>
+                    <p class="adp-card-desc" style="margin: 0; font-size: 13px;">
+                        <?php esc_html_e( 'Configura los eventos rápidos predefinidos (recesos, devocionales, actividades, comidas) que se pueden añadir al calendario con 1 clic en el modal con duración automática personalizable.', 'aura' ); ?>
+                    </p>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-sm btn-ghost" id="btn-reset-generic-events" title="<?php esc_attr_e( 'Restablecer a los 11 eventos iniciales recomendados', 'aura' ); ?>" style="font-size: 12px; padding: 6px 12px;">
+                        ↺ <?php esc_html_e( 'Restablecer Predeterminados', 'aura' ); ?>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-indigo btn-lift" id="btn-add-generic-event" style="font-size: 12px; font-weight: 600; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;">
+                        ➕ <?php esc_html_e( 'Agregar Evento Genérico', 'aura' ); ?>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de Eventos Genéricos -->
+            <div class="adp-table-responsive" style="border: 1px solid var(--aura-border, #e2e8f0); border-radius: 10px; overflow: hidden;">
+                <table class="adp-table" id="table-generic-events" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--aura-surface-alt, #f8fafc); border-bottom: 1px solid var(--aura-border, #e2e8f0); text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #64748b);">
+                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Icono & Nombre', 'aura' ); ?></th>
+                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Tipo de Evento', 'aura' ); ?></th>
+                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Duración Auto', 'aura' ); ?></th>
+                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Color Distintivo', 'aura' ); ?></th>
+                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Estado', 'aura' ); ?></th>
+                            <th style="padding: 12px 16px; text-align: right;"><?php esc_html_e( 'Acciones', 'aura' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-generic-events">
+                        <?php foreach ( $generic_events as $gev ) : 
+                            $gev_id    = esc_attr( $gev['id'] );
+                            $gev_name  = esc_html( $gev['name'] );
+                            $gev_icon  = esc_html( $gev['icon'] ?: '⚡' );
+                            $gev_dur   = intval( $gev['duration'] ?: 30 );
+                            $gev_type  = esc_attr( $gev['type'] ?: 'break' );
+                            $gev_color = esc_attr( $gev['color'] ?: '#5D5FEF' );
+                            $gev_act   = ! empty( $gev['active'] );
+                        ?>
+                            <tr data-generic-id="<?php echo $gev_id; ?>" style="border-bottom: 1px solid var(--aura-border, #e2e8f0);">
+                                <td style="padding: 12px 16px; font-weight: 600;">
+                                    <span style="font-size: 16px; margin-right: 6px;"><?php echo $gev_icon; ?></span>
+                                    <span><?php echo $gev_name; ?></span>
+                                </td>
+                                <td style="padding: 12px 16px; font-size: 13px; color: var(--aura-text-secondary);">
+                                    <?php echo esc_html( $type_labels[ $gev_type ] ?? ucfirst( $gev_type ) ); ?>
+                                </td>
+                                <td style="padding: 12px 16px;">
+                                    <span class="adp-badge badge-ghost" style="font-size: 12px; font-weight: 600;">
+                                        ⏱️ <?php printf( esc_html__( '%d min', 'aura' ), $gev_dur ); ?>
+                                    </span>
+                                </td>
+                                <td style="padding: 12px 16px;">
+                                    <div style="display: inline-flex; align-items: center; gap: 8px;">
+                                        <span style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: <?php echo $gev_color; ?>; box-shadow: 0 0 0 2px rgba(0,0,0,0.1);"></span>
+                                        <code style="font-size: 11px;"><?php echo $gev_color; ?></code>
+                                    </div>
+                                </td>
+                                <td style="padding: 12px 16px;">
+                                    <?php if ( $gev_act ) : ?>
+                                        <span class="adp-badge badge-emerald" style="font-size: 11px;">✓ <?php esc_html_e( 'Activo', 'aura' ); ?></span>
+                                    <?php else : ?>
+                                        <span class="adp-badge badge-ghost" style="font-size: 11px; opacity: 0.6;"><?php esc_html_e( 'Inactivo', 'aura' ); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td style="padding: 12px 16px; text-align: right; white-space: nowrap;">
+                                    <button type="button" class="btn btn-ghost btn-sm btn-edit-generic-event" 
+                                            data-id="<?php echo $gev_id; ?>"
+                                            data-name="<?php echo esc_attr( $gev['name'] ); ?>"
+                                            data-icon="<?php echo esc_attr( $gev['icon'] ); ?>"
+                                            data-duration="<?php echo $gev_dur; ?>"
+                                            data-type="<?php echo $gev_type; ?>"
+                                            data-color="<?php echo $gev_color; ?>"
+                                            data-active="<?php echo $gev_act ? 1 : 0; ?>"
+                                            style="padding: 4px 8px; font-size: 12px;">
+                                        ✏️ <?php esc_html_e( 'Editar', 'aura' ); ?>
+                                    </button>
+                                    <button type="button" class="btn btn-ghost btn-sm btn-delete-generic-event" data-id="<?php echo $gev_id; ?>" data-name="<?php echo esc_attr( $gev['name'] ); ?>" style="padding: 4px 8px; font-size: 12px; color: #ef4444;">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Botón Global de Guardar -->
         <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 4px;">
             <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-settings" style="padding: 12px 26px; font-size: 14px; font-weight: 600;">
@@ -264,4 +374,95 @@ $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_port
         </div>
     <?php endif; ?>
 
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL: CREADOR / EDITOR DE EVENTO GENÉRICO
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="modal-generic-event-editor" class="aura-modal-overlay" style="display: none;">
+    <div class="aura-modal-container" style="max-width: 520px;">
+        <div class="aura-modal-header">
+            <h3 id="modal-generic-event-title" class="adp-card-title" style="margin: 0; font-size: 17px;">
+                ⚡ <?php esc_html_e( 'Evento Genérico / Rápido', 'aura' ); ?>
+            </h3>
+            <button type="button" class="aura-modal-close" data-close-modal="#modal-generic-event-editor">&times;</button>
+        </div>
+
+        <form id="form-generic-event-editor" class="aura-modal-form">
+            <input type="hidden" name="id" id="gen-id" value="">
+
+            <div class="aura-modal-body" style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+                
+                <!-- Nombre e Icono -->
+                <div style="display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: flex-end;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; margin-bottom: 4px; display: block;">
+                            <?php esc_html_e( 'Icono', 'aura' ); ?>
+                        </label>
+                        <input type="text" name="icon" id="gen-icon" value="⚡" maxlength="4" class="form-control" style="font-size: 20px; text-align: center; border-radius: 8px; padding: 6px;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; margin-bottom: 4px; display: block;">
+                            <?php esc_html_e( 'Nombre del Evento', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="text" name="name" id="gen-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Descanso, Meditación, Refrigerio...', 'aura' ); ?>" style="border-radius: 8px; padding: 8px 12px;">
+                    </div>
+                </div>
+
+                <!-- Duración y Tipo -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; margin-bottom: 4px; display: block;">
+                            ⏱️ <?php esc_html_e( 'Duración (minutos)', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="number" name="duration" id="gen-duration" value="30" min="5" max="1440" step="5" required class="form-control" style="border-radius: 8px; padding: 8px 12px;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-weight: 600; font-size: 12px; margin-bottom: 4px; display: block;">
+                            📌 <?php esc_html_e( 'Tipo de Evento', 'aura' ); ?>
+                        </label>
+                        <select name="type" id="gen-type" class="form-control" style="border-radius: 8px; padding: 8px 12px;">
+                            <option value="break">☕ <?php esc_html_e( 'Receso / Comida', 'aura' ); ?></option>
+                            <option value="activity">🎯 <?php esc_html_e( 'Actividad / Devocional', 'aura' ); ?></option>
+                            <option value="class">📖 <?php esc_html_e( 'Clase / Lectura', 'aura' ); ?></option>
+                            <option value="workshop">🔬 <?php esc_html_e( 'Taller / Práctica', 'aura' ); ?></option>
+                            <option value="exam">📝 <?php esc_html_e( 'Examen / Evaluación', 'aura' ); ?></option>
+                            <option value="other">📍 <?php esc_html_e( 'Otro', 'aura' ); ?></option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Color Distintivo -->
+                <div class="form-group">
+                    <label class="form-label" style="font-weight: 600; font-size: 12px; margin-bottom: 4px; display: block;">
+                        🎨 <?php esc_html_e( 'Color Distintivo', 'aura' ); ?>
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="color" name="color" id="gen-color" value="#5D5FEF" style="width: 44px; height: 38px; border: 1px solid var(--aura-border, #cbd5e1); border-radius: 8px; padding: 2px; cursor: pointer;">
+                        <input type="text" id="gen-color-hex" value="#5D5FEF" class="form-control" style="width: 110px; border-radius: 8px; font-family: monospace; font-size: 13px;" readonly>
+                    </div>
+                </div>
+
+                <!-- Estado Activo -->
+                <div class="form-group" style="padding-top: 4px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                        <input type="checkbox" name="active" id="gen-active" value="1" checked>
+                        <span><?php esc_html_e( 'Habilitado para mostrarse en el modal del calendario', 'aura' ); ?></span>
+                    </label>
+                </div>
+
+                <div id="gen-editor-msg" style="display: none;"></div>
+
+            </div>
+
+            <div class="aura-modal-footer" style="padding: 14px 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--aura-border, #e2e8f0);">
+                <button type="button" class="btn btn-ghost" data-close-modal="#modal-generic-event-editor">
+                    <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                </button>
+                <button type="submit" class="btn btn-indigo btn-lift" id="btn-save-generic-item">
+                    💾 <?php esc_html_e( 'Guardar Evento', 'aura' ); ?>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>

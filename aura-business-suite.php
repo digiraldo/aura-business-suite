@@ -245,6 +245,7 @@ class Aura_Business_Suite {
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-programs.php';
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-subjects.php';
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-events.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-generic-events.php';
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-attendance.php';
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-grades.php';
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-tasks.php';
@@ -451,6 +452,7 @@ class Aura_Business_Suite {
         Aura_Calendar_Programs::init();
         Aura_Calendar_Subjects::init();
         Aura_Calendar_Events::init();
+        Aura_Calendar_Generic_Events::init();
         Aura_Calendar_Attendance::init();
         Aura_Calendar_Grades::init();
         Aura_Calendar_Tasks::init();

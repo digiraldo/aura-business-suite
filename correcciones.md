@@ -340,23 +340,43 @@ La verificación de sintaxis PHP ha concluido sin errores.
   4. **Selector Visual de Profesores:** En [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js), las píldoras de selección `.aura-user-chip` ahora incorporan miniatura de avatar y mapean de manera bidireccional todos los IDs de profesores seleccionados tanto al abrir el modal de edición como al guardar.
 
 
-⏳ En el modal de Crear Evento, al final, al hacer clic en un toggle y que al seleccionarlo, me aparezcan unos eventos rapidos de agregar al calendario que al tener la fecha y hora de inicio ya definida me agregue automaticamente la duracion de 30 minutos como son:
-Descanso
-Introducción
-Reflexión
-Deportes
-Lectura
-Trabajo
-Refrigerio
-Desayuno
-Almuerzo
-Comida
-Cena
-⏳ Que estos una vez en el calendario agregados, sean editables para poder cambiarles la duracion por ejemplo o la hora de finalización, profesores o instructores a cargo, etc
-⏳ Para mejorar esto, hazme un CRUD de Eventos Genericos en https://centromateo.org/wp-admin/admin.php?page=aura-calendar-settings, hazlo super adaptable o funcional y agrega mejoras si ves que son requeridas
+✅ El boton de Pantalla completa, su texto no esta en blanco en modo oscuro y no se puede leer, el boton de Cambio de Modo Claro, Oscuro, su icono no se ve n modo Claro.
 
+- **Solución Implementada:**
+  1. **Icono de Tema en Modo Claro:** WordPress no incluye de forma nativa el glifo `dashicons-moon`. Se añadió en [`assets/css/aura-frontend-dark-mode.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css) la regla `.dashicons-moon:before { content: "🌙" !important; }` y `.dashicons-lightbulb:before { content: "☀️" !important; }`. Además, en [`assets/js/aura-frontend-theme.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/aura-frontend-theme.js) se inyecta directamente el emoji según el tema activo para garantizar compatibilidad visual total y sin parpadeos.
+  2. **Texto de Pantalla Completa en Modo Oscuro:** Se forzó la especificidad de color `#ffffff !important;` en modo oscuro para los textos `.fs-text` y los contenedores de los botones `#btn-toggle-teacher-fullscreen`, `#btn-toggle-student-fullscreen` y `#btn-toggle-fullscreen`, eliminando la ilegibilidad y asegurando un alto contraste estético.
 
-⏳ No me sincronizan bien los eventos creados en calendario de AURA, que duran varios dias que se muestran con una barra larga de los dias en el calendario de google, y estos solo se muestran en un solo dia con el formato [{Código Corto del Programa}] {Nombre de la Materia}: {Nombre del Evento} y no el formato de: {Nombre del Evento}: {Nombre de la Materia} [{Código Corto del Programa}]
+✅ En el modal de Crear Evento, al final, al hacer clic en un toggle y que al seleccionarlo, me aparezcan unos eventos rapidos de agregar al calendario que al tener la fecha y hora de inicio ya definida me agregue automaticamente la duracion de 30 minutos como son:
+Descanso, Introducción, Reflexión, Deportes, Lectura, Trabajo, Refrigerio, Desayuno, Almuerzo, Comida, Cena.
+Que estos una vez en el calendario agregados, sean editables para poder cambiarles la duracion por ejemplo o la hora de finalización, profesores o instructores a cargo, etc.
+CRUD de Eventos Genéricos en https://centromateo.org/wp-admin/admin.php?page=aura-calendar-settings adaptable y funcional.
+
+- **Solución Implementada:**
+  1. **Catálogo y Modelo Backend (`Aura_Calendar_Generic_Events`):**
+     - Creada la clase [`modules/calendar/class-calendar-generic-events.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-generic-events.php) que gestiona los 11 eventos iniciales con sus iconos emoji, duraciones (30 min), colores y tipos (break, activity, class, workshop, exam, other).
+     - Endpoints AJAX registrados con seguridad (nonce + capability check): `aura_cal_get_generic_events`, `aura_cal_save_generic_event`, `aura_cal_delete_generic_event`, `aura_cal_reset_generic_events`.
+  2. **Interfaz de Administración (CRUD en Ajustes):**
+     - En [`templates/calendar/tab-settings.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/tab-settings.php), se implementó la tabla completa del Catálogo con visualización de icono, nombre, tipo, duración en minutos, píldora de color, estado y acciones de Editar y Eliminar.
+     - Modal dedicado `#modal-generic-event-editor` con inputs para Nombre, Icono emoji, Duración en minutos, Tipo de evento, Color Picker interactivo sincronizado en hexadecimal y Switch de Activo/Inactivo.
+     - Botón para restablecer el catálogo a los 11 eventos iniciales recomendados.
+  3. **Selector Rápido en Modal de Creación/Edición de Eventos:**
+     - En [`templates/calendar/modal-partials.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/modal-partials.php), al final del formulario del editor se añadió el switch interactivo "⚡ Eventos Genéricos y Rápidos".
+     - Al activarlo, despliega las píldoras de eventos rápidos (chips).
+     - Al hacer clic en un chip: asigna el título, selecciona el tipo y color distintivo, auto-selecciona el primer programa disponible si no se había elegido uno, y **calcula automáticamente la fecha y hora de finalización sumando los 30 minutos** (o la duración asignada al evento) respecto a la hora de inicio definida.
+     - **100% Editable:** El evento se vuelca a los campos estándar del formulario, permitiendo que el usuario modifique la duración, hora de inicio/fin, instructores a cargo, salón, enlaces y notas antes y después de agendar.
+
+✅ Sincronización en Google Calendar para eventos multi-día con barra horizontal continua y formato de título estricto `{Nombre del Evento}: {Nombre de la Materia} [{Código Corto del Programa}]`.
+
+- **Solución Implementada:**
+  1. **Barra Larga Continua de Días en Google Calendar:**
+     - En [`modules/calendar/class-calendar-google-sync.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-google-sync.php), se detecta si la fecha de inicio y la fecha de fin son diferentes (`$is_multi_day = ($start_date !== $end_date)`).
+     - Para eventos multi-día, Google Calendar API v3 exige enviar el objeto de fecha `date` (formato `YYYY-MM-DD`) sin horas. Como la propiedad `end.date` en Google Calendar API es **exclusiva**, se calcula `$end_date_exclusive = date('Y-m-d', strtotime($end_date . ' +1 day'))`. De esta forma, Google Calendar renderiza de inmediato la **barra horizontal larga continua** a lo largo de todos los días comprendidos.
+     - En la descripción se preserva el desglose del horario exacto: `⏰ Horario programado: DD/MM/YYYY HH:MM a DD/MM/YYYY HH:MM`.
+     - Para eventos dentro del mismo día, se mantiene la precisión de hora con `dateTime` y zona horaria RFC3339.
+  2. **Formato Estricto del Título (Summary):**
+     - Se fijó la estructura requerida:
+       `{Nombre del Evento}: {Nombre de la Materia} [{Código Corto del Programa}]`
+     - Manejo de fallbacks limpio si no tiene materia o código para evitar caracteres sobrantes.
 
 
 

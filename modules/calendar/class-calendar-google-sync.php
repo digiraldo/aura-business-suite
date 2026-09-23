@@ -199,12 +199,12 @@ class Aura_Calendar_Google_Sync {
             }
         }
 
-        // Construir Summary (Título para Google Calendar: Nombre del Evento: Nombre de la Materia [Código Corto])
-        $summary = $event->title;
+        // Construir Summary (Título estricto para Google Calendar: {Nombre del Evento}: {Nombre de la Materia} [{Código Corto del Programa}])
+        $summary = trim( (string) $event->title );
         if ( ! empty( $event->subject_name ) ) {
-            $summary .= ': ' . $event->subject_name;
+            $summary .= ': ' . trim( (string) $event->subject_name );
         }
-        $prog_tag = ! empty( $event->program_code ) ? $event->program_code : ( ! empty( $event->program_name ) ? $event->program_name : '' );
+        $prog_tag = ! empty( $event->program_code ) ? trim( (string) $event->program_code ) : ( ! empty( $event->program_name ) ? trim( (string) $event->program_name ) : '' );
         if ( ! empty( $prog_tag ) ) {
             $summary .= ' [' . $prog_tag . ']';
         }
@@ -257,19 +257,51 @@ class Aura_Calendar_Google_Sync {
         $dt_start   = new DateTime( $event->start_datetime, $tz_obj );
         $dt_end     = new DateTime( $event->end_datetime, $tz_obj );
 
-        $payload = [
-            'summary'     => $summary,
-            'description' => $description,
-            'location'    => ! empty( $event->online_url ) ? $event->online_url : ( $event->location ?? '' ),
-            'start'       => [
-                'dateTime' => $dt_start->format( DateTime::RFC3339 ),
-                'timeZone' => $tz_string,
-            ],
-            'end'         => [
-                'dateTime' => $dt_end->format( DateTime::RFC3339 ),
-                'timeZone' => $tz_string,
-            ],
-        ];
+        // Detección de evento multi-día (diferente fecha de inicio y fin)
+        $start_date_str = substr( $event->start_datetime, 0, 10 );
+        $end_date_str   = substr( $event->end_datetime, 0, 10 );
+        $is_multi_day   = ( ! empty( $end_date_str ) && $start_date_str !== $end_date_str );
+
+        if ( $is_multi_day ) {
+            // En Google Calendar API, para que se dibuje la barra larga horizontal continua
+            // a través de todos los días, el evento debe registrarse con fechas sin hora ('date').
+            // NOTA: 'end.date' en Google Calendar API es EXCLUSIVO. Por ello sumamos +1 día a $end_date_str.
+            $end_date_exclusive = date( 'Y-m-d', strtotime( $end_date_str . ' +1 day' ) );
+
+            $detailed_schedule = sprintf(
+                /* translators: 1: start datetime, 2: end datetime */
+                __( '⏰ Horario programado: %1$s a %2$s', 'aura' ),
+                date_i18n( 'd/m/Y H:i', strtotime( $event->start_datetime ) ),
+                date_i18n( 'd/m/Y H:i', strtotime( $event->end_datetime ) )
+            );
+
+            $payload = [
+                'summary'     => $summary,
+                'description' => $detailed_schedule . "\n\n" . $description,
+                'location'    => ! empty( $event->online_url ) ? $event->online_url : ( $event->location ?? '' ),
+                'start'       => [
+                    'date' => $start_date_str,
+                ],
+                'end'         => [
+                    'date' => $end_date_exclusive,
+                ],
+            ];
+        } else {
+            // Evento en un mismo día con hora fija
+            $payload = [
+                'summary'     => $summary,
+                'description' => $description,
+                'location'    => ! empty( $event->online_url ) ? $event->online_url : ( $event->location ?? '' ),
+                'start'       => [
+                    'dateTime' => $dt_start->format( DateTime::RFC3339 ),
+                    'timeZone' => $tz_string,
+                ],
+                'end'         => [
+                    'dateTime' => $dt_end->format( DateTime::RFC3339 ),
+                    'timeZone' => $tz_string,
+                ],
+            ];
+        }
 
         // Añadir asistentes si hay instructores con correo
         if ( ! empty( $attendees ) ) {

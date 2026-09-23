@@ -263,6 +263,7 @@ class Aura_Calendar_Admin {
             'teachers'            => $teachers_clean,
             'students'            => $students_clean,
             'student_roles'       => Aura_Calendar_Events::get_student_roles(),
+            'generic_events'      => class_exists( 'Aura_Calendar_Generic_Events' ) ? Aura_Calendar_Generic_Events::get_all( true ) : [],
             'last_sync_version'   => (int) get_option( Aura_Calendar_Events::OPTION_SYNC_VERSION, time() ),
             'paletteColors'       => self::get_palette_colors(),
             'first_day'           => (int) get_option( 'start_of_week', 1 ),

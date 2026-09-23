@@ -257,6 +257,33 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                         <textarea name="description" id="evt-description" rows="4" class="form-control" placeholder="<?php esc_attr_e( "Detalles, temario y puntos clave:\n- Texto 1\n- Texto 2\n- Texto 3", 'aura' ); ?>" style="width: 100%; border-radius: 8px; font-family: inherit; line-height: 1.5; white-space: pre-wrap;"></textarea>
                     </div>
 
+                    <!-- ── SECCIÓN DE EVENTOS RÁPIDOS Y GENÉRICOS (TOGGLE) ── -->
+                    <div class="form-group" style="background: var(--aura-surface-alt, #f8fafc); border: 1px solid var(--aura-border, #cbd5e1); border-radius: 10px; padding: 12px 14px; margin-top: 4px;">
+                        <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin: 0; user-select: none;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 16px;">⚡</span>
+                                <div>
+                                    <strong style="font-size: 13px; color: var(--aura-text-primary, #0f172a); display: block;">
+                                        <?php esc_html_e( 'Eventos Rápidos y Genéricos', 'aura' ); ?>
+                                    </strong>
+                                    <span style="font-size: 11.5px; color: var(--aura-text-muted, #64748b);">
+                                        <?php esc_html_e( 'Rellena título, tipo, color y auto-calcula duración de 30 min', 'aura' ); ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <input type="checkbox" id="toggle-generic-events" class="aura-switch-input" style="cursor: pointer; width: 18px; height: 18px;">
+                        </label>
+
+                        <div id="container-quick-generic-events" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--aura-border, #e2e8f0);">
+                            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-muted, #64748b); margin-bottom: 8px;">
+                                <?php esc_html_e( 'Selecciona para autocompletar (100% editable):', 'aura' ); ?>
+                            </div>
+                            <div id="quick-generic-chips-list" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                <!-- Inyectado dinámicamente desde calendar-admin.js -->
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 

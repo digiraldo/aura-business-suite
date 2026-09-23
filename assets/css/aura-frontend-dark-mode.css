@@ -47,6 +47,25 @@
     letter-spacing: 0.01em;
 }
 
+/* Glifos y soporte visual para dashicons-moon (no existe nativo en Dashicons) y dashicons-lightbulb */
+.dashicons-moon:before,
+.aura-theme-toggle .dashicons-moon:before {
+    content: "🌙" !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+.aura-theme-toggle .dashicons-lightbulb:before {
+    content: "☀️" !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
 /* ── VARIABLES MODO CLARO (DEFAULT) ────────────────────────────── */
 :root,
 html[data-theme="light"],
@@ -895,22 +914,73 @@ body.aura-cal-fullscreen-active {
 
 /* Botón de alternancia de Pantalla Completa */
 #btn-toggle-teacher-fullscreen,
-#btn-toggle-student-fullscreen {
+#btn-toggle-student-fullscreen,
+#btn-toggle-fullscreen {
     transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
     font-weight: 600 !important;
 }
 
+/* En Modo Oscuro, forzar color de texto blanco visible para el botón y sus elementos internos */
+[data-theme="dark"] #btn-toggle-teacher-fullscreen,
+[data-theme="dark"] #btn-toggle-student-fullscreen,
+[data-theme="dark"] #btn-toggle-fullscreen,
+body[data-theme="dark"] #btn-toggle-teacher-fullscreen,
+body[data-theme="dark"] #btn-toggle-student-fullscreen,
+body[data-theme="dark"] #btn-toggle-fullscreen,
+.aura-dark-theme #btn-toggle-teacher-fullscreen,
+.aura-dark-theme #btn-toggle-student-fullscreen,
+.aura-dark-theme #btn-toggle-fullscreen {
+    background-color: #1e293b !important;
+    border: 1px solid #475569 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] #btn-toggle-teacher-fullscreen *,
+[data-theme="dark"] #btn-toggle-student-fullscreen *,
+[data-theme="dark"] #btn-toggle-fullscreen *,
+body[data-theme="dark"] #btn-toggle-teacher-fullscreen *,
+body[data-theme="dark"] #btn-toggle-student-fullscreen *,
+body[data-theme="dark"] #btn-toggle-fullscreen *,
+.aura-dark-theme #btn-toggle-teacher-fullscreen *,
+.aura-dark-theme #btn-toggle-student-fullscreen *,
+.aura-dark-theme #btn-toggle-fullscreen *,
+[data-theme="dark"] #btn-toggle-teacher-fullscreen .fs-text,
+[data-theme="dark"] #btn-toggle-student-fullscreen .fs-text,
+body[data-theme="dark"] #btn-toggle-teacher-fullscreen .fs-text,
+body[data-theme="dark"] #btn-toggle-student-fullscreen .fs-text {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+[data-theme="dark"] #btn-toggle-teacher-fullscreen:hover,
+[data-theme="dark"] #btn-toggle-student-fullscreen:hover,
+[data-theme="dark"] #btn-toggle-fullscreen:hover,
+body[data-theme="dark"] #btn-toggle-teacher-fullscreen:hover,
+body[data-theme="dark"] #btn-toggle-student-fullscreen:hover,
+body[data-theme="dark"] #btn-toggle-fullscreen:hover {
+    background-color: #334155 !important;
+    border-color: #64748b !important;
+    color: #ffffff !important;
+}
+
 #btn-toggle-teacher-fullscreen.is-active-fullscreen,
-#btn-toggle-student-fullscreen.is-active-fullscreen {
+#btn-toggle-student-fullscreen.is-active-fullscreen,
+#btn-toggle-fullscreen.is-active-fullscreen {
     background: #6366f1 !important;
     color: #ffffff !important;
     border-color: #4f46e5 !important;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35) !important;
 }
 
+#btn-toggle-teacher-fullscreen.is-active-fullscreen *,
+#btn-toggle-student-fullscreen.is-active-fullscreen *,
+#btn-toggle-fullscreen.is-active-fullscreen *,
 #btn-toggle-teacher-fullscreen.is-active-fullscreen .dashicons,
-#btn-toggle-student-fullscreen.is-active-fullscreen .dashicons {
+#btn-toggle-student-fullscreen.is-active-fullscreen .dashicons,
+#btn-toggle-teacher-fullscreen.is-active-fullscreen .fs-text,
+#btn-toggle-student-fullscreen.is-active-fullscreen .fs-text {
     color: #ffffff !important;
+    fill: #ffffff !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════

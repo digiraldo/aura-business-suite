@@ -38,6 +38,18 @@
             .replace(/'/g, '&#039;');
     }
 
+    function formatLocalDT(d) {
+        if (!(d instanceof Date) || isNaN(d.getTime())) {
+            d = new Date();
+        }
+        var year  = d.getFullYear();
+        var month = String(d.getMonth() + 1).padStart(2, '0');
+        var day   = String(d.getDate()).padStart(2, '0');
+        var hours = String(d.getHours()).padStart(2, '0');
+        var mins  = String(d.getMinutes()).padStart(2, '0');
+        return year + '-' + month + '-' + day + 'T' + hours + ':' + mins;
+    }
+
     function openModal(selector) {
         var $modal = $(selector);
         if (!$modal.length) return;
@@ -933,8 +945,282 @@
         initStudentLeadersSelect();
         renderStudentLeadersList();
 
+        // Inicializar toggle y chips de eventos rápidos/genéricos
+        $('#toggle-generic-events').prop('checked', false);
+        $('#container-quick-generic-events').hide();
+        renderQuickGenericChips();
+
         openModal('#modal-event-editor');
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // EVENTOS RÁPIDOS / GENÉRICOS EN MODAL DEL CALENDARIO
+    // ─────────────────────────────────────────────────────────────
+
+    function renderQuickGenericChips() {
+        var $list = $('#quick-generic-chips-list');
+        if (!$list.length) return;
+        $list.empty();
+
+        var events = (auraCalData && Array.isArray(auraCalData.generic_events)) ? auraCalData.generic_events : [];
+        if (!events.length) {
+            $list.html('<p style="font-size: 12px; color: var(--aura-text-secondary); margin: 0;">No hay eventos rápidos disponibles.</p>');
+            return;
+        }
+
+        $.each(events, function(idx, ev) {
+            if (ev.active === false || ev.active === '0') return; // Omitir inactivos
+            var icon  = ev.icon || '⚡';
+            var name  = escapeHtml(ev.name || '');
+            var dur   = parseInt(ev.duration || 30, 10);
+            var color = ev.color || '#5D5FEF';
+
+            var $btn = $('<button>', {
+                type: 'button',
+                class: 'btn-quick-generic-chip',
+                html: '<span style="font-size: 14px; line-height: 1;">' + icon + '</span> ' +
+                      '<span style="font-weight: 600;">' + name + '</span> ' +
+                      '<span style="font-size: 10px; opacity: 0.75; font-family: monospace; background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 4px;">' + dur + 'm</span>',
+                title: 'Aplicar ' + name + ' (+ ' + dur + ' min)'
+            }).css({
+                'background': 'var(--aura-card-bg, #ffffff)',
+                'border': '1px solid var(--aura-border, #cbd5e1)',
+                'border-left': '3px solid ' + color,
+                'border-radius': '6px',
+                'padding': '6px 10px',
+                'font-size': '12px',
+                'cursor': 'pointer',
+                'display': 'inline-flex',
+                'align-items': 'center',
+                'gap': '6px',
+                'color': 'var(--aura-text-primary, #1e293b)',
+                'transition': 'all 0.15s ease'
+            }).data('generic', ev);
+
+            $list.append($btn);
+        });
+    }
+
+    // Toggle para desplegar u ocultar eventos rápidos
+    $(document).on('change', '#toggle-generic-events', function() {
+        if ($(this).is(':checked')) {
+            renderQuickGenericChips();
+            $('#container-quick-generic-events').slideDown(150);
+        } else {
+            $('#container-quick-generic-events').slideUp(150);
+        }
+    });
+
+    // Clic en un evento rápido dentro del modal
+    $(document).on('click', '.btn-quick-generic-chip', function(e) {
+        e.preventDefault();
+        var ev = $(this).data('generic');
+        if (!ev) return;
+
+        // 1. Título del evento
+        $('#evt-title').val(ev.name).trigger('change');
+
+        // 2. Tipo de evento
+        if (ev.type) {
+            $('#evt-type').val(ev.type).trigger('change');
+        }
+
+        // 3. Color
+        if (ev.color) {
+            $('#evt-color').val(ev.color).trigger('change');
+            syncColorPalette('#evt-color', ev.color);
+        }
+
+        // 4. Si no tiene programa asignado, auto-seleccionar el primer programa disponible
+        if (!$('#evt-program-id').val()) {
+            var $firstProg = $('#evt-program-id option[value!=""]:first');
+            if ($firstProg.length) {
+                $('#evt-program-id').val($firstProg.val()).trigger('change');
+            }
+        }
+
+        // 5. Cálculo automático de duración (por defecto 30 min)
+        var durationMinutes = parseInt(ev.duration || 30, 10);
+        var startVal = $('#evt-start-dt').val();
+        var sDate = startVal ? new Date(startVal) : null;
+        if (!sDate || isNaN(sDate.getTime())) {
+            var nowRef = new Date();
+            sDate = new Date(nowRef.getFullYear(), nowRef.getMonth(), nowRef.getDate(), nowRef.getHours() + 1, 0, 0);
+            startVal = formatLocalDT(sDate);
+            $('#evt-start-dt').val(startVal);
+        }
+
+        var eDate = new Date(sDate.getTime() + durationMinutes * 60 * 1000);
+        var endVal = formatLocalDT(eDate);
+        $('#evt-end-dt').val(endVal).trigger('change');
+
+        if ($('#rec-time-start').length) {
+            $('#rec-time-start').val(startVal.substring(11, 16));
+            $('#rec-time-end').val(endVal.substring(11, 16));
+        }
+
+        // Micro-animación de feedback al hacer clic
+        var $chip = $(this);
+        $chip.css({ 'transform': 'scale(0.96)', 'box-shadow': '0 0 0 2px var(--aura-primary, #6366f1)' });
+        setTimeout(function() {
+            $chip.css({ 'transform': 'none', 'box-shadow': 'none' });
+        }, 180);
+
+        showToast('⚡ ' + ev.name + ' agregado (+ ' + durationMinutes + ' min). Totalmente editable en el formulario.', 'success');
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // CRUD DE EVENTOS GENÉRICOS EN AJUSTES (tab-settings.php)
+    // ─────────────────────────────────────────────────────────────
+
+    // Sincronizar input color con texto hex
+    $(document).on('input change', '#gen-color', function() {
+        $('#gen-color-hex').val($(this).val());
+    });
+
+    // Abrir modal para Crear Nuevo Evento Genérico
+    $(document).on('click', '#btn-add-generic-event', function(e) {
+        e.preventDefault();
+        $('#modal-generic-event-title').text('➕ ' + 'Nuevo Evento Genérico / Rápido');
+        var f = document.getElementById('form-generic-event-editor');
+        if (f) f.reset();
+        $('#gen-id').val('');
+        $('#gen-icon').val('⚡');
+        $('#gen-name').val('');
+        $('#gen-duration').val('30');
+        $('#gen-type').val('break');
+        $('#gen-color').val('#5D5FEF');
+        $('#gen-color-hex').val('#5D5FEF');
+        $('#gen-active').prop('checked', true);
+        $('#gen-editor-msg').hide().empty();
+        openModal('#modal-generic-event-editor');
+    });
+
+    // Abrir modal para Editar Evento Genérico
+    $(document).on('click', '.btn-edit-generic-event', function(e) {
+        e.preventDefault();
+        var $btn      = $(this);
+        var id        = $btn.data('id');
+        var name      = $btn.data('name');
+        var icon      = $btn.data('icon') || '⚡';
+        var duration  = $btn.data('duration') || 30;
+        var type      = $btn.data('type') || 'break';
+        var color     = $btn.data('color') || '#5D5FEF';
+        var active    = $btn.data('active');
+
+        $('#modal-generic-event-title').text('✏️ ' + 'Editar Evento Genérico');
+        $('#gen-id').val(id);
+        $('#gen-name').val(name);
+        $('#gen-icon').val(icon);
+        $('#gen-duration').val(duration);
+        $('#gen-type').val(type);
+        $('#gen-color').val(color);
+        $('#gen-color-hex').val(color);
+        $('#gen-active').prop('checked', active !== 0 && active !== '0' && active !== false);
+        $('#gen-editor-msg').hide().empty();
+        openModal('#modal-generic-event-editor');
+    });
+
+    // Guardar (Crear o Actualizar) Evento Genérico vía AJAX
+    $(document).on('submit', '#form-generic-event-editor', function(e) {
+        e.preventDefault();
+        var $btn = $('#btn-save-generic-item');
+        $btn.prop('disabled', true).html('⏳ Guardando...');
+
+        var payload = {
+            action:   'aura_cal_save_generic_event',
+            nonce:    auraCalData.nonce,
+            id:       $('#gen-id').val(),
+            name:     $('#gen-name').val(),
+            icon:     $('#gen-icon').val(),
+            duration: $('#gen-duration').val(),
+            type:     $('#gen-type').val(),
+            color:    $('#gen-color').val(),
+            active:   $('#gen-active').is(':checked') ? '1' : '0'
+        };
+
+        $.post(auraCalData.ajax_url, payload, function(res) {
+            $btn.prop('disabled', false).html('💾 Guardar Evento');
+            if (res && res.success) {
+                showToast(res.data.message || 'Evento genérico guardado correctamente.', 'success');
+                closeModal('#modal-generic-event-editor');
+                if ($('#table-generic-events').length) {
+                    location.reload();
+                } else {
+                    if (res.data.events) {
+                        auraCalData.generic_events = res.data.events;
+                    }
+                    renderQuickGenericChips();
+                }
+            } else {
+                var err = (res && res.data && res.data.message) ? res.data.message : 'Error al guardar el evento.';
+                showToast(err, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html('💾 Guardar Evento');
+            showToast('Error de conexión con el servidor.', 'error');
+        });
+    });
+
+    // Eliminar Evento Genérico
+    $(document).on('click', '.btn-delete-generic-event', function(e) {
+        e.preventDefault();
+        var id   = $(this).data('id');
+        var name = $(this).data('name') || '';
+        if (!confirm('¿Deseas eliminar el evento rápido "' + name + '" del catálogo?')) {
+            return;
+        }
+
+        var $row = $(this).closest('tr');
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_delete_generic_event',
+            nonce:  auraCalData.nonce,
+            id:     id
+        }, function(res) {
+            if (res && res.success) {
+                showToast(res.data.message || 'Evento eliminado.', 'success');
+                $row.fadeOut(200, function() {
+                    $row.remove();
+                });
+                if (res.data.events) {
+                    auraCalData.generic_events = res.data.events;
+                }
+                renderQuickGenericChips();
+            } else {
+                var err = (res && res.data && res.data.message) ? res.data.message : 'Error al eliminar el evento.';
+                showToast(err, 'error');
+            }
+        }).fail(function() {
+            showToast('Error de conexión con el servidor.', 'error');
+        });
+    });
+
+    // Restablecer catálogo inicial
+    $(document).on('click', '#btn-reset-generic-events', function(e) {
+        e.preventDefault();
+        if (!confirm('¿Restablecer el catálogo a los 11 eventos predeterminados (Descanso, Introducción, Reflexión, Deportes, Lectura, Trabajo, Refrigerio, Desayuno, Almuerzo, Comida, Cena)?')) {
+            return;
+        }
+
+        var $btn = $(this);
+        $btn.prop('disabled', true);
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_reset_generic_events',
+            nonce:  auraCalData.nonce
+        }, function(res) {
+            $btn.prop('disabled', false);
+            if (res && res.success) {
+                showToast('Catálogo restablecido con éxito.', 'success');
+                location.reload();
+            } else {
+                var err = (res && res.data && res.data.message) ? res.data.message : 'Error al restablecer.';
+                showToast(err, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false);
+            showToast('Error de conexión con el servidor.', 'error');
+        });
+    });
 
     // Delegación global para botones de agendar / crear evento
     $(document).on('click', '#btn-top-create-event, #btn-create-event-modal, .btn-trigger-agendar, [data-action="create-event"]', function(e) {
