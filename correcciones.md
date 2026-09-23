@@ -343,7 +343,7 @@ La verificación de sintaxis PHP ha concluido sin errores.
 ✅ El boton de Pantalla completa, su texto no esta en blanco en modo oscuro y no se puede leer, el boton de Cambio de Modo Claro, Oscuro, su icono no se ve n modo Claro.
 
 - **Solución Implementada:**
-  1. **Icono de Tema en Modo Claro:** WordPress no incluye de forma nativa el glifo `dashicons-moon`. Se añadió en [`assets/css/aura-frontend-dark-mode.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css) la regla `.dashicons-moon:before { content: "🌙" !important; }` y `.dashicons-lightbulb:before { content: "☀️" !important; }`. Además, en [`assets/js/aura-frontend-theme.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/aura-frontend-theme.js) se inyecta directamente el emoji según el tema activo para garantizar compatibilidad visual total y sin parpadeos.
+  1. **Icono de Tema en Modo Claro / Oscuro (Sin Duplicación):** WordPress no incluye de forma nativa el glifo `dashicons-moon`. Se añadió en [`assets/css/aura-frontend-dark-mode.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css) la regla `.dashicons-moon:before { content: "🌙" !important; }` y `.aura-theme-toggle .dashicons-lightbulb:before { content: "☀️" !important; }`. Además, en [`assets/js/aura-frontend-theme.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/aura-frontend-theme.js) se mantuvo el contenido interior del span vacío (`icon.textContent = ''`) para evitar que el navegador renderice dos iconos superpuestos (uno del pseudo-elemento `:before` y otro del `innerHTML`), logrando una visualización limpia de un único icono perfectamente centrado.
   2. **Texto de Pantalla Completa en Modo Oscuro:** Se forzó la especificidad de color `#ffffff !important;` en modo oscuro para los textos `.fs-text` y los contenedores de los botones `#btn-toggle-teacher-fullscreen`, `#btn-toggle-student-fullscreen` y `#btn-toggle-fullscreen`, eliminando la ilegibilidad y asegurando un alto contraste estético.
 
 ✅ En el modal de Crear Evento, al final, al hacer clic en un toggle y que al seleccionarlo, me aparezcan unos eventos rapidos de agregar al calendario que al tener la fecha y hora de inicio ya definida me agregue automaticamente la duracion de 30 minutos como son:
@@ -398,6 +398,14 @@ CRUD de Eventos Genéricos en https://centromateo.org/wp-admin/admin.php?page=au
    - Se conectaron de forma segura en ambos portales con `(window.showEventTooltip || showEventTooltip)`.
    - Se diseñó la adaptación de `#aura-cal-event-tooltip` en modo claro (tarjeta limpia con sombra suave y texto oscuro) y en modo oscuro (estilo glassmorphism slate oscuro con texto blanco).
    - Se incluyó el Avatar Grande de 44px con Ring Animado pulsante (`aura-avatar-ring-pulse`), stack de avatares de instructores secundarios solapados con elevación en `:hover` e indicador `+N`.
+
+
+
+
+- En el Portal Docente y Académico — Aura Business Suite y de estudiantes, activa o realiza los tooltips enriquecidos, igual como se muestran en el calendario en el backend, y cuando doy clic en uno de ellos, no me abra la informacion en una alert si no en un modal moderno y cuando cierre el modal no me salga de pantalla completa si esta activado este modo en Portal Docente y Académico — Aura Business Suite y de estudiantes, tambien realiza este modal moderon en el calendario del backend.
+
+
+
 
 ```bash
 php build-zip.php

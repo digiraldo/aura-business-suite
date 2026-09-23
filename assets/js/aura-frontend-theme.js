@@ -90,7 +90,7 @@
                 btn.setAttribute('aria-label', 'Cambiar a modo claro');
                 if (icon) {
                     icon.className = 'dashicons dashicons-lightbulb';
-                    icon.innerHTML = '☀️';
+                    icon.textContent = ''; // Vacío para evitar doble icono con el pseudo-elemento :before
                 }
                 if (label) {
                     label.textContent = 'Modo claro';
@@ -100,7 +100,7 @@
                 btn.setAttribute('aria-label', 'Cambiar a modo oscuro');
                 if (icon) {
                     icon.className = 'dashicons dashicons-moon';
-                    icon.innerHTML = '🌙';
+                    icon.textContent = ''; // Vacío para evitar doble icono con el pseudo-elemento :before
                 }
                 if (label) {
                     label.textContent = 'Modo oscuro';
