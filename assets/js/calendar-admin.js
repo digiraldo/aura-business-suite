@@ -70,6 +70,9 @@
         }
     }
 
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+
     // Cerrar modales con botones de clase, clic fuera o tecla Escape
     $(document).on('click', '[data-close-modal], .aura-modal-close', function(e) {
         e.preventDefault();
@@ -100,8 +103,15 @@
     });
 
     $(document).on('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeModal('.aura-modal-overlay');
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            var $openModals = $('.aura-modal-overlay.active:visible, .aura-modal-overlay.is-active:visible, #modal-event-detail:visible');
+            if ($openModals.length > 0) {
+                closeModal('.aura-modal-overlay');
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+            }
         }
     });
 
@@ -244,9 +254,12 @@
     function showEventTooltip(event, el, jsEvent) {
         var p = event.extendedProps || {};
         var $tt = $('#aura-cal-event-tooltip');
+        var $fsEl = document.fullscreenElement ? $(document.fullscreenElement) : ($('.aura-calendar-is-fullscreen').length ? $('.aura-calendar-is-fullscreen').first() : $('body'));
         if (!$tt.length) {
             $tt = $('<div id="aura-cal-event-tooltip" class="aura-cal-floating-tooltip"></div>');
-            $('body').append($tt);
+            $fsEl.append($tt);
+        } else if (!$tt.parent().is($fsEl)) {
+            $tt.appendTo($fsEl);
         }
 
         var typeLabels = {
@@ -482,9 +495,13 @@
 
     $(document).on('keydown', function(e) {
         if (e.key === 'Escape' || e.keyCode === 27) {
-            if ($('.aura-modal-overlay:visible').length) {
-                $('.aura-modal-overlay:visible').hide();
-                return;
+            var $openModals = $('.aura-modal-overlay.active:visible, .aura-modal-overlay.is-active:visible, #modal-event-detail:visible, .aura-modal-overlay:visible');
+            if ($openModals.length > 0) {
+                closeModal('.aura-modal-overlay');
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
             }
             if ($('.aura-calendar-view-container').hasClass('aura-calendar-is-fullscreen')) {
                 toggleFullscreen();
@@ -1330,51 +1347,145 @@
         var p = event.extendedProps || {};
 
         $('#det-title').text(p.raw_title || event.title);
-        $('#det-type-badge').text(p.event_type ? p.event_type.toUpperCase() : 'EVENTO');
-        $('#det-status-badge').text(p.status ? p.status.toUpperCase() : 'PROGRAMADO');
+
+        var typeLabels = {
+            'class': '📖 Clase Regular',
+            'exam': '📝 Examen / Evaluación',
+            'workshop': '🔬 Taller / Práctica',
+            'activity': '🎯 Actividad',
+            'break': '☕ Receso',
+            'other': '📍 Evento'
+        };
+        $('#det-type-badge').text(typeLabels[p.event_type] || ('📖 ' + (p.event_type || 'Clase')));
+
+        var statusLabels = {
+            'scheduled': 'Programado',
+            'completed': 'Completado',
+            'cancelled': 'Cancelado',
+            'postponed': 'Pospuesto'
+        };
+        $('#det-status-badge').text(statusLabels[p.status] || (p.status ? p.status.toUpperCase() : 'PROGRAMADO'));
+        if (p.status === 'completed') {
+            $('#det-status-badge').attr('class', 'adp-badge badge-emerald');
+        } else if (p.status === 'cancelled') {
+            $('#det-status-badge').attr('class', 'adp-badge').css({'background':'#ef4444','color':'#fff'});
+        } else if (p.status === 'postponed') {
+            $('#det-status-badge').attr('class', 'adp-badge badge-amber');
+        } else {
+            $('#det-status-badge').attr('class', 'adp-badge badge-indigo');
+        }
 
         if (p.gcal_sync_status === 'synced') {
-            $('#det-gcal-badge').text('✓ Google Calendar').css('background', '#10b981').css('color', '#fff').show();
+            $('#det-gcal-badge').text('✓ Google Calendar').css({'background':'#10b981','color':'#fff'}).show();
         } else {
             $('#det-gcal-badge').hide();
         }
 
+        // Profesores con Avatar Grande (44px) + Ring Animado y Stack
+        if (p.instructors && p.instructors.length) {
+            var primaryInst = p.instructors[0];
+            var otherInsts = p.instructors.slice(1);
+
+            var primaryAvHtml = '';
+            if (primaryInst.avatar) {
+                primaryAvHtml = '<div class="aura-avatar-ring-container">' +
+                    '<img src="' + escapeHtml(primaryInst.avatar) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" alt="' + escapeHtml(primaryInst.name) + '" />' +
+                '</div>';
+            } else {
+                primaryAvHtml = '<div class="aura-avatar-ring-container">' +
+                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;background:rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;">👨‍🏫</div>' +
+                '</div>';
+            }
+
+            var stackedAvatarsHtml = '';
+            var maxStacked = 3;
+            var visibleOthers = otherInsts.slice(0, maxStacked);
+            var remainingCount = otherInsts.length - visibleOthers.length;
+
+            visibleOthers.forEach(function(inst) {
+                if (inst.avatar) {
+                    stackedAvatarsHtml += '<img src="' + escapeHtml(inst.avatar) + '" class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" alt="' + escapeHtml(inst.name) + '" title="' + escapeHtml(inst.name) + '" />';
+                } else {
+                    var init = escapeHtml((inst.name || 'P').charAt(0).toUpperCase());
+                    stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" title="' + escapeHtml(inst.name) + '">' + init + '</div>';
+                }
+            });
+
+            if (remainingCount > 0) {
+                stackedAvatarsHtml += '<div class="aura-avatar-more" style="width:28px;height:28px;border-radius:50%;background:#475569;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);">+' + remainingCount + '</div>';
+            }
+
+            $('#det-teachers-avatars').html('<div class="aura-avatar-stack" style="display:flex;align-items:center;">' + primaryAvHtml + stackedAvatarsHtml + '</div>');
+
+            var namesTxt = primaryInst.name;
+            if (otherInsts.length > 0) {
+                namesTxt += ' (+ ' + otherInsts.map(function(o){ return o.name; }).join(', ') + ')';
+            }
+            $('#det-teachers-names').text(namesTxt);
+            $('#box-det-teachers').show();
+        } else if (p.primary_name) {
+            var singleAv = p.primary_avatar
+                ? '<div class="aura-avatar-ring-container"><img src="' + escapeHtml(p.primary_avatar) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" /></div>'
+                : '<div class="aura-avatar-ring-container"><div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;background:rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;">👨‍🏫</div></div>';
+            $('#det-teachers-avatars').html(singleAv);
+            $('#det-teachers-names').text(p.primary_name);
+            $('#box-det-teachers').show();
+        } else {
+            $('#box-det-teachers').hide();
+        }
+
+        // Banner personal si el estudiante conectado tiene liderazgo asignado
+        var myLead = null;
+        var currentUserId = parseInt((typeof auraCalData !== 'undefined' && auraCalData.current_user_id) ? auraCalData.current_user_id : 0, 10);
+        if (p.student_leaders && p.student_leaders.length && currentUserId > 0) {
+            p.student_leaders.forEach(function(ldr) {
+                if (parseInt(ldr.student_id, 10) === currentUserId) {
+                    myLead = ldr.role_label || ldr.role;
+                }
+            });
+        }
+        if (myLead) {
+            $('#det-student-personal-leader-text').html('🎯 <strong>¡Fuiste asignado como ' + escapeHtml(myLead) + ' para esta actividad!</strong> Prepárate para guiar y colaborar con el grupo.');
+            $('#det-student-personal-leader-banner').show();
+        } else {
+            $('#det-student-personal-leader-banner').hide();
+        }
+
+        // Grid Programa, Materia, Horario, Ubicación
         $('#det-program').text(p.program_name || '—');
         $('#det-subject').text(p.subject_name || '—');
 
-        var timeStr = '';
-        if (p.date_label && p.start_time_label) {
-            timeStr = p.date_label + ' ' + p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '');
-        } else {
-            timeStr = (event.start ? event.start.toLocaleDateString() + ' ' + event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
-            if (event.end) {
-                timeStr += ' - ' + event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
-        }
-        $('#det-time').text(timeStr);
+        var timeRange = '';
+        var startStr = event.start ? event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var endStr = event.end ? event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var dateStr = p.date_label || (event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '');
 
-        // Profesores con avatar
-        if (p.instructors && p.instructors.length) {
-            var teachHtml = p.instructors.map(function(inst) {
-                var av = inst.avatar ? '<img src="' + escapeHtml(inst.avatar) + '" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;" />' : '';
-                return '<span class="aura-user-chip-sm" style="display:inline-flex;align-items:center;background:var(--aura-surface,#fff);border:1px solid var(--aura-border,#cbd5e1);padding:2px 8px;border-radius:12px;font-size:12px;">' + av + escapeHtml(inst.name) + '</span>';
-            }).join(' ');
-            $('#det-teachers').html(teachHtml);
-            $('#row-det-teachers').show();
+        if (p.start_time_label) {
+            timeRange = (dateStr ? dateStr + ' | ' : '') + p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '');
         } else {
-            $('#row-det-teachers').hide();
+            timeRange = (dateStr ? dateStr + ' | ' : '') + startStr + (endStr ? ' - ' + endStr : '');
+        }
+        $('#det-time').text(timeRange || '—');
+        $('#det-location').text(p.location || 'Por definir');
+
+        // Enlace de Sesión Virtual / Videollamada
+        if (p.online_url) {
+            $('#det-online-btn').attr('href', p.online_url);
+            $('#row-det-online').show().css('display', 'flex');
+        } else {
+            $('#row-det-online').hide();
         }
 
-        // Estudiantes Líderes / Responsables de la Actividad
+        // Estudiantes Líderes / Responsables
         if (p.student_leaders && p.student_leaders.length) {
             var leadHtml = p.student_leaders.map(function(ldr) {
                 var av = ldr.avatar
                     ? '<img src="' + escapeHtml(ldr.avatar) + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" />'
-                    : '<span style="width:22px;height:22px;border-radius:50%;background:var(--aura-primary,#5d5fef);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-right:6px;">' + escapeHtml((ldr.name||'E').charAt(0).toUpperCase()) + '</span>';
-                return '<div class="aura-leader-chip" style="display:inline-flex;align-items:center;background:var(--aura-surface,#fff);border:1px solid var(--aura-border,#cbd5e1);padding:3px 10px;border-radius:18px;font-size:12.5px;">' +
+                    : '<span style="width:22px;height:22px;border-radius:50%;background:#f59e0b;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-right:6px;">' + escapeHtml((ldr.name||'E').charAt(0).toUpperCase()) + '</span>';
+                return '<div class="aura-leader-chip" style="display:inline-flex;align-items:center;background:var(--aura-surface-alt,#f8fafc);border:1px solid var(--aura-border,#cbd5e1);padding:3px 10px;border-radius:18px;font-size:12px;">' +
                     av +
-                    '<span style="font-weight:600;margin-right:6px;">' + escapeHtml(ldr.name) + '</span>' +
-                    '<span class="aura-badge aura-badge--sm" style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(93,95,239,0.12);color:var(--aura-primary,#5d5fef);font-weight:600;">' + escapeHtml(ldr.role_label || 'Líder') + '</span>' +
+                    '<span style="font-weight:600;margin-right:6px;color:var(--aura-text-primary,#0f172a);">' + escapeHtml(ldr.name) + '</span>' +
+                    '<span class="aura-badge aura-badge--sm" style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(99,102,241,0.12);color:#4f46e5;font-weight:600;">' + escapeHtml(ldr.role_label || 'Líder') + '</span>' +
                 '</div>';
             }).join(' ');
             $('#det-leaders').html(leadHtml);
@@ -1383,31 +1494,25 @@
             $('#row-det-leaders').hide();
         }
 
-        // Ubicación
-        if (p.location) {
-            $('#det-location').text(p.location);
-            $('#row-det-location').show();
-        } else {
-            $('#row-det-location').hide();
-        }
-
-        // Online URL
-        if (p.online_url) {
-            $('#det-online').attr('href', p.online_url).text(p.online_url);
-            $('#row-det-online').show();
-        } else {
-            $('#row-det-online').hide();
-        }
-
-        // Descripción
+        // Descripción / Temario
         if (p.description) {
             $('#box-det-desc').text(p.description).show();
         } else {
             $('#box-det-desc').hide();
         }
 
+        // Soporte robusto para Pantalla Completa: adjuntar el modal al contenedor fullscreen activo
+        var $modal = $('#modal-event-detail');
+        var $fsEl = document.fullscreenElement ? $(document.fullscreenElement) : ($('.aura-calendar-is-fullscreen').length ? $('.aura-calendar-is-fullscreen').first() : null);
+        if ($fsEl && $fsEl.length && !$modal.closest($fsEl).length) {
+            $modal.appendTo($fsEl);
+        }
+
         openModal('#modal-event-detail');
     }
+
+    // Exponer globalmente openEventDetail
+    window.openEventDetail = openEventDetail;
 
     // Botón Eliminar Evento
     $('#btn-det-delete').on('click', function() {

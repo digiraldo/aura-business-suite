@@ -404,7 +404,35 @@ CRUD de Eventos Genéricos en https://centromateo.org/wp-admin/admin.php?page=au
 
 - En el Portal Docente y Académico — Aura Business Suite y de estudiantes, activa o realiza los tooltips enriquecidos, igual como se muestran en el calendario en el backend, y cuando doy clic en uno de ellos, no me abra la informacion en una alert si no en un modal moderno y cuando cierre el modal no me salga de pantalla completa si esta activado este modo en Portal Docente y Académico — Aura Business Suite y de estudiantes, tambien realiza este modal moderon en el calendario del backend.
 
+### Solución Implementada: Tooltips Enriquecidos, Modal Moderno Unificado y Preservación de Pantalla Completa
 
+1. **Tooltips Enriquecidos Idénticos al Backend en Ambos Portales:**
+   - Se unificó el generador de tooltips flotantes (`#aura-cal-event-tooltip`) exponiendo `window.showEventTooltip` y `window.hideEventTooltip` desde [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js).
+   - Se activó el tooltip en tiempo real tanto en el Portal Docente (`[aura_teacher_portal]`) como en el Portal de Estudiantes (`[aura_student_schedule]`) al pasar el cursor sobre las sesiones (`eventMouseEnter` y `eventMouseLeave`).
+   - El tooltip detecta si la pantalla completa está activa (vía `document.fullscreenElement` o la clase `.aura-calendar-is-fullscreen`) y se anexa automáticamente dentro del contenedor activo en pantalla completa para ser visible sobre la capa superior (*top-layer*) del navegador.
+   - Cuenta con el Avatar Grande de 44px con **Ring Animado Pulsante** (`aura-avatar-ring-animated`), stack de avatares con solapamiento y elevación en hover, indicador `+N` docentes, chips de programa, materia, horario, aula/virtual y badge de estudiante líder.
+
+2. **Modal Moderno Unificado de Detalle de Evento (`modal-event-detail.php`):**
+   - Se extrajo y modernizó el modal en un template independiente y reutilizable: [`templates/calendar/modal-event-detail.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/modal-event-detail.php), eliminando código duplicado.
+   - **Diseño Ultra-Moderno:** Glassmorphism (`backdrop-filter: blur(6px)`), cabecera con badges de estado y tipo de sesión, avatar de 44px con ring animado y stack de instructores, banner personalizado de responsabilidad para el estudiante líder autenticado, grid 2x2 para Programa, Materia, Horario y Salón/Aula, caja de videoconferencia con botón de acceso directo («Unirse a la Sesión»), chips de liderazgo y área de descripción/temario.
+   - **Acciones y Permisos:** Incluye botones de «Control de Asistencia», «Editar Evento» y «Eliminar» con verificación estricta de capabilities de WordPress (`aura_cal_take_attendance`, `aura_cal_manage_calendar`, `aura_cal_delete_events`, `manage_options`).
+   - Se integró unificadamente en:
+     * Backend: [`templates/calendar/modal-partials.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/modal-partials.php)
+     * Portal Docente: Contenedor `.adp-card` de `#tab-teacher-schedule` en [`modules/calendar/class-calendar-frontend.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php).
+     * Portal de Estudiantes: Contenedor `.adp-card` de `.aura-student-schedule-wrap` en [`modules/calendar/class-calendar-frontend.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php).
+
+3. **Cero `alert(...)` y Apertura Dinámica:**
+   - Se eliminó por completo el `alert(msg)` que existía en el Portal Docente al hacer clic en un evento.
+   - Se conectó `eventClick` en el backend, en el portal docente y en el de estudiantes para que invoque la función unificada `window.openEventDetail(info.event)`.
+
+4. **Preservación Total de la Pantalla Completa al Cerrar el Modal:**
+   - **Causa raíz:** Anteriormente el `alert()` forzaba la salida de pantalla completa en los navegadores por políticas del SO, y los listeners globales de la tecla `Escape` ejecutaban la salida de pantalla completa sin verificar si había un modal abierto.
+   - **Solución implementada:**
+     * Al abrir el modal mientras la pantalla completa está activa, `#modal-event-detail` se anexa dinámicamente al contenedor que tiene el foco de fullscreen para garantizar visibilidad sin interrumpir el modo pantalla completa.
+     * Al hacer clic en la «X», en el botón «Cerrar» (`.btn-close-evt-detail` o `[data-close-modal]`) o en el overlay, se ejecuta el cierre suave del modal sin alterar las clases ni la API nativa de pantalla completa.
+     * En todos los listeners de la tecla `Escape` (backend, portal docente y portal estudiante), se verifica primero si existe algún modal abierto (`#modal-event-detail:visible, .aura-modal-overlay:visible, [id^="modal-"]:visible`). Si hay un modal visible, se cierra el modal con `fadeOut(150)`, se remueve la clase `aura-modal-open` del body y se cancela la propagación del evento (`e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); return false;`), **impidiendo de manera absoluta que el calendario salga de pantalla completa**.
+
+- En wordpress o en Divi, que codigo escribo para que la sección, Fila o modulo tambien cambie de modo claro y oscuro en el frontend.
 
 
 ```bash

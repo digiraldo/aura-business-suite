@@ -301,68 +301,9 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════
-     MODAL 2: DETALLE RÁPIDO DE EVENTO / CLASE
+     MODAL 2: DETALLE RÁPIDO Y MODERNO DE EVENTO / CLASE
      ══════════════════════════════════════════════════════════════════ -->
-<div id="modal-event-detail" class="aura-modal-overlay" style="display: none;">
-    <div class="aura-modal-container" style="max-width: 560px;">
-        <div class="aura-modal-header">
-            <h3 id="det-title" class="adp-card-title" style="margin: 0; font-size: 18px;"></h3>
-            <button type="button" class="aura-modal-close" data-close-modal="#modal-event-detail">&times;</button>
-        </div>
-
-        <div class="aura-modal-body">
-            <div style="display: flex; flex-direction: column; gap: 14px;">
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <span id="det-type-badge" class="adp-badge badge-indigo"></span>
-                    <span id="det-status-badge" class="adp-badge badge-emerald"></span>
-                    <span id="det-gcal-badge" class="adp-badge badge-slate"></span>
-                </div>
-
-                <div style="background: var(--aura-surface-alt, #f8fafc); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
-                    <div>🎓 <strong><?php esc_html_e( 'Programa:', 'aura' ); ?></strong> <span id="det-program"></span></div>
-                    <div>📚 <strong><?php esc_html_e( 'Materia:', 'aura' ); ?></strong> <span id="det-subject"></span></div>
-                    <div>🕐 <strong><?php esc_html_e( 'Horario:', 'aura' ); ?></strong> <span id="det-time"></span></div>
-                    <div id="row-det-teachers" style="display: none;">
-                        👨‍🏫 <strong><?php esc_html_e( 'Profesor(es):', 'aura' ); ?></strong> 
-                        <span id="det-teachers" style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-left: 4px;"></span>
-                    </div>
-                    <div id="row-det-leaders" style="display: none;">
-                        🌟 <strong><?php esc_html_e( 'Estudiantes con Responsabilidad:', 'aura' ); ?></strong>
-                        <div id="det-leaders" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;"></div>
-                    </div>
-                    <div id="row-det-location" style="display: none;">📍 <strong><?php esc_html_e( 'Aula:', 'aura' ); ?></strong> <span id="det-location"></span></div>
-                    <div id="row-det-online" style="display: none;">💻 <strong><?php esc_html_e( 'Enlace Virtual:', 'aura' ); ?></strong> <a id="det-online" href="#" target="_blank" style="color: var(--aura-primary); text-decoration: underline;"></a></div>
-                </div>
-
-                <div id="box-det-desc" style="display: none; font-size: 13px; color: var(--aura-text-secondary); background: var(--aura-surface); border-left: 3px solid var(--aura-primary); padding: 10px 14px; border-radius: 0 6px 6px 0; white-space: pre-wrap; line-height: 1.5;"></div>
-            </div>
-        </div>
-
-        <div class="aura-modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <div>
-                <?php if ( current_user_can( 'aura_cal_take_attendance' ) || current_user_can( 'aura_take_attendance' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
-                    <button type="button" class="btn btn-emerald btn-lift" id="btn-det-attendance">
-                        📋 <?php esc_html_e( 'Control de Asistencia', 'aura' ); ?>
-                    </button>
-                <?php endif; ?>
-            </div>
-
-            <div style="display: flex; gap: 8px;">
-                <?php if ( current_user_can( 'aura_cal_delete_events' ) || current_user_can( 'aura_delete_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-                    <button type="button" class="btn btn-ghost" id="btn-det-delete" style="color: #ef4444;">
-                        🗑️ <?php esc_html_e( 'Eliminar', 'aura' ); ?>
-                    </button>
-                <?php endif; ?>
-
-                <?php if ( current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-                    <button type="button" class="btn btn-indigo btn-lift" id="btn-det-edit">
-                        ✏️ <?php esc_html_e( 'Editar Evento', 'aura' ); ?>
-                    </button>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-</div>
+<?php include __DIR__ . '/modal-event-detail.php'; ?>
 
 <!-- ══════════════════════════════════════════════════════════════════
      MODAL 3: CONTROL Y TOMA DE ASISTENCIA

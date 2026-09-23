@@ -684,6 +684,7 @@ class Aura_Calendar_Frontend {
                         </div>
                     </div>
                     <div id="aura-teacher-fullcalendar" style="min-height: 600px;"></div>
+                    <?php include AURA_PLUGIN_DIR . 'templates/calendar/modal-event-detail.php'; ?>
                 </div>
             </div>
 
@@ -2017,22 +2018,11 @@ class Aura_Calendar_Frontend {
                         } else if (typeof hideEventTooltip === 'function') {
                             hideEventTooltip();
                         }
-                        var p = info.event.extendedProps || {};
-                        var leadersTxt = '';
-                        if (p.student_leaders && p.student_leaders.length > 0) {
-                            leadersTxt = '\n⭐ Estudiantes con Responsabilidad:\n' + p.student_leaders.map(function(l) {
-                                return ' • ' + l.name + ' — ' + (l.role_label || l.role);
-                            }).join('\n');
+                        if (typeof window.openEventDetail === 'function') {
+                            window.openEventDetail(info.event);
+                        } else if (typeof openEventDetail === 'function') {
+                            openEventDetail(info.event);
                         }
-                        var timeLabel = (p.date_label ? p.date_label + ' | ' : '') + (p.start_time_label ? p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '') : '');
-                        var msg = '📚 ' + (p.raw_title || info.event.title) + '\n' +
-                                  (timeLabel ? '🕒 Horario: ' + timeLabel + '\n' : '') +
-                                  (p.subject_name ? 'Materia: ' + p.subject_name + '\n' : '') +
-                                  (p.location ? 'Aula / Salón: ' + p.location + '\n' : '') +
-                                  (p.online_url ? 'Enlace Virtual: ' + p.online_url + '\n' : '') +
-                                  (p.description ? 'Nota / Temario: ' + p.description + '\n' : '') +
-                                  leadersTxt;
-                        alert(msg);
                     }
                 });
                 window.teacherCalendarInstance.render();
@@ -2105,14 +2095,31 @@ class Aura_Calendar_Frontend {
                 toggleTeacherFullscreen();
             });
 
-            // Soporte para tecla Escape
+            // Soporte para tecla Escape inteligente (no salir de fullscreen si hay un modal abierto)
             $(document).on('keydown', function(e) {
                 if (e.key === 'Escape' || e.keyCode === 27) {
+                    var $openModals = $('#modal-event-detail:visible, .aura-modal-overlay:visible, [id^="modal-"]:visible');
+                    if ($openModals.length > 0) {
+                        $openModals.fadeOut(150);
+                        $('body').removeClass('aura-modal-open');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        return false;
+                    }
+
                     var $container = $('#tab-teacher-schedule .adp-card');
                     if ($container.hasClass('aura-calendar-is-fullscreen')) {
                         toggleTeacherFullscreen();
                     }
                 }
+            });
+
+            // Cerrar modal de detalle de evento sin alterar pantalla completa
+            $(document).on('click', '.btn-close-evt-detail, [data-close-modal="#modal-event-detail"]', function(e) {
+                e.preventDefault();
+                $('#modal-event-detail').fadeOut(150);
+                $('body').removeClass('aura-modal-open');
             });
 
             // Sincronización si el usuario sale de fullscreen nativo
@@ -2177,67 +2184,7 @@ class Aura_Calendar_Frontend {
                     </div>
                 </div>
                 <div id="aura-student-calendar" style="min-height: 540px;"></div>
-            </div>
-
-            <!-- MODAL DE DETALLE DE CLASE PARA ESTUDIANTE -->
-            <div id="modal-student-event-detail" class="aura-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
-                <div class="aura-modal-container" style="max-width: 520px; width: 100%; background: var(--aura-surface-card, #ffffff); border-radius: 14px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); border: 1px solid var(--aura-border, #e2e8f0);">
-                    <div style="padding: 16px 20px; border-bottom: 1px solid var(--aura-border, #e2e8f0); display: flex; justify-content: space-between; align-items: center; background: var(--aura-surface-alt, #f8fafc);">
-                        <h4 id="st-det-title" style="margin: 0; font-size: 17px; font-weight: 700; color: var(--aura-text-primary, #0f172a);">
-                            Detalle de Clase
-                        </h4>
-                        <button type="button" class="btn-close-st-modal" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--aura-text-muted, #64748b); line-height: 1;">&times;</button>
-                    </div>
-
-                    <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto;">
-                        <!-- Banner destacado si el alumno es líder de la sesión -->
-                        <div id="st-det-my-role-banner" style="display: none; padding: 12px 14px; border-radius: 10px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #b45309; font-size: 13px; font-weight: 600;">
-                            🌟 <span id="st-det-my-role-text">Tienes una responsabilidad asignada en esta clase</span>
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
-                            <div>
-                                <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block;">Materia</span>
-                                <strong id="st-det-subject" style="color: var(--aura-text-primary, #0f172a);">-</strong>
-                            </div>
-                            <div>
-                                <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block;">Horario</span>
-                                <strong id="st-det-time" style="color: var(--aura-text-primary, #0f172a);">-</strong>
-                            </div>
-                        </div>
-
-                        <div style="font-size: 13px;">
-                            <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block;">Profesor Titular</span>
-                            <div id="st-det-teacher" style="margin-top: 4px; display: flex; align-items: center; gap: 8px;">-</div>
-                        </div>
-
-                        <div id="st-det-location-box" style="font-size: 13px;">
-                            <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block;">Salón / Ubicación</span>
-                            <div id="st-det-location" style="margin-top: 2px;">-</div>
-                        </div>
-
-                        <div id="st-det-online-box" style="display: none; padding: 10px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2);">
-                            <span style="font-size: 12px; font-weight: 600; color: #4f46e5; display: block; margin-bottom: 4px;">💻 Clase Virtual En Línea</span>
-                            <a id="st-det-online-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-indigo" style="font-size: 12px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
-                                🚀 Unirse a la Clase Virtual
-                            </a>
-                        </div>
-
-                        <!-- Sección de Líderes y Monitores Estudiantiles -->
-                        <div id="st-det-leaders-box" style="display: none; border-top: 1px solid var(--aura-border, #e2e8f0); padding-top: 12px;">
-                            <span style="color: var(--aura-text-muted, #64748b); font-size: 11px; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 8px;">
-                                ⭐ Estudiantes Asignados a la Actividad
-                            </span>
-                            <div id="st-det-leaders-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
-                        </div>
-                    </div>
-
-                    <div style="padding: 12px 20px; border-top: 1px solid var(--aura-border, #e2e8f0); background: var(--aura-surface-alt, #f8fafc); text-align: right;">
-                        <button type="button" class="btn btn-ghost btn-close-st-modal">
-                            <?php esc_html_e( 'Cerrar', 'aura' ); ?>
-                        </button>
-                    </div>
-                </div>
+                <?php include AURA_PLUGIN_DIR . 'templates/calendar/modal-event-detail.php'; ?>
             </div>
         </div>
 
@@ -2246,10 +2193,14 @@ class Aura_Calendar_Frontend {
             var $ = jQuery;
             var currentUserId = <?php echo intval( $current_user_id ); ?>;
 
-            function closeStModal() {
-                $('#modal-student-event-detail').fadeOut(150);
+            function closeEventDetailModal() {
+                $('#modal-event-detail').fadeOut(150);
+                $('body').removeClass('aura-modal-open');
             }
-            $('.btn-close-st-modal').on('click', closeStModal);
+            $(document).on('click', '.btn-close-evt-detail, [data-close-modal="#modal-event-detail"]', function(e) {
+                e.preventDefault();
+                closeEventDetailModal();
+            });
 
             // Inicialización Resiliente de FullCalendar para Estudiantes
             function initStudentCalendar() {
@@ -2349,70 +2300,11 @@ class Aura_Calendar_Frontend {
                         } else if (typeof hideEventTooltip === 'function') {
                             hideEventTooltip();
                         }
-                        var p = info.event.extendedProps || {};
-                        var d = info.event;
-
-                        $('#st-det-title').text(p.raw_title || d.title);
-                        $('#st-det-subject').text(p.subject_name || 'General');
-
-                        var startFormatted = d.start ? d.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                        var endFormatted = d.end ? d.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                        var timeFormatted = (p.date_label ? p.date_label + ' | ' : '') + (p.start_time_label ? p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '') : (startFormatted + (endFormatted ? ' - ' + endFormatted : '')));
-                        $('#st-det-time').text(timeFormatted);
-
-                        // Instructor con Avatar
-                        if (p.primary_name) {
-                            var teacherAvatar = p.primary_avatar ? '<img src="' + p.primary_avatar + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">' : '👨‍🏫';
-                            $('#st-det-teacher').html(teacherAvatar + ' <strong>' + p.primary_name + '</strong>');
-                        } else {
-                            $('#st-det-teacher').text('Por designar');
+                        if (typeof window.openEventDetail === 'function') {
+                            window.openEventDetail(info.event);
+                        } else if (typeof openEventDetail === 'function') {
+                            openEventDetail(info.event);
                         }
-
-                        // Ubicación
-                        if (p.location) {
-                            $('#st-det-location').text(p.location);
-                            $('#st-det-location-box').show();
-                        } else {
-                            $('#st-det-location-box').hide();
-                        }
-
-                        // Enlace Virtual
-                        if (p.online_url) {
-                            $('#st-det-online-link').attr('href', p.online_url);
-                            $('#st-det-online-box').show();
-                        } else {
-                            $('#st-det-online-box').hide();
-                        }
-
-                        // Roles de Liderazgo
-                        var myRole = null;
-                        if (p.student_leaders && p.student_leaders.length > 0) {
-                            var html = '';
-                            $.each(p.student_leaders, function(i, l) {
-                                if (parseInt(l.student_id, 10) === currentUserId) {
-                                    myRole = l.role_label || l.role;
-                                }
-                                var lAvatar = l.avatar_url ? '<img src="' + l.avatar_url + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;">' : '👤';
-                                html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--aura-surface-alt,#f8fafc);border-radius:8px;border:1px solid var(--aura-border,#e2e8f0);font-size:12px;">';
-                                html += '  <div style="display:flex;align-items:center;gap:6px;">' + lAvatar + ' <strong>' + l.name + '</strong></div>';
-                                html += '  <span style="background:rgba(99,102,241,0.12);color:#4f46e5;font-weight:600;padding:2px 8px;border-radius:6px;font-size:11px;">' + (l.role_label || l.role) + '</span>';
-                                html += '</div>';
-                            });
-                            $('#st-det-leaders-list').html(html);
-                            $('#st-det-leaders-box').show();
-                        } else {
-                            $('#st-det-leaders-box').hide();
-                        }
-
-                        // Banner personal
-                        if (myRole) {
-                            $('#st-det-my-role-text').html('🎯 <strong>¡Fuiste asignado como ' + myRole + ' para esta sesión!</strong> Prepárate para guiar y colaborar con el grupo.');
-                            $('#st-det-my-role-banner').show();
-                        } else {
-                            $('#st-det-my-role-banner').hide();
-                        }
-
-                        $('#modal-student-event-detail').css({ display: 'flex' }).hide().fadeIn(150);
                     }
                 });
                 window.studentCalendarInstance.render();
@@ -2485,9 +2377,19 @@ class Aura_Calendar_Frontend {
                 toggleStudentFullscreen();
             });
 
-            // Tecla Escape
+            // Tecla Escape: Cerrar modal si está abierto SIN salir de fullscreen
             $(document).on('keydown', function(e) {
                 if (e.key === 'Escape' || e.keyCode === 27) {
+                    var $openModals = $('#modal-event-detail:visible, .aura-modal-overlay:visible, [id^="modal-"]:visible');
+                    if ($openModals.length > 0) {
+                        $openModals.fadeOut(150);
+                        $('body').removeClass('aura-modal-open');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        return false;
+                    }
+
                     var $container = $('.aura-student-schedule-wrap .adp-card');
                     if ($container.hasClass('aura-calendar-is-fullscreen')) {
                         toggleStudentFullscreen();
