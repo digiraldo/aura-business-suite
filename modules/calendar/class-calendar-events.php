@@ -200,12 +200,29 @@ class Aura_Calendar_Events {
         $instructors_by_event = [];
         if ( ! empty( $event_ids ) ) {
             $ids_placeholder = implode( ',', array_map( 'intval', $event_ids ) );
+
+            // Asegurar que la tabla event_instructors tenga columnas correctas en runtime
+            if ( class_exists( 'Aura_Calendar_Setup' ) ) {
+                Aura_Calendar_Setup::maybe_add_event_instructors_columns();
+            }
+
+            $inst_cols = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$table_inst}`" );
+            $order_clause = in_array( 'role', $inst_cols, true )
+                ? "ORDER BY CASE WHEN ei.role = 'lead' THEN 0 ELSE 1 END, ei.id ASC"
+                : "ORDER BY ei.id ASC";
+
+            $user_id_col = in_array( 'teacher_id', $inst_cols, true )
+                ? ( in_array( 'instructor_id', $inst_cols, true )
+                    ? "COALESCE(NULLIF(ei.teacher_id, 0), ei.instructor_id, 0)"
+                    : "ei.teacher_id" )
+                : ( in_array( 'instructor_id', $inst_cols, true ) ? "ei.instructor_id" : "0" );
+
             $inst_rows = $wpdb->get_results(
                 "SELECT ei.*, u.display_name, u.user_email
                  FROM {$table_inst} ei
-                 JOIN {$wpdb->users} u ON u.ID = COALESCE(NULLIF(ei.teacher_id, 0), ei.instructor_id)
+                 JOIN {$wpdb->users} u ON u.ID = {$user_id_col}
                  WHERE ei.event_id IN ({$ids_placeholder})
-                 ORDER BY CASE WHEN ei.role = 'lead' THEN 0 ELSE 1 END, ei.id ASC"
+                 {$order_clause}"
             );
 
             // Cargar fotos de perfil de wp_aura_students si está disponible
@@ -299,8 +316,8 @@ class Aura_Calendar_Events {
             $fc_events[] = [
                 'id'              => (string) $row->id,
                 'title'           => $title,
-                'start'           => $row->start_datetime,
-                'end'             => $row->end_datetime,
+                'start'           => str_replace( ' ', 'T', $row->start_datetime ),
+                'end'             => str_replace( ' ', 'T', $row->end_datetime ),
                 'backgroundColor' => $bg_color,
                 'borderColor'     => $bg_color,
                 'textColor'       => '#ffffff',
@@ -369,12 +386,27 @@ class Aura_Calendar_Events {
         }
 
         // Obtener instructores asociados con sus avatares y nombres normalizados
+        if ( class_exists( 'Aura_Calendar_Setup' ) ) {
+            Aura_Calendar_Setup::maybe_add_event_instructors_columns();
+        }
+
+        $inst_cols = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$table_inst}`" );
+        $order_clause = in_array( 'role', $inst_cols, true )
+            ? "ORDER BY CASE WHEN ei.role = 'lead' THEN 0 ELSE 1 END, ei.id ASC"
+            : "ORDER BY ei.id ASC";
+
+        $user_id_col = in_array( 'teacher_id', $inst_cols, true )
+            ? ( in_array( 'instructor_id', $inst_cols, true )
+                ? "COALESCE(NULLIF(ei.teacher_id, 0), ei.instructor_id, 0)"
+                : "ei.teacher_id" )
+            : ( in_array( 'instructor_id', $inst_cols, true ) ? "ei.instructor_id" : "0" );
+
         $instructors = $wpdb->get_results( $wpdb->prepare(
             "SELECT ei.*, u.display_name, u.user_email
              FROM {$table_inst} ei
-             JOIN {$wpdb->users} u ON u.ID = COALESCE(NULLIF(ei.teacher_id, 0), ei.instructor_id)
+             JOIN {$wpdb->users} u ON u.ID = {$user_id_col}
              WHERE ei.event_id = %d
-             ORDER BY CASE WHEN ei.role = 'lead' THEN 0 ELSE 1 END, ei.id ASC",
+             {$order_clause}",
             $id
         ) );
 
@@ -625,8 +657,14 @@ class Aura_Calendar_Events {
         }
 
         // ── CASO B: EVENTO ÚNICO (CREACIÓN O ACTUALIZACIÓN) ──
-        $start_dt = sanitize_text_field( $data['start_datetime'] ?? '' );
-        $end_dt   = sanitize_text_field( $data['end_datetime'] ?? '' );
+        $start_dt = str_replace( 'T', ' ', sanitize_text_field( $data['start_datetime'] ?? '' ) );
+        if ( strlen( $start_dt ) === 16 ) {
+            $start_dt .= ':00';
+        }
+        $end_dt = str_replace( 'T', ' ', sanitize_text_field( $data['end_datetime'] ?? '' ) );
+        if ( strlen( $end_dt ) === 16 ) {
+            $end_dt .= ':00';
+        }
 
         if ( empty( $start_dt ) || empty( $end_dt ) ) {
             return new WP_Error( 'missing_dates', __( 'Debe indicar fecha/hora de inicio y fin.', 'aura' ) );
@@ -793,11 +831,20 @@ class Aura_Calendar_Events {
         global $wpdb;
         $table_evts = $wpdb->prefix . 'aura_cal_events';
 
+        $start_clean = str_replace( 'T', ' ', substr( $start_dt, 0, 19 ) );
+        if ( strlen( $start_clean ) === 16 ) {
+            $start_clean .= ':00';
+        }
+        $end_clean = str_replace( 'T', ' ', substr( $end_dt, 0, 19 ) );
+        if ( strlen( $end_clean ) === 16 ) {
+            $end_clean .= ':00';
+        }
+
         $updated = $wpdb->update(
             $table_evts,
             [
-                'start_datetime' => $start_dt,
-                'end_datetime'   => $end_dt,
+                'start_datetime' => $start_clean,
+                'end_datetime'   => $end_clean,
                 'updated_at'     => current_time( 'mysql' ),
             ],
             [ 'id' => $id ],

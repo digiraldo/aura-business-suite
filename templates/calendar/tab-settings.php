@@ -368,6 +368,10 @@ $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_port
                 <button type="button" class="btn btn-emerald btn-shimmer btn-lift" id="btn-sync-all-future" style="padding: 9px 16px; font-size: 13px;">
                     🚀 <?php esc_html_e( 'Sincronizar Todas las Clases Futuras', 'aura' ); ?>
                 </button>
+
+                <button type="button" class="btn btn-ghost" id="btn-repair-cal-db" style="padding: 9px 16px; font-size: 13px;" title="<?php esc_attr_e( 'Repara y sincroniza tablas, columnas de profesores y roles en la base de datos.', 'aura' ); ?>">
+                    🛠️ <?php esc_html_e( 'Sincronizar y Reparar BD', 'aura' ); ?>
+                </button>
             </div>
 
             <div id="settings-sync-feedback" style="margin-top: 14px; display: none;"></div>

@@ -507,7 +507,74 @@ Se incorporó un selector interactivo visual con estrella ⭐ en los chips de se
 
 
 
-```bash
-php build-zip.php
-php build-zip-sin-vendor.php
-```
+
+
+
+### 26. Corrección de Carga de Avatares, Auto-Reparación de Base de Datos, Horas 06:00-24:00 y Sincronización de Fechas/Horas
+
+#### A. Avatares de Profesores que No Cargaban (Backend y Frontend)
+- **Causa Raíz:**
+  1. Al incorporar la designación de **Profesor Titular ⭐**, se agregó la columna `role` a la tabla `wp_aura_cal_event_instructors` en el código PHP, y la consulta de eventos realizaba:
+     `ORDER BY CASE WHEN ei.role = 'lead' THEN 0 ELSE 1 END, ei.id ASC` y `JOIN wp_users u ON u.ID = COALESCE(NULLIF(ei.teacher_id, 0), ei.instructor_id)`
+  2. En Hostinger (y en instalaciones existentes), al actualizar el plugin vía archivo ZIP, WordPress **NO** ejecuta automáticamente el hook `register_activation_hook`. Además, como `DB_VERSION` estaba fijado en `1.5.0`, el instalador dbDelta (`create_tables`) nunca se activaba en Hostinger.
+  3. Si la tabla no tenía la columna `role` o la columna `instructor_id`, MySQL generaba un error fatal de consulta:
+     `Unknown column 'ei.role' in 'order clause'` o `Unknown column 'ei.instructor_id'`
+     Al fallar la consulta, `$inst_rows` retornaba vacío (`[]`), por lo que `$primary_avatar` quedaba en blanco y los calendarios, tarjetas de eventos, tooltips y modales no mostraban ningún avatar.
+  4. En el Portal del Instructor (`class-calendar-frontend.php`), la consulta a materias y tareas docentes ejecutaba `WHERE (s.teacher_id = %d OR s.teacher_ids LIKE %s)`. Sin embargo, las columnas reales en `wp_aura_cal_subjects` son `default_teacher_id` y `teachers`, arrojando otro error de MySQL `Unknown column 's.teacher_id'`.
+- **Solución Implementada:**
+  - **Auto-Migración y Reparación de Base de Datos:**
+    - Se implementó `Aura_Calendar_Setup::maybe_add_event_instructors_columns()`, que se ejecuta automáticamente en cada inicio (`init`), asegurando que las columnas `teacher_id`, `instructor_id`, `role` (con default `'lead'`) y `notes` existan siempre.
+    - Sincroniza bidireccionalmente los IDs (`teacher_id <-> instructor_id`) y asigna `role = 'lead'` a registros con rol nulo.
+    - Se implementó `Aura_Calendar_Setup::repair_all_calendar_tables()`, que repara y verifica todas las 8 tablas del calendario (`wp_aura_cal_event_instructors`, `wp_aura_cal_subjects`, `wp_aura_cal_programs`, `wp_aura_cal_events`, `wp_aura_cal_tasks`).
+    - Se incrementó `DB_VERSION = '1.7.3'`. Al subir el ZIP a Hostinger, en la primera carga se detecta la versión anterior y se auto-ejecuta la migración y dbDelta de forma transparente.
+    - Se añadió un botón manual interactivo en **Calendario > Ajustes**: **🛠️ Sincronizar y Reparar BD**, permitiendo al administrador forzar la verificación y reparación en vivo con feedback inmediato.
+  - **Consultas SQL Blindadas y Tolerantes:**
+    - En [`modules/calendar/class-calendar-events.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-events.php), en `get_events()` y `get()`, se inspeccionan dinámicamente las columnas de la tabla para construir un JOIN y ORDER BY seguros, evitando cualquier caída si falta alguna columna.
+    - En [`modules/calendar/class-calendar-frontend.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php), se corrigieron las consultas de materias y tareas para buscar en `s.default_teacher_id` y `s.teachers`.
+
+---
+
+#### B. Rango de Horas en Vistas Semana y Día (06:00 a 24:00)
+- **Causa Raíz:**
+  - En [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js) y [`class-calendar-frontend.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php), las vistas semanales y diarias estaban configuradas con:
+    - `slotMinTime: '06:00:00'` / `'07:00:00'`
+    - `slotMaxTime: '21:00:00'` / `'22:00:00'`
+    - `allDaySlot: false`
+  - Clases o actividades que terminaban a las 10:00 p.m. (22:00) o más tarde quedaban ocultas o recortadas al final del calendario. Además, al tener `allDaySlot: false`, no existía la franja superior para eventos continuos de varios días.
+- **Solución Implementada:**
+  - Se unificó la configuración en todos los calendarios (Backend, Portal Docente y Portal de Estudiantes):
+    - `slotMinTime: '06:00:00'`
+    - `slotMaxTime: '24:00:00'` (abarca toda la jornada hasta la medianoche).
+    - `scrollTime: '07:00:00'` (desplaza la vista suavemente a las 07:00 am por defecto).
+    - `allDaySlot: true` y `allDayText: 'Todo el día'` (permite la barra superior continua para diplomados y eventos multi-día).
+    - `timeZone: 'local'` (asegura que las horas sigan la zona horaria del navegador sin desfases).
+
+---
+
+#### C. Sincronización de Fechas y Horas en Hostinger
+- **Causa Raíz:**
+  1. WordPress en `centromateo.org` está configurado en zona horaria **Ciudad de México** (UTC-6) con formato de hora `H:i`.
+  2. Al enviar fechas a FullCalendar, se enviaban como string con espacio (`YYYY-MM-DD HH:mm:ss`), lo que en algunos navegadores causaba que se interpretaran como UTC en lugar de hora local, produciendo un desfase de 6 horas.
+  3. En `Aura_Calendar_Events::save()`, los valores provenientes de inputs `<input type="datetime-local">` contienen una `T` (`YYYY-MM-DDTHH:mm`). Si se insertaban sin normalizar en columnas `DATETIME` de MySQL, generaban discrepancias o formatos heterogéneos.
+- **Solución Implementada:**
+  - **Normalización DATETIME:** En `save()` y `update_dates()`, se reemplaza cualquier `T` por espacio y se asegura formato canónico `YYYY-MM-DD HH:mm:ss`.
+  - **Formato ISO para FullCalendar:** En `get_events()`, `start` y `end` se entregan con `T` (`str_replace(' ', 'T', $row->start_datetime)`), y con la opción `timeZone: 'local'` en el frontend y backend, FullCalendar renderiza exactamente las 07:30 a. m. a 10:00 p. m. tal como están guardadas en la base de datos de México.
+  - **Auto-reparación tras actualización:** Al subir la nueva versión a Hostinger, el script de auto-migración detecta los eventos existentes, asegura las columnas faltantes y los campos `gcal_sync_status`, `student_leaders`, etc.
+
+---
+
+#### D. Instrucciones para Hostinger:
+1. Subir y reemplazar el plugin con el nuevo archivo generado `aura-business-suite.zip`.
+2. En WordPress en Hostinger, simplemente recargar cualquier página del panel de administración (`https://centromateo.org/wp-admin/admin.php?page=aura-calendar`).
+   - La base de datos se auto-migrará a la versión `1.7.3` en milisegundos en la primera carga.
+   - Si se desea verificar o forzar manualmente, en **Calendario > Ajustes** se puede hacer clic en el nuevo botón **🛠️ Sincronizar y Reparar BD**.
+3. Los avatares cargarán de inmediato tanto en las celdas del calendario como en los tooltips, modales y portales de profesores y estudiantes.
+4. Las vistas de semana y día mostrarán desde las 06:00 hasta las 24:00 horas.
+
+
+
+- Quiero que implemente los link o url del calendario de google cuando se navega en este, ejemplo:
+    - En Mes: u/0/r/month/2027/1/1
+    - En Semana: u/0/r/week/2027/1/1
+    - En Día: u/0/r/day/2027/1/1
+    - En Agenda: u/0/r/agenda/2027/1/1

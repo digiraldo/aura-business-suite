@@ -117,13 +117,33 @@
 
     // ─────────────────────────────────────────────────────────────
     // 1. INICIALIZACIÓN DE FULLCALENDAR
-    // ─────────────────────────────────────────────────────────────
+    // Helper para mapear el formato de hora de WordPress a la configuración de FullCalendar v6
+    function getFcTimeConfig(wpFormat) {
+        var fmt = wpFormat || (typeof auraCalData !== 'undefined' ? auraCalData.time_format : '') || 'H:i';
+        var is12Hour = /[aAgGh]/.test(fmt) && !/[HG]/.test(fmt);
+        if (is12Hour) {
+            return {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                meridiem: 'short'
+            };
+        }
+        return {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        };
+    }
+    window.getFcTimeConfig = getFcTimeConfig;
 
     function initFullCalendar() {
         var calEl = document.getElementById('aura-main-calendar');
         if (!calEl || typeof FullCalendar === 'undefined') {
             return;
         }
+
+        var timeFormatConfig = getFcTimeConfig(auraCalData.time_format);
 
         calendar = new FullCalendar.Calendar(calEl, {
             initialView: 'timeGridWeek',
@@ -141,9 +161,14 @@
                 day: auraCalData.i18n.day,
                 list: auraCalData.i18n.list
             },
-            slotMinTime: '06:00:00',
-            slotMaxTime: '22:00:00',
-            allDaySlot: false,
+            slotMinTime: '00:00:00',
+            slotMaxTime: '24:00:00',
+            scrollTime: '07:00:00',
+            slotLabelFormat: timeFormatConfig,
+            eventTimeFormat: timeFormatConfig,
+            allDaySlot: true,
+            allDayText: '🌅 Todo el día',
+            timeZone: 'local',
             nowIndicator: true,
             editable: !!auraCalData.user_can_edit,
             selectable: !!auraCalData.user_can_edit,
@@ -455,9 +480,90 @@
         }
     }
 
+    // Tooltip Enriquecido Informativo para 'Todo el Día' (Backend y Frontend)
+    function showAllDayTooltip(el, jsEvent) {
+        var $tt = $('#aura-cal-event-tooltip');
+        var $fsEl = document.fullscreenElement ? $(document.fullscreenElement) : ($('.aura-calendar-is-fullscreen').length ? $('.aura-calendar-is-fullscreen').first() : $('body'));
+        if (!$tt.length) {
+            $tt = $('<div id="aura-cal-event-tooltip" class="aura-cal-floating-tooltip aura-cal-allday-tooltip"></div>');
+            $fsEl.append($tt);
+        } else if (!$tt.parent().is($fsEl)) {
+            $tt.appendTo($fsEl);
+        }
+
+        $tt.addClass('aura-cal-allday-tooltip');
+
+        var html = '<div class="tooltip-header" style="display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.12);">' +
+            '<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 10px rgba(99,102,241,0.35);flex-shrink:0;">🌅</div>' +
+            '<div style="flex:1;min-width:0;">' +
+                '<div class="tooltip-title" style="margin:0;font-size:14px;font-weight:700;line-height:1.2;">Todo el Día / Multi-Día</div>' +
+                '<div style="font-size:11px;color:#818cf8;font-weight:600;margin-top:2px;">Sección de Jornada Continua</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="tooltip-desc" style="margin:10px 0;font-size:12px;line-height:1.5;background:rgba(99,102,241,0.08);border-left:3px solid #6366f1;padding:8px 10px;border-radius:4px;">' +
+            'Esta fila superior está reservada para <strong>actividades de día completo</strong> o <strong>eventos continuos de múltiples días</strong> (talleres intensivos, retiros, diplomados, congresos o feriados).' +
+        '</div>' +
+        '<div class="tooltip-meta-grid" style="display:grid;gap:7px;font-size:11.5px;margin-bottom:8px;">' +
+            '<div class="tooltip-meta-row" style="display:flex;gap:6px;align-items:flex-start;">' +
+                '<strong style="color:#6366f1;flex-shrink:0;">💻 Frontend:</strong>' +
+                '<span style="opacity:0.9;">Estudiantes y profesores ven con total claridad hitos globales sin invadir la cuadrícula horaria de clases regulares.</span>' +
+            '</div>' +
+            '<div class="tooltip-meta-row" style="display:flex;gap:6px;align-items:flex-start;">' +
+                '<strong style="color:#6366f1;flex-shrink:0;">⚙️ Backend:</strong>' +
+                '<span style="opacity:0.9;">Administradores coordinan fechas completas con barras horizontales continuas que abarcan varios días con un solo evento.</span>' +
+            '</div>' +
+        '</div>' +
+        '<div class="tooltip-footer" style="font-size:11px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.08);color:#94a3b8;">' +
+            '💡 <em>Al crear un evento, activa la opción <strong>"Todo el día"</strong> para fijarlo automáticamente aquí.</em>' +
+        '</div>';
+
+        $tt.html(html);
+
+        var rect = el.getBoundingClientRect();
+        var ttWidth = 340;
+        var ttHeight = $tt.outerHeight() || 220;
+        var padding = 12;
+
+        var left = rect.right + padding;
+        var top = rect.top;
+
+        if (left + ttWidth > window.innerWidth - 10) {
+            left = rect.left - ttWidth - padding;
+        }
+        if (left < 10) {
+            left = Math.max(10, (jsEvent ? jsEvent.clientX : rect.left) + 12);
+        }
+        if (top + ttHeight > window.innerHeight - 10) {
+            top = Math.max(10, window.innerHeight - ttHeight - 15);
+        }
+
+        $tt.css({
+            top: top + 'px',
+            left: left + 'px',
+            display: 'block'
+        }).addClass('is-visible');
+    }
+
+    function hideAllDayTooltip() {
+        hideEventTooltip();
+    }
+
     // Exponer globalmente para los calendarios frontend (Portales de Profesor y Estudiante)
     window.showEventTooltip = showEventTooltip;
     window.hideEventTooltip = hideEventTooltip;
+    window.showAllDayTooltip = showAllDayTooltip;
+    window.hideAllDayTooltip = hideAllDayTooltip;
+
+    // Delegación de eventos para Tooltip interactivo sobre 'Todo el día'
+    $(document).on('mouseenter', '.fc-timegrid-all-day .fc-timegrid-axis, .fc-timegrid-all-day .fc-timegrid-axis-cushion, .fc-timegrid-all-day .fc-timegrid-axis-frame', function(e) {
+        showAllDayTooltip(this, e);
+    });
+    $(document).on('mouseleave', '.fc-timegrid-all-day .fc-timegrid-axis, .fc-timegrid-all-day .fc-timegrid-axis-cushion, .fc-timegrid-all-day .fc-timegrid-axis-frame', function() {
+        hideAllDayTooltip();
+    });
+    $(document).on('scroll', function() {
+        hideAllDayTooltip();
+    });
 
     // ─────────────────────────────────────────────────────────────
     // PANTALLA COMPLETA DEL CALENDARIO
@@ -2838,6 +2944,34 @@
             }
         }).fail(function() {
             $btn.prop('disabled', false).text('🔌 Probar Conexión y Vincular Calendario');
+            $fb.html('<div class="alert-card alert-danger">⚠️ Error en la llamada AJAX.</div>');
+        });
+    });
+
+    // Reparar y sincronizar base de datos del Calendario
+    $('#btn-repair-cal-db').on('click', function() {
+        var $btn = $(this);
+        var $fb = $('#settings-sync-feedback');
+
+        $btn.prop('disabled', true).text('Reparando base de datos...');
+        $fb.html('<div class="alert-card alert-info">Verificando tablas, columnas, relaciones y roles docentes...</div>').show();
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_repair_db',
+            nonce: auraCalData.nonce
+        }, function(res) {
+            $btn.prop('disabled', false).text('🛠️ Sincronizar y Reparar BD');
+            if (res && res.success) {
+                var msg = res.data && res.data.message ? res.data.message : 'Base de datos reparada con éxito.';
+                $fb.html('<div class="alert-card alert-success">✅ ' + msg + '</div>');
+                showToast(msg);
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                var err = res && res.data && res.data.message ? res.data.message : 'Error al reparar base de datos.';
+                $fb.html('<div class="alert-card alert-danger">⚠️ ' + err + '</div>');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).text('🛠️ Sincronizar y Reparar BD');
             $fb.html('<div class="alert-card alert-danger">⚠️ Error en la llamada AJAX.</div>');
         });
     });

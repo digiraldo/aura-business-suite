@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Aura_Calendar_Setup {
 
     /** Versión actual del esquema de base de datos del módulo */
-    const DB_VERSION = '1.5.0';
+    const DB_VERSION = '1.7.3';
 
     /** Clave de opción en wp_options para almacenar la versión instalada */
     const DB_VERSION_OPTION = 'aura_calendar_db_version';
@@ -33,12 +33,68 @@ class Aura_Calendar_Setup {
      * Inicializar hooks de instalación y actualización.
      */
     public static function init(): void {
+        self::maybe_add_event_instructors_columns();
         self::maybe_add_area_id_column();
         self::maybe_add_task_library_columns();
         self::maybe_add_task_targeting_columns();
         self::maybe_add_materials_and_leaders_columns();
+
         if ( self::needs_update() ) {
-            add_action( 'admin_init', [ __CLASS__, 'create_tables' ] );
+            self::repair_all_calendar_tables();
+        }
+
+        // Hook AJAX para reparación manual bajo demanda desde Ajustes
+        add_action( 'wp_ajax_aura_cal_repair_db', [ __CLASS__, 'ajax_repair_db' ] );
+    }
+
+    /**
+     * Asegura que wp_aura_cal_event_instructors tenga role, teacher_id, instructor_id y notes,
+     * sincronizando datos existentes para que los avatares nunca fallen.
+     */
+    public static function maybe_add_event_instructors_columns(): void {
+        global $wpdb;
+        $t_inst = $wpdb->prefix . 'aura_cal_event_instructors';
+        $table_exists = $wpdb->get_var( "SHOW TABLES LIKE '{$t_inst}'" );
+        if ( $table_exists !== $t_inst ) {
+            return;
+        }
+
+        $columns = $wpdb->get_col( "SHOW COLUMNS FROM `{$t_inst}`" );
+        if ( empty( $columns ) ) {
+            return;
+        }
+
+        // 1. Asegurar columna teacher_id
+        if ( ! in_array( 'teacher_id', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `teacher_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 AFTER `event_id`" );
+        }
+
+        // 2. Asegurar columna instructor_id (retrocompatibilidad)
+        if ( ! in_array( 'instructor_id', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `instructor_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 AFTER `teacher_id`" );
+        }
+
+        // 3. Asegurar columna role
+        if ( ! in_array( 'role', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `role` VARCHAR(30) NOT NULL DEFAULT 'lead' AFTER `teacher_id`" );
+        }
+
+        // 4. Asegurar columna notes
+        if ( ! in_array( 'notes', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `notes` VARCHAR(255) DEFAULT NULL AFTER `role`" );
+        }
+
+        // 5. Sincronizar teacher_id <-> instructor_id si uno de los dos tiene 0
+        $wpdb->query( "UPDATE `{$t_inst}` SET `teacher_id` = `instructor_id` WHERE (`teacher_id` IS NULL OR `teacher_id` = 0) AND `instructor_id` > 0" );
+        $wpdb->query( "UPDATE `{$t_inst}` SET `instructor_id` = `teacher_id` WHERE (`instructor_id` IS NULL OR `instructor_id` = 0) AND `teacher_id` > 0" );
+
+        // 6. Asegurar que role tenga un valor por defecto válido
+        $wpdb->query( "UPDATE `{$t_inst}` SET `role` = 'lead' WHERE `role` IS NULL OR `role` = ''" );
+
+        // 7. Retirar índice antiguo conflictivo si existe
+        $old_idx = $wpdb->get_results( "SHOW INDEX FROM `{$t_inst}` WHERE Key_name = 'event_instructor'" );
+        if ( ! empty( $old_idx ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_inst}` DROP INDEX `event_instructor`" );
         }
     }
 
@@ -383,9 +439,102 @@ class Aura_Calendar_Setup {
             $wpdb->query( "ALTER TABLE `{$t_event_instructors}` DROP INDEX `event_instructor`" );
         }
 
+        self::maybe_add_event_instructors_columns();
         self::maybe_add_task_library_columns();
+        self::maybe_add_task_targeting_columns();
+        self::maybe_add_materials_and_leaders_columns();
 
         update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
+    }
+
+    /**
+     * Reparación y migración integral de todas las tablas de Calendario.
+     * Garantiza que todas las columnas y relaciones existan y estén sincronizadas.
+     */
+    public static function repair_all_calendar_tables(): array {
+        global $wpdb;
+
+        // 1. Asegurar instructores de eventos y sincronizar teacher_id / instructor_id / role
+        self::maybe_add_event_instructors_columns();
+
+        // 2. Asegurar columnas de programas
+        self::maybe_add_area_id_column();
+        $t_programs = $wpdb->prefix . 'aura_cal_programs';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_programs}'" ) === $t_programs ) {
+            $col_coord = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_programs}` LIKE 'coordinators'" );
+            if ( empty( $col_coord ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_programs}` ADD COLUMN `coordinators` TEXT DEFAULT NULL AFTER `coordinator_id`" );
+            }
+        }
+
+        // 3. Asegurar columnas de materias
+        $t_subjects = $wpdb->prefix . 'aura_cal_subjects';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_subjects}'" ) === $t_subjects ) {
+            $col_def = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_subjects}` LIKE 'default_teacher_id'" );
+            if ( empty( $col_def ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `default_teacher_id` BIGINT UNSIGNED DEFAULT NULL AFTER `color`" );
+            }
+            $col_t = $wpdb->get_results( "SHOW COLUMNS FROM `{$t_subjects}` LIKE 'teachers'" );
+            if ( empty( $col_t ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `teachers` TEXT DEFAULT NULL AFTER `default_teacher_id`" );
+            }
+        }
+        self::maybe_add_materials_and_leaders_columns();
+
+        // 4. Asegurar columnas de tareas y biblioteca
+        self::maybe_add_task_library_columns();
+        self::maybe_add_task_targeting_columns();
+
+        // 5. Asegurar columnas de eventos (Google Sync, líderes estudiantiles, recurrencia)
+        $t_events = $wpdb->prefix . 'aura_cal_events';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_events}'" ) === $t_events ) {
+            $cols_ev = $wpdb->get_col( "SHOW COLUMNS FROM `{$t_events}`" );
+            if ( is_array( $cols_ev ) ) {
+                if ( ! in_array( 'recurrence_group_id', $cols_ev, true ) ) {
+                    $wpdb->query( "ALTER TABLE `{$t_events}` ADD COLUMN `recurrence_group_id` VARCHAR(64) DEFAULT NULL AFTER `status`, ADD KEY `recurrence` (`recurrence_group_id`)" );
+                }
+                if ( ! in_array( 'recurrence_rule', $cols_ev, true ) ) {
+                    $wpdb->query( "ALTER TABLE `{$t_events}` ADD COLUMN `recurrence_rule` TEXT DEFAULT NULL AFTER `recurrence_group_id`" );
+                }
+                if ( ! in_array( 'gcal_event_id', $cols_ev, true ) ) {
+                    $wpdb->query( "ALTER TABLE `{$t_events}` ADD COLUMN `gcal_event_id` VARCHAR(255) DEFAULT NULL AFTER `recurrence_rule`, ADD KEY `gcal_id` (`gcal_event_id`)" );
+                }
+                if ( ! in_array( 'gcal_sync_status', $cols_ev, true ) ) {
+                    $wpdb->query( "ALTER TABLE `{$t_events}` ADD COLUMN `gcal_sync_status` VARCHAR(20) NOT NULL DEFAULT 'pending' AFTER `gcal_event_id`, ADD KEY `gcal_status` (`gcal_sync_status`)" );
+                }
+                if ( ! in_array( 'gcal_synced_at', $cols_ev, true ) ) {
+                    $wpdb->query( "ALTER TABLE `{$t_events}` ADD COLUMN `gcal_synced_at` DATETIME DEFAULT NULL AFTER `gcal_sync_status`" );
+                }
+                if ( ! in_array( 'student_leaders', $cols_ev, true ) ) {
+                    $wpdb->query( "ALTER TABLE `{$t_events}` ADD COLUMN `student_leaders` LONGTEXT DEFAULT NULL AFTER `description`" );
+                }
+            }
+        }
+
+        // 6. Ejecutar dbDelta completo para sincronizar tipos y llaves
+        self::create_tables();
+
+        update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
+
+        return [
+            'success' => true,
+            'version' => self::DB_VERSION,
+            'message' => sprintf( __( 'Base de datos del Calendario reparada y sincronizada a la versión %s con éxito.', 'aura' ), self::DB_VERSION ),
+        ];
+    }
+
+    /**
+     * AJAX handler para reparación manual de tablas.
+     */
+    public static function ajax_repair_db(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        $res = self::repair_all_calendar_tables();
+        wp_send_json_success( $res );
     }
 
     /**

@@ -524,12 +524,16 @@ class Aura_Calendar_Frontend {
         $has_subj_table = $wpdb->get_var( "SHOW TABLES LIKE '{$table_subj}'" ) === $table_subj;
         $my_subjects = [];
         if ( $has_subj_table ) {
+            $subj_cols = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$table_subj}`" );
+            $t_col = in_array( 'default_teacher_id', $subj_cols, true ) ? 's.default_teacher_id' : ( in_array( 'teacher_id', $subj_cols, true ) ? 's.teacher_id' : '0' );
+            $ts_col = in_array( 'teachers', $subj_cols, true ) ? 's.teachers' : ( in_array( 'teacher_ids', $subj_cols, true ) ? 's.teacher_ids' : "''" );
+
             $user_id_like = '%' . $wpdb->esc_like( '"' . $user_id . '"' ) . '%';
             $my_subjects = $wpdb->get_results( $wpdb->prepare(
                 "SELECT s.*, p.name AS program_name, p.code AS program_code
                  FROM {$table_subj} s
                  LEFT JOIN {$table_prog} p ON p.id = s.program_id
-                 WHERE (s.teacher_id = %d OR s.teacher_ids LIKE %s) AND s.deleted_at IS NULL
+                 WHERE ({$t_col} = %d OR {$ts_col} LIKE %s) AND s.deleted_at IS NULL
                  ORDER BY s.name ASC",
                 $user_id,
                 $user_id_like
@@ -544,6 +548,8 @@ class Aura_Calendar_Frontend {
             $book_join = $has_books_table ? "LEFT JOIN {$table_books} b ON b.id = t.book_id" : "";
             $book_cols = $has_books_table ? ", b.title AS book_title, b.author AS book_author, b.isbn AS book_isbn" : "";
             $user_id_like = '%' . $wpdb->esc_like( '"' . $user_id . '"' ) . '%';
+            $t_col = isset( $t_col ) ? $t_col : 's.default_teacher_id';
+            $ts_col = isset( $ts_col ) ? $ts_col : 's.teachers';
 
             $my_tasks = $wpdb->get_results( $wpdb->prepare(
                 "SELECT t.*, p.name AS program_name, p.code AS program_code, s.name AS subject_name
@@ -553,7 +559,7 @@ class Aura_Calendar_Frontend {
                  LEFT JOIN {$table_prog} p ON p.id = t.program_id
                  LEFT JOIN {$table_subj} s ON s.id = t.subject_id
                  {$book_join}
-                 WHERE (t.created_by = %d OR s.teacher_id = %d OR s.teacher_ids LIKE %s) AND t.deleted_at IS NULL
+                 WHERE (t.created_by = %d OR {$t_col} = %d OR {$ts_col} LIKE %s) AND t.deleted_at IS NULL
                  ORDER BY t.created_at DESC",
                 $user_id,
                 $user_id,
@@ -1938,26 +1944,35 @@ class Aura_Calendar_Frontend {
                 var calEl = document.getElementById('aura-teacher-fullcalendar');
                 if (!calEl || typeof FullCalendar === 'undefined') return;
 
-                window.teacherCalendarInstance = new FullCalendar.Calendar(calEl, {
-                    initialView: 'timeGridWeek',
-                    locale: 'es',
-                    firstDay: parseInt(auraCalData.first_day || 1, 10),
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-                    },
-                    buttonText: {
-                        today: 'Hoy',
-                        month: 'Mes',
-                        week:  'Semana',
-                        day:   'Día',
-                        list:  'Agenda'
-                    },
-                    slotMinTime: '06:00:00',
-                    slotMaxTime: '22:00:00',
-                    allDaySlot: false,
-                    nowIndicator: true,
+                    var timeFmt = (typeof window.getFcTimeConfig === 'function') 
+                        ? window.getFcTimeConfig(auraCalData.time_format)
+                        : (/[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '') ? { hour: 'numeric', minute: '2-digit', hour12: true, meridiem: 'short' } : { hour: '2-digit', minute: '2-digit', hour12: false });
+
+                    window.teacherCalendarInstance = new FullCalendar.Calendar(calEl, {
+                        initialView: 'timeGridWeek',
+                        locale: 'es',
+                        firstDay: parseInt(auraCalData.first_day || 1, 10),
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                        },
+                        buttonText: {
+                            today: 'Hoy',
+                            month: 'Mes',
+                            week:  'Semana',
+                            day:   'Día',
+                            list:  'Agenda'
+                        },
+                        slotMinTime: '00:00:00',
+                        slotMaxTime: '24:00:00',
+                        scrollTime: '07:00:00',
+                        slotLabelFormat: timeFmt,
+                        eventTimeFormat: timeFmt,
+                        allDaySlot: true,
+                        allDayText: '🌅 Todo el día',
+                        timeZone: 'local',
+                        nowIndicator: true,
                     eventMouseEnter: function(info) {
                         if (typeof window.showEventTooltip === 'function') {
                             window.showEventTooltip(info.event, info.el, info.jsEvent);
@@ -2208,6 +2223,10 @@ class Aura_Calendar_Frontend {
                 var calEl = document.getElementById('aura-student-calendar');
                 if (!calEl || typeof FullCalendar === 'undefined') return;
 
+                var timeFmt = (typeof window.getFcTimeConfig === 'function') 
+                    ? window.getFcTimeConfig(auraCalData.time_format)
+                    : (/[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '') ? { hour: 'numeric', minute: '2-digit', hour12: true, meridiem: 'short' } : { hour: '2-digit', minute: '2-digit', hour12: false });
+
                 window.studentCalendarInstance = new FullCalendar.Calendar(calEl, {
                     initialView: 'timeGridWeek',
                     locale: 'es',
@@ -2223,9 +2242,14 @@ class Aura_Calendar_Frontend {
                         week:  'Semana',
                         list:  'Agenda'
                     },
-                    slotMinTime: '07:00:00',
-                    slotMaxTime: '21:00:00',
-                    allDaySlot: false,
+                    slotMinTime: '00:00:00',
+                    slotMaxTime: '24:00:00',
+                    scrollTime: '07:00:00',
+                    slotLabelFormat: timeFmt,
+                    eventTimeFormat: timeFmt,
+                    allDaySlot: true,
+                    allDayText: '🌅 Todo el día',
+                    timeZone: 'local',
                     nowIndicator: true,
                     eventMouseEnter: function(info) {
                         if (typeof window.showEventTooltip === 'function') {
