@@ -676,28 +676,56 @@ body.aura-cal-fullscreen-active {
     bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    z-index: 999999 !important;
-    background: var(--aura-surface-card, #ffffff) !important;
-    padding: 24px !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    z-index: 9999999 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 16px 22px !important;
     box-sizing: border-box !important;
     overflow-y: auto !important;
     border-radius: 0 !important;
+    border: none !important;
     display: flex !important;
     flex-direction: column !important;
+    margin: 0 !important;
 }
 
 [data-theme="dark"] .aura-calendar-is-fullscreen,
+body[data-theme="dark"] .aura-calendar-is-fullscreen,
+html[data-theme="dark"] .aura-calendar-is-fullscreen,
+.aura-dark-theme .aura-calendar-is-fullscreen,
 body.aura-dark-mode .aura-calendar-is-fullscreen,
 html[data-wp-dark-mode-scheme="dark"] .aura-calendar-is-fullscreen,
 html.wp-dark-mode-active .aura-calendar-is-fullscreen,
 body.wp-dark-mode-active .aura-calendar-is-fullscreen {
-    background: #18191a !important;
-    color: #e4e6eb !important;
+    background: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+body.aura-cal-fullscreen-active {
+    overflow: hidden !important;
 }
 
 .aura-calendar-is-fullscreen .fc {
-    flex: 1 !important;
-    height: calc(100vh - 90px) !important;
+    flex: 1 1 auto !important;
+    height: calc(100vh - 80px) !important;
+}
+
+.aura-calendar-is-fullscreen #aura-teacher-fullcalendar,
+.aura-calendar-is-fullscreen #aura-student-calendar {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    height: calc(100vh - 80px) !important;
+    width: 100% !important;
+}
+
+.aura-calendar-is-fullscreen #aura-teacher-fullcalendar .fc,
+.aura-calendar-is-fullscreen #aura-student-calendar .fc {
+    flex: 1 1 auto !important;
+    height: 100% !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════

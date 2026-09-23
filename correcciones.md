@@ -340,8 +340,44 @@ La verificación de sintaxis PHP ha concluido sin errores.
   4. **Selector Visual de Profesores:** En [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js), las píldoras de selección `.aura-user-chip` ahora incorporan miniatura de avatar y mapean de manera bidireccional todos los IDs de profesores seleccionados tanto al abrir el modal de edición como al guardar.
 
 
+⏳ En el modal de Crear Evento, al final, al hacer clic en un toggle y que al seleccionarlo, me aparezcan unos eventos rapidos de agregar al calendario que al tener la fecha y hora de inicio ya definida me agregue automaticamente la duracion de 30 minutos como son:
+Descanso
+Introducción
+Reflexión
+Deportes
+Lectura
+Trabajo
+Refrigerio
+Desayuno
+Almuerzo
+Comida
+Cena
+⏳ Que estos una vez en el calendario agregados, sean editables para poder cambiarles la duracion por ejemplo o la hora de finalización, profesores o instructores a cargo, etc
+⏳ Para mejorar esto, hazme un CRUD de Eventos Genericos en https://centromateo.org/wp-admin/admin.php?page=aura-calendar-settings, hazlo super adaptable o funcional y agrega mejoras si ves que son requeridas
 
 
+⏳ No me sincronizan bien los eventos creados en calendario de AURA, que duran varios dias que se muestran con una barra larga de los dias en el calendario de google, y estos solo se muestran en un solo dia con el formato [{Código Corto del Programa}] {Nombre de la Materia}: {Nombre del Evento} y no el formato de: {Nombre del Evento}: {Nombre de la Materia} [{Código Corto del Programa}]
+
+
+
+
+
+
+### Implementación Completada: Pantalla Completa Resiliente, Modo Claro/Oscuro Integral y Tooltips Enriquecidos (Portal Docente y Estudiante)
+
+1. **Pantalla Completa Resiliente en Frontend:**
+   - **Causa identificada:** Los botones `#btn-toggle-teacher-fullscreen` y `#btn-toggle-student-fullscreen` se registraban dentro de un bloque condicional `if (typeof FullCalendar !== 'undefined')` que se ejecutaba en `DOMContentLoaded`, momento en el cual el bundle externo de FullCalendar en el footer muchas veces aún no terminaba de cargar.
+   - **Solución implementada:** Se desacopló la lógica a delegación global con `$(document).on('click', ...)`, se incorporó soporte dual (clase CSS fija al 100% de la ventana + API nativa `requestFullscreen()` del navegador), bloqueo de scroll del fondo con `body.aura-cal-fullscreen-active`, soporte para tecla `Escape` y evento `fullscreenchange`.
+   - **Expansión y redibujado:** Se configuró `#aura-teacher-fullcalendar` y `#aura-student-calendar` con `flex: 1 1 auto` y `height: calc(100vh - 80px)`, disparando `calendar.updateSize()` reactivo inmediato y con retardo de 220ms.
+
+2. **Adaptación Integral a Modo Claro y Modo Oscuro:**
+   - En [`assets/css/aura-frontend-dark-mode.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css), se definieron las variables CSS base en `:root` y `html[data-theme="light"]`, además de mapear los tokens `--aura-surface-card`, `--aura-surface-alt`, `--aura-border` y `--aura-text-...` para eliminar cualquier fallback blanco no deseado en modales y tarjetas en modo oscuro.
+   - Estilización de alta legibilidad para botones secundarios (`.btn-secondary`), botones fantasma (`.btn-ghost`), badges institucionales (`.badge-indigo`, `.badge-emerald`, `.badge-amber`), modales (`#modal-student-event-detail`, modales de asistencia, tareas y nómina), chips de líderes y barra de herramientas de FullCalendar.
+
+3. **Tooltips Enriquecidos con Avatar Grande (44px) en Stack + Ring Animado:**
+   - Se conectaron de forma segura en ambos portales con `(window.showEventTooltip || showEventTooltip)`.
+   - Se diseñó la adaptación de `#aura-cal-event-tooltip` en modo claro (tarjeta limpia con sombra suave y texto oscuro) y en modo oscuro (estilo glassmorphism slate oscuro con texto blanco).
+   - Se incluyó el Avatar Grande de 44px con Ring Animado pulsante (`aura-avatar-ring-pulse`), stack de avatares de instructores secundarios solapados con elevación en `:hover` e indicador `+N`.
 
 ```bash
 php build-zip.php

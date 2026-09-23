@@ -1931,9 +1931,12 @@ class Aura_Calendar_Frontend {
                 });
             });
 
-            // 6. FullCalendar para el Instructor
-            var calEl = document.getElementById('aura-teacher-fullcalendar');
-            if (calEl && typeof FullCalendar !== 'undefined') {
+            // 6. FullCalendar para el Instructor con Inicialización Resiliente
+            function initTeacherCalendar() {
+                if (window.teacherCalendarInstance) return;
+                var calEl = document.getElementById('aura-teacher-fullcalendar');
+                if (!calEl || typeof FullCalendar === 'undefined') return;
+
                 window.teacherCalendarInstance = new FullCalendar.Calendar(calEl, {
                     initialView: 'timeGridWeek',
                     locale: 'es',
@@ -1955,12 +1958,16 @@ class Aura_Calendar_Frontend {
                     allDaySlot: false,
                     nowIndicator: true,
                     eventMouseEnter: function(info) {
-                        if (typeof showEventTooltip === 'function') {
+                        if (typeof window.showEventTooltip === 'function') {
+                            window.showEventTooltip(info.event, info.el, info.jsEvent);
+                        } else if (typeof showEventTooltip === 'function') {
                             showEventTooltip(info.event, info.el, info.jsEvent);
                         }
                     },
                     eventMouseLeave: function(info) {
-                        if (typeof hideEventTooltip === 'function') {
+                        if (typeof window.hideEventTooltip === 'function') {
+                            window.hideEventTooltip();
+                        } else if (typeof hideEventTooltip === 'function') {
                             hideEventTooltip();
                         }
                     },
@@ -1971,7 +1978,7 @@ class Aura_Calendar_Frontend {
                         
                         var avatarImg = '';
                         if (p.primary_avatar) {
-                            avatarImg = '<img src="' + p.primary_avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" />';
+                            avatarImg = '<img src="' + p.primary_avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" onerror="this.style.display=\'none\';" />';
                         }
 
                         var leadersBadge = '';
@@ -2005,7 +2012,9 @@ class Aura_Calendar_Frontend {
                         }).fail(failureCallback);
                     },
                     eventClick: function(info) {
-                        if (typeof hideEventTooltip === 'function') {
+                        if (typeof window.hideEventTooltip === 'function') {
+                            window.hideEventTooltip();
+                        } else if (typeof hideEventTooltip === 'function') {
                             hideEventTooltip();
                         }
                         var p = info.event.extendedProps || {};
@@ -2027,52 +2036,111 @@ class Aura_Calendar_Frontend {
                     }
                 });
                 window.teacherCalendarInstance.render();
-
-                // Toggle Pantalla Completa para Docente
-                $('#btn-toggle-teacher-fullscreen').on('click', function() {
-                    var $container = $('#tab-teacher-schedule .adp-card');
-                    var isFs = $container.hasClass('aura-calendar-is-fullscreen');
-                    if (isFs) {
-                        $container.removeClass('aura-calendar-is-fullscreen');
-                        $(this).find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
-                        $(this).find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
-                    } else {
-                        $container.addClass('aura-calendar-is-fullscreen');
-                        $(this).find('.dashicons').removeClass('dashicons-editor-expand').addClass('dashicons-editor-contract');
-                        $(this).find('.fs-text').text(auraCalData.i18n.exit_fullscreen || 'Salir de Pantalla Completa');
-                    }
-                    setTimeout(function() {
-                        if (window.teacherCalendarInstance) {
-                            window.teacherCalendarInstance.updateSize();
-                        }
-                    }, 100);
-                });
-
-                $(document).on('keydown', function(e) {
-                    if (e.key === 'Escape' || e.keyCode === 27) {
-                        var $container = $('#tab-teacher-schedule .adp-card');
-                        if ($container.hasClass('aura-calendar-is-fullscreen')) {
-                            $container.removeClass('aura-calendar-is-fullscreen');
-                            $('#btn-toggle-teacher-fullscreen .dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
-                            $('#btn-toggle-teacher-fullscreen .fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
-                            setTimeout(function() {
-                                if (window.teacherCalendarInstance) {
-                                    window.teacherCalendarInstance.updateSize();
-                                }
-                            }, 100);
-                        }
-                    }
-                });
-
-                // Re-render reactivo instantáneo cuando cambia el tema claro/oscuro
-                window.addEventListener('aura:themeChanged', function() {
-                    if (window.teacherCalendarInstance) {
-                        setTimeout(function() {
-                            window.teacherCalendarInstance.render();
-                        }, 50);
-                    }
-                });
             }
+
+            // Polling de reintento para garantizar la inicialización aunque el CDN se demore
+            initTeacherCalendar();
+            var tTries = 0;
+            var tInterval = setInterval(function() {
+                tTries++;
+                if (window.teacherCalendarInstance || tTries > 40) {
+                    clearInterval(tInterval);
+                } else {
+                    initTeacherCalendar();
+                }
+            }, 100);
+
+            // Toggle Pantalla Completa para Docente (Soporte CSS + Native Fullscreen API)
+            function toggleTeacherFullscreen() {
+                var $container = $('#tab-teacher-schedule .adp-card');
+                var $btn = $('#btn-toggle-teacher-fullscreen');
+                var isFs = $container.hasClass('aura-calendar-is-fullscreen');
+
+                if (isFs) {
+                    $container.removeClass('aura-calendar-is-fullscreen');
+                    $('body').removeClass('aura-cal-fullscreen-active');
+                    $btn.removeClass('is-active-fullscreen');
+                    $btn.find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
+                    $btn.find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
+
+                    if (document.fullscreenElement || document.webkitFullscreenElement) {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen().catch(function(){});
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        }
+                    }
+                } else {
+                    $container.addClass('aura-calendar-is-fullscreen');
+                    $('body').addClass('aura-cal-fullscreen-active');
+                    $btn.addClass('is-active-fullscreen');
+                    $btn.find('.dashicons').removeClass('dashicons-editor-expand').addClass('dashicons-editor-contract');
+                    $btn.find('.fs-text').text(auraCalData.i18n.exit_fullscreen || 'Salir de Pantalla Completa');
+
+                    var domEl = $container[0];
+                    if (domEl) {
+                        if (domEl.requestFullscreen) {
+                            domEl.requestFullscreen().catch(function(){});
+                        } else if (domEl.webkitRequestFullscreen) {
+                            domEl.webkitRequestFullscreen();
+                        }
+                    }
+                }
+
+                setTimeout(function() {
+                    if (window.teacherCalendarInstance) {
+                        window.teacherCalendarInstance.updateSize();
+                    }
+                }, 60);
+                setTimeout(function() {
+                    if (window.teacherCalendarInstance) {
+                        window.teacherCalendarInstance.updateSize();
+                    }
+                }, 220);
+            }
+
+            // Delegación global del botón
+            $(document).on('click', '#btn-toggle-teacher-fullscreen', function(e) {
+                e.preventDefault();
+                toggleTeacherFullscreen();
+            });
+
+            // Soporte para tecla Escape
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' || e.keyCode === 27) {
+                    var $container = $('#tab-teacher-schedule .adp-card');
+                    if ($container.hasClass('aura-calendar-is-fullscreen')) {
+                        toggleTeacherFullscreen();
+                    }
+                }
+            });
+
+            // Sincronización si el usuario sale de fullscreen nativo
+            $(document).on('fullscreenchange webkitfullscreenchange mozfullscreenchange MSFullscreenChange', function() {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    var $container = $('#tab-teacher-schedule .adp-card');
+                    if ($container.hasClass('aura-calendar-is-fullscreen')) {
+                        $container.removeClass('aura-calendar-is-fullscreen');
+                        $('body').removeClass('aura-cal-fullscreen-active');
+                        var $btn = $('#btn-toggle-teacher-fullscreen');
+                        $btn.removeClass('is-active-fullscreen');
+                        $btn.find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
+                        $btn.find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
+                        if (window.teacherCalendarInstance) {
+                            setTimeout(function() { window.teacherCalendarInstance.updateSize(); }, 80);
+                        }
+                    }
+                }
+            });
+
+            // Re-render reactivo instantáneo cuando cambia el tema claro/oscuro
+            window.addEventListener('aura:themeChanged', function() {
+                if (window.teacherCalendarInstance) {
+                    setTimeout(function() {
+                        window.teacherCalendarInstance.render();
+                    }, 50);
+                }
+            });
         });
         </script>
         <?php
@@ -2176,9 +2244,6 @@ class Aura_Calendar_Frontend {
         <script>
         document.addEventListener('DOMContentLoaded', function() {
             var $ = jQuery;
-            var calEl = document.getElementById('aura-student-calendar');
-            if (!calEl || typeof FullCalendar === 'undefined') return;
-
             var currentUserId = <?php echo intval( $current_user_id ); ?>;
 
             function closeStModal() {
@@ -2186,193 +2251,274 @@ class Aura_Calendar_Frontend {
             }
             $('.btn-close-st-modal').on('click', closeStModal);
 
-            var calendar = new FullCalendar.Calendar(calEl, {
-                initialView: 'timeGridWeek',
-                locale: 'es',
-                firstDay: parseInt(auraCalData.first_day || 1, 10),
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,listWeek'
-                },
-                buttonText: {
-                    today: 'Hoy',
-                    month: 'Mes',
-                    week:  'Semana',
-                    list:  'Agenda'
-                },
-                slotMinTime: '07:00:00',
-                slotMaxTime: '21:00:00',
-                allDaySlot: false,
-                nowIndicator: true,
-                eventMouseEnter: function(info) {
-                    if (typeof showEventTooltip === 'function') {
-                        showEventTooltip(info.event, info.el, info.jsEvent);
-                    }
-                },
-                eventMouseLeave: function(info) {
-                    if (typeof hideEventTooltip === 'function') {
-                        hideEventTooltip();
-                    }
-                },
-                eventContent: function(arg) {
-                    var p = arg.event.extendedProps || {};
-                    var title = p.raw_title || arg.event.title;
-                    var timeText = arg.timeText;
-                    
-                    var avatarImg = '';
-                    if (p.primary_avatar) {
-                        avatarImg = '<img src="' + p.primary_avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" />';
-                    }
+            // Inicialización Resiliente de FullCalendar para Estudiantes
+            function initStudentCalendar() {
+                if (window.studentCalendarInstance) return;
+                var calEl = document.getElementById('aura-student-calendar');
+                if (!calEl || typeof FullCalendar === 'undefined') return;
 
-                    var isMeLeader = false;
-                    var leaderLabel = '';
-                    if (p.student_leaders && p.student_leaders.length > 0) {
-                        $.each(p.student_leaders, function(idx, ld) {
-                            if (parseInt(ld.student_id, 10) === currentUserId) {
-                                isMeLeader = true;
-                                leaderLabel = ld.role_label || 'Líder';
-                            }
-                        });
-                        if (!leaderLabel) {
-                            leaderLabel = p.student_leaders[0].name ? p.student_leaders[0].name.split(' ')[0] : 'Líder';
+                window.studentCalendarInstance = new FullCalendar.Calendar(calEl, {
+                    initialView: 'timeGridWeek',
+                    locale: 'es',
+                    firstDay: parseInt(auraCalData.first_day || 1, 10),
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,listWeek'
+                    },
+                    buttonText: {
+                        today: 'Hoy',
+                        month: 'Mes',
+                        week:  'Semana',
+                        list:  'Agenda'
+                    },
+                    slotMinTime: '07:00:00',
+                    slotMaxTime: '21:00:00',
+                    allDaySlot: false,
+                    nowIndicator: true,
+                    eventMouseEnter: function(info) {
+                        if (typeof window.showEventTooltip === 'function') {
+                            window.showEventTooltip(info.event, info.el, info.jsEvent);
+                        } else if (typeof showEventTooltip === 'function') {
+                            showEventTooltip(info.event, info.el, info.jsEvent);
                         }
-                    }
+                    },
+                    eventMouseLeave: function(info) {
+                        if (typeof window.hideEventTooltip === 'function') {
+                            window.hideEventTooltip();
+                        } else if (typeof hideEventTooltip === 'function') {
+                            hideEventTooltip();
+                        }
+                    },
+                    eventContent: function(arg) {
+                        var p = arg.event.extendedProps || {};
+                        var title = p.raw_title || arg.event.title;
+                        var timeText = arg.timeText;
+                        
+                        var avatarImg = '';
+                        if (p.primary_avatar) {
+                            avatarImg = '<img src="' + p.primary_avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" onerror="this.style.display=\'none\';" />';
+                        }
 
-                    var leadersBadge = '';
-                    if (leaderLabel) {
-                        var bg = isMeLeader ? 'background:#f59e0b;color:#ffffff;' : 'background:rgba(255,255,255,0.3);color:inherit;';
-                        leadersBadge = '<span style="font-size:10px;' + bg + 'border-radius:8px;padding:1px 5px;margin-left:auto;white-space:nowrap;font-weight:700;">⭐ ' + leaderLabel + '</span>';
-                    }
+                        var isMeLeader = false;
+                        var leaderLabel = '';
+                        if (p.student_leaders && p.student_leaders.length > 0) {
+                            $.each(p.student_leaders, function(idx, ld) {
+                                if (parseInt(ld.student_id, 10) === currentUserId) {
+                                    isMeLeader = true;
+                                    leaderLabel = ld.role_label || 'Líder';
+                                }
+                            });
+                            if (!leaderLabel) {
+                                leaderLabel = p.student_leaders[0].name ? p.student_leaders[0].name.split(' ')[0] : 'Líder';
+                            }
+                        }
 
-                    return {
-                        html: '<div style="display:flex;align-items:center;gap:5px;width:100%;overflow:hidden;padding:1px 2px;">' +
-                              avatarImg +
-                              (timeText ? '<span style="font-weight:700;font-size:11px;flex-shrink:0;">' + timeText + '</span>' : '') +
-                              '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;font-size:12px;">' + title + '</span>' +
-                              leadersBadge +
-                              '</div>'
-                    };
-                },
-                events: function(info, successCallback, failureCallback) {
-                    $.post(auraCalData.ajax_url, {
-                        action: 'aura_cal_get_events',
-                        nonce: auraCalData.nonce,
-                        start: info.startStr,
-                        end: info.endStr
-                    }, function(res) {
-                        if (res && res.success) {
-                            successCallback(res.data.events || []);
+                        var leadersBadge = '';
+                        if (leaderLabel) {
+                            var bg = isMeLeader ? 'background:#f59e0b;color:#ffffff;' : 'background:rgba(255,255,255,0.3);color:inherit;';
+                            leadersBadge = '<span style="font-size:10px;' + bg + 'border-radius:8px;padding:1px 5px;margin-left:auto;white-space:nowrap;font-weight:700;">⭐ ' + leaderLabel + '</span>';
+                        }
+
+                        return {
+                            html: '<div style="display:flex;align-items:center;gap:5px;width:100%;overflow:hidden;padding:1px 2px;">' +
+                                  avatarImg +
+                                  (timeText ? '<span style="font-weight:700;font-size:11px;flex-shrink:0;">' + timeText + '</span>' : '') +
+                                  '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;font-size:12px;">' + title + '</span>' +
+                                  leadersBadge +
+                                  '</div>'
+                        };
+                    },
+                    events: function(info, successCallback, failureCallback) {
+                        $.post(auraCalData.ajax_url, {
+                            action: 'aura_cal_get_events',
+                            nonce: auraCalData.nonce,
+                            start: info.startStr,
+                            end: info.endStr
+                        }, function(res) {
+                            if (res && res.success) {
+                                successCallback(res.data.events || []);
+                            } else {
+                                failureCallback();
+                            }
+                        }).fail(failureCallback);
+                    },
+                    eventClick: function(info) {
+                        if (typeof window.hideEventTooltip === 'function') {
+                            window.hideEventTooltip();
+                        } else if (typeof hideEventTooltip === 'function') {
+                            hideEventTooltip();
+                        }
+                        var p = info.event.extendedProps || {};
+                        var d = info.event;
+
+                        $('#st-det-title').text(p.raw_title || d.title);
+                        $('#st-det-subject').text(p.subject_name || 'General');
+
+                        var startFormatted = d.start ? d.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                        var endFormatted = d.end ? d.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                        var timeFormatted = (p.date_label ? p.date_label + ' | ' : '') + (p.start_time_label ? p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '') : (startFormatted + (endFormatted ? ' - ' + endFormatted : '')));
+                        $('#st-det-time').text(timeFormatted);
+
+                        // Instructor con Avatar
+                        if (p.primary_name) {
+                            var teacherAvatar = p.primary_avatar ? '<img src="' + p.primary_avatar + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">' : '👨‍🏫';
+                            $('#st-det-teacher').html(teacherAvatar + ' <strong>' + p.primary_name + '</strong>');
                         } else {
-                            failureCallback();
+                            $('#st-det-teacher').text('Por designar');
                         }
-                    }).fail(failureCallback);
-                },
-                eventClick: function(info) {
-                    if (typeof hideEventTooltip === 'function') {
-                        hideEventTooltip();
+
+                        // Ubicación
+                        if (p.location) {
+                            $('#st-det-location').text(p.location);
+                            $('#st-det-location-box').show();
+                        } else {
+                            $('#st-det-location-box').hide();
+                        }
+
+                        // Enlace Virtual
+                        if (p.online_url) {
+                            $('#st-det-online-link').attr('href', p.online_url);
+                            $('#st-det-online-box').show();
+                        } else {
+                            $('#st-det-online-box').hide();
+                        }
+
+                        // Roles de Liderazgo
+                        var myRole = null;
+                        if (p.student_leaders && p.student_leaders.length > 0) {
+                            var html = '';
+                            $.each(p.student_leaders, function(i, l) {
+                                if (parseInt(l.student_id, 10) === currentUserId) {
+                                    myRole = l.role_label || l.role;
+                                }
+                                var lAvatar = l.avatar_url ? '<img src="' + l.avatar_url + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;">' : '👤';
+                                html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--aura-surface-alt,#f8fafc);border-radius:8px;border:1px solid var(--aura-border,#e2e8f0);font-size:12px;">';
+                                html += '  <div style="display:flex;align-items:center;gap:6px;">' + lAvatar + ' <strong>' + l.name + '</strong></div>';
+                                html += '  <span style="background:rgba(99,102,241,0.12);color:#4f46e5;font-weight:600;padding:2px 8px;border-radius:6px;font-size:11px;">' + (l.role_label || l.role) + '</span>';
+                                html += '</div>';
+                            });
+                            $('#st-det-leaders-list').html(html);
+                            $('#st-det-leaders-box').show();
+                        } else {
+                            $('#st-det-leaders-box').hide();
+                        }
+
+                        // Banner personal
+                        if (myRole) {
+                            $('#st-det-my-role-text').html('🎯 <strong>¡Fuiste asignado como ' + myRole + ' para esta sesión!</strong> Prepárate para guiar y colaborar con el grupo.');
+                            $('#st-det-my-role-banner').show();
+                        } else {
+                            $('#st-det-my-role-banner').hide();
+                        }
+
+                        $('#modal-student-event-detail').css({ display: 'flex' }).hide().fadeIn(150);
                     }
-                    var p = info.event.extendedProps || {};
-                    var d = info.event;
+                });
+                window.studentCalendarInstance.render();
+            }
 
-                    $('#st-det-title').text(p.raw_title || d.title);
-                    $('#st-det-subject').text(p.subject_name || 'General');
-
-                    var startFormatted = d.start ? d.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                    var endFormatted = d.end ? d.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                    var timeFormatted = (p.date_label ? p.date_label + ' | ' : '') + (p.start_time_label ? p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '') : (startFormatted + (endFormatted ? ' - ' + endFormatted : '')));
-                    $('#st-det-time').text(timeFormatted);
-
-                    // Instructor con Avatar
-                    if (p.primary_name) {
-                        var teacherAvatar = p.primary_avatar ? '<img src="' + p.primary_avatar + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">' : '👨‍🏫';
-                        $('#st-det-teacher').html(teacherAvatar + ' <strong>' + p.primary_name + '</strong>');
-                    } else {
-                        $('#st-det-teacher').text('Por designar');
-                    }
-
-                    // Ubicación
-                    if (p.location) {
-                        $('#st-det-location').text(p.location);
-                        $('#st-det-location-box').show();
-                    } else {
-                        $('#st-det-location-box').hide();
-                    }
-
-                    // Enlace Virtual
-                    if (p.online_url) {
-                        $('#st-det-online-link').attr('href', p.online_url);
-                        $('#st-det-online-box').show();
-                    } else {
-                        $('#st-det-online-box').hide();
-                    }
-
-                    // Roles de Liderazgo
-                    var myRole = null;
-                    if (p.student_leaders && p.student_leaders.length > 0) {
-                        var html = '';
-                        $.each(p.student_leaders, function(i, l) {
-                            if (parseInt(l.student_id, 10) === currentUserId) {
-                                myRole = l.role_label || l.role;
-                            }
-                            var lAvatar = l.avatar_url ? '<img src="' + l.avatar_url + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;">' : '👤';
-                            html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;background:var(--aura-surface-alt,#f8fafc);border-radius:8px;border:1px solid var(--aura-border,#e2e8f0);font-size:12px;">';
-                            html += '  <div style="display:flex;align-items:center;gap:6px;">' + lAvatar + ' <strong>' + l.name + '</strong></div>';
-                            html += '  <span style="background:rgba(99,102,241,0.12);color:#4f46e5;font-weight:600;padding:2px 8px;border-radius:6px;font-size:11px;">' + (l.role_label || l.role) + '</span>';
-                            html += '</div>';
-                        });
-                        $('#st-det-leaders-list').html(html);
-                        $('#st-det-leaders-box').show();
-                    } else {
-                        $('#st-det-leaders-box').hide();
-                    }
-
-                    // Banner personal
-                    if (myRole) {
-                        $('#st-det-my-role-text').html('🎯 <strong>¡Fuiste asignado como ' + myRole + ' para esta sesión!</strong> Prepárate para guiar y colaborar con el grupo.');
-                        $('#st-det-my-role-banner').show();
-                    } else {
-                        $('#st-det-my-role-banner').hide();
-                    }
-
-                    $('#modal-student-event-detail').css({ display: 'flex' }).hide().fadeIn(150);
+            // Polling de reintentos
+            initStudentCalendar();
+            var sTries = 0;
+            var sInterval = setInterval(function() {
+                sTries++;
+                if (window.studentCalendarInstance || sTries > 40) {
+                    clearInterval(sInterval);
+                } else {
+                    initStudentCalendar();
                 }
-            });
-            calendar.render();
+            }, 100);
 
-            // Toggle Pantalla Completa para Estudiante
-            $('#btn-toggle-student-fullscreen').on('click', function() {
+            // Toggle Pantalla Completa para Estudiante (Soporte CSS + Native Fullscreen API)
+            function toggleStudentFullscreen() {
                 var $container = $('.aura-student-schedule-wrap .adp-card');
+                var $btn = $('#btn-toggle-student-fullscreen');
                 var isFs = $container.hasClass('aura-calendar-is-fullscreen');
+
                 if (isFs) {
                     $container.removeClass('aura-calendar-is-fullscreen');
-                    $(this).find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
-                    $(this).find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
+                    $('body').removeClass('aura-cal-fullscreen-active');
+                    $btn.removeClass('is-active-fullscreen');
+                    $btn.find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
+                    $btn.find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
+
+                    if (document.fullscreenElement || document.webkitFullscreenElement) {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen().catch(function(){});
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        }
+                    }
                 } else {
                     $container.addClass('aura-calendar-is-fullscreen');
-                    $(this).find('.dashicons').removeClass('dashicons-editor-expand').addClass('dashicons-editor-contract');
-                    $(this).find('.fs-text').text(auraCalData.i18n.exit_fullscreen || 'Salir de Pantalla Completa');
-                }
-                setTimeout(function() {
-                    if (calendar) {
-                        calendar.updateSize();
+                    $('body').addClass('aura-cal-fullscreen-active');
+                    $btn.addClass('is-active-fullscreen');
+                    $btn.find('.dashicons').removeClass('dashicons-editor-expand').addClass('dashicons-editor-contract');
+                    $btn.find('.fs-text').text(auraCalData.i18n.exit_fullscreen || 'Salir de Pantalla Completa');
+
+                    var domEl = $container[0];
+                    if (domEl) {
+                        if (domEl.requestFullscreen) {
+                            domEl.requestFullscreen().catch(function(){});
+                        } else if (domEl.webkitRequestFullscreen) {
+                            domEl.webkitRequestFullscreen();
+                        }
                     }
-                }, 100);
+                }
+
+                setTimeout(function() {
+                    if (window.studentCalendarInstance) {
+                        window.studentCalendarInstance.updateSize();
+                    }
+                }, 60);
+                setTimeout(function() {
+                    if (window.studentCalendarInstance) {
+                        window.studentCalendarInstance.updateSize();
+                    }
+                }, 220);
+            }
+
+            // Delegación global
+            $(document).on('click', '#btn-toggle-student-fullscreen', function(e) {
+                e.preventDefault();
+                toggleStudentFullscreen();
             });
 
+            // Tecla Escape
             $(document).on('keydown', function(e) {
                 if (e.key === 'Escape' || e.keyCode === 27) {
                     var $container = $('.aura-student-schedule-wrap .adp-card');
                     if ($container.hasClass('aura-calendar-is-fullscreen')) {
-                        $container.removeClass('aura-calendar-is-fullscreen');
-                        $('#btn-toggle-student-fullscreen .dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
-                        $('#btn-toggle-student-fullscreen .fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
-                        setTimeout(function() {
-                            if (calendar) {
-                                calendar.updateSize();
-                            }
-                        }, 100);
+                        toggleStudentFullscreen();
                     }
+                }
+            });
+
+            // Sincronización fullscreen nativo
+            $(document).on('fullscreenchange webkitfullscreenchange mozfullscreenchange MSFullscreenChange', function() {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                    var $container = $('.aura-student-schedule-wrap .adp-card');
+                    if ($container.hasClass('aura-calendar-is-fullscreen')) {
+                        $container.removeClass('aura-calendar-is-fullscreen');
+                        $('body').removeClass('aura-cal-fullscreen-active');
+                        var $btn = $('#btn-toggle-student-fullscreen');
+                        $btn.removeClass('is-active-fullscreen');
+                        $btn.find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
+                        $btn.find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
+                        if (window.studentCalendarInstance) {
+                            setTimeout(function() { window.studentCalendarInstance.updateSize(); }, 80);
+                        }
+                    }
+                }
+            });
+
+            // Re-render reactivo en cambio de tema
+            window.addEventListener('aura:themeChanged', function() {
+                if (window.studentCalendarInstance) {
+                    setTimeout(function() {
+                        window.studentCalendarInstance.render();
+                    }, 50);
                 }
             });
         });
