@@ -119,14 +119,138 @@
     border-color: var(--aura-border, #e2e8f0) !important;
 }
 
+/* ── COMPACTACIÓN Y AJUSTE VISUAL DE CABECERA Y FILA 'TODO EL DÍA' ── */
+/* 1. Anular márgenes y paddings residuales de maquetadores como Divi */
+.aura-calendar-view-container table,
+.aura-teacher-portal table,
+.aura-student-portal table,
+.fc table {
+    border-collapse: collapse !important;
+    margin-bottom: 0 !important;
+}
+
+/* 2. Fila 1: Cabecera de días (LUN, MAR, MIÉ, etc.) ultra compacta */
+.fc .fc-scrollgrid-section-header,
+.fc .fc-scrollgrid-section-header th,
+.fc .fc-scrollgrid-section-header td {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+}
+
 .fc .fc-col-header-cell {
     background: var(--aura-surface-alt, #f8fafc);
-    padding: 8px 0;
+    padding: 3px 0 !important;
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--aura-text-secondary, #64748b);
+    line-height: 1.2 !important;
+}
+
+.fc .fc-col-header-cell-cushion {
+    padding: 2px 4px !important;
+    display: inline-block !important;
+    line-height: 1.2 !important;
+}
+
+/* 3. Fila 2: Franja 'Todo el día' ultra compacta y contigua a la cabecera */
+.fc .fc-timegrid-all-day,
+.fc .fc-timegrid-all-day th,
+.fc .fc-timegrid-all-day td,
+.fc .fc-scrollgrid-section.fc-timegrid-all-day {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+}
+
+.fc .fc-timegrid-all-day .fc-daygrid-day-frame {
+    min-height: 24px !important;
+    padding: 1px 0 !important;
+    margin: 0 !important;
+}
+
+.fc .fc-timegrid-all-day .fc-daygrid-day-events {
+    margin: 0 !important;
+    min-height: 22px !important;
+    padding: 0 !important;
+}
+
+.fc .fc-timegrid-all-day .fc-daygrid-body {
+    min-height: unset !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 4. Columna Axis (Hora) sincronizada para alineación 100% precisa */
+.fc .fc-timegrid-axis {
+    width: 82px !important;
+    min-width: 82px !important;
+    max-width: 82px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    vertical-align: middle !important;
+}
+
+.fc .fc-timegrid-all-day .fc-timegrid-axis-frame {
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 1px 4px !important;
+    min-height: 24px !important;
+    display: flex !important;
+}
+
+.fc .fc-timegrid-all-day .fc-timegrid-axis-cushion {
+    white-space: nowrap !important;
+    padding: 2px 7px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    border-radius: 9999px !important;
+    cursor: help;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.12));
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    color: #4f46e5;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.fc .fc-timegrid-all-day .fc-timegrid-axis-cushion:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(139, 92, 246, 0.22));
+    border-color: #6366f1;
+    color: #4338ca;
+}
+
+/* 5. Eliminación de flechas y barras de scroll secundarias en Windows */
+.fc .fc-scrollgrid-section-header .fc-scrollgrid-shrink .fc-scroller,
+.fc .fc-timegrid-all-day .fc-scrollgrid-shrink .fc-scroller,
+.fc .fc-scrollgrid-section-header .fc-scroller,
+.fc .fc-timegrid-all-day .fc-scroller {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    overflow-y: hidden !important;
+}
+
+.fc .fc-scrollgrid-section-header .fc-scrollgrid-shrink .fc-scroller::-webkit-scrollbar,
+.fc .fc-timegrid-all-day .fc-scrollgrid-shrink .fc-scroller::-webkit-scrollbar,
+.fc .fc-scrollgrid-section-header .fc-scroller::-webkit-scrollbar,
+.fc .fc-timegrid-all-day .fc-scroller::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+.fc th.fc-scrollgrid-shrink,
+.fc td.fc-scrollgrid-shrink {
+    padding: 0 !important;
+    vertical-align: middle !important;
 }
 
 .fc .fc-event {

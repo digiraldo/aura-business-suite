@@ -1626,7 +1626,27 @@ body.aura-dark-mode #aura-cal-event-tooltip {
     color: #818cf8 !important;
 }
 
-/* Fila 'Todo el día' y eliminación de scroll horizontal en Frontend Dark Mode */
+/* Fila 'Todo el día', compactación y eliminación de scrollbars secundarias en Frontend Dark Mode */
+[data-theme="dark"] .fc .fc-scrollgrid-section-header,
+[data-theme="dark"] .fc .fc-scrollgrid-section-header th,
+[data-theme="dark"] .fc .fc-scrollgrid-section-header td,
+[data-theme="dark"] .fc .fc-timegrid-all-day,
+[data-theme="dark"] .fc .fc-timegrid-all-day th,
+[data-theme="dark"] .fc .fc-timegrid-all-day td,
+.aura-dark-theme .fc .fc-scrollgrid-section-header,
+.aura-dark-theme .fc .fc-timegrid-all-day {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+}
+
+[data-theme="dark"] .fc .fc-col-header-cell,
+.aura-dark-theme .fc .fc-col-header-cell {
+    padding: 3px 0 !important;
+    line-height: 1.2 !important;
+}
+
 [data-theme="dark"] .fc .fc-scroller,
 [data-theme="dark"] .fc .fc-scroller-harness,
 [data-theme="dark"] .fc .fc-scroller-liquid-absolute,
@@ -1636,8 +1656,51 @@ body.aura-dark-mode #aura-cal-event-tooltip {
     overflow-x: hidden !important;
 }
 
+/* Ocultar flechas y barras de scroll secundarias en cabecera y all-day en Dark Mode */
+[data-theme="dark"] .fc .fc-scrollgrid-section-header .fc-scrollgrid-shrink .fc-scroller,
+[data-theme="dark"] .fc .fc-timegrid-all-day .fc-scrollgrid-shrink .fc-scroller,
+[data-theme="dark"] .fc .fc-scrollgrid-section-header .fc-scroller,
+[data-theme="dark"] .fc .fc-timegrid-all-day .fc-scroller,
+.aura-dark-theme .fc .fc-scrollgrid-section-header .fc-scrollgrid-shrink .fc-scroller,
+.aura-dark-theme .fc .fc-timegrid-all-day .fc-scrollgrid-shrink .fc-scroller {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    overflow-y: hidden !important;
+}
+
+[data-theme="dark"] .fc .fc-scrollgrid-section-header .fc-scrollgrid-shrink .fc-scroller::-webkit-scrollbar,
+[data-theme="dark"] .fc .fc-timegrid-all-day .fc-scrollgrid-shrink .fc-scroller::-webkit-scrollbar,
+[data-theme="dark"] .fc .fc-scrollgrid-section-header .fc-scroller::-webkit-scrollbar,
+[data-theme="dark"] .fc .fc-timegrid-all-day .fc-scroller::-webkit-scrollbar,
+.aura-dark-theme .fc .fc-scrollgrid-section-header .fc-scroller::-webkit-scrollbar,
+.aura-dark-theme .fc .fc-timegrid-all-day .fc-scroller::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+[data-theme="dark"] .fc .fc-timegrid-all-day .fc-timegrid-axis-frame,
+.aura-dark-theme .fc .fc-timegrid-all-day .fc-timegrid-axis-frame {
+    padding: 1px 4px !important;
+    min-height: 24px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
 [data-theme="dark"] .fc .fc-timegrid-all-day .fc-timegrid-axis-cushion,
 .aura-dark-theme .fc .fc-timegrid-all-day .fc-timegrid-axis-cushion {
+    white-space: nowrap !important;
+    padding: 2px 7px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    border-radius: 9999px !important;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(139, 92, 246, 0.26)) !important;
     border: 1px solid rgba(99, 102, 241, 0.45) !important;
     color: #c7d2fe !important;

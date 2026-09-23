@@ -602,5 +602,39 @@ Se implementó el enrutamiento reactivo idéntico al estándar de Google Calenda
 
 ---
 
-- Intento aplicar la Opción B (DIVI 4): En el "Elemento Principal" usando Variables CSS de Aura (Sin Opciones del Tema), del archivo `documentacion\Tutoriales\TUTORIAL-CALENDARIO-TOOLTIPS-MODALES-Y-MODO-OSCURO-DIVI.md`, pero no me sirve o funciona en Divi 4, dejo captura de pantalla.
-- Mejora visualmente las dos primeras filas del calendario del frontend, ya que estan muy separadas verticalmente, elimina el padding superior e inferior y demas para que queden juntos pero sin perder la alineacion de las columnas.
+### 28. Solución para Divi (CSS Libre vs Elementos) y Compactación de las Dos Primeras Filas del Calendario (Cabecera y Todo el Día)
+
+#### A. Solución al Error de Divi (`Expected a 'FUNCTION' or 'IDENT' after colon`)
+- **Causa Raíz:** En la captura enviada, la ventana de configuración de Divi se encuentra activa en la subpestaña **"CSS de formato libre"** (dentro de *Avanzado ➔ CSS personalizado*). Este editor exige que cualquier código CSS esté dentro de un bloque con la palabra clave `selector { ... }`. Al pegar propiedades CSS sueltas sin un selector que las contenga, el analizador de Divi genera el error de sintaxis en rojo.
+- **Solución Implementada:**
+  1. **Si usas "CSS de formato libre":** Se debe envolver con `selector { ... }`:
+     ```css
+     selector {
+         background-color: var(--aura-surface-card, #ffffff) !important;
+         color: var(--aura-text-primary, #0f172a) !important;
+         border: 1px solid var(--aura-border, #e2e8f0) !important;
+         transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+     }
+     ```
+  2. **Si usas "Elementos del módulo":** Solo debes hacer clic en el botón contiguo **"Elementos del módulo"** (a la derecha de "CSS de formato libre"). Allí aparece la casilla **"Elemento principal"** donde sí se pueden pegar las propiedades sueltas directamente sin `selector`.
+  - Se actualizó el tutorial en [`documentacion/Tutoriales/TUTORIAL-CALENDARIO-TOOLTIPS-MODALES-Y-MODO-OSCURO-DIVI.md`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/documentacion/Tutoriales/TUTORIAL-CALENDARIO-TOOLTIPS-MODALES-Y-MODO-OSCURO-DIVI.md) detallando ambos caminos con capturas explicadas.
+
+---
+
+#### B. Compactación Visual de las Dos Primeras Filas y Eliminación de Scrollbars Secundarias
+- **Causa Raíz:**
+  1. En la vista semanal (`timeGridWeek`), la fila 1 (cabecera con los días de la semana) y la fila 2 (franja de "Todo el día") tenían múltiples fuentes de padding superior e inferior (en celdas `th`, `td`, y estilos heredados de Divi).
+  2. El badge "🌅 Todo el día" se dividía en dos líneas de texto (`🌅 Todo` / `el día`), duplicando la altura requerida para la fila.
+  3. En Windows, FullCalendar coloca un elemento con `overflow-y: scroll` en la celda espaciadora derecha (`.fc-scrollgrid-shrink`) de ambas filas para reservar el ancho de la barra de desplazamiento del cuerpo. Al tener alturas pequeñas (~30px), Windows dibuja dos cajas de scrollbar completas con flechas arriba/abajo en la cabecera y en all-day.
+- **Solución Implementada:**
+  1. **Eliminación Total de Padding Vertical Excesivo:**
+     - `padding-top: 0 !important; padding-bottom: 0 !important;` en `.fc-scrollgrid-section-header` y `.fc-timegrid-all-day`.
+     - Padding de `.fc-col-header-cell` ajustado a `3px 0 !important` y altura mínima de `.fc-daygrid-day-frame` reducida a `24px`. Ambas filas quedan inmediatamente juntas y sin espacios muertos.
+  2. **Badge Compacto en Una Sola Línea:**
+     - Se fijó `white-space: nowrap !important;` en `.fc-timegrid-axis-cushion` con padding `2px 7px !important` y bordes píldora redondeados `9999px`, manteniendo "🌅 Todo el día" en una sola línea pulcra.
+  3. **Alineación 100% de Columnas (Eje Horario Sincronizado):**
+     - Se unificó el ancho de la columna de hora `.fc-timegrid-axis` en exactamente `82px !important` en la cabecera, en la fila de Todo el día y en todas las franjas horarias inferiores, garantizando que LUN, MAR, MIÉ, JUE, VIE, SÁB y DOM mantengan su cuadrícula perfectamente recta y alineada.
+  4. **Eliminación de Flechas de Scrollbar en Windows:**
+     - Se aplicó `scrollbar-width: none !important;` y `::-webkit-scrollbar { display: none !important; width: 0 !important; }` en `.fc-scrollgrid-shrink .fc-scroller`. La celda preserva su ancho de reserva para alinear las columnas con el cuerpo inferior pero las flechas y la barra gris desaparecen por completo.
+  5. **Neutralización de Tablas de Divi:**
+     - Se forzó `border-collapse: collapse !important; margin-bottom: 0 !important;` sobre las tablas del calendario en el frontend y backend para anular cualquier espaciado externo introducido por Divi.
