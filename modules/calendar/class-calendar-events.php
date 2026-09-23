@@ -203,16 +203,40 @@ class Aura_Calendar_Events {
             $inst_rows = $wpdb->get_results(
                 "SELECT ei.*, u.display_name, u.user_email
                  FROM {$table_inst} ei
-                 JOIN {$wpdb->users} u ON u.ID = ei.teacher_id
+                 JOIN {$wpdb->users} u ON u.ID = COALESCE(NULLIF(ei.teacher_id, 0), ei.instructor_id)
                  WHERE ei.event_id IN ({$ids_placeholder})"
             );
+
+            // Cargar fotos de perfil de wp_aura_students si está disponible
+            $t_students = $wpdb->prefix . 'aura_students';
+            $custom_photos = [];
+            if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_students}'" ) === $t_students && ! empty( $inst_rows ) ) {
+                $twp_ids = array_unique( array_filter( array_map( function( $r ) {
+                    return (int) ( $r->teacher_id ?: ( $r->instructor_id ?? 0 ) );
+                }, $inst_rows ) ) );
+                if ( ! empty( $twp_ids ) ) {
+                    $twp_in = implode( ',', $twp_ids );
+                    $photos = $wpdb->get_results( "SELECT wp_user_id, photo_url FROM {$t_students} WHERE wp_user_id IN ({$twp_in}) AND photo_url IS NOT NULL AND photo_url != ''" );
+                    if ( is_array( $photos ) ) {
+                        foreach ( $photos as $p ) {
+                            $custom_photos[ (int) $p->wp_user_id ] = $p->photo_url;
+                        }
+                    }
+                }
+            }
+
             foreach ( $inst_rows as $ir ) {
+                $real_id = (int) ( $ir->teacher_id ?: ( $ir->instructor_id ?? 0 ) );
+                $av_url  = ! empty( $custom_photos[ $real_id ] )
+                    ? $custom_photos[ $real_id ]
+                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+
                 $instructors_by_event[ $ir->event_id ][] = [
-                    'id'     => (int) $ir->teacher_id,
+                    'id'     => $real_id,
                     'name'   => $ir->display_name,
                     'email'  => $ir->user_email,
                     'role'   => $ir->role,
-                    'avatar' => get_avatar_url( (int) $ir->teacher_id, [ 'size' => 64, 'default' => 'identicon' ] ),
+                    'avatar' => $av_url,
                 ];
             }
         }
@@ -342,18 +366,40 @@ class Aura_Calendar_Events {
             return null;
         }
 
-        // Obtener instructores asociados con sus avatares
+        // Obtener instructores asociados con sus avatares y nombres normalizados
         $instructors = $wpdb->get_results( $wpdb->prepare(
             "SELECT ei.*, u.display_name, u.user_email
              FROM {$table_inst} ei
-             JOIN {$wpdb->users} u ON u.ID = ei.teacher_id
+             JOIN {$wpdb->users} u ON u.ID = COALESCE(NULLIF(ei.teacher_id, 0), ei.instructor_id)
              WHERE ei.event_id = %d",
             $id
         ) );
 
         if ( is_array( $instructors ) ) {
+            $t_students = $wpdb->prefix . 'aura_students';
+            $custom_photos = [];
+            if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_students}'" ) === $t_students && ! empty( $instructors ) ) {
+                $twp_ids = array_unique( array_filter( array_map( function( $inst ) {
+                    return (int) ( $inst->teacher_id ?: ( $inst->instructor_id ?? 0 ) );
+                }, $instructors ) ) );
+                if ( ! empty( $twp_ids ) ) {
+                    $twp_in = implode( ',', $twp_ids );
+                    $photos = $wpdb->get_results( "SELECT wp_user_id, photo_url FROM {$t_students} WHERE wp_user_id IN ({$twp_in}) AND photo_url IS NOT NULL AND photo_url != ''" );
+                    if ( is_array( $photos ) ) {
+                        foreach ( $photos as $p ) {
+                            $custom_photos[ (int) $p->wp_user_id ] = $p->photo_url;
+                        }
+                    }
+                }
+            }
+
             foreach ( $instructors as &$inst ) {
-                $inst->avatar = get_avatar_url( (int) $inst->teacher_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                $real_id      = (int) ( $inst->teacher_id ?: ( $inst->instructor_id ?? 0 ) );
+                $inst->avatar = ! empty( $custom_photos[ $real_id ] )
+                    ? $custom_photos[ $real_id ]
+                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                $inst->name   = $inst->display_name;
+                $inst->id     = $real_id;
             }
             unset( $inst );
         }
@@ -434,6 +480,7 @@ class Aura_Calendar_Events {
                 $teacher_ids = array_unique( array_filter( array_map( 'intval', explode( ',', $data['teacher_ids'] ) ) ) );
             }
         }
+        $has_instructor_id_col = (bool) $wpdb->get_results( "SHOW COLUMNS FROM `{$table_inst}` LIKE 'instructor_id'" );
 
         // Procesar líderes estudiantiles asignados
         $student_leaders_json = null;
@@ -529,16 +576,18 @@ class Aura_Calendar_Events {
 
                         // Insertar instructores
                         foreach ( $teacher_ids as $tid ) {
-                            $wpdb->insert(
-                                $table_inst,
-                                [
-                                    'event_id'   => $new_evt_id,
-                                    'teacher_id' => $tid,
-                                    'role'       => 'lead',
-                                    'created_at' => current_time( 'mysql' ),
-                                ],
-                                [ '%d', '%d', '%s', '%s' ]
-                            );
+                            $inst_payload = [
+                                'event_id'   => $new_evt_id,
+                                'teacher_id' => $tid,
+                                'role'       => 'lead',
+                                'created_at' => current_time( 'mysql' ),
+                            ];
+                            $inst_formats = [ '%d', '%d', '%s', '%s' ];
+                            if ( $has_instructor_id_col ) {
+                                $inst_payload['instructor_id'] = $tid;
+                                $inst_formats[] = '%d';
+                            }
+                            $wpdb->insert( $table_inst, $inst_payload, $inst_formats );
                         }
                     }
                 }
@@ -602,16 +651,18 @@ class Aura_Calendar_Events {
             // Re-asignar instructores
             $wpdb->delete( $table_inst, [ 'event_id' => $event_id ], [ '%d' ] );
             foreach ( $teacher_ids as $tid ) {
-                $wpdb->insert(
-                    $table_inst,
-                    [
-                        'event_id'   => $event_id,
-                        'teacher_id' => $tid,
-                        'role'       => 'lead',
-                        'created_at' => current_time( 'mysql' ),
-                    ],
-                    [ '%d', '%d', '%s', '%s' ]
-                );
+                $inst_payload = [
+                    'event_id'   => $event_id,
+                    'teacher_id' => $tid,
+                    'role'       => 'lead',
+                    'created_at' => current_time( 'mysql' ),
+                ];
+                $inst_formats = [ '%d', '%d', '%s', '%s' ];
+                if ( $has_instructor_id_col ) {
+                    $inst_payload['instructor_id'] = $tid;
+                    $inst_formats[] = '%d';
+                }
+                $wpdb->insert( $table_inst, $inst_payload, $inst_formats );
             }
 
             // Sincronizar actualización con Google Calendar
@@ -639,16 +690,18 @@ class Aura_Calendar_Events {
             $event_id = (int) $wpdb->insert_id;
 
             foreach ( $teacher_ids as $tid ) {
-                $wpdb->insert(
-                    $table_inst,
-                    [
-                        'event_id'   => $event_id,
-                        'teacher_id' => $tid,
-                        'role'       => 'lead',
-                        'created_at' => current_time( 'mysql' ),
-                    ],
-                    [ '%d', '%d', '%s', '%s' ]
-                );
+                $inst_payload = [
+                    'event_id'   => $event_id,
+                    'teacher_id' => $tid,
+                    'role'       => 'lead',
+                    'created_at' => current_time( 'mysql' ),
+                ];
+                $inst_formats = [ '%d', '%d', '%s', '%s' ];
+                if ( $has_instructor_id_col ) {
+                    $inst_payload['instructor_id'] = $tid;
+                    $inst_formats[] = '%d';
+                }
+                $wpdb->insert( $table_inst, $inst_payload, $inst_formats );
             }
 
             if ( Aura_Calendar_Google_Sync::is_auto_sync() ) {

@@ -377,6 +377,12 @@ class Aura_Calendar_Setup {
             $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `teachers` TEXT DEFAULT NULL AFTER `default_teacher_id`" );
         }
 
+        // Retirar índice obsoleto event_instructor en wp_aura_cal_event_instructors para permitir múltiples profesores
+        $old_idx = $wpdb->get_results( "SHOW INDEX FROM `{$t_event_instructors}` WHERE Key_name = 'event_instructor'" );
+        if ( ! empty( $old_idx ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_event_instructors}` DROP INDEX `event_instructor`" );
+        }
+
         self::maybe_add_task_library_columns();
 
         update_option( self::DB_VERSION_OPTION, self::DB_VERSION );

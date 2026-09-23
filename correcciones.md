@@ -269,6 +269,33 @@ Edited correcciones.md
 Viewed correcciones.md:212-236
 
 
+Se ha implementado el formato **Stack + Ring Animado** para los **Avatares Grandes (44px)** en los **Tooltips Enriquecidos** del calendario.
+
+---
+
+### 🎨 Detalle de las mejoras visuales implementadas
+
+1. **Ring Animado (Pulsing Ring + Ring-Offset Gap):**
+   - **Avatar Principal (44px):** El avatar principal cuenta con un borde índigo institucional (`#6366f1`), un separador de contraste perimetral oscuro de `2px` (`#0f172a`), y una animación `@keyframes aura-avatar-ring-pulse` que genera ondas y un halo de luz pulsante continuo con interpolación suave (`cubic-bezier(0.4, 0, 0.6, 1)`).
+
+2. **Avatar Stack (Solapamiento Horizontal y Elevación):**
+   - **Múltiples Instructores / Co-docentes:** Cuando una clase o evento cuenta con más de un instructor, se muestran apilados horizontalmente (`.aura-avatar-stack`) con solapamiento negativo (`margin-left: -14px`), borde protector de 2.5px (`#0f172a`) y sombra con efecto flotante al pasar el cursor (`transform: scale(1.18) translateY(-3px)` con elevación `z-index: 10`).
+   - **Contador `+N`:** Si existen más de 2 co-docentes adicionales, se añade automáticamente el badge circular apilado (`.aura-avatar-more`) con el conteo de instructores restantes y su lista de nombres en el `title`.
+
+3. **Stack de Liderazgo Estudiantil:**
+   - La fila de estudiantes con responsabilidades/liderazgo en el evento también adopta el formato Stack (avatares de 24px solapados con borde perimetral, indicador de iniciales en caso de no tener foto, y badge `+N`).
+
+4. **Soporte Global (Backend + Portales Frontend):**
+   - Se expusieron las funciones `window.showEventTooltip` y `window.hideEventTooltip` en [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js), garantizando que tanto en el panel de administración como en el **Portal de Profesores** (`[aura_teacher_portal]`) y el **Portal de Estudiantes** (`[aura_student_schedule]`) el tooltip muestre exactamente el mismo diseño premium con Ring Animado y Stack.
+
+---
+
+### 📁 Archivos Actualizados
+
+- [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js): Lógica de construcción del Stack de avatares, fallback con iniciales, anillo animado y exportación de funciones globales.
+- [`assets/css/calendar-admin.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/calendar-admin.css): Reglas y keyframes del Ring Animado, solapamiento horizontal, bordes y micro-interacciones hover.
+- [`correcciones.md`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/correcciones.md) y [`walkthrough.md`](file:///C:/Users/disan/.gemini/antigravity-ide/brain/a456aa39-3414-4a5f-a597-48172dac2d36/walkthrough.md): Documentación técnica del cambio.
+
 
 
 ✅ En el calendario de google esta sincronizando de esta manera que dejo como ejemplo:
@@ -300,7 +327,17 @@ La verificación de sintaxis PHP ha concluido sin errores.
 
 
 
-Al actualizar un evento, agrego o modifico los Profesor(es) o Instructor(es) a Cargo y no me aparecen los seleccionados correspondiente, solo me muestra uno
+✅ Al actualizar un evento, agrego o modifico los Profesor(es) o Instructor(es) a Cargo y no me aparecen los seleccionados correspondiente, solo me muestra uno y en este caso seleccione varios para probar el formato Stack + Ring Animado recien implementado.
+
+- **Causa Raíz Identificada:**
+  1. En la base de datos, la tabla `wp_aura_cal_event_instructors` conservaba un índice único heredado (`UNIQUE KEY event_instructor (event_id, instructor_id)`). Al intentar insertar un segundo o tercer docente sin suministrar explícitamente `instructor_id`, MySQL asignaba el valor predeterminado `0` para `instructor_id`, disparando un error de clave duplicada silencioso `Duplicate entry '{event_id}-0' for key 'event_instructor'`.
+  2. En [`modules/calendar/class-calendar-events.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-events.php), la consulta de instructores en `get()` no mapeaba correctamente `id = teacher_id` y `name = display_name`, causando que al editar solo se precargara el primer identificador.
+
+- **Solución Implementada:**
+  1. **Migración y Limpieza de Índices:** Se eliminó el índice duplicado obsoleto `event_instructor` y se añadió la migración automática en [`modules/calendar/class-calendar-setup.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-setup.php) para preservar la integridad de `UNIQUE KEY event_teacher (event_id, teacher_id)`.
+  2. **Persistencia Dual Resiliente en PHP:** En `Aura_Calendar_Events::save()`, se detecta si la columna legacy `instructor_id` existe y se sincroniza en conjunto con `teacher_id`, permitiendo almacenar múltiples docentes simultáneamente sin colisiones.
+  3. **Carga Enriquecida de Avatares:** Se actualizó `get_events()` y `get()` para consultar las fotos de perfil reales subidas en `wp_aura_students.photo_url` para cada instructor, con fallback a Gravatar.
+  4. **Selector Visual de Profesores:** En [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js), las píldoras de selección `.aura-user-chip` ahora incorporan miniatura de avatar y mapean de manera bidireccional todos los IDs de profesores seleccionados tanto al abrir el modal de edición como al guardar.
 
 
 

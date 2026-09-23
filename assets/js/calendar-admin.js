@@ -625,10 +625,12 @@
         $.each(auraCalData.teachers, function(i, t) {
             var tid = parseInt(t.id, 10);
             var isChecked = selectedIds.indexOf(tid) !== -1;
+            var av = t.avatar ? '<img src="' + escapeHtml(t.avatar) + '" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" />' : '';
             var pill = $(
                 '<label class="aura-user-chip ' + (isChecked ? 'is-checked' : '') + '">' +
                 '<input type="checkbox" name="teacher_ids[]" value="' + t.id + '" ' + (isChecked ? 'checked' : '') + '> ' +
-                '<span>' + t.name + '</span>' +
+                av +
+                '<span>' + escapeHtml(t.name) + '</span>' +
                 '</label>'
             );
             container.append(pill);
@@ -1008,6 +1010,10 @@
         }
 
         var formData = $(this).serializeArray();
+        var hasTeacherField = formData.some(function(item) { return item.name === 'teacher_ids[]'; });
+        if (!hasTeacherField) {
+            formData.push({ name: 'teacher_ids', value: '' });
+        }
         formData.push({ name: 'action', value: 'aura_cal_save_event' });
         formData.push({ name: 'nonce', value: auraCalData.nonce });
 
@@ -1157,7 +1163,7 @@
 
         closeModal('#modal-event-detail');
 
-        var teacherIds = (p.instructors || []).map(function(inst) { return parseInt(inst.id, 10); });
+        var teacherIds = (p.instructors || []).map(function(inst) { return parseInt(inst.id || inst.teacher_id, 10); });
 
         openEventEditor({
             id: ev.id,
