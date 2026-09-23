@@ -262,7 +262,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     </div>
 
                     <!-- ── SECCIÓN DE EVENTOS RÁPIDOS Y GENÉRICOS (TOGGLE) ── -->
-                    <div class="form-group" style="background: var(--aura-surface-alt, #f8fafc); border: 1px solid var(--aura-border, #cbd5e1); border-radius: 10px; padding: 12px 14px; margin-top: 4px;">
+                    <div class="form-group box-quick-generic-section">
                         <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin: 0; user-select: none;">
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span style="font-size: 16px;">⚡</span>

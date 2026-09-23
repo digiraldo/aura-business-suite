@@ -919,6 +919,52 @@ body.aura-cal-fullscreen-active {
 }
 
 /* ══════════════════════════════════════════════════════════════
+   CHIPS DE EVENTOS RÁPIDOS Y GENÉRICOS (MODAL CREAR EVENTO)
+   ══════════════════════════════════════════════════════════════ */
+.box-quick-generic-section {
+    background: var(--aura-surface-alt, #f8fafc);
+    border: 1px solid var(--aura-border, #cbd5e1);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-quick-generic-chip {
+    background: var(--aura-surface, #ffffff);
+    border: 1px solid var(--aura-border, #cbd5e1);
+    border-left: 3px solid var(--chip-accent, #6366f1);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--aura-text-primary, #0f172a);
+    transition: all 0.15s ease;
+    user-select: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.btn-quick-generic-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+    background: var(--aura-surface-hover, #f1f5f9);
+    border-color: var(--aura-border-focus, #94a3b8);
+}
+
+.btn-quick-generic-chip .btn-quick-generic-dur {
+    font-size: 10px;
+    opacity: 0.85;
+    font-family: monospace;
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--aura-text-secondary, #475569);
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════════
    ZONA DRAG & DROP — MODAL IMPORTACIÓN
    ══════════════════════════════════════════════════════════════ */
 .aura-import-dropzone {
@@ -1889,6 +1935,52 @@ body.aura-dark-mode .aura-user-chip.is-primary-teacher {
     border-color: #f59e0b !important;
     color: #fbbf24 !important;
     box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4) !important;
+}
+
+/* Eventos Rápidos en Modo Oscuro */
+html[data-theme="dark"] .box-quick-generic-section,
+body[data-theme="dark"] .box-quick-generic-section,
+html[data-wp-dark-mode-scheme="dark"] .box-quick-generic-section,
+html.wp-dark-mode-active .box-quick-generic-section,
+body.wp-dark-mode-active .box-quick-generic-section,
+body.aura-dark-mode .box-quick-generic-section {
+    background: rgba(30, 41, 59, 0.5) !important;
+    border-color: #334155 !important;
+}
+
+html[data-theme="dark"] .btn-quick-generic-chip,
+body[data-theme="dark"] .btn-quick-generic-chip,
+html[data-wp-dark-mode-scheme="dark"] .btn-quick-generic-chip,
+html.wp-dark-mode-active .btn-quick-generic-chip,
+body.wp-dark-mode-active .btn-quick-generic-chip,
+body.aura-dark-mode .btn-quick-generic-chip {
+    background: #1e2430 !important;
+    border: 1px solid #334155 !important;
+    border-left: 3px solid var(--chip-accent, #6366f1) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+html[data-theme="dark"] .btn-quick-generic-chip:hover,
+body[data-theme="dark"] .btn-quick-generic-chip:hover,
+html[data-wp-dark-mode-scheme="dark"] .btn-quick-generic-chip:hover,
+html.wp-dark-mode-active .btn-quick-generic-chip:hover,
+body.wp-dark-mode-active .btn-quick-generic-chip:hover,
+body.aura-dark-mode .btn-quick-generic-chip:hover {
+    background: #283040 !important;
+    border-color: #475569 !important;
+    border-left-color: var(--chip-accent, #6366f1) !important;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-theme="dark"] .btn-quick-generic-chip .btn-quick-generic-dur,
+body[data-theme="dark"] .btn-quick-generic-chip .btn-quick-generic-dur,
+html[data-wp-dark-mode-scheme="dark"] .btn-quick-generic-chip .btn-quick-generic-dur,
+html.wp-dark-mode-active .btn-quick-generic-chip .btn-quick-generic-dur,
+body.wp-dark-mode-active .btn-quick-generic-chip .btn-quick-generic-dur,
+body.aura-dark-mode .btn-quick-generic-chip .btn-quick-generic-dur {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #cbd5e1 !important;
 }
 
 /* Pastillas de días recurrentes */

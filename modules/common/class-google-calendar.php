@@ -40,6 +40,16 @@ class Aura_Google_Calendar {
     /** wp_option que cachea el Calendar ID resuelto */
     const CAL_ID_OPTION = 'aura_gcal_calendar_id_resolved';
 
+    /** Último error registrado por la API */
+    private static ?string $last_error = null;
+
+    /**
+     * Obtener el último error retornado por Google API
+     */
+    public static function get_last_error(): ?string {
+        return self::$last_error;
+    }
+
     // ─────────────────────────────────────────────────────────────
     // INIT
     // ─────────────────────────────────────────────────────────────
@@ -179,8 +189,10 @@ class Aura_Google_Calendar {
      * @return array|null          Respuesta decodificada, [] para 204 No Content, null si hay error.
      */
     public static function api_request( string $method, string $url, ?array $body = null ): ?array {
+        self::$last_error = null;
         $token = self::get_access_token();
         if ( ! $token ) {
+            self::$last_error = 'No se pudo obtener el token de acceso OAuth2 para Google Calendar.';
             error_log( '[AURA GCal] api_request: sin token — ' . $method . ' ' . $url );
             return null;
         }
@@ -200,6 +212,7 @@ class Aura_Google_Calendar {
 
         $resp = wp_remote_request( $url, $args );
         if ( is_wp_error( $resp ) ) {
+            self::$last_error = 'WP_Error: ' . $resp->get_error_message();
             error_log( '[AURA GCal] api_request: WP_Error → ' . $resp->get_error_message() . ' | ' . $method . ' ' . $url );
             return null;
         }
@@ -208,6 +221,9 @@ class Aura_Google_Calendar {
         $resp_body = wp_remote_retrieve_body( $resp );
 
         if ( $code >= 400 ) {
+            $err_data = json_decode( $resp_body, true );
+            $msg = $err_data['error']['message'] ?? $resp_body;
+            self::$last_error = sprintf( 'HTTP %d: %s', $code, $msg );
             error_log( sprintf(
                 '[AURA GCal] api_request: HTTP %d en %s %s → %s',
                 $code, $method, $url, $resp_body

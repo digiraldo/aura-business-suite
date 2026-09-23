@@ -303,11 +303,6 @@ class Aura_Calendar_Google_Sync {
             ];
         }
 
-        // Añadir asistentes si hay instructores con correo
-        if ( ! empty( $attendees ) ) {
-            $payload['attendees'] = $attendees;
-        }
-
         $result     = null;
         $gcal_id    = $event->gcal_event_id;
         $is_update  = ! empty( $gcal_id );
@@ -317,7 +312,7 @@ class Aura_Calendar_Google_Sync {
             $result = Aura_Google_Calendar::api_request( 'PUT', $url, $payload );
 
             // Si el evento no existe en Google Calendar (p. ej. fue borrado manualmente en Google), recrearlo
-            if ( $result === null ) {
+            if ( empty( $result ) || empty( $result['id'] ) ) {
                 $is_update = false;
                 $gcal_id   = null;
             }
@@ -348,10 +343,13 @@ class Aura_Calendar_Google_Sync {
             return [
                 'success' => true,
                 'gcal_id' => $gcal_id,
+                'title'   => $event->title,
+                'dates'   => $event->start_datetime . ' a ' . $event->end_datetime,
                 'message' => __( 'Evento sincronizado con éxito en Google Calendar.', 'aura' ),
             ];
         }
 
+        $error_detail = Aura_Google_Calendar::get_last_error();
         $wpdb->update(
             $table_events,
             [
@@ -366,7 +364,11 @@ class Aura_Calendar_Google_Sync {
         return [
             'success' => false,
             'gcal_id' => null,
-            'message' => __( 'Error en la respuesta de Google Calendar API.', 'aura' ),
+            'title'   => $event->title,
+            'dates'   => $event->start_datetime . ' a ' . $event->end_datetime,
+            'message' => $error_detail
+                ? sprintf( __( 'Error de Google Calendar: %s', 'aura' ), $error_detail )
+                : __( 'Error en la respuesta de Google Calendar API.', 'aura' ),
         ];
     }
 
@@ -421,16 +423,18 @@ class Aura_Calendar_Google_Sync {
      * @param int|null    $program_id Filtrar por programa específico (opcional)
      * @param string|null $from_date  Fecha mínima (YYYY-MM-DD), default hoy
      * @param int         $limit      Límite de eventos a procesar por tanda
-     * @return array Estadísticas de la sincronización ['total', 'synced', 'failed', 'skipped']
+     * @return array Estadísticas de la sincronización ['total', 'synced', 'failed', 'skipped', 'items']
      */
     public static function batch_sync( ?int $program_id = null, ?string $from_date = null, int $limit = 50 ): array {
         if ( ! self::is_enabled() ) {
             return [
-                'total'   => 0,
-                'synced'  => 0,
-                'failed'  => 0,
-                'skipped' => 0,
-                'error'   => __( 'Google Calendar no está habilitado.', 'aura' ),
+                'total'     => 0,
+                'synced'    => 0,
+                'failed'    => 0,
+                'skipped'   => 0,
+                'items'     => [],
+                'synced_at' => current_time( 'mysql' ),
+                'error'     => __( 'Google Calendar no está habilitado.', 'aura' ),
             ];
         }
 
@@ -458,22 +462,44 @@ class Aura_Calendar_Google_Sync {
         $event_ids = $wpdb->get_col( $wpdb->prepare( $sql, $params ) );
 
         $stats = [
-            'total'   => count( $event_ids ),
-            'synced'  => 0,
-            'failed'  => 0,
-            'skipped' => 0,
+            'total'     => count( $event_ids ),
+            'synced'    => 0,
+            'failed'    => 0,
+            'skipped'   => 0,
+            'items'     => [],
+            'synced_at' => current_time( 'mysql' ),
         ];
 
         foreach ( $event_ids as $id ) {
             $res = self::sync_event( (int) $id );
-            if ( $res['success'] ) {
+            $stats['items'][] = [
+                'id'      => (int) $id,
+                'title'   => $res['title'] ?? '',
+                'dates'   => $res['dates'] ?? '',
+                'success' => ! empty( $res['success'] ),
+                'message' => $res['message'] ?? '',
+                'gcal_id' => $res['gcal_id'] ?? null,
+            ];
+
+            if ( ! empty( $res['success'] ) ) {
                 $stats['synced']++;
             } else {
                 $stats['failed']++;
             }
         }
 
+        // Persistir el último log de sincronización para consulta visual en Ajustes
+        update_option( 'aura_cal_last_sync_log', $stats, false );
+
         return $stats;
+    }
+
+    /**
+     * Obtener el último log de sincronización masiva persistido
+     */
+    public static function get_last_sync_log(): ?array {
+        $log = get_option( 'aura_cal_last_sync_log', null );
+        return is_array( $log ) ? $log : null;
     }
 
     // ─────────────────────────────────────────────────────────────

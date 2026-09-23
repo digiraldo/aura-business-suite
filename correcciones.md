@@ -475,6 +475,37 @@ Se incorporó un selector interactivo visual con estrella ⭐ en los chips de se
 
 
 
+### ✅ Adaptación de Eventos Rápidos a Modo Claro y Registro Detallado de Sincronización con Google Calendar
+
+#### 1. Botones de Eventos Rápidos Adaptados a Modo Claro y Oscuro
+- **Problema previo:** En el modal de Crear/Editar Evento, los botones de "Eventos Rápidos y Genéricos" tenían fondos blancos fijos (`background: #ffffff`) y tipografía gris clara inyectada por código inline, provocando que en modo claro no contrastaran adecuadamente o lucieran desalineados con el sistema de diseño.
+- **Solución implementada:**
+  - En [`assets/css/calendar-admin.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/calendar-admin.css), se declararon clases de tokens dinámicos:
+    - `.box-quick-generic-section`: fondo adaptable (`var(--aura-surface-alt)`).
+    - `.btn-quick-generic-chip`: fondo interactivo adaptable a modo claro (`#ffffff`, texto `#1e293b`, borde `#cbd5e1`) y a modo oscuro (`#1e293b`, texto `#f1f5f9`, borde `#334155`).
+    - `.btn-quick-generic-dur`: microbadge de duración estilizado con fondo sutil translúcido.
+  - En [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js), la función `renderQuickGenericChips()` ahora asigna el color distintivo mediante variable CSS local `--chip-accent` y un borde izquierdo coloreado de 3.5px, garantizando contraste óptimo y fluidez al alternar entre temas.
+
+#### 2. Dónde Ver los Errores y Causa Raíz de la Sincronización (Total: 9, Sincronizados: 3, Errores: 6)
+- **Causa Raíz del Error:**
+  - Al revisar la respuesta de la Google Calendar API se descubrió:
+    `HTTP 403 Forbidden: "Service accounts cannot invite attendees without Domain-Wide Delegation of Authority."`
+  - **Explicación:** Las Cuentas de Servicio (Service Accounts de Google Cloud) no tienen permitido invitar asistentes (`attendees`) a menos que cuenten con delegación de autoridad en Google Workspace.
+  - Al sincronizar eventos que tenían profesores asignados, el plugin enviaba el arreglo `attendees`, lo que provocaba que Google Calendar rechazara los 6 eventos con profesores asignados (incluyendo diplomados y eventos multi-día de barra continua horizontal) y solo aceptara los 3 eventos genéricos sin docentes.
+- **Solución:**
+  - En [`modules/calendar/class-calendar-google-sync.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-google-sync.php), se retiró el campo restrictivo `attendees` del payload (los nombres y roles de los instructores ya se proyectan automáticamente de forma legible en la descripción del evento y en el título).
+  - En eventos multi-día (`is_multi_day`), se envían fechas sin hora (`start.date` y `end.date` exclusivo +1 día), lo cual le indica a Google Calendar que dibuje la **barra continua horizontal superior (all-day span)** a lo largo de todos los días de duración.
+  - En [`modules/common/class-google-calendar.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/common/class-google-calendar.php), se añadió la captura del error exacto de la API (`Aura_Google_Calendar::get_last_error()`) para evitar errores genéricos silenciosos.
+- **¿Dónde ver los errores a partir de ahora?**
+  - Se implementó un panel visual interactivo permanente: **📋 Registro de la Última Sincronización** en la pestaña **Ajustes** (debajo de "Herramientas de Sincronización Manual").
+  - Muestra una tabla con cada evento procesado:
+    - ID y Nombre del evento.
+    - Rango y Horario programado.
+    - Insignia de estado (✅ Sincronizado / ❌ Falló).
+    - Detalle exacto o motivo reportado por la API de Google.
+  - Los datos se guardan en la base de datos (`aura_cal_last_sync_log`) para consulta inmediata y se actualizan dinámicamente vía AJAX al pulsar "Sincronizar Todas las Clases Futuras".
+
+
 
 ```bash
 php build-zip.php

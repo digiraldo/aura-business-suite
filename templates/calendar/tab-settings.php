@@ -371,6 +371,72 @@ $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_port
             </div>
 
             <div id="settings-sync-feedback" style="margin-top: 14px; display: none;"></div>
+
+            <!-- Visor del Registro Detallado de la Última Sincronización -->
+            <?php
+            $last_sync_log = Aura_Calendar_Google_Sync::get_last_sync_log();
+            ?>
+            <div id="box-gcal-sync-log" style="margin-top: 20px; <?php echo empty( $last_sync_log['items'] ) ? 'display: none;' : ''; ?>">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--aura-border, #e2e8f0); padding-bottom: 8px;">
+                    <strong style="font-size: 13.5px; color: var(--aura-text-primary, #0f172a); display: flex; align-items: center; gap: 6px;">
+                        📋 <?php esc_html_e( 'Registro de la Última Sincronización', 'aura' ); ?>
+                        <span id="gcal-sync-log-timestamp" style="font-weight: 400; font-size: 12px; color: var(--aura-text-muted, #64748b);">
+                            <?php if ( ! empty( $last_sync_log['synced_at'] ) ) : ?>
+                                (<?php echo esc_html( $last_sync_log['synced_at'] ); ?>)
+                            <?php endif; ?>
+                        </span>
+                    </strong>
+                    <div id="gcal-sync-log-summary" style="display: flex; gap: 8px; font-size: 12px;">
+                        <?php if ( ! empty( $last_sync_log ) ) : ?>
+                            <span class="badge" style="background: rgba(16,185,129,0.12); color: #059669; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
+                                ✅ <?php echo (int) ( $last_sync_log['synced'] ?? 0 ); ?> <?php esc_html_e( 'Correctos', 'aura' ); ?>
+                            </span>
+                            <?php if ( ! empty( $last_sync_log['failed'] ) ) : ?>
+                                <span class="badge" style="background: rgba(239,68,68,0.12); color: #dc2626; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
+                                    ❌ <?php echo (int) $last_sync_log['failed']; ?> <?php esc_html_e( 'Errores', 'aura' ); ?>
+                                </span>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div id="gcal-sync-log-table-container" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--aura-border, #e2e8f0); border-radius: 8px;">
+                    <table class="adp-table" style="width: 100%; font-size: 12.5px; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--aura-surface-alt, #f8fafc); text-align: left; border-bottom: 1px solid var(--aura-border, #e2e8f0);">
+                                <th style="padding: 8px 12px;"><?php esc_html_e( 'Evento', 'aura' ); ?></th>
+                                <th style="padding: 8px 12px;"><?php esc_html_e( 'Horario / Rango', 'aura' ); ?></th>
+                                <th style="padding: 8px 12px; width: 110px;"><?php esc_html_e( 'Estado', 'aura' ); ?></th>
+                                <th style="padding: 8px 12px;"><?php esc_html_e( 'Detalle / Razón', 'aura' ); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="gcal-sync-log-tbody">
+                            <?php if ( ! empty( $last_sync_log['items'] ) ) : ?>
+                                <?php foreach ( $last_sync_log['items'] as $item ) : ?>
+                                    <tr style="border-bottom: 1px solid var(--aura-border, #f1f5f9);">
+                                        <td style="padding: 8px 12px; font-weight: 600;">
+                                            #<?php echo (int) $item['id']; ?> <?php echo esc_html( $item['title'] ); ?>
+                                        </td>
+                                        <td style="padding: 8px 12px; color: var(--aura-text-secondary, #475569); font-size: 11.5px;">
+                                            <?php echo esc_html( $item['dates'] ); ?>
+                                        </td>
+                                        <td style="padding: 8px 12px;">
+                                            <?php if ( ! empty( $item['success'] ) ) : ?>
+                                                <span style="color: #10b981; font-weight: 600;">✅ Sincronizado</span>
+                                            <?php else : ?>
+                                                <span style="color: #ef4444; font-weight: 600;">❌ Falló</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td style="padding: 8px 12px; color: <?php echo ! empty( $item['success'] ) ? '#64748b' : '#ef4444'; ?>; font-size: 12px;">
+                                            <?php echo esc_html( $item['message'] ); ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     <?php endif; ?>
 

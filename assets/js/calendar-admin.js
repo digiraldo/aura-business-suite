@@ -1076,21 +1076,11 @@
                 class: 'btn-quick-generic-chip',
                 html: '<span style="font-size: 14px; line-height: 1;">' + icon + '</span> ' +
                       '<span style="font-weight: 600;">' + name + '</span> ' +
-                      '<span style="font-size: 10px; opacity: 0.75; font-family: monospace; background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 4px;">' + dur + 'm</span>',
+                      '<span class="btn-quick-generic-dur">' + dur + 'm</span>',
                 title: 'Aplicar ' + name + ' (+ ' + dur + ' min)'
             }).css({
-                'background': 'var(--aura-card-bg, #ffffff)',
-                'border': '1px solid var(--aura-border, #cbd5e1)',
-                'border-left': '3px solid ' + color,
-                'border-radius': '6px',
-                'padding': '6px 10px',
-                'font-size': '12px',
-                'cursor': 'pointer',
-                'display': 'inline-flex',
-                'align-items': 'center',
-                'gap': '6px',
-                'color': 'var(--aura-text-primary, #1e293b)',
-                'transition': 'all 0.15s ease'
+                '--chip-accent': color,
+                'border-left-color': color
             }).data('generic', ev);
 
             $list.append($btn);
@@ -2852,9 +2842,41 @@
         });
     });
 
+    // Renderizar panel de registro detallado de sincronización GCal
+    function renderGCalSyncLog(stats) {
+        var $box = $('#box-gcal-sync-log');
+        if (!$box.length || !stats) return;
+
+        $('#gcal-sync-log-timestamp').text('(' + (stats.synced_at || '') + ')');
+        var summaryHtml = '<span class="badge" style="background: rgba(16,185,129,0.12); color: #059669; font-weight: 600; padding: 2px 8px; border-radius: 6px;">✅ ' + (stats.synced || 0) + ' ' + escapeHtml(auraCalData.i18n.synced || 'Correctos') + '</span>';
+        if (stats.failed > 0) {
+            summaryHtml += ' <span class="badge" style="background: rgba(239,68,68,0.12); color: #dc2626; font-weight: 600; padding: 2px 8px; border-radius: 6px;">❌ ' + stats.failed + ' ' + escapeHtml(auraCalData.i18n.errors || 'Errores') + '</span>';
+        }
+        $('#gcal-sync-log-summary').html(summaryHtml);
+
+        var rowsHtml = '';
+        if (Array.isArray(stats.items) && stats.items.length) {
+            stats.items.forEach(function(item) {
+                var statusBadge = item.success
+                    ? '<span style="color: #10b981; font-weight: 600;">✅ Sincronizado</span>'
+                    : '<span style="color: #ef4444; font-weight: 600;">❌ Falló</span>';
+                var msgColor = item.success ? '#64748b' : '#ef4444';
+                rowsHtml += '<tr style="border-bottom: 1px solid var(--aura-border, #f1f5f9);">' +
+                    '<td style="padding: 8px 12px; font-weight: 600;">#' + escapeHtml(item.id) + ' ' + escapeHtml(item.title) + '</td>' +
+                    '<td style="padding: 8px 12px; color: var(--aura-text-secondary, #475569); font-size: 11.5px;">' + escapeHtml(item.dates || '') + '</td>' +
+                    '<td style="padding: 8px 12px;">' + statusBadge + '</td>' +
+                    '<td style="padding: 8px 12px; color: ' + msgColor + '; font-size: 12px;">' + escapeHtml(item.message || '') + '</td>' +
+                '</tr>';
+            });
+        }
+        $('#gcal-sync-log-tbody').html(rowsHtml);
+        $box.slideDown(200);
+    }
+
     // Sincronizar todas las clases futuras
     $('#btn-sync-all-future, #btn-top-sync-gcal').on('click', function() {
         var $btn = $(this);
+        var originalText = $btn.text();
         $btn.prop('disabled', true).text('Sincronizando...');
 
         showToast(auraCalData.i18n.syncing);
@@ -2863,16 +2885,24 @@
             action: 'aura_cal_gcal_sync_all',
             nonce: auraCalData.nonce
         }, function(res) {
-            $btn.prop('disabled', false).text('🔄 Sincronizar GCal');
+            $btn.prop('disabled', false).text(originalText);
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
+                if (res.data.stats) {
+                    renderGCalSyncLog(res.data.stats);
+                    var alertClass = (res.data.stats.failed > 0) ? 'alert-warning' : 'alert-success';
+                    $('#settings-sync-feedback').html('<div class="alert-card ' + alertClass + '">' + escapeHtml(res.data.message) + '</div>').slideDown(200);
+                }
                 if (calendar) calendar.refetchEvents();
             } else {
-                showToast(res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error, 'error');
+                var err = (res && res.data && res.data.message) ? res.data.message : auraCalData.i18n.error;
+                showToast(err, 'error');
+                $('#settings-sync-feedback').html('<div class="alert-card alert-danger">⚠️ ' + escapeHtml(err) + '</div>').slideDown(200);
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('🔄 Sincronizar GCal');
+            $btn.prop('disabled', false).text(originalText);
             showToast(auraCalData.i18n.error, 'error');
+            $('#settings-sync-feedback').html('<div class="alert-card alert-danger">⚠️ Error en la llamada AJAX del servidor.</div>').slideDown(200);
         });
     });
 
