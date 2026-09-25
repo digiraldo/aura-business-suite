@@ -744,3 +744,51 @@ Se implementó el enrutamiento reactivo idéntico al estándar de Google Calenda
      - Se implementó fijación matemática y CSS con `max-width: calc(100vw - 20px) !important; max-height: calc(100vh - 20px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important;`, previniendo cualquier desbordamiento o corte en pantallas móviles y bordes laterales de la pantalla.
   5. **Optimización Móvil en Pantalla Normal:**
      - Se implementaron reglas `@media (max-width: 768px)` que ocultan textos largos de ayuda (`.aura-calendar-hint`), reducen los paddings de tarjetas a 8px, compactan la cabecera del calendario y estructuran los filtros de forma ergonómica sin robar espacio vertical.
+
+
+---
+
+## Sección 32 — Header/Filtros Ultra-Compacto Móvil + Botón FS Semi-Transparente con Icono Universal
+
+### Archivos modificados
+
+- `assets/css/calendar-admin.css`
+- `assets/css/aura-frontend-dark-mode.css`
+- `templates/calendar/tab-calendar.php`
+- `modules/calendar/class-calendar-frontend.php`
+
+### Cambios implementados
+
+1. **Icono Universal del Botón "Salir de Pantalla Completa" (Backend + Frontend)**
+   - Reemplazado el SVG anterior (mezcla de polylines cruzadas) por el icono universal estándar de **4 flechas desde las esquinas apuntando hacia el centro** (patrón Feather Icons `compress`).
+   - El nuevo SVG usa `polyline` + `line` en las 4 esquinas: superior-izquierda, superior-derecha, inferior-izquierda e inferior-derecha, cada una con una flecha diagonal hacia el centro.
+   - Aplicado en los 3 puntos: `tab-calendar.php` (admin backend), `class-calendar-frontend.php` (teacher), `class-calendar-frontend.php` (student).
+   - `aria-hidden="true"` añadido para accesibilidad (el `aria-label` del botón lo describe).
+
+2. **Semitransparencia de la Barra Flotante de Pantalla Completa**
+   - `background` reducido de `rgba(15, 23, 42, 0.88)` a `rgba(15, 23, 42, 0.55)` — notablemente más translúcido.
+   - `backdrop-filter: blur(14px) saturate(1.6)` para mejorar legibilidad sin tapar el contenido detrás.
+   - `box-shadow` simplificado a una sombra suave y difusa en lugar de una sombra oscura pesada.
+   - `transition` cambiado a `opacity + background` para animaciones más naturales.
+   - Aplicado tanto en `calendar-admin.css` como en `aura-frontend-dark-mode.css`.
+
+3. **Header y Filtros Ultra-Compactos en Móvil — Backend (`@media max-width: 768px`)**
+   - Ocultar subtítulos/descripciones del encabezado de página (`.adp-page-desc`, `.adp-page-subtitle`, `p`).
+   - Tabs de navegación (`adp-nav-tabs`) con gap y padding reducidos.
+   - **Labels de los 3 filtros ocultados** — los selects ocupan toda la altura disponible directamente.
+   - Filtros reorganizados en **fila horizontal con scroll táctil** en lugar de columna vertical, ahorrando espacio vertical crítico.
+   - Cada select con `height: 30px`, `padding: 4px 6px`, `font-size: 11.5px`.
+   - Botones de acciones (`Crear Evento`, `Limpiar`, `Pantalla Completa`) más pequeños.
+   - Toolbar de FullCalendar en fila flexible (`flex-direction: row; flex-wrap: wrap`) en lugar de columna.
+   - Títulos del toolbar reducidos a `13.5px` y botones a `10.5px`.
+
+4. **Header y Filtros Ultra-Compactos en Móvil — Frontend (`@media max-width: 768px`)**
+   - **Avatar/foto de perfil ocultado** en móvil para liberar espacio horizontal.
+   - Header del portal (`aura-calendar-top-header`) con padding 0 y gaps mínimos de 4px.
+   - Ocultar descripción/subtexto del header del portal.
+   - Texto de botones de pantalla completa (`#btn-toggle-teacher-fullscreen .fs-text`, `#btn-toggle-student-fullscreen .fs-text`) ocultado en móvil — solo queda el icono.
+   - Tabs del profesor con scroll horizontal táctil (`-webkit-overflow-scrolling: touch`).
+   - Barra de filtros del frontend (`.aura-calendar-filters-card`): labels ocultos, selects en fila horizontal con scroll, `height: 28px`.
+   - Toolbar FullCalendar en fila compacta, `font-size: 13px` para título, `10.5px` para botones.
+
+5. **Build generado**: `aura-business-suite.zip` — 21.23 MB — 3304 archivos empaquetados.

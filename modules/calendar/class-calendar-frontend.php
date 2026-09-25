@@ -694,7 +694,12 @@ class Aura_Calendar_Frontend {
                     </div>
                     <div class="aura-calendar-floating-fs-bar aura-frontend-fs-bar" role="toolbar" aria-label="<?php esc_attr_e( 'Controles de Pantalla Completa', 'aura' ); ?>">
                         <button type="button" class="aura-fs-bar-btn aura-fs-btn-exit" id="btn-fs-exit-teacher" title="<?php esc_attr_e( 'Salir de Pantalla Completa (ESC)', 'aura' ); ?>" aria-label="<?php esc_attr_e( 'Salir de Pantalla Completa', 'aura' ); ?>">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><polyline points="14 20 14 14 20 14"></polyline><polyline points="10 4 10 10 4 10"></polyline><line x1="14" y1="14" x2="21" y2="21"></line><line x1="10" y1="10" x2="3" y2="3"></line><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="5 9 5 5 9 5"></polyline><line x1="5" y1="5" x2="10" y2="10"></line>
+                                <polyline points="19 9 19 5 15 5"></polyline><line x1="19" y1="5" x2="14" y2="10"></line>
+                                <polyline points="5 15 5 19 9 19"></polyline><line x1="5" y1="19" x2="10" y2="14"></line>
+                                <polyline points="19 15 19 19 15 19"></polyline><line x1="19" y1="19" x2="14" y2="14"></line>
+                            </svg>
                         </button>
                     </div>
                     <div id="aura-teacher-fullcalendar" style="min-height: 600px;"></div>
@@ -2243,7 +2248,12 @@ class Aura_Calendar_Frontend {
                 </div>
                 <div class="aura-calendar-floating-fs-bar aura-frontend-fs-bar" role="toolbar" aria-label="<?php esc_attr_e( 'Controles de Pantalla Completa', 'aura' ); ?>">
                     <button type="button" class="aura-fs-bar-btn aura-fs-btn-exit" id="btn-fs-exit-student" title="<?php esc_attr_e( 'Salir de Pantalla Completa (ESC)', 'aura' ); ?>" aria-label="<?php esc_attr_e( 'Salir de Pantalla Completa', 'aura' ); ?>">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><polyline points="14 20 14 14 20 14"></polyline><polyline points="10 4 10 10 4 10"></polyline><line x1="14" y1="14" x2="21" y2="21"></line><line x1="10" y1="10" x2="3" y2="3"></line><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="5 9 5 5 9 5"></polyline><line x1="5" y1="5" x2="10" y2="10"></line>
+                            <polyline points="19 9 19 5 15 5"></polyline><line x1="19" y1="5" x2="14" y2="10"></line>
+                            <polyline points="5 15 5 19 9 19"></polyline><line x1="5" y1="19" x2="10" y2="14"></line>
+                            <polyline points="19 15 19 19 15 19"></polyline><line x1="19" y1="19" x2="14" y2="14"></line>
+                        </svg>
                     </button>
                 </div>
                 <div id="aura-student-calendar" style="min-height: 540px;"></div>

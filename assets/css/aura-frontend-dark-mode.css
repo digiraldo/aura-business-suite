@@ -2053,22 +2053,22 @@ body[data-theme="dark"] .adp-card:-webkit-full-screen,
 /* Barra flotante superior central en pantalla completa frontend */
 .aura-calendar-floating-fs-bar {
     position: fixed !important;
-    top: 14px !important;
+    top: 12px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 10000010 !important;
     display: none !important;
     align-items: center !important;
-    gap: 10px !important;
-    padding: 6px 10px !important;
-    background: rgba(15, 23, 42, 0.88) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    gap: 8px !important;
+    padding: 5px 8px !important;
+    background: rgba(15, 23, 42, 0.55) !important;
+    backdrop-filter: blur(14px) saturate(1.6) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
     border-radius: 9999px !important;
-    box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.45), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28) !important;
     pointer-events: auto !important;
-    transition: all 0.2s ease !important;
+    transition: opacity 0.2s ease, background 0.2s ease !important;
 }
 
 .aura-calendar-wrapper:fullscreen .aura-calendar-floating-fs-bar,
@@ -2264,62 +2264,132 @@ body[data-theme="dark"] .adp-card:-webkit-full-screen,
         display: none !important;
     }
 
+    /* Contenedores del portal estudiante/profesor */
     .aura-student-schedule-wrap {
-        margin: 8px 0 !important;
+        margin: 6px 0 !important;
     }
 
     .adp-card.aura-teacher-card,
     .aura-student-schedule-wrap .adp-card {
-        padding: 8px 8px !important;
+        padding: 6px !important;
         border-radius: 8px !important;
     }
 
+    /* — Header superior del portal: al mínimo — */
     .aura-calendar-top-header {
-        margin-bottom: 6px !important;
-        gap: 6px !important;
+        margin-bottom: 4px !important;
+        gap: 4px !important;
+        padding: 0 !important;
     }
 
+    /* Ocultar avatar/foto de perfil en móvil para ahorrar espacio */
+    .aura-calendar-top-header .aura-user-avatar,
+    .aura-calendar-top-header .avatar,
+    .aura-calendar-top-header img.avatar {
+        display: none !important;
+    }
+
+    /* Título del header solo el nombre, compacto */
     .aura-calendar-top-header .adp-card-title {
-        font-size: 13.5px !important;
-        gap: 6px !important;
+        font-size: 13px !important;
+        gap: 4px !important;
+        margin: 0 !important;
     }
 
+    /* Ocultar descripción y subtexto del header */
+    .aura-calendar-top-header .adp-card-desc,
+    .aura-calendar-top-header p {
+        display: none !important;
+    }
+
+    /* Barra de acciones superior: compactar */
     .aura-calendar-top-actions {
         width: 100% !important;
         justify-content: flex-start !important;
-        gap: 6px !important;
+        gap: 4px !important;
+        flex-wrap: wrap !important;
     }
 
     .aura-calendar-top-actions .btn {
-        padding: 4px 8px !important;
+        padding: 3px 7px !important;
         font-size: 11px !important;
+        gap: 3px !important;
     }
 
+    /* Ocultar texto de botones de FS en móvil */
+    #btn-toggle-teacher-fullscreen .fs-text,
+    #btn-toggle-student-fullscreen .fs-text {
+        display: none !important;
+    }
+
+    /* Tabs del profesor en fila con scroll horizontal */
     .teacher-tabs-nav {
-        gap: 4px !important;
-        margin-bottom: 8px !important;
+        gap: 3px !important;
+        margin-bottom: 6px !important;
         overflow-x: auto !important;
         white-space: nowrap !important;
         padding-bottom: 2px !important;
+        -webkit-overflow-scrolling: touch !important;
     }
 
     .teacher-tab-btn {
-        padding: 6px 10px !important;
-        font-size: 11.5px !important;
+        padding: 5px 9px !important;
+        font-size: 11px !important;
+        flex-shrink: 0 !important;
     }
 
+    /* — Barra de filtros del frontend: ocultar labels, filtros en fila horizontal — */
+    .aura-calendar-filters-card {
+        padding: 5px 7px !important;
+        margin-bottom: 5px !important;
+        border-radius: 7px !important;
+    }
+
+    /* Ocultar labels de filtros frontend */
+    .aura-calendar-filters-card .form-label,
+    .aura-calendar-filters-card label {
+        display: none !important;
+    }
+
+    /* Filtros en fila horizontal con scroll */
+    .aura-calendar-filters-card > div,
+    .aura-calendar-filters-row {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 4px !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .aura-calendar-filters-card select {
+        padding: 3px 6px !important;
+        font-size: 11px !important;
+        height: 28px !important;
+        border-radius: 5px !important;
+        min-width: 90px !important;
+    }
+
+    /* Toolbar FullCalendar en fila compacta */
     .fc .fc-toolbar {
-        flex-direction: column !important;
-        gap: 6px !important;
-        margin-bottom: 8px !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+        margin-bottom: 5px !important;
+        padding: 0 2px !important;
     }
 
     .fc .fc-toolbar-title {
-        font-size: 14px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
     }
 
     .fc .fc-button {
-        padding: 4px 7px !important;
-        font-size: 11px !important;
+        padding: 3px 6px !important;
+        font-size: 10.5px !important;
+        border-radius: 4px !important;
+    }
+
+    .fc .fc-button-group .fc-button {
+        padding: 3px 5px !important;
     }
 }
