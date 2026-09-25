@@ -792,3 +792,11 @@ Se implementó el enrutamiento reactivo idéntico al estándar de Google Calenda
    - Toolbar FullCalendar en fila compacta, `font-size: 13px` para título, `10.5px` para botones.
 
 5. **Build generado**: `aura-business-suite.zip` — 21.23 MB — 3304 archivos empaquetados.
+
+
+
+
+
+
+
+- Que los eventos en cualquier tamaño de pantalla, se vean iguales en Google Calendario, osea, sin espacios de margin ni padding entre evento y evento y entre la caja del evento y el dia, debajo del dia. aplicar esto tanto en la vista del Frontend y Backend, y en todas las vistas, mensual, semanal, diaria y agenda. y en Pantalla normal y pantalla completa. Que sea lo mas fiel posible a Google Calendario que ya esta optimizado para esto. y que en pantallas grandes inicie como esta ahora con la imagen de perfil del usuario con estrella o principal. Recuerda adaptar perfectamente la informacion de los tooltips enriquecidos, que no se corten y muestren toda la informacion y que queden encima de todo, para todo tipo de vista tanto en el backend como en el frontend.

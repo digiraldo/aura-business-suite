@@ -2824,7 +2824,7 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
 }
 
 .fc .fc-daygrid-event-harness {
-    margin: 1px 0 !important;
+    margin: 0 !important;
     padding: 0 !important;
 }
 
@@ -2970,9 +2970,60 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
     .fc .fc-button-group .fc-button {
         padding: 3px 5px !important;
     }
-    /* Ocultar texto de botones de vista en móvil, sólo iconos */
-    .fc .fc-dayGridMonth-button::after { content: 'Mes'; }
-    .fc .fc-timeGridWeek-button::after { content: 'Sem'; }
-    .fc .fc-timeGridDay-button::after { content: 'Día'; }
-    .fc .fc-listWeek-button::after { content: 'Lista'; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   REFUERZO TOOLTIP ENRIQUECIDO — SIEMPRE ENCIMA DE TODO
+   ══════════════════════════════════════════════════════════════════ */
+/* El tooltip siempre debe quedar sobre modales, fullscreen y cualquier overlay */
+#aura-cal-event-tooltip {
+    z-index: 2147483647 !important; /* Máximo posible en navegadores */
+    position: fixed !important;
+}
+
+/* En pantalla completa nativa (::backdrop), FullCalendar y el tooltip deben
+   quedar dentro del fullscreen element. El tooltip se mueve al container
+   correcto via JS, pero reforzamos que no quede oculto. */
+:fullscreen #aura-cal-event-tooltip,
+:-webkit-full-screen #aura-cal-event-tooltip {
+    z-index: 2147483647 !important;
+    position: fixed !important;
+}
+
+/* Refuerzo densidad Google Calendar en TODAS las vistas y en pantalla completa */
+.fc .fc-daygrid-day-bg .fc-bg-event { display: none !important; }
+.fc .fc-daygrid-event-harness-abs { top: 0 !important; }
+
+/* Vista Mes: eliminar último padding inferior de la celda del día */
+.fc .fc-daygrid-day-bottom {
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 10px !important;
+}
+
+/* Botones de vista en pantalla completa — refuerzo mínimo y sin duplicados */
+.fc .fc-dayGridMonth-button,
+.fc .fc-timeGridWeek-button,
+.fc .fc-timeGridDay-button,
+.fc .fc-listWeek-button {
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+    max-width: none !important;
+}
+
+/* Garantizar que todos los textos del tooltip sean visibles sin truncar */
+#aura-cal-event-tooltip .tooltip-title,
+#aura-cal-event-tooltip .tooltip-meta-row,
+#aura-cal-event-tooltip .tooltip-desc {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    word-break: break-word !important;
+}
+
+/* Tooltip max dimensions refuerzo */
+#aura-cal-event-tooltip.aura-cal-floating-tooltip {
+    max-width: min(340px, calc(100vw - 16px)) !important;
+    max-height: calc(100dvh - 20px) !important;
+    word-break: break-word !important;
 }

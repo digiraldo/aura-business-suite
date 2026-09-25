@@ -2213,7 +2213,7 @@ body[data-theme="dark"] .adp-card:-webkit-full-screen,
 }
 
 .aura-calendar-wrapper .fc .fc-daygrid-event-harness {
-    margin: 1px 0 !important;
+    margin: 0 !important;
     padding: 0 !important;
 }
 
@@ -2392,4 +2392,39 @@ body[data-theme="dark"] .adp-card:-webkit-full-screen,
     .fc .fc-button-group .fc-button {
         padding: 3px 5px !important;
     }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   REFUERZO TOOLTIP ENRIQUECIDO FRONTEND — SIEMPRE ENCIMA DE TODO
+   ══════════════════════════════════════════════════════════════════ */
+#aura-cal-event-tooltip {
+    z-index: 2147483647 !important;
+    position: fixed !important;
+    max-width: min(340px, calc(100vw - 16px)) !important;
+    max-height: calc(100dvh - 20px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+}
+
+/* Garantizar que todos los textos del tooltip sean visibles sin truncar */
+#aura-cal-event-tooltip .tooltip-title,
+#aura-cal-event-tooltip .tooltip-meta-row,
+#aura-cal-event-tooltip .tooltip-desc {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    word-break: break-word !important;
+}
+
+/* Refuerzo densidad Google Calendar Frontend */
+.aura-calendar-wrapper .fc .fc-daygrid-day-bottom {
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 10px !important;
+}
+
+.aura-calendar-wrapper .fc .fc-daygrid-event-harness-abs {
+    top: 0 !important;
 }
