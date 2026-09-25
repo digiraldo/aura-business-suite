@@ -1495,6 +1495,16 @@ class Aura_Calendar_Frontend {
                 renderTeacherStudentsRoster(filtered);
             });
 
+            function formatLocalIso(d) {
+                if (!(d instanceof Date) || isNaN(d.getTime())) d = new Date();
+                var y = d.getFullYear();
+                var m = String(d.getMonth() + 1).padStart(2, '0');
+                var day = String(d.getDate()).padStart(2, '0');
+                var h = String(d.getHours()).padStart(2, '0');
+                var min = String(d.getMinutes()).padStart(2, '0');
+                return y + '-' + m + '-' + day + 'T' + h + ':' + min;
+            }
+
             // Botón Asignar Tarea Grupal desde la nómina
             $('#btn-t-stds-assign-all').on('click', function() {
                 closeTeacherModal('#modal-teacher-students');
@@ -1506,7 +1516,7 @@ class Aura_Calendar_Frontend {
                 var d = new Date();
                 d.setDate(d.getDate() + 7);
                 d.setHours(23, 59, 0, 0);
-                $('#t-tsk-due').val(d.toISOString().slice(0, 16));
+                $('#t-tsk-due').val(formatLocalIso(d));
                 openTeacherModal('#modal-teacher-task');
             });
 
@@ -1521,7 +1531,7 @@ class Aura_Calendar_Frontend {
                 var d = new Date();
                 d.setDate(d.getDate() + 7);
                 d.setHours(23, 59, 0, 0);
-                $('#t-tsk-due').val(d.toISOString().slice(0, 16));
+                $('#t-tsk-due').val(formatLocalIso(d));
                 openTeacherModal('#modal-teacher-task');
                 loadProgramStudentsIfNeeded();
             });
@@ -1538,7 +1548,7 @@ class Aura_Calendar_Frontend {
                 var d = new Date();
                 d.setDate(d.getDate() + 7);
                 d.setHours(23, 59, 0, 0);
-                $('#t-tsk-due').val(d.toISOString().slice(0, 16));
+                $('#t-tsk-due').val(formatLocalIso(d));
                 $('#t-tsk-title').val('').attr('placeholder', 'Ej: Tarea individual / Responsabilidad para ' + studentName);
 
                 openTeacherModal('#modal-teacher-task');
@@ -1644,8 +1654,7 @@ class Aura_Calendar_Frontend {
                 var d = new Date();
                 d.setDate(d.getDate() + 7);
                 d.setHours(23, 59, 0, 0);
-                var iso = d.toISOString().slice(0, 16);
-                $('#t-tsk-due').val(iso);
+                $('#t-tsk-due').val(formatLocalIso(d));
                 openTeacherModal('#modal-teacher-task');
             });
 
@@ -1661,7 +1670,7 @@ class Aura_Calendar_Frontend {
                 var d = new Date();
                 d.setDate(d.getDate() + 7);
                 d.setHours(23, 59, 0, 0);
-                $('#t-tsk-due').val(d.toISOString().slice(0, 16));
+                $('#t-tsk-due').val(formatLocalIso(d));
                 openTeacherModal('#modal-teacher-task');
             });
 

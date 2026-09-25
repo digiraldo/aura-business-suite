@@ -66,6 +66,29 @@ class Aura_Calendar_Events {
     }
 
     /**
+     * Formatear una fecha/hora local de la BD respetando la zona horaria del sitio sin desfasar horas
+     *
+     * @param string $datetime_str Fecha y hora en formato YYYY-MM-DD HH:MM:SS
+     * @param string $format Formato de salida de PHP/WordPress
+     * @return string
+     */
+    public static function format_local_datetime( string $datetime_str, string $format ): string {
+        if ( empty( $datetime_str ) ) {
+            return '';
+        }
+        try {
+            $tz = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+            $dt = date_create( $datetime_str, $tz );
+            if ( ! $dt ) {
+                return '';
+            }
+            return wp_date( $format, $dt->getTimestamp() );
+        } catch ( Exception $e ) {
+            return '';
+        }
+    }
+
+    /**
      * Obtener eventos formateados para FullCalendar v6
      *
      * @param array $filters (start, end, program_id, subject_id, teacher_id, event_type, status)
@@ -87,15 +110,21 @@ class Aura_Calendar_Events {
         $where  = [ 'e.deleted_at IS NULL' ];
         $params = [];
 
-        // Rango de fechas (FullCalendar envía start y end en ISO, comparamos con hora local del sitio)
+        // Rango de fechas (FullCalendar envía start y end, comparamos con hora local de la BD sin desfasar)
         if ( ! empty( $filters['start'] ) ) {
-            $start_dt = wp_date( 'Y-m-d H:i:s', strtotime( $filters['start'] ) );
+            $start_dt = str_replace( 'T', ' ', substr( $filters['start'], 0, 19 ) );
+            if ( strlen( $start_dt ) === 10 ) {
+                $start_dt .= ' 00:00:00';
+            }
             $where[]  = 'e.end_datetime >= %s';
             $params[] = $start_dt;
         }
 
         if ( ! empty( $filters['end'] ) ) {
-            $end_dt   = wp_date( 'Y-m-d H:i:s', strtotime( $filters['end'] ) );
+            $end_dt   = str_replace( 'T', ' ', substr( $filters['end'], 0, 19 ) );
+            if ( strlen( $end_dt ) === 10 ) {
+                $end_dt .= ' 23:59:59';
+            }
             $where[]  = 'e.start_datetime <= %s';
             $params[] = $end_dt;
         }
@@ -337,9 +366,9 @@ class Aura_Calendar_Events {
                     'end_raw'             => $row->end_datetime,
                     'start_local_iso'     => str_replace( ' ', 'T', substr( $row->start_datetime, 0, 16 ) ),
                     'end_local_iso'       => str_replace( ' ', 'T', substr( $row->end_datetime, 0, 16 ) ),
-                    'start_time_label'    => wp_date( get_option( 'time_format', 'H:i' ), strtotime( $row->start_datetime ) ),
-                    'end_time_label'      => wp_date( get_option( 'time_format', 'H:i' ), strtotime( $row->end_datetime ) ),
-                    'date_label'          => wp_date( get_option( 'date_format', 'd-m-Y' ), strtotime( $row->start_datetime ) ),
+                    'start_time_label'    => self::format_local_datetime( $row->start_datetime, get_option( 'time_format', 'H:i' ) ),
+                    'end_time_label'      => self::format_local_datetime( $row->end_datetime, get_option( 'time_format', 'H:i' ) ),
+                    'date_label'          => self::format_local_datetime( $row->start_datetime, get_option( 'date_format', 'd-m-Y' ) ),
                     'description'         => $row->description,
                     'recurrence_group_id' => $row->recurrence_group_id,
                     'gcal_event_id'       => $row->gcal_event_id,
@@ -993,7 +1022,14 @@ class Aura_Calendar_Events {
 
         $ok = self::update_dates( $id, $start_dt, $end_dt );
         if ( $ok ) {
-            wp_send_json_success( [ 'message' => __( 'Horario actualizado.', 'aura' ) ] );
+            $time_fmt = get_option( 'time_format', 'H:i' );
+            $date_fmt = get_option( 'date_format', 'd-m-Y' );
+            wp_send_json_success( [
+                'message'          => __( 'Horario actualizado.', 'aura' ),
+                'start_time_label' => self::format_local_datetime( $start_dt, $time_fmt ),
+                'end_time_label'   => self::format_local_datetime( $end_dt, $time_fmt ),
+                'date_label'       => self::format_local_datetime( $start_dt, $date_fmt ),
+            ] );
         } else {
             wp_send_json_error( [ 'message' => __( 'No se pudo actualizar el horario.', 'aura' ) ] );
         }

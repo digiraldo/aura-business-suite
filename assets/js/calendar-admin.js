@@ -38,6 +38,20 @@
             .replace(/'/g, '&#039;');
     }
 
+    function formatLocalDateTime(d, includeSeconds) {
+        if (!(d instanceof Date) || isNaN(d.getTime())) {
+            d = new Date();
+        }
+        var year  = d.getFullYear();
+        var month = String(d.getMonth() + 1).padStart(2, '0');
+        var day   = String(d.getDate()).padStart(2, '0');
+        var hours = String(d.getHours()).padStart(2, '0');
+        var mins  = String(d.getMinutes()).padStart(2, '0');
+        var secs  = String(d.getSeconds()).padStart(2, '0');
+        return year + '-' + month + '-' + day + ' ' + hours + ':' + mins + (includeSeconds ? ':' + secs : '');
+    }
+    window.formatLocalDateTime = formatLocalDateTime;
+
     function formatLocalDT(d) {
         if (!(d instanceof Date) || isNaN(d.getTime())) {
             d = new Date();
@@ -49,6 +63,7 @@
         var mins  = String(d.getMinutes()).padStart(2, '0');
         return year + '-' + month + '-' + day + 'T' + hours + ':' + mins;
     }
+    window.formatLocalDT = formatLocalDT;
 
     function openModal(selector) {
         var $modal = $(selector);
@@ -136,6 +151,18 @@
         };
     }
     window.getFcTimeConfig = getFcTimeConfig;
+
+    function formatLocalDateTime(d, includeSeconds) {
+        if (!d || isNaN(d.getTime())) return '';
+        var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+        var base = d.getFullYear() + '-' +
+               pad(d.getMonth() + 1) + '-' +
+               pad(d.getDate()) + ' ' +
+               pad(d.getHours()) + ':' +
+               pad(d.getMinutes());
+        return includeSeconds ? base + ':' + pad(d.getSeconds()) : base + ':00';
+    }
+    window.formatLocalDateTime = formatLocalDateTime;
 
     // ─────────────────────────────────────────────────────────────
     // GOOGLE CALENDAR DEEP LINKING Y RUTAS BIDIRECCIONALES (u/0/r/...)
@@ -333,14 +360,14 @@
             eventDrop: function(info) {
                 if (!auraCalData.user_can_edit) return;
                 hideEventTooltip();
-                updateEventDates(info.event);
+                updateEventDates(info.event, info.revert);
             },
 
             // Redimensionamiento de evento
             eventResize: function(info) {
                 if (!auraCalData.user_can_edit) return;
                 hideEventTooltip();
-                updateEventDates(info.event);
+                updateEventDates(info.event, info.revert);
             },
 
             // Sincronización continua de la URL y enlace dinámico de Google Calendar al cambiar fechas o vistas
@@ -403,10 +430,18 @@
             ? '<span class="adp-badge badge-emerald" style="font-size:10px;padding:2px 7px;" title="Sincronizado con Google Calendar">✓ GCal</span>' 
             : '';
 
-        var startStr = event.start ? event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        var endStr = event.end ? event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        var timeRange = (p.start_time_label ? p.start_time_label + (p.end_time_label ? ' — ' + p.end_time_label : '') : '') || (startStr ? (startStr + (endStr ? ' — ' + endStr : '')) : '');
-        var dateStr = p.date_label || (event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '');
+        var is12h = /[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '');
+        var startStr = event.start ? event.start.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+        var endStr = event.end ? event.end.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+        var timeRange = '';
+        if (startStr && endStr) {
+            timeRange = startStr + ' — ' + endStr;
+        } else if (startStr) {
+            timeRange = startStr;
+        } else if (p.start_time_label) {
+            timeRange = p.start_time_label + (p.end_time_label ? ' — ' + p.end_time_label : '');
+        }
+        var dateStr = (event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '') || p.date_label || '';
 
         var teachersHtml = '';
         if (p.instructors && p.instructors.length) {
@@ -709,9 +744,9 @@
         }
     });
 
-    function updateEventDates(event) {
-        var startStr = event.start.toISOString();
-        var endStr = event.end ? event.end.toISOString() : startStr;
+    function updateEventDates(event, revertFunc) {
+        var startStr = formatLocalDateTime(event.start, true);
+        var endStr = event.end ? formatLocalDateTime(event.end, true) : startStr;
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_update_event_dates',
@@ -722,9 +757,28 @@
         }, function(res) {
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
+                if (res.data) {
+                    var p = event.extendedProps || {};
+                    if (res.data.start_time_label) p.start_time_label = res.data.start_time_label;
+                    if (res.data.end_time_label)   p.end_time_label   = res.data.end_time_label;
+                    if (res.data.date_label)       p.date_label       = res.data.date_label;
+                    p.start_local_iso = startStr.replace(' ', 'T').substring(0, 16);
+                    p.end_local_iso   = endStr.replace(' ', 'T').substring(0, 16);
+                }
             } else {
                 showToast(res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error, 'error');
-                if (calendar) calendar.refetchEvents();
+                if (typeof revertFunc === 'function') {
+                    revertFunc();
+                } else if (calendar) {
+                    calendar.refetchEvents();
+                }
+            }
+        }).fail(function() {
+            showToast(auraCalData.i18n.error, 'error');
+            if (typeof revertFunc === 'function') {
+                revertFunc();
+            } else if (calendar) {
+                calendar.refetchEvents();
             }
         });
     }
@@ -1725,14 +1779,17 @@
         $('#det-subject').text(p.subject_name || '—');
 
         var timeRange = '';
-        var startStr = event.start ? event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        var endStr = event.end ? event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        var dateStr = p.date_label || (event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '');
+        var is12h = /[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '');
+        var startStr = event.start ? event.start.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+        var endStr = event.end ? event.end.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+        var dateStr = (event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '') || p.date_label || '';
 
-        if (p.start_time_label) {
-            timeRange = (dateStr ? dateStr + ' | ' : '') + p.start_time_label + (p.end_time_label ? ' - ' + p.end_time_label : '');
-        } else {
-            timeRange = (dateStr ? dateStr + ' | ' : '') + startStr + (endStr ? ' - ' + endStr : '');
+        if (startStr && endStr) {
+            timeRange = (dateStr ? dateStr + ' | ' : '') + startStr + ' — ' + endStr;
+        } else if (startStr) {
+            timeRange = (dateStr ? dateStr + ' | ' : '') + startStr;
+        } else if (p.start_time_label) {
+            timeRange = (dateStr ? dateStr + ' | ' : '') + p.start_time_label + (p.end_time_label ? ' — ' + p.end_time_label : '');
         }
         $('#det-time').text(timeRange || '—');
         $('#det-location').text(p.location || 'Por definir');
@@ -1825,17 +1882,19 @@
 
         var teacherIds = (p.instructors || []).map(function(inst) { return parseInt(inst.id || inst.teacher_id, 10); });
 
-        openEventEditor({
-            id: ev.id,
-            title: p.raw_title || ev.title,
-            program_id: p.program_id,
-            subject_id: p.subject_id,
-            event_type: p.event_type,
-            status: p.status,
-            start_local_iso: p.start_local_iso,
-            end_local_iso: p.end_local_iso,
-            start: p.start_local_iso || (ev.start ? ev.start.toISOString() : ''),
-            end: p.end_local_iso || (ev.end ? ev.end.toISOString() : ''),
+            var localStartIso = (ev.start) ? formatLocalDateTime(ev.start, false).replace(' ', 'T') : '';
+            var localEndIso = (ev.end) ? formatLocalDateTime(ev.end, false).replace(' ', 'T') : '';
+            openEventEditor({
+                id: ev.id,
+                title: p.raw_title || ev.title,
+                program_id: p.program_id,
+                subject_id: p.subject_id,
+                event_type: p.event_type,
+                status: p.status,
+                start_local_iso: p.start_local_iso || localStartIso,
+                end_local_iso: p.end_local_iso || localEndIso,
+                start: p.start_local_iso || localStartIso,
+                end: p.end_local_iso || localEndIso,
             location: p.location,
             online_url: p.online_url,
             color: ev.backgroundColor,

@@ -271,8 +271,8 @@ class Aura_Calendar_Google_Sync {
             $detailed_schedule = sprintf(
                 /* translators: 1: start datetime, 2: end datetime */
                 __( '⏰ Horario programado: %1$s a %2$s', 'aura' ),
-                date_i18n( 'd/m/Y H:i', strtotime( $event->start_datetime ) ),
-                date_i18n( 'd/m/Y H:i', strtotime( $event->end_datetime ) )
+                $dt_start->format( 'd/m/Y H:i' ),
+                $dt_end->format( 'd/m/Y H:i' )
             );
 
             $payload = [

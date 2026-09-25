@@ -638,3 +638,43 @@ Se implementó el enrutamiento reactivo idéntico al estándar de Google Calenda
      - Se aplicó `scrollbar-width: none !important;` y `::-webkit-scrollbar { display: none !important; width: 0 !important; }` en `.fc-scrollgrid-shrink .fc-scroller`. La celda preserva su ancho de reserva para alinear las columnas con el cuerpo inferior pero las flechas y la barra gris desaparecen por completo.
   5. **Neutralización de Tablas de Divi:**
      - Se forzó `border-collapse: collapse !important; margin-bottom: 0 !important;` sobre las tablas del calendario en el frontend y backend para anular cualquier espaciado externo introducido por Divi.
+
+
+
+
+---
+
+### 29. Corrección de Desfase Horario en Tooltip Enriquecido y Estabilidad de Arrastre (Drag & Drop / Resize)
+
+#### A. Desfase de Horarios en Tooltip Enriquecido y Modal de Detalles (04:00 — 12:00 vs 10:00 — 01:30)
+- **Causa Raíz:**
+  1. En WordPress, `wp-settings.php` establece globalmente la zona horaria del motor PHP a UTC (`date_default_timezone_set('UTC')`).
+  2. Las columnas `start_datetime` y `end_datetime` en MySQL almacenan la fecha y hora local del evento (ej: `2027-01-25 10:00:00`).
+  3. Al consultar eventos en [`modules/calendar/class-calendar-events.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-events.php), el código ejecutaba `wp_date(..., strtotime($row->start_datetime))`. Debido a que PHP corre en UTC, `strtotime()` interpretaba la cadena local como UTC, y posteriormente `wp_date()` aplicaba la compensación de zona horaria de WordPress (ej: `-6 horas` para la zona horaria de Ciudad de México / UTC-6), convirtiendo erróneamente las **10:00 am** en **04:00 am**, distorsionando las etiquetas generadas en el tooltip.
+- **Solución Implementada:**
+  1. Se implementó el método estático centralizado `format_local_datetime(string $datetime_str, string $format)` en `Aura_Calendar_Events`, el cual crea la fecha asociando explícitamente la zona horaria configurada en WordPress (`wp_timezone()`), preservando exactamente la hora almacenada en la base de datos sin desplazamientos.
+  2. En [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js), las funciones `showEventTooltip` y `openEventDetail` ahora leen preferentemente los objetos de fecha de FullCalendar (`event.start` y `event.end`) formateados dinámicamente con `toLocaleTimeString()` respetando el formato de 12 horas o 24 horas del sitio WordPress.
+
+---
+
+#### B. Evento "Salta a Otro Lugar" al Estirar o Arrastrar (Drag & Drop / Resize)
+- **Causa Raíz:**
+  1. En `assets/js/calendar-admin.js`, la función `updateEventDates(event)` utilizaba `event.start.toISOString()` y `event.end.toISOString()`.
+  2. El método estándar de JavaScript `.toISOString()` convierte **siempre** la fecha a UTC (Zulu time). Por ejemplo, un evento programado a las 10:00 am en una máquina en UTC-6 era convertido a `16:00:00Z` (+6 horas).
+  3. Cuando el servidor recibía la petición AJAX `aura_cal_update_event_dates`, limpiaba la cadena y guardaba `2027-01-25 16:00:00` en MySQL como si fuera hora local.
+  4. En consecuencia, cada vez que el usuario estiraba con el mouse o arrastraba un evento para moverlo, FullCalendar guardaba la hora desfasada +6 horas hacia adelante, provocando que el evento saltara a otra posición inesperada en el grid.
+- **Solución Implementada:**
+  1. Se creó la función utilitaria `formatLocalDateTime(d, includeSeconds)` en `calendar-admin.js`, la cual construye una cadena limpia `YYYY-MM-DD HH:mm:ss` en la hora local del navegador, sin conversión a UTC.
+  2. Se actualizó `updateEventDates(event, revertFunc)` para enviar las fechas en formato local exacto y procesar la respuesta AJAX con las nuevas etiquetas de horario y fecha (`start_time_label`, `end_time_label`, `date_label`), reflejándolas de inmediato en `event.extendedProps`.
+  3. Se conectó el callback `info.revert` tanto en `eventDrop` como en `eventResize`, de modo que si ocurre cualquier error de red o de permisos, el evento regresa de forma fluida a su posición original sin inconsistencias visuales.
+  4. En el modal de edición al hacer clic en "Editar Evento" (`#btn-det-edit`), se eliminó el uso de `.toISOString()`, usando `formatLocalDateTime` para preservar la hora sin alteraciones al cargar el formulario.
+  5. En [`modules/calendar/class-calendar-frontend.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php), se reemplazó el uso de `.toISOString().slice(0, 16)` por `formatLocalIso(d)` en la creación de tareas docentes con fecha límite, protegiendo también el frontend de desfases horarios.
+
+
+
+- Requiero que cuando en el calendario este en pantalla completa en Portal de Instructor o Portal de Estudiante, se vea igual que el calendario de google, en espec ial en dispositivos moviles sin margenes, padding ni espacios al rededor de la pantalla para optimizar el espacio, y que la informacion que se muestre en esto sea igual que el calendario de Google, tambien quita la fila de Todo el Dia, para todos los calendarios del Backend y Frontend, ya que en el calendario de Google nunca he visto esto.
+
+
+
+
+php build-zip.php
