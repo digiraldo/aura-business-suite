@@ -65,6 +65,94 @@
     }
     window.formatLocalDT = formatLocalDT;
 
+    function renderGoogleStyleEvent(arg, currentUserId) {
+        var p = arg.event.extendedProps || {};
+        var title = p.raw_title || arg.event.title || 'Evento';
+        var timeText = arg.timeText || '';
+        var viewType = (arg.view && arg.view.type) ? arg.view.type : '';
+        var isTimeGrid = viewType.indexOf('timeGrid') !== -1;
+
+        // Avatar del docente
+        var avatarImg = '';
+        if (p.primary_avatar) {
+            avatarImg = '<img src="' + escapeHtml(p.primary_avatar) + '" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0;vertical-align:middle;display:inline-block;border:1px solid rgba(255,255,255,0.6);" onerror="this.style.display=\'none\';" />';
+        }
+
+        // Chip de líder estudiantil
+        var leaderBadge = '';
+        if (p.student_leaders && p.student_leaders.length > 0) {
+            var isMe = false;
+            var lName = p.student_leaders[0].name ? p.student_leaders[0].name.split(' ')[0] : (p.student_leaders[0].role_label || 'Líder');
+            if (currentUserId) {
+                for (var i = 0; i < p.student_leaders.length; i++) {
+                    if (parseInt(p.student_leaders[i].student_id, 10) === parseInt(currentUserId, 10)) {
+                        isMe = true;
+                        lName = p.student_leaders[i].role_label || 'Tú (Líder)';
+                        break;
+                    }
+                }
+            }
+            var bg = isMe ? 'background:#f59e0b;color:#ffffff;' : 'background:rgba(255,255,255,0.28);color:inherit;';
+            leaderBadge = '<span class="aura-gcal-leader-chip" style="font-size:9.5px;' + bg + 'border-radius:6px;padding:1px 5px;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;flex-shrink:0;">⭐ ' + escapeHtml(lName) + '</span>';
+        }
+
+        // 1. Vista Semanal o Diaria (timeGridWeek / timeGridDay) - Estilo Tarjeta Bloque Google Calendar
+        if (isTimeGrid) {
+            var durationMinutes = 60;
+            if (arg.event.start && arg.event.end) {
+                durationMinutes = Math.round((arg.event.end.getTime() - arg.event.start.getTime()) / 60000);
+            }
+
+            // Para eventos cortos (< 40 minutos), diseño compacto en 1 línea estilo Google
+            if (durationMinutes < 40) {
+                return {
+                    html: '<div class="aura-gcal-event-compact" style="display:flex;align-items:center;gap:4px;width:100%;height:100%;overflow:hidden;padding:1px 4px;box-sizing:border-box;">' +
+                          (timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;">' + escapeHtml(timeText) + '</span>' : '') +
+                          '<span style="font-weight:600;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">' + escapeHtml(title) + '</span>' +
+                          leaderBadge +
+                          '</div>'
+                };
+            }
+
+            // Para eventos de 40+ minutos, tarjeta vertical espaciosa idéntica a Google Calendar
+            var locOrTeacher = '';
+            if (p.location) {
+                locOrTeacher = '📍 ' + escapeHtml(p.location);
+            } else if (p.primary_name) {
+                locOrTeacher = '👨‍🏫 ' + escapeHtml(p.primary_name);
+            }
+
+            var subjectTxt = '';
+            if (p.subject_name && p.subject_name.toLowerCase() !== title.toLowerCase()) {
+                subjectTxt = escapeHtml(p.subject_name);
+            }
+
+            var html = '<div class="aura-gcal-event-card" style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:3px 6px;box-sizing:border-box;line-height:1.25;">' +
+                       '<div style="display:flex;align-items:center;gap:4px;width:100%;overflow:hidden;">' +
+                           avatarImg +
+                           '<span class="aura-gcal-title" style="font-weight:700;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;letter-spacing:-0.2px;">' + escapeHtml(title) + '</span>' +
+                           leaderBadge +
+                       '</div>' +
+                       (timeText ? '<div class="aura-gcal-time" style="font-size:10.5px;font-weight:500;opacity:0.92;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(timeText) + '</div>' : '') +
+                       (locOrTeacher ? '<div class="aura-gcal-meta" style="font-size:10px;opacity:0.85;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + locOrTeacher + '</div>' : '') +
+                       (subjectTxt && durationMinutes >= 85 ? '<div class="aura-gcal-subj" style="font-size:9.5px;opacity:0.75;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📚 ' + subjectTxt + '</div>' : '') +
+                       '</div>';
+
+            return { html: html };
+        }
+
+        // 2. Vista Mensual (dayGridMonth) - Estilo Píldora Google Calendar
+        return {
+            html: '<div class="aura-gcal-month-pill" style="display:flex;align-items:center;gap:4px;width:100%;overflow:hidden;padding:1px 4px;font-size:11px;line-height:1.2;box-sizing:border-box;">' +
+                  avatarImg +
+                  (timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;">' + escapeHtml(timeText) + '</span>' : '') +
+                  '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;">' + escapeHtml(title) + '</span>' +
+                  leaderBadge +
+                  '</div>'
+        };
+    }
+    window.renderGoogleStyleEvent = renderGoogleStyleEvent;
+
     function openModal(selector) {
         var $modal = $(selector);
         if (!$modal.length) return;
@@ -268,40 +356,16 @@
             scrollTime: '07:00:00',
             slotLabelFormat: timeFormatConfig,
             eventTimeFormat: timeFormatConfig,
-            allDaySlot: true,
-            allDayText: '🌅 Todo el día',
+            allDaySlot: false,
             timeZone: 'local',
             nowIndicator: true,
             editable: !!auraCalData.user_can_edit,
             selectable: !!auraCalData.user_can_edit,
             selectMirror: true,
 
-            // Renderizado personalizado de la tarjeta de evento con micro-avatar del docente y badge de líder
+            // Renderizado estilo Google Calendar de la tarjeta de evento
             eventContent: function(arg) {
-                var p = arg.event.extendedProps || {};
-                var title = p.raw_title || arg.event.title;
-                var timeText = arg.timeText;
-                
-                var avatarImg = '';
-                if (p.primary_avatar) {
-                    avatarImg = '<img src="' + escapeHtml(p.primary_avatar) + '" alt="' + escapeHtml(p.primary_name || '') + '" title="' + escapeHtml(p.primary_name || '') + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" onerror="this.style.display=\'none\';" />';
-                }
-
-                var leadersBadge = '';
-                if (p.student_leaders && p.student_leaders.length > 0) {
-                    var lCount = p.student_leaders.length;
-                    var firstLeader = p.student_leaders[0];
-                    leadersBadge = '<span class="aura-event-leader-tag" title="' + escapeHtml(firstLeader.name + ' (' + firstLeader.role_label + ')') + (lCount > 1 ? ' +' + (lCount - 1) : '') + '" style="font-size:10px;background:rgba(255,255,255,0.28);color:inherit;border-radius:8px;padding:1px 5px;margin-left:auto;white-space:nowrap;display:inline-flex;align-items:center;gap:3px;font-weight:600;">⭐ ' + escapeHtml(firstLeader.name.split(' ')[0]) + '</span>';
-                }
-
-                var html = '<div class="fc-event-custom-row" style="display:flex;align-items:center;gap:5px;width:100%;overflow:hidden;padding:1px 2px;">' +
-                    avatarImg +
-                    (timeText ? '<span class="fc-event-time" style="font-weight:700;font-size:11px;flex-shrink:0;">' + escapeHtml(timeText) + '</span>' : '') +
-                    '<span class="fc-event-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;font-size:12px;">' + escapeHtml(title) + '</span>' +
-                    leadersBadge +
-                '</div>';
-
-                return { html: html };
+                return renderGoogleStyleEvent(arg, auraCalData.current_user_id || 0);
             },
 
             // Carga de eventos con filtros

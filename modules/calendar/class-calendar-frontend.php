@@ -675,19 +675,19 @@ class Aura_Calendar_Frontend {
             <!-- CONTENIDO TAB 1: CALENDARIO DE CLASES -->
             <div id="tab-teacher-schedule" class="teacher-tab-content active">
                 <div class="adp-card aura-teacher-card" style="padding: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <div class="aura-calendar-top-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                         <h3 class="adp-card-title" style="font-size: 17px; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
                             <span class="dashicons dashicons-calendar-alt" style="color: #6366f1;"></span>
                             <?php esc_html_e( 'Horario Semanal de Sesiones y Evaluaciones', 'aura' ); ?>
                         </h3>
-                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="aura-calendar-top-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                             <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-teacher-fullscreen" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
                                 <span class="dashicons dashicons-editor-expand" style="font-size: 16px; width: 16px; height: 16px;"></span> <span class="fs-text"><?php esc_html_e( 'Pantalla Completa', 'aura' ); ?></span>
                             </button>
                             <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer" id="btn-open-teacher-gcal" class="btn btn-secondary btn-sm aura-btn-gcal-link" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px; text-decoration: none; color: inherit;" title="<?php esc_attr_e( 'Abrir esta misma fecha y vista en Google Calendar', 'aura' ); ?>">
                                 <span style="font-size: 13px;">📅</span> <?php esc_html_e( 'Google Calendar', 'aura' ); ?> ↗
                             </a>
-                            <div style="font-size: 12px; color: var(--at-text-muted);">
+                            <div class="aura-calendar-hint" style="font-size: 12px; color: var(--at-text-muted);">
                                 💡 <?php esc_html_e( 'Haz clic sobre una clase para ver el aula, enlace virtual o tomar lista rápida.', 'aura' ); ?>
                             </div>
                         </div>
@@ -1986,8 +1986,7 @@ class Aura_Calendar_Frontend {
                         scrollTime: '07:00:00',
                         slotLabelFormat: timeFmt,
                         eventTimeFormat: timeFmt,
-                        allDaySlot: true,
-                        allDayText: '🌅 Todo el día',
+                        allDaySlot: false,
                         timeZone: 'local',
                         nowIndicator: true,
                     eventMouseEnter: function(info) {
@@ -2005,29 +2004,11 @@ class Aura_Calendar_Frontend {
                         }
                     },
                     eventContent: function(arg) {
+                        if (typeof window.renderGoogleStyleEvent === 'function') {
+                            return window.renderGoogleStyleEvent(arg, 0);
+                        }
                         var p = arg.event.extendedProps || {};
-                        var title = p.raw_title || arg.event.title;
-                        var timeText = arg.timeText;
-                        
-                        var avatarImg = '';
-                        if (p.primary_avatar) {
-                            avatarImg = '<img src="' + p.primary_avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" onerror="this.style.display=\'none\';" />';
-                        }
-
-                        var leadersBadge = '';
-                        if (p.student_leaders && p.student_leaders.length > 0) {
-                            var firstLeader = p.student_leaders[0];
-                            leadersBadge = '<span style="font-size:10px;background:rgba(255,255,255,0.28);border-radius:8px;padding:1px 5px;margin-left:auto;white-space:nowrap;font-weight:600;">⭐ ' + (firstLeader.name ? firstLeader.name.split(' ')[0] : 'Líder') + '</span>';
-                        }
-
-                        return {
-                            html: '<div style="display:flex;align-items:center;gap:5px;width:100%;overflow:hidden;padding:1px 2px;">' +
-                                  avatarImg +
-                                  (timeText ? '<span style="font-weight:700;font-size:11px;flex-shrink:0;">' + timeText + '</span>' : '') +
-                                  '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;font-size:12px;">' + title + '</span>' +
-                                  leadersBadge +
-                                  '</div>'
-                        };
+                        return { html: '<div style="padding:2px 4px;font-weight:600;font-size:12px;">' + (p.raw_title || arg.event.title) + '</div>' };
                     },
                     events: function(info, successCallback, failureCallback) {
                         $.post(auraCalData.ajax_url, {
@@ -2221,19 +2202,19 @@ class Aura_Calendar_Frontend {
         ?>
         <div class="aura-student-schedule-wrap" style="margin: 20px 0;">
             <div class="adp-card" style="padding: 20px; border-radius: 12px;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div class="aura-calendar-top-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                     <h3 class="adp-card-title" style="font-size: 18px; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
                         <span class="dashicons dashicons-calendar-alt" style="font-size: 20px; width: 20px; height: 20px; color: #6366f1;"></span>
                         <span><?php esc_html_e( 'Mi Calendario de Clases y Actividades', 'aura' ); ?></span>
                     </h3>
-                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <div class="aura-calendar-top-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                         <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-student-fullscreen" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
                             <span class="dashicons dashicons-editor-expand" style="font-size: 16px; width: 16px; height: 16px;"></span> <span class="fs-text"><?php esc_html_e( 'Pantalla Completa', 'aura' ); ?></span>
                         </button>
                         <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer" id="btn-open-student-gcal" class="btn btn-secondary btn-sm aura-btn-gcal-link" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px; text-decoration: none; color: inherit;" title="<?php esc_attr_e( 'Abrir esta misma fecha y vista en Google Calendar', 'aura' ); ?>">
                             <span style="font-size: 13px;">📅</span> <?php esc_html_e( 'Google Calendar', 'aura' ); ?> ↗
                         </a>
-                        <div style="font-size: 12px; color: var(--at-text-muted, #64748b);">
+                        <div class="aura-calendar-hint" style="font-size: 12px; color: var(--at-text-muted, #64748b);">
                             💡 <?php esc_html_e( 'Las clases con una estrella (⭐) indican que tienes o hay compañeros con roles de liderazgo asignados.', 'aura' ); ?>
                         </div>
                     </div>
@@ -2292,8 +2273,7 @@ class Aura_Calendar_Frontend {
                     scrollTime: '07:00:00',
                     slotLabelFormat: timeFmt,
                     eventTimeFormat: timeFmt,
-                    allDaySlot: true,
-                    allDayText: '🌅 Todo el día',
+                    allDaySlot: false,
                     timeZone: 'local',
                     nowIndicator: true,
                     eventMouseEnter: function(info) {
@@ -2311,43 +2291,11 @@ class Aura_Calendar_Frontend {
                         }
                     },
                     eventContent: function(arg) {
+                        if (typeof window.renderGoogleStyleEvent === 'function') {
+                            return window.renderGoogleStyleEvent(arg, currentUserId);
+                        }
                         var p = arg.event.extendedProps || {};
-                        var title = p.raw_title || arg.event.title;
-                        var timeText = arg.timeText;
-                        
-                        var avatarImg = '';
-                        if (p.primary_avatar) {
-                            avatarImg = '<img src="' + p.primary_avatar + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.7);vertical-align:middle;display:inline-block;" onerror="this.style.display=\'none\';" />';
-                        }
-
-                        var isMeLeader = false;
-                        var leaderLabel = '';
-                        if (p.student_leaders && p.student_leaders.length > 0) {
-                            $.each(p.student_leaders, function(idx, ld) {
-                                if (parseInt(ld.student_id, 10) === currentUserId) {
-                                    isMeLeader = true;
-                                    leaderLabel = ld.role_label || 'Líder';
-                                }
-                            });
-                            if (!leaderLabel) {
-                                leaderLabel = p.student_leaders[0].name ? p.student_leaders[0].name.split(' ')[0] : 'Líder';
-                            }
-                        }
-
-                        var leadersBadge = '';
-                        if (leaderLabel) {
-                            var bg = isMeLeader ? 'background:#f59e0b;color:#ffffff;' : 'background:rgba(255,255,255,0.3);color:inherit;';
-                            leadersBadge = '<span style="font-size:10px;' + bg + 'border-radius:8px;padding:1px 5px;margin-left:auto;white-space:nowrap;font-weight:700;">⭐ ' + leaderLabel + '</span>';
-                        }
-
-                        return {
-                            html: '<div style="display:flex;align-items:center;gap:5px;width:100%;overflow:hidden;padding:1px 2px;">' +
-                                  avatarImg +
-                                  (timeText ? '<span style="font-weight:700;font-size:11px;flex-shrink:0;">' + timeText + '</span>' : '') +
-                                  '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;font-size:12px;">' + title + '</span>' +
-                                  leadersBadge +
-                                  '</div>'
-                        };
+                        return { html: '<div style="padding:2px 4px;font-weight:600;font-size:12px;">' + (p.raw_title || arg.event.title) + '</div>' };
                     },
                     events: function(info, successCallback, failureCallback) {
                         $.post(auraCalData.ajax_url, {

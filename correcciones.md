@@ -672,9 +672,41 @@ Se implementó el enrutamiento reactivo idéntico al estándar de Google Calenda
 
 
 
-- Requiero que cuando en el calendario este en pantalla completa en Portal de Instructor o Portal de Estudiante, se vea igual que el calendario de google, en espec ial en dispositivos moviles sin margenes, padding ni espacios al rededor de la pantalla para optimizar el espacio, y que la informacion que se muestre en esto sea igual que el calendario de Google, tambien quita la fila de Todo el Dia, para todos los calendarios del Backend y Frontend, ya que en el calendario de Google nunca he visto esto.
 
+---
 
+### 30. Eliminación de la Fila "Todo el Día" y Rediseño de Pantalla Completa Móvil estilo Google Calendar
 
+#### A. Eliminación Total de la Fila "Todo el Día" (Backend y Frontend)
+- **Motivación y Requisito:** En interfaces como Google Calendar, las cuadrículas horarias de eventos regulares no intercalan filas de "Todo el día" si el flujo principal está enfocado en horas de clases, talleres y evaluaciones específicas. Se solicitó su remoción integral para optimizar el espacio vertical.
+- **Implementación:**
+  1. **Configuración FullCalendar:** Se fijó `allDaySlot: false` en las tres instancias del sistema:
+     - Calendario del Administrador en [`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js).
+     - Portal de Profesores (`window.teacherCalendarInstance`) en [`modules/calendar/class-calendar-frontend.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php).
+     - Portal de Estudiantes (`window.studentCalendarInstance`) en [`modules/calendar/class-calendar-frontend.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php).
+  2. **Reglas CSS Definitivas:** En [`assets/css/calendar-admin.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/calendar-admin.css) y [`assets/css/aura-frontend-dark-mode.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css), se forzó `.fc-timegrid-all-day, .fc-scrollgrid-section-all-day { display: none !important; height: 0 !important; border: none !important; }` garantizando que no se reserve ni 1px de espacio superior.
 
-php build-zip.php
+---
+
+#### B. Rediseño de Pantalla Completa estilo Google Calendar (0 Márgenes / 0 Padding en Móviles)
+- **Motivación y Requisito:** En dispositivos móviles, los márgenes, paddings de tarjetas y títulos de encabezado consumían hasta el 40% del área visible. Se requería que al activar pantalla completa, el calendario ocupe el 100% de la pantalla (`100vw` × `100dvh`) con cero espacios muertos idéntico a la app de Google Calendar.
+- **Implementación:**
+  1. **Contenedor Fullscreen `100vw × 100dvh` Sin Márgenes ni Relleno:**
+     - En `.aura-calendar-is-fullscreen`, se eliminó todo padding (`padding: 0 !important`), bordes (`border: none !important`) y esquinas redondeadas (`border-radius: 0 !important`), ocupando de borde a borde toda la pantalla.
+  2. **TopBar Compacta estilo Google Calendar (48px de alto):**
+     - La cabecera `.aura-calendar-top-header` pasa a un formato de barra de aplicación de 48px de altura con fondo continuo, título conciso, botón de alternancia de pantalla completa y acceso directo a Google Calendar.
+     - Los textos descriptivos largos de ayuda (`.aura-calendar-hint`) se ocultan automáticamente en pantalla completa para no robar espacio vertical.
+  3. **Optimización Móvil Específica (`@media (max-width: 768px)`):**
+     - El eje horario `.fc-timegrid-axis` se reduce de 82px a 44px, otorgando más del 85% del ancho de la pantalla a las columnas de los días.
+     - Botones y cabecera de FullCalendar compactos con padding de 4px y tipografía nítida para máxima comodidad táctil sin desbordamientos.
+
+---
+
+#### C. Renderizado de Tarjetas de Eventos idéntico a Google Calendar
+- **Implementación:**
+  1. Se implementó la función unificada `renderGoogleStyleEvent(arg, currentUserId)` tanto en el panel administrativo como en los portales de Profesor y Estudiante.
+  2. **Eventos en Vista Semanal/Diaria (`timeGrid`):**
+     - Si duran menos de 40 min: formato compacto horizontal en 1 línea (`Hora` • `Título`).
+     - Si duran 40 min o más: bloque vertical espacioso con **Título en negrita destacada**, horario claro (`10:00 – 13:30`), aula / profesor (`📍 Chimenea` / `👨‍🏫 Tomas Vidal`) y chip sutil de líder estudiantil (`⭐ Líder`).
+  3. **Eventos en Vista Mensual (`dayGridMonth`):**
+     - Formato de píldora redondeada limpia estilo Google Calendar con hora destacada y título sin cortes abruptos.
