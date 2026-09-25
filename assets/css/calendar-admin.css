@@ -3027,3 +3027,17 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
     max-height: calc(100dvh - 20px) !important;
     word-break: break-word !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   FIX: Reset padding de tema/WordPress en celdas de FullCalendar (Admin)
+   Previene que estilos de td del admin o temas afecten el grid del calendario.
+   ══════════════════════════════════════════════════════════════════ */
+#aura-fullcalendar-wrapper .fc td,
+#aura-fullcalendar-wrapper .fc th,
+.aura-calendar-card .fc td,
+.aura-calendar-card .fc th,
+.aura-cal-main .fc td,
+.aura-cal-main .fc th {
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}

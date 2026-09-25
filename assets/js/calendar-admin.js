@@ -361,6 +361,7 @@
             allDaySlot: false,
             timeZone: 'local',
             nowIndicator: true,
+            eventDisplay: 'block',
             editable: !!auraCalData.user_can_edit,
             selectable: !!auraCalData.user_can_edit,
             selectMirror: true,

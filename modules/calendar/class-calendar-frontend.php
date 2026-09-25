@@ -2001,6 +2001,7 @@ class Aura_Calendar_Frontend {
                         allDaySlot: false,
                         timeZone: 'local',
                         nowIndicator: true,
+                        eventDisplay: 'block',
                     eventMouseEnter: function(info) {
                         if (typeof window.showEventTooltip === 'function') {
                             window.showEventTooltip(info.event, info.el, info.jsEvent);
@@ -2315,6 +2316,7 @@ class Aura_Calendar_Frontend {
                     allDaySlot: false,
                     timeZone: 'local',
                     nowIndicator: true,
+                    eventDisplay: 'block',
                     eventMouseEnter: function(info) {
                         if (typeof window.showEventTooltip === 'function') {
                             window.showEventTooltip(info.event, info.el, info.jsEvent);
