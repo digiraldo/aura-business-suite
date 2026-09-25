@@ -2845,15 +2845,46 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
     margin: 0 1px !important;
 }
 
-.fc .fc-timegrid-event-harness {
-    inset: 0 !important;
-}
-
-.fc .fc-timegrid-event {
+.fc .fc-timegrid-event,
+.fc a.fc-timegrid-event,
+.fc a.fc-event {
     margin: 0 !important;
     border-radius: 4px !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
-    padding: 2px 4px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+    text-decoration: none !important;
+}
+
+.fc .fc-timegrid-event:hover,
+.fc a.fc-timegrid-event:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+    z-index: 5 !important;
+}
+
+.fc .fc-timegrid-event .fc-event-main,
+.fc a.fc-timegrid-event .fc-event-main {
+    padding: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    color: inherit !important;
+    box-sizing: border-box !important;
+}
+
+/* Evitar que WordPress o temas apliquen color azul de enlace a los textos de eventos */
+.fc .fc-timegrid-event .aura-gcal-event-card,
+.fc .fc-timegrid-event .aura-gcal-event-compact,
+.fc .fc-daygrid-event .aura-gcal-month-pill {
+    color: inherit !important;
+}
+
+.fc .fc-timegrid-event .aura-gcal-title,
+.fc .fc-timegrid-event .aura-gcal-time,
+.fc .fc-timegrid-event .aura-gcal-meta,
+.fc .fc-timegrid-event .aura-gcal-subj {
+    color: inherit !important;
 }
 
 /* Vista Agenda (List) */

@@ -89,6 +89,27 @@ class Aura_Calendar_Events {
     }
 
     /**
+     * Calcular color de contraste óptimo (blanco o negro/oscuro) según la luminancia del fondo
+     *
+     * @param string $hex_color
+     * @return string '#ffffff' o '#0f172a'
+     */
+    public static function get_contrast_color( string $hex_color ): string {
+        $hex = ltrim( trim( $hex_color ), '#' );
+        if ( strlen( $hex ) === 3 ) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+        if ( strlen( $hex ) !== 6 ) {
+            return '#ffffff';
+        }
+        $r = hexdec( substr( $hex, 0, 2 ) );
+        $g = hexdec( substr( $hex, 2, 2 ) );
+        $b = hexdec( substr( $hex, 4, 2 ) );
+        $yiq = ( ( $r * 299 ) + ( $g * 587 ) + ( $b * 114 ) ) / 1000;
+        return ( $yiq >= 145 ) ? '#0f172a' : '#ffffff';
+    }
+
+    /**
      * Obtener eventos formateados para FullCalendar v6
      *
      * @param array $filters (start, end, program_id, subject_id, teacher_id, event_type, status)
@@ -342,6 +363,8 @@ class Aura_Calendar_Events {
             $primary_avatar = ! empty( $inst_list[0]['avatar'] ) ? $inst_list[0]['avatar'] : ( ! empty( $student_leaders_list[0]['avatar'] ) ? $student_leaders_list[0]['avatar'] : '' );
             $primary_name   = ! empty( $inst_list[0]['name'] ) ? $inst_list[0]['name'] : ( ! empty( $student_leaders_list[0]['name'] ) ? $student_leaders_list[0]['name'] : '' );
 
+            $text_color = self::get_contrast_color( $bg_color );
+
             $fc_events[] = [
                 'id'              => (string) $row->id,
                 'title'           => $title,
@@ -349,8 +372,10 @@ class Aura_Calendar_Events {
                 'end'             => str_replace( ' ', 'T', $row->end_datetime ),
                 'backgroundColor' => $bg_color,
                 'borderColor'     => $bg_color,
-                'textColor'       => '#ffffff',
+                'textColor'       => $text_color,
                 'extendedProps'   => [
+                    'text_color'          => $text_color,
+                    'color'               => $bg_color,
                     'raw_title'           => $row->title,
                     'program_id'          => (int) $row->program_id,
                     'program_name'        => $row->program_name,

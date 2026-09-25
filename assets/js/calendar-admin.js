@@ -65,12 +65,43 @@
     }
     window.formatLocalDT = formatLocalDT;
 
+    function getEventContrastColor(colorStr) {
+        if (!colorStr) return '#ffffff';
+        if (typeof colorStr === 'string' && colorStr.indexOf('rgb') !== -1) {
+            var m = colorStr.match(/\d+/g);
+            if (m && m.length >= 3) {
+                var r = parseInt(m[0], 10);
+                var g = parseInt(m[1], 10);
+                var b = parseInt(m[2], 10);
+                var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+                return (yiq >= 145) ? '#0f172a' : '#ffffff';
+            }
+        }
+        var hex = String(colorStr).replace('#', '').trim();
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        if (hex.length === 6) {
+            var r = parseInt(hex.substring(0, 2), 16);
+            var g = parseInt(hex.substring(2, 4), 16);
+            var b = parseInt(hex.substring(4, 6), 16);
+            var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 145) ? '#0f172a' : '#ffffff';
+        }
+        return '#ffffff';
+    }
+    window.getEventContrastColor = getEventContrastColor;
+
     function renderGoogleStyleEvent(arg, currentUserId) {
         var p = arg.event.extendedProps || {};
         var title = p.raw_title || arg.event.title || 'Evento';
         var timeText = arg.timeText || '';
         var viewType = (arg.view && arg.view.type) ? arg.view.type : '';
         var isTimeGrid = viewType.indexOf('timeGrid') !== -1;
+
+        // Calcular color de contraste dinámico (blanco o negro/oscuro) según el fondo del evento
+        var bgColor = arg.event.backgroundColor || p.color || (arg.el && arg.el.style ? arg.el.style.backgroundColor : '') || '#6366f1';
+        var textColor = p.text_color || arg.event.textColor || getEventContrastColor(bgColor);
 
         // Avatar del docente
         var avatarImg = '';
@@ -92,7 +123,7 @@
                     }
                 }
             }
-            var bg = isMe ? 'background:#f59e0b;color:#ffffff;' : 'background:rgba(255,255,255,0.28);color:inherit;';
+            var bg = isMe ? 'background:#f59e0b;color:#ffffff;' : (textColor === '#ffffff' ? 'background:rgba(255,255,255,0.28);color:#ffffff;' : 'background:rgba(15,23,42,0.15);color:#0f172a;');
             leaderBadge = '<span class="aura-gcal-leader-chip" style="font-size:9.5px;' + bg + 'border-radius:6px;padding:1px 5px;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;flex-shrink:0;">⭐ ' + escapeHtml(lName) + '</span>';
         }
 
@@ -106,9 +137,9 @@
             // Para eventos cortos (< 40 minutos), diseño compacto en 1 línea estilo Google
             if (durationMinutes < 40) {
                 return {
-                    html: '<div class="aura-gcal-event-compact" style="display:flex;align-items:center;gap:4px;width:100%;height:100%;overflow:hidden;padding:1px 4px;box-sizing:border-box;">' +
-                          (timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;">' + escapeHtml(timeText) + '</span>' : '') +
-                          '<span style="font-weight:600;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">' + escapeHtml(title) + '</span>' +
+                    html: '<div class="aura-gcal-event-compact" style="display:flex;align-items:center;gap:4px;width:100%;height:100%;overflow:hidden;padding:1px 4px;box-sizing:border-box;color:' + textColor + ' !important;">' +
+                          (timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;color:' + textColor + ' !important;">' + escapeHtml(timeText) + '</span>' : '') +
+                          '<span style="font-weight:600;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:' + textColor + ' !important;">' + escapeHtml(title) + '</span>' +
                           leaderBadge +
                           '</div>'
                 };
@@ -127,15 +158,15 @@
                 subjectTxt = escapeHtml(p.subject_name);
             }
 
-            var html = '<div class="aura-gcal-event-card" style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:3px 6px;box-sizing:border-box;line-height:1.25;">' +
-                       '<div style="display:flex;align-items:center;gap:4px;width:100%;overflow:hidden;">' +
+            var html = '<div class="aura-gcal-event-card" style="display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;padding:3px 6px;box-sizing:border-box;line-height:1.25;color:' + textColor + ' !important;">' +
+                       '<div style="display:flex;align-items:center;gap:4px;width:100%;overflow:hidden;color:' + textColor + ' !important;">' +
                            avatarImg +
-                           '<span class="aura-gcal-title" style="font-weight:700;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;letter-spacing:-0.2px;">' + escapeHtml(title) + '</span>' +
+                           '<span class="aura-gcal-title" style="font-weight:700;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;letter-spacing:-0.2px;color:' + textColor + ' !important;">' + escapeHtml(title) + '</span>' +
                            leaderBadge +
                        '</div>' +
-                       (timeText ? '<div class="aura-gcal-time" style="font-size:10.5px;font-weight:500;opacity:0.92;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(timeText) + '</div>' : '') +
-                       (locOrTeacher ? '<div class="aura-gcal-meta" style="font-size:10px;opacity:0.85;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + locOrTeacher + '</div>' : '') +
-                       (subjectTxt && durationMinutes >= 85 ? '<div class="aura-gcal-subj" style="font-size:9.5px;opacity:0.75;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📚 ' + subjectTxt + '</div>' : '') +
+                       (timeText ? '<div class="aura-gcal-time" style="font-size:10.5px;font-weight:600;opacity:0.92;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' + textColor + ' !important;">' + escapeHtml(timeText) + '</div>' : '') +
+                       (locOrTeacher ? '<div class="aura-gcal-meta" style="font-size:10px;opacity:0.85;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' + textColor + ' !important;">' + locOrTeacher + '</div>' : '') +
+                       (subjectTxt && durationMinutes >= 85 ? '<div class="aura-gcal-subj" style="font-size:9.5px;opacity:0.8;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' + textColor + ' !important;">📚 ' + subjectTxt + '</div>' : '') +
                        '</div>';
 
             return { html: html };
@@ -143,11 +174,11 @@
 
         // 2. Vista Mensual (dayGridMonth) - Estilo Píldora Google Calendar
         return {
-            html: '<div class="aura-gcal-month-pill" style="display:flex;align-items:center;gap:3px;width:100%;overflow:hidden;padding:1px 3px;font-size:11px;line-height:1.2;box-sizing:border-box;">' +
+            html: '<div class="aura-gcal-month-pill" style="display:flex;align-items:center;gap:3px;width:100%;overflow:hidden;padding:1px 3px;font-size:11px;line-height:1.2;box-sizing:border-box;color:' + textColor + ' !important;">' +
                   avatarImg +
                   leaderBadge +
-                  (timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;">' + escapeHtml(timeText) + '</span>' : '') +
-                  '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;">' + escapeHtml(title) + '</span>' +
+                  (timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;color:' + textColor + ' !important;">' + escapeHtml(timeText) + '</span>' : '') +
+                  '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;color:' + textColor + ' !important;">' + escapeHtml(title) + '</span>' +
                   '</div>'
         };
     }
@@ -369,6 +400,19 @@
             // Renderizado estilo Google Calendar de la tarjeta de evento
             eventContent: function(arg) {
                 return renderGoogleStyleEvent(arg, auraCalData.current_user_id || 0);
+            },
+
+            // Garantizar contraste de color de texto (blanco o negro) sobre el elemento DOM
+            eventDidMount: function(info) {
+                var p = info.event.extendedProps || {};
+                var bg = info.event.backgroundColor || info.el.style.backgroundColor || '#6366f1';
+                var textCol = p.text_color || info.event.textColor || (typeof getEventContrastColor === 'function' ? getEventContrastColor(bg) : '#ffffff');
+                info.el.style.color = textCol;
+                info.el.style.setProperty('--fc-event-text-color', textCol, 'important');
+                var main = info.el.querySelector('.fc-event-main');
+                if (main) {
+                    main.style.color = textCol;
+                }
             },
 
             // Carga de eventos con filtros

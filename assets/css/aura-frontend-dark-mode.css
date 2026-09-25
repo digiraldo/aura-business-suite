@@ -2249,19 +2249,35 @@ body[data-theme="dark"] .adp-card:-webkit-full-screen,
 }
 
 /* Vista Semana y Día Frontend */
-.aura-calendar-wrapper .fc .fc-timegrid-col-events {
+.aura-calendar-wrapper .fc .fc-timegrid-col-events,
+.aura-teacher-portal .fc .fc-timegrid-col-events {
     margin: 0 1px !important;
 }
 
-.aura-calendar-wrapper .fc .fc-timegrid-event-harness {
-    inset: 0 !important;
-}
-
-.aura-calendar-wrapper .fc .fc-timegrid-event {
+.aura-calendar-wrapper .fc .fc-timegrid-event,
+.aura-teacher-portal .fc .fc-timegrid-event {
     margin: 0 !important;
     border-radius: 4px !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
-    padding: 2px 4px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+}
+
+.aura-calendar-wrapper .fc .fc-timegrid-event:hover,
+.aura-teacher-portal .fc .fc-timegrid-event:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+    z-index: 5 !important;
+}
+
+.aura-calendar-wrapper .fc .fc-timegrid-event .fc-event-main,
+.aura-teacher-portal .fc .fc-timegrid-event .fc-event-main {
+    padding: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    color: inherit !important;
+    box-sizing: border-box !important;
 }
 
 /* Vista Agenda (List) Frontend */

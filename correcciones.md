@@ -799,7 +799,54 @@ Se implementó el enrutamiento reactivo idéntico al estándar de Google Calenda
 
 
 
-- Que los eventos en cualquier tamaño de pantalla, se vean iguales en Google Calendario, osea, sin espacios de margin ni padding entre evento y evento y entre la caja del evento y el dia, debajo del dia. aplicar esto tanto en la vista del Frontend y Backend, y en todas las vistas, mensual, semanal, diaria y agenda. y en Pantalla normal y pantalla completa. Que sea lo mas fiel posible a Google Calendario que ya esta optimizado para esto. y que en pantallas grandes inicie como esta ahora con la imagen de perfil del usuario con estrella o principal. Recuerda adaptar perfectamente la informacion de los tooltips enriquecidos, que no se corten y muestren toda la informacion y que queden encima de todo, para todo tipo de vista tanto en el backend como en el frontend.
+---
+
+## Sección 33 — Corrección de Posicionamiento Horario de Eventos en Vistas Semana y Día (Backend + Frontend)
+
+### Causa Raíz Detectada
+En [`assets/css/calendar-admin.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/calendar-admin.css) y [`assets/css/aura-frontend-dark-mode.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css), existía la regla:
+```css
+.fc .fc-timegrid-event-harness {
+    inset: 0 !important;
+}
+```
+FullCalendar v6 posiciona cada evento en la rejilla de horas mediante estilos inline `top: ...px; bottom: ...px; left: ...; right: ...;` aplicados sobre `.fc-timegrid-event-harness` en base a la hora de inicio y término del evento (`start_datetime` y `end_datetime`).
+Al forzar `inset: 0 !important;`, la regla CSS sobreescribía el cálculo inline de FullCalendar, fijando `top: 0 !important;`, lo que hacía que todos los eventos se pegaran a la posición 0 de la columna (arriba de las 12:00 a. m.) como una barra plana colapsada sin mostrar el bloque correspondiente en su franja horaria.
+
+### Cambios Implementados
+1. **Eliminación de `inset: 0 !important;` en `.fc-timegrid-event-harness`:**
+   - En [`assets/css/calendar-admin.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/calendar-admin.css) y [`assets/css/aura-frontend-dark-mode.css`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css), se retiró la regla forzada en `.fc-timegrid-event-harness`, permitiendo que FullCalendar respete las coordenadas horarias reales del evento.
+2. **Estilizado de Bloque Google Calendar para `.fc-timegrid-event`:**
+   - Se garantizó que los eventos en timegrid (`.fc .fc-timegrid-event`) tengan bordes redondeados (`border-radius: 4px`), sombra sutil (`box-shadow`), borde refinado (`border: 1px solid rgba(255,255,255,0.2)`), y que `.fc-event-main` ocupe el 100% del alto y ancho con relleno limpio.
+   - En hover, los eventos elevan su `z-index` y sombra para interactividad óptima.
+3. **Verificación Automatizada en Navegador:**
+   - Confirmado en el Portal del Instructor y Backend: el evento del miércoles 16 de septiembre se sitúa de forma exacta entre las 2:00 p. m. y 4:00 p. m. en la vista semanal (`timeGridWeek`) y en la vista diaria (`timeGridDay`), mostrando avatar, título, hora e instructor con total legibilidad.
+4. **Build del Plugin:**
+   - Ejecutado `php build-zip.php`, empaquetando 3304 archivos en `aura-business-suite.zip` (21.23 MB).
 
 
-- No lo solucionaste, para ayudarte, veo que el problema es que esta informacion del dia 16 se esta ajustando al pading izquierdo y derecho de la caja del dia o de la fecha 16 y no esta estirandoce de lado a lado de la caja.
+---
+
+## Sección 34 — Adaptación Dinámica de Color de Texto en Eventos del Backend (Blanco o Negro según Luminancia)
+
+### Causa Raíz Detectada
+En el panel de administración (`wp-admin`), los eventos del calendario (`timeGridWeek`, `timeGridDay`, `dayGridMonth`) se encapsulan dentro de una etiqueta `<a>` generada por FullCalendar. WordPress y los estilos administrativos imponen sobre los enlaces reglas de color (`#2271b1` azul estándar de enlace de WordPress), además de que los elementos hijos heredaban colores oscuros/atenuados del tema. Al tener el evento un fondo oscuro (por ejemplo, verde esmeralda `#059669` o azul), el texto se visualizaba con muy bajo contraste e ilegible.
+
+### Cambios Implementados
+1. **Algoritmo de Luminancia y Contraste YIQ:**
+   - **En PHP (`modules/calendar/class-calendar-events.php`):** Se creó el método `get_contrast_color($hex_color)` que calcula la luminancia YIQ `((R*299) + (G*587) + (B*114)) / 1000`. Si es `>= 145`, el fondo es claro y asigna `#0f172a` (negro oscuro); de lo contrario, asigna `#ffffff` (blanco puro).
+   - Se añadió tanto `'textColor'` como `'extendedProps.text_color'` en los datos JSON enviados a FullCalendar.
+   - **En JavaScript (`assets/js/calendar-admin.js`):** Se implementó la función homóloga `getEventContrastColor(colorStr)` compatible con formatos HEX y RGB, exponiéndola en `window.getEventContrastColor`.
+
+2. **Renderizado de la Tarjeta del Evento (`renderGoogleStyleEvent`):**
+   - Se inyecta explícitamente `color: ${textColor} !important;` en el contenedor `.aura-gcal-event-card`, en el título (`.aura-gcal-title`), en la hora (`.aura-gcal-time`), en los metadatos de aula/docente (`.aura-gcal-meta`), en la materia (`.aura-gcal-subj`), en el diseño compacto (`.aura-gcal-event-compact`) y en la píldora del mes (`.aura-gcal-month-pill`).
+
+3. **Hook de Montaje en FullCalendar (`eventDidMount`):**
+   - Se configuró `eventDidMount` en la instancia del backend para fijar directamente sobre el elemento DOM `info.el.style.color`, `--fc-event-text-color` y `.fc-event-main.style.color`, blindando el evento frente a cualquier regla externa de WordPress.
+
+4. **Reglas CSS en `assets/css/calendar-admin.css`:**
+   - Se anularon los colores y decoraciones de enlace de WordPress en `.fc a.fc-timegrid-event`, `.fc a.fc-event` y `.fc .fc-timegrid-event .aura-gcal-*` con `color: inherit !important; text-decoration: none !important;`.
+
+5. **Verificación y Build:**
+   - Verificado con recarga en el navegador en la vista semanal del backend: los textos se muestran en blanco puro `#ffffff` nítido sobre fondos oscuros y con contraste impecable.
+   - Compilación exitosa ejecutando `php build-zip.php` (`aura-business-suite.zip`, 21.23 MB, 3304 archivos).
