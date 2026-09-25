@@ -692,6 +692,11 @@ class Aura_Calendar_Frontend {
                             </div>
                         </div>
                     </div>
+                    <div class="aura-calendar-floating-fs-bar aura-frontend-fs-bar" role="toolbar" aria-label="<?php esc_attr_e( 'Controles de Pantalla Completa', 'aura' ); ?>">
+                        <button type="button" class="aura-fs-bar-btn aura-fs-btn-exit" id="btn-fs-exit-teacher" title="<?php esc_attr_e( 'Salir de Pantalla Completa (ESC)', 'aura' ); ?>" aria-label="<?php esc_attr_e( 'Salir de Pantalla Completa', 'aura' ); ?>">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><polyline points="14 20 14 14 20 14"></polyline><polyline points="10 4 10 10 4 10"></polyline><line x1="14" y1="14" x2="21" y2="21"></line><line x1="10" y1="10" x2="3" y2="3"></line><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                        </button>
+                    </div>
                     <div id="aura-teacher-fullcalendar" style="min-height: 600px;"></div>
                     <?php include AURA_PLUGIN_DIR . 'templates/calendar/modal-event-detail.php'; ?>
                 </div>
@@ -1974,6 +1979,8 @@ class Aura_Calendar_Frontend {
                             center: 'title',
                             right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
                         },
+                        height: '100%',
+                        expandRows: true,
                         buttonText: {
                             today: 'Hoy',
                             month: 'Mes',
@@ -2042,6 +2049,11 @@ class Aura_Calendar_Frontend {
                         if (typeof window.syncCalendarUrlAndGcalLink === 'function') {
                             window.syncCalendarUrlAndGcalLink(dateInfo.view.type, anchorDate);
                         }
+                        if ($('#tab-teacher-schedule .adp-card').hasClass('aura-calendar-is-fullscreen')) {
+                            setTimeout(function() {
+                                if (window.teacherCalendarInstance) window.teacherCalendarInstance.updateSize();
+                            }, 50);
+                        }
                     }
                 });
                 window.teacherCalendarInstance.render();
@@ -2086,6 +2098,11 @@ class Aura_Calendar_Frontend {
                     $btn.find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
                     $btn.find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
 
+                    if (window.teacherCalendarInstance) {
+                        window.teacherCalendarInstance.setOption('height', 'auto');
+                        window.teacherCalendarInstance.setOption('expandRows', false);
+                    }
+
                     if (document.fullscreenElement || document.webkitFullscreenElement) {
                         if (document.exitFullscreen) {
                             document.exitFullscreen().catch(function(){});
@@ -2099,6 +2116,11 @@ class Aura_Calendar_Frontend {
                     $btn.addClass('is-active-fullscreen');
                     $btn.find('.dashicons').removeClass('dashicons-editor-expand').addClass('dashicons-editor-contract');
                     $btn.find('.fs-text').text(auraCalData.i18n.exit_fullscreen || 'Salir de Pantalla Completa');
+
+                    if (window.teacherCalendarInstance) {
+                        window.teacherCalendarInstance.setOption('height', '100%');
+                        window.teacherCalendarInstance.setOption('expandRows', true);
+                    }
 
                     var domEl = $container[0];
                     if (domEl) {
@@ -2123,7 +2145,7 @@ class Aura_Calendar_Frontend {
             }
 
             // Delegación global del botón
-            $(document).on('click', '#btn-toggle-teacher-fullscreen', function(e) {
+            $(document).on('click', '#btn-toggle-teacher-fullscreen, #btn-fs-exit-teacher', function(e) {
                 e.preventDefault();
                 toggleTeacherFullscreen();
             });
@@ -2219,6 +2241,11 @@ class Aura_Calendar_Frontend {
                         </div>
                     </div>
                 </div>
+                <div class="aura-calendar-floating-fs-bar aura-frontend-fs-bar" role="toolbar" aria-label="<?php esc_attr_e( 'Controles de Pantalla Completa', 'aura' ); ?>">
+                    <button type="button" class="aura-fs-bar-btn aura-fs-btn-exit" id="btn-fs-exit-student" title="<?php esc_attr_e( 'Salir de Pantalla Completa (ESC)', 'aura' ); ?>" aria-label="<?php esc_attr_e( 'Salir de Pantalla Completa', 'aura' ); ?>">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><polyline points="14 20 14 14 20 14"></polyline><polyline points="10 4 10 10 4 10"></polyline><line x1="14" y1="14" x2="21" y2="21"></line><line x1="10" y1="10" x2="3" y2="3"></line><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                    </button>
+                </div>
                 <div id="aura-student-calendar" style="min-height: 540px;"></div>
                 <?php include AURA_PLUGIN_DIR . 'templates/calendar/modal-event-detail.php'; ?>
             </div>
@@ -2262,6 +2289,8 @@ class Aura_Calendar_Frontend {
                         center: 'title',
                         right: 'dayGridMonth,timeGridWeek,listWeek'
                     },
+                    height: '100%',
+                    expandRows: true,
                     buttonText: {
                         today: 'Hoy',
                         month: 'Mes',
@@ -2328,6 +2357,11 @@ class Aura_Calendar_Frontend {
                         if (typeof window.syncCalendarUrlAndGcalLink === 'function') {
                             window.syncCalendarUrlAndGcalLink(dateInfo.view.type, anchorDate);
                         }
+                        if ($('.aura-student-schedule-wrap .adp-card').hasClass('aura-calendar-is-fullscreen')) {
+                            setTimeout(function() {
+                                if (window.studentCalendarInstance) window.studentCalendarInstance.updateSize();
+                            }, 50);
+                        }
                     }
                 });
                 window.studentCalendarInstance.render();
@@ -2372,6 +2406,11 @@ class Aura_Calendar_Frontend {
                     $btn.find('.dashicons').removeClass('dashicons-editor-contract').addClass('dashicons-editor-expand');
                     $btn.find('.fs-text').text(auraCalData.i18n.fullscreen || 'Pantalla Completa');
 
+                    if (window.studentCalendarInstance) {
+                        window.studentCalendarInstance.setOption('height', 'auto');
+                        window.studentCalendarInstance.setOption('expandRows', false);
+                    }
+
                     if (document.fullscreenElement || document.webkitFullscreenElement) {
                         if (document.exitFullscreen) {
                             document.exitFullscreen().catch(function(){});
@@ -2385,6 +2424,11 @@ class Aura_Calendar_Frontend {
                     $btn.addClass('is-active-fullscreen');
                     $btn.find('.dashicons').removeClass('dashicons-editor-expand').addClass('dashicons-editor-contract');
                     $btn.find('.fs-text').text(auraCalData.i18n.exit_fullscreen || 'Salir de Pantalla Completa');
+
+                    if (window.studentCalendarInstance) {
+                        window.studentCalendarInstance.setOption('height', '100%');
+                        window.studentCalendarInstance.setOption('expandRows', true);
+                    }
 
                     var domEl = $container[0];
                     if (domEl) {
@@ -2409,7 +2453,7 @@ class Aura_Calendar_Frontend {
             }
 
             // Delegación global
-            $(document).on('click', '#btn-toggle-student-fullscreen', function(e) {
+            $(document).on('click', '#btn-toggle-student-fullscreen, #btn-fs-exit-student', function(e) {
                 e.preventDefault();
                 toggleStudentFullscreen();
             });

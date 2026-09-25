@@ -1,3 +1,7 @@
+php build-zip.php
+
+
+
 # Registro de Correcciones y Tareas
 
 ⏳ A veces al cargar un modal se demora en mostrarse, requiero modernizar esto mostrando Skeleton Loaders dentro del modal para esto y no tener la sensacion de que no carga nada, pon esto en el archivo `documentacion\TRACKER-MIGRACION-DESIGN-SYSTEM.md`
@@ -710,3 +714,33 @@ Se implementó el enrutamiento reactivo idéntico al estándar de Google Calenda
      - Si duran 40 min o más: bloque vertical espacioso con **Título en negrita destacada**, horario claro (`10:00 – 13:30`), aula / profesor (`📍 Chimenea` / `👨‍🏫 Tomas Vidal`) y chip sutil de líder estudiantil (`⭐ Líder`).
   3. **Eventos en Vista Mensual (`dayGridMonth`):**
      - Formato de píldora redondeada limpia estilo Google Calendar con hora destacada y título sin cortes abruptos.
+
+### 31. Optimización Integral de Pantalla Completa, Diseño Compacto Google Calendar y Experiencia Móvil
+
+- **Problemas Detectados:**
+  1. En modo Pantalla Completa, el calendario no cubría el 100% vertical de la pantalla en la vista de mes (`dayGridMonth`), y no permitía hacer scroll fluido en las vistas de semana (`timeGridWeek`), día (`timeGridDay`) ni agenda (`listWeek`).
+  2. En el Backend, los encabezados y tarjetas de filtros superiores consumían espacio vertical en pantalla completa en lugar de dejar el lienzo despejado para el calendario.
+  3. En el Frontend, la cabecera superior y notas ocupaban espacio en pantalla completa.
+  4. La separación vertical entre eventos y entre el evento y el número del día generaba espacios vacíos excesivos que diferían de la densidad compacta de Google Calendar.
+  5. En dispositivos móviles con pantalla normal, los encabezados, textos explicativos largos y barras de filtros restaban espacio vital al calendario.
+  6. Los botones de salir de pantalla completa requerían unificarse en formato de solo icono universal (cuatro flechas desde las esquinas apuntando hacia el centro) flotante superior central.
+
+- **Solución e Implementación:**
+  1. **Ajuste de Pantalla Completa Líquida (100dvh) y Scroll Fluido:**
+     - En `FullCalendar`, se configuraron dinámicamente las propiedades `height: '100%'` y `expandRows: true` al activar la pantalla completa (restaurando `height: 'auto'` y `expandRows: false` al salir).
+     - Se añadió `updateSize()` en hooks de redimensionamiento y evento `datesSet` para sincronización inmediata tras cualquier cambio de mes/semana/día.
+     - Se aplicó `-webkit-overflow-scrolling: touch !important; touch-action: pan-y !important;` en `.fc-scroller` garantizando un scroll vertical suave y sin trabas tanto en escritorio como en dispositivos móviles en vistas semanal, diaria y de agenda.
+  2. **Controles Flotantes Superiores Centrales (Solo Icono):**
+     - **Backend:** Se integró una barra flotante (`.aura-calendar-floating-fs-bar`) con efecto glassmorphism oscuro centrada en la parte superior que solo aparece en pantalla completa, conteniendo:
+       - Botón circular de Crear Evento (icono plus SVG de 24px trazo 2.6).
+       - Botón circular de Salir de Pantalla Completa (icono universal SVG con 4 flechas desde las esquinas apuntando hacia el centro).
+     - **Frontend (Profesor y Estudiante):** Se implementó la misma barra flotante superior central mostrando únicamente el botón circular de Salir de Pantalla Completa con el icono universal de 4 flechas hacia el centro.
+     - En ambos entornos se ocultaron por completo los filtros y cabeceras estándar durante la pantalla completa.
+  3. **Densidad y Cero Espaciados estilo Google Calendar:**
+     - Se eliminaron los márgenes y rellenos innecesarios en `.fc-daygrid-day-frame`, `.fc-daygrid-day-top`, `.fc-daygrid-day-events`, `.fc-daygrid-event-harness`, `.fc-daygrid-event`, `.fc-timegrid-col-events` y `.fc-timegrid-event`.
+     - En pantallas grandes, las píldoras de eventos inician con el avatar del usuario y el indicador de líder estudiantil si corresponde, manteniendo un diseño limpio y profesional.
+  4. **Tooltips Enriquecidos Delimitados y Capa Superior:**
+     - El tooltip `#aura-cal-event-tooltip` se elevó a `z-index: 10000020 !important;` asegurando que siempre quede por encima de modales, barras fijas o canvas en pantalla completa.
+     - Se implementó fijación matemática y CSS con `max-width: calc(100vw - 20px) !important; max-height: calc(100vh - 20px) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important;`, previniendo cualquier desbordamiento o corte en pantallas móviles y bordes laterales de la pantalla.
+  5. **Optimización Móvil en Pantalla Normal:**
+     - Se implementaron reglas `@media (max-width: 768px)` que ocultan textos largos de ayuda (`.aura-calendar-hint`), reducen los paddings de tarjetas a 8px, compactan la cabecera del calendario y estructuran los filtros de forma ergonómica sin robar espacio vertical.

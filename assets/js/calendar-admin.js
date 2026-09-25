@@ -143,11 +143,11 @@
 
         // 2. Vista Mensual (dayGridMonth) - Estilo Píldora Google Calendar
         return {
-            html: '<div class="aura-gcal-month-pill" style="display:flex;align-items:center;gap:4px;width:100%;overflow:hidden;padding:1px 4px;font-size:11px;line-height:1.2;box-sizing:border-box;">' +
+            html: '<div class="aura-gcal-month-pill" style="display:flex;align-items:center;gap:3px;width:100%;overflow:hidden;padding:1px 3px;font-size:11px;line-height:1.2;box-sizing:border-box;">' +
                   avatarImg +
+                  leaderBadge +
                   (timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;">' + escapeHtml(timeText) + '</span>' : '') +
                   '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;">' + escapeHtml(title) + '</span>' +
-                  leaderBadge +
                   '</div>'
         };
     }
@@ -344,6 +344,8 @@
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
             },
+            height: '100%',
+            expandRows: true,
             buttonText: {
                 today: auraCalData.i18n.today,
                 month: auraCalData.i18n.month,
@@ -438,6 +440,11 @@
             datesSet: function(dateInfo) {
                 var anchorDate = dateInfo.view.currentStart || dateInfo.start;
                 syncCalendarUrlAndGcalLink(dateInfo.view.type, anchorDate);
+                if ($('.aura-calendar-view-container').hasClass('aura-calendar-is-fullscreen')) {
+                    setTimeout(function() {
+                        if (calendar) calendar.updateSize();
+                    }, 50);
+                }
             }
         });
 
@@ -641,9 +648,10 @@
         $tt.html(html);
 
         var rect = el.getBoundingClientRect();
-        var ttWidth = 320;
+        var ttWidth = Math.min(340, window.innerWidth - 20);
+        $tt.css('max-width', ttWidth + 'px');
         var ttHeight = $tt.outerHeight() || 180;
-        var padding = 12;
+        var padding = 10;
 
         var left = rect.right + padding;
         var top = rect.top;
@@ -651,12 +659,15 @@
         if (left + ttWidth > window.innerWidth - 10) {
             left = rect.left - ttWidth - padding;
         }
-        if (left < 10) {
-            left = Math.max(10, (jsEvent ? jsEvent.clientX : rect.left) + 12);
+        if (left + ttWidth > window.innerWidth - 10 || left < 10) {
+            left = Math.max(10, Math.min(window.innerWidth - ttWidth - 10, rect.left));
         }
 
         if (top + ttHeight > window.innerHeight - 10) {
-            top = Math.max(10, window.innerHeight - ttHeight - 15);
+            top = Math.max(10, window.innerHeight - ttHeight - 10);
+        }
+        if (top < 10) {
+            top = 10;
         }
 
         $tt.css({
@@ -713,9 +724,10 @@
         $tt.html(html);
 
         var rect = el.getBoundingClientRect();
-        var ttWidth = 340;
+        var ttWidth = Math.min(340, window.innerWidth - 20);
+        $tt.css('max-width', ttWidth + 'px');
         var ttHeight = $tt.outerHeight() || 220;
-        var padding = 12;
+        var padding = 10;
 
         var left = rect.right + padding;
         var top = rect.top;
@@ -723,11 +735,14 @@
         if (left + ttWidth > window.innerWidth - 10) {
             left = rect.left - ttWidth - padding;
         }
-        if (left < 10) {
-            left = Math.max(10, (jsEvent ? jsEvent.clientX : rect.left) + 12);
+        if (left + ttWidth > window.innerWidth - 10 || left < 10) {
+            left = Math.max(10, Math.min(window.innerWidth - ttWidth - 10, rect.left));
         }
         if (top + ttHeight > window.innerHeight - 10) {
-            top = Math.max(10, window.innerHeight - ttHeight - 15);
+            top = Math.max(10, window.innerHeight - ttHeight - 10);
+        }
+        if (top < 10) {
+            top = 10;
         }
 
         $tt.css({
@@ -772,22 +787,33 @@
             $btn.html('🗗 ' + (auraCalData.i18n && auraCalData.i18n.exit_fullscreen ? auraCalData.i18n.exit_fullscreen : 'Salir de Pantalla Completa'))
                 .addClass('btn-indigo').removeClass('btn-ghost');
             $('body').addClass('aura-cal-fullscreen-active');
+            if (calendar) {
+                calendar.setOption('height', '100%');
+                calendar.setOption('expandRows', true);
+            }
             showToast('Pantalla completa activada. Presiona ESC para salir.');
         } else {
             $container.removeClass('aura-calendar-is-fullscreen');
             $btn.html('⛶ ' + (auraCalData.i18n && auraCalData.i18n.fullscreen ? auraCalData.i18n.fullscreen : 'Pantalla Completa'))
                 .removeClass('btn-indigo').addClass('btn-ghost');
             $('body').removeClass('aura-cal-fullscreen-active');
+            if (calendar) {
+                calendar.setOption('height', 'auto');
+                calendar.setOption('expandRows', false);
+            }
         }
 
         if (calendar) {
             setTimeout(function() {
                 calendar.updateSize();
-            }, 120);
+            }, 60);
+            setTimeout(function() {
+                calendar.updateSize();
+            }, 220);
         }
     }
 
-    $(document).on('click', '#btn-toggle-fullscreen', function(e) {
+    $(document).on('click', '#btn-toggle-fullscreen, #btn-fs-exit-fullscreen', function(e) {
         e.preventDefault();
         toggleFullscreen();
     });
@@ -1364,6 +1390,13 @@
         $('#container-quick-generic-events').hide();
         renderQuickGenericChips();
 
+        // Soporte para Pantalla Completa: adjuntar el modal al contenedor fullscreen activo
+        var $modalEditor = $('#modal-event-editor');
+        var $fsEl = document.fullscreenElement ? $(document.fullscreenElement) : ($('.aura-calendar-is-fullscreen').length ? $('.aura-calendar-is-fullscreen').first() : null);
+        if ($fsEl && $fsEl.length && !$modalEditor.closest($fsEl).length) {
+            $modalEditor.appendTo($fsEl);
+        }
+
         openModal('#modal-event-editor');
     }
 
@@ -1627,7 +1660,7 @@
     });
 
     // Delegación global para botones de agendar / crear evento
-    $(document).on('click', '#btn-top-create-event, #btn-create-event-modal, .btn-trigger-agendar, [data-action="create-event"]', function(e) {
+    $(document).on('click', '#btn-top-create-event, #btn-create-event-modal, #btn-fs-create-event, .btn-trigger-agendar, [data-action="create-event"]', function(e) {
         e.preventDefault();
         openEventEditor();
     });

@@ -23,7 +23,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 <div class="aura-calendar-view-container">
 
     <!-- ── BARRA DE FILTROS SUPERIOR ── -->
-    <div class="adp-card" style="padding: 16px 20px; margin-bottom: 20px; border-radius: 12px;">
+    <div class="adp-card aura-calendar-filter-bar" style="padding: 16px 20px; margin-bottom: 20px; border-radius: 12px;">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
             <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 12px; flex: 1;">
                 
@@ -93,6 +93,18 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
     <!-- ── CONTENEDOR DEL FULLCALENDAR ── -->
     <div class="adp-card aura-calendar-card" style="padding: 20px; border-radius: 14px; box-shadow: var(--aura-shadow-sm, 0 1px 3px rgba(0,0,0,0.05)); position: relative;">
+        <!-- Barra de controles flotantes en Pantalla Completa (Backend) -->
+        <div class="aura-calendar-floating-fs-bar aura-backend-fs-bar" role="toolbar" aria-label="<?php esc_attr_e( 'Controles de Pantalla Completa', 'aura' ); ?>">
+            <?php if ( current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                <button type="button" class="aura-fs-bar-btn aura-fs-btn-create btn-trigger-agendar" id="btn-fs-create-event" title="<?php esc_attr_e( 'Crear Evento', 'aura' ); ?>" aria-label="<?php esc_attr_e( 'Crear Evento', 'aura' ); ?>">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </button>
+            <?php endif; ?>
+            <button type="button" class="aura-fs-bar-btn aura-fs-btn-exit" id="btn-fs-exit-fullscreen" title="<?php esc_attr_e( 'Salir de Pantalla Completa (ESC)', 'aura' ); ?>" aria-label="<?php esc_attr_e( 'Salir de Pantalla Completa', 'aura' ); ?>">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><polyline points="14 20 14 14 20 14"></polyline><polyline points="10 4 10 10 4 10"></polyline><line x1="14" y1="14" x2="21" y2="21"></line><line x1="10" y1="10" x2="3" y2="3"></line><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+            </button>
+        </div>
+
         <div id="aura-main-calendar" style="min-height: 700px;"></div>
     </div>
 

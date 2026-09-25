@@ -546,51 +546,18 @@ body.aura-cal-fullscreen-active {
     overflow: hidden !important;
 }
 
-.aura-calendar-view-container.aura-calendar-is-fullscreen {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: 100vw !important;
-    z-index: 99999 !important;
-    background: var(--aura-surface, #0f172a) !important;
-    padding: 16px 24px 20px 24px !important;
-    margin: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    box-sizing: border-box !important;
-    overflow-y: auto !important;
-    box-shadow: none !important;
-}
-
-.aura-calendar-view-container.aura-calendar-is-fullscreen .adp-card {
-    border-radius: 10px !important;
-}
-
-.aura-calendar-view-container.aura-calendar-is-fullscreen .aura-calendar-card {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: calc(100vh - 120px) !important;
-    margin-bottom: 0 !important;
-}
-
-.aura-calendar-view-container.aura-calendar-is-fullscreen #aura-main-calendar {
-    flex: 1 !important;
-    min-height: calc(100vh - 160px) !important;
-    height: 100% !important;
-}
+/* (Reglas de pantalla completa unificadas en la sección dedicada más abajo) */
 
 /* ── TOOLTIP HTML FLOTANTE ENRIQUECIDO ── */
 #aura-cal-event-tooltip.aura-cal-floating-tooltip {
-    position: fixed;
-    z-index: 100300;
+    position: fixed !important;
+    z-index: 10000020 !important;
     pointer-events: none;
     width: 320px;
-    max-width: 90vw;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100vh - 20px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
     background: rgba(15, 23, 42, 0.95);
     color: #f8fafc;
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -854,67 +821,156 @@ body.wp-dark-mode-active .aura-calendar-is-fullscreen {
     color: #f8fafc !important;
 }
 
-/* Barra superior Google Calendar TopBar en pantalla completa */
-.aura-calendar-is-fullscreen .aura-calendar-top-header {
-    height: 48px !important;
-    min-height: 48px !important;
-    max-height: 48px !important;
-    padding: 0 16px !important;
+/* Ocultar barra de filtros en Backend en pantalla completa */
+.aura-calendar-view-container.aura-calendar-is-fullscreen > .adp-card:not(.aura-calendar-card),
+.aura-calendar-view-container.aura-calendar-is-fullscreen .aura-calendar-filter-bar {
+    display: none !important;
+    height: 0 !important;
     margin: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    flex-wrap: nowrap !important;
-    border-bottom: 1px solid var(--aura-border, rgba(0, 0, 0, 0.08)) !important;
-    background: inherit !important;
-    z-index: 10 !important;
-    box-sizing: border-box !important;
-}
-
-[data-theme="dark"] .aura-calendar-is-fullscreen .aura-calendar-top-header,
-.aura-dark-theme .aura-calendar-is-fullscreen .aura-calendar-top-header,
-body.aura-dark-mode .aura-calendar-is-fullscreen .aura-calendar-top-header {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Título de la barra superior */
-.aura-calendar-is-fullscreen .adp-card-title {
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    margin: 0 !important;
-    white-space: nowrap !important;
+    padding: 0 !important;
     overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    letter-spacing: -0.2px !important;
 }
 
-/* Ocultar texto de ayuda largo en pantalla completa para ganar todo el espacio útil */
+/* El card contenedor de calendario en Backend llena el 100% de la pantalla */
+.aura-calendar-view-container.aura-calendar-is-fullscreen > .aura-calendar-card {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    flex: 1 1 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* En Frontend, ocultar el encabezado superior estándar en pantalla completa */
+.aura-calendar-is-fullscreen .aura-calendar-top-header {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ── BARRA FLOTANTE DE ACCIONES EN PANTALLA COMPLETA (BACKEND Y FRONTEND) ── */
+.aura-calendar-floating-fs-bar {
+    display: none;
+    position: fixed !important;
+    top: 10px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 10000005 !important;
+    background: rgba(15, 23, 42, 0.92) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-radius: 9999px !important;
+    padding: 4px 6px !important;
+    align-items: center !important;
+    gap: 6px !important;
+    box-sizing: border-box !important;
+    pointer-events: auto !important;
+}
+
+.aura-calendar-is-fullscreen .aura-calendar-floating-fs-bar {
+    display: inline-flex !important;
+}
+
+.aura-fs-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    cursor: pointer !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #f8fafc !important;
+    padding: 6px 14px !important;
+    border-radius: 9999px !important;
+    transition: background 0.15s ease, transform 0.15s ease, color 0.15s ease !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+}
+
+.aura-fs-btn:hover {
+    background: rgba(255, 255, 255, 0.18) !important;
+    color: #ffffff !important;
+}
+
+.aura-fs-btn:active {
+    transform: scale(0.96) !important;
+}
+
+.aura-fs-btn-create {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.45) !important;
+}
+
+.aura-fs-btn-create:hover {
+    background: #4338ca !important;
+    color: #ffffff !important;
+}
+
+.aura-fs-btn-exit {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #f8fafc !important;
+}
+
+.aura-fs-btn-exit:hover {
+    background: rgba(239, 68, 68, 0.28) !important;
+    color: #fca5a5 !important;
+}
+
+/* Ocultar texto de ayuda largo */
 .aura-calendar-is-fullscreen .aura-calendar-hint {
     display: none !important;
 }
 
-/* Contenedores de FullCalendar ocupan todo el alto disponible restante */
+/* Contenedores de FullCalendar ocupan el 100% de la pantalla */
 .aura-calendar-is-fullscreen #aura-teacher-fullcalendar,
 .aura-calendar-is-fullscreen #aura-student-calendar,
 .aura-calendar-is-fullscreen #aura-main-calendar {
-    flex: 1 1 auto !important;
+    flex: 1 1 100% !important;
     width: 100vw !important;
-    height: calc(100vh - 48px) !important;
-    height: calc(100dvh - 48px) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
     min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 .aura-calendar-is-fullscreen .fc {
-    flex: 1 1 auto !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
     height: 100% !important;
     max-height: 100% !important;
+    min-height: 0 !important;
     border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
 }
 
 .aura-calendar-is-fullscreen .fc-header-toolbar {
+    flex: 0 0 auto !important;
     margin: 0 !important;
     padding: 8px 16px !important;
     border-bottom: 1px solid var(--aura-border, rgba(0, 0, 0, 0.06)) !important;
@@ -924,6 +980,39 @@ body.aura-dark-mode .aura-calendar-is-fullscreen .aura-calendar-top-header {
 .aura-dark-theme .aura-calendar-is-fullscreen .fc-header-toolbar,
 body.aura-dark-mode .aura-calendar-is-fullscreen .fc-header-toolbar {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.aura-calendar-is-fullscreen .fc-view-harness {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+.aura-calendar-is-fullscreen .fc-view-harness > .fc-view {
+    height: 100% !important;
+    min-height: 0 !important;
+}
+
+.aura-calendar-is-fullscreen .fc-scrollgrid {
+    height: 100% !important;
+    border: none !important;
+}
+
+/* En vista Mes, permitir que las filas se expandan de forma líquida ocupando todo el alto */
+.aura-calendar-is-fullscreen .fc-daygrid-body,
+.aura-calendar-is-fullscreen .fc-daygrid-body table,
+.aura-calendar-is-fullscreen .fc-scrollgrid-sync-table {
+    width: 100% !important;
+}
+
+/* En vista Semana, Día y Agenda: el scroller interno permite el scroll suave táctil y de rueda */
+.aura-calendar-is-fullscreen .fc .fc-scroller,
+.aura-calendar-is-fullscreen .fc-scroller-liquid-absolute {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
 }
 
 /* Tarjetas de eventos estilo Google Calendar */
@@ -941,13 +1030,16 @@ body.aura-dark-mode .aura-calendar-is-fullscreen .fc-header-toolbar {
 
 /* Optimización móvil estilo Google Calendar App */
 @media (max-width: 768px) {
-    .aura-calendar-is-fullscreen .aura-calendar-top-header {
-        padding: 0 10px !important;
-        gap: 8px !important;
+    .aura-calendar-floating-fs-bar {
+        top: 6px !important;
+        padding: 3px 5px !important;
+        gap: 4px !important;
     }
 
-    .aura-calendar-is-fullscreen .adp-card-title {
-        font-size: 13px !important;
+    .aura-fs-btn {
+        padding: 5px 10px !important;
+        font-size: 11px !important;
+        gap: 4px !important;
     }
 
     .aura-calendar-is-fullscreen .fc-header-toolbar {
@@ -2527,5 +2619,309 @@ body.wp-dark-mode-active .aura-av-tooltip .aura-av-tooltip-email,
     color: #94a3b8 !important;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   PANTALLA COMPLETA INTEGRAL — ESTILO GOOGLE CALENDAR (BACKEND)
+   ══════════════════════════════════════════════════════════════════ */
+.aura-calendar-card:fullscreen,
+.aura-calendar-card:-webkit-full-screen,
+.aura-calendar-card.is-browser-fullscreen,
+.aura-calendar-card.aura-calendar-is-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    z-index: 999999 !important;
+    background: #ffffff !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
 
+body.aura-dark-mode .aura-calendar-card:fullscreen,
+body.aura-dark-mode .aura-calendar-card:-webkit-full-screen,
+body.aura-dark-mode .aura-calendar-card.is-browser-fullscreen,
+body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
+[data-theme="dark"] .aura-calendar-card:fullscreen,
+[data-theme="dark"] .aura-calendar-card:-webkit-full-screen,
+[data-theme="dark"] .aura-calendar-card.is-browser-fullscreen,
+[data-theme="dark"] .aura-calendar-card.aura-calendar-is-fullscreen {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+}
 
+/* Ocultar barra de filtros y encabezados que consuman espacio superior en pantalla completa */
+.aura-calendar-card:fullscreen .aura-calendar-filter-bar,
+.aura-calendar-card:-webkit-full-screen .aura-calendar-filter-bar,
+.aura-calendar-card.is-browser-fullscreen .aura-calendar-filter-bar,
+.aura-calendar-card.aura-calendar-is-fullscreen .aura-calendar-filter-bar {
+    display: none !important;
+}
+
+/* Barra flotante superior central en pantalla completa */
+.aura-calendar-floating-fs-bar {
+    position: fixed !important;
+    top: 14px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 10000010 !important;
+    display: none !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 6px 10px !important;
+    background: rgba(15, 23, 42, 0.88) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.45), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+    pointer-events: auto !important;
+    transition: all 0.2s ease !important;
+}
+
+.aura-calendar-card:fullscreen .aura-calendar-floating-fs-bar,
+.aura-calendar-card:-webkit-full-screen .aura-calendar-floating-fs-bar,
+.aura-calendar-card.is-browser-fullscreen .aura-calendar-floating-fs-bar,
+.aura-calendar-card.aura-calendar-is-fullscreen .aura-calendar-floating-fs-bar {
+    display: inline-flex !important;
+}
+
+.aura-calendar-floating-fs-bar .aura-fs-bar-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    white-space: nowrap !important;
+    border: none !important;
+    line-height: 1 !important;
+}
+
+.aura-calendar-floating-fs-bar .aura-fs-bar-btn svg {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.aura-calendar-floating-fs-bar .aura-fs-btn-create {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4) !important;
+}
+
+.aura-calendar-floating-fs-bar .aura-fs-btn-create:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.55) !important;
+}
+
+.aura-calendar-floating-fs-bar .aura-fs-btn-exit {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.aura-calendar-floating-fs-bar .aura-fs-btn-exit:hover {
+    background: rgba(239, 68, 68, 0.85) !important;
+    border-color: rgba(239, 68, 68, 1) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Área del Calendario en Pantalla Completa */
+.aura-calendar-card:fullscreen #aura-main-calendar,
+.aura-calendar-card:-webkit-full-screen #aura-main-calendar,
+.aura-calendar-card.is-browser-fullscreen #aura-main-calendar {
+    flex: 1 1 100% !important;
+    height: 100% !important;
+    max-height: 100dvh !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 10px 14px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.aura-calendar-card:fullscreen .fc-header-toolbar,
+.aura-calendar-card:-webkit-full-screen .fc-header-toolbar,
+.aura-calendar-card.is-browser-fullscreen .fc-header-toolbar {
+    margin-bottom: 8px !important;
+    padding-top: 2px !important;
+}
+
+.aura-calendar-card:fullscreen .fc-view-harness,
+.aura-calendar-card:-webkit-full-screen .fc-view-harness,
+.aura-calendar-card.is-browser-fullscreen .fc-view-harness {
+    flex: 1 1 100% !important;
+    height: 100% !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PRECISIÓN ESTILO GOOGLE CALENDAR — CERO MÁRGENES Y SCROLL FLUIDO
+   ══════════════════════════════════════════════════════════════════ */
+/* Scroll fluido táctil y de escritorio en vistas de tiempo y lista */
+.fc .fc-scroller {
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+}
+
+/* Ajuste total de la cuadrícula de mes */
+.fc-daygrid-body,
+.fc-scrollgrid-sync-table {
+    width: 100% !important;
+}
+
+.aura-calendar-card:fullscreen .fc-daygrid-body,
+.aura-calendar-card.is-browser-fullscreen .fc-daygrid-body {
+    height: 100% !important;
+    min-height: 100% !important;
+}
+
+/* Cero separación entre eventos y encabezado de día en Vista Mes */
+.fc .fc-daygrid-day-frame {
+    padding: 1px 2px !important;
+    min-height: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.fc .fc-daygrid-day-top {
+    padding: 2px 4px 0 !important;
+    flex-direction: row-reverse !important;
+    margin-bottom: 0 !important;
+}
+
+.fc .fc-daygrid-day-number {
+    padding: 1px 4px !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    border-radius: 9999px !important;
+}
+
+.fc .fc-daygrid-day-events {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+    flex: 1 1 auto !important;
+}
+
+.fc .fc-daygrid-event-harness {
+    margin: 1px 0 !important;
+    padding: 0 !important;
+}
+
+.fc .fc-daygrid-event {
+    margin: 0 !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+    padding: 1px 4px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Vista Semana y Día (TimeGrid) */
+.fc .fc-timegrid-col-events {
+    margin: 0 1px !important;
+}
+
+.fc .fc-timegrid-event-harness {
+    inset: 0 !important;
+}
+
+.fc .fc-timegrid-event {
+    margin: 0 !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+    padding: 2px 4px !important;
+}
+
+/* Vista Agenda (List) */
+.fc .fc-list-event {
+    cursor: pointer !important;
+    transition: background 0.15s ease !important;
+}
+
+.fc .fc-list-event td {
+    padding: 6px 10px !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   OPTIMIZACIÓN ULTRA-COMPACTA PARA MÓVILES (BACKEND)
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .aura-calendar-header {
+        margin-bottom: 8px !important;
+    }
+    .aura-calendar-header h1 {
+        font-size: 16px !important;
+    }
+    .aura-calendar-filter-bar {
+        padding: 8px 10px !important;
+        margin-bottom: 8px !important;
+        gap: 6px !important;
+    }
+    .aura-calendar-filter-bar > div:first-child {
+        gap: 6px !important;
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+    .aura-calendar-filter-bar > div:first-child > div {
+        min-width: 100% !important;
+        width: 100% !important;
+    }
+    .aura-calendar-filter-bar .form-label {
+        margin-bottom: 1px !important;
+        font-size: 10.5px !important;
+    }
+    .aura-calendar-filter-bar select {
+        padding: 5px 8px !important;
+        font-size: 12px !important;
+    }
+    .aura-calendar-filter-bar > div:last-child {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+    }
+    .aura-calendar-filter-bar .btn {
+        padding: 5px 9px !important;
+        font-size: 11.5px !important;
+        flex: 1 1 auto !important;
+        justify-content: center !important;
+    }
+    .aura-calendar-card {
+        padding: 8px !important;
+    }
+    .fc .fc-toolbar {
+        flex-direction: column !important;
+        gap: 6px !important;
+        margin-bottom: 8px !important;
+    }
+    .fc .fc-toolbar-title {
+        font-size: 14px !important;
+    }
+    .fc .fc-button {
+        padding: 4px 7px !important;
+        font-size: 11px !important;
+    }
+}
