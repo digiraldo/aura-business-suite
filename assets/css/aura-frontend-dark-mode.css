@@ -2221,12 +2221,35 @@ body[data-theme="dark"] .adp-card:-webkit-full-screen,
     margin: 0 !important;
     border-radius: 4px !important;
     font-size: 11px !important;
-    line-height: 1.25 !important;
+    line-height: 1.3 !important;
     padding: 1px 4px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+    /* CRÍTICO: altura mínima para que el evento siempre sea visible */
+    min-height: 18px !important;
+    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* El contenedor interno de FullCalendar también debe tener altura mínima */
+.aura-calendar-wrapper .fc .fc-daygrid-event .fc-event-main {
+    min-height: 16px !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* La píldora personalizada del evento (vista mes) siempre visible */
+.aura-calendar-wrapper .fc .aura-gcal-month-pill {
+    min-height: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    overflow: hidden !important;
 }
 
 /* Vista Semana y Día Frontend */
@@ -2391,6 +2414,61 @@ body[data-theme="dark"] .adp-card:-webkit-full-screen,
 
     .fc .fc-button-group .fc-button {
         padding: 3px 5px !important;
+    }
+
+    /* ── CRÍTICO: Visibilidad de eventos en vista mes (móvil) ──
+       En pantallas pequeñas las celdas son muy angostas y los eventos
+       pueden colapsar a 0px de altura. Forzamos tamaño mínimo visible. */
+
+    /* Celda del día: altura mínima para que quepa al menos 1 evento */
+    .aura-calendar-wrapper .fc .fc-daygrid-day-frame {
+        min-height: 52px !important;
+    }
+
+    /* Número del día más compacto en móvil */
+    .aura-calendar-wrapper .fc .fc-daygrid-day-number {
+        font-size: 10px !important;
+        padding: 1px 2px !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Event harness con altura mínima garantizada */
+    .aura-calendar-wrapper .fc .fc-daygrid-event-harness {
+        min-height: 16px !important;
+    }
+
+    /* Evento visible: barra de color siempre de al menos 16px */
+    .aura-calendar-wrapper .fc .fc-daygrid-event {
+        min-height: 16px !important;
+        font-size: 9.5px !important;
+        padding: 1px 2px !important;
+        line-height: 1.2 !important;
+        border-radius: 3px !important;
+    }
+
+    /* Contenido interno del evento en móvil */
+    .aura-calendar-wrapper .fc .fc-daygrid-event .fc-event-main,
+    .aura-calendar-wrapper .fc .aura-gcal-month-pill {
+        min-height: 14px !important;
+        font-size: 9.5px !important;
+        padding: 0 !important;
+    }
+
+    /* Ocultar avatar en la píldora del evento en móvil para ahorrar espacio */
+    .aura-calendar-wrapper .fc .aura-gcal-month-pill img {
+        display: none !important;
+    }
+
+    /* El chip de líder en móvil: ultra compacto */
+    .aura-calendar-wrapper .fc .aura-gcal-leader-chip {
+        font-size: 8px !important;
+        padding: 0 2px !important;
+    }
+
+    /* Si hay más eventos que no caben: el link "+N más" también compacto */
+    .aura-calendar-wrapper .fc .fc-daygrid-more-link {
+        font-size: 9px !important;
+        padding: 0 2px !important;
     }
 }
 
