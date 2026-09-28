@@ -82,27 +82,34 @@ $can_delete     = current_user_can( 'aura_cal_delete_programs' ) || $can_manage;
 
 <!-- ══ TOOLTIP ENRIQUECIDO DE FECHAS EN CALENDARIO (singleton) ══ -->
 <div id="aura-subj-cal-tooltip" class="aura-subj-cal-tooltip" role="tooltip" aria-hidden="true">
-    <div class="aura-subj-cal-tooltip-header">
-        <div class="aura-subj-cal-tooltip-icon-box">📅</div>
-        <div class="aura-subj-cal-tooltip-title-wrap">
-            <div class="aura-subj-cal-tooltip-subj-name"></div>
-            <div class="aura-subj-cal-tooltip-meta">
-                <span class="aura-subj-cal-tooltip-code"></span>
-                <span class="aura-subj-cal-tooltip-prog"></span>
+    <div class="aura-tip-card">
+        <div class="aura-tip-card-header">
+            <div class="aura-tip-avatar-large" id="aura-subj-cal-tip-avatar">
+                <span class="dashicons dashicons-calendar-alt"></span>
+            </div>
+            <div class="aura-tip-info">
+                <div class="aura-tip-title" id="aura-subj-cal-tip-name"></div>
+                <div class="aura-tip-subtitle" id="aura-subj-cal-tip-prog"></div>
+                <div class="aura-tip-badges" id="aura-subj-cal-tip-meta-badges">
+                    <!-- Badges canónicos inyectados dinámicamente vía JS -->
+                </div>
             </div>
         </div>
-        <div class="aura-subj-cal-tooltip-count-badge"></div>
-    </div>
-    <div class="aura-subj-cal-tooltip-section-title">
-        <span>🗓️ <?php esc_html_e( 'Sesiones Programadas en Calendario', 'aura' ); ?></span>
-    </div>
-    <div class="aura-subj-cal-tooltip-list">
-        <!-- Renderizado dinámicamente vía JS -->
-    </div>
-    <div class="aura-subj-cal-tooltip-footer">
-        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar' ) ); ?>" class="aura-subj-cal-tooltip-link">
-            <span><?php esc_html_e( 'Ir al Calendario Principal', 'aura' ); ?></span> &rarr;
-        </a>
+        <div class="aura-tip-card-body">
+            <div class="aura-tip-section-header">
+                <span class="aura-tip-section-label"><?php esc_html_e( 'Fechas y Sesiones Programadas', 'aura' ); ?></span>
+                <span class="aura-tip-section-count" id="aura-subj-cal-tip-count"></span>
+            </div>
+            <div class="aura-tip-session-list" id="aura-subj-cal-tip-list">
+                <!-- Se inyectan dinámicamente las sesiones con Date Tiles tipográficos -->
+            </div>
+        </div>
+        <div class="aura-tip-card-footer">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar' ) ); ?>" class="btn btn-sm btn-indigo btn-shimmer btn-lift" style="width:100%;justify-content:center;text-decoration:none;display:flex;align-items:center;gap:6px;">
+                <span class="dashicons dashicons-calendar-alt" style="font-size:15px;width:15px;height:15px;line-height:1;"></span>
+                <span><?php esc_html_e( 'Abrir en Calendario Principal', 'aura' ); ?></span> &rarr;
+            </a>
+        </div>
     </div>
 </div>
 
@@ -194,6 +201,442 @@ body.aura-dark-mode .aura-av-more,
     border-color: #20242c !important;
     background: rgba(99, 102, 241, 0.25) !important;
     color: #a5b4fc !important;
+}
+
+/* ── Tooltip Enriquecido de Fechas en Calendario (.aura-subj-cal-tooltip) ── */
+.aura-subj-cal-tooltip {
+    position: fixed !important;
+    z-index: 999999 !important;
+    width: 360px;
+    max-width: calc(100vw - 28px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .18s cubic-bezier(0.16, 1, 0.3, 1), transform .18s cubic-bezier(0.16, 1, 0.3, 1), visibility .18s;
+    font-family: inherit;
+}
+.aura-subj-cal-tooltip.visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+/* Tarjeta base con fondo sólido institucional */
+.aura-subj-cal-tooltip .aura-tip-card {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 16px 45px -5px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(99, 102, 241, 0.15) !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cabecera */
+.aura-subj-cal-tooltip .aura-tip-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+.aura-subj-cal-tooltip .aura-tip-avatar-large {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #4f46e5;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.aura-subj-cal-tooltip .aura-tip-info {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.aura-subj-cal-tooltip .aura-tip-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a !important;
+    line-height: 1.25;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.aura-subj-cal-tooltip .aura-tip-subtitle {
+    font-size: 11px;
+    color: #64748b !important;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.aura-subj-cal-tooltip .aura-tip-badges {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 5px;
+}
+.aura-subj-cal-tooltip .aura-tip-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 9999px !important;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.aura-subj-cal-tooltip .aura-tip-badge--code {
+    background: rgba(99, 102, 241, 0.12);
+    color: #4f46e5 !important;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+.aura-subj-cal-tooltip .aura-tip-badge--hours {
+    background: rgba(100, 116, 139, 0.12);
+    color: #475569 !important;
+    border: 1px solid rgba(100, 116, 139, 0.25);
+}
+.aura-subj-cal-tooltip .aura-tip-badge--count {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Cuerpo y listado */
+.aura-subj-cal-tooltip .aura-tip-card-body {
+    padding: 10px 14px;
+    background: #ffffff !important;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.aura-subj-cal-tooltip .aura-tip-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b !important;
+    margin-bottom: 2px;
+}
+.aura-subj-cal-tooltip .aura-tip-section-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: #4f46e5;
+    background: rgba(99, 102, 241, 0.08);
+    padding: 1px 6px;
+    border-radius: 9999px;
+}
+.aura-subj-cal-tooltip .aura-tip-session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+.aura-subj-cal-tooltip .aura-tip-session-list::-webkit-scrollbar {
+    width: 5px;
+}
+.aura-subj-cal-tooltip .aura-tip-session-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.aura-subj-cal-tooltip .aura-tip-session-list::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.3);
+    border-radius: 4px;
+}
+
+/* Tarjeta individual de sesión */
+.aura-subj-cal-tooltip .aura-tip-session-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.aura-subj-cal-tooltip .aura-tip-session-card:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+/* Date Calendar Tile */
+.aura-subj-cal-tooltip .aura-tip-date-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    border-radius: 7px;
+    padding: 3px 2px;
+    text-align: center;
+    flex-shrink: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 3px solid #4f46e5;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.aura-subj-cal-tooltip .aura-tip-date-month {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #4f46e5;
+    line-height: 1.1;
+}
+.aura-subj-cal-tooltip .aura-tip-date-day {
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 1px 0;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+}
+.aura-subj-cal-tooltip .aura-tip-date-wday {
+    font-size: 8.5px;
+    font-weight: 600;
+    color: #64748b;
+    line-height: 1;
+}
+
+/* Info de la sesión */
+.aura-subj-cal-tooltip .aura-tip-session-info {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.aura-subj-cal-tooltip .aura-tip-session-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+}
+.aura-subj-cal-tooltip .aura-tip-session-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+.aura-subj-cal-tooltip .aura-tip-status-pill {
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.aura-subj-cal-tooltip .status-scheduled {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+.aura-subj-cal-tooltip .status-completed {
+    background: rgba(100, 116, 139, 0.15);
+    color: #475569;
+}
+.aura-subj-cal-tooltip .status-cancelled {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+.aura-subj-cal-tooltip .aura-tip-session-time {
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+}
+.aura-subj-cal-tooltip .aura-tip-type-label {
+    font-size: 9.5px;
+    color: #64748b;
+    background: #e2e8f0;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+.aura-subj-cal-tooltip .aura-tip-session-meta {
+    font-size: 10.5px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
+.aura-subj-cal-tooltip .aura-tip-session-meta strong {
+    color: #334155;
+}
+
+/* Footer */
+.aura-subj-cal-tooltip .aura-tip-card-footer {
+    padding: 9px 14px;
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+
+/* ── MODO OSCURO (Universal Design System) ── */
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-card,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-card,
+.dark .aura-subj-cal-tooltip .aura-tip-card,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card {
+    background: #181b21 !important;
+    color: #f8fafc !important;
+    border-color: #3c4043 !important;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(99, 102, 241, 0.3) !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-card-header,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-card-header,
+.dark .aura-subj-cal-tooltip .aura-tip-card-header,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-header {
+    background: linear-gradient(135deg, #1e2430 0%, #181b21 100%) !important;
+    border-bottom-color: #334155 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-title,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-title,
+.dark .aura-subj-cal-tooltip .aura-tip-title,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-title {
+    color: #f8fafc !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-subtitle,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-subtitle,
+.dark .aura-subj-cal-tooltip .aura-tip-subtitle,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-subtitle {
+    color: #94a3b8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-badge--code,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-badge--code,
+.dark .aura-subj-cal-tooltip .aura-tip-badge--code {
+    background: rgba(99, 102, 241, 0.25) !important;
+    color: #a5b4fc !important;
+    border-color: rgba(99, 102, 241, 0.5) !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-badge--hours,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-badge--hours,
+.dark .aura-subj-cal-tooltip .aura-tip-badge--hours {
+    background: rgba(100, 116, 139, 0.25) !important;
+    color: #cbd5e1 !important;
+    border-color: rgba(100, 116, 139, 0.4) !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-badge--count,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-badge--count,
+.dark .aura-subj-cal-tooltip .aura-tip-badge--count {
+    background: rgba(16, 185, 129, 0.25) !important;
+    color: #6ee7b7 !important;
+    border-color: rgba(16, 185, 129, 0.5) !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-card-body,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-card-body,
+.dark .aura-subj-cal-tooltip .aura-tip-card-body,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-body {
+    background: #181b21 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-section-header,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-section-header,
+.dark .aura-subj-cal-tooltip .aura-tip-section-header {
+    color: #94a3b8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-card,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-card,
+.dark .aura-subj-cal-tooltip .aura-tip-session-card,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-session-card {
+    background: #1e2430 !important;
+    border-color: #334155 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-card:hover,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-card:hover,
+.dark .aura-subj-cal-tooltip .aura-tip-session-card:hover {
+    background: #252d3d !important;
+    border-color: #475569 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-date-tile,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-date-tile,
+.dark .aura-subj-cal-tooltip .aura-tip-date-tile {
+    background: #15181e !important;
+    border-color: #3c4043 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-date-month,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-date-month,
+.dark .aura-subj-cal-tooltip .aura-tip-date-month {
+    color: #818cf8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-date-day,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-date-day,
+.dark .aura-subj-cal-tooltip .aura-tip-date-day {
+    color: #ffffff !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-date-wday,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-date-wday,
+.dark .aura-subj-cal-tooltip .aura-tip-date-wday {
+    color: #94a3b8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-title,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-title,
+.dark .aura-subj-cal-tooltip .aura-tip-session-title {
+    color: #f8fafc !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-time,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-time,
+.dark .aura-subj-cal-tooltip .aura-tip-session-time {
+    color: #cbd5e1 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-type-label,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-type-label,
+.dark .aura-subj-cal-tooltip .aura-tip-type-label {
+    background: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-meta,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-meta,
+.dark .aura-subj-cal-tooltip .aura-tip-session-meta {
+    color: #94a3b8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-meta strong,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-meta strong,
+.dark .aura-subj-cal-tooltip .aura-tip-session-meta strong {
+    color: #cbd5e1 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-card-footer,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-card-footer,
+.dark .aura-subj-cal-tooltip .aura-tip-card-footer,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
+    background: #181b21 !important;
+    border-top-color: #334155 !important;
 }
 
 /* ── Program Card ───────────────────────────────────────────────── */
@@ -592,6 +1035,8 @@ body.aura-dark-mode .aura-av-more,
                                                   role="button"
                                                   data-subj-name="<?php echo esc_attr( $s->name ); ?>"
                                                   data-subj-code="<?php echo esc_attr( $s->code ); ?>"
+                                                  data-subj-color="<?php echo esc_attr( $s_color ); ?>"
+                                                  data-subj-hours="<?php echo intval( $s->total_hours ?? 0 ); ?>"
                                                   data-prog-name="<?php echo esc_attr( $p->name ); ?>"
                                                   data-events='<?php echo esc_attr( wp_json_encode( $s->scheduled_events ) ); ?>'
                                                   aria-label="<?php echo esc_attr( sprintf( _n( '%d fecha programada', '%d fechas programadas', $ev_count, 'aura' ), $ev_count ) ); ?>">
@@ -1035,27 +1480,42 @@ body.aura-dark-mode .aura-av-more,
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════
-     TOOLTIP FLOTANTE ENRIQUECIDO: FECHAS PROGRAMADAS DE LA MATERIA
+     TOOLTIP FLOTANTE ENRIQUECIDO TIPO TARJETA (.aura-tip-card)
+     DIRECTRIZ CANÓNICA: documentacion/TRACKER-MIGRACION-DESIGN-SYSTEM.md
      ══════════════════════════════════════════════════════════════════ -->
-<div id="aura-subj-cal-tooltip" class="aura-subj-cal-tooltip" role="tooltip" aria-hidden="true">
-    <div class="aura-subj-cal-tip-header">
-        <div class="aura-subj-cal-tip-title-box">
-            <span class="aura-subj-cal-tip-icon">📅</span>
-            <div>
-                <div class="aura-subj-cal-tip-subj" id="aura-subj-cal-tip-name"></div>
-                <div class="aura-subj-cal-tip-prog" id="aura-subj-cal-tip-prog"></div>
+<div id="aura-subj-cal-tooltip" class="aura-subj-cal-tooltip aura-tip-card--subject" role="tooltip" aria-hidden="true">
+    <div class="aura-tip-card">
+        <!-- Header con avatar grande temático, título y badges -->
+        <div class="aura-tip-card-header">
+            <div class="aura-tip-avatar-large" id="aura-subj-cal-tip-avatar">
+                <span id="aura-subj-cal-tip-code-badge" style="font-size: 13px; font-weight: 800; color: #ffffff;"></span>
+            </div>
+            <div class="aura-tip-info">
+                <div class="aura-tip-title" id="aura-subj-cal-tip-name"></div>
+                <div class="aura-tip-subtitle" id="aura-subj-cal-tip-prog"></div>
+                <div class="aura-tip-badges" id="aura-subj-cal-tip-meta-badges">
+                    <!-- Badges generados dinámicamente: Código, Horas y Conteo -->
+                </div>
             </div>
         </div>
-        <span class="aura-subj-cal-tip-count-badge" id="aura-subj-cal-tip-count"></span>
-    </div>
-    <div class="aura-subj-cal-tip-body" id="aura-subj-cal-tip-list">
-        <!-- Inyección dinámica de sesiones con HTML enriquecido -->
-    </div>
-    <div class="aura-subj-cal-tip-footer">
-        <span class="aura-subj-cal-tip-hint">💡 Sesiones del programa</span>
-        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar&tab=calendar' ) ); ?>" class="aura-subj-cal-tip-link">
-            <?php esc_html_e( 'Ir al Calendario →', 'aura' ); ?>
-        </a>
+
+        <!-- Body: Bloques de fecha tipográficos (Date Tiles) sin emojis repetidos -->
+        <div class="aura-tip-card-body">
+            <div class="aura-tip-section-header">
+                <span class="aura-tip-section-title"><?php esc_html_e( 'Fechas y Sesiones Programadas', 'aura' ); ?></span>
+                <span id="aura-subj-cal-tip-count" class="badge badge-indigo badge-sm"></span>
+            </div>
+            <div class="aura-tip-sessions-list" id="aura-subj-cal-tip-list">
+                <!-- Inyección dinámica de sesiones con Date Calendar Tile sin iconos repetidos -->
+            </div>
+        </div>
+
+        <!-- Footer: Botón de acción con estilo WOW del Design System -->
+        <div class="aura-tip-card-footer">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar&tab=calendar' ) ); ?>" class="btn btn-sm btn-indigo btn-shimmer btn-lift" style="width: 100%; justify-content: center; text-decoration: none;">
+                <?php esc_html_e( 'Ver Sesiones en el Calendario →', 'aura' ); ?>
+            </a>
+        </div>
     </div>
 </div>
 

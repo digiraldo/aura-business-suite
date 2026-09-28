@@ -220,7 +220,13 @@ class Aura_Calendar_Subjects {
                 $start_ts  = strtotime( $ev->start_datetime );
                 $end_ts    = strtotime( $ev->end_datetime );
 
-                $date_str = $start_ts ? date_i18n( 'D, j M Y', $start_ts ) : substr( $ev->start_datetime, 0, 10 );
+                $date_str      = $start_ts ? date_i18n( 'D, j M Y', $start_ts ) : substr( $ev->start_datetime, 0, 10 );
+                $date_full     = $start_ts ? date_i18n( 'l, j \d\e F \d\e Y', $start_ts ) : $date_str;
+                $day_num       = $start_ts ? date_i18n( 'j', $start_ts ) : '';
+                $month_short   = $start_ts ? strtoupper( date_i18n( 'M', $start_ts ) ) : '';
+                $weekday_short = $start_ts ? ucfirst( date_i18n( 'D', $start_ts ) ) : '';
+                $year_num      = $start_ts ? date_i18n( 'Y', $start_ts ) : '';
+
                 $time_str = ( $start_ts && $end_ts )
                     ? date_i18n( $time_fmt, $start_ts ) . ' – ' . date_i18n( $time_fmt, $end_ts )
                     : '';
@@ -234,6 +240,11 @@ class Aura_Calendar_Subjects {
                     'start_datetime' => $ev->start_datetime,
                     'end_datetime'   => $ev->end_datetime,
                     'date_formatted' => $date_str,
+                    'date_full'      => $date_full,
+                    'day_num'        => $day_num,
+                    'month_short'    => $month_short,
+                    'weekday_short'  => $weekday_short,
+                    'year_num'       => $year_num,
                     'time_formatted' => $time_str,
                     'location'       => $ev->location ?: '',
                     'online_url'     => $ev->online_url ?: '',

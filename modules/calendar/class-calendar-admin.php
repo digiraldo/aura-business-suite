@@ -226,7 +226,7 @@ class Aura_Calendar_Admin {
         wp_enqueue_script(
             'aura-calendar-admin',
             AURA_PLUGIN_URL . 'assets/js/calendar-admin.js',
-            [ 'jquery', 'fullcalendar-bundle' ],
+            [ 'jquery', 'fullcalendar-bundle', 'aura-ui-core' ],
             $cal_ver,
             true
         );

@@ -879,7 +879,7 @@ Esto se debía a una combinación de tres factores técnicos:
 
 
 
-- En las Tarjetas de `Materias del Programa` que estan dentro de un `Programa Académico`, quiero que introduzca un icono cuando una materia esté asignada al calendario y caundo pase el puntero encima, me aparezca un tooltip enriquecido con html donde me muestre las fechas programadas de esa materia dentro del Programa
+✅ En las Tarjetas de `Materias del Programa` que estan dentro de un `Programa Académico`, quiero que introduzca un icono cuando una materia esté asignada al calendario y caundo pase el puntero encima, me aparezca un tooltip enriquecido con html donde me muestre las fechas programadas de esa materia dentro del Programa
 
 
 
@@ -887,7 +887,7 @@ Esto se debía a una combinación de tres factores técnicos:
     `+ Insertar campos predeterminados`
     Formulario de Inscripción
     Los campos mapeados se sincronizan automáticamente con el Módulo de Estudiantes al enviar.
-Lo anterior, se sincroniza en el Módulo de Estudiantes, para administrar los estudiantes que se inscriben, cuales son aprobados, cuales renuncian o desisten despues de la inscripción, etc.?
+Lo anterior, se sincroniza en el Módulo de Estudiantes, para administrar los estudiantes que se inscriben, cuales son aprobados, cuales se inscribieron dos veces para editar y dejar una sola inscripción, cuales renuncian o desisten despues de la inscripción, etc.?
 
 
 
@@ -947,20 +947,30 @@ La sincronización entre ambos módulos es fundamental por tres razones operativ
    - Formatea automáticamente las fechas en español (`date_i18n`), rangos de horario en formato local de 12/24h, tipo de evento con emoji y etiqueta (📖 Clase, 🔬 Taller, 📝 Examen, etc.), ubicación/enlace online y estado de la sesión.
    - Integra la información directamente en `Aura_Calendar_Subjects::get_all()` y `Aura_Calendar_Subjects::get()`.
 
-2. **Renderizado de Badge en Tarjetas de Materia (`templates/calendar/tab-programs.php`):**
+2. **Renderizado de Badge y Estructura Canónica de Tooltip (`templates/calendar/tab-programs.php`):**
    - En la cabecera de `.aura-subject-card`, se dispuso una fila flex con el código de materia y el distintivo interactivo `.aura-subj-cal-badge`.
-   - Si la materia cuenta con eventos agendados (`! empty( $s->scheduled_events )`), se renderiza el distintivo con el icono `📅` y el número de sesiones programadas, conteniendo los atributos `data-events`, `data-subj-name` y `data-prog-name`.
-   - Se añadió al final del documento el contenedor flotante singleton `#aura-subj-cal-tooltip`.
+   - Si la materia cuenta con eventos agendados (`! empty( $s->scheduled_events )`), se renderiza el distintivo con el icono `📅` y el número de sesiones programadas, conteniendo los atributos `data-events`, `data-subj-name`, `data-prog-name`, `data-subj-code`, `data-subj-color` y `data-subj-hours`.
+   - Se migró el contenedor flotante singleton `#aura-subj-cal-tooltip` a la arquitectura canónica de tarjetas emergentes del Design System (`.aura-tip-card`), dotándolo de los IDs correspondientes:
+     - `.aura-tip-card-header`: Avatar temático de la materia (`#aura-subj-cal-tip-avatar`), títulos jerárquicos (`#aura-subj-cal-tip-name`, `#aura-subj-cal-tip-prog`) y grupo de pills/badges canónicos (`#aura-subj-cal-tip-meta-badges`).
+     - `.aura-tip-card-body`: Contenedor desplazable con scrollbar estilizada (`#aura-subj-cal-tip-list`) para las sesiones agendadas y contador (`#aura-subj-cal-tip-count`).
+     - `.aura-tip-card-footer`: Pie con botón canónico hacia el Calendario Principal (`.btn.btn-sm.btn-indigo.btn-shimmer.btn-lift`).
 
-3. **Estilos y Experiencia Visual (`assets/css/calendar-admin.css`):**
-   - Se estilizó `.aura-subj-cal-badge` con apariencia moderna tipo píldora, borde sutil, acento índigo y microinteracciones de elevación (`translateY(-1px)`) y sombra al hacer hover/focus.
-   - Se diseñó el componente flotante `#aura-subj-cal-tooltip` con sombra multicapa, cabecera descriptiva (materia, programa y conteo de sesiones), lista desplazable de sesiones con borde de acento según el color del evento, emojis informativos de tipo de sesión, horario y ubicación, y pie con enlace directo a la pestaña del Calendario.
-   - Soporte nativo para modo oscuro (`body.aura-dark-mode`).
+3. **Homologación con Tooltips de Avatar y Estilos Opacos Adaptativos (`tab-programs.php` y `calendar-admin.css`):**
+   - Se diagnosticó que el tooltip se mostraba transparente y desalineado debido a la falta de reglas CSS acopladas en la vista y a una discrepancia de selectores (`.aura-tip-card--subject` vs `#aura-subj-cal-tooltip`).
+   - Se incorporaron las reglas de estilo de `#aura-subj-cal-tooltip` directamente en `<style>` de `tab-programs.php` y en `calendar-admin.css`, idéntico a `#aura-av-tooltip`:
+     - Posicionamiento `position: fixed !important; z-index: 999999 !important;` y ancho de 360px.
+     - Fondo sólido institucional 100% no transparente: `#ffffff` en Modo Claro y `#181b21` en Modo Oscuro (`body.aura-dark-mode`, `[data-theme="dark"]`, `.dark`, `html.wp-dark-mode-active`).
+     - Sombra multicapa de alta profundidad (`box-shadow: 0 24px 50px rgba(0, 0, 0, 0.75)` en oscuro).
+   - Componente **Date Calendar Tile** (`.aura-tip-date-tile`):
+     - Un bloque de calendario tipográfico estilizado que desglosa el mes en mayúsculas (`.aura-tip-date-month`), el número del día en tipografía destacada (`.aura-tip-date-day`) y el día abreviado (`.aura-tip-date-wday`), erradicando emojis repetidos (`📅`, `⏰`, `📍`).
+   - Tarjetas de sesión limpias (`.aura-tip-session-card`) con franja de color dinámico según la materia/evento, insignia semántica de estado (`status-scheduled`, `status-completed`, `status-cancelled`) y metadatos estructurados en fila para horario y aula/enlace virtual.
 
-4. **Interactividad y Posicionamiento Inteligente (`assets/js/calendar-admin.js`):**
+4. **Interactividad Dinámica y Posicionamiento Inteligente (`assets/js/calendar-admin.js`):**
    - Controladores para eventos `mouseenter`, `mouseleave`, `focus` y `blur` sobre `.aura-subj-cal-badge`.
-   - Lógica de persistencia en hover que permite al usuario desplazar el puntero hacia el interior del tooltip para interactuar con sesiones o enlaces sin que se cierre intempestivamente.
-   - Posicionamiento dinámico adaptativo que calcula los bordes del viewport para evitar desbordamientos horizontales y verticales.
+   - Homologación con la lógica posicional de `#aura-av-tooltip`: cálculo dinámico con `getBoundingClientRect()`, posicionando arriba mediante `transform: translateY(-100%)` cuando hay espacio suficiente en el viewport, o invirtiéndose automáticamente hacia abajo (`transform: translateY(0)`) si la tarjeta está en el borde superior de la pantalla.
+   - Parseo seguro de `data-events` tanto si jQuery lo entrega deserializado como objeto/array o como cadena JSON.
+   - Generación de Date Tiles tipográficos para cada fecha agendada, orden cronológico y enlace directo al calendario en el footer.
+   - Lógica de persistencia en hover que permite interactuar con el interior del tooltip (scroll y enlaces) sin cierres intempestivos.
 
 5. **Empaquetado:**
    - Ejecutado `php build-zip.php` actualizando el archivo final `aura-business-suite.zip`.

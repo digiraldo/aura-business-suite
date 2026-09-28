@@ -3768,81 +3768,136 @@
 
         if (subjTooltipTimer) clearTimeout(subjTooltipTimer);
 
-        var subjName = $badge.data('subj-name') || '';
-        var subjCode = $badge.data('subj-code') || '';
-        var progName = $badge.data('prog-name') || '';
-        var eventsRaw = $badge.attr('data-events') || '[]';
-        var events = [];
+        var subjName  = $badge.data('subj-name') || '';
+        var subjCode  = $badge.data('subj-code') || '';
+        var subjColor = $badge.data('subj-color') || '#4f46e5';
+        var subjHours = parseInt($badge.data('subj-hours'), 10) || 0;
+        var progName  = $badge.data('prog-name') || '';
+        var rawEvents = $badge.attr('data-events') || $badge.data('events') || '[]';
+        var events    = [];
 
-        try {
-            events = JSON.parse(eventsRaw);
-        } catch (e) {
-            events = [];
+        if (Array.isArray(rawEvents)) {
+            events = rawEvents;
+        } else if (typeof rawEvents === 'string') {
+            try {
+                events = JSON.parse(rawEvents);
+            } catch (e) {
+                events = [];
+            }
         }
 
         if (!events || !events.length) return;
 
-        // Cabecera
-        var fullName = subjCode ? (subjCode + ' — ' + subjName) : subjName;
-        $('#aura-subj-cal-tip-name').text(fullName);
-        $('#aura-subj-cal-tip-prog').text(progName ? ('📁 ' + progName) : '');
-        var countText = events.length === 1 ? '1 sesión' : (events.length + ' sesiones');
-        $('#aura-subj-cal-tip-count').text(countText);
+        // 1. Cabecera canónica del Design System (.aura-tip-card-header)
+        var $avatar = $('#aura-subj-cal-tip-avatar');
+        if ($avatar.length) {
+            $avatar.css({
+                'background': subjColor,
+                'border-color': 'rgba(255,255,255,0.2)'
+            });
+            var avatarText = subjCode ? subjCode.substring(0, 4) : (subjName ? subjName.charAt(0).toUpperCase() : 'M');
+            $avatar.text(avatarText);
+        }
 
-        // Renderizado del cuerpo con lista de sesiones HTML enriquecido
+        $('#aura-subj-cal-tip-name').text(subjName);
+        $('#aura-subj-cal-tip-prog').text(progName ? ('Programa: ' + progName) : '');
+
+        // Badges de metadatos en cabecera
+        var metaBadgesHtml = '';
+        if (subjCode) {
+            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--code">' + escapeHtmlSafe(subjCode) + '</span>';
+        }
+        if (subjHours > 0) {
+            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--hours">' + subjHours + ' hrs</span>';
+        }
+        var countText = events.length === 1 ? '1 fecha agendada' : (events.length + ' fechas agendadas');
+        metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--count">' + countText + '</span>';
+        $('#aura-subj-cal-tip-meta-badges').html(metaBadgesHtml);
+
+        $('#aura-subj-cal-tip-count').text(events.length === 1 ? '1 sesión' : (events.length + ' sesiones'));
+
+        // 2. Renderizado del listado de fechas sin iconos repetidos (Date Tiles)
         var itemsHtml = '';
         $.each(events, function(idx, ev) {
-            var dateStr = ev.date_formatted || '';
-            var timeStr = ev.time_formatted || '';
-            var emoji   = ev.type_icon || ev.event_type_emoji || '📅';
-            var typeLbl = ev.type_label || ev.event_type_label || 'Sesión';
-            var locStr  = '';
+            var monthStr   = ev.month_short || 'FECHA';
+            var dayNum     = ev.day_num || (idx + 1);
+            var wdayStr    = ev.weekday_short || '';
+            var timeStr    = ev.time_formatted || '';
+            var typeLbl    = ev.type_label || ev.event_type_label || 'Sesión de clase';
+            var sessionTit = (ev.title && ev.title !== subjName) ? ev.title : typeLbl;
+            var tileAccent = ev.color || subjColor;
 
-            if (ev.location) {
-                locStr = '<span class="aura-subj-cal-session-loc" title="' + escapeHtmlSafe(ev.location) + '">📍 ' + escapeHtmlSafe(ev.location) + '</span>';
-            } else if (ev.online_url) {
-                locStr = '<a href="' + escapeHtmlSafe(ev.online_url) + '" target="_blank" class="aura-subj-cal-session-loc" style="color:var(--aura-primary,#5d5fef);text-decoration:none;" title="Enlace de sesión">💻 Enlace online</a>';
+            // Insignia de estado semántico
+            var statusBadgeClass = 'status-scheduled';
+            var statusText = ev.status_label || 'Programado';
+            if (ev.status === 'completed') {
+                statusBadgeClass = 'status-completed';
+                statusText = 'Completado';
+            } else if (ev.status === 'cancelled') {
+                statusBadgeClass = 'status-cancelled';
+                statusText = 'Cancelado';
             }
 
-            var itemBorderColor = ev.color ? ev.color : '';
+            // Metadatos de aula / enlace
+            var metaHtml = '';
+            if (ev.location) {
+                metaHtml = '<div class="aura-tip-session-meta">Aula / Espacio: <strong>' + escapeHtmlSafe(ev.location) + '</strong></div>';
+            } else if (ev.online_url) {
+                metaHtml = '<div class="aura-tip-session-meta"><a href="' + escapeHtmlSafe(ev.online_url) + '" target="_blank" style="color:var(--aura-primary,#4f46e5);text-decoration:none;font-weight:600;">Enlace de sesión virtual &rarr;</a></div>';
+            }
 
-            itemsHtml += '<div class="aura-subj-cal-session-item"' + (itemBorderColor ? (' style="border-left: 3.5px solid ' + escapeHtmlSafe(itemBorderColor) + ';"') : '') + '>';
-            itemsHtml += '  <div class="aura-subj-cal-session-head">';
-            itemsHtml += '    <span class="aura-subj-cal-session-date">' + emoji + ' ' + escapeHtmlSafe(dateStr) + '</span>';
-            itemsHtml += '    <span class="aura-subj-cal-session-type">' + escapeHtmlSafe(typeLbl) + '</span>';
+            itemsHtml += '<div class="aura-tip-session-card">';
+            // Bloque de calendario tipográfico (Date Tile)
+            itemsHtml += '  <div class="aura-tip-date-tile" style="border-top: 3px solid ' + escapeHtmlSafe(tileAccent) + ';">';
+            itemsHtml += '    <span class="aura-tip-date-month">' + escapeHtmlSafe(monthStr) + '</span>';
+            itemsHtml += '    <span class="aura-tip-date-day">' + escapeHtmlSafe(dayNum) + '</span>';
+            itemsHtml += '    <span class="aura-tip-date-wday">' + escapeHtmlSafe(wdayStr) + '</span>';
             itemsHtml += '  </div>';
-            itemsHtml += '  <div class="aura-subj-cal-session-details">';
-            itemsHtml += '    <span class="aura-subj-cal-session-time">⏰ ' + escapeHtmlSafe(timeStr) + '</span>';
-            itemsHtml +=      locStr;
+
+            // Información y horario de la sesión
+            itemsHtml += '  <div class="aura-tip-session-info">';
+            itemsHtml += '    <div class="aura-tip-session-top">';
+            itemsHtml += '      <span class="aura-tip-session-title" title="' + escapeHtmlSafe(sessionTit) + '">' + escapeHtmlSafe(sessionTit) + '</span>';
+            itemsHtml += '      <span class="aura-tip-status-pill ' + statusBadgeClass + '">' + escapeHtmlSafe(statusText) + '</span>';
+            itemsHtml += '    </div>';
+            itemsHtml += '    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin:2px 0;">';
+            itemsHtml += '      <span class="aura-tip-session-time">' + escapeHtmlSafe(timeStr) + '</span>';
+            if (sessionTit !== typeLbl) {
+                itemsHtml += '    <span class="aura-tip-type-label">' + escapeHtmlSafe(typeLbl) + '</span>';
+            }
+            itemsHtml += '    </div>';
+            itemsHtml +=      metaHtml;
             itemsHtml += '  </div>';
             itemsHtml += '</div>';
         });
 
         $('#aura-subj-cal-tip-list').html(itemsHtml);
 
-        // Posicionamiento inteligente
-        var badgeEl = $badge[0];
-        var rect = badgeEl.getBoundingClientRect();
-        var tipW = 330;
-        var tipH = $subjTooltip.outerHeight() || 240;
-        var gap  = 8;
+        // 3. Posicionamiento inteligente idéntico a los tooltips de avatar
+        var rect = $badge[0].getBoundingClientRect();
+        var tipW = 360;
+        var tipH = $subjTooltip.outerHeight() || 280;
 
         var left = rect.left + (rect.width / 2) - (tipW / 2);
-        if (left < 14) left = 14;
-        if (left + tipW > window.innerWidth - 14) {
-            left = window.innerWidth - tipW - 14;
+        left = Math.max(12, Math.min(left, window.innerWidth - tipW - 12));
+
+        if (rect.top - tipH - 12 >= 10) {
+            var top = rect.top - 10;
+            $subjTooltip.css({
+                left: left + 'px',
+                top: top + 'px',
+                transform: 'translateY(-100%)'
+            });
+        } else {
+            var top = rect.bottom + 10;
+            $subjTooltip.css({
+                left: left + 'px',
+                top: top + 'px',
+                transform: 'translateY(0)'
+            });
         }
 
-        var top = rect.bottom + gap;
-        if (top + tipH > window.innerHeight - 10) {
-            top = rect.top - tipH - gap;
-            if (top < 10) top = 10;
-        }
-
-        $subjTooltip.css({
-            top: top + 'px',
-            left: left + 'px'
-        }).addClass('visible').attr('aria-hidden', 'false');
+        $subjTooltip.attr('aria-hidden', 'false').addClass('visible');
     }
 
     $(document).on('mouseenter focus', '.aura-subj-cal-badge', function() {

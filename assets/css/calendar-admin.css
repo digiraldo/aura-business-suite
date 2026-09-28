@@ -3075,13 +3075,14 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
 
 /* ══════════════════════════════════════════════════════════════════
    BADGE & TOOLTIP ENRIQUECIDO DE FECHAS EN CALENDARIO (MATERIAS)
+   DIRECTRIZ CANÓNICA: documentacion/TRACKER-MIGRACION-DESIGN-SYSTEM.md
    ══════════════════════════════════════════════════════════════════ */
 .aura-subj-cal-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     padding: 2px 7px;
-    border-radius: 999px;
+    border-radius: 9999px !important;
     font-size: 11px;
     font-weight: 700;
     line-height: 1.2;
@@ -3116,36 +3117,35 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
 }
 
 /* Dark mode para el badge */
-body.aura-dark-mode .aura-subj-cal-badge {
+body.aura-dark-mode .aura-subj-cal-badge,
+body[data-theme="dark"] .aura-subj-cal-badge {
     background: rgba(99, 102, 241, 0.22);
     color: #a5b4fc;
     border-color: rgba(99, 102, 241, 0.45);
 }
 
 body.aura-dark-mode .aura-subj-cal-badge:hover,
-body.aura-dark-mode .aura-subj-cal-badge:focus-visible {
+body.aura-dark-mode .aura-subj-cal-badge:focus-visible,
+body[data-theme="dark"] .aura-subj-cal-badge:hover,
+body[data-theme="dark"] .aura-subj-cal-badge:focus-visible {
     background: #6366f1;
     color: #ffffff;
     border-color: #6366f1;
     box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
 }
 
-/* Tooltip flotante enriquecido */
+/* ── Tooltip Flotante Enriquecido Canónico (.aura-tip-card) ── */
 .aura-subj-cal-tooltip {
     position: fixed;
-    z-index: 100080;
-    width: 330px;
+    z-index: 9999999999;
+    width: 350px;
     max-width: calc(100vw - 28px);
-    background: #ffffff;
-    color: #1e293b;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.18), 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transform: translateY(6px);
-    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
-    overflow: hidden;
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.18s;
     font-family: inherit;
 }
 
@@ -3156,243 +3156,446 @@ body.aura-dark-mode .aura-subj-cal-badge:focus-visible {
     transform: translateY(0);
 }
 
-.aura-subj-cal-tip-header {
-    padding: 12px 14px 10px;
-    border-bottom: 1px solid #f1f5f9;
+/* Tarjeta contenedora con soporte claro y oscuro */
+.aura-subj-cal-tooltip .aura-tip-card {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 16px 45px -5px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(99, 102, 241, 0.15) !important;
+    overflow: hidden;
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    background: #fafafa;
+    flex-direction: column;
 }
 
-.aura-subj-cal-tip-title-box {
+/* Cabecera */
+.aura-subj-cal-tooltip .aura-tip-card-header {
     display: flex;
-    align-items: flex-start;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.aura-subj-cal-tooltip .aura-tip-avatar-large {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #4f46e5;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.aura-subj-cal-tooltip .aura-tip-info {
+    flex: 1 1 auto;
     min-width: 0;
 }
 
-.aura-subj-cal-tip-icon {
-    font-size: 18px;
-    line-height: 1.2;
-    flex-shrink: 0;
-}
-
-.aura-subj-cal-tip-subj {
-    font-size: 13.5px;
+.aura-subj-cal-tooltip .aura-tip-title {
+    font-size: 14px;
     font-weight: 700;
-    color: #0f172a;
-    line-height: 1.3;
-    word-break: break-word;
+    color: #0f172a !important;
+    line-height: 1.25;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.aura-subj-cal-tip-prog {
-    font-size: 11.5px;
-    color: #64748b;
+.aura-subj-cal-tooltip .aura-tip-subtitle {
+    font-size: 11px;
+    color: #64748b !important;
     margin-top: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 200px;
 }
 
-.aura-subj-cal-tip-count-badge {
-    background: #eef2ff;
-    color: #4338ca;
-    font-size: 11px;
+.aura-subj-cal-tooltip .aura-tip-badges {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 5px;
+}
+
+.aura-subj-cal-tooltip .aura-tip-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 9999px !important;
+    font-size: 10.5px;
     font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 999px;
-    white-space: nowrap;
-    border: 1px solid rgba(99, 102, 241, 0.25);
-    flex-shrink: 0;
+    line-height: 1.2;
 }
 
-.aura-subj-cal-tip-body {
-    padding: 10px 12px;
-    max-height: 260px;
-    overflow-y: auto;
+.aura-subj-cal-tooltip .aura-tip-badge--code {
+    background: rgba(99, 102, 241, 0.12);
+    color: #4f46e5 !important;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.aura-subj-cal-tooltip .aura-tip-badge--hours {
+    background: rgba(100, 116, 139, 0.12);
+    color: #475569 !important;
+    border: 1px solid rgba(100, 116, 139, 0.25);
+}
+
+.aura-subj-cal-tooltip .aura-tip-badge--count {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Cuerpo y listado */
+.aura-subj-cal-tooltip .aura-tip-card-body {
+    padding: 10px 14px;
+    background: #ffffff !important;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    scrollbar-width: thin;
 }
 
-.aura-subj-cal-tip-body::-webkit-scrollbar {
+.aura-subj-cal-tooltip .aura-tip-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b !important;
+    margin-bottom: 2px;
+}
+
+.aura-subj-cal-tooltip .aura-tip-section-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: #4f46e5;
+    background: rgba(99, 102, 241, 0.08);
+    padding: 1px 6px;
+    border-radius: 9999px;
+}
+
+.aura-subj-cal-tooltip .aura-tip-session-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.aura-subj-cal-tooltip .aura-tip-session-list::-webkit-scrollbar {
     width: 5px;
 }
-.aura-subj-cal-tip-body::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
+.aura-subj-cal-tooltip .aura-tip-session-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+.aura-subj-cal-tooltip .aura-tip-session-list::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.3);
+    border-radius: 4px;
 }
 
-/* Item de sesión */
-.aura-subj-cal-session-item {
-    padding: 8px 10px;
-    border-radius: 8px;
+/* Tarjeta individual de sesión */
+.aura-subj-cal-tooltip .aura-tip-session-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
+    border-radius: 9px;
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.aura-subj-cal-session-item:hover {
+.aura-subj-cal-tooltip .aura-tip-session-card:hover {
     background: #f1f5f9;
     border-color: #cbd5e1;
 }
 
-.aura-subj-cal-session-head {
+/* Date Calendar Tile */
+.aura-subj-cal-tooltip .aura-tip-date-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    border-radius: 7px;
+    padding: 3px 2px;
+    text-align: center;
+    flex-shrink: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 3px solid #4f46e5;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.aura-subj-cal-tooltip .aura-tip-date-month {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #4f46e5;
+    line-height: 1.1;
+}
+
+.aura-subj-cal-tooltip .aura-tip-date-day {
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 1px 0;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+}
+
+.aura-subj-cal-tooltip .aura-tip-date-wday {
+    font-size: 8.5px;
+    font-weight: 600;
+    color: #64748b;
+    line-height: 1;
+}
+
+/* Info de la sesión */
+.aura-subj-cal-tooltip .aura-tip-session-info {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.aura-subj-cal-tooltip .aura-tip-session-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 6px;
-    margin-bottom: 4px;
 }
 
-.aura-subj-cal-session-date {
+.aura-subj-cal-tooltip .aura-tip-session-title {
     font-size: 12px;
     font-weight: 700;
-    color: #1e293b;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.aura-subj-cal-session-type {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 1px 6px;
-    border-radius: 4px;
-    background: rgba(99, 102, 241, 0.1);
-    color: #4f46e5;
-    white-space: nowrap;
-}
-
-.aura-subj-cal-session-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-    color: #64748b;
-    gap: 8px;
-}
-
-.aura-subj-cal-session-time {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-weight: 500;
-    color: #475569;
-}
-
-.aura-subj-cal-session-loc {
+    color: #0f172a;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 140px;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    color: #64748b;
+    max-width: 180px;
 }
 
-.aura-subj-cal-tip-footer {
-    padding: 8px 14px;
-    background: #f8fafc;
-    border-top: 1px solid #f1f5f9;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.aura-subj-cal-tooltip .aura-tip-status-pill {
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.aura-subj-cal-tooltip .status-scheduled {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+.aura-subj-cal-tooltip .status-completed {
+    background: rgba(100, 116, 139, 0.15);
+    color: #475569;
+}
+.aura-subj-cal-tooltip .status-cancelled {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+
+.aura-subj-cal-tooltip .aura-tip-session-time {
     font-size: 11px;
-}
-
-.aura-subj-cal-tip-hint {
-    color: #64748b;
-}
-
-.aura-subj-cal-tip-link {
-    color: #4f46e5;
     font-weight: 600;
-    text-decoration: none;
-    transition: color 0.15s ease;
+    color: #475569;
 }
 
-.aura-subj-cal-tip-link:hover {
-    color: #3730a3;
-    text-decoration: underline;
+.aura-subj-cal-tooltip .aura-tip-type-label {
+    font-size: 9.5px;
+    color: #64748b;
+    background: #e2e8f0;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 600;
 }
 
-/* Soporte Dark Mode para el Tooltip */
-body.aura-dark-mode .aura-subj-cal-tooltip {
-    background: #1e293b;
-    color: #f1f5f9;
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+.aura-subj-cal-tooltip .aura-tip-session-meta {
+    font-size: 10.5px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
 }
 
-body.aura-dark-mode .aura-subj-cal-tip-header {
-    background: #0f172a;
-    border-bottom-color: #334155;
+.aura-subj-cal-tooltip .aura-tip-session-meta strong {
+    color: #334155;
 }
 
-body.aura-dark-mode .aura-subj-cal-tip-subj {
-    color: #f8fafc;
+/* Footer */
+.aura-subj-cal-tooltip .aura-tip-card-footer {
+    padding: 9px 14px;
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-tip-prog {
-    color: #94a3b8;
+/* ── MODO OSCURO (Universal Design System) ── */
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-card,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-card,
+.dark .aura-subj-cal-tooltip .aura-tip-card,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card {
+    background: #181b21 !important;
+    color: #f8fafc !important;
+    border-color: #3c4043 !important;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(99, 102, 241, 0.3) !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-tip-count-badge {
-    background: rgba(99, 102, 241, 0.25);
-    color: #c7d2fe;
-    border-color: rgba(99, 102, 241, 0.45);
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-card-header,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-card-header,
+.dark .aura-subj-cal-tooltip .aura-tip-card-header,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-header {
+    background: linear-gradient(135deg, #1e2430 0%, #181b21 100%) !important;
+    border-bottom-color: #334155 !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-tip-body::-webkit-scrollbar-thumb {
-    background: #475569;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-title,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-title,
+.dark .aura-subj-cal-tooltip .aura-tip-title,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-title {
+    color: #f8fafc !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-session-item {
-    background: #0f172a;
-    border-color: #334155;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-subtitle,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-subtitle,
+.dark .aura-subj-cal-tooltip .aura-tip-subtitle,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-subtitle {
+    color: #94a3b8 !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-session-item:hover {
-    background: #1e293b;
-    border-color: #475569;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-badge--code,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-badge--code,
+.dark .aura-subj-cal-tooltip .aura-tip-badge--code {
+    background: rgba(99, 102, 241, 0.25) !important;
+    color: #a5b4fc !important;
+    border-color: rgba(99, 102, 241, 0.5) !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-session-date {
-    color: #f1f5f9;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-badge--hours,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-badge--hours,
+.dark .aura-subj-cal-tooltip .aura-tip-badge--hours {
+    background: rgba(100, 116, 139, 0.25) !important;
+    color: #cbd5e1 !important;
+    border-color: rgba(100, 116, 139, 0.4) !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-session-type {
-    background: rgba(99, 102, 241, 0.25);
-    color: #a5b4fc;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-badge--count,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-badge--count,
+.dark .aura-subj-cal-tooltip .aura-tip-badge--count {
+    background: rgba(16, 185, 129, 0.25) !important;
+    color: #6ee7b7 !important;
+    border-color: rgba(16, 185, 129, 0.5) !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-session-time {
-    color: #cbd5e1;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-card-body,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-card-body,
+.dark .aura-subj-cal-tooltip .aura-tip-card-body,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-body {
+    background: #181b21 !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-session-loc {
-    color: #94a3b8;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-section-header,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-section-header,
+.dark .aura-subj-cal-tooltip .aura-tip-section-header {
+    color: #94a3b8 !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-tip-footer {
-    background: #0f172a;
-    border-top-color: #334155;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-card,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-card,
+.dark .aura-subj-cal-tooltip .aura-tip-session-card,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-session-card {
+    background: #1e2430 !important;
+    border-color: #334155 !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-tip-hint {
-    color: #94a3b8;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-card:hover,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-card:hover,
+.dark .aura-subj-cal-tooltip .aura-tip-session-card:hover {
+    background: #252d3d !important;
+    border-color: #475569 !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-tip-link {
-    color: #818cf8;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-date-tile,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-date-tile,
+.dark .aura-subj-cal-tooltip .aura-tip-date-tile {
+    background: #15181e !important;
+    border-color: #3c4043 !important;
 }
 
-body.aura-dark-mode .aura-subj-cal-tip-link:hover {
-    color: #a5b4fc;
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-date-month,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-date-month,
+.dark .aura-subj-cal-tooltip .aura-tip-date-month {
+    color: #818cf8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-date-day,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-date-day,
+.dark .aura-subj-cal-tooltip .aura-tip-date-day {
+    color: #ffffff !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-date-wday,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-date-wday,
+.dark .aura-subj-cal-tooltip .aura-tip-date-wday {
+    color: #94a3b8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-title,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-title,
+.dark .aura-subj-cal-tooltip .aura-tip-session-title {
+    color: #f8fafc !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-time,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-time,
+.dark .aura-subj-cal-tooltip .aura-tip-session-time {
+    color: #cbd5e1 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-type-label,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-type-label,
+.dark .aura-subj-cal-tooltip .aura-tip-type-label {
+    background: #334155 !important;
+    color: #94a3b8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-meta,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-meta,
+.dark .aura-subj-cal-tooltip .aura-tip-session-meta {
+    color: #94a3b8 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-meta strong,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-meta strong,
+.dark .aura-subj-cal-tooltip .aura-tip-session-meta strong {
+    color: #cbd5e1 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-card-footer,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-card-footer,
+.dark .aura-subj-cal-tooltip .aura-tip-card-footer,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
+    background: #181b21 !important;
+    border-top-color: #334155 !important;
 }
 
