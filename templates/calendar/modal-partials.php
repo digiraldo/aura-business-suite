@@ -34,7 +34,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
             <button type="button" class="aura-modal-close" data-close-modal="#modal-event-editor">&times;</button>
         </div>
 
-        <form id="form-event-editor" class="aura-modal-form">
+        <form id="form-event-editor" class="aura-modal-form" novalidate>
             <input type="hidden" name="id" id="evt-id" value="0">
 
             <div class="aura-modal-body">

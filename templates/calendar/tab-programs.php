@@ -634,7 +634,7 @@ body.aura-dark-mode .aura-av-more,
             <button type="button" class="aura-modal-close" data-close-modal="#modal-program-editor">&times;</button>
         </div>
 
-        <form id="form-program-editor" class="aura-modal-form">
+        <form id="form-program-editor" class="aura-modal-form" novalidate>
             <div class="aura-modal-body">
                 <input type="hidden" name="id" id="prog-id" value="0">
 

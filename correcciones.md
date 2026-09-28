@@ -850,3 +850,28 @@ En el panel de administración (`wp-admin`), los eventos del calendario (`timeGr
 5. **Verificación y Build:**
    - Verificado con recarga en el navegador en la vista semanal del backend: los textos se muestran en blanco puro `#ffffff` nítido sobre fondos oscuros y con contraste impecable.
    - Compilación exitosa ejecutando `php build-zip.php` (`aura-business-suite.zip`, 21.23 MB, 3304 archivos).
+
+
+---
+
+## Sección 35 — Corrección de Validación Bloqueante de Fechas en el Editor de Eventos del Calendario
+
+### Causa Raíz Detectada
+Al abrir o editar un evento en el modal `#modal-event-editor` en el backend del calendario, el navegador impedía guardar y arrojaba un tooltip nativo de validación HTML5 en el campo de fecha de fin (`#evt-end-dt`):
+`"El valor debe ser igual o posterior a [fecha/hora].."`
+
+Esto se debía a una combinación de tres factores técnicos:
+1. **Atributo `min` residual huérfano:** En `assets/js/calendar-admin.js`, al cambiar la fecha de inicio (`#evt-start-dt`), se asignaba el atributo HTML `min` en `#evt-end-dt`. Sin embargo, al abrir cualquier otro evento mediante `openEventEditor()`, se ejecutaba `form.reset()`, el cual **no remueve atributos HTML dinámicos** (`min`, `max`). Como `$('#evt-start-dt').val(startVal)` no dispara el evento `change`, `#evt-end-dt` conservaba indefinidamente el atributo `min` del evento o fecha previamente seleccionada (por ejemplo, una fecha en mayo de 2027). Al editar un evento con fecha fin anterior (como abril de 2027 o enero de 2027), el navegador consideraba inválido el campo.
+2. **Ausencia de `novalidate` en los formularios modales:** Ni `<form id="form-event-editor">` ni `<form id="form-program-editor">` poseían el atributo `novalidate`, permitiendo que el motor de validación nativo del navegador interceptara el submit antes de que el script jQuery pudiera procesar y validar amigablemente el formulario.
+3. **Escucha de eventos:** `#evt-start-dt` y `#rec-date-start` solo escuchaban el evento `change` (que se dispara al desenfocar o confirmar), y no `input`, impidiendo que los ajustes en tiempo real actualizaran las restricciones adecuadamente mientras el usuario digita o usa el selector.
+
+### Cambios Implementados
+1. **Reset y Sincronización Explícita de Restricciones en `openEventEditor()` (`assets/js/calendar-admin.js`):**
+   - Se removió cualquier atributo `min` residual previo en `#evt-end-dt` y `#rec-date-end` al abrir el modal (`removeAttr('min')`).
+   - Se sincronizó el atributo `min` exactamente con el `startVal` del evento cargado en ese instante.
+2. **Escucha Bidireccional `change input` en Fechas:**
+   - `#evt-start-dt`, `#rec-date-start`, `#prog-start-date` y `#prog-end-date` ahora escuchan `'change input'`, recalculando y sincronizando dinámicamente las restricciones mínimas y coherencia de fechas en tiempo real.
+3. **Atributo `novalidate` en Formularios Modales:**
+   - Se incorporó `novalidate` en `<form id="form-event-editor" class="aura-modal-form" novalidate>` (`templates/calendar/modal-partials.php`) y en `<form id="form-program-editor" class="aura-modal-form" novalidate>` (`templates/calendar/tab-programs.php`).
+4. **Validaciones JS Exhaustivas con Feedback UI (`showToast`):**
+   - En el submit de `#form-event-editor`, se validan en JavaScript la presencia del título, selección del programa, coherencia de fechas tanto para eventos simples (`dtEnd >= dtStart`) como para series recurrentes (`rEnd >= rStart`, selección de días de la semana), mostrando toasts amigables y enfocando el campo correspondiente sin popups intrusivos del navegador.

@@ -1394,6 +1394,17 @@
         $('#evt-start-dt').val(startVal);
         $('#evt-end-dt').val(endVal);
 
+        // Resetear y sincronizar atributos min para evitar bloqueos residuales de fechas
+        $('#evt-end-dt').removeAttr('min');
+        $('#rec-date-end').removeAttr('min');
+        if (startVal) {
+            $('#evt-end-dt').attr('min', startVal);
+        }
+        var recDateStartVal = startVal ? startVal.substring(0, 10) : '';
+        if (recDateStartVal) {
+            $('#rec-date-end').attr('min', recDateStartVal);
+        }
+
         $('#rec-date-start').val(startVal.substring(0, 10));
         $('#rec-date-end').val(endVal.substring(0, 10));
         $('#rec-time-start').val(startVal.substring(11, 16) || '09:00');
@@ -1728,7 +1739,7 @@
     });
 
     // Sincronización dinámica de fechas y horas en el editor de eventos
-    $('#evt-start-dt').on('change', function() {
+    $('#evt-start-dt').on('change input', function() {
         var startVal = $(this).val();
         if (startVal) {
             $('#evt-end-dt').attr('min', startVal);
@@ -1741,7 +1752,7 @@
         }
     });
 
-    $('#rec-date-start').on('change', function() {
+    $('#rec-date-start').on('change input', function() {
         var startVal = $(this).val();
         if (startVal) {
             $('#rec-date-end').attr('min', startVal);
@@ -1758,18 +1769,57 @@
     $('#form-event-editor').on('submit', function(e) {
         e.preventDefault();
 
+        // Validaciones JS exhaustivas con feedback amigable
+        var title = $.trim($('#evt-title').val());
+        if (!title) {
+            showToast('Por favor ingresa el título o nombre del evento.', 'error');
+            $('#evt-title').focus();
+            return false;
+        }
+
+        var progId = $('#evt-program-id').val();
+        if (!progId) {
+            showToast('Por favor selecciona un programa académico.', 'error');
+            $('#evt-program-id').focus();
+            return false;
+        }
+
         // Validar rangos coherentes
         if ($('#evt-is-recurring').is(':checked')) {
             var rStart = $('#rec-date-start').val();
             var rEnd = $('#rec-date-end').val();
+            if (!rStart) {
+                showToast('Por favor ingresa la fecha de inicio de la recurrencia.', 'error');
+                $('#rec-date-start').focus();
+                return false;
+            }
+            if (!rEnd) {
+                showToast('Por favor ingresa la fecha fin de la recurrencia.', 'error');
+                $('#rec-date-end').focus();
+                return false;
+            }
             if (rStart && rEnd && rEnd < rStart) {
                 showToast('La fecha fin de la recurrencia no puede ser anterior a la de inicio.', 'error');
                 $('#rec-date-end').focus();
                 return false;
             }
+            if ($('input[name="recurring_days[]"]:checked').length === 0) {
+                showToast('Por favor selecciona al menos un día de la semana para la serie recurrente.', 'error');
+                return false;
+            }
         } else {
             var dtStart = $('#evt-start-dt').val();
             var dtEnd = $('#evt-end-dt').val();
+            if (!dtStart) {
+                showToast('Por favor ingresa la fecha y hora de inicio del evento.', 'error');
+                $('#evt-start-dt').focus();
+                return false;
+            }
+            if (!dtEnd) {
+                showToast('Por favor ingresa la fecha y hora de fin del evento.', 'error');
+                $('#evt-end-dt').focus();
+                return false;
+            }
             if (dtStart && dtEnd && dtEnd < dtStart) {
                 showToast('La fecha y hora de fin debe ser posterior a la de inicio.', 'error');
                 $('#evt-end-dt').focus();
@@ -2176,6 +2226,7 @@
         $('#form-program-editor')[0].reset();
         $('#prog-id').val('0');
         $('#prog-area-id').val('');
+        $('#prog-end-date').removeAttr('min');
         $('#modal-prog-title').text('🎓 Nuevo Programa Académico');
         $('#btn-delete-program-modal').hide();
 
@@ -2201,6 +2252,10 @@
                 $('#prog-period').val(p.academic_period || '');
                 $('#prog-start-date').val(p.start_date || '');
                 $('#prog-end-date').val(p.end_date || '');
+                $('#prog-end-date').removeAttr('min');
+                if (p.start_date) {
+                    $('#prog-end-date').attr('min', p.start_date);
+                }
                 $('#prog-area-id').val(p.area_id || '');
                 
                 var progColor = p.color || '#5D5FEF';
@@ -2219,7 +2274,7 @@
     });
 
     // Sincronización dinámica de fechas del programa
-    $('#prog-start-date').on('change', function() {
+    $('#prog-start-date').on('change input', function() {
         var startVal = $(this).val();
         if (startVal) {
             $('#prog-end-date').attr('min', startVal);
@@ -2233,7 +2288,7 @@
         }
     });
 
-    $('#prog-end-date').on('change', function() {
+    $('#prog-end-date').on('change input', function() {
         var endVal = $(this).val();
         var startVal = $('#prog-start-date').val();
         if (startVal && endVal && endVal < startVal) {
