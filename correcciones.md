@@ -1041,3 +1041,11 @@ La sincronización entre ambos módulos es fundamental por tres razones operativ
 
 6. **Empaquetado:**
    - Ejecutado `php build-zip.php` actualizando el archivo final `aura-business-suite.zip`.
+
+
+
+
+
+
+
+   - En `https://diserwp.test/wp-admin/admin.php?page=aura-forms-enrollments`, en acciones, tiene el boton de eliminar este, y como se sincroniza esta pagina de `Postulantes — Inscripciones desde Formularios`, con la de `Inscripciones y Aprobaciones` en la url `https://diserwp.test/wp-admin/admin.php?page=aura-students-enrollments` del Modulo de estudiantes, analiza todo ya que debe haver sincronizacion entre lo correspondiente al formulario cunado hay incripciones a curso, y Estudiantes y que que el curso este creado en `Cursos y Programas` y este debe esta sincronizado con `Programas y Cursos de Capacitación` del calendario.  Analiza todo el flujo
