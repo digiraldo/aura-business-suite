@@ -875,3 +875,92 @@ Esto se debía a una combinación de tres factores técnicos:
    - Se incorporó `novalidate` en `<form id="form-event-editor" class="aura-modal-form" novalidate>` (`templates/calendar/modal-partials.php`) y en `<form id="form-program-editor" class="aura-modal-form" novalidate>` (`templates/calendar/tab-programs.php`).
 4. **Validaciones JS Exhaustivas con Feedback UI (`showToast`):**
    - En el submit de `#form-event-editor`, se validan en JavaScript la presencia del título, selección del programa, coherencia de fechas tanto para eventos simples (`dtEnd >= dtStart`) como para series recurrentes (`rEnd >= rStart`, selección de días de la semana), mostrando toasts amigables y enfocando el campo correspondiente sin popups intrusivos del navegador.
+
+
+
+
+- En las Tarjetas de `Materias del Programa` que estan dentro de un `Programa Académico`, quiero que introduzca un icono cuando una materia esté asignada al calendario y caundo pase el puntero encima, me aparezca un tooltip enriquecido con html donde me muestre las fechas programadas de esa materia dentro del Programa
+
+
+
+- Analiza la pagina de `Nuevo Estudiante`, en la url `https://diserwp.test/wp-admin/admin.php?page=aura-students-new` y revisa si en la creacion de `Nuevo Formulario` en Tipo de formulario: Inscripción a Curso, al dar clic en:
+    `+ Insertar campos predeterminados`
+    Formulario de Inscripción
+    Los campos mapeados se sincronizan automáticamente con el Módulo de Estudiantes al enviar.
+Lo anterior, se sincroniza en el Módulo de Estudiantes, para administrar los estudiantes que se inscriben, cuales son aprobados, cuales renuncian o desisten despues de la inscripción, etc.?
+
+
+
+
+
+
+Actualmente **sí existe una sincronización parcial**, pero **debe existir y profundizarse hacia una sincronización automática bidireccional**. 
+
+A continuación te detallo la situación actual y la arquitectura técnica correspondiente:
+
+---
+
+### 1. Lo que existe actualmente en el proyecto
+
+1. **Dos tablas separadas pero convergentes:**
+   - `wp_aura_student_courses` (Módulo de Estudiantes): Gestiona la parte administrativa, financiera y de admisiones (costo, moneda, cupos máximos, becas, matrículas).
+   - `wp_aura_cal_programs` (Módulo de Calendario): Gestiona la parte pedagógica y de agenda (materias, eventos de clases, exámenes, tareas, asistencia y notas).
+
+2. **Herramienta de sincronización existente:**
+   - En **Calendario > Programas y Cursos de Capacitación** (`tab-programs.php`), existe el botón **`🔄 Sincronizar desde Estudiantes`**.
+   - Al presionarlo, se ejecuta `Aura_Calendar_Programs::sync_from_student_courses()`, el cual lee todos los cursos activos de `wp_aura_student_courses` y crea de forma automática en `wp_aura_cal_programs` aquellos programas académicos que aún no existan en el calendario.
+
+3. **Integración en Tareas y Asistencia:**
+   - Al cargar los alumnos de un programa en el calendario (en `Aura_Calendar_Tasks::get_program_students`), el sistema busca a los estudiantes matriculados en `wp_aura_student_enrollments` cruzando tanto por ID como por coincidencia de nombre (`c.name = p.name`).
+
+---
+
+### 2. Por qué **DEBE existir** una sincronización automática y continua
+
+La sincronización entre ambos módulos es fundamental por tres razones operativas:
+
+1. **Experiencia del Estudiante en su Portal:**
+   - Cuando un estudiante ingresa a su portal, el calendario filtra sus eventos comparando los cursos donde está matriculado activamente. Si un curso se crea en Estudiantes pero no existe como programa en el Calendario, el estudiante no verá sus clases ni horarios.
+2. **Evitar duplicidad de trabajo para los administradores:**
+   - Si se da de alta un nuevo curso o diplomado en Estudiantes, no debería ser necesario que el usuario tenga que ir manualmente al Calendario a presionar "Sincronizar" o a volver a crearlo desde cero.
+3. **Coherencia de Docentes, Fechas y Áreas:**
+   - El docente asignado al curso en Estudiantes debe coincidir con el instructor titular en el Calendario; igualmente, las fechas de inicio y fin del curso deben delimitar las clases programadas.
+
+---
+
+### 3. Conclusión y Recomendación Arquitectónica
+
+- **Existe hoy:** Sincronización manual bajo demanda desde el Calendario (`sync_from_student_courses()`) y vinculación híbrida por nombre/ID.
+- **Debe existir:** Que al **crear o editar un Curso en Estudiantes**, se dispare automáticamente la creación/actualización en **Programas del Calendario** (y viceversa mediante hooks internos de WordPress), manteniendo ambos módulos siempre vinculados por un identificador común sin intervención manual.
+
+---
+
+## 36. Distintivo e Icono con Tooltip Enriquecido de Fechas en Tarjetas de Materia
+
+### Solicitud:
+- En las tarjetas de **Materias del Programa** dentro de un **Programa Académico** (`admin.php?page=aura-calendar&tab=programs`), introducir un icono cuando una materia esté asignada al calendario y, al pasar el puntero por encima (hover), desplegar un tooltip enriquecido con HTML donde se muestren las fechas programadas de esa materia dentro del programa.
+
+### Implementación Realizada:
+1. **Consulta Masiva y Eficiente en Backend (`modules/calendar/class-calendar-subjects.php`):**
+   - Se implementó el método `populate_scheduled_events( array $subjects ): array`.
+   - Consulta en una sola sentencia SQL optimizada todos los eventos activos (`deleted_at IS NULL`) de `wp_aura_cal_events` vinculados a las materias consultadas (`subject_id IN (...)`).
+   - Formatea automáticamente las fechas en español (`date_i18n`), rangos de horario en formato local de 12/24h, tipo de evento con emoji y etiqueta (📖 Clase, 🔬 Taller, 📝 Examen, etc.), ubicación/enlace online y estado de la sesión.
+   - Integra la información directamente en `Aura_Calendar_Subjects::get_all()` y `Aura_Calendar_Subjects::get()`.
+
+2. **Renderizado de Badge en Tarjetas de Materia (`templates/calendar/tab-programs.php`):**
+   - En la cabecera de `.aura-subject-card`, se dispuso una fila flex con el código de materia y el distintivo interactivo `.aura-subj-cal-badge`.
+   - Si la materia cuenta con eventos agendados (`! empty( $s->scheduled_events )`), se renderiza el distintivo con el icono `📅` y el número de sesiones programadas, conteniendo los atributos `data-events`, `data-subj-name` y `data-prog-name`.
+   - Se añadió al final del documento el contenedor flotante singleton `#aura-subj-cal-tooltip`.
+
+3. **Estilos y Experiencia Visual (`assets/css/calendar-admin.css`):**
+   - Se estilizó `.aura-subj-cal-badge` con apariencia moderna tipo píldora, borde sutil, acento índigo y microinteracciones de elevación (`translateY(-1px)`) y sombra al hacer hover/focus.
+   - Se diseñó el componente flotante `#aura-subj-cal-tooltip` con sombra multicapa, cabecera descriptiva (materia, programa y conteo de sesiones), lista desplazable de sesiones con borde de acento según el color del evento, emojis informativos de tipo de sesión, horario y ubicación, y pie con enlace directo a la pestaña del Calendario.
+   - Soporte nativo para modo oscuro (`body.aura-dark-mode`).
+
+4. **Interactividad y Posicionamiento Inteligente (`assets/js/calendar-admin.js`):**
+   - Controladores para eventos `mouseenter`, `mouseleave`, `focus` y `blur` sobre `.aura-subj-cal-badge`.
+   - Lógica de persistencia en hover que permite al usuario desplazar el puntero hacia el interior del tooltip para interactuar con sesiones o enlaces sin que se cierre intempestivamente.
+   - Posicionamiento dinámico adaptativo que calcula los bordes del viewport para evitar desbordamientos horizontales y verticales.
+
+5. **Empaquetado:**
+   - Ejecutado `php build-zip.php` actualizando el archivo final `aura-business-suite.zip`.

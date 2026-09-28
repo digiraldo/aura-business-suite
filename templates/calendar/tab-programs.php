@@ -80,6 +80,32 @@ $can_delete     = current_user_can( 'aura_cal_delete_programs' ) || $can_manage;
     </div>
 </div>
 
+<!-- ══ TOOLTIP ENRIQUECIDO DE FECHAS EN CALENDARIO (singleton) ══ -->
+<div id="aura-subj-cal-tooltip" class="aura-subj-cal-tooltip" role="tooltip" aria-hidden="true">
+    <div class="aura-subj-cal-tooltip-header">
+        <div class="aura-subj-cal-tooltip-icon-box">📅</div>
+        <div class="aura-subj-cal-tooltip-title-wrap">
+            <div class="aura-subj-cal-tooltip-subj-name"></div>
+            <div class="aura-subj-cal-tooltip-meta">
+                <span class="aura-subj-cal-tooltip-code"></span>
+                <span class="aura-subj-cal-tooltip-prog"></span>
+            </div>
+        </div>
+        <div class="aura-subj-cal-tooltip-count-badge"></div>
+    </div>
+    <div class="aura-subj-cal-tooltip-section-title">
+        <span>🗓️ <?php esc_html_e( 'Sesiones Programadas en Calendario', 'aura' ); ?></span>
+    </div>
+    <div class="aura-subj-cal-tooltip-list">
+        <!-- Renderizado dinámicamente vía JS -->
+    </div>
+    <div class="aura-subj-cal-tooltip-footer">
+        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar' ) ); ?>" class="aura-subj-cal-tooltip-link">
+            <span><?php esc_html_e( 'Ir al Calendario Principal', 'aura' ); ?></span> &rarr;
+        </a>
+    </div>
+</div>
+
 <style>
 /* ── Avatar Stack + Tooltip ─────────────────────────────────────── */
 .aura-avatar-group { display: flex; align-items: center; }
@@ -551,10 +577,27 @@ body.aura-dark-mode .aura-av-more,
                                 $st_mat_count= (int) ( $s->student_materials_count ?? 0 );
                             ?>
                                 <div class="aura-subject-card" style="--subj-color: <?php echo esc_attr($s_color); ?>;">
-                                    <div class="aura-subject-card-code">
-                                        <?php echo esc_html( $s->code ); ?>
-                                        <?php if ( ! empty( $s->total_hours ) ) : ?>
-                                            &bull; <?php echo intval( $s->total_hours ); ?> hrs
+                                    <div class="aura-subject-card-top" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px;">
+                                        <div class="aura-subject-card-code">
+                                            <?php echo esc_html( $s->code ); ?>
+                                            <?php if ( ! empty( $s->total_hours ) ) : ?>
+                                                &bull; <?php echo intval( $s->total_hours ); ?> hrs
+                                            <?php endif; ?>
+                                        </div>
+                                        <?php if ( ! empty( $s->scheduled_events ) ) :
+                                            $ev_count = count( $s->scheduled_events );
+                                        ?>
+                                            <span class="aura-subj-cal-badge"
+                                                  tabindex="0"
+                                                  role="button"
+                                                  data-subj-name="<?php echo esc_attr( $s->name ); ?>"
+                                                  data-subj-code="<?php echo esc_attr( $s->code ); ?>"
+                                                  data-prog-name="<?php echo esc_attr( $p->name ); ?>"
+                                                  data-events='<?php echo esc_attr( wp_json_encode( $s->scheduled_events ) ); ?>'
+                                                  aria-label="<?php echo esc_attr( sprintf( _n( '%d fecha programada', '%d fechas programadas', $ev_count, 'aura' ), $ev_count ) ); ?>">
+                                                <span class="aura-subj-cal-icon">📅</span>
+                                                <span class="aura-subj-cal-count"><?php echo $ev_count; ?></span>
+                                            </span>
                                         <?php endif; ?>
                                     </div>
                                     <div class="aura-subject-card-name"><?php echo esc_html( $s->name ); ?></div>
@@ -990,4 +1033,30 @@ body.aura-dark-mode .aura-av-more,
         </form>
     </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TOOLTIP FLOTANTE ENRIQUECIDO: FECHAS PROGRAMADAS DE LA MATERIA
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="aura-subj-cal-tooltip" class="aura-subj-cal-tooltip" role="tooltip" aria-hidden="true">
+    <div class="aura-subj-cal-tip-header">
+        <div class="aura-subj-cal-tip-title-box">
+            <span class="aura-subj-cal-tip-icon">📅</span>
+            <div>
+                <div class="aura-subj-cal-tip-subj" id="aura-subj-cal-tip-name"></div>
+                <div class="aura-subj-cal-tip-prog" id="aura-subj-cal-tip-prog"></div>
+            </div>
+        </div>
+        <span class="aura-subj-cal-tip-count-badge" id="aura-subj-cal-tip-count"></span>
+    </div>
+    <div class="aura-subj-cal-tip-body" id="aura-subj-cal-tip-list">
+        <!-- Inyección dinámica de sesiones con HTML enriquecido -->
+    </div>
+    <div class="aura-subj-cal-tip-footer">
+        <span class="aura-subj-cal-tip-hint">💡 Sesiones del programa</span>
+        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar&tab=calendar' ) ); ?>" class="aura-subj-cal-tip-link">
+            <?php esc_html_e( 'Ir al Calendario →', 'aura' ); ?>
+        </a>
+    </div>
+</div>
+
 

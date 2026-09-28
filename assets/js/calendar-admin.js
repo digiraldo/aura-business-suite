@@ -3736,6 +3736,132 @@
     });
 
     // ─────────────────────────────────────────────────────────────
+    // TOOLTIP ENRIQUECIDO PARA FECHAS EN CALENDARIO DE MATERIAS
+    // ─────────────────────────────────────────────────────────────
+    var $subjTooltip = $('#aura-subj-cal-tooltip');
+    var subjTooltipTimer = null;
+
+    function escapeHtmlSafe(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function hideSubjTooltip() {
+        if (subjTooltipTimer) clearTimeout(subjTooltipTimer);
+        subjTooltipTimer = setTimeout(function() {
+            if ($subjTooltip && $subjTooltip.length) {
+                $subjTooltip.removeClass('visible').attr('aria-hidden', 'true');
+            }
+        }, 180);
+    }
+
+    function showSubjTooltip($badge) {
+        if (!$subjTooltip || !$subjTooltip.length) {
+            $subjTooltip = $('#aura-subj-cal-tooltip');
+            if (!$subjTooltip.length) return;
+        }
+
+        if (subjTooltipTimer) clearTimeout(subjTooltipTimer);
+
+        var subjName = $badge.data('subj-name') || '';
+        var subjCode = $badge.data('subj-code') || '';
+        var progName = $badge.data('prog-name') || '';
+        var eventsRaw = $badge.attr('data-events') || '[]';
+        var events = [];
+
+        try {
+            events = JSON.parse(eventsRaw);
+        } catch (e) {
+            events = [];
+        }
+
+        if (!events || !events.length) return;
+
+        // Cabecera
+        var fullName = subjCode ? (subjCode + ' — ' + subjName) : subjName;
+        $('#aura-subj-cal-tip-name').text(fullName);
+        $('#aura-subj-cal-tip-prog').text(progName ? ('📁 ' + progName) : '');
+        var countText = events.length === 1 ? '1 sesión' : (events.length + ' sesiones');
+        $('#aura-subj-cal-tip-count').text(countText);
+
+        // Renderizado del cuerpo con lista de sesiones HTML enriquecido
+        var itemsHtml = '';
+        $.each(events, function(idx, ev) {
+            var dateStr = ev.date_formatted || '';
+            var timeStr = ev.time_formatted || '';
+            var emoji   = ev.type_icon || ev.event_type_emoji || '📅';
+            var typeLbl = ev.type_label || ev.event_type_label || 'Sesión';
+            var locStr  = '';
+
+            if (ev.location) {
+                locStr = '<span class="aura-subj-cal-session-loc" title="' + escapeHtmlSafe(ev.location) + '">📍 ' + escapeHtmlSafe(ev.location) + '</span>';
+            } else if (ev.online_url) {
+                locStr = '<a href="' + escapeHtmlSafe(ev.online_url) + '" target="_blank" class="aura-subj-cal-session-loc" style="color:var(--aura-primary,#5d5fef);text-decoration:none;" title="Enlace de sesión">💻 Enlace online</a>';
+            }
+
+            var itemBorderColor = ev.color ? ev.color : '';
+
+            itemsHtml += '<div class="aura-subj-cal-session-item"' + (itemBorderColor ? (' style="border-left: 3.5px solid ' + escapeHtmlSafe(itemBorderColor) + ';"') : '') + '>';
+            itemsHtml += '  <div class="aura-subj-cal-session-head">';
+            itemsHtml += '    <span class="aura-subj-cal-session-date">' + emoji + ' ' + escapeHtmlSafe(dateStr) + '</span>';
+            itemsHtml += '    <span class="aura-subj-cal-session-type">' + escapeHtmlSafe(typeLbl) + '</span>';
+            itemsHtml += '  </div>';
+            itemsHtml += '  <div class="aura-subj-cal-session-details">';
+            itemsHtml += '    <span class="aura-subj-cal-session-time">⏰ ' + escapeHtmlSafe(timeStr) + '</span>';
+            itemsHtml +=      locStr;
+            itemsHtml += '  </div>';
+            itemsHtml += '</div>';
+        });
+
+        $('#aura-subj-cal-tip-list').html(itemsHtml);
+
+        // Posicionamiento inteligente
+        var badgeEl = $badge[0];
+        var rect = badgeEl.getBoundingClientRect();
+        var tipW = 330;
+        var tipH = $subjTooltip.outerHeight() || 240;
+        var gap  = 8;
+
+        var left = rect.left + (rect.width / 2) - (tipW / 2);
+        if (left < 14) left = 14;
+        if (left + tipW > window.innerWidth - 14) {
+            left = window.innerWidth - tipW - 14;
+        }
+
+        var top = rect.bottom + gap;
+        if (top + tipH > window.innerHeight - 10) {
+            top = rect.top - tipH - gap;
+            if (top < 10) top = 10;
+        }
+
+        $subjTooltip.css({
+            top: top + 'px',
+            left: left + 'px'
+        }).addClass('visible').attr('aria-hidden', 'false');
+    }
+
+    $(document).on('mouseenter focus', '.aura-subj-cal-badge', function() {
+        showSubjTooltip($(this));
+    });
+
+    $(document).on('mouseleave blur', '.aura-subj-cal-badge', function() {
+        hideSubjTooltip();
+    });
+
+    $(document).on('mouseenter', '#aura-subj-cal-tooltip', function() {
+        if (subjTooltipTimer) clearTimeout(subjTooltipTimer);
+    });
+
+    $(document).on('mouseleave', '#aura-subj-cal-tooltip', function() {
+        hideSubjTooltip();
+    });
+
+    // ─────────────────────────────────────────────────────────────
     // INICIALIZACIÓN AL CARGAR DOM
     // ─────────────────────────────────────────────────────────────
     $(document).ready(function() {

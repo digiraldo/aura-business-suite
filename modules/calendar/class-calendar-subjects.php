@@ -89,7 +89,7 @@ class Aura_Calendar_Subjects {
 
         $results = $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
         $subjects = is_array( $results ) ? $results : [];
-        return self::populate_teachers( $subjects );
+        return self::populate_scheduled_events( self::populate_teachers( $subjects ) );
     }
 
     /**
@@ -161,6 +161,101 @@ class Aura_Calendar_Subjects {
     }
 
     /**
+     * Enriquecer materias con los eventos y fechas programadas en el calendario
+     *
+     * @param array $subjects
+     * @return array
+     */
+    private static function populate_scheduled_events( array $subjects ): array {
+        if ( empty( $subjects ) ) {
+            return [];
+        }
+
+        global $wpdb;
+        $table_evts = $wpdb->prefix . 'aura_cal_events';
+        $sub_ids    = array_values( array_filter( array_map( function( $s ) {
+            return (int) ( $s->id ?? 0 );
+        }, $subjects ) ) );
+
+        if ( empty( $sub_ids ) ) {
+            return $subjects;
+        }
+
+        $ids_placeholder = implode( ',', $sub_ids );
+        $rows = $wpdb->get_results(
+            "SELECT id, program_id, subject_id, title, event_type, start_datetime, end_datetime, 
+                    location, online_url, status, color
+             FROM {$table_evts}
+             WHERE subject_id IN ({$ids_placeholder}) AND deleted_at IS NULL
+             ORDER BY start_datetime ASC"
+        );
+
+        $events_by_subject = [];
+        $time_fmt = get_option( 'time_format', 'H:i' );
+
+        $type_labels = [
+            'class'    => [ 'label' => __( 'Clase Regular', 'aura' ), 'icon' => '📖' ],
+            'exam'     => [ 'label' => __( 'Examen / Evaluación', 'aura' ), 'icon' => '📝' ],
+            'workshop' => [ 'label' => __( 'Taller / Práctica', 'aura' ), 'icon' => '🔬' ],
+            'activity' => [ 'label' => __( 'Actividad', 'aura' ), 'icon' => '🎯' ],
+            'break'    => [ 'label' => __( 'Receso', 'aura' ), 'icon' => '☕' ],
+            'other'    => [ 'label' => __( 'Otro', 'aura' ), 'icon' => '📍' ],
+        ];
+
+        $status_labels = [
+            'scheduled' => __( 'Programado', 'aura' ),
+            'completed' => __( 'Completado', 'aura' ),
+            'cancelled' => __( 'Cancelado', 'aura' ),
+            'postponed' => __( 'Pospuesto', 'aura' ),
+        ];
+
+        if ( ! empty( $rows ) ) {
+            foreach ( $rows as $ev ) {
+                $sid = (int) $ev->subject_id;
+                if ( ! isset( $events_by_subject[ $sid ] ) ) {
+                    $events_by_subject[ $sid ] = [];
+                }
+
+                $type_info = $type_labels[ $ev->event_type ] ?? [ 'label' => ucfirst( $ev->event_type ), 'icon' => '📌' ];
+                $start_ts  = strtotime( $ev->start_datetime );
+                $end_ts    = strtotime( $ev->end_datetime );
+
+                $date_str = $start_ts ? date_i18n( 'D, j M Y', $start_ts ) : substr( $ev->start_datetime, 0, 10 );
+                $time_str = ( $start_ts && $end_ts )
+                    ? date_i18n( $time_fmt, $start_ts ) . ' – ' . date_i18n( $time_fmt, $end_ts )
+                    : '';
+
+                $events_by_subject[ $sid ][] = [
+                    'id'             => (int) $ev->id,
+                    'title'          => $ev->title,
+                    'event_type'     => $ev->event_type,
+                    'type_label'     => $type_info['label'],
+                    'type_icon'      => $type_info['icon'],
+                    'start_datetime' => $ev->start_datetime,
+                    'end_datetime'   => $ev->end_datetime,
+                    'date_formatted' => $date_str,
+                    'time_formatted' => $time_str,
+                    'location'       => $ev->location ?: '',
+                    'online_url'     => $ev->online_url ?: '',
+                    'status'         => $ev->status,
+                    'status_label'   => $status_labels[ $ev->status ] ?? ucfirst( $ev->status ),
+                    'color'          => $ev->color ?: '#5D5FEF',
+                ];
+            }
+        }
+
+        foreach ( $subjects as &$s ) {
+            $sid = (int) ( $s->id ?? 0 );
+            $s->scheduled_events = $events_by_subject[ $sid ] ?? [];
+            $s->has_calendar     = ! empty( $s->scheduled_events );
+            $s->events_count     = count( $s->scheduled_events );
+        }
+        unset( $s );
+
+        return $subjects;
+    }
+
+    /**
      * Obtener una materia por ID
      *
      * @param int $id
@@ -185,7 +280,7 @@ class Aura_Calendar_Subjects {
             return null;
         }
 
-        $populated = self::populate_teachers( [ $row ] );
+        $populated = self::populate_scheduled_events( self::populate_teachers( [ $row ] ) );
         return ! empty( $populated ) ? $populated[0] : $row;
     }
 
