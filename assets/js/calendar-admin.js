@@ -3846,6 +3846,28 @@
                 metaHtml = '<div class="aura-tip-session-meta"><a href="' + escapeHtmlSafe(ev.online_url) + '" target="_blank" style="color:var(--aura-primary,#4f46e5);text-decoration:none;font-weight:600;">Enlace de sesión virtual &rarr;</a></div>';
             }
 
+            // Generación de la URL al día del calendario (#/u/0/r/day/YYYY/M/D)
+            var evY = 0, evM = 0, evD = 0;
+            if (ev.start_datetime) {
+                var dtParts = ev.start_datetime.split(' ')[0].split('T')[0].split('-');
+                if (dtParts.length === 3) {
+                    evY = parseInt(dtParts[0], 10);
+                    evM = parseInt(dtParts[1], 10);
+                    evD = parseInt(dtParts[2], 10);
+                }
+            }
+            if (!evY || !evM || !evD) {
+                evY = parseInt(ev.year_num, 10) || new Date().getFullYear();
+                evM = parseInt(ev.month_num, 10) || (new Date().getMonth() + 1);
+                evD = parseInt(ev.day_num, 10) || new Date().getDate();
+            }
+
+            var calBaseUrl = (window.auraCalData && window.auraCalData.calendar_url) ? window.auraCalData.calendar_url : 'admin.php?page=aura-calendar';
+            var dayRoutePath = '#/u/0/r/day/' + evY + '/' + evM + '/' + evD;
+            var dayFullUrl   = calBaseUrl + dayRoutePath;
+            var dayFormatted = evD + '/' + evM + '/' + evY;
+            var dateIso      = evY + '-' + (evM < 10 ? '0' : '') + evM + '-' + (evD < 10 ? '0' : '') + evD;
+
             itemsHtml += '<div class="aura-tip-session-card">';
             // Bloque de calendario tipográfico (Date Tile)
             itemsHtml += '  <div class="aura-tip-date-tile" style="border-top: 3px solid ' + escapeHtmlSafe(tileAccent) + ';">';
@@ -3868,6 +3890,14 @@
             itemsHtml += '    </div>';
             itemsHtml +=      metaHtml;
             itemsHtml += '  </div>';
+
+            // Botón directo a la vista de ese día en el calendario
+            itemsHtml += '  <a href="' + escapeHtmlSafe(dayFullUrl) + '" class="aura-tip-goto-day-btn" data-date="' + dateIso + '" title="Ver día ' + dayFormatted + ' en el calendario" aria-label="Abrir ' + dayFormatted + ' en el calendario">';
+            itemsHtml += '    <svg class="aura-tip-goto-icon-cal" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+            itemsHtml += '    <span class="aura-tip-goto-text">Ver día</span>';
+            itemsHtml += '    <svg class="aura-tip-goto-icon-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+            itemsHtml += '  </a>';
+
             itemsHtml += '</div>';
         });
 
@@ -3875,7 +3905,7 @@
 
         // 3. Posicionamiento inteligente idéntico a los tooltips de avatar
         var rect = $badge[0].getBoundingClientRect();
-        var tipW = 360;
+        var tipW = 380;
         var tipH = $subjTooltip.outerHeight() || 280;
 
         var left = rect.left + (rect.width / 2) - (tipW / 2);
@@ -3914,6 +3944,29 @@
 
     $(document).on('mouseleave', '#aura-subj-cal-tooltip', function() {
         hideSubjTooltip();
+    });
+
+    // Clic en el botón "Ver día" dentro del tooltip
+    $(document).on('click', '.aura-tip-goto-day-btn', function(e) {
+        var targetDate = $(this).data('date');
+        hideSubjTooltip();
+
+        // Si FullCalendar ya está cargado y visible en la vista actual
+        if (typeof calendar !== 'undefined' && calendar && $('#aura-main-calendar').length && $('#aura-main-calendar').is(':visible')) {
+            e.preventDefault();
+            calendar.changeView('timeGridDay', targetDate);
+            var dateParts = targetDate.split('-');
+            var y = parseInt(dateParts[0], 10);
+            var m = parseInt(dateParts[1], 10);
+            var d = parseInt(dateParts[2], 10);
+            var newHash = '#/u/0/r/day/' + y + '/' + m + '/' + d;
+            if (window.history && window.history.pushState) {
+                var cleanUrl = window.location.href.split('#')[0];
+                window.history.pushState(null, '', cleanUrl + newHash);
+            } else {
+                window.location.hash = newHash;
+            }
+        }
     });
 
     // ─────────────────────────────────────────────────────────────

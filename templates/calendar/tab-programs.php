@@ -207,7 +207,7 @@ body.aura-dark-mode .aura-av-more,
 .aura-subj-cal-tooltip {
     position: fixed !important;
     z-index: 999999 !important;
-    width: 360px;
+    width: 380px;
     max-width: calc(100vw - 28px);
     opacity: 0;
     visibility: hidden;
@@ -483,6 +483,45 @@ body.aura-dark-mode .aura-av-more,
     color: #334155;
 }
 
+/* Botón de acceso directo al día en el calendario */
+.aura-subj-cal-tooltip .aura-tip-goto-day-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    color: #4338ca !important;
+    text-decoration: none !important;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.aura-subj-cal-tooltip .aura-tip-goto-day-btn:hover {
+    background: #4f46e5 !important;
+    border-color: #4338ca !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 8px rgba(79, 70, 229, 0.28);
+    transform: translateY(-1px);
+}
+.aura-subj-cal-tooltip .aura-tip-goto-day-btn:active {
+    transform: translateY(0);
+}
+.aura-subj-cal-tooltip .aura-tip-goto-icon-cal,
+.aura-subj-cal-tooltip .aura-tip-goto-icon-arrow {
+    flex-shrink: 0;
+    display: inline-block;
+    transition: transform 0.18s ease;
+}
+.aura-subj-cal-tooltip .aura-tip-goto-day-btn:hover .aura-tip-goto-icon-arrow {
+    transform: translateX(2px);
+}
+
 /* Footer */
 .aura-subj-cal-tooltip .aura-tip-card-footer {
     padding: 9px 14px;
@@ -629,6 +668,26 @@ body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-session-meta strong,
 body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-session-meta strong,
 .dark .aura-subj-cal-tooltip .aura-tip-session-meta strong {
     color: #cbd5e1 !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-goto-day-btn,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-goto-day-btn,
+.dark .aura-subj-cal-tooltip .aura-tip-goto-day-btn,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-goto-day-btn {
+    background: #181b21 !important;
+    border-color: #3c4043 !important;
+    color: #a5b4fc !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+}
+
+body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-goto-day-btn:hover,
+body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-goto-day-btn:hover,
+.dark .aura-subj-cal-tooltip .aura-tip-goto-day-btn:hover,
+html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-goto-day-btn:hover {
+    background: #6366f1 !important;
+    border-color: #4f46e5 !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 8px rgba(99, 102, 241, 0.4) !important;
 }
 
 body.aura-dark-mode .aura-subj-cal-tooltip .aura-tip-card-footer,

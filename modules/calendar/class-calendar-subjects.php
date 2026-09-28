@@ -223,6 +223,7 @@ class Aura_Calendar_Subjects {
                 $date_str      = $start_ts ? date_i18n( 'D, j M Y', $start_ts ) : substr( $ev->start_datetime, 0, 10 );
                 $date_full     = $start_ts ? date_i18n( 'l, j \d\e F \d\e Y', $start_ts ) : $date_str;
                 $day_num       = $start_ts ? date_i18n( 'j', $start_ts ) : '';
+                $month_num     = $start_ts ? (int) date_i18n( 'n', $start_ts ) : 1;
                 $month_short   = $start_ts ? strtoupper( date_i18n( 'M', $start_ts ) ) : '';
                 $weekday_short = $start_ts ? ucfirst( date_i18n( 'D', $start_ts ) ) : '';
                 $year_num      = $start_ts ? date_i18n( 'Y', $start_ts ) : '';
@@ -242,6 +243,7 @@ class Aura_Calendar_Subjects {
                     'date_formatted' => $date_str,
                     'date_full'      => $date_full,
                     'day_num'        => $day_num,
+                    'month_num'      => $month_num,
                     'month_short'    => $month_short,
                     'weekday_short'  => $weekday_short,
                     'year_num'       => $year_num,

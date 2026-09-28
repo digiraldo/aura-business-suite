@@ -880,16 +880,75 @@ Esto se debía a una combinación de tres factores técnicos:
 
 
 ✅ En las Tarjetas de `Materias del Programa` que estan dentro de un `Programa Académico`, quiero que introduzca un icono cuando una materia esté asignada al calendario y caundo pase el puntero encima, me aparezca un tooltip enriquecido con html donde me muestre las fechas programadas de esa materia dentro del Programa
+✅ Que dentro del `.aura-tip-session-card`, del tooltip enriquecido, tenga un boton que me abra ese dia en que esta la clase en el calendario, ejemplo: `https://diserwp.test/wp-admin/admin.php?page=aura-calendar#/u/0/r/day/2026/9/23`
 
 
 
-- Analiza la pagina de `Nuevo Estudiante`, en la url `https://diserwp.test/wp-admin/admin.php?page=aura-students-new` y revisa si en la creacion de `Nuevo Formulario` en Tipo de formulario: Inscripción a Curso, al dar clic en:
+✅ Analiza la pagina de `Nuevo Estudiante`, en la url `https://diserwp.test/wp-admin/admin.php?page=aura-students-new` y revisa si en la creacion de `Nuevo Formulario` en Tipo de formulario: Inscripción a Curso, al dar clic en:
     `+ Insertar campos predeterminados`
     Formulario de Inscripción
     Los campos mapeados se sincronizan automáticamente con el Módulo de Estudiantes al enviar.
 Lo anterior, se sincroniza en el Módulo de Estudiantes, para administrar los estudiantes que se inscriben, cuales son aprobados, cuales se inscribieron dos veces para editar y dejar una sola inscripción, cuales renuncian o desisten despues de la inscripción, etc.?
 
+Searched for "Insertar campos predeterminados"
+Searched for "mapping_key"
+Viewed class-forms-submissions.php:270-380
+Searched for "aura_form_submission_saved"
+Viewed class-forms-enrollment.php:1-250
+Viewed class-forms-enrollment.php:251-450
+Viewed class-forms-enrollment.php:451-650
+Searched for "applicant"
+Searched for "postulante"
+Viewed enrollments.php:30-100
 
+**Sí, se sincroniza de forma automática e integral con el Módulo de Estudiantes**, funcionando como un embudo completo de admisiones y gestión académica.
+
+A continuación te detallo cómo opera el flujo internamente y cómo resuelve cada uno de los escenarios que mencionas:
+
+---
+
+### 1. ¿Cómo funciona la sincronización automática?
+
+Cuando en el constructor de formularios seleccionas **Tipo: Inscripción a Curso** y pulsas `+ Insertar campos predeterminados`:
+
+1. **Mapeo de datos:** En [builder.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/forms/builder.php) y [class-forms-builder.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/forms/class-forms-builder.php), se insertan los campos con sus respectivas claves de mapeo (`first_name`, `last_name`, `email`, `phone`, `birthdate`, `gender`, `city`, `country`, `motivation`).
+2. **Procesamiento del envío:** En [class-forms-submissions.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/forms/class-forms-submissions.php), al enviarse el formulario, se guarda la respuesta y se dispara el hook `aura_form_submission_saved`.
+3. **Puente al módulo de estudiantes:** [class-forms-enrollment.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/forms/class-forms-enrollment.php) intercepta el evento:
+   - **Crea el perfil del estudiante:** Lo registra en la tabla `wp_aura_students` con rol `student` y estado inicial **`applicant` (Postulante)**.
+   - **Crea la inscripción:** La registra en `wp_aura_student_enrollments` con estado **`pending` (Pendiente de aprobación)** asociada al curso seleccionado.
+
+---
+
+### 2. Gestión de los casos planteados
+
+#### A. Aprobación de postulantes
+* **Dónde se gestiona:** Desde **Formularios > Postulantes** (`admin.php?page=aura-forms-enrollments`) o en **Estudiantes > Postulantes**.
+* **Qué sucede al aprobar:**
+  1. El estado del estudiante cambia a **`approved`** y la inscripción pasa a **`active`**.
+  2. Se crea automáticamente el **usuario de WordPress** correspondiente (rol de alumno/suscriptor).
+  3. Se genera su contraseña segura y se le envía un correo electrónico de bienvenida con sus credenciales para acceder al portal del estudiante.
+
+#### B. Control de inscripciones duplicadas (se inscribió dos veces)
+* **Detección automática por correo y curso:** En la función `create_pending_enrollment()` de [class-forms-enrollment.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/forms/class-forms-enrollment.php#L140-L175):
+  - Si el estudiante vuelve a enviar el formulario con el mismo correo electrónico, el sistema **no duplica el perfil** del estudiante ni crea una segunda inscripción activa en el mismo curso: reutiliza la inscripción pendiente/activa existente y vincula el nuevo envío.
+* **Consolidación manual:** Si el usuario envió el formulario con dos correos distintos y generó dos registros, el administrador puede ir a **Estudiantes > Lista de Estudiantes** (`admin.php?page=aura-students`), ingresar al perfil duplicado y editarlo o eliminarlo (`deleted_at`) para dejar únicamente el perfil oficial.
+
+#### C. Renuncias o desistimientos posteriores
+* **Estado "Retirado" (`withdrawn`):** 
+  - Tanto desde la tabla de postulantes de formularios como desde el historial académico de la ficha del estudiante, existe la acción **"Marcar como retirado"**.
+  - Al marcarlo como retirado (`withdrawn`), la inscripción se desactiva, **se libera el cupo del curso** para otros alumnos y se bloquea la generación de cargos contables o asistencias futuras.
+* **Rechazo con motivo:** Si antes de ingresar desiste o no cumple con los requisitos, se puede **Rechazar** (`rejected`), permitiendo registrar el motivo del rechazo y notificando opcionalmente al postulante por correo.
+
+---
+
+### 3. Rutas de administración en WordPress
+
+| Acción | Menú en WordPress | URL de acceso |
+| :--- | :--- | :--- |
+| **Bandeja de postulantes de formularios** | Formularios > Postulantes | `wp-admin/admin.php?page=aura-forms-enrollments` |
+| **Lista general de estudiantes y postulantes** | Estudiantes > Todos los estudiantes | `wp-admin/admin.php?page=aura-students` |
+| **Inscripciones y matrículas por curso** | Estudiantes > Inscripciones | `wp-admin/admin.php?page=aura-students-enrollments` |
+| **Alta manual de estudiante** | Estudiantes > Nuevo Estudiante | `wp-admin/admin.php?page=aura-students-new` |
 
 
 
@@ -972,5 +1031,13 @@ La sincronización entre ambos módulos es fundamental por tres razones operativ
    - Generación de Date Tiles tipográficos para cada fecha agendada, orden cronológico y enlace directo al calendario en el footer.
    - Lógica de persistencia en hover que permite interactuar con el interior del tooltip (scroll y enlaces) sin cierres intempestivos.
 
-5. **Empaquetado:**
+5. **Botón de Apertura Directa de Día en el Calendario (`.aura-tip-goto-day-btn`):**
+   - Cada tarjeta de sesión (`.aura-tip-session-card`) cuenta ahora con un botón de acción rápida que enlaza al día exacto en que se imparte la clase en el calendario.
+   - La URL se genera de forma determinista con el hash `#/u/0/r/day/{año}/{mes}/{día}` (ejemplo: `https://diserwp.test/wp-admin/admin.php?page=aura-calendar#/u/0/r/day/2026/9/23`), cumpliendo con la arquitectura de rutas canónicas de Aura y Google Calendar.
+   - Soporte dual interactivo:
+     - Si el usuario se encuentra en otra vista o tab (ejemplo: `tab=programs`), el botón navega y abre la vista del día indicado.
+     - Si el calendario ya está presente y visible en el DOM (`#aura-main-calendar`), el evento click intercepta la acción, transiciona de forma fluida a la vista diaria (`timeGridDay`) en esa fecha con `calendar.changeView()`, actualiza el hash en el historial (`pushState`) y oculta suavemente el tooltip.
+   - Estilizado de diseño con micro-animación en hover (flecha `translateX`, sombra de elevación e inversión cromática tanto en Modo Claro como en Modo Oscuro).
+
+6. **Empaquetado:**
    - Ejecutado `php build-zip.php` actualizando el archivo final `aura-business-suite.zip`.
