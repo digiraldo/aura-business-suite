@@ -86,6 +86,7 @@ class Aura_Calendar_Programs {
 
         $sql = "SELECT p.*, u.display_name AS coordinator_name, u.user_email AS coordinator_email,
                        a.name AS area_name, a.slug AS area_code, a.color AS area_color,
+                       a.logo_id AS area_logo_id, a.icon AS area_icon,
                        (SELECT COUNT(*) FROM {$table_subj} s WHERE s.program_id = p.id AND s.deleted_at IS NULL) AS subjects_count,
                        (SELECT COUNT(*) FROM {$table_evts} e WHERE e.program_id = p.id AND e.deleted_at IS NULL) AS events_count
                 FROM {$table_prog} p
@@ -118,6 +119,12 @@ class Aura_Calendar_Programs {
         $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
 
         foreach ( $programs as &$p ) {
+            $area_logo_url = '';
+            if ( ! empty( $p->area_logo_id ) ) {
+                $area_logo_url = wp_get_attachment_image_url( (int) $p->area_logo_id, 'medium' ) ?: wp_get_attachment_url( (int) $p->area_logo_id ) ?: '';
+            }
+            $p->area_logo_url = $area_logo_url;
+
             $ids = [];
             if ( ! empty( $p->coordinators ) ) {
                 $decoded = json_decode( $p->coordinators, true );
@@ -220,7 +227,8 @@ class Aura_Calendar_Programs {
 
         $row = $wpdb->get_row( $wpdb->prepare(
             "SELECT p.*, u.display_name AS coordinator_name, u.user_email AS coordinator_email,
-                    a.name AS area_name, a.slug AS area_code, a.color AS area_color
+                    a.name AS area_name, a.slug AS area_code, a.color AS area_color,
+                    a.logo_id AS area_logo_id, a.icon AS area_icon
              FROM {$table_prog} p
              LEFT JOIN {$wpdb->users} u ON u.ID = p.coordinator_id
              LEFT JOIN {$table_areas} a ON a.id = p.area_id

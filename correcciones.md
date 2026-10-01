@@ -1201,3 +1201,32 @@ Continua de inmediato con la Fase 7 (generación y envío de invitaciones de cal
 
 
 - Las tarjetas de las materias salenapiladas una encima de la otra y no estan como antes, en la descripcionque aparece en el tooltip, en `.aura-tip-avatar-large`, muestra el logo del `Área Institucional`, si ha sido seleccionado alguno, ya que las areas tiene opcion de logo o imagen, al igual que en la inforamcion del Programa que aparece in icono o emogi y no el logo del area, por ejemplo en el programa de `Hadime Raíces 2026`, aparece un icono o emoji y no el logo: 🏢 Hadime Raíces.
+- Que los botones en las tarjetas de Editar y Eliminar, sean mas elegantes y redondos y un poco mas pequeños, usa Íconos WordPress (Dashicons)
+
+---
+
+### Solución Aplicada (Tarjetas de Materias, Logos de Área Institucional y Botones Redondos Dashicons)
+
+1. **Corrección de Tarjetas Apiladas (Grid CSS Restaurado)**:
+   - Se detectó que en el renderizado de la tarjeta de materia faltaba el cierre `</div><!-- /.aura-subject-card-top -->` tras el badge de fechas programadas, lo que provocaba que el nombre, avatares, footer y las siguientes materias del grid se anidaran indebidamente dentro del encabezado.
+   - Se restauró el cierre del contenedor `aura-subject-card-top` en [templates/calendar/tab-programs.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/tab-programs.php), restituyendo el flujo del grid CSS `.aura-subjects-grid` con `repeat(auto-fill, minmax(220px, 1fr))`.
+
+2. **Logo del Área Institucional en Badge del Programa y en Tooltip de Materia**:
+   - **Backend ([modules/calendar/class-calendar-programs.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-programs.php))**:
+     - Se incorporó la extracción de `a.logo_id AS area_logo_id` en las consultas de programas.
+     - En `populate_coordinators()`, se resuelve automáticamente la URL del archivo multimedia del logo (`wp_get_attachment_image_url($p->area_logo_id, 'medium') ?: wp_get_attachment_url($p->area_logo_id)`), guardándola en `$p->area_logo_url`.
+   - **Cabecera del Programa ([templates/calendar/tab-programs.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/tab-programs.php))**:
+     - El badge del área ahora renderiza la imagen `<img>` del logo institucional del área cuando existe (con fallback al emoji `🏢` si el área no tiene logo asignado).
+   - **Tooltip Enriquecido de Materia ([assets/js/calendar-admin.js](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js))**:
+     - Se pasan los atributos `data-area-logo` y `data-area-name` al elemento `.has-desc-tooltip`.
+     - En `showSubjDescTooltip()`, si el programa/área posee logo institucional, se inyecta en `#aura-subj-desc-tip-avatar` (`.aura-tip-avatar-large`) la imagen del logo con estilo cuadrado institucional (`object-fit: cover; border-radius: 10px; background: #ffffff;`). Si no dispone de logo, se mantiene el fallback dinámico con las iniciales de la materia y su color pedagógico.
+
+3. **Botones de Editar y Eliminar Redondos y Elegantes con Dashicons**:
+   - Se reemplazaron los antiguos botones con emojis por botones circulares compactos `.aura-subj-action-btn` en las tarjetas de materias:
+     - **Editar**: `<button class="aura-subj-action-btn btn-edit-subject"><span class="dashicons dashicons-edit"></span></button>`.
+     - **Eliminar**: `<button class="aura-subj-action-btn is-danger btn-delete-subject"><span class="dashicons dashicons-trash"></span></button>`.
+   - Se crearon reglas de estilo CSS dedicadas:
+     - Diámetro de 26px, borde sutil circular (`border-radius: 50%`), sombra de elevación mínima.
+     - Íconos Dashicons centrados de 14px.
+     - Efecto hover con micro-escalado (`transform: scale(1.08)`), color de acento primario (`#6366f1`) para edición y rojo de alerta (`#ef4444`) para eliminación.
+     - Total compatibilidad con Aura Dark Mode y WP Dark Mode (`rgba(255,255,255,0.08)` con bordes translúcidos).

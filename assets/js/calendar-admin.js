@@ -5034,16 +5034,33 @@
         var subjHours  = parseInt($target.data('subj-hours'), 10) || 0;
         var subjModule = $target.data('subj-module') || '';
         var progName   = $target.data('prog-name') || '';
+        var areaLogo   = $target.data('area-logo') || '';
+        var areaName   = $target.data('area-name') || '';
 
-        // 1. Cabecera
+        // 1. Cabecera (Logo institucional del área si existe, o iniciales de la materia)
         var $avatar = $('#aura-subj-desc-tip-avatar');
         if ($avatar.length) {
-            $avatar.css({
-                'background': subjColor,
-                'border-color': 'rgba(255,255,255,0.2)'
-            });
-            var avatarText = subjCode ? subjCode.substring(0, 4) : (subjName ? subjName.charAt(0).toUpperCase() : 'M');
-            $avatar.text(avatarText);
+            if (areaLogo) {
+                $avatar.css({
+                    'background': '#ffffff',
+                    'border-color': 'rgba(255,255,255,0.35)',
+                    'padding': '0',
+                    'overflow': 'hidden',
+                    'display': 'flex',
+                    'align-items': 'center',
+                    'justify-content': 'center'
+                });
+                $avatar.html('<img src="' + escapeHtmlSafe(areaLogo) + '" alt="' + escapeHtmlSafe(areaName || subjName) + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px;display:block;">');
+            } else {
+                $avatar.css({
+                    'background': subjColor,
+                    'border-color': 'rgba(255,255,255,0.2)',
+                    'padding': '',
+                    'overflow': ''
+                });
+                var avatarText = subjCode ? subjCode.substring(0, 4) : (subjName ? subjName.charAt(0).toUpperCase() : 'M');
+                $avatar.text(avatarText);
+            }
         }
 
         $('#aura-subj-desc-tip-name').text(subjName);

@@ -1013,8 +1013,69 @@ html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-subj-desc-box {
 .aura-subject-card-footer {
     display: flex; justify-content: space-between; align-items: center; margin-top: 8px;
 }
-.aura-subject-card-actions { display: flex; gap: 3px; opacity: 0; transition: opacity .18s; }
+.aura-subject-card-actions { display: flex; gap: 4px; opacity: 0; transition: opacity .18s; align-items: center; }
 .aura-subject-card:hover .aura-subject-card-actions { opacity: 1; }
+
+.aura-subj-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--aura-border, #e2e8f0);
+    background: var(--aura-surface-alt, #f8fafc);
+    color: var(--aura-text-secondary, #64748b);
+    cursor: pointer;
+    padding: 0;
+    transition: all .15s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.aura-subj-action-btn .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+}
+.aura-subj-action-btn:hover {
+    background: var(--aura-primary, #6366f1);
+    border-color: var(--aura-primary, #6366f1);
+    color: #ffffff;
+    transform: scale(1.08);
+}
+.aura-subj-action-btn.is-danger {
+    color: #ef4444;
+}
+.aura-subj-action-btn.is-danger:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff;
+}
+
+body.aura-dark-mode .aura-subj-action-btn,
+body[data-theme="dark"] .aura-subj-action-btn,
+.dark .aura-subj-action-btn,
+html.wp-dark-mode-active .aura-subj-action-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: var(--aura-text-secondary, #94a3b8);
+}
+body.aura-dark-mode .aura-subj-action-btn:hover,
+body[data-theme="dark"] .aura-subj-action-btn:hover,
+.dark .aura-subj-action-btn:hover,
+html.wp-dark-mode-active .aura-subj-action-btn:hover {
+    background: var(--aura-primary, #6366f1);
+    border-color: var(--aura-primary, #6366f1);
+    color: #ffffff;
+}
+body.aura-dark-mode .aura-subj-action-btn.is-danger:hover,
+body[data-theme="dark"] .aura-subj-action-btn.is-danger:hover,
+.dark .aura-subj-action-btn.is-danger:hover,
+html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff;
+}
 
 /* ── Export dropdown ────────────────────────────────────────────── */
 .aura-export-dropdown { position: relative; display: inline-flex; }
@@ -1183,8 +1244,13 @@ html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-subj-desc-box {
                             <?php endif; ?>
                             <?php if ( ! empty( $p->area_name ) ) :
                                 $ac = ! empty( $p->area_color ) ? $p->area_color : '#6366f1'; ?>
-                                <span class="adp-badge" style="background:<?php echo esc_attr($ac.'18'); ?>;color:<?php echo esc_attr($ac); ?>;border:1px solid <?php echo esc_attr($ac.'35'); ?>;font-size:11px;">
-                                    🏢 <?php echo esc_html( $p->area_name ); ?>
+                                <span class="adp-badge" style="background:<?php echo esc_attr($ac.'18'); ?>;color:<?php echo esc_attr($ac); ?>;border:1px solid <?php echo esc_attr($ac.'35'); ?>;font-size:11px;display:inline-flex;align-items:center;gap:5px;">
+                                    <?php if ( ! empty( $p->area_logo_url ) ) : ?>
+                                        <img src="<?php echo esc_url( $p->area_logo_url ); ?>" alt="<?php echo esc_attr( $p->area_name ); ?>" style="width:16px;height:16px;border-radius:4px;object-fit:cover;flex-shrink:0;">
+                                    <?php else : ?>
+                                        <span>🏢</span>
+                                    <?php endif; ?>
+                                    <?php echo esc_html( $p->area_name ); ?>
                                 </span>
                             <?php endif; ?>
                             <?php if ( ! empty( $p->academic_period ) ) : ?>
@@ -1370,6 +1436,8 @@ html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-subj-desc-box {
                                                 <span class="aura-subj-cal-count"><?php echo $ev_count; ?></span>
                                             </span>
                                         <?php endif; ?>
+                                    </div><!-- /.aura-subject-card-top -->
+
                                     <div class="aura-subject-card-name has-desc-tooltip"
                                          tabindex="0"
                                          role="button"
@@ -1380,6 +1448,8 @@ html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-subj-desc-box {
                                          data-subj-module="<?php echo esc_attr( $s->module ?? '' ); ?>"
                                          data-subj-color="<?php echo esc_attr( $s_color ); ?>"
                                          data-prog-name="<?php echo esc_attr( $p->name ); ?>"
+                                         data-area-logo="<?php echo esc_attr( $p->area_logo_url ?? '' ); ?>"
+                                         data-area-name="<?php echo esc_attr( $p->area_name ?? '' ); ?>"
                                          title="<?php esc_attr_e( 'Ver descripción de la materia', 'aura' ); ?>">
                                         <?php echo esc_html( $s->name ); ?>
                                     </div>
@@ -1437,12 +1507,18 @@ html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-subj-desc-box {
                                         </div>
                                         <div class="aura-subject-card-actions">
                                             <?php if ( $can_edit ) : ?>
-                                                <button type="button" class="btn btn-ghost btn-edit-subject"
+                                                <button type="button" class="aura-subj-action-btn btn-edit-subject"
                                                         data-subject-id="<?php echo esc_attr($s->id); ?>"
-                                                        style="padding:3px 7px;font-size:12px;" title="<?php esc_attr_e('Editar','aura'); ?>">✏️</button>
-                                                <button type="button" class="btn btn-ghost btn-delete-subject"
+                                                        title="<?php esc_attr_e('Editar materia','aura'); ?>"
+                                                        aria-label="<?php esc_attr_e('Editar materia','aura'); ?>">
+                                                    <span class="dashicons dashicons-edit"></span>
+                                                </button>
+                                                <button type="button" class="aura-subj-action-btn is-danger btn-delete-subject"
                                                         data-subject-id="<?php echo esc_attr($s->id); ?>"
-                                                        style="padding:3px 7px;font-size:12px;color:#ef4444;" title="<?php esc_attr_e('Eliminar','aura'); ?>">🗑️</button>
+                                                        title="<?php esc_attr_e('Eliminar materia','aura'); ?>"
+                                                        aria-label="<?php esc_attr_e('Eliminar materia','aura'); ?>">
+                                                    <span class="dashicons dashicons-trash"></span>
+                                                </button>
                                             <?php endif; ?>
                                         </div>
                                     </div>
