@@ -1339,3 +1339,29 @@ Se implementó de forma completa y nativa el subsistema de generación y envío 
    - **Interactividad JavaScript (assets/js/calendar-admin.js)**:
      - Carga asíncrona de enlaces de calendario en `openEventDetail()`.
      - Manejadores de envío de invitaciones con feedback por toast y spinner en botón submit.
+
+
+### Fase 8: Empaquetado y Verificación de Despliegue en Hostinger
+
+Se ejecutó la auditoría de despliegue y empaquetado para garantizar un funcionamiento perfecto en entornos de producción Hostinger (Linux / Cloud / cPanel):
+
+1. **Verificación de Compatibilidad de Rutas y Separadores Linux**:
+   - Todas las llamadas a require/include utilizan la constante `AURA_PLUGIN_DIR` con barras normales (`/`).
+   - El script constructor `build-zip.php` normaliza todas las rutas internas del archivo ZIP mediante `str_replace("\\", "/", $relativePath)`.
+   - Se verificó la ausencia total de backslashes `\\` en el índice de archivos del ZIP.
+
+2. **Depuración de BOM (Byte Order Mark)**:
+   - Verificación de 0 BOMs en archivos PHP, CSS y JS, eliminando cualquier riesgo de error `headers already sent` o salidas prematuras en respuestas AJAX/REST.
+
+3. **Migraciones Idempotentes y Auto-Reparación de Base de Datos**:
+   - `Aura_Calendar_Setup::init()` ejecuta verificaciones automáticas no destructivas (`SHOW COLUMNS`, `ALTER TABLE ... ADD COLUMN ...`) para todas las columnas requeridas (`module_name`, `module_order`, `external_teachers`, `external_coordinators`, `is_external`, `external_name`, `external_email`, `external_phone`, `external_org`, `third_party_id`, `avatar_url`, etc.).
+   - Conservación del endpoint AJAX `aura_cal_repair_db` para forzar re-sincronización manual del esquema bajo demanda.
+
+4. **Actualización de Versión Oficial**:
+   - Actualización de versión a **1.8.3** en `aura-business-suite.php` (`AURA_VERSION`) y `readme.txt` (`Stable tag: 1.8.3`).
+
+5. **Auditoría de Integridad del ZIP Final (`aura-business-suite.zip`)**:
+   - **Archivos empaquetados**: 3,305 archivos.
+   - **Tamaño**: 21.28 MB (incluyendo librerías optimizadas de Google Drive y Calendar en `vendor/`).
+   - **Exclusiones verificadas**: Repositorio `.git`, artefactos temporales `.tmp`, `.bak`, `.DS_Store`, `Thumbs.db` y directorios de desarrollo/pruebas.
+   - **Prefijo de raíz**: 100% de los archivos ubicados bajo `aura-business-suite/` para instalación estándar directa desde el panel de WordPress.
