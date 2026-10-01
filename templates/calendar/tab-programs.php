@@ -52,19 +52,69 @@ function aura_avatar_stack_item( int $user_id, string $role_label = '' ): string
  * con soporte para avatares de usuario WP si están vinculados o se vinculan a futuro.
  */
 function aura_avatar_stack_item_external( array $ext, string $default_role = '' ): string {
-    $name = esc_attr( $ext['commercial_name'] ?? $ext['name'] ?? '' );
-    if ( empty( $name ) ) return '';
-    $email = esc_attr( $ext['email'] ?? '' );
-    $role = esc_attr( $ext['role'] ?? $default_role );
-    $avatar_url = ! empty( $ext['avatar_url'] ) ? esc_url( $ext['avatar_url'] ) : '';
-    $is_wp = ! empty( $ext['is_wp_user'] ) || ! empty( $ext['wp_user_id'] );
+    $raw_name = ! empty( $ext['commercial_name'] ) ? $ext['commercial_name'] : ( ! empty( $ext['name'] ) ? $ext['name'] : ( $ext['external_name'] ?? '' ) );
+    $name     = esc_attr( trim( $raw_name ) );
+    if ( empty( $name ) ) {
+        return '';
+    }
+    $email = esc_attr( $ext['email'] ?? ( $ext['external_email'] ?? '' ) );
+    $role  = esc_attr( $ext['role'] ?? $default_role );
+
+    $avatar_url = ! empty( $ext['avatar_url'] ) ? esc_url( $ext['avatar_url'] ) : ( ! empty( $ext['avatar'] ) ? esc_url( $ext['avatar'] ) : '' );
+    if ( empty( $avatar_url ) && ! empty( $ext['logo_url'] ) ) {
+        $avatar_url = esc_url( $ext['logo_url'] );
+    }
+
+    $wp_uid = ! empty( $ext['wp_user_id'] ) ? intval( $ext['wp_user_id'] ) : ( ! empty( $ext['user_id'] ) ? intval( $ext['user_id'] ) : 0 );
+    if ( empty( $wp_uid ) && ! empty( $email ) ) {
+        $u_by_email = get_user_by( 'email', $email );
+        if ( $u_by_email ) {
+            $wp_uid = (int) $u_by_email->ID;
+        }
+    }
+
+    if ( $wp_uid > 0 && empty( $avatar_url ) ) {
+        $raw_av = get_avatar_url( $wp_uid );
+        if ( ! empty( $raw_av ) ) {
+            if ( str_starts_with( $raw_av, ':/' ) ) {
+                $raw_av = site_url( substr( $raw_av, 1 ) );
+            }
+            $avatar_url = esc_url( $raw_av );
+        }
+    }
+
+    $tp_id = ! empty( $ext['third_party_id'] ) ? intval( $ext['third_party_id'] ) : 0;
+    if ( empty( $avatar_url ) && $tp_id > 0 ) {
+        global $wpdb;
+        $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_tp}'" ) === $t_tp ) {
+            $tp_rec = $wpdb->get_row( $wpdb->prepare( "SELECT wp_user_id, logo_id FROM {$t_tp} WHERE id = %d", $tp_id ) );
+            if ( $tp_rec ) {
+                if ( ! empty( $tp_rec->wp_user_id ) ) {
+                    $wp_uid = (int) $tp_rec->wp_user_id;
+                    $raw_av = get_avatar_url( $wp_uid );
+                    if ( ! empty( $raw_av ) ) {
+                        if ( str_starts_with( $raw_av, ':/' ) ) {
+                            $raw_av = site_url( substr( $raw_av, 1 ) );
+                        }
+                        $avatar_url = esc_url( $raw_av );
+                    }
+                }
+                if ( empty( $avatar_url ) && ! empty( $tp_rec->logo_id ) ) {
+                    $avatar_url = esc_url( wp_get_attachment_image_url( (int) $tp_rec->logo_id, 'thumbnail' ) ?: wp_get_attachment_url( (int) $tp_rec->logo_id ) );
+                }
+            }
+        }
+    }
+
+    $is_wp = ( $wp_uid > 0 ) || ! empty( $ext['is_wp_user'] );
     $initials = strtoupper( mb_substr( $name, 0, 2 ) );
     
-    $role_label = $role;
+    $role_label = $role ?: $default_role;
     if ( ! empty( $ext['organization'] ) ) {
         $role_label .= ' (' . $ext['organization'] . ')';
     }
-    if ( ! empty( $ext['third_party_id'] ) ) {
+    if ( ! empty( $ext['third_party_id'] ) || $is_wp ) {
         $role_label .= ' • ' . ( $is_wp ? __( 'Usuario WP / Tercero', 'aura' ) : __( 'Tercero Catálogo', 'aura' ) );
     }
 

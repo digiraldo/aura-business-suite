@@ -1230,3 +1230,36 @@ Continua de inmediato con la Fase 7 (generación y envío de invitaciones de cal
      - Íconos Dashicons centrados de 14px.
      - Efecto hover con micro-escalado (`transform: scale(1.08)`), color de acento primario (`#6366f1`) para edición y rojo de alerta (`#ef4444`) para eliminación.
      - Total compatibilidad con Aura Dark Mode y WP Dark Mode (`rgba(255,255,255,0.08)` con bordes translúcidos).
+
+
+
+
+- Correccion de los terceros, cuando agrego un tercero como profesor, instructor o docente, desde Docentes Externos / Catálogo de Terceros, no aparecen en los `Stack + Ring Animado`de:
+    - En Programas en <!-- Avatares de coordinadores (Internos + Terceros / Entidades) --> `.aura-avatar-group`.
+    - En las tarjetas de Materias del Programa en <!-- Profesores en avatar stack (Internos + Terceros / Externos) --> `.aura-avatar-group`.
+    - En <!-- Tarjeta Destacada de Profesores con Avatar Grande (44px) + Ring Animado y Stack --> `.aura-avatar-stack`.
+- Solo aparecen los seleccionados de Profesor(es) Titular(es) o Profesor(es) o Instructor(es) a Cargo donde se selecciona el Titular o Principal.
+
+---
+
+### Solución Aplicada (Terceros y Docentes Externos en Avatar Stacks y Ring Animado)
+
+1. **Causa Raíz Identificada y Corregida**:
+   - **Operador Null Coalescing (`??`) sobre cadenas vacías**: En `aura_avatar_stack_item_external()` y en los módulos de programas y materias, se utilizaba `$name = $ext['commercial_name'] ?? $ext['name']`. Si un tercero (ej: Melody Vidal o Sandra Mosquera) tiene la clave `'commercial_name' => ''`, el operador `??` no pasaba al nombre personal porque la clave existe y no es `null`. Esto generaba cadenas vacías y omitía completamente a los terceros del avatar stack. Se implementó una resolución rigurosa con `!empty()`.
+   - **Búsqueda exhaustiva de fotos de perfil**: Cuando un tercero externo no disponía de `avatar_url` explícita, el sistema no buscaba si su `email` coincidía con un usuario WP registrado, ni consultaba si `wp_user_id` o `third_party_id` tenían foto en `wp_aura_students` o `wp_aura_finance_third_parties`. Se implementó un algoritmo de resolución multinivel y normalización de URLs malformadas de WP.
+   - **Falta de columna `avatar_url` en eventos**: La tabla `wp_aura_cal_event_instructors` no persistía la columna `avatar_url` para terceros. Se agregó la columna a la estructura de la base de datos MySQL mediante migración en runtime y se ejecutó en la base de datos de producción local.
+   - **Fallback automático a la materia**: Si un evento agendado no tenía instructores asignados explícitamente en la tabla de cruce de eventos, `get_events()` y `get()` ahora consultan y heredan de inmediato los profesores y docentes externos asignados a la materia vinculada.
+   - **Sincronización en el modal de agendar evento**: Se agregó un listener a `#evt-subject-id` para que al seleccionar una materia, se precarguen automáticamente los docentes externos del Catálogo de Terceros en `currentEventExternalInstructors`.
+
+2. **Archivos Modificados**:
+   - [templates/calendar/tab-programs.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/calendar/tab-programs.php): Corrección completa de `aura_avatar_stack_item_external()`.
+   - [modules/calendar/class-calendar-programs.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-programs.php): Enriquecimiento de `populate_coordinators()` y persistencia de `avatar_url` en `save()`.
+   - [modules/calendar/class-calendar-subjects.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-subjects.php): Enriquecimiento de `populate_teachers()` y persistencia de `avatar_url` en `save()`.
+   - [modules/calendar/class-calendar-setup.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-setup.php): Adición de columna `avatar_url` e índice `third_party_id` en `wp_aura_cal_event_instructors`.
+   - [modules/calendar/class-calendar-events.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-events.php): Persistencia en `save()`, resolución y fallback a materia en `get_events()` y `get()`.
+   - [assets/js/calendar-admin.js](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js): Renderizado con Ring Animado e iniciales/fotos en `openEventDetail()`, y auto-precarga de terceros al cambiar materia `#evt-subject-id`.
+
+
+- Requiero que el calendario del backend y del portal de profesores y estudiantes en el frontend, su visulizacion dentro de cada dia, sea igual al Calendario de Google, ya que los eventos largos que aparecen con una linea larga horizontal, quedan por encima unos de otros latgos horizontales y quedan por encima de los eventos cortos del dia en la vista de mes, analiza tambien si pasa en la vista de semana y dia y corrige tod, conserva el color asignado a cada evento y que muestre el avatar del usuario titular o principal
+
+  

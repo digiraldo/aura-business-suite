@@ -2047,6 +2047,7 @@
     function loadSubjectsForProgram(progId, selectedSubjectId) {
         var $subSelect = $('#evt-subject-id');
         $subSelect.html('<option value="">General / Sin materia específica</option>');
+        window.auraCurrentProgramSubjects = [];
 
         if (progId) {
             $.post(auraCalData.ajax_url, {
@@ -2055,11 +2056,14 @@
                 program_id: progId
             }, function(res) {
                 if (res && res.success && res.data.subjects) {
+                    window.auraCurrentProgramSubjects = res.data.subjects;
                     $.each(res.data.subjects, function(i, s) {
-                        $subSelect.append($('<option>', {
+                        var $opt = $('<option>', {
                             value: s.id,
                             text: s.name + (s.code ? ' (' + s.code + ')' : '')
-                        }));
+                        });
+                        $opt.data('subject', s);
+                        $subSelect.append($opt);
                     });
                     if (selectedSubjectId) {
                         $subSelect.val(selectedSubjectId);
@@ -2068,6 +2072,50 @@
             });
         }
     }
+
+    // Auto-sugerir profesores y docentes externos del Catálogo de Terceros al seleccionar materia
+    $(document).on('change', '#evt-subject-id', function() {
+        var subjectId = parseInt($(this).val(), 10);
+        if (!subjectId) return;
+
+        var subjectsList = window.auraCurrentProgramSubjects || [];
+        var subj = subjectsList.find(function(s) { return parseInt(s.id, 10) === subjectId; });
+        if (!subj) {
+            var optData = $(this).find('option:selected').data('subject');
+            if (optData) {
+                subj = typeof optData === 'string' ? JSON.parse(optData) : optData;
+            }
+        }
+
+        if (subj) {
+            var currentChecked = $('input[name="teacher_ids[]"]:checked').length;
+            var isNewEvent = !$('#evt-id').val() || $('#evt-id').val() === '0';
+
+            // Precargar checkboxes de profesores si aún no se han marcado o si es evento nuevo
+            if (currentChecked === 0 || isNewEvent) {
+                renderTeacherCheckboxes(subj.teacher_ids || [], subj.default_teacher_id || 0);
+            }
+
+            // Precargar docentes externos de la materia si la lista está vacía o si es evento nuevo
+            if ((currentEventExternalInstructors.length === 0 || isNewEvent) && Array.isArray(subj.external_teachers_list) && subj.external_teachers_list.length > 0) {
+                currentEventExternalInstructors = subj.external_teachers_list.map(function(ext) {
+                    var extName = ext.commercial_name || ext.name || ext.external_name || 'Docente Externo';
+                    return {
+                        id: ext.wp_user_id || ext.user_id || 0,
+                        name: extName,
+                        email: ext.email || '',
+                        phone: ext.phone || '',
+                        org: ext.commercial_name || ext.org || '',
+                        third_party_id: ext.third_party_id || null,
+                        is_external: 1,
+                        avatar: ext.avatar_url || ext.avatar || '',
+                        avatar_url: ext.avatar_url || ext.avatar || ''
+                    };
+                });
+                renderExternalInstructorsList();
+            }
+        }
+    });
 
     function openEventEditor(data) {
         data = data || {};
@@ -2691,13 +2739,15 @@
             var otherInsts = p.instructors.slice(1);
 
             var primaryAvHtml = '';
-            if (primaryInst.avatar) {
+            var pAvUrl = primaryInst.avatar_url || primaryInst.avatar || '';
+            if (pAvUrl) {
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
-                    '<img src="' + escapeHtml(primaryInst.avatar) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" alt="' + escapeHtml(primaryInst.name) + '" />' +
+                    '<img src="' + escapeHtml(pAvUrl) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" alt="' + escapeHtml(primaryInst.name) + '" />' +
                 '</div>';
             } else if (primaryInst.is_external) {
+                var initExt = escapeHtml((primaryInst.name || 'D').charAt(0).toUpperCase());
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
-                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;" title="' + escapeHtml(primaryInst.external_org ? primaryInst.external_org : 'Instructor Externo') + '">🏢</div>' +
+                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;" title="' + escapeHtml(primaryInst.external_org ? primaryInst.external_org : 'Instructor Externo') + '">' + initExt + '</div>' +
                 '</div>';
             } else {
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
@@ -2711,10 +2761,12 @@
             var remainingCount = otherInsts.length - visibleOthers.length;
 
             visibleOthers.forEach(function(inst) {
-                if (inst.avatar) {
-                    stackedAvatarsHtml += '<img src="' + escapeHtml(inst.avatar) + '" class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" alt="' + escapeHtml(inst.name) + '" title="' + escapeHtml(inst.name) + '" />';
+                var oAvUrl = inst.avatar_url || inst.avatar || '';
+                if (oAvUrl) {
+                    stackedAvatarsHtml += '<img src="' + escapeHtml(oAvUrl) + '" class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" alt="' + escapeHtml(inst.name) + '" title="' + escapeHtml(inst.name + (inst.is_external ? ' [Externo]' : '')) + '" />';
                 } else if (inst.is_external) {
-                    stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;background:#0ea5e9;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" title="' + escapeHtml(inst.name + (inst.external_org ? ' (' + inst.external_org + ')' : ' [Externo]')) + '">🏢</div>';
+                    var initExtO = escapeHtml((inst.name || 'D').charAt(0).toUpperCase());
+                    stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;background:#0ea5e9;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" title="' + escapeHtml(inst.name + (inst.external_org ? ' (' + inst.external_org + ')' : ' [Externo]')) + '">' + initExtO + '</div>';
                 } else {
                     var init = escapeHtml((inst.name || 'P').charAt(0).toUpperCase());
                     stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" title="' + escapeHtml(inst.name) + '">' + init + '</div>';
@@ -2737,8 +2789,9 @@
             $('#det-teachers-names').text(namesTxt);
             $('#box-det-teachers').show();
         } else if (p.primary_name) {
-            var singleAv = p.primary_avatar
-                ? '<div class="aura-avatar-ring-container"><img src="' + escapeHtml(p.primary_avatar) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" /></div>'
+            var singleAvUrl = p.primary_avatar || '';
+            var singleAv = singleAvUrl
+                ? '<div class="aura-avatar-ring-container"><img src="' + escapeHtml(singleAvUrl) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" /></div>'
                 : '<div class="aura-avatar-ring-container"><div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;background:rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;">👨‍🏫</div></div>';
             $('#det-teachers-avatars').html(singleAv);
             $('#det-teachers-names').text(p.primary_name);

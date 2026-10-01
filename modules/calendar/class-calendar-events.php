@@ -250,6 +250,7 @@ class Aura_Calendar_Events {
                        p.name AS program_name, p.code AS program_code, p.color AS program_color, p.description AS program_description,
                        s.name AS subject_name, s.code AS subject_code, s.color AS subject_color, s.description AS subject_description,
                        s.module_name, s.module_order,
+                       s.default_teacher_id AS subject_default_teacher_id, s.teachers AS subject_teachers, s.external_teachers AS subject_external_teachers,
                        (SELECT COUNT(*) FROM {$table_att} a WHERE a.event_id = e.id) AS attendance_count
                 FROM {$table_evts} e
                 LEFT JOIN {$table_prog} p ON p.id = e.program_id
@@ -318,7 +319,7 @@ class Aura_Calendar_Events {
                 $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
                 if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_tp}'" ) === $t_tp ) {
                     $in_tp = implode( ',', array_map( 'intval', $tp_ids ) );
-                    $tp_records = $wpdb->get_results( "SELECT id, wp_user_id, logo_id, commercial_name, full_name FROM {$t_tp} WHERE id IN ({$in_tp})", OBJECT_K );
+                    $tp_records = $wpdb->get_results( "SELECT id, wp_user_id, logo_id, commercial_name, full_name, email, phone FROM {$t_tp} WHERE id IN ({$in_tp})", OBJECT_K );
                     if ( is_array( $tp_records ) ) {
                         $tp_map = $tp_records;
                     }
@@ -339,24 +340,51 @@ class Aura_Calendar_Events {
                         ? $custom_photos[ $real_id ]
                         : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
                 } else {
+                    if ( ! empty( $ir->avatar_url ) ) {
+                        $av_url = $ir->avatar_url;
+                    }
+
                     if ( $real_id > 0 ) {
                         $is_wp_user = true;
-                        $av_url     = ! empty( $custom_photos[ $real_id ] )
-                            ? $custom_photos[ $real_id ]
-                            : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                        if ( empty( $av_url ) ) {
+                            $av_url = ! empty( $custom_photos[ $real_id ] )
+                                ? $custom_photos[ $real_id ]
+                                : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                        }
                     } elseif ( $tp_info ) {
                         if ( ! empty( $tp_info->wp_user_id ) && (int) $tp_info->wp_user_id > 0 ) {
                             $is_wp_user = true;
                             $real_id    = (int) $tp_info->wp_user_id;
-                            $av_url     = get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
-                        } elseif ( ! empty( $tp_info->logo_id ) ) {
+                            if ( empty( $av_url ) ) {
+                                $av_url = ! empty( $custom_photos[ $real_id ] )
+                                    ? $custom_photos[ $real_id ]
+                                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                            }
+                        } elseif ( ! empty( $tp_info->logo_id ) && empty( $av_url ) ) {
                             $av_url = wp_get_attachment_image_url( (int) $tp_info->logo_id, 'thumbnail' ) ?: ( wp_get_attachment_url( (int) $tp_info->logo_id ) ?: '' );
+                        }
+                    }
+
+                    if ( empty( $av_url ) && ! empty( $ir->external_email ) ) {
+                        $u_by_email = get_user_by( 'email', $ir->external_email );
+                        if ( $u_by_email ) {
+                            $is_wp_user = true;
+                            $real_id    = (int) $u_by_email->ID;
+                            $av_url     = ! empty( $custom_photos[ $real_id ] )
+                                ? $custom_photos[ $real_id ]
+                                : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                        } else {
+                            $av_url = get_avatar_url( $ir->external_email, [ 'size' => 64, 'default' => 'identicon' ] );
                         }
                     }
                 }
 
-                $inst_name  = $is_ext ? ( $ir->external_name ?: __( 'Instructor Externo', 'aura' ) ) : ( $ir->display_name ?: __( 'Profesor', 'aura' ) );
-                $inst_email = $is_ext ? $ir->external_email : $ir->user_email;
+                if ( ! empty( $av_url ) && str_starts_with( $av_url, ':/' ) ) {
+                    $av_url = site_url( substr( $av_url, 1 ) );
+                }
+
+                $inst_name  = $is_ext ? ( $ir->external_name ?: ( ( $tp_info && ! empty( $tp_info->commercial_name ) ) ? $tp_info->commercial_name : ( ( $tp_info && ! empty( $tp_info->full_name ) ) ? $tp_info->full_name : __( 'Instructor Externo', 'aura' ) ) ) ) : ( $ir->display_name ?: __( 'Profesor', 'aura' ) );
+                $inst_email = $is_ext ? ( $ir->external_email ?: ( ( $tp_info && ! empty( $tp_info->email ) ) ? $tp_info->email : '' ) ) : $ir->user_email;
 
                 $instructors_by_event[ $ir->event_id ][] = [
                     'id'             => $real_id,
@@ -367,10 +395,10 @@ class Aura_Calendar_Events {
                     'is_wp_user'     => $is_wp_user,
                     'wp_user_id'     => $is_wp_user ? $real_id : null,
                     'third_party_id' => $tp_id ?: null,
-                    'external_name'  => $ir->external_name ?? '',
-                    'external_email' => $ir->external_email ?? '',
-                    'external_phone' => $ir->external_phone ?? '',
-                    'external_org'   => $ir->external_org ?? '',
+                    'external_name'  => $inst_name,
+                    'external_email' => $inst_email,
+                    'external_phone' => $ir->external_phone ?? ( ( $tp_info && ! empty( $tp_info->phone ) ) ? $tp_info->phone : '' ),
+                    'external_org'   => $ir->external_org ?? ( ( $tp_info && ! empty( $tp_info->commercial_name ) ) ? $tp_info->commercial_name : '' ),
                     'avatar'         => $av_url,
                     'avatar_url'     => $av_url,
                 ];
@@ -402,6 +430,92 @@ class Aura_Calendar_Events {
             }
 
             $inst_list = $instructors_by_event[ $row->id ] ?? [];
+
+            // Fallback a los profesores y docentes externos de la materia si el evento no tiene instructores explícitos
+            if ( empty( $inst_list ) && ! empty( $row->subject_id ) ) {
+                $subj_teachers = [];
+                if ( ! empty( $row->subject_teachers ) ) {
+                    $dec = json_decode( $row->subject_teachers, true );
+                    if ( is_array( $dec ) ) {
+                        $subj_teachers = array_values( array_unique( array_filter( array_map( 'intval', $dec ) ) ) );
+                    }
+                }
+                if ( empty( $subj_teachers ) && ! empty( $row->subject_default_teacher_id ) ) {
+                    $subj_teachers = [ intval( $row->subject_default_teacher_id ) ];
+                }
+
+                foreach ( $subj_teachers as $s_uid ) {
+                    $u = get_userdata( $s_uid );
+                    if ( $u ) {
+                        $s_av = ! empty( $custom_photos[ $s_uid ] ) ? $custom_photos[ $s_uid ] : get_avatar_url( $s_uid, [ 'size' => 64, 'default' => 'identicon' ] );
+                        if ( ! empty( $s_av ) && str_starts_with( $s_av, ':/' ) ) {
+                            $s_av = site_url( substr( $s_av, 1 ) );
+                        }
+                        $inst_list[] = [
+                            'id'             => $s_uid,
+                            'name'           => $u->display_name,
+                            'email'          => $u->user_email,
+                            'role'           => ( count( $inst_list ) === 0 ) ? 'lead' : 'secondary',
+                            'is_external'    => 0,
+                            'is_wp_user'     => true,
+                            'wp_user_id'     => $s_uid,
+                            'third_party_id' => null,
+                            'external_name'  => '',
+                            'external_email' => '',
+                            'external_phone' => '',
+                            'external_org'   => '',
+                            'avatar'         => $s_av,
+                            'avatar_url'     => $s_av,
+                        ];
+                    }
+                }
+
+                if ( ! empty( $row->subject_external_teachers ) ) {
+                    $dec_subj_ext = json_decode( $row->subject_external_teachers, true );
+                    if ( is_array( $dec_subj_ext ) ) {
+                        foreach ( $dec_subj_ext as $se ) {
+                            $se_name = ! empty( $se['commercial_name'] ) ? $se['commercial_name'] : ( ! empty( $se['name'] ) ? $se['name'] : ( $se['external_name'] ?? '' ) );
+                            if ( empty( $se_name ) ) {
+                                continue;
+                            }
+                            $se_av = ! empty( $se['avatar_url'] ) ? $se['avatar_url'] : ( $se['avatar'] ?? '' );
+                            $se_uid = ! empty( $se['wp_user_id'] ) ? intval( $se['wp_user_id'] ) : 0;
+                            if ( empty( $se_av ) && $se_uid > 0 ) {
+                                $se_av = ! empty( $custom_photos[ $se_uid ] ) ? $custom_photos[ $se_uid ] : get_avatar_url( $se_uid, [ 'size' => 64, 'default' => 'identicon' ] );
+                            }
+                            if ( empty( $se_av ) && ! empty( $se['email'] ) ) {
+                                $u_em = get_user_by( 'email', $se['email'] );
+                                if ( $u_em ) {
+                                    $se_uid = (int) $u_em->ID;
+                                    $se_av = get_avatar_url( $se_uid, [ 'size' => 64, 'default' => 'identicon' ] );
+                                } else {
+                                    $se_av = get_avatar_url( $se['email'], [ 'size' => 64, 'default' => 'identicon' ] );
+                                }
+                            }
+                            if ( ! empty( $se_av ) && str_starts_with( $se_av, ':/' ) ) {
+                                $se_av = site_url( substr( $se_av, 1 ) );
+                            }
+
+                            $inst_list[] = [
+                                'id'             => $se_uid,
+                                'name'           => $se_name,
+                                'email'          => $se['email'] ?? '',
+                                'role'           => ( count( $inst_list ) === 0 ) ? 'lead' : 'secondary',
+                                'is_external'    => 1,
+                                'is_wp_user'     => $se_uid > 0,
+                                'wp_user_id'     => $se_uid ?: null,
+                                'third_party_id' => ! empty( $se['third_party_id'] ) ? intval( $se['third_party_id'] ) : null,
+                                'external_name'  => $se_name,
+                                'external_email' => $se['email'] ?? '',
+                                'external_phone' => $se['phone'] ?? '',
+                                'external_org'   => $se['commercial_name'] ?? ( $se['org'] ?? '' ),
+                                'avatar'         => $se_av,
+                                'avatar_url'     => $se_av,
+                            ];
+                        }
+                    }
+                }
+            }
 
             // Decodificar líderes estudiantiles asignados
             $student_leaders_list = [];
@@ -442,40 +556,42 @@ class Aura_Calendar_Events {
                 'borderColor'     => $bg_color,
                 'textColor'       => $text_color,
                 'extendedProps'   => [
-                    'text_color'          => $text_color,
-                    'color'               => $bg_color,
-                    'raw_title'           => $row->title,
-                    'program_id'          => (int) $row->program_id,
-                    'program_name'        => $row->program_name,
-                    'program_code'        => $row->program_code,
-                    'subject_id'          => (int) $row->subject_id,
-                    'subject_name'        => $row->subject_name,
-                    'subject_code'        => $row->subject_code,
-                    'event_type'          => $row->event_type,
-                    'location'            => $row->location,
-                    'online_url'          => $row->online_url,
-                    'status'              => $row->status,
-                    'start_raw'           => $row->start_datetime,
-                    'end_raw'             => $row->end_datetime,
-                    'start_local_iso'     => str_replace( ' ', 'T', substr( $row->start_datetime, 0, 16 ) ),
-                    'end_local_iso'       => str_replace( ' ', 'T', substr( $row->end_datetime, 0, 16 ) ),
-                    'start_time_label'    => self::format_local_datetime( $row->start_datetime, get_option( 'time_format', 'H:i' ) ),
-                    'end_time_label'      => self::format_local_datetime( $row->end_datetime, get_option( 'time_format', 'H:i' ) ),
-                    'date_label'          => self::format_local_datetime( $row->start_datetime, get_option( 'date_format', 'd-m-Y' ) ),
-                    'description'         => $row->description,
-                    'program_description' => $row->program_description ?? '',
-                    'subject_description' => $row->subject_description ?? '',
-                    'module_name'         => $row->module_name ?? '',
-                    'module_order'        => (int) ( $row->module_order ?? 0 ),
-                    'recurrence_group_id' => $row->recurrence_group_id,
-                    'gcal_event_id'       => $row->gcal_event_id,
-                    'gcal_sync_status'    => $row->gcal_sync_status,
-                    'attendance_taken'    => intval( $row->attendance_count ) > 0,
-                    'instructors'         => $inst_list,
-                    'student_leaders'     => $student_leaders_list,
-                    'primary_avatar'      => $primary_avatar,
-                    'primary_name'        => $primary_name,
-                    'primary_teacher_id'  => ! empty( $inst_list[0]['id'] ) ? (int) $inst_list[0]['id'] : 0,
+                    'text_color'           => $text_color,
+                    'color'                => $bg_color,
+                    'raw_title'            => $row->title,
+                    'program_id'           => (int) $row->program_id,
+                    'program_name'         => $row->program_name,
+                    'program_code'         => $row->program_code,
+                    'subject_id'           => (int) $row->subject_id,
+                    'subject_name'         => $row->subject_name,
+                    'subject_code'         => $row->subject_code,
+                    'event_type'           => $row->event_type,
+                    'location'             => $row->location,
+                    'online_url'           => $row->online_url,
+                    'status'               => $row->status,
+                    'start_raw'            => $row->start_datetime,
+                    'end_raw'              => $row->end_datetime,
+                    'start_local_iso'      => str_replace( ' ', 'T', substr( $row->start_datetime, 0, 16 ) ),
+                    'end_local_iso'        => str_replace( ' ', 'T', substr( $row->end_datetime, 0, 16 ) ),
+                    'start_time_label'     => self::format_local_datetime( $row->start_datetime, get_option( 'time_format', 'H:i' ) ),
+                    'end_time_label'       => self::format_local_datetime( $row->end_datetime, get_option( 'time_format', 'H:i' ) ),
+                    'date_label'           => self::format_local_datetime( $row->start_datetime, get_option( 'date_format', 'd-m-Y' ) ),
+                    'description'          => $row->description,
+                    'program_description'  => $row->program_description ?? '',
+                    'subject_description'  => $row->subject_description ?? '',
+                    'module_name'          => $row->module_name ?? '',
+                    'module_order'         => (int) ( $row->module_order ?? 0 ),
+                    'recurrence_group_id'  => $row->recurrence_group_id,
+                    'gcal_event_id'        => $row->gcal_event_id,
+                    'gcal_sync_status'     => $row->gcal_sync_status,
+                    'attendance_taken'     => intval( $row->attendance_count ) > 0,
+                    'instructors'          => $inst_list,
+                    'external_instructors' => array_values( array_filter( $inst_list, function( $i ) { return ! empty( $i['is_external'] ); } ) ),
+                    'teacher_ids'          => array_values( array_filter( array_map( function( $i ) { return empty( $i['is_external'] ) ? (int) $i['id'] : 0; }, $inst_list ) ) ),
+                    'student_leaders'      => $student_leaders_list,
+                    'primary_avatar'       => $primary_avatar,
+                    'primary_name'         => $primary_name,
+                    'primary_teacher_id'   => ! empty( $inst_list[0]['id'] ) ? (int) $inst_list[0]['id'] : 0,
                 ],
             ];
         }
@@ -499,7 +615,8 @@ class Aura_Calendar_Events {
         $row = $wpdb->get_row( $wpdb->prepare(
             "SELECT e.*,
                     p.name AS program_name, p.code AS program_code,
-                    s.name AS subject_name, s.code AS subject_code
+                    s.name AS subject_name, s.code AS subject_code,
+                    s.default_teacher_id AS subject_default_teacher_id, s.teachers AS subject_teachers, s.external_teachers AS subject_external_teachers
              FROM {$table_evts} e
              LEFT JOIN {$table_prog} p ON p.id = e.program_id
              LEFT JOIN {$table_subj} s ON s.id = e.subject_id
@@ -536,9 +653,10 @@ class Aura_Calendar_Events {
             $id
         ) );
 
+        $t_students = $wpdb->prefix . 'aura_students';
+        $custom_photos = [];
+
         if ( is_array( $instructors ) ) {
-            $t_students = $wpdb->prefix . 'aura_students';
-            $custom_photos = [];
             if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_students}'" ) === $t_students && ! empty( $instructors ) ) {
                 $twp_ids = array_unique( array_filter( array_map( function( $inst ) {
                     return (int) ( $inst->teacher_id ?: ( $inst->instructor_id ?? 0 ) );
@@ -562,7 +680,7 @@ class Aura_Calendar_Events {
                 $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
                 if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_tp}'" ) === $t_tp ) {
                     $in_tp = implode( ',', array_map( 'intval', $tp_ids ) );
-                    $tp_records = $wpdb->get_results( "SELECT id, wp_user_id, logo_id, commercial_name, full_name FROM {$t_tp} WHERE id IN ({$in_tp})", OBJECT_K );
+                    $tp_records = $wpdb->get_results( "SELECT id, wp_user_id, logo_id, commercial_name, full_name, email, phone FROM {$t_tp} WHERE id IN ({$in_tp})", OBJECT_K );
                     if ( is_array( $tp_records ) ) {
                         $tp_map = $tp_records;
                     }
@@ -583,41 +701,162 @@ class Aura_Calendar_Events {
                         ? $custom_photos[ $real_id ]
                         : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
                 } else {
+                    if ( ! empty( $inst->avatar_url ) ) {
+                        $av_url = $inst->avatar_url;
+                    }
+
                     if ( $real_id > 0 ) {
                         $is_wp_user = true;
-                        $av_url     = ! empty( $custom_photos[ $real_id ] )
-                            ? $custom_photos[ $real_id ]
-                            : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                        if ( empty( $av_url ) ) {
+                            $av_url = ! empty( $custom_photos[ $real_id ] )
+                                ? $custom_photos[ $real_id ]
+                                : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                        }
                     } elseif ( $tp_info ) {
                         if ( ! empty( $tp_info->wp_user_id ) && (int) $tp_info->wp_user_id > 0 ) {
                             $is_wp_user = true;
                             $real_id    = (int) $tp_info->wp_user_id;
-                            $av_url     = get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
-                        } elseif ( ! empty( $tp_info->logo_id ) ) {
+                            if ( empty( $av_url ) ) {
+                                $av_url = ! empty( $custom_photos[ $real_id ] )
+                                    ? $custom_photos[ $real_id ]
+                                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                            }
+                        } elseif ( ! empty( $tp_info->logo_id ) && empty( $av_url ) ) {
                             $av_url = wp_get_attachment_image_url( (int) $tp_info->logo_id, 'thumbnail' ) ?: ( wp_get_attachment_url( (int) $tp_info->logo_id ) ?: '' );
                         }
                     }
+
+                    if ( empty( $av_url ) && ! empty( $inst->external_email ) ) {
+                        $u_by_email = get_user_by( 'email', $inst->external_email );
+                        if ( $u_by_email ) {
+                            $is_wp_user = true;
+                            $real_id    = (int) $u_by_email->ID;
+                            $av_url     = ! empty( $custom_photos[ $real_id ] )
+                                ? $custom_photos[ $real_id ]
+                                : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                        } else {
+                            $av_url = get_avatar_url( $inst->external_email, [ 'size' => 64, 'default' => 'identicon' ] );
+                        }
+                    }
                 }
+
+                if ( ! empty( $av_url ) && str_starts_with( $av_url, ':/' ) ) {
+                    $av_url = site_url( substr( $av_url, 1 ) );
+                }
+
+                $inst_name  = $is_ext ? ( $inst->external_name ?: ( ( $tp_info && ! empty( $tp_info->commercial_name ) ) ? $tp_info->commercial_name : ( ( $tp_info && ! empty( $tp_info->full_name ) ) ? $tp_info->full_name : __( 'Instructor Externo', 'aura' ) ) ) ) : ( $inst->display_name ?: __( 'Profesor', 'aura' ) );
+                $inst_email = $is_ext ? ( $inst->external_email ?: ( ( $tp_info && ! empty( $tp_info->email ) ) ? $tp_info->email : '' ) ) : $inst->user_email;
 
                 $inst->avatar         = $av_url;
                 $inst->avatar_url     = $av_url;
                 $inst->is_wp_user     = $is_wp_user;
                 $inst->wp_user_id     = $is_wp_user ? $real_id : null;
-                $inst->name           = $is_ext ? ( $inst->external_name ?: __( 'Instructor Externo', 'aura' ) ) : ( $inst->display_name ?: __( 'Profesor', 'aura' ) );
+                $inst->name           = $inst_name;
                 $inst->id             = $real_id;
                 $inst->is_external    = $is_ext ? 1 : 0;
-                $inst->external_name  = $inst->external_name ?? '';
-                $inst->external_email = $inst->external_email ?? '';
-                $inst->external_phone = $inst->external_phone ?? '';
-                $inst->external_org   = $inst->external_org ?? '';
+                $inst->external_name  = $inst_name;
+                $inst->external_email = $inst_email;
+                $inst->external_phone = $inst->external_phone ?? ( ( $tp_info && ! empty( $tp_info->phone ) ) ? $tp_info->phone : '' );
+                $inst->external_org   = $inst->external_org ?? ( ( $tp_info && ! empty( $tp_info->commercial_name ) ) ? $tp_info->commercial_name : '' );
                 $inst->third_party_id = $tp_id ?: null;
             }
             unset( $inst );
         }
+
+        // Fallback a los profesores y docentes externos de la materia si el evento no tiene instructores explícitos
+        if ( empty( $instructors ) && ! empty( $row->subject_id ) ) {
+            $instructors = [];
+            $subj_teachers = [];
+            if ( ! empty( $row->subject_teachers ) ) {
+                $dec = json_decode( $row->subject_teachers, true );
+                if ( is_array( $dec ) ) {
+                    $subj_teachers = array_values( array_unique( array_filter( array_map( 'intval', $dec ) ) ) );
+                }
+            }
+            if ( empty( $subj_teachers ) && ! empty( $row->subject_default_teacher_id ) ) {
+                $subj_teachers = [ intval( $row->subject_default_teacher_id ) ];
+            }
+
+            foreach ( $subj_teachers as $s_uid ) {
+                $u = get_userdata( $s_uid );
+                if ( $u ) {
+                    $s_av = ! empty( $custom_photos[ $s_uid ] ) ? $custom_photos[ $s_uid ] : get_avatar_url( $s_uid, [ 'size' => 64, 'default' => 'identicon' ] );
+                    if ( ! empty( $s_av ) && str_starts_with( $s_av, ':/' ) ) {
+                        $s_av = site_url( substr( $s_av, 1 ) );
+                    }
+                    $instructors[] = (object) [
+                        'id'             => $s_uid,
+                        'name'           => $u->display_name,
+                        'email'          => $u->user_email,
+                        'role'           => ( count( $instructors ) === 0 ) ? 'lead' : 'secondary',
+                        'is_external'    => 0,
+                        'is_wp_user'     => true,
+                        'wp_user_id'     => $s_uid,
+                        'third_party_id' => null,
+                        'external_name'  => '',
+                        'external_email' => '',
+                        'external_phone' => '',
+                        'external_org'   => '',
+                        'avatar'         => $s_av,
+                        'avatar_url'     => $s_av,
+                    ];
+                }
+            }
+
+            if ( ! empty( $row->subject_external_teachers ) ) {
+                $dec_subj_ext = json_decode( $row->subject_external_teachers, true );
+                if ( is_array( $dec_subj_ext ) ) {
+                    foreach ( $dec_subj_ext as $se ) {
+                        $se_name = ! empty( $se['commercial_name'] ) ? $se['commercial_name'] : ( ! empty( $se['name'] ) ? $se['name'] : ( $se['external_name'] ?? '' ) );
+                        if ( empty( $se_name ) ) {
+                            continue;
+                        }
+                        $se_av = ! empty( $se['avatar_url'] ) ? $se['avatar_url'] : ( $se['avatar'] ?? '' );
+                        $se_uid = ! empty( $se['wp_user_id'] ) ? intval( $se['wp_user_id'] ) : 0;
+                        if ( empty( $se_av ) && $se_uid > 0 ) {
+                            $se_av = ! empty( $custom_photos[ $se_uid ] ) ? $custom_photos[ $se_uid ] : get_avatar_url( $se_uid, [ 'size' => 64, 'default' => 'identicon' ] );
+                        }
+                        if ( empty( $se_av ) && ! empty( $se['email'] ) ) {
+                            $u_em = get_user_by( 'email', $se['email'] );
+                            if ( $u_em ) {
+                                $se_uid = (int) $u_em->ID;
+                                $se_av = get_avatar_url( $se_uid, [ 'size' => 64, 'default' => 'identicon' ] );
+                            } else {
+                                $se_av = get_avatar_url( $se['email'], [ 'size' => 64, 'default' => 'identicon' ] );
+                            }
+                        }
+                        if ( ! empty( $se_av ) && str_starts_with( $se_av, ':/' ) ) {
+                            $se_av = site_url( substr( $se_av, 1 ) );
+                        }
+
+                        $instructors[] = (object) [
+                            'id'             => $se_uid,
+                            'name'           => $se_name,
+                            'email'          => $se['email'] ?? '',
+                            'role'           => ( count( $instructors ) === 0 ) ? 'lead' : 'secondary',
+                            'is_external'    => 1,
+                            'is_wp_user'     => $se_uid > 0,
+                            'wp_user_id'     => $se_uid ?: null,
+                            'third_party_id' => ! empty( $se['third_party_id'] ) ? intval( $se['third_party_id'] ) : null,
+                            'external_name'  => $se_name,
+                            'external_email' => $se['email'] ?? '',
+                            'external_phone' => $se['phone'] ?? '',
+                            'external_org'   => $se['commercial_name'] ?? ( $se['org'] ?? '' ),
+                            'avatar'         => $se_av,
+                            'avatar_url'     => $se_av,
+                        ];
+                    }
+                }
+            }
+        }
+
         $row->instructors = is_array( $instructors ) ? $instructors : [];
         $row->external_instructors = array_values( array_filter( $row->instructors, function( $inst ) {
             return ! empty( $inst->is_external );
         } ) );
+        $row->teacher_ids = array_values( array_filter( array_map( function( $i ) {
+            return empty( $i->is_external ) ? (int) $i->id : 0;
+        }, $row->instructors ) ) );
         $row->primary_teacher_id = ! empty( $row->instructors ) ? (int) $row->instructors[0]->id : 0;
 
         // Decodificar líderes estudiantiles asociados con avatares y etiquetas de rol
@@ -704,6 +943,7 @@ class Aura_Calendar_Events {
         }
         $has_instructor_id_col = (bool) $wpdb->get_results( "SHOW COLUMNS FROM `{$table_inst}` LIKE 'instructor_id'" );
         $has_tp_id_col         = (bool) $wpdb->get_results( "SHOW COLUMNS FROM `{$table_inst}` LIKE 'third_party_id'" );
+        $has_avatar_url_col    = (bool) $wpdb->get_results( "SHOW COLUMNS FROM `{$table_inst}` LIKE 'avatar_url'" );
 
         // Procesar líderes estudiantiles asignados
         $student_leaders_json = null;
@@ -746,7 +986,7 @@ class Aura_Calendar_Events {
         }
 
         // Helper para persistir instructores internos y externos
-        $persist_instructors = function( $target_evt_id ) use ( $wpdb, $table_inst, $teacher_ids, $primary_teacher_id, $has_instructor_id_col, $has_tp_id_col, $external_instructors ) {
+        $persist_instructors = function( $target_evt_id ) use ( $wpdb, $table_inst, $teacher_ids, $primary_teacher_id, $has_instructor_id_col, $has_tp_id_col, $has_avatar_url_col, $external_instructors ) {
             foreach ( $teacher_ids as $tid ) {
                 $inst_payload = [
                     'event_id'   => $target_evt_id,
@@ -763,19 +1003,66 @@ class Aura_Calendar_Events {
                 $wpdb->insert( $table_inst, $inst_payload, $inst_formats );
             }
 
+            $has_internal = ! empty( $teacher_ids );
+            $ext_idx = 0;
             foreach ( $external_instructors as $ext ) {
                 $ext_name = sanitize_text_field( $ext['name'] ?? ( $ext['external_name'] ?? '' ) );
                 if ( empty( $ext_name ) ) {
                     continue;
                 }
                 $ext_wp_user_id = ! empty( $ext['wp_user_id'] ) ? intval( $ext['wp_user_id'] ) : ( ! empty( $ext['user_id'] ) ? intval( $ext['user_id'] ) : 0 );
+                $ext_email = sanitize_email( $ext['email'] ?? ( $ext['external_email'] ?? '' ) );
+                if ( empty( $ext_wp_user_id ) && ! empty( $ext_email ) ) {
+                    $u_chk = get_user_by( 'email', $ext_email );
+                    if ( $u_chk ) {
+                        $ext_wp_user_id = (int) $u_chk->ID;
+                    }
+                }
+
+                $ext_role = sanitize_key( $ext['role'] ?? 'guest' );
+                if ( ! $has_internal && $ext_idx === 0 && ( $ext_role === 'lead' || $ext_role === 'primary' || $ext_role === 'guest' ) ) {
+                    $ext_role = 'lead';
+                }
+
+                $ext_avatar_url = ! empty( $ext['avatar_url'] ) ? esc_url_raw( $ext['avatar_url'] ) : ( ! empty( $ext['avatar'] ) ? esc_url_raw( $ext['avatar'] ) : '' );
+                if ( empty( $ext_avatar_url ) && $ext_wp_user_id > 0 ) {
+                    $raw_av = get_avatar_url( $ext_wp_user_id );
+                    if ( ! empty( $raw_av ) ) {
+                        if ( str_starts_with( $raw_av, ':/' ) ) {
+                            $raw_av = site_url( substr( $raw_av, 1 ) );
+                        }
+                        $ext_avatar_url = esc_url_raw( $raw_av );
+                    }
+                }
+
+                $tp_id = ! empty( $ext['third_party_id'] ) ? intval( $ext['third_party_id'] ) : ( ! empty( $ext['tp_id'] ) ? intval( $ext['tp_id'] ) : 0 );
+                if ( empty( $ext_avatar_url ) && $tp_id > 0 ) {
+                    $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
+                    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_tp}'" ) === $t_tp ) {
+                        $tp_row = $wpdb->get_row( $wpdb->prepare( "SELECT wp_user_id, logo_id FROM {$t_tp} WHERE id = %d", $tp_id ) );
+                        if ( $tp_row ) {
+                            if ( ! empty( $tp_row->wp_user_id ) ) {
+                                $raw_av = get_avatar_url( (int) $tp_row->wp_user_id );
+                                if ( ! empty( $raw_av ) ) {
+                                    if ( str_starts_with( $raw_av, ':/' ) ) {
+                                        $raw_av = site_url( substr( $raw_av, 1 ) );
+                                    }
+                                    $ext_avatar_url = esc_url_raw( $raw_av );
+                                }
+                            } elseif ( ! empty( $tp_row->logo_id ) ) {
+                                $ext_avatar_url = esc_url_raw( wp_get_attachment_image_url( (int) $tp_row->logo_id, 'thumbnail' ) ?: wp_get_attachment_url( (int) $tp_row->logo_id ) );
+                            }
+                        }
+                    }
+                }
+
                 $ext_payload = [
                     'event_id'       => $target_evt_id,
                     'teacher_id'     => $ext_wp_user_id,
-                    'role'           => sanitize_key( $ext['role'] ?? 'guest' ),
+                    'role'           => $ext_role,
                     'is_external'    => 1,
                     'external_name'  => $ext_name,
-                    'external_email' => sanitize_email( $ext['email'] ?? ( $ext['external_email'] ?? '' ) ),
+                    'external_email' => $ext_email,
                     'external_phone' => sanitize_text_field( $ext['phone'] ?? ( $ext['external_phone'] ?? '' ) ),
                     'external_org'   => sanitize_text_field( $ext['organization'] ?? ( $ext['org'] ?? ( $ext['external_org'] ?? '' ) ) ),
                     'notes'          => sanitize_text_field( $ext['notes'] ?? '' ),
@@ -786,12 +1073,16 @@ class Aura_Calendar_Events {
                     $ext_payload['instructor_id'] = $ext_wp_user_id;
                     $ext_formats[] = '%d';
                 }
-                $tp_id = ! empty( $ext['third_party_id'] ) ? intval( $ext['third_party_id'] ) : ( ! empty( $ext['tp_id'] ) ? intval( $ext['tp_id'] ) : 0 );
                 if ( $has_tp_id_col && $tp_id > 0 ) {
                     $ext_payload['third_party_id'] = $tp_id;
                     $ext_formats[] = '%d';
                 }
+                if ( $has_avatar_url_col && ! empty( $ext_avatar_url ) ) {
+                    $ext_payload['avatar_url'] = $ext_avatar_url;
+                    $ext_formats[] = '%s';
+                }
                 $wpdb->insert( $table_inst, $ext_payload, $ext_formats );
+                $ext_idx++;
             }
         };
 

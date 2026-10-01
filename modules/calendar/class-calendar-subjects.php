@@ -179,18 +179,31 @@ class Aura_Calendar_Subjects {
                             }
                         }
 
+                        if ( empty( $wp_uid ) && ! empty( $ext_item['email'] ) ) {
+                            $u_by_email = get_user_by( 'email', $ext_item['email'] );
+                            if ( $u_by_email ) {
+                                $wp_uid = (int) $u_by_email->ID;
+                            }
+                        }
+
                         $ext_item['wp_user_id'] = $wp_uid;
                         if ( $wp_uid ) {
                             $wp_u = get_userdata( $wp_uid );
                             if ( $wp_u ) {
                                 $ext_item['is_wp_user'] = true;
                                 $ext_item['user_display_name'] = $wp_u->display_name;
-                                $ext_item['avatar_url'] = get_avatar_url( $wp_uid, [ 'size' => 72 ] );
+                                $raw_av = get_avatar_url( $wp_uid );
+                                if ( ! empty( $raw_av ) ) {
+                                    if ( str_starts_with( $raw_av, ':/' ) ) {
+                                        $raw_av = site_url( substr( $raw_av, 1 ) );
+                                    }
+                                    $ext_item['avatar_url'] = esc_url( $raw_av );
+                                }
                             }
                         }
 
                         $s->external_teachers_list[] = $ext_item;
-                        $ext_name = $ext_item['commercial_name'] ?? $ext_item['name'] ?? '';
+                        $ext_name = ! empty( $ext_item['commercial_name'] ) ? $ext_item['commercial_name'] : ( ! empty( $ext_item['name'] ) ? $ext_item['name'] : '' );
                         if ( $ext_name ) {
                             $names[] = $ext_name . ' (🏛️)';
                         }
@@ -470,6 +483,7 @@ class Aura_Calendar_Subjects {
                         'role'           => sanitize_key( $ext['role'] ?? 'lead' ),
                         'third_party_id' => $tp_id,
                         'wp_user_id'     => $wp_uid,
+                        'avatar_url'     => esc_url_raw( $ext['avatar_url'] ?? ( $ext['avatar'] ?? '' ) ),
                     ];
                 }
             }

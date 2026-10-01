@@ -261,6 +261,10 @@ class Aura_Calendar_Setup {
             if ( ! in_array( 'third_party_id', $cols_inst, true ) ) {
                 $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `third_party_id` BIGINT UNSIGNED DEFAULT NULL AFTER `external_org`, ADD KEY `third_party_id` (`third_party_id`)" );
             }
+
+            if ( ! in_array( 'avatar_url', $cols_inst, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `avatar_url` TEXT DEFAULT NULL AFTER `third_party_id`" );
+            }
         }
     }
 
@@ -392,12 +396,15 @@ class Aura_Calendar_Setup {
   external_email VARCHAR(255) DEFAULT NULL,
   external_phone VARCHAR(50) DEFAULT NULL,
   external_org VARCHAR(255) DEFAULT NULL,
+  third_party_id BIGINT UNSIGNED DEFAULT NULL,
+  avatar_url TEXT DEFAULT NULL,
   notes VARCHAR(255) DEFAULT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (id),
   KEY event_id (event_id),
   KEY teacher_id (teacher_id),
-  KEY is_external (is_external)
+  KEY is_external (is_external),
+  KEY third_party_id (third_party_id)
 ) {$charset_collate};";
 
         // 5. Tabla de Asistencia
