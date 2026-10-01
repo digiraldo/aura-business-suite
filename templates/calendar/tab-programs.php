@@ -47,6 +47,51 @@ function aura_avatar_stack_item( int $user_id, string $role_label = '' ): string
     );
 }
 
+/**
+ * Genera un avatar para Coordinadores o Docentes Terceros / Entidades Comerciales
+ * con soporte para avatares de usuario WP si están vinculados o se vinculan a futuro.
+ */
+function aura_avatar_stack_item_external( array $ext, string $default_role = '' ): string {
+    $name = esc_attr( $ext['commercial_name'] ?? $ext['name'] ?? '' );
+    if ( empty( $name ) ) return '';
+    $email = esc_attr( $ext['email'] ?? '' );
+    $role = esc_attr( $ext['role'] ?? $default_role );
+    $avatar_url = ! empty( $ext['avatar_url'] ) ? esc_url( $ext['avatar_url'] ) : '';
+    $is_wp = ! empty( $ext['is_wp_user'] ) || ! empty( $ext['wp_user_id'] );
+    $initials = strtoupper( mb_substr( $name, 0, 2 ) );
+    
+    $role_label = $role;
+    if ( ! empty( $ext['organization'] ) ) {
+        $role_label .= ' (' . $ext['organization'] . ')';
+    }
+    if ( ! empty( $ext['third_party_id'] ) ) {
+        $role_label .= ' • ' . ( $is_wp ? __( 'Usuario WP / Tercero', 'aura' ) : __( 'Tercero Catálogo', 'aura' ) );
+    }
+
+    $border_color = $is_wp ? '#10b981' : '#0284c7';
+    $bg_color     = $is_wp ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#0284c7,#38bdf8)';
+
+    return sprintf(
+        '<span class="aura-avatar-stack-item avatar avatar-sm aura-avatar-external" '
+        . 'style="border-color:%s;background:%s;" '
+        . 'data-av-name="%s" data-av-email="%s" data-av-role="%s" data-av-img="%s" '
+        . 'aria-label="%s">'
+        . '%s'
+        . '<span style="%sfont-weight:700;font-size:10px;color:#fff;">%s</span>'
+        . '</span>',
+        esc_attr( $border_color ),
+        esc_attr( $bg_color ),
+        $name,
+        $email,
+        esc_attr( $role_label ),
+        $avatar_url,
+        $name,
+        $avatar_url ? '<img src="' . $avatar_url . '" alt="' . $name . '" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'inline\';" />' : '',
+        $avatar_url ? 'display:none;' : '',
+        esc_html( $initials )
+    );
+}
+
 // ─── Filtro activo ────────────────────────────────────────────────────────────
 $prog_view_filter = sanitize_key( $_GET['prog_filter'] ?? 'active' );
 if ( ! in_array( $prog_view_filter, [ 'active', 'archived', 'all' ], true ) ) {
@@ -109,6 +154,33 @@ $can_delete     = current_user_can( 'aura_cal_delete_programs' ) || $can_manage;
                 <span class="dashicons dashicons-calendar-alt" style="font-size:15px;width:15px;height:15px;line-height:1;"></span>
                 <span><?php esc_html_e( 'Abrir en Calendario Principal', 'aura' ); ?></span> &rarr;
             </a>
+        </div>
+    </div>
+</div>
+
+<!-- ══ TOOLTIP ENRIQUECIDO DE DESCRIPCIÓN DE MATERIA (singleton) ══ -->
+<div id="aura-subj-desc-tooltip" class="aura-subj-desc-tooltip" role="tooltip" aria-hidden="true">
+    <div class="aura-tip-card">
+        <div class="aura-tip-card-header">
+            <div class="aura-tip-avatar-large" id="aura-subj-desc-tip-avatar">
+                <span class="dashicons dashicons-book-alt"></span>
+            </div>
+            <div class="aura-tip-info">
+                <div class="aura-tip-title" id="aura-subj-desc-tip-name"></div>
+                <div class="aura-tip-subtitle" id="aura-subj-desc-tip-prog"></div>
+                <div class="aura-tip-badges" id="aura-subj-desc-tip-meta-badges">
+                    <!-- Badges dinámicos inyectados vía JS: Código, Horas, Módulo -->
+                </div>
+            </div>
+        </div>
+        <div class="aura-tip-card-body">
+            <div class="aura-tip-section-header">
+                <span class="aura-tip-section-label"><?php esc_html_e( 'Descripción y Objetivos Pedagógicos', 'aura' ); ?></span>
+                <span class="aura-tip-section-count" id="aura-subj-desc-tip-module"></span>
+            </div>
+            <div class="aura-subj-desc-box" id="aura-subj-desc-tip-text">
+                <!-- Se inyecta la descripción formateada -->
+            </div>
         </div>
     </div>
 </div>
@@ -698,6 +770,189 @@ html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
     border-top-color: #334155 !important;
 }
 
+/* ── Tooltip Enriquecido de Descripción de Materia (.aura-subj-desc-tooltip) ── */
+.aura-subj-desc-tooltip {
+    position: fixed !important;
+    z-index: 999999 !important;
+    width: 380px;
+    max-width: calc(100vw - 28px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .18s cubic-bezier(0.16, 1, 0.3, 1), transform .18s cubic-bezier(0.16, 1, 0.3, 1), visibility .18s;
+    font-family: inherit;
+}
+.aura-subj-desc-tooltip.visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+.aura-subj-desc-tooltip .aura-tip-card {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 16px 45px -5px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(99, 102, 241, 0.15) !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.aura-subj-desc-tooltip .aura-tip-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+.aura-subj-desc-tooltip .aura-tip-avatar-large {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #4f46e5;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 800;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+.aura-subj-desc-tooltip .aura-tip-info { flex: 1; min-width: 0; }
+.aura-subj-desc-tooltip .aura-tip-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.3;
+    margin-bottom: 2px;
+    word-break: break-word;
+}
+.aura-subj-desc-tooltip .aura-tip-subtitle {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+.aura-subj-desc-tooltip .aura-tip-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.aura-subj-desc-tooltip .aura-tip-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10.5px;
+    font-weight: 600;
+}
+.aura-subj-desc-tooltip .aura-tip-badge--code {
+    background: #eef2ff;
+    color: #4f46e5;
+    border: 1px solid #c7d2fe;
+}
+.aura-subj-desc-tooltip .aura-tip-badge--hours {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+.aura-subj-desc-tooltip .aura-tip-badge--module {
+    background: #fdf2f8;
+    color: #db2777;
+    border: 1px solid #fbcfe8;
+}
+.aura-subj-desc-tooltip .aura-tip-card-body {
+    padding: 14px 16px;
+    background: #ffffff;
+}
+.aura-subj-desc-tooltip .aura-tip-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+.aura-subj-desc-tooltip .aura-tip-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #64748b;
+}
+.aura-subj-desc-tooltip .aura-tip-section-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8b5cf6;
+}
+.aura-subj-desc-tooltip .aura-subj-desc-box {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #334155;
+    max-height: 220px;
+    overflow-y: auto;
+    white-space: pre-line;
+    word-break: break-word;
+}
+.aura-subj-desc-tooltip .aura-subj-desc-empty {
+    font-size: 12px;
+    font-style: italic;
+    color: #94a3b8;
+    padding: 6px 0;
+}
+
+/* Modo oscuro para aura-subj-desc-tooltip */
+body.aura-dark-mode .aura-subj-desc-tooltip .aura-tip-card,
+body[data-theme="dark"] .aura-subj-desc-tooltip .aura-tip-card,
+.dark .aura-subj-desc-tooltip .aura-tip-card,
+html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-tip-card {
+    background: #181b21 !important;
+    color: #f8fafc !important;
+    border-color: #3c4043 !important;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(99, 102, 241, 0.3) !important;
+}
+body.aura-dark-mode .aura-subj-desc-tooltip .aura-tip-card-header,
+body[data-theme="dark"] .aura-subj-desc-tooltip .aura-tip-card-header,
+.dark .aura-subj-desc-tooltip .aura-tip-card-header,
+html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-tip-card-header {
+    background: linear-gradient(135deg, #1e2430 0%, #181b21 100%) !important;
+    border-bottom-color: #334155 !important;
+}
+body.aura-dark-mode .aura-subj-desc-tooltip .aura-tip-title,
+body[data-theme="dark"] .aura-subj-desc-tooltip .aura-tip-title,
+.dark .aura-subj-desc-tooltip .aura-tip-title,
+html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-tip-title {
+    color: #f8fafc !important;
+}
+body.aura-dark-mode .aura-subj-desc-tooltip .aura-tip-subtitle,
+body[data-theme="dark"] .aura-subj-desc-tooltip .aura-tip-subtitle,
+.dark .aura-subj-desc-tooltip .aura-tip-subtitle,
+html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-tip-subtitle {
+    color: #94a3b8 !important;
+}
+body.aura-dark-mode .aura-subj-desc-tooltip .aura-tip-card-body,
+body[data-theme="dark"] .aura-subj-desc-tooltip .aura-tip-card-body,
+.dark .aura-subj-desc-tooltip .aura-tip-card-body,
+html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-tip-card-body {
+    background: #181b21 !important;
+}
+body.aura-dark-mode .aura-subj-desc-tooltip .aura-subj-desc-box,
+body[data-theme="dark"] .aura-subj-desc-tooltip .aura-subj-desc-box,
+.dark .aura-subj-desc-tooltip .aura-subj-desc-box,
+html.wp-dark-mode-active .aura-subj-desc-tooltip .aura-subj-desc-box {
+    color: #cbd5e1 !important;
+}
+
+/* Indicador en el nombre de la materia */
+.aura-subject-card-name.has-desc-tooltip {
+    cursor: pointer;
+    transition: color .15s ease;
+    display: inline-block;
+}
+.aura-subject-card-name.has-desc-tooltip:hover {
+    color: var(--aura-primary, #4f46e5);
+    text-decoration: underline decoration-dotted;
+    text-underline-offset: 3px;
+}
+
 /* ── Program Card ───────────────────────────────────────────────── */
 .aura-prog-card {
     border-radius: 14px;
@@ -1024,9 +1279,12 @@ html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
                         <span>📚 <strong><?php echo intval( $p->subjects_count ); ?></strong> <?php esc_html_e( 'materias', 'aura' ); ?></span>
                         <span>📅 <strong><?php echo intval( $p->events_count ); ?></strong> <?php esc_html_e( 'clases', 'aura' ); ?></span>
 
-                        <!-- Avatares de coordinadores -->
-                        <?php if ( ! empty( $p->coordinator_ids ) && is_array( $p->coordinator_ids ) ) :
-                            $coord_count = count( $p->coordinator_ids );
+                        <!-- Avatares de coordinadores (Internos + Terceros / Entidades) -->
+                        <?php
+                        $has_internal_c = ! empty( $p->coordinator_ids ) && is_array( $p->coordinator_ids );
+                        $has_external_c = ! empty( $p->external_coordinators_list ) && is_array( $p->external_coordinators_list );
+                        if ( $has_internal_c || $has_external_c ) :
+                            $coord_count = ( $has_internal_c ? count( $p->coordinator_ids ) : 0 ) + ( $has_external_c ? count( $p->external_coordinators_list ) : 0 );
                             $max_visible = 4;
                         ?>
                             <span style="display:inline-flex;align-items:center;gap:6px;">
@@ -1036,10 +1294,19 @@ html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
                                 <span class="aura-avatar-group">
                                     <?php
                                     $shown = 0;
-                                    foreach ( $p->coordinator_ids as $c_id ) {
-                                        if ( $shown >= $max_visible ) break;
-                                        echo aura_avatar_stack_item( (int) $c_id, __('Coordinador','aura') );
-                                        $shown++;
+                                    if ( $has_internal_c ) {
+                                        foreach ( $p->coordinator_ids as $c_id ) {
+                                            if ( $shown >= $max_visible ) break;
+                                            echo aura_avatar_stack_item( (int) $c_id, __('Coordinador','aura') );
+                                            $shown++;
+                                        }
+                                    }
+                                    if ( $has_external_c && $shown < $max_visible ) {
+                                        foreach ( $p->external_coordinators_list as $ext_c ) {
+                                            if ( $shown >= $max_visible ) break;
+                                            echo aura_avatar_stack_item_external( $ext_c, __('Coordinador Externo','aura') );
+                                            $shown++;
+                                        }
                                     }
                                     if ( $coord_count > $max_visible ) : ?>
                                         <span class="aura-av-more">+<?php echo $coord_count - $max_visible; ?></span>
@@ -1103,22 +1370,45 @@ html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
                                                 <span class="aura-subj-cal-count"><?php echo $ev_count; ?></span>
                                             </span>
                                         <?php endif; ?>
+                                    <div class="aura-subject-card-name has-desc-tooltip"
+                                         tabindex="0"
+                                         role="button"
+                                         data-subj-name="<?php echo esc_attr( $s->name ); ?>"
+                                         data-subj-code="<?php echo esc_attr( $s->code ); ?>"
+                                         data-subj-desc="<?php echo esc_attr( $s->description ?? '' ); ?>"
+                                         data-subj-hours="<?php echo intval( $s->total_hours ?? 0 ); ?>"
+                                         data-subj-module="<?php echo esc_attr( $s->module ?? '' ); ?>"
+                                         data-subj-color="<?php echo esc_attr( $s_color ); ?>"
+                                         data-prog-name="<?php echo esc_attr( $p->name ); ?>"
+                                         title="<?php esc_attr_e( 'Ver descripción de la materia', 'aura' ); ?>">
+                                        <?php echo esc_html( $s->name ); ?>
                                     </div>
-                                    <div class="aura-subject-card-name"><?php echo esc_html( $s->name ); ?></div>
 
-                                    <!-- Profesores en avatar stack -->
-                                    <?php if ( ! empty( $s->teacher_ids ) && is_array( $s->teacher_ids ) ) :
-                                        $teach_count = count( $s->teacher_ids );
+                                    <!-- Profesores en avatar stack (Internos + Terceros / Externos) -->
+                                    <?php
+                                    $has_internal_t = ! empty( $s->teacher_ids ) && is_array( $s->teacher_ids );
+                                    $has_external_t = ! empty( $s->external_teachers_list ) && is_array( $s->external_teachers_list );
+                                    if ( $has_internal_t || $has_external_t ) :
+                                        $teach_count = ( $has_internal_t ? count( $s->teacher_ids ) : 0 ) + ( $has_external_t ? count( $s->external_teachers_list ) : 0 );
                                         $max_teach   = 3;
                                     ?>
                                         <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
                                             <span class="aura-avatar-group">
                                                 <?php
                                                 $t_shown = 0;
-                                                foreach ( $s->teacher_ids as $t_id ) {
-                                                    if ( $t_shown >= $max_teach ) break;
-                                                    echo aura_avatar_stack_item( (int) $t_id, __('Profesor','aura') );
-                                                    $t_shown++;
+                                                if ( $has_internal_t ) {
+                                                    foreach ( $s->teacher_ids as $t_id ) {
+                                                        if ( $t_shown >= $max_teach ) break;
+                                                        echo aura_avatar_stack_item( (int) $t_id, __('Profesor','aura') );
+                                                        $t_shown++;
+                                                    }
+                                                }
+                                                if ( $has_external_t && $t_shown < $max_teach ) {
+                                                    foreach ( $s->external_teachers_list as $ext_t ) {
+                                                        if ( $t_shown >= $max_teach ) break;
+                                                        echo aura_avatar_stack_item_external( $ext_t, __('Docente Externo','aura') );
+                                                        $t_shown++;
+                                                    }
                                                 }
                                                 if ( $teach_count > $max_teach ) : ?>
                                                     <span class="aura-av-more">+<?php echo $teach_count - $max_teach; ?></span>
@@ -1265,6 +1555,77 @@ html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
                         </small>
                     </div>
 
+                    <!-- Coordinadores Externos / Catálogo de Terceros -->
+                    <div class="form-group" style="background: rgba(14, 165, 233, 0.04); border: 1px dashed rgba(14, 165, 233, 0.35); border-radius: 8px; padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                <span>🏛️ <?php esc_html_e( 'Coordinadores Externos / Catálogo de Terceros', 'aura' ); ?></span>
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-third-parties' ) ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost" style="font-size: 11px; padding: 3px 6px; color: var(--aura-text-muted, #64748b);" title="<?php esc_attr_e( 'Abrir Directorio de Terceros en nueva pestaña', 'aura' ); ?>">
+                                    ↗ <?php esc_html_e( 'Directorio', 'aura' ); ?>
+                                </a>
+                                <button type="button" id="btn-open-tp-catalog-prog" class="btn btn-xs btn-primary" style="font-size: 11.5px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 5px; background: #0284c7; border-color: #0284c7; color: #fff; font-weight: 600; border-radius: 6px; box-shadow: 0 1px 3px rgba(2,132,199,0.3);">
+                                    🏛️ <?php esc_html_e( 'Catálogo de Terceros', 'aura' ); ?>
+                                </button>
+                                <button type="button" id="btn-toggle-add-external-coord" class="btn btn-xs btn-outline" style="font-size: 11.5px; padding: 3px 8px; border-radius: 6px;">
+                                    ➕ <?php esc_html_e( 'Agregar Manual', 'aura' ); ?>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Formulario desplegable para nuevo coordinador externo -->
+                        <div id="box-add-external-coord" style="display: none; background: var(--aura-surface, #ffffff); border: 1px solid var(--aura-border, #cbd5e1); border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                            <input type="hidden" id="ext-coord-third-party-id" value="">
+                            <input type="hidden" id="ext-coord-wp-user-id" value="">
+                            <input type="hidden" id="ext-coord-avatar-url" value="">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                                <div>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre / Razón Social', 'aura' ); ?> <span style="color:#ef4444;">*</span></label>
+                                    <input type="text" id="ext-coord-name" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Escribe para autocompletar o registrar...', 'aura' ); ?>">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Correo Electrónico', 'aura' ); ?></label>
+                                    <input type="email" id="ext-coord-email" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="coordinador@institucion.org">
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                                <div>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Institución / Organización', 'aura' ); ?></label>
+                                    <input type="text" id="ext-coord-org" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Entidad u ONG...', 'aura' ); ?>">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Teléfono', 'aura' ); ?></label>
+                                    <input type="text" id="ext-coord-phone" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="+502 ...">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Rol de Coordinación', 'aura' ); ?></label>
+                                    <select id="ext-coord-role" class="form-control" style="font-size: 12px; padding: 5px 8px;">
+                                        <option value="Coordinador Externo"><?php esc_html_e( 'Coordinador Externo', 'aura' ); ?></option>
+                                        <option value="Director Académico"><?php esc_html_e( 'Director Académico', 'aura' ); ?></option>
+                                        <option value="Asesor / Enlace"><?php esc_html_e( 'Asesor / Enlace', 'aura' ); ?></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px solid #f1f5f9;">
+                                <div id="ext-coord-linked-badge" style="display: none; align-items: center; gap: 4px; font-size: 11px; color: #0284c7; font-weight: 600;">
+                                    <span class="dashicons dashicons-admin-links" style="font-size: 14px; width: 14px; height: 14px;"></span>
+                                    <span><?php esc_html_e( 'Vinculado a Tercero del Catálogo', 'aura' ); ?></span>
+                                </div>
+                                <div style="display: flex; justify-content: flex-end; gap: 6px; margin-left: auto;">
+                                    <button type="button" id="btn-cancel-add-external-coord" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura' ); ?></button>
+                                    <button type="button" id="btn-save-external-coord" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir al Programa', 'aura' ); ?></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de coordinadores externos asignados con chips -->
+                        <div id="prog-external-coordinators-list" style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; align-items: center;">
+                            <span id="prog-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;"><?php esc_html_e( 'Sin coordinadores externos asignados.', 'aura' ); ?></span>
+                        </div>
+                        <input type="hidden" name="external_coordinators" id="prog-external-coordinators-json" value="[]">
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
                             <?php esc_html_e( 'Descripción u Objetivos', 'aura' ); ?>
@@ -1401,6 +1762,77 @@ html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
                             <small style="font-size: 11.5px; color: var(--aura-text-muted); display: block; margin-top: 4px;">
                                 <?php esc_html_e( 'Puedes seleccionar uno o varios profesores titulares para esta materia.', 'aura' ); ?>
                             </small>
+                        </div>
+
+                        <!-- Docentes Externos / Catálogo de Terceros -->
+                        <div class="form-group" style="background: rgba(16, 185, 129, 0.04); border: 1px dashed rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                                <label class="form-label" style="font-weight: 600; font-size: 13px; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                    <span>🏢 <?php esc_html_e( 'Docentes Externos / Catálogo de Terceros', 'aura' ); ?></span>
+                                </label>
+                                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-third-parties' ) ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost" style="font-size: 11px; padding: 3px 6px; color: var(--aura-text-muted, #64748b);" title="<?php esc_attr_e( 'Abrir Directorio de Terceros en nueva pestaña', 'aura' ); ?>">
+                                        ↗ <?php esc_html_e( 'Directorio', 'aura' ); ?>
+                                    </a>
+                                    <button type="button" id="btn-open-tp-catalog-subj" class="btn btn-xs btn-primary" style="font-size: 11.5px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 5px; background: #0284c7; border-color: #0284c7; color: #fff; font-weight: 600; border-radius: 6px; box-shadow: 0 1px 3px rgba(2,132,199,0.3);">
+                                        🏛️ <?php esc_html_e( 'Catálogo de Terceros', 'aura' ); ?>
+                                    </button>
+                                    <button type="button" id="btn-toggle-add-external-teacher" class="btn btn-xs btn-outline" style="font-size: 11.5px; padding: 3px 8px; border-radius: 6px;">
+                                        ➕ <?php esc_html_e( 'Agregar Manual', 'aura' ); ?>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Formulario desplegable para nuevo docente externo -->
+                            <div id="box-add-external-teacher" style="display: none; background: var(--aura-surface, #ffffff); border: 1px solid var(--aura-border, #cbd5e1); border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                                <input type="hidden" id="ext-teacher-third-party-id" value="">
+                                <input type="hidden" id="ext-teacher-wp-user-id" value="">
+                                <input type="hidden" id="ext-teacher-avatar-url" value="">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                                    <div>
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre / Razón Social', 'aura' ); ?> <span style="color:#ef4444;">*</span></label>
+                                        <input type="text" id="ext-teacher-name" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Escribe para autocompletar o registrar...', 'aura' ); ?>">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Correo Electrónico', 'aura' ); ?></label>
+                                        <input type="email" id="ext-teacher-email" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="docente@institucion.com">
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                                    <div>
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Organización / Institución', 'aura' ); ?></label>
+                                        <input type="text" id="ext-teacher-org" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Universidad / Empresa', 'aura' ); ?>">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Teléfono', 'aura' ); ?></label>
+                                        <input type="text" id="ext-teacher-phone" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="+502 ...">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Rol en la Materia', 'aura' ); ?></label>
+                                        <select id="ext-teacher-role" class="form-control" style="font-size: 12px; padding: 5px 8px;">
+                                            <option value="Docente Titular"><?php esc_html_e( 'Docente Titular Externo', 'aura' ); ?></option>
+                                            <option value="Profesor Invitado"><?php esc_html_e( 'Profesor Invitado / Especialista', 'aura' ); ?></option>
+                                            <option value="Auxiliar / Adjunto"><?php esc_html_e( 'Auxiliar / Adjunto Externo', 'aura' ); ?></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px solid #f1f5f9;">
+                                    <div id="ext-teacher-linked-badge" style="display: none; align-items: center; gap: 4px; font-size: 11px; color: #0284c7; font-weight: 600;">
+                                        <span class="dashicons dashicons-admin-links" style="font-size: 14px; width: 14px; height: 14px;"></span>
+                                        <span><?php esc_html_e( 'Vinculado a Tercero del Catálogo', 'aura' ); ?></span>
+                                    </div>
+                                    <div style="display: flex; justify-content: flex-end; gap: 6px; margin-left: auto;">
+                                        <button type="button" id="btn-cancel-add-external-teacher" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura' ); ?></button>
+                                        <button type="button" id="btn-save-external-teacher" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir a la Materia', 'aura' ); ?></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Lista de docentes externos asignados con chips -->
+                            <div id="subj-external-teachers-list" style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; align-items: center;">
+                                <span id="subj-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;"><?php esc_html_e( 'Sin docentes externos asignados.', 'aura' ); ?></span>
+                            </div>
+                            <input type="hidden" name="external_teachers" id="subj-external-teachers-json" value="[]">
                         </div>
                     </div>
                 </div>

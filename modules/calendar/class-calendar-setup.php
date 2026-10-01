@@ -207,7 +207,7 @@ class Aura_Calendar_Setup {
         $t_subjects = $wpdb->prefix . 'aura_cal_subjects';
         $t_inst     = $wpdb->prefix . 'aura_cal_event_instructors';
 
-        // 1. Columnas de Módulos en wp_aura_cal_subjects
+        // 1. Columnas en wp_aura_cal_subjects (Módulos y Docentes Terceros / Externos)
         if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_subjects}'" ) === $t_subjects ) {
             $cols_subj = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$t_subjects}`" );
 
@@ -218,9 +218,23 @@ class Aura_Calendar_Setup {
             if ( ! in_array( 'module_order', $cols_subj, true ) ) {
                 $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `module_order` INT NOT NULL DEFAULT 1 AFTER `module_name`" );
             }
+
+            if ( ! in_array( 'external_teachers', $cols_subj, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `external_teachers` LONGTEXT DEFAULT NULL AFTER `teachers`" );
+            }
         }
 
-        // 2. Columnas de Instructor Tercero / Externo en wp_aura_cal_event_instructors
+        // 2. Columnas en wp_aura_cal_programs (Coordinadores Terceros / Externos)
+        $t_programs = $wpdb->prefix . 'aura_cal_programs';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_programs}'" ) === $t_programs ) {
+            $cols_prog = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$t_programs}`" );
+
+            if ( ! in_array( 'external_coordinators', $cols_prog, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_programs}` ADD COLUMN `external_coordinators` LONGTEXT DEFAULT NULL AFTER `coordinators`" );
+            }
+        }
+
+        // 3. Columnas de Instructor Tercero / Externo en wp_aura_cal_event_instructors
         if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_inst}'" ) === $t_inst ) {
             $cols_inst = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$t_inst}`" );
 
@@ -289,6 +303,7 @@ class Aura_Calendar_Setup {
   status VARCHAR(20) NOT NULL DEFAULT 'active',
   coordinator_id BIGINT UNSIGNED DEFAULT NULL,
   coordinators TEXT DEFAULT NULL,
+  external_coordinators LONGTEXT DEFAULT NULL,
   created_by BIGINT UNSIGNED NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -314,6 +329,7 @@ class Aura_Calendar_Setup {
   color VARCHAR(20) DEFAULT '#3b82f6',
   default_teacher_id BIGINT UNSIGNED DEFAULT NULL,
   teachers TEXT DEFAULT NULL,
+  external_teachers LONGTEXT DEFAULT NULL,
   teacher_materials LONGTEXT DEFAULT NULL,
   student_materials LONGTEXT DEFAULT NULL,
   gdrive_folder_id VARCHAR(255) DEFAULT NULL,

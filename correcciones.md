@@ -1046,18 +1046,14 @@ La sincronización entre ambos módulos es fundamental por tres razones operativ
 
 
 
-flowchart TD
-    A[Fase 1: Base de Datos y Migraciones para Hostinger] --> B[Fase 2: Materias por Módulos y Descripciones]
-    B --> C[Fase 3: Capability CBAC y Conmutador en Portal Docente]
-    C --> D[Fase 4: Tooltip Enriquecido y Visualización Apilada]
-    D --> E[Fase 5: Clonar, Copiar, Pegar y Repetir Eventos]
-    E --> F[Fase 6: Instructores Terceros y Filtro de Clases Asignadas]
-    F --> G[Fase 7: Invitaciones de Calendario .ics / Google Calendar]
-    G --> H[Fase 8: Empaquetado y Verificación de Despliegue en Hostinger]
 
 
 
-Continua de inmediato con la Fase 7 (generación y envío de invitaciones de calendario a profesores mediante correo con archivo .ics descargable y enlaces directos de "Agregar a Google Calendar / Outlook")
+
+- [x] Añade el modal Catálogo de Terceros a Programas y Materias.
+- [x] Recuerda que Los Terceros pueden volversen en un futuro Usuarios del Sistema de Wordpress (Sincronización en tiempo real y detección en base de datos implementada)
+
+
 
 
 
@@ -1103,3 +1099,105 @@ Se integró completamente la base de datos centralizada de Terceros (`wp_aura_fi
      - Se actualizó el `z-index` de `#aura-tp-explorer-modal` y su diálogo a `1002000 !important` en [assets/js/third-party-selector.js](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/third-party-selector.js), [assets/css/third-parties-directory.css](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/third-parties-directory.css) y [assets/css/calendar-admin.css](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/calendar-admin.css).
      - Se ajustó dinámicamente el montaje DOM en `openExplorer()`: si hay pantalla completa o un modal de eventos activo, el modal del catálogo se inserta inmediatamente después (`insertAfter`) o dentro del contenedor activo, compartiendo idéntico stacking context.
      - Se agregó aislamiento de eventos (`stopPropagation` y control de tecla Escape en [assets/js/calendar-admin.js](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js)) para evitar que cerrar el catálogo cierre inadvertidamente el modal de Crear/Editar Evento.
+
+### 31. Catálogo de Terceros y Entidades Comerciales en Programas y Materias (con Detección y Sincronización Futura con Usuarios WordPress)
+
+Se extendió el modal "Catálogo de Terceros y Entidades Comerciales" (`window.AuraThirdPartySelector`) a los módulos de **Programas Académicos** y **Materias**, permitiendo vincular entidades externas (empresas patrocinadoras, coordinadores aliados, directores de convenios, docentes externos y ponentes especializados) de forma persistente, con compatibilidad bidireccional y reactiva para terceros que puedan convertirse en usuarios de WordPress a futuro.
+
+#### Componentes y Modificaciones Realizadas:
+
+1. **Base de Datos y Migración Automática (`modules/calendar/class-calendar-setup.php`):**
+   - Se añadieron las columnas:
+     - `external_coordinators LONGTEXT DEFAULT NULL` en la tabla `wp_aura_cal_programs`.
+     - `external_teachers LONGTEXT DEFAULT NULL` en la tabla `wp_aura_cal_subjects`.
+   - Se incorporó la migración automática y declarativa dentro de `maybe_add_modules_and_externals_columns()`.
+
+2. **Detección Dinámica y Enriquecimiento de Terceros <-> Usuarios WordPress (`modules/calendar/class-calendar-programs.php` y `modules/calendar/class-calendar-subjects.php`):**
+   - **Premisa clave:** Un Tercero (`wp_aura_finance_third_parties`) puede no tener usuario inicialmente y crearse posteriormente una cuenta de WordPress (`wp_user_id`), o viceversa.
+   - En `Aura_Calendar_Programs::populate_coordinators()` y `Aura_Calendar_Subjects::populate_teachers()`:
+     - Se decodifican los JSONs `external_coordinators` y `external_teachers`.
+     - Se consulta en tiempo real la tabla `wp_aura_finance_third_parties` para obtener el `wp_user_id`, nombres actualizados y avatares/logos.
+     - Si el tercero tiene o adquiere un `wp_user_id > 0`, se recupera automáticamente su avatar de WordPress (`get_avatar_url`) y datos de usuario, marcándolo con la bandera `is_wp_user: true`.
+     - Si no tiene usuario WP, se utiliza el logo del catálogo o sus iniciales estilizadas con diseño institucional.
+   - En `save()`: se valida, sanitiza y almacena de forma segura la estructura JSON con los identificadores `third_party_id` y `wp_user_id`.
+
+3. **Interfaz de Usuario en Pestaña Programas y Materias (`templates/calendar/tab-programs.php`):**
+   - Se añadió la función `aura_avatar_stack_item_external()` para mostrar avatares de terceros en los avatar stacks de los cards de programas y materias con bordes diferenciados (verde esmeralda para usuarios WP vinculados y azul cian para terceros del catálogo) y tooltips enriquecidos adaptativos.
+   - **Modal de Programa (`#modal-program-editor`):**
+     - Botón **🏛️ Catálogo de Terceros** (`#btn-open-tp-catalog-prog`).
+     - Botón **➕ Agregar Manual** (`#btn-toggle-add-external-coord`).
+     - Formulario desplegable `#box-add-external-coord` con autocompletado y selección de rol (Coordinador Externo, Director Académico, Asesor / Enlace).
+     - Contenedor dinámico de chips con badges de rol y eliminación instantánea.
+   - **Modal de Materia (`#modal-subject-editor`):**
+     - Botón **🏛️ Catálogo de Terceros** (`#btn-open-tp-catalog-subj`).
+     - Botón **➕ Agregar Manual** (`#btn-toggle-add-external-teacher`).
+     - Formulario desplegable `#box-add-external-teacher` con autocompletado y selección de rol (Docente Titular Externo, Profesor Invitado / Especialista, Auxiliar / Adjunto Externo).
+     - Contenedor dinámico de chips con badges de rol y eliminación instantánea.
+
+4. **Lógica JavaScript e Interactividad (`assets/js/calendar-admin.js`):**
+   - Bindings de `#btn-open-tp-catalog-prog` y `#btn-open-tp-catalog-subj` conectados a `window.AuraThirdPartySelector.openExplorer()`.
+   - Autocompletado inteligente con jQuery UI (`initExternalCoordAutocomplete` e `initExternalTeacherAutocomplete`) consumiendo la acción AJAX `aura_search_counterparties`.
+   - Carga y poblado automático del array de externos al abrir el modal de edición (`.btn-edit-program` y `.btn-edit-subject`).
+   - Serialización y envío automático en el formulario mediante `external_coordinators` y `external_teachers`.
+
+
+
+### 32. Corrección de Doble Pegado de Eventos, Tooltip Enriquecido de Materias y Avatares de Terceros / Usuarios del Sistema
+
+Se resolvieron de forma exhaustiva las 3 incidencias reportadas en el módulo de Calendario y Gestión Académica:
+
+#### 1. Doble Confirmación y Duplicación de Eventos al Copiar y Pegar:
+- **Causa Raíz:** En FullCalendar con `selectable: true`, un clic sobre una celda disparaba secuencialmente `dateClick` y a los pocos milisegundos `select`. Ambos eventos llamaban a `handlePasteEventToDate()` sin debounce ni semáforo de bloqueo, abriendo dos diálogos `confirm()` y despachando dos peticiones AJAX en paralelo hacia `aura_cal_duplicate_event`.
+- **Solución Implementada (`assets/js/calendar-admin.js`):**
+  - Se introdujo un candado de concurrencia `isPastingEvent` y un guard de tiempo por timestamp `(now - lastPasteTimestamp < 1000)`.
+  - Se añadió la deselección visual inmediata en el calendario (`calendar.unselect()`).
+  - Se liberó el candado de forma segura tanto si el usuario cancela la confirmación como al completarse o fallar la petición AJAX, garantizando una sola ejecución atómica por pegado.
+
+#### 2. Tooltip Enriquecido en el Nombre de la Materia (Pestaña Programas y Materias):
+- **Diseño y Arquitectura (`templates/calendar/tab-programs.php` y `assets/js/calendar-admin.js`):**
+  - Se creó el contenedor singleton `#aura-subj-desc-tooltip` con arquitectura idéntica al Design System institucional de Aura.
+  - El card flotante cuenta con:
+    - Cabecera con avatar estilizado con el color de la materia y sus iniciales/código.
+    - Nombre completo de la materia y programa académico al que pertenece.
+    - Badges semánticos para **Código**, **Total de Horas** y **Módulo**.
+    - Sección de **Descripción y Objetivos Pedagógicos** con formato de texto enriquecido, scroll suave y mensaje informativo en caso de no contar aún con descripción.
+  - Soporte completo para modo oscuro institucional (`body.aura-dark-mode`, `.dark`, etc.).
+  - Posicionamiento inteligente con cálculo de colisiones contra los bordes superior, inferior y laterales de la pantalla (`getBoundingClientRect`).
+  - El nombre de la materia en cada tarjeta (`.aura-subject-card-name.has-desc-tooltip`) cuenta con cursor interactivo y subrayado dotted al hacer hover.
+
+#### 3. Soporte Completo de Fotos / Avatares para Terceros y Usuarios del Sistema en Calendario, Programas y Materias:
+- **Causa Raíz:**
+  1. En el frontend de Eventos (`calendar-admin.js`), `renderExternalInstructorsList()` tenía un `<div>🏢</div>` rígido que ignoraba la imagen de perfil.
+  2. En `#btn-open-tp-catalog-explorer` y en los autocompletados, no se almacenaba el `wp_user_id` ni el `avatar_url` en los inputs del formulario de instructores externos.
+  3. En `third-party-selector.js`, al seleccionar un tercero, el objeto exportado no propagaba `logo_url` simultáneamente con `avatar_url`.
+  4. En el backend (`modules/calendar/class-calendar-events.php`), los métodos `get_all()`, `get()` y `$persist_instructors` forzaban `teacher_id = 0` para externos sin resolver el avatar de WordPress ni propagar el avatar dinámico de `wp_aura_finance_third_parties`.
+- **Solución Implementada:**
+  - **Backend (`class-calendar-events.php`):**
+    - En `get_all()` y `get()`: si un instructor externo tiene `real_id > 0` o un `third_party_id` vinculado a un usuario de WordPress (`wp_user_id`), se consulta y asigna `$inst->avatar = get_avatar_url(...)`, y se marca `is_wp_user: true`. Si no es usuario WP pero tiene logo de empresa, se asigna dicho logo.
+    - En el guardado (`$persist_instructors`): cuando el instructor es un usuario de WP, se persiste en base de datos su `teacher_id` e `instructor_id` con dicho ID en vez de `0`.
+  - **Selector de Terceros (`third-party-selector.js`):**
+    - Se garantizó la exportación uniforme de `avatar_url`, `logo_url`, `wp_user_id` y `is_wp_user`.
+  - **Formularios e Interfaces (`modal-partials.php` y `tab-programs.php`):**
+    - Se incorporaron los campos ocultos `#ext-inst-wp-user-id` y `#ext-inst-avatar-url`.
+    - En `renderExternalInstructorsList()`, se reemplazó el icono estático por una etiqueta `<img src="..." onerror="...">` con fallback elegante a `👤` (esmeralda) si es usuario del sistema o `🏢` (azul) si es tercero comercial, junto con la insignia distintiva correspondiente (`👤 Usuario WP` o `🏛️ Tercero`).
+    - Se unificó este comportamiento de avatares en **Calendario (Clases)**, **Programas (Coordinadores)** y **Materias (Docentes)**.
+
+
+
+
+
+flowchart TD
+    A[Fase 1: Base de Datos y Migraciones para Hostinger] --> B[Fase 2: Materias por Módulos y Descripciones]
+    B --> C[Fase 3: Capability CBAC y Conmutador en Portal Docente]
+    C --> D[Fase 4: Tooltip Enriquecido y Visualización Apilada]
+    D --> E[Fase 5: Clonar, Copiar, Pegar y Repetir Eventos]
+    E --> F[Fase 6: Instructores Terceros y Filtro de Clases Asignadas]
+    F --> G[Fase 7: Invitaciones de Calendario .ics / Google Calendar]
+    G --> H[Fase 8: Empaquetado y Verificación de Despliegue en Hostinger]
+
+
+
+Continua de inmediato con la Fase 7 (generación y envío de invitaciones de calendario a profesores mediante correo con archivo .ics descargable y enlaces directos de "Agregar a Google Calendar / Outlook")
+
+
+- Las tarjetas de las materias salenapiladas una encima de la otra y no estan como antes, en la descripcionque aparece en el tooltip, en `.aura-tip-avatar-large`, muestra el logo del `Área Institucional`, si ha sido seleccionado alguno, ya que las areas tiene opcion de logo o imagen, al igual que en la inforamcion del Programa que aparece in icono o emogi y no el logo del area, por ejemplo en el programa de `Hadime Raíces 2026`, aparece un icono o emoji y no el logo: 🏢 Hadime Raíces.

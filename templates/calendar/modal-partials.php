@@ -142,6 +142,8 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                         <!-- Formulario desplegable para nuevo externo -->
                         <div id="box-add-external-inst" style="display: none; background: var(--aura-surface, #ffffff); border: 1px solid var(--aura-border, #cbd5e1); border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
                             <input type="hidden" id="ext-inst-third-party-id" value="">
+                            <input type="hidden" id="ext-inst-wp-user-id" value="">
+                            <input type="hidden" id="ext-inst-avatar-url" value="">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                 <div>
                                     <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre Completo / Razón Social', 'aura' ); ?> <span style="color:#ef4444;">*</span></label>

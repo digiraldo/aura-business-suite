@@ -141,6 +141,63 @@ class Aura_Calendar_Subjects {
                 }
             }
 
+            // Procesar docentes terceros / externos (Catálogo de Terceros)
+            $s->external_teachers_list = [];
+            if ( ! empty( $s->external_teachers ) ) {
+                $dec_ext = json_decode( $s->external_teachers, true );
+                if ( is_array( $dec_ext ) ) {
+                    global $wpdb;
+                    $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
+
+                    foreach ( $dec_ext as $ext_item ) {
+                        $tp_id  = ! empty( $ext_item['third_party_id'] ) ? intval( $ext_item['third_party_id'] ) : null;
+                        $wp_uid = ! empty( $ext_item['wp_user_id'] ) ? intval( $ext_item['wp_user_id'] ) : ( ! empty( $ext_item['user_id'] ) ? intval( $ext_item['user_id'] ) : null );
+
+                        // Si tiene third_party_id, verificar si en el futuro se convirtió en usuario WP
+                        if ( $tp_id ) {
+                            $tp_row = $wpdb->get_row( $wpdb->prepare(
+                                "SELECT wp_user_id, full_name, commercial_name, email, phone, logo_id, party_type FROM {$t_tp} WHERE id = %d",
+                                $tp_id
+                            ), ARRAY_A );
+
+                            if ( $tp_row ) {
+                                if ( ! empty( $tp_row['wp_user_id'] ) ) {
+                                    $wp_uid = intval( $tp_row['wp_user_id'] );
+                                }
+                                if ( empty( $ext_item['name'] ) ) {
+                                    $ext_item['name'] = $tp_row['commercial_name'] ?: $tp_row['full_name'];
+                                }
+                                if ( empty( $ext_item['email'] ) && ! empty( $tp_row['email'] ) ) {
+                                    $ext_item['email'] = $tp_row['email'];
+                                }
+                                if ( empty( $ext_item['phone'] ) && ! empty( $tp_row['phone'] ) ) {
+                                    $ext_item['phone'] = $tp_row['phone'];
+                                }
+                                if ( ! empty( $tp_row['logo_id'] ) ) {
+                                    $ext_item['logo_url'] = wp_get_attachment_image_url( (int) $tp_row['logo_id'], 'thumbnail' ) ?: '';
+                                }
+                            }
+                        }
+
+                        $ext_item['wp_user_id'] = $wp_uid;
+                        if ( $wp_uid ) {
+                            $wp_u = get_userdata( $wp_uid );
+                            if ( $wp_u ) {
+                                $ext_item['is_wp_user'] = true;
+                                $ext_item['user_display_name'] = $wp_u->display_name;
+                                $ext_item['avatar_url'] = get_avatar_url( $wp_uid, [ 'size' => 72 ] );
+                            }
+                        }
+
+                        $s->external_teachers_list[] = $ext_item;
+                        $ext_name = $ext_item['commercial_name'] ?? $ext_item['name'] ?? '';
+                        if ( $ext_name ) {
+                            $names[] = $ext_name . ' (🏛️)';
+                        }
+                    }
+                }
+            }
+
             $s->teachers_names = ! empty( $names ) ? implode( ', ', $names ) : ( $s->default_teacher_name ?: '' );
 
             // Decodificar listas de materiales docentes y estudiantiles
@@ -381,6 +438,44 @@ class Aura_Calendar_Subjects {
         $module_name      = ! empty( $data['module_name'] ) ? sanitize_text_field( $data['module_name'] ) : null;
         $module_order     = isset( $data['module_order'] ) ? max( 1, intval( $data['module_order'] ) ) : 1;
 
+        // Procesar docentes terceros / externos (Catálogo de Terceros)
+        $clean_ext_teachers = [];
+        if ( isset( $data['external_teachers'] ) ) {
+            $raw_ext = $data['external_teachers'];
+            if ( is_string( $raw_ext ) ) {
+                $raw_ext = json_decode( stripslashes( $raw_ext ), true );
+            }
+            if ( is_array( $raw_ext ) ) {
+                global $wpdb;
+                $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
+                foreach ( $raw_ext as $ext ) {
+                    if ( empty( $ext['name'] ) && empty( $ext['commercial_name'] ) ) continue;
+                    $tp_id  = ! empty( $ext['third_party_id'] ) ? intval( $ext['third_party_id'] ) : null;
+                    $wp_uid = ! empty( $ext['wp_user_id'] ) ? intval( $ext['wp_user_id'] ) : ( ! empty( $ext['user_id'] ) ? intval( $ext['user_id'] ) : null );
+
+                    // Si tiene third_party_id pero no wp_user_id, verificar si en wp_aura_finance_third_parties ya tiene wp_user_id
+                    if ( $tp_id && ! $wp_uid ) {
+                        $found_uid = $wpdb->get_var( $wpdb->prepare( "SELECT wp_user_id FROM {$t_tp} WHERE id = %d", $tp_id ) );
+                        if ( ! empty( $found_uid ) ) {
+                            $wp_uid = intval( $found_uid );
+                        }
+                    }
+
+                    $clean_ext_teachers[] = [
+                        'name'           => sanitize_text_field( $ext['name'] ?? '' ),
+                        'commercial_name'=> sanitize_text_field( $ext['commercial_name'] ?? '' ),
+                        'email'          => sanitize_email( $ext['email'] ?? '' ),
+                        'phone'          => sanitize_text_field( $ext['phone'] ?? '' ),
+                        'organization'   => sanitize_text_field( $ext['organization'] ?? '' ),
+                        'role'           => sanitize_key( $ext['role'] ?? 'lead' ),
+                        'third_party_id' => $tp_id,
+                        'wp_user_id'     => $wp_uid,
+                    ];
+                }
+            }
+        }
+        $ext_teachers_json = ! empty( $clean_ext_teachers ) ? wp_json_encode( $clean_ext_teachers ) : null;
+
         $fields = [
             'program_id'         => $program_id,
             'name'               => $name,
@@ -392,6 +487,7 @@ class Aura_Calendar_Subjects {
             'color'              => $color,
             'default_teacher_id' => $primary_teacher,
             'teachers'           => $teachers_json,
+            'external_teachers'  => $ext_teachers_json,
             'teacher_materials'  => $teacher_materials_val,
             'student_materials'  => $student_materials_val,
             'gdrive_folder_id'   => $gdrive_folder_id,
@@ -406,6 +502,7 @@ class Aura_Calendar_Subjects {
             '%d', '%d', '%s',
             $fields['default_teacher_id'] !== null ? '%d' : null,
             $fields['teachers'] !== null ? '%s' : null,
+            $fields['external_teachers'] !== null ? '%s' : null,
             $fields['teacher_materials'] !== null ? '%s' : null,
             $fields['student_materials'] !== null ? '%s' : null,
             $fields['gdrive_folder_id'] !== null ? '%s' : null,

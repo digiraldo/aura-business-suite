@@ -310,14 +310,52 @@ class Aura_Calendar_Events {
                 }
             }
 
+            $tp_ids = array_unique( array_filter( array_map( function( $ir ) {
+                return (int) ( $ir->third_party_id ?? 0 );
+            }, $inst_rows ) ) );
+            $tp_map = [];
+            if ( ! empty( $tp_ids ) ) {
+                $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
+                if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_tp}'" ) === $t_tp ) {
+                    $in_tp = implode( ',', array_map( 'intval', $tp_ids ) );
+                    $tp_records = $wpdb->get_results( "SELECT id, wp_user_id, logo_id, commercial_name, full_name FROM {$t_tp} WHERE id IN ({$in_tp})", OBJECT_K );
+                    if ( is_array( $tp_records ) ) {
+                        $tp_map = $tp_records;
+                    }
+                }
+            }
+
             foreach ( $inst_rows as $ir ) {
                 $is_ext  = ! empty( $ir->is_external );
                 $real_id = (int) ( $ir->teacher_id ?: ( $ir->instructor_id ?? 0 ) );
-                $av_url  = $is_ext ? '' : ( ! empty( $custom_photos[ $real_id ] )
-                    ? $custom_photos[ $real_id ]
-                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] ) );
+                $tp_id   = ! empty( $ir->third_party_id ) ? (int) $ir->third_party_id : 0;
+                $tp_info = ( $tp_id > 0 && isset( $tp_map[ $tp_id ] ) ) ? $tp_map[ $tp_id ] : null;
 
-                $inst_name = $is_ext ? ( $ir->external_name ?: __( 'Instructor Externo', 'aura' ) ) : ( $ir->display_name ?: __( 'Profesor', 'aura' ) );
+                $is_wp_user = false;
+                $av_url     = '';
+
+                if ( ! $is_ext ) {
+                    $av_url = ! empty( $custom_photos[ $real_id ] )
+                        ? $custom_photos[ $real_id ]
+                        : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                } else {
+                    if ( $real_id > 0 ) {
+                        $is_wp_user = true;
+                        $av_url     = ! empty( $custom_photos[ $real_id ] )
+                            ? $custom_photos[ $real_id ]
+                            : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                    } elseif ( $tp_info ) {
+                        if ( ! empty( $tp_info->wp_user_id ) && (int) $tp_info->wp_user_id > 0 ) {
+                            $is_wp_user = true;
+                            $real_id    = (int) $tp_info->wp_user_id;
+                            $av_url     = get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                        } elseif ( ! empty( $tp_info->logo_id ) ) {
+                            $av_url = wp_get_attachment_image_url( (int) $tp_info->logo_id, 'thumbnail' ) ?: ( wp_get_attachment_url( (int) $tp_info->logo_id ) ?: '' );
+                        }
+                    }
+                }
+
+                $inst_name  = $is_ext ? ( $ir->external_name ?: __( 'Instructor Externo', 'aura' ) ) : ( $ir->display_name ?: __( 'Profesor', 'aura' ) );
                 $inst_email = $is_ext ? $ir->external_email : $ir->user_email;
 
                 $instructors_by_event[ $ir->event_id ][] = [
@@ -326,12 +364,15 @@ class Aura_Calendar_Events {
                     'email'          => $inst_email,
                     'role'           => $ir->role,
                     'is_external'    => $is_ext ? 1 : 0,
-                    'third_party_id' => ! empty( $ir->third_party_id ) ? (int) $ir->third_party_id : null,
+                    'is_wp_user'     => $is_wp_user,
+                    'wp_user_id'     => $is_wp_user ? $real_id : null,
+                    'third_party_id' => $tp_id ?: null,
                     'external_name'  => $ir->external_name ?? '',
                     'external_email' => $ir->external_email ?? '',
                     'external_phone' => $ir->external_phone ?? '',
                     'external_org'   => $ir->external_org ?? '',
                     'avatar'         => $av_url,
+                    'avatar_url'     => $av_url,
                 ];
             }
         }
@@ -513,12 +554,55 @@ class Aura_Calendar_Events {
                 }
             }
 
+            $tp_ids = array_unique( array_filter( array_map( function( $inst ) {
+                return (int) ( $inst->third_party_id ?? 0 );
+            }, $instructors ) ) );
+            $tp_map = [];
+            if ( ! empty( $tp_ids ) ) {
+                $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
+                if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_tp}'" ) === $t_tp ) {
+                    $in_tp = implode( ',', array_map( 'intval', $tp_ids ) );
+                    $tp_records = $wpdb->get_results( "SELECT id, wp_user_id, logo_id, commercial_name, full_name FROM {$t_tp} WHERE id IN ({$in_tp})", OBJECT_K );
+                    if ( is_array( $tp_records ) ) {
+                        $tp_map = $tp_records;
+                    }
+                }
+            }
+
             foreach ( $instructors as &$inst ) {
-                $is_ext       = ! empty( $inst->is_external );
-                $real_id      = (int) ( $inst->teacher_id ?: ( $inst->instructor_id ?? 0 ) );
-                $inst->avatar = $is_ext ? '' : ( ! empty( $custom_photos[ $real_id ] )
-                    ? $custom_photos[ $real_id ]
-                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] ) );
+                $is_ext  = ! empty( $inst->is_external );
+                $real_id = (int) ( $inst->teacher_id ?: ( $inst->instructor_id ?? 0 ) );
+                $tp_id   = ! empty( $inst->third_party_id ) ? (int) $inst->third_party_id : 0;
+                $tp_info = ( $tp_id > 0 && isset( $tp_map[ $tp_id ] ) ) ? $tp_map[ $tp_id ] : null;
+
+                $is_wp_user = false;
+                $av_url     = '';
+
+                if ( ! $is_ext ) {
+                    $av_url = ! empty( $custom_photos[ $real_id ] )
+                        ? $custom_photos[ $real_id ]
+                        : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                } else {
+                    if ( $real_id > 0 ) {
+                        $is_wp_user = true;
+                        $av_url     = ! empty( $custom_photos[ $real_id ] )
+                            ? $custom_photos[ $real_id ]
+                            : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                    } elseif ( $tp_info ) {
+                        if ( ! empty( $tp_info->wp_user_id ) && (int) $tp_info->wp_user_id > 0 ) {
+                            $is_wp_user = true;
+                            $real_id    = (int) $tp_info->wp_user_id;
+                            $av_url     = get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                        } elseif ( ! empty( $tp_info->logo_id ) ) {
+                            $av_url = wp_get_attachment_image_url( (int) $tp_info->logo_id, 'thumbnail' ) ?: ( wp_get_attachment_url( (int) $tp_info->logo_id ) ?: '' );
+                        }
+                    }
+                }
+
+                $inst->avatar         = $av_url;
+                $inst->avatar_url     = $av_url;
+                $inst->is_wp_user     = $is_wp_user;
+                $inst->wp_user_id     = $is_wp_user ? $real_id : null;
                 $inst->name           = $is_ext ? ( $inst->external_name ?: __( 'Instructor Externo', 'aura' ) ) : ( $inst->display_name ?: __( 'Profesor', 'aura' ) );
                 $inst->id             = $real_id;
                 $inst->is_external    = $is_ext ? 1 : 0;
@@ -526,7 +610,7 @@ class Aura_Calendar_Events {
                 $inst->external_email = $inst->external_email ?? '';
                 $inst->external_phone = $inst->external_phone ?? '';
                 $inst->external_org   = $inst->external_org ?? '';
-                $inst->third_party_id = ! empty( $inst->third_party_id ) ? (int) $inst->third_party_id : null;
+                $inst->third_party_id = $tp_id ?: null;
             }
             unset( $inst );
         }
@@ -684,9 +768,10 @@ class Aura_Calendar_Events {
                 if ( empty( $ext_name ) ) {
                     continue;
                 }
+                $ext_wp_user_id = ! empty( $ext['wp_user_id'] ) ? intval( $ext['wp_user_id'] ) : ( ! empty( $ext['user_id'] ) ? intval( $ext['user_id'] ) : 0 );
                 $ext_payload = [
                     'event_id'       => $target_evt_id,
-                    'teacher_id'     => 0,
+                    'teacher_id'     => $ext_wp_user_id,
                     'role'           => sanitize_key( $ext['role'] ?? 'guest' ),
                     'is_external'    => 1,
                     'external_name'  => $ext_name,
@@ -698,7 +783,7 @@ class Aura_Calendar_Events {
                 ];
                 $ext_formats = [ '%d', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' ];
                 if ( $has_instructor_id_col ) {
-                    $ext_payload['instructor_id'] = 0;
+                    $ext_payload['instructor_id'] = $ext_wp_user_id;
                     $ext_formats[] = '%d';
                 }
                 $tp_id = ! empty( $ext['third_party_id'] ) ? intval( $ext['third_party_id'] ) : ( ! empty( $ext['tp_id'] ) ? intval( $ext['tp_id'] ) : 0 );

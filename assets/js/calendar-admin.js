@@ -1410,12 +1410,22 @@
             var orgText = inst.organization ? ' <span style="color:#64748b;font-size:11px;">(' + escapeHtml(inst.organization) + ')</span>' : '';
             var emailText = inst.email ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; ' + escapeHtml(inst.email) + '</span>' : '';
             var phoneText = inst.phone ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; 📞 ' + escapeHtml(inst.phone) + '</span>' : '';
-            var tpBadge = inst.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado al Catálogo Contable #ID ' + inst.third_party_id + '">🏛️ Catálogo</span>' : '';
+            
+            var isWpUser = inst.is_wp_user || (inst.wp_user_id && parseInt(inst.wp_user_id, 10) > 0) || (inst.type === 'wp_user');
+            var tpBadge = isWpUser
+                ? ' <span style="font-size:9.5px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado como Usuario WordPress (ID #' + (inst.wp_user_id || '') + ')">👤 Usuario WP</span>'
+                : (inst.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado al Catálogo Contable #ID ' + inst.third_party_id + '">🏛️ Tercero</span>' : '');
+
+            var avatarSrc = inst.avatar || inst.avatar_url || '';
+            var avatarHtml = avatarSrc
+                ? '<img src="' + escapeHtml(avatarSrc) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,0.12);" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'inline-flex\';">' +
+                  '<div style="display:none;width:28px;height:28px;border-radius:50%;background:' + (isWpUser ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#0ea5e9,#0284c7)') + ';color:#fff;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">' + (isWpUser ? '👤' : '🏢') + '</div>'
+                : '<div style="width:28px;height:28px;border-radius:50%;background:' + (isWpUser ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#0ea5e9,#0284c7)') + ';color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;box-shadow:0 2px 4px ' + (isWpUser ? 'rgba(16,185,129,0.25)' : 'rgba(14,165,233,0.25)') + ';">' + (isWpUser ? '👤' : '🏢') + '</div>';
 
             var $chip = $(
                 '<div class="aura-ext-inst-card" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:var(--aura-surface-soft, rgba(14,165,233,0.06));border:1px solid rgba(14,165,233,0.22);border-radius:8px;margin-bottom:6px;">' +
                     '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">' +
-                        '<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;box-shadow:0 2px 4px rgba(14,165,233,0.25);">🏢</div>' +
+                        avatarHtml +
                         '<div style="min-width:0;flex:1;line-height:1.3;">' +
                             '<div style="font-size:12px;font-weight:700;color:var(--aura-text-primary);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
                                 '<span>' + escapeHtml(inst.name) + '</span>' +
@@ -1451,7 +1461,7 @@
     $(document).on('click', '#btn-cancel-add-external, #btn-cancel-external-inst', function(e) {
         e.preventDefault();
         $('#box-add-external-inst').slideUp(180);
-        $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org, #ext-inst-third-party-id').val('');
+        $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org, #ext-inst-third-party-id, #ext-inst-wp-user-id, #ext-inst-avatar-url').val('');
         $('#ext-inst-linked-badge').hide();
     });
 
@@ -1464,14 +1474,18 @@
                 onSelect: function(item) {
                     var displayName = item.commercial_name || item.name || '';
                     var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
+                    var wpUserId = item.wp_user_id || item.user_id || (item.is_wp_user && item.id ? String(item.id).replace('user_', '') : '') || '';
+                    var avatarUrl = item.avatar_url || item.logo_url || '';
 
                     $('#ext-inst-name').val(displayName);
                     $('#ext-inst-email').val(item.email || '');
                     $('#ext-inst-phone').val(item.phone || '');
                     $('#ext-inst-org').val(orgName);
                     $('#ext-inst-third-party-id').val(item.third_party_id || '');
+                    $('#ext-inst-wp-user-id').val(wpUserId);
+                    $('#ext-inst-avatar-url').val(avatarUrl);
 
-                    if (item.third_party_id) {
+                    if (item.third_party_id || wpUserId) {
                         $('#ext-inst-linked-badge').css('display', 'inline-flex');
                     } else {
                         $('#ext-inst-linked-badge').hide();
@@ -1523,14 +1537,18 @@
                 var item = ui.item;
                 var displayName = item.commercial_name || item.name || item.value || '';
                 var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
+                var wpUserId = item.wp_user_id || item.user_id || (item.is_wp_user && item.id ? String(item.id).replace('user_', '') : '') || '';
+                var avatarUrl = item.avatar_url || item.logo_url || '';
 
                 $input.val(displayName);
                 $('#ext-inst-email').val(item.email || '');
                 $('#ext-inst-phone').val(item.phone || '');
                 $('#ext-inst-org').val(orgName);
                 $('#ext-inst-third-party-id').val(item.third_party_id || '');
+                $('#ext-inst-wp-user-id').val(wpUserId);
+                $('#ext-inst-avatar-url').val(avatarUrl);
 
-                if (item.third_party_id) {
+                if (item.third_party_id || wpUserId) {
                     $('#ext-inst-linked-badge').css('display', 'inline-flex');
                 } else {
                     $('#ext-inst-linked-badge').hide();
@@ -1545,6 +1563,8 @@
     // Inicializar autocompletado al cargar
     $(function() {
         initExternalInstAutocomplete();
+        initExternalCoordAutocomplete();
+        initExternalTeacherAutocomplete();
     });
 
     // Guardar instructor externo en el array temporal
@@ -1562,6 +1582,8 @@
         var org = $.trim($('#ext-inst-org').val());
         var role = $('#ext-inst-role').val() || 'guest';
         var tpId = $('#ext-inst-third-party-id').val();
+        var wpUid = $('#ext-inst-wp-user-id').val();
+        var avatarUrl = $('#ext-inst-avatar-url').val();
 
         currentEventExternalInstructors.push({
             name: name,
@@ -1569,12 +1591,16 @@
             phone: phone,
             organization: org,
             role: role,
-            third_party_id: tpId ? parseInt(tpId, 10) : null
+            third_party_id: tpId ? parseInt(tpId, 10) : null,
+            wp_user_id: wpUid ? parseInt(wpUid, 10) : null,
+            is_wp_user: !!(wpUid && parseInt(wpUid, 10) > 0),
+            avatar: avatarUrl || '',
+            avatar_url: avatarUrl || ''
         });
 
         renderExternalInstructorsList();
 
-        $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org, #ext-inst-third-party-id').val('');
+        $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org, #ext-inst-third-party-id, #ext-inst-wp-user-id, #ext-inst-avatar-url').val('');
         $('#ext-inst-linked-badge').hide();
         $('#box-add-external-inst').slideUp(180);
         showToast('Instructor externo "' + name + '" añadido.', 'success');
@@ -1587,6 +1613,434 @@
         if (idx >= 0 && idx < currentEventExternalInstructors.length) {
             currentEventExternalInstructors.splice(idx, 1);
             renderExternalInstructorsList();
+        }
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // COORDINADORES EXTERNOS / TERCEROS EN PROGRAMAS
+    // ─────────────────────────────────────────────────────────────
+    var currentProgramExternalCoordinators = [];
+
+    function renderProgramExternalCoordinatorsList() {
+        var $box = $('#prog-external-coordinators-list');
+        if (!$box.length) return;
+        $box.empty();
+
+        if (!currentProgramExternalCoordinators || !currentProgramExternalCoordinators.length) {
+            $box.html('<span id="prog-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;">Sin coordinadores externos asignados.</span>');
+            $('#prog-external-coordinators-json').val('[]');
+            return;
+        }
+
+        var roleBadges = {
+            'Coordinador Externo': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Coordinador Externo</span>',
+            'Director Académico': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">Director Académico</span>',
+            'Asesor / Enlace': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">Asesor / Enlace</span>'
+        };
+
+        $.each(currentProgramExternalCoordinators, function(idx, coord) {
+            var roleBadge = roleBadges[coord.role] || '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(coord.role || 'Coordinador') + '</span>';
+            var orgText = coord.organization ? ' <span style="color:#64748b;font-size:11px;">(' + escapeHtml(coord.organization) + ')</span>' : '';
+            var emailText = coord.email ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; ' + escapeHtml(coord.email) + '</span>' : '';
+            var phoneText = coord.phone ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; 📞 ' + escapeHtml(coord.phone) + '</span>' : '';
+            var isWpUser = coord.is_wp_user || (coord.wp_user_id && parseInt(coord.wp_user_id, 10) > 0);
+            var tpBadge = isWpUser
+                ? ' <span style="font-size:9.5px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado como Usuario WordPress (ID #' + coord.wp_user_id + ')">👤 Usuario WP</span>'
+                : (coord.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado al Catálogo Contable #ID ' + coord.third_party_id + '">🏛️ Tercero</span>' : '');
+
+            var avatarHtml = coord.avatar_url
+                ? '<img src="' + escapeHtml(coord.avatar_url) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'inline-flex\';">' +
+                  '<div style="display:none;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0284c7,#38bdf8);color:#fff;align-items:center;justify-content:center;font-size:11px;font-weight:700;">🏛️</div>'
+                : '<div style="width:28px;height:28px;border-radius:50%;background:' + (isWpUser ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#0284c7,#38bdf8)') + ';color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;box-shadow:0 2px 4px rgba(2,132,199,0.2);">' + (isWpUser ? '👤' : '🏛️') + '</div>';
+
+            var $chip = $(
+                '<div class="aura-ext-coord-card" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:var(--aura-surface-soft, rgba(14,165,233,0.06));border:1px solid rgba(14,165,233,0.22);border-radius:8px;margin-bottom:6px;width:100%;">' +
+                    '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">' +
+                        avatarHtml +
+                        '<div style="min-width:0;flex:1;line-height:1.3;">' +
+                            '<div style="font-size:12px;font-weight:700;color:var(--aura-text-primary);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+                                '<span>' + escapeHtml(coord.name) + '</span>' +
+                                roleBadge +
+                                tpBadge +
+                            '</div>' +
+                            '<div style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                                orgText + emailText + phoneText +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button type="button" class="btn-remove-ext-coord" data-index="' + idx + '" title="Eliminar coordinador externo" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;">&times;</button>' +
+                '</div>'
+            );
+            $box.append($chip);
+        });
+
+        $('#prog-external-coordinators-json').val(JSON.stringify(currentProgramExternalCoordinators));
+    }
+
+    $(document).on('click', '#btn-toggle-add-external-coord', function(e) {
+        e.preventDefault();
+        var $box = $('#box-add-external-coord');
+        if ($box.is(':visible')) {
+            $box.slideUp(180);
+        } else {
+            $box.slideDown(180);
+            $('#ext-coord-name').focus();
+        }
+    });
+
+    $(document).on('click', '#btn-cancel-add-external-coord', function(e) {
+        e.preventDefault();
+        $('#box-add-external-coord').slideUp(180);
+        $('#ext-coord-name, #ext-coord-email, #ext-coord-phone, #ext-coord-org, #ext-coord-third-party-id, #ext-coord-wp-user-id, #ext-coord-avatar-url').val('');
+        $('#ext-coord-linked-badge').hide();
+    });
+
+    $(document).on('click', '#btn-open-tp-catalog-prog', function(e) {
+        e.preventDefault();
+        if (window.AuraThirdPartySelector && typeof window.AuraThirdPartySelector.openExplorer === 'function') {
+            window.AuraThirdPartySelector.openExplorer({
+                title: 'Catálogo de Terceros — Coordinador del Programa',
+                onSelect: function(item) {
+                    var displayName = item.commercial_name || item.name || '';
+                    var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
+
+                    $('#ext-coord-name').val(displayName);
+                    $('#ext-coord-email').val(item.email || '');
+                    $('#ext-coord-phone').val(item.phone || '');
+                    $('#ext-coord-org').val(orgName);
+                    $('#ext-coord-third-party-id').val(item.third_party_id || '');
+                    $('#ext-coord-wp-user-id').val(item.wp_user_id || item.user_id || '');
+                    $('#ext-coord-avatar-url').val(item.avatar_url || item.logo_url || '');
+
+                    if (item.third_party_id || item.wp_user_id || item.user_id) {
+                        $('#ext-coord-linked-badge').css('display', 'inline-flex');
+                    } else {
+                        $('#ext-coord-linked-badge').hide();
+                    }
+
+                    $('#box-add-external-coord').slideDown(180);
+                    $('#ext-coord-role').focus();
+                    showToast('Tercero "' + displayName + '" seleccionado del catálogo. Asigna su rol de coordinación.', 'info');
+                }
+            });
+        } else {
+            window.open(auraCalData.ajax_url.replace('admin-ajax.php', 'admin.php?page=aura-third-parties'), '_blank');
+        }
+    });
+
+    function initExternalCoordAutocomplete() {
+        var $input = $('#ext-coord-name');
+        if (!$input.length || typeof $input.autocomplete !== 'function') return;
+
+        var ajaxUrl = (window.auraCounterpartiesData && auraCounterpartiesData.ajaxUrl) || auraCalData.ajax_url;
+        var nonce = (window.auraCounterpartiesData && auraCounterpartiesData.nonce) || '';
+
+        $input.autocomplete({
+            minLength: 2,
+            delay: 200,
+            source: function(request, response) {
+                $.ajax({
+                    url: ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'aura_search_counterparties',
+                        nonce: nonce,
+                        term: request.term
+                    },
+                    success: function(res) {
+                        if (res && res.success && Array.isArray(res.data)) {
+                            response(res.data);
+                        } else {
+                            response([]);
+                        }
+                    },
+                    error: function() {
+                        response([]);
+                    }
+                });
+            },
+            select: function(event, ui) {
+                var item = ui.item;
+                var displayName = item.commercial_name || item.name || item.value || '';
+                var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
+
+                $input.val(displayName);
+                $('#ext-coord-email').val(item.email || '');
+                $('#ext-coord-phone').val(item.phone || '');
+                $('#ext-coord-org').val(orgName);
+                $('#ext-coord-third-party-id').val(item.third_party_id || '');
+                $('#ext-coord-wp-user-id').val(item.wp_user_id || item.user_id || '');
+                $('#ext-coord-avatar-url').val(item.avatar_url || item.logo_url || '');
+
+                if (item.third_party_id || item.wp_user_id || item.user_id) {
+                    $('#ext-coord-linked-badge').css('display', 'inline-flex');
+                } else {
+                    $('#ext-coord-linked-badge').hide();
+                }
+
+                $('#ext-coord-role').focus();
+                return false;
+            }
+        });
+    }
+
+    $(document).on('click', '#btn-save-external-coord', function(e) {
+        e.preventDefault();
+        var name = $.trim($('#ext-coord-name').val());
+        if (!name) {
+            showToast('Por favor escribe el nombre del coordinador.', 'warning');
+            $('#ext-coord-name').focus();
+            return;
+        }
+
+        var email = $.trim($('#ext-coord-email').val());
+        var phone = $.trim($('#ext-coord-phone').val());
+        var org = $.trim($('#ext-coord-org').val());
+        var role = $('#ext-coord-role').val() || 'Coordinador Externo';
+        var tpId = $('#ext-coord-third-party-id').val();
+        var wpUid = $('#ext-coord-wp-user-id').val();
+        var avatarUrl = $('#ext-coord-avatar-url').val();
+
+        currentProgramExternalCoordinators.push({
+            name: name,
+            email: email,
+            phone: phone,
+            organization: org,
+            role: role,
+            third_party_id: tpId ? parseInt(tpId, 10) : null,
+            wp_user_id: wpUid ? parseInt(wpUid, 10) : null,
+            is_wp_user: !!(wpUid && parseInt(wpUid, 10) > 0),
+            avatar_url: avatarUrl || ''
+        });
+
+        renderProgramExternalCoordinatorsList();
+
+        $('#ext-coord-name, #ext-coord-email, #ext-coord-phone, #ext-coord-org, #ext-coord-third-party-id, #ext-coord-wp-user-id, #ext-coord-avatar-url').val('');
+        $('#ext-coord-linked-badge').hide();
+        $('#box-add-external-coord').slideUp(180);
+        showToast('Coordinador externo "' + name + '" añadido al programa.', 'success');
+    });
+
+    $(document).on('click', '.btn-remove-ext-coord', function(e) {
+        e.preventDefault();
+        var idx = parseInt($(this).data('index'), 10);
+        if (idx >= 0 && idx < currentProgramExternalCoordinators.length) {
+            currentProgramExternalCoordinators.splice(idx, 1);
+            renderProgramExternalCoordinatorsList();
+        }
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // DOCENTES EXTERNOS / TERCEROS EN MATERIAS
+    // ─────────────────────────────────────────────────────────────
+    var currentSubjectExternalTeachers = [];
+
+    function renderSubjectExternalTeachersList() {
+        var $box = $('#subj-external-teachers-list');
+        if (!$box.length) return;
+        $box.empty();
+
+        if (!currentSubjectExternalTeachers || !currentSubjectExternalTeachers.length) {
+            $box.html('<span id="subj-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;">Sin docentes externos asignados.</span>');
+            $('#subj-external-teachers-json').val('[]');
+            return;
+        }
+
+        var roleBadges = {
+            'Docente Titular': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Docente Titular</span>',
+            'Profesor Invitado': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">Profesor Invitado</span>',
+            'Auxiliar / Adjunto': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">Auxiliar / Adjunto</span>'
+        };
+
+        $.each(currentSubjectExternalTeachers, function(idx, teacher) {
+            var roleBadge = roleBadges[teacher.role] || '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(teacher.role || 'Docente') + '</span>';
+            var orgText = teacher.organization ? ' <span style="color:#64748b;font-size:11px;">(' + escapeHtml(teacher.organization) + ')</span>' : '';
+            var emailText = teacher.email ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; ' + escapeHtml(teacher.email) + '</span>' : '';
+            var phoneText = teacher.phone ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; 📞 ' + escapeHtml(teacher.phone) + '</span>' : '';
+            var isWpUser = teacher.is_wp_user || (teacher.wp_user_id && parseInt(teacher.wp_user_id, 10) > 0);
+            var tpBadge = isWpUser
+                ? ' <span style="font-size:9.5px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado como Usuario WordPress (ID #' + teacher.wp_user_id + ')">👤 Usuario WP</span>'
+                : (teacher.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado al Catálogo Contable #ID ' + teacher.third_party_id + '">🏛️ Tercero</span>' : '');
+
+            var avatarHtml = teacher.avatar_url
+                ? '<img src="' + escapeHtml(teacher.avatar_url) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'inline-flex\';">' +
+                  '<div style="display:none;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0284c7,#38bdf8);color:#fff;align-items:center;justify-content:center;font-size:11px;font-weight:700;">🏢</div>'
+                : '<div style="width:28px;height:28px;border-radius:50%;background:' + (isWpUser ? 'linear-gradient(135deg,#059669,#10b981)' : 'linear-gradient(135deg,#0284c7,#38bdf8)') + ';color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;box-shadow:0 2px 4px rgba(2,132,199,0.2);">' + (isWpUser ? '👨‍🏫' : '🏢') + '</div>';
+
+            var $chip = $(
+                '<div class="aura-ext-teacher-card" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:var(--aura-surface-soft, rgba(16,185,129,0.06));border:1px solid rgba(16,185,129,0.25);border-radius:8px;margin-bottom:6px;width:100%;">' +
+                    '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">' +
+                        avatarHtml +
+                        '<div style="min-width:0;flex:1;line-height:1.3;">' +
+                            '<div style="font-size:12px;font-weight:700;color:var(--aura-text-primary);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+                                '<span>' + escapeHtml(teacher.name) + '</span>' +
+                                roleBadge +
+                                tpBadge +
+                            '</div>' +
+                            '<div style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                                orgText + emailText + phoneText +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button type="button" class="btn-remove-ext-teacher" data-index="' + idx + '" title="Eliminar docente externo" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;">&times;</button>' +
+                '</div>'
+            );
+            $box.append($chip);
+        });
+
+        $('#subj-external-teachers-json').val(JSON.stringify(currentSubjectExternalTeachers));
+    }
+
+    $(document).on('click', '#btn-toggle-add-external-teacher', function(e) {
+        e.preventDefault();
+        var $box = $('#box-add-external-teacher');
+        if ($box.is(':visible')) {
+            $box.slideUp(180);
+        } else {
+            $box.slideDown(180);
+            $('#ext-teacher-name').focus();
+        }
+    });
+
+    $(document).on('click', '#btn-cancel-add-external-teacher', function(e) {
+        e.preventDefault();
+        $('#box-add-external-teacher').slideUp(180);
+        $('#ext-teacher-name, #ext-teacher-email, #ext-teacher-phone, #ext-teacher-org, #ext-teacher-third-party-id, #ext-teacher-wp-user-id, #ext-teacher-avatar-url').val('');
+        $('#ext-teacher-linked-badge').hide();
+    });
+
+    $(document).on('click', '#btn-open-tp-catalog-subj', function(e) {
+        e.preventDefault();
+        if (window.AuraThirdPartySelector && typeof window.AuraThirdPartySelector.openExplorer === 'function') {
+            window.AuraThirdPartySelector.openExplorer({
+                title: 'Catálogo de Terceros — Docente de la Materia',
+                onSelect: function(item) {
+                    var displayName = item.commercial_name || item.name || '';
+                    var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
+
+                    $('#ext-teacher-name').val(displayName);
+                    $('#ext-teacher-email').val(item.email || '');
+                    $('#ext-teacher-phone').val(item.phone || '');
+                    $('#ext-teacher-org').val(orgName);
+                    $('#ext-teacher-third-party-id').val(item.third_party_id || '');
+                    $('#ext-teacher-wp-user-id').val(item.wp_user_id || item.user_id || '');
+                    $('#ext-teacher-avatar-url').val(item.avatar_url || item.logo_url || '');
+
+                    if (item.third_party_id || item.wp_user_id || item.user_id) {
+                        $('#ext-teacher-linked-badge').css('display', 'inline-flex');
+                    } else {
+                        $('#ext-teacher-linked-badge').hide();
+                    }
+
+                    $('#box-add-external-teacher').slideDown(180);
+                    $('#ext-teacher-role').focus();
+                    showToast('Tercero "' + displayName + '" seleccionado del catálogo. Asigna su rol en la materia.', 'info');
+                }
+            });
+        } else {
+            window.open(auraCalData.ajax_url.replace('admin-ajax.php', 'admin.php?page=aura-third-parties'), '_blank');
+        }
+    });
+
+    function initExternalTeacherAutocomplete() {
+        var $input = $('#ext-teacher-name');
+        if (!$input.length || typeof $input.autocomplete !== 'function') return;
+
+        var ajaxUrl = (window.auraCounterpartiesData && auraCounterpartiesData.ajaxUrl) || auraCalData.ajax_url;
+        var nonce = (window.auraCounterpartiesData && auraCounterpartiesData.nonce) || '';
+
+        $input.autocomplete({
+            minLength: 2,
+            delay: 200,
+            source: function(request, response) {
+                $.ajax({
+                    url: ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'aura_search_counterparties',
+                        nonce: nonce,
+                        term: request.term
+                    },
+                    success: function(res) {
+                        if (res && res.success && Array.isArray(res.data)) {
+                            response(res.data);
+                        } else {
+                            response([]);
+                        }
+                    },
+                    error: function() {
+                        response([]);
+                    }
+                });
+            },
+            select: function(event, ui) {
+                var item = ui.item;
+                var displayName = item.commercial_name || item.name || item.value || '';
+                var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
+
+                $input.val(displayName);
+                $('#ext-teacher-email').val(item.email || '');
+                $('#ext-teacher-phone').val(item.phone || '');
+                $('#ext-teacher-org').val(orgName);
+                $('#ext-teacher-third-party-id').val(item.third_party_id || '');
+                $('#ext-teacher-wp-user-id').val(item.wp_user_id || item.user_id || '');
+                $('#ext-teacher-avatar-url').val(item.avatar_url || item.logo_url || '');
+
+                if (item.third_party_id || item.wp_user_id || item.user_id) {
+                    $('#ext-teacher-linked-badge').css('display', 'inline-flex');
+                } else {
+                    $('#ext-teacher-linked-badge').hide();
+                }
+
+                $('#ext-teacher-role').focus();
+                return false;
+            }
+        });
+    }
+
+    $(document).on('click', '#btn-save-external-teacher', function(e) {
+        e.preventDefault();
+        var name = $.trim($('#ext-teacher-name').val());
+        if (!name) {
+            showToast('Por favor escribe el nombre del docente.', 'warning');
+            $('#ext-teacher-name').focus();
+            return;
+        }
+
+        var email = $.trim($('#ext-teacher-email').val());
+        var phone = $.trim($('#ext-teacher-phone').val());
+        var org = $.trim($('#ext-teacher-org').val());
+        var role = $('#ext-teacher-role').val() || 'Docente Titular';
+        var tpId = $('#ext-teacher-third-party-id').val();
+        var wpUid = $('#ext-teacher-wp-user-id').val();
+        var avatarUrl = $('#ext-teacher-avatar-url').val();
+
+        currentSubjectExternalTeachers.push({
+            name: name,
+            email: email,
+            phone: phone,
+            organization: org,
+            role: role,
+            third_party_id: tpId ? parseInt(tpId, 10) : null,
+            wp_user_id: wpUid ? parseInt(wpUid, 10) : null,
+            is_wp_user: !!(wpUid && parseInt(wpUid, 10) > 0),
+            avatar_url: avatarUrl || ''
+        });
+
+        renderSubjectExternalTeachersList();
+
+        $('#ext-teacher-name, #ext-teacher-email, #ext-teacher-phone, #ext-teacher-org, #ext-teacher-third-party-id, #ext-teacher-wp-user-id, #ext-teacher-avatar-url').val('');
+        $('#ext-teacher-linked-badge').hide();
+        $('#box-add-external-teacher').slideUp(180);
+        showToast('Docente externo "' + name + '" añadido a la materia.', 'success');
+    });
+
+    $(document).on('click', '.btn-remove-ext-teacher', function(e) {
+        e.preventDefault();
+        var idx = parseInt($(this).data('index'), 10);
+        if (idx >= 0 && idx < currentSubjectExternalTeachers.length) {
+            currentSubjectExternalTeachers.splice(idx, 1);
+            renderSubjectExternalTeachersList();
         }
     });
 
@@ -2599,8 +3053,18 @@
     });
 
     // Función unificada para pegar evento copiado en una fecha/hora dada
+    var isPastingEvent = false;
+    var lastPasteTimestamp = 0;
+
     function handlePasteEventToDate(startStr, endStr) {
         if (!window.auraEventClipboard || !window.auraEventClipboard.id) return;
+        var now = Date.now();
+        if (isPastingEvent || (now - lastPasteTimestamp < 1000)) {
+            return;
+        }
+        isPastingEvent = true;
+        lastPasteTimestamp = now;
+
         var clip = window.auraEventClipboard;
         
         var dateFormatted = startStr;
@@ -2612,9 +3076,12 @@
         } catch(e) {}
 
         if (!confirm('¿Deseas pegar el evento "' + clip.title + '" en ' + dateFormatted + '?')) {
+            isPastingEvent = false;
+            if (typeof calendar !== 'undefined' && calendar) calendar.unselect();
             return;
         }
 
+        if (typeof calendar !== 'undefined' && calendar) calendar.unselect();
         showToast('⏳ Pegando evento...', 'info');
 
         $.post(auraCalData.ajax_url, {
@@ -2625,6 +3092,7 @@
             new_end: endStr || '',
             title_prefix: ''
         }, function(res) {
+            isPastingEvent = false;
             if (res && res.success) {
                 showToast(res.data && res.data.message ? res.data.message : 'Evento pegado exitosamente.', 'success');
                 if (typeof calendar !== 'undefined' && calendar) calendar.refetchEvents();
@@ -2633,6 +3101,7 @@
                 showToast(res && res.data && res.data.message ? res.data.message : 'Error al pegar el evento.', 'error');
             }
         }).fail(function() {
+            isPastingEvent = false;
             showToast('Error al procesar el pegado de evento.', 'error');
         });
     }
@@ -2772,6 +3241,10 @@
         $('#btn-delete-program-modal').hide();
 
         renderCoordinatorCheckboxes([]);
+        currentProgramExternalCoordinators = [];
+        renderProgramExternalCoordinatorsList();
+        $('#box-add-external-coord').hide();
+        $('#ext-coord-linked-badge').hide();
         syncColorPalette('#prog-color', '#5D5FEF');
 
         openModal('#modal-program-editor');
@@ -2807,6 +3280,11 @@
 
                 var coordIds = p.coordinator_ids || (p.coordinator_id ? [parseInt(p.coordinator_id, 10)] : []);
                 renderCoordinatorCheckboxes(coordIds);
+
+                currentProgramExternalCoordinators = p.external_coordinators_list || [];
+                renderProgramExternalCoordinatorsList();
+                $('#box-add-external-coord').hide();
+                $('#ext-coord-linked-badge').hide();
 
                 $('#btn-delete-program-modal').show();
                 openModal('#modal-program-editor');
@@ -3238,6 +3716,11 @@
         $('#modal-subj-title').text('📚 Añadir Materia');
 
         renderSubjectTeacherCheckboxes([]);
+        currentSubjectExternalTeachers = [];
+        renderSubjectExternalTeachersList();
+        $('#box-add-external-teacher').hide();
+        $('#ext-teacher-linked-badge').hide();
+
         syncColorPalette('#subj-color', '#3A86FF');
         $('#subj-module-name').val('');
         $('#subj-module-order').val('1');
@@ -3279,6 +3762,11 @@
 
                 var teacherIds = s.teacher_ids || (s.default_teacher_id ? [parseInt(s.default_teacher_id, 10)] : []);
                 renderSubjectTeacherCheckboxes(teacherIds);
+
+                currentSubjectExternalTeachers = s.external_teachers_list || [];
+                renderSubjectExternalTeachersList();
+                $('#box-add-external-teacher').hide();
+                $('#ext-teacher-linked-badge').hide();
 
                 currentTeacherMaterials = s.teacher_materials_list || [];
                 currentStudentMaterials = s.student_materials_list || [];
@@ -4514,6 +5002,116 @@
                 window.location.hash = newHash;
             }
         }
+    });
+
+    // ─────────────────────────────────────────────────────────────
+    // TOOLTIP ENRIQUECIDO PARA DESCRIPCIÓN DE MATERIAS
+    // ─────────────────────────────────────────────────────────────
+    var $subjDescTooltip = $('#aura-subj-desc-tooltip');
+    var subjDescTooltipTimer = null;
+
+    function hideSubjDescTooltip() {
+        if (subjDescTooltipTimer) clearTimeout(subjDescTooltipTimer);
+        subjDescTooltipTimer = setTimeout(function() {
+            if ($subjDescTooltip && $subjDescTooltip.length) {
+                $subjDescTooltip.removeClass('visible').attr('aria-hidden', 'true');
+            }
+        }, 180);
+    }
+
+    function showSubjDescTooltip($target) {
+        if (!$subjDescTooltip || !$subjDescTooltip.length) {
+            $subjDescTooltip = $('#aura-subj-desc-tooltip');
+            if (!$subjDescTooltip.length) return;
+        }
+
+        if (subjDescTooltipTimer) clearTimeout(subjDescTooltipTimer);
+
+        var subjName   = $target.data('subj-name') || $target.text().trim();
+        var subjCode   = $target.data('subj-code') || '';
+        var subjDesc   = $target.data('subj-desc') || '';
+        var subjColor  = $target.data('subj-color') || '#4f46e5';
+        var subjHours  = parseInt($target.data('subj-hours'), 10) || 0;
+        var subjModule = $target.data('subj-module') || '';
+        var progName   = $target.data('prog-name') || '';
+
+        // 1. Cabecera
+        var $avatar = $('#aura-subj-desc-tip-avatar');
+        if ($avatar.length) {
+            $avatar.css({
+                'background': subjColor,
+                'border-color': 'rgba(255,255,255,0.2)'
+            });
+            var avatarText = subjCode ? subjCode.substring(0, 4) : (subjName ? subjName.charAt(0).toUpperCase() : 'M');
+            $avatar.text(avatarText);
+        }
+
+        $('#aura-subj-desc-tip-name').text(subjName);
+        $('#aura-subj-desc-tip-prog').text(progName ? ('Programa: ' + progName) : '');
+
+        // Badges canónicos
+        var metaBadgesHtml = '';
+        if (subjCode) {
+            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--code">' + escapeHtmlSafe(subjCode) + '</span>';
+        }
+        if (subjHours > 0) {
+            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--hours">' + subjHours + ' hrs</span>';
+        }
+        if (subjModule) {
+            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--module">Módulo: ' + escapeHtmlSafe(subjModule) + '</span>';
+        }
+        $('#aura-subj-desc-tip-meta-badges').html(metaBadgesHtml);
+
+        // 2. Módulo & Contenido de la descripción
+        $('#aura-subj-desc-tip-module').text(subjModule ? ('Módulo: ' + subjModule) : '');
+
+        if (subjDesc && $.trim(subjDesc)) {
+            $('#aura-subj-desc-tip-text').removeClass('aura-subj-desc-empty').html(escapeHtmlSafe($.trim(subjDesc)));
+        } else {
+            $('#aura-subj-desc-tip-text').addClass('aura-subj-desc-empty').text('Esta materia no tiene una descripción pedagógica registrada.');
+        }
+
+        // 3. Posicionamiento inteligente
+        var rect = $target[0].getBoundingClientRect();
+        var tipW = 380;
+        var tipH = $subjDescTooltip.outerHeight() || 240;
+
+        var left = rect.left + (rect.width / 2) - (tipW / 2);
+        left = Math.max(12, Math.min(left, window.innerWidth - tipW - 12));
+
+        if (rect.top - tipH - 12 >= 10) {
+            var top = rect.top - 10;
+            $subjDescTooltip.css({
+                left: left + 'px',
+                top: top + 'px',
+                transform: 'translateY(-100%)'
+            });
+        } else {
+            var top = rect.bottom + 10;
+            $subjDescTooltip.css({
+                left: left + 'px',
+                top: top + 'px',
+                transform: 'translateY(0)'
+            });
+        }
+
+        $subjDescTooltip.attr('aria-hidden', 'false').addClass('visible');
+    }
+
+    $(document).on('mouseenter focus', '.aura-subject-card-name.has-desc-tooltip', function() {
+        showSubjDescTooltip($(this));
+    });
+
+    $(document).on('mouseleave blur', '.aura-subject-card-name.has-desc-tooltip', function() {
+        hideSubjDescTooltip();
+    });
+
+    $(document).on('mouseenter', '#aura-subj-desc-tooltip', function() {
+        if (subjDescTooltipTimer) clearTimeout(subjDescTooltipTimer);
+    });
+
+    $(document).on('mouseleave', '#aura-subj-desc-tooltip', function() {
+        hideSubjDescTooltip();
     });
 
     // ─────────────────────────────────────────────────────────────

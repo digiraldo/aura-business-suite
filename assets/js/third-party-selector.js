@@ -451,6 +451,8 @@ window.AuraThirdPartySelector = (function($) {
                 accounting_role: role,
                 accounting_role_label: roleLabel,
                 avatar_url: logo,
+                logo_url: logo,
+                wp_user_id: isWpUser ? parseInt(userId, 10) : null,
                 value: commercial || name,
                 label: (commercial || name) + (doc ? ' (' + taxType + ': ' + doc + ')' : '')
             };

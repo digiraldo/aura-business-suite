@@ -114,6 +114,9 @@ class Aura_Calendar_Programs {
             return [];
         }
 
+        global $wpdb;
+        $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
+
         foreach ( $programs as &$p ) {
             $ids = [];
             if ( ! empty( $p->coordinators ) ) {
@@ -140,6 +143,60 @@ class Aura_Calendar_Programs {
                         'email' => $user->user_email,
                     ];
                     $names[] = $user->display_name;
+                }
+            }
+
+            // Procesar coordinadores externos / catálogo de terceros
+            $p->external_coordinators_list = [];
+            if ( ! empty( $p->external_coordinators ) ) {
+                $dec_ext = json_decode( $p->external_coordinators, true );
+                if ( is_array( $dec_ext ) ) {
+                    foreach ( $dec_ext as $ext_item ) {
+                        $tp_id  = ! empty( $ext_item['third_party_id'] ) ? intval( $ext_item['third_party_id'] ) : null;
+                        $wp_uid = ! empty( $ext_item['wp_user_id'] ) ? intval( $ext_item['wp_user_id'] ) : ( ! empty( $ext_item['user_id'] ) ? intval( $ext_item['user_id'] ) : null );
+
+                        // Si tiene third_party_id, verificar si en el futuro se convirtió en usuario WP
+                        if ( $tp_id ) {
+                            $tp_row = $wpdb->get_row( $wpdb->prepare(
+                                "SELECT wp_user_id, full_name, commercial_name, email, phone, logo_id, party_type FROM {$t_tp} WHERE id = %d",
+                                $tp_id
+                            ), ARRAY_A );
+
+                            if ( $tp_row ) {
+                                if ( ! empty( $tp_row['wp_user_id'] ) ) {
+                                    $wp_uid = intval( $tp_row['wp_user_id'] );
+                                }
+                                if ( empty( $ext_item['name'] ) ) {
+                                    $ext_item['name'] = $tp_row['commercial_name'] ?: $tp_row['full_name'];
+                                }
+                                if ( empty( $ext_item['email'] ) && ! empty( $tp_row['email'] ) ) {
+                                    $ext_item['email'] = $tp_row['email'];
+                                }
+                                if ( empty( $ext_item['phone'] ) && ! empty( $tp_row['phone'] ) ) {
+                                    $ext_item['phone'] = $tp_row['phone'];
+                                }
+                                if ( ! empty( $tp_row['logo_id'] ) ) {
+                                    $ext_item['logo_url'] = wp_get_attachment_image_url( (int) $tp_row['logo_id'], 'thumbnail' ) ?: '';
+                                }
+                            }
+                        }
+
+                        $ext_item['wp_user_id'] = $wp_uid;
+                        if ( $wp_uid ) {
+                            $wp_u = get_userdata( $wp_uid );
+                            if ( $wp_u ) {
+                                $ext_item['is_wp_user'] = true;
+                                $ext_item['user_display_name'] = $wp_u->display_name;
+                                $ext_item['avatar_url'] = get_avatar_url( $wp_uid, [ 'size' => 72 ] );
+                            }
+                        }
+
+                        $p->external_coordinators_list[] = $ext_item;
+                        $ext_name = $ext_item['commercial_name'] ?? $ext_item['name'] ?? '';
+                        if ( $ext_name ) {
+                            $names[] = $ext_name . ' (🏛️)';
+                        }
+                    }
                 }
             }
 
@@ -240,19 +297,57 @@ class Aura_Calendar_Programs {
         $primary_coordinator = ! empty( $coord_ids ) ? $coord_ids[0] : null;
         $coordinators_json   = ! empty( $coord_ids ) ? wp_json_encode( $coord_ids ) : null;
 
+        // Procesar coordinadores externos / catálogo de terceros
+        $clean_ext_coords = [];
+        if ( isset( $data['external_coordinators'] ) ) {
+            $raw_ext = $data['external_coordinators'];
+            if ( is_string( $raw_ext ) ) {
+                $raw_ext = json_decode( stripslashes( $raw_ext ), true );
+            }
+            if ( is_array( $raw_ext ) ) {
+                $t_tp = $wpdb->prefix . 'aura_finance_third_parties';
+                foreach ( $raw_ext as $ext ) {
+                    if ( empty( $ext['name'] ) && empty( $ext['commercial_name'] ) ) continue;
+                    $tp_id  = ! empty( $ext['third_party_id'] ) ? intval( $ext['third_party_id'] ) : null;
+                    $wp_uid = ! empty( $ext['wp_user_id'] ) ? intval( $ext['wp_user_id'] ) : ( ! empty( $ext['user_id'] ) ? intval( $ext['user_id'] ) : null );
+
+                    // Si tiene third_party_id pero no wp_user_id, verificar si en wp_aura_finance_third_parties ya tiene wp_user_id
+                    if ( $tp_id && ! $wp_uid ) {
+                        $found_uid = $wpdb->get_var( $wpdb->prepare( "SELECT wp_user_id FROM {$t_tp} WHERE id = %d", $tp_id ) );
+                        if ( ! empty( $found_uid ) ) {
+                            $wp_uid = intval( $found_uid );
+                        }
+                    }
+
+                    $clean_ext_coords[] = [
+                        'name'           => sanitize_text_field( $ext['name'] ?? '' ),
+                        'commercial_name'=> sanitize_text_field( $ext['commercial_name'] ?? '' ),
+                        'email'          => sanitize_email( $ext['email'] ?? '' ),
+                        'phone'          => sanitize_text_field( $ext['phone'] ?? '' ),
+                        'organization'   => sanitize_text_field( $ext['organization'] ?? '' ),
+                        'role'           => sanitize_key( $ext['role'] ?? 'coord_lead' ),
+                        'third_party_id' => $tp_id,
+                        'wp_user_id'     => $wp_uid,
+                    ];
+                }
+            }
+        }
+        $ext_coords_json = ! empty( $clean_ext_coords ) ? wp_json_encode( $clean_ext_coords ) : null;
+
         $fields = [
-            'name'            => $name,
-            'code'            => $code,
-            'description'     => sanitize_textarea_field( $data['description'] ?? '' ),
-            'academic_period' => sanitize_text_field( $data['academic_period'] ?? '' ),
-            'start_date'      => ! empty( $data['start_date'] ) ? sanitize_text_field( $data['start_date'] ) : null,
-            'end_date'        => ! empty( $data['end_date'] ) ? sanitize_text_field( $data['end_date'] ) : null,
-            'color'           => $color,
-            'status'          => in_array( $data['status'] ?? '', [ 'active', 'archived', 'draft' ], true ) ? $data['status'] : 'active',
-            'coordinator_id'  => $primary_coordinator,
-            'coordinators'    => $coordinators_json,
-            'area_id'         => $area_id,
-            'updated_at'      => current_time( 'mysql' ),
+            'name'                 => $name,
+            'code'                 => $code,
+            'description'          => sanitize_textarea_field( $data['description'] ?? '' ),
+            'academic_period'      => sanitize_text_field( $data['academic_period'] ?? '' ),
+            'start_date'           => ! empty( $data['start_date'] ) ? sanitize_text_field( $data['start_date'] ) : null,
+            'end_date'             => ! empty( $data['end_date'] ) ? sanitize_text_field( $data['end_date'] ) : null,
+            'color'                => $color,
+            'status'               => in_array( $data['status'] ?? '', [ 'active', 'archived', 'draft' ], true ) ? $data['status'] : 'active',
+            'coordinator_id'       => $primary_coordinator,
+            'coordinators'         => $coordinators_json,
+            'external_coordinators'=> $ext_coords_json,
+            'area_id'              => $area_id,
+            'updated_at'           => current_time( 'mysql' ),
         ];
 
         // Validar coherencia de rango de fechas
@@ -269,6 +364,7 @@ class Aura_Calendar_Programs {
             '%s', '%s',
             $fields['coordinator_id'] !== null ? '%d' : null,
             $fields['coordinators'] !== null ? '%s' : null,
+            $fields['external_coordinators'] !== null ? '%s' : null,
             $fields['area_id'] !== null ? '%d' : null,
             '%s',
         ];
