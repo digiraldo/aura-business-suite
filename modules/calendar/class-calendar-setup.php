@@ -243,6 +243,10 @@ class Aura_Calendar_Setup {
             if ( ! in_array( 'external_org', $cols_inst, true ) ) {
                 $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `external_org` VARCHAR(255) DEFAULT NULL AFTER `external_phone`" );
             }
+
+            if ( ! in_array( 'third_party_id', $cols_inst, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `third_party_id` BIGINT UNSIGNED DEFAULT NULL AFTER `external_org`, ADD KEY `third_party_id` (`third_party_id`)" );
+            }
         }
     }
 

@@ -1057,7 +1057,42 @@ flowchart TD
 
 
 
+Continua de inmediato con la Fase 7 (generación y envío de invitaciones de calendario a profesores mediante correo con archivo .ics descargable y enlaces directos de "Agregar a Google Calendar / Outlook")
 
 
 
-   - En `https://diserwp.test/wp-admin/admin.php?page=aura-forms-enrollments`, en acciones, tiene el boton de eliminar este, y como se sincroniza esta pagina de `Postulantes — Inscripciones desde Formularios`, con la de `Inscripciones y Aprobaciones` en la url `https://diserwp.test/wp-admin/admin.php?page=aura-students-enrollments` del Modulo de estudiantes, analiza todo ya que debe haver sincronizacion entre lo correspondiente al formulario cunado hay incripciones a curso, y Estudiantes y que que el curso este creado en `Cursos y Programas` y este debe esta sincronizado con `Programas y Cursos de Capacitación` del calendario.  Analiza todo el flujo
+### 30. Integración del Catálogo de Terceros y Entidades Comerciales en el Calendario Académico
+
+Se integró completamente la base de datos centralizada de Terceros (`wp_aura_finance_third_parties`) y el modal reutilizable `AuraThirdPartySelector` (`Catálogo de Terceros y Entidades Comerciales`) con el modal de asignación de eventos del Calendario (`#modal-event-editor`), permitiendo vincular docentes externos, empresas, ponentes y fundaciones directamente desde el directorio institucional sin necesidad de registrarlos manualmente cada vez.
+
+#### Componentes y Modificaciones Realizadas:
+1. **Base de Datos y Persistencia Relacional:**
+   - Se añadió la columna `third_party_id BIGINT UNSIGNED DEFAULT NULL` a la tabla `wp_aura_cal_event_instructors` mediante migración segura y declarativa en `Aura_Calendar_Setup::maybe_add_modules_and_externals_columns()`.
+   - Se actualizó `Aura_Calendar_Events::save()` para capturar y persistir `third_party_id` en las asignaciones de instructores externos.
+   - Se actualizó el mapeo en `Aura_Calendar_Events::get()` y `get_all()` para exponer `third_party_id` en los instructores externos cargados en el modal de eventos y en FullCalendar.
+
+2. **Carga Modular de Recursos (Assets):**
+   - En `Aura_Calendar_Admin::enqueue_assets()`, se encolaron los estilos y scripts del selector de terceros:
+     - `jquery-ui-autocomplete` y estilos jQuery UI.
+     - `aura-third-parties-directory-css` (`assets/css/third-parties-directory.css`).
+     - `aura-third-party-selector` (`assets/js/third-party-selector.js`) con localización de `auraCounterpartiesData` (nonce `aura_search_counterparties_nonce` y roles contables).
+     - Se añadió `aura-third-party-selector` como dependencia de `aura-calendar-admin`.
+
+3. **Interfaz de Usuario en el Modal del Calendario (`templates/calendar/modal-partials.php`):**
+   - Botón destacado **🏛️ Catálogo de Terceros** (`#btn-open-tp-catalog-explorer`) con diseño azul corporativo, hover y sombra de elevación.
+   - Enlace directo **↗ Directorio** que abre `admin.php?page=aura-third-parties` en nueva pestaña para ver o dar de alta nuevas entidades.
+   - Botón **➕ Agregar Manual** para el desplegable tradicional de creación rápida.
+   - Input oculto `#ext-inst-third-party-id` e indicador visual `#ext-inst-linked-badge` (**🔗 Vinculado a Entidad del Catálogo**).
+   - Placeholder inteligente en `#ext-inst-name` sugerente de búsqueda o registro directo.
+
+4. **Interactividad Dinámica (`assets/js/calendar-admin.js`):**
+   - Conexión del botón `#btn-open-tp-catalog-explorer` a `window.AuraThirdPartySelector.openExplorer()`.
+   - Al seleccionar un tercero en el catálogo:
+     - Prellenado automático de nombre/razón social, correo, teléfono y organización/tipo de entidad.
+     - Sincronización del `third_party_id`.
+     - Despliegue del formulario con enfoque en el selector de rol (`ext-inst-role`: Titular Externo, Invitado / Ponente, Co-instructor).
+   - Autocompletado inteligente con jQuery UI en el campo de texto `#ext-inst-name` conectado a `action: 'aura_search_counterparties'`.
+   - Distintivo visual `🏛️ Catálogo` en los chips de la lista de instructores asignados (`renderExternalInstructorsList()`).
+
+5. **Mejora del Selector Central (`assets/js/third-party-selector.js`):**
+   - Incorporación de `data-phone` en el botón de selección de la tarjeta de catálogo y propagación limpia en el objeto `item.phone` para callbacks de selección externos.

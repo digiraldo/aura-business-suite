@@ -425,6 +425,7 @@ window.AuraThirdPartySelector = (function($) {
             const logo = $(this).data('logo') || '';
             const login = $(this).data('login') || '';
             const email = $(this).data('email') || '';
+            const phone = $(this).data('phone') || '';
             const partyType = $(this).data('party-type') || (isWpUser ? 'user' : 'company');
             const partyTypeLabel = $(this).data('party-type-label') || '';
 
@@ -437,6 +438,7 @@ window.AuraThirdPartySelector = (function($) {
                 name: name,
                 login: login,
                 email: email,
+                phone: phone,
                 commercial_name: commercial,
                 party_type: partyType,
                 party_type_label: partyTypeLabel,
@@ -706,6 +708,7 @@ window.AuraThirdPartySelector = (function($) {
                             data-name="${item.name}"
                             data-login="${item.login || ''}"
                             data-email="${item.email || ''}"
+                            data-phone="${item.phone || ''}"
                             data-commercial="${item.commercial_name || ''}"
                             data-doc="${item.document_id || ''}"
                             data-tax="${item.tax_id_type || 'NIT'}"

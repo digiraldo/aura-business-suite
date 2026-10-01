@@ -1378,6 +1378,8 @@
     // ─────────────────────────────────────────────────────────────
     // INSTRUCTORES TERCEROS / EXTERNOS
     // ─────────────────────────────────────────────────────────────
+    // INSTRUCTORES TERCEROS / EXTERNOS (INTEGRACIÓN CATÁLOGO AURA)
+    // ─────────────────────────────────────────────────────────────
     var currentEventExternalInstructors = [];
 
     function renderExternalInstructorsList() {
@@ -1392,8 +1394,10 @@
         }
 
         var roleBadges = {
-            'primary': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Titular</span>',
-            'guest': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">Invitado</span>',
+            'lead': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Titular Externo</span>',
+            'primary': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Titular Externo</span>',
+            'guest': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">Invitado / Ponente</span>',
+            'assistant': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">Co-instructor</span>',
             'co_instructor': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">Co-instructor</span>'
         };
 
@@ -1402,6 +1406,7 @@
             var orgText = inst.organization ? ' <span style="color:#64748b;font-size:11px;">(' + escapeHtml(inst.organization) + ')</span>' : '';
             var emailText = inst.email ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; ' + escapeHtml(inst.email) + '</span>' : '';
             var phoneText = inst.phone ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; 📞 ' + escapeHtml(inst.phone) + '</span>' : '';
+            var tpBadge = inst.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado al Catálogo Contable #ID ' + inst.third_party_id + '">🏛️ Catálogo</span>' : '';
 
             var $chip = $(
                 '<div class="aura-ext-inst-card" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:var(--aura-surface-soft, rgba(14,165,233,0.06));border:1px solid rgba(14,165,233,0.22);border-radius:8px;margin-bottom:6px;">' +
@@ -1411,6 +1416,7 @@
                             '<div style="font-size:12px;font-weight:700;color:var(--aura-text-primary);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
                                 '<span>' + escapeHtml(inst.name) + '</span>' +
                                 roleBadge +
+                                tpBadge +
                             '</div>' +
                             '<div style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
                                 orgText + emailText + phoneText +
@@ -1438,13 +1444,103 @@
         }
     });
 
-    $(document).on('click', '#btn-cancel-external-inst', function(e) {
+    $(document).on('click', '#btn-cancel-add-external, #btn-cancel-external-inst', function(e) {
         e.preventDefault();
         $('#box-add-external-inst').slideUp(180);
-        $('#ext-inst-name').val('');
-        $('#ext-inst-email').val('');
-        $('#ext-inst-phone').val('');
-        $('#ext-inst-org').val('');
+        $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org, #ext-inst-third-party-id').val('');
+        $('#ext-inst-linked-badge').hide();
+    });
+
+    // Abrir Modal Explorador Avanzado de Terceros y Entidades Comerciales
+    $(document).on('click', '#btn-open-tp-catalog-explorer', function(e) {
+        e.preventDefault();
+        if (window.AuraThirdPartySelector && typeof window.AuraThirdPartySelector.openExplorer === 'function') {
+            window.AuraThirdPartySelector.openExplorer({
+                title: 'Catálogo de Terceros — Asignar a la Clase',
+                onSelect: function(item) {
+                    var displayName = item.commercial_name || item.name || '';
+                    var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
+
+                    $('#ext-inst-name').val(displayName);
+                    $('#ext-inst-email').val(item.email || '');
+                    $('#ext-inst-phone').val(item.phone || '');
+                    $('#ext-inst-org').val(orgName);
+                    $('#ext-inst-third-party-id').val(item.third_party_id || '');
+
+                    if (item.third_party_id) {
+                        $('#ext-inst-linked-badge').css('display', 'inline-flex');
+                    } else {
+                        $('#ext-inst-linked-badge').hide();
+                    }
+
+                    $('#box-add-external-inst').slideDown(180);
+                    $('#ext-inst-role').focus();
+                    showToast('Tercero "' + displayName + '" seleccionado del catálogo. Revisa su rol y agrégalo a la clase.', 'info');
+                }
+            });
+        } else {
+            window.open(auraCalData.ajax_url.replace('admin-ajax.php', 'admin.php?page=aura-third-parties'), '_blank');
+        }
+    });
+
+    // Inicializar autocompletado en el input de nombre si jQuery UI está disponible
+    function initExternalInstAutocomplete() {
+        var $input = $('#ext-inst-name');
+        if (!$input.length || typeof $input.autocomplete !== 'function') return;
+
+        var ajaxUrl = (window.auraCounterpartiesData && auraCounterpartiesData.ajaxUrl) || auraCalData.ajax_url;
+        var nonce = (window.auraCounterpartiesData && auraCounterpartiesData.nonce) || '';
+
+        $input.autocomplete({
+            minLength: 2,
+            delay: 200,
+            source: function(request, response) {
+                $.ajax({
+                    url: ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'aura_search_counterparties',
+                        nonce: nonce,
+                        term: request.term
+                    },
+                    success: function(res) {
+                        if (res && res.success && Array.isArray(res.data)) {
+                            response(res.data);
+                        } else {
+                            response([]);
+                        }
+                    },
+                    error: function() {
+                        response([]);
+                    }
+                });
+            },
+            select: function(event, ui) {
+                var item = ui.item;
+                var displayName = item.commercial_name || item.name || item.value || '';
+                var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
+
+                $input.val(displayName);
+                $('#ext-inst-email').val(item.email || '');
+                $('#ext-inst-phone').val(item.phone || '');
+                $('#ext-inst-org').val(orgName);
+                $('#ext-inst-third-party-id').val(item.third_party_id || '');
+
+                if (item.third_party_id) {
+                    $('#ext-inst-linked-badge').css('display', 'inline-flex');
+                } else {
+                    $('#ext-inst-linked-badge').hide();
+                }
+
+                $('#ext-inst-role').focus();
+                return false;
+            }
+        });
+    }
+
+    // Inicializar autocompletado al cargar
+    $(function() {
+        initExternalInstAutocomplete();
     });
 
     // Guardar instructor externo en el array temporal
@@ -1461,21 +1557,21 @@
         var phone = $.trim($('#ext-inst-phone').val());
         var org = $.trim($('#ext-inst-org').val());
         var role = $('#ext-inst-role').val() || 'guest';
+        var tpId = $('#ext-inst-third-party-id').val();
 
         currentEventExternalInstructors.push({
             name: name,
             email: email,
             phone: phone,
             organization: org,
-            role: role
+            role: role,
+            third_party_id: tpId ? parseInt(tpId, 10) : null
         });
 
         renderExternalInstructorsList();
 
-        $('#ext-inst-name').val('');
-        $('#ext-inst-email').val('');
-        $('#ext-inst-phone').val('');
-        $('#ext-inst-org').val('');
+        $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org, #ext-inst-third-party-id').val('');
+        $('#ext-inst-linked-badge').hide();
         $('#box-add-external-inst').slideUp(180);
         showToast('Instructor externo "' + name + '" añadido.', 'success');
     });
@@ -1639,7 +1735,8 @@
         // Cargar instructores terceros / externos si existen
         currentEventExternalInstructors = Array.isArray(data.external_instructors) ? data.external_instructors.slice() : [];
         $('#box-add-external-inst').hide();
-        $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org').val('');
+        $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org, #ext-inst-third-party-id').val('');
+        $('#ext-inst-linked-badge').hide();
         renderExternalInstructorsList();
 
         // Inicializar toggle y chips de eventos rápidos/genéricos

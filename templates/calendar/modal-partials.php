@@ -122,48 +122,63 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
                     <!-- Instructores Terceros / Externos -->
                     <div class="form-group" style="background: rgba(16, 185, 129, 0.04); border: 1px dashed rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin: 0; display: flex; align-items: center; gap: 6px;">
                                 <span>🏢 <?php esc_html_e( 'Instructores Terceros / Externos', 'aura' ); ?></span>
                             </label>
-                            <button type="button" id="btn-toggle-add-external-inst" class="btn btn-xs btn-outline" style="font-size: 11.5px; padding: 3px 8px;">
-                                ➕ <?php esc_html_e( 'Agregar Tercero', 'aura' ); ?>
-                            </button>
+                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-third-parties' ) ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost" style="font-size: 11px; padding: 3px 6px; color: var(--aura-text-muted, #64748b);" title="<?php esc_attr_e( 'Abrir Directorio de Terceros en nueva pestaña', 'aura' ); ?>">
+                                    ↗ <?php esc_html_e( 'Directorio', 'aura' ); ?>
+                                </a>
+                                <button type="button" id="btn-open-tp-catalog-explorer" class="btn btn-xs btn-primary" style="font-size: 11.5px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 5px; background: #0284c7; border-color: #0284c7; color: #fff; font-weight: 600; border-radius: 6px; box-shadow: 0 1px 3px rgba(2,132,199,0.3);">
+                                    🏛️ <?php esc_html_e( 'Catálogo de Terceros', 'aura' ); ?>
+                                </button>
+                                <button type="button" id="btn-toggle-add-external-inst" class="btn btn-xs btn-outline" style="font-size: 11.5px; padding: 3px 8px; border-radius: 6px;">
+                                    ➕ <?php esc_html_e( 'Agregar Manual', 'aura' ); ?>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Formulario desplegable para nuevo externo -->
-                        <div id="box-add-external-inst" style="display: none; background: var(--aura-surface, #ffffff); border: 1px solid var(--aura-border, #cbd5e1); border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                        <div id="box-add-external-inst" style="display: none; background: var(--aura-surface, #ffffff); border: 1px solid var(--aura-border, #cbd5e1); border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                            <input type="hidden" id="ext-inst-third-party-id" value="">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                 <div>
                                     <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre Completo / Razón Social', 'aura' ); ?> <span style="color:#ef4444;">*</span></label>
-                                    <input type="text" id="ext-inst-name" class="form-control" style="font-size: 12px; padding: 4px 8px;" placeholder="<?php esc_attr_e( 'Ej: Dr. Roberto Gómez', 'aura' ); ?>">
+                                    <input type="text" id="ext-inst-name" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Escribe para autocompletar o registrar...', 'aura' ); ?>">
                                 </div>
                                 <div>
                                     <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Correo Electrónico', 'aura' ); ?></label>
-                                    <input type="email" id="ext-inst-email" class="form-control" style="font-size: 12px; padding: 4px 8px;" placeholder="roberto@empresa.com">
+                                    <input type="email" id="ext-inst-email" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="contacto@empresa.com">
                                 </div>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                 <div>
                                     <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Organización / Institución', 'aura' ); ?></label>
-                                    <input type="text" id="ext-inst-org" class="form-control" style="font-size: 12px; padding: 4px 8px;" placeholder="<?php esc_attr_e( 'Empresa / Univ.', 'aura' ); ?>">
+                                    <input type="text" id="ext-inst-org" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Empresa / Institución', 'aura' ); ?>">
                                 </div>
                                 <div>
                                     <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Teléfono', 'aura' ); ?></label>
-                                    <input type="text" id="ext-inst-phone" class="form-control" style="font-size: 12px; padding: 4px 8px;" placeholder="+502 ...">
+                                    <input type="text" id="ext-inst-phone" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="+502 ...">
                                 </div>
                                 <div>
                                     <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Rol en la Clase', 'aura' ); ?></label>
-                                    <select id="ext-inst-role" class="form-control" style="font-size: 12px; padding: 4px 8px;">
+                                    <select id="ext-inst-role" class="form-control" style="font-size: 12px; padding: 5px 8px;">
                                         <option value="guest"><?php esc_html_e( 'Invitado / Ponente', 'aura' ); ?></option>
                                         <option value="lead"><?php esc_html_e( 'Titular Externo', 'aura' ); ?></option>
                                         <option value="assistant"><?php esc_html_e( 'Co-instructor', 'aura' ); ?></option>
                                     </select>
                                 </div>
                             </div>
-                            <div style="display: flex; justify-content: flex-end; gap: 6px;">
-                                <button type="button" id="btn-cancel-add-external" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura' ); ?></button>
-                                <button type="button" id="btn-save-external-inst" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir a la Clase', 'aura' ); ?></button>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px solid #f1f5f9;">
+                                <div id="ext-inst-linked-badge" style="display: none; align-items: center; gap: 4px; font-size: 11px; color: #0284c7; font-weight: 600;">
+                                    <span class="dashicons dashicons-admin-links" style="font-size: 14px; width: 14px; height: 14px;"></span>
+                                    <span><?php esc_html_e( 'Vinculado a Entidad del Catálogo', 'aura' ); ?></span>
+                                </div>
+                                <div style="display: flex; justify-content: flex-end; gap: 6px; margin-left: auto;">
+                                    <button type="button" id="btn-cancel-add-external" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura' ); ?></button>
+                                    <button type="button" id="btn-save-external-inst" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir a la Clase', 'aura' ); ?></button>
+                                </div>
                             </div>
                         </div>
 

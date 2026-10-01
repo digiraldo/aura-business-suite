@@ -222,11 +222,25 @@ class Aura_Calendar_Admin {
             $cal_ver
         );
 
+        // Autocomplete y selector reutilizable de Terceros / Entidades Comerciales
+        wp_enqueue_script( 'jquery-ui-autocomplete' );
+        wp_enqueue_style( 'jquery-ui-css', 'https://code.jquery.com/ui/1.13.2/themes/smoothness/jquery-ui.css' );
+        $css_tp_ver = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/css/third-parties-directory.css' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/css/third-parties-directory.css' ) : time() );
+        wp_enqueue_style( 'aura-third-parties-directory-css', AURA_PLUGIN_URL . 'assets/css/third-parties-directory.css', [], $css_tp_ver );
+
+        $js_tp_ver = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/js/third-party-selector.js' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/js/third-party-selector.js' ) : time() );
+        wp_enqueue_script( 'aura-third-party-selector', AURA_PLUGIN_URL . 'assets/js/third-party-selector.js', [ 'jquery', 'jquery-ui-autocomplete' ], $js_tp_ver, true );
+        wp_localize_script( 'aura-third-party-selector', 'auraCounterpartiesData', [
+            'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+            'nonce'   => wp_create_nonce( 'aura_search_counterparties_nonce' ),
+            'roles'   => class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_accounting_roles() : [],
+        ] );
+
         // Script administrativo del módulo de calendario
         wp_enqueue_script(
             'aura-calendar-admin',
             AURA_PLUGIN_URL . 'assets/js/calendar-admin.js',
-            [ 'jquery', 'fullcalendar-bundle', 'aura-ui-core' ],
+            [ 'jquery', 'fullcalendar-bundle', 'aura-ui-core', 'aura-third-party-selector' ],
             $cal_ver,
             true
         );

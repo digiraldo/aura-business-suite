@@ -326,6 +326,7 @@ class Aura_Calendar_Events {
                     'email'          => $inst_email,
                     'role'           => $ir->role,
                     'is_external'    => $is_ext ? 1 : 0,
+                    'third_party_id' => ! empty( $ir->third_party_id ) ? (int) $ir->third_party_id : null,
                     'external_name'  => $ir->external_name ?? '',
                     'external_email' => $ir->external_email ?? '',
                     'external_phone' => $ir->external_phone ?? '',
@@ -525,6 +526,7 @@ class Aura_Calendar_Events {
                 $inst->external_email = $inst->external_email ?? '';
                 $inst->external_phone = $inst->external_phone ?? '';
                 $inst->external_org   = $inst->external_org ?? '';
+                $inst->third_party_id = ! empty( $inst->third_party_id ) ? (int) $inst->third_party_id : null;
             }
             unset( $inst );
         }
@@ -617,6 +619,7 @@ class Aura_Calendar_Events {
             array_unshift( $teacher_ids, $primary_teacher_id );
         }
         $has_instructor_id_col = (bool) $wpdb->get_results( "SHOW COLUMNS FROM `{$table_inst}` LIKE 'instructor_id'" );
+        $has_tp_id_col         = (bool) $wpdb->get_results( "SHOW COLUMNS FROM `{$table_inst}` LIKE 'third_party_id'" );
 
         // Procesar líderes estudiantiles asignados
         $student_leaders_json = null;
@@ -659,7 +662,7 @@ class Aura_Calendar_Events {
         }
 
         // Helper para persistir instructores internos y externos
-        $persist_instructors = function( $target_evt_id ) use ( $wpdb, $table_inst, $teacher_ids, $primary_teacher_id, $has_instructor_id_col, $external_instructors ) {
+        $persist_instructors = function( $target_evt_id ) use ( $wpdb, $table_inst, $teacher_ids, $primary_teacher_id, $has_instructor_id_col, $has_tp_id_col, $external_instructors ) {
             foreach ( $teacher_ids as $tid ) {
                 $inst_payload = [
                     'event_id'   => $target_evt_id,
@@ -696,6 +699,11 @@ class Aura_Calendar_Events {
                 $ext_formats = [ '%d', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' ];
                 if ( $has_instructor_id_col ) {
                     $ext_payload['instructor_id'] = 0;
+                    $ext_formats[] = '%d';
+                }
+                $tp_id = ! empty( $ext['third_party_id'] ) ? intval( $ext['third_party_id'] ) : ( ! empty( $ext['tp_id'] ) ? intval( $ext['tp_id'] ) : 0 );
+                if ( $has_tp_id_col && $tp_id > 0 ) {
+                    $ext_payload['third_party_id'] = $tp_id;
                     $ext_formats[] = '%d';
                 }
                 $wpdb->insert( $table_inst, $ext_payload, $ext_formats );
