@@ -2068,6 +2068,18 @@ class Aura_Calendar_Frontend {
                             openEventDetail(info.event);
                         }
                     },
+                    dateClick: function(info) {
+                        if (!auraCalData.user_can_edit) return;
+                        if (window.auraEventClipboard && typeof window.handlePasteEventToDate === 'function') {
+                            window.handlePasteEventToDate(info.dateStr);
+                        }
+                    },
+                    select: function(info) {
+                        if (!auraCalData.user_can_edit) return;
+                        if (window.auraEventClipboard && typeof window.handlePasteEventToDate === 'function') {
+                            window.handlePasteEventToDate(info.startStr, info.endStr);
+                        }
+                    },
                     datesSet: function(dateInfo) {
                         var anchorDate = dateInfo.view.currentStart || dateInfo.start;
                         if (typeof window.syncCalendarUrlAndGcalLink === 'function') {

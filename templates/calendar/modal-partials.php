@@ -159,9 +159,25 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
                         <div id="box-recurrence-details" style="display: none; margin-top: 14px; flex-direction: column; gap: 12px;">
                             <div>
-                                <span style="font-size: 12px; font-weight: 600; color: var(--aura-text-secondary); display: block; margin-bottom: 6px;">
-                                    <?php esc_html_e( 'Días de la semana:', 'aura' ); ?>
-                                </span>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                                    <span style="font-size: 12px; font-weight: 600; color: var(--aura-text-secondary);">
+                                        <?php esc_html_e( 'Días de la semana:', 'aura' ); ?>
+                                    </span>
+                                    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                        <button type="button" class="btn-rec-preset" data-preset="same-day" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--aura-border, #cbd5e1); background: var(--aura-surface, #f8fafc); cursor: pointer; font-weight: 600;">
+                                            📅 <?php esc_html_e( 'Mismo día', 'aura' ); ?>
+                                        </button>
+                                        <button type="button" class="btn-rec-preset" data-preset="weekdays" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--aura-border, #cbd5e1); background: var(--aura-surface, #f8fafc); cursor: pointer; font-weight: 600;">
+                                            <?php esc_html_e( 'Lun - Vie', 'aura' ); ?>
+                                        </button>
+                                        <button type="button" class="btn-rec-preset" data-preset="all" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--aura-border, #cbd5e1); background: var(--aura-surface, #f8fafc); cursor: pointer; font-weight: 600;">
+                                            <?php esc_html_e( 'Todos', 'aura' ); ?>
+                                        </button>
+                                        <button type="button" class="btn-rec-preset" data-preset="weekend" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--aura-border, #cbd5e1); background: var(--aura-surface, #f8fafc); cursor: pointer; font-weight: 600;">
+                                            <?php esc_html_e( 'Fin de semana', 'aura' ); ?>
+                                        </button>
+                                    </div>
+                                </div>
                                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                                     <?php
                                     $dias = [

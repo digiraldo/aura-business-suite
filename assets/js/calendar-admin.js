@@ -444,18 +444,26 @@
                 hideEventTooltip();
             },
 
-            // Clic en celda para crear evento
+            // Clic en celda para crear o pegar evento
             dateClick: function(info) {
                 if (!auraCalData.user_can_edit) return;
+                if (window.auraEventClipboard && typeof handlePasteEventToDate === 'function') {
+                    handlePasteEventToDate(info.dateStr);
+                    return;
+                }
                 openEventEditor({
                     start: info.dateStr,
                     allDay: info.allDay
                 });
             },
 
-            // Clic y arrastre en rango de fechas para agendar
+            // Clic y arrastre en rango de fechas para agendar o pegar
             select: function(info) {
                 if (!auraCalData.user_can_edit) return;
+                if (window.auraEventClipboard && typeof handlePasteEventToDate === 'function') {
+                    handlePasteEventToDate(info.startStr, info.endStr);
+                    return;
+                }
                 openEventEditor({
                     start: info.startStr,
                     end: info.endStr,
@@ -1745,6 +1753,36 @@
         }
     });
 
+    // Presets rápidos de días para serie recurrente
+    $(document).on('click', '.btn-rec-preset', function(e) {
+        e.preventDefault();
+        var preset = $(this).data('preset');
+        var $checks = $('input[name="recurring_days[]"]');
+        
+        if (preset === 'same-day') {
+            var startDateVal = $('#rec-date-start').val() || $('#evt-start-dt').val();
+            if (startDateVal) {
+                var d = new Date(startDateVal.substring(0, 10) + 'T12:00:00');
+                var jsDay = d.getDay(); // 0 Dom, 1 Lun, ...
+                var isoDay = jsDay === 0 ? 7 : jsDay;
+                $checks.prop('checked', false);
+                $checks.filter('[value="' + isoDay + '"]').prop('checked', true);
+            }
+        } else if (preset === 'weekdays') {
+            $checks.each(function() {
+                var v = parseInt($(this).val(), 10);
+                $(this).prop('checked', v >= 1 && v <= 5);
+            });
+        } else if (preset === 'all') {
+            $checks.prop('checked', true);
+        } else if (preset === 'weekend') {
+            $checks.each(function() {
+                var v = parseInt($(this).val(), 10);
+                $(this).prop('checked', v === 6 || v === 7);
+            });
+        }
+    });
+
     // Cargar materias según programa seleccionado en modal
     $('#evt-program-id').on('change', function() {
         var progId = $(this).val();
@@ -2127,6 +2165,181 @@
             student_leaders: p.student_leaders || []
         });
     });
+
+    // ─────────────────────────────────────────────────────────────
+    // 4.5. CLONAR, COPIAR, PEGAR Y REPETIR SERIES DE EVENTOS
+    // ─────────────────────────────────────────────────────────────
+
+    window.auraEventClipboard = null;
+
+    function updateClipboardBarUI() {
+        var $bar = $('#aura-calendar-clipboard-bar');
+        if (window.auraEventClipboard && window.auraEventClipboard.title) {
+            $('#clipboard-bar-event-title').text(window.auraEventClipboard.title);
+            $bar.css('display', 'flex').fadeIn(200);
+        } else {
+            $bar.fadeOut(200);
+        }
+    }
+
+    $(document).on('click', '#btn-clipboard-cancel', function(e) {
+        e.preventDefault();
+        window.auraEventClipboard = null;
+        updateClipboardBarUI();
+        showToast('Portapapeles descartado.', 'info');
+    });
+
+    // Copiar Evento desde Modal Detalle
+    $('#btn-det-copy').on('click', function() {
+        if (!currentDetailEvent) return;
+        var p = currentDetailEvent.extendedProps || {};
+        window.auraEventClipboard = {
+            id: currentDetailEvent.id,
+            title: p.raw_title || currentDetailEvent.title,
+            start: currentDetailEvent.start,
+            end: currentDetailEvent.end
+        };
+        updateClipboardBarUI();
+        closeModal('#modal-event-detail');
+        showToast('📋 Evento copiado. Haz clic en cualquier fecha/hora para pegarlo.', 'success');
+    });
+
+    // Clonar Evento Inmediato
+    $('#btn-det-clone').on('click', function() {
+        if (!currentDetailEvent) return;
+        var evtId = currentDetailEvent.id;
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<span>⏳</span> <span>Clonando...</span>');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_duplicate_event',
+            nonce: auraCalData.nonce,
+            id: evtId
+        }, function(res) {
+            $btn.prop('disabled', false).html('<span>⚡</span> <span>Clonar</span>');
+            if (res && res.success) {
+                closeModal('#modal-event-detail');
+                showToast(res.data && res.data.message ? res.data.message : 'Evento clonado exitosamente.', 'success');
+                if (typeof calendar !== 'undefined' && calendar) calendar.refetchEvents();
+                if (window.teacherCalendarInstance) window.teacherCalendarInstance.refetchEvents();
+            } else {
+                showToast(res && res.data && res.data.message ? res.data.message : 'Error al clonar el evento.', 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html('<span>⚡</span> <span>Clonar</span>');
+            showToast('Error de conexión al clonar el evento.', 'error');
+        });
+    });
+
+    // Abrir Modal de Repetir Serie
+    $('#btn-det-repeat').on('click', function() {
+        if (!currentDetailEvent) return;
+        var ev = currentDetailEvent;
+        var p = ev.extendedProps || {};
+
+        closeModal('#modal-event-detail');
+
+        $('#repeat-event-id').val(ev.id);
+        var dateLabel = ev.start ? ev.start.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        var timeLabel = (ev.start ? ev.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '') + (ev.end ? ' — ' + ev.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+
+        $('#repeat-event-summary').html(
+            '<strong>Clase:</strong> ' + escapeHtml(p.raw_title || ev.title) + '<br>' +
+            '<strong>Día base:</strong> ' + escapeHtml(dateLabel) + '<br>' +
+            '<strong>Horario:</strong> ' + escapeHtml(timeLabel)
+        );
+
+        // Pre-llenar fecha inicio con la fecha del evento original
+        var startYmd = ev.start ? ev.start.toISOString().split('T')[0] : '';
+        $('#repeat-date-start').val(startYmd);
+
+        // Pre-llenar fecha fin con 4 semanas después
+        if (ev.start) {
+            var futureDt = new Date(ev.start.getTime() + (28 * 86400000));
+            $('#repeat-date-end').val(futureDt.toISOString().split('T')[0]);
+        }
+
+        openModal('#modal-repeat-series');
+    });
+
+    // Enviar Formulario de Repetir Serie
+    $('#form-repeat-series').on('submit', function(e) {
+        e.preventDefault();
+        var evtId = $('#repeat-event-id').val();
+        var freq = $('#repeat-frequency').val();
+        var dtStart = $('#repeat-date-start').val();
+        var dtEnd = $('#repeat-date-end').val();
+
+        if (!evtId || !dtStart || !dtEnd) {
+            showToast('Por favor completa todos los campos requeridos.', 'error');
+            return;
+        }
+
+        var $submitBtn = $('#btn-submit-repeat-series');
+        $submitBtn.prop('disabled', true).text('⏳ Generando repeticiones...');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_replicate_series',
+            nonce: auraCalData.nonce,
+            id: evtId,
+            repeat_type: freq,
+            date_start: dtStart,
+            date_end: dtEnd
+        }, function(res) {
+            $submitBtn.prop('disabled', false).html('🔁 Generar Repeticiones');
+            if (res && res.success) {
+                closeModal('#modal-repeat-series');
+                showToast(res.data && res.data.message ? res.data.message : 'Serie recurrente generada exitosamente.', 'success');
+                if (typeof calendar !== 'undefined' && calendar) calendar.refetchEvents();
+                if (window.teacherCalendarInstance) window.teacherCalendarInstance.refetchEvents();
+            } else {
+                showToast(res && res.data && res.data.message ? res.data.message : 'Error al generar la serie.', 'error');
+            }
+        }).fail(function() {
+            $submitBtn.prop('disabled', false).html('🔁 Generar Repeticiones');
+            showToast('Error de conexión al generar la serie recurrente.', 'error');
+        });
+    });
+
+    // Función unificada para pegar evento copiado en una fecha/hora dada
+    function handlePasteEventToDate(startStr, endStr) {
+        if (!window.auraEventClipboard || !window.auraEventClipboard.id) return;
+        var clip = window.auraEventClipboard;
+        
+        var dateFormatted = startStr;
+        try {
+            var d = new Date(startStr);
+            if (!isNaN(d.getTime())) {
+                dateFormatted = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        } catch(e) {}
+
+        if (!confirm('¿Deseas pegar el evento "' + clip.title + '" en ' + dateFormatted + '?')) {
+            return;
+        }
+
+        showToast('⏳ Pegando evento...', 'info');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_duplicate_event',
+            nonce: auraCalData.nonce,
+            id: clip.id,
+            new_start: startStr,
+            new_end: endStr || '',
+            title_prefix: ''
+        }, function(res) {
+            if (res && res.success) {
+                showToast(res.data && res.data.message ? res.data.message : 'Evento pegado exitosamente.', 'success');
+                if (typeof calendar !== 'undefined' && calendar) calendar.refetchEvents();
+                if (window.teacherCalendarInstance) window.teacherCalendarInstance.refetchEvents();
+            } else {
+                showToast(res && res.data && res.data.message ? res.data.message : 'Error al pegar el evento.', 'error');
+            }
+        }).fail(function() {
+            showToast('Error al procesar el pegado de evento.', 'error');
+        });
+    }
+    window.handlePasteEventToDate = handlePasteEventToDate;
 
     // ─────────────────────────────────────────────────────────────
     // 5. ASISTENCIA (MODAL Y ROSTER)

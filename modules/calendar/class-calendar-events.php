@@ -63,6 +63,8 @@ class Aura_Calendar_Events {
         add_action( 'wp_ajax_aura_cal_delete_event',        [ __CLASS__, 'ajax_delete_event' ] );
         add_action( 'wp_ajax_aura_cal_update_event_dates',  [ __CLASS__, 'ajax_update_event_dates' ] );
         add_action( 'wp_ajax_aura_cal_heartbeat_sync',       [ __CLASS__, 'ajax_heartbeat_sync' ] );
+        add_action( 'wp_ajax_aura_cal_duplicate_event',     [ __CLASS__, 'ajax_duplicate_event' ] );
+        add_action( 'wp_ajax_aura_cal_replicate_series',    [ __CLASS__, 'ajax_replicate_series' ] );
     }
 
     /**
@@ -1078,5 +1080,306 @@ class Aura_Calendar_Events {
         } else {
             wp_send_json_error( [ 'message' => __( 'No se pudo actualizar el horario.', 'aura' ) ] );
         }
+    }
+
+    /**
+     * Duplicar o clonar un evento existente
+     *
+     * @param int $id ID del evento a duplicar
+     * @param string|null $new_start Nueva fecha/hora de inicio (opcional)
+     * @param string|null $new_end Nueva fecha/hora de fin (opcional)
+     * @param string|null $title_prefix Prefijo para el título
+     * @return int|WP_Error ID del nuevo evento creado
+     */
+    public static function duplicate( int $id, ?string $new_start = null, ?string $new_end = null, ?string $title_prefix = null ) {
+        global $wpdb;
+        $table_evts = $wpdb->prefix . 'aura_cal_events';
+        $table_inst = $wpdb->prefix . 'aura_cal_event_instructors';
+
+        $event = self::get( $id );
+        if ( ! $event ) {
+            return new WP_Error( 'not_found', __( 'Evento original no encontrado.', 'aura' ) );
+        }
+
+        $orig_start = $event->start_datetime;
+        $orig_end   = $event->end_datetime;
+        $duration   = max( 1800, strtotime( $orig_end ) - strtotime( $orig_start ) );
+
+        if ( ! empty( $new_start ) ) {
+            $start_clean = str_replace( 'T', ' ', substr( $new_start, 0, 19 ) );
+            if ( strlen( $start_clean ) === 16 ) {
+                $start_clean .= ':00';
+            }
+            if ( ! empty( $new_end ) ) {
+                $end_clean = str_replace( 'T', ' ', substr( $new_end, 0, 19 ) );
+                if ( strlen( $end_clean ) === 16 ) {
+                    $end_clean .= ':00';
+                }
+            } else {
+                $end_clean = date( 'Y-m-d H:i:s', strtotime( $start_clean ) + $duration );
+            }
+            $title = ( $title_prefix !== null ? $title_prefix : '' ) . $event->title;
+        } else {
+            $start_clean = $orig_start;
+            $end_clean   = $orig_end;
+            $title       = ( $title_prefix !== null ? $title_prefix : __( '(Copia) ', 'aura' ) ) . $event->title;
+        }
+
+        $student_leaders_json = ! empty( $event->student_leaders ) ? $event->student_leaders : null;
+
+        $inserted = $wpdb->insert(
+            $table_evts,
+            [
+                'program_id'          => $event->program_id,
+                'subject_id'          => $event->subject_id,
+                'title'               => $title,
+                'description'         => $event->description,
+                'student_leaders'     => $student_leaders_json,
+                'event_type'          => $event->event_type,
+                'start_datetime'      => $start_clean,
+                'end_datetime'        => $end_clean,
+                'location'            => $event->location,
+                'online_url'          => $event->online_url,
+                'color'               => $event->color,
+                'status'              => 'scheduled',
+                'recurrence_group_id' => null,
+                'gcal_sync_status'    => 'pending',
+                'created_by'          => get_current_user_id(),
+                'created_at'          => current_time( 'mysql' ),
+                'updated_at'          => current_time( 'mysql' ),
+            ],
+            [ '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s' ]
+        );
+
+        if ( ! $inserted ) {
+            return new WP_Error( 'db_error', __( 'Error al duplicar el registro en la base de datos.', 'aura' ) );
+        }
+
+        $new_id = (int) $wpdb->insert_id;
+
+        // Copiar instructores
+        $inst_cols   = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$table_inst}`" );
+        $has_ext     = in_array( 'is_external', $inst_cols, true );
+        $has_teach   = in_array( 'teacher_id', $inst_cols, true );
+        $has_inst_id = in_array( 'instructor_id', $inst_cols, true );
+
+        $orig_insts = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_inst} WHERE event_id = %d", $id ) );
+        if ( ! empty( $orig_insts ) ) {
+            foreach ( $orig_insts as $oi ) {
+                $payload = [
+                    'event_id'   => $new_id,
+                    'role'       => $oi->role ?? 'assistant',
+                    'created_at' => current_time( 'mysql' ),
+                ];
+                if ( $has_teach ) {
+                    $payload['teacher_id'] = (int) ( $oi->teacher_id ?? 0 );
+                }
+                if ( $has_inst_id ) {
+                    $payload['instructor_id'] = (int) ( $oi->instructor_id ?? ( $oi->teacher_id ?? 0 ) );
+                }
+                if ( $has_ext ) {
+                    $payload['is_external']    = (int) ( $oi->is_external ?? 0 );
+                    $payload['external_name']  = $oi->external_name ?? null;
+                    $payload['external_email'] = $oi->external_email ?? null;
+                    $payload['external_phone'] = $oi->external_phone ?? null;
+                    $payload['external_org']   = $oi->external_org ?? null;
+                }
+                $wpdb->insert( $table_inst, $payload );
+            }
+        }
+
+        self::bump_sync_version();
+        return $new_id;
+    }
+
+    /**
+     * Replicar un evento en una serie recurrente en el mismo día y horario
+     *
+     * @param int $id ID del evento base
+     * @param string $repeat_type 'weekly', 'daily', 'weekdays', 'biweekly'
+     * @param string $date_start Fecha inicial (YYYY-MM-DD)
+     * @param string $date_end Fecha final (YYYY-MM-DD)
+     * @return array|WP_Error
+     */
+    public static function replicate_series( int $id, string $repeat_type, string $date_start, string $date_end ) {
+        global $wpdb;
+        $table_evts = $wpdb->prefix . 'aura_cal_events';
+        $table_inst = $wpdb->prefix . 'aura_cal_event_instructors';
+
+        $base_event = self::get( $id );
+        if ( ! $base_event ) {
+            return new WP_Error( 'not_found', __( 'Evento base no encontrado.', 'aura' ) );
+        }
+
+        $ts_start = strtotime( $date_start );
+        $ts_end   = strtotime( $date_end );
+        if ( ! $ts_start || ! $ts_end || $ts_end < $ts_start ) {
+            return new WP_Error( 'invalid_dates', __( 'Rango de fechas inválido para la serie.', 'aura' ) );
+        }
+
+        $orig_start_ts = strtotime( $base_event->start_datetime );
+        $orig_end_ts   = strtotime( $base_event->end_datetime );
+        $duration      = max( 1800, $orig_end_ts - $orig_start_ts );
+
+        $time_start_str   = date( 'H:i:s', $orig_start_ts );
+        $base_day_of_week = (int) date( 'N', $orig_start_ts ); // 1 (Lun) a 7 (Dom)
+
+        $recurrence_group_id = ! empty( $base_event->recurrence_group_id ) ? $base_event->recurrence_group_id : wp_generate_uuid4();
+
+        if ( empty( $base_event->recurrence_group_id ) ) {
+            $wpdb->update( $table_evts, [ 'recurrence_group_id' => $recurrence_group_id ], [ 'id' => $id ] );
+        }
+
+        $created_ids = [];
+        $ts_curr     = $ts_start;
+        $max_steps   = 366;
+        $steps       = 0;
+
+        $orig_insts  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_inst} WHERE event_id = %d", $id ) );
+        $inst_cols   = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$table_inst}`" );
+        $has_ext     = in_array( 'is_external', $inst_cols, true );
+        $has_teach   = in_array( 'teacher_id', $inst_cols, true );
+        $has_inst_id = in_array( 'instructor_id', $inst_cols, true );
+
+        while ( $ts_curr <= $ts_end && $steps < $max_steps ) {
+            $steps++;
+            $day_of_week = (int) date( 'N', $ts_curr );
+            $curr_date   = date( 'Y-m-d', $ts_curr );
+
+            $match = false;
+            if ( $repeat_type === 'weekly' ) {
+                $match = ( $day_of_week === $base_day_of_week );
+            } elseif ( $repeat_type === 'daily' ) {
+                $match = true;
+            } elseif ( $repeat_type === 'weekdays' ) {
+                $match = ( $day_of_week <= 5 );
+            } elseif ( $repeat_type === 'biweekly' ) {
+                $diff_days = (int) round( ( $ts_curr - $ts_start ) / 86400 );
+                $match = ( $day_of_week === $base_day_of_week && ( $diff_days % 14 === 0 ) );
+            }
+
+            if ( $match ) {
+                $evt_start_str = $curr_date . ' ' . $time_start_str;
+                $evt_end_str   = date( 'Y-m-d H:i:s', strtotime( $evt_start_str ) + $duration );
+
+                if ( substr( $base_event->start_datetime, 0, 10 ) !== $curr_date ) {
+                    $ins = $wpdb->insert(
+                        $table_evts,
+                        [
+                            'program_id'          => $base_event->program_id,
+                            'subject_id'          => $base_event->subject_id,
+                            'title'               => $base_event->title,
+                            'description'         => $base_event->description,
+                            'student_leaders'     => $base_event->student_leaders,
+                            'event_type'          => $base_event->event_type,
+                            'start_datetime'      => $evt_start_str,
+                            'end_datetime'        => $evt_end_str,
+                            'location'            => $base_event->location,
+                            'online_url'          => $base_event->online_url,
+                            'color'               => $base_event->color,
+                            'status'              => 'scheduled',
+                            'recurrence_group_id' => $recurrence_group_id,
+                            'recurrence_rule'     => "Repetición {$repeat_type}",
+                            'gcal_sync_status'    => 'pending',
+                            'created_by'          => get_current_user_id(),
+                            'created_at'          => current_time( 'mysql' ),
+                            'updated_at'          => current_time( 'mysql' ),
+                        ],
+                        [ '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s' ]
+                    );
+
+                    if ( $ins ) {
+                        $new_id = (int) $wpdb->insert_id;
+                        $created_ids[] = $new_id;
+
+                        foreach ( $orig_insts as $oi ) {
+                            $payload = [
+                                'event_id'   => $new_id,
+                                'role'       => $oi->role ?? 'assistant',
+                                'created_at' => current_time( 'mysql' ),
+                            ];
+                            if ( $has_teach ) {
+                                $payload['teacher_id'] = (int) ( $oi->teacher_id ?? 0 );
+                            }
+                            if ( $has_inst_id ) {
+                                $payload['instructor_id'] = (int) ( $oi->instructor_id ?? ( $oi->teacher_id ?? 0 ) );
+                            }
+                            if ( $has_ext ) {
+                                $payload['is_external']    = (int) ( $oi->is_external ?? 0 );
+                                $payload['external_name']  = $oi->external_name ?? null;
+                                $payload['external_email'] = $oi->external_email ?? null;
+                                $payload['external_phone'] = $oi->external_phone ?? null;
+                                $payload['external_org']   = $oi->external_org ?? null;
+                            }
+                            $wpdb->insert( $table_inst, $payload );
+                        }
+                    }
+                }
+            }
+
+            $ts_curr += 86400;
+        }
+
+        self::bump_sync_version();
+
+        return [
+            'count'               => count( $created_ids ),
+            'created_ids'         => $created_ids,
+            'recurrence_group_id' => $recurrence_group_id,
+            'message'             => sprintf( __( 'Se generaron %d repeticiones para la serie.', 'aura' ), count( $created_ids ) ),
+        ];
+    }
+
+    public static function ajax_duplicate_event(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para duplicar eventos.', 'aura' ) ] );
+        }
+
+        $id        = intval( $_POST['id'] ?? 0 );
+        $new_start = ! empty( $_POST['new_start'] ) ? sanitize_text_field( $_POST['new_start'] ) : null;
+        $new_end   = ! empty( $_POST['new_end'] ) ? sanitize_text_field( $_POST['new_end'] ) : null;
+        $title_pfx = isset( $_POST['title_prefix'] ) ? sanitize_text_field( $_POST['title_prefix'] ) : null;
+
+        if ( ! $id ) {
+            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura' ) ] );
+        }
+
+        $res = self::duplicate( $id, $new_start, $new_end, $title_pfx );
+        if ( is_wp_error( $res ) ) {
+            wp_send_json_error( [ 'message' => $res->get_error_message() ] );
+        }
+
+        $duplicated_event = self::get( $res );
+        wp_send_json_success( [
+            'message'  => __( 'Evento duplicado exitosamente.', 'aura' ),
+            'event_id' => $res,
+            'event'    => $duplicated_event,
+        ] );
+    }
+
+    public static function ajax_replicate_series(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para crear series recurrentes.', 'aura' ) ] );
+        }
+
+        $id          = intval( $_POST['id'] ?? 0 );
+        $repeat_type = sanitize_key( $_POST['repeat_type'] ?? 'weekly' );
+        $date_start  = sanitize_text_field( $_POST['date_start'] ?? '' );
+        $date_end    = sanitize_text_field( $_POST['date_end'] ?? '' );
+
+        if ( ! $id || empty( $date_start ) || empty( $date_end ) ) {
+            wp_send_json_error( [ 'message' => __( 'Faltan parámetros requeridos para replicar la serie.', 'aura' ) ] );
+        }
+
+        $res = self::replicate_series( $id, $repeat_type, $date_start, $date_end );
+        if ( is_wp_error( $res ) ) {
+            wp_send_json_error( [ 'message' => $res->get_error_message() ] );
+        }
+
+        wp_send_json_success( $res );
     }
 }
