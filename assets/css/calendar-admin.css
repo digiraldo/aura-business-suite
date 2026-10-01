@@ -2824,12 +2824,11 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
 }
 
 .fc .fc-daygrid-event-harness {
-    margin: 0 0 2px 0 !important;
     padding: 0 !important;
 }
 
 .fc .fc-daygrid-event {
-    margin: 0 !important;
+    margin: 1px 0 !important;
     display: flex !important;
     align-items: center !important;
     border-radius: 5px !important;
@@ -2923,7 +2922,7 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
 }
 
 .fc .fc-timegrid-allday .fc-daygrid-event-harness {
-    margin: 1px 0 !important;
+    padding: 0 !important;
 }
 
 .fc .fc-timegrid-allday .fc-daygrid-event {
@@ -3183,7 +3182,8 @@ body.aura-dark-mode .fc .fc-daygrid-more-link:hover {
 
 /* Refuerzo densidad Google Calendar en TODAS las vistas y en pantalla completa */
 .fc .fc-daygrid-day-bg .fc-bg-event { display: none !important; }
-.fc .fc-daygrid-event-harness-abs { top: 0 !important; }
+/* Respetar el top calculado inline por FullCalendar para eventos multiodía */
+.fc .fc-daygrid-event-harness-abs { position: absolute; }
 
 /* Vista Mes: eliminar último padding inferior de la celda del día */
 .fc .fc-daygrid-day-bottom {

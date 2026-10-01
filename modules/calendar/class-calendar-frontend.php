@@ -2018,10 +2018,14 @@ class Aura_Calendar_Frontend {
                         eventOrder: '-allDay,start,duration,title',
                         eventDidMount: function(info) {
                             var p = info.event.extendedProps || {};
-                            var bg = info.event.backgroundColor || info.el.style.backgroundColor || '#6366f1';
+                            var bg = info.event.backgroundColor || p.color || info.el.style.backgroundColor || '#6366f1';
                             var textCol = p.text_color || info.event.textColor || (typeof window.getEventContrastColor === 'function' ? window.getEventContrastColor(bg) : '#ffffff');
-                            info.el.style.color = textCol;
+                            info.el.style.setProperty('background-color', bg, 'important');
+                            info.el.style.setProperty('border-color', bg, 'important');
+                            info.el.style.setProperty('--fc-event-bg-color', bg, 'important');
+                            info.el.style.setProperty('--fc-event-border-color', bg, 'important');
                             info.el.style.setProperty('--fc-event-text-color', textCol, 'important');
+                            info.el.style.color = textCol;
                             var main = info.el.querySelector('.fc-event-main');
                             if (main) {
                                 main.style.color = textCol;
@@ -2393,10 +2397,14 @@ class Aura_Calendar_Frontend {
                     eventOrder: '-allDay,start,duration,title',
                     eventDidMount: function(info) {
                         var p = info.event.extendedProps || {};
-                        var bg = info.event.backgroundColor || info.el.style.backgroundColor || '#6366f1';
+                        var bg = info.event.backgroundColor || p.color || info.el.style.backgroundColor || '#6366f1';
                         var textCol = p.text_color || info.event.textColor || (typeof window.getEventContrastColor === 'function' ? window.getEventContrastColor(bg) : '#ffffff');
-                        info.el.style.color = textCol;
+                        info.el.style.setProperty('background-color', bg, 'important');
+                        info.el.style.setProperty('border-color', bg, 'important');
+                        info.el.style.setProperty('--fc-event-bg-color', bg, 'important');
+                        info.el.style.setProperty('--fc-event-border-color', bg, 'important');
                         info.el.style.setProperty('--fc-event-text-color', textCol, 'important');
+                        info.el.style.color = textCol;
                         var main = info.el.querySelector('.fc-event-main');
                         if (main) {
                             main.style.color = textCol;

@@ -475,13 +475,17 @@
                 return renderGoogleStyleEvent(arg, auraCalData.current_user_id || 0);
             },
 
-            // Garantizar contraste de color de texto (blanco o negro) sobre el elemento DOM
+            // Garantizar contraste y color de fondo sobre el elemento DOM
             eventDidMount: function(info) {
                 var p = info.event.extendedProps || {};
-                var bg = info.event.backgroundColor || info.el.style.backgroundColor || '#6366f1';
+                var bg = info.event.backgroundColor || p.color || info.el.style.backgroundColor || '#6366f1';
                 var textCol = p.text_color || info.event.textColor || (typeof getEventContrastColor === 'function' ? getEventContrastColor(bg) : '#ffffff');
-                info.el.style.color = textCol;
+                info.el.style.setProperty('background-color', bg, 'important');
+                info.el.style.setProperty('border-color', bg, 'important');
+                info.el.style.setProperty('--fc-event-bg-color', bg, 'important');
+                info.el.style.setProperty('--fc-event-border-color', bg, 'important');
                 info.el.style.setProperty('--fc-event-text-color', textCol, 'important');
+                info.el.style.color = textCol;
                 var main = info.el.querySelector('.fc-event-main');
                 if (main) {
                     main.style.color = textCol;
