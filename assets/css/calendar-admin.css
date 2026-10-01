@@ -3725,3 +3725,338 @@ body[data-theme="dark"] .aura-portal-scope-toggle-group .btn-teacher-scope:hover
     background: rgba(255, 255, 255, 0.06);
 }
 
+/* ─────────────────────────────────────────────────────────────
+   DRAWER DE CLASES NO ASIGNADAS & DRAG AND DROP
+   ───────────────────────────────────────────────────────────── */
+#aura-unassigned-drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 99980;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+#aura-unassigned-drawer-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+#aura-unassigned-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 380px;
+    max-width: 90vw;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: -6px 0 24px rgba(15, 23, 42, 0.15);
+    z-index: 99990;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#aura-unassigned-drawer.is-open {
+    transform: translateX(0);
+}
+
+.aura-drawer-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+}
+
+.aura-drawer-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-drawer-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.aura-drawer-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(99, 102, 241, 0.12);
+    color: #4f46e5;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.aura-drawer-close {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    color: #64748b;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.aura-drawer-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.aura-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.aura-drawer-filter-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aura-drawer-search-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.aura-drawer-search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.aura-drawer-search-input {
+    width: 100%;
+    padding: 8px 12px 8px 32px !important;
+    font-size: 12.5px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    background: #f8fafc !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+    transition: border-color 0.15s, background 0.15s !important;
+}
+
+.aura-drawer-search-input:focus {
+    border-color: #6366f1 !important;
+    background: #ffffff !important;
+}
+
+.aura-drawer-select {
+    width: 100%;
+    padding: 7px 10px !important;
+    font-size: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    background: #f8fafc !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+}
+
+.aura-drawer-tip-box {
+    background: rgba(99, 102, 241, 0.06);
+    border-left: 3px solid #6366f1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: #475569;
+}
+
+.aura-drawer-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Tarjeta de Asignatura Arrastrable */
+.aura-draggable-subject-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #6366f1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.18s;
+}
+
+.aura-draggable-subject-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+    border-color: #cbd5e1;
+}
+
+.aura-draggable-subject-card:active {
+    cursor: grabbing;
+    transform: scale(0.98);
+}
+
+.aura-drag-handle {
+    font-size: 18px;
+    line-height: 1;
+    color: #94a3b8;
+    cursor: grab;
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+.aura-draggable-subject-card:hover .aura-drag-handle {
+    color: #6366f1;
+}
+
+.aura-drag-info {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.35;
+}
+
+.aura-drag-prog-badge {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #6366f1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aura-drag-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+.aura-drag-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.btn-unassigned-card-schedule {
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.08);
+    color: #4f46e5;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-unassigned-card-schedule:hover {
+    background: #6366f1;
+    color: #ffffff;
+    border-color: #6366f1;
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+/* Dark Mode para el Drawer */
+html[data-theme="dark"] #aura-unassigned-drawer,
+body[data-theme="dark"] #aura-unassigned-drawer,
+body.aura-dark-mode #aura-unassigned-drawer,
+.aura-dark-theme #aura-unassigned-drawer {
+    background: #181b21;
+    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="dark"] .aura-drawer-header,
+body[data-theme="dark"] .aura-drawer-header,
+body.aura-dark-mode .aura-drawer-header {
+    background: #181b21;
+    border-bottom-color: #2b313c;
+}
+
+html[data-theme="dark"] .aura-drawer-title,
+body[data-theme="dark"] .aura-drawer-title,
+body.aura-dark-mode .aura-drawer-title {
+    color: #f1f3f4;
+}
+
+html[data-theme="dark"] .aura-drawer-close,
+body[data-theme="dark"] .aura-drawer-close,
+body.aura-dark-mode .aura-drawer-close {
+    color: #9aa0a6;
+}
+
+html[data-theme="dark"] .aura-drawer-close:hover,
+body[data-theme="dark"] .aura-drawer-close:hover,
+body.aura-dark-mode .aura-drawer-close:hover {
+    background: #2b313c;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .aura-drawer-search-input,
+body[data-theme="dark"] .aura-drawer-search-input,
+body.aura-dark-mode .aura-drawer-search-input,
+html[data-theme="dark"] .aura-drawer-select,
+body[data-theme="dark"] .aura-drawer-select,
+body.aura-dark-mode .aura-drawer-select {
+    background: #20242c !important;
+    border-color: #3c4043 !important;
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] .aura-drawer-tip-box,
+body[data-theme="dark"] .aura-drawer-tip-box,
+body.aura-dark-mode .aura-drawer-tip-box {
+    background: rgba(99, 102, 241, 0.12);
+    color: #c7d2fe;
+}
+
+html[data-theme="dark"] .aura-draggable-subject-card,
+body[data-theme="dark"] .aura-draggable-subject-card,
+body.aura-dark-mode .aura-draggable-subject-card {
+    background: #20242c;
+    border-color: #2e3440;
+}
+
+html[data-theme="dark"] .aura-draggable-subject-card:hover,
+body[data-theme="dark"] .aura-draggable-subject-card:hover,
+body.aura-dark-mode .aura-draggable-subject-card:hover {
+    border-color: #3c4043;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .aura-drag-title,
+body[data-theme="dark"] .aura-drag-title,
+body.aura-dark-mode .aura-drag-title {
+    color: #f1f3f4;
+}
+
+

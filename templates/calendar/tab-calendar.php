@@ -53,7 +53,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                 </div>
 
                 <!-- Filtro Tipo de Evento -->
-                <div style="min-width: 180px;">
+                <div style="min-width: 170px;">
                     <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #64748b); margin-bottom: 4px; display: block;">
                         📌 <?php esc_html_e( 'Tipo de Evento', 'aura' ); ?>
                     </label>
@@ -66,11 +66,27 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                         <option value="break">☕ <?php esc_html_e( 'Recesos / Descansos', 'aura' ); ?></option>
                     </select>
                 </div>
+
+                <!-- Filtro Asignación al Calendario -->
+                <div style="min-width: 170px;">
+                    <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #64748b); margin-bottom: 4px; display: block;">
+                        📋 <?php esc_html_e( 'Asignación', 'aura' ); ?>
+                    </label>
+                    <select id="filter-assignment-status" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; font-size: 13px;">
+                        <option value=""><?php esc_html_e( 'Todas las clases', 'aura' ); ?></option>
+                        <option value="unassigned"><?php esc_html_e( '⏳ Sin agendar / Pendientes', 'aura' ); ?></option>
+                    </select>
+                </div>
             </div>
 
             <!-- Acciones rápidas de vista -->
             <div style="display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;">
                 <?php if ( current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <button type="button" id="btn-toggle-unassigned-drawer" class="btn btn-secondary btn-lift" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--aura-border, #cbd5e1);" title="<?php esc_attr_e( 'Ver materias pendientes de programar y arrastrarlas al calendario', 'aura' ); ?>">
+                        <span>📦</span> <span><?php esc_html_e( 'Materias Pendientes', 'aura' ); ?></span>
+                        <span id="unassigned-badge-count" style="background: #ef4444; color: #fff; font-size: 11px; padding: 1px 7px; border-radius: 10px; font-weight: 700; margin-left: 2px;">0</span>
+                    </button>
+
                     <button type="button" id="btn-create-event-modal" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;" title="<?php esc_attr_e( 'Crear nuevo evento en el calendario', 'aura' ); ?>">
                         ➕ <?php esc_html_e( 'Crear Evento', 'aura' ); ?>
                     </button>
@@ -118,3 +134,47 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
     </div>
 
 </div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     DRAWER LATERAL: MATERIAS NO ASIGNADAS (DRAG & DROP AL CALENDARIO)
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="aura-unassigned-drawer-backdrop" class="aura-drawer-backdrop" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 99998; transition: opacity 0.25s ease;"></div>
+
+<aside id="aura-unassigned-drawer" class="aura-unassigned-drawer" style="position: fixed; top: 0; right: -420px; width: 400px; max-width: 90vw; height: 100vh; background: var(--aura-surface-card, #ffffff); box-shadow: -5px 0 25px rgba(0,0,0,0.15); z-index: 99999; display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <!-- Cabecera del Drawer -->
+    <div style="padding: 18px 20px; border-bottom: 1px solid var(--aura-border, #e2e8f0); display: flex; justify-content: space-between; align-items: flex-start; background: var(--aura-surface-alt, #f8fafc);">
+        <div>
+            <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: var(--aura-text-primary, #0f172a); display: flex; align-items: center; gap: 8px;">
+                📦 <?php esc_html_e( 'Materias sin Asignar', 'aura' ); ?>
+            </h3>
+            <p style="margin: 0; font-size: 12px; color: var(--aura-text-muted, #64748b); line-height: 1.35;">
+                <?php esc_html_e( 'Arrastra cualquier materia directamente a una fecha y hora del calendario.', 'aura' ); ?>
+            </p>
+        </div>
+        <button type="button" id="btn-close-unassigned-drawer" style="background: none; border: none; font-size: 24px; line-height: 1; cursor: pointer; color: var(--aura-text-muted); padding: 2px 6px;" title="<?php esc_attr_e( 'Cerrar panel', 'aura' ); ?>">&times;</button>
+    </div>
+
+    <!-- Barra de búsqueda y filtro dentro del Drawer -->
+    <div style="padding: 12px 18px; border-bottom: 1px solid var(--aura-border, #e2e8f0); background: var(--aura-surface, #ffffff); display: flex; flex-direction: column; gap: 8px;">
+        <div style="position: relative;">
+            <input type="text" id="drawer-search-subj" class="form-control" placeholder="<?php esc_attr_e( 'Buscar por nombre, código o módulo...', 'aura' ); ?>" style="width: 100%; font-size: 12.5px; padding: 7px 12px; border-radius: 8px;">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--aura-text-secondary);">
+            <span id="drawer-count-label"><?php esc_html_e( 'Cargando materias...', 'aura' ); ?></span>
+            <button type="button" id="btn-refresh-unassigned" style="background: none; border: none; color: #6366f1; cursor: pointer; font-weight: 600; padding: 0;">🔄 <?php esc_html_e( 'Actualizar', 'aura' ); ?></button>
+        </div>
+    </div>
+
+    <!-- Lista de materias arrastrables -->
+    <div id="aura-unassigned-subjects-list" style="flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px;">
+        <!-- Inyectado dinámicamente con cards arrastrables -->
+    </div>
+
+    <!-- Footer del Drawer con Tip informativo -->
+    <div style="padding: 12px 18px; border-top: 1px solid var(--aura-border, #e2e8f0); background: var(--aura-surface-alt, #f8fafc); font-size: 11.5px; color: var(--aura-text-muted); display: flex; align-items: center; gap: 8px;">
+        <span>💡</span>
+        <span><?php esc_html_e( 'Al soltar una materia en el calendario se abrirá el formulario para confirmar aula y horario.', 'aura' ); ?></span>
+    </div>
+</aside>
+

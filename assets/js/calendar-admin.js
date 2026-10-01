@@ -103,10 +103,13 @@
         var bgColor = arg.event.backgroundColor || p.color || (arg.el && arg.el.style ? arg.el.style.backgroundColor : '') || '#6366f1';
         var textColor = p.text_color || arg.event.textColor || getEventContrastColor(bgColor);
 
-        // Avatar del docente
+        // Avatar del docente (o icono si es externo / tercero)
         var avatarImg = '';
+        var isPrimaryExt = !!(p.is_external || (p.instructors && p.instructors.length && p.instructors[0].is_external));
         if (p.primary_avatar) {
             avatarImg = '<img src="' + escapeHtml(p.primary_avatar) + '" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0;vertical-align:middle;display:inline-block;border:1px solid rgba(255,255,255,0.6);" onerror="this.style.display=\'none\';" />';
+        } else if (isPrimaryExt) {
+            avatarImg = '<span style="font-size:12px;flex-shrink:0;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.25);line-height:1;" title="Instructor Externo">🏢</span>';
         }
 
         // Chip de líder estudiantil
@@ -150,7 +153,7 @@
             if (p.location) {
                 locOrTeacher = '📍 ' + escapeHtml(p.location);
             } else if (p.primary_name) {
-                locOrTeacher = '👨‍🏫 ' + escapeHtml(p.primary_name);
+                locOrTeacher = (isPrimaryExt ? '🏢 ' : '👨‍🏫 ') + escapeHtml(p.primary_name);
             }
 
             var subjectTxt = '';
@@ -398,6 +401,56 @@
             editable: !!auraCalData.user_can_edit,
             selectable: !!auraCalData.user_can_edit,
             selectMirror: true,
+            droppable: !!auraCalData.user_can_edit,
+
+            // Drop de materia no asignada desde el Drawer
+            drop: function(info) {
+                if (!auraCalData.user_can_edit) return;
+                var $el = $(info.draggedEl);
+                if (!$el.hasClass('aura-draggable-subject-card')) {
+                    $el = $el.closest('.aura-draggable-subject-card');
+                }
+                var subId = parseInt($el.data('subject-id') || 0, 10);
+                var progId = parseInt($el.data('program-id') || 0, 10);
+                var title = $el.data('title') || 'Clase';
+                var color = $el.data('color') || '#6366f1';
+                var durMins = parseInt($el.data('duration-mins') || 120, 10);
+                var teacherId = parseInt($el.data('teacher-id') || 0, 10);
+
+                var startDt = info.dateStr;
+                var endDt = '';
+                if (startDt.indexOf('T') !== -1) {
+                    var sDate = new Date(startDt);
+                    var eDate = new Date(sDate.getTime() + durMins * 60 * 1000);
+                    endDt = formatLocalDateTime(eDate, false).replace(' ', 'T');
+                    startDt = startDt.substring(0, 16);
+                } else {
+                    startDt = startDt.substring(0, 10) + 'T09:00';
+                    var sD = new Date(startDt);
+                    var eD = new Date(sD.getTime() + durMins * 60 * 1000);
+                    endDt = formatLocalDateTime(eD, false).replace(' ', 'T');
+                }
+
+                if (typeof closeUnassignedDrawer === 'function') {
+                    closeUnassignedDrawer();
+                }
+
+                openEventEditor({
+                    title: title,
+                    program_id: progId,
+                    subject_id: subId,
+                    event_type: 'class',
+                    start_local_iso: startDt,
+                    end_local_iso: endDt,
+                    start: startDt,
+                    end: endDt,
+                    color: color,
+                    teacher_ids: teacherId ? [teacherId] : [],
+                    primary_teacher_id: teacherId
+                });
+
+                showToast('Asignando ' + title + ' al calendario...', 'info');
+            },
 
             // Renderizado estilo Google Calendar de la tarjeta de evento
             eventContent: function(arg) {
@@ -580,6 +633,10 @@
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
                     '<img src="' + escapeHtml(primaryInst.avatar) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" alt="' + escapeHtml(primaryInst.name) + '" title="' + escapeHtml(primaryInst.name) + '" />' +
                 '</div>';
+            } else if (primaryInst.is_external) {
+                primaryAvHtml = '<div class="aura-avatar-ring-container">' +
+                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="background:linear-gradient(135deg,#0284c7,#0369a1);display:flex;align-items:center;justify-content:center;font-size:20px;" title="' + escapeHtml(primaryInst.external_org ? primaryInst.external_org : 'Instructor Externo') + '">🏢</div>' +
+                '</div>';
             } else {
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
                     '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="background:rgba(99,102,241,0.3);display:flex;align-items:center;justify-content:center;font-size:20px;">👨‍🏫</div>' +
@@ -595,6 +652,8 @@
             visibleOthers.forEach(function(inst) {
                 if (inst.avatar) {
                     stackedAvatarsHtml += '<img src="' + escapeHtml(inst.avatar) + '" class="aura-avatar-stacked" alt="' + escapeHtml(inst.name) + '" title="' + escapeHtml(inst.name) + '" />';
+                } else if (inst.is_external) {
+                    stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="background:#0284c7;display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:#fff;" title="' + escapeHtml(inst.name + (inst.external_org ? ' (' + inst.external_org + ')' : '')) + '">🏢</div>';
                 } else {
                     var initial = escapeHtml((inst.name || 'P').charAt(0).toUpperCase());
                     stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#c7d2fe;" title="' + escapeHtml(inst.name) + '">' + initial + '</div>';
@@ -1316,6 +1375,121 @@
         }
     });
 
+    // ─────────────────────────────────────────────────────────────
+    // INSTRUCTORES TERCEROS / EXTERNOS
+    // ─────────────────────────────────────────────────────────────
+    var currentEventExternalInstructors = [];
+
+    function renderExternalInstructorsList() {
+        var $box = $('#evt-external-instructors-list');
+        if (!$box.length) return;
+        $box.empty();
+
+        if (!currentEventExternalInstructors || !currentEventExternalInstructors.length) {
+            $box.html('<span style="font-size:12px;color:var(--aura-text-muted);font-style:italic;">No hay instructores externos o terceros asignados a este evento.</span>');
+            $('#evt-external-instructors-json').val('[]');
+            return;
+        }
+
+        var roleBadges = {
+            'primary': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Titular</span>',
+            'guest': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">Invitado</span>',
+            'co_instructor': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">Co-instructor</span>'
+        };
+
+        $.each(currentEventExternalInstructors, function(idx, inst) {
+            var roleBadge = roleBadges[inst.role] || '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(inst.role || 'Invitado') + '</span>';
+            var orgText = inst.organization ? ' <span style="color:#64748b;font-size:11px;">(' + escapeHtml(inst.organization) + ')</span>' : '';
+            var emailText = inst.email ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; ' + escapeHtml(inst.email) + '</span>' : '';
+            var phoneText = inst.phone ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; 📞 ' + escapeHtml(inst.phone) + '</span>' : '';
+
+            var $chip = $(
+                '<div class="aura-ext-inst-card" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:var(--aura-surface-soft, rgba(14,165,233,0.06));border:1px solid rgba(14,165,233,0.22);border-radius:8px;margin-bottom:6px;">' +
+                    '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">' +
+                        '<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;box-shadow:0 2px 4px rgba(14,165,233,0.25);">🏢</div>' +
+                        '<div style="min-width:0;flex:1;line-height:1.3;">' +
+                            '<div style="font-size:12px;font-weight:700;color:var(--aura-text-primary);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+                                '<span>' + escapeHtml(inst.name) + '</span>' +
+                                roleBadge +
+                            '</div>' +
+                            '<div style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                                orgText + emailText + phoneText +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button type="button" class="btn-remove-ext-inst" data-index="' + idx + '" title="Eliminar instructor externo" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;">&times;</button>' +
+                '</div>'
+            );
+            $box.append($chip);
+        });
+
+        $('#evt-external-instructors-json').val(JSON.stringify(currentEventExternalInstructors));
+    }
+
+    // Toggle para desplegar u ocultar mini formulario de agregar tercero
+    $(document).on('click', '#btn-toggle-add-external-inst', function(e) {
+        e.preventDefault();
+        var $box = $('#box-add-external-inst');
+        if ($box.is(':visible')) {
+            $box.slideUp(180);
+        } else {
+            $box.slideDown(180);
+            $('#ext-inst-name').focus();
+        }
+    });
+
+    $(document).on('click', '#btn-cancel-external-inst', function(e) {
+        e.preventDefault();
+        $('#box-add-external-inst').slideUp(180);
+        $('#ext-inst-name').val('');
+        $('#ext-inst-email').val('');
+        $('#ext-inst-phone').val('');
+        $('#ext-inst-org').val('');
+    });
+
+    // Guardar instructor externo en el array temporal
+    $(document).on('click', '#btn-save-external-inst', function(e) {
+        e.preventDefault();
+        var name = $.trim($('#ext-inst-name').val());
+        if (!name) {
+            showToast('Por favor escribe el nombre del instructor tercero.', 'warning');
+            $('#ext-inst-name').focus();
+            return;
+        }
+
+        var email = $.trim($('#ext-inst-email').val());
+        var phone = $.trim($('#ext-inst-phone').val());
+        var org = $.trim($('#ext-inst-org').val());
+        var role = $('#ext-inst-role').val() || 'guest';
+
+        currentEventExternalInstructors.push({
+            name: name,
+            email: email,
+            phone: phone,
+            organization: org,
+            role: role
+        });
+
+        renderExternalInstructorsList();
+
+        $('#ext-inst-name').val('');
+        $('#ext-inst-email').val('');
+        $('#ext-inst-phone').val('');
+        $('#ext-inst-org').val('');
+        $('#box-add-external-inst').slideUp(180);
+        showToast('Instructor externo "' + name + '" añadido.', 'success');
+    });
+
+    // Remover instructor externo
+    $(document).on('click', '.btn-remove-ext-inst', function(e) {
+        e.preventDefault();
+        var idx = parseInt($(this).data('index'), 10);
+        if (idx >= 0 && idx < currentEventExternalInstructors.length) {
+            currentEventExternalInstructors.splice(idx, 1);
+            renderExternalInstructorsList();
+        }
+    });
+
     function loadSubjectsForProgram(progId, selectedSubjectId) {
         var $subSelect = $('#evt-subject-id');
         $subSelect.html('<option value="">General / Sin materia específica</option>');
@@ -1461,6 +1635,12 @@
         currentEventLeaders = Array.isArray(data.student_leaders) ? data.student_leaders.slice() : [];
         initStudentLeadersSelect();
         renderStudentLeadersList();
+
+        // Cargar instructores terceros / externos si existen
+        currentEventExternalInstructors = Array.isArray(data.external_instructors) ? data.external_instructors.slice() : [];
+        $('#box-add-external-inst').hide();
+        $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org').val('');
+        renderExternalInstructorsList();
 
         // Inicializar toggle y chips de eventos rápidos/genéricos
         $('#toggle-generic-events').prop('checked', false);
@@ -1895,6 +2075,9 @@
                 showToast(res.data.message || auraCalData.i18n.saved);
                 closeModal('#modal-event-editor');
                 if (calendar) calendar.refetchEvents();
+                if (typeof loadUnassignedSubjects === 'function') {
+                    loadUnassignedSubjects();
+                }
             } else {
                 showToast(res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error, 'error');
             }
@@ -1957,6 +2140,10 @@
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
                     '<img src="' + escapeHtml(primaryInst.avatar) + '" class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" alt="' + escapeHtml(primaryInst.name) + '" />' +
                 '</div>';
+            } else if (primaryInst.is_external) {
+                primaryAvHtml = '<div class="aura-avatar-ring-container">' +
+                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;" title="' + escapeHtml(primaryInst.external_org ? primaryInst.external_org : 'Instructor Externo') + '">🏢</div>' +
+                '</div>';
             } else {
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
                     '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;background:rgba(99,102,241,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;">👨‍🏫</div>' +
@@ -1971,6 +2158,8 @@
             visibleOthers.forEach(function(inst) {
                 if (inst.avatar) {
                     stackedAvatarsHtml += '<img src="' + escapeHtml(inst.avatar) + '" class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" alt="' + escapeHtml(inst.name) + '" title="' + escapeHtml(inst.name) + '" />';
+                } else if (inst.is_external) {
+                    stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;background:#0ea5e9;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" title="' + escapeHtml(inst.name + (inst.external_org ? ' (' + inst.external_org + ')' : ' [Externo]')) + '">🏢</div>';
                 } else {
                     var init = escapeHtml((inst.name || 'P').charAt(0).toUpperCase());
                     stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" title="' + escapeHtml(inst.name) + '">' + init + '</div>';
@@ -1984,8 +2173,11 @@
             $('#det-teachers-avatars').html('<div class="aura-avatar-stack" style="display:flex;align-items:center;">' + primaryAvHtml + stackedAvatarsHtml + '</div>');
 
             var namesTxt = primaryInst.name;
+            if (primaryInst.is_external && primaryInst.external_org) {
+                namesTxt += ' (' + primaryInst.external_org + ')';
+            }
             if (otherInsts.length > 0) {
-                namesTxt += ' (+ ' + otherInsts.map(function(o){ return o.name; }).join(', ') + ')';
+                namesTxt += ' (+ ' + otherInsts.map(function(o){ return o.name + (o.is_external && o.external_org ? ' [' + o.external_org + ']' : ''); }).join(', ') + ')';
             }
             $('#det-teachers-names').text(namesTxt);
             $('#box-det-teachers').show();
@@ -2127,6 +2319,9 @@
                 showToast(res.data.message || auraCalData.i18n.saved);
                 closeModal('#modal-event-detail');
                 if (calendar) calendar.refetchEvents();
+                if (typeof loadUnassignedSubjects === 'function') {
+                    loadUnassignedSubjects();
+                }
             } else {
                 showToast(res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error, 'error');
             }
@@ -2162,7 +2357,8 @@
             description: p.description,
             teacher_ids: teacherIds,
             primary_teacher_id: p.primary_teacher_id || (teacherIds.length ? teacherIds[0] : 0),
-            student_leaders: p.student_leaders || []
+            student_leaders: p.student_leaders || [],
+            external_instructors: p.external_instructors || []
         });
     });
 
@@ -4220,11 +4416,238 @@
     });
 
     // ─────────────────────────────────────────────────────────────
+    // DRAWER DE CLASES NO ASIGNADAS & DRAG AND DROP DIRECTO
+    // ─────────────────────────────────────────────────────────────
+    var allUnassignedSubjects = [];
+    var unassignedDraggableInstance = null;
+
+    function openUnassignedDrawer() {
+        $('#aura-unassigned-drawer').addClass('is-open');
+        $('#aura-unassigned-drawer-backdrop').addClass('is-open');
+        $('body').addClass('aura-drawer-open');
+        loadUnassignedSubjects();
+    }
+
+    function closeUnassignedDrawer() {
+        $('#aura-unassigned-drawer').removeClass('is-open');
+        $('#aura-unassigned-drawer-backdrop').removeClass('is-open');
+        $('body').removeClass('aura-drawer-open');
+    }
+
+    window.openUnassignedDrawer = openUnassignedDrawer;
+    window.closeUnassignedDrawer = closeUnassignedDrawer;
+
+    function initUnassignedDraggable() {
+        var containerEl = document.getElementById('aura-unassigned-subjects-list');
+        if (!containerEl || typeof FullCalendar === 'undefined' || typeof FullCalendar.Draggable === 'undefined') {
+            return;
+        }
+
+        if (unassignedDraggableInstance) {
+            try {
+                unassignedDraggableInstance.destroy();
+            } catch (e) {}
+        }
+
+        unassignedDraggableInstance = new FullCalendar.Draggable(containerEl, {
+            itemSelector: '.aura-draggable-subject-card',
+            eventData: function(eventEl) {
+                var $el = $(eventEl);
+                var dur = parseInt($el.data('duration-mins') || 120, 10);
+                var col = $el.data('color') || '#6366f1';
+                return {
+                    title: $el.data('title') || 'Clase',
+                    duration: { minutes: dur },
+                    backgroundColor: col,
+                    borderColor: col,
+                    textColor: '#ffffff'
+                };
+            }
+        });
+    }
+
+    function renderUnassignedSubjectsList() {
+        var $list = $('#aura-unassigned-subjects-list');
+        if (!$list.length) return;
+        $list.empty();
+
+        var query = $.trim($('#aura-unassigned-search').val() || '').toLowerCase();
+        var progFilter = parseInt($('#aura-unassigned-prog-filter').val() || 0, 10);
+
+        var filtered = allUnassignedSubjects.filter(function(sub) {
+            if (progFilter > 0 && parseInt(sub.program_id, 10) !== progFilter) {
+                return false;
+            }
+            if (query) {
+                var nameMatch = (sub.name || '').toLowerCase().indexOf(query) !== -1;
+                var codeMatch = (sub.code || '').toLowerCase().indexOf(query) !== -1;
+                var modMatch  = (sub.module_name || '').toLowerCase().indexOf(query) !== -1;
+                var progMatch = (sub.program_name || '').toLowerCase().indexOf(query) !== -1;
+                return nameMatch || codeMatch || modMatch || progMatch;
+            }
+            return true;
+        });
+
+        if (!filtered.length) {
+            $list.html(
+                '<div style="text-align:center;padding:40px 20px;color:var(--aura-text-muted);">' +
+                    '<div style="font-size:36px;margin-bottom:8px;">🎉</div>' +
+                    '<div style="font-weight:700;font-size:14px;color:var(--aura-text-primary);">¡No hay materias pendientes!</div>' +
+                    '<p style="font-size:12px;margin:6px 0 0;line-height:1.4;">Todas las materias coinciden con los filtros o ya tienen fechas agendadas en el calendario.</p>' +
+                '</div>'
+            );
+            return;
+        }
+
+        filtered.forEach(function(sub) {
+            var durMins = parseInt(sub.default_duration_minutes || (sub.hours ? sub.hours * 60 : 120), 10);
+            if (durMins <= 0) durMins = 120;
+            var durHours = Math.round(durMins / 60 * 10) / 10;
+            var color = sub.color || '#6366f1';
+            var teacherName = sub.teacher_name || (sub.teacher_id ? 'Docente asignado' : 'Sin docente predeterminado');
+
+            var modBadge = sub.module_name
+                ? '<span style="font-size:10px;background:rgba(99,102,241,0.12);color:#4f46e5;font-weight:700;padding:1px 6px;border-radius:4px;">🏷️ ' + escapeHtml(sub.module_name) + '</span>'
+                : '';
+
+            var $card = $(
+                '<div class="aura-draggable-subject-card" ' +
+                    'data-subject-id="' + sub.id + '" ' +
+                    'data-program-id="' + sub.program_id + '" ' +
+                    'data-title="' + escapeHtml(sub.name) + '" ' +
+                    'data-color="' + escapeHtml(color) + '" ' +
+                    'data-duration-mins="' + durMins + '" ' +
+                    'data-teacher-id="' + (sub.teacher_id || 0) + '" ' +
+                    'style="border-left-color:' + color + ';">' +
+                    '<div class="aura-drag-handle" title="Arrastrar al calendario">⠿</div>' +
+                    '<div class="aura-drag-info">' +
+                        '<div class="aura-drag-prog-badge">' + escapeHtml(sub.program_name || 'Programa General') + '</div>' +
+                        '<div class="aura-drag-title">' + escapeHtml(sub.name) + (sub.code ? ' <span style="font-weight:400;color:var(--aura-text-muted);">(' + escapeHtml(sub.code) + ')</span>' : '') + '</div>' +
+                        '<div class="aura-drag-meta">' +
+                            modBadge +
+                            '<span style="font-size:10.5px;color:var(--aura-text-muted);">⏱️ ' + durHours + 'h (' + durMins + 'm)</span>' +
+                            '<span style="font-size:10.5px;color:var(--aura-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👨‍🏫 ' + escapeHtml(teacherName) + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<button type="button" class="btn-unassigned-card-schedule" title="Agendar fecha para esta materia">➕ Agendar</button>' +
+                '</div>'
+            );
+
+            $card.data('subject-data', sub);
+            $list.append($card);
+        });
+
+        // Inicializar Draggable de FullCalendar sobre las cards recién añadidas
+        initUnassignedDraggable();
+    }
+
+    function loadUnassignedSubjects() {
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_get_unassigned_subjects',
+            nonce: auraCalData.nonce
+        }, function(res) {
+            if (res && res.success && res.data) {
+                allUnassignedSubjects = res.data.subjects || [];
+                var count = res.data.unassigned_count || 0;
+                
+                $('#unassigned-badge-count').text(count);
+                $('#aura-unassigned-count').text(count + (count === 1 ? ' materia' : ' materias'));
+                
+                if (count > 0) {
+                    $('#unassigned-badge-count').show();
+                } else {
+                    $('#unassigned-badge-count').hide();
+                }
+
+                // Sincronizar opciones del selector de programas dentro del drawer si aún no están
+                var $progSelect = $('#aura-unassigned-prog-filter');
+                if ($progSelect.length && $progSelect.children('option').length <= 1) {
+                    var progs = {};
+                    allUnassignedSubjects.forEach(function(s) {
+                        if (s.program_id && s.program_name) {
+                            progs[s.program_id] = s.program_name;
+                        }
+                    });
+                    $.each(progs, function(id, name) {
+                        $progSelect.append($('<option>', { value: id, text: name }));
+                    });
+                }
+
+                renderUnassignedSubjectsList();
+            }
+        });
+    }
+
+    window.loadUnassignedSubjects = loadUnassignedSubjects;
+
+    // Toggle y eventos del Drawer
+    $(document).on('click', '#btn-toggle-unassigned-drawer', function(e) {
+        e.preventDefault();
+        openUnassignedDrawer();
+    });
+
+    $(document).on('click', '#btn-close-unassigned-drawer, #aura-unassigned-drawer-backdrop', function(e) {
+        e.preventDefault();
+        closeUnassignedDrawer();
+    });
+
+    $(document).on('input', '#aura-unassigned-search', function() {
+        renderUnassignedSubjectsList();
+    });
+
+    $(document).on('change', '#aura-unassigned-prog-filter', function() {
+        renderUnassignedSubjectsList();
+    });
+
+    // Filtro rápido de estado de asignación en barra superior
+    $(document).on('change', '#filter-assignment-status', function() {
+        var status = $(this).val();
+        if (status === 'unassigned') {
+            openUnassignedDrawer();
+            $(this).val('all');
+        }
+    });
+
+    // Clic en botón "➕ Agendar" dentro de la tarjeta del drawer (para quien prefiere clic a drag & drop)
+    $(document).on('click', '.btn-unassigned-card-schedule', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $card = $(this).closest('.aura-draggable-subject-card');
+        var sub = $card.data('subject-data');
+        if (!sub) return;
+
+        closeUnassignedDrawer();
+
+        var durMins = parseInt(sub.default_duration_minutes || (sub.hours ? sub.hours * 60 : 120), 10);
+        var now = new Date();
+        var sDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0);
+        var eDate = new Date(sDate.getTime() + durMins * 60 * 1000);
+        var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+        var startIso = sDate.getFullYear() + '-' + pad(sDate.getMonth() + 1) + '-' + pad(sDate.getDate()) + 'T09:00';
+        var endIso = eDate.getFullYear() + '-' + pad(eDate.getMonth() + 1) + '-' + pad(eDate.getDate()) + 'T' + pad(eDate.getHours()) + ':' + pad(eDate.getMinutes());
+
+        openEventEditor({
+            title: sub.name,
+            program_id: sub.program_id,
+            subject_id: sub.id,
+            event_type: 'class',
+            start_local_iso: startIso,
+            end_local_iso: endIso,
+            start: startIso,
+            end: endIso,
+            color: sub.color || '#6366f1',
+            teacher_ids: sub.teacher_id ? [sub.teacher_id] : [],
+            primary_teacher_id: sub.teacher_id || 0
+        });
+    });
+
+    // ─────────────────────────────────────────────────────────────
     // INICIALIZACIÓN AL CARGAR DOM
     // ─────────────────────────────────────────────────────────────
     $(document).ready(function() {
         initFullCalendar();
         initLiveCollaboration();
+        loadUnassignedSubjects();
 
         // Si la URL contiene action=create, abrir el editor automáticamente
         var urlParams = new URLSearchParams(window.location.search);

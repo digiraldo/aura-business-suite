@@ -26,6 +26,7 @@ class Aura_Calendar_Subjects {
         add_action( 'wp_ajax_aura_cal_delete_subject',          [ __CLASS__, 'ajax_delete_subject' ] );
         add_action( 'wp_ajax_aura_cal_upload_subject_material', [ __CLASS__, 'ajax_upload_material' ] );
         add_action( 'wp_ajax_aura_cal_delete_subject_material', [ __CLASS__, 'ajax_delete_material' ] );
+        add_action( 'wp_ajax_aura_cal_get_unassigned_subjects', [ __CLASS__, 'ajax_get_unassigned_subjects' ] );
     }
 
     /**
@@ -62,6 +63,14 @@ class Aura_Calendar_Subjects {
         if ( ! empty( $r['status'] ) ) {
             $where[]  = 's.status = %s';
             $params[] = sanitize_text_field( $r['status'] );
+        }
+
+        if ( ! empty( $r['assignment_status'] ) ) {
+            if ( $r['assignment_status'] === 'unassigned' ) {
+                $where[] = "(SELECT COUNT(*) FROM {$table_evts} e WHERE e.subject_id = s.id AND e.deleted_at IS NULL) = 0";
+            } elseif ( $r['assignment_status'] === 'assigned' ) {
+                $where[] = "(SELECT COUNT(*) FROM {$table_evts} e WHERE e.subject_id = s.id AND e.deleted_at IS NULL) > 0";
+            }
         }
 
         if ( ! empty( $r['search'] ) ) {
@@ -778,6 +787,54 @@ class Aura_Calendar_Subjects {
             'material_id' => $material_id,
             'audience'    => $audience,
             'message'     => __( 'Material eliminado correctamente.', 'aura' ),
+        ] );
+    }
+
+    /**
+     * AJAX: Obtener materias con estado de asignación al calendario (para Drawer y filtros)
+     */
+    public static function ajax_get_unassigned_subjects(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        $program_id    = intval( $_POST['program_id'] ?? 0 );
+        $status_filter = sanitize_text_field( $_POST['status_filter'] ?? 'unassigned' );
+
+        $args = [
+            'status'  => 'active',
+            'limit'   => 300,
+            'orderby' => 's.module_order ASC, s.order_index ASC, s.name',
+            'order'   => 'ASC',
+        ];
+        if ( $program_id > 0 ) {
+            $args['program_id'] = $program_id;
+        }
+        if ( in_array( $status_filter, [ 'unassigned', 'assigned' ], true ) ) {
+            $args['assignment_status'] = $status_filter;
+        }
+
+        $subjects = self::get_all( $args );
+
+        global $wpdb;
+        $table_subj = $wpdb->prefix . 'aura_cal_subjects';
+        $table_evts = $wpdb->prefix . 'aura_cal_events';
+        $prog_sql   = $program_id > 0 ? $wpdb->prepare( "AND s.program_id = %d", $program_id ) : "";
+
+        $unassigned_count = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$table_subj} s 
+             WHERE s.deleted_at IS NULL AND s.status = 'active' {$prog_sql}
+             AND (SELECT COUNT(*) FROM {$table_evts} e WHERE e.subject_id = s.id AND e.deleted_at IS NULL) = 0"
+        );
+
+        $total_subjects = (int) $wpdb->get_var(
+            "SELECT COUNT(*) FROM {$table_subj} s 
+             WHERE s.deleted_at IS NULL AND s.status = 'active' {$prog_sql}"
+        );
+
+        wp_send_json_success( [
+            'subjects'         => $subjects,
+            'unassigned_count' => $unassigned_count,
+            'total_subjects'   => $total_subjects,
+            'assigned_count'   => max( 0, $total_subjects - $unassigned_count ),
         ] );
     }
 }

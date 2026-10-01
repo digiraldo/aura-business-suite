@@ -287,7 +287,7 @@ class Aura_Calendar_Events {
             $inst_rows = $wpdb->get_results(
                 "SELECT ei.*, u.display_name, u.user_email
                  FROM {$table_inst} ei
-                 JOIN {$wpdb->users} u ON u.ID = {$user_id_col}
+                 LEFT JOIN {$wpdb->users} u ON u.ID = {$user_id_col}
                  WHERE ei.event_id IN ({$ids_placeholder})
                  {$order_clause}"
             );
@@ -311,17 +311,26 @@ class Aura_Calendar_Events {
             }
 
             foreach ( $inst_rows as $ir ) {
+                $is_ext  = ! empty( $ir->is_external );
                 $real_id = (int) ( $ir->teacher_id ?: ( $ir->instructor_id ?? 0 ) );
-                $av_url  = ! empty( $custom_photos[ $real_id ] )
+                $av_url  = $is_ext ? '' : ( ! empty( $custom_photos[ $real_id ] )
                     ? $custom_photos[ $real_id ]
-                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
+                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] ) );
+
+                $inst_name = $is_ext ? ( $ir->external_name ?: __( 'Instructor Externo', 'aura' ) ) : ( $ir->display_name ?: __( 'Profesor', 'aura' ) );
+                $inst_email = $is_ext ? $ir->external_email : $ir->user_email;
 
                 $instructors_by_event[ $ir->event_id ][] = [
-                    'id'     => $real_id,
-                    'name'   => $ir->display_name,
-                    'email'  => $ir->user_email,
-                    'role'   => $ir->role,
-                    'avatar' => $av_url,
+                    'id'             => $real_id,
+                    'name'           => $inst_name,
+                    'email'          => $inst_email,
+                    'role'           => $ir->role,
+                    'is_external'    => $is_ext ? 1 : 0,
+                    'external_name'  => $ir->external_name ?? '',
+                    'external_email' => $ir->external_email ?? '',
+                    'external_phone' => $ir->external_phone ?? '',
+                    'external_org'   => $ir->external_org ?? '',
+                    'avatar'         => $av_url,
                 ];
             }
         }
@@ -479,7 +488,7 @@ class Aura_Calendar_Events {
         $instructors = $wpdb->get_results( $wpdb->prepare(
             "SELECT ei.*, u.display_name, u.user_email
              FROM {$table_inst} ei
-             JOIN {$wpdb->users} u ON u.ID = {$user_id_col}
+             LEFT JOIN {$wpdb->users} u ON u.ID = {$user_id_col}
              WHERE ei.event_id = %d
              {$order_clause}",
             $id
@@ -504,16 +513,25 @@ class Aura_Calendar_Events {
             }
 
             foreach ( $instructors as &$inst ) {
+                $is_ext       = ! empty( $inst->is_external );
                 $real_id      = (int) ( $inst->teacher_id ?: ( $inst->instructor_id ?? 0 ) );
-                $inst->avatar = ! empty( $custom_photos[ $real_id ] )
+                $inst->avatar = $is_ext ? '' : ( ! empty( $custom_photos[ $real_id ] )
                     ? $custom_photos[ $real_id ]
-                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] );
-                $inst->name   = $inst->display_name;
-                $inst->id     = $real_id;
+                    : get_avatar_url( $real_id, [ 'size' => 64, 'default' => 'identicon' ] ) );
+                $inst->name           = $is_ext ? ( $inst->external_name ?: __( 'Instructor Externo', 'aura' ) ) : ( $inst->display_name ?: __( 'Profesor', 'aura' ) );
+                $inst->id             = $real_id;
+                $inst->is_external    = $is_ext ? 1 : 0;
+                $inst->external_name  = $inst->external_name ?? '';
+                $inst->external_email = $inst->external_email ?? '';
+                $inst->external_phone = $inst->external_phone ?? '';
+                $inst->external_org   = $inst->external_org ?? '';
             }
             unset( $inst );
         }
         $row->instructors = is_array( $instructors ) ? $instructors : [];
+        $row->external_instructors = array_values( array_filter( $row->instructors, function( $inst ) {
+            return ! empty( $inst->is_external );
+        } ) );
         $row->primary_teacher_id = ! empty( $row->instructors ) ? (int) $row->instructors[0]->id : 0;
 
         // Decodificar líderes estudiantiles asociados con avatares y etiquetas de rol
@@ -622,6 +640,68 @@ class Aura_Calendar_Events {
             }
         }
 
+        // Procesar instructores externos (terceros)
+        $external_instructors = [];
+        if ( isset( $data['external_instructors_json'] ) && ! empty( $data['external_instructors_json'] ) ) {
+            $dec = json_decode( stripslashes( $data['external_instructors_json'] ), true );
+            if ( is_array( $dec ) ) {
+                $external_instructors = $dec;
+            }
+        } elseif ( isset( $data['external_instructors'] ) ) {
+            if ( is_array( $data['external_instructors'] ) ) {
+                $external_instructors = $data['external_instructors'];
+            } elseif ( is_string( $data['external_instructors'] ) ) {
+                $dec = json_decode( stripslashes( $data['external_instructors'] ), true );
+                if ( is_array( $dec ) ) {
+                    $external_instructors = $dec;
+                }
+            }
+        }
+
+        // Helper para persistir instructores internos y externos
+        $persist_instructors = function( $target_evt_id ) use ( $wpdb, $table_inst, $teacher_ids, $primary_teacher_id, $has_instructor_id_col, $external_instructors ) {
+            foreach ( $teacher_ids as $tid ) {
+                $inst_payload = [
+                    'event_id'   => $target_evt_id,
+                    'teacher_id' => $tid,
+                    'role'       => ( $tid === $primary_teacher_id ) ? 'lead' : 'assistant',
+                    'is_external'=> 0,
+                    'created_at' => current_time( 'mysql' ),
+                ];
+                $inst_formats = [ '%d', '%d', '%s', '%d', '%s' ];
+                if ( $has_instructor_id_col ) {
+                    $inst_payload['instructor_id'] = $tid;
+                    $inst_formats[] = '%d';
+                }
+                $wpdb->insert( $table_inst, $inst_payload, $inst_formats );
+            }
+
+            foreach ( $external_instructors as $ext ) {
+                $ext_name = sanitize_text_field( $ext['name'] ?? ( $ext['external_name'] ?? '' ) );
+                if ( empty( $ext_name ) ) {
+                    continue;
+                }
+                $ext_payload = [
+                    'event_id'       => $target_evt_id,
+                    'teacher_id'     => 0,
+                    'role'           => sanitize_key( $ext['role'] ?? 'guest' ),
+                    'is_external'    => 1,
+                    'external_name'  => $ext_name,
+                    'external_email' => sanitize_email( $ext['email'] ?? ( $ext['external_email'] ?? '' ) ),
+                    'external_phone' => sanitize_text_field( $ext['phone'] ?? ( $ext['external_phone'] ?? '' ) ),
+                    'external_org'   => sanitize_text_field( $ext['organization'] ?? ( $ext['org'] ?? ( $ext['external_org'] ?? '' ) ) ),
+                    'notes'          => sanitize_text_field( $ext['notes'] ?? '' ),
+                    'created_at'     => current_time( 'mysql' ),
+                ];
+                $ext_formats = [ '%d', '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' ];
+                if ( $has_instructor_id_col ) {
+                    $ext_payload['instructor_id'] = 0;
+                    $ext_formats[] = '%d';
+                }
+                $wpdb->insert( $table_inst, $ext_payload, $ext_formats );
+            }
+        };
+
         $created_event_ids = [];
 
         // ── CASO A: EVENTO RECURRENTE (NUEVA SERIE) ──
@@ -691,22 +771,7 @@ class Aura_Calendar_Events {
                     $new_evt_id = (int) $wpdb->insert_id;
                     if ( $new_evt_id > 0 ) {
                         $created_event_ids[] = $new_evt_id;
-
-                        // Insertar instructores
-                        foreach ( $teacher_ids as $tid ) {
-                            $inst_payload = [
-                                'event_id'   => $new_evt_id,
-                                'teacher_id' => $tid,
-                                'role'       => ( $tid === $primary_teacher_id ) ? 'lead' : 'assistant',
-                                'created_at' => current_time( 'mysql' ),
-                            ];
-                            $inst_formats = [ '%d', '%d', '%s', '%s' ];
-                            if ( $has_instructor_id_col ) {
-                                $inst_payload['instructor_id'] = $tid;
-                                $inst_formats[] = '%d';
-                            }
-                            $wpdb->insert( $table_inst, $inst_payload, $inst_formats );
-                        }
+                        $persist_instructors( $new_evt_id );
                     }
                 }
 
@@ -732,11 +797,13 @@ class Aura_Calendar_Events {
         }
 
         // ── CASO B: EVENTO ÚNICO (CREACIÓN O ACTUALIZACIÓN) ──
-        $start_dt = str_replace( 'T', ' ', sanitize_text_field( $data['start_datetime'] ?? '' ) );
+        $start_raw = ! empty( $data['start_datetime'] ) ? $data['start_datetime'] : ( $data['start'] ?? '' );
+        $end_raw   = ! empty( $data['end_datetime'] ) ? $data['end_datetime'] : ( $data['end'] ?? '' );
+        $start_dt  = str_replace( 'T', ' ', sanitize_text_field( $start_raw ) );
         if ( strlen( $start_dt ) === 16 ) {
             $start_dt .= ':00';
         }
-        $end_dt = str_replace( 'T', ' ', sanitize_text_field( $data['end_datetime'] ?? '' ) );
+        $end_dt = str_replace( 'T', ' ', sanitize_text_field( $end_raw ) );
         if ( strlen( $end_dt ) === 16 ) {
             $end_dt .= ':00';
         }
@@ -772,22 +839,9 @@ class Aura_Calendar_Events {
             $wpdb->update( $table_evts, $fields, [ 'id' => $id ], $formats, [ '%d' ] );
             $event_id = $id;
 
-            // Re-asignar instructores
+            // Re-asignar instructores (internos y externos)
             $wpdb->delete( $table_inst, [ 'event_id' => $event_id ], [ '%d' ] );
-            foreach ( $teacher_ids as $tid ) {
-                $inst_payload = [
-                    'event_id'   => $event_id,
-                    'teacher_id' => $tid,
-                    'role'       => ( $tid === $primary_teacher_id ) ? 'lead' : 'assistant',
-                    'created_at' => current_time( 'mysql' ),
-                ];
-                $inst_formats = [ '%d', '%d', '%s', '%s' ];
-                if ( $has_instructor_id_col ) {
-                    $inst_payload['instructor_id'] = $tid;
-                    $inst_formats[] = '%d';
-                }
-                $wpdb->insert( $table_inst, $inst_payload, $inst_formats );
-            }
+            $persist_instructors( $event_id );
 
             // Sincronizar actualización con Google Calendar
             if ( Aura_Calendar_Google_Sync::is_auto_sync() ) {
@@ -813,20 +867,7 @@ class Aura_Calendar_Events {
             $wpdb->insert( $table_evts, $fields, $formats );
             $event_id = (int) $wpdb->insert_id;
 
-            foreach ( $teacher_ids as $tid ) {
-                $inst_payload = [
-                    'event_id'   => $event_id,
-                    'teacher_id' => $tid,
-                    'role'       => ( $tid === $primary_teacher_id ) ? 'lead' : 'assistant',
-                    'created_at' => current_time( 'mysql' ),
-                ];
-                $inst_formats = [ '%d', '%d', '%s', '%s' ];
-                if ( $has_instructor_id_col ) {
-                    $inst_payload['instructor_id'] = $tid;
-                    $inst_formats[] = '%d';
-                }
-                $wpdb->insert( $table_inst, $inst_payload, $inst_formats );
-            }
+            $persist_instructors( $event_id );
 
             if ( Aura_Calendar_Google_Sync::is_auto_sync() ) {
                 Aura_Calendar_Google_Sync::sync_event( $event_id );

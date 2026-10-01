@@ -1046,6 +1046,18 @@ La sincronización entre ambos módulos es fundamental por tres razones operativ
 
 
 
+flowchart TD
+    A[Fase 1: Base de Datos y Migraciones para Hostinger] --> B[Fase 2: Materias por Módulos y Descripciones]
+    B --> C[Fase 3: Capability CBAC y Conmutador en Portal Docente]
+    C --> D[Fase 4: Tooltip Enriquecido y Visualización Apilada]
+    D --> E[Fase 5: Clonar, Copiar, Pegar y Repetir Eventos]
+    E --> F[Fase 6: Instructores Terceros y Filtro de Clases Asignadas]
+    F --> G[Fase 7: Invitaciones de Calendario .ics / Google Calendar]
+    G --> H[Fase 8: Empaquetado y Verificación de Despliegue en Hostinger]
+
+
+
+
 
 
    - En `https://diserwp.test/wp-admin/admin.php?page=aura-forms-enrollments`, en acciones, tiene el boton de eliminar este, y como se sincroniza esta pagina de `Postulantes — Inscripciones desde Formularios`, con la de `Inscripciones y Aprobaciones` en la url `https://diserwp.test/wp-admin/admin.php?page=aura-students-enrollments` del Modulo de estudiantes, analiza todo ya que debe haver sincronizacion entre lo correspondiente al formulario cunado hay incripciones a curso, y Estudiantes y que que el curso este creado en `Cursos y Programas` y este debe esta sincronizado con `Programas y Cursos de Capacitación` del calendario.  Analiza todo el flujo
