@@ -375,6 +375,17 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                         </div>
                     </div>
 
+                    <!-- Enviar invitaciones por correo (Fase 7) -->
+                    <div class="form-group" style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; padding: 10px 14px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; cursor: pointer; user-select: none; margin: 0;">
+                            <input type="checkbox" name="send_calendar_invitations" id="evt-send-invitations" value="1" style="width: 16px; height: 16px;">
+                            <span>✉️ <?php esc_html_e( 'Enviar invitación de calendario por correo a los instructores al guardar', 'aura' ); ?></span>
+                        </label>
+                        <div style="font-size: 11.5px; color: var(--aura-text-muted, #64748b); margin-left: 24px; margin-top: 2px;">
+                            <?php esc_html_e( 'Incluye archivo adjunto .ics y enlaces directos para Google Calendar y Outlook.', 'aura' ); ?>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 

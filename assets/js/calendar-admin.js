@@ -2906,6 +2906,33 @@
             $('#box-det-desc').hide();
         }
 
+        // ── Fase 7: Enlaces de sincronización de calendario (.ics, Google, Outlook) ──
+        var evtId = event.id;
+        var directIcsUrl = (auraCalData.ajax_url || '/wp-admin/admin-ajax.php') + '?action=aura_cal_download_ics&event_id=' + encodeURIComponent(evtId) + '&nonce=' + encodeURIComponent(auraCalData.nonce);
+        $('#btn-det-download-ics').attr('href', directIcsUrl);
+        $('#btn-det-add-google').attr('href', '#');
+        $('#btn-det-add-outlook').attr('href', '#');
+
+        if (evtId && auraCalData.ajax_url) {
+            $.ajax({
+                url: auraCalData.ajax_url,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'aura_cal_get_calendar_links',
+                    event_id: evtId,
+                    nonce: auraCalData.nonce
+                },
+                success: function(resp) {
+                    if (resp && resp.success && resp.data) {
+                        if (resp.data.google) $('#btn-det-add-google').attr('href', resp.data.google);
+                        if (resp.data.outlook) $('#btn-det-add-outlook').attr('href', resp.data.outlook);
+                        if (resp.data.ics_download) $('#btn-det-download-ics').attr('href', resp.data.ics_download);
+                    }
+                }
+            });
+        }
+
         // Soporte robusto para Pantalla Completa: adjuntar el modal al contenedor fullscreen activo
         var $modal = $('#modal-event-detail');
         var $fsEl = document.fullscreenElement ? $(document.fullscreenElement) : ($('.aura-calendar-is-fullscreen').length ? $('.aura-calendar-is-fullscreen').first() : null);
@@ -3177,6 +3204,103 @@
         });
     }
     window.handlePasteEventToDate = handlePasteEventToDate;
+
+    // ─────────────────────────────────────────────────────────────
+    // FASE 7: ENVIAR INVITACIÓN DE CALENDARIO POR CORREO (.ICS / GOOGLE / OUTLOOK)
+    // ─────────────────────────────────────────────────────────────
+
+    $('#btn-det-open-email-invite').on('click', function() {
+        if (!currentDetailEvent) return;
+        var p = currentDetailEvent.extendedProps || {};
+        var eventId = currentDetailEvent.id;
+        var title = p.raw_title || currentDetailEvent.title || 'Evento';
+
+        var dateStr = (currentDetailEvent.start ? currentDetailEvent.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '') || p.date_label || '';
+        var startStr = currentDetailEvent.start ? currentDetailEvent.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var endStr = currentDetailEvent.end ? currentDetailEvent.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var timeSummary = dateStr + (startStr ? ' (' + startStr + (endStr ? ' - ' + endStr : '') + ')' : '');
+
+        $('#invite-event-id').val(eventId);
+        $('#invite-event-summary').html('<strong>' + escapeHtml(title) + '</strong><br><span style="color:#6366f1;font-weight:600;">' + escapeHtml(timeSummary) + '</span>' + (p.subject_name ? ' &bull; ' + escapeHtml(p.subject_name) : ''));
+        $('#invite-custom-emails').val('');
+        $('#invite-custom-note').val('');
+
+        // Listar instructores con correo
+        var instHtml = '';
+        var instructors = p.instructors || [];
+        if (instructors.length) {
+            instructors.forEach(function(inst) {
+                var email = inst.email || '';
+                var isExt = !!inst.is_external;
+                var badge = isExt ? '<span style="font-size:10px;background:#0ea5e9;color:#fff;padding:1px 6px;border-radius:10px;margin-left:4px;">Externo</span>' : '<span style="font-size:10px;background:#6366f1;color:#fff;padding:1px 6px;border-radius:10px;margin-left:4px;">Docente</span>';
+                if (email) {
+                    instHtml += '<div style="display:flex;align-items:center;gap:6px;">' +
+                        '<span>👤</span> <strong>' + escapeHtml(inst.name) + '</strong> ' + badge + ' &lt;<code>' + escapeHtml(email) + '</code>&gt;' +
+                    '</div>';
+                } else {
+                    instHtml += '<div style="display:flex;align-items:center;gap:6px;opacity:0.6;">' +
+                        '<span>⚠️</span> <span>' + escapeHtml(inst.name) + ' ' + badge + ' (sin correo registrado)</span>' +
+                    '</div>';
+                }
+            });
+        } else {
+            instHtml = '<span style="color:var(--aura-text-muted,#94a3b8);font-style:italic;">No hay instructores asignados a esta clase. Puedes escribir correos en el campo adicional abajo.</span>';
+        }
+        $('#invite-recipients-list').html(instHtml);
+
+        // Adjuntar modal al contenedor si está en fullscreen
+        var $invModal = $('#modal-send-invitation');
+        var $fsEl = document.fullscreenElement ? $(document.fullscreenElement) : ($('.aura-calendar-is-fullscreen').length ? $('.aura-calendar-is-fullscreen').first() : null);
+        if ($fsEl && $fsEl.length && !$invModal.closest($fsEl).length) {
+            $invModal.appendTo($fsEl);
+        }
+
+        openModal('#modal-send-invitation');
+    });
+
+    $('#form-send-invitation').on('submit', function(e) {
+        e.preventDefault();
+        var eventId = parseInt($('#invite-event-id').val(), 10);
+        if (!eventId) {
+            showToast('No se especificó el ID del evento.', 'error');
+            return;
+        }
+
+        var customEmails = $.trim($('#invite-custom-emails').val());
+        var customNote = $.trim($('#invite-custom-note').val());
+        var $btn = $('#btn-submit-send-invite');
+        var originalBtnHtml = $btn.html();
+
+        $btn.prop('disabled', true).html('⏳ Enviando invitaciones...');
+        showToast('Enviando invitaciones de calendario...', 'info');
+
+        $.ajax({
+            url: auraCalData.ajax_url,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'aura_cal_send_invitation_email',
+                event_id: eventId,
+                custom_emails: customEmails,
+                custom_note: customNote,
+                nonce: auraCalData.nonce
+            },
+            success: function(resp) {
+                $btn.prop('disabled', false).html(originalBtnHtml);
+                if (resp && resp.success) {
+                    closeModal('#modal-send-invitation');
+                    showToast(resp.data && resp.data.message ? resp.data.message : '¡Invitaciones de calendario enviadas con éxito!', 'success');
+                } else {
+                    var errMsg = resp && resp.data && resp.data.message ? resp.data.message : 'Error al enviar las invitaciones.';
+                    showToast(errMsg, 'error');
+                }
+            },
+            error: function() {
+                $btn.prop('disabled', false).html(originalBtnHtml);
+                showToast('Error de red al procesar el envío de invitaciones.', 'error');
+            }
+        });
+    });
 
     // ─────────────────────────────────────────────────────────────
     // 5. ASISTENCIA (MODAL Y ROSTER)

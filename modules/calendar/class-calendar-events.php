@@ -1481,6 +1481,21 @@ class Aura_Calendar_Events {
             wp_send_json_error( [ 'message' => $res->get_error_message() ] );
         }
 
+        // Si se solicitó enviar invitaciones de calendario a los instructores (Fase 7)
+        $send_invitations = ! empty( $_POST['send_calendar_invitations'] ) || ! empty( $_POST['send_invitations'] );
+        if ( $send_invitations && ! empty( $res['ids'] ) && class_exists( 'Aura_Calendar_Invitations' ) ) {
+            $total_sent = 0;
+            foreach ( $res['ids'] as $eid ) {
+                $invite_res = Aura_Calendar_Invitations::send_invitations_email( (int) $eid );
+                if ( ! empty( $invite_res['success'] ) ) {
+                    $total_sent += count( $invite_res['sent_to'] ?? [] );
+                }
+            }
+            if ( $total_sent > 0 ) {
+                $res['message'] .= ' ' . sprintf( __( 'Se enviaron %d invitaciones por correo electrónico.', 'aura' ), $total_sent );
+            }
+        }
+
         wp_send_json_success( $res );
     }
 

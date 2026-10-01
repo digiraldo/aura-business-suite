@@ -1301,3 +1301,41 @@ Continua de inmediato con la Fase 7 (generación y envío de invitaciones de cal
      - Se eliminaron las variables `--fc-event-bg-color: #6366f1;` globales forzadas en `aura-frontend-dark-mode.css`.
      - En el hook `eventDidMount(info)` de los tres calendarios (admin, profesor y estudiante), se inyectan dinámicamente con `info.el.style.setProperty()` las propiedades `background-color`, `border-color`, `--fc-event-bg-color`, `--fc-event-border-color` y `--fc-event-text-color` con `!important` a partir del color original de la base de datos (`info.event.backgroundColor || p.color`).
      - Se eliminó la regla `visibility: visible !important;` que rompía el manejo de elementos ocultos de FullCalendar.
+
+
+### Fase 7: Invitaciones de Calendario a Profesores (.ics, Google Calendar, Outlook)
+
+Se implementó de forma completa y nativa el subsistema de generación y envío de invitaciones de calendario estándar:
+
+1. **Servicio Central de Invitaciones (modules/calendar/class-calendar-invitations.php)**:
+   - **Generador RFC 5545 iCalendar (`generate_ics`)**:
+     - Estructura estándar `BEGIN:VCALENDAR` y `BEGIN:VEVENT` con UID único y persistente basado en hash institucional y dominio.
+     - Conversión automática de timestamps a UTC (`Ymd\THis\Z`) y soporte para eventos de día completo (`VALUE=DATE`).
+     - Metadatos completos: `SUMMARY`, `DESCRIPTION` estructurada con materia, módulo, programa, profesores, líderes y salón; `LOCATION`, `URL` de videollamada, `ORGANIZER` y directivas `ATTENDEE` con `ROLE=REQ-PARTICIPANT` para titulares y `RSVP=TRUE`.
+     - Recordatorio nativo `VALARM` a 30 minutos antes (`TRIGGER:-PT30M`).
+     - Plegado de líneas largas estricto a 75 octetos (`fold_ics_line`) para total compatibilidad con clientes de correo y calendarios (Apple Calendar, Microsoft Outlook, Thunderbird, Google Calendar).
+   - **Generador de Enlaces Directos (`get_calendar_links`)**:
+     - Enlace pre-llenado de **Google Calendar** (`action=TEMPLATE&text=...&dates=...&details=...&location=...`).
+     - Enlace pre-llenado de **Outlook Live / Web** (`/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent...`).
+     - Enlace pre-llenado de **Office 365** para entornos corporativos y educativos.
+     - Enlace de descarga directa del archivo `.ics` securizado mediante token/nonce.
+   - **Motor de Envío por Correo Electrónico (`send_invitations_email`)**:
+     - Construcción de archivo `.ics` temporal y adjunto vía `wp_mail()`.
+     - Plantilla de correo HTML responsiva con diseño institucional Aura (cabecera con gradiente, tarjeta central, botón destacado de videollamada si la sesión es virtual, botones de acción inmediata para Google Calendar, Outlook y descarga de archivo .ics, y nota personalizada opcional).
+     - Detección automática de profesores titulares, adjuntos y externos asignados a la clase, con opción de incluir destinatarios adicionales separados por coma.
+   - **Endpoints AJAX Registrados**:
+     - `aura_cal_download_ics` (con soporte público mediante token seguro para descarga desde correos).
+     - `aura_cal_get_calendar_links` (para obtener enlaces en tiempo real).
+     - `aura_cal_send_invitation_email` (para disparar invitaciones desde el frontend).
+
+2. **Integración en la Interfaz de Usuario**:
+   - **Modal de Detalle del Evento (templates/calendar/modal-event-detail.php)**:
+     - Nueva sección "Sincronizar con Calendario Personal" con botones de Google Calendar, Outlook / 365 y descarga de archivo `.ics`.
+     - Botón "✉️ Enviar Invitación a Profesores" que despliega el modal terciario `#modal-send-invitation`.
+     - Modal `#modal-send-invitation` con resumen de la clase, previsualización de instructores con badges, campo para correos adicionales y textarea para notas personalizadas.
+   - **Modal de Creación y Edición (templates/calendar/modal-partials.php)**:
+     - Checkbox opcional: "✉️ Enviar invitación de calendario por correo a los instructores al guardar".
+     - Integración en `Aura_Calendar_Events::ajax_save_event()` (modules/calendar/class-calendar-events.php) para despachar invitaciones automáticamente tras guardar si el checkbox está activo.
+   - **Interactividad JavaScript (assets/js/calendar-admin.js)**:
+     - Carga asíncrona de enlaces de calendario en `openEventDetail()`.
+     - Manejadores de envío de invitaciones con feedback por toast y spinner en botón submit.

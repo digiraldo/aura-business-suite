@@ -252,6 +252,7 @@ class Aura_Business_Suite {
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-admin.php';
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-frontend.php';
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-export.php';
+        require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-invitations.php';
     }
     
     /**
@@ -459,6 +460,7 @@ class Aura_Business_Suite {
         Aura_Calendar_Admin::init();
         Aura_Calendar_Frontend::init();
         Aura_Calendar_Export::init();
+        Aura_Calendar_Invitations::init();
     }
 
     /**
