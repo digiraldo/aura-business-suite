@@ -241,6 +241,10 @@
 
     $(document).on('keydown', function(e) {
         if (e.key === 'Escape' || e.keyCode === 27) {
+            // Si el modal secundario de catálogo de terceros está visible, no cerrar el modal de evento padre
+            if ($('#aura-tp-explorer-modal').is(':visible')) {
+                return;
+            }
             var $openModals = $('.aura-modal-overlay.active:visible, .aura-modal-overlay.is-active:visible, #modal-event-detail:visible');
             if ($openModals.length > 0) {
                 closeModal('.aura-modal-overlay');

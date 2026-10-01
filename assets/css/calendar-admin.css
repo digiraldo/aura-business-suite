@@ -4059,4 +4059,15 @@ body.aura-dark-mode .aura-drag-title {
     color: #f1f3f4;
 }
 
+/* ── MODAL SECUNDARIO: CATÁLOGO DE TERCEROS Y ENTIDADES ── */
+#aura-tp-explorer-modal.aura-tp-modal,
+#aura-tp-explorer-modal {
+    z-index: 1002000 !important;
+}
+
+#aura-tp-explorer-modal .aura-tp-modal-dialog {
+    z-index: 1002001 !important;
+    position: relative !important;
+}
+
 

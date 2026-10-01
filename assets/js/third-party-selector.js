@@ -184,7 +184,7 @@ window.AuraThirdPartySelector = (function($) {
         if ($('#aura-tp-explorer-modal').length) return;
 
         const modalHtml = `
-        <div id="aura-tp-explorer-modal" class="aura-tp-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.75);z-index:999999;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:16px;box-sizing:border-box;">
+        <div id="aura-tp-explorer-modal" class="aura-tp-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.75);z-index:1002000 !important;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:16px;box-sizing:border-box;">
             <div class="aura-tp-modal-dialog" style="background:#fff;border-radius:18px;width:100%;max-width:960px;max-height:min(92vh, 840px);height:auto;display:flex;flex-direction:column;box-shadow:0 25px 60px -15px rgba(0,0,0,0.35);overflow:hidden;border:1px solid #cbd5e1;">
                 
                 <!-- Modal Header -->
@@ -322,6 +322,7 @@ window.AuraThirdPartySelector = (function($) {
         $modal.on('click', function(e) {
             if ($(e.target).is('#aura-tp-explorer-modal')) {
                 closeExplorer();
+                e.stopPropagation();
             }
         });
 
@@ -329,6 +330,9 @@ window.AuraThirdPartySelector = (function($) {
         $(document).on('keydown', function(e) {
             if (e.key === 'Escape' && $('#aura-tp-explorer-modal').is(':visible')) {
                 closeExplorer();
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
             }
         });
 
@@ -771,7 +775,24 @@ window.AuraThirdPartySelector = (function($) {
         $('#aura-tp-explorer-search').val('');
         $('#aura-tp-search-clear').hide();
 
-        $modal.css('display', 'flex');
+        // Si la pantalla o calendario está en Fullscreen, mover el modal adentro del contenedor fullscreen activo
+        const $fsEl = document.fullscreenElement ? $(document.fullscreenElement) : ($('.aura-calendar-is-fullscreen').length ? $('.aura-calendar-is-fullscreen').first() : null);
+        if ($fsEl && $fsEl.length) {
+            if (!$modal.closest($fsEl).length) {
+                $modal.appendTo($fsEl);
+            }
+        } else {
+            // Asegurar el mismo stacking context insertando después del modal activo (por ejemplo, #modal-event-editor)
+            const $activeModal = $('.aura-modal-overlay.active:visible, .aura-modal-overlay.is-active:visible, #modal-event-editor:visible').last();
+            if ($activeModal.length && !$modal.closest($activeModal.parent()).length) {
+                $modal.insertAfter($activeModal);
+            }
+        }
+
+        $modal.css({
+            'display': 'flex',
+            'z-index': '1002000'
+        });
         $('#aura-tp-explorer-loading').show();
         $('#aura-tp-explorer-grid').empty();
         $('#aura-tp-explorer-empty').hide();

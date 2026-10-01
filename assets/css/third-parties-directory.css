@@ -3637,3 +3637,15 @@ body.aura-dark-mode .aura-360-section-title,
     color: var(--tx-primary, #f8fafc) !important;
     border-bottom-color: var(--border, #334155) !important;
 }
+
+/* ── MODAL EXPLORADOR / CATÁLOGO DE TERCEROS (SUPERIOR A OTROS MODALES) ── */
+#aura-tp-explorer-modal.aura-tp-modal,
+#aura-tp-explorer-modal {
+    z-index: 1002000 !important;
+}
+
+#aura-tp-explorer-modal .aura-tp-modal-dialog {
+    z-index: 1002001 !important;
+    position: relative !important;
+}
+

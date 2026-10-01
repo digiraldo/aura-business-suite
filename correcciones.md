@@ -1096,3 +1096,10 @@ Se integró completamente la base de datos centralizada de Terceros (`wp_aura_fi
 
 5. **Mejora del Selector Central (`assets/js/third-party-selector.js`):**
    - Incorporación de `data-phone` en el botón de selección de la tarjeta de catálogo y propagación limpia en el objeto `item.phone` para callbacks de selección externos.
+
+6. **Corrección de Jerarquía de Capas (Stacking Context y z-index):**
+   - **Causa raíz:** `.aura-modal-overlay` del editor de eventos (`#modal-event-editor`) tiene asignado `z-index: 1000500 !important`. El modal del catálogo (`#aura-tp-explorer-modal`) se encontraba con `z-index: 999999` y añadido al `body`, lo que provocaba que se renderizara por detrás del modal de evento.
+   - **Solución implementada:**
+     - Se actualizó el `z-index` de `#aura-tp-explorer-modal` y su diálogo a `1002000 !important` en [assets/js/third-party-selector.js](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/third-party-selector.js), [assets/css/third-parties-directory.css](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/third-parties-directory.css) y [assets/css/calendar-admin.css](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/calendar-admin.css).
+     - Se ajustó dinámicamente el montaje DOM en `openExplorer()`: si hay pantalla completa o un modal de eventos activo, el modal del catálogo se inserta inmediatamente después (`insertAfter`) o dentro del contenedor activo, compartiendo idéntico stacking context.
+     - Se agregó aislamiento de eventos (`stopPropagation` y control de tecla Escape en [assets/js/calendar-admin.js](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js)) para evitar que cerrar el catálogo cierre inadvertidamente el modal de Crear/Editar Evento.
