@@ -393,6 +393,8 @@
             timeZone: 'local',
             nowIndicator: true,
             eventDisplay: 'block',
+            dayMaxEvents: 4,
+            eventOrder: 'start,-duration,allDay,title',
             editable: !!auraCalData.user_can_edit,
             selectable: !!auraCalData.user_can_edit,
             selectMirror: true,
@@ -664,9 +666,20 @@
         }
 
         var descHtml = '';
+        if (p.module_name) {
+            descHtml += '<div style="font-size:11.5px;color:#a5b4fc;font-weight:600;margin-bottom:4px;">🏷️ ' + escapeHtml(p.module_name) + '</div>';
+        }
+        if (p.subject_description) {
+            var cleanSubj = p.subject_description.length > 200 ? p.subject_description.substring(0, 197) + '...' : p.subject_description;
+            descHtml += '<div class="tooltip-desc" style="white-space:pre-wrap;line-height:1.45;margin-bottom:6px;border-left:2px solid #818cf8;padding-left:6px;font-size:11.5px;color:#cbd5e1;"><em>📖 ' + escapeHtml(cleanSubj) + '</em></div>';
+        }
+        if (p.program_description) {
+            var cleanProg = p.program_description.length > 180 ? p.program_description.substring(0, 177) + '...' : p.program_description;
+            descHtml += '<div class="tooltip-desc" style="white-space:pre-wrap;line-height:1.45;margin-bottom:6px;border-left:2px solid #a855f7;padding-left:6px;font-size:11px;color:#94a3b8;"><em>🎓 ' + escapeHtml(cleanProg) + '</em></div>';
+        }
         if (p.description) {
             var cleanDesc = p.description.length > 250 ? p.description.substring(0, 247) + '...' : p.description;
-            descHtml = '<div class="tooltip-desc" style="white-space:pre-wrap;line-height:1.5;">' + escapeHtml(cleanDesc) + '</div>';
+            descHtml += '<div class="tooltip-desc" style="white-space:pre-wrap;line-height:1.5;">' + escapeHtml(cleanDesc) + '</div>';
         }
 
         var html = '' +
@@ -682,7 +695,7 @@
             '<div class="tooltip-title">' + escapeHtml(p.raw_title || event.title) + '</div>' +
             '<div class="tooltip-meta-grid">' +
                 (p.program_name ? '<div class="tooltip-meta-row"><strong>🎓 Programa:</strong> <span>' + escapeHtml(p.program_name) + '</span></div>' : '') +
-                (p.subject_name ? '<div class="tooltip-meta-row"><strong>📚 Materia:</strong> <span>' + escapeHtml(p.subject_name) + '</span></div>' : '') +
+                (p.subject_name ? '<div class="tooltip-meta-row"><strong>📚 Materia:</strong> <span>' + escapeHtml(p.subject_name) + (p.module_name ? ' (' + escapeHtml(p.module_name) + ')' : '') + '</span></div>' : '') +
                 (timeRange ? '<div class="tooltip-meta-row"><strong>🕐 Horario:</strong> <span>' + timeRange + '</span></div>' : '') +
                 locHtml +
                 leadersHtml +
@@ -1968,7 +1981,11 @@
 
         // Grid Programa, Materia, Horario, Ubicación
         $('#det-program').text(p.program_name || '—');
-        $('#det-subject').text(p.subject_name || '—');
+        var subjTitle = p.subject_name || '—';
+        if (p.module_name) {
+            subjTitle += ' (' + p.module_name + ')';
+        }
+        $('#det-subject').text(subjTitle);
 
         var timeRange = '';
         var is12h = /[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '');
@@ -2012,9 +2029,23 @@
             $('#row-det-leaders').hide();
         }
 
-        // Descripción / Temario
+        // Descripción / Temario / Información de Módulo y Programa
+        var fullDescParts = [];
+        if (p.module_name) {
+            fullDescParts.push('🏷️ ' + p.module_name);
+        }
+        if (p.subject_description) {
+            fullDescParts.push('📚 Descripción de Materia:\n' + p.subject_description);
+        }
+        if (p.program_description) {
+            fullDescParts.push('🎓 Descripción de Programa:\n' + p.program_description);
+        }
         if (p.description) {
-            $('#box-det-desc').text(p.description).show();
+            fullDescParts.push('📝 Detalle de Clase:\n' + p.description);
+        }
+
+        if (fullDescParts.length > 0) {
+            $('#box-det-desc').text(fullDescParts.join('\n\n')).show();
         } else {
             $('#box-det-desc').hide();
         }
@@ -2698,6 +2729,9 @@
 
         renderSubjectTeacherCheckboxes([]);
         syncColorPalette('#subj-color', '#3A86FF');
+        $('#subj-module-name').val('');
+        $('#subj-module-order').val('1');
+        $('#subj-description').val('');
 
         currentTeacherMaterials = [];
         currentStudentMaterials = [];
@@ -2725,6 +2759,9 @@
                 $('#subj-name').val(s.name);
                 $('#subj-code').val(s.code);
                 $('#subj-hours').val(s.total_hours || 30);
+                $('#subj-module-name').val(s.module_name || '');
+                $('#subj-module-order').val(s.module_order || 1);
+                $('#subj-description').val(s.description || '');
                 
                 var subjColor = s.color || '#3A86FF';
                 $('#subj-color').val(subjColor);

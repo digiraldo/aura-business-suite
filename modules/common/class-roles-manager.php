@@ -378,6 +378,7 @@ class Aura_Roles_Manager {
                 'aura_cal_submit_tasks'     => __('Entregar tareas académicas (estudiantes)', 'aura-suite'),
                 'aura_cal_grade_tasks'      => __('Revisar y calificar entregas de tareas', 'aura-suite'),
                 'aura_cal_view_own'         => __('Ver únicamente clases/eventos propios asignados', 'aura-suite'),
+                'aura_cal_portal_view_all'  => __('Portal Docente: Alternar entre todo el calendario y solo mis clases', 'aura-suite'),
                 'aura_cal_manage_settings'  => __('Configurar módulo de calendario y sincronización GCal', 'aura-suite'),
             ),
         );
@@ -511,7 +512,8 @@ class Aura_Roles_Manager {
                 'title'        => __('MÓDULO: CALENDARIO, CLASES Y HORARIOS', 'aura-suite'),
                 'capabilities' => array(
                     'aura_cal_view_calendar'   => array('label' => __('Ver calendario de clases y actividades', 'aura-suite'), 'code' => 'view_calendar'),
-                    'aura_cal_view_own'        => array('label' => __('Ver solo clases/eventos propios asignados', 'aura-suite'), 'code' => 'view_own'),
+                    'aura_cal_view_own'         => array('label' => __('Ver solo clases/eventos propios asignados', 'aura-suite'), 'code' => 'view_own'),
+                    'aura_cal_portal_view_all'  => array('label' => __('Portal Docente: Alternar entre todo el calendario y solo mis clases', 'aura-suite'), 'code' => 'portal_view_all'),
                     'aura_cal_manage_calendar' => array('label' => __('Crear y programar clases y eventos', 'aura-suite'), 'code' => 'manage_calendar'),
                     'aura_cal_delete_events'   => array('label' => __('Eliminar clases y eventos', 'aura-suite'), 'code' => 'delete_events', 'star' => true),
                     'aura_cal_manage_programs' => array('label' => __('Gestionar programas y materias', 'aura-suite'), 'code' => 'manage_programs'),

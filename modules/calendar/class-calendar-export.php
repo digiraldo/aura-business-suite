@@ -53,6 +53,8 @@ class Aura_Calendar_Export {
                     'code'           => $s->code ?? '',
                     'name'           => $s->name ?? '',
                     'description'    => $s->description ?? '',
+                    'module_name'    => $s->module_name ?? '',
+                    'module_order'   => $s->module_order ?? 1,
                     'total_hours'    => $s->total_hours ?? null,
                     'color'          => $s->color ?? '',
                     'status'         => $s->status ?? 'active',
@@ -90,7 +92,7 @@ class Aura_Calendar_Export {
      */
     public static function to_json( array $program_ids = [] ): string {
         $data = [
-            'export_version' => '1.8.1',
+            'export_version' => '1.8.2',
             'plugin'         => 'aura-business-suite',
             'exported_at'    => current_time( 'c' ),
             'programs'       => self::get_export_data( $program_ids ),
@@ -112,7 +114,7 @@ class Aura_Calendar_Export {
             'programa_codigo', 'programa_nombre', 'programa_descripcion',
             'periodo_academico', 'fecha_inicio', 'fecha_fin', 'color_programa',
             'estado_programa', 'area', 'coordinadores',
-            'materia_codigo', 'materia_nombre', 'materia_descripcion',
+            'materia_codigo', 'materia_nombre', 'materia_descripcion', 'modulo',
             'horas_totales', 'creditos', 'color_materia',
             'estado_materia', 'modalidad', 'profesores', 'notas_horario', 'orden',
         ];
@@ -124,7 +126,7 @@ class Aura_Calendar_Export {
                     $prog['code'], $prog['name'], $prog['description'],
                     $prog['academic_period'], $prog['start_date'], $prog['end_date'],
                     $prog['color'], $prog['status'], $prog['area_name'], $prog['coordinator_names'],
-                    '', '', '', '', '', '', '', '', '', '', '',
+                    '', '', '', '', '', '', '', '', '', '', '', '',
                 ] );
             } else {
                 foreach ( $prog['subjects'] as $s ) {
@@ -132,7 +134,7 @@ class Aura_Calendar_Export {
                         $prog['code'], $prog['name'], $prog['description'],
                         $prog['academic_period'], $prog['start_date'], $prog['end_date'],
                         $prog['color'], $prog['status'], $prog['area_name'], $prog['coordinator_names'],
-                        $s['code'], $s['name'], $s['description'],
+                        $s['code'], $s['name'], $s['description'], $s['module_name'],
                         $s['total_hours'], $s['credits'], $s['color'],
                         $s['status'], $s['modality'], $s['teacher_names'],
                         $s['schedule_notes'], $s['order'],
@@ -252,6 +254,8 @@ class Aura_Calendar_Export {
                         'code'           => $s_code,
                         'name'           => $s_name,
                         'description'    => sanitize_textarea_field( $s_data['description'] ?? '' ),
+                        'module_name'    => sanitize_text_field( $s_data['module_name'] ?? ( $s_data['modulo'] ?? '' ) ),
+                        'module_order'   => ! empty( $s_data['module_order'] ) ? intval( $s_data['module_order'] ) : 1,
                         'total_hours'    => ! empty( $s_data['total_hours'] ) ? intval( $s_data['total_hours'] ) : null,
                         'credits'        => ! empty( $s_data['credits'] ) ? intval( $s_data['credits'] ) : null,
                         'color'          => sanitize_hex_color( $s_data['color'] ?? '' ) ?: '#3b82f6',

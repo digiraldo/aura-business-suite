@@ -181,9 +181,19 @@ class Aura_Calendar_Events {
                           current_user_can( 'aura_cal_manage_calendar' ) ||
                           current_user_can( 'aura_manage_calendar' );
 
+        $portal_scope = ! empty( $filters['portal_scope'] ) ? sanitize_key( $filters['portal_scope'] ) : '';
+        $can_portal_view_all = current_user_can( 'aura_cal_portal_view_all' ) || $can_manage_all;
+
         if ( ! $can_manage_all && $user_id > 0 ) {
             $is_restricted_view = current_user_can( 'aura_cal_view_own' ) || current_user_can( 'aura_teach_calendar' );
             $is_student         = current_user_can( 'aura_student_portal_access' );
+
+            // Si el docente solicita expresamente alternar entre 'all' y 'own' desde el portal
+            if ( $portal_scope === 'own' ) {
+                $is_restricted_view = true;
+            } elseif ( $portal_scope === 'all' && $can_portal_view_all ) {
+                $is_restricted_view = false;
+            }
 
             // Si es un líder de área o tiene asignadas áreas específicas en wp_aura_area_users
             $user_areas = [];
@@ -203,7 +213,7 @@ class Aura_Calendar_Events {
             } elseif ( $is_restricted_view && ! $is_student ) {
                 // Profesor o usuario con vista propia: eventos donde es instructor, coordina el programa o programas de su área
                 $area_clause = '';
-                if ( ! empty( $user_areas ) ) {
+                if ( ! empty( $user_areas ) && $portal_scope !== 'own' ) {
                     $area_ids_sql = implode( ',', array_map( 'intval', $user_areas ) );
                     $area_clause = " OR p.area_id IN ({$area_ids_sql})";
                 }
@@ -226,13 +236,18 @@ class Aura_Calendar_Events {
                     $params[] = $user_id;
                 }
             }
+        } elseif ( $can_manage_all && $portal_scope === 'own' && $user_id > 0 ) {
+            // Incluso un admin puede probar el modo 'Solo mis clases'
+            $where[]  = "EXISTS (SELECT 1 FROM {$table_inst} ei_cbac WHERE ei_cbac.event_id = e.id AND ei_cbac.teacher_id = %d)";
+            $params[] = $user_id;
         }
 
         $where_sql = implode( ' AND ', $where );
 
         $sql = "SELECT e.*,
-                       p.name AS program_name, p.code AS program_code, p.color AS program_color,
-                       s.name AS subject_name, s.code AS subject_code, s.color AS subject_color,
+                       p.name AS program_name, p.code AS program_code, p.color AS program_color, p.description AS program_description,
+                       s.name AS subject_name, s.code AS subject_code, s.color AS subject_color, s.description AS subject_description,
+                       s.module_name, s.module_order,
                        (SELECT COUNT(*) FROM {$table_att} a WHERE a.event_id = e.id) AS attendance_count
                 FROM {$table_evts} e
                 LEFT JOIN {$table_prog} p ON p.id = e.program_id
@@ -395,6 +410,10 @@ class Aura_Calendar_Events {
                     'end_time_label'      => self::format_local_datetime( $row->end_datetime, get_option( 'time_format', 'H:i' ) ),
                     'date_label'          => self::format_local_datetime( $row->start_datetime, get_option( 'date_format', 'd-m-Y' ) ),
                     'description'         => $row->description,
+                    'program_description' => $row->program_description ?? '',
+                    'subject_description' => $row->subject_description ?? '',
+                    'module_name'         => $row->module_name ?? '',
+                    'module_order'        => (int) ( $row->module_order ?? 0 ),
                     'recurrence_group_id' => $row->recurrence_group_id,
                     'gcal_event_id'       => $row->gcal_event_id,
                     'gcal_sync_status'    => $row->gcal_sync_status,
@@ -960,13 +979,14 @@ class Aura_Calendar_Events {
         }
 
         $filters = [
-            'start'      => sanitize_text_field( $_POST['start'] ?? '' ),
-            'end'        => sanitize_text_field( $_POST['end'] ?? '' ),
-            'program_id' => intval( $_POST['program_id'] ?? 0 ),
-            'subject_id' => intval( $_POST['subject_id'] ?? 0 ),
-            'teacher_id' => intval( $_POST['teacher_id'] ?? 0 ),
-            'event_type' => sanitize_text_field( $_POST['event_type'] ?? '' ),
-            'status'     => sanitize_text_field( $_POST['status'] ?? '' ),
+            'start'        => sanitize_text_field( $_POST['start'] ?? '' ),
+            'end'          => sanitize_text_field( $_POST['end'] ?? '' ),
+            'program_id'   => intval( $_POST['program_id'] ?? 0 ),
+            'subject_id'   => intval( $_POST['subject_id'] ?? 0 ),
+            'teacher_id'   => intval( $_POST['teacher_id'] ?? 0 ),
+            'event_type'   => sanitize_text_field( $_POST['event_type'] ?? '' ),
+            'status'       => sanitize_text_field( $_POST['status'] ?? '' ),
+            'portal_scope' => sanitize_key( $_POST['portal_scope'] ?? '' ),
         ];
 
         $events = self::get_events( $filters );

@@ -1355,6 +1355,29 @@ html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
                             </div>
                         </div>
 
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                    📦 <?php esc_html_e( 'Módulo / Bloque Temático', 'aura' ); ?>
+                                </label>
+                                <input type="text" name="module_name" id="subj-module-name" class="form-control" placeholder="<?php esc_attr_e( 'Ej: Módulo 1, Módulo 2...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                                <small style="font-size: 11px; color: var(--aura-text-muted);"><?php esc_html_e( 'Agrupa materias en Módulo 1, Módulo 2, etc.', 'aura' ); ?></small>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                    🔢 <?php esc_html_e( 'N° Orden Módulo', 'aura' ); ?>
+                                </label>
+                                <input type="number" name="module_order" id="subj-module-order" value="1" min="1" class="form-control" style="width: 100%; border-radius: 8px;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                                📝 <?php esc_html_e( 'Descripción de la Materia', 'aura' ); ?>
+                            </label>
+                            <textarea name="description" id="subj-description" rows="3" class="form-control" placeholder="<?php esc_attr_e( 'Breve descripción de los contenidos y objetivos pedagógicos de la materia...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
+                        </div>
+
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
                                 🎨 <?php esc_html_e( 'Color de la Materia', 'aura' ); ?>

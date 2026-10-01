@@ -369,12 +369,16 @@ class Aura_Calendar_Subjects {
         }
 
         $gdrive_folder_id = ! empty( $data['gdrive_folder_id'] ) ? sanitize_text_field( $data['gdrive_folder_id'] ) : null;
+        $module_name      = ! empty( $data['module_name'] ) ? sanitize_text_field( $data['module_name'] ) : null;
+        $module_order     = isset( $data['module_order'] ) ? max( 1, intval( $data['module_order'] ) ) : 1;
 
         $fields = [
             'program_id'         => $program_id,
             'name'               => $name,
             'code'               => $code,
             'description'        => sanitize_textarea_field( $data['description'] ?? '' ),
+            'module_name'        => $module_name,
+            'module_order'       => $module_order,
             'total_hours'        => max( 0, intval( $data['total_hours'] ?? 0 ) ),
             'color'              => $color,
             'default_teacher_id' => $primary_teacher,
@@ -388,7 +392,9 @@ class Aura_Calendar_Subjects {
         ];
 
         $formats = [
-            '%d', '%s', '%s', '%s', '%d', '%s',
+            '%d', '%s', '%s', '%s',
+            $fields['module_name'] !== null ? '%s' : null,
+            '%d', '%d', '%s',
             $fields['default_teacher_id'] !== null ? '%d' : null,
             $fields['teachers'] !== null ? '%s' : null,
             $fields['teacher_materials'] !== null ? '%s' : null,

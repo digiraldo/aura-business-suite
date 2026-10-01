@@ -133,11 +133,12 @@ class Aura_Calendar_Frontend {
             'date_format'         => get_option( 'date_format', 'd-m-Y' ),
             'time_format'         => get_option( 'time_format', 'H:i' ),
             'timezone'            => wp_timezone_string(),
-            'user_can_edit'       => current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
-            'user_can_tasks'      => current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
-            'user_can_attendance' => current_user_can( 'aura_cal_take_attendance' ) || current_user_can( 'aura_take_attendance' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),
-            'user_can_grade'      => current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'aura_cal_grade_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),
-            'gcal_enabled'        => Aura_Calendar_Google_Sync::is_enabled(),
+            'user_can_edit'            => current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
+            'user_can_tasks'           => current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
+            'user_can_attendance'      => current_user_can( 'aura_cal_take_attendance' ) || current_user_can( 'aura_take_attendance' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),
+            'user_can_grade'           => current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'aura_cal_grade_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),
+            'user_can_portal_view_all' => current_user_can( 'aura_cal_portal_view_all' ) || current_user_can( 'manage_options' ),
+            'gcal_enabled'             => Aura_Calendar_Google_Sync::is_enabled(),
             'programs'            => $programs,
             'teachers'            => $teachers_clean,
             'students'            => $students_clean,
@@ -681,6 +682,16 @@ class Aura_Calendar_Frontend {
                             <?php esc_html_e( 'Horario Semanal de Sesiones y Evaluaciones', 'aura' ); ?>
                         </h3>
                         <div class="aura-calendar-top-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <?php if ( current_user_can( 'aura_cal_portal_view_all' ) || current_user_can( 'manage_options' ) ) : ?>
+                                <div class="aura-portal-scope-toggle-group" style="display: inline-flex; align-items: center; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25); border-radius: 8px; padding: 2px; gap: 2px;">
+                                    <button type="button" class="btn btn-sm btn-teacher-scope active" data-scope="own" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-weight: 600; background: #6366f1; color: #ffffff; transition: all 0.2s ease;">
+                                        <span>👨‍🏫</span> <span><?php esc_html_e( 'Solo Mis Clases', 'aura' ); ?></span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-teacher-scope" data-scope="all" style="padding: 4px 10px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-weight: 600; background: transparent; color: var(--at-text-secondary, #64748b); transition: all 0.2s ease;">
+                                        <span>🌐</span> <span><?php esc_html_e( 'Todo el Calendario', 'aura' ); ?></span>
+                                    </button>
+                                </div>
+                            <?php endif; ?>
                             <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-teacher-fullscreen" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
                                 <span class="dashicons dashicons-editor-expand" style="font-size: 16px; width: 16px; height: 16px;"></span> <span class="fs-text"><?php esc_html_e( 'Pantalla Completa', 'aura' ); ?></span>
                             </button>
@@ -2002,6 +2013,8 @@ class Aura_Calendar_Frontend {
                         timeZone: 'local',
                         nowIndicator: true,
                         eventDisplay: 'block',
+                        dayMaxEvents: 4,
+                        eventOrder: 'start,-duration,allDay,title',
                     eventMouseEnter: function(info) {
                         if (typeof window.showEventTooltip === 'function') {
                             window.showEventTooltip(info.event, info.el, info.jsEvent);
@@ -2024,13 +2037,18 @@ class Aura_Calendar_Frontend {
                         return { html: '<div style="padding:2px 4px;font-weight:600;font-size:12px;">' + (p.raw_title || arg.event.title) + '</div>' };
                     },
                     events: function(info, successCallback, failureCallback) {
-                        $.post(auraCalData.ajax_url, {
+                        var scope = window.teacherCurrentScope || 'own';
+                        var payload = {
                             action: 'aura_cal_get_events',
                             nonce: auraCalData.nonce,
                             start: info.startStr,
                             end: info.endStr,
-                            teacher_id: <?php echo intval( $user_id ); ?>
-                        }, function(res) {
+                            portal_scope: scope
+                        };
+                        if (scope === 'own') {
+                            payload.teacher_id = <?php echo intval( $user_id ); ?>;
+                        }
+                        $.post(auraCalData.ajax_url, payload, function(res) {
                             if (res && res.success) {
                                 successCallback(res.data.events || []);
                             } else {
@@ -2078,6 +2096,32 @@ class Aura_Calendar_Frontend {
                     }
                 });
             }
+
+            // Manejo de Scope (Solo Mis Clases vs Todo el Calendario)
+            window.teacherCurrentScope = localStorage.getItem('aura_teacher_portal_scope') || 'own';
+            function syncTeacherScopeButtons() {
+                $('.btn-teacher-scope').each(function() {
+                    var $b = $(this);
+                    if ($b.data('scope') === window.teacherCurrentScope) {
+                        $b.addClass('active').css({ background: '#6366f1', color: '#ffffff' });
+                    } else {
+                        $b.removeClass('active').css({ background: 'transparent', color: 'var(--at-text-secondary, #64748b)' });
+                    }
+                });
+            }
+            syncTeacherScopeButtons();
+
+            $(document).on('click', '.btn-teacher-scope', function(e) {
+                e.preventDefault();
+                var selectedScope = $(this).data('scope') || 'own';
+                if (window.teacherCurrentScope === selectedScope) return;
+                window.teacherCurrentScope = selectedScope;
+                localStorage.setItem('aura_teacher_portal_scope', selectedScope);
+                syncTeacherScopeButtons();
+                if (window.teacherCalendarInstance) {
+                    window.teacherCalendarInstance.refetchEvents();
+                }
+            });
 
             // Polling de reintento para garantizar la inicialización aunque el CDN se demore
             initTeacherCalendar();

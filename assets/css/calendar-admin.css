@@ -2824,20 +2824,30 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
 }
 
 .fc .fc-daygrid-event-harness {
-    margin: 0 !important;
+    margin: 0 0 2px 0 !important;
     padding: 0 !important;
 }
 
 .fc .fc-daygrid-event {
     margin: 0 !important;
-    border-radius: 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-radius: 5px !important;
     font-size: 11px !important;
-    line-height: 1.25 !important;
-    padding: 1px 4px !important;
+    line-height: 1.3 !important;
+    padding: 2px 6px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.fc .fc-daygrid-event:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16) !important;
+    z-index: 5 !important;
 }
 
 /* Vista Semana y Día (TimeGrid) */
@@ -3660,5 +3670,58 @@ body[data-theme="dark"] .aura-subj-cal-tooltip .aura-tip-card-footer,
 html.wp-dark-mode-active .aura-subj-cal-tooltip .aura-tip-card-footer {
     background: #181b21 !important;
     border-top-color: #334155 !important;
+}
+
+/* Conmutador de Scope CBAC en Portal Docente */
+.aura-portal-scope-toggle-group {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.22);
+    border-radius: 8px;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.aura-portal-scope-toggle-group .btn-teacher-scope {
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    color: var(--at-text-secondary, #64748b);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    outline: none;
+}
+
+.aura-portal-scope-toggle-group .btn-teacher-scope.active {
+    background: #6366f1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.35);
+}
+
+body.aura-dark-mode .aura-portal-scope-toggle-group,
+body[data-theme="dark"] .aura-portal-scope-toggle-group,
+.dark .aura-portal-scope-toggle-group {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: rgba(99, 102, 241, 0.35);
+}
+
+body.aura-dark-mode .aura-portal-scope-toggle-group .btn-teacher-scope:not(.active),
+body[data-theme="dark"] .aura-portal-scope-toggle-group .btn-teacher-scope:not(.active),
+.dark .aura-portal-scope-toggle-group .btn-teacher-scope:not(.active) {
+    color: #94a3b8;
+}
+
+body.aura-dark-mode .aura-portal-scope-toggle-group .btn-teacher-scope:hover:not(.active),
+body[data-theme="dark"] .aura-portal-scope-toggle-group .btn-teacher-scope:hover:not(.active),
+.dark .aura-portal-scope-toggle-group .btn-teacher-scope:hover:not(.active) {
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.06);
 }
 

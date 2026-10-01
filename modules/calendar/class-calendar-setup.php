@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Aura_Calendar_Setup {
 
     /** Versión actual del esquema de base de datos del módulo */
-    const DB_VERSION = '1.7.3';
+    const DB_VERSION = '1.7.4';
 
     /** Clave de opción en wp_options para almacenar la versión instalada */
     const DB_VERSION_OPTION = 'aura_calendar_db_version';
@@ -38,6 +38,7 @@ class Aura_Calendar_Setup {
         self::maybe_add_task_library_columns();
         self::maybe_add_task_targeting_columns();
         self::maybe_add_materials_and_leaders_columns();
+        self::maybe_add_modules_and_externals_columns();
 
         if ( self::needs_update() ) {
             self::repair_all_calendar_tables();
@@ -197,6 +198,55 @@ class Aura_Calendar_Setup {
     }
 
     /**
+     * Asegura las columnas module_name y module_order en wp_aura_cal_subjects,
+     * y las columnas is_external, external_name, external_email, external_phone, external_org
+     * en wp_aura_cal_event_instructors para soportar módulos y docentes terceros.
+     */
+    public static function maybe_add_modules_and_externals_columns(): void {
+        global $wpdb;
+        $t_subjects = $wpdb->prefix . 'aura_cal_subjects';
+        $t_inst     = $wpdb->prefix . 'aura_cal_event_instructors';
+
+        // 1. Columnas de Módulos en wp_aura_cal_subjects
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_subjects}'" ) === $t_subjects ) {
+            $cols_subj = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$t_subjects}`" );
+
+            if ( ! in_array( 'module_name', $cols_subj, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `module_name` VARCHAR(150) DEFAULT NULL AFTER `description`, ADD KEY `module_name` (`module_name`)" );
+            }
+
+            if ( ! in_array( 'module_order', $cols_subj, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_subjects}` ADD COLUMN `module_order` INT NOT NULL DEFAULT 1 AFTER `module_name`" );
+            }
+        }
+
+        // 2. Columnas de Instructor Tercero / Externo en wp_aura_cal_event_instructors
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$t_inst}'" ) === $t_inst ) {
+            $cols_inst = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$t_inst}`" );
+
+            if ( ! in_array( 'is_external', $cols_inst, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `is_external` TINYINT(1) NOT NULL DEFAULT 0 AFTER `role`" );
+            }
+
+            if ( ! in_array( 'external_name', $cols_inst, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `external_name` VARCHAR(255) DEFAULT NULL AFTER `is_external`" );
+            }
+
+            if ( ! in_array( 'external_email', $cols_inst, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `external_email` VARCHAR(255) DEFAULT NULL AFTER `external_name`" );
+            }
+
+            if ( ! in_array( 'external_phone', $cols_inst, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `external_phone` VARCHAR(50) DEFAULT NULL AFTER `external_email`" );
+            }
+
+            if ( ! in_array( 'external_org', $cols_inst, true ) ) {
+                $wpdb->query( "ALTER TABLE `{$t_inst}` ADD COLUMN `external_org` VARCHAR(255) DEFAULT NULL AFTER `external_phone`" );
+            }
+        }
+    }
+
+    /**
      * Comprobar si la versión de base de datos requiere actualización.
      */
     public static function needs_update(): bool {
@@ -255,6 +305,8 @@ class Aura_Calendar_Setup {
   code VARCHAR(50) DEFAULT NULL,
   name VARCHAR(255) NOT NULL,
   description TEXT DEFAULT NULL,
+  module_name VARCHAR(150) DEFAULT NULL,
+  module_order INT NOT NULL DEFAULT 1,
   color VARCHAR(20) DEFAULT '#3b82f6',
   default_teacher_id BIGINT UNSIGNED DEFAULT NULL,
   teachers TEXT DEFAULT NULL,
@@ -270,6 +322,7 @@ class Aura_Calendar_Setup {
   PRIMARY KEY  (id),
   KEY program_id (program_id),
   KEY code (code),
+  KEY module_name (module_name),
   KEY status (status),
   KEY deleted_at (deleted_at)
 ) {$charset_collate};";
@@ -312,13 +365,19 @@ class Aura_Calendar_Setup {
         $sql_instructors = "CREATE TABLE {$t_event_instructors} (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   event_id BIGINT UNSIGNED NOT NULL,
-  teacher_id BIGINT UNSIGNED NOT NULL,
+  teacher_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
   role VARCHAR(30) NOT NULL DEFAULT 'lead',
+  is_external TINYINT(1) NOT NULL DEFAULT 0,
+  external_name VARCHAR(255) DEFAULT NULL,
+  external_email VARCHAR(255) DEFAULT NULL,
+  external_phone VARCHAR(50) DEFAULT NULL,
+  external_org VARCHAR(255) DEFAULT NULL,
   notes VARCHAR(255) DEFAULT NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (id),
-  UNIQUE KEY event_teacher (event_id, teacher_id),
-  KEY teacher_id (teacher_id)
+  KEY event_id (event_id),
+  KEY teacher_id (teacher_id),
+  KEY is_external (is_external)
 ) {$charset_collate};";
 
         // 5. Tabla de Asistencia
@@ -443,6 +502,7 @@ class Aura_Calendar_Setup {
         self::maybe_add_task_library_columns();
         self::maybe_add_task_targeting_columns();
         self::maybe_add_materials_and_leaders_columns();
+        self::maybe_add_modules_and_externals_columns();
 
         update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
     }
@@ -480,6 +540,7 @@ class Aura_Calendar_Setup {
             }
         }
         self::maybe_add_materials_and_leaders_columns();
+        self::maybe_add_modules_and_externals_columns();
 
         // 4. Asegurar columnas de tareas y biblioteca
         self::maybe_add_task_library_columns();
