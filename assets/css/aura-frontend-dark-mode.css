@@ -2290,6 +2290,32 @@ body[data-theme="dark"] .adp-card:-webkit-full-screen,
     padding: 6px 10px !important;
 }
 
+/* Fila Todo el día en Frontend */
+.aura-calendar-wrapper .fc .fc-timegrid-allday,
+.aura-teacher-portal .fc .fc-timegrid-allday {
+    border-bottom: 2px solid #e0e0e0 !important;
+}
+
+html[data-theme="dark"] .aura-calendar-wrapper .fc .fc-timegrid-allday,
+body[data-theme="dark"] .aura-calendar-wrapper .fc .fc-timegrid-allday,
+body.aura-dark-mode .aura-calendar-wrapper .fc .fc-timegrid-allday,
+html[data-theme="dark"] .aura-teacher-portal .fc .fc-timegrid-allday,
+body[data-theme="dark"] .aura-teacher-portal .fc .fc-timegrid-allday,
+body.aura-dark-mode .aura-teacher-portal .fc .fc-timegrid-allday {
+    border-bottom: 2px solid #3c4043 !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.aura-calendar-wrapper .fc .fc-timegrid-allday .fc-daygrid-event,
+.aura-teacher-portal .fc .fc-timegrid-allday .fc-daygrid-event {
+    min-height: 22px !important;
+    height: 22px !important;
+    border-radius: 4px !important;
+    padding: 0 4px !important;
+    box-sizing: border-box !important;
+}
+
+
 /* ══════════════════════════════════════════════════════════════════
    OPTIMIZACIÓN ULTRA-COMPACTA PARA MÓVILES (FRONTEND)
    ══════════════════════════════════════════════════════════════════ */

@@ -98,16 +98,21 @@
         var timeText = arg.timeText || '';
         var viewType = (arg.view && arg.view.type) ? arg.view.type : '';
         var isTimeGrid = viewType.indexOf('timeGrid') !== -1;
+        var isAllDay = !!(arg.event.allDay || p.is_all_day);
 
         // Calcular color de contraste dinámico (blanco o negro/oscuro) según el fondo del evento
         var bgColor = arg.event.backgroundColor || p.color || (arg.el && arg.el.style ? arg.el.style.backgroundColor : '') || '#6366f1';
         var textColor = p.text_color || arg.event.textColor || getEventContrastColor(bgColor);
 
-        // Avatar del docente (o icono si es externo / tercero)
+        // Avatar del titular o docente principal (foto o inicial en pastilla circular)
         var avatarImg = '';
         var isPrimaryExt = !!(p.is_external || (p.instructors && p.instructors.length && p.instructors[0].is_external));
         if (p.primary_avatar) {
             avatarImg = '<img src="' + escapeHtml(p.primary_avatar) + '" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0;vertical-align:middle;display:inline-block;border:1px solid rgba(255,255,255,0.6);" onerror="this.style.display=\'none\';" />';
+        } else if (p.primary_name) {
+            var initial = (p.primary_name.trim().charAt(0) || 'U').toUpperCase();
+            var avatarBg = (textColor === '#ffffff') ? 'rgba(255,255,255,0.32)' : 'rgba(15,23,42,0.18)';
+            avatarImg = '<span style="width:16px;height:16px;border-radius:50%;background:' + avatarBg + ';color:' + textColor + ';display:inline-flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;flex-shrink:0;vertical-align:middle;line-height:1;border:1px solid rgba(255,255,255,0.5);" title="' + escapeHtml(p.primary_name) + '">' + escapeHtml(initial) + '</span>';
         } else if (isPrimaryExt) {
             avatarImg = '<span style="font-size:12px;flex-shrink:0;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.25);line-height:1;" title="Instructor Externo">🏢</span>';
         }
@@ -130,8 +135,8 @@
             leaderBadge = '<span class="aura-gcal-leader-chip" style="font-size:9.5px;' + bg + 'border-radius:6px;padding:1px 5px;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:2px;flex-shrink:0;">⭐ ' + escapeHtml(lName) + '</span>';
         }
 
-        // 1. Vista Semanal o Diaria (timeGridWeek / timeGridDay) - Estilo Tarjeta Bloque Google Calendar
-        if (isTimeGrid) {
+        // 1. Vista Semanal o Diaria en rejilla por horas (timeGridWeek / timeGridDay) - SOLO eventos con franja de hora específica
+        if (isTimeGrid && !isAllDay) {
             var durationMinutes = 60;
             if (arg.event.start && arg.event.end) {
                 durationMinutes = Math.round((arg.event.end.getTime() - arg.event.start.getTime()) / 60000);
@@ -141,6 +146,7 @@
             if (durationMinutes < 40) {
                 return {
                     html: '<div class="aura-gcal-event-compact" style="display:flex;align-items:center;gap:4px;width:100%;height:100%;overflow:hidden;padding:1px 4px;box-sizing:border-box;color:' + textColor + ' !important;">' +
+                          avatarImg +
                           (timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;color:' + textColor + ' !important;">' + escapeHtml(timeText) + '</span>' : '') +
                           '<span style="font-weight:600;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:' + textColor + ' !important;">' + escapeHtml(title) + '</span>' +
                           leaderBadge +
@@ -175,12 +181,13 @@
             return { html: html };
         }
 
-        // 2. Vista Mensual (dayGridMonth) - Estilo Píldora Google Calendar
+        // 2. Vista Mensual (dayGridMonth) O fila superior "Todo el día" (allDaySlot) en semana/día:
+        // Estilo Píldora Google Calendar horizontal limpia de una sola línea
         return {
-            html: '<div class="aura-gcal-month-pill" style="display:flex;align-items:center;gap:3px;width:100%;overflow:hidden;padding:1px 3px;font-size:11px;line-height:1.2;box-sizing:border-box;color:' + textColor + ' !important;">' +
+            html: '<div class="aura-gcal-month-pill" style="display:flex;align-items:center;gap:3.5px;width:100%;height:100%;overflow:hidden;padding:1px 4px;font-size:11px;line-height:1.2;box-sizing:border-box;color:' + textColor + ' !important;">' +
                   avatarImg +
                   leaderBadge +
-                  (timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;color:' + textColor + ' !important;">' + escapeHtml(timeText) + '</span>' : '') +
+                  (!isAllDay && timeText ? '<span style="font-weight:700;font-size:10.5px;flex-shrink:0;color:' + textColor + ' !important;">' + escapeHtml(timeText) + '</span>' : '') +
                   '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-weight:600;color:' + textColor + ' !important;">' + escapeHtml(title) + '</span>' +
                   '</div>'
         };
@@ -396,12 +403,25 @@
             scrollTime: '07:00:00',
             slotLabelFormat: timeFormatConfig,
             eventTimeFormat: timeFormatConfig,
-            allDaySlot: false,
+            allDaySlot: true,
+            allDayText: (auraCalData.i18n && auraCalData.i18n.all_day) ? auraCalData.i18n.all_day : 'Todo el día',
             timeZone: 'local',
             nowIndicator: true,
             eventDisplay: 'block',
-            dayMaxEvents: 4,
-            eventOrder: 'start,-duration,allDay,title',
+            dayMaxEvents: 3,
+            moreLinkClick: 'popover',
+            slotEventOverlap: true,
+            eventOrder: function(a, b) {
+                if (a.allDay && !b.allDay) return -1;
+                if (!a.allDay && b.allDay) return 1;
+                var startA = a.start ? a.start.getTime() : 0;
+                var startB = b.start ? b.start.getTime() : 0;
+                if (startA !== startB) return startA - startB;
+                var durA = (a.end && a.start) ? (a.end.getTime() - a.start.getTime()) : 0;
+                var durB = (b.end && b.start) ? (b.end.getTime() - b.start.getTime()) : 0;
+                if (durA !== durB) return durA - durB;
+                return (a.title || '').localeCompare(b.title || '');
+            },
             editable: !!auraCalData.user_can_edit,
             selectable: !!auraCalData.user_can_edit,
             selectMirror: true,

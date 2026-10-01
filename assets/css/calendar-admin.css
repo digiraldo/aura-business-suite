@@ -2907,6 +2907,156 @@ body.aura-dark-mode .aura-calendar-card.aura-calendar-is-fullscreen,
     padding: 6px 10px !important;
 }
 
+/* ── ESTILOS GOOGLE CALENDAR: FILA "TODO EL DÍA" (allDaySlot) ── */
+.fc .fc-timegrid-axis-frame,
+.fc .fc-timegrid-axis {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #5f6368 !important;
+    padding: 3px 6px !important;
+    text-align: right !important;
+}
+
+.fc .fc-timegrid-allday {
+    border-bottom: 2px solid #e0e0e0 !important;
+    background: rgba(0, 0, 0, 0.015);
+}
+
+.fc .fc-timegrid-allday .fc-daygrid-event-harness {
+    margin: 1px 0 !important;
+}
+
+.fc .fc-timegrid-allday .fc-daygrid-event {
+    min-height: 22px !important;
+    height: 22px !important;
+    border-radius: 4px !important;
+    padding: 0 4px !important;
+    box-sizing: border-box !important;
+}
+
+/* ── POPOVER ESTILO GOOGLE CALENDAR ("+X más") ── */
+.fc .fc-popover {
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15) !important;
+    background: #ffffff !important;
+    z-index: 1000 !important;
+    overflow: hidden !important;
+    max-width: 280px !important;
+}
+
+.fc .fc-popover .fc-popover-header {
+    background: #f8fafc !important;
+    padding: 8px 12px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.fc .fc-popover .fc-popover-title {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+
+.fc .fc-popover .fc-popover-close {
+    font-size: 14px !important;
+    opacity: 0.6 !important;
+    cursor: pointer !important;
+    padding: 2px 4px !important;
+    line-height: 1 !important;
+    transition: opacity 0.15s ease !important;
+}
+
+.fc .fc-popover .fc-popover-close:hover {
+    opacity: 1 !important;
+}
+
+.fc .fc-popover .fc-popover-body {
+    padding: 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+    max-height: 260px !important;
+    overflow-y: auto !important;
+}
+
+.fc .fc-more-popover .fc-daygrid-event {
+    margin: 0 !important;
+    min-height: 22px !important;
+}
+
+/* Enlaces "+X más" compactos y limpios */
+.fc .fc-daygrid-more-link {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #4f46e5 !important;
+    padding: 1px 4px !important;
+    border-radius: 4px !important;
+    margin: 1px 2px !important;
+    display: inline-block !important;
+    transition: background 0.15s ease !important;
+}
+
+.fc .fc-daygrid-more-link:hover {
+    background: rgba(99, 102, 241, 0.12) !important;
+    text-decoration: none !important;
+}
+
+/* Modo oscuro para Fila Todo el día y Popover */
+html[data-theme="dark"] .fc .fc-timegrid-axis-frame,
+body[data-theme="dark"] .fc .fc-timegrid-axis-frame,
+body.aura-dark-mode .fc .fc-timegrid-axis-frame {
+    color: #9aa0a6 !important;
+}
+
+html[data-theme="dark"] .fc .fc-timegrid-allday,
+body[data-theme="dark"] .fc .fc-timegrid-allday,
+body.aura-dark-mode .fc .fc-timegrid-allday {
+    border-bottom: 2px solid #3c4043 !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+html[data-theme="dark"] .fc .fc-popover,
+body[data-theme="dark"] .fc .fc-popover,
+body.aura-dark-mode .fc .fc-popover {
+    background: #20242c !important;
+    border-color: #3c4043 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.55), 0 8px 10px -6px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-theme="dark"] .fc .fc-popover .fc-popover-header,
+body[data-theme="dark"] .fc .fc-popover .fc-popover-header,
+body.aura-dark-mode .fc .fc-popover .fc-popover-header {
+    background: #181b21 !important;
+    border-bottom-color: #2b313c !important;
+}
+
+html[data-theme="dark"] .fc .fc-popover .fc-popover-title,
+body[data-theme="dark"] .fc .fc-popover .fc-popover-title,
+body.aura-dark-mode .fc .fc-popover .fc-popover-title {
+    color: #f1f3f4 !important;
+}
+
+html[data-theme="dark"] .fc .fc-popover .fc-popover-close,
+body[data-theme="dark"] .fc .fc-popover .fc-popover-close,
+body.aura-dark-mode .fc .fc-popover .fc-popover-close {
+    color: #9aa0a6 !important;
+}
+
+html[data-theme="dark"] .fc .fc-daygrid-more-link,
+body[data-theme="dark"] .fc .fc-daygrid-more-link,
+body.aura-dark-mode .fc .fc-daygrid-more-link {
+    color: #818cf8 !important;
+}
+
+html[data-theme="dark"] .fc .fc-daygrid-more-link:hover,
+body[data-theme="dark"] .fc .fc-daygrid-more-link:hover,
+body.aura-dark-mode .fc .fc-daygrid-more-link:hover {
+    background: rgba(129, 140, 248, 0.16) !important;
+}
+
 /* ══════════════════════════════════════════════════════════════════
    OPTIMIZACIÓN ULTRA-COMPACTA PARA MÓVILES (BACKEND)
    ══════════════════════════════════════════════════════════════════ */

@@ -1260,6 +1260,28 @@ Continua de inmediato con la Fase 7 (generación y envío de invitaciones de cal
    - [assets/js/calendar-admin.js](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js): Renderizado con Ring Animado e iniciales/fotos en `openEventDetail()`, y auto-precarga de terceros al cambiar materia `#evt-subject-id`.
 
 
-- Requiero que el calendario del backend y del portal de profesores y estudiantes en el frontend, su visulizacion dentro de cada dia, sea igual al Calendario de Google, ya que los eventos largos que aparecen con una linea larga horizontal, quedan por encima unos de otros latgos horizontales y quedan por encima de los eventos cortos del dia en la vista de mes, analiza tambien si pasa en la vista de semana y dia y corrige tod, conserva el color asignado a cada evento y que muestre el avatar del usuario titular o principal
+### Corrección de Visualización del Calendario idéntico a Google Calendar (Backend, Portal Docente y Estudiante)
 
-  
+1. **Causa Raíz Diagnosticada**:
+   - **Orden `-duration`**: FullCalendar tenía configurado `eventOrder: 'start,-duration,allDay,title'`. El parámetro `-duration` forzaba a ordenar de mayor a menor duración, empujando los eventos largos (de varios días o 24 horas continuas) a colocarse en la primera fila de cada celda diaria de la vista de mes (`dayGridMonth`), apilándose horizontalmente y sepultando los eventos cortos con horarios específicos.
+   - **`allDaySlot: false` en Semana y Día**: Al estar desactivada la fila superior "Todo el día", los eventos multiodía y de 24 horas continuas se renderizaban como bloques masivos que cubrían toda la columna horaria (00:00 a 24:00) en las vistas de semana (`timeGridWeek`) y día (`timeGridDay`), tapando por completo los eventos y clases de 1 o 2 horas.
+   - **Ausencia del atributo `allDay` en el backend**: `get_events()` en `class-calendar-events.php` no detectaba ni pasaba el flag `allDay` a FullCalendar, tratando eventos de 9 días o 24 horas como eventos de franja horaria normal.
+   - **Avatar del titular ausente o desbordado**: No se garantizaba la renderización del avatar en píldoras horizontales ni existía fallback a inicial circular si el titular no tenía foto cargada o si el evento era institucional/sin profesor directo.
+
+2. **Soluciones Implementadas**:
+   - **Detección Automática de `allDay` y Multiodía en Backend ([modules/calendar/class-calendar-events.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-events.php))**:
+     - Se calcula `$is_multi_day = ($start_date !== $end_date)` y `$is_all_day_hours = ($duration_secs >= 86400 || ($start_time === '00:00' && $end_time === '00:00'))`.
+     - Se asigna `'allDay' => ($is_multi_day || $is_all_day_hours)` en el array de FullCalendar.
+     - Fallback de titular: si no hay instructores ni líderes, se asume el creador del evento (`$row->created_by`) asegurando siempre nombre y foto/inicial.
+   - **Configuración Google Calendar en los 3 Calendarios ([assets/js/calendar-admin.js](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js) y [modules/calendar/class-calendar-frontend.php](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-frontend.php))**:
+     - Se habilitó `allDaySlot: true`, `allDayText: 'Todo el día'` y `slotEventOverlap: true`.
+     - Se configuró `dayMaxEvents: 3` y `moreLinkClick: 'popover'` para vista mensual limpia.
+     - Se reemplazó el orden `-duration` por un comparador cronológico inteligente: eventos `allDay` primero, luego orden cronológico por hora de inicio (`startA - startB`), luego menor duración (`durA - durB`) para que ningún evento largo sepulte los eventos del día, y título alfabético.
+     - Se añadió la vista de día (`timeGridDay`) y soporte completo al Portal de Estudiantes.
+     - Se agregó dependencia `'fullcalendar-bundle'` al encolar el script del frontend.
+   - **Renderizado Visual Google Calendar (`renderGoogleStyleEvent`)**:
+     - Vista mensual (`dayGridMonth`) y fila superior "Todo el día" (`allDaySlot` en semana y día): diseño de píldora horizontal de una línea con esquinas redondeadas (`4px`), fondo del color asignado al evento, avatar circular del titular de 16px con borde blanco sutil (con inicial en círculo translúcido si no tiene foto), badge de líder si aplica, hora si no es todo el día y título con elipsis.
+     - Rejilla de horas (`timeGridWeek` / `timeGridDay`): tarjeta vertical compacta o detallada con avatar en cabecera, hora, profesor y materia, preservando el color de fondo asignado y calculando automáticamente el texto de alto contraste (`#ffffff` o `#0f172a`).
+   - **Estilos CSS Dedicados ([assets/css/calendar-admin.css](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/calendar-admin.css) y [assets/css/aura-frontend-dark-mode.css](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/css/aura-frontend-dark-mode.css))**:
+     - Estilos para la fila `.fc-timegrid-allday` con etiqueta "Todo el día" alineada.
+     - Estilos Material 3 / Google Calendar para el popover `.fc-popover` al hacer clic en `+X más` (sombra elevada, bordes redondeados y soporte completo Dark Mode).

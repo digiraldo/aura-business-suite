@@ -545,13 +545,39 @@ class Aura_Calendar_Events {
             $primary_avatar = ! empty( $inst_list[0]['avatar'] ) ? $inst_list[0]['avatar'] : ( ! empty( $student_leaders_list[0]['avatar'] ) ? $student_leaders_list[0]['avatar'] : '' );
             $primary_name   = ! empty( $inst_list[0]['name'] ) ? $inst_list[0]['name'] : ( ! empty( $student_leaders_list[0]['name'] ) ? $student_leaders_list[0]['name'] : '' );
 
+            // Si el evento no tiene instructores o líderes asignados directamente, fallback al creador/titular del evento
+            if ( empty( $primary_name ) && ! empty( $row->created_by ) ) {
+                $creator = get_userdata( intval( $row->created_by ) );
+                if ( $creator ) {
+                    $primary_name   = $creator->display_name;
+                    $primary_avatar = ! empty( $custom_photos[ $creator->ID ] )
+                        ? $custom_photos[ $creator->ID ]
+                        : get_avatar_url( $creator->ID, [ 'size' => 64, 'default' => 'identicon' ] );
+                }
+            }
+
             $text_color = self::get_contrast_color( $bg_color );
+
+            // Detección precisa de eventos de Todo el Día y Multiodía (Estilo Google Calendar)
+            $start_date = substr( $row->start_datetime, 0, 10 );
+            $end_date   = substr( $row->end_datetime, 0, 10 );
+            $start_time = substr( $row->start_datetime, 11, 5 );
+            $end_time   = substr( $row->end_datetime, 11, 5 );
+
+            $start_ts   = strtotime( $row->start_datetime );
+            $end_ts     = strtotime( $row->end_datetime );
+            $duration_secs = max( 0, $end_ts - $start_ts );
+
+            $is_multi_day     = ( $start_date !== $end_date );
+            $is_all_day_hours = ( $duration_secs >= 86400 || ( $start_time === '00:00' && ( $end_time === '00:00' || $end_time === '23:59' || $duration_secs >= 82800 ) ) );
+            $is_all_day       = ( $is_all_day_hours || $is_multi_day );
 
             $fc_events[] = [
                 'id'              => (string) $row->id,
                 'title'           => $title,
                 'start'           => str_replace( ' ', 'T', $row->start_datetime ),
                 'end'             => str_replace( ' ', 'T', $row->end_datetime ),
+                'allDay'          => $is_all_day,
                 'backgroundColor' => $bg_color,
                 'borderColor'     => $bg_color,
                 'textColor'       => $text_color,
@@ -559,6 +585,9 @@ class Aura_Calendar_Events {
                     'text_color'           => $text_color,
                     'color'                => $bg_color,
                     'raw_title'            => $row->title,
+                    'is_all_day'           => $is_all_day,
+                    'is_multi_day'         => $is_multi_day,
+                    'duration_seconds'     => $duration_secs,
                     'program_id'           => (int) $row->program_id,
                     'program_name'         => $row->program_name,
                     'program_code'         => $row->program_code,
@@ -574,18 +603,18 @@ class Aura_Calendar_Events {
                     'start_local_iso'      => str_replace( ' ', 'T', substr( $row->start_datetime, 0, 16 ) ),
                     'end_local_iso'        => str_replace( ' ', 'T', substr( $row->end_datetime, 0, 16 ) ),
                     'start_time_label'     => self::format_local_datetime( $row->start_datetime, get_option( 'time_format', 'H:i' ) ),
-                    'end_time_label'       => self::format_local_datetime( $row->end_datetime, get_option( 'time_format', 'H:i' ) ),
-                    'date_label'           => self::format_local_datetime( $row->start_datetime, get_option( 'date_format', 'd-m-Y' ) ),
-                    'description'          => $row->description,
-                    'program_description'  => $row->program_description ?? '',
-                    'subject_description'  => $row->subject_description ?? '',
-                    'module_name'          => $row->module_name ?? '',
-                    'module_order'         => (int) ( $row->module_order ?? 0 ),
-                    'recurrence_group_id'  => $row->recurrence_group_id,
-                    'gcal_event_id'        => $row->gcal_event_id,
-                    'gcal_sync_status'     => $row->gcal_sync_status,
-                    'attendance_taken'     => intval( $row->attendance_count ) > 0,
-                    'instructors'          => $inst_list,
+                    'end_time_label'      => self::format_local_datetime( $row->end_datetime, get_option( 'time_format', 'H:i' ) ),
+                    'date_label'          => self::format_local_datetime( $row->start_datetime, get_option( 'date_format', 'd-m-Y' ) ),
+                    'description'         => $row->description,
+                    'program_description' => $row->program_description ?? '',
+                    'subject_description' => $row->subject_description ?? '',
+                    'module_name'         => $row->module_name ?? '',
+                    'module_order'        => (int) ( $row->module_order ?? 0 ),
+                    'recurrence_group_id' => $row->recurrence_group_id,
+                    'gcal_event_id'       => $row->gcal_event_id,
+                    'gcal_sync_status'    => $row->gcal_sync_status,
+                    'attendance_taken'    => intval( $row->attendance_count ) > 0,
+                    'instructors'         => $inst_list,
                     'external_instructors' => array_values( array_filter( $inst_list, function( $i ) { return ! empty( $i['is_external'] ); } ) ),
                     'teacher_ids'          => array_values( array_filter( array_map( function( $i ) { return empty( $i['is_external'] ) ? (int) $i['id'] : 0; }, $inst_list ) ) ),
                     'student_leaders'      => $student_leaders_list,

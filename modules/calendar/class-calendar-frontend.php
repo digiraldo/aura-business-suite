@@ -110,7 +110,7 @@ class Aura_Calendar_Frontend {
         wp_enqueue_script(
             'aura-calendar-frontend',
             AURA_PLUGIN_URL . 'assets/js/calendar-admin.js',
-            [ 'jquery' ],
+            [ 'jquery', 'fullcalendar-bundle' ],
             AURA_VERSION,
             true
         );
@@ -2009,12 +2009,36 @@ class Aura_Calendar_Frontend {
                         scrollTime: '07:00:00',
                         slotLabelFormat: timeFmt,
                         eventTimeFormat: timeFmt,
-                        allDaySlot: false,
+                        allDaySlot: true,
+                        allDayText: 'Todo el día',
                         timeZone: 'local',
                         nowIndicator: true,
                         eventDisplay: 'block',
-                        dayMaxEvents: 4,
-                        eventOrder: 'start,-duration,allDay,title',
+                        dayMaxEvents: 3,
+                        moreLinkClick: 'popover',
+                        slotEventOverlap: true,
+                        eventOrder: function(a, b) {
+                            if (a.allDay && !b.allDay) return -1;
+                            if (!a.allDay && b.allDay) return 1;
+                            var startA = a.start ? a.start.getTime() : 0;
+                            var startB = b.start ? b.start.getTime() : 0;
+                            if (startA !== startB) return startA - startB;
+                            var durA = (a.end && a.start) ? (a.end.getTime() - a.start.getTime()) : 0;
+                            var durB = (b.end && b.start) ? (b.end.getTime() - b.start.getTime()) : 0;
+                            if (durA !== durB) return durA - durB;
+                            return (a.title || '').localeCompare(b.title || '');
+                        },
+                        eventDidMount: function(info) {
+                            var p = info.event.extendedProps || {};
+                            var bg = info.event.backgroundColor || info.el.style.backgroundColor || '#6366f1';
+                            var textCol = p.text_color || info.event.textColor || (typeof window.getEventContrastColor === 'function' ? window.getEventContrastColor(bg) : '#ffffff');
+                            info.el.style.color = textCol;
+                            info.el.style.setProperty('--fc-event-text-color', textCol, 'important');
+                            var main = info.el.querySelector('.fc-event-main');
+                            if (main) {
+                                main.style.color = textCol;
+                            }
+                        },
                     eventMouseEnter: function(info) {
                         if (typeof window.showEventTooltip === 'function') {
                             window.showEventTooltip(info.event, info.el, info.jsEvent);
@@ -2354,7 +2378,7 @@ class Aura_Calendar_Frontend {
                     headerToolbar: {
                         left: 'prev,next today',
                         center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,listWeek'
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
                     },
                     height: '100%',
                     expandRows: true,
@@ -2362,6 +2386,7 @@ class Aura_Calendar_Frontend {
                         today: 'Hoy',
                         month: 'Mes',
                         week:  'Semana',
+                        day:   'Día',
                         list:  'Agenda'
                     },
                     slotMinTime: '00:00:00',
@@ -2369,10 +2394,36 @@ class Aura_Calendar_Frontend {
                     scrollTime: '07:00:00',
                     slotLabelFormat: timeFmt,
                     eventTimeFormat: timeFmt,
-                    allDaySlot: false,
+                    allDaySlot: true,
+                    allDayText: 'Todo el día',
                     timeZone: 'local',
                     nowIndicator: true,
                     eventDisplay: 'block',
+                    dayMaxEvents: 3,
+                    moreLinkClick: 'popover',
+                    slotEventOverlap: true,
+                    eventOrder: function(a, b) {
+                        if (a.allDay && !b.allDay) return -1;
+                        if (!a.allDay && b.allDay) return 1;
+                        var startA = a.start ? a.start.getTime() : 0;
+                        var startB = b.start ? b.start.getTime() : 0;
+                        if (startA !== startB) return startA - startB;
+                        var durA = (a.end && a.start) ? (a.end.getTime() - a.start.getTime()) : 0;
+                        var durB = (b.end && b.start) ? (b.end.getTime() - b.start.getTime()) : 0;
+                        if (durA !== durB) return durA - durB;
+                        return (a.title || '').localeCompare(b.title || '');
+                    },
+                    eventDidMount: function(info) {
+                        var p = info.event.extendedProps || {};
+                        var bg = info.event.backgroundColor || info.el.style.backgroundColor || '#6366f1';
+                        var textCol = p.text_color || info.event.textColor || (typeof window.getEventContrastColor === 'function' ? window.getEventContrastColor(bg) : '#ffffff');
+                        info.el.style.color = textCol;
+                        info.el.style.setProperty('--fc-event-text-color', textCol, 'important');
+                        var main = info.el.querySelector('.fc-event-main');
+                        if (main) {
+                            main.style.color = textCol;
+                        }
+                    },
                     eventMouseEnter: function(info) {
                         if (typeof window.showEventTooltip === 'function') {
                             window.showEventTooltip(info.event, info.el, info.jsEvent);
