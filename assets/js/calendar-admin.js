@@ -139,7 +139,11 @@
         if (isTimeGrid && !isAllDay) {
             var durationMinutes = 60;
             if (arg.event.start && arg.event.end) {
-                durationMinutes = Math.round((arg.event.end.getTime() - arg.event.start.getTime()) / 60000);
+                var sMs = (arg.event.start instanceof Date) ? arg.event.start.getTime() : (typeof arg.event.start === 'number' ? arg.event.start : (new Date(arg.event.start)).getTime());
+                var eMs = (arg.event.end instanceof Date) ? arg.event.end.getTime() : (typeof arg.event.end === 'number' ? arg.event.end : (new Date(arg.event.end)).getTime());
+                if (!isNaN(sMs) && !isNaN(eMs) && eMs > sMs) {
+                    durationMinutes = Math.round((eMs - sMs) / 60000);
+                }
             }
 
             // Para eventos cortos (< 40 minutos), diseño compacto en 1 línea estilo Google
@@ -411,17 +415,7 @@
             dayMaxEvents: 3,
             moreLinkClick: 'popover',
             slotEventOverlap: true,
-            eventOrder: function(a, b) {
-                if (a.allDay && !b.allDay) return -1;
-                if (!a.allDay && b.allDay) return 1;
-                var startA = a.start ? a.start.getTime() : 0;
-                var startB = b.start ? b.start.getTime() : 0;
-                if (startA !== startB) return startA - startB;
-                var durA = (a.end && a.start) ? (a.end.getTime() - a.start.getTime()) : 0;
-                var durB = (b.end && b.start) ? (b.end.getTime() - b.start.getTime()) : 0;
-                if (durA !== durB) return durA - durB;
-                return (a.title || '').localeCompare(b.title || '');
-            },
+            eventOrder: '-allDay,start,duration,title',
             editable: !!auraCalData.user_can_edit,
             selectable: !!auraCalData.user_can_edit,
             selectMirror: true,

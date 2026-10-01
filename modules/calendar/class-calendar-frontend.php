@@ -89,16 +89,14 @@ class Aura_Calendar_Frontend {
             );
         }
 
-        // Cargar FullCalendar si es el portal del profesor o el horario
-        if ( has_shortcode( $post->post_content, 'aura_teacher_portal' ) || has_shortcode( $post->post_content, 'aura_student_schedule' ) ) {
-            wp_enqueue_script(
-                'fullcalendar-bundle',
-                'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js',
-                [],
-                '6.1.15',
-                true
-            );
-        }
+        // Cargar FullCalendar para los portales y vistas de calendario en frontend
+        wp_enqueue_script(
+            'fullcalendar-bundle',
+            'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js',
+            [],
+            '6.1.15',
+            true
+        );
 
         wp_enqueue_style(
             'aura-calendar-admin',
@@ -110,7 +108,7 @@ class Aura_Calendar_Frontend {
         wp_enqueue_script(
             'aura-calendar-frontend',
             AURA_PLUGIN_URL . 'assets/js/calendar-admin.js',
-            [ 'jquery', 'fullcalendar-bundle' ],
+            [ 'jquery' ],
             AURA_VERSION,
             true
         );
@@ -2017,17 +2015,7 @@ class Aura_Calendar_Frontend {
                         dayMaxEvents: 3,
                         moreLinkClick: 'popover',
                         slotEventOverlap: true,
-                        eventOrder: function(a, b) {
-                            if (a.allDay && !b.allDay) return -1;
-                            if (!a.allDay && b.allDay) return 1;
-                            var startA = a.start ? a.start.getTime() : 0;
-                            var startB = b.start ? b.start.getTime() : 0;
-                            if (startA !== startB) return startA - startB;
-                            var durA = (a.end && a.start) ? (a.end.getTime() - a.start.getTime()) : 0;
-                            var durB = (b.end && b.start) ? (b.end.getTime() - b.start.getTime()) : 0;
-                            if (durA !== durB) return durA - durB;
-                            return (a.title || '').localeCompare(b.title || '');
-                        },
+                        eventOrder: '-allDay,start,duration,title',
                         eventDidMount: function(info) {
                             var p = info.event.extendedProps || {};
                             var bg = info.event.backgroundColor || info.el.style.backgroundColor || '#6366f1';
@@ -2402,17 +2390,7 @@ class Aura_Calendar_Frontend {
                     dayMaxEvents: 3,
                     moreLinkClick: 'popover',
                     slotEventOverlap: true,
-                    eventOrder: function(a, b) {
-                        if (a.allDay && !b.allDay) return -1;
-                        if (!a.allDay && b.allDay) return 1;
-                        var startA = a.start ? a.start.getTime() : 0;
-                        var startB = b.start ? b.start.getTime() : 0;
-                        if (startA !== startB) return startA - startB;
-                        var durA = (a.end && a.start) ? (a.end.getTime() - a.start.getTime()) : 0;
-                        var durB = (b.end && b.start) ? (b.end.getTime() - b.start.getTime()) : 0;
-                        if (durA !== durB) return durA - durB;
-                        return (a.title || '').localeCompare(b.title || '');
-                    },
+                    eventOrder: '-allDay,start,duration,title',
                     eventDidMount: function(info) {
                         var p = info.event.extendedProps || {};
                         var bg = info.event.backgroundColor || info.el.style.backgroundColor || '#6366f1';
