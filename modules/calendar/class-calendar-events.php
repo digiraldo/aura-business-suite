@@ -572,11 +572,36 @@ class Aura_Calendar_Events {
             $is_all_day_hours = ( $duration_secs >= 86400 || ( $start_time === '00:00' && ( $end_time === '00:00' || $end_time === '23:59' || $duration_secs >= 82800 ) ) );
             $is_all_day       = ( $is_all_day_hours || $is_multi_day );
 
+            // FullCalendar v6 y especificación RFC 5545:
+            // Para eventos con allDay: true, la propiedad 'end' es EXCLUSIVA ([start, end)).
+            // Si el evento concluye en $end_date después de 00:00 (por ejemplo 19:00 o 23:59),
+            // o si es un evento de un solo día marcado como todo el día ($start_date === $end_date),
+            // 'end' para FullCalendar debe ser el día siguiente exclusivo para cubrir $end_date en el grid.
+            // Si concluye exactamente a las 00:00 de $end_date y es multiodía, $end_date ya es el corte exclusivo.
+            if ( $is_all_day ) {
+                $fc_start = $start_date;
+                if ( $end_time !== '00:00' || $start_date === $end_date ) {
+                    $fc_end = date( 'Y-m-d', strtotime( $end_date . ' +1 day' ) );
+                } else {
+                    $fc_end = $end_date;
+                }
+            } else {
+                $fc_start = str_replace( ' ', 'T', $row->start_datetime );
+                $fc_end   = str_replace( ' ', 'T', $row->end_datetime );
+            }
+
+            $date_fmt         = get_option( 'date_format', 'd-m-Y' );
+            $start_date_label = self::format_local_datetime( $row->start_datetime, $date_fmt );
+            $end_date_label   = self::format_local_datetime( $row->end_datetime, $date_fmt );
+            $date_label       = $is_multi_day
+                ? ( $start_date_label . ' — ' . $end_date_label )
+                : $start_date_label;
+
             $fc_events[] = [
                 'id'              => (string) $row->id,
                 'title'           => $title,
-                'start'           => str_replace( ' ', 'T', $row->start_datetime ),
-                'end'             => str_replace( ' ', 'T', $row->end_datetime ),
+                'start'           => $fc_start,
+                'end'             => $fc_end,
                 'allDay'          => $is_all_day,
                 'backgroundColor' => $bg_color,
                 'borderColor'     => $bg_color,
@@ -604,7 +629,9 @@ class Aura_Calendar_Events {
                     'end_local_iso'        => str_replace( ' ', 'T', substr( $row->end_datetime, 0, 16 ) ),
                     'start_time_label'     => self::format_local_datetime( $row->start_datetime, get_option( 'time_format', 'H:i' ) ),
                     'end_time_label'      => self::format_local_datetime( $row->end_datetime, get_option( 'time_format', 'H:i' ) ),
-                    'date_label'          => self::format_local_datetime( $row->start_datetime, get_option( 'date_format', 'd-m-Y' ) ),
+                    'start_date_label'     => $start_date_label,
+                    'end_date_label'       => $end_date_label,
+                    'date_label'          => $date_label,
                     'description'         => $row->description,
                     'program_description' => $row->program_description ?? '',
                     'subject_description' => $row->subject_description ?? '',
@@ -1540,11 +1567,23 @@ class Aura_Calendar_Events {
         if ( $ok ) {
             $time_fmt = get_option( 'time_format', 'H:i' );
             $date_fmt = get_option( 'date_format', 'd-m-Y' );
+            $start_d  = substr( $start_dt, 0, 10 );
+            $end_d    = substr( $end_dt, 0, 10 );
+            $is_multi = ( $start_d !== $end_d );
+            $start_date_label = self::format_local_datetime( $start_dt, $date_fmt );
+            $end_date_label   = self::format_local_datetime( $end_dt, $date_fmt );
+            $date_label = $is_multi
+                ? ( $start_date_label . ' — ' . $end_date_label )
+                : $start_date_label;
+
             wp_send_json_success( [
                 'message'          => __( 'Horario actualizado.', 'aura' ),
                 'start_time_label' => self::format_local_datetime( $start_dt, $time_fmt ),
                 'end_time_label'   => self::format_local_datetime( $end_dt, $time_fmt ),
-                'date_label'       => self::format_local_datetime( $start_dt, $date_fmt ),
+                'start_date_label' => $start_date_label,
+                'end_date_label'   => $end_date_label,
+                'date_label'       => $date_label,
+                'is_multi_day'     => $is_multi,
             ] );
         } else {
             wp_send_json_error( [ 'message' => __( 'No se pudo actualizar el horario.', 'aura' ) ] );

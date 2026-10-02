@@ -1365,3 +1365,32 @@ Se ejecutó la auditoría de despliegue y empaquetado para garantizar un funcion
    - **Tamaño**: 21.28 MB (incluyendo librerías optimizadas de Google Drive y Calendar en `vendor/`).
    - **Exclusiones verificadas**: Repositorio `.git`, artefactos temporales `.tmp`, `.bak`, `.DS_Store`, `Thumbs.db` y directorios de desarrollo/pruebas.
    - **Prefijo de raíz**: 100% de los archivos ubicados bajo `aura-business-suite/` para instalación estándar directa desde el panel de WordPress.
+
+---
+
+### Corrección: Desfase de un día en Eventos Multiodía y de Rango en el Calendario (FullCalendar RFC 5545)
+
+**Problema Reportado:**
+Al crear o visualizar eventos de varios días (por ejemplo, `Prueba evento martes a viernes` del 13 al 16 de octubre de 2026), el calendario mensual (`dayGridMonth`), tanto en el panel de administración como en los portales frontend (Portal Docente y Portal de Estudiantes), mostraba la barra del evento cubriendo únicamente del 13 al 15 de octubre (dejando el viernes 16 vacío).
+
+**Causa Raíz:**
+1. **Especificación RFC 5545 y FullCalendar v6 sobre la propiedad `end` en eventos `allDay`**:
+   - FullCalendar maneja la propiedad `end` en eventos con `allDay: true` (o multiodía) de forma **ESTRICTAMENTE EXCLUSIVA** (`[start, end)`).
+   - En [`modules/calendar/class-calendar-events.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-events.php), los eventos multiodía se marcan con `allDay: true` para que se dibujen como barras continuas.
+   - Al enviar directamente la fecha de fin de la BD (`end: '2026-10-16T19:00:00'`), FullCalendar normaliza la fecha a medianoche (`2026-10-16 00:00:00`) y corta antes de ese día, pintando únicamente hasta el 15 y excluyendo el 16.
+
+**Solución Implementada:**
+1. **Cálculo Exclusivo del Parámetro `end` para FullCalendar ([`modules/calendar/class-calendar-events.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/calendar/class-calendar-events.php))**:
+   - En `get_events()`, cuando `$is_all_day === true`:
+     - Si el evento concluye en `$end_date` posterior a las `00:00` (ej. 19:00, 23:59) o es un evento `allDay` de un solo día (`$start_date === $end_date`), se calcula `$fc_end = date('Y-m-d', strtotime($end_date . ' +1 day'))` (en el ejemplo: `2026-10-17`), permitiendo a FullCalendar renderizar de forma inclusiva hasta el final del día 16.
+     - Si el evento finaliza exactamente a las `00:00:00` de `$end_date`, se mantiene `$fc_end = $end_date`.
+   - Se preservan intactos en `extendedProps` los valores reales de BD: `start_raw`, `end_raw`, `start_local_iso`, `end_local_iso`, `start_time_label`, `end_time_label`, `start_date_label`, `end_date_label` y `date_label` (mostrando el rango legible: *"13 octubre, 2026 — 16 octubre, 2026"*).
+2. **Protección en Arrastre y Redimensionamiento ([`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js))**:
+   - En `updateEventDates(event, revertFunc)`:
+     - Para eventos `allDay`, se resta 1 segundo (`1000ms`) a la medianoche exclusiva de `event.end` para obtener el último día efectivamente cubierto, evitando que al arrastrar o redimensionar se sumen días infinitamente a la base de datos.
+     - Se preservan las horas reales originales configuradas por el usuario.
+3. **Modal de Detalle y Tooltips Enriquecidos ([`assets/js/calendar-admin.js`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/assets/js/calendar-admin.js))**:
+   - En `showEventTooltip` y `openEventDetail`, para eventos multiodía y todo el día, se lee prioritariamente `p.date_label` y las horas reales (`p.start_time_label — p.end_time_label`), eliminando cualquier texto anómalo como `12:00 a. m. — 12:00 a. m.` y mostrando fielmente *"13 octubre, 2026 — 16 octubre, 2026 | 6:30 am — 7:00 pm"*.
+4. **Anti-Caché Dinámico en Frontend y Backend**:
+   - Se vinculó el versionado de `calendar-admin.js` a `filemtime` tanto en `class-calendar-admin.php` como en `class-calendar-frontend.php`.
+

@@ -98,18 +98,21 @@ class Aura_Calendar_Frontend {
             true
         );
 
+        $cal_css_ver = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/css/calendar-admin.css' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/css/calendar-admin.css' ) : time() );
+        $cal_js_ver  = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/js/calendar-admin.js' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/js/calendar-admin.js' ) : time() );
+
         wp_enqueue_style(
             'aura-calendar-admin',
             AURA_PLUGIN_URL . 'assets/css/calendar-admin.css',
             [ 'aura-design-system', 'aura-frontend-dark-mode' ],
-            AURA_VERSION
+            $cal_css_ver
         );
 
         wp_enqueue_script(
             'aura-calendar-frontend',
             AURA_PLUGIN_URL . 'assets/js/calendar-admin.js',
             [ 'jquery' ],
-            AURA_VERSION,
+            $cal_js_ver,
             true
         );
 

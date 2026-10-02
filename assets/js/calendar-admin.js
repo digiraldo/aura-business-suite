@@ -632,17 +632,30 @@
             : '';
 
         var is12h = /[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '');
-        var startStr = event.start ? event.start.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
-        var endStr = event.end ? event.end.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
         var timeRange = '';
-        if (startStr && endStr) {
-            timeRange = startStr + ' — ' + endStr;
-        } else if (startStr) {
-            timeRange = startStr;
-        } else if (p.start_time_label) {
-            timeRange = p.start_time_label + (p.end_time_label ? ' — ' + p.end_time_label : '');
+        var dateStr = p.date_label || '';
+
+        if (event.allDay || p.is_all_day) {
+            if (p.is_multi_day) {
+                var hasRealTimes = p.start_time_label && p.end_time_label && (p.start_time_label !== '00:00' || p.end_time_label !== '00:00');
+                timeRange = hasRealTimes ? (p.start_time_label + ' — ' + p.end_time_label) : 'Todo el día';
+            } else {
+                timeRange = 'Todo el día';
+            }
+        } else {
+            var startStr = event.start ? event.start.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+            var endStr = event.end ? event.end.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+            if (startStr && endStr) {
+                timeRange = startStr + ' — ' + endStr;
+            } else if (startStr) {
+                timeRange = startStr;
+            } else if (p.start_time_label) {
+                timeRange = p.start_time_label + (p.end_time_label ? ' — ' + p.end_time_label : '');
+            }
         }
-        var dateStr = (event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '') || p.date_label || '';
+        if (!dateStr && event.start) {
+            dateStr = event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+        }
 
         var teachersHtml = '';
         if (p.instructors && p.instructors.length) {
@@ -982,8 +995,38 @@
     });
 
     function updateEventDates(event, revertFunc) {
-        var startStr = formatLocalDateTime(event.start, true);
-        var endStr = event.end ? formatLocalDateTime(event.end, true) : startStr;
+        var p = event.extendedProps || {};
+        var startStr = '';
+        var endStr = '';
+
+        if (event.allDay) {
+            var sDate = new Date(event.start.getTime());
+            var sYear = sDate.getFullYear();
+            var sMonth = String(sDate.getMonth() + 1).padStart(2, '0');
+            var sDay = String(sDate.getDate()).padStart(2, '0');
+            var sDateOnly = sYear + '-' + sMonth + '-' + sDay;
+
+            var origStartTime = (p.start_raw && p.start_raw.length >= 19) ? p.start_raw.substring(11, 19) : '00:00:00';
+            startStr = sDateOnly + ' ' + origStartTime;
+
+            if (event.end) {
+                // En FullCalendar, event.end para eventos allDay es EXCLUSIVO (medianoche del día siguiente).
+                // Restamos 1000ms para obtener la fecha del último día efectivamente cubierto.
+                var eDate = new Date(event.end.getTime() - 1000);
+                var eYear = eDate.getFullYear();
+                var eMonth = String(eDate.getMonth() + 1).padStart(2, '0');
+                var eDay = String(eDate.getDate()).padStart(2, '0');
+                var eDateOnly = eYear + '-' + eMonth + '-' + eDay;
+
+                var origEndTime = (p.end_raw && p.end_raw.length >= 19) ? p.end_raw.substring(11, 19) : '23:59:59';
+                endStr = eDateOnly + ' ' + origEndTime;
+            } else {
+                endStr = sDateOnly + ' ' + ((p.end_raw && p.end_raw.length >= 19) ? p.end_raw.substring(11, 19) : '23:59:59');
+            }
+        } else {
+            startStr = formatLocalDateTime(event.start, true);
+            endStr = event.end ? formatLocalDateTime(event.end, true) : startStr;
+        }
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_update_event_dates',
@@ -995,12 +1038,16 @@
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
                 if (res.data) {
-                    var p = event.extendedProps || {};
-                    if (res.data.start_time_label) p.start_time_label = res.data.start_time_label;
-                    if (res.data.end_time_label)   p.end_time_label   = res.data.end_time_label;
-                    if (res.data.date_label)       p.date_label       = res.data.date_label;
-                    p.start_local_iso = startStr.replace(' ', 'T').substring(0, 16);
-                    p.end_local_iso   = endStr.replace(' ', 'T').substring(0, 16);
+                    var ep = event.extendedProps || {};
+                    if (res.data.start_time_label) ep.start_time_label = res.data.start_time_label;
+                    if (res.data.end_time_label)   ep.end_time_label   = res.data.end_time_label;
+                    if (res.data.date_label)       ep.date_label       = res.data.date_label;
+                    if (res.data.start_date_label) ep.start_date_label = res.data.start_date_label;
+                    if (res.data.end_date_label)   ep.end_date_label   = res.data.end_date_label;
+                    ep.start_raw = startStr;
+                    ep.end_raw   = endStr;
+                    ep.start_local_iso = startStr.replace(' ', 'T').substring(0, 16);
+                    ep.end_local_iso   = endStr.replace(' ', 'T').substring(0, 16);
                 }
             } else {
                 showToast(res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error, 'error');
@@ -2845,16 +2892,32 @@
 
         var timeRange = '';
         var is12h = /[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '');
-        var startStr = event.start ? event.start.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
-        var endStr = event.end ? event.end.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
-        var dateStr = (event.start ? event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '') || p.date_label || '';
+        var dateStr = p.date_label || '';
 
-        if (startStr && endStr) {
-            timeRange = (dateStr ? dateStr + ' | ' : '') + startStr + ' — ' + endStr;
-        } else if (startStr) {
-            timeRange = (dateStr ? dateStr + ' | ' : '') + startStr;
-        } else if (p.start_time_label) {
-            timeRange = (dateStr ? dateStr + ' | ' : '') + p.start_time_label + (p.end_time_label ? ' — ' + p.end_time_label : '');
+        if (event.allDay || p.is_all_day) {
+            if (p.is_multi_day) {
+                var hasRealTimes = p.start_time_label && p.end_time_label && (p.start_time_label !== '00:00' || p.end_time_label !== '00:00');
+                if (hasRealTimes) {
+                    timeRange = (dateStr ? dateStr + ' | ' : '') + p.start_time_label + ' — ' + p.end_time_label;
+                } else {
+                    timeRange = (dateStr ? dateStr + ' | ' : '') + 'Todo el día';
+                }
+            } else {
+                timeRange = (dateStr ? dateStr + ' | ' : '') + 'Todo el día';
+            }
+        } else {
+            var startStr = event.start ? event.start.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+            var endStr = event.end ? event.end.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+            if (!dateStr && event.start) {
+                dateStr = event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+            }
+            if (startStr && endStr) {
+                timeRange = (dateStr ? dateStr + ' | ' : '') + startStr + ' — ' + endStr;
+            } else if (startStr) {
+                timeRange = (dateStr ? dateStr + ' | ' : '') + startStr;
+            } else if (p.start_time_label) {
+                timeRange = (dateStr ? dateStr + ' | ' : '') + p.start_time_label + (p.end_time_label ? ' — ' + p.end_time_label : '');
+            }
         }
         $('#det-time').text(timeRange || '—');
         $('#det-location').text(p.location || 'Por definir');
@@ -3045,8 +3108,8 @@
         window.auraEventClipboard = {
             id: currentDetailEvent.id,
             title: p.raw_title || currentDetailEvent.title,
-            start: currentDetailEvent.start,
-            end: currentDetailEvent.end
+            start: p.start_local_iso || currentDetailEvent.start,
+            end: p.end_local_iso || currentDetailEvent.end
         };
         updateClipboardBarUI();
         closeModal('#modal-event-detail');

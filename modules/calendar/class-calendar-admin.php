@@ -236,12 +236,14 @@ class Aura_Calendar_Admin {
             'roles'   => class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_accounting_roles() : [],
         ] );
 
+        $cal_js_ver = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/js/calendar-admin.js' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/js/calendar-admin.js' ) : time() );
+
         // Script administrativo del módulo de calendario
         wp_enqueue_script(
             'aura-calendar-admin',
             AURA_PLUGIN_URL . 'assets/js/calendar-admin.js',
             [ 'jquery', 'fullcalendar-bundle', 'aura-ui-core', 'aura-third-party-selector' ],
-            $cal_ver,
+            $cal_js_ver,
             true
         );
 
