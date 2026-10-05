@@ -8,7 +8,13 @@
 # 1. PRESERVACIÓN DE ESTRUCTURA Y ARCHIVOS CANÓNICOS DE PRODUCCIÓN
 # Permite únicamente las carpetas y archivos raíz que empaqueta build-zip.php
 # ------------------------------------------------------------------------------
-# Archivos raíz autorizados
+# ¡CRUCIAL!: Ignorar absolutamente todo por defecto en este directorio
+*
+
+# Configuración esencial de Git
+!.gitignore
+
+# Archivos raíz autorizados (Excepciones al bloqueo total)
 !/aura-business-suite.php
 !/composer.json
 !/readme.txt
@@ -22,11 +28,17 @@
 !/favicon.ico
 !/favicon.png
 
-# Directorios de producción autorizados
+# Directorios de producción autorizados (Excepciones al bloqueo total)
 !/assets/
 !/modules/
 !/templates/
 !/languages/
+
+# Asegurar que Git pueda entrar a examinar las carpetas autorizadas
+!/assets/**
+!/modules/**
+!/templates/**
+!/languages/**
 
 
 # ------------------------------------------------------------------------------
