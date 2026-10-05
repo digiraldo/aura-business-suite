@@ -19,6 +19,10 @@ if ( ! current_user_can( 'aura_finance_create' ) && ! current_user_can( 'manage_
             <span class="dashicons dashicons-download"></span>
             <?php esc_html_e( 'Descargar plantilla', 'aura-suite' ); ?>
         </a>
+        <button type="button" class="button button-secondary aura-template-btn" onclick="openAuraBundleModal('import')" style="margin-left: 8px; border-color: #7c3aed; color: #7c3aed;">
+            <span class="dashicons dashicons-database-export" style="color: #7c3aed;"></span>
+            <strong><?php esc_html_e( 'Portabilidad Multimedia (ZIP)', 'aura-suite' ); ?></strong>
+        </button>
     </h1>
 
     <!-- Indicador de pasos -->
@@ -385,3 +389,8 @@ if ( ! in_array( $req_import_type, [ 'transactions', 'accounts', 'categories', '
     </div>
 
 </div><!-- .aura-import-wrap -->
+
+<?php
+// Modal de Migración y Portabilidad Multimedia (ZIP Bundle)
+include AURA_PLUGIN_DIR . 'templates/common/portable-bundle-modal.php';
+?>

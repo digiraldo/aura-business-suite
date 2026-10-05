@@ -105,6 +105,10 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                         <span class="dashicons dashicons-download"></span>
                         <span><?php esc_html_e('Exportar CSV', 'aura-suite'); ?></span>
                     </button>
+                    <button type="button" class="btn btn-glass btn-lift" id="aura-portable-bundle-btn" onclick="openAuraBundleModal('export')" title="<?php esc_attr_e('Exportar o importar terceros, áreas y usuarios con fotos reales (.ZIP)', 'aura-suite'); ?>" style="border-color: rgba(124, 58, 237, 0.4); color: #7c3aed;">
+                        <span class="dashicons dashicons-database-export" style="color: #7c3aed;"></span>
+                        <span><strong><?php esc_html_e('Portabilidad Multimedia (ZIP)', 'aura-suite'); ?></strong></span>
+                    </button>
                     <?php if ($can_create) : ?>
                         <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-tp-btn-new">
                             <span class="dashicons dashicons-plus-alt2"></span>
@@ -1170,3 +1174,9 @@ function exportAuraThirdPartiesCSV(btn) {
     });
 }
 </script>
+
+<?php
+// Modal de Migración y Portabilidad Multimedia (ZIP Bundle)
+include AURA_PLUGIN_DIR . 'templates/common/portable-bundle-modal.php';
+?>
+

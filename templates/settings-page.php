@@ -269,6 +269,10 @@ document.addEventListener('DOMContentLoaded', function () {
             <span class="dashicons dashicons-calendar-alt"></span>
             <span><?php esc_html_e('Google Calendar', 'aura-suite'); ?></span>
         </button>
+        <button type="button" class="aura-navbar-item aura-tab-btn tab-btn" data-tab="tab-migration" role="tab">
+            <span class="dashicons dashicons-database-export"></span>
+            <span><?php esc_html_e('Portabilidad (.ZIP)', 'aura-suite'); ?></span>
+        </button>
     </nav>
 
     <!-- ── FORMULARIO PRINCIPAL Y CONTENIDO ── -->
@@ -1338,6 +1342,39 @@ document.addEventListener('DOMContentLoaded', function () {
                 </div>
             </div>
 
+            <!-- ══════════════════════════════════════════════════════
+                 TAB: PORTABILIDAD Y MIGRACIÓN (.ZIP)
+                 ══════════════════════════════════════════════════════ -->
+            <div class="aura-tab-panel" id="tab-migration">
+                <div class="aura-panel-card">
+                    <div class="aura-card-header">
+                        <div class="card-icon indigo"><span class="dashicons dashicons-database-export"></span></div>
+                        <div class="card-title">
+                            <h3><?php esc_html_e('Migración y Portabilidad Multimedia', 'aura-suite'); ?></h3>
+                            <p><?php esc_html_e('Exporta o importa paquetes autónomos comprimidos (.ZIP) con base de datos e imágenes reales.', 'aura-suite'); ?></p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:20px;">
+                            <h4 style="margin:0 0 8px; color:#1e293b;"><?php esc_html_e('¿Cómo funciona el Paquete de Portabilidad?', 'aura-suite'); ?></h4>
+                            <p style="margin:0; font-size:0.88rem; color:#64748b; line-height:1.5;">
+                                <?php esc_html_e('A diferencia de las exportaciones en texto plano (CSV), este asistente genera un archivo .ZIP con los datos en JSON y los archivos binarios de imágenes (logotipos de terceros, portadas de áreas y fotos de perfil de usuarios de WordPress). Al restaurarlo en tu hosting (ej. Hostinger), las imágenes se vuelven a registrar automáticamente en la Biblioteca de Medios sin generar enlaces rotos.', 'aura-suite'); ?>
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                            <button type="button" class="button button-primary" onclick="openAuraBundleModal('export')" style="background:linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); border:none; padding:10px 20px; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
+                                <span class="dashicons dashicons-download"></span>
+                                <?php esc_html_e('Abrir Asistente de Exportación (.ZIP)', 'aura-suite'); ?>
+                            </button>
+                            <button type="button" class="button button-secondary" onclick="openAuraBundleModal('import')" style="padding:10px 20px; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
+                                <span class="dashicons dashicons-upload"></span>
+                                <?php esc_html_e('Abrir Asistente de Importación (.ZIP)', 'aura-suite'); ?>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ── BARRA DE GUARDADO FIJA (.aura-sticky-bar) ── -->
             <div class="aura-sticky-bar glass-frosted" id="aura-sticky-save">
                 <span class="save-hint">
@@ -1733,3 +1770,8 @@ jQuery(document).ready(function ($) {
 
 });
 </script>
+
+<?php
+// Modal de Migración y Portabilidad Multimedia (ZIP Bundle)
+include AURA_PLUGIN_DIR . 'templates/common/portable-bundle-modal.php';
+?>

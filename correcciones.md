@@ -2,7 +2,24 @@ php build-zip.php
 
 
 
+
+# Nombres Oficiales de tus Entornos
+**https://diserwp.test** 💻 Entorno de Desarrollo (Local / Dev): Es tu espacio seguro. Aquí es donde escribes el código, cometes errores, pruebas funciones nuevas y experimentas sin que ningún usuario real se vea afectado.
+**https://centromateo.org** 🌐 Entorno de Producción (Live / Prod): Es el sitio web real que está al aire. Aquí solo debe llegar código que ya haya sido probado y esté 100% libre de errores.
+
+
+
+
 # Registro de Correcciones y Tareas
+
+✅ **Portabilidad y Migración Multimedia (ZIP Bundle)**
+
+- **Requerimiento**: Exportar terceros, áreas institucionales y usuarios de WordPress incluyendo íntegramente sus fotos de perfil y logotipos reales, y que al importar el paquete en otro servidor (ej. Hostinger) todo quede restaurado y vinculado automáticamente a la Biblioteca de Medios sin perder imágenes.
+- **Implementación**:
+  1. Se creó [`modules/common/class-portable-bundle.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/modules/common/class-portable-bundle.php) con soporte de `ZipArchive` para empaquetar datos (`manifest.json`) y archivos binarios físicos (`media/third_parties/`, `media/areas/`, `media/users/`).
+  2. Motor de importación inteligente que extrae las imágenes, las inserta de forma nativa en la Biblioteca de Medios (`wp_insert_attachment()` y `wp_generate_attachment_metadata()`) y asocia los nuevos IDs a terceros (`logo_id`), áreas (`logo_id`) y usuarios (`aura_avatar_id`, `simple_local_avatar`, `wp_user_avatar`).
+  3. Modal interactivo [`templates/common/portable-bundle-modal.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/common/portable-bundle-modal.php) con pestañas de Exportación granular e Importación con dropzone y previsualización en tiempo real.
+  4. Integración de accesos directos en: **Directorio de Terceros** ([`third-parties-page.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/common/third-parties-page.php)), **Importador Financiero** ([`import-page.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/financial/import-page.php)) y **Configuración General** ([`settings-page.php`](file:///c:/laragon/www/diserwp/wp-content/plugins/aura-business-suite/templates/settings-page.php)).
 
 ⏳ A veces al cargar un modal se demora en mostrarse, requiero modernizar esto mostrando Skeleton Loaders dentro del modal para esto y no tener la sensacion de que no carga nada, pon esto en el archivo `documentacion\TRACKER-MIGRACION-DESIGN-SYSTEM.md`
 
@@ -1394,3 +1411,34 @@ Al crear o visualizar eventos de varios días (por ejemplo, `Prueba evento marte
 4. **Anti-Caché Dinámico en Frontend y Backend**:
    - Se vinculó el versionado de `calendar-admin.js` a `filemtime` tanto en `class-calendar-admin.php` como en `class-calendar-frontend.php`.
 
+
+
+
+
+
+
+
+Actúa como un desarrollador experto en WordPress y Git. Necesito crear o modificar el archivo `.gitignore` dentro de mi plugin local de WordPress llamado "aura-business-suite".
+
+Actualmente estoy cambiando mi flujo de trabajo de archivos ZIP a un repositorio público en GitHub, pero quiero asegurarme de que solo se suban los archivos esenciales del plugin. 
+
+Para lograrlo, quiero que te bases en la lógica de exclusión que utiliza mi archivo `build-zip.php`, el cual se encargaba de empaquetar únicamente los archivos necesarios para producción e ignoraba todo lo demás.
+
+Por favor, genera o reestructura el archivo `.gitignore` aplicando las siguientes reglas estrictas:
+
+1. FILTRADO INVERSO (Lógica de build-zip.php):
+   - Solo se deben rastrear los archivos esenciales de código del plugin: archivos `.php`, `.js`, `.css`, archivos de traducción (`.pot`, `.po`, `.mo`), archivos de assets (`.png`, `.jpg`, `.svg`, `.json` de configuración básica) y el archivo `README.txt`.
+   - Ignora cualquier archivo comprimido (`.zip`, `.rar`, `.tar.gz`) que se use para pruebas o respaldos temporales.
+
+2. SEGURIDAD Y PRIVACIDAD DE DATOS (Crucial para repositorio público):
+   - Bloquea por completo cualquier archivo que contenga credenciales, tokens, claves de API o configuraciones locales de base de datos utilizadas en Laragon (por ejemplo: `.env`, archivos `.json` de claves o credenciales, logs de errores `.log`, archivos `.tmp`, `.bak`).
+
+3. LIMPIEZA DE ENTORNOS DE DESARROLLO:
+   - Ignora las carpetas ocultas generadas automáticamente por los editores de código o entornos de desarrollo (como `.idea/` de PhpStorm, `.vscode/`, archivos ocultos del sistema como `.DS_Store` o `Thumbs.db`).
+
+Entrega el contenido final del archivo `.gitignore` limpio, bien comentado en español, explicando brevemente qué hace cada sección para mantener mi repositorio público impecable.
+
+
+
+
+- Quiero que el archivo de `documentacion\exportados csv\categorias-financieras-con mas emogis.csv`, lo tome como ejemplo para corregir o incorporar los emojis correspondientes al archivo `documentacion\exportados csv\categorias-financieras-con menos emojis.csv`, el cual voy a usar para importarlo en servidor en Hostinger el cual es mi entorno de produccion.

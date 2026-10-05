@@ -80,6 +80,7 @@ class Aura_Business_Suite {
         require_once AURA_PLUGIN_DIR . 'modules/common/class-notifications.php';
         require_once AURA_PLUGIN_DIR . 'modules/common/class-google-calendar.php';
         require_once AURA_PLUGIN_DIR . 'modules/common/class-third-parties.php';
+        require_once AURA_PLUGIN_DIR . 'modules/common/class-portable-bundle.php';
         
         // Módulo Financiero
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-cpt.php';
@@ -304,6 +305,9 @@ class Aura_Business_Suite {
         
         // Inicializar directorio global de terceros
         Aura_Third_Parties::init();
+        
+        // Inicializar paquetes portátiles multimedia (ZIP Bundle)
+        Aura_Portable_Bundle::init();
         
         Aura_Financial_Categories_CPT::init();
         Aura_Financial_Categories::get_instance();
