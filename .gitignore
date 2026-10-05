@@ -1,106 +1,210 @@
-# Aura Business Suite - Ignorar archivos
+# ==============================================================================
+# .gitignore — Aura Business Suite
+# Configuración optimizada para repositorio PÚBLICO en GitHub.
+# Basado estrictamente en la lógica de exclusión de build-zip.php y estándares WP.
+# ==============================================================================
 
-# WordPress
+# ------------------------------------------------------------------------------
+# 1. PRESERVACIÓN DE ESTRUCTURA Y ARCHIVOS CANÓNICOS DE PRODUCCIÓN
+# Permite únicamente las carpetas y archivos raíz que empaqueta build-zip.php
+# ------------------------------------------------------------------------------
+# Archivos raíz autorizados
+!/aura-business-suite.php
+!/composer.json
+!/readme.txt
+!/README.md
+!/LICENSE
+!/CHANGELOG.md
+!/CONTRIBUTING.md
+!/DEPLOYMENT.md
+!/aura-icono.svg
+!/aura.svg
+!/favicon.ico
+!/favicon.png
+
+# Directorios de producción autorizados
+!/assets/
+!/modules/
+!/templates/
+!/languages/
+
+
+# ------------------------------------------------------------------------------
+# 2. SEGURIDAD, CREDENCIALES Y PRIVACIDAD (CRÍTICO PARA REPOSITORIO PÚBLICO)
+# Bloquea claves de API, tokens, cuentas de servicio y volcados de datos locales.
+# ------------------------------------------------------------------------------
+# Credenciales y cuentas de servicio (Google Cloud, Firebase, APIs)
+*credentials*.json
+*client_secret*.json
+*service-account*.json
+*secret*.json
+*token*.json
+oauth*.json
+aura-credentials.json
+
+# Claves criptográficas y certificados SSL/TLS
+*.pem
+*.key
+*.pub
+*.p12
+*.crt
+
+# Variables de entorno y configuraciones locales
+.env
+.env.*
+*.env
+local.php
 wp-config.php
-wp-content/uploads/
-wp-content/cache/
-wp-content/backup-db/
-wp-content/advanced-cache.php
-wp-content/wp-cache-config.php
-wp-content/updraft/
 
-# Plugin específico
-*.log
+# Volcados de base de datos y scripts SQL (MySQL / SQLite / Laragon)
 *.sql
 *.sqlite
+*.sqlite3
+*.db
+*.session.sql
 
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon
-._*
+# Registros de depuración y logs de servidor
+*.log
+error_log
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
 
-# Linux
+# ------------------------------------------------------------------------------
+# 3. ARCHIVOS COMPRIMIDOS, RESPALDOS Y TEMPORALES (LÓGICA BUILD-ZIP)
+# Evita subir archivos ZIP de prueba, backups de base de datos o temporales.
+# ------------------------------------------------------------------------------
+*.zip
+*.zip.*
+*.rar
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# Archivos temporales generados por editores, scripts o el sistema
+*.tmp
+*.bak
+*.backup
+*.old
+*.cache
 *~
-.directory
+*.swp
+*.swo
 
-# Editores e IDEs
+
+# ------------------------------------------------------------------------------
+# 4. HOJAS DE CÁLCULO, DATOS REALES Y SCRIPTS DE DESARROLLO / PRUEBAS
+# Hojas de datos contables de la organización y utilitarios de desarrollo local.
+# ------------------------------------------------------------------------------
+# Hojas de cálculo con transacciones y propuestas reales
+*.xlsx
+*.xls
+*.csv
+
+# Scripts utilitarios y temporales de desarrollo en Python
+*.py
+_tmp_*.*
+analyze_excel.py
+extract_finance_2026.py
+replace.py
+
+# Scripts de automatización local de PowerShell y Bash
+*.ps1
+*.sh
+build-zip.php
+build-zip-sin-vendor.php
+build-plugin.ps1
+build-update-lite.ps1
+test-zip.ps1
+
+# Scripts PHP temporales de diagnóstico y pruebas en raíz
+check-*.php
+check_*.php
+debug-*.php
+diagnostico-*.php
+test-*.php
+test_*.php
+add_capex.php
+fix-permalinks.php
+force-register-api.php
+migrate-area-users-table.php
+
+
+# ------------------------------------------------------------------------------
+# 5. DOCUMENTACIÓN INTERNA, PRDs Y NOTAS PRIVADAS
+# No exponer requisitos del producto (PRD), correcciones o notas operativas.
+# ------------------------------------------------------------------------------
+correcciones.md
+PRD*.md
+prd*.md
+prompt-maestro*.md
+completarFinanzas.md
+arquitecturaVehiculos.md
+qrVehiculos.md
+reenbolsos.md
+ConstruyeZIP.md
+Categorias*.md
+categorias.md
+ordenDeModulos.md
+Otros.md
+implementation_plan.md
+CORRECCION-*.md
+FASE*.md
+GUIA-*.md
+IMPLEMENTACION-*.md
+Implementacion*.md
+MANUAL-*.md
+PRESUPUESTOS-*.md
+
+# Carpetas de desarrollo interno, pruebas o scratch
+/documentacion/
+/scratch/
+/tests/
+/bin/
+/image/
+
+
+# ------------------------------------------------------------------------------
+# 6. LIMPIEZA DE ENTORNOS DE DESARROLLO Y SISTEMA OPERATIVO
+# Evita subir configuraciones personales de editores o metadatos de OS.
+# ------------------------------------------------------------------------------
+# Editores e IDEs (VS Code, PhpStorm, Sublime Text)
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
-*.swp
-*.swo
-*~
+*.code-workspace
 
-# Node (si usas build tools)
-node_modules/
-npm-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
+# Sistema operativo macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
 
-# Composer
-/vendor/
-composer.lock
+# Sistema operativo Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# Build tools
-/dist/
-/build/
-*.min.js.map
-*.min.css.map
-/aura-business-suite.zip
-/build-zip.ps1
-*.zip
-*.xlsx
-/import_*.csv
-/import_transacciones*.csv
-/Y-Global2 2017-20 (Use this one).xlsx
-
-# Temporales
-*.tmp
-*.bak
-*.cache
-
-# Documentos privados
-/docs/private/
-/config/local.php
-
-# Backups
-*.backup
-*.old
-
-# Testing
-/tests/coverage/
-phpunit.xml
-.phpunit.result.cache
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Documentación md (no subir a GitHub)
-ordenDeModulos.md
-prd-finanzas.md
-PRD.md
-prdFinanzas.md
-prdInventario.md
-
-# Documentación interna (no subir a GitHub)
-/documentacion/
-
-# Archivos de Python / virtualenv
+# Entornos virtuales y caché de Python
 .venv/
 __pycache__/
 *.py[cod]
 
-# Google Cloud Credentials
-/aura-credentials.json
+# Directorios de Node y dependencias de build
+node_modules/
+package-lock.json
+yarn.lock
+/dist/
+/build/
+
+# Dependencias de Composer (se instalan con 'composer install' / composer.json)
+/vendor/
+composer.lock

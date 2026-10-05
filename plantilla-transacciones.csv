@@ -1,1 +1,0 @@
-transaction_date,transaction_type,category,amount,description,notes,payment_method,reference_number,source_account_id,destination_account_id,related_user_id,status
