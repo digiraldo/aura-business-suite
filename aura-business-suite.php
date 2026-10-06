@@ -16,7 +16,6 @@
  * @package AuraBusinessSuite
  */
 
-
 // Prevenir acceso directo
 if (!defined('ABSPATH')) {
     exit;

@@ -938,6 +938,22 @@ class Aura_Areas_Setup {
         self::maybe_migrate();
     }
 
+    /**
+     * Asegura que todas las tablas y columnas necesarias para áreas existan.
+     */
+    public static function ensure_table_exists(): void {
+        global $wpdb;
+        $table = $wpdb->prefix . self::TABLE;
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+            self::create_areas_table( $wpdb );
+        }
+        self::maybe_migrate();
+        self::maybe_create_area_users_table();
+        self::maybe_add_logo_column();
+        self::maybe_create_types_table();
+        self::maybe_convert_type_to_varchar();
+    }
+
     /* ======================================================================
      * MIGRACIÓN v1.4.0: Tabla de tipos de área
      * ==================================================================== */

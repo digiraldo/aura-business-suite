@@ -332,6 +332,11 @@ class Aura_Portable_Bundle {
             wp_send_json_error( [ 'message' => __( 'Sin permisos para importar datos.', 'aura-suite' ) ], 403 );
         }
 
+        @set_time_limit( 300 );
+        if ( function_exists( 'wp_raise_memory_limit' ) ) {
+            wp_raise_memory_limit( 'admin' );
+        }
+
         $token = sanitize_text_field( $_POST['token'] ?? '' );
         $bundle_data = get_transient( 'aura_bundle_' . $token );
 
@@ -342,281 +347,303 @@ class Aura_Portable_Bundle {
         $extract_dir = untrailingslashit( $bundle_data['dir'] );
         $manifest    = $bundle_data['manifest'];
 
-        // Opciones de importación
-        $import_users_opt = ! empty( $_POST['import_users'] );
-        $import_areas_opt = ! empty( $_POST['import_areas'] );
-        $import_tp_opt    = ! empty( $_POST['import_third_parties'] );
+        try {
+            // Opciones de importación
+            $import_users_opt = ! empty( $_POST['import_users'] );
+            $import_areas_opt = ! empty( $_POST['import_areas'] );
+            $import_tp_opt    = ! empty( $_POST['import_third_parties'] );
 
-        // Si no se pasaron filtros específicos, importar todo lo que contenga el bundle
-        if ( ! isset( $_POST['import_users'] ) && ! isset( $_POST['import_areas'] ) && ! isset( $_POST['import_third_parties'] ) ) {
-            $import_users_opt = ! empty( $manifest['users'] );
-            $import_areas_opt = ! empty( $manifest['areas'] );
-            $import_tp_opt    = ! empty( $manifest['third_parties'] );
-        }
+            // Si no se pasaron filtros específicos, importar todo lo que contenga el bundle
+            if ( ! isset( $_POST['import_users'] ) && ! isset( $_POST['import_areas'] ) && ! isset( $_POST['import_third_parties'] ) ) {
+                $import_users_opt = ! empty( $manifest['users'] );
+                $import_areas_opt = ! empty( $manifest['areas'] );
+                $import_tp_opt    = ! empty( $manifest['third_parties'] );
+            }
 
-        $results = [
-            'users'         => [ 'created' => 0, 'updated' => 0, 'images' => 0, 'failed' => 0 ],
-            'areas'         => [ 'created' => 0, 'updated' => 0, 'images' => 0, 'failed' => 0 ],
-            'third_parties' => [ 'created' => 0, 'updated' => 0, 'images' => 0, 'failed' => 0 ],
-        ];
+            $results = [
+                'users'         => [ 'created' => 0, 'updated' => 0, 'images' => 0, 'failed' => 0 ],
+                'areas'         => [ 'created' => 0, 'updated' => 0, 'images' => 0, 'failed' => 0 ],
+                'third_parties' => [ 'created' => 0, 'updated' => 0, 'images' => 0, 'failed' => 0 ],
+            ];
 
-        $user_login_to_id = [];
-        $area_slug_to_id  = [];
+            $user_login_to_id = [];
+            $area_slug_to_id  = [];
 
-        // ── 1. Procesar Usuarios de WordPress ─────────────────────────────
-        if ( $import_users_opt && ! empty( $manifest['users'] ) ) {
-            foreach ( $manifest['users'] as $u_data ) {
-                $login = sanitize_user( $u_data['user_login'] ?? '' );
-                $email = sanitize_email( $u_data['user_email'] ?? '' );
-                if ( empty( $login ) || empty( $email ) ) {
-                    continue;
-                }
-
-                $user = get_user_by( 'login', $login ) ?: get_user_by( 'email', $email );
-                $user_id = 0;
-
-                if ( $user ) {
-                    // Usuario existente: actualizar nombres si corresponde
-                    $user_id = $user->ID;
-                    $update_args = [
-                        'ID'           => $user_id,
-                        'display_name' => sanitize_text_field( $u_data['display_name'] ?? $user->display_name ),
-                    ];
-                    if ( ! empty( $u_data['first_name'] ) ) {
-                        $update_args['first_name'] = sanitize_text_field( $u_data['first_name'] );
-                    }
-                    if ( ! empty( $u_data['last_name'] ) ) {
-                        $update_args['last_name'] = sanitize_text_field( $u_data['last_name'] );
-                    }
-                    wp_update_user( $update_args );
-                    $results['users']['updated']++;
-                } else {
-                    // Crear nuevo usuario con contraseña aleatoria segura
-                    $random_pass = wp_generate_password( 18, true, true );
-                    $new_user_args = [
-                        'user_login'   => $login,
-                        'user_email'   => $email,
-                        'user_pass'    => $random_pass,
-                        'display_name' => sanitize_text_field( $u_data['display_name'] ?? $login ),
-                        'first_name'   => sanitize_text_field( $u_data['first_name'] ?? '' ),
-                        'last_name'    => sanitize_text_field( $u_data['last_name'] ?? '' ),
-                        'role'         => ! empty( $u_data['roles'][0] ) ? sanitize_key( $u_data['roles'][0] ) : 'subscriber',
-                    ];
-                    $created_id = wp_insert_user( $new_user_args );
-                    if ( ! is_wp_error( $created_id ) ) {
-                        $user_id = $created_id;
-                        $results['users']['created']++;
-                    } else {
-                        $results['users']['failed']++;
+            // ── 1. Procesar Usuarios de WordPress ─────────────────────────────
+            if ( $import_users_opt && ! empty( $manifest['users'] ) ) {
+                foreach ( $manifest['users'] as $u_data ) {
+                    $login = sanitize_user( $u_data['user_login'] ?? '' );
+                    $email = sanitize_email( $u_data['user_email'] ?? '' );
+                    if ( empty( $login ) || empty( $email ) ) {
                         continue;
                     }
-                }
 
-                $user_login_to_id[ $login ] = $user_id;
+                    $user = get_user_by( 'login', $login ) ?: get_user_by( 'email', $email );
+                    $user_id = 0;
 
-                // Restaurar avatar si viene en el bundle
-                if ( ! empty( $u_data['media_path'] ) ) {
-                    $new_attach_id = self::import_media_attachment( $u_data['media_path'], $extract_dir, "Avatar de {$login}" );
-                    if ( $new_attach_id > 0 ) {
-                        // Sincronizar en usermeta para Aura Suite y plugins de avatar
-                        update_user_meta( $user_id, 'aura_avatar_id', $new_attach_id );
-                        update_user_meta( $user_id, 'wp_user_avatar', $new_attach_id );
-                        update_user_meta( $user_id, 'aura_avatar_url', wp_get_attachment_url( $new_attach_id ) );
-
-                        $full_path = get_attached_file( $new_attach_id );
-                        $full_url  = wp_get_attachment_url( $new_attach_id );
-                        $sla_meta  = [
-                            'media_id' => $new_attach_id,
-                            'full'     => $full_url,
-                            'file'     => $full_path,
+                    if ( $user ) {
+                        // Usuario existente: actualizar nombres si corresponde
+                        $user_id = $user->ID;
+                        $update_args = [
+                            'ID'           => $user_id,
+                            'display_name' => sanitize_text_field( $u_data['display_name'] ?? $user->display_name ),
                         ];
-                        update_user_meta( $user_id, 'simple_local_avatar', $sla_meta );
-                        $results['users']['images']++;
+                        if ( ! empty( $u_data['first_name'] ) ) {
+                            $update_args['first_name'] = sanitize_text_field( $u_data['first_name'] );
+                        }
+                        if ( ! empty( $u_data['last_name'] ) ) {
+                            $update_args['last_name'] = sanitize_text_field( $u_data['last_name'] );
+                        }
+                        wp_update_user( $update_args );
+                        $results['users']['updated']++;
+                    } else {
+                        // Crear nuevo usuario con contraseña aleatoria segura
+                        $random_pass = wp_generate_password( 18, true, true );
+                        $new_user_args = [
+                            'user_login'   => $login,
+                            'user_email'   => $email,
+                            'user_pass'    => $random_pass,
+                            'display_name' => sanitize_text_field( $u_data['display_name'] ?? $login ),
+                            'first_name'   => sanitize_text_field( $u_data['first_name'] ?? '' ),
+                            'last_name'    => sanitize_text_field( $u_data['last_name'] ?? '' ),
+                            'role'         => ! empty( $u_data['roles'][0] ) ? sanitize_key( $u_data['roles'][0] ) : 'subscriber',
+                        ];
+                        $created_id = wp_insert_user( $new_user_args );
+                        if ( ! is_wp_error( $created_id ) ) {
+                            $user_id = $created_id;
+                            $results['users']['created']++;
+                        } else {
+                            $results['users']['failed']++;
+                            continue;
+                        }
+                    }
+
+                    $user_login_to_id[ $login ] = $user_id;
+
+                    // Restaurar avatar si viene en el bundle
+                    if ( ! empty( $u_data['media_path'] ) ) {
+                        $new_attach_id = self::import_media_attachment( $u_data['media_path'], $extract_dir, "Avatar de {$login}" );
+                        if ( $new_attach_id > 0 ) {
+                            // Sincronizar en usermeta para Aura Suite y plugins de avatar
+                            update_user_meta( $user_id, 'aura_avatar_id', $new_attach_id );
+                            update_user_meta( $user_id, 'wp_user_avatar', $new_attach_id );
+                            update_user_meta( $user_id, 'aura_avatar_url', wp_get_attachment_url( $new_attach_id ) );
+
+                            $full_path = get_attached_file( $new_attach_id );
+                            $full_url  = wp_get_attachment_url( $new_attach_id );
+                            $sla_meta  = [
+                                'media_id' => $new_attach_id,
+                                'full'     => $full_url,
+                                'file'     => $full_path,
+                            ];
+                            update_user_meta( $user_id, 'simple_local_avatar', $sla_meta );
+                            $results['users']['images']++;
+                        }
                     }
                 }
             }
-        }
 
-        // ── 2. Procesar Áreas ─────────────────────────────────────────────
-        if ( $import_areas_opt && ! empty( $manifest['areas'] ) ) {
-            global $wpdb;
-            $areas_table = $wpdb->prefix . 'aura_areas';
-            Aura_Areas_Setup::ensure_table_exists();
+            // ── 2. Procesar Áreas ─────────────────────────────────────────────
+            if ( $import_areas_opt && ! empty( $manifest['areas'] ) ) {
+                global $wpdb;
+                $areas_table = $wpdb->prefix . 'aura_areas';
 
-            foreach ( $manifest['areas'] as $a_data ) {
-                $slug = sanitize_title( $a_data['slug'] ?? $a_data['name'] ?? '' );
-                $name = sanitize_text_field( $a_data['name'] ?? '' );
-                if ( empty( $name ) || empty( $slug ) ) {
-                    continue;
-                }
-
-                // Importar logo del área
-                $new_logo_id = null;
-                if ( ! empty( $a_data['media_path'] ) ) {
-                    $new_logo_id = self::import_media_attachment( $a_data['media_path'], $extract_dir, "Logo {$name}" );
-                    if ( $new_logo_id > 0 ) {
-                        $results['areas']['images']++;
+                if ( class_exists( 'Aura_Areas_Setup' ) ) {
+                    if ( method_exists( 'Aura_Areas_Setup', 'ensure_table_exists' ) ) {
+                        Aura_Areas_Setup::ensure_table_exists();
                     } else {
-                        $new_logo_id = null;
+                        Aura_Areas_Setup::maybe_migrate();
+                        if ( method_exists( 'Aura_Areas_Setup', 'maybe_create_area_users_table' ) ) {
+                            Aura_Areas_Setup::maybe_create_area_users_table();
+                        }
+                        if ( method_exists( 'Aura_Areas_Setup', 'maybe_add_logo_column' ) ) {
+                            Aura_Areas_Setup::maybe_add_logo_column();
+                        }
                     }
                 }
 
-                // Resolver responsable
-                $resp_id = null;
-                if ( ! empty( $a_data['responsible_login'] ) && isset( $user_login_to_id[ $a_data['responsible_login'] ] ) ) {
-                    $resp_id = $user_login_to_id[ $a_data['responsible_login'] ];
-                } elseif ( ! empty( $a_data['responsible_user_id'] ) ) {
-                    $resp_id = (int) $a_data['responsible_user_id'];
-                }
+                foreach ( $manifest['areas'] as $a_data ) {
+                    $slug = sanitize_title( $a_data['slug'] ?? $a_data['name'] ?? '' );
+                    $name = sanitize_text_field( $a_data['name'] ?? '' );
+                    if ( empty( $name ) || empty( $slug ) ) {
+                        continue;
+                    }
 
-                $area_row_data = [
-                    'name'                => $name,
-                    'slug'                => $slug,
-                    'type'                => sanitize_key( $a_data['type'] ?? 'program' ),
-                    'description'         => sanitize_textarea_field( $a_data['description'] ?? '' ),
-                    'color'               => sanitize_hex_color( $a_data['color'] ?? '#2271b1' ) ?: '#2271b1',
-                    'icon'                => sanitize_text_field( $a_data['icon'] ?? 'dashicons-groups' ),
-                    'status'              => in_array( $a_data['status'] ?? 'active', [ 'active', 'archived' ], true ) ? $a_data['status'] : 'active',
-                    'sort_order'          => (int) ( $a_data['sort_order'] ?? 0 ),
-                    'responsible_user_id' => $resp_id,
-                ];
+                    // Importar logo del área
+                    $new_logo_id = null;
+                    if ( ! empty( $a_data['media_path'] ) ) {
+                        $new_logo_id = self::import_media_attachment( $a_data['media_path'], $extract_dir, "Logo {$name}" );
+                        if ( $new_logo_id > 0 ) {
+                            $results['areas']['images']++;
+                        } else {
+                            $new_logo_id = null;
+                        }
+                    }
 
-                if ( $new_logo_id ) {
-                    $area_row_data['logo_id'] = $new_logo_id;
-                }
+                    // Resolver responsable
+                    $resp_id = null;
+                    if ( ! empty( $a_data['responsible_login'] ) && isset( $user_login_to_id[ $a_data['responsible_login'] ] ) ) {
+                        $resp_id = $user_login_to_id[ $a_data['responsible_login'] ];
+                    } elseif ( ! empty( $a_data['responsible_user_id'] ) ) {
+                        $resp_id = (int) $a_data['responsible_user_id'];
+                    }
 
-                $existing_area_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$areas_table} WHERE slug = %s LIMIT 1", $slug ) );
+                    $area_row_data = [
+                        'name'                => $name,
+                        'slug'                => $slug,
+                        'type'                => sanitize_key( $a_data['type'] ?? 'program' ),
+                        'description'         => sanitize_textarea_field( $a_data['description'] ?? '' ),
+                        'color'               => sanitize_hex_color( $a_data['color'] ?? '#2271b1' ) ?: '#2271b1',
+                        'icon'                => sanitize_text_field( $a_data['icon'] ?? 'dashicons-groups' ),
+                        'status'              => in_array( $a_data['status'] ?? 'active', [ 'active', 'archived' ], true ) ? $a_data['status'] : 'active',
+                        'sort_order'          => (int) ( $a_data['sort_order'] ?? 0 ),
+                        'responsible_user_id' => $resp_id,
+                    ];
 
-                if ( $existing_area_id ) {
-                    $area_id = (int) $existing_area_id;
-                    $wpdb->update( $areas_table, $area_row_data, [ 'id' => $area_id ] );
-                    $results['areas']['updated']++;
-                } else {
-                    $area_row_data['created_by'] = get_current_user_id() ?: 1;
-                    $area_row_data['created_at'] = current_time( 'mysql' );
-                    $wpdb->insert( $areas_table, $area_row_data );
-                    $area_id = (int) $wpdb->insert_id;
-                    $results['areas']['created']++;
-                }
+                    if ( $new_logo_id ) {
+                        $area_row_data['logo_id'] = $new_logo_id;
+                    }
 
-                $area_slug_to_id[ $slug ] = $area_id;
+                    $existing_area_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$areas_table} WHERE slug = %s LIMIT 1", $slug ) );
 
-                // Asignar usuarios al área si la tabla relacional existe
-                if ( ! empty( $a_data['assigned_logins'] ) && is_array( $a_data['assigned_logins'] ) ) {
-                    $rel_table = $wpdb->prefix . 'aura_area_users';
-                    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$rel_table}'" ) === $rel_table ) {
-                        foreach ( $a_data['assigned_logins'] as $assigned ) {
-                            $u_login = $assigned['login'] ?? '';
-                            $u_id = $user_login_to_id[ $u_login ] ?? ( get_user_by( 'login', $u_login ) ? get_user_by( 'login', $u_login )->ID : 0 );
-                            if ( $u_id > 0 ) {
-                                $wpdb->replace( $rel_table, [
-                                    'area_id'     => $area_id,
-                                    'user_id'     => $u_id,
-                                    'role'        => sanitize_key( $assigned['role'] ?? 'responsible' ),
-                                    'assigned_at' => current_time( 'mysql' ),
-                                    'assigned_by' => get_current_user_id() ?: 1,
-                                ] );
+                    if ( $existing_area_id ) {
+                        $area_id = (int) $existing_area_id;
+                        $wpdb->update( $areas_table, $area_row_data, [ 'id' => $area_id ] );
+                        $results['areas']['updated']++;
+                    } else {
+                        $area_row_data['created_by'] = get_current_user_id() ?: 1;
+                        $area_row_data['created_at'] = current_time( 'mysql' );
+                        $wpdb->insert( $areas_table, $area_row_data );
+                        $area_id = (int) $wpdb->insert_id;
+                        $results['areas']['created']++;
+                    }
+
+                    $area_slug_to_id[ $slug ] = $area_id;
+
+                    // Asignar usuarios al área si la tabla relacional existe
+                    if ( ! empty( $a_data['assigned_logins'] ) && is_array( $a_data['assigned_logins'] ) ) {
+                        $rel_table = $wpdb->prefix . 'aura_area_users';
+                        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$rel_table}'" ) === $rel_table ) {
+                            foreach ( $a_data['assigned_logins'] as $assigned ) {
+                                $u_login = $assigned['login'] ?? '';
+                                $u_id = $user_login_to_id[ $u_login ] ?? ( get_user_by( 'login', $u_login ) ? get_user_by( 'login', $u_login )->ID : 0 );
+                                if ( $u_id > 0 ) {
+                                    $wpdb->replace( $rel_table, [
+                                        'area_id'     => $area_id,
+                                        'user_id'     => $u_id,
+                                        'role'        => sanitize_key( $assigned['role'] ?? 'responsible' ),
+                                        'assigned_at' => current_time( 'mysql' ),
+                                        'assigned_by' => get_current_user_id() ?: 1,
+                                    ] );
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        // ── 3. Procesar Terceros ──────────────────────────────────────────
-        if ( $import_tp_opt && ! empty( $manifest['third_parties'] ) ) {
-            global $wpdb;
-            $tp_table = $wpdb->prefix . 'aura_finance_third_parties';
-            Aura_Third_Parties::ensure_table();
+            // ── 3. Procesar Terceros ──────────────────────────────────────────
+            if ( $import_tp_opt && ! empty( $manifest['third_parties'] ) ) {
+                global $wpdb;
+                $tp_table = $wpdb->prefix . 'aura_finance_third_parties';
+                Aura_Third_Parties::ensure_table();
 
-            foreach ( $manifest['third_parties'] as $tp_data ) {
-                $full_name   = sanitize_text_field( $tp_data['full_name'] ?? '' );
-                $document_id = sanitize_text_field( $tp_data['document_id'] ?? '' );
+                foreach ( $manifest['third_parties'] as $tp_data ) {
+                    $full_name   = sanitize_text_field( $tp_data['full_name'] ?? '' );
+                    $document_id = sanitize_text_field( $tp_data['document_id'] ?? '' );
 
-                if ( empty( $full_name ) ) {
-                    continue;
-                }
+                    if ( empty( $full_name ) ) {
+                        continue;
+                    }
 
-                // Importar imagen de logo
-                $new_logo_id = null;
-                if ( ! empty( $tp_data['media_path'] ) ) {
-                    $new_logo_id = self::import_media_attachment( $tp_data['media_path'], $extract_dir, "Logo {$full_name}" );
-                    if ( $new_logo_id > 0 ) {
-                        $results['third_parties']['images']++;
+                    // Importar imagen de logo
+                    $new_logo_id = null;
+                    if ( ! empty( $tp_data['media_path'] ) ) {
+                        $new_logo_id = self::import_media_attachment( $tp_data['media_path'], $extract_dir, "Logo {$full_name}" );
+                        if ( $new_logo_id > 0 ) {
+                            $results['third_parties']['images']++;
+                        } else {
+                            $new_logo_id = null;
+                        }
+                    }
+
+                    // Resolver usuario WP vinculado
+                    $linked_user_id = null;
+                    if ( ! empty( $tp_data['linked_login'] ) && isset( $user_login_to_id[ $tp_data['linked_login'] ] ) ) {
+                        $linked_user_id = $user_login_to_id[ $tp_data['linked_login'] ];
+                    } elseif ( ! empty( $tp_data['email'] ) ) {
+                        $u = get_user_by( 'email', sanitize_email( $tp_data['email'] ) );
+                        if ( $u ) {
+                            $linked_user_id = $u->ID;
+                        }
+                    }
+
+                    $tp_row = [
+                        'full_name'       => $full_name,
+                        'commercial_name' => sanitize_text_field( $tp_data['commercial_name'] ?? '' ),
+                        'party_type'      => sanitize_key( $tp_data['party_type'] ?? 'company' ),
+                        'accounting_role' => sanitize_key( $tp_data['accounting_role'] ?? 'supplier' ),
+                        'tax_id_type'     => strtoupper( sanitize_text_field( $tp_data['tax_id_type'] ?? 'NIT' ) ) ?: 'NIT',
+                        'document_id'     => $document_id,
+                        'phone'           => sanitize_text_field( $tp_data['phone'] ?? '' ),
+                        'email'           => sanitize_email( $tp_data['email'] ?? '' ),
+                        'website'         => esc_url_raw( $tp_data['website'] ?? '' ),
+                        'address'         => sanitize_textarea_field( $tp_data['address'] ?? '' ),
+                        'notes'           => sanitize_textarea_field( $tp_data['notes'] ?? '' ),
+                        'is_active'       => (int) ( $tp_data['is_active'] ?? 1 ),
+                        'wp_user_id'      => $linked_user_id,
+                    ];
+
+                    if ( $new_logo_id ) {
+                        $tp_row['logo_id'] = $new_logo_id;
+                    }
+
+                    // Buscar si ya existe por document_id o full_name
+                    $existing_tp_id = null;
+                    if ( ! empty( $document_id ) ) {
+                        $existing_tp_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$tp_table} WHERE document_id = %s LIMIT 1", $document_id ) );
+                    }
+                    if ( ! $existing_tp_id ) {
+                        $existing_tp_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$tp_table} WHERE full_name = %s LIMIT 1", $full_name ) );
+                    }
+
+                    if ( $existing_tp_id ) {
+                        $tp_row['updated_at'] = current_time( 'mysql' );
+                        $wpdb->update( $tp_table, $tp_row, [ 'id' => (int) $existing_tp_id ] );
+                        $results['third_parties']['updated']++;
+                        $saved_tp_id = (int) $existing_tp_id;
                     } else {
-                        $new_logo_id = null;
+                        $tp_row['created_by'] = get_current_user_id() ?: 1;
+                        $tp_row['created_at'] = current_time( 'mysql' );
+                        $tp_row['updated_at'] = current_time( 'mysql' );
+                        $wpdb->insert( $tp_table, $tp_row );
+                        $saved_tp_id = (int) $wpdb->insert_id;
+                        $results['third_parties']['created']++;
                     }
-                }
 
-                // Resolver usuario WP vinculado
-                $linked_user_id = null;
-                if ( ! empty( $tp_data['linked_login'] ) && isset( $user_login_to_id[ $tp_data['linked_login'] ] ) ) {
-                    $linked_user_id = $user_login_to_id[ $tp_data['linked_login'] ];
-                } elseif ( ! empty( $tp_data['email'] ) ) {
-                    $u = get_user_by( 'email', sanitize_email( $tp_data['email'] ) );
-                    if ( $u ) {
-                        $linked_user_id = $u->ID;
+                    // Sincronizar avatar con el usuario WP vinculado si existe
+                    if ( $linked_user_id && $new_logo_id && class_exists( 'Aura_Third_Parties' ) ) {
+                        Aura_Third_Parties::sync_avatar_to_wp_user( $linked_user_id, $new_logo_id );
                     }
-                }
-
-                $tp_row = [
-                    'full_name'       => $full_name,
-                    'commercial_name' => sanitize_text_field( $tp_data['commercial_name'] ?? '' ),
-                    'party_type'      => sanitize_key( $tp_data['party_type'] ?? 'company' ),
-                    'accounting_role' => sanitize_key( $tp_data['accounting_role'] ?? 'supplier' ),
-                    'tax_id_type'     => strtoupper( sanitize_text_field( $tp_data['tax_id_type'] ?? 'NIT' ) ) ?: 'NIT',
-                    'document_id'     => $document_id,
-                    'phone'           => sanitize_text_field( $tp_data['phone'] ?? '' ),
-                    'email'           => sanitize_email( $tp_data['email'] ?? '' ),
-                    'website'         => esc_url_raw( $tp_data['website'] ?? '' ),
-                    'address'         => sanitize_textarea_field( $tp_data['address'] ?? '' ),
-                    'notes'           => sanitize_textarea_field( $tp_data['notes'] ?? '' ),
-                    'is_active'       => (int) ( $tp_data['is_active'] ?? 1 ),
-                    'wp_user_id'      => $linked_user_id,
-                ];
-
-                if ( $new_logo_id ) {
-                    $tp_row['logo_id'] = $new_logo_id;
-                }
-
-                // Buscar si ya existe por document_id o full_name
-                $existing_tp_id = null;
-                if ( ! empty( $document_id ) ) {
-                    $existing_tp_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$tp_table} WHERE document_id = %s LIMIT 1", $document_id ) );
-                }
-                if ( ! $existing_tp_id ) {
-                    $existing_tp_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$tp_table} WHERE full_name = %s LIMIT 1", $full_name ) );
-                }
-
-                if ( $existing_tp_id ) {
-                    $tp_row['updated_at'] = current_time( 'mysql' );
-                    $wpdb->update( $tp_table, $tp_row, [ 'id' => (int) $existing_tp_id ] );
-                    $results['third_parties']['updated']++;
-                    $saved_tp_id = (int) $existing_tp_id;
-                } else {
-                    $tp_row['created_by'] = get_current_user_id() ?: 1;
-                    $tp_row['created_at'] = current_time( 'mysql' );
-                    $tp_row['updated_at'] = current_time( 'mysql' );
-                    $wpdb->insert( $tp_table, $tp_row );
-                    $saved_tp_id = (int) $wpdb->insert_id;
-                    $results['third_parties']['created']++;
-                }
-
-                // Sincronizar avatar con el usuario WP vinculado si existe
-                if ( $linked_user_id && $new_logo_id && class_exists( 'Aura_Third_Parties' ) ) {
-                    Aura_Third_Parties::sync_avatar_to_wp_user( $linked_user_id, $new_logo_id );
                 }
             }
+
+            // Limpieza de carpeta temporal
+            self::delete_dir( $extract_dir );
+            delete_transient( 'aura_bundle_' . $token );
+
+            wp_send_json_success( [
+                'results' => $results,
+                'message' => __( 'La importación del paquete multimedia se completó con éxito.', 'aura-suite' ),
+            ] );
+        } catch ( \Throwable $e ) {
+            if ( ! empty( $extract_dir ) && file_exists( $extract_dir ) ) {
+                self::delete_dir( $extract_dir );
+            }
+            wp_send_json_error( [
+                'message' => __( 'Error durante la importación: ', 'aura-suite' ) . $e->getMessage(),
+            ] );
         }
-
-        // Limpieza de carpeta temporal
-        self::delete_dir( $extract_dir );
-        delete_transient( 'aura_bundle_' . $token );
-
-        wp_send_json_success( [
-            'results' => $results,
-            'message' => __( 'La importación del paquete multimedia se completó con éxito.', 'aura-suite' ),
-        ] );
     }
 
     /**
@@ -625,41 +652,51 @@ class Aura_Portable_Bundle {
      * =========================================================================
      */
     private static function import_media_attachment( $rel_path, $extract_dir, $title = '' ) {
-        $source_file = $extract_dir . '/' . ltrim( $rel_path, '/\\' );
-        if ( ! file_exists( $source_file ) ) {
+        try {
+            $source_file = $extract_dir . '/' . ltrim( $rel_path, '/\\' );
+            if ( ! file_exists( $source_file ) ) {
+                return 0;
+            }
+
+            $upload_dir = wp_upload_dir();
+            $filename   = wp_basename( $source_file );
+            $unique_fn  = wp_unique_filename( $upload_dir['path'], $filename );
+            $dest_file  = $upload_dir['path'] . '/' . $unique_fn;
+
+            if ( ! @copy( $source_file, $dest_file ) ) {
+                return 0;
+            }
+
+            $wp_filetype = wp_check_filetype( $dest_file, null );
+            $attachment = [
+                'post_mime_type' => $wp_filetype['type'] ?: 'image/jpeg',
+                'post_title'     => $title ?: sanitize_file_name( pathinfo( $filename, PATHINFO_FILENAME ) ),
+                'post_content'   => '',
+                'post_status'    => 'inherit',
+                'guid'           => $upload_dir['url'] . '/' . $unique_fn,
+            ];
+
+            require_once ABSPATH . 'wp-admin/includes/image.php';
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            require_once ABSPATH . 'wp-admin/includes/media.php';
+
+            $attach_id = wp_insert_attachment( $attachment, $dest_file );
+            if ( ! is_wp_error( $attach_id ) && $attach_id > 0 ) {
+                try {
+                    $attach_data = wp_generate_attachment_metadata( $attach_id, $dest_file );
+                    if ( ! empty( $attach_data ) && ! is_wp_error( $attach_data ) ) {
+                        wp_update_attachment_metadata( $attach_id, $attach_data );
+                    }
+                } catch ( \Throwable $t ) {
+                    // Si falla la generación de miniaturas secundarias, el attachment principal se mantiene
+                }
+                return $attach_id;
+            }
+
+            return 0;
+        } catch ( \Throwable $e ) {
             return 0;
         }
-
-        $upload_dir = wp_upload_dir();
-        $filename   = wp_basename( $source_file );
-        $unique_fn  = wp_unique_filename( $upload_dir['path'], $filename );
-        $dest_file  = $upload_dir['path'] . '/' . $unique_fn;
-
-        if ( ! @copy( $source_file, $dest_file ) ) {
-            return 0;
-        }
-
-        $wp_filetype = wp_check_filetype( $dest_file, null );
-        $attachment = [
-            'post_mime_type' => $wp_filetype['type'] ?: 'image/jpeg',
-            'post_title'     => $title ?: sanitize_file_name( pathinfo( $filename, PATHINFO_FILENAME ) ),
-            'post_content'   => '',
-            'post_status'    => 'inherit',
-            'guid'           => $upload_dir['url'] . '/' . $unique_fn,
-        ];
-
-        require_once ABSPATH . 'wp-admin/includes/image.php';
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-        require_once ABSPATH . 'wp-admin/includes/media.php';
-
-        $attach_id = wp_insert_attachment( $attachment, $dest_file );
-        if ( ! is_wp_error( $attach_id ) && $attach_id > 0 ) {
-            $attach_data = wp_generate_attachment_metadata( $attach_id, $dest_file );
-            wp_update_attachment_metadata( $attach_id, $attach_data );
-            return $attach_id;
-        }
-
-        return 0;
     }
 
     /**
