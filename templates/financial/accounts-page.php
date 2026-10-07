@@ -59,8 +59,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-traspasos">
                     <span class="dashicons dashicons-randomize"></span> <?php _e('Traspasos', 'aura-suite'); ?>
                 </a>
-                <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-presupuestos">
-                    <span class="dashicons dashicons-chart-pie"></span> <?php _e('Presupuestos', 'aura-suite'); ?>
+                <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-divisas">
+                    <span class="dashicons dashicons-money-alt"></span> <?php _e('Cambio de Divisas', 'aura-suite'); ?>
                 </a>
                 <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-cajachica">
                     <span class="dashicons dashicons-money-alt"></span> <?php _e('Caja Chica', 'aura-suite'); ?>
@@ -68,11 +68,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-reembolsos">
                     <span class="dashicons dashicons-tickets-alt"></span> <?php _e('Reembolsos', 'aura-suite'); ?>
                 </a>
+                <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-presupuestos">
+                    <span class="dashicons dashicons-chart-pie"></span> <?php _e('Presupuestos', 'aura-suite'); ?>
+                </a>
                 <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-reportes">
                     <span class="dashicons dashicons-chart-bar"></span> <?php _e('Reportes y Cierre', 'aura-suite'); ?>
-                </a>
-                <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-divisas">
-                    <span class="dashicons dashicons-money-alt"></span> <?php _e('Cambio de Divisas y Auditoría', 'aura-suite'); ?>
                 </a>
             </div>
         </nav>
