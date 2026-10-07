@@ -56,6 +56,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <a href="#" class="aura-navbar-item aura-tab-btn active" data-tab="tab-cuentas">
                     <span class="dashicons dashicons-bank"></span> <?php _e('Cuentas Bancarias', 'aura-suite'); ?>
                 </a>
+                <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-traspasos">
+                    <span class="dashicons dashicons-randomize"></span> <?php _e('Traspasos', 'aura-suite'); ?>
+                </a>
                 <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-presupuestos">
                     <span class="dashicons dashicons-chart-pie"></span> <?php _e('Presupuestos', 'aura-suite'); ?>
                 </a>
@@ -86,6 +89,10 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <button type="button" class="btn btn-secondary btn-lift" id="aura-accounts-export-btn">
                             <span class="dashicons dashicons-download" style="vertical-align:middle;"></span>
                             <?php _e('Exportar CSV', 'aura-suite'); ?>
+                        </button>
+                        <button type="button" class="btn btn-teal btn-lift" id="aura-transfer-open-btn" style="background: #0d9488; color: #fff;">
+                            <span class="dashicons dashicons-randomize" style="vertical-align:middle;"></span>
+                            <?php _e('Nuevo Traspaso', 'aura-suite'); ?>
                         </button>
                         <button type="button" class="btn btn-indigo btn-lift" id="aura-exchange-open-btn">
                             <span class="dashicons dashicons-money-alt" style="vertical-align:middle;"></span>
@@ -176,6 +183,110 @@ if ( ! defined( 'ABSPATH' ) ) {
                             </tr>
                         </thead>
                         <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: Traspasos entre Cuentas -->
+            <div id="tab-traspasos" class="aura-tab-panel">
+                <div class="aura-card-head">
+                    <div>
+                        <h2 class="aura-title-with-help">
+                            <?php _e('Traspasos entre Cuentas y Fondeo de Caja', 'aura-suite'); ?>
+                            <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Transfiere fondos entre cuentas bancarias o fondea tu Caja Chica sin generar falsos gastos ni ingresos en el Estado de Resultados (P&L).', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button>
+                        </h2>
+                        <p style="margin: 4px 0 0; color: var(--aura-text-muted, #64748b); font-size: 13px;">
+                            <?php _e('Movimientos de capital entre cuentas propias: débito y crédito atómico con trazabilidad y soporte multimoneda.', 'aura-suite'); ?>
+                        </p>
+                    </div>
+                    <div class="aura-section-actions">
+                        <button type="button" class="btn btn-secondary btn-lift" id="aura-transfers-export-btn">
+                            <span class="dashicons dashicons-download" style="vertical-align:middle;"></span>
+                            <?php _e('Exportar CSV', 'aura-suite'); ?>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-transfer-new-btn" style="background:#0d9488;">
+                            <span class="dashicons dashicons-randomize" style="vertical-align:middle;"></span>
+                            <?php _e('Nuevo Traspaso', 'aura-suite'); ?>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPIs de Traspasos -->
+                <div class="aura-report-kpis aura-kpis-top-spacer">
+                    <div class="kpi-card kpi-indigo card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-randomize"></span></div>
+                        <span class="kpi-label"><?php _e('Total Traspasos', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-transfer-count">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Operaciones registradas', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-emerald card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-money-alt"></span></div>
+                        <span class="kpi-label"><?php _e('Volumen Transferido', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-transfer-volume" style="color:#10b981;">0.00</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Total movilizado', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-blue card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-vault"></span></div>
+                        <span class="kpi-label"><?php _e('Fondeos a Caja Chica', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-transfer-petty-cash" style="color:#0284c7;">0</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Aperturas / Recargas', 'aura-suite'); ?></div>
+                    </div>
+                    <div class="kpi-card kpi-amber card-lift">
+                        <div class="kpi-icon"><span class="dashicons dashicons-clock"></span></div>
+                        <span class="kpi-label"><?php _e('Último Traspaso', 'aura-suite'); ?></span>
+                        <div class="kpi-value"><strong id="aura-kpi-transfer-last-date" style="font-size:1.1rem; color:#f59e0b;">—</strong></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <span id="aura-kpi-transfer-last-folio"><?php _e('Sin movimientos', 'aura-suite'); ?></span></div>
+                    </div>
+                </div>
+
+                <!-- Filtros para Traspasos -->
+                <div class="aura-filters-bar" style="margin-top: 16px;">
+                    <div class="aura-filters-group" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <div class="input-group" style="min-width: 240px;">
+                            <span class="input-group-text">🔍</span>
+                            <input type="text" id="aura-transfers-search" class="form-control" placeholder="<?php esc_attr_e('Buscar por folio, notas o referencia...', 'aura-suite'); ?>">
+                        </div>
+                        <select id="aura-filter-transfer-source" class="form-control" style="width:auto;">
+                            <option value=""><?php _e('Todas las cuentas origen', 'aura-suite'); ?></option>
+                        </select>
+                        <select id="aura-filter-transfer-destination" class="form-control" style="width:auto;">
+                            <option value=""><?php _e('Todas las cuentas destino', 'aura-suite'); ?></option>
+                        </select>
+                        <select id="aura-filter-transfer-status" class="form-control" style="width:auto;">
+                            <option value=""><?php _e('Todos los estados', 'aura-suite'); ?></option>
+                            <option value="completed"><?php _e('Completados', 'aura-suite'); ?></option>
+                            <option value="cancelled"><?php _e('Anulados', 'aura-suite'); ?></option>
+                        </select>
+                        <button type="button" id="aura-transfers-refresh-btn" class="btn btn-secondary btn-lift" title="<?php esc_attr_e('Recargar historial', 'aura-suite'); ?>">
+                            <span class="dashicons dashicons-update" style="vertical-align: middle;"></span>
+                            <?php _e('Actualizar', 'aura-suite'); ?>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla de Historial de Traspasos -->
+                <div class="aura-dt-wrapper">
+                    <table class="dataTable display responsive nowrap aura-table-fullwidth" id="aura-transfers-table">
+                        <thead>
+                            <tr>
+                                <th><span class="dashicons dashicons-tag" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Folio / Fecha', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-arrow-up-alt" style="vertical-align:middle;margin-right:4px;color:#ef4444;"></span><?php _e('Cuenta Origen (Salida)', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Monto Salida', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-arrow-down-alt" style="vertical-align:middle;margin-right:4px;color:#10b981;"></span><?php _e('Cuenta Destino (Entrada)', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Monto Entrada', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-admin-users" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Usuario', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-edit" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Referencia / Notas', 'aura-suite'); ?></th>
+                                <th><span class="dashicons dashicons-flag" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Estado', 'aura-suite'); ?></th>
+                                <th class="aura-actions-col" style="text-align: right; width: 110px;"><span class="dashicons dashicons-admin-generic" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Acciones', 'aura-suite'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="aura-transfers-tbody">
+                            <tr>
+                                <td colspan="9" style="text-align: center; padding: 20px; color: var(--aura-text-muted, #888);">
+                                    <?php _e('Cargando historial de traspasos...', 'aura-suite'); ?>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -2099,6 +2210,178 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <span class="dashicons dashicons-saved" style="margin-right:4px;vertical-align:text-bottom;"></span>
                         <?php _e('Aplicar Pago y Contabilizar', 'aura-suite'); ?>
                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Traspaso entre Cuentas -->
+    <div id="aura-finance-transfer-modal" class="aura-modal-overlay" aria-hidden="true">
+        <div class="aura-modal-content aura-finance-modal__dialog--medium" role="dialog" aria-modal="true" aria-labelledby="aura-transfer-modal-title" style="max-width: 640px;">
+            <div class="aura-modal-header">
+                <div>
+                    <h2 id="aura-transfer-modal-title" class="aura-title-with-help">
+                        <span class="dashicons dashicons-randomize" style="margin-right: 6px; color: #0d9488;"></span>
+                        <?php _e('Nuevo Traspaso entre Cuentas', 'aura-suite'); ?>
+                    </h2>
+                    <p class="description" style="margin: 2px 0 0; font-size: 13px;">
+                        <?php _e('Mueve fondos entre cuentas bancarias o fondea tu Caja Chica sin generar falsos gastos ni alterar el P&L.', 'aura-suite'); ?>
+                    </p>
+                </div>
+                <button type="button" class="aura-modal-close" data-modal-close="aura-finance-transfer-modal" aria-label="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>">✕</button>
+            </div>
+            <form id="aura-transfer-form" class="aura-modal-body" style="padding-top: 16px;">
+                <!-- Callout explicativo -->
+                <div style="margin-bottom: 14px; padding: 10px 14px; border-radius: 8px; font-size: 12.5px; line-height: 1.5; background: rgba(13, 148, 136, 0.08); border: 1px solid rgba(13, 148, 136, 0.25); color: #0f766e;">
+                    <span class="dashicons dashicons-info" style="font-size: 16px; margin-right: 4px; vertical-align: text-bottom; color: #0d9488;"></span>
+                    <strong><?php _e('Movimiento de Tesorería Puro:', 'aura-suite'); ?></strong> <?php _e('Se debitará de la cuenta origen y se acreditará en la cuenta destino simultáneamente.', 'aura-suite'); ?>
+                </div>
+
+                <!-- Cuentas Origen y Destino -->
+                <div class="aura-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="aura-field">
+                        <label for="aura-transfer-source" class="aura-label">
+                            <strong style="color: #ef4444;">📤 <?php _e('Cuenta Origen (Salida) *', 'aura-suite'); ?></strong>
+                        </label>
+                        <select id="aura-transfer-source" name="source_account_id" class="aura-input aura-select" required>
+                            <option value=""><?php _e('Seleccione cuenta origen...', 'aura-suite'); ?></option>
+                        </select>
+                        <div id="aura-transfer-source-balance-tip" style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
+                            <?php _e('Saldo disponible:', 'aura-suite'); ?> <strong id="aura-transfer-source-balance">—</strong>
+                        </div>
+                    </div>
+                    <div class="aura-field">
+                        <label for="aura-transfer-target" class="aura-label">
+                            <strong style="color: #10b981;">📥 <?php _e('Cuenta Destino (Entrada) *', 'aura-suite'); ?></strong>
+                        </label>
+                        <select id="aura-transfer-target" name="destination_account_id" class="aura-input aura-select" required>
+                            <option value=""><?php _e('Seleccione cuenta destino...', 'aura-suite'); ?></option>
+                        </select>
+                        <div id="aura-transfer-target-balance-tip" style="font-size: 11.5px; color: #64748b; margin-top: 4px;">
+                            <?php _e('Saldo actual:', 'aura-suite'); ?> <strong id="aura-transfer-target-balance">—</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monto a Transferir y Monedas -->
+                <div class="aura-form-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="aura-field">
+                        <label for="aura-transfer-amount" class="aura-label">
+                            <strong><?php _e('Monto a Traspasar *', 'aura-suite'); ?> (<span id="aura-transfer-source-currency">—</span>)</strong>
+                        </label>
+                        <input type="number" id="aura-transfer-amount" name="amount" class="aura-input" step="0.01" min="0.01" placeholder="0.00" required style="font-size: 16px; font-weight: 700; height: 42px;">
+                    </div>
+                    <div class="aura-field">
+                        <label for="aura-transfer-date" class="aura-label">
+                            <strong>📅 <?php _e('Fecha de Operación *', 'aura-suite'); ?></strong>
+                        </label>
+                        <input type="date" id="aura-transfer-date" name="transfer_date" class="aura-input" value="<?php echo esc_attr( current_time('Y-m-d') ); ?>" required style="height: 42px;">
+                    </div>
+                </div>
+
+                <!-- Sección Conversión de Divisas (se muestra si monedas difieren) -->
+                <div id="aura-transfer-fx-box" style="display: none; margin-bottom: 14px; padding: 12px 14px; border-radius: 8px; background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.4);">
+                    <div style="font-size: 12.5px; font-weight: 700; color: #b45309; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <span class="dashicons dashicons-randomize"></span>
+                        <?php _e('Diferencia de Moneda Detectada (Conversión Automática)', 'aura-suite'); ?>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="aura-field">
+                            <label for="aura-transfer-exchange-rate" class="aura-label" style="font-size: 12px;">
+                                <strong><?php _e('Tipo / Tasa de Cambio', 'aura-suite'); ?></strong>
+                            </label>
+                            <input type="number" id="aura-transfer-exchange-rate" name="exchange_rate" class="aura-input" step="0.0001" min="0.0001" value="1.0000">
+                        </div>
+                        <div class="aura-field">
+                            <label for="aura-transfer-dest-amount" class="aura-label" style="font-size: 12px;">
+                                <strong><?php _e('Monto Recibido en Destino', 'aura-suite'); ?> (<span id="aura-transfer-dest-currency">—</span>)</strong>
+                            </label>
+                            <input type="number" id="aura-transfer-dest-amount" name="destination_amount" class="aura-input" step="0.01" min="0.01" style="font-weight: 700; background: rgba(0,0,0,0.03);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Referencia Bancaria y Notas -->
+                <div class="aura-field" style="margin-bottom: 12px;">
+                    <label for="aura-transfer-reference" class="aura-label">
+                        <strong><?php _e('Referencia / Folio Bancario (opcional)', 'aura-suite'); ?></strong>
+                    </label>
+                    <input type="text" id="aura-transfer-reference" name="reference" class="aura-input" placeholder="<?php esc_attr_e('Ej: SPEI-984321, Voucher 044, Ref Interna...', 'aura-suite'); ?>">
+                </div>
+
+                <div class="aura-field" style="margin-bottom: 14px;">
+                    <label for="aura-transfer-notes" class="aura-label">
+                        <strong><?php _e('Concepto o Notas del Traspaso', 'aura-suite'); ?></strong>
+                    </label>
+                    <textarea id="aura-transfer-notes" name="notes" class="aura-input" rows="2" placeholder="<?php esc_attr_e('Ej: Fondeo de Caja Chica semanal para gastos operativos menores, traspaso a cuenta de ahorros...', 'aura-suite'); ?>"></textarea>
+                </div>
+
+                <div class="aura-modal-footer aura-modal-footer-spaced aura-modal-footer-end" style="margin-top: 16px; padding: 0;">
+                    <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-transfer-modal"><?php _e('Cancelar', 'aura-suite'); ?></button>
+                    <button type="submit" class="btn btn-primary btn-shimmer btn-lift" id="aura-transfer-submit-btn" style="background:#0d9488;">
+                        <span class="dashicons dashicons-saved" style="margin-right: 4px; vertical-align: text-bottom;"></span>
+                        <?php _e('Ejecutar Traspaso', 'aura-suite'); ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detalle de Traspaso -->
+    <div id="aura-finance-transfer-detail-modal" class="aura-modal-overlay" aria-hidden="true">
+        <div class="aura-modal-content aura-finance-modal__dialog--medium" role="dialog" aria-modal="true" aria-labelledby="aura-transfer-detail-title" style="max-width: 600px;">
+            <div class="aura-modal-header">
+                <div>
+                    <h2 id="aura-transfer-detail-title" class="aura-title-with-help">
+                        <span class="dashicons dashicons-media-document" style="margin-right: 6px; color: #0d9488;"></span>
+                        <span id="aura-transfer-detail-code">TRF-XXXXXX</span>
+                    </h2>
+                    <p class="description" style="margin: 2px 0 0; font-size: 13px;">
+                        <?php _e('Comprobante y trazabilidad de movimiento entre cuentas.', 'aura-suite'); ?>
+                    </p>
+                </div>
+                <button type="button" class="aura-modal-close" data-modal-close="aura-finance-transfer-detail-modal" aria-label="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>">✕</button>
+            </div>
+            <div class="aura-modal-body" style="padding-top: 16px;" id="aura-transfer-detail-body">
+                <!-- Se inyecta dinámicamente con JS -->
+            </div>
+            <div class="aura-modal-footer aura-modal-footer-spaced">
+                <button type="button" class="btn btn-danger btn-lift" id="aura-transfer-detail-cancel-btn" style="display:none;">
+                    <span class="dashicons dashicons-undo" style="vertical-align:text-bottom;"></span>
+                    <?php _e('Anular este Traspaso', 'aura-suite'); ?>
+                </button>
+                <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-transfer-detail-modal" style="margin-left:auto;">
+                    <?php _e('Cerrar', 'aura-suite'); ?>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Anular Traspaso -->
+    <div id="aura-finance-transfer-cancel-modal" class="aura-modal-overlay" aria-hidden="true">
+        <div class="aura-modal-content aura-finance-modal__dialog--medium" role="dialog" aria-modal="true" aria-labelledby="aura-transfer-cancel-title" style="max-width: 500px;">
+            <div class="aura-modal-header">
+                <div>
+                    <h2 id="aura-transfer-cancel-title" class="aura-title-with-help" style="color: #dc2626;">
+                        <span class="dashicons dashicons-undo" style="margin-right: 6px;"></span>
+                        <?php _e('Anular Traspaso', 'aura-suite'); ?>
+                    </h2>
+                    <p class="description" style="margin: 2px 0 0; font-size: 13px;">
+                        <?php _e('Se devolverá el dinero a la cuenta de origen y se debitará de la cuenta de destino.', 'aura-suite'); ?>
+                    </p>
+                </div>
+                <button type="button" class="aura-modal-close" data-modal-close="aura-finance-transfer-cancel-modal" aria-label="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>">✕</button>
+            </div>
+            <form id="aura-transfer-cancel-form" class="aura-modal-body" style="padding-top: 16px;">
+                <input type="hidden" id="aura-transfer-cancel-id" name="id" value="0">
+                <div id="aura-transfer-cancel-summary" style="margin-bottom: 14px; padding: 10px 14px; border-radius: 8px; font-size: 12.5px; line-height: 1.5; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); color: #991b1b;"></div>
+                <div class="aura-field">
+                    <label for="aura-transfer-cancel-reason" class="aura-label"><strong style="color: #dc2626;"><?php _e('Motivo de la Anulación *', 'aura-suite'); ?></strong></label>
+                    <textarea id="aura-transfer-cancel-reason" class="aura-input" name="cancel_reason" rows="3" required placeholder="<?php esc_attr_e('Ej: Traspaso registrado por error, monto duplicado...', 'aura-suite'); ?>"></textarea>
+                </div>
+                <div class="aura-modal-footer aura-modal-footer-spaced aura-modal-footer-end" style="margin-top: 16px; padding: 0;">
+                    <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-transfer-cancel-modal"><?php _e('Cerrar', 'aura-suite'); ?></button>
+                    <button type="submit" class="btn btn-danger btn-shimmer btn-lift" id="aura-transfer-cancel-submit-btn"><?php _e('Confirmar y Revertir Saldos', 'aura-suite'); ?></button>
                 </div>
             </form>
         </div>

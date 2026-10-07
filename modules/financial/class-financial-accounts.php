@@ -68,6 +68,12 @@ class Aura_Financial_Accounts {
         add_action('wp_ajax_aura_finance_exchange_update', array(__CLASS__, 'ajax_update_exchange'));
         add_action('wp_ajax_aura_finance_exchange_revert', array(__CLASS__, 'ajax_revert_exchange'));
         add_action('wp_ajax_aura_finance_exchange_delete', array(__CLASS__, 'ajax_delete_exchange'));
+
+        // CRUD Traspasos entre Cuentas (Internal Transfers)
+        add_action('wp_ajax_aura_finance_transfers_list', array(__CLASS__, 'ajax_list_transfers'));
+        add_action('wp_ajax_aura_finance_transfers_save', array(__CLASS__, 'ajax_save_transfer'));
+        add_action('wp_ajax_aura_finance_transfers_get', array(__CLASS__, 'ajax_get_transfer'));
+        add_action('wp_ajax_aura_finance_transfers_cancel', array(__CLASS__, 'ajax_cancel_transfer'));
     }
 
     public static function maybe_install() {
@@ -82,6 +88,7 @@ class Aura_Financial_Accounts {
 
         self::migrate_settlements_phase3_columns();
         self::migrate_currency_exchanges_table();
+        self::migrate_transfers_table();
         self::migrate_usd_ledger_to_accounts();
         self::migrate_petty_cash_counterparty_model();
 
@@ -299,6 +306,45 @@ class Aura_Financial_Accounts {
             KEY idx_created_at (created_at)
         ) {$charset_collate};";
 
+        $currency_exchanges = $wpdb->prefix . 'aura_finance_currency_exchanges';
+        $transfers = $wpdb->prefix . 'aura_finance_transfers';
+
+        $sql_transfers = "CREATE TABLE {$transfers} (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            transfer_number VARCHAR(50) NOT NULL,
+            source_account_id BIGINT UNSIGNED NOT NULL,
+            destination_account_id BIGINT UNSIGNED NOT NULL,
+            amount DECIMAL(18,2) NOT NULL DEFAULT 0,
+            destination_amount DECIMAL(18,2) NOT NULL DEFAULT 0,
+            exchange_rate DECIMAL(12,4) NOT NULL DEFAULT 1.0000,
+            source_currency VARCHAR(10) NOT NULL DEFAULT 'MXN',
+            destination_currency VARCHAR(10) NOT NULL DEFAULT 'MXN',
+            source_old_balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+            source_new_balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+            destination_old_balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+            destination_new_balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+            transfer_date DATE NOT NULL,
+            reference_number VARCHAR(100) NULL,
+            notes TEXT NULL,
+            receipt_url VARCHAR(1024) NULL,
+            source_movement_id BIGINT UNSIGNED NULL,
+            destination_movement_id BIGINT UNSIGNED NULL,
+            status ENUM('completed', 'cancelled') NOT NULL DEFAULT 'completed',
+            cancel_reason TEXT NULL,
+            cancelled_by BIGINT UNSIGNED NULL,
+            cancelled_at DATETIME NULL,
+            created_by BIGINT UNSIGNED NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY uq_transfer_num (transfer_number),
+            KEY idx_source (source_account_id),
+            KEY idx_destination (destination_account_id),
+            KEY idx_date (transfer_date),
+            KEY idx_status (status),
+            KEY idx_created_by (created_by)
+        ) {$charset_collate};";
+
         dbDelta($sql_accounts);
         dbDelta($sql_movements);
         dbDelta($sql_settlements);
@@ -308,6 +354,7 @@ class Aura_Financial_Accounts {
         dbDelta($sql_budget_monthly);
         dbDelta($sql_petty_cash_expenses);
         dbDelta($sql_currency_exchanges);
+        dbDelta($sql_transfers);
     }
 
     private static function migrate_reimbursements_counterparty_model() {
@@ -797,6 +844,407 @@ class Aura_Financial_Accounts {
                     }
                 }
             }
+        }
+    }
+
+    public static function migrate_transfers_table() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_transfers';
+        $charset_collate = $wpdb->get_charset_collate();
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+        $sql = "CREATE TABLE {$table} (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            transfer_number VARCHAR(50) NOT NULL,
+            source_account_id BIGINT UNSIGNED NOT NULL,
+            destination_account_id BIGINT UNSIGNED NOT NULL,
+            amount DECIMAL(18,2) NOT NULL DEFAULT 0,
+            destination_amount DECIMAL(18,2) NOT NULL DEFAULT 0,
+            exchange_rate DECIMAL(12,4) NOT NULL DEFAULT 1.0000,
+            source_currency VARCHAR(10) NOT NULL DEFAULT 'MXN',
+            destination_currency VARCHAR(10) NOT NULL DEFAULT 'MXN',
+            source_old_balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+            source_new_balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+            destination_old_balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+            destination_new_balance DECIMAL(18,2) NOT NULL DEFAULT 0,
+            transfer_date DATE NOT NULL,
+            reference_number VARCHAR(100) NULL,
+            notes TEXT NULL,
+            receipt_url VARCHAR(1024) NULL,
+            source_movement_id BIGINT UNSIGNED NULL,
+            destination_movement_id BIGINT UNSIGNED NULL,
+            status ENUM('completed', 'cancelled') NOT NULL DEFAULT 'completed',
+            cancel_reason TEXT NULL,
+            cancelled_by BIGINT UNSIGNED NULL,
+            cancelled_at DATETIME NULL,
+            created_by BIGINT UNSIGNED NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY uq_transfer_num (transfer_number),
+            KEY idx_source (source_account_id),
+            KEY idx_destination (destination_account_id),
+            KEY idx_date (transfer_date),
+            KEY idx_status (status),
+            KEY idx_created_by (created_by)
+        ) {$charset_collate};";
+
+        dbDelta($sql);
+    }
+
+    public static function ajax_list_transfers() {
+        self::check_ajax_permissions();
+
+        global $wpdb;
+        self::migrate_transfers_table();
+
+        $table = $wpdb->prefix . 'aura_finance_transfers';
+        $accs  = $wpdb->prefix . 'aura_finance_accounts';
+        $users = $wpdb->users;
+
+        $rows = $wpdb->get_results(
+            "SELECT t.*,
+                    sa.name AS source_account_name,
+                    sa.account_type AS source_account_type,
+                    da.name AS destination_account_name,
+                    da.account_type AS destination_account_type,
+                    COALESCE(u.display_name, 'Sistema') AS creator_name
+             FROM {$table} t
+             LEFT JOIN {$accs} sa ON sa.id = t.source_account_id
+             LEFT JOIN {$accs} da ON da.id = t.destination_account_id
+             LEFT JOIN {$users} u ON u.ID = t.created_by
+             ORDER BY t.transfer_date DESC, t.id DESC
+             LIMIT 500",
+            ARRAY_A
+        );
+
+        wp_send_json_success(array('transfers' => $rows ?: array()));
+    }
+
+    public static function ajax_save_transfer() {
+        self::check_ajax_permissions();
+
+        global $wpdb;
+        self::migrate_transfers_table();
+
+        $accounts_table  = $wpdb->prefix . 'aura_finance_accounts';
+        $transfers_table = $wpdb->prefix . 'aura_finance_transfers';
+        $movements_table = $wpdb->prefix . 'aura_finance_account_movements';
+
+        $source_id          = isset($_POST['source_account_id']) ? absint($_POST['source_account_id']) : 0;
+        $destination_id     = isset($_POST['destination_account_id']) ? absint($_POST['destination_account_id']) : 0;
+        $amount             = isset($_POST['amount']) ? floatval($_POST['amount']) : 0;
+        $destination_amount = isset($_POST['destination_amount']) ? floatval($_POST['destination_amount']) : 0;
+        $exchange_rate      = isset($_POST['exchange_rate']) ? floatval($_POST['exchange_rate']) : 1.0;
+        $transfer_date      = !empty($_POST['transfer_date']) ? sanitize_text_field(wp_unslash($_POST['transfer_date'])) : current_time('Y-m-d');
+        $reference_number   = sanitize_text_field(wp_unslash($_POST['reference_number'] ?? ''));
+        $notes              = sanitize_textarea_field(wp_unslash($_POST['notes'] ?? ''));
+        $receipt_url        = esc_url_raw(wp_unslash($_POST['receipt_url'] ?? ''));
+
+        if ($source_id <= 0 || $destination_id <= 0) {
+            wp_send_json_error(array('message' => __('Debes seleccionar la cuenta de origen y de destino.', 'aura-suite')));
+        }
+
+        if ($source_id === $destination_id) {
+            wp_send_json_error(array('message' => __('La cuenta de origen y de destino no pueden ser la misma.', 'aura-suite')));
+        }
+
+        if ($amount <= 0) {
+            wp_send_json_error(array('message' => __('El monto a transferir debe ser mayor a cero.', 'aura-suite')));
+        }
+
+        $source_acc = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$accounts_table} WHERE id = %d AND is_active = 1", $source_id));
+        $dest_acc   = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$accounts_table} WHERE id = %d AND is_active = 1", $destination_id));
+
+        if (!$source_acc || !$dest_acc) {
+            wp_send_json_error(array('message' => __('Una de las cuentas seleccionadas no existe o está inactiva.', 'aura-suite')));
+        }
+
+        $source_curr = strtoupper((string) ($source_acc->currency ?: 'MXN'));
+        $dest_curr   = strtoupper((string) ($dest_acc->currency ?: 'MXN'));
+
+        // Si destino no especificó monto pero tienen la misma moneda, es 1:1
+        if ($destination_amount <= 0) {
+            if ($source_curr === $dest_curr) {
+                $destination_amount = $amount;
+                $exchange_rate = 1.0;
+            } elseif ($exchange_rate > 0) {
+                $destination_amount = round($amount * $exchange_rate, 2);
+            } else {
+                $destination_amount = $amount;
+            }
+        } else {
+            $exchange_rate = ($amount > 0) ? round($destination_amount / $amount, 4) : 1.0;
+        }
+
+        // Generar folio único correlativo TRF-YYYYMM-XXXX
+        $year_month = date('Ym', strtotime($transfer_date));
+        $count_month = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$transfers_table} WHERE transfer_number LIKE %s",
+            'TRF-' . $year_month . '-%'
+        ));
+        $seq = str_pad($count_month + 1, 4, '0', STR_PAD_LEFT);
+        $transfer_number = 'TRF-' . $year_month . '-' . $seq;
+
+        $user_id = get_current_user_id() ?: 1;
+
+        $wpdb->query('START TRANSACTION');
+
+        try {
+            $source_old = floatval($source_acc->current_balance);
+            $source_new = $source_old - $amount;
+
+            $dest_old = floatval($dest_acc->current_balance);
+            $dest_new = $dest_old + $destination_amount;
+
+            // Actualizar saldos atómicamente
+            $wpdb->update($accounts_table, array('current_balance' => $source_new, 'updated_at' => current_time('mysql')), array('id' => $source_id));
+            $wpdb->update($accounts_table, array('current_balance' => $dest_new, 'updated_at' => current_time('mysql')), array('id' => $destination_id));
+
+            // 1. Movimiento de salida (debit en origen)
+            $wpdb->insert($movements_table, array(
+                'account_id'     => $source_id,
+                'movement_type'  => 'transfer_out',
+                'amount'         => -$amount,
+                'currency'       => $source_curr,
+                'exchange_rate'  => $exchange_rate,
+                'reference_type' => 'manual',
+                'notes'          => sprintf(__('Traspaso hacia %s [Folio %s]. %s', 'aura-suite'), $dest_acc->name, $transfer_number, $notes),
+                'created_by'     => $user_id,
+                'created_at'     => current_time('mysql')
+            ));
+            $source_movement_id = (int) $wpdb->insert_id;
+
+            // 2. Movimiento de entrada (credit en destino)
+            $wpdb->insert($movements_table, array(
+                'account_id'     => $destination_id,
+                'movement_type'  => 'transfer_in',
+                'amount'         => $destination_amount,
+                'currency'       => $dest_curr,
+                'exchange_rate'  => $exchange_rate,
+                'reference_type' => 'manual',
+                'reference_id'   => $source_movement_id,
+                'notes'          => sprintf(__('Traspaso recibido desde %s [Folio %s]. %s', 'aura-suite'), $source_acc->name, $transfer_number, $notes),
+                'created_by'     => $user_id,
+                'created_at'     => current_time('mysql')
+            ));
+            $dest_movement_id = (int) $wpdb->insert_id;
+
+            // Enlazar salida con entrada
+            if ($source_movement_id && $dest_movement_id) {
+                $wpdb->update($movements_table, array('reference_id' => $dest_movement_id), array('id' => $source_movement_id));
+            }
+
+            // Registrar traspaso en tabla maestra
+            $wpdb->insert($transfers_table, array(
+                'transfer_number'        => $transfer_number,
+                'source_account_id'      => $source_id,
+                'destination_account_id' => $destination_id,
+                'amount'                 => $amount,
+                'destination_amount'     => $destination_amount,
+                'exchange_rate'          => $exchange_rate,
+                'source_currency'        => $source_curr,
+                'destination_currency'   => $dest_curr,
+                'source_old_balance'     => $source_old,
+                'source_new_balance'     => $source_new,
+                'destination_old_balance'=> $dest_old,
+                'destination_new_balance'=> $dest_new,
+                'transfer_date'          => $transfer_date,
+                'reference_number'       => $reference_number,
+                'notes'                  => $notes,
+                'receipt_url'            => $receipt_url,
+                'source_movement_id'     => $source_movement_id,
+                'destination_movement_id'=> $dest_movement_id,
+                'status'                 => 'completed',
+                'created_by'             => $user_id,
+                'created_at'             => current_time('mysql'),
+            ));
+            $transfer_id = (int) $wpdb->insert_id;
+
+            // Auditoría si existe
+            if (class_exists('Aura_Financial_Audit')) {
+                Aura_Financial_Audit::log_action(
+                    'account_transferred',
+                    'transfer',
+                    $transfer_id,
+                    array(
+                        'source_id'          => $source_id,
+                        'source_name'        => $source_acc->name,
+                        'destination_id'     => $destination_id,
+                        'destination_name'   => $dest_acc->name,
+                    ),
+                    array(
+                        'transfer_id'        => $transfer_id,
+                        'transfer_number'    => $transfer_number,
+                        'amount'             => $amount,
+                        'destination_amount' => $destination_amount,
+                        'notes'              => $notes
+                    )
+                );
+            }
+
+            $wpdb->query('COMMIT');
+
+            wp_send_json_success(array(
+                'message'            => sprintf(__('Traspaso %s completado exitosamente.', 'aura-suite'), $transfer_number),
+                'transfer_id'        => $transfer_id,
+                'transfer_number'    => $transfer_number,
+                'source_id'          => $source_id,
+                'source_new_balance' => $source_new,
+                'destination_id'     => $destination_id,
+                'destination_new_balance' => $dest_new,
+            ));
+        } catch (\Throwable $e) {
+            $wpdb->query('ROLLBACK');
+            wp_send_json_error(array('message' => __('Error al procesar el traspaso: ', 'aura-suite') . $e->getMessage()));
+        }
+    }
+
+    public static function ajax_get_transfer() {
+        self::check_ajax_permissions();
+
+        global $wpdb;
+        $id = isset($_POST['id']) ? absint($_POST['id']) : 0;
+        if ($id <= 0) {
+            wp_send_json_error(array('message' => __('ID inválido.', 'aura-suite')));
+        }
+
+        $table = $wpdb->prefix . 'aura_finance_transfers';
+        $accs  = $wpdb->prefix . 'aura_finance_accounts';
+        $users = $wpdb->users;
+
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT t.*,
+                    sa.name AS source_account_name,
+                    sa.account_type AS source_account_type,
+                    da.name AS destination_account_name,
+                    da.account_type AS destination_account_type,
+                    COALESCE(u.display_name, 'Sistema') AS creator_name,
+                    COALESCE(cu.display_name, 'Sistema') AS canceller_name
+             FROM {$table} t
+             LEFT JOIN {$accs} sa ON sa.id = t.source_account_id
+             LEFT JOIN {$accs} da ON da.id = t.destination_account_id
+             LEFT JOIN {$users} u ON u.ID = t.created_by
+             LEFT JOIN {$users} cu ON cu.ID = t.cancelled_by
+             WHERE t.id = %d",
+            $id
+        ), ARRAY_A);
+
+        if (!$row) {
+            wp_send_json_error(array('message' => __('Traspaso no encontrado.', 'aura-suite')));
+        }
+
+        wp_send_json_success(array('transfer' => $row));
+    }
+
+    public static function ajax_cancel_transfer() {
+        self::check_ajax_permissions();
+
+        global $wpdb;
+        $id     = isset($_POST['id']) ? absint($_POST['id']) : 0;
+        $reason = sanitize_textarea_field(wp_unslash($_POST['cancel_reason'] ?? ''));
+
+        if ($id <= 0) {
+            wp_send_json_error(array('message' => __('ID inválido.', 'aura-suite')));
+        }
+
+        if (empty($reason)) {
+            wp_send_json_error(array('message' => __('Debes indicar el motivo de la anulación.', 'aura-suite')));
+        }
+
+        $transfers_table = $wpdb->prefix . 'aura_finance_transfers';
+        $accounts_table  = $wpdb->prefix . 'aura_finance_accounts';
+        $movements_table = $wpdb->prefix . 'aura_finance_account_movements';
+
+        $transfer = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$transfers_table} WHERE id = %d", $id));
+
+        if (!$transfer) {
+            wp_send_json_error(array('message' => __('Traspaso no encontrado.', 'aura-suite')));
+        }
+
+        if ($transfer->status === 'cancelled') {
+            wp_send_json_error(array('message' => __('Este traspaso ya fue anulado previamente.', 'aura-suite')));
+        }
+
+        $source_id = (int) $transfer->source_account_id;
+        $dest_id   = (int) $transfer->destination_account_id;
+        $amount    = floatval($transfer->amount);
+        $dest_amt  = floatval($transfer->destination_amount);
+
+        $source_acc = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$accounts_table} WHERE id = %d", $source_id));
+        $dest_acc   = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$accounts_table} WHERE id = %d", $dest_id));
+
+        $user_id = get_current_user_id() ?: 1;
+
+        $wpdb->query('START TRANSACTION');
+
+        try {
+            // Revertir saldos: devolver monto a source y restar de dest
+            $source_restored = floatval($source_acc->current_balance) + $amount;
+            $dest_restored   = floatval($dest_acc->current_balance) - $dest_amt;
+
+            $wpdb->update($accounts_table, array('current_balance' => $source_restored, 'updated_at' => current_time('mysql')), array('id' => $source_id));
+            $wpdb->update($accounts_table, array('current_balance' => $dest_restored, 'updated_at' => current_time('mysql')), array('id' => $dest_id));
+
+            // Registrar movimientos de reversión/ajuste para trazabilidad contable
+            $wpdb->insert($movements_table, array(
+                'account_id'     => $source_id,
+                'movement_type'  => 'adjustment',
+                'amount'         => $amount,
+                'currency'       => $transfer->source_currency,
+                'reference_type' => 'manual',
+                'notes'          => sprintf(__('Reversión por anulación de traspaso %s. Motivo: %s', 'aura-suite'), $transfer->transfer_number, $reason),
+                'created_by'     => $user_id,
+                'created_at'     => current_time('mysql')
+            ));
+
+            $wpdb->insert($movements_table, array(
+                'account_id'     => $dest_id,
+                'movement_type'  => 'adjustment',
+                'amount'         => -$dest_amt,
+                'currency'       => $transfer->destination_currency,
+                'reference_type' => 'manual',
+                'notes'          => sprintf(__('Descuento por anulación de traspaso %s. Motivo: %s', 'aura-suite'), $transfer->transfer_number, $reason),
+                'created_by'     => $user_id,
+                'created_at'     => current_time('mysql')
+            ));
+
+            // Actualizar estado del traspaso a cancelled
+            $wpdb->update(
+                $transfers_table,
+                array(
+                    'status'           => 'cancelled',
+                    'cancel_reason'    => $reason,
+                    'cancelled_by'     => $user_id,
+                    'cancelled_at'     => current_time('mysql'),
+                    'updated_at'       => current_time('mysql')
+                ),
+                array('id' => $id)
+            );
+
+            // Log auditoría
+            if (class_exists('Aura_Financial_Audit')) {
+                Aura_Financial_Audit::log_action(
+                    'transfer_cancelled',
+                    'transfer',
+                    $id,
+                    array('status' => 'completed'),
+                    array('status' => 'cancelled', 'cancel_reason' => $reason)
+                );
+            }
+
+            $wpdb->query('COMMIT');
+
+            wp_send_json_success(array(
+                'message'                 => sprintf(__('El traspaso %s fue anulado y los saldos fueron reconstituidos.', 'aura-suite'), $transfer->transfer_number),
+                'source_id'               => $source_id,
+                'source_new_balance'      => $source_restored,
+                'destination_id'          => $dest_id,
+                'destination_new_balance' => $dest_restored
+            ));
+        } catch (\Throwable $e) {
+            $wpdb->query('ROLLBACK');
+            wp_send_json_error(array('message' => __('Error al anular el traspaso: ', 'aura-suite') . $e->getMessage()));
         }
     }
 

@@ -1009,6 +1009,7 @@ jQuery(function ($) {
             if (res && res.success) {
                 window.auraAccountsCache = res.data.accounts || [];
                 populateCurrencyFilter(window.auraAccountsCache);
+                populateTransferAccountsSelects(window.auraAccountsCache);
                 applyInitialFilters();
                 applyFilters();
                 return;
@@ -5554,6 +5555,533 @@ jQuery(function ($) {
         $('#aura-petty-guide-banner').slideUp(180);
     });
 
+    // =========================================================================
+    // MÓDULO EXCLUSIVO DE TRASPASOS ENTRE CUENTAS Y FONDEO DE CAJA CHICA
+    // =========================================================================
+    window.auraTransfersCache = [];
+
+    function populateTransferAccountsSelects(accountsList) {
+        const accounts = accountsList || window.auraAccountsCache || [];
+        const activeAccounts = accounts.filter(function (a) { return parseInt(a.is_active, 10) === 1; });
+
+        const buildOptions = function (placeholder) {
+            let html = '<option value="">' + placeholder + '</option>';
+            activeAccounts.forEach(function (acc) {
+                const balFormatted = formatNumber(acc.current_balance || 0);
+                const curr = String(acc.currency || 'COP').toUpperCase();
+                const typeName = typeLabel(acc.account_type);
+                html += '<option value="' + acc.id + '" data-currency="' + curr + '" data-balance="' + (acc.current_balance || 0) + '">' +
+                    escapeHtml(acc.name) + ' (' + curr + ' $' + balFormatted + ') — ' + escapeHtml(typeName) +
+                '</option>';
+            });
+            return html;
+        };
+
+        const currentSource = $('#aura-transfer-source').val();
+        const currentTarget = $('#aura-transfer-target').val();
+
+        $('#aura-transfer-source').html(buildOptions('Seleccione cuenta origen (salida)...'));
+        $('#aura-transfer-target').html(buildOptions('Seleccione cuenta destino (entrada)...'));
+
+        if (currentSource) { $('#aura-transfer-source').val(currentSource); }
+        if (currentTarget) { $('#aura-transfer-target').val(currentTarget); }
+
+        // Filtros en la tabla
+        let filterSrcHtml = '<option value="">Todas las cuentas origen</option>';
+        let filterDstHtml = '<option value="">Todas las cuentas destino</option>';
+        accounts.forEach(function (acc) {
+            filterSrcHtml += '<option value="' + acc.id + '">' + escapeHtml(acc.name) + '</option>';
+            filterDstHtml += '<option value="' + acc.id + '">' + escapeHtml(acc.name) + '</option>';
+        });
+        $('#aura-filter-transfer-source').html(filterSrcHtml);
+        $('#aura-filter-transfer-destination').html(filterDstHtml);
+    }
+
+    function updateTransferCurrenciesAndCalculations() {
+        const sourceId = $('#aura-transfer-source').val();
+        const targetId = $('#aura-transfer-target').val();
+        const accounts = window.auraAccountsCache || [];
+
+        const srcAccount = accounts.find(function (a) { return String(a.id) === String(sourceId); });
+        const dstAccount = accounts.find(function (a) { return String(a.id) === String(targetId); });
+
+        if (srcAccount) {
+            const srcCurr = String(srcAccount.currency || 'COP').toUpperCase();
+            $('#aura-transfer-source-currency').text(srcCurr);
+            $('#aura-transfer-source-balance').text(srcCurr + ' $' + formatNumber(srcAccount.current_balance || 0));
+        } else {
+            $('#aura-transfer-source-currency').text('—');
+            $('#aura-transfer-source-balance').text('—');
+        }
+
+        if (dstAccount) {
+            const dstCurr = String(dstAccount.currency || 'COP').toUpperCase();
+            $('#aura-transfer-dest-currency').text(dstCurr);
+            $('#aura-transfer-target-balance').text(dstCurr + ' $' + formatNumber(dstAccount.current_balance || 0));
+        } else {
+            $('#aura-transfer-dest-currency').text('—');
+            $('#aura-transfer-target-balance').text('—');
+        }
+
+        if (srcAccount && dstAccount) {
+            const srcCurr = String(srcAccount.currency || 'COP').toUpperCase();
+            const dstCurr = String(dstAccount.currency || 'COP').toUpperCase();
+
+            if (srcCurr !== dstCurr) {
+                $('#aura-transfer-fx-box').slideDown(150);
+                const rate = parseFloat($('#aura-transfer-exchange-rate').val()) || 1.0;
+                const amt = parseFloat($('#aura-transfer-amount').val()) || 0;
+                const destAmt = parseFloat((amt * rate).toFixed(2));
+                $('#aura-transfer-dest-amount').val(destAmt > 0 ? destAmt : '');
+            } else {
+                $('#aura-transfer-fx-box').slideUp(150);
+                $('#aura-transfer-exchange-rate').val('1.0000');
+                const amt = parseFloat($('#aura-transfer-amount').val()) || 0;
+                $('#aura-transfer-dest-amount').val(amt > 0 ? amt : '');
+            }
+        } else {
+            $('#aura-transfer-fx-box').slideUp(150);
+        }
+    }
+
+    $(document).on('change', '#aura-transfer-source, #aura-transfer-target', function () {
+        updateTransferCurrenciesAndCalculations();
+    });
+
+    $(document).on('input', '#aura-transfer-amount, #aura-transfer-exchange-rate', function () {
+        const sourceId = $('#aura-transfer-source').val();
+        const targetId = $('#aura-transfer-target').val();
+        const accounts = window.auraAccountsCache || [];
+        const srcAccount = accounts.find(function (a) { return String(a.id) === String(sourceId); });
+        const dstAccount = accounts.find(function (a) { return String(a.id) === String(targetId); });
+
+        if (srcAccount && dstAccount) {
+            const srcCurr = String(srcAccount.currency || 'COP').toUpperCase();
+            const dstCurr = String(dstAccount.currency || 'COP').toUpperCase();
+            const amt = parseFloat($('#aura-transfer-amount').val()) || 0;
+
+            if (srcCurr !== dstCurr) {
+                const rate = parseFloat($('#aura-transfer-exchange-rate').val()) || 1.0;
+                $('#aura-transfer-dest-amount').val(parseFloat((amt * rate).toFixed(2)) || '');
+            } else {
+                $('#aura-transfer-dest-amount').val(amt || '');
+            }
+        }
+    });
+
+    $(document).on('input', '#aura-transfer-dest-amount', function () {
+        const amt = parseFloat($('#aura-transfer-amount').val()) || 0;
+        const destAmt = parseFloat($('#aura-transfer-dest-amount').val()) || 0;
+        if (amt > 0 && destAmt > 0) {
+            $('#aura-transfer-exchange-rate').val((destAmt / amt).toFixed(4));
+        }
+    });
+
+    function openNewTransferModal(preselectedSourceId, preselectedTargetId) {
+        populateTransferAccountsSelects();
+        $('#aura-transfer-form')[0].reset();
+        $('#aura-transfer-date').val(new Date().toISOString().slice(0, 10));
+        $('#aura-transfer-exchange-rate').val('1.0000');
+        $('#aura-transfer-fx-box').hide();
+
+        if (preselectedSourceId) {
+            $('#aura-transfer-source').val(preselectedSourceId);
+        }
+        if (preselectedTargetId) {
+            $('#aura-transfer-target').val(preselectedTargetId);
+        }
+
+        updateTransferCurrenciesAndCalculations();
+        window.AuraUI.openModal('aura-finance-transfer-modal');
+    }
+
+    $(document).on('click', '#aura-transfer-open-btn, #aura-transfer-new-btn', function (e) {
+        e.preventDefault();
+        openNewTransferModal();
+    });
+
+    function loadTransfersList() {
+        const $tbody = $('#aura-transfers-tbody');
+        $tbody.html('<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>Cargando historial de traspasos...</td></tr>');
+
+        $.post(auraFinancialAccounts.ajaxUrl, {
+            action: 'aura_finance_transfers_list',
+            nonce: auraFinancialAccounts.nonce
+        }).done(function (res) {
+            if (res && res.success) {
+                window.auraTransfersCache = res.data.transfers || [];
+                updateTransfersKpis(window.auraTransfersCache);
+                applyTransferFilters();
+                return;
+            }
+            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">Error al cargar traspasos.</td></tr>');
+        }).fail(function () {
+            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">Error de comunicación con el servidor.</td></tr>');
+        });
+    }
+
+    function updateTransfersKpis(transfers) {
+        const list = transfers || [];
+        const completed = list.filter(function (t) { return t.status === 'completed'; });
+        
+        let totalCount = completed.length;
+        let totalVolume = 0;
+        let pettyCashCount = 0;
+
+        completed.forEach(function (t) {
+            totalVolume += parseFloat(t.amount || 0);
+            if (String(t.dest_account_type || '').toLowerCase().indexOf('petty_cash') !== -1 ||
+                String(t.dest_account_name || '').toLowerCase().indexOf('caja chica') !== -1) {
+                pettyCashCount++;
+            }
+        });
+
+        $('#aura-kpi-transfer-count').text(totalCount);
+        $('#aura-kpi-transfer-volume').text('$' + formatNumber(totalVolume));
+        $('#aura-kpi-transfer-petty-cash').text(pettyCashCount);
+
+        if (completed.length > 0) {
+            const first = completed[0];
+            $('#aura-kpi-transfer-last-date').text(first.transfer_date || '—');
+            $('#aura-kpi-transfer-last-folio').text(first.code || ('ID #' + first.id));
+        } else {
+            $('#aura-kpi-transfer-last-date').text('—');
+            $('#aura-kpi-transfer-last-folio').text('Sin movimientos');
+        }
+    }
+
+    function applyTransferFilters() {
+        const query = ($('#aura-transfers-search').val() || '').toLowerCase().trim();
+        const srcFilter = $('#aura-filter-transfer-source').val() || '';
+        const dstFilter = $('#aura-filter-transfer-destination').val() || '';
+        const statusFilter = $('#aura-filter-transfer-status').val() || '';
+        const list = window.auraTransfersCache || [];
+
+        const filtered = list.filter(function (t) {
+            if (srcFilter && String(t.source_account_id) !== String(srcFilter)) { return false; }
+            if (dstFilter && String(t.destination_account_id) !== String(dstFilter)) { return false; }
+            if (statusFilter && t.status !== statusFilter) { return false; }
+            if (query) {
+                const text = [
+                    t.code || '',
+                    t.source_account_name || '',
+                    t.dest_account_name || '',
+                    t.reference || '',
+                    t.notes || '',
+                    t.user_name || ''
+                ].join(' ').toLowerCase();
+                if (text.indexOf(query) === -1) { return false; }
+            }
+            return true;
+        });
+
+        renderTransfersTable(filtered);
+    }
+
+    function renderTransfersTable(transfers) {
+        const $tbody = $('#aura-transfers-tbody');
+        $tbody.empty();
+
+        if (!transfers || transfers.length === 0) {
+            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);">No se encontraron traspasos con los filtros aplicados.</td></tr>');
+            return;
+        }
+
+        transfers.forEach(function (t) {
+            const isCompleted = t.status === 'completed';
+            const statusBadgeHtml = isCompleted
+                ? '<span class="badge badge-emerald" style="display:inline-flex;align-items:center;gap:4px;"><span class="traffic-dot traffic-dot-success"></span> Completado</span>'
+                : '<span class="badge badge-rose" style="display:inline-flex;align-items:center;gap:4px;"><span class="traffic-dot traffic-dot-danger"></span> Anulado</span>';
+
+            const actionsHtml = '<div style="display:inline-flex;gap:6px;justify-content:flex-end;">' +
+                '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-transfer-action-view" data-id="' + t.id + '" title="Ver Detalle y Comprobante">' +
+                    '<span class="dashicons dashicons-visibility"></span>' +
+                '</button>' +
+                (isCompleted ? (
+                    '<button type="button" class="btn btn-sm btn-danger btn-lift aura-transfer-action-cancel" data-id="' + t.id + '" title="Anular Traspaso">' +
+                        '<span class="dashicons dashicons-undo"></span>' +
+                    '</button>'
+                ) : '') +
+            '</div>';
+
+            const srcAmtFormatted = String(t.source_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.amount || 0);
+            const dstAmtFormatted = String(t.destination_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.destination_amount || t.amount || 0);
+
+            const row = '<tr class="table-row-hover-lift">' +
+                '<td>' +
+                    '<strong style="color:var(--aura-text-heading,#0f172a);font-family:monospace;font-size:12.5px;">' + escapeHtml(t.code || ('TRF-#' + t.id)) + '</strong>' +
+                    '<small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(t.transfer_date || '') + '</small>' +
+                '</td>' +
+                '<td>' +
+                    '<strong style="color:#ef4444;"><span class="dashicons dashicons-arrow-up-alt" style="font-size:14px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(t.source_account_name || 'Cuenta #' + t.source_account_id) + '</strong>' +
+                '</td>' +
+                '<td><strong style="color:#ef4444;font-size:13px;">' + escapeHtml(srcAmtFormatted) + '</strong></td>' +
+                '<td>' +
+                    '<strong style="color:#10b981;"><span class="dashicons dashicons-arrow-down-alt" style="font-size:14px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(t.dest_account_name || 'Cuenta #' + t.destination_account_id) + '</strong>' +
+                '</td>' +
+                '<td><strong style="color:#10b981;font-size:13px;">' + escapeHtml(dstAmtFormatted) + '</strong></td>' +
+                '<td><small style="color:var(--aura-text-main,#334155);">' + escapeHtml(t.user_name || 'Sistema') + '</small></td>' +
+                '<td>' +
+                    (t.reference ? ('<code style="font-size:11px;background:rgba(0,0,0,0.04);padding:1px 4px;border-radius:4px;display:inline-block;margin-bottom:2px;">' + escapeHtml(t.reference) + '</code><br>') : '') +
+                    '<small style="color:var(--aura-text-muted,#64748b);">' + escapeHtml(t.notes || 'Sin notas') + '</small>' +
+                '</td>' +
+                '<td>' + statusBadgeHtml + '</td>' +
+                '<td style="text-align:right;">' + actionsHtml + '</td>' +
+            '</tr>';
+
+            $tbody.append(row);
+        });
+    }
+
+    $(document).on('input', '#aura-transfers-search', applyTransferFilters);
+    $(document).on('change', '#aura-filter-transfer-source, #aura-filter-transfer-destination, #aura-filter-transfer-status', applyTransferFilters);
+    $(document).on('click', '#aura-transfers-refresh-btn', function () {
+        loadTransfersList();
+    });
+
+    // Guardar nuevo traspaso
+    $('#aura-transfer-form').on('submit', function (e) {
+        e.preventDefault();
+        const $submitBtn = $('#aura-transfer-submit-btn');
+        const sourceId = $('#aura-transfer-source').val();
+        const targetId = $('#aura-transfer-target').val();
+        const amount = parseFloat($('#aura-transfer-amount').val()) || 0;
+
+        if (!sourceId || !targetId) {
+            showFeedback('Debes seleccionar cuenta origen y cuenta destino.', false);
+            return;
+        }
+        if (String(sourceId) === String(targetId)) {
+            showFeedback('La cuenta origen y destino deben ser distintas.', false);
+            return;
+        }
+        if (amount <= 0) {
+            showFeedback('El monto a transferir debe ser mayor a 0.', false);
+            return;
+        }
+
+        $submitBtn.prop('disabled', true).text('Ejecutando...');
+
+        const formData = {
+            action: 'aura_finance_transfers_save',
+            nonce: auraFinancialAccounts.nonce,
+            source_account_id: sourceId,
+            destination_account_id: targetId,
+            amount: amount,
+            transfer_date: $('#aura-transfer-date').val(),
+            exchange_rate: $('#aura-transfer-exchange-rate').val(),
+            destination_amount: $('#aura-transfer-dest-amount').val(),
+            reference: $('#aura-transfer-reference').val(),
+            notes: $('#aura-transfer-notes').val()
+        };
+
+        $.post(auraFinancialAccounts.ajaxUrl, formData)
+            .done(function (res) {
+                if (res && res.success) {
+                    showFeedback((res.data && res.data.message) || 'Traspaso ejecutado correctamente.', true);
+                    window.AuraUI.closeModal('aura-finance-transfer-modal');
+                    loadAccounts();
+                    loadTransfersList();
+                    return;
+                }
+                showFeedback((res && res.data && res.data.message) || 'Error al ejecutar el traspaso.', false);
+            })
+            .fail(function () {
+                showFeedback('Error de comunicación con el servidor.', false);
+            })
+            .always(function () {
+                $submitBtn.prop('disabled', false).html('<span class="dashicons dashicons-saved" style="margin-right:4px;vertical-align:text-bottom;"></span>Ejecutar Traspaso');
+            });
+    });
+
+    // Ver Detalle de Traspaso
+    $(document).on('click', '.aura-transfer-action-view', function () {
+        const id = $(this).data('id');
+        const $body = $('#aura-transfer-detail-body');
+        const $code = $('#aura-transfer-detail-code');
+        const $cancelBtn = $('#aura-transfer-detail-cancel-btn');
+
+        $code.text('Cargando...');
+        $body.html('<div style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>Consultando trazabilidad...</div>');
+        $cancelBtn.hide();
+
+        window.AuraUI.openModal('aura-finance-transfer-detail-modal');
+
+        $.post(auraFinancialAccounts.ajaxUrl, {
+            action: 'aura_finance_transfers_get',
+            nonce: auraFinancialAccounts.nonce,
+            id: id
+        }).done(function (res) {
+            if (!res || !res.success || !res.data || !res.data.transfer) {
+                $body.html('<div style="text-align:center;padding:20px;color:#dc2626;">No se encontró la información del traspaso.</div>');
+                return;
+            }
+
+            const t = res.data.transfer;
+            $code.text(t.code || ('TRF-#' + t.id));
+
+            const isCompleted = t.status === 'completed';
+            if (isCompleted) {
+                $cancelBtn.show().data('id', t.id);
+            }
+
+            const srcAmt = String(t.source_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.amount || 0);
+            const dstAmt = String(t.destination_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.destination_amount || t.amount || 0);
+
+            let html = '<div style="margin-bottom:16px;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid #e2e8f0;">' +
+                    '<div>' +
+                        '<span class="badge ' + (isCompleted ? 'badge-emerald' : 'badge-rose') + '" style="font-size:12px;font-weight:700;">' +
+                            (isCompleted ? '● Traspaso Completado' : '✕ Traspaso Anulado') +
+                        '</span>' +
+                    '</div>' +
+                    '<div style="font-size:13px;color:#64748b;">📅 ' + escapeHtml(t.transfer_date) + '</div>' +
+                '</div>' +
+            '</div>';
+
+            html += '<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:18px;background:rgba(0,0,0,0.02);padding:14px;border-radius:10px;border:1px solid #e2e8f0;">' +
+                '<div style="text-align:center;">' +
+                    '<div style="font-size:11px;color:#ef4444;font-weight:700;text-transform:uppercase;">Origen (Salida)</div>' +
+                    '<div style="font-weight:700;color:#0f172a;font-size:13.5px;margin:4px 0;">' + escapeHtml(t.source_account_name) + '</div>' +
+                    '<div style="color:#ef4444;font-weight:800;font-size:15px;">-' + escapeHtml(srcAmt) + '</div>' +
+                    '<div style="font-size:11px;color:#64748b;margin-top:4px;">Saldo ant: $' + formatNumber(t.source_balance_before) + '<br>Nuevo: $' + formatNumber(t.source_balance_after) + '</div>' +
+                '</div>' +
+                '<div style="text-align:center;color:#0d9488;font-size:24px;">➔</div>' +
+                '<div style="text-align:center;">' +
+                    '<div style="font-size:11px;color:#10b981;font-weight:700;text-transform:uppercase;">Destino (Entrada)</div>' +
+                    '<div style="font-weight:700;color:#0f172a;font-size:13.5px;margin:4px 0;">' + escapeHtml(t.dest_account_name) + '</div>' +
+                    '<div style="color:#10b981;font-weight:800;font-size:15px;">+' + escapeHtml(dstAmt) + '</div>' +
+                    '<div style="font-size:11px;color:#64748b;margin-top:4px;">Saldo ant: $' + formatNumber(t.destination_balance_before) + '<br>Nuevo: $' + formatNumber(t.destination_balance_after) + '</div>' +
+                '</div>' +
+            '</div>';
+
+            if (parseFloat(t.exchange_rate) !== 1.0) {
+                html += '<div style="font-size:12px;color:#b45309;background:rgba(245,158,11,0.08);padding:8px 12px;border-radius:6px;margin-bottom:14px;">' +
+                    '💱 <strong>Conversión aplicada:</strong> Tasa ' + parseFloat(t.exchange_rate).toFixed(4) +
+                '</div>';
+            }
+
+            html += '<div style="font-size:12.5px;line-height:1.6;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">' +
+                '<div><strong>Registrado por:</strong> ' + escapeHtml(t.user_name || 'Sistema') + '</div>' +
+                '<div><strong>Referencia bancaria:</strong> ' + escapeHtml(t.reference || 'Ninguna') + '</div>' +
+            '</div>';
+
+            if (t.notes) {
+                html += '<div style="font-size:12.5px;line-height:1.5;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:12px;">' +
+                    '<strong>Notas / Concepto:</strong> ' + escapeHtml(t.notes) +
+                '</div>';
+            }
+
+            if (!isCompleted && t.cancel_reason) {
+                html += '<div style="font-size:12.5px;line-height:1.5;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#991b1b;padding:10px 12px;border-radius:6px;">' +
+                    '<strong>Motivo de anulación:</strong> ' + escapeHtml(t.cancel_reason) + '<br>' +
+                    '<small>Anulado el: ' + escapeHtml(t.cancelled_at) + '</small>' +
+                '</div>';
+            }
+
+            $body.html(html);
+        }).fail(function () {
+            $body.html('<div style="text-align:center;padding:20px;color:#dc2626;">Error al cargar la información del traspaso.</div>');
+        });
+    });
+
+    // Abrir modal de anulación
+    $(document).on('click', '.aura-transfer-action-cancel, #aura-transfer-detail-cancel-btn', function () {
+        const id = $(this).data('id');
+        const list = window.auraTransfersCache || [];
+        const t = list.find(function (x) { return String(x.id) === String(id); });
+
+        $('#aura-transfer-cancel-id').val(id);
+        $('#aura-transfer-cancel-reason').val('');
+
+        let summaryText = 'Se anulará el traspaso <strong>#' + id + '</strong>. Los fondos volverán a su estado anterior.';
+        if (t) {
+            summaryText = 'Se anulará el folio <strong>' + escapeHtml(t.code || ('TRF-#' + t.id)) + '</strong> por valor de <strong>$' + formatNumber(t.amount) + '</strong>.<br>' +
+                'Se reembolsarán a <strong>' + escapeHtml(t.source_account_name) + '</strong> y se descontarán de <strong>' + escapeHtml(t.dest_account_name) + '</strong>.';
+        }
+        $('#aura-transfer-cancel-summary').html(summaryText);
+
+        window.AuraUI.closeModal('aura-finance-transfer-detail-modal');
+        window.AuraUI.openModal('aura-finance-transfer-cancel-modal');
+    });
+
+    // Confirmar anulación de traspaso
+    $('#aura-transfer-cancel-form').on('submit', function (e) {
+        e.preventDefault();
+        const $submitBtn = $('#aura-transfer-cancel-submit-btn');
+        const id = $('#aura-transfer-cancel-id').val();
+        const reason = $('#aura-transfer-cancel-reason').val();
+
+        if (!reason.trim()) {
+            showFeedback('Indica el motivo de la anulación.', false);
+            return;
+        }
+
+        $submitBtn.prop('disabled', true).text('Revirtiendo...');
+
+        $.post(auraFinancialAccounts.ajaxUrl, {
+            action: 'aura_finance_transfers_cancel',
+            nonce: auraFinancialAccounts.nonce,
+            id: id,
+            cancel_reason: reason
+        }).done(function (res) {
+            if (res && res.success) {
+                showFeedback((res.data && res.data.message) || 'Traspaso anulado y saldos revertidos con éxito.', true);
+                window.AuraUI.closeModal('aura-finance-transfer-cancel-modal');
+                loadAccounts();
+                loadTransfersList();
+                return;
+            }
+            showFeedback((res && res.data && res.data.message) || 'Error al anular el traspaso.', false);
+        }).fail(function () {
+            showFeedback('Error de comunicación con el servidor.', false);
+        }).always(function () {
+            $submitBtn.prop('disabled', false).text('Confirmar y Revertir Saldos');
+        });
+    });
+
+    // Exportar CSV de Traspasos
+    $('#aura-transfers-export-btn').on('click', function () {
+        const list = window.auraTransfersCache || [];
+        if (!list.length) {
+            alert('No hay traspasos para exportar.');
+            return;
+        }
+
+        let csv = 'Folio,Fecha,Cuenta Origen,Monto Salida,Moneda Origen,Cuenta Destino,Monto Entrada,Moneda Destino,Tasa,Usuario,Referencia,Notas,Estado\n';
+        list.forEach(function (t) {
+            csv += [
+                '"' + (t.code || '') + '"',
+                '"' + (t.transfer_date || '') + '"',
+                '"' + (t.source_account_name || '').replace(/"/g, '""') + '"',
+                parseFloat(t.amount || 0),
+                '"' + (t.source_currency || '') + '"',
+                '"' + (t.dest_account_name || '').replace(/"/g, '""') + '"',
+                parseFloat(t.destination_amount || t.amount || 0),
+                '"' + (t.destination_currency || '') + '"',
+                parseFloat(t.exchange_rate || 1),
+                '"' + (t.user_name || '').replace(/"/g, '""') + '"',
+                '"' + (t.reference || '').replace(/"/g, '""') + '"',
+                '"' + (t.notes || '').replace(/"/g, '""') + '"',
+                '"' + (t.status || '') + '"'
+            ].join(',') + '\n';
+        });
+
+        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'traspasos-cuentas-' + new Date().toISOString().slice(0, 10) + '.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    $(document).on('click', '.aura-tab-btn[data-tab="tab-traspasos"]', function () {
+        loadTransfersList();
+    });
+
     resetForm();
     updateBudgetOverview();
     resetPettyForm();
@@ -5565,5 +6093,7 @@ jQuery(function ($) {
     loadReports();
     loadBudgetByYear();
     loadExchangeHistory();
+    loadTransfersList();
 });
+
 
