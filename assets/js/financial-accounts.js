@@ -5597,6 +5597,13 @@ jQuery(function ($) {
         $('#aura-filter-transfer-destination').html(filterDstHtml);
     }
 
+    function updateRateText(srcCurr, dstCurr, rate) {
+        $('#aura-transfer-rate-text').html(
+            '<span class="dashicons dashicons-randomize" style="color:#b45309;font-size:16px;vertical-align:text-bottom;"></span> ' +
+            '<span>Conversión multimoneda: <strong>1 ' + escapeHtml(srcCurr) + ' = ' + rate.toFixed(4) + ' ' + escapeHtml(dstCurr) + '</strong></span>'
+        );
+    }
+
     function updateTransferCurrenciesAndCalculations() {
         const sourceId = $('#aura-transfer-source').val();
         const targetId = $('#aura-transfer-target').val();
@@ -5605,42 +5612,77 @@ jQuery(function ($) {
         const srcAccount = accounts.find(function (a) { return String(a.id) === String(sourceId); });
         const dstAccount = accounts.find(function (a) { return String(a.id) === String(targetId); });
 
+        const srcCurr = srcAccount ? String(srcAccount.currency || 'COP').toUpperCase() : '—';
+        const dstCurr = dstAccount ? String(dstAccount.currency || 'COP').toUpperCase() : '—';
+
+        $('#aura-transfer-source-currency-badge, #aura-transfer-source-currency-addon').text(srcCurr);
+        $('#aura-transfer-dest-currency-badge, #aura-transfer-dest-currency-addon').text(dstCurr);
+
         if (srcAccount) {
-            const srcCurr = String(srcAccount.currency || 'COP').toUpperCase();
-            $('#aura-transfer-source-currency').text(srcCurr);
             $('#aura-transfer-source-balance').text(srcCurr + ' $' + formatNumber(srcAccount.current_balance || 0));
         } else {
-            $('#aura-transfer-source-currency').text('—');
             $('#aura-transfer-source-balance').text('—');
         }
 
         if (dstAccount) {
-            const dstCurr = String(dstAccount.currency || 'COP').toUpperCase();
-            $('#aura-transfer-dest-currency').text(dstCurr);
             $('#aura-transfer-target-balance').text(dstCurr + ' $' + formatNumber(dstAccount.current_balance || 0));
         } else {
-            $('#aura-transfer-dest-currency').text('—');
             $('#aura-transfer-target-balance').text('—');
         }
 
-        if (srcAccount && dstAccount) {
-            const srcCurr = String(srcAccount.currency || 'COP').toUpperCase();
-            const dstCurr = String(dstAccount.currency || 'COP').toUpperCase();
+        const $rateBox = $('#aura-transfer-rate-box');
+        const $customRateBox = $('#aura-transfer-fx-rate-custom');
 
-            if (srcCurr !== dstCurr) {
-                $('#aura-transfer-fx-box').slideDown(150);
-                const rate = parseFloat($('#aura-transfer-exchange-rate').val()) || 1.0;
-                const amt = parseFloat($('#aura-transfer-amount').val()) || 0;
-                const destAmt = parseFloat((amt * rate).toFixed(2));
-                $('#aura-transfer-dest-amount').val(destAmt > 0 ? destAmt : '');
-            } else {
-                $('#aura-transfer-fx-box').slideUp(150);
+        if (srcAccount && dstAccount) {
+            if (srcCurr === dstCurr) {
+                // Misma moneda: sincronización 1 a 1
+                $rateBox.css({
+                    'background': 'rgba(16, 185, 129, 0.06)',
+                    'border-color': 'rgba(16, 185, 129, 0.3)'
+                });
+                $('#aura-transfer-rate-text').html(
+                    '<span class="dashicons dashicons-yes-alt" style="color:#10b981;font-size:16px;vertical-align:text-bottom;"></span> ' +
+                    '<span>Misma moneda (<strong>' + escapeHtml(srcCurr) + '</strong>): montos sincronizados 1 a 1 automáticamente.</span>'
+                );
+                $customRateBox.hide();
                 $('#aura-transfer-exchange-rate').val('1.0000');
-                const amt = parseFloat($('#aura-transfer-amount').val()) || 0;
-                $('#aura-transfer-dest-amount').val(amt > 0 ? amt : '');
+
+                const srcVal = $('#aura-transfer-amount').val();
+                if (srcVal) {
+                    $('#aura-transfer-dest-amount').val(srcVal);
+                }
+            } else {
+                // Monedas distintas: cálculo inteligente de tasa y conversión
+                $rateBox.css({
+                    'background': 'rgba(245, 158, 11, 0.08)',
+                    'border-color': 'rgba(245, 158, 11, 0.4)'
+                });
+                $customRateBox.css('display', 'inline-flex');
+
+                const srcAmt = parseFloat($('#aura-transfer-amount').val()) || 0;
+                let destAmt = parseFloat($('#aura-transfer-dest-amount').val()) || 0;
+                let rate = parseFloat($('#aura-transfer-exchange-rate').val()) || 1.0;
+
+                if (srcAmt > 0 && destAmt > 0) {
+                    rate = destAmt / srcAmt;
+                    $('#aura-transfer-exchange-rate').val(rate.toFixed(4));
+                } else if (srcAmt > 0) {
+                    destAmt = parseFloat((srcAmt * rate).toFixed(2));
+                    $('#aura-transfer-dest-amount').val(destAmt > 0 ? destAmt : '');
+                }
+
+                updateRateText(srcCurr, dstCurr, rate);
             }
         } else {
-            $('#aura-transfer-fx-box').slideUp(150);
+            $rateBox.css({
+                'background': 'rgba(0,0,0,0.02)',
+                'border-color': '#e2e8f0'
+            });
+            $('#aura-transfer-rate-text').html(
+                '<span class="dashicons dashicons-info" style="color:#64748b;font-size:16px;vertical-align:text-bottom;"></span> ' +
+                '<span>Selecciona cuenta de origen y destino para verificar monedas.</span>'
+            );
+            $customRateBox.hide();
         }
     }
 
@@ -5648,32 +5690,81 @@ jQuery(function ($) {
         updateTransferCurrenciesAndCalculations();
     });
 
-    $(document).on('input', '#aura-transfer-amount, #aura-transfer-exchange-rate', function () {
+    // Entrada en monto de salida (Origen)
+    $(document).on('input', '#aura-transfer-amount', function () {
         const sourceId = $('#aura-transfer-source').val();
         const targetId = $('#aura-transfer-target').val();
         const accounts = window.auraAccountsCache || [];
         const srcAccount = accounts.find(function (a) { return String(a.id) === String(sourceId); });
         const dstAccount = accounts.find(function (a) { return String(a.id) === String(targetId); });
 
-        if (srcAccount && dstAccount) {
-            const srcCurr = String(srcAccount.currency || 'COP').toUpperCase();
-            const dstCurr = String(dstAccount.currency || 'COP').toUpperCase();
-            const amt = parseFloat($('#aura-transfer-amount').val()) || 0;
+        const srcCurr = srcAccount ? String(srcAccount.currency || 'COP').toUpperCase() : '';
+        const dstCurr = dstAccount ? String(dstAccount.currency || 'COP').toUpperCase() : '';
+        const srcAmt = parseFloat($(this).val()) || 0;
 
-            if (srcCurr !== dstCurr) {
-                const rate = parseFloat($('#aura-transfer-exchange-rate').val()) || 1.0;
-                $('#aura-transfer-dest-amount').val(parseFloat((amt * rate).toFixed(2)) || '');
+        if (srcCurr && dstCurr) {
+            if (srcCurr === dstCurr) {
+                // Sincronización directa 1 a 1
+                $('#aura-transfer-dest-amount').val($(this).val());
             } else {
-                $('#aura-transfer-dest-amount').val(amt || '');
+                // Conversión con tasa actual
+                const rate = parseFloat($('#aura-transfer-exchange-rate').val()) || 1.0;
+                if (srcAmt > 0) {
+                    $('#aura-transfer-dest-amount').val((srcAmt * rate).toFixed(2));
+                    updateRateText(srcCurr, dstCurr, rate);
+                } else {
+                    $('#aura-transfer-dest-amount').val('');
+                }
             }
         }
     });
 
+    // Entrada en monto recibido (Destino)
     $(document).on('input', '#aura-transfer-dest-amount', function () {
-        const amt = parseFloat($('#aura-transfer-amount').val()) || 0;
-        const destAmt = parseFloat($('#aura-transfer-dest-amount').val()) || 0;
-        if (amt > 0 && destAmt > 0) {
-            $('#aura-transfer-exchange-rate').val((destAmt / amt).toFixed(4));
+        const sourceId = $('#aura-transfer-source').val();
+        const targetId = $('#aura-transfer-target').val();
+        const accounts = window.auraAccountsCache || [];
+        const srcAccount = accounts.find(function (a) { return String(a.id) === String(sourceId); });
+        const dstAccount = accounts.find(function (a) { return String(a.id) === String(targetId); });
+
+        const srcCurr = srcAccount ? String(srcAccount.currency || 'COP').toUpperCase() : '';
+        const dstCurr = dstAccount ? String(dstAccount.currency || 'COP').toUpperCase() : '';
+        const destAmt = parseFloat($(this).val()) || 0;
+        const srcAmt = parseFloat($('#aura-transfer-amount').val()) || 0;
+
+        if (srcCurr && dstCurr) {
+            if (srcCurr === dstCurr) {
+                // Sincronización directa 1 a 1
+                $('#aura-transfer-amount').val($(this).val());
+            } else {
+                // Si el usuario escribe ambos montos, deduce la tasa implícita exacta
+                if (srcAmt > 0 && destAmt > 0) {
+                    const rate = destAmt / srcAmt;
+                    $('#aura-transfer-exchange-rate').val(rate.toFixed(4));
+                    updateRateText(srcCurr, dstCurr, rate);
+                }
+            }
+        }
+    });
+
+    // Ajuste manual de la tasa de cambio
+    $(document).on('input', '#aura-transfer-exchange-rate', function () {
+        const sourceId = $('#aura-transfer-source').val();
+        const targetId = $('#aura-transfer-target').val();
+        const accounts = window.auraAccountsCache || [];
+        const srcAccount = accounts.find(function (a) { return String(a.id) === String(sourceId); });
+        const dstAccount = accounts.find(function (a) { return String(a.id) === String(targetId); });
+
+        const srcCurr = srcAccount ? String(srcAccount.currency || 'COP').toUpperCase() : '';
+        const dstCurr = dstAccount ? String(dstAccount.currency || 'COP').toUpperCase() : '';
+        const rate = parseFloat($(this).val()) || 1.0;
+        const srcAmt = parseFloat($('#aura-transfer-amount').val()) || 0;
+
+        if (srcCurr && dstCurr && srcCurr !== dstCurr) {
+            if (srcAmt > 0) {
+                $('#aura-transfer-dest-amount').val((srcAmt * rate).toFixed(2));
+            }
+            updateRateText(srcCurr, dstCurr, rate);
         }
     });
 
@@ -5682,7 +5773,6 @@ jQuery(function ($) {
         $('#aura-transfer-form')[0].reset();
         $('#aura-transfer-date').val(new Date().toISOString().slice(0, 10));
         $('#aura-transfer-exchange-rate').val('1.0000');
-        $('#aura-transfer-fx-box').hide();
 
         if (preselectedSourceId) {
             $('#aura-transfer-source').val(preselectedSourceId);

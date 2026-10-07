@@ -2263,50 +2263,58 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                 </div>
 
-                <!-- Monto a Transferir y Monedas -->
-                <div class="aura-form-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <!-- Montos Paralelos Inteligentes (Salida vs Entrada) -->
+                <div class="aura-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 12px;">
                     <div class="aura-field">
                         <label for="aura-transfer-amount" class="aura-label">
-                            <strong><?php _e('Monto a Traspasar *', 'aura-suite'); ?> (<span id="aura-transfer-source-currency">—</span>)</strong>
+                            <strong style="color: #ef4444;">📤 <?php _e('Monto que Sale (Origen) *', 'aura-suite'); ?></strong>
+                            <span class="badge badge-rose" id="aura-transfer-source-currency-badge" style="margin-left: 4px; font-weight: 700; font-size: 11px;">—</span>
                         </label>
-                        <input type="number" id="aura-transfer-amount" name="amount" class="aura-input" step="0.01" min="0.01" placeholder="0.00" required style="font-size: 16px; font-weight: 700; height: 42px;">
+                        <div style="position: relative;">
+                            <input type="number" id="aura-transfer-amount" name="amount" class="aura-input" step="0.01" min="0.01" placeholder="0.00" required style="font-size: 16px; font-weight: 700; height: 42px; padding-right: 55px;">
+                            <span id="aura-transfer-source-currency-addon" style="position: absolute; right: 12px; top: 11px; font-weight: 700; color: #94a3b8; font-size: 12px;">—</span>
+                        </div>
                     </div>
+                    <div class="aura-field">
+                        <label for="aura-transfer-dest-amount" class="aura-label">
+                            <strong style="color: #10b981;">📥 <?php _e('Monto que Entra (Destino) *', 'aura-suite'); ?></strong>
+                            <span class="badge badge-emerald" id="aura-transfer-dest-currency-badge" style="margin-left: 4px; font-weight: 700; font-size: 11px;">—</span>
+                        </label>
+                        <div style="position: relative;">
+                            <input type="number" id="aura-transfer-dest-amount" name="destination_amount" class="aura-input" step="0.01" min="0.01" placeholder="0.00" required style="font-size: 16px; font-weight: 700; height: 42px; padding-right: 55px;">
+                            <span id="aura-transfer-dest-currency-addon" style="position: absolute; right: 12px; top: 11px; font-weight: 700; color: #94a3b8; font-size: 12px;">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barra Informativa de Tasa / Sincronización Inteligente -->
+                <div id="aura-transfer-rate-box" style="margin-bottom: 14px; padding: 10px 14px; border-radius: 8px; font-size: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+                    <div id="aura-transfer-rate-text" style="color: #64748b; display: flex; align-items: center; gap: 6px;">
+                        <span class="dashicons dashicons-yes-alt" style="color: #10b981;"></span>
+                        <span><?php _e('Misma moneda: montos sincronizados 1 a 1 automáticamente.', 'aura-suite'); ?></span>
+                    </div>
+                    <div id="aura-transfer-fx-rate-custom" style="display: none; align-items: center; gap: 6px;">
+                        <label for="aura-transfer-exchange-rate" style="font-size: 11.5px; color: #b45309; font-weight: 600;">
+                            <?php _e('Tasa de cambio:', 'aura-suite'); ?>
+                        </label>
+                        <input type="number" id="aura-transfer-exchange-rate" name="exchange_rate" class="aura-input" step="0.0001" min="0.0001" value="1.0000" style="width: 95px; height: 28px; padding: 2px 6px; font-size: 12px; font-weight: 700; background: #fff;">
+                    </div>
+                </div>
+
+                <!-- Fecha de Operación y Referencia Bancaria -->
+                <div class="aura-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
                     <div class="aura-field">
                         <label for="aura-transfer-date" class="aura-label">
                             <strong>📅 <?php _e('Fecha de Operación *', 'aura-suite'); ?></strong>
                         </label>
-                        <input type="date" id="aura-transfer-date" name="transfer_date" class="aura-input" value="<?php echo esc_attr( current_time('Y-m-d') ); ?>" required style="height: 42px;">
+                        <input type="date" id="aura-transfer-date" name="transfer_date" class="aura-input" value="<?php echo esc_attr( current_time('Y-m-d') ); ?>" required style="height: 40px;">
                     </div>
-                </div>
-
-                <!-- Sección Conversión de Divisas (se muestra si monedas difieren) -->
-                <div id="aura-transfer-fx-box" style="display: none; margin-bottom: 14px; padding: 12px 14px; border-radius: 8px; background: rgba(245, 158, 11, 0.08); border: 1px dashed rgba(245, 158, 11, 0.4);">
-                    <div style="font-size: 12.5px; font-weight: 700; color: #b45309; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <span class="dashicons dashicons-randomize"></span>
-                        <?php _e('Diferencia de Moneda Detectada (Conversión Automática)', 'aura-suite'); ?>
+                    <div class="aura-field">
+                        <label for="aura-transfer-reference" class="aura-label">
+                            <strong><?php _e('Referencia / Folio Bancario (opcional)', 'aura-suite'); ?></strong>
+                        </label>
+                        <input type="text" id="aura-transfer-reference" name="reference" class="aura-input" placeholder="<?php esc_attr_e('Ej: SPEI-984321, Voucher 044, Ref...', 'aura-suite'); ?>" style="height: 40px;">
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="aura-field">
-                            <label for="aura-transfer-exchange-rate" class="aura-label" style="font-size: 12px;">
-                                <strong><?php _e('Tipo / Tasa de Cambio', 'aura-suite'); ?></strong>
-                            </label>
-                            <input type="number" id="aura-transfer-exchange-rate" name="exchange_rate" class="aura-input" step="0.0001" min="0.0001" value="1.0000">
-                        </div>
-                        <div class="aura-field">
-                            <label for="aura-transfer-dest-amount" class="aura-label" style="font-size: 12px;">
-                                <strong><?php _e('Monto Recibido en Destino', 'aura-suite'); ?> (<span id="aura-transfer-dest-currency">—</span>)</strong>
-                            </label>
-                            <input type="number" id="aura-transfer-dest-amount" name="destination_amount" class="aura-input" step="0.01" min="0.01" style="font-weight: 700; background: rgba(0,0,0,0.03);">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Referencia Bancaria y Notas -->
-                <div class="aura-field" style="margin-bottom: 12px;">
-                    <label for="aura-transfer-reference" class="aura-label">
-                        <strong><?php _e('Referencia / Folio Bancario (opcional)', 'aura-suite'); ?></strong>
-                    </label>
-                    <input type="text" id="aura-transfer-reference" name="reference" class="aura-input" placeholder="<?php esc_attr_e('Ej: SPEI-984321, Voucher 044, Ref Interna...', 'aura-suite'); ?>">
                 </div>
 
                 <div class="aura-field" style="margin-bottom: 14px;">
