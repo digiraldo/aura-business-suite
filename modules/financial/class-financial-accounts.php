@@ -73,6 +73,7 @@ class Aura_Financial_Accounts {
         add_action('wp_ajax_aura_finance_transfers_list', array(__CLASS__, 'ajax_list_transfers'));
         add_action('wp_ajax_aura_finance_transfers_save', array(__CLASS__, 'ajax_save_transfer'));
         add_action('wp_ajax_aura_finance_transfers_get', array(__CLASS__, 'ajax_get_transfer'));
+        add_action('wp_ajax_aura_finance_transfers_update', array(__CLASS__, 'ajax_update_transfer'));
         add_action('wp_ajax_aura_finance_transfers_cancel', array(__CLASS__, 'ajax_cancel_transfer'));
     }
 
@@ -908,7 +909,9 @@ class Aura_Financial_Accounts {
                     sa.account_type AS source_account_type,
                     da.name AS destination_account_name,
                     da.account_type AS destination_account_type,
-                    COALESCE(u.display_name, 'Sistema') AS creator_name
+                    COALESCE(u.display_name, u.user_nicename, 'Usuario') AS user_name,
+                    COALESCE(u.display_name, u.user_nicename, 'Usuario') AS creator_name,
+                    u.user_email
              FROM {$table} t
              LEFT JOIN {$accs} sa ON sa.id = t.source_account_id
              LEFT JOIN {$accs} da ON da.id = t.destination_account_id
@@ -917,6 +920,17 @@ class Aura_Financial_Accounts {
              LIMIT 500",
             ARRAY_A
         );
+
+        if (!empty($rows)) {
+            foreach ($rows as &$r) {
+                $uid = !empty($r['created_by']) ? (int) $r['created_by'] : 0;
+                $r['user_avatar'] = $uid > 0 ? get_avatar_url($uid, array('size' => 64, 'default' => 'identicon')) : '';
+                // Alias de compatibilidad total
+                $r['dest_account_name'] = !empty($r['destination_account_name']) ? $r['destination_account_name'] : ('Cuenta #' . $r['destination_account_id']);
+                $r['code'] = !empty($r['transfer_number']) ? $r['transfer_number'] : ('TRF-#' . $r['id']);
+                $r['reference'] = !empty($r['reference_number']) ? $r['reference_number'] : '';
+            }
+        }
 
         wp_send_json_success(array('transfers' => $rows ?: array()));
     }
@@ -937,7 +951,7 @@ class Aura_Financial_Accounts {
         $destination_amount = isset($_POST['destination_amount']) ? floatval($_POST['destination_amount']) : 0;
         $exchange_rate      = isset($_POST['exchange_rate']) ? floatval($_POST['exchange_rate']) : 1.0;
         $transfer_date      = !empty($_POST['transfer_date']) ? sanitize_text_field(wp_unslash($_POST['transfer_date'])) : current_time('Y-m-d');
-        $reference_number   = sanitize_text_field(wp_unslash($_POST['reference_number'] ?? ''));
+        $reference_number   = sanitize_text_field(wp_unslash($_POST['reference_number'] ?? $_POST['reference'] ?? ''));
         $notes              = sanitize_textarea_field(wp_unslash($_POST['notes'] ?? ''));
         $receipt_url        = esc_url_raw(wp_unslash($_POST['receipt_url'] ?? ''));
 
@@ -1119,8 +1133,10 @@ class Aura_Financial_Accounts {
                     sa.account_type AS source_account_type,
                     da.name AS destination_account_name,
                     da.account_type AS destination_account_type,
-                    COALESCE(u.display_name, 'Sistema') AS creator_name,
-                    COALESCE(cu.display_name, 'Sistema') AS canceller_name
+                    COALESCE(u.display_name, u.user_nicename, 'Usuario') AS user_name,
+                    COALESCE(u.display_name, u.user_nicename, 'Usuario') AS creator_name,
+                    COALESCE(cu.display_name, cu.user_nicename, 'Sistema') AS canceller_name,
+                    u.user_email
              FROM {$table} t
              LEFT JOIN {$accs} sa ON sa.id = t.source_account_id
              LEFT JOIN {$accs} da ON da.id = t.destination_account_id
@@ -1134,8 +1150,22 @@ class Aura_Financial_Accounts {
             wp_send_json_error(array('message' => __('Traspaso no encontrado.', 'aura-suite')));
         }
 
+        $uid = !empty($row['created_by']) ? (int) $row['created_by'] : 0;
+        $row['user_avatar'] = $uid > 0 ? get_avatar_url($uid, array('size' => 64, 'default' => 'identicon')) : '';
+        $row['dest_account_name'] = !empty($row['destination_account_name']) ? $row['destination_account_name'] : ('Cuenta #' . $row['destination_account_id']);
+        $row['code'] = !empty($row['transfer_number']) ? $row['transfer_number'] : ('TRF-#' . $row['id']);
+        $row['reference'] = !empty($row['reference_number']) ? $row['reference_number'] : '';
+
         wp_send_json_success(array('transfer' => $row));
     }
+
+    public static function ajax_update_transfer() {
+        self::check_ajax_permissions();
+        wp_send_json_error(array(
+            'message' => __('Por principio de auditoría e inmutabilidad contable (estándar bancario), los traspasos completados no pueden sobreescribirse. Debes anular el traspaso con motivo de cancelación para revertir los saldos y registrar uno nuevo.', 'aura-suite')
+        ));
+    }
+
 
     public static function ajax_cancel_transfer() {
         self::check_ajax_permissions();

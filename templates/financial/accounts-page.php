@@ -2347,7 +2347,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             </div>
             <div class="aura-modal-footer aura-modal-footer-spaced">
                 <button type="button" class="btn btn-danger btn-lift" id="aura-transfer-detail-cancel-btn" style="display:none;">
-                    <span class="dashicons dashicons-undo" style="vertical-align:text-bottom;"></span>
+                    <span class="dashicons dashicons-undo" style="vertical-align:text-bottom; margin-right:4px;"></span>
                     <?php _e('Anular este Traspaso', 'aura-suite'); ?>
                 </button>
                 <button type="button" class="btn btn-secondary btn-lift" data-modal-close="aura-finance-transfer-detail-modal" style="margin-left:auto;">

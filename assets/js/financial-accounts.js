@@ -5807,6 +5807,19 @@ jQuery(function ($) {
             const srcAmtFormatted = String(t.source_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.amount || 0);
             const dstAmtFormatted = String(t.destination_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.destination_amount || t.amount || 0);
 
+            const userName = t.user_name || t.creator_name || 'Sistema';
+            const userAvatarHtml = t.user_avatar
+                ? '<span style="display:inline-flex;align-items:center;gap:6px;" title="' + escapeHtml(userName) + '">' +
+                    '<img src="' + escapeHtml(t.user_avatar) + '" alt="' + escapeHtml(userName) + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid #cbd5e1;box-shadow:0 1px 2px rgba(0,0,0,0.06);">' +
+                    '<span style="font-weight:600;color:var(--aura-text-heading,#0f172a);font-size:12.5px;">' + escapeHtml(userName) + '</span>' +
+                  '</span>'
+                : '<span style="display:inline-flex;align-items:center;gap:6px;">' +
+                    '<span class="dashicons dashicons-admin-users" style="font-size:16px;color:#64748b;vertical-align:middle;"></span>' +
+                    '<span style="font-weight:600;color:var(--aura-text-heading,#0f172a);font-size:12.5px;">' + escapeHtml(userName) + '</span>' +
+                  '</span>';
+
+            const destName = t.dest_account_name || t.destination_account_name || ('Cuenta #' + t.destination_account_id);
+
             const row = '<tr class="table-row-hover-lift">' +
                 '<td>' +
                     '<strong style="color:var(--aura-text-heading,#0f172a);font-family:monospace;font-size:12.5px;">' + escapeHtml(t.code || ('TRF-#' + t.id)) + '</strong>' +
@@ -5817,10 +5830,10 @@ jQuery(function ($) {
                 '</td>' +
                 '<td><strong style="color:#ef4444;font-size:13px;">' + escapeHtml(srcAmtFormatted) + '</strong></td>' +
                 '<td>' +
-                    '<strong style="color:#10b981;"><span class="dashicons dashicons-arrow-down-alt" style="font-size:14px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(t.dest_account_name || 'Cuenta #' + t.destination_account_id) + '</strong>' +
+                    '<strong style="color:#10b981;"><span class="dashicons dashicons-arrow-down-alt" style="font-size:14px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(destName) + '</strong>' +
                 '</td>' +
                 '<td><strong style="color:#10b981;font-size:13px;">' + escapeHtml(dstAmtFormatted) + '</strong></td>' +
-                '<td><small style="color:var(--aura-text-main,#334155);">' + escapeHtml(t.user_name || 'Sistema') + '</small></td>' +
+                '<td>' + userAvatarHtml + '</td>' +
                 '<td>' +
                     (t.reference ? ('<code style="font-size:11px;background:rgba(0,0,0,0.04);padding:1px 4px;border-radius:4px;display:inline-block;margin-bottom:2px;">' + escapeHtml(t.reference) + '</code><br>') : '') +
                     '<small style="color:var(--aura-text-muted,#64748b);">' + escapeHtml(t.notes || 'Sin notas') + '</small>' +
@@ -5872,6 +5885,7 @@ jQuery(function ($) {
             exchange_rate: $('#aura-transfer-exchange-rate').val(),
             destination_amount: $('#aura-transfer-dest-amount').val(),
             reference: $('#aura-transfer-reference').val(),
+            reference_number: $('#aura-transfer-reference').val(),
             notes: $('#aura-transfer-notes').val()
         };
 
@@ -5927,6 +5941,12 @@ jQuery(function ($) {
 
             const srcAmt = String(t.source_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.amount || 0);
             const dstAmt = String(t.destination_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.destination_amount || t.amount || 0);
+            const destName = t.dest_account_name || t.destination_account_name || ('Cuenta #' + t.destination_account_id);
+
+            const detailUserName = t.user_name || t.creator_name || 'Sistema';
+            const detailUserAvatarHtml = t.user_avatar
+                ? '<div style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;"><img src="' + escapeHtml(t.user_avatar) + '" alt="' + escapeHtml(detailUserName) + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid #cbd5e1;"> <strong>' + escapeHtml(detailUserName) + '</strong></div>'
+                : '<strong>' + escapeHtml(detailUserName) + '</strong>';
 
             let html = '<div style="margin-bottom:16px;">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid #e2e8f0;">' +
@@ -5949,7 +5969,7 @@ jQuery(function ($) {
                 '<div style="text-align:center;color:#0d9488;font-size:24px;">➔</div>' +
                 '<div style="text-align:center;">' +
                     '<div style="font-size:11px;color:#10b981;font-weight:700;text-transform:uppercase;">Destino (Entrada)</div>' +
-                    '<div style="font-weight:700;color:#0f172a;font-size:13.5px;margin:4px 0;">' + escapeHtml(t.dest_account_name) + '</div>' +
+                    '<div style="font-weight:700;color:#0f172a;font-size:13.5px;margin:4px 0;">' + escapeHtml(destName) + '</div>' +
                     '<div style="color:#10b981;font-weight:800;font-size:15px;">+' + escapeHtml(dstAmt) + '</div>' +
                     '<div style="font-size:11px;color:#64748b;margin-top:4px;">Saldo ant: $' + formatNumber(t.destination_balance_before) + '<br>Nuevo: $' + formatNumber(t.destination_balance_after) + '</div>' +
                 '</div>' +
@@ -5962,8 +5982,8 @@ jQuery(function ($) {
             }
 
             html += '<div style="font-size:12.5px;line-height:1.6;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">' +
-                '<div><strong>Registrado por:</strong> ' + escapeHtml(t.user_name || 'Sistema') + '</div>' +
-                '<div><strong>Referencia bancaria:</strong> ' + escapeHtml(t.reference || 'Ninguna') + '</div>' +
+                '<div><strong>Registrado por:</strong> ' + detailUserAvatarHtml + '</div>' +
+                '<div><strong>Referencia bancaria:</strong> ' + escapeHtml(t.reference || t.reference_number || 'Ninguna') + '</div>' +
             '</div>';
 
             if (t.notes) {
@@ -5996,8 +6016,9 @@ jQuery(function ($) {
 
         let summaryText = 'Se anulará el traspaso <strong>#' + id + '</strong>. Los fondos volverán a su estado anterior.';
         if (t) {
+            const destName = t.dest_account_name || t.destination_account_name || ('Cuenta #' + t.destination_account_id);
             summaryText = 'Se anulará el folio <strong>' + escapeHtml(t.code || ('TRF-#' + t.id)) + '</strong> por valor de <strong>$' + formatNumber(t.amount) + '</strong>.<br>' +
-                'Se reembolsarán a <strong>' + escapeHtml(t.source_account_name) + '</strong> y se descontarán de <strong>' + escapeHtml(t.dest_account_name) + '</strong>.';
+                'Se reembolsarán a <strong>' + escapeHtml(t.source_account_name) + '</strong> y se descontarán de <strong>' + escapeHtml(destName) + '</strong>.';
         }
         $('#aura-transfer-cancel-summary').html(summaryText);
 
