@@ -59,9 +59,6 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-traspasos">
                     <span class="dashicons dashicons-randomize"></span> <?php _e('Traspasos', 'aura-suite'); ?>
                 </a>
-                <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-divisas">
-                    <span class="dashicons dashicons-money-alt"></span> <?php _e('Cambio de Divisas', 'aura-suite'); ?>
-                </a>
                 <a href="#" class="aura-navbar-item aura-tab-btn" data-tab="tab-cajachica">
                     <span class="dashicons dashicons-money-alt"></span> <?php _e('Caja Chica', 'aura-suite'); ?>
                 </a>
@@ -93,10 +90,6 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <button type="button" class="btn btn-teal btn-lift" id="aura-transfer-open-btn" style="background: #0d9488; color: #fff;">
                             <span class="dashicons dashicons-randomize" style="vertical-align:middle;"></span>
                             <?php _e('Nuevo Traspaso', 'aura-suite'); ?>
-                        </button>
-                        <button type="button" class="btn btn-indigo btn-lift" id="aura-exchange-open-btn">
-                            <span class="dashicons dashicons-money-alt" style="vertical-align:middle;"></span>
-                            <?php _e('Cambiar Divisa', 'aura-suite'); ?>
                         </button>
                         <button type="button" class="btn btn-primary btn-shimmer btn-lift" id="aura-account-new-btn">
                             <span class="dashicons dashicons-plus-alt2" style="vertical-align:middle;"></span>
