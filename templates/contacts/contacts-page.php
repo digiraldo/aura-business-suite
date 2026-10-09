@@ -875,111 +875,319 @@ $category_icons = array(
 <!-- ══════════════════════════════════════════════════════════════════
      MODAL: CREAR / EDITAR CONTACTO
 ═══════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL: CREAR / EDITAR CONTACTO (UX/UI PROFESIONAL Y ELEGANTE)
+═══════════════════════════════════════════════════════════════════ -->
 <div id="modal-contact-form" class="aura-modal-overlay" style="display: none;">
-    <div class="aura-modal aura-glass-card" style="max-width: 680px; width: 92%;">
-        <div class="aura-modal__header">
-            <h3 class="aura-modal__title" id="contact-modal-title">
-                📇 <?php esc_html_e( 'Nuevo Contacto', 'aura-suite' ); ?>
-            </h3>
-            <button type="button" class="aura-modal__close" onclick="closeContactModal();">&times;</button>
+    <div class="aura-modal aura-glass-card contact-modal-dialog">
+        <!-- Header del Modal -->
+        <div class="contact-modal-header">
+            <div class="contact-modal-title-wrap">
+                <div class="contact-modal-icon-badge" id="contact-modal-icon-badge">
+                    <span class="dashicons dashicons-id-alt"></span>
+                </div>
+                <div class="contact-modal-title-text">
+                    <h3 id="contact-modal-title">
+                        <?php esc_html_e( 'Nuevo Contacto', 'aura-suite' ); ?>
+                    </h3>
+                    <p id="contact-modal-subtitle">
+                        <?php esc_html_e( 'Directorio institucional integrado con Google Contacts y el ecosistema Aura Suite.', 'aura-suite' ); ?>
+                    </p>
+                </div>
+            </div>
+            <button type="button" class="aura-modal__close" onclick="closeContactModal();" title="<?php esc_attr_e( 'Cerrar', 'aura-suite' ); ?>">&times;</button>
         </div>
 
         <form id="contact-edit-form">
             <input type="hidden" id="contact-form-id" name="id" value="0">
-            <div class="aura-modal__body" style="display: flex; flex-direction: column; gap: 16px; max-height: 72vh; overflow-y: auto; padding-right: 6px;">
+            <input type="hidden" id="contact-avatar-url" name="avatar_url" value="">
+            <input type="hidden" id="contact-type-input" name="contact_type" value="person">
+            <input type="hidden" id="contact-third-party-id" name="third_party_id" value="0">
+            <input type="hidden" id="contact-wp-user-id" name="wp_user_id" value="0">
 
-                <!-- Fila 1: Nombre y Apellido -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div class="aura-form-group">
-                        <label for="contact-first-name" class="aura-form-label"><?php esc_html_e( 'Nombre(s)', 'aura-suite' ); ?> <span style="color:#ef4444;">*</span></label>
-                        <input type="text" id="contact-first-name" name="first_name" class="aura-input" required placeholder="Ej: Carlos">
+            <!-- Mini-Tabs del Modal -->
+            <div class="contact-modal-tabs">
+                <button type="button" class="contact-modal-tab-btn is-active" data-tab-target="#cmodal-tab-general">
+                    <span class="dashicons dashicons-admin-users"></span>
+                    <?php esc_html_e( 'Datos Principales', 'aura-suite' ); ?>
+                </button>
+                <button type="button" class="contact-modal-tab-btn" data-tab-target="#cmodal-tab-comms">
+                    <span class="dashicons dashicons-phone"></span>
+                    <?php esc_html_e( 'Comunicación y Dirección', 'aura-suite' ); ?>
+                </button>
+                <button type="button" class="contact-modal-tab-btn" data-tab-target="#cmodal-tab-relations">
+                    <span class="dashicons dashicons-admin-links"></span>
+                    <?php esc_html_e( 'Vinculaciones y Notas', 'aura-suite' ); ?>
+                </button>
+            </div>
+
+            <!-- Cuerpo del Modal -->
+            <div class="contact-modal-body">
+
+                <!-- ════ PESTAÑA 1: DATOS PRINCIPALES ════ -->
+                <div id="cmodal-tab-general" class="contact-modal-tab-pane">
+                    
+                    <!-- Selector de Tipo de Contacto (Segmented Pills) -->
+                    <div style="margin-bottom: 16px;">
+                        <label class="aura-form-label" style="margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+                            <span><?php esc_html_e( 'Tipo de Entidad / Registro', 'aura-suite' ); ?></span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: normal;"><?php esc_html_e( 'Define la estructura del contacto', 'aura-suite' ); ?></span>
+                        </label>
+                        <div class="contact-type-selector">
+                            <button type="button" class="contact-type-btn is-active" data-type="person">
+                                <span>👤</span>
+                                <span><?php esc_html_e( 'Persona Individual', 'aura-suite' ); ?></span>
+                            </button>
+                            <button type="button" class="contact-type-btn" data-type="company">
+                                <span>🏢</span>
+                                <span><?php esc_html_e( 'Empresa / Negocio', 'aura-suite' ); ?></span>
+                            </button>
+                            <button type="button" class="contact-type-btn" data-type="organization">
+                                <span>🏛️</span>
+                                <span><?php esc_html_e( 'Organización / ONG', 'aura-suite' ); ?></span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="aura-form-group">
-                        <label for="contact-last-name" class="aura-form-label"><?php esc_html_e( 'Apellido(s)', 'aura-suite' ); ?></label>
-                        <input type="text" id="contact-last-name" name="last_name" class="aura-input" placeholder="Ej: González">
+
+                    <!-- Hero de Identidad & Avatar Preview -->
+                    <div class="contact-identity-hero" style="margin-bottom: 18px;">
+                        <div class="contact-avatar-preview-box">
+                            <img id="contact-avatar-preview-img" src="" alt="Avatar" class="contact-avatar-preview-img" style="display: none;">
+                            <div id="contact-avatar-preview-initials" class="contact-avatar-preview-initials">AU</div>
+                        </div>
+                        <div class="contact-avatar-actions" style="flex: 1;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-glass btn-xs" id="btn-upload-contact-avatar">
+                                    <span class="dashicons dashicons-camera" style="font-size:14px;width:14px;height:14px;"></span>
+                                    <span><?php esc_html_e( 'Subir / Elegir Foto', 'aura-suite' ); ?></span>
+                                </button>
+                                <button type="button" class="btn btn-glass btn-xs" id="btn-remove-contact-avatar" style="display: none; color: #f87171;">
+                                    <span class="dashicons dashicons-trash" style="font-size:14px;width:14px;height:14px;"></span>
+                                    <span><?php esc_html_e( 'Quitar Foto', 'aura-suite' ); ?></span>
+                                </button>
+                            </div>
+                            <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">
+                                <?php esc_html_e( 'Avatar sincronizable con Google People API y Gravatar automático.', 'aura-suite' ); ?>
+                            </span>
+                        </div>
                     </div>
+
+                    <!-- Campos de Nombres y Apellidos -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;" id="contact-name-fields-row">
+                        <div class="aura-form-group">
+                            <label for="contact-first-name" class="aura-form-label" id="contact-label-first-name">
+                                <?php esc_html_e( 'Nombre(s)', 'aura-suite' ); ?> <span style="color:#ef4444;">*</span>
+                            </label>
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-admin-users"></span>
+                                <input type="text" id="contact-first-name" name="first_name" class="aura-input" required placeholder="Ej: Carlos" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="aura-form-group" id="contact-wrap-last-name">
+                            <label for="contact-last-name" class="aura-form-label">
+                                <?php esc_html_e( 'Apellido(s)', 'aura-suite' ); ?>
+                            </label>
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-id"></span>
+                                <input type="text" id="contact-last-name" name="last_name" class="aura-input" placeholder="Ej: González" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Organización y Categoría -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                        <div class="aura-form-group">
+                            <label for="contact-organization" class="aura-form-label" id="contact-label-organization">
+                                <?php esc_html_e( 'Organización / Empresa', 'aura-suite' ); ?>
+                            </label>
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-building"></span>
+                                <input type="text" id="contact-organization" name="organization" class="aura-input" placeholder="Ej: Centro Cultural Mateo" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="aura-form-group">
+                            <label for="contact-category" class="aura-form-label">
+                                <?php esc_html_e( 'Categoría Institucional', 'aura-suite' ); ?> <span style="color:#ef4444;">*</span>
+                            </label>
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-tag"></span>
+                                <select id="contact-category" name="category" class="aura-select" required>
+                                    <?php foreach ( $categories as $ckey => $clabel ) : ?>
+                                        <option value="<?php echo esc_attr( $ckey ); ?>">
+                                            <?php echo esc_html( ( $category_icons[ $ckey ] ?? '🏷️' ) . ' ' . $clabel ); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cargo / Puesto -->
+                    <div class="aura-form-group">
+                        <label for="contact-job-title" class="aura-form-label">
+                            <?php esc_html_e( 'Puesto / Cargo o Rol Profesional', 'aura-suite' ); ?>
+                        </label>
+                        <div class="contact-input-icon-wrap">
+                            <span class="contact-input-icon dashicons dashicons-businessman"></span>
+                            <input type="text" id="contact-job-title" name="job_title" class="aura-input" placeholder="Ej: Director Administrativo, Facilitador de Taller...">
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Fila 2: Email y Teléfono -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div class="aura-form-group">
-                        <label for="contact-email" class="aura-form-label"><?php esc_html_e( 'Correo Electrónico', 'aura-suite' ); ?></label>
-                        <input type="email" id="contact-email" name="email" class="aura-input" placeholder="ejemplo@correo.com">
+                <!-- ════ PESTAÑA 2: COMUNICACIÓN Y DIRECCIÓN ════ -->
+                <div id="cmodal-tab-comms" class="contact-modal-tab-pane" style="display: none;">
+                    
+                    <!-- Fila: Correo Primario y Secundario -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                        <div class="aura-form-group">
+                            <label for="contact-email" class="aura-form-label">
+                                <?php esc_html_e( 'Correo Electrónico Principal', 'aura-suite' ); ?>
+                            </label>
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-email"></span>
+                                <input type="email" id="contact-email" name="email" class="aura-input" placeholder="ejemplo@correo.com">
+                            </div>
+                        </div>
+                        <div class="aura-form-group">
+                            <label for="contact-email-secondary" class="aura-form-label">
+                                <?php esc_html_e( 'Correo Electrónico Secundario', 'aura-suite' ); ?>
+                            </label>
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-email-alt"></span>
+                                <input type="email" id="contact-email-secondary" name="email_secondary" class="aura-input" placeholder="alternativo@correo.com">
+                            </div>
+                        </div>
                     </div>
-                    <div class="aura-form-group">
-                        <label for="contact-phone" class="aura-form-label"><?php esc_html_e( 'Teléfono / Móvil', 'aura-suite' ); ?></label>
-                        <input type="tel" id="contact-phone" name="phone" class="aura-input" placeholder="+52 55 1234 5678">
+
+                    <!-- Fila: Teléfono Primario y WhatsApp -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                        <div class="aura-form-group">
+                            <label for="contact-phone" class="aura-form-label">
+                                <?php esc_html_e( 'Teléfono / Móvil', 'aura-suite' ); ?>
+                            </label>
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-phone"></span>
+                                <input type="tel" id="contact-phone" name="phone" class="aura-input" placeholder="+52 55 1234 5678">
+                            </div>
+                        </div>
+                        <div class="aura-form-group">
+                            <label for="contact-whatsapp" class="aura-form-label" style="display: flex; align-items: center; justify-content: space-between;">
+                                <span><?php esc_html_e( 'WhatsApp Directo', 'aura-suite' ); ?></span>
+                                <span style="color: #22c55e; font-size: 0.75rem;">🟢 Mensajería</span>
+                            </label>
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-smartphone" style="color: #22c55e;"></span>
+                                <input type="tel" id="contact-whatsapp" name="whatsapp" class="aura-input" placeholder="+52 55 1234 5678">
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Dirección Física (Calle y Número) -->
+                    <div class="aura-form-group" style="margin-bottom: 14px;">
+                        <label for="contact-address" class="aura-form-label">
+                            <?php esc_html_e( 'Dirección (Calle, Número, Colonia)', 'aura-suite' ); ?>
+                        </label>
+                        <div class="contact-input-icon-wrap">
+                            <span class="contact-input-icon dashicons dashicons-location"></span>
+                            <input type="text" id="contact-address" name="address" class="aura-input" placeholder="Av. Revolución 123, Depto 401">
+                        </div>
+                    </div>
+
+                    <!-- Ciudad, Estado, País, Código Postal -->
+                    <div style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 12px;">
+                        <div class="aura-form-group">
+                            <label for="contact-address-city" class="aura-form-label"><?php esc_html_e( 'Ciudad', 'aura-suite' ); ?></label>
+                            <input type="text" id="contact-address-city" name="address_city" class="aura-input" placeholder="Ciudad de México">
+                        </div>
+                        <div class="aura-form-group">
+                            <label for="contact-address-state" class="aura-form-label"><?php esc_html_e( 'Estado / Región', 'aura-suite' ); ?></label>
+                            <input type="text" id="contact-address-state" name="address_state" class="aura-input" placeholder="CDMX">
+                        </div>
+                        <div class="aura-form-group">
+                            <label for="contact-address-postal" class="aura-form-label"><?php esc_html_e( 'C.P.', 'aura-suite' ); ?></label>
+                            <input type="text" id="contact-address-postal" name="address_postal" class="aura-input" placeholder="03100">
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Fila 3: Categoría y Organización -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div class="aura-form-group">
-                        <label for="contact-category" class="aura-form-label"><?php esc_html_e( 'Categoría', 'aura-suite' ); ?> <span style="color:#ef4444;">*</span></label>
-                        <select id="contact-category" name="category" class="aura-select" required>
-                            <?php foreach ( $categories as $ckey => $clabel ) : ?>
-                                <option value="<?php echo esc_attr( $ckey ); ?>">
-                                    <?php echo esc_html( ( $category_icons[ $ckey ] ?? '🏷️' ) . ' ' . $clabel ); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                <!-- ════ PESTAÑA 3: VINCULACIONES Y NOTAS ════ -->
+                <div id="cmodal-tab-relations" class="contact-modal-tab-pane" style="display: none;">
+                    
+                    <!-- Vinculación con Tercero Comercial -->
+                    <div class="aura-glass-card" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); padding: 14px; border-radius: 12px; margin-bottom: 14px;">
+                        <label class="aura-form-label" style="margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+                            <span>🏢 <?php esc_html_e( 'Vincular con Tercero de Aura (Directorio Comercial)', 'aura-suite' ); ?></span>
+                            <span style="font-size:0.75rem; color:#38bdf8;">Opcional</span>
+                        </label>
+                        <div style="position: relative;">
+                            <input type="text" id="contact-link-third-party-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por nombre comercial, razón social o RFC...', 'aura-suite' ); ?>" style="width: 100%;">
+                            <div id="contact-third-party-results" class="contacts-autocomplete-dropdown" style="display: none;"></div>
+                        </div>
+                        <div id="contact-third-party-selected" class="contact-linked-card" style="display: none;">
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                                <span class="dashicons dashicons-building" style="color: #38bdf8;"></span>
+                                <strong id="contact-third-party-name"></strong>
+                            </span>
+                            <button type="button" class="btn btn-glass btn-xs" onclick="unlinkThirdPartyInForm();" style="color: #f87171;" title="<?php esc_attr_e( 'Desvincular tercero', 'aura-suite' ); ?>">
+                                &times; <?php esc_html_e( 'Desvincular', 'aura-suite' ); ?>
+                            </button>
+                        </div>
                     </div>
-                    <div class="aura-form-group">
-                        <label for="contact-organization" class="aura-form-label"><?php esc_html_e( 'Organización / Empresa', 'aura-suite' ); ?></label>
-                        <input type="text" id="contact-organization" name="organization" class="aura-input" placeholder="Ej: Centro Cultural Mateo">
-                    </div>
-                </div>
 
-                <!-- Fila 4: Cargo y Dirección -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <!-- Vinculación con Usuario de WordPress -->
+                    <div class="aura-glass-card" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); padding: 14px; border-radius: 12px; margin-bottom: 14px;">
+                        <label class="aura-form-label" style="margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+                            <span>👤 <?php esc_html_e( 'Vincular con Usuario del Sistema WordPress', 'aura-suite' ); ?></span>
+                            <span style="font-size:0.75rem; color:#c084fc;">Opcional</span>
+                        </label>
+                        <div style="position: relative;">
+                            <input type="text" id="contact-link-wp-user-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por nombre, usuario o email registrado...', 'aura-suite' ); ?>" style="width: 100%;">
+                            <div id="contact-wp-user-results" class="contacts-autocomplete-dropdown" style="display: none;"></div>
+                        </div>
+                        <div id="contact-wp-user-selected" class="contact-linked-card contact-linked-card-wp" style="display: none;">
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                                <span class="dashicons dashicons-admin-users" style="color: #c084fc;"></span>
+                                <strong id="contact-wp-user-name"></strong>
+                            </span>
+                            <button type="button" class="btn btn-glass btn-xs" onclick="unlinkWpUserInForm();" style="color: #f87171;" title="<?php esc_attr_e( 'Desvincular usuario', 'aura-suite' ); ?>">
+                                &times; <?php esc_html_e( 'Desvincular', 'aura-suite' ); ?>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Etiquetas (Tags) -->
+                    <div class="aura-form-group" style="margin-bottom: 14px;">
+                        <label for="contact-tags" class="aura-form-label">
+                            🏷️ <?php esc_html_e( 'Etiquetas / Tags (separadas por coma)', 'aura-suite' ); ?>
+                        </label>
+                        <input type="text" id="contact-tags" name="tags" class="aura-input" placeholder="diplomado-2026, facilitador-externo, benefactor, vip">
+                    </div>
+
+                    <!-- Notas / Observaciones -->
                     <div class="aura-form-group">
-                        <label for="contact-job-title" class="aura-form-label"><?php esc_html_e( 'Puesto / Cargo', 'aura-suite' ); ?></label>
-                        <input type="text" id="contact-job-title" name="job_title" class="aura-input" placeholder="Ej: Facilitador de Taller">
+                        <label for="contact-notes" class="aura-form-label">
+                            📝 <?php esc_html_e( 'Notas Internas / Observaciones', 'aura-suite' ); ?>
+                        </label>
+                        <textarea id="contact-notes" name="notes" class="aura-textarea" rows="3" placeholder="<?php esc_attr_e( 'Anotaciones confidenciales o historial relevante para la institución...', 'aura-suite' ); ?>"></textarea>
                     </div>
-                    <div class="aura-form-group">
-                        <label for="contact-address" class="aura-form-label"><?php esc_html_e( 'Dirección Física', 'aura-suite' ); ?></label>
-                        <input type="text" id="contact-address" name="address" class="aura-input" placeholder="Calle, Número, Ciudad, Estado">
-                    </div>
-                </div>
 
-                <!-- Fila 5: Etiquetas (Tags) -->
-                <div class="aura-form-group">
-                    <label for="contact-tags" class="aura-form-label"><?php esc_html_e( 'Etiquetas (separadas por coma)', 'aura-suite' ); ?></label>
-                    <input type="text" id="contact-tags" name="tags" class="aura-input" placeholder="diplomado-2026, facilitador-externo, vip">
-                </div>
-
-                <!-- Fila 6: Notas Adicionales -->
-                <div class="aura-form-group">
-                    <label for="contact-notes" class="aura-form-label"><?php esc_html_e( 'Notas / Observaciones', 'aura-suite' ); ?></label>
-                    <textarea id="contact-notes" name="notes" class="aura-textarea" rows="3" placeholder="<?php esc_attr_e( 'Información relevante para la institución...', 'aura-suite' ); ?>"></textarea>
-                </div>
-
-                <!-- Fila 7: Vinculación con Tercero de Aura (Opcional) -->
-                <div class="aura-glass-card" style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 8px;">
-                    <label class="aura-form-label" style="margin-bottom: 6px; font-weight: 600;">
-                        🔗 <?php esc_html_e( 'Vinculación con Tercero / Entidad Comercial de Aura (Opcional)', 'aura-suite' ); ?>
-                    </label>
-                    <div style="position: relative;">
-                        <input type="text" id="contact-link-third-party-search" class="aura-input" placeholder="<?php esc_attr_e( 'Escribe para buscar tercero existente...', 'aura-suite' ); ?>" style="width: 100%;">
-                        <input type="hidden" id="contact-third-party-id" name="third_party_id" value="0">
-                        <div id="contact-third-party-results" class="contacts-autocomplete-dropdown" style="display: none;"></div>
-                    </div>
-                    <div id="contact-third-party-selected" style="margin-top: 6px; display: none;">
-                        <span class="badge badge-blue">
-                            <span id="contact-third-party-name"></span>
-                            <button type="button" onclick="unlinkThirdPartyInForm();" style="background:none;border:none;color:#fff;cursor:pointer;margin-left:6px;">&times;</button>
-                        </span>
-                    </div>
                 </div>
 
             </div>
 
-            <div class="aura-modal__footer" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn btn-glass" onclick="closeContactModal();"><?php esc_html_e( 'Cancelar', 'aura-suite' ); ?></button>
-                <button type="submit" class="btn btn-primary btn-lift" id="btn-save-contact">
-                    <span class="dashicons dashicons-saved"></span>
-                    <span><?php esc_html_e( 'Guardar Contacto', 'aura-suite' ); ?></span>
+            <!-- Footer del Modal -->
+            <div class="contact-modal-footer">
+                <button type="button" class="btn btn-glass" onclick="closeContactModal();">
+                    <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
                 </button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button type="submit" class="btn btn-primary btn-lift" id="btn-save-contact">
+                        <span class="dashicons dashicons-saved"></span>
+                        <span><?php esc_html_e( 'Guardar Contacto', 'aura-suite' ); ?></span>
+                    </button>
+                </div>
             </div>
         </form>
     </div>

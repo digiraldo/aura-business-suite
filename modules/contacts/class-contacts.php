@@ -687,10 +687,10 @@ class Aura_Contacts {
             wp_send_json_success( array( 'items' => array() ) );
         }
 
-        $q = sanitize_text_field( wp_unslash( $_POST['q'] ?? '' ) );
+        $q = sanitize_text_field( wp_unslash( $_POST['term'] ?? $_POST['q'] ?? '' ) );
         $term = '%' . $wpdb->esc_like( $q ) . '%';
 
-        $results = $wpdb->get_results(
+        $raw_results = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT id, legal_name, trade_name, identification_number, email, phone 
                  FROM {$table} 
@@ -701,7 +701,17 @@ class Aura_Contacts {
             ARRAY_A
         );
 
-        wp_send_json_success( array( 'items' => $results ?: array() ) );
+        $results = array();
+        if ( ! empty( $raw_results ) ) {
+            foreach ( $raw_results as $row ) {
+                $name = ! empty( $row['trade_name'] ) ? $row['trade_name'] : $row['legal_name'];
+                $row['name'] = $name;
+                $row['type_label'] = ! empty( $row['identification_number'] ) ? $row['identification_number'] : __( 'Tercero', 'aura-suite' );
+                $results[] = $row;
+            }
+        }
+
+        wp_send_json_success( array( 'items' => $results, 'data' => $results ) );
     }
 
     /**
@@ -714,7 +724,7 @@ class Aura_Contacts {
             wp_send_json_error( array( 'message' => __( 'Sin permisos.', 'aura-suite' ) ) );
         }
 
-        $search = sanitize_text_field( wp_unslash( $_POST['q'] ?? '' ) );
+        $search = sanitize_text_field( wp_unslash( $_POST['term'] ?? $_POST['q'] ?? '' ) );
         $users  = get_users( array(
             'search'         => '*' . $search . '*',
             'search_columns' => array( 'user_login', 'user_email', 'display_name' ),
@@ -726,13 +736,14 @@ class Aura_Contacts {
         foreach ( $users as $u ) {
             $items[] = array(
                 'id'           => $u->ID,
+                'name'         => $u->display_name ?: $u->user_login,
                 'display_name' => $u->display_name,
                 'email'        => $u->user_email,
                 'login'        => $u->user_login,
             );
         }
 
-        wp_send_json_success( array( 'items' => $items ) );
+        wp_send_json_success( array( 'items' => $items, 'data' => $items ) );
     }
 
     /**

@@ -302,20 +302,48 @@
         }).join('');
     }
 
-    // ── Paginación ───────────────────────────────────────────────────────────────
+    // ── Paginación Robusta e Interactiva ───────────────────────────────────────
     function renderPagination(data) {
-        var total = data.total || 0;
+        var total = parseInt(data.total, 10);
+        if (isNaN(total) || total < 0) total = 0;
+
+        var perPage = parseInt(data.per_page || state.perPage, 10) || 25;
+        state.perPage = perPage;
+
+        // Calcular número real de páginas
+        var calculatedPages = Math.ceil(total / perPage);
+        var pages = parseInt(data.pages || data.total_pages, 10);
+        if (isNaN(pages) || pages < 1 || pages < calculatedPages) {
+            pages = calculatedPages;
+        }
+        if (pages < 1) pages = 1;
+        state.totalPages = pages;
+
+        // Normalizar página activa
+        var currentPage = parseInt(data.page || state.page, 10) || 1;
+        if (currentPage > pages) currentPage = pages;
+        if (currentPage < 1) currentPage = 1;
+        state.page = currentPage;
+
         var start = total > 0 ? (state.page - 1) * state.perPage + 1 : 0;
         var end = Math.min(state.page * state.perPage, total);
         $('#contacts-pagination-info').text('Mostrando ' + start + ' - ' + end + ' de ' + total + ' contactos');
 
-        var pages = data.pages || 1;
         var $controls = $('#contacts-pagination-controls').empty();
 
-        // Botón Anterior (siempre visible)
-        var $prev = $('<button type="button" class="btn btn-glass btn-xs" ' + (state.page <= 1 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : '') + ' title="Página anterior"><span class="dashicons dashicons-arrow-left-alt2"></span></button>');
-        $prev.on('click', function() {
-            if (state.page > 1) {
+        if (total === 0) {
+            return;
+        }
+
+        // Botón Anterior
+        var prevDisabled = (state.page <= 1);
+        var $prev = $('<button type="button" class="btn btn-glass btn-xs' + (prevDisabled ? ' disabled' : '') + '" ' + 
+            (prevDisabled ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : 'style="cursor:pointer;"') + 
+            ' title="Página anterior"><span class="dashicons dashicons-arrow-left-alt2"></span></button>');
+        
+        $prev.on('click', function(e) {
+            e.preventDefault();
+            if (state.page > 1 && !state.isLoading) {
                 state.page--;
                 fetchContacts();
             }
@@ -323,27 +351,71 @@
         $controls.append($prev);
 
         // Páginas numeradas
-        for (var p = 1; p <= pages; p++) {
-            if (p === 1 || p === pages || (p >= state.page - 2 && p <= state.page + 2)) {
-                var $pBtn = $('<button type="button" class="btn btn-xs ' + (p === state.page ? 'btn-primary' : 'btn-glass') + '">' + p + '</button>');
-                (function(pageIndex) {
-                    $pBtn.on('click', function() {
-                        if (state.page !== pageIndex) {
-                            state.page = pageIndex;
-                            fetchContacts();
-                        }
-                    });
-                })(p);
-                $controls.append($pBtn);
-            } else if (p === state.page - 3 || p === state.page + 3) {
-                $controls.append('<span style="padding: 0 4px; color: #94a3b8;">...</span>');
+        var maxButtons = 5;
+        var startPage = Math.max(1, state.page - 2);
+        var endPage = Math.min(pages, startPage + maxButtons - 1);
+        if (endPage - startPage < maxButtons - 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        if (startPage > 1) {
+            var $pFirst = $('<button type="button" class="btn btn-glass btn-xs" style="cursor:pointer;">1</button>');
+            $pFirst.on('click', function(e) {
+                e.preventDefault();
+                if (state.page !== 1 && !state.isLoading) {
+                    state.page = 1;
+                    fetchContacts();
+                }
+            });
+            $controls.append($pFirst);
+            if (startPage > 2) {
+                $controls.append('<span style="padding: 0 4px; color: #94a3b8; user-select:none;">...</span>');
             }
         }
 
-        // Botón Siguiente (siempre visible)
-        var $next = $('<button type="button" class="btn btn-glass btn-xs" ' + (state.page >= pages ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : '') + ' title="Página siguiente"><span class="dashicons dashicons-arrow-right-alt2"></span></button>');
-        $next.on('click', function() {
-            if (state.page < pages) {
+        for (var p = startPage; p <= endPage; p++) {
+            var isCurrent = (p === state.page);
+            var $pBtn = $('<button type="button" class="btn btn-xs ' + (isCurrent ? 'btn-primary' : 'btn-glass') + '" ' + 
+                (isCurrent ? 'style="font-weight:700;box-shadow:0 0 10px rgba(59,130,246,0.5);cursor:default;"' : 'style="cursor:pointer;"') + 
+                '>' + p + '</button>');
+
+            (function(pageIndex) {
+                $pBtn.on('click', function(e) {
+                    e.preventDefault();
+                    if (state.page !== pageIndex && !state.isLoading) {
+                        state.page = pageIndex;
+                        fetchContacts();
+                    }
+                });
+            })(p);
+
+            $controls.append($pBtn);
+        }
+
+        if (endPage < pages) {
+            if (endPage < pages - 1) {
+                $controls.append('<span style="padding: 0 4px; color: #94a3b8; user-select:none;">...</span>');
+            }
+            var $pLast = $('<button type="button" class="btn btn-glass btn-xs" style="cursor:pointer;">' + pages + '</button>');
+            $pLast.on('click', function(e) {
+                e.preventDefault();
+                if (state.page !== pages && !state.isLoading) {
+                    state.page = pages;
+                    fetchContacts();
+                }
+            });
+            $controls.append($pLast);
+        }
+
+        // Botón Siguiente
+        var nextDisabled = (state.page >= pages);
+        var $next = $('<button type="button" class="btn btn-glass btn-xs' + (nextDisabled ? ' disabled' : '') + '" ' + 
+            (nextDisabled ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : 'style="cursor:pointer;"') + 
+            ' title="Página siguiente"><span class="dashicons dashicons-arrow-right-alt2"></span></button>');
+        
+        $next.on('click', function(e) {
+            e.preventDefault();
+            if (state.page < pages && !state.isLoading) {
                 state.page++;
                 fetchContacts();
             }
@@ -377,7 +449,75 @@
         });
     }
 
+    // ── Helper de UI para Tipo de Contacto ────────────────────────────────────────
+    function setContactType(type) {
+        if (!type || (type !== 'company' && type !== 'organization')) {
+            type = 'person';
+        }
+        $('#contact-type-input').val(type);
+        $('.contact-type-btn').removeClass('is-active');
+        $('.contact-type-btn[data-type="' + type + '"]').addClass('is-active');
+
+        var $iconBadge = $('#contact-modal-icon-badge');
+        var $firstLabel = $('#contact-label-first-name');
+        var $orgLabel = $('#contact-label-organization');
+
+        if (type === 'company' || type === 'organization') {
+            $iconBadge.html('<span class="dashicons dashicons-building"></span>');
+            $firstLabel.html((cfg.i18n.contactPerson || 'Representante / Contacto directo') + ' <span style="font-size:0.75rem;color:#94a3b8;font-weight:normal;">(Opcional)</span>');
+            $orgLabel.html((type === 'company' ? 'Razón Social / Empresa' : 'Nombre de la Organización / Institución') + ' <span style="color:#ef4444;">*</span>');
+            $('#contact-first-name').prop('required', false);
+            $('#contact-organization').prop('required', true);
+        } else {
+            $iconBadge.html('<span class="dashicons dashicons-id-alt"></span>');
+            $firstLabel.html((cfg.i18n.firstName || 'Nombre(s)') + ' <span style="color:#ef4444;">*</span>');
+            $orgLabel.html(cfg.i18n.organization || 'Organización / Empresa');
+            $('#contact-first-name').prop('required', true);
+            $('#contact-organization').prop('required', false);
+        }
+        updateAvatarPreview();
+    }
+
+    // ── Helper de Iniciales y Preview de Avatar ───────────────────────────────────
+    function computeInitials(str1, str2) {
+        var a = (str1 || '').trim().charAt(0);
+        var b = (str2 || '').trim().charAt(0);
+        if (!a && !b) return 'AU';
+        return (a + b).toUpperCase();
+    }
+
+    function updateAvatarPreview() {
+        var customUrl = ($('#contact-avatar-url').val() || '').trim();
+        var $img = $('#contact-avatar-preview-img');
+        var $initials = $('#contact-avatar-preview-initials');
+        var $btnRemove = $('#btn-remove-contact-avatar');
+
+        if (customUrl) {
+            $img.attr('src', customUrl).show();
+            $initials.hide();
+            $btnRemove.show();
+        } else {
+            $img.attr('src', '').hide();
+            $btnRemove.hide();
+            var fName = $('#contact-first-name').val();
+            var lName = $('#contact-last-name').val();
+            var org = $('#contact-organization').val();
+            var ini = '';
+            if (fName || lName) {
+                ini = computeInitials(fName, lName);
+            } else if (org) {
+                var parts = org.trim().split(/\s+/);
+                ini = computeInitials(parts[0], parts[1] || '');
+            } else {
+                ini = 'AU';
+            }
+            $initials.text(ini).show();
+        }
+    }
+
     // ── Gestión del Modal de Contacto (Crear / Editar) ───────────────────────────
+    var mediaFrame = null;
+
     function initModals() {
         $('#btn-open-create-modal').on('click', function() {
             openCreateModal();
@@ -388,7 +528,74 @@
             saveContact();
         });
 
-        // Autocomplete en formulario de creación para vincular tercero
+        // Mini-Tabs del Modal
+        $('.contact-modal-tab-btn').on('click', function(e) {
+            e.preventDefault();
+            $('.contact-modal-tab-btn').removeClass('is-active');
+            $(this).addClass('is-active');
+            var targetPane = $(this).data('tab-target');
+            $('.contact-modal-tab-pane').hide();
+            $(targetPane).fadeIn(150);
+        });
+
+        // Selector de Tipo de Contacto
+        $('.contact-type-btn').on('click', function(e) {
+            e.preventDefault();
+            var type = $(this).data('type');
+            setContactType(type);
+        });
+
+        // Escucha cambios de texto para iniciales en tiempo real
+        $('#contact-first-name, #contact-last-name, #contact-organization').on('input', function() {
+            if (!$('#contact-avatar-url').val()) {
+                updateAvatarPreview();
+            }
+        });
+
+        // Media Uploader de WordPress para Avatar
+        $('#btn-upload-contact-avatar').on('click', function(e) {
+            e.preventDefault();
+            if (typeof wp === 'undefined' || !wp.media) {
+                var manualUrl = prompt('Ingresa la URL de la foto o avatar del contacto:');
+                if (manualUrl) {
+                    $('#contact-avatar-url').val(manualUrl.trim());
+                    updateAvatarPreview();
+                }
+                return;
+            }
+
+            if (mediaFrame) {
+                mediaFrame.open();
+                return;
+            }
+
+            mediaFrame = wp.media({
+                title: 'Seleccionar Foto o Logotipo del Contacto',
+                button: { text: 'Usar como Avatar' },
+                multiple: false,
+                library: { type: 'image' }
+            });
+
+            mediaFrame.on('select', function() {
+                var attachment = mediaFrame.state().get('selection').first().toJSON();
+                var selectedUrl = attachment.url;
+                if (attachment.sizes && attachment.sizes.thumbnail) {
+                    selectedUrl = attachment.sizes.thumbnail.url;
+                }
+                $('#contact-avatar-url').val(selectedUrl);
+                updateAvatarPreview();
+            });
+
+            mediaFrame.open();
+        });
+
+        $('#btn-remove-contact-avatar').on('click', function(e) {
+            e.preventDefault();
+            $('#contact-avatar-url').val('');
+            updateAvatarPreview();
+        });
+
+        // Autocomplete en formulario de creación/edición para vincular tercero
         var tpSearchTimer = null;
         $('#contact-link-third-party-search').on('input', function() {
             var q = $(this).val().trim();
@@ -419,6 +626,39 @@
                 });
             }, 250);
         });
+
+        // Autocomplete en formulario para vincular usuario de WordPress
+        var wpSearchTimer = null;
+        $('#contact-link-wp-user-search').on('input', function() {
+            var q = $(this).val().trim();
+            clearTimeout(wpSearchTimer);
+            if (q.length < 2) {
+                $('#contact-wp-user-results').hide().empty();
+                return;
+            }
+            wpSearchTimer = setTimeout(function() {
+                searchWpUsers(q, function(results) {
+                    var $box = $('#contact-wp-user-results').empty();
+                    if (!results || results.length === 0) {
+                        $box.append('<div class="autocomplete-item" style="color:#94a3b8;">No se encontraron usuarios</div>').show();
+                        return;
+                    }
+                    results.forEach(function(u) {
+                        var $item = $('<div class="autocomplete-item"><span><strong>' + escapeHtml(u.name) + '</strong> (' + escapeHtml(u.email) + ')</span><span style="font-size:0.75rem;color:#c084fc;">Seleccionar</span></div>');
+                        $item.on('click', function() {
+                            $('#contact-wp-user-id').val(u.id);
+                            $('#contact-wp-user-name').text(u.name + ' (' + u.email + ')');
+                            $('#contact-wp-user-selected').show();
+                            $('#contact-link-wp-user-search').val('');
+                            $box.hide().empty();
+                        });
+                        $box.append($item);
+                    });
+                    $box.show();
+                });
+            }, 250);
+        });
+
         // Cerrar modal al hacer clic en el backdrop oscuro
         $('.aura-modal-overlay').on('click', function(e) {
             if ($(e.target).hasClass('aura-modal-overlay')) {
@@ -428,21 +668,38 @@
     }
 
     function openCreateModal() {
-        $('#contact-modal-title').html('📇 ' + 'Nuevo Contacto');
+        $('#contact-modal-title').html('📇 ' + (cfg.i18n.newContact || 'Nuevo Contacto'));
+        $('#contact-modal-subtitle').text('Directorio institucional integrado con Google Contacts y el ecosistema Aura Suite.');
         $('#contact-form-id').val(0);
+        
         var form = document.getElementById('contact-edit-form');
         if (form && typeof form.reset === 'function') {
             form.reset();
         }
+
+        $('#contact-avatar-url').val('');
         $('#contact-third-party-id').val(0);
         $('#contact-third-party-selected').hide();
+        $('#contact-wp-user-id').val(0);
+        $('#contact-wp-user-selected').hide();
+
+        setContactType('person');
+        updateAvatarPreview();
+
+        // Resetear a pestaña principal
+        $('.contact-modal-tab-btn').removeClass('is-active');
+        $('.contact-modal-tab-btn[data-tab-target="#cmodal-tab-general"]').addClass('is-active');
+        $('.contact-modal-tab-pane').hide();
+        $('#cmodal-tab-general').show();
+
         $('#modal-contact-form')
             .removeClass('is-hidden')
             .addClass('active')
             .css({ display: 'flex', opacity: 1, visibility: 'visible' });
+
         setTimeout(function() {
             $('#contact-first-name').focus();
-        }, 60);
+        }, 100);
     }
 
     function openEditModal(id) {
@@ -452,17 +709,38 @@
                 return;
             }
             var c = res.data;
-            $('#contact-modal-title').html('✏️ ' + 'Editar Contacto: ' + escapeHtml(c.first_name + ' ' + (c.last_name || '')));
+            var contactTitle = (c.first_name || '') + ' ' + (c.last_name || '');
+            if (!contactTitle.trim()) contactTitle = c.organization || ('Contacto #' + c.id);
+
+            $('#contact-modal-title').html('✏️ ' + 'Editar Contacto: ' + escapeHtml(contactTitle));
+            $('#contact-modal-subtitle').text('ID #' + c.id + ' • Sincronización: ' + (c.sync_status || 'pending').toUpperCase());
+            
             $('#contact-form-id').val(c.id);
             $('#contact-first-name').val(c.first_name || '');
             $('#contact-last-name').val(c.last_name || '');
-            $('#contact-email').val(c.email || '');
-            $('#contact-phone').val(c.phone || '');
-            $('#contact-category').val(c.category || 'other');
             $('#contact-organization').val(c.organization || '');
             $('#contact-job-title').val(c.job_title || '');
-            $('#contact-address').val(c.address || '');
+            $('#contact-category').val(c.category || 'other');
+
+            $('#contact-email').val(c.email || c.email_primary || '');
+            $('#contact-email-secondary').val(c.email_secondary || '');
+            $('#contact-phone').val(c.phone || c.phone_primary || '');
+            $('#contact-whatsapp').val(c.whatsapp || '');
+
+            $('#contact-address').val(c.address_street || c.address || '');
+            $('#contact-address-city').val(c.address_city || '');
+            $('#contact-address-state').val(c.address_state || '');
+            $('#contact-address-postal').val(c.address_postal || '');
+
             $('#contact-notes').val(c.notes || '');
+
+            // Avatar
+            var avUrl = c.avatar_url || c.photo_url || '';
+            $('#contact-avatar-url').val(avUrl);
+
+            // Tipo de contacto
+            setContactType(c.contact_type || 'person');
+            updateAvatarPreview();
 
             // Tags
             var tagsStr = '';
@@ -483,6 +761,22 @@
                 $('#contact-third-party-selected').hide();
             }
 
+            // Usuario WordPress vinculado
+            if (c.wp_user_id && parseInt(c.wp_user_id, 10) > 0) {
+                $('#contact-wp-user-id').val(c.wp_user_id);
+                $('#contact-wp-user-name').text(c.wp_user_name || ('Usuario WP #' + c.wp_user_id));
+                $('#contact-wp-user-selected').show();
+            } else {
+                $('#contact-wp-user-id').val(0);
+                $('#contact-wp-user-selected').hide();
+            }
+
+            // Pestaña inicial
+            $('.contact-modal-tab-btn').removeClass('is-active');
+            $('.contact-modal-tab-btn[data-tab-target="#cmodal-tab-general"]').addClass('is-active');
+            $('.contact-modal-tab-pane').hide();
+            $('#cmodal-tab-general').show();
+
             $('#modal-contact-form')
                 .removeClass('is-hidden')
                 .addClass('active')
@@ -491,8 +785,24 @@
     }
 
     function saveContact() {
+        var contactType = $('#contact-type-input').val() || 'person';
+        var firstName = ($('#contact-first-name').val() || '').trim();
+        var org = ($('#contact-organization').val() || '').trim();
+
+        if (contactType === 'person' && !firstName && !org) {
+            alert('Por favor ingresa al menos el Nombre del contacto.');
+            $('#contact-first-name').focus();
+            return;
+        }
+
+        if ((contactType === 'company' || contactType === 'organization') && !org && !firstName) {
+            alert('Por favor ingresa la Razón Social o Nombre de la Organización.');
+            $('#contact-organization').focus();
+            return;
+        }
+
         var $btn = $('#btn-save-contact');
-        var originalText = $btn.html();
+        var originalHtml = $btn.html();
         $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Guardando...');
 
         var formData = $('#contact-edit-form').serialize();
@@ -504,17 +814,18 @@
             data: formData,
             dataType: 'json',
             success: function(res) {
-                $btn.prop('disabled', false).html(originalText);
+                $btn.prop('disabled', false).html(originalHtml);
                 if (res.success) {
                     closeContactModal();
                     fetchContacts();
+                    refreshStats();
                     showToast(cfg.i18n.saveSuccess || 'Contacto guardado correctamente.');
                 } else {
                     alert(res.data && res.data.message ? res.data.message : (cfg.i18n.saveError || 'Error al guardar'));
                 }
             },
             error: function() {
-                $btn.prop('disabled', false).html(originalText);
+                $btn.prop('disabled', false).html(originalHtml);
                 alert(cfg.i18n.connError || 'Error de conexión');
             }
         });
@@ -533,6 +844,11 @@
     window.unlinkThirdPartyInForm = function() {
         $('#contact-third-party-id').val(0);
         $('#contact-third-party-selected').hide();
+    };
+
+    window.unlinkWpUserInForm = function() {
+        $('#contact-wp-user-id').val(0);
+        $('#contact-wp-user-selected').hide();
     };
 
     // ── Sincronización con Google ────────────────────────────────────────────────
@@ -1139,13 +1455,15 @@
 
     function searchThirdParties(term, callback) {
         $.post(cfg.ajaxUrl, { action: 'aura_contacts_search_third_parties', nonce: cfg.nonce, term: term }, function(res) {
-            callback(res.success ? res.data : []);
+            var list = (res && res.success && res.data) ? (Array.isArray(res.data) ? res.data : (res.data.items || [])) : [];
+            callback(list);
         });
     }
 
     function searchWpUsers(term, callback) {
         $.post(cfg.ajaxUrl, { action: 'aura_contacts_search_wp_users', nonce: cfg.nonce, term: term }, function(res) {
-            callback(res.success ? res.data : []);
+            var list = (res && res.success && res.data) ? (Array.isArray(res.data) ? res.data : (res.data.items || [])) : [];
+            callback(list);
         });
     }
 
