@@ -231,6 +231,24 @@ wp_enqueue_style(  'aura-inv-loans',      AURA_PLUGIN_URL . 'assets/css/inventor
 
                 </div><!-- .aura-loan-fields-2col -->
 
+                <!-- Selector Universal de Contactos Aura -->
+                <div class="aura-loan-field-group" style="margin-bottom: 12px; grid-column: 1 / -1;">
+                    <?php
+                    echo Aura_Contact_Selector::render([
+                        'id'           => 'co-contact-selector',
+                        'name'         => 'contact_id',
+                        'label'        => __( 'Prestatario (Directorio de Contactos Aura)', 'aura-suite' ),
+                        'placeholder'  => __( 'Buscar prestatario por nombre, teléfono, empresa o cargo…', 'aura-suite' ),
+                        'sync_fields'  => [
+                            'name'    => '#co-borrower-name',
+                            'phone'   => '#co-borrower-phone',
+                            'user_id' => '#co-borrower-user',
+                        ],
+                        'hint'         => __( 'Autocompleta nombre, teléfono y usuario vinculado desde la libreta de contactos.', 'aura-suite' ),
+                    ]);
+                    ?>
+                </div>
+
                 <div class="aura-loan-fields-2col">
 
                     <!-- Nombre libre (PRIORIDAD) ─────────────── -->
@@ -502,6 +520,22 @@ wp_enqueue_style(  'aura-inv-loans',      AURA_PLUGIN_URL . 'assets/css/inventor
                         </label>
                         <input type="date" id="el-expected-return" name="expected_return_date" class="aura-loan-input" required>
                     </div>
+                </div>
+
+                <div class="aura-loan-field-group" style="margin-bottom: 12px;">
+                    <?php
+                    echo Aura_Contact_Selector::render([
+                        'id'           => 'el-contact-selector',
+                        'name'         => 'contact_id',
+                        'label'        => __( 'Vincular a Contacto de Aura', 'aura-suite' ),
+                        'placeholder'  => __( 'Buscar contacto por nombre, email o teléfono…', 'aura-suite' ),
+                        'sync_fields'  => [
+                            'name'  => '#el-borrowed-name',
+                            'phone' => '#el-borrowed-phone',
+                        ],
+                        'hint'         => __( 'Actualiza automáticamente el nombre y teléfono del contacto.', 'aura-suite' ),
+                    ]);
+                    ?>
                 </div>
 
                 <div class="aura-loan-field-group">

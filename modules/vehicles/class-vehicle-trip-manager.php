@@ -27,6 +27,22 @@ class Aura_Vehicle_Trip_Manager {
     const TYPE_MAINTENANCE = 'maintenance';
     const TYPE_OTHER       = 'other';
 
+    /**
+     * Asegurar que la columna contact_id exista en la tabla de salidas.
+     */
+    public static function maybe_add_contact_id_column(): void {
+        global $wpdb;
+        $table = $wpdb->prefix . self::TABLE;
+        $column = $wpdb->get_results( $wpdb->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = 'contact_id'",
+            DB_NAME,
+            $table
+        ) );
+        if ( empty( $column ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `contact_id` BIGINT(20) UNSIGNED DEFAULT NULL AFTER `area_id`, ADD INDEX `idx_contact` (`contact_id`)" );
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────
     // CREAR SALIDA
     // ─────────────────────────────────────────────────────────────
@@ -39,6 +55,8 @@ class Aura_Vehicle_Trip_Manager {
      */
     public static function create( array $data ) {
         global $wpdb;
+
+        self::maybe_add_contact_id_column();
 
         // Validaciones obligatorias
         $vehicle_id = absint( $data['vehicle_id'] ?? 0 );
@@ -490,14 +508,20 @@ class Aura_Vehicle_Trip_Manager {
     public static function get( int $id ): ?array {
         global $wpdb;
 
+        self::maybe_add_contact_id_column();
+
         $trip = $wpdb->get_row( $wpdb->prepare(
             "SELECT t.*, v.plate, v.brand, v.model,
                     u.display_name AS created_by_name,
-                    au.display_name AS assigned_to_name
+                    au.display_name AS assigned_to_name,
+                    c.avatar_url AS contact_avatar,
+                    c.category AS contact_category,
+                    COALESCE(NULLIF(TRIM(CONCAT(COALESCE(c.first_name, ''), ' ', COALESCE(c.last_name, ''))), ''), c.organization) AS contact_master_name
              FROM {$wpdb->prefix}" . self::TABLE . " t
              LEFT JOIN {$wpdb->prefix}aura_vehicles v ON v.id = t.vehicle_id
              LEFT JOIN {$wpdb->users} u  ON u.ID  = t.created_by
              LEFT JOIN {$wpdb->users} au ON au.ID = t.assigned_to
+             LEFT JOIN {$wpdb->prefix}aura_contacts c ON c.id = t.contact_id
              WHERE t.id = %d AND t.deleted = 0",
             $id
         ), ARRAY_A );
@@ -581,11 +605,15 @@ class Aura_Vehicle_Trip_Manager {
 
         $list_sql = "SELECT t.*, v.plate, v.brand, v.model,
                             u.display_name AS created_by_name,
-                            au.display_name AS assigned_to_name
+                            au.display_name AS assigned_to_name,
+                            c.avatar_url AS contact_avatar,
+                            c.category AS contact_category,
+                            COALESCE(NULLIF(TRIM(CONCAT(COALESCE(c.first_name, ''), ' ', COALESCE(c.last_name, ''))), ''), c.organization) AS contact_master_name
                      FROM {$table} t
                      LEFT JOIN {$wpdb->prefix}aura_vehicles v ON v.id = t.vehicle_id
                      LEFT JOIN {$wpdb->users} u  ON u.ID = t.created_by
                      LEFT JOIN {$wpdb->users} au ON au.ID = t.assigned_to
+                     LEFT JOIN {$wpdb->prefix}aura_contacts c ON c.id = t.contact_id
                      WHERE {$where_sql}
                      ORDER BY t.{$sort_by} {$sort_dir}
                      LIMIT %d OFFSET %d";
@@ -682,7 +710,7 @@ class Aura_Vehicle_Trip_Manager {
 
         // Campos numéricos
         $int_fields = array( 'departure_odometer', 'return_odometer', 'area_id', 'assigned_to',
-                             'departure_fuel', 'return_fuel', 'km_traveled' );
+                             'departure_fuel', 'return_fuel', 'km_traveled', 'contact_id' );
         foreach ( $int_fields as $field ) {
             if ( array_key_exists( $field, $data ) ) {
                 $row[ $field ] = absint( $data[ $field ] );

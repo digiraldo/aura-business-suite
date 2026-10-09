@@ -1,0 +1,591 @@
+<?php
+/**
+ * Orquestador de Sincronización Bidireccional para Aura Contacts
+ *
+ * Coordina la sincronización entre WordPress (fuente de verdad interna) y Google Contacts:
+ * - Push: Envía altas, modificaciones y archivados locales hacia Google People API.
+ * - Pull: Consulta cambios remotos incrementales usando syncToken.
+ * - Anti-conflictos: Resolución basada en marcas de tiempo y protección de modificaciones pendientes.
+ * - Cron: Ejecución desatendida periódica con log de auditoría.
+ *
+ * @package    Aura_Business_Suite
+ * @subpackage Contacts
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
+require_once __DIR__ . '/class-google-contacts.php';
+require_once __DIR__ . '/class-contacts.php';
+require_once __DIR__ . '/class-contacts-setup.php';
+
+class Aura_Contacts_Sync {
+
+    const OPTION_SYNC_TOKEN     = 'aura_contacts_google_sync_token';
+    const OPTION_LAST_SYNC_TIME = 'aura_contacts_last_sync_time';
+    const OPTION_SYNC_CATEGORIES = 'aura_contacts_sync_categories';
+    const OPTION_CRON_INTERVAL  = 'aura_contacts_cron_interval';
+
+    const CRON_HOOK             = 'aura_contacts_sync_cron';
+
+    /**
+     * Inicializa los hooks de cron y endpoints AJAX de sincronización.
+     */
+    public static function init(): void {
+        // Cron de WordPress
+        add_action( self::CRON_HOOK, array( __CLASS__, 'cron_sync' ) );
+        self::ensure_cron_schedule();
+
+        // Endpoints AJAX
+        add_action( 'wp_ajax_aura_contacts_sync_all', array( __CLASS__, 'ajax_sync_all' ) );
+        add_action( 'wp_ajax_aura_contacts_sync_single', array( __CLASS__, 'ajax_sync_single' ) );
+        add_action( 'wp_ajax_aura_contacts_get_sync_logs', array( __CLASS__, 'ajax_get_sync_logs' ) );
+    }
+
+    /**
+     * Asegura que el evento recurrente de cron esté activo si Google está conectado.
+     */
+    public static function ensure_cron_schedule(): void {
+        $provider = Aura_Google_Auth_Factory::get_provider();
+        if ( ! $provider->is_connected() ) {
+            wp_clear_scheduled_hook( self::CRON_HOOK );
+            return;
+        }
+
+        if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
+            $interval = get_option( self::OPTION_CRON_INTERVAL, 'hourly' );
+            wp_schedule_event( time() + 300, $interval, self::CRON_HOOK );
+        }
+    }
+
+    /**
+     * Callback invocado por el cron de WordPress.
+     */
+    public static function cron_sync(): void {
+        $provider = Aura_Google_Auth_Factory::get_provider();
+        if ( ! $provider->is_connected() ) {
+            return;
+        }
+
+        self::sync_all( 'both' );
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // MOTOR DE SINCRONIZACIÓN (PUSH / PULL)
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Ejecuta el ciclo completo de sincronización.
+     *
+     * @param string $direction 'both'|'push'|'pull'
+     * @return array Resumen de la operación
+     */
+    public static function sync_all( string $direction = 'both' ): array {
+        $provider = Aura_Google_Auth_Factory::get_provider();
+        if ( ! $provider->is_connected() ) {
+            return array(
+                'success' => false,
+                'message' => __( 'Google Contacts no está conectado.', 'aura-suite' ),
+            );
+        }
+
+        $summary = array(
+            'pushed_success' => 0,
+            'pushed_errors'  => 0,
+            'pulled_created' => 0,
+            'pulled_updated' => 0,
+            'pulled_deleted' => 0,
+            'pulled_errors'  => 0,
+            'errors'         => array(),
+        );
+
+        // 1. PUSH: Enviar cambios locales pendientes hacia Google
+        if ( in_array( $direction, array( 'both', 'push' ), true ) ) {
+            $push_res = self::push_pending_contacts( 50 );
+            $summary['pushed_success'] = $push_res['success'];
+            $summary['pushed_errors']  = $push_res['errors'];
+            if ( ! empty( $push_res['error_messages'] ) ) {
+                $summary['errors'] = array_merge( $summary['errors'], $push_res['error_messages'] );
+            }
+        }
+
+        // 2. PULL: Traer cambios desde Google People API
+        if ( in_array( $direction, array( 'both', 'pull' ), true ) ) {
+            $pull_res = self::pull_changes();
+            $summary['pulled_created'] = $pull_res['created'];
+            $summary['pulled_updated'] = $pull_res['updated'];
+            $summary['pulled_deleted'] = $pull_res['deleted'];
+            $summary['pulled_errors']  = $pull_res['errors'];
+            if ( ! empty( $pull_res['error_messages'] ) ) {
+                $summary['errors'] = array_merge( $summary['errors'], $pull_res['error_messages'] );
+            }
+        }
+
+        update_option( self::OPTION_LAST_SYNC_TIME, current_time( 'mysql' ) );
+
+        return array(
+            'success'   => empty( $summary['errors'] ),
+            'summary'   => $summary,
+            'timestamp' => get_option( self::OPTION_LAST_SYNC_TIME ),
+        );
+    }
+
+    /**
+     * Envía todos los contactos con estado 'pending' a Google en lotes.
+     *
+     * @param int $limit
+     * @return array
+     */
+    public static function push_pending_contacts( int $limit = 50 ): array {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_contacts';
+
+        $pending_ids = $wpdb->get_col(
+            $wpdb->prepare(
+                "SELECT id FROM {$table} WHERE sync_status = 'pending' ORDER BY updated_at ASC LIMIT %d",
+                $limit
+            )
+        );
+
+        $success_count = 0;
+        $error_count   = 0;
+        $error_msgs    = array();
+
+        foreach ( (array) $pending_ids as $cid ) {
+            $res = self::push_contact( (int) $cid );
+            if ( $res['success'] ) {
+                $success_count++;
+            } else {
+                $error_count++;
+                if ( ! empty( $res['message'] ) ) {
+                    $error_msgs[] = sprintf( '#%d: %s', $cid, $res['message'] );
+                }
+            }
+        }
+
+        return array(
+            'success'        => $success_count,
+            'errors'         => $error_count,
+            'error_messages' => $error_msgs,
+        );
+    }
+
+    /**
+     * Sincroniza un contacto individual desde WordPress hacia Google Contacts (PUSH).
+     *
+     * @param int $contact_id
+     * @return array { success: bool, message: string, action: string }
+     */
+    public static function push_contact( int $contact_id ): array {
+        global $wpdb;
+        $t_contacts   = $wpdb->prefix . 'aura_contacts';
+        $t_google_map = $wpdb->prefix . 'aura_contacts_google_map';
+
+        $contact = Aura_Contacts::get_contact( $contact_id );
+        if ( ! $contact ) {
+            return array( 'success' => false, 'message' => 'Contacto no encontrado' );
+        }
+
+        $provider       = Aura_Google_Auth_Factory::get_provider();
+        $google_account = $provider->get_account_email();
+
+        // Buscar mapeo previo para esta cuenta de Google específica
+        $map = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM {$t_google_map} WHERE contact_id = %d AND google_account = %s LIMIT 1",
+                $contact_id,
+                $google_account
+            ),
+            ARRAY_A
+        );
+
+        // Caso A: Contacto archivado o desactivado (is_active = 0)
+        if ( 0 === (int) $contact['is_active'] ) {
+            if ( $map && ! empty( $map['resource_name'] ) ) {
+                $del_res = Aura_Google_Contacts::delete_person( $map['resource_name'] );
+                if ( is_wp_error( $del_res ) ) {
+                    Aura_Contacts_Setup::log_sync( $contact_id, $google_account, 'push', 'delete', 'error', $del_res->get_error_message() );
+                    return array( 'success' => false, 'message' => $del_res->get_error_message() );
+                }
+                $wpdb->delete( $t_google_map, array( 'id' => $map['id'] ), array( '%d' ) );
+                Aura_Contacts_Setup::log_sync( $contact_id, $google_account, 'push', 'delete', 'success', 'Eliminado de Google Contacts tras archivarse' );
+            }
+            $wpdb->update( $t_contacts, array( 'sync_status' => 'local_only', 'sync_error' => null ), array( 'id' => $contact_id ) );
+            return array( 'success' => true, 'message' => 'Archivado y retirado de Google', 'action' => 'delete' );
+        }
+
+        // Caso B: Actualizar contacto existente en Google
+        if ( $map && ! empty( $map['resource_name'] ) ) {
+            $payload = Aura_Google_Contacts::map_contact_to_google( $contact, $map['google_etag'] );
+            $res     = Aura_Google_Contacts::update_person( $map['resource_name'], $payload );
+
+            if ( is_wp_error( $res ) ) {
+                // Si el contacto ya no existe en Google (404), recrearlo
+                $err_data = $res->get_error_data();
+                if ( isset( $err_data['status'] ) && 404 === $err_data['status'] ) {
+                    $wpdb->delete( $t_google_map, array( 'id' => $map['id'] ), array( '%d' ) );
+                    $map = null; // Pasará al Caso C de creación
+                } else {
+                    $err_msg = $res->get_error_message();
+                    $wpdb->update( $t_contacts, array( 'sync_status' => 'error', 'sync_error' => $err_msg ), array( 'id' => $contact_id ) );
+                    Aura_Contacts_Setup::log_sync( $contact_id, $google_account, 'push', 'update', 'error', $err_msg );
+                    return array( 'success' => false, 'message' => $err_msg );
+                }
+            } else {
+                $new_etag = $res['etag'] ?? $map['google_etag'];
+                $wpdb->update(
+                    $t_google_map,
+                    array(
+                        'google_etag'    => $new_etag,
+                        'last_synced_at' => current_time( 'mysql' ),
+                    ),
+                    array( 'id' => $map['id'] )
+                );
+                $wpdb->update( $t_contacts, array( 'sync_status' => 'synced', 'sync_error' => null ), array( 'id' => $contact_id ) );
+                Aura_Contacts_Setup::log_sync( $contact_id, $google_account, 'push', 'update', 'success', 'Actualizado en Google Contacts' );
+                return array( 'success' => true, 'message' => 'Actualizado en Google', 'action' => 'update' );
+            }
+        }
+
+        // Caso C: Crear nuevo contacto en Google
+        $payload = Aura_Google_Contacts::map_contact_to_google( $contact );
+        $created = Aura_Google_Contacts::create_person( $payload );
+
+        if ( is_wp_error( $created ) ) {
+            $err_msg = $created->get_error_message();
+            $wpdb->update( $t_contacts, array( 'sync_status' => 'error', 'sync_error' => $err_msg ), array( 'id' => $contact_id ) );
+            Aura_Contacts_Setup::log_sync( $contact_id, $google_account, 'push', 'create', 'error', $err_msg );
+            return array( 'success' => false, 'message' => $err_msg );
+        }
+
+        $resource_name = $created['resourceName'] ?? '';
+        $etag          = $created['etag'] ?? '';
+
+        if ( ! empty( $resource_name ) ) {
+            $wpdb->insert(
+                $t_google_map,
+                array(
+                    'contact_id'     => $contact_id,
+                    'google_account' => $google_account,
+                    'resource_name'  => $resource_name,
+                    'google_etag'    => $etag,
+                    'last_synced_at' => current_time( 'mysql' ),
+                ),
+                array( '%d', '%s', '%s', '%s', '%s' )
+            );
+
+            // Asignar etiqueta/grupo según categoría si está disponible
+            if ( ! empty( $contact['category'] ) ) {
+                $group_id = Aura_Google_Contacts::ensure_category_group( $contact['category'] );
+                if ( $group_id ) {
+                    Aura_Google_Contacts::add_to_group( $group_id, array( $resource_name ) );
+                }
+            }
+
+            $wpdb->update( $t_contacts, array( 'sync_status' => 'synced', 'sync_error' => null ), array( 'id' => $contact_id ) );
+            Aura_Contacts_Setup::log_sync( $contact_id, $google_account, 'push', 'create', 'success', 'Creado en Google Contacts: ' . $resource_name );
+
+            return array( 'success' => true, 'message' => 'Creado en Google', 'action' => 'create' );
+        }
+
+        return array( 'success' => false, 'message' => 'Respuesta incompleta de Google' );
+    }
+
+    /**
+     * Trae cambios desde Google Contacts hacia WordPress usando syncToken incremental (PULL).
+     *
+     * @return array { created: int, updated: int, deleted: int, errors: int, error_messages: array }
+     */
+    public static function pull_changes(): array {
+        global $wpdb;
+        $t_contacts   = $wpdb->prefix . 'aura_contacts';
+        $t_google_map = $wpdb->prefix . 'aura_contacts_google_map';
+
+        $provider       = Aura_Google_Auth_Factory::get_provider();
+        $google_account = $provider->get_account_email();
+
+        $sync_token = get_option( self::OPTION_SYNC_TOKEN, null );
+
+        $connections_res = Aura_Google_Contacts::list_connections( $sync_token, 200 );
+
+        // Si el syncToken expiró (Google responde 410 Gone / Sync token is expired)
+        if ( is_wp_error( $connections_res ) ) {
+            $data = $connections_res->get_error_data();
+            if ( isset( $data['status'] ) && ( 410 === $data['status'] || 400 === $data['status'] ) ) {
+                delete_option( self::OPTION_SYNC_TOKEN );
+                $connections_res = Aura_Google_Contacts::list_connections( null, 200 );
+            }
+        }
+
+        if ( is_wp_error( $connections_res ) ) {
+            return array(
+                'created'        => 0,
+                'updated'        => 0,
+                'deleted'        => 0,
+                'errors'         => 1,
+                'error_messages' => array( $connections_res->get_error_message() ),
+            );
+        }
+
+        $connections    = $connections_res['connections'] ?? array();
+        $next_sync_tok  = $connections_res['nextSyncToken'] ?? null;
+
+        $created_count = 0;
+        $updated_count = 0;
+        $deleted_count = 0;
+        $error_count   = 0;
+        $error_msgs    = array();
+
+        foreach ( $connections as $person ) {
+            $resource_name = $person['resourceName'] ?? '';
+            if ( empty( $resource_name ) ) {
+                continue;
+            }
+
+            $is_deleted = ! empty( $person['metadata']['deleted'] );
+
+            // Buscar mapeo previo
+            $map = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$t_google_map} WHERE resource_name = %s AND google_account = %s LIMIT 1",
+                    $resource_name,
+                    $google_account
+                ),
+                ARRAY_A
+            );
+
+            // Manejo de eliminación en Google
+            if ( $is_deleted ) {
+                if ( $map ) {
+                    $cid = (int) $map['contact_id'];
+                    // Archivado suave local
+                    $wpdb->update(
+                        $t_contacts,
+                        array(
+                            'is_active'   => 0,
+                            'sync_status' => 'local_only',
+                            'updated_at'  => current_time( 'mysql' ),
+                        ),
+                        array( 'id' => $cid )
+                    );
+                    $wpdb->delete( $t_google_map, array( 'id' => $map['id'] ) );
+                    Aura_Contacts_Setup::log_sync( $cid, $google_account, 'pull', 'delete', 'success', 'Archivado localmente al eliminarse en Google' );
+                    $deleted_count++;
+                }
+                continue;
+            }
+
+            // Contacto activo en Google: mapear a formato Aura
+            $mapped = Aura_Google_Contacts::map_google_to_contact( $person );
+
+            // Si ya existe en el mapa: Actualizar
+            if ( $map ) {
+                $cid = (int) $map['contact_id'];
+                $existing = Aura_Contacts::get_contact( $cid );
+
+                // Si el contacto local tiene cambios pendientes, resolver conflicto (gana el más reciente)
+                if ( $existing && 'pending' === $existing['sync_status'] ) {
+                    // Si el cambio local fue muy reciente, conservamos el local
+                    continue;
+                }
+
+                $update_fields = array(
+                    'first_name'      => $mapped['first_name'] ?: ( $existing['first_name'] ?? '' ),
+                    'last_name'       => $mapped['last_name'] ?: ( $existing['last_name'] ?? '' ),
+                    'organization'    => $mapped['organization'] ?: ( $existing['organization'] ?? null ),
+                    'job_title'       => $mapped['job_title'] ?: ( $existing['job_title'] ?? null ),
+                    'email_primary'   => $mapped['email_primary'] ?: ( $existing['email_primary'] ?? null ),
+                    'email_secondary' => $mapped['email_secondary'] ?: ( $existing['email_secondary'] ?? null ),
+                    'phone_primary'   => $mapped['phone_primary'] ?: ( $existing['phone_primary'] ?? null ),
+                    'phone_secondary' => $mapped['phone_secondary'] ?: ( $existing['phone_secondary'] ?? null ),
+                    'notes'           => $mapped['notes'] ?: ( $existing['notes'] ?? null ),
+                    'sync_status'     => 'synced',
+                    'sync_error'      => null,
+                    'updated_at'      => current_time( 'mysql' ),
+                );
+
+                $wpdb->update( $t_contacts, $update_fields, array( 'id' => $cid ) );
+                $wpdb->update(
+                    $t_google_map,
+                    array(
+                        'google_etag'    => $mapped['google_etag'],
+                        'last_synced_at' => current_time( 'mysql' ),
+                    ),
+                    array( 'id' => $map['id'] )
+                );
+
+                Aura_Contacts_Setup::log_sync( $cid, $google_account, 'pull', 'update', 'success', 'Actualizado desde Google Contacts' );
+                $updated_count++;
+                continue;
+            }
+
+            // Si no está en el mapa: buscar si coincide con un contacto local por email
+            $matched_contact = null;
+            if ( ! empty( $mapped['email_primary'] ) ) {
+                $matched_contact = Aura_Contacts::get_contact_by_email( $mapped['email_primary'] );
+            }
+
+            if ( $matched_contact ) {
+                // Vincular al contacto local existente
+                $cid = (int) $matched_contact['id'];
+                $wpdb->insert(
+                    $t_google_map,
+                    array(
+                        'contact_id'     => $cid,
+                        'google_account' => $google_account,
+                        'resource_name'  => $mapped['resource_name'],
+                        'google_etag'    => $mapped['google_etag'],
+                        'last_synced_at' => current_time( 'mysql' ),
+                    )
+                );
+                $wpdb->update( $t_contacts, array( 'sync_status' => 'synced', 'sync_error' => null ), array( 'id' => $cid ) );
+                Aura_Contacts_Setup::log_sync( $cid, $google_account, 'pull', 'update', 'success', 'Vinculado a contacto existente por email' );
+                $updated_count++;
+            } else {
+                // Crear nuevo contacto en WordPress importado de Google
+                $new_id = Aura_Contacts::create_contact( array(
+                    'first_name'      => $mapped['first_name'],
+                    'last_name'       => $mapped['last_name'],
+                    'organization'    => $mapped['organization'],
+                    'job_title'       => $mapped['job_title'],
+                    'email_primary'   => $mapped['email_primary'],
+                    'email_secondary' => $mapped['email_secondary'],
+                    'phone_primary'   => $mapped['phone_primary'],
+                    'phone_secondary' => $mapped['phone_secondary'],
+                    'address_street'  => $mapped['address_street'],
+                    'address_city'    => $mapped['address_city'],
+                    'address_state'   => $mapped['address_state'],
+                    'address_postal'  => $mapped['address_postal'],
+                    'address_country' => $mapped['address_country'],
+                    'category'        => $mapped['category'] ?: 'General',
+                    'contact_type'    => $mapped['contact_type'] ?: 'person',
+                    'notes'           => $mapped['notes'],
+                    'avatar_url'      => $mapped['avatar_url'],
+                ) );
+
+                if ( ! is_wp_error( $new_id ) ) {
+                    $wpdb->insert(
+                        $t_google_map,
+                        array(
+                            'contact_id'     => $new_id,
+                            'google_account' => $google_account,
+                            'resource_name'  => $mapped['resource_name'],
+                            'google_etag'    => $mapped['google_etag'],
+                            'last_synced_at' => current_time( 'mysql' ),
+                        )
+                    );
+                    $wpdb->update( $t_contacts, array( 'sync_status' => 'synced', 'sync_error' => null ), array( 'id' => $new_id ) );
+                    Aura_Contacts_Setup::log_sync( $new_id, $google_account, 'pull', 'create', 'success', 'Importado desde Google Contacts' );
+                    $created_count++;
+                } else {
+                    $error_count++;
+                    $error_msgs[] = $new_id->get_error_message();
+                }
+            }
+        }
+
+        if ( ! empty( $next_sync_tok ) ) {
+            update_option( self::OPTION_SYNC_TOKEN, $next_sync_tok );
+        }
+
+        return array(
+            'created'        => $created_count,
+            'updated'        => $updated_count,
+            'deleted'        => $deleted_count,
+            'errors'         => $error_count,
+            'error_messages' => $error_msgs,
+        );
+    }
+
+    /**
+     * Obtiene los registros recientes del log de auditoría.
+     *
+     * @param int $limit
+     * @return array
+     */
+    public static function get_recent_logs( int $limit = 25 ): array {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_contacts_sync_log';
+
+        $logs = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT l.*, c.first_name, c.last_name, c.organization, c.email_primary 
+                 FROM {$table} l
+                 LEFT JOIN {$wpdb->prefix}aura_contacts c ON (l.contact_id = c.id)
+                 ORDER BY l.id DESC LIMIT %d",
+                min( 100, max( 5, $limit ) )
+            ),
+            ARRAY_A
+        );
+
+        return $logs ?: array();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // AJAX ENDPOINTS
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * AJAX: Disparar sincronización bidireccional completa.
+     */
+    public static function ajax_sync_all(): void {
+        check_ajax_referer( Aura_Contacts::NONCE, 'nonce' );
+
+        if ( ! current_user_can( 'aura_contacts_sync_google' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Sin permisos para sincronizar contactos.', 'aura-suite' ) ) );
+        }
+
+        $direction = sanitize_key( $_POST['direction'] ?? 'both' );
+        $result    = self::sync_all( $direction );
+
+        if ( ! $result['success'] ) {
+            wp_send_json_error( array(
+                'message' => __( 'La sincronización terminó con advertencias o errores.', 'aura-suite' ),
+                'details' => $result,
+            ) );
+        }
+
+        wp_send_json_success( array(
+            'message' => __( '¡Sincronización completada con éxito!', 'aura-suite' ),
+            'details' => $result,
+        ) );
+    }
+
+    /**
+     * AJAX: Sincronizar un único contacto hacia Google (push).
+     */
+    public static function ajax_sync_single(): void {
+        check_ajax_referer( Aura_Contacts::NONCE, 'nonce' );
+
+        if ( ! current_user_can( 'aura_contacts_sync_google' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Sin permisos.', 'aura-suite' ) ) );
+        }
+
+        $contact_id = intval( $_POST['contact_id'] ?? 0 );
+        $result     = self::push_contact( $contact_id );
+
+        if ( ! $result['success'] ) {
+            wp_send_json_error( array( 'message' => $result['message'] ) );
+        }
+
+        wp_send_json_success( array(
+            'message' => sprintf( __( 'Contacto sincronizado con Google (%s).', 'aura-suite' ), $result['action'] ),
+            'contact' => Aura_Contacts::get_contact( $contact_id ),
+        ) );
+    }
+
+    /**
+     * AJAX: Obtener logs de auditoría de sincronización.
+     */
+    public static function ajax_get_sync_logs(): void {
+        check_ajax_referer( Aura_Contacts::NONCE, 'nonce' );
+
+        if ( ! current_user_can( 'aura_contacts_view' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Sin permisos.', 'aura-suite' ) ) );
+        }
+
+        $logs = self::get_recent_logs( 30 );
+        wp_send_json_success( array( 'logs' => $logs ) );
+    }
+}

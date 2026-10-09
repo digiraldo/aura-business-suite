@@ -172,17 +172,29 @@
                   }
                 },
                 // 3. Responsable/Cliente: Dinámico según trip_type
-                { data: null, title: 'Responsable / Cliente', responsivePriority: 10000, width: '120px',
+                { data: null, title: 'Responsable / Cliente', responsivePriority: 10000, width: '130px',
                   render: function( row ) {
                       var name = '—';
                       if ( row.trip_type === 'rental' ) {
                           name = row.client_name || '—';
                       } else if ( row.trip_type === 'maintenance' ) {
-                          name = row.assigned_to_name || row.created_by_name || '—';
+                          name = row.maint_provider || row.assigned_to_name || row.created_by_name || '—';
                       } else {
                           name = row.responsible_name || '—';
                       }
-                      return $( '<span>' ).text( name ).html();
+                      var html = '<div style="display:flex;align-items:center;gap:6px;">';
+                      if ( row.contact_avatar ) {
+                          html += '<img src="' + $( '<div>' ).text( row.contact_avatar ).html() + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;">';
+                      } else if ( name !== '—' ) {
+                          var init = name.charAt(0).toUpperCase();
+                          html += '<span style="width:24px;height:24px;border-radius:50%;background:rgba(59,130,246,0.15);color:#3b82f6;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">' + $( '<div>' ).text( init ).html() + '</span>';
+                      }
+                      html += '<div style="line-height:1.2;"><strong>' + $( '<div>' ).text( name ).html() + '</strong>';
+                      if ( row.contact_category ) {
+                          html += '<br><small style="color:#888;font-size:10px;text-transform:capitalize;">' + $( '<div>' ).text( row.contact_category ).html() + '</small>';
+                      }
+                      html += '</div></div>';
+                      return html;
                   }
                 },
                 // 4. Destino: Solo si no es rental, sino mostrar "—"
@@ -488,6 +500,12 @@
         $( '#trip-maint_priority' ).val( 'medium' );
         $( '#trip-maint_description, #trip-maint_provider, #trip-maint_contact' ).val( '' );
         $( '#trip-maint_estimated_cost' ).val( '0.00' );
+        $( '#trip-contact_id' ).val( '' );
+        if ( window.AuraContactSelector ) {
+            window.AuraContactSelector.clear( '#trip-client-contact-selector' );
+            window.AuraContactSelector.clear( '#trip-responsible-contact-selector' );
+            window.AuraContactSelector.clear( '#trip-provider-contact-selector' );
+        }
         $( '.aura-trips-type-section' ).hide();
         $( '.aura-trips-type-card' ).removeClass( 'is-active' );
         $( '.aura-veh-form-col.has-error' ).removeClass( 'has-error' );
@@ -552,6 +570,25 @@
                 $( '#trip-departure_odometer' ).val( trip.departure_odometer || 0 );
                 $( '#trip-departure_fuel' ).val( normalizeFuelLevel( trip.departure_fuel || 0 ) );
                 updateFuelGauge( $( '#trip-departure_fuel' ).val(), 'trip' );
+
+                $( '#trip-contact_id' ).val( trip.contact_id || '' );
+                if ( window.AuraContactSelector && trip.contact_id ) {
+                    var cData = {
+                        id: trip.contact_id,
+                        name: trip.contact_master_name || trip.client_name || trip.responsible_name || trip.maint_provider || '',
+                        avatar: trip.contact_avatar || '',
+                        category_label: trip.contact_category || '',
+                        category_color: '#3b82f6',
+                        category_bg: '#eff6ff'
+                    };
+                    if ( trip.trip_type === 'rental' ) {
+                        window.AuraContactSelector.setContact( '#trip-client-contact-selector', cData );
+                    } else if ( trip.trip_type === 'errand' || trip.trip_type === 'other' ) {
+                        window.AuraContactSelector.setContact( '#trip-responsible-contact-selector', cData );
+                    } else if ( trip.trip_type === 'maintenance' ) {
+                        window.AuraContactSelector.setContact( '#trip-provider-contact-selector', cData );
+                    }
+                }
 
                 $( '#trip-client_name' ).val( trip.client_name || '' );
                 $( '#trip-client_phone' ).val( trip.client_phone || '' );
@@ -627,10 +664,31 @@
         }
     } );
 
+    $( document ).on( 'aura:contact-selected', '#trip-client-contact-selector, #trip-responsible-contact-selector, #trip-provider-contact-selector', function( e, contact ) {
+        if ( contact && contact.id ) {
+            $( '#trip-contact_id' ).val( contact.id );
+        }
+    } );
+
+    $( document ).on( 'aura:contact-cleared', '#trip-client-contact-selector, #trip-responsible-contact-selector, #trip-provider-contact-selector', function() {
+        $( '#trip-contact_id' ).val( '' );
+    } );
+
     function collectFormData() {
         var type = $( '#trip-trip_type' ).val();
+        var contactId = parseInt( $( '#trip-contact_id' ).val(), 10 ) || 0;
+        if ( ! contactId ) {
+            if ( type === 'rental' ) {
+                contactId = parseInt( $( '#trip-client-contact-selector-val' ).val(), 10 ) || 0;
+            } else if ( type === 'errand' || type === 'other' ) {
+                contactId = parseInt( $( '#trip-responsible-contact-selector-val' ).val(), 10 ) || 0;
+            } else if ( type === 'maintenance' ) {
+                contactId = parseInt( $( '#trip-provider-contact-selector-val' ).val(), 10 ) || 0;
+            }
+        }
         var data = {
             vehicle_id:          parseInt( $( '#trip-vehicle_id' ).val(), 10 )     || 0,
+            contact_id:          contactId,
             trip_type:           type,
             area_id:             parseInt( $( '#trip-area_id' ).val(), 10 )        || 0,
             departure_datetime:  $( '#trip-departure_datetime' ).val(),

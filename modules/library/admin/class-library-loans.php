@@ -36,6 +36,23 @@ class Aura_Library_Loans {
         foreach ( $ajax_actions as $action => $handler ) {
             add_action( 'wp_ajax_aura_library_loans_' . $action, [ __CLASS__, $handler ] );
         }
+
+        self::maybe_add_contact_id_column();
+    }
+
+    /**
+     * Asegurar que la columna contact_id exista en aura_library_loans
+     */
+    public static function maybe_add_contact_id_column(): void {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_library_loans';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+            return;
+        }
+        $col = $wpdb->get_results( "SHOW COLUMNS FROM `{$table}` LIKE 'contact_id'" );
+        if ( empty( $col ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `contact_id` BIGINT(20) UNSIGNED DEFAULT NULL AFTER `borrower_user_id`, ADD KEY `idx_contact` (`contact_id`)" );
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -111,8 +128,9 @@ class Aura_Library_Loans {
         }
 
         global $wpdb;
-        $t_loans = $wpdb->prefix . 'aura_library_loans';
-        $t_books = $wpdb->prefix . 'aura_library_books';
+        $t_loans    = $wpdb->prefix . 'aura_library_loans';
+        $t_books    = $wpdb->prefix . 'aura_library_books';
+        $t_contacts = $wpdb->prefix . 'aura_contacts';
 
         $page      = max( 1, intval( $_POST['page']     ?? 1 ) );
         $per_page  = min( 100, max( 10, intval( $_POST['per_page'] ?? 20 ) ) );
@@ -142,8 +160,8 @@ class Aura_Library_Loans {
 
         if ( $search ) {
             $like    = '%' . $wpdb->esc_like( $search ) . '%';
-            $where[] = '(b.title LIKE %s OR b.author LIKE %s OR u.display_name LIKE %s)';
-            array_push( $params, $like, $like, $like );
+            $where[] = '(b.title LIKE %s OR b.author LIKE %s OR u.display_name LIKE %s OR c.first_name LIKE %s OR c.last_name LIKE %s OR c.organization LIKE %s)';
+            array_push( $params, $like, $like, $like, $like, $like, $like );
         }
 
         if ( $date_from ) {
@@ -160,6 +178,7 @@ class Aura_Library_Loans {
         $count_sql = "SELECT COUNT(*) FROM {$t_loans} l
                       LEFT JOIN {$t_books} b ON b.id = l.book_id
                       LEFT JOIN {$wpdb->users} u ON u.ID = l.borrower_user_id
+                      LEFT JOIN {$t_contacts} c ON c.id = l.contact_id
                       WHERE {$where_sql}";
 
         $total = $params
@@ -170,10 +189,18 @@ class Aura_Library_Loans {
                             b.title     AS book_title,
                             b.dewey_number,
                             b.cover_image_id,
-                            u.display_name AS borrower_name
+                            COALESCE(
+                                NULLIF(TRIM(CONCAT(COALESCE(c.first_name,''), ' ', COALESCE(c.last_name,''))), ''),
+                                NULLIF(c.organization, ''),
+                                u.display_name,
+                                'Lector'
+                            ) AS borrower_name,
+                            c.avatar_url AS contact_avatar,
+                            c.category   AS contact_category
                      FROM {$t_loans} l
                      LEFT JOIN {$t_books} b ON b.id = l.book_id
                      LEFT JOIN {$wpdb->users} u ON u.ID = l.borrower_user_id
+                     LEFT JOIN {$t_contacts} c ON c.id = l.contact_id
                      WHERE {$where_sql}
                      ORDER BY l.{$sort_by} {$sort_dir}
                      LIMIT %d OFFSET %d";
@@ -231,6 +258,7 @@ class Aura_Library_Loans {
 
         $book_id    = intval( $_POST['book_id']            ?? 0 );
         $user_id    = intval( $_POST['borrower_user_id']   ?? 0 );
+        $contact_id = intval( $_POST['contact_id']          ?? 0 );
         $loan_date  = sanitize_text_field( $_POST['loan_date']  ?? '' );
         $due_date   = sanitize_text_field( $_POST['due_date']   ?? '' );
         $notes      = sanitize_textarea_field( $_POST['notes']  ?? '' );
@@ -238,8 +266,19 @@ class Aura_Library_Loans {
         if ( ! $book_id ) {
             wp_send_json_error( [ 'message' => __( 'Debe seleccionar un libro.', 'aura-business-suite' ) ] );
         }
-        if ( ! $user_id ) {
-            wp_send_json_error( [ 'message' => __( 'Debe seleccionar un lector.', 'aura-business-suite' ) ] );
+
+        // Si se envió contact_id pero no user_id, buscar si el contacto tiene usuario WP
+        if ( $contact_id > 0 && ! $user_id ) {
+            global $wpdb;
+            $t_contacts = $wpdb->prefix . 'aura_contacts';
+            $c_row = $wpdb->get_row( $wpdb->prepare( "SELECT id, wp_user_id FROM {$t_contacts} WHERE id = %d", $contact_id ) );
+            if ( $c_row && ! empty( $c_row->wp_user_id ) ) {
+                $user_id = (int) $c_row->wp_user_id;
+            }
+        }
+
+        if ( ! $user_id && ! $contact_id ) {
+            wp_send_json_error( [ 'message' => __( 'Debe seleccionar un lector o contacto de la libreta.', 'aura-business-suite' ) ] );
         }
         if ( ! $loan_date ) {
             $loan_date = gmdate( 'Y-m-d' );
@@ -274,9 +313,12 @@ class Aura_Library_Loans {
             wp_send_json_error( [ 'message' => __( 'No hay ejemplares disponibles de este libro. Considere reservarlo.', 'aura-business-suite' ) ] );
         }
 
-        // Verificar usuario WP
-        if ( ! get_user_by( 'id', $user_id ) ) {
-            wp_send_json_error( [ 'message' => __( 'Usuario no encontrado.', 'aura-business-suite' ) ] );
+        // Verificar lector (usuario WP o contacto)
+        if ( $user_id > 0 && ! get_user_by( 'id', $user_id ) ) {
+            if ( ! $contact_id ) {
+                wp_send_json_error( [ 'message' => __( 'Usuario no encontrado.', 'aura-business-suite' ) ] );
+            }
+            $user_id = 0;
         }
 
         // Crear préstamo — transacción atómica con bloqueo de fila
@@ -291,6 +333,7 @@ class Aura_Library_Loans {
         $result = $wpdb->insert( $t_loans, [
             'book_id'          => $book_id,
             'borrower_user_id' => $user_id,
+            'contact_id'       => $contact_id > 0 ? $contact_id : null,
             'loan_date'        => $loan_date,
             'due_date'         => $due_date,
             'status'           => 'active',

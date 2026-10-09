@@ -38,6 +38,23 @@ class Aura_Inventory_Loans {
         foreach ( $ajax_actions as $action => $handler ) {
             add_action( 'wp_ajax_aura_inventory_' . $action, [ __CLASS__, $handler ] );
         }
+
+        self::maybe_add_contact_id_column();
+    }
+
+    /**
+     * Asegurar que la columna contact_id exista en la tabla de préstamos
+     */
+    public static function maybe_add_contact_id_column(): void {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_inventory_loans';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+            return;
+        }
+        $col = $wpdb->get_results( "SHOW COLUMNS FROM `{$table}` LIKE 'contact_id'" );
+        if ( empty( $col ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `contact_id` BIGINT(20) UNSIGNED DEFAULT NULL AFTER `borrowed_by_user_id`, ADD KEY `idx_contact` (`contact_id`)" );
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -151,9 +168,24 @@ class Aura_Inventory_Loans {
         foreach ( $rows as &$row ) {
             $user = get_userdata( $row->borrowed_by_user_id );
 
-            // Prioridad: nombre libre → si no, nombre del usuario WP
+            // Si está vinculado a un contacto maestro de Aura
+            $contact = null;
+            if ( ! empty( $row->contact_id ) ) {
+                $contact = $wpdb->get_row( $wpdb->prepare(
+                    "SELECT id, first_name, last_name, email_primary as email, phone_primary as phone, organization, category, avatar_url FROM {$wpdb->prefix}aura_contacts WHERE id = %d",
+                    $row->contact_id
+                ) );
+            }
+
+            // Prioridad: contacto maestro → nombre libre → usuario WP
             $free_name = trim( $row->borrowed_to_name ?? '' );
-            if ( $free_name !== '' ) {
+            if ( $contact ) {
+                $c_name = trim( $contact->first_name . ' ' . $contact->last_name ) ?: ( $contact->organization ?: '' );
+                $row->borrower_display = $free_name ?: $c_name;
+                $row->borrower_avatar  = $contact->avatar_url ?: ( $contact->email ? get_avatar_url( $contact->email, [ 'size' => 40, 'default' => 'mystery' ] ) : null );
+                $row->contact_category = $contact->category;
+                $row->is_external      = empty( $row->borrowed_by_user_id );
+            } elseif ( $free_name !== '' ) {
                 $row->borrower_display = $free_name;
                 $row->borrower_avatar  = null;   // sin avatar para externos
                 $row->is_external      = true;
@@ -238,9 +270,31 @@ class Aura_Inventory_Loans {
             wp_send_json_error( [ 'message' => __( 'La fecha de devolución esperada no puede ser anterior a la fecha de préstamo.', 'aura-suite' ) ] );
         }
 
+        $contact_id    = intval( $_POST['contact_id'] ?? 0 );
         $borrowed_by   = intval( $_POST['borrowed_by_user_id'] ?? get_current_user_id() );
         $borrowed_name = sanitize_text_field( $_POST['borrowed_to_name'] ?? '' );
         $borrowed_phone = sanitize_text_field( $_POST['borrowed_to_phone'] ?? '' );
+
+        // Si se envió un contacto maestro, resolver campos vacíos
+        if ( $contact_id > 0 ) {
+            $t_contacts = $wpdb->prefix . 'aura_contacts';
+            $contact = $wpdb->get_row( $wpdb->prepare(
+                "SELECT id, first_name, last_name, phone_primary as phone, wp_user_id FROM {$t_contacts} WHERE id = %d",
+                $contact_id
+            ) );
+            if ( $contact ) {
+                if ( empty( $borrowed_name ) ) {
+                    $borrowed_name = trim( $contact->first_name . ' ' . $contact->last_name );
+                }
+                if ( empty( $borrowed_phone ) && ! empty( $contact->phone ) ) {
+                    $borrowed_phone = $contact->phone;
+                }
+                if ( ! empty( $contact->wp_user_id ) && $borrowed_by === get_current_user_id() && empty( $_POST['borrowed_by_user_id'] ) ) {
+                    $borrowed_by = (int) $contact->wp_user_id;
+                }
+            }
+        }
+
         // Validar formato básico de teléfono: solo +, dígitos, espacios, guiones
         if ( $borrowed_phone !== '' && ! preg_match( '/^[\+0-9\s\-]{6,30}$/', $borrowed_phone ) ) {
             $borrowed_phone = '';
@@ -255,6 +309,7 @@ class Aura_Inventory_Loans {
             $t_loans,
             [
                 'equipment_id'        => $equipment_id,
+                'contact_id'          => $contact_id > 0 ? $contact_id : null,
                 'borrowed_by_user_id' => $borrowed_by,
                 'borrowed_to_name'    => $borrowed_name ?: null,
                 'borrowed_to_phone'   => $borrowed_phone ?: null,
@@ -266,7 +321,7 @@ class Aura_Inventory_Loans {
                 'registered_by'       => get_current_user_id(),
                 'created_at'          => current_time( 'mysql' ),
             ],
-            [ '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s' ]
+            [ '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s' ]
         );
 
         if ( ! $inserted || ! $wpdb->insert_id ) {
@@ -581,6 +636,18 @@ class Aura_Inventory_Loans {
             $loan->is_external      = false;
         }
 
+        if ( ! empty( $loan->contact_id ) ) {
+            $contact = $wpdb->get_row( $wpdb->prepare(
+                "SELECT id, first_name, last_name, email_primary as email, phone_primary as phone, organization, category, avatar_url FROM {$wpdb->prefix}aura_contacts WHERE id = %d",
+                $loan->contact_id
+            ) );
+            if ( $contact ) {
+                $loan->contact_master_name = trim( $contact->first_name . ' ' . $contact->last_name ) ?: ( $contact->organization ?: '' );
+                $loan->contact_avatar = $contact->avatar_url ?: ( $contact->email ? get_avatar_url( $contact->email, [ 'size' => 40, 'default' => 'mystery' ] ) : null );
+                $loan->contact_category = $contact->category;
+            }
+        }
+
         $loan->loan_status = self::get_loan_status( $loan );
 
         wp_send_json_success( $loan );
@@ -671,18 +738,27 @@ class Aura_Inventory_Loans {
         }
         $project = sanitize_text_field( $_POST['project'] ?? '' );
 
+        $update_data = [
+            'loan_date'            => $loan_date,
+            'expected_return_date' => $expected_return,
+            'borrowed_to_name'     => $borrowed_name  ?: null,
+            'borrowed_to_phone'    => $borrowed_phone ?: null,
+            'project'              => $project        ?: null,
+            'updated_at'           => current_time( 'mysql' ),
+        ];
+        $update_format = [ '%s', '%s', '%s', '%s', '%s', '%s' ];
+
+        if ( isset( $_POST['contact_id'] ) ) {
+            $contact_id = intval( $_POST['contact_id'] );
+            $update_data['contact_id'] = $contact_id > 0 ? $contact_id : null;
+            $update_format[] = '%d';
+        }
+
         $wpdb->update(
             $t_loans,
-            [
-                'loan_date'            => $loan_date,
-                'expected_return_date' => $expected_return,
-                'borrowed_to_name'     => $borrowed_name  ?: null,
-                'borrowed_to_phone'    => $borrowed_phone ?: null,
-                'project'              => $project        ?: null,
-                'updated_at'           => current_time( 'mysql' ),
-            ],
+            $update_data,
             [ 'id' => $loan_id ],
-            [ '%s', '%s', '%s', '%s', '%s', '%s' ],
+            $update_format,
             [ '%d' ]
         );
 

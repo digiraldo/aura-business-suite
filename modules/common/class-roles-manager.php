@@ -381,6 +381,19 @@ class Aura_Roles_Manager {
                 'aura_cal_portal_view_all'  => __('Portal Docente: Alternar entre todo el calendario y solo mis clases', 'aura-suite'),
                 'aura_cal_manage_settings'  => __('Configurar módulo de calendario y sincronización GCal', 'aura-suite'),
             ),
+            // Módulo de Contactos y Directorio Maestro
+            'contacts' => array(
+                'aura_contacts_view'           => __('Ver directorio de contactos', 'aura-suite'),
+                'aura_contacts_create'         => __('Crear nuevos contactos', 'aura-suite'),
+                'aura_contacts_edit'           => __('Editar contactos existentes', 'aura-suite'),
+                'aura_contacts_delete'         => __('Eliminar/archivar contactos', 'aura-suite'),
+                'aura_contacts_sync_google'    => __('Iniciar sincronización con Google Contacts', 'aura-suite'),
+                'aura_contacts_manage_google'  => __('Conectar/desconectar cuenta de Google y credenciales OAuth', 'aura-suite'),
+                'aura_contacts_import'         => __('Importar contactos desde CSV o Google', 'aura-suite'),
+                'aura_contacts_export'         => __('Exportar directorio de contactos a CSV o vCard', 'aura-suite'),
+                'aura_contacts_view_financial' => __('Ver historial financiero vinculado del contacto', 'aura-suite'),
+                'aura_contacts_merge'          => __('Fusionar contactos duplicados', 'aura-suite'),
+            ),
         );
     }
     
@@ -666,6 +679,24 @@ class Aura_Roles_Manager {
                     'aura_electric_reading_delete'    => array('label' => __('Eliminar lecturas registradas', 'aura-suite'), 'code' => 'reading_delete', 'star' => true),
                 ),
             ),
+            array(
+                'group'        => 'stakeholders',
+                'module'       => 'contacts',
+                'icon'         => '📇',
+                'title'        => __('MÓDULO: CONTACTOS Y GOOGLE SYNC', 'aura-suite'),
+                'capabilities' => array(
+                    'aura_contacts_view'           => array('label' => __('Ver directorio maestro de contactos', 'aura-suite'), 'code' => 'contacts_view'),
+                    'aura_contacts_create'         => array('label' => __('Crear nuevos contactos', 'aura-suite'), 'code' => 'contacts_create', 'star' => true),
+                    'aura_contacts_edit'           => array('label' => __('Editar contactos existentes', 'aura-suite'), 'code' => 'contacts_edit', 'star' => true),
+                    'aura_contacts_delete'         => array('label' => __('Eliminar / archivar contactos', 'aura-suite'), 'code' => 'contacts_delete'),
+                    'aura_contacts_sync_google'    => array('label' => __('Sincronizar con Google Contacts (Push/Pull)', 'aura-suite'), 'code' => 'sync_google', 'star' => true),
+                    'aura_contacts_manage_google'  => array('label' => __('Conectar cuenta de Google y OAuth2', 'aura-suite'), 'code' => 'manage_google', 'star' => true),
+                    'aura_contacts_import'         => array('label' => __('Importar contactos desde CSV o Google', 'aura-suite'), 'code' => 'import'),
+                    'aura_contacts_export'         => array('label' => __('Exportar contactos a CSV o vCard', 'aura-suite'), 'code' => 'export'),
+                    'aura_contacts_view_financial' => array('label' => __('Ver historial financiero del contacto', 'aura-suite'), 'code' => 'view_financial'),
+                    'aura_contacts_merge'          => array('label' => __('Fusionar contactos duplicados', 'aura-suite'), 'code' => 'merge'),
+                ),
+            ),
         );
     }
     
@@ -802,6 +833,16 @@ class Aura_Roles_Manager {
                     'aura_cal_view_tasks',
                     'aura_library_view_catalog',
                     'aura_library_reports',
+                    'aura_contacts_view',
+                    'aura_contacts_create',
+                    'aura_contacts_edit',
+                    'aura_contacts_delete',
+                    'aura_contacts_sync_google',
+                    'aura_contacts_manage_google',
+                    'aura_contacts_import',
+                    'aura_contacts_export',
+                    'aura_contacts_view_financial',
+                    'aura_contacts_merge',
                 ),
             ),
             'auditor' => array(
@@ -859,6 +900,8 @@ class Aura_Roles_Manager {
                     'aura_library_reports',
                     'aura_library_audit',
                     'aura_admin_logs',
+                    'aura_contacts_view',
+                    'aura_contacts_view_financial',
                 ),
             ),
             'project_leader' => array(
@@ -885,6 +928,10 @@ class Aura_Roles_Manager {
                     'aura_finance_budgets',
                     'aura_third_parties_view',
                     'aura_third_parties_create',
+                    'aura_contacts_view',
+                    'aura_contacts_create',
+                    'aura_contacts_edit',
+                    'aura_contacts_export',
                     'aura_areas_view_own',
                     'aura_areas_budget_view',
                     'aura_areas_forms_manage',

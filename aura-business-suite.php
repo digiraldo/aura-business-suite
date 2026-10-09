@@ -254,6 +254,16 @@ class Aura_Business_Suite {
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-frontend.php';
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-export.php';
         require_once AURA_PLUGIN_DIR . 'modules/calendar/class-calendar-invitations.php';
+
+        // ── Módulo de Contactos y Google Sync ─────────────────────
+        require_once AURA_PLUGIN_DIR . 'modules/contacts/class-contacts-setup.php';
+        require_once AURA_PLUGIN_DIR . 'modules/contacts/auth/class-google-auth-factory.php';
+        require_once AURA_PLUGIN_DIR . 'modules/contacts/class-contacts.php';
+        require_once AURA_PLUGIN_DIR . 'modules/contacts/class-google-contacts.php';
+        require_once AURA_PLUGIN_DIR . 'modules/contacts/class-contacts-sync.php';
+        require_once AURA_PLUGIN_DIR . 'modules/contacts/class-contact-selector.php';
+        require_once AURA_PLUGIN_DIR . 'modules/contacts/class-contacts-import-export.php';
+        require_once AURA_PLUGIN_DIR . 'modules/contacts/class-contacts-merge.php';
     }
     
     /**
@@ -465,6 +475,15 @@ class Aura_Business_Suite {
         Aura_Calendar_Frontend::init();
         Aura_Calendar_Export::init();
         Aura_Calendar_Invitations::init();
+
+        // ── Módulo de Contactos y Google Sync ─────────────────────
+        Aura_Contacts_Setup::init();
+        Aura_Google_Auth_Factory::init();
+        Aura_Contacts::init();
+        Aura_Contacts_Sync::init();
+        Aura_Contact_Selector::init();
+        Aura_Contacts_Import_Export::init();
+        Aura_Contacts_Merge::init();
     }
 
     /**
@@ -485,6 +504,7 @@ class Aura_Business_Suite {
         Aura_Vehicle_Setup::create_tables();
         Aura_Library_Setup::create_tables();
         Aura_Calendar_Setup::create_tables();
+        Aura_Contacts_Setup::create_tables();
         
         // Instalar categorías financieras predeterminadas
         $this->install_default_categories();
@@ -530,6 +550,9 @@ class Aura_Business_Suite {
 
         // Eliminar cron de alertas de préstamos de Biblioteca (Fase 5)
         wp_clear_scheduled_hook( 'aura_library_daily_cron' );
+
+        // Eliminar cron de sincronización de Google Contacts (Módulo de Contactos)
+        wp_clear_scheduled_hook( 'aura_contacts_sync_cron' );
     }
     
     /**
@@ -2192,6 +2215,62 @@ class Aura_Business_Suite {
                 ),
             ) );
         }
+
+        // ── Assets Directorio de Contactos ─────────────────────────────
+        $is_contacts_page = (
+            ( isset( $_GET['page'] ) && $_GET['page'] === 'aura-contacts' ) ||
+            strpos( $hook, 'aura-contacts' ) !== false
+        );
+        if ( $is_contacts_page ) {
+            wp_enqueue_media();
+            $contacts_css_ver = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/css/contacts.css' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/css/contacts.css' ) : time() );
+            $contacts_js_ver  = AURA_VERSION . '.' . ( file_exists( AURA_PLUGIN_DIR . 'assets/js/contacts.js' ) ? filemtime( AURA_PLUGIN_DIR . 'assets/js/contacts.js' ) : time() );
+
+            wp_enqueue_style(
+                'aura-contacts',
+                AURA_PLUGIN_URL . 'assets/css/contacts.css',
+                array( 'aura-admin-styles', 'aura-design-system' ),
+                $contacts_css_ver
+            );
+
+            wp_enqueue_script(
+                'aura-contacts',
+                AURA_PLUGIN_URL . 'assets/js/contacts.js',
+                array( 'jquery', 'aura-ui-core' ),
+                $contacts_js_ver,
+                true
+            );
+
+            $oauth_provider = Aura_Google_Auth_Factory::get_oauth_provider();
+
+            wp_localize_script( 'aura-contacts', 'auraContactsData', array(
+                'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
+                'postUrl'          => admin_url( 'admin-post.php' ),
+                'nonce'            => wp_create_nonce( 'aura_contacts_nonce' ),
+                'exportNonce'      => wp_create_nonce( 'aura_contacts_export_action' ),
+                'canCreate'        => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_create' ),
+                'canEdit'          => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_edit' ),
+                'canDelete'        => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_delete' ),
+                'canSync'          => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_sync' ),
+                'canManageGoogle'  => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_manage_google' ),
+                'oauthConfigured'  => $oauth_provider->is_configured(),
+                'oauthConnected'   => $oauth_provider->is_authenticated(),
+                'oauthAuthUrl'     => $oauth_provider->get_auth_url(),
+                'oauthAccount'     => $oauth_provider->get_account_email(),
+                'redirectUri'      => Aura_Google_Auth_OAuth_User::get_redirect_uri(),
+                'categories'       => Aura_Contacts::CATEGORIES,
+                'i18n'             => array(
+                    'confirmDelete'     => __( '¿Estás seguro de mover este contacto a la papelera?', 'aura-suite' ),
+                    'confirmPermanent'  => __( '¿Estás seguro de eliminar permanentemente este contacto? Esta acción es irreversible.', 'aura-suite' ),
+                    'confirmDisconnect' => __( '¿Estás seguro de desconectar la cuenta de Google? Se detendrá la sincronización automática.', 'aura-suite' ),
+                    'syncSuccess'       => __( 'Sincronización completada exitosamente.', 'aura-suite' ),
+                    'syncError'         => __( 'Ocurrió un error durante la sincronización.', 'aura-suite' ),
+                    'saveSuccess'       => __( 'Contacto guardado correctamente.', 'aura-suite' ),
+                    'saveError'         => __( 'Error al guardar el contacto.', 'aura-suite' ),
+                    'connError'         => __( 'Error de conexión con el servidor.', 'aura-suite' ),
+                ),
+            ) );
+        }
     }
     
     /**
@@ -2403,6 +2482,27 @@ class Aura_Business_Suite {
                 'read',
                 'aura-third-parties',
                 array('Aura_Third_Parties', 'render_admin_page')
+            );
+        }
+
+        // Directorio Maestro de Contactos
+        $has_contacts_access = (
+            current_user_can('manage_options') ||
+            current_user_can('aura_contacts_view') ||
+            current_user_can('aura_contacts_create') ||
+            current_user_can('aura_contacts_edit') ||
+            current_user_can('aura_contacts_delete') ||
+            current_user_can('aura_contacts_export')
+        );
+
+        if ($has_contacts_access) {
+            add_submenu_page(
+                'aura-suite',
+                __('Directorio de Contactos', 'aura-suite'),
+                __('📇 Contactos', 'aura-suite'),
+                'read',
+                'aura-contacts',
+                array('Aura_Contacts', 'render_admin_page')
             );
         }
 

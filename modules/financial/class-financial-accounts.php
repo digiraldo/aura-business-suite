@@ -3037,6 +3037,20 @@ class Aura_Financial_Accounts {
             wp_send_json_error(array('message' => __('No se pudo actualizar el tercero.', 'aura-suite')));
         }
 
+        do_action('aura_third_party_saved', $id, array(
+            'full_name'       => $full_name,
+            'commercial_name' => $commercial_name,
+            'party_type'      => $party_type,
+            'document_id'     => $document_id,
+            'tax_id_type'     => $tax_id_type,
+            'phone'           => $phone,
+            'email'           => $email,
+            'website'         => $website,
+            'address'         => $address,
+            'notes'           => $notes,
+            'logo_id'         => $logo_id,
+        ));
+
         wp_send_json_success(array(
             'message' => __('Tercero actualizado correctamente.', 'aura-suite'),
             'third_parties' => self::get_third_parties(true),
@@ -3070,6 +3084,8 @@ class Aura_Financial_Accounts {
         if ($ok === false) {
             wp_send_json_error(array('message' => __('No se pudo cambiar el estado del tercero.', 'aura-suite')));
         }
+
+        do_action('aura_third_party_saved', $id, array('is_active' => $is_active));
 
         wp_send_json_success(array(
             'message' => $is_active === 1

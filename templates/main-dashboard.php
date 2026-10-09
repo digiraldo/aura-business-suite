@@ -60,9 +60,9 @@ $org_tagline  = get_option('aura_org_tagline', '');
 
 // ── Módulos accesibles ────────────────────────────────────────────────────────
 // Módulos lanzados (desplegados y en producción)
-$deployed_modules = ['finance', 'inventory', 'calendar', 'students', 'certificates', 'forms', 'vehicles', 'library'];
-// Total del roadmap completo del plugin (8 activos + 1 planificado)
-$total_planned    = 9;
+$deployed_modules = ['finance', 'inventory', 'calendar', 'students', 'certificates', 'forms', 'vehicles', 'library', 'contacts'];
+// Total del roadmap completo del plugin (9 activos + 1 planificado)
+$total_planned    = 10;
 // Cuántos módulos desplegados puede ver este usuario
 $active_count     = 0;
 foreach ($deployed_modules as $mk) {
@@ -337,6 +337,22 @@ if ( Aura_Roles_Manager::user_can_view_module( 'library' ) ) {
                 "SELECT COUNT(*) FROM {$t_reserv} WHERE status = 'pending'"
             );
         }
+    }
+}
+
+// ── Contactos: estadísticas ──────────────────────────────────────────────────
+$cnt_total    = 0;
+$cnt_synced   = 0;
+$cnt_pending  = 0;
+$cnt_can_view = false;
+
+if ( Aura_Roles_Manager::user_can_view_module( 'contacts' ) ) {
+    $cnt_can_view = current_user_can( 'aura_contacts_view' ) || current_user_can( 'manage_options' );
+    if ( $cnt_can_view && class_exists( 'Aura_Contacts' ) ) {
+        $cnt_stats   = Aura_Contacts::get_stats();
+        $cnt_total   = $cnt_stats['total'] ?? 0;
+        $cnt_synced  = $cnt_stats['synced'] ?? 0;
+        $cnt_pending = $cnt_stats['pending'] ?? 0;
     }
 }
 
@@ -1056,6 +1072,55 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
             </div>
             <?php endif; ?>
 
+            <!-- ── CONTACTOS (Activo) ── -->
+            <?php if ( Aura_Roles_Manager::user_can_view_module( 'contacts' ) ) : ?>
+            <div class="aura-glass-card adp-module-card adp-module-card--contacts card-lift mini-dash-card accent-blue">
+                <div class="adp-module-card__header">
+                    <div class="adp-module-card__icon-row">
+                        <span class="adp-module-card__icon">📇</span>
+                        <span class="badge badge-emerald adp-badge"><span class="pulse-dot dot-emerald"></span> <?php _e( 'Activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <h3 class="adp-module-card__title"><?php _e( 'Contactos', 'aura-suite' ); ?></h3>
+                    <p class="adp-module-card__desc"><?php _e( 'Directorio maestro, libreta unificada y sincronización bidireccional con Google Contacts', 'aura-suite' ); ?></p>
+                </div>
+
+                <div class="adp-mini-stats">
+                    <?php if ( $cnt_can_view ) : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value"><?php echo $cnt_total; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Contactos', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value adp-text--success"><?php echo $cnt_synced; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'En Google', 'aura-suite' ); ?></span>
+                    </div>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value <?php echo $cnt_pending > 0 ? 'adp-text--warning' : ''; ?>"><?php echo $cnt_pending; ?></span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Pendientes', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php else : ?>
+                    <div class="adp-mini-stat">
+                        <span class="adp-mini-stat__value adp-mini-stat__value--icon">📇</span>
+                        <span class="adp-mini-stat__label"><?php _e( 'Módulo activo', 'aura-suite' ); ?></span>
+                    </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="adp-module-card__actions">
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-contacts' ); ?>" class="btn btn-blue btn-shimmer adp-btn">
+                        <span class="dashicons dashicons-id-alt"></span>
+                        <span><?php _e( 'Ver directorio', 'aura-suite' ); ?></span>
+                    </a>
+                    <?php if ( current_user_can( 'aura_contacts_create' ) || current_user_can( 'manage_options' ) ) : ?>
+                    <a href="<?php echo admin_url( 'admin.php?page=aura-contacts#new' ); ?>" class="btn btn-secondary btn-sm btn-lift adp-btn">
+                        <span class="dashicons dashicons-plus-alt"></span>
+                        <span><?php _e( 'Nuevo contacto', 'aura-suite' ); ?></span>
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- ── ELECTRICIDAD (En Desarrollo) ── -->
             <div class="aura-glass-card adp-module-card adp-module-card--electricity adp-module-card--coming-soon adp-module-card--compact card-lift mini-dash-card accent-amber">
                 <div class="adp-module-card__header">
@@ -1215,6 +1280,17 @@ wp_nonce_field('aura_dashboard_nonce', 'aura_dashboard_nonce_field');
                     <div>
                         <strong><?php _e('Gestionar Permisos', 'aura-suite'); ?></strong>
                         <span><?php _e('Roles y capabilities de usuarios', 'aura-suite'); ?></span>
+                    </div>
+                    <span class="adp-quick-btn__arrow">→</span>
+                </a>
+                <?php endif; ?>
+
+                <?php if ( current_user_can( 'aura_contacts_create' ) || current_user_can( 'manage_options' ) ) : ?>
+                <a href="<?php echo admin_url( 'admin.php?page=aura-contacts#new' ); ?>" class="adp-quick-btn card-lift">
+                    <span class="adp-quick-btn__icon">📇</span>
+                    <div>
+                        <strong><?php _e( 'Nuevo Contacto', 'aura-suite' ); ?></strong>
+                        <span><?php _e( 'Agregar a la libreta institucional', 'aura-suite' ); ?></span>
                     </div>
                     <span class="adp-quick-btn__arrow">→</span>
                 </a>

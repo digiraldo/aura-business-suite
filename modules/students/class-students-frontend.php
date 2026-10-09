@@ -445,7 +445,8 @@ class Aura_Students_Frontend {
             wp_send_json_error( [ 'message' => __( 'No se pudo guardar la solicitud. Por favor intenta más tarde.', 'aura-suite' ) ] );
         }
 
-        $student_id = $wpdb->insert_id;
+        $student_id = (int) $wpdb->insert_id;
+        do_action( 'aura_student_saved', $student_id, $data );
 
         // Actualizar contador de rate limiting
         set_transient( $rate_key, $rate_count + 1, DAY_IN_SECONDS );

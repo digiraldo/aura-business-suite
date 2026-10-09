@@ -30,6 +30,10 @@ global $wpdb;
 $areas = $wpdb->get_results(
     "SELECT id, name FROM {$wpdb->prefix}aura_areas WHERE status = 'active' ORDER BY name ASC"
 ) ?: array();
+
+if ( class_exists( 'Aura_Contact_Selector' ) ) {
+    Aura_Contact_Selector::enqueue_assets();
+}
 ?>
 
 <div class="wrap aura-vehicles-trips">
@@ -189,6 +193,7 @@ $trips_cfg = wp_json_encode( array(
 
         <div class="aura-veh-modal-body">
             <input type="hidden" id="aura-trips-form-id" value="">
+            <input type="hidden" id="trip-contact_id" name="contact_id" value="">
 
             <!-- Sección: Datos de la salida -->
             <div class="aura-veh-form-section">
@@ -292,6 +297,29 @@ $trips_cfg = wp_json_encode( array(
                     <span class="dashicons dashicons-businessman"></span>
                     <?php esc_html_e( 'Datos del cliente (Renta)', 'aura-suite' ); ?>
                 </div>
+
+                <?php if ( class_exists( 'Aura_Contact_Selector' ) ) : ?>
+                <div class="aura-veh-form-row" style="margin-bottom:12px;">
+                    <div class="aura-veh-form-col" style="flex:1 1 100%;">
+                        <label><strong><?php esc_html_e( 'Buscar Cliente en Contactos', 'aura-suite' ); ?></strong></label>
+                        <?php
+                        Aura_Contact_Selector::render( array(
+                            'id'          => 'trip-client-contact-selector',
+                            'name'        => 'client_contact_id',
+                            'placeholder' => __( 'Buscar cliente por nombre, empresa o teléfono…', 'aura-suite' ),
+                            'category'    => 'cliente',
+                            'sync_fields' => array(
+                                'name'     => '#trip-client_name',
+                                'phone'    => '#trip-client_phone',
+                                'email'    => '#trip-client_email',
+                                'document' => '#trip-client_document',
+                            ),
+                        ) );
+                        ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <div class="aura-veh-form-row">
                     <div class="aura-veh-form-col">
                         <label for="trip-client_name"><strong><?php esc_html_e( 'Cliente *', 'aura-suite' ); ?></strong></label>
@@ -324,6 +352,26 @@ $trips_cfg = wp_json_encode( array(
                     <span id="trip-section-errand-icon" class="dashicons dashicons-clipboard"></span>
                     <span id="trip-section-errand-title"><?php esc_html_e( 'Datos del encargo', 'aura-suite' ); ?></span>
                 </div>
+
+                <?php if ( class_exists( 'Aura_Contact_Selector' ) ) : ?>
+                <div class="aura-veh-form-row" style="margin-bottom:12px;">
+                    <div class="aura-veh-form-col" style="flex:1 1 100%;">
+                        <label><strong><?php esc_html_e( 'Buscar Responsable / Conductor en Contactos', 'aura-suite' ); ?></strong></label>
+                        <?php
+                        Aura_Contact_Selector::render( array(
+                            'id'          => 'trip-responsible-contact-selector',
+                            'name'        => 'responsible_contact_id',
+                            'placeholder' => __( 'Buscar conductor o responsable…', 'aura-suite' ),
+                            'sync_fields' => array(
+                                'name'    => '#trip-responsible_name',
+                                'user_id' => '#trip-assigned_to',
+                            ),
+                        ) );
+                        ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <div class="aura-veh-form-row">
                     <div class="aura-veh-form-col">
                         <label for="trip-responsible_name"><strong><?php esc_html_e( 'Responsable *', 'aura-suite' ); ?></strong></label>
@@ -364,6 +412,27 @@ $trips_cfg = wp_json_encode( array(
                     <span class="dashicons dashicons-admin-tools"></span>
                     <?php esc_html_e( 'Datos de mantenimiento', 'aura-suite' ); ?>
                 </div>
+
+                <?php if ( class_exists( 'Aura_Contact_Selector' ) ) : ?>
+                <div class="aura-veh-form-row" style="margin-bottom:12px;">
+                    <div class="aura-veh-form-col" style="flex:1 1 100%;">
+                        <label><strong><?php esc_html_e( 'Buscar Proveedor / Taller en Contactos', 'aura-suite' ); ?></strong></label>
+                        <?php
+                        Aura_Contact_Selector::render( array(
+                            'id'          => 'trip-provider-contact-selector',
+                            'name'        => 'provider_contact_id',
+                            'placeholder' => __( 'Buscar taller o proveedor…', 'aura-suite' ),
+                            'category'    => 'proveedor',
+                            'sync_fields' => array(
+                                'name'  => '#trip-maint_provider',
+                                'phone' => '#trip-maint_contact',
+                            ),
+                        ) );
+                        ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <div class="aura-veh-form-row">
                     <div class="aura-veh-form-col">
                         <label for="trip-maint_subtype"><?php esc_html_e( 'Subtipo', 'aura-suite' ); ?></label>

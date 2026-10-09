@@ -471,6 +471,7 @@ class Aura_Third_Parties {
                 $update_data['updated_at'] = current_time('mysql');
                 $update_formats[] = '%s';
                 $wpdb->update($table, $update_data, array('id' => $existing_id), $update_formats, array('%d'));
+                do_action('aura_third_party_saved', $existing_id, array_merge($extra, array('full_name' => $full_name)));
             }
             return $existing_id;
         }
@@ -504,7 +505,10 @@ class Aura_Third_Parties {
             return 0;
         }
 
-        return (int) $wpdb->insert_id;
+        $new_id = (int) $wpdb->insert_id;
+        do_action('aura_third_party_saved', $new_id, array_merge($extra, array('full_name' => $full_name, 'created_by' => $created_by)));
+
+        return $new_id;
     }
 
     /**
@@ -1138,6 +1142,20 @@ class Aura_Third_Parties {
         }
 
         $item = self::get_third_party_by_id($id);
+        do_action('aura_third_party_saved', $id, array(
+            'full_name'       => $full_name,
+            'commercial_name' => $commercial_name,
+            'party_type'      => $party_type,
+            'accounting_role' => $accounting_role,
+            'document_id'     => $document_id,
+            'tax_id_type'     => $tax_id_type,
+            'phone'           => $phone,
+            'email'           => $email,
+            'website'         => $website,
+            'address'         => $address,
+            'notes'           => $notes,
+            'logo_id'         => $logo_id,
+        ));
 
         wp_send_json_success(array(
             'id'      => $id,
@@ -1170,6 +1188,8 @@ class Aura_Third_Parties {
             array('%d', '%s'),
             array('%d')
         );
+
+        do_action('aura_third_party_saved', $id, array('is_active' => $new_status));
 
         wp_send_json_success(array(
             'id'        => $id,
@@ -1247,6 +1267,8 @@ class Aura_Third_Parties {
         if ($deleted === false) {
             wp_send_json_error(array('message' => __('Error al eliminar el registro de la base de datos.', 'aura-suite')));
         }
+
+        do_action('aura_third_party_deleted', $id);
 
         wp_send_json_success(array(
             'id'      => $id,

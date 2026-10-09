@@ -168,6 +168,11 @@
             $('#loan-user-error').hide();
         });
 
+        // Eventos del Selector Universal de Contactos
+        $(document).on('aura:contact-selected', '#loan-contact-selector', function () {
+            $('#loan-user-error').hide();
+        });
+
         // Toggle notas opcionales
         $(document).on('click', '#aura-lib-loan-notes-toggle', function () {
             var $wrap = $('#aura-lib-loan-notes-wrap');
@@ -421,7 +426,19 @@
                 '</div></div>' +
                 '</td>';
             if (cfg.can_view_all) {
-                rows += '<td>' + escHtml(loan.borrower_name || '—') + '</td>';
+                var borrowerHtml = '<div style="display:flex;align-items:center;gap:8px;">';
+                if (loan.contact_avatar) {
+                    borrowerHtml += '<img src="' + escAttr(loan.contact_avatar) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.1);">';
+                } else {
+                    var bInitials = (loan.borrower_name || '?').charAt(0).toUpperCase();
+                    borrowerHtml += '<span style="width:28px;height:28px;border-radius:50%;background:rgba(99,102,241,0.2);color:#818cf8;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">' + escHtml(bInitials) + '</span>';
+                }
+                borrowerHtml += '<div><strong>' + escHtml(loan.borrower_name || '—') + '</strong>';
+                if (loan.contact_category) {
+                    borrowerHtml += '<br><small style="color:var(--aura-text-muted, #9ca3af);font-size:10px;text-transform:capitalize;">' + escHtml(loan.contact_category) + '</small>';
+                }
+                borrowerHtml += '</div></div>';
+                rows += '<td>' + borrowerHtml + '</td>';
             }
             rows += '<td>' + escHtml(loan.loan_date || '—') + '</td>';
             rows += '<td>' + dueBadge + '</td>';
@@ -562,6 +579,9 @@
         $('#aura-lib-loan-user-card').hide();
         $('#loan-user-search-row').show();
         $('#loan-user-error').hide();
+        if (window.AuraContactSelector) {
+            window.AuraContactSelector.clear('#loan-contact-selector');
+        }
 
         // Resetear notas
         $('#aura-lib-loan-notes-wrap').hide();
@@ -594,10 +614,15 @@
             return;
         }
 
-        var userId = parseInt($('#loan_user_id').val(), 10);
-        if (cfg.can_view_all && !userId) {
+        var contactId = parseInt($('#loan-contact-selector-val').val(), 10) || 0;
+        var userId    = parseInt($('#loan_user_id').val(), 10) || 0;
+        if (cfg.can_view_all && !userId && !contactId) {
             $('#loan-user-error').show();
-            $('#loan_user_input').focus();
+            if ($('#loan-contact-selector .aura-cs-search-input').length) {
+                $('#loan-contact-selector .aura-cs-search-input').focus();
+            } else {
+                $('#loan_user_input').focus();
+            }
             return;
         }
 
@@ -616,6 +641,7 @@
             action            : 'aura_library_loans_create',
             nonce             : cfg.nonce,
             book_id           : bookId,
+            contact_id        : contactId,
             borrower_user_id  : userId || 0,
             loan_date         : loanDate,
             due_date          : dueDate,

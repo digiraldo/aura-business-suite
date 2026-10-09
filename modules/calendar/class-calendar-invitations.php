@@ -419,10 +419,38 @@ class Aura_Calendar_Invitations {
                 foreach ( $event->instructors as $inst ) {
                     $inst_arr   = (array) $inst;
                     $em         = $inst_arr['email'] ?? '';
+                    $name       = $inst_arr['name'] ?? '';
+
+                    // Si no tiene email directo, buscar en wp_aura_contacts por third_party_id o teacher_id
+                    if ( empty( $em ) && class_exists( 'Aura_Contacts' ) ) {
+                        global $wpdb;
+                        $t_cnt = $wpdb->prefix . 'aura_contacts';
+                        $t_id  = (int) ( $inst_arr['teacher_id'] ?? ( $inst_arr['instructor_id'] ?? 0 ) );
+                        $tp_id = (int) ( $inst_arr['third_party_id'] ?? 0 );
+
+                        if ( $tp_id > 0 ) {
+                            $cnt_row = $wpdb->get_row( $wpdb->prepare( "SELECT first_name, last_name, email, organization FROM {$t_cnt} WHERE third_party_id = %d AND deleted_at IS NULL LIMIT 1", $tp_id ) );
+                            if ( $cnt_row && ! empty( $cnt_row->email ) ) {
+                                $em = $cnt_row->email;
+                                if ( empty( $name ) ) {
+                                    $name = trim( $cnt_row->first_name . ' ' . $cnt_row->last_name );
+                                }
+                            }
+                        } elseif ( $t_id > 0 ) {
+                            $cnt_row = $wpdb->get_row( $wpdb->prepare( "SELECT first_name, last_name, email, organization FROM {$t_cnt} WHERE wp_user_id = %d AND deleted_at IS NULL LIMIT 1", $t_id ) );
+                            if ( $cnt_row && ! empty( $cnt_row->email ) ) {
+                                $em = $cnt_row->email;
+                                if ( empty( $name ) ) {
+                                    $name = trim( $cnt_row->first_name . ' ' . $cnt_row->last_name );
+                                }
+                            }
+                        }
+                    }
+
                     if ( ! empty( $em ) && is_email( $em ) ) {
                         $role_label = ( isset( $inst_arr['role'] ) && $inst_arr['role'] === 'lead' ) ? __( 'Profesor Titular', 'aura' ) : __( 'Docente / Expositor', 'aura' );
                         $recipients[] = [
-                            'name'  => $inst_arr['name'] ?? '',
+                            'name'  => $name,
                             'email' => sanitize_email( $em ),
                             'role'  => $role_label,
                         ];

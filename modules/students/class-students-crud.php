@@ -256,6 +256,16 @@ class Aura_Students_CRUD {
                 wp_send_json_error( [ 'message' => __( 'Error al actualizar el estudiante.', 'aura-suite' ) ] );
             }
 
+            do_action( 'aura_student_saved', $id, [
+                'id'         => $id,
+                'first_name' => $first_name,
+                'last_name'  => $last_name,
+                'email'      => $email,
+                'phone'      => $phone,
+                'status'     => $status,
+                'wp_user_id' => $wp_user_id > 0 ? $wp_user_id : null,
+            ] );
+
             wp_send_json_success( [
                 'message' => __( 'Estudiante actualizado correctamente.', 'aura-suite' ),
                 'id'      => $id,
@@ -307,9 +317,20 @@ class Aura_Students_CRUD {
                 wp_send_json_error( [ 'message' => __( 'Error al registrar el estudiante.', 'aura-suite' ) ] );
             }
 
+            $new_student_id = (int) $wpdb->insert_id;
+            do_action( 'aura_student_saved', $new_student_id, [
+                'id'         => $new_student_id,
+                'first_name' => $first_name,
+                'last_name'  => $last_name,
+                'email'      => $email,
+                'phone'      => $phone,
+                'status'     => 'applicant',
+                'wp_user_id' => $wp_user_id > 0 ? $wp_user_id : null,
+            ] );
+
             wp_send_json_success( [
                 'message' => __( 'Estudiante registrado correctamente.', 'aura-suite' ),
-                'id'      => $wpdb->insert_id,
+                'id'      => $new_student_id,
             ] );
         }
     }
@@ -350,6 +371,8 @@ class Aura_Students_CRUD {
         if ( $result === false ) {
             wp_send_json_error( [ 'message' => __( 'Error al eliminar el estudiante.', 'aura-suite' ) ] );
         }
+
+        do_action( 'aura_student_deleted', $id );
 
         wp_send_json_success( [ 'message' => __( 'Estudiante eliminado correctamente.', 'aura-suite' ) ] );
     }

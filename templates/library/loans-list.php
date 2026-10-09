@@ -183,6 +183,9 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
     </div>
 
 <?php
+if ( class_exists( 'Aura_Contact_Selector' ) ) {
+    Aura_Contact_Selector::enqueue_assets();
+}
 wp_enqueue_script( 'aura-lib-loans',
     AURA_PLUGIN_URL . 'assets/js/library-loans.js',
     [ 'jquery', 'jquery-ui-autocomplete' ],
@@ -261,11 +264,24 @@ wp_enqueue_style( 'aura-lib-loans-css',
                 <div class="aura-lib-lstep">
                     <div class="aura-lib-lstep-hdr">
                         <span class="aura-lib-lstep-num">2</span>
-                        <strong><?php esc_html_e( 'Lector', 'aura-business-suite' ); ?></strong>
+                        <strong><?php esc_html_e( 'Lector o Contacto', 'aura-business-suite' ); ?></strong>
                         <span class="aura-lib-lstep-req"><?php esc_html_e( '* requerido', 'aura-business-suite' ); ?></span>
                     </div>
 
-                    <!-- Buscador de lector -->
+                    <?php if ( class_exists( 'Aura_Contact_Selector' ) ) : ?>
+                        <?php
+                        Aura_Contact_Selector::render( [
+                            'id'          => 'loan-contact-selector',
+                            'name'        => 'contact_id',
+                            'placeholder' => __( 'Buscar por nombre, email, teléfono u organización…', 'aura-business-suite' ),
+                            'required'    => true,
+                            'sync_fields' => [
+                                'user_id' => '#loan_user_id',
+                            ],
+                        ] );
+                        ?>
+                    <?php else : ?>
+                    <!-- Buscador de lector (fallback) -->
                     <div class="aura-lib-lsearch-wrap" id="loan-user-search-row">
                         <span class="dashicons dashicons-admin-users aura-lib-lsearch-icon"></span>
                         <input type="text" id="loan_user_input" name="loan_user_input"
@@ -273,22 +289,10 @@ wp_enqueue_style( 'aura-lib-loans-css',
                                placeholder="<?php esc_attr_e( 'Buscar por nombre o correo del lector…', 'aura-business-suite' ); ?>"
                                autocomplete="off">
                     </div>
-
-                    <!-- Tarjeta del lector seleccionado -->
-                    <div id="aura-lib-loan-user-card" class="aura-lib-loan-selected-card" style="display:none;">
-                        <div class="aura-lib-loan-user-avatar" id="loan-user-card-avatar">?</div>
-                        <div class="aura-lib-loan-card-info">
-                            <strong id="loan-user-card-name" class="aura-lib-loan-card-title"></strong>
-                            <span id="loan-user-card-email" class="aura-lib-loan-card-sub"></span>
-                        </div>
-                        <button type="button" id="aura-lib-loan-clear-user" class="aura-lib-loan-clear-btn"
-                                title="<?php esc_attr_e( 'Cambiar lector', 'aura-business-suite' ); ?>">
-                            <span class="dashicons dashicons-no"></span>
-                        </button>
-                    </div>
+                    <?php endif; ?>
 
                     <span id="loan-user-error" class="aura-lib-loan-field-error" style="display:none;">
-                        ⚠ <?php esc_html_e( 'Selecciona un lector de la lista de sugerencias.', 'aura-business-suite' ); ?>
+                        ⚠ <?php esc_html_e( 'Selecciona un lector o contacto de la libreta.', 'aura-business-suite' ); ?>
                     </span>
                     <input type="hidden" id="loan_user_id" name="borrower_user_id">
                 </div>
