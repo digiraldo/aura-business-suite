@@ -965,7 +965,7 @@ class Aura_Contacts {
      * @param array $row
      * @return array
      */
-    private static function format_contact_row( array $row ): array {
+    public static function format_contact_row( array $row ): array {
         $first_name = $row['first_name'] ?? '';
         $last_name  = $row['last_name'] ?? '';
         $full_name  = trim( $first_name . ' ' . $last_name );

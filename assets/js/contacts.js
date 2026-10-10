@@ -1238,9 +1238,13 @@
                 }
 
                 renderDuplicateClusters(clusters);
-            }).fail(function() {
+            }).fail(function(xhr) {
                 $btn.prop('disabled', false).html(orig);
-                $('#duplicates-container').html('<div class="aura-notice-box is-error"><p>Error de conexión al escanear duplicados.</p></div>');
+                var errDetail = '';
+                if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                    errDetail = ' (' + xhr.responseJSON.data.message + ')';
+                }
+                $('#duplicates-container').html('<div class="aura-notice-box is-error"><p>Error de conexión al escanear duplicados' + escapeHtml(errDetail) + '. Intenta nuevamente.</p></div>');
             });
         });
     }
@@ -1248,11 +1252,14 @@
     function renderDuplicateClusters(clusters) {
         var html = '<div style="display:flex;flex-direction:column;gap:20px;">';
         clusters.forEach(function(cluster, idx) {
-            var reasonsHtml = cluster.reasons.map(function(r) {
+            var rawReasons = cluster.reasons || [
+                { type: cluster.type || 'email', label: cluster.type_label || 'Coincidencia', value: cluster.match_value || '' }
+            ];
+            var reasonsHtml = rawReasons.map(function(r) {
                 var bg = r.type === 'email' ? 'background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);' :
                          (r.type === 'phone' ? 'background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);' :
                          'background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3);');
-                return '<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;' + bg + '"><strong>' + escapeHtml(r.label) + ':</strong> ' + escapeHtml(r.value) + '</span>';
+                return '<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;' + bg + '"><strong>' + escapeHtml(r.label || '') + ':</strong> ' + escapeHtml(r.value || '') + '</span>';
             }).join(' ');
 
             html += '<div class="aura-glass-card cluster-card" style="padding:18px;border-radius:12px;background:rgba(255,255,255,0.03);" data-cluster="' + idx + '">';

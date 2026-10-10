@@ -66,6 +66,13 @@ class Aura_Contacts_Merge {
                         'match_value' => $email,
                         'confidence'  => 100,
                         'badge_color' => '#10b981',
+                        'reasons'     => array(
+                            array(
+                                'type'  => 'email',
+                                'label' => __( 'Correo Coincidente', 'aura-suite' ),
+                                'value' => $email,
+                            ),
+                        ),
                         'contacts'    => array_values( array_map( array( 'Aura_Contacts', 'format_contact_row' ), $group ) ),
                     );
                 }
@@ -102,6 +109,13 @@ class Aura_Contacts_Merge {
                         'match_value' => $phone,
                         'confidence'  => 95,
                         'badge_color' => '#3b82f6',
+                        'reasons'     => array(
+                            array(
+                                'type'  => 'phone',
+                                'label' => __( 'Teléfono Coincidente', 'aura-suite' ),
+                                'value' => $phone,
+                            ),
+                        ),
                         'contacts'    => array_values( array_map( array( 'Aura_Contacts', 'format_contact_row' ), $group ) ),
                     );
                 }
@@ -155,6 +169,13 @@ class Aura_Contacts_Merge {
                         'match_value' => $name1,
                         'confidence'  => $sim,
                         'badge_color' => '#8b5cf6',
+                        'reasons'     => array(
+                            array(
+                                'type'  => 'name',
+                                'label' => ( 90 <= $sim ) ? __( 'Nombre Idéntico', 'aura-suite' ) : __( 'Nombre Similar', 'aura-suite' ),
+                                'value' => $name1 . ' ↔ ' . $name2,
+                            ),
+                        ),
                         'contacts'    => array_values( array_map( array( 'Aura_Contacts', 'format_contact_row' ), array( $c1, $c2 ) ) ),
                     );
                 }
