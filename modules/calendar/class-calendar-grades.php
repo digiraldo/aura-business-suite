@@ -308,8 +308,8 @@ class Aura_Calendar_Grades {
         $student_id = intval( $_POST['student_id'] ?? 0 );
         $program_id = ! empty( $_POST['program_id'] ) ? intval( $_POST['program_id'] ) : null;
 
-        // Si es el propio estudiante consultando su boletín o un rol con gestión de calificaciones
-        if ( ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
+        // Si no tiene permisos de ver o gestionar calificaciones, validar que sea el propio estudiante consultando su boletín
+        if ( ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
             // Validar que el estudiante corresponda al usuario actual
             global $wpdb;
             $table_stud = $wpdb->prefix . 'aura_students';

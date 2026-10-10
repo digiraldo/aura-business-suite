@@ -22,16 +22,17 @@ if ( ! $can_view ) {
 $can_create = current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_create' );
 $can_edit   = current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_edit' );
 $can_delete = current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_delete' );
-$can_sync   = current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_sync' );
+$can_sync   = current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_sync' ) || current_user_can( 'aura_contacts_sync_google' );
 $can_google = current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_manage_google' );
 $can_export = current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_export' );
 
 $kpis              = Aura_Contacts::get_stats();
 $active_auth_mode  = Aura_Google_Auth_Factory::get_active_mode();
 $auth_modes        = Aura_Google_Auth_Factory::get_available_modes();
+$provider          = Aura_Google_Auth_Factory::get_provider();
+$is_connected      = $provider->is_connected();
+$account_email     = $provider->get_account_email();
 $oauth_provider    = Aura_Google_Auth_Factory::get_oauth_provider();
-$is_connected      = $oauth_provider->is_authenticated();
-$account_email     = $oauth_provider->get_account_email();
 $is_configured     = $oauth_provider->is_configured();
 $auth_url          = $oauth_provider->get_auth_url();
 $redirect_uri      = Aura_Google_Auth_OAuth_User::get_redirect_uri();
@@ -103,11 +104,18 @@ $category_icons = array(
                         <span><?php esc_html_e( 'Dashboard', 'aura-suite' ); ?></span>
                     </a>
 
-                    <?php if ( $can_sync && $is_connected ) : ?>
-                        <button type="button" class="btn btn-glass btn-lift" id="btn-sync-all" title="<?php esc_attr_e( 'Sincronizar cambios bidireccionalmente con Google People API', 'aura-suite' ); ?>">
-                            <span class="dashicons dashicons-update"></span>
-                            <span><?php esc_html_e( 'Sincronizar Ahora', 'aura-suite' ); ?></span>
-                        </button>
+                    <?php if ( $can_sync ) : ?>
+                        <?php if ( $is_connected ) : ?>
+                            <button type="button" class="btn btn-glass btn-lift" id="btn-sync-all" title="<?php esc_attr_e( 'Sincronizar cambios bidireccionalmente con Google People API', 'aura-suite' ); ?>">
+                                <span class="dashicons dashicons-update"></span>
+                                <span><?php esc_html_e( 'Sincronizar Ahora', 'aura-suite' ); ?></span>
+                            </button>
+                        <?php else : ?>
+                            <button type="button" class="btn btn-glass btn-lift" onclick="$('.aura-navbar-item[data-tab=\'google_settings\']').click();" style="border: 1px dashed rgba(245, 158, 11, 0.45); color: #fbbf24;" title="<?php esc_attr_e( 'Google Contacts no está conectado. Haz clic aquí para autorizar tu cuenta en Google & Workspace.', 'aura-suite' ); ?>">
+                                <span class="dashicons dashicons-google" style="color: #f59e0b;"></span>
+                                <span><?php esc_html_e( 'Conectar Google Sync', 'aura-suite' ); ?></span>
+                            </button>
+                        <?php endif; ?>
                     <?php endif; ?>
 
                     <?php if ( $can_create ) : ?>
@@ -371,11 +379,18 @@ $category_icons = array(
                                 <span class="dashicons dashicons-image-rotate"></span>
                                 <span><?php esc_html_e( 'Actualizar Logs', 'aura-suite' ); ?></span>
                             </button>
-                            <?php if ( $can_sync && $is_connected ) : ?>
-                                <button type="button" class="btn btn-primary btn-sm" id="btn-sync-all-from-logs">
-                                    <span class="dashicons dashicons-update"></span>
-                                    <span><?php esc_html_e( 'Forzar Sincronización', 'aura-suite' ); ?></span>
-                                </button>
+                            <?php if ( $can_sync ) : ?>
+                                <?php if ( $is_connected ) : ?>
+                                    <button type="button" class="btn btn-primary btn-sm" id="btn-sync-all-from-logs" title="<?php esc_attr_e( 'Forzar sincronización completa bidireccional con Google People API', 'aura-suite' ); ?>">
+                                        <span class="dashicons dashicons-update"></span>
+                                        <span><?php esc_html_e( 'Sincronizar Todo Ahora', 'aura-suite' ); ?></span>
+                                    </button>
+                                <?php else : ?>
+                                    <button type="button" class="btn btn-glass btn-sm" onclick="$('.aura-navbar-item[data-tab=\'google_settings\']').click();" style="border: 1px dashed rgba(245, 158, 11, 0.45); color: #fbbf24;" title="<?php esc_attr_e( 'Google Contacts no está conectado. Haz clic para configurar tu cuenta.', 'aura-suite' ); ?>">
+                                        <span class="dashicons dashicons-google" style="color: #f59e0b;"></span>
+                                        <span><?php esc_html_e( 'Conectar Google Sync', 'aura-suite' ); ?></span>
+                                    </button>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     </div>

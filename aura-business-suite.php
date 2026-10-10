@@ -2241,7 +2241,7 @@ class Aura_Business_Suite {
                 true
             );
 
-            $oauth_provider = Aura_Google_Auth_Factory::get_oauth_provider();
+            $provider = Aura_Google_Auth_Factory::get_provider();
 
             wp_localize_script( 'aura-contacts', 'auraContactsData', array(
                 'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
@@ -2251,12 +2251,12 @@ class Aura_Business_Suite {
                 'canCreate'        => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_create' ),
                 'canEdit'          => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_edit' ),
                 'canDelete'        => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_delete' ),
-                'canSync'          => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_sync' ),
+                'canSync'          => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_sync' ) || current_user_can( 'aura_contacts_sync_google' ),
                 'canManageGoogle'  => current_user_can( 'manage_options' ) || current_user_can( 'aura_contacts_manage_google' ),
-                'oauthConfigured'  => $oauth_provider->is_configured(),
-                'oauthConnected'   => $oauth_provider->is_authenticated(),
-                'oauthAuthUrl'     => $oauth_provider->get_auth_url(),
-                'oauthAccount'     => $oauth_provider->get_account_email(),
+                'oauthConfigured'  => $provider->is_configured(),
+                'oauthConnected'   => $provider->is_connected(),
+                'oauthAuthUrl'     => ( $provider instanceof Aura_Google_Auth_OAuth_User ) ? $provider->get_auth_url() : '',
+                'oauthAccount'     => $provider->get_account_email(),
                 'redirectUri'      => Aura_Google_Auth_OAuth_User::get_redirect_uri(),
                 'categories'       => Aura_Contacts::CATEGORIES,
                 'i18n'             => array(

@@ -134,7 +134,7 @@ class Aura_Calendar_Frontend {
             'date_format'         => get_option( 'date_format', 'd-m-Y' ),
             'time_format'         => get_option( 'time_format', 'H:i' ),
             'timezone'            => wp_timezone_string(),
-            'user_can_edit'            => current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
+            'user_can_edit'            => current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
             'user_can_tasks'           => current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ),
             'user_can_attendance'      => current_user_can( 'aura_cal_take_attendance' ) || current_user_can( 'aura_take_attendance' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),
             'user_can_grade'           => current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'aura_cal_grade_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'manage_options' ),

@@ -365,6 +365,7 @@ class Aura_Roles_Manager {
                 'aura_cal_create_events'    => __('Crear y programar eventos del calendario', 'aura-suite'),
                 'aura_cal_delete_events'    => __('Eliminar eventos del calendario (solo admin)', 'aura-suite'),
                 'aura_cal_manage_programs'  => __('Crear y gestionar programas de capacitación y materias', 'aura-suite'),
+                'aura_cal_view_programs'    => __('Ver programas de capacitación y materias', 'aura-suite'),
                 'aura_cal_delete_programs'  => __('Eliminar programas y materias académicas', 'aura-suite'),
                 'aura_cal_sync_gcal'        => __('Sincronizar eventos con Google Calendar', 'aura-suite'),
                 'aura_cal_view_attendance'  => __('Ver registros de asistencia', 'aura-suite'),
@@ -527,8 +528,10 @@ class Aura_Roles_Manager {
                     'aura_cal_view_calendar'   => array('label' => __('Ver calendario de clases y actividades', 'aura-suite'), 'code' => 'view_calendar'),
                     'aura_cal_view_own'         => array('label' => __('Ver solo clases/eventos propios asignados', 'aura-suite'), 'code' => 'view_own'),
                     'aura_cal_portal_view_all'  => array('label' => __('Portal Docente: Alternar entre todo el calendario y solo mis clases', 'aura-suite'), 'code' => 'portal_view_all'),
+                    'aura_cal_create_events'    => array('label' => __('Crear y programar eventos del calendario', 'aura-suite'), 'code' => 'create_events'),
                     'aura_cal_manage_calendar' => array('label' => __('Crear y programar clases y eventos', 'aura-suite'), 'code' => 'manage_calendar'),
                     'aura_cal_delete_events'   => array('label' => __('Eliminar clases y eventos', 'aura-suite'), 'code' => 'delete_events', 'star' => true),
+                    'aura_cal_view_programs'   => array('label' => __('Ver programas y materias académicas', 'aura-suite'), 'code' => 'view_programs'),
                     'aura_cal_manage_programs' => array('label' => __('Gestionar programas y materias', 'aura-suite'), 'code' => 'manage_programs'),
                     'aura_cal_delete_programs' => array('label' => __('Eliminar programas y materias', 'aura-suite'), 'code' => 'delete_programs', 'star' => true),
                     'aura_cal_view_attendance' => array('label' => __('Consultar registros de asistencia', 'aura-suite'), 'code' => 'view_attendance'),
@@ -828,6 +831,7 @@ class Aura_Roles_Manager {
                     'aura_students_view_all',
                     'aura_students_reports',
                     'aura_cal_view_calendar',
+                    'aura_cal_view_programs',
                     'aura_cal_view_attendance',
                     'aura_cal_view_grades',
                     'aura_cal_view_tasks',
@@ -1023,6 +1027,8 @@ class Aura_Roles_Manager {
                     'aura_students_courses_manage',
                     'aura_students_reports',
                     'aura_cal_view_calendar',
+                    'aura_cal_view_programs',
+                    'aura_cal_create_events',
                     'aura_cal_manage_calendar',
                     'aura_cal_manage_programs',
                     'aura_cal_sync_gcal',
@@ -1065,6 +1071,7 @@ class Aura_Roles_Manager {
                 ),
                 'capabilities'  => array(
                     'aura_cal_view_calendar',
+                    'aura_cal_view_programs',
                     'aura_cal_view_own',
                     'aura_cal_view_attendance',
                     'aura_cal_take_attendance',
@@ -1095,6 +1102,8 @@ class Aura_Roles_Manager {
                 ),
                 'capabilities'  => array(
                     'aura_cal_view_calendar',
+                    'aura_cal_view_programs',
+                    'aura_cal_create_events',
                     'aura_cal_manage_calendar',
                     'aura_cal_manage_programs',
                     'aura_cal_sync_gcal',
@@ -1122,6 +1131,8 @@ class Aura_Roles_Manager {
                 ),
                 'capabilities'  => array(
                     'aura_cal_view_calendar',
+                    'aura_cal_view_programs',
+                    'aura_cal_create_events',
                     'aura_cal_manage_calendar',
                     'aura_cal_delete_events',
                     'aura_cal_manage_programs',
@@ -1753,7 +1764,7 @@ class Aura_Roles_Manager {
             return $allcaps;
         }
 
-        // Caps de módulos que requieren subida/gestión de imágenes
+        // Caps de módulos que requieren subida/gestión de imágenes y archivos
         $media_required_caps = [
             'aura_inventory_create',
             'aura_inventory_edit',
@@ -1761,6 +1772,10 @@ class Aura_Roles_Manager {
             'aura_vehicles_edit',
             'aura_third_parties_create',
             'aura_third_parties_edit',
+            'aura_cal_manage_calendar',
+            'aura_cal_manage_programs',
+            'aura_cal_manage_tasks',
+            'aura_cal_submit_tasks',
         ];
 
         foreach ( $media_required_caps as $cap ) {
@@ -1795,6 +1810,8 @@ class Aura_Roles_Manager {
             'aura_inventory_edit',
             'aura_vehicles_create',
             'aura_vehicles_edit',
+            'aura_cal_manage_calendar',
+            'aura_cal_manage_programs',
         ];
 
         foreach ( $media_required_caps as $cap ) {
@@ -1989,9 +2006,11 @@ class Aura_Roles_Manager {
             'aura_students_payments_register', 'aura_students_payments_view_all',
             'aura_students_quotas_config', 'aura_students_status_view', 'aura_students_courses_manage',
             'aura_students_reports', 'aura_students_settings',
+            'aura_cal_view_calendar', 'aura_cal_view_programs', 'aura_cal_create_events',
             'aura_cal_manage_calendar', 'aura_cal_delete_events', 'aura_cal_manage_programs',
-            'aura_cal_delete_programs', 'aura_cal_manage_tasks', 'aura_cal_delete_tasks',
-            'aura_cal_manage_grades', 'aura_cal_delete_grades',
+            'aura_cal_delete_programs', 'aura_cal_take_attendance', 'aura_cal_view_attendance',
+            'aura_cal_manage_tasks', 'aura_cal_delete_tasks', 'aura_cal_grade_tasks',
+            'aura_cal_manage_grades', 'aura_cal_delete_grades', 'aura_cal_view_grades',
             'aura_cal_sync_gcal', 'aura_cal_manage_settings',
             'aura_library_create', 'aura_library_edit', 'aura_library_delete',
             'aura_library_loan_create', 'aura_library_loan_return', 'aura_library_loan_extend',
