@@ -832,15 +832,41 @@ $category_icons = array(
                         </div>
 
                         <!-- Resumen de Resultados de Importación -->
-                        <div id="import-results-card" style="display: none; margin-top: 16px; padding: 14px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);">
-                            <h4 style="margin: 0 0 8px; font-size: 0.9rem; color: #38bdf8; font-weight: 700;">
-                                📊 <?php esc_html_e( 'Resultado del Proceso', 'aura-suite' ); ?>
-                            </h4>
-                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center;">
-                                <div><div id="res-total" style="font-weight: 800; font-size: 1.1rem; color: #fff;">0</div><div style="font-size: 0.72rem; color: #94a3b8;">Total</div></div>
-                                <div><div id="res-created" style="font-weight: 800; font-size: 1.1rem; color: #34d399;">0</div><div style="font-size: 0.72rem; color: #94a3b8;">Creados</div></div>
-                                <div><div id="res-updated" style="font-weight: 800; font-size: 1.1rem; color: #38bdf8;">0</div><div style="font-size: 0.72rem; color: #94a3b8;">Actualizados</div></div>
-                                <div><div id="res-skipped" style="font-weight: 800; font-size: 1.1rem; color: #f59e0b;">0</div><div style="font-size: 0.72rem; color: #94a3b8;">Omitidos</div></div>
+                        <div id="import-results-card" style="display: none; margin-top: 16px; padding: 18px; border-radius: 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                                <h4 style="margin: 0; font-size: 0.95rem; color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                                    📊 <?php esc_html_e( 'Resultado de la Importación Masiva', 'aura-suite' ); ?>
+                                </h4>
+                                <span id="res-badge-status" style="font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; background: rgba(16, 185, 129, 0.15); color: #34d399; font-weight: 600;">
+                                    Proceso Finalizado
+                                </span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px; text-align: center; margin-bottom: 12px;">
+                                <div style="background: rgba(255,255,255,0.03); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                                    <div id="res-total" style="font-weight: 800; font-size: 1.25rem; color: #fff;">0</div>
+                                    <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Total</div>
+                                </div>
+                                <div style="background: rgba(16, 185, 129, 0.06); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                    <div id="res-created" style="font-weight: 800; font-size: 1.25rem; color: #34d399;">0</div>
+                                    <div style="font-size: 0.72rem; color: #34d399; text-transform: uppercase;">Creados</div>
+                                </div>
+                                <div style="background: rgba(56, 189, 248, 0.06); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.2);">
+                                    <div id="res-updated" style="font-weight: 800; font-size: 1.25rem; color: #38bdf8;">0</div>
+                                    <div style="font-size: 0.72rem; color: #38bdf8; text-transform: uppercase;">Actualizados</div>
+                                </div>
+                                <div style="background: rgba(245, 158, 11, 0.06); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                                    <div id="res-skipped" style="font-weight: 800; font-size: 1.25rem; color: #f59e0b;">0</div>
+                                    <div style="font-size: 0.72rem; color: #f59e0b; text-transform: uppercase;">Omitidos</div>
+                                </div>
+                                <div style="background: rgba(239, 68, 68, 0.06); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                    <div id="res-errors" style="font-weight: 800; font-size: 1.25rem; color: #ef4444;">0</div>
+                                    <div style="font-size: 0.72rem; color: #ef4444; text-transform: uppercase;">Errores</div>
+                                </div>
+                            </div>
+                            <div id="res-message" style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 8px; line-height: 1.4;"></div>
+                            <div id="res-details-wrapper" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 10px;">
+                                <div style="font-size: 0.75rem; font-weight: 700; color: #f59e0b; margin-bottom: 6px;">Observaciones y Detalles:</div>
+                                <ul id="res-details-list" style="margin: 0; padding-left: 18px; font-size: 0.75rem; color: #94a3b8; max-height: 120px; overflow-y: auto;"></ul>
                             </div>
                         </div>
                     </div>

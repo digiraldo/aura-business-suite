@@ -1190,13 +1190,31 @@
                     $btn.prop('disabled', false).html(orig);
                     if (res.success && res.data) {
                         var d = res.data;
-                        $('#res-total').text(d.total || 0);
+                        var totalCount = (typeof d.total !== 'undefined') ? d.total : (d.total_rows || 0);
+                        $('#res-total').text(totalCount);
                         $('#res-created').text(d.created || 0);
                         $('#res-updated').text(d.updated || 0);
                         $('#res-skipped').text(d.skipped || 0);
+                        $('#res-errors').text(d.errors || 0);
+
+                        if (d.message) {
+                            $('#res-message').text(d.message);
+                        }
+
+                        if (d.details && d.details.length > 0) {
+                            var detailsHtml = '';
+                            d.details.forEach(function(item) {
+                                detailsHtml += '<li style="margin-bottom:3px;">' + escapeHtml(item) + '</li>';
+                            });
+                            $('#res-details-list').html(detailsHtml);
+                            $('#res-details-wrapper').show();
+                        } else {
+                            $('#res-details-wrapper').hide();
+                        }
+
                         $('#import-results-card').slideDown(200);
 
-                        showToast('Importación completada: ' + (d.created || 0) + ' creados, ' + (d.updated || 0) + ' actualizados.');
+                        showToast('Importación finalizada: ' + (d.created || 0) + ' creados, ' + (d.updated || 0) + ' actualizados.');
                         fetchContacts();
                         refreshStats();
                     } else {

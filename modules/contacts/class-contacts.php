@@ -133,6 +133,56 @@ class Aura_Contacts {
     }
 
     /**
+     * Obtiene un contacto por su teléfono principal, secundario o WhatsApp.
+     *
+     * @param string $phone
+     * @return array|null
+     */
+    public static function get_contact_by_phone( string $phone ): ?array {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_contacts';
+        $phone = sanitize_text_field( trim( $phone ) );
+
+        if ( empty( $phone ) ) {
+            return null;
+        }
+
+        $digits = preg_replace( '/\D+/', '', $phone );
+        if ( strlen( $digits ) >= 8 ) {
+            $suffix = substr( $digits, -8 );
+            $like   = '%' . $wpdb->esc_like( $suffix );
+            $row    = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$table} 
+                     WHERE (phone_primary = %s OR phone_secondary = %s OR whatsapp = %s 
+                            OR phone_primary LIKE %s OR phone_secondary LIKE %s)
+                       AND is_active = 1 LIMIT 1",
+                    $phone,
+                    $phone,
+                    $phone,
+                    $like,
+                    $like
+                ),
+                ARRAY_A
+            );
+        } else {
+            $row = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT * FROM {$table} 
+                     WHERE (phone_primary = %s OR phone_secondary = %s OR whatsapp = %s)
+                       AND is_active = 1 LIMIT 1",
+                    $phone,
+                    $phone,
+                    $phone
+                ),
+                ARRAY_A
+            );
+        }
+
+        return $row ? self::format_contact_row( $row ) : null;
+    }
+
+    /**
      * Obtiene un contacto vinculado a un Tercero.
      *
      * @param int $third_party_id
