@@ -361,7 +361,7 @@
     bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background: rgba(15, 23, 42, 0.75) !important;
+    background: rgba(15, 23, 42, 0.8) !important;
     backdrop-filter: blur(8px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(8px) saturate(180%) !important;
     display: none;
@@ -370,6 +370,9 @@
     z-index: 999999 !important;
     opacity: 0;
     transition: opacity 0.2s ease;
+    overflow-y: auto !important;
+    padding: 20px 16px !important;
+    box-sizing: border-box !important;
 }
 
 .aura-modal-overlay.active,
@@ -392,9 +395,10 @@
     padding: 24px !important;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     animation: modalSlideUp 0.22s ease-out;
-    max-height: 90vh !important;
+    max-height: calc(100vh - 40px) !important;
     display: flex !important;
     flex-direction: column !important;
+    margin: auto !important;
 }
 
 @keyframes modalSlideUp {
@@ -456,24 +460,36 @@
 /* ── Modal de Crear / Editar Contacto (UX/UI Premium) ─────────────────────── */
 .contact-modal-dialog {
     max-width: 780px !important;
-    width: 94% !important;
+    width: 95% !important;
+    max-height: calc(100vh - 40px) !important;
+    height: auto !important;
     border-radius: 20px !important;
     padding: 0 !important;
     overflow: hidden !important;
-    background: rgba(15, 23, 42, 0.88) !important;
+    background: rgba(15, 23, 42, 0.94) !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 30px rgba(59, 130, 246, 0.12) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(56, 189, 248, 0.15) !important;
     display: flex !important;
     flex-direction: column !important;
-    max-height: 92vh !important;
+    margin: auto !important;
+}
+
+.contact-modal-dialog #contact-edit-form {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
 }
 
 .contact-modal-header {
-    padding: 20px 24px;
+    flex-shrink: 0 !important;
+    padding: 16px 24px !important;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.4) 100%);
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.5) 100%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -554,10 +570,11 @@
 
 /* Mini-Tabs de Navegación dentro del Modal */
 .contact-modal-tabs {
+    flex-shrink: 0 !important;
     display: flex;
     gap: 6px;
     padding: 0 24px;
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -588,12 +605,33 @@
 
 /* Cuerpo del Modal con Scroll suave */
 .contact-modal-body {
-    padding: 24px;
-    overflow-y: auto;
-    max-height: calc(92vh - 170px);
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    max-height: none !important;
+    padding: 20px 24px !important;
     display: flex;
     flex-direction: column;
     gap: 18px;
+    overscroll-behavior: contain;
+}
+
+.contact-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.contact-modal-body::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 4px;
+}
+
+.contact-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.3);
+    border-radius: 4px;
+}
+
+.contact-modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.55);
 }
 
 /* Hero de Identidad & Avatar */
@@ -826,12 +864,13 @@
 }
 
 .contact-modal-footer {
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(15, 23, 42, 0.6);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0 !important;
+    padding: 14px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Estilos de Paginación Mejorada */

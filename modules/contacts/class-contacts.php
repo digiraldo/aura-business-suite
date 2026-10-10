@@ -575,7 +575,10 @@ class Aura_Contacts {
             wp_send_json_error( array( 'message' => __( 'Contacto no encontrado.', 'aura-suite' ) ) );
         }
 
-        wp_send_json_success( array( 'contact' => $contact ) );
+        $response            = $contact;
+        $response['contact'] = $contact;
+
+        wp_send_json_success( $response );
     }
 
     /**
@@ -1024,6 +1027,24 @@ class Aura_Contacts {
         $row['photo_url']        = $avatar ?: '';
         $row['tags']             = $tags;
         $row['tags_list']        = $tags;
+
+        // Nombres de entidades vinculadas
+        if ( ! empty( $row['third_party_id'] ) && empty( $row['third_party_name'] ) ) {
+            global $wpdb;
+            $tp_table = $wpdb->prefix . 'aura_third_parties';
+            if ( $wpdb->get_var( "SHOW TABLES LIKE '{$tp_table}'" ) === $tp_table ) {
+                $tp = $wpdb->get_row( $wpdb->prepare( "SELECT legal_name, trade_name FROM {$tp_table} WHERE id = %d LIMIT 1", (int) $row['third_party_id'] ), ARRAY_A );
+                if ( $tp ) {
+                    $row['third_party_name'] = ! empty( $tp['trade_name'] ) ? $tp['trade_name'] : $tp['legal_name'];
+                }
+            }
+        }
+        if ( ! empty( $row['wp_user_id'] ) && empty( $row['wp_user_name'] ) ) {
+            $user = get_userdata( (int) $row['wp_user_id'] );
+            if ( $user ) {
+                $row['wp_user_name'] = $user->display_name ?: $user->user_login;
+            }
+        }
 
         // Metadatos de Google
         $row['is_synced_google'] = ! empty( $row['resource_name'] );

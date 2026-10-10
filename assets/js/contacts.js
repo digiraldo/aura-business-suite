@@ -708,7 +708,11 @@
                 alert('No se pudo cargar la información del contacto.');
                 return;
             }
-            var c = res.data;
+            var c = (res.data && res.data.contact) ? res.data.contact : res.data;
+            if (!c || !c.id) {
+                alert('No se pudo procesar la información del contacto.');
+                return;
+            }
             var contactTitle = (c.first_name || '') + ' ' + (c.last_name || '');
             if (!contactTitle.trim()) contactTitle = c.organization || ('Contacto #' + c.id);
 
@@ -722,9 +726,9 @@
             $('#contact-job-title').val(c.job_title || '');
             $('#contact-category').val(c.category || 'other');
 
-            $('#contact-email').val(c.email || c.email_primary || '');
+            $('#contact-email').val(c.email_primary || c.email || '');
             $('#contact-email-secondary').val(c.email_secondary || '');
-            $('#contact-phone').val(c.phone || c.phone_primary || '');
+            $('#contact-phone').val(c.phone_primary || c.phone || '');
             $('#contact-whatsapp').val(c.whatsapp || '');
 
             $('#contact-address').val(c.address_street || c.address || '');
