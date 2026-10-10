@@ -1098,15 +1098,24 @@ $category_icons = array(
                     <div style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 12px;">
                         <div class="aura-form-group">
                             <label for="contact-address-city" class="aura-form-label"><?php esc_html_e( 'Ciudad', 'aura-suite' ); ?></label>
-                            <input type="text" id="contact-address-city" name="address_city" class="aura-input" placeholder="Ciudad de México">
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-location-alt"></span>
+                                <input type="text" id="contact-address-city" name="address_city" class="aura-input" placeholder="Ciudad de México">
+                            </div>
                         </div>
                         <div class="aura-form-group">
                             <label for="contact-address-state" class="aura-form-label"><?php esc_html_e( 'Estado / Región', 'aura-suite' ); ?></label>
-                            <input type="text" id="contact-address-state" name="address_state" class="aura-input" placeholder="CDMX">
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-admin-site"></span>
+                                <input type="text" id="contact-address-state" name="address_state" class="aura-input" placeholder="CDMX">
+                            </div>
                         </div>
                         <div class="aura-form-group">
                             <label for="contact-address-postal" class="aura-form-label"><?php esc_html_e( 'C.P.', 'aura-suite' ); ?></label>
-                            <input type="text" id="contact-address-postal" name="address_postal" class="aura-input" placeholder="03100">
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-post-status"></span>
+                                <input type="text" id="contact-address-postal" name="address_postal" class="aura-input" placeholder="03100">
+                            </div>
                         </div>
                     </div>
 
@@ -1119,10 +1128,13 @@ $category_icons = array(
                     <div class="aura-glass-card" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); padding: 14px; border-radius: 12px; margin-bottom: 14px;">
                         <label class="aura-form-label" style="margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
                             <span>🏢 <?php esc_html_e( 'Vincular con Tercero de Aura (Directorio Comercial)', 'aura-suite' ); ?></span>
-                            <span style="font-size:0.75rem; color:#38bdf8;">Opcional</span>
+                            <span style="font-size:0.75rem; color:#38bdf8; font-weight: 500;">Opcional</span>
                         </label>
                         <div style="position: relative;">
-                            <input type="text" id="contact-link-third-party-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por nombre comercial, razón social o RFC...', 'aura-suite' ); ?>" style="width: 100%;">
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-search"></span>
+                                <input type="text" id="contact-link-third-party-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por nombre comercial, razón social o RFC...', 'aura-suite' ); ?>" style="width: 100%;">
+                            </div>
                             <div id="contact-third-party-results" class="contacts-autocomplete-dropdown" style="display: none;"></div>
                         </div>
                         <div id="contact-third-party-selected" class="contact-linked-card" style="display: none;">
@@ -1140,10 +1152,13 @@ $category_icons = array(
                     <div class="aura-glass-card" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); padding: 14px; border-radius: 12px; margin-bottom: 14px;">
                         <label class="aura-form-label" style="margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
                             <span>👤 <?php esc_html_e( 'Vincular con Usuario del Sistema WordPress', 'aura-suite' ); ?></span>
-                            <span style="font-size:0.75rem; color:#c084fc;">Opcional</span>
+                            <span style="font-size:0.75rem; color:#c084fc; font-weight: 500;">Opcional</span>
                         </label>
                         <div style="position: relative;">
-                            <input type="text" id="contact-link-wp-user-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por nombre, usuario o email registrado...', 'aura-suite' ); ?>" style="width: 100%;">
+                            <div class="contact-input-icon-wrap">
+                                <span class="contact-input-icon dashicons dashicons-search"></span>
+                                <input type="text" id="contact-link-wp-user-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por nombre, usuario o email registrado...', 'aura-suite' ); ?>" style="width: 100%;">
+                            </div>
                             <div id="contact-wp-user-results" class="contacts-autocomplete-dropdown" style="display: none;"></div>
                         </div>
                         <div id="contact-wp-user-selected" class="contact-linked-card contact-linked-card-wp" style="display: none;">
@@ -1162,7 +1177,10 @@ $category_icons = array(
                         <label for="contact-tags" class="aura-form-label">
                             🏷️ <?php esc_html_e( 'Etiquetas / Tags (separadas por coma)', 'aura-suite' ); ?>
                         </label>
-                        <input type="text" id="contact-tags" name="tags" class="aura-input" placeholder="diplomado-2026, facilitador-externo, benefactor, vip">
+                        <div class="contact-input-icon-wrap">
+                            <span class="contact-input-icon dashicons dashicons-tag"></span>
+                            <input type="text" id="contact-tags" name="tags" class="aura-input" placeholder="diplomado-2026, facilitador-externo, benefactor, vip">
+                        </div>
                     </div>
 
                     <!-- Notas / Observaciones -->

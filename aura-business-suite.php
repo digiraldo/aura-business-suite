@@ -3058,8 +3058,24 @@ class Aura_Business_Suite {
             wp_send_json_error( array( 'message' => $user_id->get_error_message() ) );
         }
 
+        $contact_id = absint( $_POST['contact_id'] ?? 0 );
+        if ( $contact_id > 0 ) {
+            global $wpdb;
+            $contacts_table = $wpdb->prefix . 'aura_contacts';
+            if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $contacts_table ) ) === $contacts_table ) {
+                $wpdb->update(
+                    $contacts_table,
+                    array( 'wp_user_id' => $user_id ),
+                    array( 'id' => $contact_id ),
+                    array( '%d' ),
+                    array( '%d' )
+                );
+            }
+        }
+
         wp_send_json_success( array(
             'user_id'      => $user_id,
+            'contact_id'   => $contact_id,
             'display_name' => trim( $first_name . ' ' . $last_name ),
             'email'        => $email,
             'redirect_url' => admin_url( 'admin.php?page=aura-permissions&user_id=' . $user_id . '&created=1' ),

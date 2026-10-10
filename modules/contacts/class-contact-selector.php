@@ -80,6 +80,10 @@ class Aura_Contact_Selector {
                     || wp_verify_nonce( $nonce, 'aura_inventory_nonce' )
                     || wp_verify_nonce( $nonce, 'aura_library_nonce' )
                     || wp_verify_nonce( $nonce, 'aura_vehicles_nonce' )
+                    || wp_verify_nonce( $nonce, 'aura_third_parties_nonce' )
+                    || wp_verify_nonce( $nonce, 'aura_create_user_nonce' )
+                    || wp_verify_nonce( $nonce, 'aura_permissions_nonce' )
+                    || wp_verify_nonce( $nonce, 'assign_permissions' )
                     || wp_verify_nonce( $nonce, 'wp_rest' );
 
         if ( ! $valid_nonce ) {

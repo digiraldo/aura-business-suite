@@ -1011,6 +1011,7 @@ class Aura_Third_Parties {
         $address         = sanitize_textarea_field(wp_unslash($_POST['address'] ?? ''));
         $notes           = sanitize_textarea_field(wp_unslash($_POST['notes'] ?? ''));
         $logo_id         = absint($_POST['logo_id'] ?? 0);
+        $contact_id      = absint($_POST['contact_id'] ?? 0);
 
         if (!in_array($party_type, array('company', 'store', 'organization_foundation', 'person', 'religious', 'other'), true)) {
             $party_type = 'company';
@@ -1051,12 +1052,41 @@ class Aura_Third_Parties {
             wp_send_json_error(array('message' => __('No se pudo registrar el tercero.', 'aura-suite')));
         }
 
+        // Si se originó desde un contacto, vincular bidireccionalmente
+        if ($contact_id > 0) {
+            global $wpdb;
+            $contacts_table = $wpdb->prefix . 'aura_contacts';
+            if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $contacts_table)) === $contacts_table) {
+                $contact = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$contacts_table} WHERE id = %d", $contact_id));
+                if ($contact) {
+                    $wpdb->update(
+                        $contacts_table,
+                        array('third_party_id' => $id),
+                        array('id' => $contact_id),
+                        array('%d'),
+                        array('%d')
+                    );
+                    // Si el contacto tenía wp_user_id y el tercero no tiene related_user_id, asociarlo
+                    if (!empty($contact->wp_user_id)) {
+                        $wpdb->update(
+                            self::get_table_name(),
+                            array('related_user_id' => (int) $contact->wp_user_id),
+                            array('id' => $id),
+                            array('%d'),
+                            array('%d')
+                        );
+                    }
+                }
+            }
+        }
+
         $item = self::get_third_party_by_id($id);
 
         wp_send_json_success(array(
-            'id'      => $id,
-            'item'    => $item,
-            'message' => __('Tercero registrado correctamente.', 'aura-suite'),
+            'id'         => $id,
+            'item'       => $item,
+            'contact_id' => $contact_id,
+            'message'    => __('Tercero registrado correctamente.', 'aura-suite'),
         ));
     }
 
