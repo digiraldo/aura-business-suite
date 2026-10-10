@@ -904,3 +904,144 @@
     border: 1px solid #3b82f6 !important;
     box-shadow: 0 0 12px rgba(37, 99, 235, 0.5) !important;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MODAL DE FUSIÓN ASISTIDA INTELIGENTE (MERGE WIZARD)
+═══════════════════════════════════════════════════════════════ */
+.merge-modal-dialog {
+    max-width: 960px !important;
+    width: 95% !important;
+    max-height: calc(100vh - 40px) !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    margin: auto !important;
+    background: rgba(15, 23, 42, 0.94) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 25px rgba(139, 92, 246, 0.2) !important;
+    border-radius: 16px !important;
+}
+
+.merge-modal-header {
+    flex-shrink: 0 !important;
+    padding: 18px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: linear-gradient(135deg, rgba(30, 27, 75, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.merge-modal-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding: 22px 24px !important;
+}
+
+.merge-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.merge-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.4);
+    border-radius: 4px;
+}
+
+.merge-field-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    transition: all 0.2s ease;
+}
+
+.merge-field-card:hover {
+    border-color: rgba(139, 92, 246, 0.25);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.merge-field-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.merge-field-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.merge-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+}
+
+.merge-option-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 9px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.merge-option-label:hover {
+    border-color: rgba(139, 92, 246, 0.35);
+    background: rgba(15, 23, 42, 0.75);
+}
+
+.merge-option-label.is-selected {
+    border-color: #8b5cf6 !important;
+    background: rgba(139, 92, 246, 0.12) !important;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+.merge-option-radio {
+    margin-top: 3px !important;
+    accent-color: #8b5cf6 !important;
+}
+
+.merge-custom-input-box {
+    margin-top: 10px;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px dashed rgba(139, 92, 246, 0.35);
+    border-radius: 9px;
+    display: none;
+}
+
+.merge-preview-card {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.7) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 22px;
+}
+
+.merge-modal-footer {
+    flex-shrink: 0 !important;
+    padding: 14px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+

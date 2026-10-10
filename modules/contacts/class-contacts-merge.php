@@ -1,10 +1,11 @@
 <?php
 /**
- * Motor de Detección de Duplicados y Fusión (Merge) de Contactos en Aura Suite.
+ * Motor Inteligente de Detección de Duplicados y Fusión (Merge) de Contactos en Aura Suite.
  *
  * Permite identificar coincidencias inteligentes por Correo Electrónico,
- * Teléfono normalizado o similitud de Nombres, unificando registros
- * sin perder historial, notas, etiquetas ni vinculaciones de sistema.
+ * Teléfono normalizado, similitud fonética/ortográfica de Nombres y Organizaciones,
+ * consolidando clusters conexos y permitiendo al usuario configurar campo por campo
+ * la ficha maestra final sin perder historial, canales de contacto ni vinculaciones.
  *
  * @package    Aura_Business_Suite
  * @subpackage Contacts
@@ -25,7 +26,42 @@ class Aura_Contacts_Merge {
     }
 
     /**
-     * Analiza el directorio de contactos y encuentra grupos (clusters) de posibles duplicados.
+     * Normaliza cadenas de texto para comparaciones inteligentes:
+     * minúsculas, remueve acentos/diacríticos y signos de puntuación.
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function clean_for_comparison( string $str ): string {
+        $str = mb_strtolower( trim( $str ), 'UTF-8' );
+        $unwanted = array(
+            'á'=>'a', 'é'=>'e', 'í'=>'i', 'ó'=>'o', 'ú'=>'u', 'ü'=>'u', 'ñ'=>'n',
+            'à'=>'a', 'è'=>'e', 'ì'=>'i', 'ò'=>'o', 'ù'=>'u',
+            'Á'=>'a', 'É'=>'e', 'Í'=>'i', 'Ó'=>'o', 'Ú'=>'u', 'Ü'=>'u', 'Ñ'=>'n',
+        );
+        $str = strtr( $str, $unwanted );
+        $str = preg_replace( '/[^a-z0-9\s]/', '', $str );
+        return preg_replace( '/\s+/', ' ', trim( $str ) );
+    }
+
+    /**
+     * Normaliza un número telefónico extrayendo sus dígitos canónicos
+     * (omitiendo prefijos internacionales si son más de 10 dígitos).
+     *
+     * @param string $phone
+     * @return string
+     */
+    public static function normalize_phone( string $phone ): string {
+        $digits = preg_replace( '/\D+/', '', $phone );
+        if ( strlen( $digits ) > 10 ) {
+            return substr( $digits, -10 );
+        }
+        return $digits;
+    }
+
+    /**
+     * Analiza el directorio de contactos y encuentra grupos (clusters) de posibles duplicados
+     * utilizando análisis multi-criterio y consolidación de grafos conectados.
      *
      * @return array
      */
@@ -38,173 +74,261 @@ class Aura_Contacts_Merge {
             return array();
         }
 
-        $clusters = array();
-        $seen_pairs = array();
+        // Estructura de adyacencia para unir duplicados conexos (Disjoint Set / Graph)
+        $matches = array(); // [ [ 'c1' => id, 'c2' => id, 'type' => ..., 'label' => ..., 'value' => ..., 'confidence' => ... ] ]
 
-        // 1. Indexar por correo electrónico (primario y secundario)
+        // 1. Detección por Correo Electrónico
         $by_email = array();
         foreach ( $contacts as $c ) {
             $e1 = strtolower( trim( (string) $c['email_primary'] ) );
             $e2 = strtolower( trim( (string) $c['email_secondary'] ) );
             if ( ! empty( $e1 ) ) {
-                $by_email[ $e1 ][] = $c;
+                $by_email[ $e1 ][] = $c['id'];
             }
             if ( ! empty( $e2 ) && $e2 !== $e1 ) {
-                $by_email[ $e2 ][] = $c;
+                $by_email[ $e2 ][] = $c['id'];
             }
         }
 
-        foreach ( $by_email as $email => $group ) {
-            if ( count( $group ) > 1 ) {
-                $ids = wp_list_pluck( $group, 'id' );
-                sort( $ids );
-                $key = 'email_' . implode( '_', $ids );
-                if ( ! isset( $clusters[ $key ] ) ) {
-                    $clusters[ $key ] = array(
-                        'type'        => 'email',
-                        'type_label'  => __( 'Correo Coincidente', 'aura-suite' ),
-                        'match_value' => $email,
-                        'confidence'  => 100,
-                        'badge_color' => '#10b981',
-                        'reasons'     => array(
-                            array(
-                                'type'  => 'email',
-                                'label' => __( 'Correo Coincidente', 'aura-suite' ),
-                                'value' => $email,
-                            ),
-                        ),
-                        'contacts'    => array_values( array_map( array( 'Aura_Contacts', 'format_contact_row' ), $group ) ),
-                    );
+        foreach ( $by_email as $email => $ids ) {
+            $ids = array_unique( $ids );
+            $count = count( $ids );
+            if ( $count > 1 ) {
+                for ( $i = 0; $i < $count; $i++ ) {
+                    for ( $j = $i + 1; $j < $count; $j++ ) {
+                        $matches[] = array(
+                            'c1'         => $ids[ $i ],
+                            'c2'         => $ids[ $j ],
+                            'type'       => 'email',
+                            'type_label' => __( 'Correo Coincidente', 'aura-suite' ),
+                            'value'      => $email,
+                            'confidence' => 100,
+                            'badge'      => '#10b981',
+                        );
+                    }
                 }
             }
         }
 
-        // 2. Indexar por teléfono normalizado (últimos 10 dígitos)
+        // 2. Detección por Teléfono Normalizado
         $by_phone = array();
         foreach ( $contacts as $c ) {
+            $phones = array();
             $p1 = self::normalize_phone( (string) $c['phone_primary'] );
             $p2 = self::normalize_phone( (string) $c['phone_secondary'] );
             $p3 = self::normalize_phone( (string) $c['whatsapp'] );
 
-            if ( strlen( $p1 ) >= 8 ) {
-                $by_phone[ $p1 ][] = $c;
-            }
-            if ( strlen( $p2 ) >= 8 && $p2 !== $p1 ) {
-                $by_phone[ $p2 ][] = $c;
-            }
-            if ( strlen( $p3 ) >= 8 && $p3 !== $p1 && $p3 !== $p2 ) {
-                $by_phone[ $p3 ][] = $c;
+            if ( strlen( $p1 ) >= 8 ) $phones[] = $p1;
+            if ( strlen( $p2 ) >= 8 ) $phones[] = $p2;
+            if ( strlen( $p3 ) >= 8 ) $phones[] = $p3;
+
+            foreach ( array_unique( $phones ) as $phone ) {
+                $by_phone[ $phone ][] = $c['id'];
             }
         }
 
-        foreach ( $by_phone as $phone => $group ) {
-            if ( count( $group ) > 1 ) {
-                $ids = wp_list_pluck( $group, 'id' );
-                sort( $ids );
-                $key = 'phone_' . implode( '_', $ids );
-                if ( ! isset( $clusters[ $key ] ) ) {
-                    $clusters[ $key ] = array(
-                        'type'        => 'phone',
-                        'type_label'  => __( 'Teléfono Coincidente', 'aura-suite' ),
-                        'match_value' => $phone,
-                        'confidence'  => 95,
-                        'badge_color' => '#3b82f6',
-                        'reasons'     => array(
-                            array(
-                                'type'  => 'phone',
-                                'label' => __( 'Teléfono Coincidente', 'aura-suite' ),
-                                'value' => $phone,
-                            ),
-                        ),
-                        'contacts'    => array_values( array_map( array( 'Aura_Contacts', 'format_contact_row' ), $group ) ),
-                    );
+        foreach ( $by_phone as $phone => $ids ) {
+            $ids = array_unique( $ids );
+            $count = count( $ids );
+            if ( $count > 1 ) {
+                for ( $i = 0; $i < $count; $i++ ) {
+                    for ( $j = $i + 1; $j < $count; $j++ ) {
+                        $matches[] = array(
+                            'c1'         => $ids[ $i ],
+                            'c2'         => $ids[ $j ],
+                            'type'       => 'phone',
+                            'type_label' => __( 'Teléfono Coincidente', 'aura-suite' ),
+                            'value'      => $phone,
+                            'confidence' => 95,
+                            'badge'      => '#3b82f6',
+                        );
+                    }
                 }
             }
         }
 
-        // 3. Comparación de Nombres y Organizaciones (Exacto y Fonético / Similitud)
-        $count = count( $contacts );
-        for ( $i = 0; $i < $count; $i++ ) {
-            $c1    = $contacts[ $i ];
-            $name1 = strtolower( trim( $c1['first_name'] . ' ' . $c1['last_name'] ) );
-            if ( empty( $name1 ) ) {
-                $name1 = strtolower( trim( (string) $c1['organization'] ) );
+        // 3. Detección Avanzada por Nombres y Organizaciones
+        $c_count = count( $contacts );
+        for ( $i = 0; $i < $c_count; $i++ ) {
+            $c1 = $contacts[ $i ];
+            $fn1 = self::clean_for_comparison( (string) $c1['first_name'] );
+            $ln1 = self::clean_for_comparison( (string) $c1['last_name'] );
+            $full1 = trim( $fn1 . ' ' . $ln1 );
+            $inv1  = trim( $ln1 . ' ' . $fn1 );
+            $org1  = self::clean_for_comparison( (string) $c1['organization'] );
+
+            for ( $j = $i + 1; $j < $c_count; $j++ ) {
+                $c2 = $contacts[ $j ];
+                $fn2 = self::clean_for_comparison( (string) $c2['first_name'] );
+                $ln2 = self::clean_for_comparison( (string) $c2['last_name'] );
+                $full2 = trim( $fn2 . ' ' . $ln2 );
+                $inv2  = trim( $ln2 . ' ' . $fn2 );
+                $org2  = self::clean_for_comparison( (string) $c2['organization'] );
+
+                // A. Nombre completo idéntico (normalizado)
+                if ( ! empty( $full1 ) && strlen( $full1 ) >= 5 && $full1 === $full2 ) {
+                    $matches[] = array(
+                        'c1'         => $c1['id'],
+                        'c2'         => $c2['id'],
+                        'type'       => 'name',
+                        'type_label' => __( 'Nombre Idéntico', 'aura-suite' ),
+                        'value'      => trim( $c1['first_name'] . ' ' . $c1['last_name'] ),
+                        'confidence' => 92,
+                        'badge'      => '#8b5cf6',
+                    );
+                    continue;
+                }
+
+                // B. Nombre invertido idéntico (ej: Diego Giraldo vs Giraldo Diego)
+                if ( ! empty( $full1 ) && ! empty( $ln1 ) && ( $full1 === $inv2 || $inv1 === $full2 ) ) {
+                    $matches[] = array(
+                        'c1'         => $c1['id'],
+                        'c2'         => $c2['id'],
+                        'type'       => 'name',
+                        'type_label' => __( 'Nombre Transpuesto', 'aura-suite' ),
+                        'value'      => trim( $c1['first_name'] . ' ' . $c1['last_name'] ) . ' ↔ ' . trim( $c2['first_name'] . ' ' . $c2['last_name'] ),
+                        'confidence' => 90,
+                        'badge'      => '#8b5cf6',
+                    );
+                    continue;
+                }
+
+                // C. Similitud de texto elevada en nombres (>= 86%)
+                if ( ! empty( $full1 ) && ! empty( $full2 ) && strlen( $full1 ) >= 6 && strlen( $full2 ) >= 6 ) {
+                    similar_text( $full1, $full2, $pct_name );
+                    if ( $pct_name >= 86 ) {
+                        $matches[] = array(
+                            'c1'         => $c1['id'],
+                            'c2'         => $c2['id'],
+                            'type'       => 'name',
+                            'type_label' => __( 'Nombre Muy Similar', 'aura-suite' ),
+                            'value'      => trim( $c1['first_name'] . ' ' . $c1['last_name'] ) . ' ≈ ' . trim( $c2['first_name'] . ' ' . $c2['last_name'] ),
+                            'confidence' => round( (float) $pct_name ),
+                            'badge'      => '#a855f7',
+                        );
+                        continue;
+                    }
+                }
+
+                // D. Misma Organización y mismo primer nombre
+                if ( ! empty( $org1 ) && strlen( $org1 ) >= 4 && $org1 === $org2 && ! empty( $fn1 ) && $fn1 === $fn2 ) {
+                    $matches[] = array(
+                        'c1'         => $c1['id'],
+                        'c2'         => $c2['id'],
+                        'type'       => 'org',
+                        'type_label' => __( 'Misma Empresa y Nombre', 'aura-suite' ),
+                        'value'      => $c1['organization'] . ' (' . $c1['first_name'] . ')',
+                        'confidence' => 88,
+                        'badge'      => '#f59e0b',
+                    );
+                    continue;
+                }
             }
-            if ( strlen( $name1 ) < 3 ) {
+        }
+
+        if ( empty( $matches ) ) {
+            return array();
+        }
+
+        // 4. Consolidar componentes conexos (Grafo de Clusters)
+        // Agrupa contactos que están conectados directa o indirectamente
+        $parent = array();
+        $find = function( $i ) use ( &$parent, &$find ) {
+            if ( ! isset( $parent[ $i ] ) ) {
+                $parent[ $i ] = $i;
+            }
+            if ( $parent[ $i ] !== $i ) {
+                $parent[ $i ] = $find( $parent[ $i ] );
+            }
+            return $parent[ $i ];
+        };
+
+        $union = function( $i, $j ) use ( &$parent, &$find ) {
+            $root_i = $find( $i );
+            $root_j = $find( $j );
+            if ( $root_i !== $root_j ) {
+                $parent[ $root_i ] = $root_j;
+            }
+        };
+
+        foreach ( $matches as $m ) {
+            $union( $m['c1'], $m['c2'] );
+        }
+
+        // Agrupar razones e IDs por raíz de cluster
+        $cluster_ids     = array();
+        $cluster_reasons = array();
+        $cluster_conf    = array();
+
+        foreach ( $matches as $m ) {
+            $root = $find( $m['c1'] );
+            $cluster_ids[ $root ][ $m['c1'] ] = true;
+            $cluster_ids[ $root ][ $m['c2'] ] = true;
+
+            $reason_key = $m['type'] . '_' . $m['value'];
+            if ( ! isset( $cluster_reasons[ $root ][ $reason_key ] ) ) {
+                $cluster_reasons[ $root ][ $reason_key ] = array(
+                    'type'  => $m['type'],
+                    'label' => $m['type_label'],
+                    'value' => $m['value'],
+                    'badge' => $m['badge'],
+                );
+            }
+            $cluster_conf[ $root ] = max( $cluster_conf[ $root ] ?? 0, $m['confidence'] );
+        }
+
+        // Indexar contactos por ID para armado ágil
+        $indexed_contacts = array();
+        foreach ( $contacts as $c ) {
+            $indexed_contacts[ $c['id'] ] = $c;
+        }
+
+        $clusters = array();
+        foreach ( $cluster_ids as $root => $members ) {
+            $member_ids = array_keys( $members );
+            sort( $member_ids );
+
+            $formatted_contacts = array();
+            foreach ( $member_ids as $mid ) {
+                if ( isset( $indexed_contacts[ $mid ] ) ) {
+                    $formatted_contacts[] = Aura_Contacts::format_contact_row( $indexed_contacts[ $mid ] );
+                }
+            }
+
+            if ( count( $formatted_contacts ) < 2 ) {
                 continue;
             }
 
-            for ( $j = $i + 1; $j < $count; $j++ ) {
-                $c2    = $contacts[ $j ];
-                $name2 = strtolower( trim( $c2['first_name'] . ' ' . $c2['last_name'] ) );
-                if ( empty( $name2 ) ) {
-                    $name2 = strtolower( trim( (string) $c2['organization'] ) );
-                }
-                if ( strlen( $name2 ) < 3 ) {
-                    continue;
-                }
+            $reasons = array_values( $cluster_reasons[ $root ] ?? array() );
+            $main_reason = $reasons[0] ?? array( 'type' => 'mixed', 'label' => __( 'Coincidencia Múltiple', 'aura-suite' ), 'value' => '' );
 
-                // Si ya están en el mismo cluster de email o teléfono, ignorar
-                $pair_key = min( $c1['id'], $c2['id'] ) . '_' . max( $c1['id'], $c2['id'] );
-                if ( isset( $seen_pairs[ $pair_key ] ) ) {
-                    continue;
-                }
-
-                $sim = 0;
-                similar_text( $name1, $name2, $percent );
-                $percent = (float) $percent;
-
-                if ( $name1 === $name2 ) {
-                    $sim = 90;
-                } elseif ( $percent >= 85 ) {
-                    $sim = round( $percent );
-                }
-
-                if ( $sim >= 85 ) {
-                    $seen_pairs[ $pair_key ] = true;
-                    $key = 'name_' . $pair_key;
-                    $clusters[ $key ] = array(
-                        'type'        => 'name',
-                        'type_label'  => ( 90 <= $sim ) ? __( 'Nombre Idéntico', 'aura-suite' ) : __( 'Nombre Muy Similar', 'aura-suite' ),
-                        'match_value' => $name1,
-                        'confidence'  => $sim,
-                        'badge_color' => '#8b5cf6',
-                        'reasons'     => array(
-                            array(
-                                'type'  => 'name',
-                                'label' => ( 90 <= $sim ) ? __( 'Nombre Idéntico', 'aura-suite' ) : __( 'Nombre Similar', 'aura-suite' ),
-                                'value' => $name1 . ' ↔ ' . $name2,
-                            ),
-                        ),
-                        'contacts'    => array_values( array_map( array( 'Aura_Contacts', 'format_contact_row' ), array( $c1, $c2 ) ) ),
-                    );
-                }
-            }
+            $clusters[] = array(
+                'id'          => 'cluster_' . implode( '_', $member_ids ),
+                'type'        => $main_reason['type'],
+                'type_label'  => $main_reason['label'],
+                'match_value' => $main_reason['value'],
+                'confidence'  => $cluster_conf[ $root ] ?? 90,
+                'badge_color' => $main_reason['badge'] ?? '#6366f1',
+                'reasons'     => $reasons,
+                'contacts'    => $formatted_contacts,
+            );
         }
+
+        // Ordenar clusters por confianza descendente
+        usort( $clusters, function( $a, $b ) {
+            return $b['confidence'] <=> $a['confidence'];
+        } );
 
         return array_values( $clusters );
     }
 
     /**
-     * Normaliza un número telefónico extrayendo solo los últimos 10 dígitos.
-     *
-     * @param string $phone
-     * @return string
-     */
-    private static function normalize_phone( string $phone ): string {
-        $digits = preg_replace( '/\D+/', '', $phone );
-        if ( strlen( $digits ) > 10 ) {
-            return substr( $digits, -10 );
-        }
-        return $digits;
-    }
-
-    /**
-     * Ejecuta la fusión atómica de uno o varios contactos de origen hacia un contacto de destino.
+     * Ejecuta la fusión atómica de uno o varios contactos de origen hacia un contacto de destino,
+     * aplicando las elecciones y personalizaciones campo a campo elegidas por el usuario.
      *
      * @param int   $target_id        ID del contacto maestro resultante.
      * @param array $source_ids       IDs de los contactos secundarios a fusionar y desactivar.
-     * @param array $field_overrides  Sobrescribir campos específicos si se definieron en el modal.
+     * @param array $field_overrides  Sobrescribir campos específicos definidos por el usuario en el modal.
      * @return array|WP_Error
      */
     public static function merge_contacts( int $target_id, array $source_ids, array $field_overrides = array() ) {
@@ -238,15 +362,20 @@ class Aura_Contacts_Merge {
             return new WP_Error( 'no_valid_sources', __( 'Ninguno de los contactos secundarios seleccionados existe.', 'aura-suite' ) );
         }
 
-        // Iniciar transacción de base de datos
+        // Iniciar transacción atómica de base de datos
         $wpdb->query( 'START TRANSACTION' );
 
         try {
             $updated_target = array();
-            $target_fields = array(
+
+            // Lista completa de campos elegibles/modificables
+            $all_configurable_fields = array(
+                'first_name',
                 'last_name',
                 'organization',
                 'job_title',
+                'category',
+                'contact_type',
                 'email_primary',
                 'email_secondary',
                 'phone_primary',
@@ -260,10 +389,10 @@ class Aura_Contacts_Merge {
                 'avatar_url',
             );
 
-            // Aplicar campos faltantes en target desde los fuentes
-            foreach ( $target_fields as $f ) {
-                if ( ! empty( $field_overrides[ $f ] ) ) {
-                    $updated_target[ $f ] = $field_overrides[ $f ];
+            // 1. Aplicar selecciones del usuario o heredar valores no vacíos
+            foreach ( $all_configurable_fields as $f ) {
+                if ( isset( $field_overrides[ $f ] ) && $field_overrides[ $f ] !== '' ) {
+                    $updated_target[ $f ] = sanitize_text_field( $field_overrides[ $f ] );
                 } elseif ( empty( $target[ $f ] ) ) {
                     foreach ( $sources as $s ) {
                         if ( ! empty( $s[ $f ] ) ) {
@@ -274,8 +403,46 @@ class Aura_Contacts_Merge {
                 }
             }
 
-            // Unificar vinculaciones de entidades si target no las tiene
-            if ( empty( $target['wp_user_id'] ) ) {
+            // 2. Inteligencia de Preservación de Canales de Contacto Alternos
+            // Si el correo primario elegido desplazó a otro correo válido, moverlo a secundario si está disponible
+            $chosen_email_primary = $updated_target['email_primary'] ?? ( $target['email_primary'] ?? '' );
+            $chosen_email_secondary = $updated_target['email_secondary'] ?? ( $target['email_secondary'] ?? '' );
+
+            if ( empty( $chosen_email_secondary ) ) {
+                foreach ( array_merge( array( $target ), $sources ) as $item ) {
+                    $cand_e1 = strtolower( trim( (string) $item['email_primary'] ) );
+                    $cand_e2 = strtolower( trim( (string) $item['email_secondary'] ) );
+                    if ( ! empty( $cand_e1 ) && $cand_e1 !== strtolower( $chosen_email_primary ) ) {
+                        $updated_target['email_secondary'] = $cand_e1;
+                        break;
+                    } elseif ( ! empty( $cand_e2 ) && $cand_e2 !== strtolower( $chosen_email_primary ) ) {
+                        $updated_target['email_secondary'] = $cand_e2;
+                        break;
+                    }
+                }
+            }
+
+            // Misma preservación inteligente para teléfonos:
+            $chosen_phone_primary = $updated_target['phone_primary'] ?? ( $target['phone_primary'] ?? '' );
+            $chosen_phone_secondary = $updated_target['phone_secondary'] ?? ( $target['phone_secondary'] ?? '' );
+            if ( empty( $chosen_phone_secondary ) ) {
+                foreach ( array_merge( array( $target ), $sources ) as $item ) {
+                    $cand_p1 = trim( (string) $item['phone_primary'] );
+                    $cand_p2 = trim( (string) $item['phone_secondary'] );
+                    if ( ! empty( $cand_p1 ) && $cand_p1 !== $chosen_phone_primary ) {
+                        $updated_target['phone_secondary'] = $cand_p1;
+                        break;
+                    } elseif ( ! empty( $cand_p2 ) && $cand_p2 !== $chosen_phone_primary ) {
+                        $updated_target['phone_secondary'] = $cand_p2;
+                        break;
+                    }
+                }
+            }
+
+            // 3. Unificar vinculaciones de entidades si target no las tiene o si se forzaron
+            if ( isset( $field_overrides['wp_user_id'] ) && $field_overrides['wp_user_id'] !== '' ) {
+                $updated_target['wp_user_id'] = absint( $field_overrides['wp_user_id'] );
+            } elseif ( empty( $target['wp_user_id'] ) ) {
                 foreach ( $sources as $s ) {
                     if ( ! empty( $s['wp_user_id'] ) ) {
                         $updated_target['wp_user_id'] = $s['wp_user_id'];
@@ -283,7 +450,10 @@ class Aura_Contacts_Merge {
                     }
                 }
             }
-            if ( empty( $target['third_party_id'] ) ) {
+
+            if ( isset( $field_overrides['third_party_id'] ) && $field_overrides['third_party_id'] !== '' ) {
+                $updated_target['third_party_id'] = absint( $field_overrides['third_party_id'] );
+            } elseif ( empty( $target['third_party_id'] ) ) {
                 foreach ( $sources as $s ) {
                     if ( ! empty( $s['third_party_id'] ) ) {
                         $updated_target['third_party_id'] = $s['third_party_id'];
@@ -291,7 +461,10 @@ class Aura_Contacts_Merge {
                     }
                 }
             }
-            if ( empty( $target['student_id'] ) ) {
+
+            if ( isset( $field_overrides['student_id'] ) && $field_overrides['student_id'] !== '' ) {
+                $updated_target['student_id'] = absint( $field_overrides['student_id'] );
+            } elseif ( empty( $target['student_id'] ) ) {
                 foreach ( $sources as $s ) {
                     if ( ! empty( $s['student_id'] ) ) {
                         $updated_target['student_id'] = $s['student_id'];
@@ -300,21 +473,27 @@ class Aura_Contacts_Merge {
                 }
             }
 
-            // Unificar etiquetas (Tags)
+            // 4. Unificar etiquetas (Tags) de todas las fichas
             $all_tags = is_array( $target['tags'] ) ? $target['tags'] : array();
             foreach ( $sources as $s ) {
                 if ( ! empty( $s['tags'] ) && is_array( $s['tags'] ) ) {
                     $all_tags = array_merge( $all_tags, $s['tags'] );
                 }
             }
+            if ( ! empty( $field_overrides['custom_tags'] ) ) {
+                $custom_tags = array_map( 'trim', explode( ',', $field_overrides['custom_tags'] ) );
+                $all_tags = array_merge( $all_tags, $custom_tags );
+            }
             $all_tags = array_values( array_unique( array_filter( $all_tags ) ) );
-            if ( ! empty( $all_tags ) ) {
-                $updated_target['tags'] = wp_json_encode( $all_tags );
+            $updated_target['tags'] = ! empty( $all_tags ) ? wp_json_encode( $all_tags ) : null;
+
+            // 5. Consolidar notas con registro de auditoría claro
+            $merged_notes = trim( (string) ( $target['notes'] ?? '' ) );
+            if ( ! empty( $field_overrides['custom_notes'] ) ) {
+                $merged_notes = trim( $field_overrides['custom_notes'] ) . "\n\n" . $merged_notes;
             }
 
-            // Consolidar notas con registro de auditoría
-            $merged_notes = trim( (string) ( $target['notes'] ?? '' ) );
-            $timestamp    = current_time( 'mysql' );
+            $timestamp = current_time( 'mysql' );
             foreach ( $sources as $s ) {
                 $s_name  = trim( $s['first_name'] . ' ' . $s['last_name'] );
                 $s_notes = trim( (string) ( $s['notes'] ?? '' ) );
@@ -327,7 +506,7 @@ class Aura_Contacts_Merge {
             }
             $updated_target['notes'] = trim( $merged_notes );
 
-            // Si target no tiene Google Resource Name mapeado, verificar si algún source lo tenía
+            // 6. Si target no tiene Google Resource Name mapeado, transferir el de algún origen
             $target_map = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$t_google_map} WHERE contact_id = %d LIMIT 1", $target_id ), ARRAY_A );
             if ( ! $target_map ) {
                 foreach ( $sources as $s ) {
@@ -339,12 +518,12 @@ class Aura_Contacts_Merge {
                 }
             }
 
-            // Actualizar referencias externas de llaves foráneas hacia target_id
+            // 7. Actualizar referencias externas de llaves foráneas hacia target_id
             $foreign_tables = array(
-                $wpdb->prefix . 'aura_vehicle_trips'       => 'contact_id',
-                $wpdb->prefix . 'aura_inventory_loans'     => 'contact_id',
-                $wpdb->prefix . 'aura_library_loans'       => 'contact_id',
-                $wpdb->prefix . 'aura_calendar_events'     => 'contact_id',
+                $wpdb->prefix . 'aura_vehicle_trips'   => 'contact_id',
+                $wpdb->prefix . 'aura_inventory_loans' => 'contact_id',
+                $wpdb->prefix . 'aura_library_loans'   => 'contact_id',
+                $wpdb->prefix . 'aura_calendar_events' => 'contact_id',
             );
 
             foreach ( $foreign_tables as $tbl => $col ) {
@@ -356,7 +535,7 @@ class Aura_Contacts_Merge {
                 }
             }
 
-            // Desactivar contactos de origen y marcarlos como fusionados
+            // 8. Desactivar contactos de origen y marcarlos como fusionados
             foreach ( $sources as $s ) {
                 $wpdb->update(
                     $t_contacts,
@@ -371,21 +550,21 @@ class Aura_Contacts_Merge {
                 );
             }
 
-            // Actualizar contacto maestro de destino
-            $updated_target['sync_status'] = 'pending'; // Listo para actualizar en Google si está vinculado
+            // 9. Actualizar contacto maestro de destino
+            $updated_target['sync_status'] = 'pending'; // Listo para propagar a Google People API si está conectado
             $updated_target['updated_at']  = current_time( 'mysql' );
             $updated_target['updated_by']  = get_current_user_id() ?: 1;
 
             $wpdb->update( $t_contacts, $updated_target, array( 'id' => $target_id ) );
 
-            // Registrar en logs de auditoría
+            // 10. Registrar en logs de auditoría
             $wpdb->insert( $t_sync_log, array(
-                'contact_id'    => $target_id,
-                'direction'     => 'push',
-                'action'        => 'merge',
-                'status'        => 'success',
-                'message'       => sprintf( __( 'Fusión exitosa: Se unificaron los contactos IDs [%s] dentro del contacto #%d.', 'aura-suite' ), implode( ', ', $source_ids ), $target_id ),
-                'created_at'    => current_time( 'mysql' ),
+                'contact_id' => $target_id,
+                'direction'  => 'push',
+                'action'     => 'merge',
+                'status'     => 'success',
+                'message'    => sprintf( __( 'Fusión inteligente completada: Contactos [%s] integrados en el contacto maestro #%d con personalización campo a campo.', 'aura-suite' ), implode( ', ', $source_ids ), $target_id ),
+                'created_at' => current_time( 'mysql' ),
             ) );
 
             $wpdb->query( 'COMMIT' );
@@ -394,7 +573,7 @@ class Aura_Contacts_Merge {
                 'success'        => true,
                 'target_id'      => $target_id,
                 'merged_sources' => count( $source_ids ),
-                'message'        => sprintf( __( 'Se han fusionado con éxito %d contacto(s) en la ficha maestra #%d.', 'aura-suite' ), count( $source_ids ), $target_id ),
+                'message'        => sprintf( __( 'Fusión completada con éxito. %d contacto(s) unificados en el registro #%d.', 'aura-suite' ), count( $source_ids ), $target_id ),
             );
 
         } catch ( \Exception $e ) {
@@ -408,7 +587,7 @@ class Aura_Contacts_Merge {
     // ─────────────────────────────────────────────────────────────
 
     /**
-     * AJAX: Buscar posibles duplicados.
+     * AJAX: Buscar posibles duplicados con motor enriquecido.
      */
     public static function ajax_find_duplicates(): void {
         check_ajax_referer( Aura_Contacts::NONCE, 'nonce' );
@@ -426,7 +605,7 @@ class Aura_Contacts_Merge {
     }
 
     /**
-     * AJAX: Ejecutar fusión de contactos.
+     * AJAX: Ejecutar fusión personalizada campo a campo de contactos.
      */
     public static function ajax_merge(): void {
         check_ajax_referer( Aura_Contacts::NONCE, 'nonce' );

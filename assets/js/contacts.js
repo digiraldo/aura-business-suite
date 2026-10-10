@@ -1262,17 +1262,25 @@
             var reasonsHtml = rawReasons.map(function(r) {
                 var bg = r.type === 'email' ? 'background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);' :
                          (r.type === 'phone' ? 'background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);' :
-                         'background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3);');
+                         (r.type === 'org' ? 'background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);' :
+                         'background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3);'));
                 return '<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;' + bg + '"><strong>' + escapeHtml(r.label || '') + ':</strong> ' + escapeHtml(r.value || '') + '</span>';
             }).join(' ');
 
+            var confBadge = '<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;background:rgba(99,102,241,0.18);color:#a5b4fc;border:1px solid rgba(99,102,241,0.35);font-weight:700;">🎯 ' + (cluster.confidence || 90) + '% Certeza</span>';
+
             html += '<div class="aura-glass-card cluster-card" style="padding:18px;border-radius:12px;background:rgba(255,255,255,0.03);" data-cluster="' + idx + '">';
             html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">';
-            html += '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">';
+            html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
             html += '<span style="font-weight:700;color:#fff;font-size:0.95rem;">Grupo ' + (idx + 1) + ' (' + cluster.contacts.length + ' coincidencias)</span>';
+            html += confBadge;
             html += reasonsHtml;
             html += '</div>';
-            html += '<button type="button" class="btn btn-emerald btn-sm btn-lift btn-merge-cluster" data-cluster="' + idx + '"><span class="dashicons dashicons-randomize"></span> <span>Fusionar en Maestro</span></button>';
+
+            html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
+            html += '<button type="button" class="btn btn-primary btn-sm btn-lift btn-open-merge-wizard" data-cluster="' + idx + '" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;box-shadow:0 0 14px rgba(139,92,246,0.4);"><span class="dashicons dashicons-randomize"></span> <span>Comparar y Fusionar Asistido</span></button>';
+            html += '<button type="button" class="btn btn-secondary btn-sm btn-lift btn-merge-cluster-quick" data-cluster="' + idx + '" title="Fusiona automáticamente en el contacto maestro marcado"><span class="dashicons dashicons-yes-alt"></span> <span>Fusión Rápida</span></button>';
+            html += '</div>';
             html += '</div>';
 
             html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">';
@@ -1280,12 +1288,15 @@
                 var isChecked = cIdx === 0 ? 'checked' : '';
                 var avatarUrl = c.avatar_url || c.photo_url || '';
 
-                html += '<label class="contact-card-selectable" style="display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);cursor:pointer;">';
-                html += '<input type="radio" name="master_cluster_' + idx + '" value="' + c.id + '" ' + isChecked + ' style="margin-top:4px;">';
+                html += '<div class="contact-card-selectable" style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);position:relative;">';
+                html += '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:2px;">';
+                html += '<input type="checkbox" class="cluster-chk-include" data-cluster="' + idx + '" value="' + c.id + '" checked title="Incluir en la fusión">';
+                html += '<input type="radio" name="master_cluster_' + idx + '" value="' + c.id + '" ' + isChecked + ' title="Marcar como registro base maestro" style="accent-color:#8b5cf6;">';
+                html += '</div>';
                 html += '<div style="flex:1;min-width:0;">';
                 html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
                 if (avatarUrl) {
-                    html += '<img src="' + escapeHtml(avatarUrl) + '" style="width:26px;height:26px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\';">';
+                    html += '<img src="' + escapeHtml(avatarUrl) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\';">';
                 }
                 html += '<strong style="color:#fff;font-size:0.88rem;">' + escapeHtml(c.first_name + ' ' + (c.last_name || '')) + '</strong>';
                 html += '<span style="font-size:0.7rem;color:#94a3b8;">#' + c.id + '</span>';
@@ -1293,11 +1304,12 @@
                 html += '<div style="font-size:0.8rem;color:#94a3b8;display:flex;flex-direction:column;gap:2px;">';
                 if (c.email_primary) html += '<span>✉️ ' + escapeHtml(c.email_primary) + '</span>';
                 if (c.phone_primary) html += '<span>📞 ' + escapeHtml(c.phone_primary) + '</span>';
-                if (c.organization) html += '<span>🏢 ' + escapeHtml(c.organization) + '</span>';
-                if (c.third_party_id && parseInt(c.third_party_id) > 0) html += '<span style="color:#38bdf8;">🔗 Vinculado a Tercero</span>';
+                if (c.organization) html += '<span>🏢 ' + escapeHtml(c.organization) + (c.job_title ? ' (' + escapeHtml(c.job_title) + ')' : '') + '</span>';
+                if (c.third_party_id && parseInt(c.third_party_id) > 0) html += '<span style="color:#38bdf8;">🔗 Tercero vinculado</span>';
+                if (c.wp_user_id && parseInt(c.wp_user_id) > 0) html += '<span style="color:#34d399;">👤 Usuario WP vinculado</span>';
                 html += '</div>';
                 html += '</div>';
-                html += '</label>';
+                html += '</div>';
             });
             html += '</div>';
             html += '</div>';
@@ -1306,8 +1318,14 @@
 
         $('#duplicates-container').html(html);
 
-        // Handler del botón de fusión
-        $('.btn-merge-cluster').on('click', function() {
+        // Handler: Abrir Wizard de Fusión Asistida
+        $('.btn-open-merge-wizard').on('click', function() {
+            var clusterIdx = $(this).data('cluster');
+            openMergeWizard(clusters[clusterIdx], clusterIdx);
+        });
+
+        // Handler: Fusión Rápida en Maestro marcado
+        $('.btn-merge-cluster-quick').on('click', function() {
             var clusterIdx = $(this).data('cluster');
             var cluster = clusters[clusterIdx];
             var primaryId = $('input[name="master_cluster_' + clusterIdx + '"]:checked').val();
@@ -1316,53 +1334,444 @@
                 return;
             }
 
-            var secondaryIds = cluster.contacts
-                .map(function(c) { return parseInt(c.id); })
-                .filter(function(id) { return id !== parseInt(primaryId); });
-
-            if (!secondaryIds.length) {
-                alert('No hay contactos duplicados para fusionar en este grupo.');
-                return;
-            }
-
-            if (!confirm('¿Estás seguro de fusionar ' + secondaryIds.length + ' contacto(s) en el contacto #' + primaryId + '?\n\nLos teléfonos, emails, notas y relaciones se unificarán en el maestro y los registros redundantes se archivarán.')) {
-                return;
-            }
-
-            var $btn = $(this);
-            var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Fusionando...');
-
-            $.post(cfg.ajaxUrl, {
-                action: 'aura_contacts_merge',
-                nonce: cfg.nonce,
-                target_id: primaryId,
-                source_ids: secondaryIds
-            }, function(res) {
-                if (res.success) {
-                    showToast('Contactos fusionados correctamente en el registro #' + primaryId);
-                    $('.cluster-card[data-cluster="' + clusterIdx + '"]').fadeOut(300, function() {
-                        $(this).remove();
-                        if (!$('.cluster-card').length) {
-                            $('#duplicates-container').html(
-                                '<div style="text-align:center;padding:50px 20px;">' +
-                                '<div style="font-size:42px;margin-bottom:12px;">🎉</div>' +
-                                '<h3 style="margin:0 0 8px;color:#34d399;font-size:1.15rem;">¡Fusión Completada!</h3>' +
-                                '<p style="margin:0;color:#94a3b8;font-size:0.9rem;">Todos los grupos detectados han sido resueltos satisfactoriamente.</p>' +
-                                '</div>'
-                            );
-                        }
-                    });
-                    fetchContacts();
-                    refreshStats();
-                } else {
-                    $btn.prop('disabled', false).html(orig);
-                    alert(res.data && res.data.message ? res.data.message : 'Error al fusionar contactos');
-                }
-            }).fail(function() {
-                $btn.prop('disabled', false).html(orig);
-                alert('Error de conexión durante la fusión');
+            // Considerar solo los contactos con checkbox marcado
+            var checkedIds = [];
+            $('.cluster-chk-include[data-cluster="' + clusterIdx + '"]:checked').each(function() {
+                checkedIds.push(parseInt($(this).val()));
             });
+
+            if (checkedIds.indexOf(parseInt(primaryId)) === -1) {
+                alert('El contacto maestro seleccionado debe estar incluido en la lista de fusión.');
+                return;
+            }
+
+            var secondaryIds = checkedIds.filter(function(id) { return id !== parseInt(primaryId); });
+            if (!secondaryIds.length) {
+                alert('Debes incluir al menos dos contactos para fusionar.');
+                return;
+            }
+
+            if (!confirm('¿Estás seguro de fusionar de forma rápida estos ' + secondaryIds.length + ' contacto(s) en el contacto #' + primaryId + '?\n\nLos teléfonos, emails, notas y relaciones se unificarán en el maestro y los registros redundantes se archivarán.')) {
+                return;
+            }
+
+            executeMerge(primaryId, secondaryIds, {}, clusterIdx, $(this));
+        });
+    }
+
+    // ── Wizard de Fusión Asistida y Selección Campo a Campo ──────────────────────
+    window.closeMergeModal = function() {
+        $('#modal-merge-contacts').fadeOut(150);
+    };
+
+    function openMergeWizard(cluster, clusterIdx) {
+        // Filtrar contactos según checkboxes marcados en el cluster
+        var checkedIds = [];
+        $('.cluster-chk-include[data-cluster="' + clusterIdx + '"]:checked').each(function() {
+            checkedIds.push(parseInt($(this).val()));
+        });
+
+        var activeContacts = cluster.contacts.filter(function(c) {
+            return checkedIds.indexOf(parseInt(c.id)) !== -1;
+        });
+
+        if (activeContacts.length < 2) {
+            alert('Debes mantener al menos 2 contactos seleccionados en este grupo para realizar la fusión.');
+            return;
+        }
+
+        var preselectedMasterId = parseInt($('input[name="master_cluster_' + clusterIdx + '"]:checked').val()) || activeContacts[0].id;
+
+        // Construir contenido dinámico del modal
+        var mHtml = '';
+
+        // 1. Selector de Registro Maestro (Destino del ID)
+        mHtml += '<div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px;margin-bottom:20px;">';
+        mHtml += '<div style="font-size:0.85rem;font-weight:700;color:#c4b5fd;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">👑 1. Selecciona el Contacto Maestro (ID Base que se conservará en BD):</div>';
+        mHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;">';
+        activeContacts.forEach(function(c) {
+            var isMaster = (parseInt(c.id) === preselectedMasterId);
+            mHtml += '<label class="merge-option-label ' + (isMaster ? 'is-selected' : '') + '">';
+            mHtml += '<input type="radio" name="wizard_target_id" value="' + c.id + '" ' + (isMaster ? 'checked' : '') + ' class="merge-option-radio" onchange="onWizardMasterChange(this);">';
+            mHtml += '<div><strong style="color:#fff;font-size:0.9rem;">#' + c.id + ' — ' + escapeHtml(c.first_name + ' ' + (c.last_name || '')) + '</strong>';
+            mHtml += '<div style="font-size:0.75rem;color:#94a3b8;margin-top:2px;">' + (c.email_primary ? escapeHtml(c.email_primary) : 'Sin correo') + '</div></div>';
+            mHtml += '</label>';
+        });
+        mHtml += '</div></div>';
+
+        // 2. Campo: Nombre y Apellidos
+        var distinctNames = [];
+        activeContacts.forEach(function(c) {
+            var fn = (c.first_name || '').trim();
+            var ln = (c.last_name || '').trim();
+            var full = (fn + ' ' + ln).trim();
+            var exists = distinctNames.some(function(n) { return n.full === full; });
+            if (!exists && full) {
+                distinctNames.push({ full: full, first: fn, last: ln, sourceId: c.id });
+            }
+        });
+
+        mHtml += '<div class="merge-field-card">';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">👤 Nombre y Apellidos</span><span style="font-size:0.75rem;color:#94a3b8;">Elige una opción o edita el nombre final</span></div>';
+        mHtml += '<div class="merge-options-grid">';
+        distinctNames.forEach(function(n, nIdx) {
+            var isChk = (nIdx === 0);
+            mHtml += '<label class="merge-option-label ' + (isChk ? 'is-selected' : '') + '">';
+            mHtml += '<input type="radio" name="wizard_field_name" value="' + nIdx + '" ' + (isChk ? 'checked' : '') + ' class="merge-option-radio" data-first="' + escapeHtml(n.first) + '" data-last="' + escapeHtml(n.last) + '" onchange="onWizardNameChange(this);">';
+            mHtml += '<div><strong style="color:#fff;">' + escapeHtml(n.full) + '</strong><span style="font-size:0.75rem;color:#94a3b8;margin-left:6px;">(de #' + n.sourceId + ')</span></div>';
+            mHtml += '</label>';
+        });
+        mHtml += '<label class="merge-option-label" id="label-wizard-name-custom">';
+        mHtml += '<input type="radio" name="wizard_field_name" value="custom" class="merge-option-radio" onchange="onWizardNameChange(this);">';
+        mHtml += '<div><strong style="color:#a78bfa;">✏️ Personalizar Nombre y Apellidos</strong></div>';
+        mHtml += '</label>';
+        mHtml += '</div>';
+
+        // Inputs en vivo de Nombre
+        var defaultFirst = distinctNames[0] ? distinctNames[0].first : '';
+        var defaultLast = distinctNames[0] ? distinctNames[0].last : '';
+        mHtml += '<div class="merge-custom-input-box" id="box-wizard-name-inputs" style="display:block;">';
+        mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+        mHtml += '<div><label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Nombre(s) Final *</label><input type="text" id="merge_inp_first_name" class="aura-input" value="' + escapeHtml(defaultFirst) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div><label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Apellidos Final</label><input type="text" id="merge_inp_last_name" class="aura-input" value="' + escapeHtml(defaultLast) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '</div></div>';
+        mHtml += '</div>';
+
+        // 3. Campo: Organización y Cargo
+        var distinctOrgs = [];
+        activeContacts.forEach(function(c) {
+            var org = (c.organization || '').trim();
+            var job = (c.job_title || '').trim();
+            if (org || job) {
+                var exists = distinctOrgs.some(function(o) { return o.org === org && o.job === job; });
+                if (!exists) distinctOrgs.push({ org: org, job: job, sourceId: c.id });
+            }
+        });
+
+        mHtml += '<div class="merge-field-card">';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏢 Organización y Cargo</span></div>';
+        mHtml += '<div class="merge-options-grid">';
+        distinctOrgs.forEach(function(o, oIdx) {
+            var isChk = (oIdx === 0);
+            mHtml += '<label class="merge-option-label ' + (isChk ? 'is-selected' : '') + '">';
+            mHtml += '<input type="radio" name="wizard_field_org" value="' + oIdx + '" ' + (isChk ? 'checked' : '') + ' class="merge-option-radio" data-org="' + escapeHtml(o.org) + '" data-job="' + escapeHtml(o.job) + '" onchange="onWizardOrgChange(this);">';
+            mHtml += '<div><strong style="color:#fff;">' + (o.org ? escapeHtml(o.org) : 'Sin empresa') + '</strong>' + (o.job ? ' — <span style="color:#94a3b8;">' + escapeHtml(o.job) + '</span>' : '') + '<span style="font-size:0.75rem;color:#94a3b8;margin-left:6px;">(#' + o.sourceId + ')</span></div>';
+            mHtml += '</label>';
+        });
+        mHtml += '<label class="merge-option-label">';
+        mHtml += '<input type="radio" name="wizard_field_org" value="custom" class="merge-option-radio" onchange="onWizardOrgChange(this);">';
+        mHtml += '<div><strong style="color:#a78bfa;">✏️ Personalizar Empresa y Cargo</strong></div>';
+        mHtml += '</label>';
+        mHtml += '</div>';
+
+        var defaultOrg = distinctOrgs[0] ? distinctOrgs[0].org : '';
+        var defaultJob = distinctOrgs[0] ? distinctOrgs[0].job : '';
+        mHtml += '<div class="merge-custom-input-box" id="box-wizard-org-inputs" style="display:block;">';
+        mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+        mHtml += '<div><label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Empresa / Organización</label><input type="text" id="merge_inp_organization" class="aura-input" value="' + escapeHtml(defaultOrg) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div><label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Cargo / Ocupación</label><input type="text" id="merge_inp_job_title" class="aura-input" value="' + escapeHtml(defaultJob) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '</div></div>';
+        mHtml += '</div>';
+
+        // 4. Campo: Correos Electrónicos (Primario y Secundario)
+        var allEmails = [];
+        activeContacts.forEach(function(c) {
+            [c.email_primary, c.email_secondary].forEach(function(em) {
+                em = (em || '').trim().toLowerCase();
+                if (em && allEmails.indexOf(em) === -1) allEmails.push(em);
+            });
+        });
+
+        mHtml += '<div class="merge-field-card">';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">✉️ Correos Electrónicos</span><span style="font-size:0.75rem;color:#34d399;">El principal prevalecerá en Google y el alterno se guardará como secundario</span></div>';
+        if (allEmails.length > 0) {
+            mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">';
+            mHtml += '<div><label style="font-size:0.78rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:6px;">Correo Principal (Primary) *</label>';
+            allEmails.forEach(function(em, emIdx) {
+                var isChk = (emIdx === 0);
+                mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
+                mHtml += '<input type="radio" name="wizard_email_primary" value="' + escapeHtml(em) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
+                mHtml += '<span style="font-size:0.85rem;color:#fff;">' + escapeHtml(em) + '</span>';
+                mHtml += '</label>';
+            });
+            mHtml += '</div>';
+
+            mHtml += '<div><label style="font-size:0.78rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:6px;">Correo Secundario (Secondary)</label>';
+            mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
+            mHtml += '<input type="radio" name="wizard_email_secondary" value="" ' + (allEmails.length <= 1 ? 'checked' : '') + ' onchange="updateMergePreview();">';
+            mHtml += '<span style="font-size:0.85rem;color:#94a3b8;">Ninguno / Dejar vacío</span>';
+            mHtml += '</label>';
+            allEmails.forEach(function(em, emIdx) {
+                var isChk = (allEmails.length > 1 && emIdx === 1);
+                mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
+                mHtml += '<input type="radio" name="wizard_email_secondary" value="' + escapeHtml(em) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
+                mHtml += '<span style="font-size:0.85rem;color:#fff;">' + escapeHtml(em) + '</span>';
+                mHtml += '</label>';
+            });
+            mHtml += '</div>';
+            mHtml += '</div>';
+        } else {
+            mHtml += '<p style="color:#94a3b8;font-size:0.85rem;margin:0;">Ninguno de los contactos tiene correo electrónico registrado.</p>';
+        }
+        mHtml += '</div>';
+
+        // 5. Campo: Teléfonos
+        var allPhones = [];
+        activeContacts.forEach(function(c) {
+            [c.phone_primary, c.phone_secondary, c.whatsapp].forEach(function(ph) {
+                ph = (ph || '').trim();
+                if (ph && allPhones.indexOf(ph) === -1) allPhones.push(ph);
+            });
+        });
+
+        mHtml += '<div class="merge-field-card">';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">📞 Teléfonos y WhatsApp</span></div>';
+        if (allPhones.length > 0) {
+            mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">';
+            mHtml += '<div><label style="font-size:0.78rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:6px;">Teléfono Principal *</label>';
+            allPhones.forEach(function(ph, pIdx) {
+                var isChk = (pIdx === 0);
+                mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
+                mHtml += '<input type="radio" name="wizard_phone_primary" value="' + escapeHtml(ph) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
+                mHtml += '<span style="font-size:0.85rem;color:#fff;">' + escapeHtml(ph) + '</span>';
+                mHtml += '</label>';
+            });
+            mHtml += '</div>';
+
+            mHtml += '<div><label style="font-size:0.78rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:6px;">Teléfono Secundario</label>';
+            mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
+            mHtml += '<input type="radio" name="wizard_phone_secondary" value="" ' + (allPhones.length <= 1 ? 'checked' : '') + ' onchange="updateMergePreview();">';
+            mHtml += '<span style="font-size:0.85rem;color:#94a3b8;">Ninguno / Dejar vacío</span>';
+            mHtml += '</label>';
+            allPhones.forEach(function(ph, pIdx) {
+                var isChk = (allPhones.length > 1 && pIdx === 1);
+                mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
+                mHtml += '<input type="radio" name="wizard_phone_secondary" value="' + escapeHtml(ph) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
+                mHtml += '<span style="font-size:0.85rem;color:#fff;">' + escapeHtml(ph) + '</span>';
+                mHtml += '</label>';
+            });
+            mHtml += '</div>';
+            mHtml += '</div>';
+        } else {
+            mHtml += '<p style="color:#94a3b8;font-size:0.85rem;margin:0;">Ninguno de los contactos tiene teléfono registrado.</p>';
+        }
+        mHtml += '</div>';
+
+        // 6. Campo: Avatar / Foto
+        var allAvatars = [];
+        activeContacts.forEach(function(c) {
+            var av = (c.avatar_url || c.photo_url || '').trim();
+            if (av && allAvatars.indexOf(av) === -1) allAvatars.push({ url: av, sourceId: c.id });
+        });
+
+        if (allAvatars.length > 0) {
+            mHtml += '<div class="merge-field-card">';
+            mHtml += '<div class="merge-field-header"><span class="merge-field-title">🖼️ Foto de Perfil / Avatar</span></div>';
+            mHtml += '<div style="display:flex;gap:12px;flex-wrap:wrap;">';
+            allAvatars.forEach(function(av, avIdx) {
+                var isChk = (avIdx === 0);
+                mHtml += '<label style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:8px;cursor:pointer;">';
+                mHtml += '<input type="radio" name="wizard_avatar_url" value="' + escapeHtml(av.url) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
+                mHtml += '<img src="' + escapeHtml(av.url) + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">';
+                mHtml += '<span style="font-size:0.8rem;color:#94a3b8;">Foto de #' + av.sourceId + '</span>';
+                mHtml += '</label>';
+            });
+            mHtml += '</div></div>';
+        }
+
+        // 7. Campo: Categoría
+        var allCats = [];
+        activeContacts.forEach(function(c) {
+            if (c.category && allCats.indexOf(c.category) === -1) allCats.push(c.category);
+        });
+
+        mHtml += '<div class="merge-field-card">';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏷️ Categoría de la Ficha Maestra</span></div>';
+        mHtml += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
+        ['student', 'teacher', 'staff', 'supplier', 'donor', 'member', 'other'].forEach(function(catKey) {
+            var label = cfg.categories[catKey] || catKey;
+            var isChk = (allCats.length > 0 && allCats[0] === catKey);
+            mHtml += '<label style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:6px;cursor:pointer;">';
+            mHtml += '<input type="radio" name="wizard_category" value="' + catKey + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
+            mHtml += '<span style="font-size:0.84rem;color:#fff;">' + escapeHtml(label) + '</span>';
+            mHtml += '</label>';
+        });
+        mHtml += '</div></div>';
+
+        // 8. Notas adicionales
+        mHtml += '<div class="merge-field-card">';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">📝 Notas Consolidadas y Relaciones</span><span style="font-size:0.75rem;color:#38bdf8;">Todas las notas e historiales previos se preservarán automáticamente</span></div>';
+        mHtml += '<textarea id="merge_inp_custom_notes" class="aura-textarea" rows="2" placeholder="Nota adicional explicativa de la fusión (opcional)..." oninput="updateMergePreview();"></textarea>';
+        mHtml += '</div>';
+
+        // 9. TARJETA EN VIVO: PREVISUALIZACIÓN DEL REGISTRO RESULTANTE
+        mHtml += '<div class="merge-preview-card" id="merge-live-preview-box">';
+        mHtml += '<div style="font-size:0.8rem;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">🌟 Vista Previa del Contacto Maestro Resultante:</div>';
+        mHtml += '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">';
+        mHtml += '<div id="prev-avatar-wrap" style="width:52px;height:52px;border-radius:50%;background:#8b5cf6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;font-weight:700;flex-shrink:0;">👤</div>';
+        mHtml += '<div style="flex:1;min-width:200px;">';
+        mHtml += '<div style="font-size:1.15rem;font-weight:800;color:#fff;" id="prev-name">Cargando...</div>';
+        mHtml += '<div style="font-size:0.85rem;color:#cbd5e1;" id="prev-org-job"></div>';
+        mHtml += '<div style="display:flex;gap:14px;margin-top:6px;font-size:0.82rem;color:#94a3b8;flex-wrap:wrap;">';
+        mHtml += '<span id="prev-email">✉️ —</span>';
+        mHtml += '<span id="prev-phone">📞 —</span>';
+        mHtml += '<span id="prev-cat" style="color:#a78bfa;">🏷️ —</span>';
+        mHtml += '</div>';
+        mHtml += '</div>';
+        mHtml += '</div>';
+        mHtml += '</div>';
+
+        $('#merge-modal-content').html(mHtml);
+
+        // Guardar contexto en el botón de confirmación
+        $('#btn-submit-merge-action').data('cluster-idx', clusterIdx);
+        $('#btn-submit-merge-action').data('active-contacts', activeContacts);
+
+        // Actualizar previsualización inicial
+        updateMergePreview();
+
+        // Mostrar modal con centrado inteligente
+        $('#modal-merge-contacts').css('display', 'flex').hide().fadeIn(150);
+    }
+
+    // Handlers dinámicos del Wizard de Fusión
+    window.onWizardMasterChange = function(radio) {
+        $('.merge-option-label').removeClass('is-selected');
+        $(radio).closest('.merge-option-label').addClass('is-selected');
+        updateMergePreview();
+    };
+
+    window.onWizardNameChange = function(radio) {
+        $('input[name="wizard_field_name"]').closest('.merge-option-label').removeClass('is-selected');
+        $(radio).closest('.merge-option-label').addClass('is-selected');
+        if (radio.value === 'custom') {
+            $('#box-wizard-name-inputs').slideDown(150);
+            $('#merge_inp_first_name').focus();
+        } else {
+            var first = $(radio).data('first') || '';
+            var last = $(radio).data('last') || '';
+            $('#merge_inp_first_name').val(first);
+            $('#merge_inp_last_name').val(last);
+        }
+        updateMergePreview();
+    };
+
+    window.onWizardOrgChange = function(radio) {
+        $('input[name="wizard_field_org"]').closest('.merge-option-label').removeClass('is-selected');
+        $(radio).closest('.merge-option-label').addClass('is-selected');
+        if (radio.value === 'custom') {
+            $('#box-wizard-org-inputs').slideDown(150);
+            $('#merge_inp_organization').focus();
+        } else {
+            var org = $(radio).data('org') || '';
+            var job = $(radio).data('job') || '';
+            $('#merge_inp_organization').val(org);
+            $('#merge_inp_job_title').val(job);
+        }
+        updateMergePreview();
+    };
+
+    window.updateMergePreview = function() {
+        var fn = ($('#merge_inp_first_name').val() || '').trim();
+        var ln = ($('#merge_inp_last_name').val() || '').trim();
+        var full = fn + (ln ? ' ' + ln : '');
+        if (!full) full = 'Contacto Sin Nombre';
+
+        var org = ($('#merge_inp_organization').val() || '').trim();
+        var job = ($('#merge_inp_job_title').val() || '').trim();
+        var orgJobText = org ? org + (job ? ' (' + job + ')' : '') : (job ? job : 'Sin organización');
+
+        var emPrimary = $('input[name="wizard_email_primary"]:checked').val() || '';
+        var phPrimary = $('input[name="wizard_phone_primary"]:checked').val() || '';
+        var catKey = $('input[name="wizard_category"]:checked').val() || 'other';
+        var catLabel = cfg.categories[catKey] || catKey;
+        var avatarUrl = $('input[name="wizard_avatar_url"]:checked').val() || '';
+
+        $('#prev-name').text(full);
+        $('#prev-org-job').text(orgJobText);
+        $('#prev-email').text(emPrimary ? '✉️ ' + emPrimary : '✉️ Sin correo');
+        $('#prev-phone').text(phPrimary ? '📞 ' + phPrimary : '📞 Sin teléfono');
+        $('#prev-cat').text('🏷️ ' + catLabel);
+
+        if (avatarUrl) {
+            $('#prev-avatar-wrap').html('<img src="' + escapeHtml(avatarUrl) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">');
+        } else {
+            var initial = fn ? fn.charAt(0).toUpperCase() : '👤';
+            $('#prev-avatar-wrap').html(initial);
+        }
+    };
+
+    // Confirmación y envío del Wizard
+    $('#btn-submit-merge-action').on('click', function() {
+        var $btn = $(this);
+        var clusterIdx = $btn.data('cluster-idx');
+        var activeContacts = $btn.data('active-contacts') || [];
+
+        var targetId = parseInt($('input[name="wizard_target_id"]:checked').val());
+        if (!targetId) {
+            alert('Por favor selecciona el contacto maestro de destino.');
+            return;
+        }
+
+        var sourceIds = activeContacts.map(function(c) { return parseInt(c.id); }).filter(function(id) { return id !== targetId; });
+        if (!sourceIds.length) {
+            alert('No hay contactos secundarios para fusionar.');
+            return;
+        }
+
+        // Recolectar sobreescrituras (field_overrides)
+        var overrides = {
+            first_name: ($('#merge_inp_first_name').val() || '').trim(),
+            last_name: ($('#merge_inp_last_name').val() || '').trim(),
+            organization: ($('#merge_inp_organization').val() || '').trim(),
+            job_title: ($('#merge_inp_job_title').val() || '').trim(),
+            email_primary: $('input[name="wizard_email_primary"]:checked').val() || '',
+            email_secondary: $('input[name="wizard_email_secondary"]:checked').val() || '',
+            phone_primary: $('input[name="wizard_phone_primary"]:checked').val() || '',
+            phone_secondary: $('input[name="wizard_phone_secondary"]:checked').val() || '',
+            avatar_url: $('input[name="wizard_avatar_url"]:checked').val() || '',
+            category: $('input[name="wizard_category"]:checked').val() || '',
+            custom_notes: ($('#merge_inp_custom_notes').val() || '').trim()
+        };
+
+        var orig = $btn.html();
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Fusionando contactos...');
+
+        executeMerge(targetId, sourceIds, overrides, clusterIdx, $btn, orig);
+    });
+
+    function executeMerge(targetId, sourceIds, overrides, clusterIdx, $btn, origHtml) {
+        $.post(cfg.ajaxUrl, {
+            action: 'aura_contacts_merge',
+            nonce: cfg.nonce,
+            target_id: targetId,
+            source_ids: sourceIds,
+            field_overrides: overrides
+        }, function(res) {
+            if (res.success) {
+                closeMergeModal();
+                showToast('Fusión exitosa: Se unificaron ' + sourceIds.length + ' contacto(s) en la ficha #' + targetId);
+                $('.cluster-card[data-cluster="' + clusterIdx + '"]').fadeOut(300, function() {
+                    $(this).remove();
+                    if (!$('.cluster-card').length) {
+                        $('#duplicates-container').html(
+                            '<div style="text-align:center;padding:50px 20px;">' +
+                            '<div style="font-size:42px;margin-bottom:12px;">🎉</div>' +
+                            '<h3 style="margin:0 0 8px;color:#34d399;font-size:1.15rem;">¡Fusión Completada!</h3>' +
+                            '<p style="margin:0;color:#94a3b8;font-size:0.9rem;">Todos los grupos de duplicados han sido resueltos satisfactoriamente.</p>' +
+                            '</div>'
+                        );
+                    }
+                });
+                fetchContacts();
+                refreshStats();
+            } else {
+                if (origHtml) $btn.prop('disabled', false).html(origHtml);
+                alert(res.data && res.data.message ? res.data.message : 'Error al fusionar contactos.');
+            }
+        }).fail(function() {
+            if (origHtml) $btn.prop('disabled', false).html(origHtml);
+            alert('Error de conexión durante el proceso de fusión.');
         });
     }
 

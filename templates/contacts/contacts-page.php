@@ -1428,3 +1428,45 @@ $category_icons = array(
     </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL: FUSIÓN ASISTIDA INTELIGENTE DE CONTACTOS DUPLICADOS
+═══════════════════════════════════════════════════════════════════ -->
+<div id="modal-merge-contacts" class="aura-modal-overlay" style="display: none;">
+    <div class="aura-modal aura-glass-card merge-modal-dialog">
+        <!-- Header del Modal -->
+        <div class="merge-modal-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);">
+                    <span class="dashicons dashicons-randomize" style="font-size: 22px; width: 22px; height: 22px;"></span>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff;">
+                        <?php esc_html_e( 'Fusión Asistida de Contactos Duplicados', 'aura-suite' ); ?>
+                    </h3>
+                    <p style="margin: 2px 0 0; font-size: 0.82rem; color: #94a3b8;">
+                        <?php esc_html_e( 'Selecciona o edita qué dato de cada contacto conformará la ficha maestra definitiva.', 'aura-suite' ); ?>
+                    </p>
+                </div>
+            </div>
+            <button type="button" class="aura-modal__close" onclick="closeMergeModal();" title="<?php esc_attr_e( 'Cerrar', 'aura-suite' ); ?>">&times;</button>
+        </div>
+
+        <!-- Cuerpo del Modal -->
+        <div class="merge-modal-body" id="merge-modal-content">
+            <!-- Inyectado dinámicamente por JavaScript -->
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="merge-modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeMergeModal();">
+                <?php esc_html_e( 'Cancelar Fusión', 'aura-suite' ); ?>
+            </button>
+            <button type="button" class="btn btn-emerald btn-sm btn-shimmer btn-lift" id="btn-submit-merge-action">
+                <span class="dashicons dashicons-randomize"></span>
+                <span><?php esc_html_e( 'Confirmar y Fusionar Contactos', 'aura-suite' ); ?></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+

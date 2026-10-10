@@ -832,6 +832,7 @@ class Aura_Roles_Manager {
                     'aura_students_reports',
                     'aura_cal_view_calendar',
                     'aura_cal_view_programs',
+                    'aura_cal_portal_view_all',
                     'aura_cal_view_attendance',
                     'aura_cal_view_grades',
                     'aura_cal_view_tasks',
@@ -1028,6 +1029,7 @@ class Aura_Roles_Manager {
                     'aura_students_reports',
                     'aura_cal_view_calendar',
                     'aura_cal_view_programs',
+                    'aura_cal_portal_view_all',
                     'aura_cal_create_events',
                     'aura_cal_manage_calendar',
                     'aura_cal_manage_programs',
@@ -1132,6 +1134,7 @@ class Aura_Roles_Manager {
                 'capabilities'  => array(
                     'aura_cal_view_calendar',
                     'aura_cal_view_programs',
+                    'aura_cal_portal_view_all',
                     'aura_cal_create_events',
                     'aura_cal_manage_calendar',
                     'aura_cal_delete_events',
