@@ -524,22 +524,108 @@ class Aura_Calendar_Frontend {
 
         // Materias a cargo del profesor (titular directo o en equipo de profesores titulares)
         $has_subj_table = $wpdb->get_var( "SHOW TABLES LIKE '{$table_subj}'" ) === $table_subj;
-        $my_subjects = [];
+        $table_evts     = $wpdb->prefix . 'aura_cal_events';
+        $my_subjects    = [];
+        $unique_catedras = [];
+        $total_enrolled_students = 0;
+        $total_subject_hours     = 0.0;
+
         if ( $has_subj_table ) {
             $subj_cols = (array) $wpdb->get_col( "SHOW COLUMNS FROM `{$table_subj}`" );
-            $t_col = in_array( 'default_teacher_id', $subj_cols, true ) ? 's.default_teacher_id' : ( in_array( 'teacher_id', $subj_cols, true ) ? 's.teacher_id' : '0' );
+            $t_col  = in_array( 'default_teacher_id', $subj_cols, true ) ? 's.default_teacher_id' : ( in_array( 'teacher_id', $subj_cols, true ) ? 's.teacher_id' : '0' );
             $ts_col = in_array( 'teachers', $subj_cols, true ) ? 's.teachers' : ( in_array( 'teacher_ids', $subj_cols, true ) ? 's.teacher_ids' : "''" );
 
             $user_id_like = '%' . $wpdb->esc_like( '"' . $user_id . '"' ) . '%';
+            $can_view_all_academic = current_user_can( 'manage_options' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'aura_cal_portal_view_all' );
+
             $my_subjects = $wpdb->get_results( $wpdb->prepare(
-                "SELECT s.*, p.name AS program_name, p.code AS program_code
+                "SELECT s.*, p.name AS program_name, p.code AS program_code, p.color AS program_color,
+                        (SELECT COUNT(*) FROM {$table_evts} e WHERE e.subject_id = s.id AND e.deleted_at IS NULL) AS events_count,
+                        (SELECT MIN(e2.start_datetime) FROM {$table_evts} e2 WHERE e2.subject_id = s.id AND e2.start_datetime >= NOW() AND e2.deleted_at IS NULL) AS next_session_datetime,
+                        (SELECT e3.location FROM {$table_evts} e3 WHERE e3.subject_id = s.id AND e3.start_datetime >= NOW() AND e3.deleted_at IS NULL ORDER BY e3.start_datetime ASC LIMIT 1) AS next_session_location,
+                        (SELECT e4.online_url FROM {$table_evts} e4 WHERE e4.subject_id = s.id AND e4.start_datetime >= NOW() AND e4.deleted_at IS NULL ORDER BY e4.start_datetime ASC LIMIT 1) AS next_session_online_url
                  FROM {$table_subj} s
                  LEFT JOIN {$table_prog} p ON p.id = s.program_id
                  WHERE ({$t_col} = %d OR {$ts_col} LIKE %s) AND s.deleted_at IS NULL
-                 ORDER BY s.name ASC",
+                 ORDER BY COALESCE(s.module_order, 999) ASC, s.order_index ASC, s.name ASC",
                 $user_id,
                 $user_id_like
             ) );
+
+            // Si es administrador o coordinador y no tiene materias asignadas directamente, traer las asignaturas institucionales activas
+            if ( empty( $my_subjects ) && $can_view_all_academic ) {
+                $my_subjects = $wpdb->get_results(
+                    "SELECT s.*, p.name AS program_name, p.code AS program_code, p.color AS program_color,
+                            (SELECT COUNT(*) FROM {$table_evts} e WHERE e.subject_id = s.id AND e.deleted_at IS NULL) AS events_count,
+                            (SELECT MIN(e2.start_datetime) FROM {$table_evts} e2 WHERE e2.subject_id = s.id AND e2.start_datetime >= NOW() AND e2.deleted_at IS NULL) AS next_session_datetime,
+                            (SELECT e3.location FROM {$table_evts} e3 WHERE e3.subject_id = s.id AND e3.start_datetime >= NOW() AND e3.deleted_at IS NULL ORDER BY e3.start_datetime ASC LIMIT 1) AS next_session_location,
+                            (SELECT e4.online_url FROM {$table_evts} e4 WHERE e4.subject_id = s.id AND e4.start_datetime >= NOW() AND e4.deleted_at IS NULL ORDER BY e4.start_datetime ASC LIMIT 1) AS next_session_online_url
+                     FROM {$table_subj} s
+                     LEFT JOIN {$table_prog} p ON p.id = s.program_id
+                     WHERE s.deleted_at IS NULL
+                     ORDER BY COALESCE(s.module_order, 999) ASC, s.order_index ASC, s.name ASC"
+                );
+            }
+
+            // Enriquecer cada materia con usuarios asignados (estudiantes + docentes) y cátedra
+            $students_cache = [];
+            if ( ! empty( $my_subjects ) ) {
+                foreach ( $my_subjects as &$s_item ) {
+                    $prog_id = (int) ( $s_item->program_id ?? 0 );
+                    $subj_id = (int) ( $s_item->id ?? 0 );
+                    $cache_key = "{$prog_id}_{$subj_id}";
+
+                    if ( ! isset( $students_cache[ $cache_key ] ) ) {
+                        $students_cache[ $cache_key ] = class_exists( 'Aura_Calendar_Tasks' )
+                            ? Aura_Calendar_Tasks::get_program_students( $prog_id, $subj_id )
+                            : [];
+                    }
+
+                    $s_item->assigned_students = $students_cache[ $cache_key ];
+                    $s_item->students_count    = count( $s_item->assigned_students );
+                    $total_enrolled_students  += $s_item->students_count;
+                    $total_subject_hours      += floatval( $s_item->total_hours ?? 0 );
+
+                    // Docente Titular / Responsable de la Cátedra
+                    $lead_id = ! empty( $s_item->default_teacher_id ) ? (int) $s_item->default_teacher_id : (int) $user_id;
+                    $lead_u  = get_userdata( $lead_id );
+                    $s_item->lead_teacher = [
+                        'id'     => $lead_id,
+                        'name'   => $lead_u ? $lead_u->display_name : ( $user_id === $lead_id ? $user->display_name : __( 'Docente Titular', 'aura' ) ),
+                        'avatar' => get_avatar_url( $lead_id, [ 'size' => 64 ] ),
+                        'role'   => __( 'Docente Titular', 'aura' ),
+                    ];
+
+                    // Co-docentes o equipo docente
+                    $s_item->co_teachers = [];
+                    if ( ! empty( $s_item->teachers ) ) {
+                        $t_ids = json_decode( $s_item->teachers, true );
+                        if ( is_array( $t_ids ) ) {
+                            foreach ( $t_ids as $tid ) {
+                                $tid = (int) $tid;
+                                if ( $tid && $tid !== $lead_id ) {
+                                    $cu = get_userdata( $tid );
+                                    if ( $cu ) {
+                                        $s_item->co_teachers[] = [
+                                            'id'     => $tid,
+                                            'name'   => $cu->display_name,
+                                            'avatar' => get_avatar_url( $tid, [ 'size' => 48 ] ),
+                                        ];
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Identificación de Cátedra
+                    $cat_name = ! empty( $s_item->module_name ) ? trim( $s_item->module_name ) : __( 'Cátedra General', 'aura' );
+                    $s_item->catedra_name = $cat_name;
+                    if ( ! in_array( $cat_name, $unique_catedras, true ) ) {
+                        $unique_catedras[] = $cat_name;
+                    }
+                }
+                unset( $s_item );
+            }
         }
 
         // Tareas creadas por o correspondientes al profesor
@@ -593,6 +679,155 @@ class Aura_Calendar_Frontend {
                 ];
             }, $library_books ) ); ?>;
         </script>
+        <style>
+            /* ── FORMATO STACK + RING ANIMADO PARA MIS MATERIAS Y GRUPOS ── */
+            .aura-roster-preview {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+            .avatar-stack {
+                display: inline-flex;
+                align-items: center;
+                vertical-align: middle;
+            }
+            .avatar-stack .avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                border: 2.5px solid var(--at-bg-card, #ffffff);
+                margin-left: -10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 11px;
+                font-weight: 700;
+                color: #ffffff;
+                flex-shrink: 0;
+                cursor: pointer;
+                position: relative;
+                transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, z-index 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+            .avatar-stack .avatar:first-child {
+                margin-left: 0;
+            }
+            .avatar-stack .avatar:hover {
+                transform: translateY(-4px) scale(1.18);
+                z-index: 30 !important;
+                box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+            }
+            .avatar-stack .avatar img {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                object-fit: cover;
+                display: block;
+            }
+            .avatar-stack .avatar-overflow {
+                background: var(--at-bg-card, #ffffff);
+                color: var(--at-text-secondary, #64748b);
+                border: 2px dashed var(--at-border, #cbd5e1) !important;
+                font-size: 10.5px;
+                font-weight: 800;
+            }
+            .avatar-stack .avatar-overflow:hover {
+                background: #6366f1;
+                color: #ffffff;
+                border-color: #6366f1 !important;
+            }
+
+            /* RING ANIMADO */
+            .avatar-ring {
+                position: relative;
+                z-index: 5;
+                flex-shrink: 0;
+            }
+            .avatar-ring::before {
+                content: '';
+                position: absolute;
+                inset: -4px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #6366f1, #06b6d4);
+                z-index: -1;
+                animation: auraRingPulse 2.2s ease-in-out infinite;
+                pointer-events: none;
+            }
+            @keyframes auraRingPulse {
+                0%, 100% {
+                    opacity: 0.65;
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 1;
+                    transform: scale(1.1);
+                }
+            }
+            .avatar-ring:hover::before {
+                animation-duration: 1.2s;
+            }
+
+            /* Tarjetas de Materia y Cátedra */
+            .aura-teacher-item-card {
+                background: var(--at-bg-card, #ffffff);
+                border: 1px solid var(--at-border, #e2e8f0);
+                border-radius: 14px;
+                padding: 18px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+            .aura-teacher-item-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 24px rgba(99, 102, 241, 0.12);
+                border-color: rgba(99, 102, 241, 0.4);
+            }
+            .aura-teacher-card-footer {
+                border-top: 1px solid var(--at-border);
+                padding-top: 12px;
+                margin-top: 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .aura-teacher-footer-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .aura-teacher-footer-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                width: 100%;
+            }
+            .aura-teacher-footer-actions .btn {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+                white-space: nowrap;
+                font-size: 11.5px;
+                padding: 7px 10px;
+                font-weight: 600;
+                box-sizing: border-box;
+            }
+
+            [data-theme="dark"] .avatar-stack .avatar,
+            body.aura-dark-mode .avatar-stack .avatar {
+                border-color: var(--at-bg-card, #1e293b);
+            }
+            [data-theme="dark"] .avatar-stack .avatar-overflow,
+            body.aura-dark-mode .avatar-stack .avatar-overflow {
+                background: #1e293b;
+                color: #cbd5e1;
+                border-color: #475569 !important;
+            }
+        </style>
         <div class="aura-portal-wrap aura-teacher-portal" style="max-width: 1200px; margin: 24px auto; padding: 0 16px; font-family: inherit;">
 
             <!-- BARRA SUPERIOR / ENCABEZADO DEL INSTRUCTOR -->
@@ -719,23 +954,94 @@ class Aura_Calendar_Frontend {
                 </div>
             </div>
 
-            <!-- CONTENIDO TAB 2: MIS MATERIAS -->
+            <!-- CONTENIDO TAB 2: MIS MATERIAS Y GRUPOS (CÁTEDRAS Y ASIGNATURAS ASIGNADAS) -->
             <div id="tab-teacher-subjects" class="teacher-tab-content" style="display: none;">
-                <div class="adp-card aura-teacher-card">
-                    <h3 class="adp-card-title" style="font-size: 18px; margin: 0 0 6px 0;">
-                        📚 <?php esc_html_e( 'Cátedras y Asignaturas Asignadas', 'aura' ); ?>
-                    </h3>
-                    <p class="adp-card-desc" style="margin: 0 0 20px 0; color: var(--at-text-secondary);">
-                        <?php esc_html_e( 'Materias académicas bajo tu titularidad docente según el plan de estudios institucional.', 'aura' ); ?>
-                    </p>
+                <div class="adp-card aura-teacher-card" style="padding: 22px;">
+                    <!-- ENCABEZADO DE LA SECCIÓN -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <h3 class="adp-card-title" style="font-size: 19px; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 22px;">📚</span>
+                                    <span><?php esc_html_e( 'Cátedras y Asignaturas Asignadas', 'aura' ); ?></span>
+                                </h3>
+                                <span class="adp-badge badge-indigo" style="font-size: 11.5px; font-weight: 700;">
+                                    <?php echo count( $my_subjects ); ?> <?php echo count( $my_subjects ) === 1 ? esc_html__( 'materia', 'aura' ) : esc_html__( 'materias', 'aura' ); ?>
+                                </span>
+                            </div>
+                            <p class="adp-card-desc" style="margin: 6px 0 0 0; color: var(--at-text-secondary); font-size: 13.5px; line-height: 1.5;">
+                                <?php esc_html_e( 'Gestión de materias bajo tu titularidad docente, cátedras académicas, estudiantes matriculados en cada grupo y recursos pedagógicos.', 'aura' ); ?>
+                            </p>
+                        </div>
 
+                        <!-- KPIs RÁPIDOS DE CÁTEDRA -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <div style="background: var(--at-bg-card-alt, #f8fafc); border: 1px solid var(--at-border); border-radius: 10px; padding: 8px 14px; min-width: 110px; text-align: center;">
+                                <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--at-text-muted); letter-spacing: 0.5px;">
+                                    <?php esc_html_e( 'Cátedras', 'aura' ); ?>
+                                </div>
+                                <div style="font-size: 18px; font-weight: 800; color: #6366f1;">
+                                    <?php echo count( $unique_catedras ); ?>
+                                </div>
+                            </div>
+                            <div style="background: var(--at-bg-card-alt, #f8fafc); border: 1px solid var(--at-border); border-radius: 10px; padding: 8px 14px; min-width: 110px; text-align: center;">
+                                <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--at-text-muted); letter-spacing: 0.5px;">
+                                    <?php esc_html_e( 'Estudiantes', 'aura' ); ?>
+                                </div>
+                                <div style="font-size: 18px; font-weight: 800; color: #10b981;">
+                                    <?php echo $total_enrolled_students; ?>
+                                </div>
+                            </div>
+                            <div style="background: var(--at-bg-card-alt, #f8fafc); border: 1px solid var(--at-border); border-radius: 10px; padding: 8px 14px; min-width: 110px; text-align: center;">
+                                <div style="font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--at-text-muted); letter-spacing: 0.5px;">
+                                    <?php esc_html_e( 'Carga Horaria', 'aura' ); ?>
+                                </div>
+                                <div style="font-size: 18px; font-weight: 800; color: #f59e0b;">
+                                    <?php echo number_format( $total_subject_hours, 1 ); ?>h
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BARRA DE BÚSQUEDA Y FILTROS REACTIVOS -->
+                    <?php if ( ! empty( $my_subjects ) ) : ?>
+                        <div style="background: var(--at-bg-card-alt, #f8fafc); border: 1px solid var(--at-border); border-radius: 12px; padding: 12px 16px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 260px; max-width: 480px; position: relative;">
+                                <input type="text" id="teacher-subjects-search-input" class="form-control" placeholder="<?php esc_attr_e( '🔍 Buscar materia por nombre, código, cátedra o programa...', 'aura' ); ?>" style="width: 100%; font-size: 13px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--at-border);">
+                            </div>
+
+                            <?php if ( count( $unique_catedras ) > 1 ) : ?>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span style="font-size: 12px; font-weight: 600; color: var(--at-text-secondary);">
+                                        <?php esc_html_e( 'Filtrar por Cátedra:', 'aura' ); ?>
+                                    </span>
+                                    <button type="button" class="btn btn-sm btn-catedra-filter active" data-catedra="all" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; font-weight: 600; background: #6366f1; color: #fff; border: none; cursor: pointer; transition: all 0.2s ease;">
+                                        <?php esc_html_e( 'Todas', 'aura' ); ?>
+                                    </button>
+                                    <?php foreach ( $unique_catedras as $cat_btn ) : ?>
+                                        <button type="button" class="btn btn-sm btn-catedra-filter" data-catedra="<?php echo esc_attr( $cat_btn ); ?>" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; font-weight: 600; background: var(--at-bg-card, #fff); color: var(--at-text-secondary); border: 1px solid var(--at-border); cursor: pointer; transition: all 0.2s ease;">
+                                            🏛️ <?php echo esc_html( $cat_btn ); ?>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- ESTADO VACÍO -->
                     <?php if ( empty( $my_subjects ) ) : ?>
-                        <div style="text-align: center; padding: 40px 20px; color: var(--at-text-muted);">
-                            <div style="font-size: 36px; margin-bottom: 10px;">📖</div>
-                            <p><?php esc_html_e( 'Aún no tienes asignaturas registradas a tu nombre. El coordinador te asignará materias desde el módulo Calendario.', 'aura' ); ?></p>
+                        <div style="text-align: center; padding: 48px 20px; color: var(--at-text-muted); background: var(--at-bg-card-alt, #f8fafc); border-radius: 12px; border: 1px dashed var(--at-border);">
+                            <div style="font-size: 42px; margin-bottom: 12px;">📖</div>
+                            <h4 style="font-size: 16px; margin: 0 0 6px 0; color: var(--at-text-primary); font-weight: 700;">
+                                <?php esc_html_e( 'Aún no tienes asignaturas registradas a tu nombre', 'aura' ); ?>
+                            </h4>
+                            <p style="font-size: 13px; margin: 0; max-width: 480px; margin: 0 auto; color: var(--at-text-secondary); line-height: 1.5;">
+                                <?php esc_html_e( 'El Coordinador Académico asignará tus cátedras y materias desde el módulo Calendario. Si ya eres titular y no las visualizas, contacta a la administración para validar tus credenciales.', 'aura' ); ?>
+                            </p>
                         </div>
                     <?php else : ?>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px;">
+                        <!-- GRID DE CÁTEDRAS Y ASIGNATURAS ASIGNADAS -->
+                        <div id="teacher-subjects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
                             <?php foreach ( $my_subjects as $s ) : 
                                 $t_materials = ! empty( $s->teacher_materials ) ? json_decode( $s->teacher_materials, true ) : [];
                                 if ( ! is_array( $t_materials ) ) $t_materials = [];
@@ -744,25 +1050,151 @@ class Aura_Calendar_Frontend {
                                 $t_count = count( $t_materials );
                                 $s_count = count( $s_materials );
                                 $collapse_id = 't-mat-collapse-' . $s->id;
+                                $accent_color = ! empty( $s->color ) ? $s->color : '#6366f1';
+                                $lead_teacher = $s->lead_teacher ?? null;
+                                $assigned_students = $s->assigned_students ?? [];
+                                $students_count = $s->students_count ?? 0;
                             ?>
-                                <div class="aura-teacher-item-card" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="display: flex; flex-direction: column; justify-content: space-between;">
+                                <div class="aura-teacher-item-card" 
+                                     data-subject-id="<?php echo esc_attr( $s->id ); ?>" 
+                                     data-catedra="<?php echo esc_attr( $s->catedra_name ); ?>"
+                                     style="border-top: 4px solid <?php echo esc_attr( $accent_color ); ?>; display: flex; flex-direction: column; justify-content: space-between;">
                                     <div>
-                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                                            <span class="adp-badge badge-indigo"><?php echo esc_html( $s->code ?: 'MAT' ); ?></span>
+                                        <!-- BADGES SUPERIORES: CÓDIGO, CÁTEDRA Y PROGRAMA -->
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;">
+                                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                                <span class="adp-badge" style="background: <?php echo esc_attr( $accent_color ); ?>20; color: <?php echo esc_attr( $accent_color ); ?>; font-weight: 700; font-family: monospace; font-size: 11.5px; border: 1px solid <?php echo esc_attr( $accent_color ); ?>40;">
+                                                    <?php echo esc_html( $s->code ?: 'MAT' ); ?>
+                                                </span>
+                                                <span class="adp-badge badge-amber" style="font-size: 11px; font-weight: 600;" title="<?php esc_attr_e( 'Cátedra / Módulo Temático', 'aura' ); ?>">
+                                                    🏛️ <?php echo esc_html( $s->catedra_name ); ?>
+                                                </span>
+                                            </div>
                                             <?php if ( ! empty( $s->program_name ) ) : ?>
-                                                <span class="adp-badge badge-slate" style="font-size: 11px;"><?php echo esc_html( $s->program_name ); ?></span>
+                                                <span class="adp-badge badge-slate" style="font-size: 11px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo esc_attr( $s->program_name . ' (' . ( $s->program_code ?: '' ) . ')' ); ?>">
+                                                    🎓 <?php echo esc_html( $s->program_code ?: $s->program_name ); ?>
+                                                </span>
                                             <?php endif; ?>
                                         </div>
-                                        <h4 class="aura-teacher-item-title" style="margin-bottom: 6px;">
+
+                                        <!-- TÍTULO DE LA ASIGNATURA -->
+                                        <h4 class="aura-teacher-item-title" style="margin: 0 0 8px 0; font-size: 16.5px; font-weight: 700; color: var(--at-text-primary); line-height: 1.35;">
                                             <?php echo esc_html( $s->name ); ?>
                                         </h4>
+
                                         <?php if ( ! empty( $s->description ) ) : ?>
-                                            <p class="aura-teacher-item-desc" style="margin-bottom: 12px;">
+                                            <p class="aura-teacher-item-desc" style="margin: 0 0 14px 0; font-size: 12.5px; color: var(--at-text-secondary); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                                                 <?php echo esc_html( wp_strip_all_tags( $s->description ) ); ?>
                                             </p>
                                         <?php endif; ?>
 
-                                        <!-- Resumen de Materiales Docente / Alumnos -->
+                                        <!-- METADATOS DE CÁTEDRA: CARGA HORARIA Y SESIONES -->
+                                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+                                            <span class="adp-badge badge-slate" style="font-size: 11px; padding: 3px 8px;" title="<?php esc_attr_e( 'Carga horaria asignada en el plan de estudios', 'aura' ); ?>">
+                                                ⏱️ <strong><?php echo floatval( $s->total_hours ); ?></strong> <?php esc_html_e( 'hrs', 'aura' ); ?>
+                                            </span>
+                                            <span class="adp-badge badge-indigo" style="font-size: 11px; padding: 3px 8px;" title="<?php esc_attr_e( 'Sesiones de clase programadas en el calendario', 'aura' ); ?>">
+                                                📅 <strong><?php echo (int) $s->events_count; ?></strong> <?php esc_html_e( 'sesiones', 'aura' ); ?>
+                                            </span>
+                                            <?php if ( ! empty( $s->next_session_datetime ) ) : 
+                                                $next_ts = strtotime( $s->next_session_datetime );
+                                                $next_fmt = wp_date( 'D, j M H:i', $next_ts );
+                                            ?>
+                                                <span class="adp-badge badge-emerald has-dot" style="font-size: 11px; padding: 3px 8px;" title="<?php echo esc_attr( sprintf( __( 'Próxima clase: %s (%s)', 'aura' ), $next_fmt, $s->next_session_location ?: __( 'Aula asignada', 'aura' ) ) ); ?>">
+                                                    <span class="pulse-dot"></span> <?php echo esc_html( $next_fmt ); ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <!-- ══════════════════════════════════════════════════════════════
+                                             SECCIÓN CLAVE: USUARIOS ASIGNADOS CON FORMATO STACK + RING ANIMADO
+                                             ══════════════════════════════════════════════════════════════ -->
+                                        <div class="aura-subject-users-block" style="background: var(--at-bg-card-alt, #f8fafc); border: 1px solid var(--at-border); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px;">
+                                                <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--at-text-muted); letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 5px;">
+                                                    👥 <?php esc_html_e( 'Usuarios Asignados', 'aura' ); ?>
+                                                </span>
+                                                <span class="adp-badge <?php echo $students_count > 0 ? 'badge-emerald' : 'badge-slate'; ?>" style="font-size: 10.5px; padding: 1px 7px;">
+                                                    <?php echo $students_count; ?> <?php echo $students_count === 1 ? esc_html__( 'alumno', 'aura' ) : esc_html__( 'alumnos', 'aura' ); ?>
+                                                </span>
+                                            </div>
+
+                                            <div class="aura-roster-preview" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <!-- 1. DOCENTE TITULAR CON RING ANIMADO (.avatar-ring) -->
+                                                    <?php if ( ! empty( $lead_teacher ) ) : ?>
+                                                        <div class="avatar avatar-sm avatar-primary avatar-ring aura-teacher-avatar-lead" 
+                                                             title="<?php echo esc_attr( sprintf( __( 'Docente Titular: %s', 'aura' ), $lead_teacher['name'] ) ); ?>" 
+                                                             style="cursor: pointer;"
+                                                             data-role="lead-teacher">
+                                                            <?php if ( ! empty( $lead_teacher['avatar'] ) && ! str_contains( $lead_teacher['avatar'], 'gravatar.com/avatar/?s=' ) ) : ?>
+                                                                <img src="<?php echo esc_url( $lead_teacher['avatar'] ); ?>" alt="<?php echo esc_attr( $lead_teacher['name'] ); ?>">
+                                                            <?php else : ?>
+                                                                <?php echo esc_html( strtoupper( mb_substr( $lead_teacher['name'], 0, 2 ) ) ); ?>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <!-- 2. STACK DE AVATARES DE ALUMNOS MATRICULADOS (.avatar-stack) -->
+                                                    <div class="avatar-stack btn-teacher-view-students" 
+                                                         data-program-id="<?php echo esc_attr( $s->program_id ); ?>" 
+                                                         data-subject-id="<?php echo esc_attr( $s->id ); ?>" 
+                                                         data-program-name="<?php echo esc_attr( $s->program_name ); ?>" 
+                                                         data-subject-name="<?php echo esc_attr( $s->name ); ?>"
+                                                         title="<?php esc_attr_e( 'Ver nómina de estudiantes asignados', 'aura' ); ?>"
+                                                         style="cursor: pointer;">
+                                                        <?php if ( empty( $assigned_students ) ) : ?>
+                                                            <div class="avatar avatar-sm" style="background: var(--at-bg-card); border: 2px dashed var(--at-border); color: var(--at-text-muted); font-size: 11px;" title="<?php esc_attr_e( 'Sin alumnos matriculados aún', 'aura' ); ?>">
+                                                                👤
+                                                            </div>
+                                                        <?php else : 
+                                                            $palette = [ 'avatar-primary', 'avatar-green', 'avatar-amber', 'avatar-cyan', 'avatar-rose' ];
+                                                            $shown_students = array_slice( $assigned_students, 0, 4 );
+                                                            $remaining_count = $students_count - count( $shown_students );
+                                                            
+                                                            foreach ( $shown_students as $idx => $st ) : 
+                                                                $color_class = $palette[ $idx % count( $palette ) ];
+                                                                $fn = $st['first_name'] ?? '';
+                                                                $ln = $st['last_name'] ?? '';
+                                                                $inits = mb_substr( $fn, 0, 1 ) . mb_substr( $ln, 0, 1 );
+                                                                if ( empty( $inits ) ) {
+                                                                    $inits = mb_substr( $st['full_name'] ?? 'E', 0, 1 );
+                                                                }
+                                                                $title_tip = ( $st['full_name'] ?? '' ) . ( ! empty( $st['student_code'] ) ? ' [' . $st['student_code'] . ']' : '' );
+                                                            ?>
+                                                                <div class="avatar avatar-sm <?php echo esc_attr( $color_class ); ?>" 
+                                                                     title="<?php echo esc_attr( $title_tip ); ?>">
+                                                                    <?php if ( ! empty( $st['avatar'] ) && ! str_contains( $st['avatar'], 'gravatar.com/avatar/?s=' ) ) : ?>
+                                                                        <img src="<?php echo esc_url( $st['avatar'] ); ?>" alt="<?php echo esc_attr( $st['full_name'] ); ?>">
+                                                                    <?php else : ?>
+                                                                        <?php echo esc_html( strtoupper( $inits ) ); ?>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            <?php endforeach; ?>
+
+                                                            <?php if ( $remaining_count > 0 ) : ?>
+                                                                <div class="avatar avatar-sm avatar-overflow" 
+                                                                     title="<?php echo esc_attr( sprintf( __( 'Ver %d estudiantes más...', 'aura' ), $remaining_count ) ); ?>">
+                                                                    +<?php echo $remaining_count; ?>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+
+                                                <!-- ENLACE DIRECTO A NÓMINA -->
+                                                <button type="button" class="btn btn-ghost btn-sm btn-teacher-view-students" 
+                                                        data-program-id="<?php echo esc_attr( $s->program_id ); ?>" 
+                                                        data-subject-id="<?php echo esc_attr( $s->id ); ?>" 
+                                                        data-program-name="<?php echo esc_attr( $s->program_name ); ?>" 
+                                                        data-subject-name="<?php echo esc_attr( $s->name ); ?>"
+                                                        style="padding: 3px 8px; font-size: 11.5px; color: #6366f1; font-weight: 600;">
+                                                    <?php esc_html_e( 'Nómina', 'aura' ); ?> &rarr;
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- RESUMEN DE MATERIALES DOCENTE / ALUMNOS -->
                                         <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
                                             <span class="adp-badge badge-amber" title="<?php esc_attr_e( 'Material pedagógico de cátedra exclusivo para instructores', 'aura' ); ?>" style="font-size: 11.5px; padding: 4px 8px;">
                                                 📁 <?php esc_html_e( 'Cátedra:', 'aura' ); ?> <strong><?php echo $t_count; ?></strong>
@@ -772,7 +1204,7 @@ class Aura_Calendar_Frontend {
                                             </span>
                                         </div>
 
-                                        <!-- Panel Desplegable de Materiales -->
+                                        <!-- PANEL DESPLEGABLE DE MATERIALES -->
                                         <div id="<?php echo esc_attr( $collapse_id ); ?>" class="aura-teacher-materials-panel" style="display: none; background: var(--at-bg-card-alt, #f8fafc); border: 1px solid var(--at-border); border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 12px;">
                                             <!-- Sección 1: Material Pedagógico (Cátedra) -->
                                             <div style="margin-bottom: 12px;">
@@ -833,20 +1265,31 @@ class Aura_Calendar_Frontend {
                                         </div>
                                     </div>
 
-                                    <div style="border-top: 1px solid var(--at-border); padding-top: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--at-text-muted); flex-wrap: wrap; gap: 6px;">
-                                        <div style="display: flex; gap: 6px; align-items: center;">
-                                            <button type="button" class="btn btn-ghost btn-toggle-mat-panel" data-target="#<?php echo esc_attr( $collapse_id ); ?>" style="font-size: 11px; padding: 4px 8px;">
-                                                📂 <?php esc_html_e( 'Recursos', 'aura' ); ?> (<?php echo $t_count + $s_count; ?>)
-                                            </button>
-                                            <button type="button" class="btn btn-ghost btn-open-upload-mat" data-subject-id="<?php echo esc_attr( $s->id ); ?>" data-subject-name="<?php echo esc_attr( $s->name ); ?>" style="font-size: 11px; padding: 4px 8px; color: #4f46e5;">
-                                                ☁️ <?php esc_html_e( 'Subir', 'aura' ); ?>
-                                            </button>
+                                    <!-- FOOTER CON ACCIONES DE CÁTEDRA -->
+                                    <div class="aura-teacher-card-footer">
+                                        <!-- Fila 1: Recursos, Subida y Horario de Clases -->
+                                        <div class="aura-teacher-footer-top">
+                                            <div style="display: flex; gap: 6px; align-items: center;">
+                                                <button type="button" class="btn btn-ghost btn-sm btn-toggle-mat-panel" data-target="#<?php echo esc_attr( $collapse_id ); ?>" style="font-size: 11px; padding: 4px 8px;">
+                                                    📂 <?php esc_html_e( 'Recursos', 'aura' ); ?> (<?php echo $t_count + $s_count; ?>)
+                                                </button>
+                                                <button type="button" class="btn btn-ghost btn-sm btn-open-upload-mat" data-subject-id="<?php echo esc_attr( $s->id ); ?>" data-subject-name="<?php echo esc_attr( $s->name ); ?>" style="font-size: 11px; padding: 4px 8px; color: #4f46e5;">
+                                                    ☁️ <?php esc_html_e( 'Subir', 'aura' ); ?>
+                                                </button>
+                                            </div>
+                                            <?php if ( (int) $s->events_count > 0 ) : ?>
+                                                <button type="button" class="btn btn-ghost btn-sm btn-teacher-view-schedule" data-next-date="<?php echo esc_attr( ! empty( $s->next_session_datetime ) ? substr( $s->next_session_datetime, 0, 10 ) : '' ); ?>" style="font-size: 11px; padding: 4px 8px;" title="<?php esc_attr_e( 'Ver sesiones en el calendario', 'aura' ); ?>">
+                                                    📅 <?php esc_html_e( 'Clases', 'aura' ); ?>
+                                                </button>
+                                            <?php endif; ?>
                                         </div>
-                                        <div style="display: flex; gap: 6px; align-items: center;">
-                                            <button type="button" class="btn btn-indigo btn-lift btn-teacher-view-students" data-program-id="<?php echo esc_attr( $s->program_id ); ?>" data-subject-id="<?php echo esc_attr( $s->id ); ?>" data-program-name="<?php echo esc_attr( $s->program_name ); ?>" data-subject-name="<?php echo esc_attr( $s->name ); ?>" style="font-size: 11px; padding: 4px 10px; font-weight: 600;">
+
+                                        <!-- Fila 2: Acciones Principales con Grid Responsivo al 100% -->
+                                        <div class="aura-teacher-footer-actions">
+                                            <button type="button" class="btn btn-indigo btn-lift btn-teacher-view-students" data-program-id="<?php echo esc_attr( $s->program_id ); ?>" data-subject-id="<?php echo esc_attr( $s->id ); ?>" data-program-name="<?php echo esc_attr( $s->program_name ); ?>" data-subject-name="<?php echo esc_attr( $s->name ); ?>">
                                                 👥 <?php esc_html_e( 'Estudiantes', 'aura' ); ?>
                                             </button>
-                                            <button type="button" class="btn btn-ghost btn-new-task-for-subject" data-program-id="<?php echo esc_attr( $s->program_id ); ?>" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="font-size: 11px; padding: 4px 8px;">
+                                            <button type="button" class="btn btn-ghost btn-new-task-for-subject" data-program-id="<?php echo esc_attr( $s->program_id ); ?>" data-subject-id="<?php echo esc_attr( $s->id ); ?>" style="border: 1px solid var(--at-border);">
                                                 ➕ <?php esc_html_e( 'Crear Tarea', 'aura' ); ?>
                                             </button>
                                         </div>
@@ -2273,6 +2716,50 @@ class Aura_Calendar_Frontend {
                             setTimeout(function() { window.teacherCalendarInstance.updateSize(); }, 80);
                         }
                     }
+                }
+            });
+
+            // ── Búsqueda y filtrado reactivo de Cátedras y Materias (Tab 2) ──
+            $('#teacher-subjects-search-input').on('input', function() {
+                var q = $(this).val().toLowerCase().trim();
+                var activeCatedra = $('.btn-catedra-filter.active').data('catedra') || 'all';
+                filterTeacherSubjects(q, activeCatedra);
+            });
+
+            $('.btn-catedra-filter').on('click', function(e) {
+                e.preventDefault();
+                $('.btn-catedra-filter').removeClass('active').css({ background: 'var(--at-bg-card, #fff)', color: 'var(--at-text-secondary)', border: '1px solid var(--at-border)' });
+                $(this).addClass('active').css({ background: '#6366f1', color: '#fff', border: 'none' });
+                var q = $('#teacher-subjects-search-input').val().toLowerCase().trim();
+                var activeCatedra = $(this).data('catedra') || 'all';
+                filterTeacherSubjects(q, activeCatedra);
+            });
+
+            function filterTeacherSubjects(q, catedra) {
+                $('.aura-teacher-item-card').each(function() {
+                    var $card = $(this);
+                    var text = $card.text().toLowerCase();
+                    var cardCat = $card.data('catedra') || '';
+                    var matchesQ = !q || text.indexOf(q) !== -1;
+                    var matchesCat = (catedra === 'all') || (cardCat === catedra);
+
+                    if (matchesQ && matchesCat) {
+                        $card.fadeIn(120);
+                    } else {
+                        $card.hide();
+                    }
+                });
+            }
+
+            // Botón para saltar del listado de materias al calendario semanal en la fecha de la próxima sesión
+            $(document).on('click', '.btn-teacher-view-schedule', function(e) {
+                e.preventDefault();
+                var nextDate = $(this).data('next-date');
+                $('.teacher-tab-btn[data-target="tab-teacher-schedule"]').trigger('click');
+                if (nextDate && window.teacherCalendarInstance) {
+                    setTimeout(function() {
+                        window.teacherCalendarInstance.gotoDate(nextDate);
+                    }, 120);
                 }
             });
 
