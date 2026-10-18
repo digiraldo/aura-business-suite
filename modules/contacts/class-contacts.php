@@ -44,6 +44,7 @@ class Aura_Contacts {
             'search_third_parties'   => 'ajax_search_third_parties',
             'search_wp_users'        => 'ajax_search_wp_users',
             'link_third_party'       => 'ajax_link_third_party',
+            'create_third_party'     => 'ajax_create_third_party',
             'link_wp_user'           => 'ajax_link_wp_user',
             'save_google_settings'   => 'ajax_save_google_settings',
             'disconnect_google'      => 'ajax_disconnect_google',
@@ -733,7 +734,7 @@ class Aura_Contacts {
         }
 
         global $wpdb;
-        $table = $wpdb->prefix . 'aura_third_parties';
+        $table = class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_table_name() : $wpdb->prefix . 'aura_finance_third_parties';
 
         // Si la tabla de terceros no existe aún
         if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
@@ -745,10 +746,10 @@ class Aura_Contacts {
 
         $raw_results = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT id, legal_name, trade_name, identification_number, email, phone 
+                "SELECT id, full_name, commercial_name, document_id, email, phone 
                  FROM {$table} 
-                 WHERE is_active = 1 AND (legal_name LIKE %s OR trade_name LIKE %s OR identification_number LIKE %s OR email LIKE %s)
-                 ORDER BY legal_name ASC LIMIT 15",
+                 WHERE is_active = 1 AND (full_name LIKE %s OR commercial_name LIKE %s OR document_id LIKE %s OR email LIKE %s)
+                 ORDER BY full_name ASC LIMIT 15",
                 $term, $term, $term, $term
             ),
             ARRAY_A
@@ -757,9 +758,9 @@ class Aura_Contacts {
         $results = array();
         if ( ! empty( $raw_results ) ) {
             foreach ( $raw_results as $row ) {
-                $name = ! empty( $row['trade_name'] ) ? $row['trade_name'] : $row['legal_name'];
+                $name = ! empty( $row['commercial_name'] ) ? $row['commercial_name'] : $row['full_name'];
                 $row['name'] = $name;
-                $row['type_label'] = ! empty( $row['identification_number'] ) ? $row['identification_number'] : __( 'Tercero', 'aura-suite' );
+                $row['type_label'] = ! empty( $row['document_id'] ) ? $row['document_id'] : __( 'Tercero', 'aura-suite' );
                 $results[] = $row;
             }
         }
@@ -814,6 +815,7 @@ class Aura_Contacts {
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_contacts';
+        $contact = $wpdb->get_row( $wpdb->prepare( "SELECT avatar_url FROM {$table} WHERE id = %d LIMIT 1", $contact_id ), ARRAY_A );
 
         $wpdb->update(
             $table,
@@ -825,7 +827,141 @@ class Aura_Contacts {
             array( 'id' => $contact_id )
         );
 
+        // Si el tercero no tiene logo y el contacto tiene una foto local, asociarla al tercero
+        if ( $third_party_id > 0 && ! empty( $contact['avatar_url'] ) && false === strpos( $contact['avatar_url'], 'gravatar.com' ) ) {
+            $tp_table = class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_table_name() : $wpdb->prefix . 'aura_finance_third_parties';
+            $cur_logo = $wpdb->get_var( $wpdb->prepare( "SELECT logo_id FROM {$tp_table} WHERE id = %d LIMIT 1", $third_party_id ) );
+            if ( empty( $cur_logo ) ) {
+                $att_id = attachment_url_to_postid( $contact['avatar_url'] );
+                if ( $att_id > 0 ) {
+                    $wpdb->update( $tp_table, array( 'logo_id' => $att_id ), array( 'id' => $third_party_id ) );
+                }
+            }
+        }
+
         wp_send_json_success( array( 'message' => __( 'Vinculación con Tercero actualizada.', 'aura-suite' ) ) );
+    }
+
+    /**
+     * AJAX: Crear un Tercero en Finanzas a partir de un contacto existente y vincularlos.
+     */
+    public static function ajax_create_third_party(): void {
+        check_ajax_referer( self::NONCE, 'nonce' );
+
+        if ( ! current_user_can( 'aura_contacts_edit' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Sin permisos suficientes.', 'aura-suite' ) ) );
+        }
+
+        $contact_id = intval( $_POST['contact_id'] ?? 0 );
+        if ( $contact_id <= 0 ) {
+            wp_send_json_error( array( 'message' => __( 'ID de contacto inválido.', 'aura-suite' ) ) );
+        }
+
+        global $wpdb;
+        $table_contacts = $wpdb->prefix . 'aura_contacts';
+        $contact = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_contacts} WHERE id = %d LIMIT 1", $contact_id ), ARRAY_A );
+
+        if ( ! $contact ) {
+            wp_send_json_error( array( 'message' => __( 'Contacto no encontrado.', 'aura-suite' ) ) );
+        }
+
+        // Si ya está vinculado a un tercero
+        if ( ! empty( $contact['third_party_id'] ) ) {
+            wp_send_json_error( array( 'message' => __( 'Este contacto ya está vinculado a un Tercero.', 'aura-suite' ) ) );
+        }
+
+        // Construir datos para el Tercero
+        $full_name = trim( ( $contact['first_name'] ?? '' ) . ' ' . ( $contact['last_name'] ?? '' ) );
+        if ( empty( $full_name ) ) {
+            $full_name = ! empty( $contact['organization'] ) ? $contact['organization'] : sprintf( __( 'Contacto #%d', 'aura-suite' ), $contact_id );
+        }
+
+        $party_type = 'company';
+        if ( ( $contact['contact_type'] ?? '' ) === 'person' ) {
+            $party_type = 'person';
+        } elseif ( in_array( $contact['contact_type'] ?? '', array( 'organization', 'organization_foundation' ), true ) ) {
+            $party_type = 'organization_foundation';
+        }
+
+        // Mapeo sugerido de rol contable
+        $accounting_role = sanitize_key( $_POST['accounting_role'] ?? '' );
+        if ( empty( $accounting_role ) ) {
+            $cat = $contact['category'] ?? 'other';
+            if ( $cat === 'supplier' ) {
+                $accounting_role = 'supplier';
+            } elseif ( $cat === 'member' ) {
+                $accounting_role = 'customer';
+            } elseif ( $cat === 'staff' || $cat === 'teacher' ) {
+                $accounting_role = 'employee';
+            } else {
+                $accounting_role = 'supplier';
+            }
+        }
+
+        $address_parts = array_filter( array(
+            $contact['address_street'] ?? '',
+            $contact['address_city'] ?? '',
+            $contact['address_state'] ?? '',
+            $contact['address_postal'] ?? '',
+        ) );
+        $address = implode( ', ', $address_parts );
+
+        // Preservar foto de perfil del contacto como logo del Tercero
+        $logo_id = 0;
+        $contact_avatar = $contact['avatar_url'] ?? '';
+        if ( ! empty( $contact_avatar ) && false === strpos( $contact_avatar, 'gravatar.com' ) ) {
+            $att_id = attachment_url_to_postid( $contact_avatar );
+            if ( $att_id > 0 ) {
+                $logo_id = $att_id;
+            }
+        }
+
+        $extra = array(
+            'commercial_name' => $contact['organization'] ?? '',
+            'party_type'      => $party_type,
+            'accounting_role' => $accounting_role,
+            'phone'           => $contact['phone_primary'] ?: ( $contact['phone'] ?: ( $contact['whatsapp'] ?? '' ) ),
+            'email'           => $contact['email_primary'] ?: ( $contact['email'] ?? '' ),
+            'address'         => $address,
+            'notes'           => $contact['notes'] ?? '',
+            'logo_id'         => $logo_id > 0 ? $logo_id : null,
+            'wp_user_id'      => ! empty( $contact['wp_user_id'] ) ? absint( $contact['wp_user_id'] ) : null,
+        );
+
+        if ( class_exists( 'Aura_Third_Parties' ) ) {
+            $tp_id = Aura_Third_Parties::ensure_third_party( $full_name, $extra, get_current_user_id() );
+        } else {
+            $table_tp = $wpdb->prefix . 'aura_finance_third_parties';
+            $wpdb->insert( $table_tp, array_merge( $extra, array(
+                'full_name'  => $full_name,
+                'created_by' => get_current_user_id(),
+                'created_at' => current_time( 'mysql' ),
+                'updated_at' => current_time( 'mysql' ),
+                'is_active'  => 1,
+            ) ) );
+            $tp_id = (int) $wpdb->insert_id;
+        }
+
+        if ( $tp_id <= 0 ) {
+            wp_send_json_error( array( 'message' => __( 'No se pudo crear el Tercero en la base de datos.', 'aura-suite' ) ) );
+        }
+
+        // Vincular en el contacto
+        $wpdb->update(
+            $table_contacts,
+            array(
+                'third_party_id' => $tp_id,
+                'updated_at'     => current_time( 'mysql' ),
+            ),
+            array( 'id' => $contact_id )
+        );
+
+        wp_send_json_success( array(
+            'message'          => __( '¡Tercero creado y vinculado con éxito!', 'aura-suite' ),
+            'third_party_id'   => $tp_id,
+            'third_party_name' => ! empty( $extra['commercial_name'] ) ? $extra['commercial_name'] : $full_name,
+            'contact_id'       => $contact_id,
+        ) );
     }
 
     /**
@@ -1081,11 +1217,11 @@ class Aura_Contacts {
         // Nombres de entidades vinculadas
         if ( ! empty( $row['third_party_id'] ) && empty( $row['third_party_name'] ) ) {
             global $wpdb;
-            $tp_table = $wpdb->prefix . 'aura_third_parties';
+            $tp_table = class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_table_name() : $wpdb->prefix . 'aura_finance_third_parties';
             if ( $wpdb->get_var( "SHOW TABLES LIKE '{$tp_table}'" ) === $tp_table ) {
-                $tp = $wpdb->get_row( $wpdb->prepare( "SELECT legal_name, trade_name FROM {$tp_table} WHERE id = %d LIMIT 1", (int) $row['third_party_id'] ), ARRAY_A );
+                $tp = $wpdb->get_row( $wpdb->prepare( "SELECT full_name, commercial_name FROM {$tp_table} WHERE id = %d LIMIT 1", (int) $row['third_party_id'] ), ARRAY_A );
                 if ( $tp ) {
-                    $row['third_party_name'] = ! empty( $tp['trade_name'] ) ? $tp['trade_name'] : $tp['legal_name'];
+                    $row['third_party_name'] = ! empty( $tp['commercial_name'] ) ? $tp['commercial_name'] : $tp['full_name'];
                 }
             }
         }
@@ -1398,19 +1534,31 @@ class Aura_Contacts {
             $contact_data['wp_user_id'] = $wp_user_id;
         }
 
-        // Avatar: resolver desde logo_id de Tercero, usuario WP o Gravatar
+        // Avatar: resolver desde logo_id de Tercero o usuario WP
         if ( ! empty( $tp['logo_id'] ) ) {
             $logo_url = wp_get_attachment_image_url( (int) $tp['logo_id'], 'medium' );
             if ( $logo_url ) {
                 $contact_data['avatar_url'] = $logo_url;
             }
         } elseif ( $wp_user_id > 0 ) {
-            $contact_data['avatar_url'] = get_avatar_url( $wp_user_id, array( 'size' => 256 ) );
-        } elseif ( ! empty( $email ) ) {
-            $contact_data['avatar_url'] = get_avatar_url( $email, array( 'size' => 256, 'default' => 'identicon' ) );
+            $user_avatar = get_user_meta( $wp_user_id, 'aura_avatar_url', true );
+            if ( $user_avatar ) {
+                $contact_data['avatar_url'] = $user_avatar;
+            }
         }
 
         if ( $existing ) {
+            // NUNCA sobreescribir el avatar del contacto existente si el Tercero no trae un logo explícito
+            if ( ! empty( $existing['avatar_url'] ) && empty( $tp['logo_id'] ) ) {
+                unset( $contact_data['avatar_url'] );
+            }
+            // Si el contacto ya tiene avatar propio y el tercero no tenía logo, propagarlo hacia el tercero
+            if ( ! empty( $existing['avatar_url'] ) && empty( $tp['logo_id'] ) && false === strpos( $existing['avatar_url'], 'gravatar.com' ) ) {
+                $att_id = attachment_url_to_postid( $existing['avatar_url'] );
+                if ( $att_id > 0 ) {
+                    $wpdb->update( $table_tp, array( 'logo_id' => $att_id ), array( 'id' => $third_party_id ) );
+                }
+            }
             // Preservar categoría si fue personalizada en la libreta
             if ( ! empty( $existing['category'] ) && ! in_array( $existing['category'], array( 'other', 'supplier', 'member' ), true ) ) {
                 unset( $contact_data['category'] );

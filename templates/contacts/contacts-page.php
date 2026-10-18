@@ -1178,6 +1178,13 @@ $category_icons = array(
                             </div>
                             <div id="contact-third-party-results" class="contacts-autocomplete-dropdown" style="display: none;"></div>
                         </div>
+                        <div id="contact-form-create-tp-wrap" style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 0.74rem; color: #94a3b8;"><?php esc_html_e( '¿No está en el catálogo? Crea este contacto como Tercero', 'aura-suite' ); ?></span>
+                            <button type="button" class="btn btn-glass btn-xs" id="btn-form-create-tp" onclick="window.AuraContactsApp.createThirdPartyFromForm();" style="color: #38bdf8;">
+                                <span class="dashicons dashicons-plus-alt2" style="font-size: 13px; width: 13px; height: 13px; vertical-align: middle;"></span>
+                                <span><?php esc_html_e( '+ Crear como Tercero', 'aura-suite' ); ?></span>
+                            </button>
+                        </div>
                         <div id="contact-third-party-selected" class="contact-linked-card" style="display: none;">
                             <span style="display: flex; align-items: center; gap: 8px;">
                                 <span class="dashicons dashicons-building" style="color: #38bdf8;"></span>
@@ -1274,6 +1281,23 @@ $category_icons = array(
                 </label>
                 <input type="text" id="link-modal-tp-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por nombre comercial, razón social o RFC...', 'aura-suite' ); ?>" style="width: 100%;">
                 <div id="link-modal-tp-results" class="contacts-autocomplete-dropdown" style="display: none;"></div>
+            </div>
+
+            <!-- Crear Tercero Nuevo directamente -->
+            <div class="aura-glass-card" style="background: rgba(56, 189, 248, 0.04); border: 1px solid rgba(56, 189, 248, 0.2); padding: 12px 14px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 0.86rem; color: #fff; display: flex; align-items: center; gap: 6px;">
+                        <span>🏢</span>
+                        <span><?php esc_html_e( '¿No existe aún en Terceros?', 'aura-suite' ); ?></span>
+                    </div>
+                    <div style="font-size: 0.74rem; color: #94a3b8;">
+                        <?php esc_html_e( 'Crea y registra este contacto en el catálogo contable de Finanzas.', 'aura-suite' ); ?>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-link-modal-create-tp" onclick="window.AuraContactsApp.createThirdPartyFromContact();" style="white-space: nowrap;">
+                    <span class="dashicons dashicons-plus-alt2"></span>
+                    <span><?php esc_html_e( 'Crear como Tercero', 'aura-suite' ); ?></span>
+                </button>
             </div>
 
             <div class="aura-form-group">

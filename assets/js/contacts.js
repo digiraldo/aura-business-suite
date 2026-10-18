@@ -680,6 +680,7 @@
         $('#contact-avatar-url').val('');
         $('#contact-third-party-id').val(0);
         $('#contact-third-party-selected').hide();
+        $('#contact-form-create-tp-wrap').hide();
         $('#contact-wp-user-id').val(0);
         $('#contact-wp-user-selected').hide();
 
@@ -760,9 +761,11 @@
                 $('#contact-third-party-id').val(c.third_party_id);
                 $('#contact-third-party-name').text(c.third_party_name || ('Tercero #' + c.third_party_id));
                 $('#contact-third-party-selected').show();
+                $('#contact-form-create-tp-wrap').hide();
             } else {
                 $('#contact-third-party-id').val(0);
                 $('#contact-third-party-selected').hide();
+                $('#contact-form-create-tp-wrap').show();
             }
 
             // Usuario WordPress vinculado
@@ -848,6 +851,9 @@
     window.unlinkThirdPartyInForm = function() {
         $('#contact-third-party-id').val(0);
         $('#contact-third-party-selected').hide();
+        if ($('#contact-form-id').val() > 0) {
+            $('#contact-form-create-tp-wrap').show();
+        }
     };
 
     window.unlinkWpUserInForm = function() {
@@ -1891,6 +1897,76 @@
         });
     }
 
+    function createThirdPartyFromContact(contactId) {
+        contactId = contactId || $('#link-target-contact-id').val();
+        if (!contactId || parseInt(contactId, 10) <= 0) return;
+
+        if (!confirm('¿Deseas registrar este contacto como un nuevo Tercero en el catálogo comercial y contable de Finanzas?')) {
+            return;
+        }
+
+        var $btn = $('#btn-link-modal-create-tp');
+        var origText = $btn.html();
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Creando...');
+
+        $.post(cfg.ajaxUrl, {
+            action: 'aura_contacts_create_third_party',
+            nonce: cfg.nonce,
+            contact_id: contactId
+        }, function(res) {
+            $btn.prop('disabled', false).html(origText);
+            if (res.success) {
+                showToast(res.data && res.data.message ? res.data.message : '¡Tercero creado y vinculado con éxito!');
+                closeLinkModal();
+                fetchContacts();
+                refreshStats();
+            } else {
+                alert(res.data && res.data.message ? res.data.message : 'Error al crear el Tercero.');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html(origText);
+            alert('Error de conexión al intentar crear el Tercero.');
+        });
+    }
+
+    function createThirdPartyFromForm() {
+        var contactId = $('#contact-form-id').val();
+        if (!contactId || parseInt(contactId, 10) <= 0) {
+            alert('Debes guardar el contacto primero antes de poder crearlo como Tercero.');
+            return;
+        }
+
+        if (!confirm('¿Deseas crear y registrar este contacto en el catálogo comercial de Terceros de Finanzas?')) {
+            return;
+        }
+
+        var $btn = $('#btn-form-create-tp');
+        var origText = $btn.html();
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Creando...');
+
+        $.post(cfg.ajaxUrl, {
+            action: 'aura_contacts_create_third_party',
+            nonce: cfg.nonce,
+            contact_id: contactId
+        }, function(res) {
+            $btn.prop('disabled', false).html(origText);
+            if (res.success && res.data) {
+                $('#contact-third-party-id').val(res.data.third_party_id);
+                $('#contact-third-party-name').text(res.data.third_party_name || ('Tercero #' + res.data.third_party_id));
+                $('#contact-third-party-selected').show();
+                $('#contact-form-create-tp-wrap').hide();
+                showToast(res.data.message || '¡Tercero creado y vinculado con éxito!');
+                fetchContacts();
+                refreshStats();
+            } else {
+                alert(res.data && res.data.message ? res.data.message : 'Error al crear el Tercero.');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html(origText);
+            alert('Error de conexión al intentar crear el Tercero.');
+        });
+    }
+
     function searchThirdParties(term, callback) {
         $.post(cfg.ajaxUrl, { action: 'aura_contacts_search_third_parties', nonce: cfg.nonce, term: term }, function(res) {
             var list = (res && res.success && res.data) ? (Array.isArray(res.data) ? res.data : (res.data.items || [])) : [];
@@ -1957,6 +2033,8 @@
     window.AuraContactsApp = {
         editContact: openEditModal,
         openLinkEntityModal: window.openLinkEntityModal,
+        createThirdPartyFromContact: createThirdPartyFromContact,
+        createThirdPartyFromForm: createThirdPartyFromForm,
         syncSingleContact: syncSingle,
         deleteContact: deleteContactItem,
         refresh: fetchContacts,
