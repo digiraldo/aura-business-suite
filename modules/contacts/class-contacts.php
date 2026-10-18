@@ -73,6 +73,16 @@ class Aura_Contacts {
 
         // ── Hooks en tiempo real: Formularios y Lead Capture (Prioridad 3) ──
         add_action( 'aura_form_submission_saved', array( __CLASS__, 'on_form_submission_saved' ), 20, 2 );
+
+        // ── Auto-recuperación de contactos archivados involuntariamente por borrado en Google ──
+        if ( ! get_option( 'aura_contacts_recovered_archived_v1' ) ) {
+            global $wpdb;
+            $table = $wpdb->prefix . 'aura_contacts';
+            if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) === $table ) {
+                $wpdb->query( "UPDATE {$table} SET is_active = 1, sync_status = 'pending' WHERE is_active = 0" );
+                update_option( 'aura_contacts_recovered_archived_v1', 1 );
+            }
+        }
     }
 
     // ─────────────────────────────────────────────────────────────

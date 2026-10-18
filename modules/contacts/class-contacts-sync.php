@@ -397,18 +397,20 @@ class Aura_Contacts_Sync {
             if ( $is_deleted ) {
                 if ( $map ) {
                     $cid = (int) $map['contact_id'];
-                    // Archivado suave local
+                    // PRIORIDAD LOCAL -> GOOGLE (La base de datos local es soberana y permanente):
+                    // Si se elimina un contacto en Google, NUNCA se desactiva ni se borra de WordPress.
+                    // Se desvincula el mapeo y se marca 'pending' para que si se sincroniza, vuelva a subirse a Google.
+                    $wpdb->delete( $t_google_map, array( 'id' => $map['id'] ) );
                     $wpdb->update(
                         $t_contacts,
                         array(
-                            'is_active'   => 0,
-                            'sync_status' => 'local_only',
+                            'is_active'   => 1, // Se preserva siempre ACTIVO
+                            'sync_status' => 'pending', // Listo para re-sincronizar de Local -> Google
                             'updated_at'  => current_time( 'mysql' ),
                         ),
                         array( 'id' => $cid )
                     );
-                    $wpdb->delete( $t_google_map, array( 'id' => $map['id'] ) );
-                    Aura_Contacts_Setup::log_sync( $cid, $google_account, 'pull', 'delete', 'success', 'Archivado localmente al eliminarse en Google' );
+                    Aura_Contacts_Setup::log_sync( $cid, $google_account, 'pull', 'skip', 'success', 'Desvinculado de Google tras eliminarse externamente (contacto local preservado activo)' );
                     $deleted_count++;
                 }
                 continue;
