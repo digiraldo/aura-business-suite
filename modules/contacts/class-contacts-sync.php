@@ -521,17 +521,24 @@ class Aura_Contacts_Sync {
      * @param int $limit
      * @return array
      */
-    public static function get_recent_logs( int $limit = 25 ): array {
+    public static function get_recent_logs( int $limit = 50, string $status = '' ): array {
         global $wpdb;
         $table = $wpdb->prefix . 'aura_contacts_sync_log';
 
+        $where = '';
+        if ( in_array( $status, array( 'error', 'success' ), true ) ) {
+            $where = $wpdb->prepare( "WHERE l.status = %s", $status );
+        }
+
+        $limit_val = min( 200, max( 5, $limit ) );
         $logs = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT l.*, c.first_name, c.last_name, c.organization, c.email_primary 
                  FROM {$table} l
                  LEFT JOIN {$wpdb->prefix}aura_contacts c ON (l.contact_id = c.id)
+                 {$where}
                  ORDER BY l.id DESC LIMIT %d",
-                min( 100, max( 5, $limit ) )
+                $limit_val
             ),
             ARRAY_A
         );
@@ -602,7 +609,9 @@ class Aura_Contacts_Sync {
             wp_send_json_error( array( 'message' => __( 'Sin permisos.', 'aura-suite' ) ) );
         }
 
-        $logs = self::get_recent_logs( 30 );
+        $limit  = isset( $_POST['limit'] ) ? absint( $_POST['limit'] ) : 50;
+        $status = isset( $_POST['status'] ) ? sanitize_key( $_POST['status'] ) : '';
+        $logs   = self::get_recent_logs( $limit, $status );
         wp_send_json_success( array( 'logs' => $logs ) );
     }
 

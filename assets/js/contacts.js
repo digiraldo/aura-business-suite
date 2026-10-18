@@ -147,6 +147,22 @@
         $('#btn-refresh-list').on('click', function() {
             fetchContacts();
         });
+
+        // Clic en tarjetas KPI para filtrar automáticamente el directorio
+        $('.kpi-card.accent-rose, #kpi-error-val').css('cursor', 'pointer').on('click', function() {
+            $('.aura-navbar-item[data-tab="directory"]').trigger('click');
+            $('#contacts-filter-sync').val('error').trigger('change');
+        });
+
+        $('.kpi-card.accent-amber, #kpi-pending-val').css('cursor', 'pointer').on('click', function() {
+            $('.aura-navbar-item[data-tab="directory"]').trigger('click');
+            $('#contacts-filter-sync').val('pending').trigger('change');
+        });
+
+        $('.kpi-card.accent-emerald, #kpi-synced-val').css('cursor', 'pointer').on('click', function() {
+            $('.aura-navbar-item[data-tab="directory"]').trigger('click');
+            $('#contacts-filter-sync').val('synced').trigger('change');
+        });
     }
 
     // ── Obtener Listado de Contactos vía AJAX ────────────────────────────────────
@@ -938,7 +954,7 @@
         var $tbody = $('#contacts-logs-tbody');
         $tbody.html('<tr><td colspan="6" style="text-align: center; padding: 24px;"><span class="dashicons dashicons-update spin"></span> Cargando historial de sincronización...</td></tr>');
 
-        $.post(cfg.ajaxUrl, { action: 'aura_contacts_get_sync_logs', nonce: cfg.nonce, limit: 50 }, function(res) {
+        $.post(cfg.ajaxUrl, { action: 'aura_contacts_get_sync_logs', nonce: cfg.nonce, limit: 150 }, function(res) {
             var logs = (res.data && res.data.logs) ? res.data.logs : (Array.isArray(res.data) ? res.data : []);
             if (!res.success || logs.length === 0) {
                 $tbody.html('<tr><td colspan="6" style="text-align: center; padding: 30px; color:#94a3b8;">No hay registros de sincronización registrados aún.</td></tr>');
