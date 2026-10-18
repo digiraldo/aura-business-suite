@@ -1210,6 +1210,12 @@ $category_icons = array(
                             <span class="contact-input-icon dashicons dashicons-tag"></span>
                             <input type="text" id="contact-tags" name="tags" class="aura-input" placeholder="diplomado-2026, facilitador-externo, benefactor, vip">
                         </div>
+                        <div class="contact-tags-quick-selector" style="margin-top: 8px;">
+                            <span style="font-size: 0.76rem; color: #94a3b8; display: block; margin-bottom: 5px;">
+                                <?php esc_html_e( 'Etiquetas disponibles en el sistema (haz clic para añadir o quitar):', 'aura-suite' ); ?>
+                            </span>
+                            <div id="contact-tags-cloud" class="aura-tags-cloud" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                        </div>
                     </div>
 
                     <!-- Notas / Observaciones -->
@@ -1570,6 +1576,12 @@ $category_icons = array(
                         </label>
                     </div>
                     <input type="text" id="bulk-val-tags" class="aura-input" placeholder="<?php esc_attr_e( 'Ej: VIP, Egresado 2026, Comité Directivo (separar por comas)', 'aura-suite' ); ?>" style="width: 100%;">
+                    <div class="bulk-tags-quick-selector" style="margin-top: 6px;">
+                        <span style="font-size: 0.76rem; color: #94a3b8; display: block; margin-bottom: 5px;">
+                            <?php esc_html_e( 'Etiquetas disponibles en el sistema (haz clic para añadir o quitar):', 'aura-suite' ); ?>
+                        </span>
+                        <div id="bulk-tags-cloud" class="aura-tags-cloud" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                    </div>
                 </div>
             </div>
 

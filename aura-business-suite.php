@@ -2309,6 +2309,7 @@ class Aura_Business_Suite
                 'oauthAccount' => $provider->get_account_email(),
                 'redirectUri' => Aura_Google_Auth_OAuth_User::get_redirect_uri(),
                 'categories' => Aura_Contacts::CATEGORIES,
+                'availableTags' => Aura_Contacts::get_all_unique_tags(),
                 'i18n' => array(
                     'confirmDelete' => __('¿Estás seguro de mover este contacto a la papelera?', 'aura-suite'),
                     'confirmPermanent' => __('¿Estás seguro de eliminar permanentemente este contacto? Esta acción es irreversible.', 'aura-suite'),

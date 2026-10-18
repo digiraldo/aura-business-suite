@@ -90,6 +90,41 @@ class Aura_Contacts {
     }
 
     /**
+     * Obtiene todas las etiquetas (tags) únicas existentes en la base de datos de contactos.
+     *
+     * @return array
+     */
+    public static function get_all_unique_tags(): array {
+        global $wpdb;
+        $table = self::get_table_name();
+
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+            return array();
+        }
+
+        $rows = $wpdb->get_col( "SELECT DISTINCT tags FROM {$table} WHERE tags IS NOT NULL AND tags != ''" );
+        if ( empty( $rows ) ) {
+            return array();
+        }
+
+        $tags_map = array();
+        foreach ( $rows as $raw ) {
+            $decoded = is_string( $raw ) ? json_decode( $raw, true ) : $raw;
+            if ( is_array( $decoded ) ) {
+                foreach ( $decoded as $t ) {
+                    $clean = trim( (string) $t );
+                    if ( '' !== $clean ) {
+                        $tags_map[ mb_strtolower( $clean ) ] = $clean;
+                    }
+                }
+            }
+        }
+
+        ksort( $tags_map, SORT_NATURAL | SORT_FLAG_CASE );
+        return array_values( $tags_map );
+    }
+
+    /**
      * Obtiene un contacto por su ID con sus metadatos y mapeo de Google.
      *
      * @param int $id
@@ -2192,9 +2227,13 @@ class Aura_Contacts {
                     } else { // 'add'
                         $existing_tags = array();
                         if ( ! empty( $existing['tags'] ) ) {
-                            $dec = json_decode( $existing['tags'], true );
-                            if ( is_array( $dec ) ) {
-                                $existing_tags = $dec;
+                            if ( is_array( $existing['tags'] ) ) {
+                                $existing_tags = $existing['tags'];
+                            } elseif ( is_string( $existing['tags'] ) ) {
+                                $dec = json_decode( $existing['tags'], true );
+                                if ( is_array( $dec ) ) {
+                                    $existing_tags = $dec;
+                                }
                             }
                         }
                         $final_tags = array_values( array_unique( array_merge( $existing_tags, $new_tags ) ) );

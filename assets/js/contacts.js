@@ -626,6 +626,72 @@
         });
     }
 
+    /**
+     * Configura y sincroniza una nube interactiva de etiquetas (tags chips)
+     * vinculada a un input de texto.
+     */
+    function setupTagsCloud($cloudContainer, $inputElement) {
+        if (!$cloudContainer.length || !$inputElement.length) return;
+
+        var systemTags = Array.isArray(cfg.availableTags) ? cfg.availableTags : [];
+        if (!systemTags.length) {
+            $cloudContainer.html('<span style="font-size:0.75rem;color:#64748b;font-style:italic;">No hay etiquetas creadas aún. Escribe en el campo para crearlas.</span>');
+            return;
+        }
+
+        function getActiveTags() {
+            var val = $inputElement.val() || '';
+            return val.split(',')
+                .map(function(t) { return t.trim(); })
+                .filter(function(t) { return t.length > 0; });
+        }
+
+        function renderChips() {
+            var activeTags = getActiveTags().map(function(t) { return t.toLowerCase(); });
+            var html = '';
+
+            systemTags.forEach(function(tag) {
+                var isActive = activeTags.indexOf(tag.toLowerCase()) !== -1;
+                var activeStyle = isActive
+                    ? 'background: rgba(59, 130, 246, 0.25); border-color: #3b82f6; color: #60a5fa; font-weight: 600;'
+                    : 'background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.12); color: #cbd5e1;';
+
+                html += '<button type="button" class="aura-tag-chip' + (isActive ? ' is-active' : '') + '" data-tag="' + escapeHtml(tag) + '" style="border-radius: 20px; padding: 3px 11px; font-size: 0.77rem; cursor: pointer; border: 1px solid; display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s ease; user-select: none; ' + activeStyle + '">';
+                html += (isActive ? '✓ ' : '+ ') + escapeHtml(tag);
+                html += '</button>';
+            });
+
+            $cloudContainer.html(html);
+        }
+
+        renderChips();
+
+        // Al hacer clic en un chip de la nube
+        $cloudContainer.off('click', '.aura-tag-chip').on('click', '.aura-tag-chip', function(e) {
+            e.preventDefault();
+            var tagClicked = $(this).attr('data-tag');
+            if (!tagClicked) return;
+
+            var current = getActiveTags();
+            var lowerList = current.map(function(t) { return t.toLowerCase(); });
+            var pos = lowerList.indexOf(tagClicked.toLowerCase());
+
+            if (pos !== -1) {
+                current.splice(pos, 1);
+            } else {
+                current.push(tagClicked);
+            }
+
+            $inputElement.val(current.join(', ')).trigger('change');
+            renderChips();
+        });
+
+        // Actualizar chips al tipear manualmente en el input
+        $inputElement.off('input.tagsCloud').on('input.tagsCloud', function() {
+            renderChips();
+        });
+    }
+
     function openCreateModal() {
         $('#contact-modal-title').html('📇 ' + (cfg.i18n.newContact || 'Nuevo Contacto'));
         $('#contact-modal-subtitle').text('Directorio institucional integrado con Google Contacts y el ecosistema Aura Suite.');
@@ -637,6 +703,9 @@
         }
 
         $('#contact-avatar-url').val('');
+        $('#contact-tags').val('');
+        setupTagsCloud($('#contact-tags-cloud'), $('#contact-tags'));
+
         $('#contact-third-party-id').val(0);
         $('#contact-third-party-selected').hide();
         $('#contact-form-create-tp-wrap').hide();
@@ -714,6 +783,7 @@
                 try { tagsStr = JSON.parse(c.tags).join(', '); } catch(e) { tagsStr = c.tags; }
             }
             $('#contact-tags').val(tagsStr);
+            setupTagsCloud($('#contact-tags-cloud'), $('#contact-tags'));
 
             // Tercero vinculado
             if (c.third_party_id && parseInt(c.third_party_id, 10) > 0) {
@@ -2202,6 +2272,7 @@
         $('#bulk-chk-sync').prop('checked', true);
         $('#bulk-wrap-category, #bulk-wrap-tags, #bulk-wrap-status').css({ opacity: 0.45, 'pointer-events': 'none' });
         $('#bulk-val-tags').val('');
+        setupTagsCloud($('#bulk-tags-cloud'), $('#bulk-val-tags'));
 
         $('#modal-bulk-edit-contacts')
             .removeClass('is-hidden')
