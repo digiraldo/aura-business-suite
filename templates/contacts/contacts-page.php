@@ -310,8 +310,44 @@ $category_icons = array(
                             <option value="100">100</option>
                         </select>
 
+                        <?php if ( $can_edit ) : ?>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-contacts-bulk-edit" style="display: none; align-items: center; gap: 6px; font-weight: 600; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+                                <span class="dashicons dashicons-edit"></span>
+                                <span><?php esc_html_e( 'Edición Masiva', 'aura-suite' ); ?></span>
+                                <span class="badge" id="contacts-bulk-count" style="background: #2563eb; color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 0.75rem; font-weight: 700;">0</span>
+                            </button>
+                        <?php endif; ?>
+
                         <button type="button" class="btn btn-glass btn-sm" id="btn-refresh-list" title="<?php esc_attr_e( 'Refrescar listado', 'aura-suite' ); ?>">
                             <span class="dashicons dashicons-image-rotate"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Barra Flotante de Acciones Masivas (Aura Enterprise Bulk Toolbar) -->
+                <div id="contacts-bulk-bar" style="display: none; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 12px; margin-bottom: 14px; backdrop-filter: blur(12px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #2563eb; color: #fff; font-size: 13px; font-weight: 700;" id="contacts-bulk-badge-circle">0</span>
+                        <span style="color: #f8fafc; font-weight: 600; font-size: 0.92rem;" id="contacts-bulk-bar-label">
+                            <?php esc_html_e( 'contactos seleccionados', 'aura-suite' ); ?>
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <?php if ( $can_edit ) : ?>
+                            <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-bulk-bar-edit" style="display: flex; align-items: center; gap: 6px;">
+                                <span class="dashicons dashicons-edit"></span>
+                                <span><?php esc_html_e( 'Editar Seleccionados', 'aura-suite' ); ?></span>
+                            </button>
+                        <?php endif; ?>
+                        <?php if ( $can_sync && $is_connected ) : ?>
+                            <button type="button" class="btn btn-glass btn-sm btn-lift" id="btn-bulk-bar-sync" style="display: flex; align-items: center; gap: 6px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
+                                <span class="dashicons dashicons-cloud"></span>
+                                <span><?php esc_html_e( 'Re-sincronizar con Google', 'aura-suite' ); ?></span>
+                            </button>
+                        <?php endif; ?>
+                        <button type="button" class="btn btn-glass btn-sm" id="btn-bulk-bar-clear" style="color: #94a3b8;">
+                            <span class="dashicons dashicons-no-alt"></span>
+                            <span><?php esc_html_e( 'Deseleccionar', 'aura-suite' ); ?></span>
                         </button>
                     </div>
                 </div>
@@ -1459,6 +1495,117 @@ $category_icons = array(
             <button type="button" class="btn btn-emerald btn-sm btn-shimmer btn-lift" id="btn-submit-merge-action">
                 <span class="dashicons dashicons-randomize"></span>
                 <span><?php esc_html_e( 'Confirmar y Fusionar Contactos', 'aura-suite' ); ?></span>
+            </button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL DE EDICIÓN MASIVA DE CONTACTOS (AURA ENTERPRISE BULK EDIT)
+═══════════════════════════════════════════════════════════════════ -->
+<div id="modal-bulk-edit-contacts" class="aura-modal-overlay" style="display: none; z-index: 999999;">
+    <div class="aura-modal aura-glass-card" style="max-width: 580px; width: 92%; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+        <!-- Cabecera del Modal -->
+        <div class="aura-modal__header" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    <span class="dashicons dashicons-edit"></span>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff;">
+                        <?php esc_html_e( 'Edición Masiva de Contactos', 'aura-suite' ); ?>
+                    </h3>
+                    <p style="margin: 2px 0 0; font-size: 0.82rem; color: #94a3b8;">
+                        <?php esc_html_e( 'Aplica modificaciones en lote a ', 'aura-suite' ); ?>
+                        <strong id="bulk-edit-modal-count" style="color: #38bdf8;">0</strong>
+                        <?php esc_html_e( ' contactos seleccionados.', 'aura-suite' ); ?>
+                    </p>
+                </div>
+            </div>
+            <button type="button" class="aura-modal__close" id="btn-close-bulk-modal" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer;">&times;</button>
+        </div>
+
+        <!-- Cuerpo del Modal -->
+        <div class="aura-modal__body" style="padding: 22px 24px; max-height: 70vh; overflow-y: auto;">
+            <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; color: #93c5fd; font-size: 0.84rem; display: flex; align-items: flex-start; gap: 10px;">
+                <span class="dashicons dashicons-info" style="font-size: 18px; width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0;"></span>
+                <span>
+                    <strong><?php esc_html_e( 'Regla de Seguridad:', 'aura-suite' ); ?></strong>
+                    <?php esc_html_e( 'Solo se actualizarán los campos cuya casilla esté activada. Los campos sin marcar conservarán intactos sus valores originales en cada contacto.', 'aura-suite' ); ?>
+                </span>
+            </div>
+
+            <!-- Campo 1: Categoría -->
+            <div class="bulk-field-group" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-size: 0.92rem; color: #f8fafc; margin-bottom: 8px;">
+                    <input type="checkbox" id="bulk-chk-category" class="aura-checkbox" style="width: 17px; height: 17px;">
+                    <span>🏷️ <?php esc_html_e( 'Cambiar Categoría', 'aura-suite' ); ?></span>
+                </label>
+                <div id="bulk-wrap-category" style="opacity: 0.45; pointer-events: none; transition: opacity 0.2s ease;">
+                    <select id="bulk-val-category" class="aura-select" style="width: 100%; height: 38px; border-radius: 8px;">
+                        <?php foreach ( $categories as $ckey => $clabel ) : ?>
+                            <option value="<?php echo esc_attr( $ckey ); ?>">
+                                <?php echo esc_html( ( $category_icons[ $ckey ] ?? '🏷️' ) . ' ' . $clabel ); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Campo 2: Etiquetas / Tags -->
+            <div class="bulk-field-group" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-size: 0.92rem; color: #f8fafc; margin-bottom: 8px;">
+                    <input type="checkbox" id="bulk-chk-tags" class="aura-checkbox" style="width: 17px; height: 17px;">
+                    <span>🔖 <?php esc_html_e( 'Modificar Etiquetas / Tags', 'aura-suite' ); ?></span>
+                </label>
+                <div id="bulk-wrap-tags" style="opacity: 0.45; pointer-events: none; transition: opacity 0.2s ease; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; gap: 12px; font-size: 0.82rem; color: #cbd5e1;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="bulk-tag-mode" value="add" checked>
+                            <span>➕ <?php esc_html_e( 'Añadir a las etiquetas existentes', 'aura-suite' ); ?></span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="radio" name="bulk-tag-mode" value="replace">
+                            <span>🔄 <?php esc_html_e( 'Reemplazar todas las etiquetas', 'aura-suite' ); ?></span>
+                        </label>
+                    </div>
+                    <input type="text" id="bulk-val-tags" class="aura-input" placeholder="<?php esc_attr_e( 'Ej: VIP, Egresado 2026, Comité Directivo (separar por comas)', 'aura-suite' ); ?>" style="width: 100%;">
+                </div>
+            </div>
+
+            <!-- Campo 3: Estado Activo / Archivado -->
+            <div class="bulk-field-group" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-size: 0.92rem; color: #f8fafc; margin-bottom: 8px;">
+                    <input type="checkbox" id="bulk-chk-status" class="aura-checkbox" style="width: 17px; height: 17px;">
+                    <span>🔘 <?php esc_html_e( 'Cambiar Estado', 'aura-suite' ); ?></span>
+                </label>
+                <div id="bulk-wrap-status" style="opacity: 0.45; pointer-events: none; transition: opacity 0.2s ease;">
+                    <select id="bulk-val-status" class="aura-select" style="width: 100%; height: 38px; border-radius: 8px;">
+                        <option value="1">🟢 <?php esc_html_e( 'Activo (Visible en Directorio)', 'aura-suite' ); ?></option>
+                        <option value="0">⚪ <?php esc_html_e( 'Inactivo / Archivado', 'aura-suite' ); ?></option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Campo 4: Re-sincronizar con Google Contacts -->
+            <div class="bulk-field-group" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px 16px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 700; font-size: 0.92rem; color: #f8fafc;">
+                    <input type="checkbox" id="bulk-chk-sync" class="aura-checkbox" style="width: 17px; height: 17px;" checked>
+                    <span>🔄 <?php esc_html_e( 'Marcar para sincronización con Google Contacts', 'aura-suite' ); ?></span>
+                </label>
+                <p style="margin: 6px 0 0 27px; font-size: 0.78rem; color: #94a3b8;">
+                    <?php esc_html_e( 'Propaga automáticamente las categorías, etiquetas en español y cambios hacia Google People API.', 'aura-suite' ); ?>
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="aura-modal__footer" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-bulk-modal">
+                <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
+            </button>
+            <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-submit-bulk-modal" style="display: flex; align-items: center; gap: 6px;">
+                <span class="dashicons dashicons-saved"></span>
+                <span><?php esc_html_e( 'Guardar Cambios Masivos', 'aura-suite' ); ?></span>
             </button>
         </div>
     </div>

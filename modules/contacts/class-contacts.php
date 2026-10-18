@@ -51,6 +51,7 @@ class Aura_Contacts {
             'sync_wp_users'          => 'ajax_sync_wp_users',
             'sync_third_parties'     => 'ajax_sync_third_parties',
             'sync_students'          => 'ajax_sync_students',
+            'bulk_edit'              => 'ajax_bulk_edit',
         );
 
         foreach ( $ajax_actions as $action => $handler ) {
@@ -2104,6 +2105,104 @@ class Aura_Contacts {
             }
             self::create_contact( $contact_data );
         }
+    }
+
+    /**
+     * Endpoint AJAX: Edición Masiva de Contactos.
+     * Permite modificar masivamente Categoría, Etiquetas (añadir/reemplazar),
+     * Estado Activo/Archivado y marcar para re-sincronizar con Google.
+     */
+    public static function ajax_bulk_edit(): void {
+        check_ajax_referer( 'aura_contacts_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'aura_contacts_edit' ) && ! current_user_can( 'aura_finance_bulk_edit' ) ) {
+            wp_send_json_error( array( 'message' => __( 'No tienes permisos suficientes para la edición masiva de contactos.', 'aura-suite' ) ) );
+        }
+
+        $raw_ids = $_POST['ids'] ?? array();
+        if ( is_string( $raw_ids ) ) {
+            $raw_ids = explode( ',', $raw_ids );
+        }
+        $contact_ids = array_filter( array_map( 'absint', (array) $raw_ids ) );
+
+        if ( empty( $contact_ids ) ) {
+            wp_send_json_error( array( 'message' => __( 'No se seleccionó ningún contacto válido para editar.', 'aura-suite' ) ) );
+        }
+
+        $apply_category = ! empty( $_POST['apply_category'] );
+        $apply_tags     = ! empty( $_POST['apply_tags'] );
+        $apply_status   = ! empty( $_POST['apply_status'] );
+        $apply_sync     = ! empty( $_POST['apply_sync'] );
+
+        if ( ! $apply_category && ! $apply_tags && ! $apply_status && ! $apply_sync ) {
+            wp_send_json_error( array( 'message' => __( 'Debes activar al menos una casilla de modificación para aplicar cambios.', 'aura-suite' ) ) );
+        }
+
+        $new_category = $apply_category ? sanitize_text_field( wp_unslash( $_POST['category'] ?? '' ) ) : null;
+        $tag_mode     = $apply_tags ? sanitize_key( $_POST['tag_mode'] ?? 'add' ) : 'add';
+        $raw_tags     = $apply_tags ? sanitize_text_field( wp_unslash( $_POST['tags'] ?? '' ) ) : '';
+        $new_tags     = array_values( array_filter( array_map( 'trim', explode( ',', $raw_tags ) ) ) );
+        $new_status   = $apply_status ? absint( $_POST['is_active'] ?? 1 ) : null;
+
+        global $wpdb;
+        $table           = self::get_table_name();
+        $updated_count   = 0;
+        $current_user_id = get_current_user_id();
+        $now             = current_time( 'mysql' );
+
+        foreach ( $contact_ids as $cid ) {
+            $existing = self::get_contact( $cid );
+            if ( ! $existing ) {
+                continue;
+            }
+
+            $update_data = array(
+                'updated_by' => $current_user_id,
+                'updated_at' => $now,
+            );
+
+            // 1. Categoría
+            if ( $apply_category && null !== $new_category ) {
+                $update_data['category'] = $new_category;
+            }
+
+            // 2. Estado
+            if ( $apply_status && null !== $new_status ) {
+                $update_data['is_active'] = $new_status;
+            }
+
+            // 3. Etiquetas (Tags)
+            if ( $apply_tags ) {
+                if ( 'replace' === $tag_mode ) {
+                    $final_tags = $new_tags;
+                } else { // 'add'
+                    $existing_tags = array();
+                    if ( ! empty( $existing['tags'] ) ) {
+                        $dec = json_decode( $existing['tags'], true );
+                        if ( is_array( $dec ) ) {
+                            $existing_tags = $dec;
+                        }
+                    }
+                    $final_tags = array_values( array_unique( array_merge( $existing_tags, $new_tags ) ) );
+                }
+                $update_data['tags'] = ! empty( $final_tags ) ? wp_json_encode( $final_tags ) : null;
+            }
+
+            // 4. Sincronización Google: Si se marcó explícitamente o si cambiaron categoría/tags
+            if ( $apply_sync || $apply_category || $apply_tags || $apply_status ) {
+                $update_data['sync_status'] = 'pending';
+            }
+
+            $res = $wpdb->update( $table, $update_data, array( 'id' => $cid ) );
+            if ( false !== $res ) {
+                $updated_count++;
+            }
+        }
+
+        wp_send_json_success( array(
+            'message' => sprintf( __( 'Edición masiva completada con éxito en %d contacto(s).', 'aura-suite' ), $updated_count ),
+            'updated' => $updated_count,
+        ) );
     }
 
     /**

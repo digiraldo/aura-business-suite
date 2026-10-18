@@ -251,6 +251,36 @@ class Aura_Google_Contacts {
     }
 
     /**
+     * Devuelve la etiqueta legible en español para una categoría de Aura.
+     *
+     * @param string $category
+     * @return string
+     */
+    public static function get_category_label( string $category ): string {
+        $labels = array(
+            'student'     => 'Estudiante',
+            'teacher'     => 'Docente / Profesor',
+            'staff'       => 'Personal / Staff',
+            'donor'       => 'Donante / Benefactor',
+            'supplier'    => 'Proveedor / Contratista',
+            'member'      => 'Miembro / Afiliado',
+            'volunteer'   => 'Voluntario',
+            'facilitator' => 'Facilitador / Tallerista',
+            'other'       => 'Otro / General',
+        );
+
+        if ( isset( $labels[ $category ] ) ) {
+            return $labels[ $category ];
+        }
+
+        if ( class_exists( 'Aura_Contacts' ) && isset( Aura_Contacts::CATEGORIES[ $category ] ) ) {
+            return Aura_Contacts::CATEGORIES[ $category ];
+        }
+
+        return ucfirst( str_replace( array( '_', '-' ), ' ', $category ) );
+    }
+
+    /**
      * Crea un nuevo grupo de contactos en Google.
      *
      * @param string $name Nombre del grupo (ej: 'Aura: Proveedores')
@@ -263,8 +293,30 @@ class Aura_Google_Contacts {
     }
 
     /**
+     * Actualiza el nombre de un grupo de contactos en Google.
+     *
+     * @param string $resource_name (ej: 'contactGroups/123456789')
+     * @param string $new_name      Nuevo nombre en español
+     * @param string $etag          Etag actual del grupo
+     * @return array|WP_Error
+     */
+    public static function update_contact_group( string $resource_name, string $new_name, string $etag = '' ) {
+        $endpoint = ltrim( $resource_name, '/' );
+        $payload  = array(
+            'contactGroup' => array(
+                'name' => $new_name,
+            ),
+        );
+        if ( ! empty( $etag ) ) {
+            $payload['contactGroup']['etag'] = $etag;
+        }
+
+        return self::api_request( 'PUT', $endpoint, $payload );
+    }
+
+    /**
      * Garantiza la existencia de una etiqueta/grupo en Google Contacts para una categoría de Aura.
-     * Devuelve el resourceName del grupo (ej: 'contactGroups/123456789').
+     * Devuelve el resourceName del grupo (ej: 'contactGroups/123456789') siempre en español.
      *
      * @param string $category
      * @return string|null
@@ -274,26 +326,39 @@ class Aura_Google_Contacts {
             return null;
         }
 
-        $group_name = 'Aura: ' . $category;
-        $cache_key  = 'aura_gcontacts_group_' . sanitize_key( $category );
-        $cached_id  = get_transient( $cache_key );
+        $label_es       = self::get_category_label( $category );
+        $group_name     = 'Aura: ' . $label_es;
+        $old_group_name = 'Aura: ' . $category; // Formato anterior en inglés
+        $cache_key      = 'aura_gc_group_v2_' . sanitize_key( $category );
+        $cached_id      = get_transient( $cache_key );
 
         if ( ! empty( $cached_id ) ) {
             return $cached_id;
         }
 
-        // Consultar grupos existentes
+        // Consultar grupos existentes en la cuenta de Google
         $groups = self::list_contact_groups();
         if ( ! is_wp_error( $groups ) && ! empty( $groups['contactGroups'] ) ) {
+            // 1. Buscar si ya existe con el nombre en español
             foreach ( $groups['contactGroups'] as $grp ) {
                 if ( ( $grp['name'] ?? '' ) === $group_name && ! empty( $grp['resourceName'] ) ) {
                     set_transient( $cache_key, $grp['resourceName'], DAY_IN_SECONDS );
                     return $grp['resourceName'];
                 }
             }
+
+            // 2. Si no existe en español pero existe el antiguo en inglés, renombrarlo en caliente
+            foreach ( $groups['contactGroups'] as $grp ) {
+                if ( ( $grp['name'] ?? '' ) === $old_group_name && ! empty( $grp['resourceName'] ) ) {
+                    $renamed = self::update_contact_group( $grp['resourceName'], $group_name, $grp['etag'] ?? '' );
+                    $final_res = ( ! is_wp_error( $renamed ) && ! empty( $renamed['resourceName'] ) ) ? $renamed['resourceName'] : $grp['resourceName'];
+                    set_transient( $cache_key, $final_res, DAY_IN_SECONDS );
+                    return $final_res;
+                }
+            }
         }
 
-        // Si no existe, crearlo
+        // 3. Si no existe ninguno, crearlo con el nombre oficial en español
         $created = self::create_contact_group( $group_name );
         if ( ! is_wp_error( $created ) && ! empty( $created['resourceName'] ) ) {
             set_transient( $cache_key, $created['resourceName'], DAY_IN_SECONDS );

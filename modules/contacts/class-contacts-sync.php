@@ -187,6 +187,13 @@ class Aura_Contacts_Sync {
             return array( 'success' => false, 'message' => 'Contacto no encontrado' );
         }
 
+        // Formatear contacto para resolver avatares heredados de WP User, Terceros o Gravatar si no vienen directos
+        $formatted = Aura_Contacts::format_contact_row( $contact );
+        if ( empty( $contact['avatar_url'] ) && ! empty( $formatted['avatar_url'] ) ) {
+            $contact['avatar_url'] = $formatted['avatar_url'];
+            $wpdb->update( $t_contacts, array( 'avatar_url' => $contact['avatar_url'] ), array( 'id' => $contact_id ) );
+        }
+
         $provider       = Aura_Google_Auth_Factory::get_provider();
         $google_account = $provider->get_account_email();
 
@@ -240,6 +247,14 @@ class Aura_Contacts_Sync {
                     $photo_res = self::sync_contact_photo( $map['resource_name'], $contact['avatar_url'], $contact_id );
                     if ( is_array( $photo_res ) && ! empty( $photo_res['person']['etag'] ) ) {
                         $new_etag = $photo_res['person']['etag'];
+                    }
+                }
+
+                // Sincronizar etiqueta/grupo en español según categoría si está disponible
+                if ( ! empty( $contact['category'] ) ) {
+                    $group_id = Aura_Google_Contacts::ensure_category_group( $contact['category'] );
+                    if ( $group_id ) {
+                        Aura_Google_Contacts::add_to_group( $group_id, array( $map['resource_name'] ) );
                     }
                 }
 
@@ -632,12 +647,26 @@ class Aura_Contacts_Sync {
             return false;
         }
 
-        // Si es un Gravatar por defecto genérico sin avatar real subido, no enviarlo a Google
-        if ( false !== strpos( $avatar_url, 'gravatar.com' ) && ( false !== strpos( $avatar_url, 'd=' ) || false !== strpos( $avatar_url, 'default=' ) ) ) {
-            return false;
+        $avatar_url = trim( $avatar_url );
+        // Limpieza de prefijos de URL residuales
+        if ( false !== strpos( $avatar_url, '/:/' ) ) {
+            $avatar_url = str_replace( '/:/', '/', $avatar_url );
+        }
+        if ( false !== strpos( $avatar_url, ':/wp-content' ) ) {
+            $avatar_url = str_replace( ':/wp-content', site_url( '/wp-content' ), $avatar_url );
         }
 
-        // Optimización de caché: evitar llamadas redundantes si la foto no ha cambiado
+        // Si es un Gravatar por defecto genérico sin avatar real registrado en gravatar.com,
+        // no enviarlo a Google para evitar pisar la foto con siluetas genéricas.
+        if ( false !== strpos( $avatar_url, 'gravatar.com' ) ) {
+            $test_url = add_query_arg( 'd', '404', $avatar_url );
+            $check    = wp_safe_remote_head( $test_url, array( 'timeout' => 5, 'sslverify' => false ) );
+            if ( ! is_wp_error( $check ) && 404 === (int) wp_remote_retrieve_response_code( $check ) ) {
+                return false; // Gravatar confirmó que no hay imagen real
+            }
+        }
+
+        // Optimización de caché: evitar llamadas redundantes a Google People API si la foto no ha cambiado
         $hash      = md5( (string) $avatar_url );
         $cache_key = 'aura_gc_photo_' . $contact_id;
         if ( $contact_id > 0 && get_transient( $cache_key ) === $hash ) {
@@ -694,6 +723,15 @@ class Aura_Contacts_Sync {
         if ( 0 === strpos( $url, $base_url ) ) {
             $rel_path  = substr( $url, strlen( $base_url ) );
             $file_path = $base_dir . $rel_path;
+            if ( file_exists( $file_path ) && is_readable( $file_path ) ) {
+                $content = file_get_contents( $file_path );
+                if ( false !== $content && strlen( $content ) > 0 ) {
+                    return $content;
+                }
+            }
+        } elseif ( false !== strpos( $url, '/wp-content/uploads/' ) ) {
+            $rel_sub   = substr( $url, strpos( $url, '/wp-content/uploads/' ) + strlen( '/wp-content/uploads/' ) );
+            $file_path = $base_dir . '/' . ltrim( $rel_sub, '/\\' );
             if ( file_exists( $file_path ) && is_readable( $file_path ) ) {
                 $content = file_get_contents( $file_path );
                 if ( false !== $content && strlen( $content ) > 0 ) {

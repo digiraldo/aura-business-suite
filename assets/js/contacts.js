@@ -46,6 +46,7 @@
         initImportExport();
         initDuplicatesMerge();
         initGlobalActions();
+        initBulkEdit();
 
         // Cargar primera página de contactos
         fetchContacts();
@@ -290,6 +291,11 @@
         });
 
         $tbody.html(html);
+
+        $('#contacts-select-all').prop('checked', false);
+        if (typeof updateBulkState === 'function') {
+            updateBulkState();
+        }
     }
 
     function renderSyncBadge(item) {
@@ -1967,6 +1973,223 @@
         });
     }
 
+    // ── Funcionalidad de Edición Masiva (Aura Enterprise Bulk Actions) ─────────
+    function getSelectedContactIds() {
+        var ids = [];
+        $('.contact-row-check:checked').each(function() {
+            var val = parseInt($(this).val(), 10);
+            if (!isNaN(val) && val > 0) {
+                ids.push(val);
+            }
+        });
+        return ids;
+    }
+
+    function updateBulkState() {
+        var ids = getSelectedContactIds();
+        var count = ids.length;
+
+        if (count > 0) {
+            $('#btn-contacts-bulk-edit').show().css('display', 'inline-flex');
+            $('#contacts-bulk-count').text(count);
+            $('#contacts-bulk-bar').slideDown(150).css('display', 'flex');
+            $('#contacts-bulk-badge-circle').text(count);
+            $('#contacts-bulk-bar-label').text(count + (count === 1 ? ' contacto seleccionado' : ' contactos seleccionados'));
+        } else {
+            $('#btn-contacts-bulk-edit').hide();
+            $('#contacts-bulk-bar').slideUp(150);
+            $('#contacts-select-all').prop('checked', false);
+        }
+    }
+
+    function initBulkEdit() {
+        // Seleccionar / Deseleccionar todo
+        $(document).on('change', '#contacts-select-all', function() {
+            var isChecked = $(this).is(':checked');
+            $('.contact-row-check').prop('checked', isChecked);
+            updateBulkState();
+        });
+
+        // Checkbox individual por fila
+        $(document).on('change', '.contact-row-check', function() {
+            var total = $('.contact-row-check').length;
+            var checked = $('.contact-row-check:checked').length;
+            $('#contacts-select-all').prop('checked', total > 0 && total === checked);
+            updateBulkState();
+        });
+
+        // Deseleccionar desde la barra flotante
+        $(document).on('click', '#btn-bulk-bar-clear', function(e) {
+            e.preventDefault();
+            $('.contact-row-check, #contacts-select-all').prop('checked', false);
+            updateBulkState();
+        });
+
+        // Abrir modal de Edición Masiva
+        $(document).on('click', '#btn-contacts-bulk-edit, #btn-bulk-bar-edit', function(e) {
+            e.preventDefault();
+            var ids = getSelectedContactIds();
+            if (!ids.length) {
+                alert('Selecciona al menos un contacto para editar.');
+                return;
+            }
+
+            $('#bulk-edit-modal-count').text(ids.length);
+
+            // Reiniciar estado de activación de campos (Regla de Seguridad)
+            $('#bulk-chk-category, #bulk-chk-tags, #bulk-chk-status').prop('checked', false);
+            $('#bulk-chk-sync').prop('checked', true);
+            $('#bulk-wrap-category, #bulk-wrap-tags, #bulk-wrap-status').css({ opacity: 0.45, 'pointer-events': 'none' });
+            $('#bulk-val-tags').val('');
+
+            $('#modal-bulk-edit-contacts').fadeIn(180);
+        });
+
+        // Cerrar modal
+        $(document).on('click', '#btn-close-bulk-modal, #btn-cancel-bulk-modal', function(e) {
+            e.preventDefault();
+            $('#modal-bulk-edit-contacts').fadeOut(180);
+        });
+
+        // Cerrar modal al hacer clic en el backdrop
+        $(document).on('click', '#modal-bulk-edit-contacts', function(e) {
+            if ($(e.target).is('#modal-bulk-edit-contacts')) {
+                $('#modal-bulk-edit-contacts').fadeOut(180);
+            }
+        });
+
+        // Activación individual de campos en el modal (Regla de Seguridad)
+        $('#bulk-chk-category').on('change', function() {
+            var active = $(this).is(':checked');
+            $('#bulk-wrap-category').css({ opacity: active ? 1 : 0.45, 'pointer-events': active ? 'auto' : 'none' });
+        });
+
+        $('#bulk-chk-tags').on('change', function() {
+            var active = $(this).is(':checked');
+            $('#bulk-wrap-tags').css({ opacity: active ? 1 : 0.45, 'pointer-events': active ? 'auto' : 'none' });
+        });
+
+        $('#bulk-chk-status').on('change', function() {
+            var active = $(this).is(':checked');
+            $('#bulk-wrap-status').css({ opacity: active ? 1 : 0.45, 'pointer-events': active ? 'auto' : 'none' });
+        });
+
+        // Guardar cambios masivos
+        $('#btn-submit-bulk-modal').on('click', function(e) {
+            e.preventDefault();
+            var ids = getSelectedContactIds();
+            if (!ids.length) {
+                alert('No hay contactos seleccionados.');
+                return;
+            }
+
+            var applyCategory = $('#bulk-chk-category').is(':checked');
+            var applyTags     = $('#bulk-chk-tags').is(':checked');
+            var applyStatus   = $('#bulk-chk-status').is(':checked');
+            var applySync     = $('#bulk-chk-sync').is(':checked');
+
+            if (!applyCategory && !applyTags && !applyStatus && !applySync) {
+                alert('Debes marcar al menos una casilla para aplicar cambios a los contactos seleccionados.');
+                return;
+            }
+
+            var $btn = $(this);
+            var originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Aplicando cambios...');
+
+            $.ajax({
+                url: cfg.ajaxUrl,
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'aura_contacts_bulk_edit',
+                    nonce: cfg.nonce,
+                    ids: ids,
+                    apply_category: applyCategory ? 1 : 0,
+                    category: $('#bulk-val-category').val(),
+                    apply_tags: applyTags ? 1 : 0,
+                    tag_mode: $('input[name="bulk-tag-mode"]:checked').val() || 'add',
+                    tags: $('#bulk-val-tags').val(),
+                    apply_status: applyStatus ? 1 : 0,
+                    is_active: $('#bulk-val-status').val(),
+                    apply_sync: applySync ? 1 : 0
+                },
+                success: function(res) {
+                    $btn.prop('disabled', false).html(originalHtml);
+                    if (res && res.success) {
+                        $('#modal-bulk-edit-contacts').fadeOut(180);
+                        showToast(res.data && res.data.message ? res.data.message : 'Edición masiva aplicada con éxito');
+                        $('.contact-row-check, #contacts-select-all').prop('checked', false);
+                        updateBulkState();
+                        fetchContacts();
+                    } else {
+                        alert(res && res.data && res.data.message ? res.data.message : 'Error al guardar cambios masivos');
+                    }
+                },
+                error: function() {
+                    $btn.prop('disabled', false).html(originalHtml);
+                    alert('Error de comunicación con el servidor al procesar la edición masiva');
+                }
+            });
+        });
+
+        // Re-sincronizar contactos seleccionados con Google People API
+        $(document).on('click', '#btn-bulk-bar-sync', function(e) {
+            e.preventDefault();
+            var ids = getSelectedContactIds();
+            if (!ids.length) return;
+
+            if (!confirm('¿Deseas sincronizar los ' + ids.length + ' contactos seleccionados con Google Contacts ahora?')) {
+                return;
+            }
+
+            var $btn = $(this);
+            var originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Sincronizando (0/' + ids.length + ')...');
+
+            var successCount = 0;
+            var errorCount = 0;
+
+            function syncItem(index) {
+                if (index >= ids.length) {
+                    $btn.prop('disabled', false).html(originalHtml);
+                    showToast('Sincronización masiva finalizada: ' + successCount + ' procesados' + (errorCount ? ', ' + errorCount + ' con error' : ''));
+                    $('.contact-row-check, #contacts-select-all').prop('checked', false);
+                    updateBulkState();
+                    fetchContacts();
+                    return;
+                }
+
+                $btn.html('<span class="dashicons dashicons-update spin"></span> Sincronizando (' + (index + 1) + '/' + ids.length + ')...');
+
+                $.ajax({
+                    url: cfg.ajaxUrl,
+                    method: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'aura_contacts_sync_single',
+                        nonce: cfg.nonce,
+                        contact_id: ids[index]
+                    },
+                    success: function(res) {
+                        if (res && res.success) {
+                            successCount++;
+                        } else {
+                            errorCount++;
+                        }
+                        syncItem(index + 1);
+                    },
+                    error: function() {
+                        errorCount++;
+                        syncItem(index + 1);
+                    }
+                });
+            }
+
+            syncItem(0);
+        });
+    }
+
     // ── Funciones Auxiliares y Exposición Global ─────────────────────────────────
     function escapeHtml(text) {
         if (!text) return '';
@@ -1991,7 +2214,9 @@
         syncSingleContact: syncSingle,
         deleteContact: deleteContactItem,
         refresh: fetchContacts,
-        refreshStats: refreshStats
+        refreshStats: refreshStats,
+        openBulkEditModal: function() { $('#btn-contacts-bulk-edit').trigger('click'); },
+        getSelectedIds: getSelectedContactIds
     };
 
 })(jQuery);
