@@ -1474,6 +1474,16 @@ class Aura_Third_Parties {
                 self::sync_avatar_to_wp_user($existing_user->ID, $tp['logo_id']);
             }
 
+            // Propagar wp_user_id al Contacto maestro vinculado
+            $c_table = $wpdb->prefix . 'aura_contacts';
+            if ($wpdb->get_var("SHOW TABLES LIKE '{$c_table}'") === $c_table) {
+                $wpdb->update(
+                    $c_table,
+                    array('wp_user_id' => (int) $existing_user->ID, 'updated_at' => current_time('mysql'), 'sync_status' => 'pending'),
+                    array('third_party_id' => $id)
+                );
+            }
+
             wp_send_json_success(array(
                 'message'         => sprintf(__('Se vinculó exitosamente el usuario existente de WordPress (@%s) a este tercero.', 'aura-suite'), $existing_user->user_login),
                 'user_id'         => (int) $existing_user->ID,
@@ -1573,6 +1583,16 @@ class Aura_Third_Parties {
             array('%d', '%s', '%s'),
             array('%d')
         );
+
+        // Propagar wp_user_id al Contacto maestro vinculado
+        $c_table = $wpdb->prefix . 'aura_contacts';
+        if ($wpdb->get_var("SHOW TABLES LIKE '{$c_table}'") === $c_table) {
+            $wpdb->update(
+                $c_table,
+                array('wp_user_id' => $new_user_id, 'updated_at' => current_time('mysql'), 'sync_status' => 'pending'),
+                array('third_party_id' => $id)
+            );
+        }
 
         // Opcional: Notificación por correo a través de WordPress
         $send_notification = !empty($_POST['send_notification']);

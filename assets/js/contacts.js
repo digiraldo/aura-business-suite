@@ -595,69 +595,6 @@
             updateAvatarPreview();
         });
 
-        // Autocomplete en formulario de creación/edición para vincular tercero
-        var tpSearchTimer = null;
-        $('#contact-link-third-party-search').on('input', function() {
-            var q = $(this).val().trim();
-            clearTimeout(tpSearchTimer);
-            if (q.length < 2) {
-                $('#contact-third-party-results').hide().empty();
-                return;
-            }
-            tpSearchTimer = setTimeout(function() {
-                searchThirdParties(q, function(results) {
-                    var $box = $('#contact-third-party-results').empty();
-                    if (!results || results.length === 0) {
-                        $box.append('<div class="autocomplete-item" style="color:#94a3b8;">No se encontraron terceros</div>').show();
-                        return;
-                    }
-                    results.forEach(function(item) {
-                        var $item = $('<div class="autocomplete-item"><span><strong>' + escapeHtml(item.name) + '</strong> (' + escapeHtml(item.type_label || '') + ')</span><span style="font-size:0.75rem;color:#38bdf8;">Seleccionar</span></div>');
-                        $item.on('click', function() {
-                            $('#contact-third-party-id').val(item.id);
-                            $('#contact-third-party-name').text(item.name);
-                            $('#contact-third-party-selected').show();
-                            $('#contact-link-third-party-search').val('');
-                            $box.hide().empty();
-                        });
-                        $box.append($item);
-                    });
-                    $box.show();
-                });
-            }, 250);
-        });
-
-        // Autocomplete en formulario para vincular usuario de WordPress
-        var wpSearchTimer = null;
-        $('#contact-link-wp-user-search').on('input', function() {
-            var q = $(this).val().trim();
-            clearTimeout(wpSearchTimer);
-            if (q.length < 2) {
-                $('#contact-wp-user-results').hide().empty();
-                return;
-            }
-            wpSearchTimer = setTimeout(function() {
-                searchWpUsers(q, function(results) {
-                    var $box = $('#contact-wp-user-results').empty();
-                    if (!results || results.length === 0) {
-                        $box.append('<div class="autocomplete-item" style="color:#94a3b8;">No se encontraron usuarios</div>').show();
-                        return;
-                    }
-                    results.forEach(function(u) {
-                        var $item = $('<div class="autocomplete-item"><span><strong>' + escapeHtml(u.name) + '</strong> (' + escapeHtml(u.email) + ')</span><span style="font-size:0.75rem;color:#c084fc;">Seleccionar</span></div>');
-                        $item.on('click', function() {
-                            $('#contact-wp-user-id').val(u.id);
-                            $('#contact-wp-user-name').text(u.name + ' (' + u.email + ')');
-                            $('#contact-wp-user-selected').show();
-                            $('#contact-link-wp-user-search').val('');
-                            $box.hide().empty();
-                        });
-                        $box.append($item);
-                    });
-                    $box.show();
-                });
-            }, 250);
-        });
 
         // Cerrar modal al hacer clic en el backdrop oscuro
         $('.aura-modal-overlay').on('click', function(e) {

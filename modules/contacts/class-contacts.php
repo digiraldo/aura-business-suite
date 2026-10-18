@@ -815,7 +815,21 @@ class Aura_Contacts {
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_contacts';
-        $contact = $wpdb->get_row( $wpdb->prepare( "SELECT avatar_url FROM {$table} WHERE id = %d LIMIT 1", $contact_id ), ARRAY_A );
+        $contact = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d LIMIT 1", $contact_id ), ARRAY_A );
+
+        if ( ! $contact ) {
+            wp_send_json_error( array( 'message' => __( 'Contacto no encontrado.', 'aura-suite' ) ) );
+        }
+
+        // Relación 1 a 1: Si se asigna un tercero, desvincularlo de cualquier otro contacto previo
+        if ( $third_party_id > 0 ) {
+            $wpdb->query( $wpdb->prepare(
+                "UPDATE {$table} SET third_party_id = NULL, updated_at = %s, sync_status = 'pending' WHERE third_party_id = %d AND id != %d",
+                current_time( 'mysql' ),
+                $third_party_id,
+                $contact_id
+            ) );
+        }
 
         $wpdb->update(
             $table,
@@ -827,14 +841,24 @@ class Aura_Contacts {
             array( 'id' => $contact_id )
         );
 
-        // Si el tercero no tiene logo y el contacto tiene una foto local, asociarla al tercero
-        if ( $third_party_id > 0 && ! empty( $contact['avatar_url'] ) && false === strpos( $contact['avatar_url'], 'gravatar.com' ) ) {
+        if ( $third_party_id > 0 ) {
             $tp_table = class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_table_name() : $wpdb->prefix . 'aura_finance_third_parties';
-            $cur_logo = $wpdb->get_var( $wpdb->prepare( "SELECT logo_id FROM {$tp_table} WHERE id = %d LIMIT 1", $third_party_id ) );
-            if ( empty( $cur_logo ) ) {
-                $att_id = self::resolve_attachment_id_from_url( $contact['avatar_url'] );
-                if ( $att_id > 0 ) {
-                    $wpdb->update( $tp_table, array( 'logo_id' => $att_id ), array( 'id' => $third_party_id ) );
+            $tp = $wpdb->get_row( $wpdb->prepare( "SELECT id, wp_user_id, logo_id FROM {$tp_table} WHERE id = %d LIMIT 1", $third_party_id ), ARRAY_A );
+
+            if ( $tp ) {
+                // Sincronizar wp_user_id entre ambos si uno de ellos lo tiene y el otro no
+                if ( ! empty( $contact['wp_user_id'] ) && empty( $tp['wp_user_id'] ) ) {
+                    $wpdb->update( $tp_table, array( 'wp_user_id' => (int) $contact['wp_user_id'] ), array( 'id' => $third_party_id ) );
+                } elseif ( empty( $contact['wp_user_id'] ) && ! empty( $tp['wp_user_id'] ) ) {
+                    $wpdb->update( $table, array( 'wp_user_id' => (int) $tp['wp_user_id'] ), array( 'id' => $contact_id ) );
+                }
+
+                // Si el tercero no tiene logo y el contacto tiene foto propia local, asociarla
+                if ( empty( $tp['logo_id'] ) && ! empty( $contact['avatar_url'] ) && false === strpos( $contact['avatar_url'], 'gravatar.com' ) ) {
+                    $att_id = self::resolve_attachment_id_from_url( $contact['avatar_url'] );
+                    if ( $att_id > 0 ) {
+                        $wpdb->update( $tp_table, array( 'logo_id' => $att_id ), array( 'id' => $third_party_id ) );
+                    }
                 }
             }
         }
@@ -987,7 +1011,10 @@ class Aura_Contacts {
         );
 
         if ( class_exists( 'Aura_Third_Parties' ) ) {
+            // El hook aura_third_party_saved reutilizará este contacto en lugar de crear uno nuevo.
+            self::$source_contact_id = $contact_id;
             $tp_id = Aura_Third_Parties::ensure_third_party( $full_name, $extra, get_current_user_id() );
+            self::$source_contact_id = 0;
         } else {
             $table_tp = $wpdb->prefix . 'aura_finance_third_parties';
             $wpdb->insert( $table_tp, array_merge( $extra, array(
@@ -1037,16 +1064,52 @@ class Aura_Contacts {
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_contacts';
+        $contact = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d LIMIT 1", $contact_id ), ARRAY_A );
+
+        if ( ! $contact ) {
+            wp_send_json_error( array( 'message' => __( 'Contacto no encontrado.', 'aura-suite' ) ) );
+        }
+
+        // Relación 1 a 1: Si se asigna un usuario WP, desvincularlo de cualquier otro contacto previo
+        if ( $wp_user_id > 0 ) {
+            $wpdb->query( $wpdb->prepare(
+                "UPDATE {$table} SET wp_user_id = NULL, updated_at = %s, sync_status = 'pending' WHERE wp_user_id = %d AND id != %d",
+                current_time( 'mysql' ),
+                $wp_user_id,
+                $contact_id
+            ) );
+        }
+
+        $update_fields = array(
+            'wp_user_id'  => $wp_user_id ?: null,
+            'updated_at'  => current_time( 'mysql' ),
+            'sync_status' => 'pending',
+        );
+
+        // Si el contacto no tenía email y el usuario WP tiene email, completarlo
+        if ( $wp_user_id > 0 && empty( $contact['email_primary'] ) ) {
+            $u = get_user_by( 'id', $wp_user_id );
+            if ( $u && ! empty( $u->user_email ) ) {
+                $update_fields['email_primary'] = sanitize_email( $u->user_email );
+            }
+        }
 
         $wpdb->update(
             $table,
-            array(
-                'wp_user_id'  => $wp_user_id ?: null,
-                'updated_at'  => current_time( 'mysql' ),
-                'sync_status' => 'pending',
-            ),
+            $update_fields,
             array( 'id' => $contact_id )
         );
+
+        // Si este contacto está vinculado a un Tercero, sincronizar el wp_user_id en la tabla de Terceros
+        if ( ! empty( $contact['third_party_id'] ) ) {
+            $tp_id = (int) $contact['third_party_id'];
+            $tp_table = class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_table_name() : $wpdb->prefix . 'aura_finance_third_parties';
+            $wpdb->update(
+                $tp_table,
+                array( 'wp_user_id' => $wp_user_id ?: null, 'updated_at' => current_time( 'mysql' ) ),
+                array( 'id' => $tp_id )
+            );
+        }
 
         wp_send_json_success( array( 'message' => __( 'Vinculación con Usuario WordPress actualizada.', 'aura-suite' ) ) );
     }
@@ -1140,6 +1203,11 @@ class Aura_Contacts {
         $phone_primary     = sanitize_text_field( wp_unslash( $raw_phone_primary ) );
         $phone_secondary   = sanitize_text_field( wp_unslash( $data['phone_secondary'] ?? '' ) );
         $whatsapp          = sanitize_text_field( wp_unslash( $data['whatsapp'] ?? '' ) );
+
+        // Regla de negocio: todo teléfono principal queda también registrado como WhatsApp.
+        if ( '' === $whatsapp && '' !== $phone_primary ) {
+            $whatsapp = $phone_primary;
+        }
 
         $raw_address    = $data['address_street'] ?? ( $data['address'] ?? '' );
         $address_street = sanitize_textarea_field( wp_unslash( $raw_address ) );
@@ -1513,6 +1581,13 @@ class Aura_Contacts {
     }
 
     /**
+     * ID del contacto que origina la creación de un Tercero (evita duplicar el contacto en el hook de sincronización).
+     *
+     * @var int
+     */
+    public static $source_contact_id = 0;
+
+    /**
      * Sincroniza un Tercero individual de Finanzas/Comercial hacia el directorio maestro de contactos.
      *
      * @param int $third_party_id
@@ -1569,9 +1644,26 @@ class Aura_Contacts {
         );
         $category = $category_map[ $accounting_role ] ?? 'supplier';
 
+        // Orden anti-duplicados: vínculo explícito -> contacto de origen -> usuario WP -> email -> crear.
         $existing = self::get_contact_by_third_party( $third_party_id );
+
+        if ( ! $existing && self::$source_contact_id > 0 ) {
+            $candidate = self::get_contact( self::$source_contact_id );
+            if ( $candidate && ( empty( $candidate['third_party_id'] ) || (int) $candidate['third_party_id'] === $third_party_id ) ) {
+                $existing = $candidate;
+            }
+        }
+        if ( ! $existing && $wp_user_id > 0 ) {
+            $candidate = self::get_contact_by_wp_user( $wp_user_id );
+            if ( $candidate && ( empty( $candidate['third_party_id'] ) || (int) $candidate['third_party_id'] === $third_party_id ) ) {
+                $existing = $candidate;
+            }
+        }
         if ( ! $existing && ! empty( $email ) ) {
-            $existing = self::get_contact_by_email( $email );
+            $candidate = self::get_contact_by_email( $email );
+            if ( $candidate && empty( $candidate['third_party_id'] ) ) {
+                $existing = $candidate;
+            }
         }
 
         $contact_data = array(
@@ -1606,27 +1698,51 @@ class Aura_Contacts {
         }
 
         if ( $existing ) {
-            // NUNCA sobreescribir el avatar del contacto existente si el Tercero no trae un logo explícito
-            if ( ! empty( $existing['avatar_url'] ) && empty( $tp['logo_id'] ) ) {
-                unset( $contact_data['avatar_url'] );
+            // El Contacto es la identidad maestra: solo se escribe el vínculo y se completan campos VACÍOS.
+            // Nunca se tocan nombres, notas, categoría ni estado activo del contacto.
+            $update = array( 'third_party_id' => $third_party_id );
+
+            foreach ( array(
+                'email_primary'  => $email,
+                'phone_primary'  => $phone,
+                'whatsapp'       => $phone,
+                'address_street' => $address,
+            ) as $field => $value ) {
+                if ( '' !== (string) $value && empty( $existing[ $field ] ) ) {
+                    $update[ $field ] = $value;
+                }
             }
-            // Si el contacto ya tiene avatar propio y el tercero no tenía logo, propagarlo hacia el tercero
-            if ( ! empty( $existing['avatar_url'] ) && empty( $tp['logo_id'] ) && false === strpos( $existing['avatar_url'], 'gravatar.com' ) ) {
+
+            if ( $wp_user_id > 0 && empty( $existing['wp_user_id'] ) ) {
+                $owner = self::get_contact_by_wp_user( $wp_user_id );
+                if ( ! $owner || (int) $owner['id'] === (int) $existing['id'] ) {
+                    $update['wp_user_id'] = $wp_user_id;
+                }
+            }
+
+            // Foto: solo si el contacto no tiene una propia (o es un gravatar genérico)
+            $has_own_avatar = ! empty( $existing['avatar_url'] ) && false === strpos( $existing['avatar_url'], 'gravatar.com' );
+            if ( ! $has_own_avatar && ! empty( $contact_data['avatar_url'] ) ) {
+                $update['avatar_url'] = $contact_data['avatar_url'];
+            }
+
+            // Si el contacto tiene foto propia y el tercero no tiene logo, propagarla hacia el tercero
+            if ( $has_own_avatar && empty( $tp['logo_id'] ) ) {
                 $att_id = attachment_url_to_postid( $existing['avatar_url'] );
                 if ( $att_id > 0 ) {
                     $wpdb->update( $table_tp, array( 'logo_id' => $att_id ), array( 'id' => $third_party_id ) );
                 }
             }
-            // Preservar categoría si fue personalizada en la libreta
-            if ( ! empty( $existing['category'] ) && ! in_array( $existing['category'], array( 'other', 'supplier', 'member' ), true ) ) {
-                unset( $contact_data['category'] );
-            }
-            self::update_contact( (int) $existing['id'], $contact_data );
+
+            self::update_contact( (int) $existing['id'], $update );
             return (int) $existing['id'];
-        } else {
-            $created_id = self::create_contact( $contact_data );
-            return is_wp_error( $created_id ) ? null : (int) $created_id;
         }
+
+        // No existe ningún contacto: se crea uno nuevo (las notas del tercero NO se copian: son independientes).
+        unset( $contact_data['notes'] );
+        $contact_data['whatsapp'] = $phone ?: null;
+        $created_id = self::create_contact( $contact_data );
+        return is_wp_error( $created_id ) ? null : (int) $created_id;
     }
 
     /**

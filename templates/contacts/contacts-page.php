@@ -1165,61 +1165,6 @@ $category_icons = array(
                 <!-- ════ PESTAÑA 3: VINCULACIONES Y NOTAS ════ -->
                 <div id="cmodal-tab-relations" class="contact-modal-tab-pane" style="display: none;">
                     
-                    <!-- Vinculación con Tercero Comercial -->
-                    <div class="aura-glass-card" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); padding: 14px; border-radius: 12px; margin-bottom: 14px;">
-                        <label class="aura-form-label" style="margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
-                            <span>🏢 <?php esc_html_e( 'Vincular con Tercero de Aura (Directorio Comercial)', 'aura-suite' ); ?></span>
-                            <span style="font-size:0.75rem; color:#38bdf8; font-weight: 500;">Opcional</span>
-                        </label>
-                        <div style="position: relative;">
-                            <div class="contact-input-icon-wrap">
-                                <span class="contact-input-icon dashicons dashicons-search"></span>
-                                <input type="text" id="contact-link-third-party-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por nombre comercial, razón social o RFC...', 'aura-suite' ); ?>" style="width: 100%;">
-                            </div>
-                            <div id="contact-third-party-results" class="contacts-autocomplete-dropdown" style="display: none;"></div>
-                        </div>
-                        <div id="contact-form-create-tp-wrap" style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
-                            <span style="font-size: 0.74rem; color: #94a3b8;"><?php esc_html_e( '¿No está en el catálogo? Crea este contacto como Tercero', 'aura-suite' ); ?></span>
-                            <button type="button" class="btn btn-glass btn-xs" id="btn-form-create-tp" onclick="window.AuraContactsApp.createThirdPartyFromForm();" style="color: #38bdf8;">
-                                <span class="dashicons dashicons-plus-alt2" style="font-size: 13px; width: 13px; height: 13px; vertical-align: middle;"></span>
-                                <span><?php esc_html_e( '+ Crear como Tercero', 'aura-suite' ); ?></span>
-                            </button>
-                        </div>
-                        <div id="contact-third-party-selected" class="contact-linked-card" style="display: none;">
-                            <span style="display: flex; align-items: center; gap: 8px;">
-                                <span class="dashicons dashicons-building" style="color: #38bdf8;"></span>
-                                <strong id="contact-third-party-name"></strong>
-                            </span>
-                            <button type="button" class="btn btn-glass btn-xs" onclick="unlinkThirdPartyInForm();" style="color: #f87171;" title="<?php esc_attr_e( 'Desvincular tercero', 'aura-suite' ); ?>">
-                                &times; <?php esc_html_e( 'Desvincular', 'aura-suite' ); ?>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Vinculación con Usuario de WordPress -->
-                    <div class="aura-glass-card" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); padding: 14px; border-radius: 12px; margin-bottom: 14px;">
-                        <label class="aura-form-label" style="margin-bottom: 6px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
-                            <span>👤 <?php esc_html_e( 'Vincular con Usuario del Sistema WordPress', 'aura-suite' ); ?></span>
-                            <span style="font-size:0.75rem; color:#c084fc; font-weight: 500;">Opcional</span>
-                        </label>
-                        <div style="position: relative;">
-                            <div class="contact-input-icon-wrap">
-                                <span class="contact-input-icon dashicons dashicons-search"></span>
-                                <input type="text" id="contact-link-wp-user-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por nombre, usuario o email registrado...', 'aura-suite' ); ?>" style="width: 100%;">
-                            </div>
-                            <div id="contact-wp-user-results" class="contacts-autocomplete-dropdown" style="display: none;"></div>
-                        </div>
-                        <div id="contact-wp-user-selected" class="contact-linked-card contact-linked-card-wp" style="display: none;">
-                            <span style="display: flex; align-items: center; gap: 8px;">
-                                <span class="dashicons dashicons-admin-users" style="color: #c084fc;"></span>
-                                <strong id="contact-wp-user-name"></strong>
-                            </span>
-                            <button type="button" class="btn btn-glass btn-xs" onclick="unlinkWpUserInForm();" style="color: #f87171;" title="<?php esc_attr_e( 'Desvincular usuario', 'aura-suite' ); ?>">
-                                &times; <?php esc_html_e( 'Desvincular', 'aura-suite' ); ?>
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- Etiquetas (Tags) -->
                     <div class="aura-form-group" style="margin-bottom: 14px;">
                         <label for="contact-tags" class="aura-form-label">
