@@ -80,6 +80,16 @@ class Aura_Contacts {
     // ─────────────────────────────────────────────────────────────
 
     /**
+     * Retorna el nombre canónico de la tabla de contactos.
+     *
+     * @return string
+     */
+    public static function get_table_name(): string {
+        global $wpdb;
+        return $wpdb->prefix . 'aura_contacts';
+    }
+
+    /**
      * Obtiene un contacto por su ID con sus metadatos y mapeo de Google.
      *
      * @param int $id
@@ -2115,94 +2125,101 @@ class Aura_Contacts {
     public static function ajax_bulk_edit(): void {
         check_ajax_referer( 'aura_contacts_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'aura_contacts_edit' ) && ! current_user_can( 'aura_finance_bulk_edit' ) ) {
+        if ( ! current_user_can( 'manage_options' ) 
+             && ! current_user_can( 'aura_contacts_edit' ) 
+             && ! current_user_can( 'aura_finance_bulk_edit' )
+             && ! current_user_can( 'aura_third_parties_edit' ) ) {
             wp_send_json_error( array( 'message' => __( 'No tienes permisos suficientes para la edición masiva de contactos.', 'aura-suite' ) ) );
         }
 
-        $raw_ids = $_POST['ids'] ?? array();
-        if ( is_string( $raw_ids ) ) {
-            $raw_ids = explode( ',', $raw_ids );
-        }
-        $contact_ids = array_filter( array_map( 'absint', (array) $raw_ids ) );
+        try {
+            $raw_ids = $_POST['ids'] ?? array();
+            if ( is_string( $raw_ids ) ) {
+                $raw_ids = explode( ',', $raw_ids );
+            }
+            $contact_ids = array_filter( array_map( 'absint', (array) $raw_ids ) );
 
-        if ( empty( $contact_ids ) ) {
-            wp_send_json_error( array( 'message' => __( 'No se seleccionó ningún contacto válido para editar.', 'aura-suite' ) ) );
-        }
-
-        $apply_category = ! empty( $_POST['apply_category'] );
-        $apply_tags     = ! empty( $_POST['apply_tags'] );
-        $apply_status   = ! empty( $_POST['apply_status'] );
-        $apply_sync     = ! empty( $_POST['apply_sync'] );
-
-        if ( ! $apply_category && ! $apply_tags && ! $apply_status && ! $apply_sync ) {
-            wp_send_json_error( array( 'message' => __( 'Debes activar al menos una casilla de modificación para aplicar cambios.', 'aura-suite' ) ) );
-        }
-
-        $new_category = $apply_category ? sanitize_text_field( wp_unslash( $_POST['category'] ?? '' ) ) : null;
-        $tag_mode     = $apply_tags ? sanitize_key( $_POST['tag_mode'] ?? 'add' ) : 'add';
-        $raw_tags     = $apply_tags ? sanitize_text_field( wp_unslash( $_POST['tags'] ?? '' ) ) : '';
-        $new_tags     = array_values( array_filter( array_map( 'trim', explode( ',', $raw_tags ) ) ) );
-        $new_status   = $apply_status ? absint( $_POST['is_active'] ?? 1 ) : null;
-
-        global $wpdb;
-        $table           = self::get_table_name();
-        $updated_count   = 0;
-        $current_user_id = get_current_user_id();
-        $now             = current_time( 'mysql' );
-
-        foreach ( $contact_ids as $cid ) {
-            $existing = self::get_contact( $cid );
-            if ( ! $existing ) {
-                continue;
+            if ( empty( $contact_ids ) ) {
+                wp_send_json_error( array( 'message' => __( 'No se seleccionó ningún contacto válido para editar.', 'aura-suite' ) ) );
             }
 
-            $update_data = array(
-                'updated_by' => $current_user_id,
-                'updated_at' => $now,
-            );
+            $apply_category = ! empty( $_POST['apply_category'] );
+            $apply_tags     = ! empty( $_POST['apply_tags'] );
+            $apply_status   = ! empty( $_POST['apply_status'] );
+            $apply_sync     = ! empty( $_POST['apply_sync'] );
 
-            // 1. Categoría
-            if ( $apply_category && null !== $new_category ) {
-                $update_data['category'] = $new_category;
+            if ( ! $apply_category && ! $apply_tags && ! $apply_status && ! $apply_sync ) {
+                wp_send_json_error( array( 'message' => __( 'Debes activar al menos una casilla de modificación para aplicar cambios.', 'aura-suite' ) ) );
             }
 
-            // 2. Estado
-            if ( $apply_status && null !== $new_status ) {
-                $update_data['is_active'] = $new_status;
-            }
+            $new_category = $apply_category ? sanitize_text_field( wp_unslash( $_POST['category'] ?? '' ) ) : null;
+            $tag_mode     = $apply_tags ? sanitize_key( $_POST['tag_mode'] ?? 'add' ) : 'add';
+            $raw_tags     = $apply_tags ? sanitize_text_field( wp_unslash( $_POST['tags'] ?? '' ) ) : '';
+            $new_tags     = array_values( array_filter( array_map( 'trim', explode( ',', $raw_tags ) ) ) );
+            $new_status   = $apply_status ? absint( $_POST['is_active'] ?? 1 ) : null;
 
-            // 3. Etiquetas (Tags)
-            if ( $apply_tags ) {
-                if ( 'replace' === $tag_mode ) {
-                    $final_tags = $new_tags;
-                } else { // 'add'
-                    $existing_tags = array();
-                    if ( ! empty( $existing['tags'] ) ) {
-                        $dec = json_decode( $existing['tags'], true );
-                        if ( is_array( $dec ) ) {
-                            $existing_tags = $dec;
-                        }
-                    }
-                    $final_tags = array_values( array_unique( array_merge( $existing_tags, $new_tags ) ) );
+            global $wpdb;
+            $table           = self::get_table_name();
+            $updated_count   = 0;
+            $current_user_id = get_current_user_id();
+            $now             = current_time( 'mysql' );
+
+            foreach ( $contact_ids as $cid ) {
+                $existing = self::get_contact( $cid );
+                if ( ! $existing ) {
+                    continue;
                 }
-                $update_data['tags'] = ! empty( $final_tags ) ? wp_json_encode( $final_tags ) : null;
+
+                $update_data = array(
+                    'updated_by' => $current_user_id,
+                    'updated_at' => $now,
+                );
+
+                // 1. Categoría
+                if ( $apply_category && null !== $new_category ) {
+                    $update_data['category'] = $new_category;
+                }
+
+                // 2. Estado
+                if ( $apply_status && null !== $new_status ) {
+                    $update_data['is_active'] = $new_status;
+                }
+
+                // 3. Etiquetas (Tags)
+                if ( $apply_tags ) {
+                    if ( 'replace' === $tag_mode ) {
+                        $final_tags = $new_tags;
+                    } else { // 'add'
+                        $existing_tags = array();
+                        if ( ! empty( $existing['tags'] ) ) {
+                            $dec = json_decode( $existing['tags'], true );
+                            if ( is_array( $dec ) ) {
+                                $existing_tags = $dec;
+                            }
+                        }
+                        $final_tags = array_values( array_unique( array_merge( $existing_tags, $new_tags ) ) );
+                    }
+                    $update_data['tags'] = ! empty( $final_tags ) ? wp_json_encode( $final_tags ) : null;
+                }
+
+                // 4. Sincronización Google: Si se marcó explícitamente o si cambiaron categoría/tags
+                if ( $apply_sync || $apply_category || $apply_tags || $apply_status ) {
+                    $update_data['sync_status'] = 'pending';
+                }
+
+                $res = $wpdb->update( $table, $update_data, array( 'id' => $cid ) );
+                if ( false !== $res ) {
+                    $updated_count++;
+                }
             }
 
-            // 4. Sincronización Google: Si se marcó explícitamente o si cambiaron categoría/tags
-            if ( $apply_sync || $apply_category || $apply_tags || $apply_status ) {
-                $update_data['sync_status'] = 'pending';
-            }
-
-            $res = $wpdb->update( $table, $update_data, array( 'id' => $cid ) );
-            if ( false !== $res ) {
-                $updated_count++;
-            }
+            wp_send_json_success( array(
+                'message' => sprintf( __( 'Edición masiva completada con éxito en %d contacto(s).', 'aura-suite' ), $updated_count ),
+                'updated' => $updated_count,
+            ) );
+        } catch ( \Throwable $e ) {
+            wp_send_json_error( array( 'message' => 'Error al procesar edición masiva: ' . $e->getMessage() ) );
         }
-
-        wp_send_json_success( array(
-            'message' => sprintf( __( 'Edición masiva completada con éxito en %d contacto(s).', 'aura-suite' ), $updated_count ),
-            'updated' => $updated_count,
-        ) );
     }
 
     /**

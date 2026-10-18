@@ -2028,33 +2028,19 @@
         // Abrir modal de Edición Masiva
         $(document).on('click', '#btn-contacts-bulk-edit, #btn-bulk-bar-edit', function(e) {
             e.preventDefault();
-            var ids = getSelectedContactIds();
-            if (!ids.length) {
-                alert('Selecciona al menos un contacto para editar.');
-                return;
-            }
-
-            $('#bulk-edit-modal-count').text(ids.length);
-
-            // Reiniciar estado de activación de campos (Regla de Seguridad)
-            $('#bulk-chk-category, #bulk-chk-tags, #bulk-chk-status').prop('checked', false);
-            $('#bulk-chk-sync').prop('checked', true);
-            $('#bulk-wrap-category, #bulk-wrap-tags, #bulk-wrap-status').css({ opacity: 0.45, 'pointer-events': 'none' });
-            $('#bulk-val-tags').val('');
-
-            $('#modal-bulk-edit-contacts').fadeIn(180);
+            openBulkModal();
         });
 
         // Cerrar modal
         $(document).on('click', '#btn-close-bulk-modal, #btn-cancel-bulk-modal', function(e) {
             e.preventDefault();
-            $('#modal-bulk-edit-contacts').fadeOut(180);
+            closeBulkModal();
         });
 
         // Cerrar modal al hacer clic en el backdrop
         $(document).on('click', '#modal-bulk-edit-contacts', function(e) {
             if ($(e.target).is('#modal-bulk-edit-contacts')) {
-                $('#modal-bulk-edit-contacts').fadeOut(180);
+                closeBulkModal();
             }
         });
 
@@ -2117,7 +2103,7 @@
                 success: function(res) {
                     $btn.prop('disabled', false).html(originalHtml);
                     if (res && res.success) {
-                        $('#modal-bulk-edit-contacts').fadeOut(180);
+                        closeBulkModal();
                         showToast(res.data && res.data.message ? res.data.message : 'Edición masiva aplicada con éxito');
                         $('.contact-row-check, #contacts-select-all').prop('checked', false);
                         updateBulkState();
@@ -2126,9 +2112,20 @@
                         alert(res && res.data && res.data.message ? res.data.message : 'Error al guardar cambios masivos');
                     }
                 },
-                error: function() {
+                error: function(xhr) {
                     $btn.prop('disabled', false).html(originalHtml);
-                    alert('Error de comunicación con el servidor al procesar la edición masiva');
+                    var msg = 'Error de comunicación con el servidor al procesar la edición masiva';
+                    if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                        msg = xhr.responseJSON.data.message;
+                    } else if (xhr && xhr.responseText) {
+                        try {
+                            var parsed = JSON.parse(xhr.responseText);
+                            if (parsed && parsed.data && parsed.data.message) {
+                                msg = parsed.data.message;
+                            }
+                        } catch (err) {}
+                    }
+                    alert(msg);
                 }
             });
         });
@@ -2190,6 +2187,38 @@
         });
     }
 
+    // ── Control del Modal de Edición Masiva ──────────────────────────────────────
+    function openBulkModal() {
+        var ids = getSelectedContactIds();
+        if (!ids.length) {
+            alert('Por favor selecciona al menos un contacto en la tabla para editar.');
+            return;
+        }
+
+        $('#bulk-edit-modal-count').text(ids.length);
+
+        // Reiniciar estado de activación de campos (Regla de Seguridad)
+        $('#bulk-chk-category, #bulk-chk-tags, #bulk-chk-status').prop('checked', false);
+        $('#bulk-chk-sync').prop('checked', true);
+        $('#bulk-wrap-category, #bulk-wrap-tags, #bulk-wrap-status').css({ opacity: 0.45, 'pointer-events': 'none' });
+        $('#bulk-val-tags').val('');
+
+        $('#modal-bulk-edit-contacts')
+            .removeClass('is-hidden')
+            .addClass('active')
+            .css({ display: 'flex', opacity: 1, visibility: 'visible', 'z-index': 999999 });
+    }
+
+    function closeBulkModal() {
+        $('#modal-bulk-edit-contacts')
+            .removeClass('active')
+            .addClass('is-hidden')
+            .css({ display: 'none', opacity: 0, visibility: 'hidden' });
+    }
+
+    window.openBulkModal = openBulkModal;
+    window.closeBulkModal = closeBulkModal;
+
     // ── Funciones Auxiliares y Exposición Global ─────────────────────────────────
     function escapeHtml(text) {
         if (!text) return '';
@@ -2215,7 +2244,8 @@
         deleteContact: deleteContactItem,
         refresh: fetchContacts,
         refreshStats: refreshStats,
-        openBulkEditModal: function() { $('#btn-contacts-bulk-edit').trigger('click'); },
+        openBulkEditModal: openBulkModal,
+        closeBulkEditModal: closeBulkModal,
         getSelectedIds: getSelectedContactIds
     };
 

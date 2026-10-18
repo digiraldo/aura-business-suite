@@ -311,7 +311,7 @@ $category_icons = array(
                         </select>
 
                         <?php if ( $can_edit ) : ?>
-                            <button type="button" class="btn btn-secondary btn-sm" id="btn-contacts-bulk-edit" style="display: none; align-items: center; gap: 6px; font-weight: 600; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-contacts-bulk-edit" onclick="if(window.openBulkModal){window.openBulkModal();}else if(window.AuraContactsApp&&window.AuraContactsApp.openBulkEditModal){window.AuraContactsApp.openBulkEditModal();}" style="display: none; align-items: center; gap: 6px; font-weight: 600; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
                                 <span class="dashicons dashicons-edit"></span>
                                 <span><?php esc_html_e( 'Edición Masiva', 'aura-suite' ); ?></span>
                                 <span class="badge" id="contacts-bulk-count" style="background: #2563eb; color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 0.75rem; font-weight: 700;">0</span>
@@ -334,7 +334,7 @@ $category_icons = array(
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <?php if ( $can_edit ) : ?>
-                            <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-bulk-bar-edit" style="display: flex; align-items: center; gap: 6px;">
+                            <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-bulk-bar-edit" onclick="if(window.openBulkModal){window.openBulkModal();}else if(window.AuraContactsApp&&window.AuraContactsApp.openBulkEditModal){window.AuraContactsApp.openBulkEditModal();}" style="display: flex; align-items: center; gap: 6px;">
                                 <span class="dashicons dashicons-edit"></span>
                                 <span><?php esc_html_e( 'Editar Seleccionados', 'aura-suite' ); ?></span>
                             </button>
@@ -1496,13 +1496,14 @@ $category_icons = array(
                 <span class="dashicons dashicons-randomize"></span>
                 <span><?php esc_html_e( 'Confirmar y Fusionar Contactos', 'aura-suite' ); ?></span>
             </button>
+        </div>
     </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════
      MODAL DE EDICIÓN MASIVA DE CONTACTOS (AURA ENTERPRISE BULK EDIT)
 ═══════════════════════════════════════════════════════════════════ -->
-<div id="modal-bulk-edit-contacts" class="aura-modal-overlay" style="display: none; z-index: 999999;">
+<div id="modal-bulk-edit-contacts" class="aura-modal-overlay is-hidden" style="display: none; z-index: 999999;">
     <div class="aura-modal aura-glass-card" style="max-width: 580px; width: 92%; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
         <!-- Cabecera del Modal -->
         <div class="aura-modal__header" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
@@ -1521,7 +1522,7 @@ $category_icons = array(
                     </p>
                 </div>
             </div>
-            <button type="button" class="aura-modal__close" id="btn-close-bulk-modal" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer;">&times;</button>
+            <button type="button" class="aura-modal__close" id="btn-close-bulk-modal" onclick="if(window.closeBulkModal){window.closeBulkModal();}else if(window.AuraContactsApp&&window.AuraContactsApp.closeBulkEditModal){window.AuraContactsApp.closeBulkEditModal();}" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer;">&times;</button>
         </div>
 
         <!-- Cuerpo del Modal -->
@@ -1600,7 +1601,7 @@ $category_icons = array(
 
         <!-- Footer del Modal -->
         <div class="aura-modal__footer" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-bulk-modal">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-bulk-modal" onclick="if(window.closeBulkModal){window.closeBulkModal();}else if(window.AuraContactsApp&&window.AuraContactsApp.closeBulkEditModal){window.AuraContactsApp.closeBulkEditModal();}">
                 <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
             </button>
             <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-submit-bulk-modal" style="display: flex; align-items: center; gap: 6px;">
