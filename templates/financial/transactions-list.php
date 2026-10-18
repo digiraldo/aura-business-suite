@@ -31,16 +31,21 @@ $available_tags = Aura_Financial_Tags::get_all_tags();
 ?>
 
 <?php
+$filter_date_from = sanitize_text_field($_GET['filter_date_from'] ?? ($_GET['start_date'] ?? ''));
+$filter_date_to   = sanitize_text_field($_GET['filter_date_to'] ?? ($_GET['end_date'] ?? ''));
+$filter_account   = intval($_GET['filter_account'] ?? ($_GET['account_id'] ?? 0));
+
 $active_filters_count = 0;
 if (!empty($_GET['filter_type'])) $active_filters_count++;
 if (!empty($_GET['filter_status'])) $active_filters_count++;
 if (!empty($_GET['filter_category']) || !empty($_GET['category_id'])) $active_filters_count++;
-if (!empty($_GET['filter_date_from']) || !empty($_GET['filter_date_to'])) $active_filters_count++;
+if (!empty($filter_date_from) || !empty($filter_date_to)) $active_filters_count++;
 if (!empty($_GET['filter_amount_min']) || !empty($_GET['filter_amount_max'])) $active_filters_count++;
 if (!empty($_GET['filter_payment_method'])) $active_filters_count++;
 if (!empty($_GET['filter_user'])) $active_filters_count++;
 if (!empty($_GET['filter_related_user'])) $active_filters_count++;
 if (!empty($_GET['filter_area'])) $active_filters_count++;
+if (!empty($filter_account)) $active_filters_count++;
 ?>
 
 <div class="wrap aura-transactions-list-page">
@@ -160,6 +165,9 @@ if (!empty($_GET['filter_area'])) $active_filters_count++;
             <div class="aura-filters-body">
                 <form method="get" id="aura-filters-form">
                     <input type="hidden" name="page" value="aura-financial-transactions">
+                    <?php if ($filter_account > 0): ?>
+                        <input type="hidden" name="filter_account" value="<?php echo esc_attr($filter_account); ?>">
+                    <?php endif; ?>
                     
                     <!-- Sección: Tipo de Transacción (Ingreso, Egreso, Capital) -->
                     <div class="filter-section">
@@ -235,7 +243,7 @@ if (!empty($_GET['filter_area'])) $active_filters_count++;
                                        id="filter_date_from" 
                                        class="aura-datepicker" 
                                        placeholder="YYYY-MM-DD"
-                                       value="<?php echo esc_attr($_GET['filter_date_from'] ?? ''); ?>">
+                                       value="<?php echo esc_attr($filter_date_from); ?>">
                             </div>
                             <div class="aura-date-input-wrap">
                                 <label for="filter_date_to"><?php _e('Hasta', 'aura-suite'); ?></label>
@@ -244,7 +252,7 @@ if (!empty($_GET['filter_area'])) $active_filters_count++;
                                        id="filter_date_to" 
                                        class="aura-datepicker" 
                                        placeholder="YYYY-MM-DD"
-                                       value="<?php echo esc_attr($_GET['filter_date_to'] ?? ''); ?>">
+                                       value="<?php echo esc_attr($filter_date_to); ?>">
                             </div>
                         </div>
                         <div class="aura-quick-date-chips">

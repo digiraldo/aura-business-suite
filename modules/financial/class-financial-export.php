@@ -236,8 +236,8 @@ class Aura_Financial_Export {
 
     private static function parse_filters(): array {
         return [
-            'date_from'      => sanitize_text_field($_POST['filter_date_from']      ?? ''),
-            'date_to'        => sanitize_text_field($_POST['filter_date_to']        ?? ''),
+            'date_from'      => sanitize_text_field($_POST['filter_date_from']      ?? ($_POST['start_date'] ?? '')),
+            'date_to'        => sanitize_text_field($_POST['filter_date_to']        ?? ($_POST['end_date'] ?? '')),
             'type'           => sanitize_text_field($_POST['filter_type']           ?? ''),
             'status'         => array_map('sanitize_text_field', (array)($_POST['filter_status'] ?? [])),
             'category'       => intval($_POST['filter_category']                    ?? 0),

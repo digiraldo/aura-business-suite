@@ -857,7 +857,7 @@
                     '</div>' +
                     '<div style="margin-top:4px;">' + statusBadge + '</div>' +
                 '</td>' +
-                '<td><a class="button button-small" href="' + escHtml(auraDashboard.txListUrl || 'admin.php?page=aura-financial-transactions') + '&start_date=' + monthStart + '&end_date=' + monthEnd + '">Ver movimientos</a></td>' +
+                '<td><a class="button button-small" href="' + escHtml(auraDashboard.txListUrl || 'admin.php?page=aura-financial-transactions') + '&filter_date_from=' + monthStart + '&filter_date_to=' + monthEnd + '&start_date=' + monthStart + '&end_date=' + monthEnd + '">Ver movimientos</a></td>' +
             '</tr>';
         }).join('');
 

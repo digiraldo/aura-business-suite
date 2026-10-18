@@ -1385,14 +1385,25 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             $where_values[] = sanitize_text_field($_REQUEST['filter_payment_method']);
         }
         
-        // Filtro por rango de fechas
-        if (!empty($_REQUEST['filter_date_from'])) {
+        // Filtro por rango de fechas (soporta filter_date_from/to y start_date/end_date)
+        $filter_date_from = !empty($_REQUEST['filter_date_from']) ? sanitize_text_field($_REQUEST['filter_date_from']) : (!empty($_REQUEST['start_date']) ? sanitize_text_field($_REQUEST['start_date']) : '');
+        $filter_date_to   = !empty($_REQUEST['filter_date_to']) ? sanitize_text_field($_REQUEST['filter_date_to']) : (!empty($_REQUEST['end_date']) ? sanitize_text_field($_REQUEST['end_date']) : '');
+        
+        if (!empty($filter_date_from)) {
             $where_clauses[] = 't.transaction_date >= %s';
-            $where_values[] = sanitize_text_field($_REQUEST['filter_date_from']);
+            $where_values[]  = $filter_date_from;
         }
-        if (!empty($_REQUEST['filter_date_to'])) {
+        if (!empty($filter_date_to)) {
             $where_clauses[] = 't.transaction_date <= %s';
-            $where_values[] = sanitize_text_field($_REQUEST['filter_date_to']);
+            $where_values[]  = $filter_date_to;
+        }
+
+        // Filtro por cuenta bancaria/caja (soporta filter_account y account_id)
+        $filter_account = !empty($_REQUEST['filter_account']) ? intval($_REQUEST['filter_account']) : (!empty($_REQUEST['account_id']) ? intval($_REQUEST['account_id']) : 0);
+        if ($filter_account > 0) {
+            $where_clauses[] = '(t.source_account_id = %d OR t.destination_account_id = %d)';
+            $where_values[]  = $filter_account;
+            $where_values[]  = $filter_account;
         }
         
         // Filtro por rango de monto
