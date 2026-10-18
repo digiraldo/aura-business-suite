@@ -318,6 +318,14 @@ $category_icons = array(
                             </button>
                         <?php endif; ?>
 
+                        <?php if ( $can_delete ) : ?>
+                            <button type="button" class="btn btn-danger btn-sm" id="btn-contacts-bulk-delete" style="display: none; align-items: center; gap: 6px; font-weight: 600; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
+                                <span class="dashicons dashicons-trash"></span>
+                                <span><?php esc_html_e( 'Borrar', 'aura-suite' ); ?></span>
+                                <span class="badge" id="contacts-bulk-delete-count" style="background: #dc2626; color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 0.75rem; font-weight: 700;">0</span>
+                            </button>
+                        <?php endif; ?>
+
                         <button type="button" class="btn btn-glass btn-sm" id="btn-refresh-list" title="<?php esc_attr_e( 'Refrescar listado', 'aura-suite' ); ?>">
                             <span class="dashicons dashicons-image-rotate"></span>
                         </button>
@@ -343,6 +351,12 @@ $category_icons = array(
                             <button type="button" class="btn btn-glass btn-sm btn-lift" id="btn-bulk-bar-sync" style="display: flex; align-items: center; gap: 6px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
                                 <span class="dashicons dashicons-cloud"></span>
                                 <span><?php esc_html_e( 'Re-sincronizar con Google', 'aura-suite' ); ?></span>
+                            </button>
+                        <?php endif; ?>
+                        <?php if ( $can_delete ) : ?>
+                            <button type="button" class="btn btn-danger btn-sm btn-lift" id="btn-bulk-bar-delete" style="display: flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
+                                <span class="dashicons dashicons-trash"></span>
+                                <span><?php esc_html_e( 'Borrar Seleccionados', 'aura-suite' ); ?></span>
                             </button>
                         <?php endif; ?>
                         <button type="button" class="btn btn-glass btn-sm" id="btn-bulk-bar-clear" style="color: #94a3b8;">
@@ -1612,14 +1626,24 @@ $category_icons = array(
         </div>
 
         <!-- Footer del Modal -->
-        <div class="aura-modal__footer" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-bulk-modal" onclick="if(window.closeBulkModal){window.closeBulkModal();}else if(window.AuraContactsApp&&window.AuraContactsApp.closeBulkEditModal){window.AuraContactsApp.closeBulkEditModal();}">
-                <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
-            </button>
-            <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-submit-bulk-modal" style="display: flex; align-items: center; gap: 6px;">
-                <span class="dashicons dashicons-saved"></span>
-                <span><?php esc_html_e( 'Guardar Cambios Masivos', 'aura-suite' ); ?></span>
-            </button>
+        <div class="aura-modal__footer" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
+            <div>
+                <?php if ( $can_delete ) : ?>
+                    <button type="button" class="btn btn-danger btn-sm btn-lift" id="btn-bulk-modal-delete" style="display: flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
+                        <span class="dashicons dashicons-trash"></span>
+                        <span><?php esc_html_e( 'Borrar Seleccionados', 'aura-suite' ); ?></span>
+                    </button>
+                <?php endif; ?>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-bulk-modal" onclick="if(window.closeBulkModal){window.closeBulkModal();}else if(window.AuraContactsApp&&window.AuraContactsApp.closeBulkEditModal){window.AuraContactsApp.closeBulkEditModal();}">
+                    <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
+                </button>
+                <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-submit-bulk-modal" style="display: flex; align-items: center; gap: 6px;">
+                    <span class="dashicons dashicons-saved"></span>
+                    <span><?php esc_html_e( 'Guardar Cambios Masivos', 'aura-suite' ); ?></span>
+                </button>
+            </div>
         </div>
     </div>
 </div>

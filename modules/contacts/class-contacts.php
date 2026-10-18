@@ -52,6 +52,7 @@ class Aura_Contacts {
             'sync_third_parties'     => 'ajax_sync_third_parties',
             'sync_students'          => 'ajax_sync_students',
             'bulk_edit'              => 'ajax_bulk_edit',
+            'bulk_delete'            => 'ajax_bulk_delete',
         );
 
         foreach ( $ajax_actions as $action => $handler ) {
@@ -2268,6 +2269,51 @@ class Aura_Contacts {
             ) );
         } catch ( \Throwable $e ) {
             wp_send_json_error( array( 'message' => 'Error al procesar edición masiva: ' . $e->getMessage() ) );
+        }
+    }
+
+    /**
+     * AJAX: Eliminación masiva de contactos seleccionados (Bulk Delete)
+     */
+    public static function ajax_bulk_delete(): void {
+        check_ajax_referer( 'aura_contacts_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'aura_contacts_delete' ) ) {
+            wp_send_json_error( array( 'message' => __( 'No tienes permisos suficientes para eliminar contactos.', 'aura-suite' ) ) );
+        }
+
+        try {
+            $raw_ids = $_POST['ids'] ?? array();
+            if ( is_string( $raw_ids ) ) {
+                $raw_ids = explode( ',', $raw_ids );
+            }
+            $contact_ids = array_filter( array_map( 'absint', (array) $raw_ids ) );
+
+            if ( empty( $contact_ids ) ) {
+                wp_send_json_error( array( 'message' => __( 'No se seleccionó ningún contacto para eliminar.', 'aura-suite' ) ) );
+            }
+
+            $force         = ! empty( $_POST['force'] ) && current_user_can( 'manage_options' );
+            $deleted_count = 0;
+
+            foreach ( $contact_ids as $cid ) {
+                $res = self::delete_contact( $cid, $force );
+                if ( ! is_wp_error( $res ) && false !== $res ) {
+                    $deleted_count++;
+                }
+            }
+
+            $message = $force
+                ? sprintf( _n( 'Se ha eliminado %d contacto permanentemente.', 'Se han eliminado %d contactos permanentemente.', $deleted_count, 'aura-suite' ), $deleted_count )
+                : sprintf( _n( 'Se ha movido %d contacto a la papelera.', 'Se han movido %d contactos a la papelera.', $deleted_count, 'aura-suite' ), $deleted_count );
+
+            wp_send_json_success( array(
+                'message' => $message,
+                'count'   => $deleted_count,
+                'force'   => $force,
+            ) );
+        } catch ( \Throwable $e ) {
+            wp_send_json_error( array( 'message' => 'Error al procesar la eliminación masiva: ' . $e->getMessage() ) );
         }
     }
 

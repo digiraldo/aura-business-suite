@@ -2072,11 +2072,16 @@
         if (count > 0) {
             $('#btn-contacts-bulk-edit').show().css('display', 'inline-flex');
             $('#contacts-bulk-count').text(count);
+            if (cfg.canDelete) {
+                $('#btn-contacts-bulk-delete').show().css('display', 'inline-flex');
+                $('#contacts-bulk-delete-count').text(count);
+            }
             $('#contacts-bulk-bar').slideDown(150).css('display', 'flex');
             $('#contacts-bulk-badge-circle').text(count);
             $('#contacts-bulk-bar-label').text(count + (count === 1 ? ' contacto seleccionado' : ' contactos seleccionados'));
         } else {
             $('#btn-contacts-bulk-edit').hide();
+            $('#btn-contacts-bulk-delete').hide();
             $('#contacts-bulk-bar').slideUp(150);
             $('#contacts-select-all').prop('checked', false);
         }
@@ -2265,7 +2270,74 @@
 
             syncItem(0);
         });
+
+        // Eliminar contactos seleccionados en lote (Bulk Delete)
+        $(document).on('click', '#btn-bulk-bar-delete, #btn-contacts-bulk-delete, #btn-bulk-modal-delete', function(e) {
+            e.preventDefault();
+            bulkDeleteContacts(false);
+        });
     }
+
+    // ── Función de Eliminación Masiva (Bulk Delete) ──────────────────────────────
+    function bulkDeleteContacts(force) {
+        var ids = getSelectedContactIds();
+        if (!ids.length) {
+            alert('Por favor selecciona al menos un contacto en la tabla para eliminar.');
+            return;
+        }
+
+        var confirmMsg = force
+            ? (cfg.i18n && cfg.i18n.confirmBulkPermanent 
+                ? cfg.i18n.confirmBulkPermanent.replace('%d', ids.length) 
+                : '¿Estás seguro de eliminar permanentemente los ' + ids.length + ' contactos seleccionados? Esta acción no se puede deshacer.')
+            : (cfg.i18n && cfg.i18n.confirmBulkDelete 
+                ? cfg.i18n.confirmBulkDelete.replace('%d', ids.length) 
+                : '¿Estás seguro de mover los ' + ids.length + ' contactos seleccionados a la papelera?');
+
+        if (!confirm(confirmMsg)) {
+            return;
+        }
+
+        var $buttons = $('#btn-bulk-bar-delete, #btn-contacts-bulk-delete, #btn-bulk-modal-delete');
+        $buttons.prop('disabled', true);
+
+        $.ajax({
+            url: cfg.ajaxUrl,
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'aura_contacts_bulk_delete',
+                nonce: cfg.nonce,
+                ids: ids,
+                force: force ? 1 : 0
+            },
+            success: function(res) {
+                $buttons.prop('disabled', false);
+                if (res && res.success) {
+                    closeBulkModal();
+                    showToast(res.data && res.data.message ? res.data.message : 'Contactos eliminados correctamente.');
+                    $('.contact-row-check, #contacts-select-all').prop('checked', false);
+                    updateBulkState();
+                    fetchContacts();
+                    if (typeof refreshStats === 'function') {
+                        refreshStats();
+                    }
+                } else {
+                    alert(res && res.data && res.data.message ? res.data.message : 'Error al eliminar los contactos seleccionados.');
+                }
+            },
+            error: function(xhr) {
+                $buttons.prop('disabled', false);
+                var msg = 'Error de comunicación con el servidor al eliminar contactos.';
+                if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                    msg = xhr.responseJSON.data.message;
+                }
+                alert(msg);
+            }
+        });
+    }
+
+    window.bulkDeleteContacts = bulkDeleteContacts;
 
     // ── Control del Modal de Edición Masiva ──────────────────────────────────────
     function openBulkModal() {
@@ -2323,6 +2395,7 @@
         createThirdPartyFromForm: createThirdPartyFromForm,
         syncSingleContact: syncSingle,
         deleteContact: deleteContactItem,
+        bulkDelete: bulkDeleteContacts,
         refresh: fetchContacts,
         refreshStats: refreshStats,
         openBulkEditModal: openBulkModal,

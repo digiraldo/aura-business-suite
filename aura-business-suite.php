@@ -2313,6 +2313,8 @@ class Aura_Business_Suite
                 'i18n' => array(
                     'confirmDelete' => __('¿Estás seguro de mover este contacto a la papelera?', 'aura-suite'),
                     'confirmPermanent' => __('¿Estás seguro de eliminar permanentemente este contacto? Esta acción es irreversible.', 'aura-suite'),
+                    'confirmBulkDelete' => __('¿Estás seguro de mover los %d contactos seleccionados a la papelera?', 'aura-suite'),
+                    'confirmBulkPermanent' => __('¿Estás seguro de eliminar permanentemente los %d contactos seleccionados? Esta acción no se puede deshacer.', 'aura-suite'),
                     'confirmDisconnect' => __('¿Estás seguro de desconectar la cuenta de Google? Se detendrá la sincronización automática.', 'aura-suite'),
                     'syncSuccess' => __('Sincronización completada exitosamente.', 'aura-suite'),
                     'syncError' => __('Ocurrió un error durante la sincronización.', 'aura-suite'),
