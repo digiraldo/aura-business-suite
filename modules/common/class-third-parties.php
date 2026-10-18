@@ -259,13 +259,17 @@ class Aura_Third_Parties {
         }
 
         $where_sql = !empty($where) ? implode(' AND ', $where) : '1=1';
+        $contacts_tbl = $wpdb->prefix . 'aura_contacts';
 
         $rows = $wpdb->get_results(
             "SELECT tp.*,
-                    u.user_login AS wp_user_login, u.user_email AS wp_user_email, u.display_name AS wp_user_display
+                    u.user_login AS wp_user_login, u.user_email AS wp_user_email, u.display_name AS wp_user_display,
+                    c.avatar_url AS contact_avatar_url, c.id AS contact_linked_id
              FROM {$table} tp
              LEFT JOIN {$users} u ON u.ID = tp.wp_user_id
+             LEFT JOIN {$contacts_tbl} c ON (c.third_party_id = tp.id OR (tp.wp_user_id IS NOT NULL AND tp.wp_user_id > 0 AND c.wp_user_id = tp.wp_user_id))
              WHERE {$where_sql}
+             GROUP BY tp.id
              ORDER BY tp.full_name ASC
              LIMIT 2000",
             ARRAY_A
@@ -274,7 +278,41 @@ class Aura_Third_Parties {
         if (!empty($rows)) {
             foreach ($rows as &$r) {
                 $logo_id = (int) ($r['logo_id'] ?? 0);
-                $r['logo_url'] = $logo_id ? (wp_get_attachment_image_url($logo_id, 'thumbnail') ?: wp_get_attachment_url($logo_id) ?: '') : '';
+                $logo_url = '';
+                if ($logo_id > 0) {
+                    $logo_url = wp_get_attachment_image_url($logo_id, 'thumbnail') ?: wp_get_attachment_url($logo_id) ?: '';
+                }
+
+                // Fallback 1: Avatar del contacto vinculado en Aura Contacts
+                if (empty($logo_url) && !empty($r['contact_avatar_url'])) {
+                    $logo_url = $r['contact_avatar_url'];
+                    if (empty($logo_id)) {
+                        $att_id = 0;
+                        if (class_exists('Aura_Contacts') && method_exists('Aura_Contacts', 'resolve_attachment_id_from_url')) {
+                            $att_id = Aura_Contacts::resolve_attachment_id_from_url($logo_url);
+                        } else {
+                            $att_id = attachment_url_to_postid($logo_url);
+                        }
+                        if ($att_id > 0) {
+                            $r['logo_id'] = $att_id;
+                            $wpdb->update($table, array('logo_id' => $att_id), array('id' => $r['id']));
+                        }
+                    }
+                }
+
+                // Fallback 2: Avatar del usuario de WordPress vinculado
+                if (empty($logo_url) && !empty($r['wp_user_id'])) {
+                    $user_av = get_user_meta((int) $r['wp_user_id'], 'aura_avatar_url', true);
+                    if (empty($user_av)) {
+                        $user_av = get_avatar_url((int) $r['wp_user_id'], array('size' => 128));
+                    }
+                    if (!empty($user_av) && false === strpos($user_av, 'gravatar.com/avatar/?d=')) {
+                        $logo_url = $user_av;
+                    }
+                }
+
+                $r['logo_url'] = $logo_url ?: '';
+
                 if (!empty($r['wp_user_id']) && empty($r['wp_user_login'])) {
                     $r['wp_user_id'] = null;
                 }
@@ -337,14 +375,19 @@ class Aura_Third_Parties {
         global $wpdb;
         $table = self::get_table_name();
         $users = $wpdb->users;
+        $contacts_tbl = $wpdb->prefix . 'aura_contacts';
 
         $row = $wpdb->get_row(
             $wpdb->prepare(
                 "SELECT tp.*,
-                        u.user_login AS wp_user_login, u.user_email AS wp_user_email, u.display_name AS wp_user_display
+                        u.user_login AS wp_user_login, u.user_email AS wp_user_email, u.display_name AS wp_user_display,
+                        c.avatar_url AS contact_avatar_url, c.id AS contact_linked_id
                  FROM {$table} tp
                  LEFT JOIN {$users} u ON u.ID = tp.wp_user_id
-                 WHERE tp.id = %d",
+                 LEFT JOIN {$contacts_tbl} c ON (c.third_party_id = tp.id OR (tp.wp_user_id IS NOT NULL AND tp.wp_user_id > 0 AND c.wp_user_id = tp.wp_user_id))
+                 WHERE tp.id = %d
+                 GROUP BY tp.id
+                 LIMIT 1",
                 $id
             ),
             ARRAY_A
@@ -352,7 +395,41 @@ class Aura_Third_Parties {
 
         if ($row) {
             $logo_id = (int) ($row['logo_id'] ?? 0);
-            $row['logo_url'] = $logo_id ? (wp_get_attachment_image_url($logo_id, 'thumbnail') ?: wp_get_attachment_url($logo_id) ?: '') : '';
+            $logo_url = '';
+            if ($logo_id > 0) {
+                $logo_url = wp_get_attachment_image_url($logo_id, 'thumbnail') ?: wp_get_attachment_url($logo_id) ?: '';
+            }
+
+            // Fallback 1: Avatar del contacto vinculado
+            if (empty($logo_url) && !empty($row['contact_avatar_url'])) {
+                $logo_url = $row['contact_avatar_url'];
+                if (empty($logo_id)) {
+                    $att_id = 0;
+                    if (class_exists('Aura_Contacts') && method_exists('Aura_Contacts', 'resolve_attachment_id_from_url')) {
+                        $att_id = Aura_Contacts::resolve_attachment_id_from_url($logo_url);
+                    } else {
+                        $att_id = attachment_url_to_postid($logo_url);
+                    }
+                    if ($att_id > 0) {
+                        $row['logo_id'] = $att_id;
+                        $wpdb->update($table, array('logo_id' => $att_id), array('id' => $row['id']));
+                    }
+                }
+            }
+
+            // Fallback 2: Avatar del usuario WP vinculado
+            if (empty($logo_url) && !empty($row['wp_user_id'])) {
+                $user_av = get_user_meta((int) $row['wp_user_id'], 'aura_avatar_url', true);
+                if (empty($user_av)) {
+                    $user_av = get_avatar_url((int) $row['wp_user_id'], array('size' => 128));
+                }
+                if (!empty($user_av) && false === strpos($user_av, 'gravatar.com/avatar/?d=')) {
+                    $logo_url = $user_av;
+                }
+            }
+
+            $row['logo_url'] = $logo_url ?: '';
+
             if (!empty($row['wp_user_id']) && empty($row['wp_user_login'])) {
                 $row['wp_user_id'] = null;
             }

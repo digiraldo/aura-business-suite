@@ -800,7 +800,8 @@ html[data-wp-dark-mode-scheme="dark"] .aura-tp-kpi-card--inactive .aura-tp-kpi-c
     max-width: 260px;
 }
 
-.aura-floating-img-card img {
+.aura-floating-img-card > img,
+.aura-floating-img-card > img.aura-floating-img-hd {
     max-width: 200px !important;
     max-height: 200px !important;
     min-width: 140px !important;
@@ -812,6 +813,26 @@ html[data-wp-dark-mode-scheme="dark"] .aura-tp-kpi-card--inactive .aura-tp-kpi-c
     padding: 8px !important;
     box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.6) !important;
     display: block !important;
+}
+
+/* Blindaje de emojis de WordPress para que nunca se agranden en tooltips */
+.aura-floating-img-card img.emoji,
+.aura-tip-card img.emoji,
+.aura-tooltip-content img.emoji,
+.aura-tp-pill-emoji img.emoji,
+.aura-tp-emoji img.emoji {
+    width: 1em !important;
+    height: 1em !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    display: inline-block !important;
+    vertical-align: -0.15em !important;
 }
 
 .aura-floating-img-title {
@@ -826,6 +847,57 @@ html[data-wp-dark-mode-scheme="dark"] .aura-tp-kpi-card--inactive .aura-tp-kpi-c
 .aura-floating-img-sub {
     font-size: 11.5px !important;
     color: #94a3b8 !important;
+}
+
+/* ── Celda y Snippet de Notas Internas en Tabla ── */
+.aura-tp-notes-cell {
+    max-width: 220px;
+    vertical-align: middle;
+}
+
+.aura-tp-notes-wrap {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    cursor: help;
+}
+
+.aura-tp-notes-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(241, 245, 249, 0.8);
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-size: 11.5px;
+    line-height: 1.35;
+    transition: all 0.2s ease;
+    max-width: 100%;
+}
+
+.aura-tp-notes-preview:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #1e293b;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.aura-tp-notes-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: var(--aura-accent-blue, #2563eb);
+    flex-shrink: 0;
+}
+
+.aura-tp-notes-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    max-width: 160px;
 }
 
 /* ==========================================================================

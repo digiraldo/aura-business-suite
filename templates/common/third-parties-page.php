@@ -389,6 +389,13 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                                         <span class="aura-tooltip-content"><?php esc_html_e('Acceso directo a WhatsApp y correo electrónico.', 'aura-suite'); ?></span>
                                     </span>
                                 </th>
+                                <th style="min-width:140px;">
+                                    <?php esc_html_e('Notas Internas', 'aura-suite'); ?>
+                                    <span class="aura-tooltip-wrap aura-tooltip-wrap--bottom">
+                                        <span class="dashicons dashicons-editor-help aura-help-icon"></span>
+                                        <span class="aura-tooltip-content"><?php esc_html_e('Observaciones operativas, cargo/organización importados o detalles internos de la entidad.', 'aura-suite'); ?></span>
+                                    </span>
+                                </th>
                                 <th style="width:80px;text-align:center;">
                                     <?php esc_html_e('Estado', 'aura-suite'); ?>
                                     <span class="aura-tooltip-wrap aura-tooltip-wrap--bottom">
@@ -431,19 +438,11 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                                                 <div class="aura-tooltip-content">
                                                     <?php if ($logo_url) : ?>
                                                         <div class="aura-floating-img-card">
-                                                            <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($display_name); ?>">
+                                                            <img class="aura-floating-img-hd" src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($display_name); ?>">
                                                             <span class="aura-floating-img-title"><?php echo esc_html($display_name); ?></span>
                                                             <?php if (!empty($tp['commercial_name']) && $tp['commercial_name'] !== $tp['full_name']) : ?>
                                                                 <span class="aura-floating-img-sub"><?php echo esc_html($tp['full_name']); ?></span>
                                                             <?php endif; ?>
-                                                            <div class="aura-tip-badges" style="margin-top:6px;justify-content:center;">
-                                                                <span class="aura-tip-badge aura-tip-badge--<?php echo esc_attr($ptype); ?>">
-                                                                    <span class="aura-tp-pill-emoji"><?php echo esc_html($party_type_emojis[$ptype] ?? '🏢'); ?></span> <?php echo esc_html($ptype_label); ?>
-                                                                </span>
-                                                                <span class="aura-tip-badge aura-tip-badge--<?php echo $is_active ? 'active' : 'inactive'; ?>">
-                                                                    <?php echo $is_active ? esc_html__('Activo', 'aura-suite') : esc_html__('Inactivo', 'aura-suite'); ?>
-                                                                </span>
-                                                            </div>
                                                         </div>
                                                     <?php else : ?>
                                                         <div class="aura-tip-card">
@@ -672,6 +671,35 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                                                 echo '<em class="aura-text-muted">-</em>';
                                             }
                                             ?>
+                                        </td>
+                                        <td class="aura-tp-notes-cell">
+                                            <?php if (!empty($tp['notes'])) : 
+                                                $notes_clean = trim($tp['notes']);
+                                                $notes_snip = mb_strlen($notes_clean) > 55 ? mb_substr($notes_clean, 0, 52) . '...' : $notes_clean;
+                                            ?>
+                                                <div class="aura-tooltip-wrap aura-tp-notes-wrap">
+                                                    <span class="aura-tp-notes-preview">
+                                                        <span class="dashicons dashicons-edit aura-tp-notes-icon"></span>
+                                                        <span class="aura-tp-notes-text"><?php echo esc_html($notes_snip); ?></span>
+                                                    </span>
+                                                    <div class="aura-tooltip-content">
+                                                        <div class="aura-tip-card">
+                                                            <div class="aura-tip-card-header">
+                                                                <div class="aura-tip-avatar-large"><span class="dashicons dashicons-edit"></span></div>
+                                                                <div class="aura-tip-info">
+                                                                    <div class="aura-tip-title"><?php esc_html_e('Notas Internas', 'aura-suite'); ?></div>
+                                                                    <div class="aura-tip-subtitle"><?php echo esc_html($display_name); ?></div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="aura-tip-card-body">
+                                                                <div style="white-space:pre-line;color:#cbd5e1;line-height:1.5;max-width:320px;"><?php echo esc_html($notes_clean); ?></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php else : ?>
+                                                <em class="aura-text-muted">-</em>
+                                            <?php endif; ?>
                                         </td>
                                         <td style="text-align:center;">
                                             <div class="aura-tooltip-wrap">

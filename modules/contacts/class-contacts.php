@@ -832,7 +832,7 @@ class Aura_Contacts {
             $tp_table = class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_table_name() : $wpdb->prefix . 'aura_finance_third_parties';
             $cur_logo = $wpdb->get_var( $wpdb->prepare( "SELECT logo_id FROM {$tp_table} WHERE id = %d LIMIT 1", $third_party_id ) );
             if ( empty( $cur_logo ) ) {
-                $att_id = attachment_url_to_postid( $contact['avatar_url'] );
+                $att_id = self::resolve_attachment_id_from_url( $contact['avatar_url'] );
                 if ( $att_id > 0 ) {
                     $wpdb->update( $tp_table, array( 'logo_id' => $att_id ), array( 'id' => $third_party_id ) );
                 }
@@ -840,6 +840,55 @@ class Aura_Contacts {
         }
 
         wp_send_json_success( array( 'message' => __( 'Vinculación con Tercero actualizada.', 'aura-suite' ) ) );
+    }
+
+    /**
+     * Resuelve el ID de attachment de WordPress para una URL de avatar.
+     * Soporta URLs directas, con dimensiones (ej: -300x300), escalas (-scaled) o búsqueda en postmeta.
+     *
+     * @param string $avatar_url URL de la imagen.
+     * @return int Attachment ID o 0 si no se encuentra.
+     */
+    public static function resolve_attachment_id_from_url( string $avatar_url ): int {
+        if ( empty( $avatar_url ) || false !== strpos( $avatar_url, 'gravatar.com' ) ) {
+            return 0;
+        }
+
+        $att_id = attachment_url_to_postid( $avatar_url );
+        if ( $att_id > 0 ) {
+            return $att_id;
+        }
+
+        // Limpiar sufijos de tamaño y scaled
+        $clean_url = preg_replace( '/-\d+x\d+(\.[a-zA-Z0-9]+)$/', '$1', $avatar_url );
+        $clean_url = preg_replace( '/-scaled(\.[a-zA-Z0-9]+)$/', '$1', $clean_url );
+        if ( $clean_url !== $avatar_url ) {
+            $att_id = attachment_url_to_postid( $clean_url );
+            if ( $att_id > 0 ) {
+                return $att_id;
+            }
+        }
+
+        // Búsqueda en wp_postmeta por _wp_attached_file
+        global $wpdb;
+        $upload_dir = wp_upload_dir();
+        $base_url   = $upload_dir['baseurl'];
+        if ( strpos( $avatar_url, $base_url ) === 0 ) {
+            $file_rel  = ltrim( str_replace( $base_url, '', $avatar_url ), '/' );
+            $clean_rel = preg_replace( '/-\d+x\d+(\.[a-zA-Z0-9]+)$/', '$1', $file_rel );
+            $clean_rel = preg_replace( '/-scaled(\.[a-zA-Z0-9]+)$/', '$1', $clean_rel );
+
+            $att_id = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_wp_attached_file' AND (meta_value = %s OR meta_value = %s) LIMIT 1",
+                $file_rel,
+                $clean_rel
+            ) );
+            if ( $att_id > 0 ) {
+                return $att_id;
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -907,14 +956,23 @@ class Aura_Contacts {
         $address = implode( ', ', $address_parts );
 
         // Preservar foto de perfil del contacto como logo del Tercero
-        $logo_id = 0;
         $contact_avatar = $contact['avatar_url'] ?? '';
-        if ( ! empty( $contact_avatar ) && false === strpos( $contact_avatar, 'gravatar.com' ) ) {
-            $att_id = attachment_url_to_postid( $contact_avatar );
-            if ( $att_id > 0 ) {
-                $logo_id = $att_id;
-            }
+        $logo_id = self::resolve_attachment_id_from_url( $contact_avatar );
+
+        // Mapeo Contactos -> Terceros para Notas Internas:
+        // Puesto / Cargo o Rol Profesional -> Notas Internas
+        // Organización / Empresa -> Notas Internas
+        $notes_parts = array();
+        if ( ! empty( $contact['job_title'] ) ) {
+            $notes_parts[] = sprintf( __( 'Puesto / Cargo: %s', 'aura-suite' ), trim( $contact['job_title'] ) );
         }
+        if ( ! empty( $contact['organization'] ) ) {
+            $notes_parts[] = sprintf( __( 'Organización / Empresa: %s', 'aura-suite' ), trim( $contact['organization'] ) );
+        }
+        if ( ! empty( $contact['notes'] ) ) {
+            $notes_parts[] = trim( $contact['notes'] );
+        }
+        $third_party_notes = implode( "\n", $notes_parts );
 
         $extra = array(
             'commercial_name' => $contact['organization'] ?? '',
@@ -923,7 +981,7 @@ class Aura_Contacts {
             'phone'           => $contact['phone_primary'] ?: ( $contact['phone'] ?: ( $contact['whatsapp'] ?? '' ) ),
             'email'           => $contact['email_primary'] ?: ( $contact['email'] ?? '' ),
             'address'         => $address,
-            'notes'           => $contact['notes'] ?? '',
+            'notes'           => $third_party_notes,
             'logo_id'         => $logo_id > 0 ? $logo_id : null,
             'wp_user_id'      => ! empty( $contact['wp_user_id'] ) ? absint( $contact['wp_user_id'] ) : null,
         );

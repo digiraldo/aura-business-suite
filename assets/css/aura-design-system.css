@@ -5507,7 +5507,8 @@ html[data-wp-dark-mode-scheme="dark"] .input-group > .button:hover {
     box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.55);
 }
 
-.aura-floating-img-card img {
+.aura-floating-img-card > img,
+.aura-floating-img-card > img.aura-floating-img-hd {
     max-width: 200px !important;
     max-height: 200px !important;
     min-width: 140px !important;
@@ -5519,6 +5520,23 @@ html[data-wp-dark-mode-scheme="dark"] .input-group > .button:hover {
     padding: 8px !important;
     box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.6) !important;
     display: block !important;
+}
+
+.aura-floating-img-card img.emoji,
+.aura-tip-card img.emoji,
+.aura-tooltip-content img.emoji {
+    width: 1em !important;
+    height: 1em !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    display: inline-block !important;
+    vertical-align: -0.15em !important;
 }
 
 .aura-floating-img-title {

@@ -166,7 +166,7 @@
 
                 if (imgUrl) {
                     htmlContent = '<div class="aura-floating-img-card">' +
-                                  '<img src="' + imgUrl + '" alt="' + $('<span>').text(imgTitle).html() + '">' +
+                                  '<img class="aura-floating-img-hd" src="' + imgUrl + '" alt="' + $('<span>').text(imgTitle).html() + '">' +
                                   '<span class="aura-floating-img-title">' + $('<span>').text(imgTitle).html() + '</span>' +
                                   '</div>';
                     isCard = true;
@@ -536,9 +536,13 @@
                 pageLength: 25,
                 dom: '<"top"r>t<"bottom"lip><"clear">',
                 columnDefs: [
-                    { orderable: false, targets: [0, 5, 7] },
-                    { className: 'text-center', targets: [0, 6] },
-                    { className: 'text-right', targets: [7] }
+                    { responsivePriority: 1, targets: [1, 8] },
+                    { responsivePriority: 2, targets: [0] },
+                    { responsivePriority: 3, targets: [3] },
+                    { responsivePriority: 4, targets: [6] },
+                    { orderable: false, targets: [0, 5, 6, 8] },
+                    { className: 'text-center', targets: [0, 7] },
+                    { className: 'text-right', targets: [8] }
                 ]
             });
 
@@ -707,13 +711,9 @@
                             let logoTooltipHtml = '';
                             if (tp.logo_url) {
                                 logoTooltipHtml = '<div class="aura-floating-img-card">' +
-                                                  '<img src="' + tp.logo_url + '" alt="' + $('<span>').text(displayName).html() + '">' +
+                                                  '<img class="aura-floating-img-hd" src="' + tp.logo_url + '" alt="' + $('<span>').text(displayName).html() + '">' +
                                                   '<span class="aura-floating-img-title">' + $('<span>').text(displayName).html() + '</span>' +
                                                   (tp.commercial_name && tp.commercial_name !== tp.full_name ? '<span class="aura-floating-img-sub">' + $('<span>').text(tp.full_name).html() + '</span>' : '') +
-                                                  '<div class="aura-tip-badges" style="margin-top:6px;justify-content:center;">' +
-                                                  '<span class="aura-tip-badge aura-tip-badge--' + ptype + '"><span class="aura-tp-pill-emoji">' + ptypeEmoji + '</span> ' + ptypeLabel + '</span>' +
-                                                  '<span class="aura-tip-badge aura-tip-badge--' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'Activo' : 'Inactivo') + '</span>' +
-                                                  '</div>' +
                                                   '</div>';
                             } else {
                                 logoTooltipHtml = '<div class="aura-tip-card">' +
@@ -839,7 +839,29 @@
                             }
                             const contactHtml = contactArr.length ? contactArr.join('<br>') : '<em class="aura-text-muted">-</em>';
 
-                            // 7. Estado con Tooltip
+                            // 7. Notas Internas con Tooltip Enriquecido
+                            let notesHtml = '<em class="aura-text-muted">-</em>';
+                            if (tp.notes && tp.notes.trim()) {
+                                const notesText = tp.notes.trim();
+                                const notesSnippet = notesText.length > 55 ? notesText.substring(0, 52) + '...' : notesText;
+                                const notesTipHtml = '<div class="aura-tip-card">' +
+                                                     '<div class="aura-tip-card-header">' +
+                                                     '<div class="aura-tip-avatar-large"><span class="dashicons dashicons-edit"></span></div>' +
+                                                     '<div class="aura-tip-info">' +
+                                                     '<div class="aura-tip-title">Notas Internas</div>' +
+                                                     '<div class="aura-tip-subtitle">' + $('<span>').text(displayName).html() + '</div>' +
+                                                     '</div></div>' +
+                                                     '<div class="aura-tip-card-body">' +
+                                                     '<div style="white-space:pre-line;color:#cbd5e1;line-height:1.5;max-width:320px;">' + $('<span>').text(notesText).html() + '</div>' +
+                                                     '</div></div>';
+
+                                notesHtml = '<div class="aura-tooltip-wrap aura-tp-notes-wrap">' +
+                                            '<span class="aura-tp-notes-preview"><span class="dashicons dashicons-edit aura-tp-notes-icon"></span> <span class="aura-tp-notes-text">' + $('<span>').text(notesSnippet).html() + '</span></span>' +
+                                            '<div class="aura-tooltip-content">' + notesTipHtml + '</div>' +
+                                            '</div>';
+                            }
+
+                            // 8. Estado con Tooltip
                             const statusDesc = isActive
                                 ? '✅ Entidad Operativa: Habilitada para transacciones financieras, presupuestos, contratos y biblioteca.'
                                 : '⛔ Entidad Deshabilitada: Bloqueada temporalmente para nuevas operaciones en el sistema.';
@@ -860,7 +882,7 @@
                                                '<div class="aura-tooltip-content">' + statusTipHtml + '</div>' +
                                                '</div>';
 
-                            // 8. Acciones con data-tooltip
+                            // 9. Acciones con data-tooltip
                             let actionsHtml = '<div class="aura-table-actions">' +
                                               '<button type="button" class="aura-btn-action aura-btn-action--view aura-btn-360" data-id="' + tp.id + '" data-tooltip="👁️ Ficha 360°: Resumen integral, balance contable y movimientos vinculados"><span class="dashicons dashicons-visibility"></span></button>';
                             if (tp.wp_user_id) {
@@ -884,6 +906,7 @@
                                 typeHtml,
                                 docHtml,
                                 contactHtml,
+                                notesHtml,
                                 statusHtml,
                                 actionsHtml
                             ]).node();
