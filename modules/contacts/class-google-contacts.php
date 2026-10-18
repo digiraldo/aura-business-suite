@@ -25,6 +25,7 @@ class Aura_Google_Contacts {
     const PERSON_FIELDS = 'names,emailAddresses,phoneNumbers,organizations,addresses,biographies,userDefined,metadata,photos';
 
     private static ?string $last_error = null;
+    private static array $group_memory_cache = array();
 
     /**
      * Obtiene el último mensaje de error registrado.
@@ -67,7 +68,7 @@ class Aura_Google_Contacts {
 
         $args = array(
             'method'  => strtoupper( $method ),
-            'timeout' => 25,
+            'timeout' => 15,
             'headers' => array(
                 'Authorization' => 'Bearer ' . $access_token,
                 'Content-Type'  => 'application/json',
@@ -326,6 +327,10 @@ class Aura_Google_Contacts {
             return null;
         }
 
+        if ( isset( self::$group_memory_cache[ $category ] ) ) {
+            return self::$group_memory_cache[ $category ];
+        }
+
         $label_es       = self::get_category_label( $category );
         $group_name     = 'Aura: ' . $label_es;
         $old_group_name = 'Aura: ' . $category; // Formato anterior en inglés
@@ -333,6 +338,7 @@ class Aura_Google_Contacts {
         $cached_id      = get_transient( $cache_key );
 
         if ( ! empty( $cached_id ) ) {
+            self::$group_memory_cache[ $category ] = $cached_id;
             return $cached_id;
         }
 
@@ -343,6 +349,7 @@ class Aura_Google_Contacts {
             foreach ( $groups['contactGroups'] as $grp ) {
                 if ( ( $grp['name'] ?? '' ) === $group_name && ! empty( $grp['resourceName'] ) ) {
                     set_transient( $cache_key, $grp['resourceName'], DAY_IN_SECONDS );
+                    self::$group_memory_cache[ $category ] = $grp['resourceName'];
                     return $grp['resourceName'];
                 }
             }
@@ -353,6 +360,7 @@ class Aura_Google_Contacts {
                     $renamed = self::update_contact_group( $grp['resourceName'], $group_name, $grp['etag'] ?? '' );
                     $final_res = ( ! is_wp_error( $renamed ) && ! empty( $renamed['resourceName'] ) ) ? $renamed['resourceName'] : $grp['resourceName'];
                     set_transient( $cache_key, $final_res, DAY_IN_SECONDS );
+                    self::$group_memory_cache[ $category ] = $final_res;
                     return $final_res;
                 }
             }
@@ -362,6 +370,7 @@ class Aura_Google_Contacts {
         $created = self::create_contact_group( $group_name );
         if ( ! is_wp_error( $created ) && ! empty( $created['resourceName'] ) ) {
             set_transient( $cache_key, $created['resourceName'], DAY_IN_SECONDS );
+            self::$group_memory_cache[ $category ] = $created['resourceName'];
             return $created['resourceName'];
         }
 

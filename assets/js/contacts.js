@@ -895,15 +895,19 @@
         $('#btn-sync-all, #btn-sync-all-from-logs').on('click', function() {
             var $btn = $(this);
             var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Sincronizando...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Sincronizando (Local → Google)...');
 
             $.post(cfg.ajaxUrl, { action: 'aura_contacts_sync_all', nonce: cfg.nonce }, function(res) {
                 $btn.prop('disabled', false).html(orig);
                 var d = (res.data && res.data.details) ? res.data.details : {};
-                var summary = '\n• Subidos a Google: ' + (d.pushed_success || 0) + ' (errores: ' + (d.pushed_errors || 0) + ')' +
-                    '\n• Descargados de Google: ' + ((d.pulled_created || 0) + (d.pulled_updated || 0)) + ' (eliminados: ' + (d.pulled_deleted || 0) + ', errores: ' + (d.pulled_errors || 0) + ')';
+                var summary = '\n• Subidos a Google (Local → Google): ' + (d.pushed_success || 0) + ' (errores: ' + (d.pushed_errors || 0) + ')' +
+                    '\n• Nuevos importados de Google: ' + (d.pulled_created || 0) +
+                    '\n• Contactos locales preservados / vinculados: ' + (d.pulled_updated || 0) +
+                    (d.pulled_deleted ? ' (eliminados en Google: ' + d.pulled_deleted + ')' : '') +
+                    (d.pulled_errors ? ' (errores de descarga: ' + d.pulled_errors + ')' : '');
+
                 if (res.success) {
-                    showToast('Sincronización completada.' + summary.replace(/\n/g, ' '));
+                    showToast('Sincronización completada exitosamente (Prioridad: Local → Google).' + summary.replace(/\n/g, ' '));
                 } else {
                     var base = (res.data && res.data.message) ? res.data.message : 'Error al sincronizar con Google';
                     var errs = (d.errors && d.errors.length) ? '\n' + d.errors.join('\n') : '';
@@ -914,9 +918,15 @@
                 if (state.activeTab === 'sync_logs') {
                     fetchLogs();
                 }
-            }).fail(function() {
+            }).fail(function(xhr) {
                 $btn.prop('disabled', false).html(orig);
-                alert('Error de conexión al sincronizar');
+                var errMsg = 'Error de conexión con el servidor al sincronizar';
+                if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                    errMsg += ': ' + xhr.responseJSON.data.message;
+                } else if (xhr.statusText) {
+                    errMsg += ' (' + xhr.status + ' ' + xhr.statusText + ')';
+                }
+                alert(errMsg);
             });
         });
 
