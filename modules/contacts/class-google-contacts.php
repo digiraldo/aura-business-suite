@@ -22,7 +22,7 @@ class Aura_Google_Contacts {
 
     const BASE_URL = 'https://people.googleapis.com/v1';
 
-    const PERSON_FIELDS = 'names,emailAddresses,phoneNumbers,organizations,addresses,biographies,userDefined,metadata';
+    const PERSON_FIELDS = 'names,emailAddresses,phoneNumbers,organizations,addresses,biographies,userDefined,metadata,photos';
 
     private static ?string $last_error = null;
 
@@ -172,6 +172,31 @@ class Aura_Google_Contacts {
         }
 
         return true;
+    }
+
+    /**
+     * Actualiza la foto de perfil de un contacto en Google Contacts mediante people.updateContactPhoto.
+     *
+     * @param string $resource_name (ej: 'people/c123456789')
+     * @param string $photo_base64  Cadena en base64 de la imagen binaria (JPEG/PNG)
+     * @return array|WP_Error Objeto Person devuelto por Google o WP_Error en caso de fallo
+     */
+    public static function update_contact_photo( string $resource_name, string $photo_base64 ) {
+        $endpoint = sprintf( '%s:updateContactPhoto', ltrim( $resource_name, '/' ) );
+        return self::api_request( 'POST', $endpoint, array(
+            'photoBytes' => $photo_base64,
+        ) );
+    }
+
+    /**
+     * Elimina la foto de perfil de un contacto en Google Contacts mediante people.deleteContactPhoto.
+     *
+     * @param string $resource_name (ej: 'people/c123456789')
+     * @return array|WP_Error
+     */
+    public static function delete_contact_photo( string $resource_name ) {
+        $endpoint = sprintf( '%s:deleteContactPhoto', ltrim( $resource_name, '/' ) );
+        return self::api_request( 'POST', $endpoint, array() );
     }
 
     /**

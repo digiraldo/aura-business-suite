@@ -234,6 +234,15 @@ class Aura_Contacts_Sync {
                 }
             } else {
                 $new_etag = $res['etag'] ?? $map['google_etag'];
+
+                // Sincronizar foto de perfil si el contacto tiene avatar_url
+                if ( ! empty( $contact['avatar_url'] ) ) {
+                    $photo_res = self::sync_contact_photo( $map['resource_name'], $contact['avatar_url'], $contact_id );
+                    if ( is_array( $photo_res ) && ! empty( $photo_res['person']['etag'] ) ) {
+                        $new_etag = $photo_res['person']['etag'];
+                    }
+                }
+
                 $wpdb->update(
                     $t_google_map,
                     array(
@@ -263,6 +272,14 @@ class Aura_Contacts_Sync {
         $etag          = $created['etag'] ?? '';
 
         if ( ! empty( $resource_name ) ) {
+            // Sincronizar foto de perfil si el contacto tiene avatar_url
+            if ( ! empty( $contact['avatar_url'] ) ) {
+                $photo_res = self::sync_contact_photo( $resource_name, $contact['avatar_url'], $contact_id );
+                if ( is_array( $photo_res ) && ! empty( $photo_res['person']['etag'] ) ) {
+                    $etag = $photo_res['person']['etag'];
+                }
+            }
+
             $wpdb->insert(
                 $t_google_map,
                 array(
@@ -587,5 +604,183 @@ class Aura_Contacts_Sync {
 
         $logs = self::get_recent_logs( 30 );
         wp_send_json_success( array( 'logs' => $logs ) );
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SINCRONIZACIÓN DE FOTOS DE CONTACTO (Google People API)
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Sincroniza la foto de perfil hacia Google Contacts mediante people.updateContactPhoto.
+     *
+     * @param string      $resource_name (ej: 'people/c123456789')
+     * @param string|null $avatar_url    URL local o remota de la imagen
+     * @param int         $contact_id    ID del contacto en Aura
+     * @return array|bool|WP_Error
+     */
+    public static function sync_contact_photo( string $resource_name, ?string $avatar_url, int $contact_id = 0 ) {
+        if ( empty( $avatar_url ) || empty( $resource_name ) ) {
+            return false;
+        }
+
+        // Si es un Gravatar por defecto genérico sin avatar real subido, no enviarlo a Google
+        if ( false !== strpos( $avatar_url, 'gravatar.com' ) && ( false !== strpos( $avatar_url, 'd=' ) || false !== strpos( $avatar_url, 'default=' ) ) ) {
+            return false;
+        }
+
+        // Optimización de caché: evitar llamadas redundantes si la foto no ha cambiado
+        $hash      = md5( (string) $avatar_url );
+        $cache_key = 'aura_gc_photo_' . $contact_id;
+        if ( $contact_id > 0 && get_transient( $cache_key ) === $hash ) {
+            return true;
+        }
+
+        $image_bytes = self::get_image_bytes( $avatar_url );
+        if ( empty( $image_bytes ) ) {
+            return false;
+        }
+
+        // Optimizar/redimensionar la imagen para Google Contacts (JPEG máx 720x720)
+        $optimized   = self::optimize_image_for_google( $image_bytes );
+        $final_bytes = $optimized ?: $image_bytes;
+
+        $photo_base64 = base64_encode( $final_bytes );
+        if ( empty( $photo_base64 ) ) {
+            return false;
+        }
+
+        $response = Aura_Google_Contacts::update_contact_photo( $resource_name, $photo_base64 );
+
+        if ( is_wp_error( $response ) ) {
+            if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+                error_log( sprintf( '[Aura Google Contacts Photo] Error para %s (#%d): %s', $resource_name, $contact_id, $response->get_error_message() ) );
+            }
+            return $response;
+        }
+
+        if ( $contact_id > 0 ) {
+            set_transient( $cache_key, $hash, 30 * DAY_IN_SECONDS );
+        }
+
+        return $response;
+    }
+
+    /**
+     * Resuelve los bytes binarios de una imagen a partir de su URL (local o remota).
+     *
+     * @param string $url
+     * @return string|null
+     */
+    public static function get_image_bytes( string $url ): ?string {
+        $url = trim( $url );
+        if ( empty( $url ) ) {
+            return null;
+        }
+
+        // 1. Resolver ruta directa si está dentro de wp-content/uploads
+        $upload_dir = wp_upload_dir();
+        $base_url   = $upload_dir['baseurl'];
+        $base_dir   = $upload_dir['basedir'];
+
+        if ( 0 === strpos( $url, $base_url ) ) {
+            $rel_path  = substr( $url, strlen( $base_url ) );
+            $file_path = $base_dir . $rel_path;
+            if ( file_exists( $file_path ) && is_readable( $file_path ) ) {
+                $content = file_get_contents( $file_path );
+                if ( false !== $content && strlen( $content ) > 0 ) {
+                    return $content;
+                }
+            }
+        }
+
+        // 2. Resolver por ID de adjunto de WordPress
+        $attachment_id = attachment_url_to_postid( $url );
+        if ( $attachment_id > 0 ) {
+            $attached_file = get_attached_file( $attachment_id );
+            if ( $attached_file && file_exists( $attached_file ) && is_readable( $attached_file ) ) {
+                $content = file_get_contents( $attached_file );
+                if ( false !== $content && strlen( $content ) > 0 ) {
+                    return $content;
+                }
+            }
+        }
+
+        // 3. Si la URL es relativa al root (/wp-content/...)
+        if ( 0 === strpos( $url, '/' ) && ! empty( $_SERVER['DOCUMENT_ROOT'] ) ) {
+            $doc_root  = rtrim( wp_unslash( $_SERVER['DOCUMENT_ROOT'] ), '/\\' );
+            $file_path = $doc_root . $url;
+            if ( file_exists( $file_path ) && is_readable( $file_path ) ) {
+                $content = file_get_contents( $file_path );
+                if ( false !== $content && strlen( $content ) > 0 ) {
+                    return $content;
+                }
+            }
+        }
+
+        // 4. Fallback HTTP para Gravatar o URLs externas
+        $response = wp_safe_remote_get( $url, array(
+            'timeout'    => 15,
+            'sslverify'  => false,
+            'user-agent' => 'Aura-Suite/Contacts-Photo-Sync',
+        ) );
+
+        if ( ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response ) ) {
+            $body = wp_remote_retrieve_body( $response );
+            if ( ! empty( $body ) ) {
+                return $body;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Optimiza y redimensiona una imagen binaria para Google Contacts (JPEG máx 720x720).
+     *
+     * @param string $image_bytes
+     * @return string|null
+     */
+    public static function optimize_image_for_google( string $image_bytes ): ?string {
+        if ( empty( $image_bytes ) ) {
+            return null;
+        }
+
+        if ( ! function_exists( 'wp_get_image_editor' ) ) {
+            require_once ABSPATH . 'wp-admin/includes/image.php';
+        }
+
+        $temp_file = wp_tempnam( 'aura_gc_img_' );
+        if ( ! $temp_file ) {
+            return null;
+        }
+
+        file_put_contents( $temp_file, $image_bytes );
+
+        $editor = wp_get_image_editor( $temp_file );
+        if ( is_wp_error( $editor ) ) {
+            @unlink( $temp_file );
+            return null;
+        }
+
+        $size = $editor->get_size();
+        $w    = $size['width'] ?? 0;
+        $h    = $size['height'] ?? 0;
+
+        if ( $w > 720 || $h > 720 ) {
+            $editor->resize( 720, 720, false );
+        }
+
+        $dest_file = $temp_file . '.jpg';
+        $saved     = $editor->save( $dest_file, 'image/jpeg' );
+
+        @unlink( $temp_file );
+
+        if ( ! is_wp_error( $saved ) && ! empty( $saved['path'] ) && file_exists( $saved['path'] ) ) {
+            $opt = file_get_contents( $saved['path'] );
+            @unlink( $saved['path'] );
+            return ( false !== $opt && strlen( $opt ) > 0 ) ? $opt : null;
+        }
+
+        return null;
     }
 }
