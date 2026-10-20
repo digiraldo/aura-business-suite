@@ -48,6 +48,7 @@
         initGlobalActions();
         initBulkEdit();
         initSyncLogs();
+        initContactCard();
 
         // Cargar primera página de contactos
         fetchContacts();
@@ -272,6 +273,7 @@
 
             // Acciones
             var actionsHtml = '<div style="display:flex; justify-content:flex-end; gap:6px;">';
+            actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.viewContactCard(' + item.id + ')" title="Ver Tarjeta de Contacto" style="color:#38bdf8; border-color: rgba(56, 189, 248, 0.35);"><span class="dashicons dashicons-visibility"></span></button>';
             if (cfg.canEdit) {
                 actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.editContact(' + item.id + ')" title="Editar contacto"><span class="dashicons dashicons-edit"></span></button>';
                 actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.openLinkEntityModal(' + item.id + ', \'' + fullName.replace(/'/g, "\\'") + '\')" title="Vincular a Tercero / Usuario"><span class="dashicons dashicons-admin-links"></span></button>';
@@ -286,7 +288,7 @@
 
             html += '<tr data-contact-id="' + item.id + '">';
             html += '<td style="text-align: center;"><input type="checkbox" class="aura-checkbox contact-row-check" value="' + item.id + '"></td>';
-            html += '<td><div class="contact-avatar-wrap">' + avatarHtml + '<div><div class="contact-name-main">' + fullName + '</div>' + (item.tags ? '<div class="contact-name-sub">' + renderTags(item.tags) + '</div>' : '') + '</div></div></td>';
+            html += '<td><div class="contact-avatar-wrap" onclick="window.AuraContactsApp.viewContactCard(' + item.id + ')" style="cursor: pointer;" title="Ver Tarjeta de Contacto">' + avatarHtml + '<div><div class="contact-name-main" style="color:#fff; transition: color 0.15s ease;">' + fullName + '</div>' + (item.tags ? '<div class="contact-name-sub">' + renderTags(item.tags) + '</div>' : '') + '</div></div></td>';
             html += '<td><span class="category-pill category-pill--' + catKey + '">' + catIcon + ' ' + escapeHtml(catLabel) + '</span></td>';
             html += '<td><div style="font-weight:600;font-size:0.84rem;">' + (emailVal ? '<a href="mailto:' + escapeHtml(emailVal) + '" style="color:#38bdf8;text-decoration:none;">' + escapeHtml(emailVal) + '</a>' : '<span style="color:#64748b;">—</span>') + '</div><div style="font-size:0.76rem;color:#94a3b8;margin-top:2px;">' + (phoneVal ? escapeHtml(phoneVal) : '') + '</div></td>';
             html += '<td><div>' + (item.organization ? escapeHtml(item.organization) : '<span style="color:#64748b;">—</span>') + '</div><div style="font-size:0.75rem;color:#94a3b8;">' + (item.job_title ? escapeHtml(item.job_title) : '') + '</div></td>';
@@ -1451,44 +1453,175 @@
         $('#modal-oauth-tutorial').fadeOut(150);
     };
 
-    // ── Módulo de Importación y Exportación Masiva ───────────────────────────────
+    // ── Módulo de Portabilidad, Importación y Exportación Masiva ─────────────────
     function initImportExport() {
-        // Exportar CSV
-        $('#btn-export-csv').on('click', function(e) {
+        // Formatos de exportación y textos dinámicos
+        var exportFormatLabels = {
+            'csv_universal': {
+                text: 'Descargar Archivo CSV Universal',
+                action: 'aura_contacts_export_csv',
+                icon: 'dashicons-media-spreadsheet'
+            },
+            'csv_google': {
+                text: 'Descargar CSV Oficial Google Contacts',
+                action: 'aura_contacts_export_google_csv',
+                icon: 'dashicons-google'
+            },
+            'vcf': {
+                text: 'Descargar vCard 3.0 (.vcf)',
+                action: 'aura_contacts_export_vcf',
+                icon: 'dashicons-id'
+            },
+            'json': {
+                text: 'Descargar Respaldo JSON Completo',
+                action: 'aura_contacts_export_json',
+                icon: 'dashicons-backup'
+            }
+        };
+
+        // Cambio visual de formato de exportación
+        $('input[name="export_format"]').on('change', function() {
+            var selectedFormat = $(this).val();
+            
+            $('.export-format-card').removeClass('is-selected').css({
+                'border-color': 'rgba(255, 255, 255, 0.1)',
+                'background': 'rgba(255, 255, 255, 0.03)'
+            });
+            $(this).closest('.export-format-card').addClass('is-selected').css({
+                'border-color': 'rgba(56, 189, 248, 0.7)',
+                'background': 'rgba(56, 189, 248, 0.12)'
+            });
+
+            var conf = exportFormatLabels[selectedFormat] || exportFormatLabels['csv_universal'];
+            $('#btn-export-text').text(conf.text);
+
+            // Mostrar delimitador solo si es CSV Universal
+            if (selectedFormat === 'csv_universal') {
+                $('#export-csv-options').slideDown(150);
+            } else {
+                $('#export-csv-options').slideUp(150);
+            }
+        });
+
+        // Botón principal de Exportar
+        $('#btn-do-export').on('click', function(e) {
             e.preventDefault();
-            var cat = $('#export_filter_category').val();
-            var postUrl = cfg.postUrl || cfg.ajaxUrl.replace('admin-ajax.php', 'admin-post.php');
-            var url = postUrl + '?action=aura_contacts_export_csv&nonce=' + encodeURIComponent(cfg.exportNonce || cfg.nonce) + '&category=' + encodeURIComponent(cat || '');
+            var format = $('input[name="export_format"]:checked').val() || 'csv_universal';
+            var cat = $('#export_filter_category').val() || '';
+            var syncStatus = $('#export_filter_sync').val() || '';
+            var delimiter = $('input[name="export_delimiter"]:checked').val() || ',';
+
+            var conf = exportFormatLabels[format] || exportFormatLabels['csv_universal'];
+            var postUrl = cfg.postUrl || (cfg.ajaxUrl ? cfg.ajaxUrl.replace('admin-ajax.php', 'admin-post.php') : 'admin-post.php');
+            var nonce = cfg.exportNonce || cfg.nonce || '';
+
+            var url = postUrl + '?action=' + encodeURIComponent(conf.action) +
+                      '&nonce=' + encodeURIComponent(nonce) +
+                      '&category=' + encodeURIComponent(cat) +
+                      '&sync_status=' + encodeURIComponent(syncStatus);
+
+            if (format === 'csv_universal') {
+                url += '&delimiter=' + encodeURIComponent(delimiter);
+            }
+
+            showToast('Generando descarga de ' + conf.text + '...');
             window.location.href = url;
         });
 
-        // Exportar vCard (.vcf)
-        $('#btn-export-vcf').on('click', function(e) {
+        // Botón Descargar Plantilla CSV Oficial
+        $('#btn-download-csv-template').on('click', function(e) {
             e.preventDefault();
-            var cat = $('#export_filter_category').val();
-            var postUrl = cfg.postUrl || cfg.ajaxUrl.replace('admin-ajax.php', 'admin-post.php');
-            var url = postUrl + '?action=aura_contacts_export_vcf&nonce=' + encodeURIComponent(cfg.exportNonce || cfg.nonce) + '&category=' + encodeURIComponent(cat || '');
+            var postUrl = cfg.postUrl || (cfg.ajaxUrl ? cfg.ajaxUrl.replace('admin-ajax.php', 'admin-post.php') : 'admin-post.php');
+            var nonce = cfg.exportNonce || cfg.nonce || '';
+            var url = postUrl + '?action=aura_contacts_download_template&nonce=' + encodeURIComponent(nonce);
+            showToast('Descargando plantilla CSV oficial de ejemplo...');
             window.location.href = url;
         });
 
-        // Importar archivo CSV / vCard
+        // ── Drag & Drop y Previsualización de Archivo ──────────────────────────
+        var $dropzone = $('#import-dropzone');
+        var fileInput = document.getElementById('import_file_input');
+
+        function updateDropzonePreview(file) {
+            if (!file) {
+                $('#dropzone-selected').hide();
+                $('#dropzone-idle').show();
+                return;
+            }
+
+            var name = file.name || 'archivo';
+            var size = file.size ? (file.size > 1048576 ? (file.size / 1048576).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB') : '0 KB';
+            var ext = name.split('.').pop().toLowerCase();
+
+            var icon = '📄';
+            if (ext === 'csv') icon = '📊';
+            else if (ext === 'vcf' || ext === 'vcard') icon = '📇';
+            else if (ext === 'json') icon = '📦';
+
+            $('#file-icon-badge').text(icon);
+            $('#file-name-display').text(name);
+            $('#file-size-display').text(size + ' — Archivo listo para importar');
+
+            $('#dropzone-idle').hide();
+            $('#dropzone-selected').css('display', 'flex').hide().fadeIn(180);
+        }
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files.length) {
+                    updateDropzonePreview(this.files[0]);
+                } else {
+                    updateDropzonePreview(null);
+                }
+            });
+        }
+
+        // Eventos visuales de arrastrar archivo
+        $dropzone.on('dragover dragenter', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $dropzone.addClass('is-dragover');
+        });
+
+        $dropzone.on('dragleave dragend drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $dropzone.removeClass('is-dragover');
+        });
+
+        $dropzone.on('drop', function(e) {
+            var dt = e.originalEvent.dataTransfer;
+            if (dt && dt.files && dt.files.length) {
+                fileInput.files = dt.files;
+                updateDropzonePreview(dt.files[0]);
+            }
+        });
+
+        $('#btn-clear-file').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (fileInput) fileInput.value = '';
+            updateDropzonePreview(null);
+        });
+
+        // ── Envío de Formulario de Importación ────────────────────────────────
         $('#form-contacts-import').on('submit', function(e) {
             e.preventDefault();
-            var fileInput = document.getElementById('import_file_input');
             if (!fileInput || !fileInput.files.length) {
-                alert('Por favor selecciona un archivo (.csv o .vcf) para importar.');
+                alert('Por favor arrastra o selecciona un archivo (.csv, .vcf o .json) para importar.');
                 return;
             }
 
             var formData = new FormData(this);
             formData.append('action', 'aura_contacts_import_file');
             formData.append('nonce', cfg.nonce);
-            formData.append('strategy', $('#import_duplicate_strategy').val() || 'skip');
+            formData.append('strategy', $('#import_duplicate_strategy').val() || 'update');
             formData.append('default_category', $('#import_default_category').val() || 'other');
+            formData.append('mark_for_google_sync', $('#import_mark_google_sync').is(':checked') ? '1' : '0');
 
             var $btn = $('#btn-submit-import');
-            var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Procesando archivo...');
+            var origHtml = $btn.html();
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Procesando importación...');
 
             $.ajax({
                 url: cfg.ajaxUrl,
@@ -1497,10 +1630,11 @@
                 processData: false,
                 contentType: false,
                 success: function(res) {
-                    $btn.prop('disabled', false).html(orig);
+                    $btn.prop('disabled', false).html(origHtml);
                     if (res.success && res.data) {
                         var d = res.data;
                         var totalCount = (typeof d.total !== 'undefined') ? d.total : (d.total_rows || 0);
+
                         $('#res-total').text(totalCount);
                         $('#res-created').text(d.created || 0);
                         $('#res-updated').text(d.updated || 0);
@@ -1522,24 +1656,293 @@
                             $('#res-details-wrapper').hide();
                         }
 
-                        $('#import-results-card').slideDown(200);
+                        $('#import-results-card').slideDown(250);
 
-                        showToast('Importación finalizada: ' + (d.created || 0) + ' creados, ' + (d.updated || 0) + ' actualizados.');
+                        showToast('Importación completada: ' + (d.created || 0) + ' creados, ' + (d.updated || 0) + ' actualizados.');
                         fetchContacts();
                         refreshStats();
                     } else {
-                        alert(res.data && res.data.message ? res.data.message : 'Error al procesar el archivo');
+                        var msg = (res.data && res.data.message) ? res.data.message : 'Error al procesar el archivo de importación.';
+                        alert(msg);
                     }
                 },
-                error: function() {
-                    $btn.prop('disabled', false).html(orig);
-                    alert('Error en la solicitud de importación.');
+                error: function(xhr) {
+                    $btn.prop('disabled', false).html(origHtml);
+                    alert('Error en la comunicación con el servidor al procesar la importación.');
                 }
             });
         });
+
+        // Copiar detalle de importación al portapapeles
+        $('#btn-copy-import-logs').on('click', function() {
+            var lines = [];
+            $('#res-details-list li').each(function() {
+                lines.push($(this).text());
+            });
+            if (!lines.length) {
+                showToast('No hay detalles para copiar.');
+                return;
+            }
+            var textToCopy = '--- REGISTRO DE IMPORTACIÓN AURA SUITE ---\n' +
+                             'Resumen: ' + $('#res-message').text() + '\n' +
+                             'Detalles:\n' + lines.join('\n');
+
+            navigator.clipboard.writeText(textToCopy).then(function() {
+                showToast('Detalle de importación copiado al portapapeles.');
+            }).catch(function() {
+                showToast('No se pudo copiar automáticamente.');
+            });
+        });
+
+        // Botón para nueva importación
+        $('#btn-reset-import').on('click', function() {
+            if (fileInput) fileInput.value = '';
+            updateDropzonePreview(null);
+            $('#import-results-card').slideUp(200);
+            $('#form-contacts-import')[0].reset();
+            $('#import_mark_google_sync').prop('checked', true);
+            $('html, body').animate({
+                scrollTop: $('#contacts-tab-import_export').offset().top - 80
+            }, 300);
+        });
     }
 
-    // ── Detección y Fusión de Duplicados ─────────────────────────────────────────
+    // ── Módulo de Tarjeta de Identidad Digital del Contacto (Ficha con Ojo) ──────
+    var currentCardContact = null;
+
+    function initContactCard() {
+        // Copiar información al portapapeles
+        $('#card-quick-copy').on('click', function(e) {
+            e.preventDefault();
+            if (!currentCardContact) return;
+            var c = currentCardContact;
+            var fullName = (c.first_name || '') + (c.last_name ? ' ' + c.last_name : '');
+            var lines = [
+                '📇 ' + fullName.trim(),
+                c.job_title ? 'Cargo: ' + c.job_title : null,
+                c.organization ? 'Organización: ' + c.organization : null,
+                c.email_primary ? 'Email: ' + c.email_primary : (c.email ? 'Email: ' + c.email : null),
+                c.phone_primary ? 'Teléfono: ' + c.phone_primary : (c.phone ? 'Teléfono: ' + c.phone : null),
+                c.whatsapp ? 'WhatsApp: ' + c.whatsapp : null,
+                c.address_street ? 'Dirección: ' + [c.address_street, c.address_city, c.address_state, c.address_country].filter(Boolean).join(', ') : null,
+                c.notes ? 'Notas: ' + c.notes : null
+            ].filter(Boolean);
+
+            navigator.clipboard.writeText(lines.join('\n')).then(function() {
+                showToast('Ficha de contacto copiada al portapapeles.');
+            }).catch(function() {
+                showToast('No se pudo copiar automáticamente.');
+            });
+        });
+
+        // Botón Editar desde la Tarjeta
+        $('#card-btn-edit').on('click', function() {
+            if (!currentCardContact) return;
+            var cid = currentCardContact.id;
+            closeContactCard();
+            openEditModal(cid);
+        });
+
+        // Botón Sincronizar desde la Tarjeta
+        $('#card-btn-sync').on('click', function() {
+            if (!currentCardContact) return;
+            var cid = currentCardContact.id;
+            closeContactCard();
+            syncSingle(cid);
+        });
+    }
+
+    function viewContactCard(id) {
+        var contactId = parseInt(id, 10);
+        if (!contactId) return;
+
+        // 1. Buscar primero en la memoria local cargada
+        var item = null;
+        if (state.items && state.items.length) {
+            item = state.items.find(function(c) { return parseInt(c.id, 10) === contactId; });
+        }
+
+        if (item) {
+            populateAndShowContactCard(item);
+        } else {
+            // 2. Si no está en memoria, consultar vía AJAX
+            showToast('Cargando información del contacto...');
+            $.post(cfg.ajaxUrl, {
+                action: 'aura_contacts_get_contact',
+                id: contactId,
+                nonce: cfg.nonce
+            }, function(res) {
+                if (res.success && res.data && res.data.contact) {
+                    populateAndShowContactCard(res.data.contact);
+                } else {
+                    alert('No se pudo obtener la información del contacto.');
+                }
+            }).fail(function() {
+                alert('Error al conectar con el servidor.');
+            });
+        }
+    }
+
+    function populateAndShowContactCard(item) {
+        currentCardContact = item;
+
+        var fullName = (item.first_name || '') + (item.last_name ? ' ' + item.last_name : '');
+        fullName = fullName.trim() || item.organization || ('Contacto #' + item.id);
+        var initials = ((item.first_name || '').charAt(0) + (item.last_name || '').charAt(0)).toUpperCase() || 'C';
+
+        var catKey = item.category || 'other';
+        var catLabel = (cfg.categories && cfg.categories[catKey]) ? cfg.categories[catKey] : catKey;
+        var catIcon = categoryIcons[catKey] || '🏷️';
+
+        // Avatar: foto personalizada o iniciales
+        var avatarUrl = item.avatar_url || item.photo_url || '';
+        if (avatarUrl) {
+            if (avatarUrl.indexOf(':/wp-content') !== -1 || avatarUrl.indexOf('/:/') !== -1 || avatarUrl.indexOf(':/') === 0) {
+                avatarUrl = avatarUrl.replace('/:/', '/').replace(':/wp-content', '/wp-content');
+                if (avatarUrl.indexOf('http') !== 0) {
+                    avatarUrl = window.location.origin + '/' + avatarUrl.replace(/^[:\/]+/, '');
+                }
+            }
+            $('#card-avatar-img').attr('src', avatarUrl).show();
+            $('#card-avatar-initials').hide();
+        } else {
+            $('#card-avatar-img').hide();
+            $('#card-avatar-initials').text(initials).show();
+        }
+
+        // Títulos Principales
+        $('#card-full-name').text(fullName);
+        $('#card-job-title').text(item.job_title || 'Sin cargo registrado');
+        $('#card-org-text').text(item.organization || 'Sin organización');
+
+        // Badges
+        $('#card-category-badge').attr('class', 'category-pill category-pill--' + catKey).html(catIcon + ' ' + escapeHtml(catLabel));
+        
+        var typeLabel = '👤 Persona';
+        if (item.contact_type === 'company') typeLabel = '🏢 Empresa';
+        else if (item.contact_type === 'organization') typeLabel = '🏛️ Organización';
+        $('#card-type-badge').text(typeLabel);
+
+        $('#card-sync-badge').html(renderSyncBadge(item));
+
+        // Acciones Rápidas
+        var primaryPhone = item.phone_primary || item.phone || '';
+        if (primaryPhone) {
+            $('#card-quick-call').attr('href', 'tel:' + primaryPhone.replace(/\s+/g, '')).css('opacity', '1').show();
+        } else {
+            $('#card-quick-call').attr('href', 'javascript:void(0)').css('opacity', '0.4');
+        }
+
+        var waPhone = item.whatsapp || primaryPhone || '';
+        var waDigits = waPhone.replace(/\D+/g, '');
+        if (waDigits) {
+            $('#card-quick-wa').attr('href', 'https://wa.me/' + waDigits).css('opacity', '1').show();
+        } else {
+            $('#card-quick-wa').attr('href', 'javascript:void(0)').css('opacity', '0.4');
+        }
+
+        var primaryEmail = item.email_primary || item.email || '';
+        if (primaryEmail) {
+            $('#card-quick-mail').attr('href', 'mailto:' + primaryEmail).css('opacity', '1').show();
+        } else {
+            $('#card-quick-mail').attr('href', 'javascript:void(0)').css('opacity', '0.4');
+        }
+
+        // Canales Directos
+        $('#card-email-primary').html(primaryEmail ? '<a href="mailto:' + escapeHtml(primaryEmail) + '" style="color:#38bdf8;text-decoration:none;">' + escapeHtml(primaryEmail) + '</a>' : '<span style="color:#64748b;">—</span>');
+        $('#card-email-secondary').html(item.email_secondary ? '<a href="mailto:' + escapeHtml(item.email_secondary) + '" style="color:#38bdf8;text-decoration:none;">' + escapeHtml(item.email_secondary) + '</a>' : '<span style="color:#64748b;">—</span>');
+        $('#card-phone-primary').html(primaryPhone ? '<a href="tel:' + escapeHtml(primaryPhone.replace(/\s+/g, '')) + '" style="color:#fff;text-decoration:none;">' + escapeHtml(primaryPhone) + '</a>' : '<span style="color:#64748b;">—</span>');
+        $('#card-phone-secondary').html(item.phone_secondary ? '<a href="tel:' + escapeHtml(item.phone_secondary.replace(/\s+/g, '')) + '" style="color:#cbd5e1;text-decoration:none;">' + escapeHtml(item.phone_secondary) + '</a>' : '<span style="color:#64748b;">—</span>');
+
+        // Dirección
+        var addressParts = [
+            item.address_street,
+            item.address_city,
+            item.address_state,
+            item.address_postal,
+            item.address_country
+        ].filter(Boolean);
+        var fullAddress = addressParts.join(', ');
+
+        if (fullAddress) {
+            $('#card-full-address').text(fullAddress);
+            $('#card-quick-map').attr('href', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(fullAddress)).css('opacity', '1').show();
+            $('#card-address-block').show();
+        } else {
+            $('#card-full-address').html('<span style="color:#64748b;font-style:italic;">Sin dirección física registrada</span>');
+            $('#card-quick-map').attr('href', 'javascript:void(0)').css('opacity', '0.4');
+        }
+
+        // Tags
+        var tagsContainer = $('#card-tags-container');
+        if (item.tags) {
+            var tagsArr = [];
+            if (typeof item.tags === 'string') {
+                try { tagsArr = JSON.parse(item.tags); } catch(e) { tagsArr = item.tags.split(','); }
+            } else if (Array.isArray(item.tags)) {
+                tagsArr = item.tags;
+            }
+            if (tagsArr.length) {
+                var tHtml = '';
+                tagsArr.forEach(function(t) {
+                    var cleanTag = String(t).trim();
+                    if (cleanTag) {
+                        tHtml += '<span style="display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:0.75rem;font-weight:600;background:rgba(192,132,252,0.12);color:#c084fc;border:1px solid rgba(192,132,252,0.25);">🏷️ #' + escapeHtml(cleanTag) + '</span>';
+                    }
+                });
+                tagsContainer.html(tHtml || '<span style="color:#64748b;font-size:0.8rem;">Sin etiquetas</span>');
+            } else {
+                tagsContainer.html('<span style="color:#64748b;font-size:0.8rem;">Sin etiquetas</span>');
+            }
+        } else {
+            tagsContainer.html('<span style="color:#64748b;font-size:0.8rem;">Sin etiquetas</span>');
+        }
+
+        // Vinculaciones
+        if (item.third_party_id && parseInt(item.third_party_id, 10) > 0) {
+            $('#card-link-tp').html('🏢 Vinculado a Tercero ID <strong>#' + item.third_party_id + '</strong>').css('color', '#60a5fa');
+        } else {
+            $('#card-link-tp').html('🏢 Sin Tercero vinculado').css('color', '#64748b');
+        }
+
+        if (item.wp_user_id && parseInt(item.wp_user_id, 10) > 0) {
+            $('#card-link-wp').html('👤 Vinculado a Usuario WP ID <strong>#' + item.wp_user_id + '</strong>').css('color', '#c084fc');
+        } else {
+            $('#card-link-wp').html('👤 Sin Usuario WP vinculado').css('color', '#64748b');
+        }
+
+        // Notas
+        if (item.notes && item.notes.trim()) {
+            $('#card-notes-text').text(item.notes).css('font-style', 'normal').css('color', '#e2e8f0');
+            $('#card-notes-block').show();
+        } else {
+            $('#card-notes-text').text('Sin notas registradas.').css('font-style', 'italic').css('color', '#64748b');
+        }
+
+        // Metadatos
+        $('#card-contact-id').text(item.id);
+        $('#card-created-at').text(item.created_at || '—');
+        if (item.google_resource_name) {
+            $('#card-google-resource').html('Google: <code>' + escapeHtml(item.google_resource_name) + '</code>').show();
+        } else {
+            $('#card-google-resource').empty().hide();
+        }
+
+        // Botón Sync
+        if (cfg.canSync && cfg.oauthConnected) {
+            $('#card-btn-sync').show();
+        } else {
+            $('#card-btn-sync').hide();
+        }
+
+        $('#modal-contact-card').css('display', 'flex').hide().fadeIn(200);
+    }
+
+    function closeContactCard() {
+        $('#modal-contact-card').fadeOut(180);
+        currentCardContact = null;
+    }
+
     function initDuplicatesMerge() {
         $('#btn-scan-duplicates').on('click', function() {
             var $btn = $(this);
@@ -2821,6 +3224,8 @@
                 closeLinkModal();
             } else if ($('#modal-oauth-tutorial').is(':visible')) {
                 closeOAuthTutorial();
+            } else if ($('#modal-contact-card').is(':visible')) {
+                closeContactCard();
             }
         }
     });
@@ -2838,6 +3243,8 @@
                 closeLinkModal();
             } else if (id === 'modal-oauth-tutorial') {
                 closeOAuthTutorial();
+            } else if (id === 'modal-contact-card') {
+                closeContactCard();
             }
         }
     });
@@ -2845,6 +3252,8 @@
     // Exponer API para botones inline
     window.AuraContactsApp = {
         editContact: openEditModal,
+        viewContactCard: viewContactCard,
+        closeContactCard: closeContactCard,
         openLinkEntityModal: window.openLinkEntityModal,
         createThirdPartyFromContact: createThirdPartyFromContact,
         createThirdPartyFromForm: createThirdPartyFromForm,

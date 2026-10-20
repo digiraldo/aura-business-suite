@@ -1825,3 +1825,54 @@
     cursor: not-allowed;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   ESTILOS DE PORTABILIDAD Y MIGRACIÓN (IMPORTACIÓN & EXPORTACIÓN)
+═══════════════════════════════════════════════════════════════ */
+.export-format-card {
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+}
+
+.export-format-card:hover {
+    border-color: rgba(56, 189, 248, 0.4);
+    background: rgba(56, 189, 248, 0.06);
+    transform: translateY(-2px);
+}
+
+.export-format-card.is-selected {
+    border-color: rgba(56, 189, 248, 0.7) !important;
+    background: rgba(56, 189, 248, 0.12) !important;
+    box-shadow: 0 4px 15px -2px rgba(56, 189, 248, 0.25);
+}
+
+#import-dropzone {
+    border: 2px dashed rgba(52, 211, 153, 0.35);
+    border-radius: 14px;
+    padding: 24px 16px;
+    text-align: center;
+    background: rgba(52, 211, 153, 0.03);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-bottom: 18px;
+    position: relative;
+}
+
+#import-dropzone:hover {
+    border-color: rgba(52, 211, 153, 0.65);
+    background: rgba(52, 211, 153, 0.07);
+}
+
+#import-dropzone.is-dragover {
+    border-color: #34d399 !important;
+    background: rgba(52, 211, 153, 0.15) !important;
+    transform: scale(1.01);
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+}

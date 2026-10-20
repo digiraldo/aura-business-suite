@@ -909,101 +909,270 @@ $category_icons = array(
             <?php endif; ?>
 
             <!-- ══════════════════════════════════════════════════════════════
-                 SECCIÓN 4: IMPORTAR Y EXPORTAR (TAB: IMPORT_EXPORT)
+                 SECCIÓN 4: PORTABILIDAD Y MIGRACIÓN (TAB: IMPORT_EXPORT)
             ═══════════════════════════════════════════════════════════════ -->
             <section id="contacts-tab-import_export" class="contacts-tab-content" style="display: none; margin-top: 15px;">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto;">
-
-                    <!-- CARD: EXPORTACIÓN -->
-                    <div class="aura-glass-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+                
+                <!-- Cabecera Informativa de Portabilidad -->
+                <div class="aura-glass-card fade-up" style="padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%); border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(59, 130, 246, 0.25) 100%); display: flex; align-items: center; justify-content: center; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); box-shadow: 0 4px 15px rgba(56, 189, 248, 0.15);">
+                            <span class="dashicons dashicons-database-export" style="font-size: 26px; width: 26px; height: 26px;"></span>
+                        </div>
                         <div>
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-                                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: #38bdf8;">
-                                    <span class="dashicons dashicons-download" style="font-size: 22px; width: 22px; height: 22px;"></span>
+                            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #fff; letter-spacing: -0.01em;">
+                                <?php esc_html_e( 'Centro de Portabilidad y Migración de Contactos', 'aura-suite' ); ?>
+                            </h3>
+                            <p style="margin: 3px 0 0; font-size: 0.85rem; color: var(--aura-text-muted, #94a3b8);">
+                                <?php esc_html_e( 'Exporta e importa tu directorio en formatos universales con preservación de acentos UTF-8, avatares y compatibilidad total con Google Workspace, Apple y Excel.', 'aura-suite' ); ?>
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25);">
+                            📄 CSV Universal
+                        </span>
+                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25);">
+                            🌐 Google Contacts CSV
+                        </span>
+                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background: rgba(168, 85, 247, 0.12); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.25);">
+                            📇 vCard 3.0 (.vcf)
+                        </span>
+                        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25);">
+                            📦 JSON Backup
+                        </span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 24px; max-width: 1300px; margin: 0 auto 30px;">
+
+                    <!-- ══════════════════════════════════════════════════════
+                         TARJETA 1: EXPORTAR DIRECTORIO
+                    ═══════════════════════════════════════════════════════ -->
+                    <div class="aura-glass-card" style="padding: 26px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(56, 189, 248, 0.25); background: rgba(15, 23, 42, 0.75); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.4);">
+                        <div>
+                            <!-- Header de la tarjeta -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                                        <span class="dashicons dashicons-download" style="font-size: 24px; width: 24px; height: 24px;"></span>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 1.18rem; font-weight: 700; color: #fff;">
+                                            <?php esc_html_e( 'Exportar Directorio', 'aura-suite' ); ?>
+                                        </h3>
+                                        <span style="font-size: 0.8rem; color: #94a3b8;">
+                                            <?php esc_html_e( 'Descarga contactos listos para cualquier plataforma', 'aura-suite' ); ?>
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff;">
-                                        <?php esc_html_e( 'Exportar Directorio', 'aura-suite' ); ?>
-                                    </h3>
-                                    <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--aura-text-muted, #94a3b8);">
-                                        <?php esc_html_e( 'Descarga tus contactos en formatos estándares compatibles con cualquier gestor.', 'aura-suite' ); ?>
-                                    </p>
-                                </div>
+                                <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                                    Paso 1 de 2
+                                </span>
                             </div>
 
-                            <div class="aura-form-group" style="margin-bottom: 16px;">
-                                <label for="export_filter_category" class="aura-form-label" style="font-weight: 600; color: #fff;">
-                                    <?php esc_html_e( 'Filtrar por Categoría a Exportar:', 'aura-suite' ); ?>
+                            <!-- Selector Visual de Formato (Cards Interactivas) -->
+                            <div style="margin-bottom: 20px;">
+                                <label class="aura-form-label" style="font-weight: 700; color: #fff; font-size: 0.88rem; margin-bottom: 10px; display: block;">
+                                    <?php esc_html_e( '1. Selecciona el Formato de Salida:', 'aura-suite' ); ?>
                                 </label>
-                                <select id="export_filter_category" class="aura-select" style="width: 100%;">
-                                    <option value=""><?php esc_html_e( '⭐ Todos los Contactos (Directorio Completo)', 'aura-suite' ); ?></option>
-                                    <?php foreach ( $categories as $ckey => $clabel ) : ?>
-                                        <option value="<?php echo esc_attr( $ckey ); ?>">
-                                            <?php echo esc_html( ( $category_icons[ $ckey ] ?? '🏷️' ) . ' ' . $clabel ); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    
+                                    <!-- Opción: CSV Universal -->
+                                    <label class="export-format-card is-selected" style="cursor: pointer; border: 1px solid rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.1); border-radius: 10px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; transition: all 0.2s ease;">
+                                        <input type="radio" name="export_format" value="csv_universal" checked style="margin-top: 3px; accent-color: #38bdf8;">
+                                        <div>
+                                            <div style="font-weight: 700; color: #fff; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                                                📊 CSV Universal
+                                            </div>
+                                            <p style="margin: 3px 0 0; font-size: 0.74rem; color: #cbd5e1; line-height: 1.3;">
+                                                Con BOM UTF-8. Ideal para Excel en Windows/Mac, Sheets y Calc.
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                    <!-- Opción: Google Contacts CSV -->
+                                    <label class="export-format-card" style="cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; transition: all 0.2s ease;">
+                                        <input type="radio" name="export_format" value="csv_google" style="margin-top: 3px; accent-color: #38bdf8;">
+                                        <div>
+                                            <div style="font-weight: 700; color: #fff; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                                                🌐 Google Contacts
+                                            </div>
+                                            <p style="margin: 3px 0 0; font-size: 0.74rem; color: #cbd5e1; line-height: 1.3;">
+                                                Columnas nativas de Google para subir directo a contacts.google.com.
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                    <!-- Opción: vCard 3.0 (.vcf) -->
+                                    <label class="export-format-card" style="cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; transition: all 0.2s ease;">
+                                        <input type="radio" name="export_format" value="vcf" style="margin-top: 3px; accent-color: #38bdf8;">
+                                        <div>
+                                            <div style="font-weight: 700; color: #fff; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                                                📇 vCard 3.0 (.vcf)
+                                            </div>
+                                            <p style="margin: 3px 0 0; font-size: 0.74rem; color: #cbd5e1; line-height: 1.3;">
+                                                Para importar en iPhone (iOS), Android, MacOS Contactos y Outlook.
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                    <!-- Opción: JSON Backup Aura -->
+                                    <label class="export-format-card" style="cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03); border-radius: 10px; padding: 12px; display: flex; align-items: flex-start; gap: 10px; transition: all 0.2s ease;">
+                                        <input type="radio" name="export_format" value="json" style="margin-top: 3px; accent-color: #38bdf8;">
+                                        <div>
+                                            <div style="font-weight: 700; color: #fff; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                                                📦 JSON Backup
+                                            </div>
+                                            <p style="margin: 3px 0 0; font-size: 0.74rem; color: #cbd5e1; line-height: 1.3;">
+                                                Copia íntegra con metadatos y tags para restaurar en otro Aura Suite.
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                </div>
                             </div>
 
-                            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
-                                <ul style="margin: 0; padding-left: 18px; font-size: 0.82rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 6px;">
-                                    <li><strong>CSV Universal:</strong> Compatible con Excel, Google Sheets, Google Contacts (BOM UTF-8).</li>
-                                    <li><strong>vCard 3.0 (.vcf):</strong> Formato estándar internacional para teléfonos móviles (iOS / Android) y Microsoft Outlook.</li>
-                                </ul>
+                            <!-- Filtros de Exportación -->
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px; margin-bottom: 22px;">
+                                <div style="font-size: 0.82rem; font-weight: 700; color: #38bdf8; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                    <?php esc_html_e( '2. Filtros y Criterios de Exportación:', 'aura-suite' ); ?>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                    <div class="aura-form-group">
+                                        <label for="export_filter_category" class="aura-form-label" style="font-size: 0.82rem; font-weight: 600; color: #fff;">
+                                            <?php esc_html_e( 'Categoría:', 'aura-suite' ); ?>
+                                        </label>
+                                        <select id="export_filter_category" class="aura-select" style="width: 100%; font-size: 0.85rem;">
+                                            <option value=""><?php esc_html_e( '⭐ Todas las Categorías', 'aura-suite' ); ?></option>
+                                            <?php foreach ( $categories as $ckey => $clabel ) : ?>
+                                                <option value="<?php echo esc_attr( $ckey ); ?>">
+                                                    <?php echo esc_html( ( $category_icons[ $ckey ] ?? '🏷️' ) . ' ' . $clabel ); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="aura-form-group">
+                                        <label for="export_filter_sync" class="aura-form-label" style="font-size: 0.82rem; font-weight: 600; color: #fff;">
+                                            <?php esc_html_e( 'Estado Google Sync:', 'aura-suite' ); ?>
+                                        </label>
+                                        <select id="export_filter_sync" class="aura-select" style="width: 100%; font-size: 0.85rem;">
+                                            <option value=""><?php esc_html_e( 'Todos los estados', 'aura-suite' ); ?></option>
+                                            <option value="synced"><?php esc_html_e( '🟢 Sincronizados', 'aura-suite' ); ?></option>
+                                            <option value="pending"><?php esc_html_e( '🟡 Pendientes', 'aura-suite' ); ?></option>
+                                            <option value="not_synced"><?php esc_html_e( '⚪ No en Google', 'aura-suite' ); ?></option>
+                                            <option value="error"><?php esc_html_e( '🔴 Con Error', 'aura-suite' ); ?></option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Opciones condicionales para CSV -->
+                                <div id="export-csv-options" style="display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);">
+                                    <span style="font-size: 0.8rem; color: #94a3b8;">
+                                        <?php esc_html_e( 'Separador de columnas para CSV:', 'aura-suite' ); ?>
+                                    </span>
+                                    <div style="display: flex; gap: 12px;">
+                                        <label style="font-size: 0.8rem; color: #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                            <input type="radio" name="export_delimiter" value="," checked style="accent-color: #38bdf8;"> Coma (<code>,</code> Estándar)
+                                        </label>
+                                        <label style="font-size: 0.8rem; color: #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                            <input type="radio" name="export_delimiter" value=";" style="accent-color: #38bdf8;"> Punto y coma (<code>;</code> Excel ES)
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button type="button" class="btn btn-primary btn-lift" id="btn-export-csv" style="flex: 1; justify-content: center;">
-                                <span class="dashicons dashicons-media-spreadsheet"></span>
-                                <span><?php esc_html_e( 'Descargar CSV', 'aura-suite' ); ?></span>
+                        <!-- Botón de Acción de Exportación -->
+                        <div>
+                            <button type="button" class="btn btn-primary btn-lift" id="btn-do-export" style="width: 100%; justify-content: center; font-size: 0.96rem; font-weight: 700; padding: 12px 20px; box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);">
+                                <span class="dashicons dashicons-download" style="font-size: 20px; width: 20px; height: 20px;"></span>
+                                <span id="btn-export-text"><?php esc_html_e( 'Descargar Archivo CSV Universal', 'aura-suite' ); ?></span>
                             </button>
-                            <button type="button" class="btn btn-secondary btn-lift" id="btn-export-vcf" style="flex: 1; justify-content: center;">
-                                <span class="dashicons dashicons-id"></span>
-                                <span><?php esc_html_e( 'Descargar vCard (.vcf)', 'aura-suite' ); ?></span>
-                            </button>
+                            <p style="margin: 8px 0 0; text-align: center; font-size: 0.74rem; color: #94a3b8;">
+                                🔒 <?php esc_html_e( 'Descarga segura generada directamente en tu navegador sin almacenar copias temporales.', 'aura-suite' ); ?>
+                            </p>
                         </div>
                     </div>
 
-                    <!-- CARD: IMPORTACIÓN -->
-                    <div class="aura-glass-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <!-- ══════════════════════════════════════════════════════
+                         TARJETA 2: IMPORTAR CONTACTOS
+                    ═══════════════════════════════════════════════════════ -->
+                    <div class="aura-glass-card" style="padding: 26px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid rgba(52, 211, 153, 0.25); background: rgba(15, 23, 42, 0.75); box-shadow: 0 10px 30px -5px rgba(0,0,0,0.4);">
                         <div>
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-                                <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(52, 211, 153, 0.15); display: flex; align-items: center; justify-content: center; color: #34d399;">
-                                    <span class="dashicons dashicons-upload" style="font-size: 22px; width: 22px; height: 22px;"></span>
+                            <!-- Header de la tarjeta -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(52, 211, 153, 0.15); display: flex; align-items: center; justify-content: center; color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3);">
+                                        <span class="dashicons dashicons-upload" style="font-size: 24px; width: 24px; height: 24px;"></span>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 1.18rem; font-weight: 700; color: #fff;">
+                                            <?php esc_html_e( 'Importar Contactos', 'aura-suite' ); ?>
+                                        </h3>
+                                        <span style="font-size: 0.8rem; color: #94a3b8;">
+                                            <?php esc_html_e( 'Sube archivos masivos (.csv, .vcf o .json)', 'aura-suite' ); ?>
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff;">
-                                        <?php esc_html_e( 'Importar Contactos', 'aura-suite' ); ?>
-                                    </h3>
-                                    <p style="margin: 2px 0 0; font-size: 0.82rem; color: var(--aura-text-muted, #94a3b8);">
-                                        <?php esc_html_e( 'Sube archivos CSV o vCard (.vcf) para cargar contactos de forma masiva.', 'aura-suite' ); ?>
-                                    </p>
-                                </div>
+                                <button type="button" class="btn btn-glass btn-sm" id="btn-download-csv-template" title="<?php esc_attr_e( 'Descargar plantilla CSV con formato recomendado', 'aura-suite' ); ?>" style="font-size: 0.78rem; display: flex; align-items: center; gap: 5px; color: #34d399; border-color: rgba(52, 211, 153, 0.35);">
+                                    <span class="dashicons dashicons-media-spreadsheet" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                                    <span><?php esc_html_e( 'Plantilla CSV', 'aura-suite' ); ?></span>
+                                </button>
                             </div>
 
                             <form id="form-contacts-import" enctype="multipart/form-data">
-                                <div class="aura-form-group" style="margin-bottom: 14px;">
-                                    <label for="import_file_input" class="aura-form-label" style="font-weight: 600; color: #fff;">
-                                        <?php esc_html_e( 'Seleccionar Archivo (.csv o .vcf):', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
-                                    </label>
-                                    <input type="file" id="import_file_input" name="import_file" accept=".csv,.vcf" class="aura-input" required style="width: 100%; padding: 7px;">
+                                
+                                <!-- Dropzone para Arrastrar y Soltar Archivo -->
+                                <div id="import-dropzone" style="border: 2px dashed rgba(52, 211, 153, 0.35); border-radius: 14px; padding: 24px 16px; text-align: center; background: rgba(52, 211, 153, 0.03); cursor: pointer; transition: all 0.25s ease; margin-bottom: 18px; position: relative;">
+                                    <input type="file" id="import_file_input" name="import_file" accept=".csv,.vcf,.vcard,.json" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;" required>
+                                    
+                                    <div id="dropzone-idle">
+                                        <div style="width: 48px; height: 48px; margin: 0 auto 10px; border-radius: 50%; background: rgba(52, 211, 153, 0.1); display: flex; align-items: center; justify-content: center; color: #34d399;">
+                                            <span class="dashicons dashicons-cloud-upload" style="font-size: 28px; width: 28px; height: 28px;"></span>
+                                        </div>
+                                        <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">
+                                            <?php esc_html_e( 'Arrastra tu archivo aquí o haz clic para explorar', 'aura-suite' ); ?>
+                                        </div>
+                                        <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px;">
+                                            <?php esc_html_e( 'Formatos soportados: CSV (Excel/Google), vCard (.vcf) o JSON Backup (Máx 20MB)', 'aura-suite' ); ?>
+                                        </div>
+                                    </div>
+
+                                    <!-- Vista previa del archivo seleccionado -->
+                                    <div id="dropzone-selected" style="display: none; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(52, 211, 153, 0.4); border-radius: 10px; padding: 10px 14px; text-align: left;">
+                                        <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                                            <span id="file-icon-badge" style="font-size: 24px;">📄</span>
+                                            <div style="overflow: hidden;">
+                                                <div id="file-name-display" style="font-weight: 700; color: #fff; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px;">
+                                                    archivo.csv
+                                                </div>
+                                                <div id="file-size-display" style="font-size: 0.75rem; color: #34d399;">
+                                                    0 KB
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" id="btn-clear-file" style="background: none; border: none; color: #f87171; cursor: pointer; font-size: 1.2rem; padding: 4px 8px;" title="<?php esc_attr_e( 'Quitar archivo', 'aura-suite' ); ?>">&times;</button>
+                                    </div>
                                 </div>
 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                                <!-- Opciones de Importación -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
                                     <div class="aura-form-group">
                                         <label for="import_duplicate_strategy" class="aura-form-label" style="font-size: 0.82rem; font-weight: 600; color: #fff;">
-                                            <?php esc_html_e( 'Si ya existe:', 'aura-suite' ); ?>
+                                            <?php esc_html_e( 'Si el contacto ya existe:', 'aura-suite' ); ?>
                                         </label>
-                                        <select id="import_duplicate_strategy" name="duplicate_strategy" class="aura-select" style="width: 100%; font-size: 0.85rem;">
-                                            <option value="skip"><?php esc_html_e( 'Omitir (No tocar)', 'aura-suite' ); ?></option>
-                                            <option value="update"><?php esc_html_e( 'Actualizar datos', 'aura-suite' ); ?></option>
-                                            <option value="create"><?php esc_html_e( 'Crear duplicado', 'aura-suite' ); ?></option>
+                                        <select id="import_duplicate_strategy" name="strategy" class="aura-select" style="width: 100%; font-size: 0.85rem;">
+                                            <option value="skip"><?php esc_html_e( 'Omitir (No modificar existente)', 'aura-suite' ); ?></option>
+                                            <option value="update" selected><?php esc_html_e( 'Actualizar datos y completar vacíos', 'aura-suite' ); ?></option>
+                                            <option value="create"><?php esc_html_e( 'Crear como nuevo duplicado', 'aura-suite' ); ?></option>
                                         </select>
                                     </div>
                                     <div class="aura-form-group">
                                         <label for="import_default_category" class="aura-form-label" style="font-size: 0.82rem; font-weight: 600; color: #fff;">
-                                            <?php esc_html_e( 'Categoría defecto:', 'aura-suite' ); ?>
+                                            <?php esc_html_e( 'Categoría por defecto:', 'aura-suite' ); ?>
                                         </label>
                                         <select id="import_default_category" name="default_category" class="aura-select" style="width: 100%; font-size: 0.85rem;">
                                             <?php foreach ( $categories as $ckey => $clabel ) : ?>
@@ -1015,54 +1184,116 @@ $category_icons = array(
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-emerald btn-lift" id="btn-submit-import" style="width: 100%; justify-content: center;">
-                                    <span class="dashicons dashicons-upload"></span>
+                                <!-- Checkbox para sincronizar con Google -->
+                                <div style="margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 14px;">
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0; font-size: 0.83rem; color: #e2e8f0;">
+                                        <input type="checkbox" id="import_mark_google_sync" name="mark_for_google_sync" value="1" checked style="accent-color: #34d399; width: 16px; height: 16px;">
+                                        <span>
+                                            <?php esc_html_e( 'Marcar contactos importados como pendientes para sincronizar con Google Contacts', 'aura-suite' ); ?>
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-emerald btn-lift" id="btn-submit-import" style="width: 100%; justify-content: center; font-size: 0.96rem; font-weight: 700; padding: 12px 20px; box-shadow: 0 4px 16px rgba(52, 211, 153, 0.3);">
+                                    <span class="dashicons dashicons-upload" style="font-size: 20px; width: 20px; height: 20px;"></span>
                                     <span><?php esc_html_e( 'Iniciar Importación Masiva', 'aura-suite' ); ?></span>
                                 </button>
                             </form>
                         </div>
 
                         <!-- Resumen de Resultados de Importación -->
-                        <div id="import-results-card" style="display: none; margin-top: 16px; padding: 18px; border-radius: 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                                <h4 style="margin: 0; font-size: 0.95rem; color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                                    📊 <?php esc_html_e( 'Resultado de la Importación Masiva', 'aura-suite' ); ?>
+                        <div id="import-results-card" style="display: none; margin-top: 20px; padding: 20px; border-radius: 14px; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(52, 211, 153, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                                <h4 style="margin: 0; font-size: 1rem; color: #34d399; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                    <span class="dashicons dashicons-yes-alt" style="font-size: 22px; width: 22px; height: 22px;"></span>
+                                    <?php esc_html_e( 'Resultado de la Importación Masiva', 'aura-suite' ); ?>
                                 </h4>
-                                <span id="res-badge-status" style="font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; background: rgba(16, 185, 129, 0.15); color: #34d399; font-weight: 600;">
-                                    Proceso Finalizado
-                                </span>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" class="btn btn-glass btn-sm" id="btn-reset-import" style="font-size: 0.75rem; padding: 4px 10px;">
+                                        <?php esc_html_e( 'Nueva Importación', 'aura-suite' ); ?>
+                                    </button>
+                                </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 10px; text-align: center; margin-bottom: 12px;">
+
+                            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; margin-bottom: 14px;">
                                 <div style="background: rgba(255,255,255,0.03); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
                                     <div id="res-total" style="font-weight: 800; font-size: 1.25rem; color: #fff;">0</div>
-                                    <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Total</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Total</div>
                                 </div>
-                                <div style="background: rgba(16, 185, 129, 0.06); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                <div style="background: rgba(16, 185, 129, 0.08); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
                                     <div id="res-created" style="font-weight: 800; font-size: 1.25rem; color: #34d399;">0</div>
-                                    <div style="font-size: 0.72rem; color: #34d399; text-transform: uppercase;">Creados</div>
+                                    <div style="font-size: 0.7rem; color: #34d399; text-transform: uppercase;">Creados</div>
                                 </div>
-                                <div style="background: rgba(56, 189, 248, 0.06); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.2);">
+                                <div style="background: rgba(56, 189, 248, 0.08); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25);">
                                     <div id="res-updated" style="font-weight: 800; font-size: 1.25rem; color: #38bdf8;">0</div>
-                                    <div style="font-size: 0.72rem; color: #38bdf8; text-transform: uppercase;">Actualizados</div>
+                                    <div style="font-size: 0.7rem; color: #38bdf8; text-transform: uppercase;">Actualizados</div>
                                 </div>
-                                <div style="background: rgba(245, 158, 11, 0.06); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                                <div style="background: rgba(245, 158, 11, 0.08); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.25);">
                                     <div id="res-skipped" style="font-weight: 800; font-size: 1.25rem; color: #f59e0b;">0</div>
-                                    <div style="font-size: 0.72rem; color: #f59e0b; text-transform: uppercase;">Omitidos</div>
+                                    <div style="font-size: 0.7rem; color: #f59e0b; text-transform: uppercase;">Omitidos</div>
                                 </div>
-                                <div style="background: rgba(239, 68, 68, 0.06); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                <div style="background: rgba(239, 68, 68, 0.08); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.25);">
                                     <div id="res-errors" style="font-weight: 800; font-size: 1.25rem; color: #ef4444;">0</div>
-                                    <div style="font-size: 0.72rem; color: #ef4444; text-transform: uppercase;">Errores</div>
+                                    <div style="font-size: 0.7rem; color: #ef4444; text-transform: uppercase;">Errores</div>
                                 </div>
                             </div>
-                            <div id="res-message" style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 8px; line-height: 1.4;"></div>
+
+                            <div id="res-message" style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4; padding: 8px 12px; background: rgba(255,255,255,0.02); border-radius: 6px;"></div>
+                            
                             <div id="res-details-wrapper" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 10px;">
-                                <div style="font-size: 0.75rem; font-weight: 700; color: #f59e0b; margin-bottom: 6px;">Observaciones y Detalles:</div>
-                                <ul id="res-details-list" style="margin: 0; padding-left: 18px; font-size: 0.75rem; color: #94a3b8; max-height: 120px; overflow-y: auto;"></ul>
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: #f59e0b;">Observaciones y Registros:</span>
+                                    <button type="button" class="btn btn-glass btn-sm" id="btn-copy-import-logs" style="font-size: 0.72rem; padding: 2px 8px;">
+                                        Copiar Detalle
+                                    </button>
+                                </div>
+                                <ul id="res-details-list" style="margin: 0; padding-left: 18px; font-size: 0.76rem; color: #94a3b8; max-height: 130px; overflow-y: auto;"></ul>
                             </div>
                         </div>
+
                     </div>
 
                 </div>
+
+                <!-- ══════════════════════════════════════════════════════
+                     GUÍA RÁPIDA DE COMPATIBILIDAD Y CONSEJOS TÉCNICOS
+                ═══════════════════════════════════════════════════════ -->
+                <div class="aura-glass-card" style="padding: 22px 26px; border: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.65);">
+                    <h4 style="margin: 0 0 14px; font-size: 0.95rem; color: #fff; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                        💡 <?php esc_html_e( 'Guía Rápida de Compatibilidad e Integraciones Externas', 'aura-suite' ); ?>
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px;">
+                        
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 14px;">
+                            <div style="font-weight: 700; color: #38bdf8; font-size: 0.86rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                🌐 Google Contacts (Gmail & Workspace)
+                            </div>
+                            <p style="margin: 0; font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;">
+                                Selecciona <strong>Google Contacts CSV</strong> al exportar. Luego ingresa a <a href="https://contacts.google.com" target="_blank" style="color: #38bdf8; text-decoration: underline;">contacts.google.com</a>, pulsa <strong>Importar</strong> y selecciona el archivo. Se conservarán nombres, teléfonos, emails y grupos automáticamente.
+                            </p>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 14px;">
+                            <div style="font-weight: 700; color: #c084fc; font-size: 0.86rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                📱 Smartphones (iPhone iOS & Android)
+                            </div>
+                            <p style="margin: 0; font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;">
+                                Exporta como <strong>vCard 3.0 (.vcf)</strong>. Puedes enviarte el archivo por WhatsApp, AirDrop, Telegram o email y abrirlo en tu móvil para importar todos los contactos a la libreta del teléfono con un solo toque.
+                            </p>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 14px;">
+                            <div style="font-weight: 700; color: #34d399; font-size: 0.86rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                📊 Microsoft Excel & LibreOffice Calc
+                            </div>
+                            <p style="margin: 0; font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;">
+                                Los archivos <strong>CSV Universal</strong> incorporan la marca de orden de bytes (BOM UTF-8). Si tu versión de Excel regional requiere punto y coma como separador de columnas, selecciónalo en los filtros antes de descargar.
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
             </section>
 
             <!-- ══════════════════════════════════════════════════════════════
@@ -1105,8 +1336,188 @@ $category_icons = array(
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════
-     MODAL: CREAR / EDITAR CONTACTO
+     MODAL: TARJETA DE IDENTIDAD DIGITAL DEL CONTACTO (MODAL CON OJO)
 ═══════════════════════════════════════════════════════════════════ -->
+<div id="modal-contact-card" class="aura-modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 100000; backdrop-filter: blur(14px); background: rgba(10, 15, 29, 0.82);">
+    <div class="aura-modal aura-glass-card contact-card-modal-dialog" style="max-width: 620px; width: 92%; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; background: linear-gradient(155deg, rgba(26, 38, 64, 0.96) 0%, rgba(12, 18, 34, 0.98) 100%); border: 1px solid rgba(56, 189, 248, 0.35); box-shadow: 0 25px 65px -12px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.15); max-height: calc(90vh - 20px);">
+        
+        <!-- Cabecera Holográfica de la Tarjeta -->
+        <div style="position: relative; padding: 26px 26px 18px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, rgba(139, 92, 246, 0.18) 50%, rgba(30, 41, 59, 0.4) 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+            <!-- Botón de Cierre Flotante -->
+            <button type="button" class="aura-modal__close" onclick="window.AuraContactsApp.closeContactCard();" style="position: absolute; top: 16px; right: 18px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+                &times;
+            </button>
+
+            <!-- Badges Superiores -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+                <span id="card-category-badge" class="category-pill" style="font-size: 0.76rem; padding: 4px 10px; font-weight: 700;">
+                    🏷️ Categoría
+                </span>
+                <span id="card-type-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; background: rgba(255,255,255,0.06); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1);">
+                    👤 Persona
+                </span>
+                <span id="card-sync-badge" style="margin-left: auto;">
+                    <!-- Badge dinámico de Google Sync -->
+                </span>
+            </div>
+
+            <!-- Hero del Contacto (Avatar + Nombre + Organización) -->
+            <div style="display: flex; align-items: center; gap: 18px;">
+                <!-- Avatar Circular con Halo -->
+                <div id="card-avatar-container" style="position: relative; width: 76px; height: 76px; flex-shrink: 0;">
+                    <div id="card-avatar-halo" style="position: absolute; inset: -3px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #818cf8); filter: blur(5px); opacity: 0.75;"></div>
+                    <div id="card-avatar-inner" style="position: relative; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #1e293b; border: 2px solid rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center;">
+                        <img id="card-avatar-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                        <span id="card-avatar-initials" style="font-size: 1.8rem; font-weight: 800; color: #fff;">C</span>
+                    </div>
+                </div>
+
+                <div style="overflow: hidden; flex: 1;">
+                    <h2 id="card-full-name" style="margin: 0; font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -0.01em; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        Nombre del Contacto
+                    </h2>
+                    <div id="card-job-title" style="font-size: 0.88rem; color: #38bdf8; font-weight: 600; margin-top: 3px;">
+                        Cargo o Puesto
+                    </div>
+                    <div id="card-organization" style="font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 5px; margin-top: 2px;">
+                        <span class="dashicons dashicons-building" style="font-size: 15px; width: 15px; height: 15px;"></span>
+                        <span id="card-org-text">Organización</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra de Acciones Rápidas (Llamar, WhatsApp, Email, Maps, Copiar) -->
+            <div style="display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap;">
+                <a id="card-quick-call" href="#" class="btn btn-sm" style="flex: 1; min-width: 90px; justify-content: center; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); text-decoration: none; font-size: 0.78rem; font-weight: 600; border-radius: 8px;">
+                    <span class="dashicons dashicons-phone" style="font-size: 15px; width: 15px; height: 15px;"></span>
+                    <span>Llamar</span>
+                </a>
+                <a id="card-quick-wa" href="#" target="_blank" class="btn btn-sm" style="flex: 1; min-width: 105px; justify-content: center; background: rgba(37, 211, 102, 0.15); color: #25d366; border: 1px solid rgba(37, 211, 102, 0.35); text-decoration: none; font-size: 0.78rem; font-weight: 600; border-radius: 8px;">
+                    <span class="dashicons dashicons-format-chat" style="font-size: 15px; width: 15px; height: 15px;"></span>
+                    <span>WhatsApp</span>
+                </a>
+                <a id="card-quick-mail" href="#" class="btn btn-sm" style="flex: 1; min-width: 90px; justify-content: center; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); text-decoration: none; font-size: 0.78rem; font-weight: 600; border-radius: 8px;">
+                    <span class="dashicons dashicons-email" style="font-size: 15px; width: 15px; height: 15px;"></span>
+                    <span>Email</span>
+                </a>
+                <a id="card-quick-map" href="#" target="_blank" class="btn btn-sm" style="flex: 1; min-width: 90px; justify-content: center; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); text-decoration: none; font-size: 0.78rem; font-weight: 600; border-radius: 8px;">
+                    <span class="dashicons dashicons-location" style="font-size: 15px; width: 15px; height: 15px;"></span>
+                    <span>Mapa</span>
+                </a>
+                <button type="button" id="card-quick-copy" class="btn btn-sm btn-glass" style="justify-content: center; font-size: 0.78rem; padding: 0 10px; border-radius: 8px;" title="Copiar ficha de contacto al portapapeles">
+                    <span class="dashicons dashicons-admin-page" style="font-size: 15px; width: 15px; height: 15px;"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cuerpo de Detalles de la Tarjeta con Scroll -->
+        <div style="padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
+            
+            <!-- Canales de Contacto (Email y Teléfonos) -->
+            <div style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
+                <div style="font-size: 0.76rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                    <span class="dashicons dashicons-email-alt" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                    <span>Canales de Contacto Directo</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;">Email Principal:</div>
+                        <div id="card-email-primary" style="font-size: 0.85rem; font-weight: 600; color: #fff; word-break: break-all;">—</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;">Email Secundario:</div>
+                        <div id="card-email-secondary" style="font-size: 0.85rem; color: #cbd5e1; word-break: break-all;">—</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;">Teléfono Móvil / Principal:</div>
+                        <div id="card-phone-primary" style="font-size: 0.85rem; font-weight: 600; color: #fff;">—</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;">Teléfono Secundario / Oficina:</div>
+                        <div id="card-phone-secondary" style="font-size: 0.85rem; color: #cbd5e1;">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ubicación y Dirección Física -->
+            <div id="card-address-block" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
+                <div style="font-size: 0.76rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span class="dashicons dashicons-location-alt" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                    <span>Dirección y Ubicación Geográfica</span>
+                </div>
+                <div id="card-full-address" style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
+                    —
+                </div>
+            </div>
+
+            <!-- Etiquetas y Tags -->
+            <div id="card-tags-block" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
+                <div style="font-size: 0.76rem; font-weight: 700; color: #c084fc; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span class="dashicons dashicons-tag" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                    <span>Etiquetas y Grupos de Clasificación</span>
+                </div>
+                <div id="card-tags-container" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <span style="color:#64748b; font-size:0.8rem;">Sin etiquetas asignadas</span>
+                </div>
+            </div>
+
+            <!-- Vinculaciones con el Ecosistema Aura -->
+            <div style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
+                <div style="font-size: 0.76rem; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span class="dashicons dashicons-admin-links" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                    <span>Vinculaciones en Aura Suite</span>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <div id="card-link-tp" style="font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);">
+                        🏢 Sin Tercero vinculado
+                    </div>
+                    <div id="card-link-wp" style="font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; background: rgba(168, 85, 247, 0.1); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.25);">
+                        👤 Sin Usuario WP vinculado
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notas y Observaciones Privadas -->
+            <div id="card-notes-block" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
+                <div style="font-size: 0.76rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                    <span class="dashicons dashicons-edit-page" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                    <span>Notas Internas y Observaciones</span>
+                </div>
+                <div id="card-notes-text" style="font-size: 0.83rem; color: #94a3b8; font-style: italic; line-height: 1.45; white-space: pre-line;">
+                    Sin notas registradas.
+                </div>
+            </div>
+
+            <!-- Metadatos de Auditoría y Google ID -->
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #64748b; padding-top: 4px; flex-wrap: wrap; gap: 8px;">
+                <div>ID Local: #<strong id="card-contact-id" style="color: #94a3b8;">—</strong> | Creado: <span id="card-created-at">—</span></div>
+                <div id="card-google-resource" style="font-family: monospace; font-size: 0.7rem; color: #94a3b8;">
+                    <!-- Google Resource ID -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer con Acciones de la Tarjeta -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-primary btn-sm btn-lift" id="card-btn-edit" style="display: flex; align-items: center; gap: 6px;">
+                    <span class="dashicons dashicons-edit"></span>
+                    <span>Editar Contacto</span>
+                </button>
+                <button type="button" class="btn btn-glass btn-sm btn-lift" id="card-btn-sync" style="display: flex; align-items: center; gap: 6px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.35);">
+                    <span class="dashicons dashicons-cloud"></span>
+                    <span>Sincronizar con Google</span>
+                </button>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="window.AuraContactsApp.closeContactCard();">
+                <?php esc_html_e( 'Cerrar', 'aura-suite' ); ?>
+            </button>
+        </div>
+
+    </div>
+</div>
+
 <!-- ══════════════════════════════════════════════════════════════════
      MODAL: CREAR / EDITAR CONTACTO (UX/UI PROFESIONAL Y ELEGANTE)
 ═══════════════════════════════════════════════════════════════════ -->
