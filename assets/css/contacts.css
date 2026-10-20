@@ -352,7 +352,7 @@
     color: #ffffff;
 }
 
-/* ── Modals Overlay ──────────────────────────────────────────────────────── */
+/* ── Modales del Directorio de Contactos (Arquitectura UX/UI Responsiva de Alta Gama) ──── */
 .aura-modal-overlay {
     position: fixed !important;
     top: 0 !important;
@@ -361,22 +361,23 @@
     bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    background: rgba(15, 23, 42, 0.8) !important;
-    backdrop-filter: blur(8px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(8px) saturate(180%) !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(10px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(180%) !important;
     display: none;
     align-items: center !important;
     justify-content: center !important;
     z-index: 999999 !important;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     overflow-y: auto !important;
-    padding: 20px 16px !important;
+    padding: clamp(12px, 2.5vh, 28px) clamp(10px, 2vw, 20px) !important;
     box-sizing: border-box !important;
 }
 
 .aura-modal-overlay.active,
-.aura-modal-overlay[style*="display: flex"] {
+.aura-modal-overlay[style*="display: flex"],
+.aura-modal-overlay[style*="display: block"] {
     display: flex !important;
     opacity: 1 !important;
     visibility: visible !important;
@@ -389,16 +390,32 @@
     visibility: hidden !important;
 }
 
+/* Forzar estado flex centrado para los modales de contactos cuando estén visibles */
+#modal-contact-form:not([style*="display: none"]),
+#modal-link-entity:not([style*="display: none"]),
+#modal-oauth-tutorial:not([style*="display: none"]),
+#modal-merge-contacts:not([style*="display: none"]),
+#modal-bulk-edit-contacts:not([style*="display: none"]) {
+    display: flex !important;
+}
+
+/* Diálogo Base de Modal Aura */
 .aura-modal {
     position: relative !important;
     border-radius: 16px !important;
-    padding: 24px !important;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
-    animation: modalSlideUp 0.22s ease-out;
-    max-height: calc(100vh - 40px) !important;
+    padding: 0 !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12) !important;
+    animation: modalSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: min(92vh, calc(100vh - 36px)) !important;
+    height: auto !important;
     display: flex !important;
     flex-direction: column !important;
     margin: auto !important;
+    background: rgba(15, 23, 42, 0.96) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
 }
 
 @keyframes modalSlideUp {
@@ -412,39 +429,148 @@
     }
 }
 
+/* Modales específicos por rol y tamaño */
+.contact-modal-dialog {
+    max-width: 780px !important;
+    width: 95% !important;
+    border-radius: 18px !important;
+}
+
+.link-modal-dialog {
+    max-width: 520px !important;
+    width: 92% !important;
+    border-radius: 16px !important;
+}
+
+.oauth-tutorial-dialog {
+    max-width: 820px !important;
+    width: 94% !important;
+    border-radius: 18px !important;
+}
+
+.merge-modal-dialog {
+    max-width: 960px !important;
+    width: 95% !important;
+    border-radius: 18px !important;
+}
+
+.bulk-modal-dialog {
+    max-width: 580px !important;
+    width: 92% !important;
+    border-radius: 16px !important;
+}
+
+/* Cabecera Estándar de Modal */
 .aura-modal__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0 !important;
+    padding: 16px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.6) 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .aura-modal__title {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #ffffff;
+    margin: 0 !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 
+/* Botón de Cierre Moderno y Táctil */
 .aura-modal__close {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    font-size: 1.6rem;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0 4px;
+    width: 34px !important;
+    height: 34px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #94a3b8 !important;
+    font-size: 1.35rem !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    transition: all 0.15s ease !important;
+    flex-shrink: 0 !important;
 }
 
-.aura-modal__close:hover {
-    color: #ffffff;
+.aura-modal__close:hover,
+.aura-modal__close:focus {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
+    border-color: rgba(239, 68, 68, 0.35) !important;
+    outline: none !important;
+    transform: scale(1.05) !important;
 }
 
+/* Cuerpo Estándar de Modal (Scrollable con Flexbox) */
+.aura-modal__body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    padding: 22px 24px !important;
+    box-sizing: border-box !important;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(56, 189, 248, 0.35) rgba(15, 23, 42, 0.4);
+}
+
+.aura-modal__body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.aura-modal__body::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 4px;
+}
+
+.aura-modal__body::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.35);
+    border-radius: 4px;
+}
+
+.aura-modal__body::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.6);
+}
+
+/* Pie Estándar de Modal (Fijo, Siempre Visible) */
 .aura-modal__footer {
-    padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    margin-top: 16px;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 14px 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    background: rgba(15, 23, 42, 0.96) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    z-index: 10 !important;
+    box-sizing: border-box !important;
+}
+
+/* Grids Flexibles para Formularios de Modales */
+.contact-form-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.contact-form-grid-2col {
+    grid-template-columns: 1fr 1fr;
+}
+
+.contact-form-grid-address {
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 12px;
 }
 
 /* Spinner helper */
@@ -1041,7 +1167,288 @@
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
     background: rgba(15, 23, 42, 0.95) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-sizing: border-box !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   REGLAS ESPECÍFICAS DE MODALES DE CONTACTOS Y ADAPTABILIDAD UX
+═══════════════════════════════════════════════════════════════ */
+
+/* Modal Vincular Entidad */
+.link-modal-dialog {
+    max-width: 520px !important;
+    width: 92% !important;
+}
+
+.link-modal-body {
+    padding: 20px 24px !important;
+}
+
+/* Modal Tutorial OAuth */
+.oauth-tutorial-dialog {
+    max-width: 820px !important;
+    width: 94% !important;
+}
+
+.oauth-tutorial-body {
+    padding: 20px 24px !important;
+    gap: 18px !important;
+}
+
+/* Modal Bulk Edit */
+.bulk-modal-dialog {
+    max-width: 580px !important;
+    width: 92% !important;
+}
+
+.bulk-modal-body {
+    padding: 22px 24px !important;
+}
+
+/* Ajustes globales de botones en modales */
+.contact-modal-footer .btn,
+.merge-modal-footer .btn,
+.aura-modal__footer .btn {
+    white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MEDIA QUERIES: ADAPTABILIDAD A PANTALLAS Y VIEWPORTS REDUCIDOS
+═══════════════════════════════════════════════════════════════ */
+
+/* Tablets y pantallas medianas (<= 768px) */
+@media (max-width: 768px) {
+    .contact-form-grid-2col,
+    .contact-form-grid-address {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .merge-options-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .contact-identity-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+}
+
+/* Teléfonos y pantallas angostas (<= 640px) */
+@media (max-width: 640px) {
+    .aura-modal-overlay {
+        padding: 8px !important;
+        align-items: flex-start !important;
+    }
+
+    .aura-modal,
+    .contact-modal-dialog,
+    .link-modal-dialog,
+    .oauth-tutorial-dialog,
+    .merge-modal-dialog,
+    .bulk-modal-dialog {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 14px !important;
+        margin: 6px auto !important;
+        max-height: calc(100vh - 16px) !important;
+    }
+
+    .aura-modal__header,
+    .contact-modal-header,
+    .merge-modal-header {
+        padding: 12px 16px !important;
+    }
+
+    .aura-modal__title,
+    .contact-modal-title-text h3 {
+        font-size: 1.05rem !important;
+    }
+
+    .contact-modal-title-text p,
+    .merge-modal-header p {
+        display: none !important; /* Oculta subtítulos largos en móvil para ganar altura */
+    }
+
+    .contact-modal-icon-badge {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 16px !important;
+    }
+
+    .contact-modal-tabs {
+        padding: 0 12px !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .contact-modal-tab-btn {
+        padding: 8px 10px !important;
+        font-size: 0.78rem !important;
+        white-space: nowrap !important;
+    }
+
+    .aura-modal__body,
+    .contact-modal-body,
+    .merge-modal-body,
+    .bulk-modal-body,
+    .link-modal-body,
+    .oauth-tutorial-body {
+        padding: 16px !important;
+        gap: 14px !important;
+    }
+
+    .contact-type-selector {
+        flex-direction: column !important;
+    }
+
+    /* Footers en móvil: botones apilados fluidamente */
+    .aura-modal__footer,
+    .contact-modal-footer,
+    .merge-modal-footer,
+    .bulk-modal-footer {
+        padding: 12px 16px !important;
+        flex-direction: column-reverse !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    .bulk-modal-footer .bulk-footer-left,
+    .bulk-modal-footer .bulk-footer-right,
+    .contact-modal-footer > div {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .aura-modal__footer .btn,
+    .contact-modal-footer .btn,
+    .merge-modal-footer .btn,
+    .bulk-modal-footer .btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 10px 14px !important;
+    }
+}
+
+/* Laptops y pantallas de baja altura (<= 750px de alto) */
+@media (max-height: 750px) {
+    .aura-modal-overlay {
+        padding: 8px 12px !important;
+    }
+
+    .aura-modal,
+    .contact-modal-dialog,
+    .link-modal-dialog,
+    .oauth-tutorial-dialog,
+    .merge-modal-dialog,
+    .bulk-modal-dialog {
+        max-height: calc(100vh - 16px) !important;
+    }
+
+    .aura-modal__header,
+    .contact-modal-header,
+    .merge-modal-header {
+        padding: 10px 18px !important;
+    }
+
+    .contact-modal-title-text p,
+    .merge-modal-header p {
+        font-size: 0.75rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .contact-modal-icon-badge {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 16px !important;
+    }
+
+    .contact-modal-tabs {
+        padding: 0 16px !important;
+    }
+
+    .contact-modal-tab-btn {
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
+    }
+
+    .aura-modal__body,
+    .contact-modal-body,
+    .merge-modal-body,
+    .bulk-modal-body,
+    .link-modal-body,
+    .oauth-tutorial-body {
+        padding: 14px 18px !important;
+        gap: 12px !important;
+    }
+
+    .contact-identity-hero {
+        padding: 10px 14px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .contact-avatar-preview-box {
+        width: 52px !important;
+        height: 52px !important;
+    }
+
+    .contact-avatar-preview-initials {
+        font-size: 1.1rem !important;
+    }
+
+    .aura-modal__footer,
+    .contact-modal-footer,
+    .merge-modal-footer,
+    .bulk-modal-footer {
+        padding: 10px 18px !important;
+    }
+
+    .contact-modal-dialog .aura-input,
+    .contact-modal-dialog .aura-select {
+        height: 38px !important;
+        font-size: 0.84rem !important;
+    }
+
+    .contact-modal-dialog textarea.aura-textarea {
+        min-height: 65px !important;
+    }
+}
+
+/* Pantallas ultra-cortas o teclados virtuales en pantalla (<= 580px de alto) */
+@media (max-height: 580px) {
+    .aura-modal-overlay {
+        padding: 4px !important;
+    }
+
+    .aura-modal__header,
+    .contact-modal-header,
+    .merge-modal-header {
+        padding: 8px 14px !important;
+    }
+
+    .contact-modal-title-text p,
+    .merge-modal-header p,
+    .aura-modal__header p {
+        display: none !important;
+    }
+
+    .aura-modal__body,
+    .contact-modal-body,
+    .merge-modal-body {
+        padding: 10px 14px !important;
+    }
+
+    .aura-modal__footer,
+    .contact-modal-footer,
+    .merge-modal-footer {
+        padding: 8px 14px !important;
+    }
 }
 

@@ -1425,6 +1425,7 @@
     // ── Wizard de Fusión Asistida y Selección Campo a Campo ──────────────────────
     window.closeMergeModal = function() {
         $('#modal-merge-contacts').fadeOut(150);
+        $('#btn-submit-merge-action').prop('disabled', false).html('<span class="dashicons dashicons-randomize"></span> <span>Confirmar y Fusionar Contactos</span>');
     };
 
     function openMergeWizard(cluster, clusterIdx) {
@@ -1693,6 +1694,9 @@
         // Actualizar previsualización inicial
         updateMergePreview();
 
+        // Reactivar botón de confirmación
+        $('#btn-submit-merge-action').prop('disabled', false).html('<span class="dashicons dashicons-randomize"></span> <span>Confirmar y Fusionar Contactos</span>');
+
         // Mostrar modal con centrado inteligente
         $('#modal-merge-contacts').css('display', 'flex').hide().fadeIn(150);
     }
@@ -1811,6 +1815,7 @@
             source_ids: sourceIds,
             field_overrides: overrides
         }, function(res) {
+            if (origHtml) $btn.prop('disabled', false).html(origHtml);
             if (res.success) {
                 closeMergeModal();
                 showToast('Fusión exitosa: Se unificaron ' + sourceIds.length + ' contacto(s) en la ficha #' + targetId);
@@ -1829,7 +1834,6 @@
                 fetchContacts();
                 refreshStats();
             } else {
-                if (origHtml) $btn.prop('disabled', false).html(origHtml);
                 alert(res.data && res.data.message ? res.data.message : 'Error al fusionar contactos.');
             }
         }).fail(function() {
@@ -2386,6 +2390,40 @@
             $toast.fadeOut(300, function() { $(this).remove(); });
         }, 3200);
     }
+
+    // ── Cierre de Modales por Teclado (Escape) y Clic en Overlay ─────────────
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' || e.keyCode === 27) {
+            if ($('#modal-contact-form').is(':visible')) {
+                closeContactModal();
+            } else if ($('#modal-bulk-edit-contacts').is(':visible')) {
+                closeBulkModal();
+            } else if ($('#modal-merge-contacts').is(':visible')) {
+                closeMergeModal();
+            } else if ($('#modal-link-entity').is(':visible')) {
+                closeLinkModal();
+            } else if ($('#modal-oauth-tutorial').is(':visible')) {
+                closeOAuthTutorial();
+            }
+        }
+    });
+
+    $(document).on('click', '.aura-modal-overlay', function(e) {
+        if ($(e.target).hasClass('aura-modal-overlay')) {
+            var id = $(this).attr('id');
+            if (id === 'modal-contact-form') {
+                closeContactModal();
+            } else if (id === 'modal-bulk-edit-contacts') {
+                closeBulkModal();
+            } else if (id === 'modal-merge-contacts') {
+                closeMergeModal();
+            } else if (id === 'modal-link-entity') {
+                closeLinkModal();
+            } else if (id === 'modal-oauth-tutorial') {
+                closeOAuthTutorial();
+            }
+        }
+    });
 
     // Exponer API para botones inline
     window.AuraContactsApp = {

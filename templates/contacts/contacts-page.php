@@ -311,17 +311,15 @@ $category_icons = array(
                         </select>
 
                         <?php if ( $can_edit ) : ?>
-                            <button type="button" class="btn btn-secondary btn-sm" id="btn-contacts-bulk-edit" onclick="if(window.openBulkModal){window.openBulkModal();}else if(window.AuraContactsApp&&window.AuraContactsApp.openBulkEditModal){window.AuraContactsApp.openBulkEditModal();}" style="display: none; align-items: center; gap: 6px; font-weight: 600; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-contacts-bulk-edit" onclick="if(window.openBulkModal){window.openBulkModal();}else if(window.AuraContactsApp&&window.AuraContactsApp.openBulkEditModal){window.AuraContactsApp.openBulkEditModal();}" style="display: none; align-items: center; gap: 6px; font-weight: 600; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);" title="<?php esc_attr_e( 'Edición Masiva', 'aura-suite' ); ?>">
                                 <span class="dashicons dashicons-edit"></span>
-                                <span><?php esc_html_e( 'Edición Masiva', 'aura-suite' ); ?></span>
                                 <span class="badge" id="contacts-bulk-count" style="background: #2563eb; color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 0.75rem; font-weight: 700;">0</span>
                             </button>
                         <?php endif; ?>
 
                         <?php if ( $can_delete ) : ?>
-                            <button type="button" class="btn btn-danger btn-sm" id="btn-contacts-bulk-delete" style="display: none; align-items: center; gap: 6px; font-weight: 600; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
+                            <button type="button" class="btn btn-danger btn-sm" id="btn-contacts-bulk-delete" style="display: none; align-items: center; gap: 6px; font-weight: 600; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);" title="<?php esc_attr_e( 'Borrar contactos seleccionados', 'aura-suite' ); ?>">
                                 <span class="dashicons dashicons-trash"></span>
-                                <span><?php esc_html_e( 'Borrar', 'aura-suite' ); ?></span>
                                 <span class="badge" id="contacts-bulk-delete-count" style="background: #dc2626; color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 0.75rem; font-weight: 700;">0</span>
                             </button>
                         <?php endif; ?>
@@ -1064,7 +1062,7 @@ $category_icons = array(
                     </div>
 
                     <!-- Campos de Nombres y Apellidos -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;" id="contact-name-fields-row">
+                    <div class="contact-form-grid contact-form-grid-2col" id="contact-name-fields-row" style="margin-bottom: 14px;">
                         <div class="aura-form-group">
                             <label for="contact-first-name" class="aura-form-label" id="contact-label-first-name">
                                 <?php esc_html_e( 'Nombre(s)', 'aura-suite' ); ?> <span style="color:#ef4444;">*</span>
@@ -1086,7 +1084,7 @@ $category_icons = array(
                     </div>
 
                     <!-- Organización y Categoría -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="contact-form-grid contact-form-grid-2col" style="margin-bottom: 14px;">
                         <div class="aura-form-group">
                             <label for="contact-organization" class="aura-form-label" id="contact-label-organization">
                                 <?php esc_html_e( 'Organización / Empresa', 'aura-suite' ); ?>
@@ -1105,7 +1103,7 @@ $category_icons = array(
                                 <select id="contact-category" name="category" class="aura-select" required>
                                     <?php foreach ( $categories as $ckey => $clabel ) : ?>
                                         <option value="<?php echo esc_attr( $ckey ); ?>">
-                                            <?php echo esc_html( ( $category_icons[ $ckey ] ?? '🏷️' ) . ' ' . $clabel ); ?>
+                                             <?php echo esc_html( ( $category_icons[ $ckey ] ?? '🏷️' ) . ' ' . $clabel ); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -1130,7 +1128,7 @@ $category_icons = array(
                 <div id="cmodal-tab-comms" class="contact-modal-tab-pane" style="display: none;">
                     
                     <!-- Fila: Correo Primario y Secundario -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="contact-form-grid contact-form-grid-2col" style="margin-bottom: 14px;">
                         <div class="aura-form-group">
                             <label for="contact-email" class="aura-form-label">
                                 <?php esc_html_e( 'Correo Electrónico Principal', 'aura-suite' ); ?>
@@ -1152,7 +1150,7 @@ $category_icons = array(
                     </div>
 
                     <!-- Fila: Teléfono Primario y WhatsApp -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                    <div class="contact-form-grid contact-form-grid-2col" style="margin-bottom: 14px;">
                         <div class="aura-form-group">
                             <label for="contact-phone" class="aura-form-label">
                                 <?php esc_html_e( 'Teléfono / Móvil', 'aura-suite' ); ?>
@@ -1186,7 +1184,7 @@ $category_icons = array(
                     </div>
 
                     <!-- Ciudad, Estado, País, Código Postal -->
-                    <div style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 12px;">
+                    <div class="contact-form-grid contact-form-grid-address" style="margin-bottom: 14px;">
                         <div class="aura-form-group">
                             <label for="contact-address-city" class="aura-form-label"><?php esc_html_e( 'Ciudad', 'aura-suite' ); ?></label>
                             <div class="contact-input-icon-wrap">
@@ -1264,7 +1262,7 @@ $category_icons = array(
      MODAL: VINCULAR TERCERO O USUARIO WP A CONTACTO EXISTENTE
 ═══════════════════════════════════════════════════════════════════ -->
 <div id="modal-link-entity" class="aura-modal-overlay" style="display: none;">
-    <div class="aura-modal aura-glass-card" style="max-width: 520px; width: 92%;">
+    <div class="aura-modal aura-glass-card link-modal-dialog">
         <div class="aura-modal__header">
             <h3 class="aura-modal__title">
                 🔗 <?php esc_html_e( 'Vincular Entidad al Contacto', 'aura-suite' ); ?>
@@ -1272,7 +1270,7 @@ $category_icons = array(
             <button type="button" class="aura-modal__close" onclick="closeLinkModal();">&times;</button>
         </div>
 
-        <div class="aura-modal__body" style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="aura-modal__body link-modal-body" style="display: flex; flex-direction: column; gap: 16px;">
             <input type="hidden" id="link-target-contact-id" value="0">
             <p id="link-contact-name-banner" style="margin: 0; font-weight: 600; color: #38bdf8;"></p>
 
@@ -1310,7 +1308,7 @@ $category_icons = array(
             </div>
         </div>
 
-        <div class="aura-modal__footer" style="display: flex; justify-content: flex-end;">
+        <div class="aura-modal__footer" style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
             <button type="button" class="btn btn-glass" onclick="closeLinkModal();"><?php esc_html_e( 'Cerrar', 'aura-suite' ); ?></button>
         </div>
     </div>
@@ -1320,8 +1318,8 @@ $category_icons = array(
      MODAL: TUTORIAL PASO A PASO GOOGLE OAUTH 2.0 & PEOPLE API
 ═══════════════════════════════════════════════════════════════════ -->
 <div id="modal-oauth-tutorial" class="aura-modal-overlay" style="display: none;">
-    <div class="aura-modal aura-glass-card" style="max-width: 820px; width: 94%;">
-        <div class="aura-modal__header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px;">
+    <div class="aura-modal aura-glass-card oauth-tutorial-dialog">
+        <div class="aura-modal__header">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: #38bdf8;">
                     <span class="dashicons dashicons-google" style="font-size: 22px; width: 22px; height: 22px;"></span>
@@ -1338,7 +1336,7 @@ $category_icons = array(
             <button type="button" class="aura-modal__close" onclick="closeOAuthTutorial();">&times;</button>
         </div>
 
-        <div class="aura-modal__body" style="display: flex; flex-direction: column; gap: 20px; max-height: 72vh; overflow-y: auto; padding: 20px 10px 20px 0;">
+        <div class="aura-modal__body oauth-tutorial-body" style="display: flex; flex-direction: column; gap: 18px; padding: 20px 24px;">
             
             <!-- Paso 1 -->
             <div style="display: flex; gap: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 16px; border-radius: 10px;">
@@ -1468,11 +1466,11 @@ $category_icons = array(
 
         </div>
 
-        <div class="aura-modal__footer" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
+        <div class="aura-modal__footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding: 14px 24px; background: rgba(15, 23, 42, 0.95);">
             <span style="font-size: 0.8rem; color: #94a3b8;">
                 💡 <?php esc_html_e( 'Si tu sincronización muestra fallos, verifica en la pestaña "Historial Sync" el código de error devuelto por Google.', 'aura-suite' ); ?>
             </span>
-            <button type="button" class="btn btn-primary btn-sm" onclick="closeOAuthTutorial();">
+            <button type="button" class="btn btn-primary btn-sm btn-lift" onclick="closeOAuthTutorial();">
                 <?php esc_html_e( 'Entendido, Cerrar Tutorial', 'aura-suite' ); ?>
             </button>
         </div>
@@ -1512,7 +1510,7 @@ $category_icons = array(
             <button type="button" class="btn btn-secondary btn-sm" onclick="closeMergeModal();">
                 <?php esc_html_e( 'Cancelar Fusión', 'aura-suite' ); ?>
             </button>
-            <button type="button" class="btn btn-emerald btn-sm btn-shimmer btn-lift" id="btn-submit-merge-action">
+            <button type="button" class="btn btn-emerald btn-sm btn-shimmer btn-lift" id="btn-submit-merge-action" style="display: inline-flex; align-items: center; gap: 6px;">
                 <span class="dashicons dashicons-randomize"></span>
                 <span><?php esc_html_e( 'Confirmar y Fusionar Contactos', 'aura-suite' ); ?></span>
             </button>
@@ -1524,9 +1522,9 @@ $category_icons = array(
      MODAL DE EDICIÓN MASIVA DE CONTACTOS (AURA ENTERPRISE BULK EDIT)
 ═══════════════════════════════════════════════════════════════════ -->
 <div id="modal-bulk-edit-contacts" class="aura-modal-overlay is-hidden" style="display: none; z-index: 999999;">
-    <div class="aura-modal aura-glass-card" style="max-width: 580px; width: 92%; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.12);">
+    <div class="aura-modal aura-glass-card bulk-modal-dialog">
         <!-- Cabecera del Modal -->
-        <div class="aura-modal__header" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
+        <div class="aura-modal__header">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
                     <span class="dashicons dashicons-edit"></span>
@@ -1546,7 +1544,7 @@ $category_icons = array(
         </div>
 
         <!-- Cuerpo del Modal -->
-        <div class="aura-modal__body" style="padding: 22px 24px; max-height: 70vh; overflow-y: auto;">
+        <div class="aura-modal__body bulk-modal-body" style="padding: 22px 24px;">
             <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; color: #93c5fd; font-size: 0.84rem; display: flex; align-items: flex-start; gap: 10px;">
                 <span class="dashicons dashicons-info" style="font-size: 18px; width: 18px; height: 18px; margin-top: 1px; flex-shrink: 0;"></span>
                 <span>
@@ -1626,8 +1624,8 @@ $category_icons = array(
         </div>
 
         <!-- Footer del Modal -->
-        <div class="aura-modal__footer" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
-            <div>
+        <div class="aura-modal__footer bulk-modal-footer" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(15, 23, 42, 0.95);">
+            <div class="bulk-footer-left">
                 <?php if ( $can_delete ) : ?>
                     <button type="button" class="btn btn-danger btn-sm btn-lift" id="btn-bulk-modal-delete" style="display: flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
                         <span class="dashicons dashicons-trash"></span>
@@ -1635,7 +1633,7 @@ $category_icons = array(
                     </button>
                 <?php endif; ?>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="bulk-footer-right" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-bulk-modal" onclick="if(window.closeBulkModal){window.closeBulkModal();}else if(window.AuraContactsApp&&window.AuraContactsApp.closeBulkEditModal){window.AuraContactsApp.closeBulkEditModal();}">
                     <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
                 </button>
