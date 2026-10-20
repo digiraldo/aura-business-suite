@@ -137,17 +137,29 @@ class Aura_Contacts_Sync {
      * @param int $limit
      * @return array
      */
-    public static function push_pending_contacts( int $limit = 50 ): array {
+    public static function push_pending_contacts( int $limit = 100 ): array {
         global $wpdb;
-        $table = $wpdb->prefix . 'aura_contacts';
+        $table        = $wpdb->prefix . 'aura_contacts';
+        $t_google_map = $wpdb->prefix . 'aura_contacts_google_map';
 
-        // Buscar contactos activos con cambios pendientes o que hayan tenido error previo
-        $pending_ids = $wpdb->get_col(
-            $wpdb->prepare(
-                "SELECT id FROM {$table} WHERE is_active = 1 AND sync_status IN ('pending', 'error') ORDER BY updated_at ASC LIMIT %d",
-                $limit
-            )
+        $provider       = Aura_Google_Auth_Factory::get_provider();
+        $google_account = $provider->get_account_email();
+
+        // Buscar contactos activos que requieran sincronización:
+        // 1. Aquellos con sync_status 'pending' o 'error'.
+        // 2. Aquellos que aún NO están mapeados en Google Contacts para esta cuenta.
+        $query = $wpdb->prepare(
+            "SELECT c.id 
+             FROM {$table} c
+             LEFT JOIN {$t_google_map} m ON (c.id = m.contact_id AND m.google_account = %s)
+             WHERE c.is_active = 1 
+               AND (c.sync_status IN ('pending', 'error') OR m.id IS NULL)
+             ORDER BY c.updated_at ASC 
+             LIMIT %d",
+            $google_account,
+            $limit
         );
+        $pending_ids = $wpdb->get_col( $query );
 
         $success_count = 0;
         $error_count   = 0;
@@ -419,11 +431,65 @@ class Aura_Contacts_Sync {
             // Contacto activo en Google: mapear a formato Aura
             $mapped = Aura_Google_Contacts::map_google_to_contact( $person );
 
-            // PRIORIDAD LOCAL -> GOOGLE:
-            // 1. Si ya existe en el mapa: NO sobreescribir datos locales, preservar las ediciones locales.
+            // 1. Si ya existe en el mapa: comparar y actualizar cambios provenientes de Google Contacts
             if ( $map ) {
-                $cid = (int) $map['contact_id'];
+                $cid      = (int) $map['contact_id'];
                 $existing = Aura_Contacts::get_contact( $cid );
+
+                if ( ! $existing ) {
+                    // Contacto local no existe, limpiar mapa huérfano
+                    $wpdb->delete( $t_google_map, array( 'id' => $map['id'] ) );
+                    continue;
+                }
+
+                // Si el contacto local NO tiene cambios pendientes de subida ('pending'),
+                // analizamos los campos para detectar qué ha cambiado en Google:
+                if ( 'pending' !== $existing['sync_status'] ) {
+                    $diff_updates   = array();
+                    $compare_fields = array(
+                        'first_name', 'last_name', 'organization', 'job_title',
+                        'email_primary', 'email_secondary', 'phone_primary', 'phone_secondary',
+                        'notes', 'address_street', 'address_city', 'address_state',
+                        'address_postal_code', 'address_country',
+                    );
+
+                    foreach ( $compare_fields as $f ) {
+                        $val_google = isset( $mapped[ $f ] ) ? trim( (string) $mapped[ $f ] ) : '';
+                        $val_local  = isset( $existing[ $f ] ) ? trim( (string) $existing[ $f ] ) : '';
+
+                        // Si Google tiene un valor y difiere del valor local, actualizar
+                        if ( '' !== $val_google && $val_google !== $val_local ) {
+                            $diff_updates[ $f ] = $val_google;
+                        }
+                    }
+
+                    // Sincronizar foto de perfil si el contacto local carece de avatar y Google sí tiene
+                    if ( empty( $existing['avatar_url'] ) && ! empty( $mapped['avatar_url'] ) ) {
+                        $diff_updates['avatar_url'] = $mapped['avatar_url'];
+                    }
+
+                    if ( ! empty( $diff_updates ) ) {
+                        $diff_updates['sync_status'] = 'synced';
+                        $diff_updates['sync_error']  = null;
+                        $diff_updates['updated_at']  = current_time( 'mysql' );
+
+                        $wpdb->update( $t_contacts, $diff_updates, array( 'id' => $cid ) );
+                        Aura_Contacts_Setup::log_sync(
+                            $cid,
+                            $google_account,
+                            'pull',
+                            'update',
+                            'success',
+                            'Campos actualizados desde Google Contacts: ' . implode( ', ', array_keys( $diff_updates ) )
+                        );
+                        $updated_count++;
+                    } else {
+                        $wpdb->update( $t_contacts, array( 'sync_status' => 'synced', 'sync_error' => null ), array( 'id' => $cid ) );
+                        Aura_Contacts_Setup::log_sync( $cid, $google_account, 'pull', 'skip', 'success', 'Contacto sincronizado (sin diferencias de datos)' );
+                    }
+                } else {
+                    Aura_Contacts_Setup::log_sync( $cid, $google_account, 'pull', 'skip', 'success', 'Prioridad Local preservada (cambios locales pendientes de subida)' );
+                }
 
                 // Actualizar sólo el etag y timestamp de mapeo de Google
                 $wpdb->update(
@@ -435,13 +501,6 @@ class Aura_Contacts_Sync {
                     array( 'id' => $map['id'] )
                 );
 
-                // Si no hay cambios locales pendientes, marcar como sincronizado
-                if ( ! $existing || 'pending' !== $existing['sync_status'] ) {
-                    $wpdb->update( $t_contacts, array( 'sync_status' => 'synced', 'sync_error' => null ), array( 'id' => $cid ) );
-                }
-
-                Aura_Contacts_Setup::log_sync( $cid, $google_account, 'pull', 'skip', 'success', 'Prioridad Local preservada (contacto no sobreescrito)' );
-                $updated_count++;
                 continue;
             }
 

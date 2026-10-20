@@ -1484,24 +1484,53 @@
 
         var preselectedMasterId = parseInt($('input[name="master_cluster_' + clusterIdx + '"]:checked').val()) || activeContacts[0].id;
 
-        // Construir contenido dinámico del modal
+        // Construir contenido dinámico del modal ultra-compacto
         var mHtml = '';
 
-        // 1. Selector de Registro Maestro (Destino del ID)
-        mHtml += '<div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px;margin-bottom:20px;">';
-        mHtml += '<div style="font-size:0.85rem;font-weight:700;color:#c4b5fd;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">👑 1. Selecciona el Contacto Maestro (ID Base que se conservará en BD):</div>';
-        mHtml += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;">';
+        // 1. Selector Superior: Registro Maestro (Destino del ID)
+        mHtml += '<div class="merge-master-bar">';
+        mHtml += '<div class="merge-master-title"><span class="dashicons dashicons-star-filled" style="color:#fbbf24;font-size:14px;width:14px;height:14px;"></span> 1. Contacto Maestro Base (Prevalecerá su ID en BD):</div>';
+        mHtml += '<div class="merge-master-options">';
         activeContacts.forEach(function(c) {
             var isMaster = (parseInt(c.id) === preselectedMasterId);
-            mHtml += '<label class="merge-option-label ' + (isMaster ? 'is-selected' : '') + '">';
+            var fullName = (c.first_name || '') + (c.last_name ? ' ' + c.last_name : '');
+            var infoExtra = c.email_primary || c.phone_primary || (c.organization ? c.organization : 'Sin email/tel');
+            mHtml += '<label class="merge-master-pill ' + (isMaster ? 'is-selected' : '') + '">';
             mHtml += '<input type="radio" name="wizard_target_id" value="' + c.id + '" ' + (isMaster ? 'checked' : '') + ' class="merge-option-radio" onchange="onWizardMasterChange(this);">';
-            mHtml += '<div><strong style="color:#fff;font-size:0.9rem;">#' + c.id + ' — ' + escapeHtml(c.first_name + ' ' + (c.last_name || '')) + '</strong>';
-            mHtml += '<div style="font-size:0.75rem;color:#94a3b8;margin-top:2px;">' + (c.email_primary ? escapeHtml(c.email_primary) : 'Sin correo') + '</div></div>';
-            mHtml += '</label>';
+            mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">';
+            mHtml += '<strong style="color:#fff;font-size:0.82rem;">👑 #' + c.id + ' — ' + escapeHtml(fullName) + '</strong>';
+            mHtml += '<div style="font-size:0.71rem;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(infoExtra) + '</div>';
+            mHtml += '</div></label>';
         });
         mHtml += '</div></div>';
 
-        // 2. Campo: Nombre y Apellidos
+        // 2. Banner Superior: Previsualización en Vivo de la Ficha Resultante
+        mHtml += '<div class="merge-preview-card" id="merge-live-preview-box">';
+        mHtml += '<div class="merge-preview-header"><span class="dashicons dashicons-visibility" style="font-size:13px;width:13px;height:13px;"></span> Ficha Maestra Resultante (Previsualización en Vivo):</div>';
+        mHtml += '<div class="merge-preview-content">';
+        mHtml += '<div id="prev-avatar-wrap" class="merge-preview-avatar">👤</div>';
+        mHtml += '<div class="merge-preview-details">';
+        mHtml += '<div class="merge-preview-name-row">';
+        mHtml += '<span class="merge-preview-name" id="prev-name">Cargando...</span>';
+        mHtml += '<span class="merge-preview-org" id="prev-org-job"></span>';
+        mHtml += '</div>';
+        mHtml += '<div class="merge-preview-chips">';
+        mHtml += '<span id="prev-email">✉️ —</span>';
+        mHtml += '<span id="prev-phone">📞 —</span>';
+        mHtml += '<span id="prev-cat" style="color:#a78bfa;">🏷️ —</span>';
+        mHtml += '<span id="prev-tags" style="color:#38bdf8;">🏷️ —</span>';
+        mHtml += '</div>';
+        mHtml += '</div>';
+        mHtml += '</div>';
+        mHtml += '</div>';
+
+        // 3. Grid de Campos a 2 Columnas
+        mHtml += '<div class="merge-fields-grid-2col">';
+
+        // ── COLUMNA 1: IDENTIDAD & EMPRESA ──
+        mHtml += '<div class="merge-column">';
+
+        // Campo: Nombre y Apellidos
         var distinctNames = [];
         activeContacts.forEach(function(c) {
             var fn = (c.first_name || '').trim();
@@ -1514,13 +1543,13 @@
         });
 
         mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">👤 Nombre y Apellidos</span><span style="font-size:0.75rem;color:#94a3b8;">Elige una opción o edita el nombre final</span></div>';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">👤 Nombre y Apellidos</span><span style="font-size:0.71rem;color:#94a3b8;">Elige u edita abajo</span></div>';
         mHtml += '<div class="merge-options-grid">';
         distinctNames.forEach(function(n, nIdx) {
             var isChk = (nIdx === 0);
             mHtml += '<label class="merge-option-label ' + (isChk ? 'is-selected' : '') + '">';
             mHtml += '<input type="radio" name="wizard_field_name" value="' + nIdx + '" ' + (isChk ? 'checked' : '') + ' class="merge-option-radio" data-first="' + escapeHtml(n.first) + '" data-last="' + escapeHtml(n.last) + '" onchange="onWizardNameChange(this);">';
-            mHtml += '<div><strong style="color:#fff;">' + escapeHtml(n.full) + '</strong><span style="font-size:0.75rem;color:#94a3b8;margin-left:6px;">(de #' + n.sourceId + ')</span></div>';
+            mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><strong style="color:#fff;">' + escapeHtml(n.full) + '</strong><span style="font-size:0.71rem;color:#94a3b8;margin-left:5px;">(#' + n.sourceId + ')</span></div>';
             mHtml += '</label>';
         });
         mHtml += '<label class="merge-option-label" id="label-wizard-name-custom">';
@@ -1532,14 +1561,14 @@
         // Inputs en vivo de Nombre
         var defaultFirst = distinctNames[0] ? distinctNames[0].first : '';
         var defaultLast = distinctNames[0] ? distinctNames[0].last : '';
-        mHtml += '<div class="merge-custom-input-box" id="box-wizard-name-inputs" style="display:block;">';
-        mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
-        mHtml += '<div><label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Nombre(s) Final *</label><input type="text" id="merge_inp_first_name" class="aura-input" value="' + escapeHtml(defaultFirst) + '" oninput="updateMergePreview();"></div>';
-        mHtml += '<div><label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Apellidos Final</label><input type="text" id="merge_inp_last_name" class="aura-input" value="' + escapeHtml(defaultLast) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div class="merge-custom-input-box" id="box-wizard-name-inputs">';
+        mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">Nombre(s) Final *</label><input type="text" id="merge_inp_first_name" class="aura-input" value="' + escapeHtml(defaultFirst) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">Apellidos Final</label><input type="text" id="merge_inp_last_name" class="aura-input" value="' + escapeHtml(defaultLast) + '" oninput="updateMergePreview();"></div>';
         mHtml += '</div></div>';
-        mHtml += '</div>';
+        mHtml += '</div>'; // Fin card nombre
 
-        // 3. Campo: Organización y Cargo
+        // Campo: Organización y Cargo
         var distinctOrgs = [];
         activeContacts.forEach(function(c) {
             var org = (c.organization || '').trim();
@@ -1557,7 +1586,7 @@
             var isChk = (oIdx === 0);
             mHtml += '<label class="merge-option-label ' + (isChk ? 'is-selected' : '') + '">';
             mHtml += '<input type="radio" name="wizard_field_org" value="' + oIdx + '" ' + (isChk ? 'checked' : '') + ' class="merge-option-radio" data-org="' + escapeHtml(o.org) + '" data-job="' + escapeHtml(o.job) + '" onchange="onWizardOrgChange(this);">';
-            mHtml += '<div><strong style="color:#fff;">' + (o.org ? escapeHtml(o.org) : 'Sin empresa') + '</strong>' + (o.job ? ' — <span style="color:#94a3b8;">' + escapeHtml(o.job) + '</span>' : '') + '<span style="font-size:0.75rem;color:#94a3b8;margin-left:6px;">(#' + o.sourceId + ')</span></div>';
+            mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><strong style="color:#fff;">' + (o.org ? escapeHtml(o.org) : 'Sin empresa') + '</strong>' + (o.job ? ' — <span style="color:#94a3b8;">' + escapeHtml(o.job) + '</span>' : '') + '<span style="font-size:0.71rem;color:#94a3b8;margin-left:5px;">(#' + o.sourceId + ')</span></div>';
             mHtml += '</label>';
         });
         mHtml += '<label class="merge-option-label">';
@@ -1568,14 +1597,41 @@
 
         var defaultOrg = distinctOrgs[0] ? distinctOrgs[0].org : '';
         var defaultJob = distinctOrgs[0] ? distinctOrgs[0].job : '';
-        mHtml += '<div class="merge-custom-input-box" id="box-wizard-org-inputs" style="display:block;">';
-        mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
-        mHtml += '<div><label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Empresa / Organización</label><input type="text" id="merge_inp_organization" class="aura-input" value="' + escapeHtml(defaultOrg) + '" oninput="updateMergePreview();"></div>';
-        mHtml += '<div><label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Cargo / Ocupación</label><input type="text" id="merge_inp_job_title" class="aura-input" value="' + escapeHtml(defaultJob) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div class="merge-custom-input-box" id="box-wizard-org-inputs">';
+        mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">Empresa / Entidad</label><input type="text" id="merge_inp_organization" class="aura-input" value="' + escapeHtml(defaultOrg) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">Cargo / Ocupación</label><input type="text" id="merge_inp_job_title" class="aura-input" value="' + escapeHtml(defaultJob) + '" oninput="updateMergePreview();"></div>';
         mHtml += '</div></div>';
-        mHtml += '</div>';
+        mHtml += '</div>'; // Fin card org
 
-        // 4. Campo: Correos Electrónicos (Primario y Secundario)
+        // Campo: Avatar / Foto (si hay)
+        var allAvatars = [];
+        activeContacts.forEach(function(c) {
+            var av = (c.avatar_url || c.photo_url || '').trim();
+            if (av && allAvatars.indexOf(av) === -1) allAvatars.push({ url: av, sourceId: c.id });
+        });
+
+        if (allAvatars.length > 0) {
+            mHtml += '<div class="merge-field-card">';
+            mHtml += '<div class="merge-field-header"><span class="merge-field-title">🖼️ Foto de Perfil / Avatar</span></div>';
+            mHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+            allAvatars.forEach(function(av, avIdx) {
+                var isChk = (avIdx === 0);
+                mHtml += '<label style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:6px;cursor:pointer;">';
+                mHtml += '<input type="radio" name="wizard_avatar_url" value="' + escapeHtml(av.url) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();" style="margin:0;accent-color:#8b5cf6;">';
+                mHtml += '<img src="' + escapeHtml(av.url) + '" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">';
+                mHtml += '<span style="font-size:0.74rem;color:#94a3b8;">#' + av.sourceId + '</span>';
+                mHtml += '</label>';
+            });
+            mHtml += '</div></div>';
+        }
+
+        mHtml += '</div>'; // Fin Columna 1
+
+        // ── COLUMNA 2: CONTACTO & CLASIFICACIÓN ──
+        mHtml += '<div class="merge-column">';
+
+        // Campo: Correos Electrónicos
         var allEmails = [];
         activeContacts.forEach(function(c) {
             [c.email_primary, c.email_secondary].forEach(function(em) {
@@ -1585,39 +1641,39 @@
         });
 
         mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">✉️ Correos Electrónicos</span><span style="font-size:0.75rem;color:#34d399;">El principal prevalecerá en Google y el alterno se guardará como secundario</span></div>';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">✉️ Correos Electrónicos</span></div>';
         if (allEmails.length > 0) {
-            mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">';
-            mHtml += '<div><label style="font-size:0.78rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:6px;">Correo Principal (Primary) *</label>';
+            mHtml += '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;box-sizing:border-box;">';
+            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">Principal *</label>';
             allEmails.forEach(function(em, emIdx) {
                 var isChk = (emIdx === 0);
-                mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
-                mHtml += '<input type="radio" name="wizard_email_primary" value="' + escapeHtml(em) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
-                mHtml += '<span style="font-size:0.85rem;color:#fff;">' + escapeHtml(em) + '</span>';
+                mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="' + escapeHtml(em) + '">';
+                mHtml += '<input type="radio" name="wizard_email_primary" value="' + escapeHtml(em) + '" ' + (isChk ? 'checked' : '') + ' class="merge-option-radio" onchange="updateMergePreview();">';
+                mHtml += '<span style="font-size:0.75rem;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">' + escapeHtml(em) + '</span>';
                 mHtml += '</label>';
             });
             mHtml += '</div>';
 
-            mHtml += '<div><label style="font-size:0.78rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:6px;">Correo Secundario (Secondary)</label>';
-            mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
-            mHtml += '<input type="radio" name="wizard_email_secondary" value="" ' + (allEmails.length <= 1 ? 'checked' : '') + ' onchange="updateMergePreview();">';
-            mHtml += '<span style="font-size:0.85rem;color:#94a3b8;">Ninguno / Dejar vacío</span>';
+            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">Secundario</label>';
+            mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="Ninguno">';
+            mHtml += '<input type="radio" name="wizard_email_secondary" value="" ' + (allEmails.length <= 1 ? 'checked' : '') + ' class="merge-option-radio" onchange="updateMergePreview();">';
+            mHtml += '<span style="font-size:0.75rem;color:#94a3b8;white-space:nowrap;">(Ninguno)</span>';
             mHtml += '</label>';
             allEmails.forEach(function(em, emIdx) {
                 var isChk = (allEmails.length > 1 && emIdx === 1);
-                mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
-                mHtml += '<input type="radio" name="wizard_email_secondary" value="' + escapeHtml(em) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
-                mHtml += '<span style="font-size:0.85rem;color:#fff;">' + escapeHtml(em) + '</span>';
+                mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="' + escapeHtml(em) + '">';
+                mHtml += '<input type="radio" name="wizard_email_secondary" value="' + escapeHtml(em) + '" ' + (isChk ? 'checked' : '') + ' class="merge-option-radio" onchange="updateMergePreview();">';
+                mHtml += '<span style="font-size:0.75rem;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">' + escapeHtml(em) + '</span>';
                 mHtml += '</label>';
             });
             mHtml += '</div>';
             mHtml += '</div>';
         } else {
-            mHtml += '<p style="color:#94a3b8;font-size:0.85rem;margin:0;">Ninguno de los contactos tiene correo electrónico registrado.</p>';
+            mHtml += '<p style="color:#94a3b8;font-size:0.76rem;margin:0;">Sin correos registrados en los contactos seleccionados.</p>';
         }
-        mHtml += '</div>';
+        mHtml += '</div>'; // Fin card email
 
-        // 5. Campo: Teléfonos
+        // Campo: Teléfonos
         var allPhones = [];
         activeContacts.forEach(function(c) {
             [c.phone_primary, c.phone_secondary, c.whatsapp].forEach(function(ph) {
@@ -1629,78 +1685,42 @@
         mHtml += '<div class="merge-field-card">';
         mHtml += '<div class="merge-field-header"><span class="merge-field-title">📞 Teléfonos y WhatsApp</span></div>';
         if (allPhones.length > 0) {
-            mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">';
-            mHtml += '<div><label style="font-size:0.78rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:6px;">Teléfono Principal *</label>';
+            mHtml += '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;box-sizing:border-box;">';
+            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">Principal *</label>';
             allPhones.forEach(function(ph, pIdx) {
                 var isChk = (pIdx === 0);
-                mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
-                mHtml += '<input type="radio" name="wizard_phone_primary" value="' + escapeHtml(ph) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
-                mHtml += '<span style="font-size:0.85rem;color:#fff;">' + escapeHtml(ph) + '</span>';
+                mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="' + escapeHtml(ph) + '">';
+                mHtml += '<input type="radio" name="wizard_phone_primary" value="' + escapeHtml(ph) + '" ' + (isChk ? 'checked' : '') + ' class="merge-option-radio" onchange="updateMergePreview();">';
+                mHtml += '<span style="font-size:0.75rem;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">' + escapeHtml(ph) + '</span>';
                 mHtml += '</label>';
             });
             mHtml += '</div>';
 
-            mHtml += '<div><label style="font-size:0.78rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:6px;">Teléfono Secundario</label>';
-            mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
-            mHtml += '<input type="radio" name="wizard_phone_secondary" value="" ' + (allPhones.length <= 1 ? 'checked' : '') + ' onchange="updateMergePreview();">';
-            mHtml += '<span style="font-size:0.85rem;color:#94a3b8;">Ninguno / Dejar vacío</span>';
+            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">Secundario</label>';
+            mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="Ninguno">';
+            mHtml += '<input type="radio" name="wizard_phone_secondary" value="" ' + (allPhones.length <= 1 ? 'checked' : '') + ' class="merge-option-radio" onchange="updateMergePreview();">';
+            mHtml += '<span style="font-size:0.75rem;color:#94a3b8;white-space:nowrap;">(Ninguno)</span>';
             mHtml += '</label>';
             allPhones.forEach(function(ph, pIdx) {
                 var isChk = (allPhones.length > 1 && pIdx === 1);
-                mHtml += '<label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.06);border-radius:6px;margin-bottom:6px;cursor:pointer;">';
-                mHtml += '<input type="radio" name="wizard_phone_secondary" value="' + escapeHtml(ph) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
-                mHtml += '<span style="font-size:0.85rem;color:#fff;">' + escapeHtml(ph) + '</span>';
+                mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="' + escapeHtml(ph) + '">';
+                mHtml += '<input type="radio" name="wizard_phone_secondary" value="' + escapeHtml(ph) + '" ' + (isChk ? 'checked' : '') + ' class="merge-option-radio" onchange="updateMergePreview();">';
+                mHtml += '<span style="font-size:0.75rem;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">' + escapeHtml(ph) + '</span>';
                 mHtml += '</label>';
             });
             mHtml += '</div>';
             mHtml += '</div>';
         } else {
-            mHtml += '<p style="color:#94a3b8;font-size:0.85rem;margin:0;">Ninguno de los contactos tiene teléfono registrado.</p>';
+            mHtml += '<p style="color:#94a3b8;font-size:0.76rem;margin:0;">Sin teléfonos registrados en este grupo.</p>';
         }
-        mHtml += '</div>';
+        mHtml += '</div>'; // Fin card telefonos
 
-        // 6. Campo: Avatar / Foto
-        var allAvatars = [];
-        activeContacts.forEach(function(c) {
-            var av = (c.avatar_url || c.photo_url || '').trim();
-            if (av && allAvatars.indexOf(av) === -1) allAvatars.push({ url: av, sourceId: c.id });
-        });
-
-        if (allAvatars.length > 0) {
-            mHtml += '<div class="merge-field-card">';
-            mHtml += '<div class="merge-field-header"><span class="merge-field-title">🖼️ Foto de Perfil / Avatar</span></div>';
-            mHtml += '<div style="display:flex;gap:12px;flex-wrap:wrap;">';
-            allAvatars.forEach(function(av, avIdx) {
-                var isChk = (avIdx === 0);
-                mHtml += '<label style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:8px;cursor:pointer;">';
-                mHtml += '<input type="radio" name="wizard_avatar_url" value="' + escapeHtml(av.url) + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
-                mHtml += '<img src="' + escapeHtml(av.url) + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">';
-                mHtml += '<span style="font-size:0.8rem;color:#94a3b8;">Foto de #' + av.sourceId + '</span>';
-                mHtml += '</label>';
-            });
-            mHtml += '</div></div>';
-        }
-
-        // 7. Campo: Categoría
+        // Campo: Categoría & Etiquetas
         var allCats = [];
         activeContacts.forEach(function(c) {
             if (c.category && allCats.indexOf(c.category) === -1) allCats.push(c.category);
         });
 
-        mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏷️ Categoría de la Ficha Maestra</span></div>';
-        mHtml += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
-        ['student', 'teacher', 'staff', 'supplier', 'donor', 'member', 'other'].forEach(function(catKey) {
-            var label = cfg.categories[catKey] || catKey;
-            var isChk = (allCats.length > 0 && allCats[0] === catKey);
-            mHtml += '<label style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(15,23,42,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:6px;cursor:pointer;">';
-            mHtml += '<input type="radio" name="wizard_category" value="' + catKey + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();">';
-            mHtml += '<span style="font-size:0.84rem;color:#fff;">' + escapeHtml(label) + '</span>';
-            mHtml += '</label>';
-        });
-        mHtml += '</div></div>';
-
-        // 8. Campo: Etiquetas (Tags)
         var allClusterTags = [];
         var contactTagsMap = {};
         activeContacts.forEach(function(c) {
@@ -1722,72 +1742,63 @@
                 if (allClusterTags.indexOf(t) === -1) allClusterTags.push(t);
             });
         });
-
         var combinedTagsStr = allClusterTags.join(', ');
 
         mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏷️ Etiquetas (Tags) de la Ficha Maestra</span><span style="font-size:0.75rem;color:#34d399;">Elige si combinar todas las etiquetas o conservar un conjunto específico</span></div>';
-        mHtml += '<div class="merge-options-grid">';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏷️ Categoría y Etiquetas</span></div>';
         
-        // Opción 1: Combinar todas
-        mHtml += '<label class="merge-option-label is-selected">';
-        mHtml += '<input type="radio" name="wizard_tags_mode" value="combine" checked class="merge-option-radio" data-tags="' + escapeHtml(combinedTagsStr) + '" onchange="onWizardTagsChange(this);">';
-        mHtml += '<div><strong style="color:#fff;">✨ Combinar todas las etiquetas</strong>';
-        if (allClusterTags.length > 0) {
-            mHtml += '<div style="font-size:0.78rem;color:#a78bfa;margin-top:2px;">' + escapeHtml(combinedTagsStr) + '</div>';
-        } else {
-            mHtml += '<div style="font-size:0.78rem;color:#94a3b8;margin-top:2px;">(Sin etiquetas registradas en este grupo)</div>';
-        }
-        mHtml += '</div></label>';
+        // Categoría chips
+        mHtml += '<div style="margin-bottom:8px;">';
+        mHtml += '<label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:4px;">Categoría Principal</label>';
+        mHtml += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
+        ['student', 'teacher', 'staff', 'supplier', 'donor', 'member', 'other'].forEach(function(catKey) {
+            var label = cfg.categories[catKey] || catKey;
+            var isChk = (allCats.length > 0 && allCats[0] === catKey);
+            mHtml += '<label style="display:inline-flex;align-items:center;gap:4px;padding:3px 7px;background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:6px;cursor:pointer;font-size:0.75rem;">';
+            mHtml += '<input type="radio" name="wizard_category" value="' + catKey + '" ' + (isChk ? 'checked' : '') + ' onchange="updateMergePreview();" style="margin:0;accent-color:#8b5cf6;">';
+            mHtml += '<span style="color:#fff;">' + escapeHtml(label) + '</span>';
+            mHtml += '</label>';
+        });
+        mHtml += '</div></div>';
 
-        // Opciones por cada contacto que tenga tags
+        // Etiquetas modos
+        mHtml += '<label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:4px;">Etiquetas de la Ficha</label>';
+        mHtml += '<div class="merge-options-grid">';
+        mHtml += '<label class="merge-option-label is-selected" style="padding:4px 6px;">';
+        mHtml += '<input type="radio" name="wizard_tags_mode" value="combine" checked class="merge-option-radio" data-tags="' + escapeHtml(combinedTagsStr) + '" onchange="onWizardTagsChange(this);">';
+        mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><strong style="color:#fff;font-size:0.76rem;">✨ Combinar todas</strong>' + (allClusterTags.length > 0 ? ' <span style="font-size:0.72rem;color:#a78bfa;">(' + escapeHtml(combinedTagsStr) + ')</span>' : '') + '</div>';
+        mHtml += '</label>';
+
         activeContacts.forEach(function(c) {
             var cTags = contactTagsMap[c.id] || [];
             if (cTags.length > 0) {
                 var cTagsStr = cTags.join(', ');
-                mHtml += '<label class="merge-option-label">';
+                mHtml += '<label class="merge-option-label" style="padding:4px 6px;">';
                 mHtml += '<input type="radio" name="wizard_tags_mode" value="contact_' + c.id + '" class="merge-option-radio" data-tags="' + escapeHtml(cTagsStr) + '" onchange="onWizardTagsChange(this);">';
-                mHtml += '<div><strong style="color:#cbd5e1;">Solo etiquetas de #' + c.id + '</strong>';
-                mHtml += '<div style="font-size:0.78rem;color:#94a3b8;margin-top:2px;">' + escapeHtml(cTagsStr) + '</div>';
-                mHtml += '</div></label>';
+                mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><span style="color:#cbd5e1;font-size:0.76rem;">Solo #' + c.id + '</span> <span style="font-size:0.72rem;color:#94a3b8;">(' + escapeHtml(cTagsStr) + ')</span></div>';
+                mHtml += '</label>';
             }
         });
 
-        // Opción personalizar
-        mHtml += '<label class="merge-option-label">';
+        mHtml += '<label class="merge-option-label" style="padding:4px 6px;">';
         mHtml += '<input type="radio" name="wizard_tags_mode" value="custom" class="merge-option-radio" onchange="onWizardTagsChange(this);">';
-        mHtml += '<div><strong style="color:#a78bfa;">✏️ Personalizar etiquetas</strong><div style="font-size:0.78rem;color:#94a3b8;margin-top:2px;">Editar o escribir manualmente las etiquetas finales</div></div>';
+        mHtml += '<div><strong style="color:#a78bfa;font-size:0.76rem;">✏️ Personalizar etiquetas</strong></div>';
         mHtml += '</label>';
         mHtml += '</div>';
 
-        mHtml += '<div class="merge-custom-input-box" id="box-wizard-tags-inputs" style="display:block;margin-top:10px;">';
-        mHtml += '<label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Etiquetas finales unificadas (separadas por comas)</label>';
-        mHtml += '<input type="text" id="merge_inp_tags" class="aura-input" value="' + escapeHtml(combinedTagsStr) + '" placeholder="ej. Cliente VIP, Egresado, Donante..." oninput="updateMergePreview();">';
+        mHtml += '<div class="merge-custom-input-box" id="box-wizard-tags-inputs" style="margin-top:6px;">';
+        mHtml += '<input type="text" id="merge_inp_tags" class="aura-input" value="' + escapeHtml(combinedTagsStr) + '" placeholder="Etiquetas separadas por comas..." oninput="updateMergePreview();">';
         mHtml += '</div>';
-        mHtml += '</div>';
+        mHtml += '</div>'; // Fin card categoria & tags
 
-        // 9. Notas adicionales
-        mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">📝 Notas Consolidadas y Relaciones</span><span style="font-size:0.75rem;color:#38bdf8;">Todas las notas e historiales previos se preservarán automáticamente</span></div>';
-        mHtml += '<textarea id="merge_inp_custom_notes" class="aura-textarea" rows="2" placeholder="Nota adicional explicativa de la fusión (opcional)..." oninput="updateMergePreview();"></textarea>';
-        mHtml += '</div>';
+        mHtml += '</div>'; // Fin Columna 2
 
-        // 10. TARJETA EN VIVO: PREVISUALIZACIÓN DEL REGISTRO RESULTANTE
-        mHtml += '<div class="merge-preview-card" id="merge-live-preview-box">';
-        mHtml += '<div style="font-size:0.8rem;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">🌟 Vista Previa del Contacto Maestro Resultante:</div>';
-        mHtml += '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">';
-        mHtml += '<div id="prev-avatar-wrap" style="width:52px;height:52px;border-radius:50%;background:#8b5cf6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;font-weight:700;flex-shrink:0;">👤</div>';
-        mHtml += '<div style="flex:1;min-width:200px;">';
-        mHtml += '<div style="font-size:1.15rem;font-weight:800;color:#fff;" id="prev-name">Cargando...</div>';
-        mHtml += '<div style="font-size:0.85rem;color:#cbd5e1;" id="prev-org-job"></div>';
-        mHtml += '<div style="display:flex;gap:14px;margin-top:6px;font-size:0.82rem;color:#94a3b8;flex-wrap:wrap;">';
-        mHtml += '<span id="prev-email">✉️ —</span>';
-        mHtml += '<span id="prev-phone">📞 —</span>';
-        mHtml += '<span id="prev-cat" style="color:#a78bfa;">🏷️ —</span>';
-        mHtml += '<span id="prev-tags" style="color:#38bdf8;">🏷️ —</span>';
-        mHtml += '</div>';
-        mHtml += '</div>';
-        mHtml += '</div>';
+        mHtml += '</div>'; // Fin 2-Col Grid
+
+        // 4. Fila Final: Notas Consolidadas (Opcional)
+        mHtml += '<div class="merge-field-card" style="margin-top:2px;">';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">📝 Notas Consolidadas (Opcional)</span><span style="font-size:0.71rem;color:#38bdf8;">Historial previo se preserva automáticamente</span></div>';
+        mHtml += '<textarea id="merge_inp_custom_notes" class="aura-textarea" rows="2" placeholder="Nota adicional explicativa de la fusión..." oninput="updateMergePreview();" style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>';
         mHtml += '</div>';
 
         $('#merge-modal-content').html(mHtml);
@@ -1808,8 +1819,8 @@
 
     // Handlers dinámicos del Wizard de Fusión
     window.onWizardMasterChange = function(radio) {
-        $('.merge-option-label').removeClass('is-selected');
-        $(radio).closest('.merge-option-label').addClass('is-selected');
+        $('.merge-master-pill').removeClass('is-selected');
+        $(radio).closest('.merge-master-pill').addClass('is-selected');
         updateMergePreview();
     };
 

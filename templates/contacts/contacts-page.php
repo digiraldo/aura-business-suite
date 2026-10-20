@@ -1479,16 +1479,16 @@ $category_icons = array(
     <div class="aura-modal aura-glass-card merge-modal-dialog">
         <!-- Header del Modal -->
         <div class="merge-modal-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);">
-                    <span class="dashicons dashicons-randomize" style="font-size: 22px; width: 22px; height: 22px;"></span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); flex-shrink: 0;">
+                    <span class="dashicons dashicons-randomize" style="font-size: 18px; width: 18px; height: 18px;"></span>
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff;">
-                        <?php esc_html_e( 'Fusión Asistida de Contactos Duplicados', 'aura-suite' ); ?>
+                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">
+                        <?php esc_html_e( 'Detección y Fusión de Contactos Duplicados', 'aura-suite' ); ?>
                     </h3>
-                    <p style="margin: 2px 0 0; font-size: 0.82rem; color: #94a3b8;">
-                        <?php esc_html_e( 'Selecciona o edita qué dato de cada contacto conformará la ficha maestra definitiva.', 'aura-suite' ); ?>
+                    <p style="margin: 1px 0 0; font-size: 0.78rem; color: #94a3b8;">
+                        <?php esc_html_e( 'Configura la ficha unificada eligiendo los datos de cada contacto. El resultado se previsualiza en tiempo real.', 'aura-suite' ); ?>
                     </p>
                 </div>
             </div>

@@ -553,8 +553,26 @@ class Aura_Contacts_Merge {
                 }
             }
 
-            // 8. Desactivar contactos de origen y marcarlos como fusionados
+            // 8. Desactivar contactos de origen, marcarlos como fusionados y retirarlos de Google Contacts si estaban vinculados
+            $provider = Aura_Google_Auth_Factory::get_provider();
+            $is_google_connected = $provider->is_connected();
+            $google_account = $is_google_connected ? $provider->get_account_email() : '';
+
             foreach ( $sources as $s ) {
+                // Si el secundario tenía mapeo en Google, eliminar el duplicado de Google Contacts
+                if ( $is_google_connected && ! empty( $google_account ) ) {
+                    $s_map = $wpdb->get_row( $wpdb->prepare(
+                        "SELECT * FROM {$t_google_map} WHERE contact_id = %d AND google_account = %s LIMIT 1",
+                        $s['id'],
+                        $google_account
+                    ), ARRAY_A );
+
+                    if ( $s_map && ! empty( $s_map['resource_name'] ) ) {
+                        Aura_Google_Contacts::delete_person( $s_map['resource_name'] );
+                        $wpdb->delete( $t_google_map, array( 'id' => $s_map['id'] ) );
+                    }
+                }
+
                 $wpdb->update(
                     $t_contacts,
                     array(
@@ -574,6 +592,11 @@ class Aura_Contacts_Merge {
             $updated_target['updated_by']  = get_current_user_id() ?: 1;
 
             $wpdb->update( $t_contacts, $updated_target, array( 'id' => $target_id ) );
+
+            // Si Google Contacts está conectado, enviar inmediatamente el contacto unificado con su foto a Google
+            if ( $is_google_connected && class_exists( 'Aura_Contacts_Sync' ) ) {
+                Aura_Contacts_Sync::push_contact( $target_id );
+            }
 
             // 10. Registrar en logs de auditoría
             $wpdb->insert( $t_sync_log, array(
