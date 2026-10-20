@@ -39,6 +39,7 @@ class Aura_Contacts_Sync {
 
         // Endpoints AJAX & Exportación
         add_action( 'wp_ajax_aura_contacts_sync_all', array( __CLASS__, 'ajax_sync_all' ) );
+        add_action( 'wp_ajax_aura_contacts_sync_batch', array( __CLASS__, 'ajax_sync_batch' ) );
         add_action( 'wp_ajax_aura_contacts_sync_single', array( __CLASS__, 'ajax_sync_single' ) );
         add_action( 'wp_ajax_aura_contacts_get_sync_logs', array( __CLASS__, 'ajax_get_sync_logs' ) );
         add_action( 'wp_ajax_aura_contacts_export_sync_logs', array( __CLASS__, 'ajax_export_sync_logs' ) );
@@ -129,8 +130,32 @@ class Aura_Contacts_Sync {
         return array(
             'success'   => empty( $summary['errors'] ),
             'summary'   => $summary,
+            'errors'    => $summary['errors'],
             'timestamp' => get_option( self::OPTION_LAST_SYNC_TIME ),
         );
+    }
+
+    /**
+     * Cuenta cuántos contactos activos locales faltan por sincronizar (push) hacia Google.
+     *
+     * @return int
+     */
+    public static function count_pending_push(): int {
+        global $wpdb;
+        $table        = $wpdb->prefix . 'aura_contacts';
+        $t_google_map = $wpdb->prefix . 'aura_contacts_google_map';
+
+        $provider       = Aura_Google_Auth_Factory::get_provider();
+        $google_account = $provider->get_account_email();
+
+        return (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(c.id) 
+             FROM {$table} c
+             LEFT JOIN {$t_google_map} m ON (c.id = m.contact_id AND m.google_account = %s)
+             WHERE c.is_active = 1 
+               AND (c.sync_status IN ('pending', 'error') OR m.id IS NULL)",
+            $google_account
+        ) );
     }
 
     /**
@@ -371,12 +396,14 @@ class Aura_Contacts_Sync {
         }
 
         if ( is_wp_error( $connections_res ) ) {
+            $err_msg = $connections_res->get_error_message();
+            Aura_Contacts_Setup::log_sync( 0, $google_account, 'pull', 'read', 'error', 'Error al consultar Google People API: ' . $err_msg );
             return array(
                 'created'        => 0,
                 'updated'        => 0,
                 'deleted'        => 0,
                 'errors'         => 1,
-                'error_messages' => array( $connections_res->get_error_message() ),
+                'error_messages' => array( $err_msg ),
             );
         }
 
@@ -571,7 +598,9 @@ class Aura_Contacts_Sync {
                     $created_count++;
                 } else {
                     $error_count++;
-                    $error_msgs[] = $new_id->get_error_message();
+                    $err_msg = $new_id->get_error_message();
+                    $error_msgs[] = $err_msg;
+                    Aura_Contacts_Setup::log_sync( 0, $google_account, 'pull', 'create', 'error', 'Error al importar contacto desde Google: ' . $err_msg );
                 }
             }
         }
@@ -735,15 +764,22 @@ class Aura_Contacts_Sync {
             $result    = self::sync_all( $direction );
 
             if ( ! $result['success'] ) {
+                $first_errors = ! empty( $result['summary']['errors'] ) ? implode( "\n• ", array_slice( $result['summary']['errors'], 0, 4 ) ) : '';
+                $message      = $result['message'] ?? ( $first_errors ? __( 'La sincronización terminó con advertencias:', 'aura-suite' ) . "\n• " . $first_errors : __( 'La sincronización terminó con advertencias o errores.', 'aura-suite' ) );
+
                 wp_send_json_error( array(
-                    'message' => $result['message'] ?? __( 'La sincronización terminó con advertencias o errores.', 'aura-suite' ),
+                    'message' => $message,
                     'details' => $result,
+                    'summary' => $result['summary'] ?? array(),
+                    'errors'  => $result['summary']['errors'] ?? array(),
                 ) );
             }
 
             wp_send_json_success( array(
                 'message' => __( '¡Sincronización completada con éxito!', 'aura-suite' ),
                 'details' => $result,
+                'summary' => $result['summary'] ?? array(),
+                'errors'  => $result['summary']['errors'] ?? array(),
             ) );
         } catch ( \Throwable $e ) {
             if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
@@ -751,6 +787,102 @@ class Aura_Contacts_Sync {
             }
             wp_send_json_error( array(
                 'message' => sprintf( __( 'Error al procesar sincronización: %s', 'aura-suite' ), $e->getMessage() ),
+            ) );
+        }
+    }
+
+    /**
+     * AJAX: Sincronización progresiva por lotes (Chunked Batch Sync).
+     * Procesa en fragmentos controlados para evitar timeouts de servidor y sobrecarga de cuota en Google.
+     */
+    public static function ajax_sync_batch(): void {
+        check_ajax_referer( Aura_Contacts::NONCE, 'nonce' );
+
+        if ( ! current_user_can( 'aura_contacts_sync_google' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Sin permisos para sincronizar contactos.', 'aura-suite' ) ) );
+        }
+
+        $provider = Aura_Google_Auth_Factory::get_provider();
+        if ( ! $provider->is_connected() ) {
+            wp_send_json_error( array( 'message' => __( 'Google Contacts no está conectado o la sesión ha expirado.', 'aura-suite' ) ) );
+        }
+
+        if ( function_exists( 'set_time_limit' ) ) {
+            @set_time_limit( 120 );
+        }
+        if ( function_exists( 'wp_raise_memory_limit' ) ) {
+            wp_raise_memory_limit( 'admin' );
+        }
+
+        $phase      = sanitize_key( $_POST['phase'] ?? 'push' );
+        $direction  = sanitize_key( $_POST['direction'] ?? 'both' );
+        $batch_size = max( 3, min( 20, intval( $_POST['batch_size'] ?? 10 ) ) );
+
+        try {
+            if ( 'push' === $phase ) {
+                $initial_pending = self::count_pending_push();
+
+                if ( $initial_pending > 0 && in_array( $direction, array( 'both', 'push' ), true ) ) {
+                    $push_res  = self::push_pending_contacts( $batch_size );
+                    $remaining = self::count_pending_push();
+                    $is_push_done = ( 0 === $remaining );
+                    $next_phase   = $is_push_done ? ( in_array( $direction, array( 'both', 'pull' ), true ) ? 'pull' : 'done' ) : 'push';
+
+                    wp_send_json_success( array(
+                        'phase'               => 'push',
+                        'processed_in_batch'  => $push_res['success'] + $push_res['errors'],
+                        'success_in_batch'    => $push_res['success'],
+                        'errors_in_batch'     => $push_res['errors'],
+                        'error_messages'      => $push_res['error_messages'],
+                        'initial_pending'     => $initial_pending,
+                        'remaining_pending'   => $remaining,
+                        'is_push_completed'   => $is_push_done,
+                        'next_phase'          => $next_phase,
+                        'is_finished'         => ( 'done' === $next_phase ),
+                        'message'             => sprintf( __( 'Lote procesado: %d contactos sincronizados con éxito hacia Google.', 'aura-suite' ), $push_res['success'] ),
+                    ) );
+                } else {
+                    $next_phase = in_array( $direction, array( 'both', 'pull' ), true ) ? 'pull' : 'done';
+                    wp_send_json_success( array(
+                        'phase'               => 'push',
+                        'processed_in_batch'  => 0,
+                        'success_in_batch'    => 0,
+                        'errors_in_batch'     => 0,
+                        'error_messages'      => array(),
+                        'initial_pending'     => 0,
+                        'remaining_pending'   => 0,
+                        'is_push_completed'   => true,
+                        'next_phase'          => $next_phase,
+                        'is_finished'         => ( 'done' === $next_phase ),
+                        'message'             => __( 'No hay más contactos pendientes de subida.', 'aura-suite' ),
+                    ) );
+                }
+            } elseif ( 'pull' === $phase ) {
+                $pull_res = self::pull_changes();
+                update_option( self::OPTION_LAST_SYNC_TIME, current_time( 'mysql' ) );
+
+                wp_send_json_success( array(
+                    'phase'          => 'pull',
+                    'pulled_created' => $pull_res['created'],
+                    'pulled_updated' => $pull_res['updated'],
+                    'pulled_deleted' => $pull_res['deleted'],
+                    'pulled_errors'  => $pull_res['errors'],
+                    'error_messages' => $pull_res['error_messages'],
+                    'is_finished'    => true,
+                    'next_phase'     => 'done',
+                    'message'        => __( 'Descarga incremental de Google People API finalizada.', 'aura-suite' ),
+                ) );
+            } else {
+                wp_send_json_success( array(
+                    'is_finished' => true,
+                    'next_phase'  => 'done',
+                    'message'     => __( 'Sincronización finalizada.', 'aura-suite' ),
+                ) );
+            }
+        } catch ( \Throwable $e ) {
+            Aura_Contacts_Setup::log_sync( 0, $provider->get_account_email(), $phase, 'batch', 'error', 'Fallo crítico en lote: ' . $e->getMessage() );
+            wp_send_json_error( array(
+                'message' => sprintf( __( 'Error en lote de sincronización: %s', 'aura-suite' ), $e->getMessage() ),
             ) );
         }
     }

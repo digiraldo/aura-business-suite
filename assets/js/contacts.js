@@ -899,43 +899,240 @@
     };
 
     // ── Sincronización con Google ────────────────────────────────────────────────
+    // ── Sincronización Progresiva con Google por Lotes (Protegida contra Timeouts) ──
+    var syncProcess = {
+        isRunning: false,
+        isCancelled: false,
+        phase: 'push',
+        batchIndex: 0,
+        totalTarget: 0,
+        totalSuccess: 0,
+        totalErrors: 0,
+        totalPulled: 0,
+        errorsList: []
+    };
+
+    function openSyncModal() {
+        $('#modal-sync-progress').fadeIn(180).css('display', 'flex');
+        $('#btn-sync-modal-finish').hide();
+        $('#btn-sync-modal-cancel').show().prop('disabled', false).text('Detener');
+        $('#sync-modal-spinner').show().addClass('spin');
+        $('#sync-modal-icon-wrap').css({ 'background': 'rgba(59, 130, 246, 0.2)', 'color': '#60a5fa' });
+        $('#sync-modal-progress-bar').css({ 'width': '0%', 'background': 'linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)' });
+        $('#sync-modal-percent-text').text('0%');
+        $('#sync-modal-status-text').text('Calculando contactos pendientes de sincronización...');
+        $('#sync-kpi-total').text('0');
+        $('#sync-kpi-success').text('0');
+        $('#sync-kpi-pulled').text('0');
+        $('#sync-kpi-errors').text('0');
+        $('#sync-modal-log-console').html('<div style="color: #64748b;">Conectando con Google Contacts API...</div>');
+    }
+
+    function closeSyncModal() {
+        if (syncProcess.isRunning && !syncProcess.isCancelled) {
+            if (!confirm('La sincronización se está ejecutando. ¿Deseas detenerla ahora?')) {
+                return;
+            }
+            syncProcess.isCancelled = true;
+        }
+        $('#modal-sync-progress').fadeOut(180);
+        fetchContacts();
+        refreshStats();
+        if (state.activeTab === 'sync_logs') {
+            fetchLogs();
+        }
+    }
+
+    function cancelSync() {
+        syncProcess.isCancelled = true;
+        $('#btn-sync-modal-cancel').prop('disabled', true).text('Deteniendo...');
+        appendSyncLog('⚠️ Detención solicitada por el usuario. Los contactos ya subidos se conservan en Google.', 'warning');
+    }
+
+    function appendSyncLog(msg, type) {
+        var color = '#cbd5e1';
+        if (type === 'error') color = '#f87171';
+        else if (type === 'success') color = '#34d399';
+        else if (type === 'warning') color = '#fbbf24';
+        else if (type === 'info') color = '#38bdf8';
+
+        var time = new Date().toLocaleTimeString();
+        var line = '<div style="color: ' + color + '; margin-bottom: 3px;">[' + time + '] ' + escapeHtml(msg) + '</div>';
+        var $console = $('#sync-modal-log-console');
+        $console.append(line);
+        $console.scrollTop($console[0].scrollHeight);
+    }
+
+    function startProgressiveGoogleSync() {
+        if (syncProcess.isRunning) return;
+
+        syncProcess.isRunning = true;
+        syncProcess.isCancelled = false;
+        syncProcess.phase = 'push';
+        syncProcess.batchIndex = 0;
+        syncProcess.totalTarget = 0;
+        syncProcess.totalSuccess = 0;
+        syncProcess.totalErrors = 0;
+        syncProcess.totalPulled = 0;
+        syncProcess.errorsList = [];
+
+        openSyncModal();
+        appendSyncLog('Iniciando sincronización por lotes (protegida contra límites de servidor)...', 'info');
+
+        processNextSyncBatch();
+    }
+
+    function processNextSyncBatch() {
+        if (syncProcess.isCancelled) {
+            finalizeSyncProcess(false, 'Sincronización detenida por el usuario.');
+            return;
+        }
+
+        syncProcess.batchIndex++;
+        $('#sync-live-batch-tag').text('Lote ' + syncProcess.batchIndex);
+
+        if (syncProcess.phase === 'push') {
+            $('#sync-modal-phase-badge').removeClass('aura-badge--success aura-badge--warning').addClass('aura-badge--info').text('Fase 1: Subida (Push)');
+            $('#sync-modal-status-text').text('Subiendo contactos hacia Google (Lote ' + syncProcess.batchIndex + ')...');
+        } else if (syncProcess.phase === 'pull') {
+            $('#sync-modal-phase-badge').removeClass('aura-badge--info aura-badge--warning').addClass('aura-badge--success').text('Fase 2: Descarga (Pull)');
+            $('#sync-modal-status-text').text('Recibiendo cambios desde Google Contacts...');
+        }
+
+        $.ajax({
+            url: cfg.ajaxUrl,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'aura_contacts_sync_batch',
+                nonce: cfg.nonce,
+                phase: syncProcess.phase,
+                direction: 'both',
+                batch_size: 10
+            },
+            timeout: 65000
+        }).done(function(res) {
+            if (!res || !res.success) {
+                var errTxt = (res && res.data && res.data.message) ? res.data.message : 'Aviso al procesar lote en Google API.';
+                appendSyncLog('⚠️ ' + errTxt, 'error');
+                syncProcess.totalErrors += 1;
+                $('#sync-kpi-errors').text(syncProcess.totalErrors);
+
+                if (syncProcess.phase === 'push') {
+                    appendSyncLog('Pasando a fase de verificación y descarga (Pull)...', 'warning');
+                    syncProcess.phase = 'pull';
+                    setTimeout(processNextSyncBatch, 1000);
+                } else {
+                    finalizeSyncProcess(false, errTxt);
+                }
+                return;
+            }
+
+            var d = res.data;
+
+            if (d.phase === 'push') {
+                if (syncProcess.totalTarget === 0 && d.total_target) {
+                    syncProcess.totalTarget = d.total_target;
+                    $('#sync-kpi-total').text(syncProcess.totalTarget);
+                } else if (syncProcess.totalTarget === 0 && d.initial_pending) {
+                    syncProcess.totalTarget = d.initial_pending;
+                    $('#sync-kpi-total').text(syncProcess.totalTarget);
+                }
+
+                syncProcess.totalSuccess += (d.success_in_batch || 0);
+                syncProcess.totalErrors += (d.errors_in_batch || 0);
+
+                $('#sync-kpi-success').text(syncProcess.totalSuccess);
+                $('#sync-kpi-errors').text(syncProcess.totalErrors);
+
+                if (d.error_messages && d.error_messages.length) {
+                    $.each(d.error_messages, function(i, msg) {
+                        appendSyncLog('Aviso: ' + msg, 'warning');
+                        syncProcess.errorsList.push(msg);
+                    });
+                }
+
+                // Cálculo de porcentaje dinámico
+                var target = syncProcess.totalTarget || 1;
+                var remaining = (d.remaining_pending !== undefined) ? d.remaining_pending : 0;
+                var currentDone = Math.max(0, target - remaining);
+                var pct = Math.min(92, Math.max(5, Math.round((currentDone / target) * 88)));
+                $('#sync-modal-progress-bar').css('width', pct + '%');
+                $('#sync-modal-percent-text').text(pct + '%');
+
+                appendSyncLog('Lote ' + syncProcess.batchIndex + ': ' + (d.success_in_batch || 0) + ' subidos exitosamente. Pendientes: ' + remaining, 'success');
+
+                if (d.is_push_completed || remaining === 0 || d.next_phase === 'pull') {
+                    syncProcess.phase = 'pull';
+                    appendSyncLog('Fase 1 (Push) concluida. Verificando cambios en Google (Pull)...', 'info');
+                    setTimeout(processNextSyncBatch, 800);
+                } else {
+                    // Pequeña pausa de 600ms entre lotes para no saturar cuota de Google
+                    setTimeout(processNextSyncBatch, 600);
+                }
+            } else if (d.phase === 'pull') {
+                syncProcess.totalPulled += (d.pulled_created || 0) + (d.pulled_updated || 0);
+                $('#sync-kpi-pulled').text(syncProcess.totalPulled);
+
+                if (d.pulled_errors) {
+                    syncProcess.totalErrors += d.pulled_errors;
+                    $('#sync-kpi-errors').text(syncProcess.totalErrors);
+                }
+
+                if (d.error_messages && d.error_messages.length) {
+                    $.each(d.error_messages, function(i, msg) {
+                        appendSyncLog('Aviso Pull: ' + msg, 'warning');
+                    });
+                }
+
+                $('#sync-modal-progress-bar').css({ 'width': '100%', 'background': 'linear-gradient(90deg, #10b981 0%, #06b6d4 100%)' });
+                $('#sync-modal-percent-text').text('100%');
+                appendSyncLog('Fase 2 (Pull) completada: ' + (d.pulled_created || 0) + ' nuevos, ' + (d.pulled_updated || 0) + ' actualizados.', 'success');
+
+                finalizeSyncProcess(true, '¡Sincronización bidireccional completada con éxito!');
+            }
+        }).fail(function(xhr, status, error) {
+            appendSyncLog('Aviso de red en Lote ' + syncProcess.batchIndex + ': ' + (xhr.statusText || error || 'Conexión lenta'), 'warning');
+            if (syncProcess.batchIndex < 35 && !syncProcess.isCancelled) {
+                appendSyncLog('Reintentando siguiente lote en 2 segundos...', 'info');
+                setTimeout(processNextSyncBatch, 2000);
+            } else {
+                finalizeSyncProcess(false, 'Se completó la sincronización parcial de lotes.');
+            }
+        });
+    }
+
+    function finalizeSyncProcess(isSuccess, finalMsg) {
+        syncProcess.isRunning = false;
+        $('#sync-modal-spinner').removeClass('spin').hide();
+        $('#btn-sync-modal-cancel').hide();
+        $('#btn-sync-modal-finish').show();
+
+        if (isSuccess) {
+            $('#sync-modal-icon-wrap').css({ 'background': 'rgba(16, 185, 129, 0.2)', 'color': '#10b981' });
+            $('#sync-modal-phase-badge').removeClass('aura-badge--info aura-badge--warning').addClass('aura-badge--success').text('Completado');
+            $('#sync-modal-status-text').text(finalMsg || '¡Sincronización finalizada con éxito!');
+            $('#sync-modal-progress-bar').css({ 'width': '100%', 'background': 'linear-gradient(90deg, #10b981 0%, #059669 100%)' });
+            $('#sync-modal-percent-text').text('100%');
+            appendSyncLog('🎉 Proceso de sincronización completado.', 'success');
+            showToast('¡Sincronización con Google Contacts completada exitosamente!');
+        } else {
+            $('#sync-modal-icon-wrap').css({ 'background': 'rgba(245, 158, 11, 0.2)', 'color': '#f59e0b' });
+            $('#sync-modal-phase-badge').removeClass('aura-badge--info aura-badge--success').addClass('aura-badge--warning').text('Finalizado');
+            $('#sync-modal-status-text').text(finalMsg || 'Sincronización procesada.');
+            appendSyncLog('ℹ️ ' + finalMsg, 'warning');
+        }
+
+        fetchContacts();
+        refreshStats();
+        if (state.activeTab === 'sync_logs') {
+            fetchLogs();
+        }
+    }
+
     function initGlobalActions() {
         $('#btn-sync-all, #btn-sync-all-from-logs').on('click', function() {
-            var $btn = $(this);
-            var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Sincronizando (Local → Google)...');
-
-            $.post(cfg.ajaxUrl, { action: 'aura_contacts_sync_all', nonce: cfg.nonce }, function(res) {
-                $btn.prop('disabled', false).html(orig);
-                var d = (res.data && res.data.details) ? res.data.details : {};
-                var summary = '\n• Subidos a Google (Local → Google): ' + (d.pushed_success || 0) + ' (errores: ' + (d.pushed_errors || 0) + ')' +
-                    '\n• Nuevos importados de Google: ' + (d.pulled_created || 0) +
-                    '\n• Contactos locales preservados / vinculados: ' + (d.pulled_updated || 0) +
-                    (d.pulled_deleted ? ' (eliminados en Google: ' + d.pulled_deleted + ')' : '') +
-                    (d.pulled_errors ? ' (errores de descarga: ' + d.pulled_errors + ')' : '');
-
-                if (res.success) {
-                    showToast('Sincronización completada exitosamente (Prioridad: Local → Google).' + summary.replace(/\n/g, ' '));
-                } else {
-                    var base = (res.data && res.data.message) ? res.data.message : 'Error al sincronizar con Google';
-                    var errs = (d.errors && d.errors.length) ? '\n' + d.errors.join('\n') : '';
-                    alert(base + (d.message ? '\n' + d.message : '') + errs);
-                }
-                fetchContacts();
-                refreshStats();
-                if (state.activeTab === 'sync_logs') {
-                    fetchLogs();
-                }
-            }).fail(function(xhr) {
-                $btn.prop('disabled', false).html(orig);
-                var errMsg = 'Error de conexión con el servidor al sincronizar';
-                if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
-                    errMsg += ': ' + xhr.responseJSON.data.message;
-                } else if (xhr.statusText) {
-                    errMsg += ' (' + xhr.status + ' ' + xhr.statusText + ')';
-                }
-                alert(errMsg);
-            });
+            startProgressiveGoogleSync();
         });
 
         $('#btn-refresh-logs').on('click', function() {
@@ -3226,6 +3423,8 @@
                 closeOAuthTutorial();
             } else if ($('#modal-contact-card').is(':visible')) {
                 closeContactCard();
+            } else if ($('#modal-sync-progress').is(':visible')) {
+                closeSyncModal();
             }
         }
     });
@@ -3245,6 +3444,8 @@
                 closeOAuthTutorial();
             } else if (id === 'modal-contact-card') {
                 closeContactCard();
+            } else if (id === 'modal-sync-progress') {
+                closeSyncModal();
             }
         }
     });
@@ -3254,6 +3455,10 @@
         editContact: openEditModal,
         viewContactCard: viewContactCard,
         closeContactCard: closeContactCard,
+        startSync: startProgressiveGoogleSync,
+        openSyncModal: openSyncModal,
+        closeSyncModal: closeSyncModal,
+        cancelSync: cancelSync,
         openLinkEntityModal: window.openLinkEntityModal,
         createThirdPartyFromContact: createThirdPartyFromContact,
         createThirdPartyFromForm: createThirdPartyFromForm,

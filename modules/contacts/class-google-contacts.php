@@ -26,6 +26,7 @@ class Aura_Google_Contacts {
 
     private static ?string $last_error = null;
     private static array $group_memory_cache = array();
+    private static ?array $cached_contact_groups = null;
 
     /**
      * Obtiene el último mensaje de error registrado.
@@ -247,8 +248,17 @@ class Aura_Google_Contacts {
      *
      * @return array|WP_Error
      */
-    public static function list_contact_groups() {
-        return self::api_request( 'GET', 'contactGroups', null, array( 'pageSize' => 100 ) );
+    public static function list_contact_groups( bool $force_refresh = false ) {
+        if ( ! $force_refresh && null !== self::$cached_contact_groups ) {
+            return self::$cached_contact_groups;
+        }
+
+        $res = self::api_request( 'GET', 'contactGroups', null, array( 'pageSize' => 100 ) );
+        if ( ! is_wp_error( $res ) ) {
+            self::$cached_contact_groups = $res;
+        }
+
+        return $res;
     }
 
     /**

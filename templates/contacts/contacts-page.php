@@ -2200,4 +2200,95 @@ $category_icons = array(
     </div>
 </div>
 
+<!-- Modal de Progreso de Sincronización Progresiva con Google -->
+<div class="aura-modal-overlay" id="modal-sync-progress" style="display: none; z-index: 100050;">
+    <div class="aura-modal aura-modal--glass" style="max-width: 580px; width: 92%; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65); border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(24px);">
+        <!-- Header -->
+        <div class="aura-modal__header" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.22) 0%, rgba(14, 165, 233, 0.15) 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div id="sync-modal-icon-wrap" style="width: 42px; height: 42px; border-radius: 12px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); display: flex; align-items: center; justify-content: center; color: #60a5fa; font-size: 20px;">
+                    <span class="dashicons dashicons-update spin" id="sync-modal-spinner"></span>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.12rem; font-weight: 700; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
+                        <span><?php esc_html_e( 'Sincronización con Google', 'aura-suite' ); ?></span>
+                        <span class="aura-badge aura-badge--info" id="sync-modal-phase-badge" style="font-size: 0.72rem; padding: 2px 8px;">Fase 1: Push</span>
+                    </h3>
+                    <p style="margin: 3px 0 0; font-size: 0.8rem; color: #94a3b8;" id="sync-modal-subtitle">
+                        <?php esc_html_e( 'Procesando en lotes protegidos contra timeouts y cuotas.', 'aura-suite' ); ?>
+                    </p>
+                </div>
+            </div>
+            <button type="button" class="aura-modal__close" id="btn-close-sync-modal" onclick="if(window.AuraContactsApp&&window.AuraContactsApp.closeSyncModal){window.AuraContactsApp.closeSyncModal();}" style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; width: 32px; height: 32px; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <span class="dashicons dashicons-no-alt"></span>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="aura-modal__body" style="padding: 24px;">
+            <!-- Barra de Progreso Principal -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 0.84rem; font-weight: 600; color: #e2e8f0;" id="sync-modal-status-text">
+                        <?php esc_html_e( 'Iniciando sincronización...', 'aura-suite' ); ?>
+                    </span>
+                    <span style="font-size: 0.95rem; font-weight: 800; color: #38bdf8;" id="sync-modal-percent-text">0%</span>
+                </div>
+                <div style="width: 100%; height: 12px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.06);">
+                    <div id="sync-modal-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%); border-radius: 999px; transition: width 0.35s ease; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);"></div>
+                </div>
+            </div>
+
+            <!-- KPIs de Sincronización en Vivo -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;">
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 10px; text-align: center;">
+                    <span style="display: block; font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;"><?php esc_html_e( 'Objetivo', 'aura-suite' ); ?></span>
+                    <strong style="font-size: 1.15rem; color: #f8fafc;" id="sync-kpi-total">0</strong>
+                </div>
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 10px; text-align: center;">
+                    <span style="display: block; font-size: 0.72rem; color: #6ee7b7; text-transform: uppercase; font-weight: 600;"><?php esc_html_e( 'Subidos', 'aura-suite' ); ?></span>
+                    <strong style="font-size: 1.15rem; color: #10b981;" id="sync-kpi-success">0</strong>
+                </div>
+                <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.25); border-radius: 12px; padding: 10px; text-align: center;">
+                    <span style="display: block; font-size: 0.72rem; color: #7dd3fc; text-transform: uppercase; font-weight: 600;"><?php esc_html_e( 'Recibidos', 'aura-suite' ); ?></span>
+                    <strong style="font-size: 1.15rem; color: #38bdf8;" id="sync-kpi-pulled">0</strong>
+                </div>
+                <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; padding: 10px; text-align: center;">
+                    <span style="display: block; font-size: 0.72rem; color: #fca5a5; text-transform: uppercase; font-weight: 600;"><?php esc_html_e( 'Avisos', 'aura-suite' ); ?></span>
+                    <strong style="font-size: 1.15rem; color: #f87171;" id="sync-kpi-errors">0</strong>
+                </div>
+            </div>
+
+            <!-- Bitácora en Vivo de Pasos -->
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <?php esc_html_e( 'Registro en Vivo del Lote', 'aura-suite' ); ?>
+                    </label>
+                    <span id="sync-live-batch-tag" style="font-size: 0.75rem; color: #38bdf8;">Lote 1</span>
+                </div>
+                <div id="sync-modal-log-console" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 10px; padding: 10px 14px; font-family: 'Courier New', Courier, monospace; font-size: 0.76rem; color: #cbd5e1; max-height: 120px; overflow-y: auto; line-height: 1.45;">
+                    <div style="color: #64748b;"><?php esc_html_e( 'Esperando respuesta del servidor...', 'aura-suite' ); ?></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="aura-modal__footer" style="padding: 14px 24px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: rgba(10, 15, 30, 0.95); display: flex; align-items: center; justify-content: space-between;">
+            <div id="sync-footer-note" style="font-size: 0.78rem; color: #64748b;">
+                🛡️ <?php esc_html_e( 'Por favor no cierres esta ventana mientras la sincronización esté en curso.', 'aura-suite' ); ?>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-modal-cancel" onclick="if(window.AuraContactsApp&&window.AuraContactsApp.cancelSync){window.AuraContactsApp.cancelSync();}">
+                    <?php esc_html_e( 'Detener', 'aura-suite' ); ?>
+                </button>
+                <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-sync-modal-finish" style="display: none;" onclick="if(window.AuraContactsApp&&window.AuraContactsApp.closeSyncModal){window.AuraContactsApp.closeSyncModal();}">
+                    <span class="dashicons dashicons-yes"></span>
+                    <span><?php esc_html_e( 'Listo', 'aura-suite' ); ?></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
