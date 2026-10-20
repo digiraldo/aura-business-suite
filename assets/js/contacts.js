@@ -105,6 +105,11 @@
         state.activeTab = tabKey;
         $('.contacts-tab-content').hide().removeClass('is-active');
         $('#contacts-tab-' + tabKey).show().addClass('is-active');
+        // Si no estamos en el directorio, asegurar que la barra de pestañas esté visible y la barra bulk oculta
+        if (tabKey !== 'directory') {
+            $('#contacts-bulk-bar').hide();
+            $('.aura-contacts-navbar').show().css('display', 'flex');
+        }
     }
 
     // ── Filtros y Búsqueda Reactiva ──────────────────────────────────────────────
@@ -1354,7 +1359,6 @@
                 html += '<div class="contact-card-selectable" style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);position:relative;">';
                 html += '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:2px;">';
                 html += '<input type="checkbox" class="cluster-chk-include" data-cluster="' + idx + '" value="' + c.id + '" checked title="Incluir en la fusión">';
-                html += '<input type="radio" name="master_cluster_' + idx + '" value="' + c.id + '" ' + isChecked + ' title="Marcar como registro base maestro" style="accent-color:#8b5cf6;">';
                 html += '</div>';
                 html += '<div style="flex:1;min-width:0;">';
                 html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
@@ -1368,9 +1372,28 @@
                 if (c.email_primary) html += '<span>✉️ ' + escapeHtml(c.email_primary) + '</span>';
                 if (c.phone_primary) html += '<span>📞 ' + escapeHtml(c.phone_primary) + '</span>';
                 if (c.organization) html += '<span>🏢 ' + escapeHtml(c.organization) + (c.job_title ? ' (' + escapeHtml(c.job_title) + ')' : '') + '</span>';
+                if (c.tags && c.tags.length) {
+                    var tgList = Array.isArray(c.tags) ? c.tags : (typeof c.tags === 'string' ? (function(){ try { return JSON.parse(c.tags); } catch(e){ return c.tags.split(','); } })() : []);
+                    if (tgList.length) {
+                        html += '<span style="color:#a78bfa;">🏷️ ' + escapeHtml(tgList.join(', ')) + '</span>';
+                    }
+                }
                 if (c.third_party_id && parseInt(c.third_party_id) > 0) html += '<span style="color:#38bdf8;">🔗 Tercero vinculado</span>';
                 if (c.wp_user_id && parseInt(c.wp_user_id) > 0) html += '<span style="color:#34d399;">👤 Usuario WP vinculado</span>';
                 html += '</div>';
+
+                // Selectores de Fusión Rápida (ID Maestro y Nombre que prevalece)
+                html += '<div style="display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;">';
+                html += '<label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.74rem;color:#c4b5fd;font-weight:600;" title="Conservar este ID como registro maestro definitivo en Base de Datos">';
+                html += '<input type="radio" name="master_cluster_' + idx + '" value="' + c.id + '" ' + isChecked + ' style="accent-color:#8b5cf6;">';
+                html += '<span>👑 ID Maestro (BD)</span>';
+                html += '</label>';
+                html += '<label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.74rem;color:#38bdf8;font-weight:600;" title="Conservar este Nombre y Apellido para la ficha unificada">';
+                html += '<input type="radio" name="quick_name_cluster_' + idx + '" value="' + c.id + '" ' + isChecked + ' data-first="' + escapeHtml(c.first_name || '') + '" data-last="' + escapeHtml(c.last_name || '') + '" style="accent-color:#38bdf8;">';
+                html += '<span>👤 Nombre a Conservar</span>';
+                html += '</label>';
+                html += '</div>';
+
                 html += '</div>';
                 html += '</div>';
             });
@@ -1389,7 +1412,9 @@
 
         // Handler: Fusión Rápida en Maestro marcado
         $('.btn-merge-cluster-quick').on('click', function() {
-            var clusterIdx = $(this).data('cluster');
+            var $btn = $(this);
+            var origHtml = $btn.html();
+            var clusterIdx = $btn.data('cluster');
             var cluster = clusters[clusterIdx];
             var primaryId = $('input[name="master_cluster_' + clusterIdx + '"]:checked').val();
             if (!primaryId) {
@@ -1414,11 +1439,24 @@
                 return;
             }
 
-            if (!confirm('¿Estás seguro de fusionar de forma rápida estos ' + secondaryIds.length + ' contacto(s) en el contacto #' + primaryId + '?\n\nLos teléfonos, emails, notas y relaciones se unificarán en el maestro y los registros redundantes se archivarán.')) {
+            // Nombre elegido para la Fusión Rápida (puede ser el de la derecha o izquierda)
+            var chosenNameRadio = $('input[name="quick_name_cluster_' + clusterIdx + '"]:checked');
+            var quickOverrides = {};
+            var nameAlertLabel = '';
+            if (chosenNameRadio.length) {
+                var qFirst = (chosenNameRadio.data('first') || '').trim();
+                var qLast  = (chosenNameRadio.data('last') || '').trim();
+                quickOverrides.first_name = qFirst;
+                quickOverrides.last_name  = qLast;
+                nameAlertLabel = ' con el nombre "' + (qFirst + (qLast ? ' ' + qLast : '')) + '"';
+            }
+
+            if (!confirm('¿Estás seguro de fusionar de forma rápida estos ' + secondaryIds.length + ' contacto(s) en la ficha maestra #' + primaryId + nameAlertLabel + '?\n\nLos teléfonos, emails, etiquetas, notas y relaciones se unificarán en el maestro y los registros redundantes se archivarán.')) {
                 return;
             }
 
-            executeMerge(primaryId, secondaryIds, {}, clusterIdx, $(this));
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Fusionando...');
+            executeMerge(primaryId, secondaryIds, quickOverrides, clusterIdx, $btn, origHtml);
         });
     }
 
@@ -1662,13 +1700,79 @@
         });
         mHtml += '</div></div>';
 
-        // 8. Notas adicionales
+        // 8. Campo: Etiquetas (Tags)
+        var allClusterTags = [];
+        var contactTagsMap = {};
+        activeContacts.forEach(function(c) {
+            var cTags = [];
+            if (Array.isArray(c.tags)) {
+                cTags = c.tags;
+            } else if (typeof c.tags === 'string' && c.tags.trim()) {
+                try {
+                    var p = JSON.parse(c.tags);
+                    if (Array.isArray(p)) cTags = p;
+                    else cTags = c.tags.split(',');
+                } catch(e) {
+                    cTags = c.tags.split(',');
+                }
+            }
+            cTags = cTags.map(function(t) { return (t || '').trim(); }).filter(function(t) { return t.length > 0; });
+            contactTagsMap[c.id] = cTags;
+            cTags.forEach(function(t) {
+                if (allClusterTags.indexOf(t) === -1) allClusterTags.push(t);
+            });
+        });
+
+        var combinedTagsStr = allClusterTags.join(', ');
+
+        mHtml += '<div class="merge-field-card">';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏷️ Etiquetas (Tags) de la Ficha Maestra</span><span style="font-size:0.75rem;color:#34d399;">Elige si combinar todas las etiquetas o conservar un conjunto específico</span></div>';
+        mHtml += '<div class="merge-options-grid">';
+        
+        // Opción 1: Combinar todas
+        mHtml += '<label class="merge-option-label is-selected">';
+        mHtml += '<input type="radio" name="wizard_tags_mode" value="combine" checked class="merge-option-radio" data-tags="' + escapeHtml(combinedTagsStr) + '" onchange="onWizardTagsChange(this);">';
+        mHtml += '<div><strong style="color:#fff;">✨ Combinar todas las etiquetas</strong>';
+        if (allClusterTags.length > 0) {
+            mHtml += '<div style="font-size:0.78rem;color:#a78bfa;margin-top:2px;">' + escapeHtml(combinedTagsStr) + '</div>';
+        } else {
+            mHtml += '<div style="font-size:0.78rem;color:#94a3b8;margin-top:2px;">(Sin etiquetas registradas en este grupo)</div>';
+        }
+        mHtml += '</div></label>';
+
+        // Opciones por cada contacto que tenga tags
+        activeContacts.forEach(function(c) {
+            var cTags = contactTagsMap[c.id] || [];
+            if (cTags.length > 0) {
+                var cTagsStr = cTags.join(', ');
+                mHtml += '<label class="merge-option-label">';
+                mHtml += '<input type="radio" name="wizard_tags_mode" value="contact_' + c.id + '" class="merge-option-radio" data-tags="' + escapeHtml(cTagsStr) + '" onchange="onWizardTagsChange(this);">';
+                mHtml += '<div><strong style="color:#cbd5e1;">Solo etiquetas de #' + c.id + '</strong>';
+                mHtml += '<div style="font-size:0.78rem;color:#94a3b8;margin-top:2px;">' + escapeHtml(cTagsStr) + '</div>';
+                mHtml += '</div></label>';
+            }
+        });
+
+        // Opción personalizar
+        mHtml += '<label class="merge-option-label">';
+        mHtml += '<input type="radio" name="wizard_tags_mode" value="custom" class="merge-option-radio" onchange="onWizardTagsChange(this);">';
+        mHtml += '<div><strong style="color:#a78bfa;">✏️ Personalizar etiquetas</strong><div style="font-size:0.78rem;color:#94a3b8;margin-top:2px;">Editar o escribir manualmente las etiquetas finales</div></div>';
+        mHtml += '</label>';
+        mHtml += '</div>';
+
+        mHtml += '<div class="merge-custom-input-box" id="box-wizard-tags-inputs" style="display:block;margin-top:10px;">';
+        mHtml += '<label style="font-size:0.75rem;color:#cbd5e1;display:block;margin-bottom:4px;">Etiquetas finales unificadas (separadas por comas)</label>';
+        mHtml += '<input type="text" id="merge_inp_tags" class="aura-input" value="' + escapeHtml(combinedTagsStr) + '" placeholder="ej. Cliente VIP, Egresado, Donante..." oninput="updateMergePreview();">';
+        mHtml += '</div>';
+        mHtml += '</div>';
+
+        // 9. Notas adicionales
         mHtml += '<div class="merge-field-card">';
         mHtml += '<div class="merge-field-header"><span class="merge-field-title">📝 Notas Consolidadas y Relaciones</span><span style="font-size:0.75rem;color:#38bdf8;">Todas las notas e historiales previos se preservarán automáticamente</span></div>';
         mHtml += '<textarea id="merge_inp_custom_notes" class="aura-textarea" rows="2" placeholder="Nota adicional explicativa de la fusión (opcional)..." oninput="updateMergePreview();"></textarea>';
         mHtml += '</div>';
 
-        // 9. TARJETA EN VIVO: PREVISUALIZACIÓN DEL REGISTRO RESULTANTE
+        // 10. TARJETA EN VIVO: PREVISUALIZACIÓN DEL REGISTRO RESULTANTE
         mHtml += '<div class="merge-preview-card" id="merge-live-preview-box">';
         mHtml += '<div style="font-size:0.8rem;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">🌟 Vista Previa del Contacto Maestro Resultante:</div>';
         mHtml += '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">';
@@ -1680,6 +1784,7 @@
         mHtml += '<span id="prev-email">✉️ —</span>';
         mHtml += '<span id="prev-phone">📞 —</span>';
         mHtml += '<span id="prev-cat" style="color:#a78bfa;">🏷️ —</span>';
+        mHtml += '<span id="prev-tags" style="color:#38bdf8;">🏷️ —</span>';
         mHtml += '</div>';
         mHtml += '</div>';
         mHtml += '</div>';
@@ -1738,6 +1843,19 @@
         updateMergePreview();
     };
 
+    window.onWizardTagsChange = function(radio) {
+        $('input[name="wizard_tags_mode"]').closest('.merge-option-label').removeClass('is-selected');
+        $(radio).closest('.merge-option-label').addClass('is-selected');
+        if (radio.value === 'custom') {
+            $('#box-wizard-tags-inputs').slideDown(150);
+            $('#merge_inp_tags').focus();
+        } else {
+            var tags = $(radio).data('tags') || '';
+            $('#merge_inp_tags').val(tags);
+        }
+        updateMergePreview();
+    };
+
     window.updateMergePreview = function() {
         var fn = ($('#merge_inp_first_name').val() || '').trim();
         var ln = ($('#merge_inp_last_name').val() || '').trim();
@@ -1753,12 +1871,14 @@
         var catKey = $('input[name="wizard_category"]:checked').val() || 'other';
         var catLabel = cfg.categories[catKey] || catKey;
         var avatarUrl = $('input[name="wizard_avatar_url"]:checked').val() || '';
+        var tagsVal = ($('#merge_inp_tags').val() || '').trim();
 
         $('#prev-name').text(full);
         $('#prev-org-job').text(orgJobText);
         $('#prev-email').text(emPrimary ? '✉️ ' + emPrimary : '✉️ Sin correo');
         $('#prev-phone').text(phPrimary ? '📞 ' + phPrimary : '📞 Sin teléfono');
         $('#prev-cat').text('🏷️ ' + catLabel);
+        $('#prev-tags').text(tagsVal ? '🏷️ ' + tagsVal : '🏷️ Sin etiquetas');
 
         if (avatarUrl) {
             $('#prev-avatar-wrap').html('<img src="' + escapeHtml(avatarUrl) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">');
@@ -1786,6 +1906,9 @@
             return;
         }
 
+        var tagsMode = $('input[name="wizard_tags_mode"]:checked').val() || 'combine';
+        var customTags = ($('#merge_inp_tags').val() || '').trim();
+
         // Recolectar sobreescrituras (field_overrides)
         var overrides = {
             first_name: ($('#merge_inp_first_name').val() || '').trim(),
@@ -1798,6 +1921,8 @@
             phone_secondary: $('input[name="wizard_phone_secondary"]:checked').val() || '',
             avatar_url: $('input[name="wizard_avatar_url"]:checked').val() || '',
             category: $('input[name="wizard_category"]:checked').val() || '',
+            tags_mode: tagsMode === 'combine' ? 'combine' : 'replace',
+            custom_tags: customTags,
             custom_notes: ($('#merge_inp_custom_notes').val() || '').trim()
         };
 
@@ -1808,6 +1933,14 @@
     });
 
     function executeMerge(targetId, sourceIds, overrides, clusterIdx, $btn, origHtml) {
+        if (!origHtml && $btn && $btn.length) {
+            origHtml = $btn.html();
+        }
+        if ($btn && $btn.length) {
+            $btn.prop('disabled', true);
+        }
+        $('#btn-submit-merge-action').prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Fusionando contactos...');
+
         $.post(cfg.ajaxUrl, {
             action: 'aura_contacts_merge',
             nonce: cfg.nonce,
@@ -1815,7 +1948,6 @@
             source_ids: sourceIds,
             field_overrides: overrides
         }, function(res) {
-            if (origHtml) $btn.prop('disabled', false).html(origHtml);
             if (res.success) {
                 closeMergeModal();
                 showToast('Fusión exitosa: Se unificaron ' + sourceIds.length + ' contacto(s) en la ficha #' + targetId);
@@ -1827,6 +1959,7 @@
                             '<div style="font-size:42px;margin-bottom:12px;">🎉</div>' +
                             '<h3 style="margin:0 0 8px;color:#34d399;font-size:1.15rem;">¡Fusión Completada!</h3>' +
                             '<p style="margin:0;color:#94a3b8;font-size:0.9rem;">Todos los grupos de duplicados han sido resueltos satisfactoriamente.</p>' +
+                            '<button type="button" class="btn btn-secondary btn-sm btn-lift" onclick="$(\'#btn-scan-duplicates\').trigger(\'click\');" style="margin-top:14px;"><span class="dashicons dashicons-search"></span> Re-escanear ahora</button>' +
                             '</div>'
                         );
                     }
@@ -1836,9 +1969,18 @@
             } else {
                 alert(res.data && res.data.message ? res.data.message : 'Error al fusionar contactos.');
             }
-        }).fail(function() {
-            if (origHtml) $btn.prop('disabled', false).html(origHtml);
-            alert('Error de conexión durante el proceso de fusión.');
+        }).fail(function(xhr) {
+            var msg = 'Error de conexión durante el proceso de fusión.';
+            if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                msg += ' (' + xhr.responseJSON.data.message + ')';
+            }
+            alert(msg);
+        }).always(function() {
+            // Restaurar SIEMPRE tanto el botón del modal como el botón del cluster
+            $('#btn-submit-merge-action').prop('disabled', false).html('<span class="dashicons dashicons-randomize"></span> <span>Confirmar y Fusionar Contactos</span>');
+            if ($btn && $btn.length && origHtml) {
+                $btn.prop('disabled', false).html(origHtml);
+            }
         });
     }
 
@@ -2080,6 +2222,8 @@
                 $('#btn-contacts-bulk-delete').show().css('display', 'inline-flex');
                 $('#contacts-bulk-delete-count').text(count);
             }
+            // Ocultar la barra de pestañas para que no queden dos barras apiladas
+            $('.aura-contacts-navbar').slideUp(150);
             $('#contacts-bulk-bar').slideDown(150).css('display', 'flex');
             $('#contacts-bulk-badge-circle').text(count);
             $('#contacts-bulk-bar-label').text(count + (count === 1 ? ' contacto seleccionado' : ' contactos seleccionados'));
@@ -2088,6 +2232,8 @@
             $('#btn-contacts-bulk-delete').hide();
             $('#contacts-bulk-bar').slideUp(150);
             $('#contacts-select-all').prop('checked', false);
+            // Restaurar la barra de pestañas flotante
+            $('.aura-contacts-navbar').slideDown(150).css('display', 'flex');
         }
     }
 

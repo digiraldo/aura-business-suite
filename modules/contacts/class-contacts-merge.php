@@ -473,18 +473,36 @@ class Aura_Contacts_Merge {
                 }
             }
 
-            // 4. Unificar etiquetas (Tags) de todas las fichas
-            $all_tags = is_array( $target['tags'] ) ? $target['tags'] : array();
-            foreach ( $sources as $s ) {
-                if ( ! empty( $s['tags'] ) && is_array( $s['tags'] ) ) {
-                    $all_tags = array_merge( $all_tags, $s['tags'] );
+            // 4. Unificar o personalizar etiquetas (Tags) de las fichas
+            $tags_mode = isset( $field_overrides['tags_mode'] ) ? sanitize_key( $field_overrides['tags_mode'] ) : 'combine';
+            $all_tags  = array();
+
+            if ( $tags_mode === 'replace' || ( isset( $field_overrides['custom_tags'] ) && $tags_mode !== 'combine' ) ) {
+                $raw_custom = $field_overrides['custom_tags'] ?? ( $field_overrides['tags'] ?? '' );
+                if ( is_array( $raw_custom ) ) {
+                    $all_tags = $raw_custom;
+                } elseif ( is_string( $raw_custom ) && trim( $raw_custom ) !== '' ) {
+                    $all_tags = array_map( 'trim', explode( ',', $raw_custom ) );
+                }
+            } else {
+                // Modo combinar todas las etiquetas
+                $target_tags = is_array( $target['tags'] ) ? $target['tags'] : ( is_string( $target['tags'] ) ? json_decode( $target['tags'], true ) : array() );
+                $all_tags    = is_array( $target_tags ) ? $target_tags : array();
+
+                foreach ( $sources as $s ) {
+                    $s_tags = is_array( $s['tags'] ) ? $s['tags'] : ( is_string( $s['tags'] ) ? json_decode( $s['tags'], true ) : array() );
+                    if ( ! empty( $s_tags ) && is_array( $s_tags ) ) {
+                        $all_tags = array_merge( $all_tags, $s_tags );
+                    }
+                }
+
+                if ( ! empty( $field_overrides['custom_tags'] ) ) {
+                    $custom_tags = array_map( 'trim', explode( ',', $field_overrides['custom_tags'] ) );
+                    $all_tags    = array_merge( $all_tags, $custom_tags );
                 }
             }
-            if ( ! empty( $field_overrides['custom_tags'] ) ) {
-                $custom_tags = array_map( 'trim', explode( ',', $field_overrides['custom_tags'] ) );
-                $all_tags = array_merge( $all_tags, $custom_tags );
-            }
-            $all_tags = array_values( array_unique( array_filter( $all_tags ) ) );
+
+            $all_tags = array_values( array_unique( array_filter( array_map( 'sanitize_text_field', $all_tags ) ) ) );
             $updated_target['tags'] = ! empty( $all_tags ) ? wp_json_encode( $all_tags ) : null;
 
             // 5. Consolidar notas con registro de auditoría claro

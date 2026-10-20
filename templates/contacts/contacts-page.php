@@ -140,131 +140,126 @@ $category_icons = array(
             <?php endif; ?>
 
             <!-- ── TARJETAS KPI RESUMEN ───────────────────────────────────── -->
-            <div class="aura-kpi-grid fade-up delay-1" style="margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="aura-kpi-grid fade-up delay-1">
                 <!-- Total Contactos -->
-                <div class="aura-glass-card kpi-card card-lift accent-blue">
+                <div class="aura-glass-card kpi-card card-lift accent-blue" title="<?php esc_attr_e( 'Total de contactos activos en libreta institucional', 'aura-suite' ); ?>">
                     <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">
                         <span class="dashicons dashicons-id-alt"></span>
                     </div>
                     <div class="kpi-body">
-                        <span class="kpi-label"><?php esc_html_e( 'Total Activos', 'aura-suite' ); ?></span>
+                        <span class="kpi-label"><?php esc_html_e( 'Total', 'aura-suite' ); ?></span>
                         <h3 class="kpi-value" id="kpi-total-val"><?php echo esc_html( $kpis['total'] ?? 0 ); ?></h3>
-                        <span class="kpi-desc"><?php esc_html_e( 'En libreta institucional', 'aura-suite' ); ?></span>
                     </div>
                 </div>
 
                 <!-- Sincronizados con Google -->
-                <div class="aura-glass-card kpi-card card-lift accent-emerald">
+                <div class="aura-glass-card kpi-card card-lift accent-emerald" title="<?php esc_attr_e( 'Contactos sincronizados exitosamente con Google People API', 'aura-suite' ); ?>">
                     <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
                         <span class="dashicons dashicons-cloud"></span>
                     </div>
                     <div class="kpi-body">
-                        <span class="kpi-label"><?php esc_html_e( 'Sincronizados Google', 'aura-suite' ); ?></span>
+                        <span class="kpi-label"><?php esc_html_e( 'Google Sync', 'aura-suite' ); ?></span>
                         <h3 class="kpi-value" id="kpi-synced-val" style="color: #10b981;"><?php echo esc_html( $kpis['synced'] ?? 0 ); ?></h3>
-                        <span class="kpi-desc"><?php esc_html_e( 'People API sincronizados', 'aura-suite' ); ?></span>
                     </div>
                 </div>
 
                 <!-- Pendientes de Subida -->
-                <div class="aura-glass-card kpi-card card-lift accent-amber">
+                <div class="aura-glass-card kpi-card card-lift accent-amber" title="<?php esc_attr_e( 'Contactos pendientes o en cola de sincronización', 'aura-suite' ); ?>">
                     <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
                         <span class="dashicons dashicons-backup"></span>
                     </div>
                     <div class="kpi-body">
-                        <span class="kpi-label"><?php esc_html_e( 'Pendientes / Cola', 'aura-suite' ); ?></span>
+                        <span class="kpi-label"><?php esc_html_e( 'Pendientes', 'aura-suite' ); ?></span>
                         <h3 class="kpi-value" id="kpi-pending-val" style="color: #f59e0b;"><?php echo esc_html( $kpis['pending'] ?? 0 ); ?></h3>
-                        <span class="kpi-desc"><?php esc_html_e( 'Por subir a Google', 'aura-suite' ); ?></span>
                     </div>
                 </div>
 
                 <!-- Con Errores -->
-                <div class="aura-glass-card kpi-card card-lift accent-rose">
+                <div class="aura-glass-card kpi-card card-lift accent-rose" title="<?php esc_attr_e( 'Contactos que reportaron errores de sincronización', 'aura-suite' ); ?>">
                     <div class="kpi-icon-wrap" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
                         <span class="dashicons dashicons-warning"></span>
                     </div>
                     <div class="kpi-body">
-                        <span class="kpi-label"><?php esc_html_e( 'Errores / Fallos', 'aura-suite' ); ?></span>
+                        <span class="kpi-label"><?php esc_html_e( 'Errores', 'aura-suite' ); ?></span>
                         <h3 class="kpi-value" id="kpi-error-val" style="color: #ef4444;"><?php echo esc_html( $kpis['error'] ?? 0 ); ?></h3>
-                        <span class="kpi-desc"><?php esc_html_e( 'Requieren revisión', 'aura-suite' ); ?></span>
                     </div>
                 </div>
 
                 <!-- Vinculados (Terceros / WP) -->
-                <div class="aura-glass-card kpi-card card-lift accent-purple">
+                <div class="aura-glass-card kpi-card card-lift accent-purple" title="<?php esc_attr_e( 'Contactos vinculados a terceros o usuarios WordPress', 'aura-suite' ); ?>">
                     <div class="kpi-icon-wrap" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">
                         <span class="dashicons dashicons-admin-links"></span>
                     </div>
                     <div class="kpi-body">
-                        <span class="kpi-label"><?php esc_html_e( 'Terceros Vinculados', 'aura-suite' ); ?></span>
+                        <span class="kpi-label"><?php esc_html_e( 'Vinculados', 'aura-suite' ); ?></span>
                         <h3 class="kpi-value" id="kpi-third-val"><?php echo esc_html( $kpis['with_third_party'] ?? 0 ); ?></h3>
-                        <span class="kpi-desc"><?php esc_html_e( 'Con directorio comercial', 'aura-suite' ); ?></span>
                     </div>
                 </div>
             </div>
 
             <!-- ── BARRA DE PESTAÑAS (TABS NAVBAR) ────────────────────────── -->
-            <nav class="aura-navbar aura-nav aura-glass-card aura-contacts-navbar fade-up delay-2" style="margin-top: 20px;">
-                <button type="button" class="aura-navbar-item aura-tab-btn is-active active" data-tab="directory" data-category="">
+            <nav class="aura-navbar aura-nav aura-glass-card aura-contacts-navbar fade-up delay-2">
+                <button type="button" class="aura-navbar-item aura-tab-btn is-active active" data-tab="directory" data-category="" title="<?php esc_attr_e( 'Todos los Contactos', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-grid-view"></span>
-                    <?php esc_html_e( 'Todos los Contactos', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Todos', 'aura-suite' ); ?></span>
                     <span class="aura-tab-count" id="tab-count-all"><?php echo esc_html( $kpis['total'] ?? 0 ); ?></span>
                 </button>
 
-                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="student">
+                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="student" title="<?php esc_attr_e( 'Estudiantes', 'aura-suite' ); ?>">
                     <span>🎓</span>
-                    <?php esc_html_e( 'Estudiantes', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Estudiantes', 'aura-suite' ); ?></span>
                     <span class="aura-tab-count" id="tab-count-student"><?php echo esc_html( $kpis['by_category']['student'] ?? 0 ); ?></span>
                 </button>
 
-                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="teacher">
+                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="teacher" title="<?php esc_attr_e( 'Docentes y Facilitadores', 'aura-suite' ); ?>">
                     <span>👨‍🏫</span>
-                    <?php esc_html_e( 'Docentes / Facilitadores', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Docentes', 'aura-suite' ); ?></span>
                     <span class="aura-tab-count" id="tab-count-teacher"><?php echo esc_html( ( $kpis['by_category']['teacher'] ?? 0 ) + ( $kpis['by_category']['facilitator'] ?? 0 ) ); ?></span>
                 </button>
 
-                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="staff">
+                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="staff" title="<?php esc_attr_e( 'Personal y Staff', 'aura-suite' ); ?>">
                     <span>👔</span>
-                    <?php esc_html_e( 'Personal / Staff', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Personal', 'aura-suite' ); ?></span>
                     <span class="aura-tab-count" id="tab-count-staff"><?php echo esc_html( $kpis['by_category']['staff'] ?? 0 ); ?></span>
                 </button>
 
-                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="supplier">
+                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="supplier" title="<?php esc_attr_e( 'Proveedores', 'aura-suite' ); ?>">
                     <span>🏢</span>
-                    <?php esc_html_e( 'Proveedores', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Proveedores', 'aura-suite' ); ?></span>
                     <span class="aura-tab-count" id="tab-count-supplier"><?php echo esc_html( $kpis['by_category']['supplier'] ?? 0 ); ?></span>
                 </button>
 
-                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="donor">
+                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="donor" title="<?php esc_attr_e( 'Donantes y Aliados', 'aura-suite' ); ?>">
                     <span>🤝</span>
-                    <?php esc_html_e( 'Donantes / Aliados', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Donantes', 'aura-suite' ); ?></span>
                     <span class="aura-tab-count" id="tab-count-donor"><?php echo esc_html( $kpis['by_category']['donor'] ?? 0 ); ?></span>
                 </button>
 
-                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="member">
+                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="directory" data-category="member" title="<?php esc_attr_e( 'Miembros y Afiliados', 'aura-suite' ); ?>">
                     <span>⭐</span>
-                    <?php esc_html_e( 'Miembros / Afiliados', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Miembros', 'aura-suite' ); ?></span>
                     <span class="aura-tab-count" id="tab-count-member"><?php echo esc_html( $kpis['by_category']['member'] ?? 0 ); ?></span>
                 </button>
 
-                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="import_export">
+                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="import_export" title="<?php esc_attr_e( 'Importar y Exportar Contactos', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-database-export"></span>
-                    <?php esc_html_e( 'Importar / Exportar', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Migración', 'aura-suite' ); ?></span>
                 </button>
 
-                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="duplicates_merge">
+                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="duplicates_merge" title="<?php esc_attr_e( 'Detección de Duplicados y Fusión', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-randomize"></span>
-                    <?php esc_html_e( 'Duplicados y Fusión', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Duplicados', 'aura-suite' ); ?></span>
                 </button>
 
-                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="sync_logs">
+                <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="sync_logs" title="<?php esc_attr_e( 'Historial de Sincronización', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-update"></span>
-                    <?php esc_html_e( 'Historial Sync', 'aura-suite' ); ?>
+                    <span><?php esc_html_e( 'Historial', 'aura-suite' ); ?></span>
                 </button>
 
                 <?php if ( $can_google ) : ?>
-                    <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="google_settings">
+                    <button type="button" class="aura-navbar-item aura-tab-btn" data-tab="google_settings" title="<?php esc_attr_e( 'Ajustes de Google & Workspace', 'aura-suite' ); ?>">
                         <span class="dashicons dashicons-google"></span>
-                        <?php esc_html_e( 'Google & Workspace', 'aura-suite' ); ?>
+                        <span><?php esc_html_e( 'Google Sync', 'aura-suite' ); ?></span>
                     </button>
                 <?php endif; ?>
             </nav>
