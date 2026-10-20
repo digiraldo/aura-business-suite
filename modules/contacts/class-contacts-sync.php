@@ -37,10 +37,12 @@ class Aura_Contacts_Sync {
         add_action( self::CRON_HOOK, array( __CLASS__, 'cron_sync' ) );
         self::ensure_cron_schedule();
 
-        // Endpoints AJAX
+        // Endpoints AJAX & Exportación
         add_action( 'wp_ajax_aura_contacts_sync_all', array( __CLASS__, 'ajax_sync_all' ) );
         add_action( 'wp_ajax_aura_contacts_sync_single', array( __CLASS__, 'ajax_sync_single' ) );
         add_action( 'wp_ajax_aura_contacts_get_sync_logs', array( __CLASS__, 'ajax_get_sync_logs' ) );
+        add_action( 'wp_ajax_aura_contacts_export_sync_logs', array( __CLASS__, 'ajax_export_sync_logs' ) );
+        add_action( 'admin_post_aura_contacts_export_sync_logs', array( __CLASS__, 'handle_export_sync_logs' ) );
     }
 
     /**
@@ -588,34 +590,123 @@ class Aura_Contacts_Sync {
     }
 
     /**
-     * Obtiene los registros recientes del log de auditoría.
+     * Obtiene los registros de auditoría de sincronización con paginación, filtros y KPIs.
+     *
+     * @param array $args
+     * @return array { items: array, total_items: int, total_pages: int, current_page: int, per_page: int, stats: array }
+     */
+    public static function get_sync_logs_paginated( array $args = array() ): array {
+        global $wpdb;
+        $t_logs     = $wpdb->prefix . 'aura_contacts_sync_log';
+        $t_contacts = $wpdb->prefix . 'aura_contacts';
+
+        $page      = isset( $args['page'] ) ? max( 1, absint( $args['page'] ) ) : 1;
+        $per_page  = isset( $args['per_page'] ) ? min( 100, max( 5, absint( $args['per_page'] ) ) ) : 25;
+        $status    = isset( $args['status'] ) ? sanitize_key( $args['status'] ) : '';
+        $direction = isset( $args['direction'] ) ? sanitize_key( $args['direction'] ) : '';
+        $search    = isset( $args['search'] ) ? sanitize_text_field( wp_unslash( $args['search'] ) ) : '';
+
+        $where_clauses = array( '1=1' );
+        $where_params  = array();
+
+        if ( in_array( $status, array( 'error', 'success' ), true ) ) {
+            $where_clauses[] = 'l.status = %s';
+            $where_params[]  = $status;
+        }
+
+        if ( in_array( $direction, array( 'push', 'pull' ), true ) ) {
+            $where_clauses[] = 'l.direction = %s';
+            $where_params[]  = $direction;
+        }
+
+        if ( ! empty( $search ) ) {
+            $like = '%' . $wpdb->esc_like( $search ) . '%';
+            if ( is_numeric( $search ) ) {
+                $where_clauses[] = '(l.contact_id = %d OR l.id = %d OR c.first_name LIKE %s OR c.last_name LIKE %s OR c.email_primary LIKE %s OR l.message LIKE %s)';
+                $where_params[]  = absint( $search );
+                $where_params[]  = absint( $search );
+                $where_params[]  = $like;
+                $where_params[]  = $like;
+                $where_params[]  = $like;
+                $where_params[]  = $like;
+            } else {
+                $where_clauses[] = '(c.first_name LIKE %s OR c.last_name LIKE %s OR c.email_primary LIKE %s OR c.organization LIKE %s OR l.message LIKE %s OR l.google_account LIKE %s)';
+                $where_params[]  = $like;
+                $where_params[]  = $like;
+                $where_params[]  = $like;
+                $where_params[]  = $like;
+                $where_params[]  = $like;
+                $where_params[]  = $like;
+            }
+        }
+
+        $where_sql = implode( ' AND ', $where_clauses );
+
+        // 1. Conteo total filtrado
+        $count_query = "SELECT COUNT(*) FROM {$t_logs} l LEFT JOIN {$t_contacts} c ON (l.contact_id = c.id) WHERE {$where_sql}";
+        if ( ! empty( $where_params ) ) {
+            $count_query = $wpdb->prepare( $count_query, $where_params );
+        }
+        $total_items = (int) $wpdb->get_var( $count_query );
+        $total_pages = $total_items > 0 ? (int) ceil( $total_items / $per_page ) : 1;
+
+        if ( $page > $total_pages ) {
+            $page = $total_pages;
+        }
+        $offset = ( $page - 1 ) * $per_page;
+
+        // 2. Consulta de registros paginados
+        $items_query = "SELECT l.*, c.first_name, c.last_name, c.organization, c.email_primary, c.phone_primary, c.avatar_url
+                        FROM {$t_logs} l
+                        LEFT JOIN {$t_contacts} c ON (l.contact_id = c.id)
+                        WHERE {$where_sql}
+                        ORDER BY l.id DESC
+                        LIMIT %d OFFSET %d";
+        $paged_params   = $where_params;
+        $paged_params[] = $per_page;
+        $paged_params[] = $offset;
+
+        $items = $wpdb->get_results( $wpdb->prepare( $items_query, $paged_params ), ARRAY_A ) ?: array();
+
+        // 3. Estadísticas globales para KPIs
+        $stat_total   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t_logs}" );
+        $stat_success = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t_logs} WHERE status = 'success'" );
+        $stat_errors  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t_logs} WHERE status = 'error'" );
+        $last_sync    = get_option( self::OPTION_LAST_SYNC_TIME, null );
+        if ( ! $last_sync ) {
+            $last_sync = $wpdb->get_var( "SELECT created_at FROM {$t_logs} ORDER BY id DESC LIMIT 1" );
+        }
+
+        return array(
+            'items'        => $items,
+            'total_items'  => $total_items,
+            'total_pages'  => $total_pages,
+            'current_page' => $page,
+            'per_page'     => $per_page,
+            'stats'        => array(
+                'total_all'     => $stat_total,
+                'total_success' => $stat_success,
+                'total_errors'  => $stat_errors,
+                'success_rate'  => $stat_total > 0 ? round( ( $stat_success / $stat_total ) * 100, 1 ) : 100,
+                'last_sync'     => $last_sync,
+            ),
+        );
+    }
+
+    /**
+     * Obtiene los registros recientes del log de auditoría (wrapper de compatibilidad).
      *
      * @param int $limit
+     * @param string $status
      * @return array
      */
     public static function get_recent_logs( int $limit = 50, string $status = '' ): array {
-        global $wpdb;
-        $table = $wpdb->prefix . 'aura_contacts_sync_log';
-
-        $where = '';
-        if ( in_array( $status, array( 'error', 'success' ), true ) ) {
-            $where = $wpdb->prepare( "WHERE l.status = %s", $status );
-        }
-
-        $limit_val = min( 200, max( 5, $limit ) );
-        $logs = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT l.*, c.first_name, c.last_name, c.organization, c.email_primary 
-                 FROM {$table} l
-                 LEFT JOIN {$wpdb->prefix}aura_contacts c ON (l.contact_id = c.id)
-                 {$where}
-                 ORDER BY l.id DESC LIMIT %d",
-                $limit_val
-            ),
-            ARRAY_A
-        );
-
-        return $logs ?: array();
+        $paged = self::get_sync_logs_paginated( array(
+            'page'     => 1,
+            'per_page' => $limit,
+            'status'   => $status,
+        ) );
+        return $paged['items'] ?? array();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -688,7 +779,7 @@ class Aura_Contacts_Sync {
     }
 
     /**
-     * AJAX: Obtener logs de auditoría de sincronización.
+     * AJAX: Obtener logs de auditoría de sincronización con paginación y filtros.
      */
     public static function ajax_get_sync_logs(): void {
         check_ajax_referer( Aura_Contacts::NONCE, 'nonce' );
@@ -697,10 +788,178 @@ class Aura_Contacts_Sync {
             wp_send_json_error( array( 'message' => __( 'Sin permisos.', 'aura-suite' ) ) );
         }
 
-        $limit  = isset( $_POST['limit'] ) ? absint( $_POST['limit'] ) : 50;
-        $status = isset( $_POST['status'] ) ? sanitize_key( $_POST['status'] ) : '';
-        $logs   = self::get_recent_logs( $limit, $status );
-        wp_send_json_success( array( 'logs' => $logs ) );
+        $page      = isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 1;
+        $per_page  = isset( $_POST['per_page'] ) ? absint( $_POST['per_page'] ) : 25;
+        $status    = isset( $_POST['status'] ) ? sanitize_key( $_POST['status'] ) : '';
+        $direction = isset( $_POST['direction'] ) ? sanitize_key( $_POST['direction'] ) : '';
+        $search    = isset( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '';
+
+        $data = self::get_sync_logs_paginated( array(
+            'page'      => $page,
+            'per_page'  => $per_page,
+            'status'    => $status,
+            'direction' => $direction,
+            'search'    => $search,
+        ) );
+
+        wp_send_json_success( array(
+            'logs'         => $data['items'],
+            'total_items'  => $data['total_items'],
+            'total_pages'  => $data['total_pages'],
+            'current_page' => $data['current_page'],
+            'per_page'     => $data['per_page'],
+            'stats'        => $data['stats'],
+        ) );
+    }
+
+    /**
+     * Manejador admin-post para descargar logs de auditoría de sincronización en archivo JSON.
+     */
+    public static function handle_export_sync_logs(): void {
+        check_admin_referer( 'aura_contacts_export_action', 'nonce' );
+
+        if ( ! current_user_can( 'aura_contacts_view' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'Sin permisos para exportar logs.', 'aura-suite' ) );
+        }
+
+        $format = isset( $_GET['format'] ) ? sanitize_key( $_GET['format'] ) : 'json';
+        self::generate_sync_logs_export( $format );
+    }
+
+    /**
+     * Endpoint AJAX para descarga directa o exportación de logs de auditoría.
+     */
+    public static function ajax_export_sync_logs(): void {
+        check_ajax_referer( Aura_Contacts::NONCE, 'nonce' );
+
+        if ( ! current_user_can( 'aura_contacts_view' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Sin permisos.', 'aura-suite' ) ) );
+        }
+
+        $format = isset( $_POST['format'] ) ? sanitize_key( $_POST['format'] ) : 'json';
+        self::generate_sync_logs_export( $format );
+    }
+
+    /**
+     * Genera la descarga en streaming del archivo de diagnóstico de auditoría de sincronización.
+     *
+     * @param string $format 'json'|'csv'
+     */
+    public static function generate_sync_logs_export( string $format = 'json' ): void {
+        global $wpdb;
+        $t_logs     = $wpdb->prefix . 'aura_contacts_sync_log';
+        $t_contacts = $wpdb->prefix . 'aura_contacts';
+
+        // Extraer hasta los últimos 1500 logs con detalle completo
+        $logs = $wpdb->get_results(
+            "SELECT l.*, c.first_name, c.last_name, c.organization, c.job_title, c.email_primary, c.phone_primary
+             FROM {$t_logs} l
+             LEFT JOIN {$t_contacts} c ON (l.contact_id = c.id)
+             ORDER BY l.id DESC LIMIT 1500",
+            ARRAY_A
+        ) ?: array();
+
+        $provider       = Aura_Google_Auth_Factory::get_provider();
+        $is_connected   = $provider->is_connected();
+        $google_account = $provider->get_account_email();
+        $auth_mode      = get_option( Aura_Google_Auth_Factory::OPTION_AUTH_MODE, 'oauth' );
+        $last_sync_time = get_option( self::OPTION_LAST_SYNC_TIME, 'Nunca' );
+        $timestamp_file = date( 'Y-m-d_H-i-s' );
+
+        if ( 'csv' === $format ) {
+            $filename = sprintf( 'aura_contacts_sync_logs_%s.csv', $timestamp_file );
+            header( 'Content-Type: text/csv; charset=utf-8' );
+            header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+            header( 'Pragma: no-cache' );
+            header( 'Expires: 0' );
+
+            $out = fopen( 'php://output', 'w' );
+            // BOM UTF-8 para Excel
+            fprintf( $out, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
+
+            fputcsv( $out, array( 'ID Log', 'Fecha / Hora', 'Dirección', 'Acción', 'Estado', 'ID Contacto', 'Nombre Contacto', 'Organización', 'Email', 'Cuenta Google', 'Mensaje / Error de API' ) );
+
+            foreach ( $logs as $row ) {
+                $cname = trim( ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) );
+                fputcsv( $out, array(
+                    $row['id'] ?? '',
+                    $row['created_at'] ?? '',
+                    $row['direction'] ?? '',
+                    $row['action'] ?? '',
+                    $row['status'] ?? '',
+                    $row['contact_id'] ?? '',
+                    $cname,
+                    $row['organization'] ?? '',
+                    $row['email_primary'] ?? '',
+                    $row['google_account'] ?? '',
+                    $row['message'] ?? '',
+                ) );
+            }
+
+            fclose( $out );
+            exit;
+        }
+
+        // Por defecto: Formato JSON estructurado para diagnóstico asistido por IA y soporte
+        $filename = sprintf( 'aura_contacts_sync_logs_%s.json', $timestamp_file );
+        header( 'Content-Type: application/json; charset=utf-8' );
+        header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+        header( 'Pragma: no-cache' );
+        header( 'Expires: 0' );
+
+        $total_success = 0;
+        $total_errors  = 0;
+        $formatted_logs = array();
+
+        foreach ( $logs as $l ) {
+            if ( 'success' === ( $l['status'] ?? '' ) ) {
+                $total_success++;
+            } else {
+                $total_errors++;
+            }
+
+            $cname = trim( ( $l['first_name'] ?? '' ) . ' ' . ( $l['last_name'] ?? '' ) );
+
+            $formatted_logs[] = array(
+                'log_id'          => (int) $l['id'],
+                'timestamp'       => $l['created_at'],
+                'direction'       => $l['direction'], // push | pull
+                'action'          => $l['action'],    // create | update | delete | skip
+                'status'          => $l['status'],    // success | error
+                'contact_id'      => $l['contact_id'] ? (int) $l['contact_id'] : null,
+                'contact_name'    => $cname ?: null,
+                'contact_email'   => $l['email_primary'] ?: null,
+                'organization'    => $l['organization'] ?: null,
+                'google_account'  => $l['google_account'],
+                'message_detail'  => $l['message'],
+            );
+        }
+
+        $export_payload = array(
+            'system_info' => array(
+                'app'             => 'Aura Business Suite - Directorio Maestro de Contactos',
+                'export_datetime' => current_time( 'mysql' ),
+                'site_url'        => site_url(),
+                'wp_version'      => get_bloginfo( 'version' ),
+                'aura_version'    => defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0',
+            ),
+            'google_sync_status' => array(
+                'is_connected'    => (bool) $is_connected,
+                'auth_mode'       => $auth_mode,
+                'account_email'   => $google_account ?: 'Desconectado',
+                'last_sync_time'  => $last_sync_time,
+                'has_sync_token'  => (bool) get_option( self::OPTION_SYNC_TOKEN, null ),
+            ),
+            'audit_summary' => array(
+                'exported_records' => count( $formatted_logs ),
+                'success_count'    => $total_success,
+                'error_count'      => $total_errors,
+            ),
+            'audit_logs' => $formatted_logs,
+        );
+
+        echo wp_json_encode( $export_payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+        exit;
     }
 
     // ─────────────────────────────────────────────────────────────

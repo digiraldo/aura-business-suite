@@ -47,6 +47,7 @@
         initDuplicatesMerge();
         initGlobalActions();
         initBulkEdit();
+        initSyncLogs();
 
         // Cargar primera página de contactos
         fetchContacts();
@@ -1040,36 +1041,295 @@
         });
     }
 
-    // ── Historial de Logs ────────────────────────────────────────────────────────
-    function fetchLogs() {
-        var $tbody = $('#contacts-logs-tbody');
-        $tbody.html('<tr><td colspan="6" style="text-align: center; padding: 24px;"><span class="dashicons dashicons-update spin"></span> Cargando historial de sincronización...</td></tr>');
+    // ── Historial y Registro de Auditoría de Sincronización (Audit v2) ──────────
+    var logsState = {
+        page: 1,
+        perPage: 25,
+        status: '',
+        direction: '',
+        search: '',
+        totalItems: 0,
+        totalPages: 1,
+        isLoading: false,
+        rawLogs: []
+    };
 
-        $.post(cfg.ajaxUrl, { action: 'aura_contacts_get_sync_logs', nonce: cfg.nonce, limit: 150 }, function(res) {
-            var logs = (res.data && res.data.logs) ? res.data.logs : (Array.isArray(res.data) ? res.data : []);
-            if (!res.success || logs.length === 0) {
-                $tbody.html('<tr><td colspan="6" style="text-align: center; padding: 30px; color:#94a3b8;">No hay registros de sincronización registrados aún.</td></tr>');
+    var logsSearchTimer = null;
+
+    function initSyncLogs() {
+        // Filtro por Estado
+        $('#logs-filter-status').on('change', function() {
+            logsState.status = $(this).val();
+            logsState.page = 1;
+            fetchLogs(1);
+        });
+
+        // Filtro por Dirección
+        $('#logs-filter-direction').on('change', function() {
+            logsState.direction = $(this).val();
+            logsState.page = 1;
+            fetchLogs(1);
+        });
+
+        // Selector por Página
+        $('#logs-filter-per-page').on('change', function() {
+            logsState.perPage = parseInt($(this).val(), 10) || 25;
+            logsState.page = 1;
+            fetchLogs(1);
+        });
+
+        // Buscador reactivo de logs con debounce
+        $('#logs-filter-search').on('input', function() {
+            var val = $(this).val();
+            clearTimeout(logsSearchTimer);
+            logsSearchTimer = setTimeout(function() {
+                logsState.search = val.trim();
+                logsState.page = 1;
+                fetchLogs(1);
+            }, 320);
+        });
+
+        // Clic en la tarjeta de fallas/errores para filtrar automáticamente
+        $('#logs-kpi-errors-card').on('click', function() {
+            $('#logs-filter-status').val('error');
+            logsState.status = 'error';
+            logsState.page = 1;
+            fetchLogs(1);
+        });
+
+        // Botón Copiar Diagnóstico en el modal
+        $('#btn-copy-log-detail').on('click', function() {
+            var text = $('#log-detail-message').text();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('Diagnóstico copiado al portapapeles.');
+                }).catch(function() {
+                    showToast('Error al copiar automáticamente. Por favor selecciónalo y cópialo manualmente.');
+                });
+            } else {
+                showToast('Selecciona el texto y usa Ctrl+C para copiarlo.');
+            }
+        });
+    }
+
+    function fetchLogs(page) {
+        if (typeof page === 'number') {
+            logsState.page = page;
+        }
+
+        var $tbody = $('#contacts-logs-tbody');
+        $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 28px; color:#cbd5e1;"><span class="dashicons dashicons-update spin"></span> Cargando registros de auditoría...</td></tr>');
+
+        logsState.isLoading = true;
+
+        $.post(cfg.ajaxUrl, {
+            action: 'aura_contacts_get_sync_logs',
+            nonce: cfg.nonce,
+            page: logsState.page,
+            per_page: logsState.perPage,
+            status: logsState.status,
+            direction: logsState.direction,
+            search: logsState.search
+        }, function(res) {
+            logsState.isLoading = false;
+
+            if (!res.success) {
+                var errMsg = (res.data && res.data.message) ? res.data.message : 'Error al cargar logs';
+                $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 30px; color:#f87171;">' + escapeHtml(errMsg) + '</td></tr>');
                 return;
             }
 
+            var d = res.data || {};
+            var logs = d.logs || [];
+            logsState.rawLogs = logs;
+            logsState.totalItems = d.total_items || 0;
+            logsState.totalPages = d.total_pages || 1;
+            logsState.page = d.current_page || 1;
+
+            // Actualizar KPIs superiores
+            if (d.stats) {
+                $('#logs-kpi-total').text(d.stats.total_all || 0);
+                $('#logs-kpi-success').text((d.stats.total_success || 0) + ' (' + (d.stats.success_rate || 100) + '%)');
+                $('#logs-kpi-errors').text(d.stats.total_errors || 0);
+                $('#logs-kpi-last-sync').text(d.stats.last_sync ? d.stats.last_sync : 'Sin registros');
+            }
+
+            // Renderizar Filas de la Tabla
+            if (logs.length === 0) {
+                var emptyMsg = logsState.search || logsState.status || logsState.direction
+                    ? 'No se encontraron registros de auditoría que coincidan con los filtros aplicados.'
+                    : 'No hay eventos de sincronización registrados aún.';
+                $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 36px; color:#94a3b8;">' + escapeHtml(emptyMsg) + '</td></tr>');
+                $('#logs-pagination-container').hide();
+                return;
+            }
+
+            $('#logs-pagination-container').show();
+
             var html = '';
-            logs.forEach(function(l) {
-                var dirBadge = l.direction === 'push' ? '<span class="badge badge-blue">Local ➔ Google</span>' : '<span class="badge badge-purple">Google ➔ Local</span>';
-                var statusBadge = l.status === 'success' ? '<span class="sync-badge sync-badge--synced">Éxito</span>' : '<span class="sync-badge sync-badge--error">Fallo</span>';
+            logs.forEach(function(l, idx) {
+                var isPush = (l.direction === 'push');
+                var dirBadge = isPush
+                    ? '<span class="badge-sync-direction is-push"><span class="dashicons dashicons-arrow-up-alt"></span> Local ➔ Google</span>'
+                    : '<span class="badge-sync-direction is-pull"><span class="dashicons dashicons-arrow-down-alt"></span> Google ➔ Local</span>';
+
+                var isSuccess = (l.status === 'success');
+                var statusBadge = isSuccess
+                    ? '<span class="sync-badge sync-badge--synced" style="display:inline-flex;align-items:center;gap:3px;"><span class="dashicons dashicons-yes" style="font-size:14px;width:14px;height:14px;"></span> Éxito</span>'
+                    : '<span class="sync-badge sync-badge--error" style="display:inline-flex;align-items:center;gap:3px;"><span class="dashicons dashicons-no-alt" style="font-size:14px;width:14px;height:14px;"></span> Fallo</span>';
+
+                var actionLabel = escapeHtml(l.action || '');
+                if (l.action === 'create') actionLabel = '✨ Crear';
+                else if (l.action === 'update') actionLabel = '🔄 Actualizar';
+                else if (l.action === 'delete') actionLabel = '🗑️ Eliminar';
+                else if (l.action === 'skip') actionLabel = '⏭️ Omitir';
+
+                // Ficha de contacto
+                var contactHtml = '—';
+                if (l.contact_id) {
+                    var cName = (l.first_name || l.last_name) ? (l.first_name + ' ' + (l.last_name || '')).trim() : 'Contacto #' + l.contact_id;
+                    var cEmail = l.email_primary || '';
+                    contactHtml = '<div style="display:flex;align-items:center;gap:8px;min-width:0;">';
+                    if (l.avatar_url) {
+                        contactHtml += '<img src="' + escapeHtml(l.avatar_url) + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;">';
+                    } else {
+                        contactHtml += '<div style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.08);color:#94a3b8;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;">👤</div>';
+                    }
+                    contactHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;">';
+                    contactHtml += '<strong style="color:#fff;font-size:0.8rem;white-space:nowrap;">#' + l.contact_id + ' ' + escapeHtml(cName) + '</strong>';
+                    if (cEmail) {
+                        contactHtml += '<div style="color:#94a3b8;font-size:0.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(cEmail) + '</div>';
+                    }
+                    contactHtml += '</div></div>';
+                }
+
+                var msgFull = l.message || l.error_message || l.details || '—';
+                var msgShort = msgFull.length > 95 ? msgFull.substring(0, 95) + '...' : msgFull;
 
                 html += '<tr>';
-                html += '<td style="font-size:0.8rem;color:#cbd5e1;">' + escapeHtml(l.created_at || '') + '</td>';
+                html += '<td style="font-size:0.78rem;color:#cbd5e1;white-space:nowrap;">' + escapeHtml(l.created_at || '') + '</td>';
                 html += '<td>' + dirBadge + '</td>';
-                html += '<td style="font-weight:600;font-size:0.82rem;">' + escapeHtml(l.action || '') + '</td>';
-                html += '<td>' + (l.contact_id ? '#' + l.contact_id : '—') + '</td>';
+                html += '<td><span class="badge-sync-action">' + actionLabel + '</span></td>';
+                html += '<td>' + contactHtml + '</td>';
                 html += '<td>' + statusBadge + '</td>';
-                html += '<td style="font-size:0.8rem;color:#94a3b8;">' + escapeHtml(l.message || l.error_message || l.details || '—') + '</td>';
+                html += '<td style="font-size:0.78rem;color:' + (isSuccess ? '#94a3b8' : '#f87171') + ';word-break:break-word;" title="' + escapeHtml(msgFull) + '">' + escapeHtml(msgShort) + '</td>';
+                html += '<td style="text-align:center;">';
+                html += '<button type="button" class="btn btn-glass btn-sm btn-view-log-detail" data-idx="' + idx + '" title="Ver diagnóstico detallado" style="padding:2px 6px;height:26px;border-radius:6px;">';
+                html += '<span class="dashicons dashicons-visibility" style="font-size:15px;width:15px;height:15px;margin-top:2px;"></span>';
+                html += '</button>';
+                html += '</td>';
                 html += '</tr>';
             });
+
             $tbody.html(html);
+
+            // Listener de apertura de modal de detalle
+            $tbody.find('.btn-view-log-detail').on('click', function() {
+                var idx = $(this).data('idx');
+                var log = logsState.rawLogs[idx];
+                if (log) {
+                    openLogDetailModal(log);
+                }
+            });
+
+            // Renderizar controles de paginación
+            renderLogsPagination(logsState.totalItems, logsState.totalPages, logsState.page, logsState.perPage);
+
         }).fail(function() {
-            $tbody.html('<tr><td colspan="6" style="text-align: center; padding: 30px; color:#f87171;">Error de conexión al cargar el historial de sincronización.</td></tr>');
+            logsState.isLoading = false;
+            $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 30px; color:#f87171;">Error de comunicación con el servidor al cargar registros.</td></tr>');
         });
+    }
+
+    function renderLogsPagination(totalItems, totalPages, currentPage, perPage) {
+        var start = totalItems > 0 ? (currentPage - 1) * perPage + 1 : 0;
+        var end = Math.min(currentPage * perPage, totalItems);
+
+        $('#logs-pagination-info').html(
+            'Mostrando <strong style="color:#fff;">' + start + '</strong> a <strong style="color:#fff;">' + end + '</strong> de <strong style="color:#38bdf8;">' + totalItems + '</strong> registros'
+        );
+
+        var $ctrls = $('#logs-pagination-controls');
+        $ctrls.empty();
+
+        if (totalPages <= 1) {
+            return;
+        }
+
+        // Botón Anterior
+        var $btnPrev = $('<button type="button" class="logs-page-btn" title="Página anterior"><span class="dashicons dashicons-arrow-left-alt2" style="font-size:14px;width:14px;height:14px;margin-top:2px;"></span></button>');
+        if (currentPage <= 1) {
+            $btnPrev.prop('disabled', true);
+        } else {
+            $btnPrev.on('click', function() { fetchLogs(currentPage - 1); });
+        }
+        $ctrls.append($btnPrev);
+
+        // Páginas numéricas (máx 5 botones visibles con elipsis)
+        var maxButtons = 5;
+        var startPage = Math.max(1, currentPage - 2);
+        var endPage = Math.min(totalPages, startPage + maxButtons - 1);
+        if (endPage - startPage < maxButtons - 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        if (startPage > 1) {
+            var $btnFirst = $('<button type="button" class="logs-page-btn">1</button>').on('click', function() { fetchLogs(1); });
+            $ctrls.append($btnFirst);
+            if (startPage > 2) {
+                $ctrls.append('<span style="color:#64748b;padding:0 2px;">...</span>');
+            }
+        }
+
+        for (var p = startPage; p <= endPage; p++) {
+            (function(pageNum) {
+                var $btnPage = $('<button type="button" class="logs-page-btn' + (pageNum === currentPage ? ' is-active' : '') + '">' + pageNum + '</button>');
+                if (pageNum === currentPage) {
+                    $btnPage.prop('disabled', true);
+                } else {
+                    $btnPage.on('click', function() { fetchLogs(pageNum); });
+                }
+                $ctrls.append($btnPage);
+            })(p);
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                $ctrls.append('<span style="color:#64748b;padding:0 2px;">...</span>');
+            }
+            var $btnLast = $('<button type="button" class="logs-page-btn">' + totalPages + '</button>').on('click', function() { fetchLogs(totalPages); });
+            $ctrls.append($btnLast);
+        }
+
+        // Botón Siguiente
+        var $btnNext = $('<button type="button" class="logs-page-btn" title="Página siguiente"><span class="dashicons dashicons-arrow-right-alt2" style="font-size:14px;width:14px;height:14px;margin-top:2px;"></span></button>');
+        if (currentPage >= totalPages) {
+            $btnNext.prop('disabled', true);
+        } else {
+            $btnNext.on('click', function() { fetchLogs(currentPage + 1); });
+        }
+        $ctrls.append($btnNext);
+    }
+
+    function openLogDetailModal(log) {
+        var metaHtml = '';
+        metaHtml += '<div><span style="color:#94a3b8;">Log ID:</span> <strong style="color:#fff;">#' + (log.id || '—') + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">Fecha:</span> <strong style="color:#fff;">' + escapeHtml(log.created_at || '—') + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">Dirección:</span> <strong style="color:#38bdf8;">' + (log.direction === 'push' ? 'Local ➔ Google (Push)' : 'Google ➔ Local (Pull)') + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">Acción:</span> <strong style="color:#a78bfa;">' + escapeHtml(log.action || '—') + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">Estado:</span> <strong style="color:' + (log.status === 'success' ? '#34d399' : '#f87171') + ';">' + (log.status === 'success' ? 'Éxito' : 'Fallo / Error') + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">Contacto ID:</span> <strong style="color:#fff;">' + (log.contact_id ? '#' + log.contact_id : 'Sin contacto asociado') + '</strong></div>';
+        if (log.first_name || log.last_name) {
+            metaHtml += '<div style="grid-column: 1 / -1;"><span style="color:#94a3b8;">Nombre Contacto:</span> <strong style="color:#fff;">' + escapeHtml((log.first_name || '') + ' ' + (log.last_name || '')) + '</strong>' + (log.email_primary ? ' &lt;' + escapeHtml(log.email_primary) + '&gt;' : '') + '</div>';
+        }
+        if (log.google_account) {
+            metaHtml += '<div style="grid-column: 1 / -1;"><span style="color:#94a3b8;">Cuenta Google:</span> <strong style="color:#fbbf24;">' + escapeHtml(log.google_account) + '</strong></div>';
+        }
+
+        $('#log-detail-meta').html(metaHtml);
+        $('#log-detail-message').text(log.message || log.error_message || 'Sin mensaje adicional.');
+
+        $('#modal-log-detail').css('display', 'flex').hide().fadeIn(140);
     }
 
     // ── Configuración Google OAuth & Workspace DWD ──────────────────────────────

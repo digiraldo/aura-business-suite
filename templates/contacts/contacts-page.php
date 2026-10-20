@@ -408,23 +408,40 @@ $category_icons = array(
             ═══════════════════════════════════════════════════════════════ -->
             <section id="contacts-tab-sync_logs" class="contacts-tab-content" style="display: none; margin-top: 15px;">
                 <div class="aura-glass-card" style="padding: 24px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                    <!-- Cabecera de la Sección de Auditoría -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
                         <div>
-                            <h2 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: #fff;">
-                                🔄 <?php esc_html_e( 'Historial y Registro de Auditoría de Sincronización', 'aura-suite' ); ?>
-                            </h2>
-                            <p style="margin: 4px 0 0; font-size: 0.85rem; color: var(--aura-text-muted, #94a3b8);">
-                                <?php esc_html_e( 'Monitoreo de intercambios bidireccionales con la API de Google People, resolución de conflictos y cron en background.', 'aura-suite' ); ?>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <h2 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #fff;">
+                                    🔄 <?php esc_html_e( 'Historial y Registro de Auditoría de Sincronización', 'aura-suite' ); ?>
+                                </h2>
+                                <span class="badge badge-purple" style="font-size: 0.72rem; padding: 2px 8px;">Audit v2.0</span>
+                            </div>
+                            <p style="margin: 4px 0 0; font-size: 0.84rem; color: var(--aura-text-muted, #94a3b8);">
+                                <?php esc_html_e( 'Monitoreo en tiempo real de llamadas a Google People API, resolución de conflictos, diagnósticos de fallos y auditoría de sincronización.', 'aura-suite' ); ?>
                             </p>
                         </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button type="button" class="btn btn-glass btn-sm" id="btn-refresh-logs">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <!-- Botón Actualizar Logs -->
+                            <button type="button" class="btn btn-glass btn-sm btn-lift" id="btn-refresh-logs" title="<?php esc_attr_e( 'Recargar registros de auditoría', 'aura-suite' ); ?>">
                                 <span class="dashicons dashicons-image-rotate"></span>
-                                <span><?php esc_html_e( 'Actualizar Logs', 'aura-suite' ); ?></span>
+                                <span><?php esc_html_e( 'Actualizar', 'aura-suite' ); ?></span>
                             </button>
+
+                            <!-- Botones de Descarga de Logs para Diagnóstico -->
+                            <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=aura_contacts_export_sync_logs&format=json' ), 'aura_contacts_export_action', 'nonce' ) ); ?>" class="btn btn-glass btn-sm btn-lift" id="btn-download-logs-json" style="border: 1px solid rgba(139, 92, 246, 0.4); color: #c4b5fd;" title="<?php esc_attr_e( 'Descarga el historial completo en JSON estructurado para diagnóstico asistido por IA o soporte técnico.', 'aura-suite' ); ?>">
+                                <span class="dashicons dashicons-download" style="color: #a78bfa;"></span>
+                                <span><?php esc_html_e( 'Descargar Logs (JSON)', 'aura-suite' ); ?></span>
+                            </a>
+                            <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=aura_contacts_export_sync_logs&format=csv' ), 'aura_contacts_export_action', 'nonce' ) ); ?>" class="btn btn-glass btn-sm btn-lift" id="btn-download-logs-csv" title="<?php esc_attr_e( 'Descargar reporte en formato Excel / CSV', 'aura-suite' ); ?>">
+                                <span class="dashicons dashicons-media-spreadsheet" style="color: #38bdf8;"></span>
+                                <span><?php esc_html_e( 'Descargar CSV', 'aura-suite' ); ?></span>
+                            </a>
+
+                            <!-- Botón Sincronizar Todo Ahora -->
                             <?php if ( $can_sync ) : ?>
                                 <?php if ( $is_connected ) : ?>
-                                    <button type="button" class="btn btn-primary btn-sm" id="btn-sync-all-from-logs" title="<?php esc_attr_e( 'Forzar sincronización completa bidireccional con Google People API', 'aura-suite' ); ?>">
+                                    <button type="button" class="btn btn-primary btn-sm btn-shimmer btn-lift" id="btn-sync-all-from-logs" title="<?php esc_attr_e( 'Forzar sincronización completa bidireccional con Google People API', 'aura-suite' ); ?>">
                                         <span class="dashicons dashicons-update"></span>
                                         <span><?php esc_html_e( 'Sincronizar Todo Ahora', 'aura-suite' ); ?></span>
                                     </button>
@@ -438,55 +455,98 @@ $category_icons = array(
                         </div>
                     </div>
 
+                    <!-- ── PÍLDORAS KPI RESUMEN DE AUDITORÍA ─────────────────── -->
+                    <div class="logs-kpi-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                        <div class="logs-kpi-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(139, 92, 246, 0.15); color: #a78bfa; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                                <span class="dashicons dashicons-list-view"></span>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Eventos</div>
+                                <div style="font-size: 1.15rem; font-weight: 700; color: #fff;" id="logs-kpi-total">—</div>
+                            </div>
+                        </div>
+
+                        <div class="logs-kpi-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                                <span class="dashicons dashicons-yes-alt"></span>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Sincronizaciones Éxito</div>
+                                <div style="font-size: 1.15rem; font-weight: 700; color: #34d399;" id="logs-kpi-success">—</div>
+                            </div>
+                        </div>
+
+                        <div class="logs-kpi-card" id="logs-kpi-errors-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer;" title="<?php esc_attr_e( 'Haz clic para filtrar solo fallas y errores', 'aura-suite' ); ?>">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(239, 68, 68, 0.15); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                                <span class="dashicons dashicons-warning"></span>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Fallas / Errores</div>
+                                <div style="font-size: 1.15rem; font-weight: 700; color: #f87171;" id="logs-kpi-errors">—</div>
+                            </div>
+                        </div>
+
+                        <div class="logs-kpi-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                                <span class="dashicons dashicons-clock"></span>
+                            </div>
+                            <div style="min-width: 0;">
+                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Última Sync</div>
+                                <div style="font-size: 0.85rem; font-weight: 700; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="logs-kpi-last-sync">—</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- ── PANEL DE INTEGRACIÓN INTERNA DEL ECOSISTEMA (CORE WP & TERCEROS — FASE 4 P2) ── -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 22px;">
                         
                         <!-- Tarjeta Sincronización Usuarios WP -->
-                        <div class="aura-glass-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 18px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;">
-                            <div style="display: flex; align-items: flex-start; gap: 14px;">
-                                <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
-                                    <span class="dashicons dashicons-admin-users" style="font-size: 24px; width: 24px; height: 24px;"></span>
+                        <div class="aura-glass-card" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+                            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                                    <span class="dashicons dashicons-admin-users" style="font-size: 20px; width: 20px; height: 20px;"></span>
                                 </div>
                                 <div style="flex: 1;">
-                                    <h4 style="margin: 0; font-size: 1rem; color: #fff; font-weight: 700;">
+                                    <h4 style="margin: 0; font-size: 0.95rem; color: #fff; font-weight: 700;">
                                         <?php esc_html_e( 'Usuarios de WordPress (Sistema)', 'aura-suite' ); ?>
                                     </h4>
-                                    <p style="margin: 4px 0 0; font-size: 0.82rem; color: var(--aura-text-muted, #94a3b8); line-height: 1.4;">
-                                        <?php esc_html_e( 'Sincroniza y mantiene enlazados en tiempo real los empleados, docentes y auxiliares de WordPress con el directorio de contactos.', 'aura-suite' ); ?>
+                                    <p style="margin: 3px 0 0; font-size: 0.78rem; color: var(--aura-text-muted, #94a3b8); line-height: 1.4;">
+                                        <?php esc_html_e( 'Sincroniza y mantiene enlazados en tiempo real los empleados, docentes y auxiliares de WordPress con el directorio.', 'aura-suite' ); ?>
                                     </p>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; flex-wrap: wrap; gap: 10px;">
-                                <span style="font-size: 0.8rem; color: #38bdf8; font-weight: 600;">
-                                    ⚡ <?php esc_html_e( 'Hooks automáticos: user_register & profile_update', 'aura-suite' ); ?>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; flex-wrap: wrap; gap: 8px;">
+                                <span style="font-size: 0.76rem; color: #38bdf8; font-weight: 600;">
+                                    ⚡ <?php esc_html_e( 'user_register & profile_update', 'aura-suite' ); ?>
                                 </span>
                                 <?php if ( $can_edit ) : ?>
                                     <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-wp-users">
                                         <span class="dashicons dashicons-update"></span>
-                                        <span><?php esc_html_e( 'Sincronizar Usuarios WP', 'aura-suite' ); ?></span>
+                                        <span><?php esc_html_e( 'Sincronizar WP Users', 'aura-suite' ); ?></span>
                                     </button>
                                 <?php endif; ?>
                             </div>
                         </div>
 
                         <!-- Tarjeta Sincronización Terceros -->
-                        <div class="aura-glass-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 18px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;">
-                            <div style="display: flex; align-items: flex-start; gap: 14px;">
-                                <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
-                                    <span class="dashicons dashicons-groups" style="font-size: 24px; width: 24px; height: 24px;"></span>
+                        <div class="aura-glass-card" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+                            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                                    <span class="dashicons dashicons-groups" style="font-size: 20px; width: 20px; height: 20px;"></span>
                                 </div>
                                 <div style="flex: 1;">
-                                    <h4 style="margin: 0; font-size: 1rem; color: #fff; font-weight: 700;">
+                                    <h4 style="margin: 0; font-size: 0.95rem; color: #fff; font-weight: 700;">
                                         <?php esc_html_e( 'Terceros y Entidades Comerciales', 'aura-suite' ); ?>
                                     </h4>
-                                    <p style="margin: 4px 0 0; font-size: 0.82rem; color: var(--aura-text-muted, #94a3b8); line-height: 1.4;">
-                                        <?php esc_html_e( 'Espejo bidireccional con proveedores, donantes y contratistas de Finanzas para que aparezcan en contactos y Google.', 'aura-suite' ); ?>
+                                    <p style="margin: 3px 0 0; font-size: 0.78rem; color: var(--aura-text-muted, #94a3b8); line-height: 1.4;">
+                                        <?php esc_html_e( 'Espejo bidireccional con proveedores, donantes y contratistas de Finanzas para su reflejo en Google Contacts.', 'aura-suite' ); ?>
                                     </p>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; flex-wrap: wrap; gap: 10px;">
-                                <span style="font-size: 0.8rem; color: #f59e0b; font-weight: 600;">
-                                    ⚡ <?php esc_html_e( 'Hook activo: aura_third_party_saved', 'aura-suite' ); ?>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; flex-wrap: wrap; gap: 8px;">
+                                <span style="font-size: 0.76rem; color: #f59e0b; font-weight: 600;">
+                                    ⚡ <?php esc_html_e( 'aura_third_party_saved', 'aura-suite' ); ?>
                                 </span>
                                 <?php if ( $can_edit ) : ?>
                                     <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-third-parties">
@@ -498,28 +558,28 @@ $category_icons = array(
                         </div>
 
                         <!-- Tarjeta Sincronización Estudiantes & Formularios (Fase 4 P3) -->
-                        <div class="aura-glass-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 18px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;">
-                            <div style="display: flex; align-items: flex-start; gap: 14px;">
-                                <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
-                                    <span class="dashicons dashicons-welcome-learn-more" style="font-size: 24px; width: 24px; height: 24px;"></span>
+                        <div class="aura-glass-card" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); padding: 16px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+                            <div style="display: flex; align-items: flex-start; gap: 12px;">
+                                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                                    <span class="dashicons dashicons-welcome-learn-more" style="font-size: 20px; width: 20px; height: 20px;"></span>
                                 </div>
                                 <div style="flex: 1;">
-                                    <h4 style="margin: 0; font-size: 1rem; color: #fff; font-weight: 700;">
+                                    <h4 style="margin: 0; font-size: 0.95rem; color: #fff; font-weight: 700;">
                                         <?php esc_html_e( 'Estudiantes y Formularios Web', 'aura-suite' ); ?>
                                     </h4>
-                                    <p style="margin: 4px 0 0; font-size: 0.82rem; color: var(--aura-text-muted, #94a3b8); line-height: 1.4;">
-                                        <?php esc_html_e( 'Espejo con alumnos matriculados y captura de nuevos prospectos o inscripciones web para difusión y Gmail.', 'aura-suite' ); ?>
+                                    <p style="margin: 3px 0 0; font-size: 0.78rem; color: var(--aura-text-muted, #94a3b8); line-height: 1.4;">
+                                        <?php esc_html_e( 'Captura instantánea de alumnos matriculados y prospectos de inscripciones web para Google y difusión.', 'aura-suite' ); ?>
                                     </p>
                                 </div>
                             </div>
-                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; flex-wrap: wrap; gap: 10px;">
-                                <span style="font-size: 0.8rem; color: #10b981; font-weight: 600;">
-                                    ⚡ <?php esc_html_e( 'Hooks: aura_student_saved & aura_form_submission_saved', 'aura-suite' ); ?>
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; flex-wrap: wrap; gap: 8px;">
+                                <span style="font-size: 0.76rem; color: #10b981; font-weight: 600;">
+                                    ⚡ <?php esc_html_e( 'student_saved & form_submission', 'aura-suite' ); ?>
                                 </span>
                                 <?php if ( $can_edit ) : ?>
                                     <button type="button" class="btn btn-secondary btn-sm" id="btn-sync-students">
                                         <span class="dashicons dashicons-update"></span>
-                                        <span><?php esc_html_e( 'Sincronizar Estudiantes', 'aura-suite' ); ?></span>
+                                        <span><?php esc_html_e( 'Sincronizar Alumnos', 'aura-suite' ); ?></span>
                                     </button>
                                 <?php endif; ?>
                             </div>
@@ -527,29 +587,117 @@ $category_icons = array(
 
                     </div>
 
-                    <div class="contacts-table-responsive">
-                        <table class="aura-table logs-table" style="width: 100%;">
+                    <!-- ── BARRA DE FILTROS Y CONTROLES REACTIVOS DE AUDITORÍA ── -->
+                    <div class="logs-filter-toolbar" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1;">
+                            <!-- Buscador Rápido -->
+                            <div style="position: relative; min-width: 220px; flex: 1; max-width: 320px;">
+                                <span class="dashicons dashicons-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 16px; width: 16px; height: 16px;"></span>
+                                <input type="text" id="logs-filter-search" class="aura-input" placeholder="<?php esc_attr_e( 'Buscar por ID, nombre, email o error...', 'aura-suite' ); ?>" style="padding-left: 32px; height: 34px; font-size: 0.8rem; width: 100%;">
+                            </div>
+
+                            <!-- Filtro Estado -->
+                            <select id="logs-filter-status" class="aura-select" style="height: 34px; font-size: 0.8rem; min-width: 130px;">
+                                <option value=""><?php esc_html_e( 'Todos los estados', 'aura-suite' ); ?></option>
+                                <option value="error"><?php esc_html_e( '⚠️ Solo Fallas / Errores', 'aura-suite' ); ?></option>
+                                <option value="success"><?php esc_html_e( '✅ Solo Exitosos', 'aura-suite' ); ?></option>
+                            </select>
+
+                            <!-- Filtro Dirección -->
+                            <select id="logs-filter-direction" class="aura-select" style="height: 34px; font-size: 0.8rem; min-width: 140px;">
+                                <option value=""><?php esc_html_e( 'Todas las direcciones', 'aura-suite' ); ?></option>
+                                <option value="push"><?php esc_html_e( 'Local ➔ Google (Push)', 'aura-suite' ); ?></option>
+                                <option value="pull"><?php esc_html_e( 'Google ➔ Local (Pull)', 'aura-suite' ); ?></option>
+                            </select>
+                        </div>
+
+                        <!-- Selector de Registros por Página -->
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label for="logs-filter-per-page" style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">
+                                <?php esc_html_e( 'Por página:', 'aura-suite' ); ?>
+                            </label>
+                            <select id="logs-filter-per-page" class="aura-select" style="height: 34px; font-size: 0.8rem; width: 75px;">
+                                <option value="15">15</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- ── TABLA DE AUDITORÍA REDISEÑADA ──────────────────────── -->
+                    <div class="contacts-table-responsive" style="border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; overflow: hidden; background: rgba(15, 23, 42, 0.4);">
+                        <table class="aura-table logs-table" style="width: 100%; border-collapse: separate; border-spacing: 0;">
                             <thead>
-                                <tr>
-                                    <th><?php esc_html_e( 'Fecha / Hora', 'aura-suite' ); ?></th>
-                                    <th><?php esc_html_e( 'Dirección', 'aura-suite' ); ?></th>
-                                    <th><?php esc_html_e( 'Acción', 'aura-suite' ); ?></th>
-                                    <th><?php esc_html_e( 'Contacto ID', 'aura-suite' ); ?></th>
-                                    <th><?php esc_html_e( 'Estado', 'aura-suite' ); ?></th>
-                                    <th><?php esc_html_e( 'Detalle / Error', 'aura-suite' ); ?></th>
+                                <tr style="background: rgba(30, 41, 59, 0.7);">
+                                    <th style="padding: 10px 14px; font-size: 0.75rem; color: #cbd5e1; text-transform: uppercase; font-weight: 700; width: 140px;"><?php esc_html_e( 'Fecha / Hora', 'aura-suite' ); ?></th>
+                                    <th style="padding: 10px 12px; font-size: 0.75rem; color: #cbd5e1; text-transform: uppercase; font-weight: 700; width: 130px;"><?php esc_html_e( 'Dirección', 'aura-suite' ); ?></th>
+                                    <th style="padding: 10px 12px; font-size: 0.75rem; color: #cbd5e1; text-transform: uppercase; font-weight: 700; width: 100px;"><?php esc_html_e( 'Acción', 'aura-suite' ); ?></th>
+                                    <th style="padding: 10px 14px; font-size: 0.75rem; color: #cbd5e1; text-transform: uppercase; font-weight: 700; min-width: 170px;"><?php esc_html_e( 'Contacto Afectado', 'aura-suite' ); ?></th>
+                                    <th style="padding: 10px 12px; font-size: 0.75rem; color: #cbd5e1; text-transform: uppercase; font-weight: 700; width: 100px;"><?php esc_html_e( 'Estado', 'aura-suite' ); ?></th>
+                                    <th style="padding: 10px 14px; font-size: 0.75rem; color: #cbd5e1; text-transform: uppercase; font-weight: 700;"><?php esc_html_e( 'Diagnóstico / Detalle de API', 'aura-suite' ); ?></th>
+                                    <th style="padding: 10px 10px; font-size: 0.75rem; color: #cbd5e1; text-transform: uppercase; font-weight: 700; width: 60px; text-align: center;"><?php esc_html_e( 'Info', 'aura-suite' ); ?></th>
                                 </tr>
                             </thead>
                             <tbody id="contacts-logs-tbody">
                                 <tr>
-                                    <td colspan="6" style="text-align: center; padding: 30px;">
-                                        <?php esc_html_e( 'Cargando logs de sincronización...', 'aura-suite' ); ?>
+                                    <td colspan="7" style="text-align: center; padding: 36px; color: #94a3b8;">
+                                        <span class="dashicons dashicons-update spin"></span>
+                                        <span style="margin-left: 8px;"><?php esc_html_e( 'Cargando logs de auditoría...', 'aura-suite' ); ?></span>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- ── CONTROLES DE PAGINACIÓN INTELIGENTE ─────────────────── -->
+                    <div id="logs-pagination-container" style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; flex-wrap: wrap; gap: 10px; padding: 6px 4px;">
+                        <div style="font-size: 0.8rem; color: #94a3b8;" id="logs-pagination-info">
+                            <!-- Inyectado por JavaScript -->
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;" id="logs-pagination-controls">
+                            <!-- Inyectado por JavaScript -->
+                        </div>
+                    </div>
                 </div>
             </section>
+
+            <!-- ══════════════════════════════════════════════════════════════
+                 MODAL: DETALLE Y DIAGNÓSTICO TÉCNICO DE LOG (AUDIT INSPECTOR)
+            ═══════════════════════════════════════════════════════════════ -->
+            <div id="modal-log-detail" class="aura-modal-overlay" style="display: none; z-index: 999999;">
+                <div class="aura-modal aura-glass-card" style="max-width: 680px; width: 92%; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;">
+                    <div class="aura-modal__header" style="padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(30, 41, 59, 0.7);">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="dashicons dashicons-search" style="color: #38bdf8;"></span>
+                            <h3 style="margin: 0; font-size: 1rem; color: #fff; font-weight: 700;">
+                                <?php esc_html_e( 'Diagnóstico de Registro de Sincronización', 'aura-suite' ); ?>
+                            </h3>
+                        </div>
+                        <button type="button" class="aura-modal__close" onclick="$('#modal-log-detail').fadeOut(120);">&times;</button>
+                    </div>
+                    <div class="aura-modal__body" style="padding: 18px 20px; overflow-y: auto; max-height: calc(85vh - 120px); display: flex; flex-direction: column; gap: 12px;">
+                        <div id="log-detail-meta" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; font-size: 0.8rem; background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.06);">
+                            <!-- Metadata inyectada dinámicamente -->
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 4px;">
+                                <?php esc_html_e( 'Detalle Técnico / Respuesta de Google People API:', 'aura-suite' ); ?>
+                            </label>
+                            <pre id="log-detail-message" style="margin: 0; padding: 12px; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: #f1f5f9; font-family: monospace; font-size: 0.78rem; white-space: pre-wrap; word-break: break-all; max-height: 240px; overflow-y: auto;"></pre>
+                        </div>
+                    </div>
+                    <div style="padding: 12px 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.9);">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="$('#modal-log-detail').fadeOut(120);">
+                            <?php esc_html_e( 'Cerrar', 'aura-suite' ); ?>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm btn-lift" id="btn-copy-log-detail">
+                            <span class="dashicons dashicons-admin-page"></span>
+                            <span><?php esc_html_e( 'Copiar Diagnóstico al Portapapeles', 'aura-suite' ); ?></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- ══════════════════════════════════════════════════════════════
                  SECCIÓN 3: CONFIGURACIÓN GOOGLE & WORKSPACE (TAB: GOOGLE SETTINGS)
