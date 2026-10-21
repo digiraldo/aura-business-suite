@@ -4949,72 +4949,355 @@
             });
         });
 
-        // Botón Abrir Modal Compartir
+        // ═════════════════════════════════════════════════════════════
+        // CONTROLADOR: CATÁLOGO Y EXPLORADOR DE CONTACTOS (GCAL ACL)
+        // ═════════════════════════════════════════════════════════════
+        var gcalAclContactsCatalog = [];
+        var gcalActiveCategory = 'all';
+        var gcalActiveSort = 'name_asc';
+        var gcalContactSearchTimer = null;
+
+        // Botón Abrir Catálogo y Explorador de Contactos
         $('#btn-open-share-contact-modal').on('click', function(e) {
             e.preventDefault();
-            resetGCalShareModal();
+            $('#gcal-share-confirmation-panel').hide();
+            $('#gcal-contact-explorer-search').val('');
+            $('#gcal-contact-search-clear').hide();
+            $('#gcal-contact-explorer-sort').val('name_asc');
+            gcalActiveSort = 'name_asc';
+            gcalActiveCategory = 'all';
+
+            // Activar primer tab "Todos"
+            $('.gcal-cat-tab-btn').removeClass('is-active').css({
+                'background': '#f8fafc',
+                'color': '#475569',
+                'border-color': '#e2e8f0'
+            });
+            $('.gcal-cat-tab-btn[data-category="all"]').addClass('is-active').css({
+                'background': '#4f46e5',
+                'color': '#fff',
+                'border-color': '#4f46e5'
+            });
+
             openModal('#modal-gcal-share-contact');
-            searchContactsForGCalShare('');
+            loadGCalContactsCatalog();
         });
 
-        // Búsqueda reactiva de contactos con debounce en el modal
-        $('#gcal-search-contact-input').on('input', function() {
-            var q = $(this).val().trim();
-            clearTimeout(gcalSearchTimer);
-            gcalSearchTimer = setTimeout(function() {
-                searchContactsForGCalShare(q);
+        // Tabs de Categorías del Catálogo
+        $(document).on('click', '.gcal-cat-tab-btn', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var cat = $btn.data('category') || 'all';
+
+            $('.gcal-cat-tab-btn').removeClass('is-active').css({
+                'background': '#f8fafc',
+                'color': '#475569',
+                'border-color': '#e2e8f0'
+            });
+            $btn.addClass('is-active').css({
+                'background': '#4f46e5',
+                'color': '#fff',
+                'border-color': '#4f46e5'
+            });
+
+            gcalActiveCategory = cat;
+            loadGCalContactsCatalog();
+        });
+
+        // Búsqueda reactiva con debounce de 250ms
+        $('#gcal-contact-explorer-search').on('input', function() {
+            var val = $(this).val().trim();
+            if (val.length > 0) {
+                $('#gcal-contact-search-clear').show();
+            } else {
+                $('#gcal-contact-search-clear').hide();
+            }
+            clearTimeout(gcalContactSearchTimer);
+            gcalContactSearchTimer = setTimeout(function() {
+                loadGCalContactsCatalog();
             }, 250);
         });
 
-        // Foco en el input vuelve a mostrar resultados si existen
-        $('#gcal-search-contact-input').on('focus', function() {
-            var $dropdown = $('#gcal-contact-dropdown-results');
-            if ($dropdown.children().length > 0) {
-                $dropdown.slideDown(150);
-            }
+        // Botón limpiar búsqueda
+        $('#gcal-contact-search-clear').on('click', function() {
+            $('#gcal-contact-explorer-search').val('').focus();
+            $(this).hide();
+            loadGCalContactsCatalog();
         });
 
-        // Clic fuera del dropdown lo oculta
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('#gcal-search-contact-input, #gcal-contact-dropdown-results').length) {
-                $('#gcal-contact-dropdown-results').hide();
-            }
+        // Dropdown de Ordenación
+        $('#gcal-contact-explorer-sort').on('change', function() {
+            gcalActiveSort = $(this).val();
+            loadGCalContactsCatalog();
         });
 
-        // Seleccionar un contacto desde el dropdown
-        $(document).on('click', '.gcal-contact-option-item', function(e) {
+        // Botón Refrescar Catálogo
+        $('#btn-refresh-gcal-contacts-catalog').on('click', function(e) {
+            e.preventDefault();
+            loadGCalContactsCatalog();
+        });
+
+        // Botón Restablecer Filtros
+        $('#btn-gcal-reset-filters').on('click', function(e) {
+            e.preventDefault();
+            $('#gcal-contact-explorer-search').val('');
+            $('#gcal-contact-search-clear').hide();
+            $('#gcal-contact-explorer-sort').val('name_asc');
+            gcalActiveSort = 'name_asc';
+            gcalActiveCategory = 'all';
+
+            $('.gcal-cat-tab-btn').removeClass('is-active').css({
+                'background': '#f8fafc',
+                'color': '#475569',
+                'border-color': '#e2e8f0'
+            });
+            $('.gcal-cat-tab-btn[data-category="all"]').addClass('is-active').css({
+                'background': '#4f46e5',
+                'color': '#fff',
+                'border-color': '#4f46e5'
+            });
+
+            loadGCalContactsCatalog();
+        });
+
+        // Cargar Catálogo de Contactos desde el Servidor
+        function loadGCalContactsCatalog() {
+            var $loading = $('#gcal-contact-explorer-loading');
+            var $grid = $('#gcal-contact-explorer-grid');
+            var $empty = $('#gcal-contact-explorer-empty');
+            var $resultsCount = $('#gcal-contact-results-count');
+            var $activeBadge = $('#gcal-contact-active-filter-badge');
+
+            $loading.show();
+            $grid.hide();
+            $empty.hide();
+
+            var query = $('#gcal-contact-explorer-search').val().trim();
+
+            $.post(auraCalData.ajax_url, {
+                action: 'aura_cal_search_contacts_for_share',
+                nonce: auraCalData.nonce,
+                q: query,
+                category: gcalActiveCategory,
+                sort: gcalActiveSort
+            }, function(res) {
+                $loading.hide();
+                if (res && res.success && res.data) {
+                    var contacts = res.data.contacts || [];
+                    var counts = res.data.category_counts || {};
+                    gcalAclContactsCatalog = contacts;
+
+                    // Actualizar contadores en tabs
+                    if (counts) {
+                        $.each(counts, function(k, countVal) {
+                            $('[data-cal-cat-count="' + k + '"]').text(countVal);
+                        });
+                        // Si hay tabs sin datos en el objeto
+                        if (typeof counts['all'] !== 'undefined') {
+                            $('[data-cal-cat-count="all"]').text(counts['all']);
+                        }
+                    }
+
+                    // Badge de filtro activo
+                    if (gcalActiveCategory !== 'all' || query.length > 0) {
+                        var filterInfo = [];
+                        if (gcalActiveCategory !== 'all') {
+                            var catLabel = $('.gcal-cat-tab-btn[data-category="' + gcalActiveCategory + '"]').text().trim();
+                            filterInfo.push(catLabel);
+                        }
+                        if (query.length > 0) {
+                            filterInfo.push('"' + query + '"');
+                        }
+                        $activeBadge.text('Filtros: ' + filterInfo.join(' • ')).show();
+                    } else {
+                        $activeBadge.hide().empty();
+                    }
+
+                    if (contacts.length === 0) {
+                        $resultsCount.text('No se encontraron contactos coincidentes');
+                        $empty.show();
+                        return;
+                    }
+
+                    $resultsCount.text('Mostrando ' + contacts.length + ' contacto' + (contacts.length === 1 ? '' : 's') + ' con correo disponible');
+                    renderGCalContactsCards(contacts);
+                    $grid.show();
+                } else {
+                    $resultsCount.text('Error al consultar contactos');
+                    $empty.show();
+                }
+            }).fail(function() {
+                $loading.hide();
+                $resultsCount.text('Error de red al consultar el catálogo');
+                $empty.show();
+            });
+        }
+
+        // Renderizar Tarjetas de Contactos en el Grid
+        function renderGCalContactsCards(contacts) {
+            var $grid = $('#gcal-contact-explorer-grid');
+            var html = '';
+
+            contacts.forEach(function(c) {
+                // Avatar redondo
+                var avatarHtml = '';
+                if (c.avatar_url || c.photo_url) {
+                    var photoSrc = c.avatar_url || c.photo_url;
+                    avatarHtml = '<img src="' + escapeHtml(photoSrc) + '" style="width:46px;height:46px;min-width:46px;min-height:46px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;box-shadow:0 2px 5px rgba(0,0,0,0.06);aspect-ratio:1/1;flex-shrink:0;">';
+                } else {
+                    var initial = (c.name || 'C').charAt(0).toUpperCase();
+                    avatarHtml = '<div style="width:46px;height:46px;min-width:46px;min-height:46px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;box-shadow:0 2px 6px rgba(79,70,229,0.25);aspect-ratio:1/1;flex-shrink:0;">' + escapeHtml(initial) + '</div>';
+                }
+
+                // Categoría badge color
+                var catBadgeStyle = 'background:rgba(79,70,229,0.1);color:#4f46e5;';
+                if (c.category === 'teacher') {
+                    catBadgeStyle = 'background:rgba(16,185,129,0.12);color:#047857;';
+                } else if (c.category === 'staff') {
+                    catBadgeStyle = 'background:rgba(59,130,246,0.12);color:#1d4ed8;';
+                } else if (c.category === 'student') {
+                    catBadgeStyle = 'background:rgba(168,85,247,0.12);color:#7e22ce;';
+                } else if (c.category === 'supplier') {
+                    catBadgeStyle = 'background:rgba(245,158,11,0.12);color:#b45309;';
+                } else if (c.category === 'member') {
+                    catBadgeStyle = 'background:rgba(6,182,212,0.12);color:#0e7490;';
+                }
+
+                var catBadge = '<span class="badge" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;' + catBadgeStyle + '">' + escapeHtml(c.category_label || c.category) + '</span>';
+
+                // Subtítulo: Organización / Cargo
+                var metaParts = [];
+                if (c.organization || c.company) metaParts.push(c.organization || c.company);
+                if (c.job_title) metaParts.push(c.job_title);
+                var metaText = metaParts.join(' • ') || 'Directorio Aura';
+
+                // Selector / Chips de Correo
+                var emailsHtml = '';
+                if (c.emails.length === 1) {
+                    var singleEm = c.emails[0];
+                    emailsHtml = '<div style="background:#f1f5f9;border:1px solid #e2e8f0;padding:6px 10px;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:6px;">' +
+                        '<span style="font-size:12px;font-family:monospace;color:#1e293b;word-break:break-all;font-weight:600;">✉️ ' + escapeHtml(singleEm.email) + '</span>' +
+                        '<span style="font-size:10px;background:#cbd5e1;color:#334155;padding:1px 5px;border-radius:4px;font-weight:600;flex-shrink:0;">' + escapeHtml(singleEm.label) + '</span>' +
+                        '<input type="hidden" class="gcal-card-selected-email" data-contact-id="' + c.id + '" value="' + escapeHtml(singleEm.email) + '">' +
+                        '</div>';
+                } else {
+                    // Múltiples correos: radios estilizados
+                    emailsHtml = '<div style="display:flex;flex-direction:column;gap:6px;">';
+                    c.emails.forEach(function(em, idx) {
+                        var isChecked = (idx === 0) ? 'checked' : '';
+                        emailsHtml += '<label style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12px;margin:0;transition:border-color 0.15s;" onmouseover="this.style.borderColor=\'#818cf8\'" onmouseout="this.style.borderColor=\'#e2e8f0\'">' +
+                            '<div style="display:flex;align-items:center;gap:6px;min-width:0;">' +
+                            '<input type="radio" name="gcal_email_select_' + c.id + '" class="gcal-card-email-radio" data-contact-id="' + c.id + '" value="' + escapeHtml(em.email) + '" ' + isChecked + ' style="margin:0;">' +
+                            '<span style="font-family:monospace;font-size:11.5px;color:#1e293b;word-break:break-all;font-weight:600;">' + escapeHtml(em.email) + '</span>' +
+                            '</div>' +
+                            '<span style="font-size:10px;background:#cbd5e1;color:#334155;padding:1px 5px;border-radius:4px;font-weight:600;flex-shrink:0;">' + escapeHtml(em.label) + '</span>' +
+                            '</label>';
+                    });
+                    emailsHtml += '</div>';
+                }
+
+                html += '<div class="gcal-contact-card" data-contact-id="' + c.id + '" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;box-shadow:0 2px 4px rgba(0,0,0,0.03);transition:all 0.18s ease;" onmouseover="this.style.borderColor=\'#cbd5e1\';this.style.boxShadow=\'0 8px 16px -4px rgba(0,0,0,0.08)\';this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.borderColor=\'#e2e8f0\';this.style.boxShadow=\'0 2px 4px rgba(0,0,0,0.03)\';this.style.transform=\'none\'">' +
+                    
+                    // Top: Avatar + Nombre + Categoría
+                    '<div style="display:flex;align-items:flex-start;gap:12px;">' +
+                    avatarHtml +
+                    '<div style="min-width:0;flex:1;">' +
+                    '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;">' +
+                    '<strong style="font-size:14px;color:#0f172a;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</strong>' +
+                    catBadge +
+                    '</div>' +
+                    '<span style="font-size:12px;color:#64748b;display:block;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escapeHtml(metaText) + '">' + escapeHtml(metaText) + '</span>' +
+                    '</div>' +
+                    '</div>' +
+
+                    // Mid: Emails
+                    '<div style="display:flex;flex-direction:column;gap:4px;">' +
+                    '<span style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;">' + (c.emails.length > 1 ? 'Selecciona una cuenta de correo:' : 'Cuenta de correo:') + '</span>' +
+                    emailsHtml +
+                    '</div>' +
+
+                    // Botón Acción
+                    '<div style="padding-top:4px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;">' +
+                    '<button type="button" class="btn btn-indigo btn-sm btn-lift btn-gcal-open-confirm-share" data-contact-id="' + c.id + '" style="font-size:12.5px;padding:6px 14px;border-radius:8px;font-weight:600;width:100%;justify-content:center;">' +
+                    '➕ Conceder Acceso ➔' +
+                    '</button>' +
+                    '</div>' +
+
+                    '</div>';
+            });
+
+            $grid.html(html);
+        }
+
+        // Clic en "Conceder Acceso ➔" en una tarjeta de contacto
+        $(document).on('click', '.btn-gcal-open-confirm-share', function(e) {
             e.preventDefault();
             var contactId = parseInt($(this).data('contact-id'), 10);
-            var contact = gcalAclContactsCache.find(function(c) { return c.id === contactId; });
-            if (contact) {
-                selectContactForGCalShare(contact);
+            var contact = gcalAclContactsCatalog.find(function(c) { return c.id === contactId; });
+            if (!contact) return;
+
+            // Determinar correo seleccionado
+            var selectedEmail = '';
+            if (contact.emails.length === 1) {
+                selectedEmail = contact.emails[0].email;
+            } else {
+                selectedEmail = $('input[name="gcal_email_select_' + contact.id + '"]:checked').val() || contact.emails[0].email;
             }
-        });
 
-        // Deseleccionar / Cambiar contacto
-        $('#btn-gcal-unselect-contact').on('click', function(e) {
-            e.preventDefault();
-            resetGCalShareModal();
-            $('#gcal-search-contact-input').focus();
-            searchContactsForGCalShare('');
-        });
-
-        // CRUD CREATE: Submit del formulario de compartir
-        $('#form-gcal-share-contact').on('submit', function(e) {
-            e.preventDefault();
-            var contactId = parseInt($('#gcal-share-contact-id').val(), 10);
-            var email = $('input[name="gcal_selected_email"]:checked').val() || $('#gcal-share-single-email').val();
-            var role = $('#gcal-share-role').val() || 'reader';
-            var sendNotifications = $('#gcal-share-notifications').is(':checked') ? 1 : 0;
-            var $feedback = $('#modal-gcal-share-feedback');
-            var $btn = $('#btn-confirm-gcal-share');
-
-            if (!contactId || !email) {
-                $feedback.html('<div class="alert-card alert-warning" style="margin:0;padding:10px 14px;border-radius:8px;">⚠️ Por favor selecciona un contacto y una cuenta de correo válida.</div>').show();
+            if (!selectedEmail) {
+                alert('Por favor selecciona una cuenta de correo para este contacto.');
                 return;
             }
 
-            $btn.prop('disabled', true).html('⏳ Concediendo acceso en Google...');
+            // Rellenar Drawer / Sub-panel de confirmación
+            $('#gcal-confirm-contact-id').val(contact.id);
+            $('#gcal-confirm-email').val(selectedEmail);
+            $('#gcal-confirm-name').text(contact.name);
+            $('#gcal-confirm-email-display').text(selectedEmail);
+
+            var metaText = (contact.organization || contact.company || 'Directorio Aura');
+            if (contact.job_title) metaText += ' • ' + contact.job_title;
+            $('#gcal-confirm-meta').text(metaText);
+
+            $('#gcal-confirm-category-badge').text(contact.category_label || contact.category);
+
+            if (contact.avatar_url || contact.photo_url) {
+                $('#gcal-confirm-avatar').html('<img src="' + escapeHtml(contact.avatar_url || contact.photo_url) + '" style="width:100%;height:100%;object-fit:cover;">');
+            } else {
+                $('#gcal-confirm-avatar').text((contact.name || 'C').charAt(0).toUpperCase());
+            }
+
+            $('#gcal-confirm-role').val('reader');
+            $('#gcal-confirm-notifications').prop('checked', true);
+            $('#gcal-confirm-feedback').hide().empty();
+            $('#btn-submit-gcal-share').prop('disabled', false).html('🚀 Confirmar y Conceder Acceso');
+
+            // Mostrar el panel de confirmación
+            $('#gcal-share-confirmation-panel').fadeIn(180);
+        });
+
+        // Cancelar / Cerrar sub-panel de confirmación
+        $('#btn-cancel-gcal-confirm, #btn-cancel-gcal-confirm-panel').on('click', function(e) {
+            e.preventDefault();
+            $('#gcal-share-confirmation-panel').fadeOut(150);
+        });
+
+        // Submit del formulario de confirmación de acceso ACL
+        $('#form-gcal-confirm-share').on('submit', function(e) {
+            e.preventDefault();
+            var contactId = parseInt($('#gcal-confirm-contact-id').val(), 10);
+            var email = $('#gcal-confirm-email').val().trim();
+            var role = $('#gcal-confirm-role').val() || 'reader';
+            var sendNotifications = $('#gcal-confirm-notifications').is(':checked') ? 1 : 0;
+            var $feedback = $('#gcal-confirm-feedback');
+            var $btn = $('#btn-submit-gcal-share');
+
+            if (!contactId || !email) {
+                $feedback.html('<div class="alert-card alert-warning" style="margin:0;padding:10px 14px;border-radius:8px;">⚠️ Contacto o correo electrónico inválido.</div>').show();
+                return;
+            }
+
+            $btn.prop('disabled', true).html('⏳ Concediendo acceso en Google Calendar...');
             $feedback.hide().empty();
 
             $.post(auraCalData.ajax_url, {
@@ -5025,12 +5308,13 @@
                 role: role,
                 send_notifications: sendNotifications
             }, function(res) {
-                $btn.prop('disabled', false).html('🚀 Conceder Acceso y Compartir');
+                $btn.prop('disabled', false).html('🚀 Confirmar y Conceder Acceso');
                 if (res && res.success) {
-                    var successMsg = res.data && res.data.message ? res.data.message : '¡Acceso concedido exitosamente!';
+                    var successMsg = res.data && res.data.message ? res.data.message : '¡Acceso concedido exitosamente en Google Calendar!';
                     $feedback.html('<div class="alert-card alert-success" style="margin:0;padding:10px 14px;border-radius:8px;">✅ ' + escapeHtml(successMsg) + '</div>').show();
                     showToast(successMsg, 'success');
                     setTimeout(function() {
+                        $('#gcal-share-confirmation-panel').fadeOut(150);
                         closeModal('#modal-gcal-share-contact');
                         loadGCalSharedUsers();
                     }, 1200);
@@ -5040,9 +5324,9 @@
                     showToast(errMsg, 'error');
                 }
             }).fail(function() {
-                $btn.prop('disabled', false).html('🚀 Conceder Acceso y Compartir');
-                $feedback.html('<div class="alert-card alert-danger" style="margin:0;padding:10px 14px;border-radius:8px;">⚠️ Error de conexión con el servidor.</div>').show();
-                showToast('Error de red al conceder acceso', 'error');
+                $btn.prop('disabled', false).html('🚀 Confirmar y Conceder Acceso');
+                $feedback.html('<div class="alert-card alert-danger" style="margin:0;padding:10px 14px;border-radius:8px;">⚠️ Error de conexión al comunicarse con el servidor.</div>').show();
+                showToast('Error de red al conceder acceso en Google Calendar', 'error');
             });
         });
 
@@ -5113,121 +5397,6 @@
             }
             $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 24px; color: #ef4444; font-size: 13.5px;">⚠️ ' + escapeHtml(err) + '</td></tr>');
         });
-    }
-
-    function searchContactsForGCalShare(query) {
-        var $dropdown = $('#gcal-contact-dropdown-results');
-        var $spinner = $('#gcal-search-contact-spinner');
-
-        $spinner.show();
-
-        $.post(auraCalData.ajax_url, {
-            action: 'aura_cal_search_contacts_for_share',
-            nonce: auraCalData.nonce,
-            q: query
-        }, function(res) {
-            $spinner.hide();
-            if (res && res.success && res.data) {
-                var contacts = res.data.contacts || [];
-                gcalAclContactsCache = contacts;
-
-                if (contacts.length === 0) {
-                    $dropdown.html('<div style="padding:14px;text-align:center;color:var(--aura-text-muted);font-size:12.5px;">No se encontraron contactos con email que coincidan con la búsqueda.</div>').show();
-                    return;
-                }
-
-                var html = '';
-                contacts.forEach(function(c) {
-                    var emailsSummary = c.emails.map(function(em) { return em.email; }).join(' • ');
-                    var avatar = c.photo_url 
-                        ? '<img src="' + escapeHtml(c.photo_url) + '" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;">'
-                        : '<div style="width:30px;height:30px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;">' + escapeHtml((c.name || 'C').charAt(0).toUpperCase()) + '</div>';
-
-                    html += '<div class="gcal-contact-option-item" data-contact-id="' + c.id + '" style="padding:10px 14px;border-bottom:1px solid #f1f5f9;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background 0.15s;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'#fff\'">' +
-                        avatar +
-                        '<div style="flex:1;min-width:0;">' +
-                        '<strong style="font-size:13px;display:block;color:var(--aura-text-primary,#0f172a);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(c.name) + '</strong>' +
-                        '<span style="font-size:11.5px;color:var(--aura-text-secondary,#64748b);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(emailsSummary) + '</span>' +
-                        '</div>' +
-                        '<span class="badge" style="font-size:11px;background:rgba(99,102,241,0.1);color:#4f46e5;padding:2px 8px;border-radius:4px;flex-shrink:0;">' + (c.emails.length > 1 ? '2 correos' : '1 correo') + '</span>' +
-                        '</div>';
-                });
-
-                $dropdown.html(html).show();
-            } else {
-                $dropdown.hide();
-            }
-        }).fail(function() {
-            $spinner.hide();
-            $dropdown.hide();
-        });
-    }
-
-    function selectContactForGCalShare(contact) {
-        $('#gcal-share-contact-id').val(contact.id);
-        $('#gcal-contact-dropdown-results').hide();
-        $('#gcal-search-contact-input').val('');
-
-        // Tarjeta de contacto
-        $('#gcal-selected-name').text(contact.name);
-        var metaText = contact.company || 'Contacto del Directorio';
-        if (contact.category) metaText += ' • ' + contact.category;
-        $('#gcal-selected-meta').text(metaText);
-
-        if (contact.photo_url) {
-            $('#gcal-selected-avatar').html('<img src="' + escapeHtml(contact.photo_url) + '" style="width:100%;height:100%;object-fit:cover;">');
-        } else {
-            $('#gcal-selected-avatar').text((contact.name || 'C').charAt(0).toUpperCase());
-        }
-        $('#gcal-selected-contact-card').slideDown(150);
-
-        // Selector de Correos (1 o 2)
-        var $emailContainer = $('#gcal-email-selection-container');
-        var $emailList = $('#gcal-email-options-list');
-        $emailList.empty();
-
-        if (contact.emails.length === 1) {
-            var singleEmail = contact.emails[0].email;
-            var singleLabel = contact.emails[0].label;
-            $emailList.html(
-                '<input type="hidden" id="gcal-share-single-email" value="' + escapeHtml(singleEmail) + '">' +
-                '<div style="padding:10px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
-                '<span style="font-size:13px;font-weight:600;color:var(--aura-text-primary);display:flex;align-items:center;gap:6px;">✉️ ' + escapeHtml(singleEmail) + '</span>' +
-                '<span class="badge" style="font-size:11px;background:rgba(99,102,241,0.12);color:#4f46e5;padding:2px 8px;border-radius:4px;">' + escapeHtml(singleLabel) + '</span>' +
-                '</div>'
-            );
-        } else {
-            // Múltiples correos: permitir selección clara
-            var radiosHtml = '';
-            contact.emails.forEach(function(em, idx) {
-                var checked = (idx === 0) ? 'checked' : '';
-                radiosHtml += '<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor=\'#818cf8\'" onmouseout="this.style.borderColor=\'#cbd5e1\'">' +
-                    '<div style="display:flex;align-items:center;gap:10px;">' +
-                    '<input type="radio" name="gcal_selected_email" value="' + escapeHtml(em.email) + '" ' + checked + ' style="margin:0;">' +
-                    '<span style="font-size:13px;font-weight:600;color:var(--aura-text-primary);">' + escapeHtml(em.email) + '</span>' +
-                    '</div>' +
-                    '<span class="badge" style="font-size:11px;background:rgba(99,102,241,0.12);color:#4f46e5;padding:2px 8px;border-radius:4px;">' + escapeHtml(em.label) + '</span>' +
-                    '</label>';
-            });
-            $emailList.html(radiosHtml);
-        }
-        $emailContainer.slideDown(150);
-
-        // Habilitar botón de confirmación
-        $('#btn-confirm-gcal-share').prop('disabled', false);
-    }
-
-    function resetGCalShareModal() {
-        $('#gcal-share-contact-id').val('');
-        $('#gcal-search-contact-input').val('');
-        $('#gcal-contact-dropdown-results').hide().empty();
-        $('#gcal-selected-contact-card').hide();
-        $('#gcal-email-selection-container').hide();
-        $('#gcal-email-options-list').empty();
-        $('#gcal-share-role').val('reader');
-        $('#gcal-share-notifications').prop('checked', true);
-        $('#modal-gcal-share-feedback').hide().empty();
-        $('#btn-confirm-gcal-share').prop('disabled', true);
     }
 
     // ─────────────────────────────────────────────────────────────

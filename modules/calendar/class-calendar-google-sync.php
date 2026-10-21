@@ -654,7 +654,7 @@ class Aura_Calendar_Google_Sync {
                 $contact_info = null;
                 if ( $has_contacts_table && ! empty( $email ) ) {
                     $contact = $wpdb->get_row( $wpdb->prepare(
-                        "SELECT id, first_name, last_name, company, email_primary, email_secondary, photo_url 
+                        "SELECT id, first_name, last_name, organization, job_title, email_primary, email_secondary, avatar_url, category 
                          FROM {$table_contacts} 
                          WHERE (email_primary = %s OR email_secondary = %s) AND is_active = 1 
                          LIMIT 1",
@@ -662,12 +662,20 @@ class Aura_Calendar_Google_Sync {
                     ) );
 
                     if ( $contact ) {
+                        $c_name = trim( $contact->first_name . ' ' . $contact->last_name );
+                        if ( empty( $c_name ) ) {
+                            $c_name = $contact->organization ?: __( 'Contacto del Directorio', 'aura' );
+                        }
                         $contact_info = [
-                            'id'         => (int) $contact->id,
-                            'name'       => trim( $contact->first_name . ' ' . $contact->last_name ),
-                            'company'    => $contact->company,
-                            'photo_url'  => $contact->photo_url,
-                            'matched_as' => ( strtolower( (string) $contact->email_primary ) === strtolower( (string) $email ) ) ? 'primary' : 'secondary',
+                            'id'           => (int) $contact->id,
+                            'name'         => $c_name,
+                            'company'      => $contact->organization,
+                            'organization' => $contact->organization,
+                            'job_title'    => $contact->job_title,
+                            'photo_url'    => $contact->avatar_url,
+                            'avatar_url'   => $contact->avatar_url,
+                            'category'     => $contact->category,
+                            'matched_as'   => ( strtolower( (string) $contact->email_primary ) === strtolower( (string) $email ) ) ? 'primary' : 'secondary',
                         ];
                     }
                 }
@@ -700,7 +708,7 @@ class Aura_Calendar_Google_Sync {
     }
 
     /**
-     * AJAX: Buscar contactos del Directorio Aura para compartir calendario
+     * AJAX: Buscar y catalogar contactos del Directorio Aura para compartir calendario
      */
     public static function ajax_search_contacts_for_share(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
@@ -717,51 +725,104 @@ class Aura_Calendar_Google_Sync {
                 wp_send_json_error( [ 'message' => __( 'La tabla de contactos de Aura no está disponible.', 'aura' ) ] );
             }
 
-            $query = isset( $_POST['q'] ) ? sanitize_text_field( wp_unslash( $_POST['q'] ) ) : '';
-            $query_like = '%' . $wpdb->esc_like( $query ) . '%';
+            $query    = isset( $_POST['q'] ) ? sanitize_text_field( wp_unslash( $_POST['q'] ) ) : '';
+            $category = isset( $_POST['category'] ) ? sanitize_key( wp_unslash( $_POST['category'] ) ) : 'all';
+            $sort     = isset( $_POST['sort'] ) ? sanitize_key( wp_unslash( $_POST['sort'] ) ) : 'name_asc';
 
-            if ( ! empty( $query ) ) {
-                $sql = $wpdb->prepare(
-                    "SELECT id, first_name, last_name, company, email_primary, email_secondary, photo_url, category 
-                     FROM {$table_contacts} 
-                     WHERE is_active = 1 
-                       AND ( (email_primary IS NOT NULL AND email_primary != '') OR (email_secondary IS NOT NULL AND email_secondary != '') )
-                       AND ( first_name LIKE %s OR last_name LIKE %s OR company LIKE %s OR email_primary LIKE %s OR email_secondary LIKE %s )
-                     ORDER BY first_name ASC, last_name ASC 
-                     LIMIT 25",
-                    $query_like, $query_like, $query_like, $query_like, $query_like
-                );
-            } else {
-                $sql = "SELECT id, first_name, last_name, company, email_primary, email_secondary, photo_url, category 
-                        FROM {$table_contacts} 
-                        WHERE is_active = 1 
-                          AND ( (email_primary IS NOT NULL AND email_primary != '') OR (email_secondary IS NOT NULL AND email_secondary != '') )
-                        ORDER BY first_name ASC, last_name ASC 
-                        LIMIT 20";
+            // 1. Obtener conteos por categoría de todos los contactos activos con email
+            $counts_sql = "SELECT category, COUNT(*) as cnt 
+                           FROM {$table_contacts} 
+                           WHERE is_active = 1 
+                             AND ( (email_primary IS NOT NULL AND TRIM(email_primary) != '') OR (email_secondary IS NOT NULL AND TRIM(email_secondary) != '') )
+                           GROUP BY category";
+            $counts_rows = $wpdb->get_results( $counts_sql );
+            $category_counts = [ 'all' => 0 ];
+            foreach ( $counts_rows as $c_row ) {
+                $cat_key = ! empty( $c_row->category ) ? strtolower( trim( $c_row->category ) ) : 'other';
+                $category_counts[ $cat_key ] = (int) $c_row->cnt;
+                $category_counts['all'] += (int) $c_row->cnt;
             }
 
-            $results = $wpdb->get_results( $sql );
+            // 2. Construir cláusula WHERE
+            $where_parts = [
+                "is_active = 1",
+                "( (email_primary IS NOT NULL AND TRIM(email_primary) != '') OR (email_secondary IS NOT NULL AND TRIM(email_secondary) != '') )"
+            ];
+            $params = [];
+
+            if ( ! empty( $query ) ) {
+                $query_like = '%' . $wpdb->esc_like( $query ) . '%';
+                $where_parts[] = "( first_name LIKE %s OR last_name LIKE %s OR organization LIKE %s OR job_title LIKE %s OR email_primary LIKE %s OR email_secondary LIKE %s )";
+                $params[] = $query_like;
+                $params[] = $query_like;
+                $params[] = $query_like;
+                $params[] = $query_like;
+                $params[] = $query_like;
+                $params[] = $query_like;
+            }
+
+            if ( ! empty( $category ) && $category !== 'all' ) {
+                $where_parts[] = "category = %s";
+                $params[] = $category;
+            }
+
+            $where_clause = implode( ' AND ', $where_parts );
+
+            // 3. Orden
+            $order_by = "first_name ASC, last_name ASC";
+            if ( $sort === 'name_desc' ) {
+                $order_by = "first_name DESC, last_name DESC";
+            } elseif ( $sort === 'org' ) {
+                $order_by = "organization ASC, first_name ASC";
+            } elseif ( $sort === 'category' ) {
+                $order_by = "category ASC, first_name ASC";
+            }
+
+            $sql = "SELECT id, first_name, last_name, organization, job_title, email_primary, email_secondary, avatar_url, category, phone_primary, whatsapp 
+                    FROM {$table_contacts} 
+                    WHERE {$where_clause} 
+                    ORDER BY {$order_by} 
+                    LIMIT 80";
+
+            if ( ! empty( $params ) ) {
+                $prepared_sql = $wpdb->prepare( $sql, $params );
+            } else {
+                $prepared_sql = $sql;
+            }
+
+            $results = $wpdb->get_results( $prepared_sql );
             $contacts = [];
+
+            $cat_labels = [
+                'teacher'  => __( '🎓 Docente / Profesor', 'aura' ),
+                'staff'    => __( '👥 Personal / Staff', 'aura' ),
+                'student'  => __( '📚 Estudiante', 'aura' ),
+                'supplier' => __( '🏢 Proveedor', 'aura' ),
+                'member'   => __( '⭐ Miembro', 'aura' ),
+                'client'   => __( '👤 Cliente', 'aura' ),
+                'customer' => __( '👤 Cliente', 'aura' ),
+                'other'    => __( '🏷️ Contacto', 'aura' ),
+            ];
 
             foreach ( $results as $row ) {
                 $name = trim( $row->first_name . ' ' . $row->last_name );
                 if ( empty( $name ) ) {
-                    $name = $row->company ?: __( 'Sin Nombre', 'aura' );
+                    $name = $row->organization ?: __( 'Sin Nombre', 'aura' );
                 }
 
                 $emails = [];
-                if ( ! empty( $row->email_primary ) && is_email( $row->email_primary ) ) {
+                if ( ! empty( $row->email_primary ) && is_email( trim( $row->email_primary ) ) ) {
                     $emails[] = [
                         'type'  => 'primary',
                         'label' => __( 'Principal', 'aura' ),
-                        'email' => $row->email_primary,
+                        'email' => trim( $row->email_primary ),
                     ];
                 }
-                if ( ! empty( $row->email_secondary ) && is_email( $row->email_secondary ) ) {
+                if ( ! empty( $row->email_secondary ) && is_email( trim( $row->email_secondary ) ) ) {
                     $emails[] = [
                         'type'  => 'secondary',
                         'label' => __( 'Secundario', 'aura' ),
-                        'email' => $row->email_secondary,
+                        'email' => trim( $row->email_secondary ),
                     ];
                 }
 
@@ -769,17 +830,31 @@ class Aura_Calendar_Google_Sync {
                     continue;
                 }
 
+                $cat_key = ! empty( $row->category ) ? strtolower( trim( $row->category ) ) : 'other';
+                $cat_label = $cat_labels[ $cat_key ] ?? ucfirst( $cat_key );
+
                 $contacts[] = [
-                    'id'        => (int) $row->id,
-                    'name'      => $name,
-                    'company'   => $row->company,
-                    'category'  => $row->category,
-                    'photo_url' => $row->photo_url,
-                    'emails'    => $emails,
+                    'id'             => (int) $row->id,
+                    'name'           => $name,
+                    'first_name'     => $row->first_name,
+                    'last_name'      => $row->last_name,
+                    'company'        => $row->organization,
+                    'organization'   => $row->organization,
+                    'job_title'      => $row->job_title,
+                    'category'       => $cat_key,
+                    'category_label' => $cat_label,
+                    'photo_url'      => $row->avatar_url,
+                    'avatar_url'     => $row->avatar_url,
+                    'phone'          => $row->phone_primary ?: $row->whatsapp,
+                    'emails'         => $emails,
                 ];
             }
 
-            wp_send_json_success( [ 'contacts' => $contacts ] );
+            wp_send_json_success( [
+                'contacts'        => $contacts,
+                'total'           => count( $contacts ),
+                'category_counts' => $category_counts,
+            ] );
         } catch ( \Throwable $e ) {
             wp_send_json_error( [ 'message' => $e->getMessage() ] );
         }
@@ -809,7 +884,7 @@ class Aura_Calendar_Google_Sync {
             global $wpdb;
             $table_contacts = $wpdb->prefix . 'aura_contacts';
             $contact = $wpdb->get_row( $wpdb->prepare(
-                "SELECT id, first_name, last_name, company, email_primary, email_secondary 
+                "SELECT id, first_name, last_name, organization, job_title, email_primary, email_secondary, avatar_url 
                  FROM {$table_contacts} 
                  WHERE id = %d AND is_active = 1 LIMIT 1",
                 $contact_id
@@ -819,8 +894,8 @@ class Aura_Calendar_Google_Sync {
                 wp_send_json_error( [ 'message' => __( 'El contacto especificado no existe o está inactivo en el Directorio de Contactos.', 'aura' ) ] );
             }
 
-            $primary_match   = ( strtolower( (string) $contact->email_primary ) === strtolower( $email ) );
-            $secondary_match = ( strtolower( (string) $contact->email_secondary ) === strtolower( $email ) );
+            $primary_match   = ( strtolower( trim( (string) $contact->email_primary ) ) === strtolower( $email ) );
+            $secondary_match = ( strtolower( trim( (string) $contact->email_secondary ) ) === strtolower( $email ) );
 
             if ( ! $primary_match && ! $secondary_match ) {
                 wp_send_json_error( [
@@ -846,7 +921,7 @@ class Aura_Calendar_Google_Sync {
 
             $contact_name = trim( $contact->first_name . ' ' . $contact->last_name );
             if ( empty( $contact_name ) ) {
-                $contact_name = $contact->company ?: $email;
+                $contact_name = $contact->organization ?: $email;
             }
 
             wp_send_json_success( [
