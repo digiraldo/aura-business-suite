@@ -4684,6 +4684,361 @@
     });
 
     // ─────────────────────────────────────────────────────────────
+    // GESTIÓN DE CONTROL DE ACCESOS (GOOGLE CALENDAR ACL)
+    // ─────────────────────────────────────────────────────────────
+    var gcalAclContactsCache = [];
+    var gcalSearchTimer = null;
+
+    function initGCalAclManager() {
+        if (!$('#card-gcal-acl-manager').length) return;
+
+        // Cargar lista inicial de usuarios compartidos
+        loadGCalSharedUsers();
+
+        // Botón Refrescar
+        $('#btn-refresh-gcal-acl').on('click', function(e) {
+            e.preventDefault();
+            loadGCalSharedUsers();
+        });
+
+        // Botón Abrir Modal Compartir
+        $('#btn-open-share-contact-modal').on('click', function(e) {
+            e.preventDefault();
+            resetGCalShareModal();
+            openModal('#modal-gcal-share-contact');
+            searchContactsForGCalShare('');
+        });
+
+        // Búsqueda reactiva de contactos con debounce
+        $('#gcal-search-contact-input').on('input', function() {
+            var q = $(this).val().trim();
+            clearTimeout(gcalSearchTimer);
+            gcalSearchTimer = setTimeout(function() {
+                searchContactsForGCalShare(q);
+            }, 250);
+        });
+
+        // Foco en el input vuelve a mostrar resultados si existen
+        $('#gcal-search-contact-input').on('focus', function() {
+            var $dropdown = $('#gcal-contact-dropdown-results');
+            if ($dropdown.children().length > 0) {
+                $dropdown.slideDown(150);
+            }
+        });
+
+        // Clic fuera del dropdown lo oculta
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#gcal-search-contact-input, #gcal-contact-dropdown-results').length) {
+                $('#gcal-contact-dropdown-results').hide();
+            }
+        });
+
+        // Seleccionar un contacto desde el dropdown
+        $(document).on('click', '.gcal-contact-option-item', function(e) {
+            e.preventDefault();
+            var contactId = parseInt($(this).data('contact-id'), 10);
+            var contact = gcalAclContactsCache.find(function(c) { return c.id === contactId; });
+            if (contact) {
+                selectContactForGCalShare(contact);
+            }
+        });
+
+        // Deseleccionar / Cambiar contacto
+        $('#btn-gcal-unselect-contact').on('click', function(e) {
+            e.preventDefault();
+            resetGCalShareModal();
+            $('#gcal-search-contact-input').focus();
+            searchContactsForGCalShare('');
+        });
+
+        // Submit del formulario de compartir
+        $('#form-gcal-share-contact').on('submit', function(e) {
+            e.preventDefault();
+            var contactId = parseInt($('#gcal-share-contact-id').val(), 10);
+            var email = $('input[name="gcal_selected_email"]:checked').val() || $('#gcal-share-single-email').val();
+            var role = $('#gcal-share-role').val() || 'reader';
+            var sendNotifications = $('#gcal-share-notifications').is(':checked') ? 1 : 0;
+            var $feedback = $('#modal-gcal-share-feedback');
+            var $btn = $('#btn-confirm-gcal-share');
+
+            if (!contactId || !email) {
+                $feedback.html('<div class="alert-card alert-warning" style="margin:0;padding:10px 14px;border-radius:8px;">⚠️ Por favor selecciona un contacto y una cuenta de correo válida.</div>').show();
+                return;
+            }
+
+            $btn.prop('disabled', true).html('⏳ Concediendo acceso en Google...');
+            $feedback.hide().empty();
+
+            $.post(auraCalData.ajax_url, {
+                action: 'aura_cal_gcal_share_contact',
+                nonce: auraCalData.nonce,
+                contact_id: contactId,
+                email: email,
+                role: role,
+                send_notifications: sendNotifications
+            }, function(res) {
+                $btn.prop('disabled', false).html('🚀 Conceder Acceso y Compartir');
+                if (res && res.success) {
+                    var successMsg = res.data && res.data.message ? res.data.message : '¡Acceso concedido exitosamente!';
+                    $feedback.html('<div class="alert-card alert-success" style="margin:0;padding:10px 14px;border-radius:8px;">✅ ' + escapeHtml(successMsg) + '</div>').show();
+                    showToast(successMsg, 'success');
+                    setTimeout(function() {
+                        closeModal('#modal-gcal-share-contact');
+                        loadGCalSharedUsers();
+                    }, 1200);
+                } else {
+                    var errMsg = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
+                    $feedback.html('<div class="alert-card alert-danger" style="margin:0;padding:10px 14px;border-radius:8px;">⚠️ ' + escapeHtml(errMsg) + '</div>').show();
+                    showToast(errMsg, 'error');
+                }
+            }).fail(function() {
+                $btn.prop('disabled', false).html('🚀 Conceder Acceso y Compartir');
+                $feedback.html('<div class="alert-card alert-danger" style="margin:0;padding:10px 14px;border-radius:8px;">⚠️ Error de conexión con el servidor.</div>').show();
+                showToast('Error de red al conceder acceso', 'error');
+            });
+        });
+
+        // Revocar Acceso
+        $(document).on('click', '.btn-revoke-gcal-acl', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var ruleId = $btn.data('rule-id');
+            var email = $btn.data('email') || '';
+            var contactName = $btn.data('contact-name') || email;
+
+            if (!ruleId) return;
+
+            var confirmMsg = '¿Deseas revocar de inmediato el acceso al calendario para "' + contactName + '" (' + email + ')?\n\nEl calendario desaparecerá de forma definitiva de su cuenta de Google Calendar.';
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            $btn.prop('disabled', true).text('Revocando...');
+
+            $.post(auraCalData.ajax_url, {
+                action: 'aura_cal_gcal_revoke_access',
+                nonce: auraCalData.nonce,
+                rule_id: ruleId
+            }, function(res) {
+                if (res && res.success) {
+                    showToast(res.data && res.data.message ? res.data.message : 'Acceso revocado correctamente.', 'success');
+                    loadGCalSharedUsers();
+                } else {
+                    var errMsg = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
+                    alert('Error al revocar acceso: ' + errMsg);
+                    $btn.prop('disabled', false).text('Revocar Acceso');
+                }
+            }).fail(function() {
+                alert('Error de red al intentar revocar acceso en Google Calendar.');
+                $btn.prop('disabled', false).text('Revocar Acceso');
+            });
+        });
+    }
+
+    function loadGCalSharedUsers() {
+        var $tbody = $('#tbody-gcal-acl-users');
+        if (!$tbody.length) return;
+
+        $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--aura-text-muted);"><span class="spinner is-active" style="float: none; margin: 0 8px 0 0;"></span>Consultando reglas de Google Calendar...</td></tr>');
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_gcal_get_shared_users',
+            nonce: auraCalData.nonce
+        }, function(res) {
+            if (res && res.success && res.data) {
+                var users = res.data.users || [];
+                if (users.length === 0) {
+                    $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 26px; color: var(--aura-text-muted); font-size: 13px;">No hay accesos de usuario compartidos adicionales en Google Calendar.<br><span style="font-size:12px;opacity:0.8;">Haz clic en <strong>"Compartir con un Contacto"</strong> para conceder acceso a profesores o coordinadores.</span></td></tr>');
+                    return;
+                }
+
+                var html = '';
+                users.forEach(function(u) {
+                    var contactHtml = '';
+                    if (u.contact) {
+                        var avatar = u.contact.photo_url 
+                            ? '<img src="' + escapeHtml(u.contact.photo_url) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #e2e8f0;">'
+                            : '<div style="width:32px;height:32px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">' + escapeHtml((u.contact.name || 'C').charAt(0).toUpperCase()) + '</div>';
+                        
+                        var badgeMatch = u.contact.matched_as === 'primary' 
+                            ? '<span class="badge" style="font-size:10px;background:rgba(99,102,241,0.1);color:#4f46e5;margin-left:4px;">Principal</span>' 
+                            : '<span class="badge" style="font-size:10px;background:rgba(100,116,139,0.1);color:#64748b;margin-left:4px;">Secundario</span>';
+
+                        contactHtml = '<div style="display:flex;align-items:center;gap:10px;">' + avatar +
+                            '<div><strong style="font-size:13px;color:var(--aura-text-primary,#0f172a);display:flex;align-items:center;">' + escapeHtml(u.contact.name) + badgeMatch + '</strong>' +
+                            '<span style="font-size:11.5px;color:var(--aura-text-secondary,#64748b);display:block;">' + escapeHtml(u.contact.company || 'Directorio Aura') + '</span></div></div>';
+                    } else {
+                        var initial = (u.email || 'G').charAt(0).toUpperCase();
+                        contactHtml = '<div style="display:flex;align-items:center;gap:10px;">' +
+                            '<div style="width:32px;height:32px;border-radius:50%;background:#94a3b8;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">' + escapeHtml(initial) + '</div>' +
+                            '<div><strong style="font-size:13px;color:var(--aura-text-secondary,#475569);">' + (u.is_service_account ? 'Cuenta de Servicio' : 'Usuario Externo') + '</strong>' +
+                            '<span style="font-size:11px;color:var(--aura-text-muted,#94a3b8);display:block;">No vinculado a Contacto</span></div></div>';
+                    }
+
+                    // Badge de Rol
+                    var roleBadge = '';
+                    if (u.is_owner) {
+                        roleBadge = '<span class="badge" style="background:rgba(16,185,129,0.15);color:#047857;font-weight:600;padding:3px 8px;border-radius:6px;">👑 Propietario</span>';
+                    } else if (u.role === 'writer') {
+                        roleBadge = '<span class="badge" style="background:rgba(99,102,241,0.15);color:#4338ca;font-weight:600;padding:3px 8px;border-radius:6px;">✏️ Editor (Escritura)</span>';
+                    } else {
+                        roleBadge = '<span class="badge" style="background:rgba(59,130,246,0.15);color:#1d4ed8;font-weight:600;padding:3px 8px;border-radius:6px;">👁️ Lector (Lectura)</span>';
+                    }
+
+                    // Badge de Origen
+                    var originBadge = '';
+                    if (u.is_service_account) {
+                        originBadge = '<span class="adp-badge badge-ghost" style="font-size:11px;">⚙️ Sistema / Service Account</span>';
+                    } else if (u.contact) {
+                        originBadge = '<span class="adp-badge badge-emerald" style="font-size:11px;">✓ Contacto Verificado</span>';
+                    } else {
+                        originBadge = '<span class="adp-badge badge-ghost" style="font-size:11px;opacity:0.7;">Externo</span>';
+                    }
+
+                    // Acciones
+                    var actionHtml = '';
+                    if (u.is_deletable) {
+                        var cName = u.contact ? u.contact.name : u.email;
+                        actionHtml = '<button type="button" class="btn btn-ghost btn-sm btn-revoke-gcal-acl" data-rule-id="' + escapeHtml(u.rule_id) + '" data-email="' + escapeHtml(u.email) + '" data-contact-name="' + escapeHtml(cName) + '" style="font-size:12px;padding:4px 10px;color:#ef4444;border:1px solid rgba(239,68,68,0.25);border-radius:6px;" title="Revocar acceso de forma definitiva a este usuario">✕ Revocar Acceso</button>';
+                    } else {
+                        actionHtml = '<span class="adp-badge badge-ghost" style="font-size:11px;opacity:0.75;" title="Cuenta esencial del sistema o propietaria del recurso">🔒 Protegido</span>';
+                    }
+
+                    html += '<tr style="border-bottom: 1px solid var(--aura-border, #e2e8f0);">' +
+                        '<td style="padding: 12px 16px;">' + contactHtml + '</td>' +
+                        '<td style="padding: 12px 16px; font-family: monospace; font-size: 12.5px; color: var(--aura-text-secondary);">' + escapeHtml(u.email) + '</td>' +
+                        '<td style="padding: 12px 16px;">' + roleBadge + '</td>' +
+                        '<td style="padding: 12px 16px;">' + originBadge + '</td>' +
+                        '<td style="padding: 12px 16px; text-align: right; white-space: nowrap;">' + actionHtml + '</td>' +
+                        '</tr>';
+                });
+
+                $tbody.html(html);
+            } else {
+                var err = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
+                $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 20px; color: #ef4444;">⚠️ ' + escapeHtml(err) + '</td></tr>');
+            }
+        }).fail(function() {
+            $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 20px; color: #ef4444;">⚠️ Error al consultar usuarios en Google Calendar.</td></tr>');
+        });
+    }
+
+    function searchContactsForGCalShare(query) {
+        var $dropdown = $('#gcal-contact-dropdown-results');
+        var $spinner = $('#gcal-search-contact-spinner');
+
+        $spinner.show();
+
+        $.post(auraCalData.ajax_url, {
+            action: 'aura_cal_search_contacts_for_share',
+            nonce: auraCalData.nonce,
+            q: query
+        }, function(res) {
+            $spinner.hide();
+            if (res && res.success && res.data) {
+                var contacts = res.data.contacts || [];
+                gcalAclContactsCache = contacts;
+
+                if (contacts.length === 0) {
+                    $dropdown.html('<div style="padding:14px;text-align:center;color:var(--aura-text-muted);font-size:12.5px;">No se encontraron contactos con email que coincidan con la búsqueda.</div>').show();
+                    return;
+                }
+
+                var html = '';
+                contacts.forEach(function(c) {
+                    var emailsSummary = c.emails.map(function(em) { return em.email; }).join(' • ');
+                    var avatar = c.photo_url 
+                        ? '<img src="' + escapeHtml(c.photo_url) + '" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;">'
+                        : '<div style="width:30px;height:30px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;">' + escapeHtml((c.name || 'C').charAt(0).toUpperCase()) + '</div>';
+
+                    html += '<div class="gcal-contact-option-item" data-contact-id="' + c.id + '" style="padding:10px 14px;border-bottom:1px solid #f1f5f9;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background 0.15s;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'#fff\'">' +
+                        avatar +
+                        '<div style="flex:1;min-width:0;">' +
+                        '<strong style="font-size:13px;display:block;color:var(--aura-text-primary,#0f172a);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(c.name) + '</strong>' +
+                        '<span style="font-size:11.5px;color:var(--aura-text-secondary,#64748b);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(emailsSummary) + '</span>' +
+                        '</div>' +
+                        '<span class="badge" style="font-size:11px;background:rgba(99,102,241,0.1);color:#4f46e5;padding:2px 8px;border-radius:4px;flex-shrink:0;">' + (c.emails.length > 1 ? '2 correos' : '1 correo') + '</span>' +
+                        '</div>';
+                });
+
+                $dropdown.html(html).show();
+            } else {
+                $dropdown.hide();
+            }
+        }).fail(function() {
+            $spinner.hide();
+            $dropdown.hide();
+        });
+    }
+
+    function selectContactForGCalShare(contact) {
+        $('#gcal-share-contact-id').val(contact.id);
+        $('#gcal-contact-dropdown-results').hide();
+        $('#gcal-search-contact-input').val('');
+
+        // Tarjeta de contacto
+        $('#gcal-selected-name').text(contact.name);
+        var metaText = contact.company || 'Contacto del Directorio';
+        if (contact.category) metaText += ' • ' + contact.category;
+        $('#gcal-selected-meta').text(metaText);
+
+        if (contact.photo_url) {
+            $('#gcal-selected-avatar').html('<img src="' + escapeHtml(contact.photo_url) + '" style="width:100%;height:100%;object-fit:cover;">');
+        } else {
+            $('#gcal-selected-avatar').text((contact.name || 'C').charAt(0).toUpperCase());
+        }
+        $('#gcal-selected-contact-card').slideDown(150);
+
+        // Selector de Correos (1 o 2)
+        var $emailContainer = $('#gcal-email-selection-container');
+        var $emailList = $('#gcal-email-options-list');
+        $emailList.empty();
+
+        if (contact.emails.length === 1) {
+            var singleEmail = contact.emails[0].email;
+            var singleLabel = contact.emails[0].label;
+            $emailList.html(
+                '<input type="hidden" id="gcal-share-single-email" value="' + escapeHtml(singleEmail) + '">' +
+                '<div style="padding:10px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+                '<span style="font-size:13px;font-weight:600;color:var(--aura-text-primary);display:flex;align-items:center;gap:6px;">✉️ ' + escapeHtml(singleEmail) + '</span>' +
+                '<span class="badge" style="font-size:11px;background:rgba(99,102,241,0.12);color:#4f46e5;padding:2px 8px;border-radius:4px;">' + escapeHtml(singleLabel) + '</span>' +
+                '</div>'
+            );
+        } else {
+            // Múltiples correos: permitir selección clara
+            var radiosHtml = '';
+            contact.emails.forEach(function(em, idx) {
+                var checked = (idx === 0) ? 'checked' : '';
+                radiosHtml += '<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor=\'#818cf8\'" onmouseout="this.style.borderColor=\'#cbd5e1\'">' +
+                    '<div style="display:flex;align-items:center;gap:10px;">' +
+                    '<input type="radio" name="gcal_selected_email" value="' + escapeHtml(em.email) + '" ' + checked + ' style="margin:0;">' +
+                    '<span style="font-size:13px;font-weight:600;color:var(--aura-text-primary);">' + escapeHtml(em.email) + '</span>' +
+                    '</div>' +
+                    '<span class="badge" style="font-size:11px;background:rgba(99,102,241,0.12);color:#4f46e5;padding:2px 8px;border-radius:4px;">' + escapeHtml(em.label) + '</span>' +
+                    '</label>';
+            });
+            $emailList.html(radiosHtml);
+        }
+        $emailContainer.slideDown(150);
+
+        // Habilitar botón de confirmación
+        $('#btn-confirm-gcal-share').prop('disabled', false);
+    }
+
+    function resetGCalShareModal() {
+        $('#gcal-share-contact-id').val('');
+        $('#gcal-search-contact-input').val('');
+        $('#gcal-contact-dropdown-results').hide().empty();
+        $('#gcal-selected-contact-card').hide();
+        $('#gcal-email-selection-container').hide();
+        $('#gcal-email-options-list').empty();
+        $('#gcal-share-role').val('reader');
+        $('#gcal-share-notifications').prop('checked', true);
+        $('#modal-gcal-share-feedback').hide().empty();
+        $('#btn-confirm-gcal-share').prop('disabled', true);
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // SINCRONIZACIÓN COLABORATIVA EN TIEMPO REAL (LIVE SYNC)
     // ─────────────────────────────────────────────────────────────
     var lastSyncVersion = auraCalData.last_sync_version || 0;
@@ -5622,6 +5977,7 @@
         initFullCalendar();
         initLiveCollaboration();
         loadUnassignedSubjects();
+        initGCalAclManager();
 
         // Si la URL contiene action=create, abrir el editor automáticamente
         var urlParams = new URLSearchParams(window.location.search);

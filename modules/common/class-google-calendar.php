@@ -348,6 +348,78 @@ class Aura_Google_Calendar {
         return $results;
     }
 
+    /**
+     * Lista todas las reglas de control de acceso (ACLs) del calendario en Google Calendar.
+     *
+     * @param string $cal_id ID del calendario.
+     * @return array Lista de reglas ACL devueltas por Google.
+     */
+    public static function list_acl_rules( string $cal_id ): array {
+        if ( empty( $cal_id ) ) {
+            return [];
+        }
+
+        $url = 'https://www.googleapis.com/calendar/v3/calendars/' . rawurlencode( $cal_id ) . '/acl';
+        $res = self::api_request( 'GET', $url );
+
+        if ( ! is_array( $res ) || empty( $res['items'] ) ) {
+            return [];
+        }
+
+        return $res['items'];
+    }
+
+    /**
+     * Otorga acceso a un correo específico en el calendario mediante Google Calendar ACL.
+     *
+     * @param string $cal_id              ID del calendario.
+     * @param string $email               Correo electrónico de la cuenta de Google.
+     * @param string $role                'reader'|'writer'|'freeBusyReader'
+     * @param bool   $send_notifications  Si true, Google envía un email de invitación oficial.
+     * @return array|null                 Respuesta de Google o null en caso de error.
+     */
+    public static function insert_acl_rule( string $cal_id, string $email, string $role = 'reader', bool $send_notifications = true ): ?array {
+        if ( empty( $cal_id ) || ! is_email( $email ) ) {
+            self::$last_error = __( 'Parámetros inválidos para conceder acceso al calendario.', 'aura-suite' );
+            return null;
+        }
+
+        $allowed_roles = [ 'reader', 'writer', 'freeBusyReader' ];
+        if ( ! in_array( $role, $allowed_roles, true ) ) {
+            $role = 'reader';
+        }
+
+        $notif_param = $send_notifications ? 'true' : 'false';
+        $url         = 'https://www.googleapis.com/calendar/v3/calendars/' . rawurlencode( $cal_id ) . '/acl?sendNotifications=' . $notif_param;
+        $body        = [
+            'role'  => $role,
+            'scope' => [
+                'type'  => 'user',
+                'value' => $email,
+            ],
+        ];
+
+        return self::api_request( 'POST', $url, $body );
+    }
+
+    /**
+     * Elimina / revoca el acceso de una regla ACL en Google Calendar.
+     *
+     * @param string $cal_id   ID del calendario.
+     * @param string $rule_id  ID de la regla de acceso (ej. 'user:correo@gmail.com').
+     * @return bool            True si fue eliminado con éxito en Google.
+     */
+    public static function delete_acl_rule( string $cal_id, string $rule_id ): bool {
+        if ( empty( $cal_id ) || empty( $rule_id ) ) {
+            return false;
+        }
+
+        $url = 'https://www.googleapis.com/calendar/v3/calendars/' . rawurlencode( $cal_id ) . '/acl/' . rawurlencode( $rule_id );
+        $res = self::api_request( 'DELETE', $url );
+
+        return ( null !== $res );
+    }
+
     // ─────────────────────────────────────────────────────────────
     // SYNC — Crear o actualizar un evento genérico
     // ─────────────────────────────────────────────────────────────

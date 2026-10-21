@@ -33,6 +33,10 @@ class Aura_Calendar_Google_Sync {
         add_action( 'wp_ajax_aura_cal_gcal_test_sync', [ __CLASS__, 'ajax_test_sync' ] );
         add_action( 'wp_ajax_aura_cal_gcal_sync_all',  [ __CLASS__, 'ajax_sync_all' ] );
         add_action( 'wp_ajax_aura_cal_gcal_sync_event', [ __CLASS__, 'ajax_sync_single_event' ] );
+        add_action( 'wp_ajax_aura_cal_gcal_get_shared_users', [ __CLASS__, 'ajax_get_shared_users' ] );
+        add_action( 'wp_ajax_aura_cal_search_contacts_for_share', [ __CLASS__, 'ajax_search_contacts_for_share' ] );
+        add_action( 'wp_ajax_aura_cal_gcal_share_contact', [ __CLASS__, 'ajax_share_contact' ] );
+        add_action( 'wp_ajax_aura_cal_gcal_revoke_access', [ __CLASS__, 'ajax_revoke_access' ] );
     }
 
     /**
@@ -595,4 +599,285 @@ class Aura_Calendar_Google_Sync {
             wp_send_json_error( $res );
         }
     }
+
+    /**
+     * AJAX: Obtener lista de usuarios compartidos con Google Calendar ACL
+     */
+    public static function ajax_get_shared_users(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        if ( ! self::is_enabled() ) {
+            wp_send_json_error( [ 'message' => __( 'Google Calendar no está configurado.', 'aura' ) ] );
+        }
+
+        $cal_id = self::get_calendar_id();
+        if ( empty( $cal_id ) ) {
+            wp_send_json_error( [ 'message' => __( 'No se pudo obtener el ID del calendario.', 'aura' ) ] );
+        }
+
+        $acl_items = Aura_Google_Calendar::list_acl_rules( $cal_id );
+        
+        global $wpdb;
+        $table_contacts = $wpdb->prefix . 'aura_contacts';
+        $has_contacts_table = ( $wpdb->get_var( "SHOW TABLES LIKE '{$table_contacts}'" ) === $table_contacts );
+
+        // Obtener email de la cuenta de servicio para identificarla
+        $sa_email = '';
+        if ( class_exists( 'Aura_Google_Calendar' ) ) {
+            $creds = Aura_Google_Calendar::get_credentials();
+            $sa_email = strtolower( trim( (string) ( $creds['client_email'] ?? '' ) ) );
+        }
+
+        $users = [];
+        foreach ( $acl_items as $item ) {
+            $scope = $item['scope'] ?? [];
+            $role  = $item['role'] ?? 'reader';
+            $id    = $item['id'] ?? '';
+            $type  = $scope['type'] ?? 'user';
+            $email = $scope['value'] ?? '';
+
+            if ( $type === 'default' ) {
+                continue;
+            }
+
+            $contact_info = null;
+            if ( $has_contacts_table && ! empty( $email ) ) {
+                $contact = $wpdb->get_row( $wpdb->prepare(
+                    "SELECT id, first_name, last_name, company, email_primary, email_secondary, photo_url 
+                     FROM {$table_contacts} 
+                     WHERE (email_primary = %s OR email_secondary = %s) AND is_active = 1 
+                     LIMIT 1",
+                    $email, $email
+                ) );
+
+                if ( $contact ) {
+                    $contact_info = [
+                        'id'         => (int) $contact->id,
+                        'name'       => trim( $contact->first_name . ' ' . $contact->last_name ),
+                        'company'    => $contact->company,
+                        'photo_url'  => $contact->photo_url,
+                        'matched_as' => ( strtolower( (string) $contact->email_primary ) === strtolower( (string) $email ) ) ? 'primary' : 'secondary',
+                    ];
+                }
+            }
+
+            $is_service_account = ( ! empty( $sa_email ) && strtolower( $email ) === $sa_email );
+            $is_owner           = ( $role === 'owner' );
+
+            $users[] = [
+                'rule_id'            => $id,
+                'email'              => $email,
+                'role'               => $role,
+                'role_label'         => ( $role === 'owner' ) ? __( 'Propietario', 'aura' ) : ( ( $role === 'writer' ) ? __( 'Editor (Lectura y Escritura)', 'aura' ) : __( 'Lector (Solo Lectura)', 'aura' ) ),
+                'is_owner'           => $is_owner,
+                'is_service_account' => $is_service_account,
+                'is_deletable'       => ( ! $is_owner && ! $is_service_account ),
+                'contact'            => $contact_info,
+            ];
+        }
+
+        wp_send_json_success( [
+            'users'       => $users,
+            'total'       => count( $users ),
+            'calendar_id' => $cal_id,
+        ] );
+    }
+
+    /**
+     * AJAX: Buscar contactos del Directorio Aura para compartir calendario
+     */
+    public static function ajax_search_contacts_for_share(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        global $wpdb;
+        $table_contacts = $wpdb->prefix . 'aura_contacts';
+
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table_contacts}'" ) !== $table_contacts ) {
+            wp_send_json_error( [ 'message' => __( 'La tabla de contactos de Aura no está disponible.', 'aura' ) ] );
+        }
+
+        $query = isset( $_POST['q'] ) ? sanitize_text_field( wp_unslash( $_POST['q'] ) ) : '';
+        $query_like = '%' . $wpdb->esc_like( $query ) . '%';
+
+        if ( ! empty( $query ) ) {
+            $sql = $wpdb->prepare(
+                "SELECT id, first_name, last_name, company, email_primary, email_secondary, photo_url, category 
+                 FROM {$table_contacts} 
+                 WHERE is_active = 1 
+                   AND ( (email_primary IS NOT NULL AND email_primary != '') OR (email_secondary IS NOT NULL AND email_secondary != '') )
+                   AND ( first_name LIKE %s OR last_name LIKE %s OR company LIKE %s OR email_primary LIKE %s OR email_secondary LIKE %s )
+                 ORDER BY first_name ASC, last_name ASC 
+                 LIMIT 25",
+                $query_like, $query_like, $query_like, $query_like, $query_like
+            );
+        } else {
+            $sql = "SELECT id, first_name, last_name, company, email_primary, email_secondary, photo_url, category 
+                    FROM {$table_contacts} 
+                    WHERE is_active = 1 
+                      AND ( (email_primary IS NOT NULL AND email_primary != '') OR (email_secondary IS NOT NULL AND email_secondary != '') )
+                    ORDER BY first_name ASC, last_name ASC 
+                    LIMIT 20";
+        }
+
+        $results = $wpdb->get_results( $sql );
+        $contacts = [];
+
+        foreach ( $results as $row ) {
+            $name = trim( $row->first_name . ' ' . $row->last_name );
+            if ( empty( $name ) ) {
+                $name = $row->company ?: __( 'Sin Nombre', 'aura' );
+            }
+
+            $emails = [];
+            if ( ! empty( $row->email_primary ) && is_email( $row->email_primary ) ) {
+                $emails[] = [
+                    'type'  => 'primary',
+                    'label' => __( 'Principal', 'aura' ),
+                    'email' => $row->email_primary,
+                ];
+            }
+            if ( ! empty( $row->email_secondary ) && is_email( $row->email_secondary ) ) {
+                $emails[] = [
+                    'type'  => 'secondary',
+                    'label' => __( 'Secundario', 'aura' ),
+                    'email' => $row->email_secondary,
+                ];
+            }
+
+            if ( empty( $emails ) ) {
+                continue;
+            }
+
+            $contacts[] = [
+                'id'        => (int) $row->id,
+                'name'      => $name,
+                'company'   => $row->company,
+                'category'  => $row->category,
+                'photo_url' => $row->photo_url,
+                'emails'    => $emails,
+            ];
+        }
+
+        wp_send_json_success( [ 'contacts' => $contacts ] );
+    }
+
+    /**
+     * AJAX: Compartir calendario con un contacto del Directorio
+     */
+    public static function ajax_share_contact(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        $contact_id = isset( $_POST['contact_id'] ) ? intval( $_POST['contact_id'] ) : 0;
+        $email      = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+        $role       = isset( $_POST['role'] ) ? sanitize_key( wp_unslash( $_POST['role'] ) ) : 'reader';
+        $notify     = ! empty( $_POST['send_notifications'] );
+
+        if ( ! $contact_id || empty( $email ) || ! is_email( $email ) ) {
+            wp_send_json_error( [ 'message' => __( 'Datos de contacto o correo electrónico inválidos.', 'aura' ) ] );
+        }
+
+        // REGLA ESTRICTA: El correo debe pertenecer a un contacto existente en wp_aura_contacts
+        global $wpdb;
+        $table_contacts = $wpdb->prefix . 'aura_contacts';
+        $contact = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id, first_name, last_name, company, email_primary, email_secondary 
+             FROM {$table_contacts} 
+             WHERE id = %d AND is_active = 1 LIMIT 1",
+            $contact_id
+        ) );
+
+        if ( ! $contact ) {
+            wp_send_json_error( [ 'message' => __( 'El contacto especificado no existe o está inactivo en el Directorio de Contactos.', 'aura' ) ] );
+        }
+
+        $primary_match   = ( strtolower( (string) $contact->email_primary ) === strtolower( $email ) );
+        $secondary_match = ( strtolower( (string) $contact->email_secondary ) === strtolower( $email ) );
+
+        if ( ! $primary_match && ! $secondary_match ) {
+            wp_send_json_error( [
+                'message' => __( 'El correo seleccionado no corresponde ni al email principal ni al secundario registrado en el contacto de Aura.', 'aura' ),
+            ] );
+        }
+
+        $cal_id = self::get_calendar_id();
+        if ( empty( $cal_id ) ) {
+            wp_send_json_error( [ 'message' => __( 'No se encontró un calendario de Google activo.', 'aura' ) ] );
+        }
+
+        $res = Aura_Google_Calendar::insert_acl_rule( $cal_id, $email, $role, $notify );
+        if ( ! $res ) {
+            $err = Aura_Google_Calendar::get_last_error();
+            wp_send_json_error( [
+                'message' => sprintf(
+                    __( 'Error al conceder acceso en Google Calendar: %s', 'aura' ),
+                    $err ?: __( 'Error desconocido en la API de Google.', 'aura' )
+                ),
+            ] );
+        }
+
+        $contact_name = trim( $contact->first_name . ' ' . $contact->last_name );
+        if ( empty( $contact_name ) ) {
+            $contact_name = $contact->company ?: $email;
+        }
+
+        wp_send_json_success( [
+            'message' => sprintf(
+                __( '¡Calendario compartido exitosamente con %s (%s) como %s!', 'aura' ),
+                $contact_name,
+                $email,
+                ( $role === 'writer' ) ? __( 'Editor', 'aura' ) : __( 'Lector', 'aura' )
+            ),
+            'rule' => $res,
+        ] );
+    }
+
+    /**
+     * AJAX: Revocar regla de acceso ACL en Google Calendar
+     */
+    public static function ajax_revoke_access(): void {
+        check_ajax_referer( 'aura_cal_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+        }
+
+        $rule_id = isset( $_POST['rule_id'] ) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
+        if ( empty( $rule_id ) ) {
+            wp_send_json_error( [ 'message' => __( 'ID de regla ACL no especificado.', 'aura' ) ] );
+        }
+
+        $cal_id = self::get_calendar_id();
+        if ( empty( $cal_id ) ) {
+            wp_send_json_error( [ 'message' => __( 'No se encontró un calendario de Google activo.', 'aura' ) ] );
+        }
+
+        $success = Aura_Google_Calendar::delete_acl_rule( $cal_id, $rule_id );
+        if ( ! $success ) {
+            $err = Aura_Google_Calendar::get_last_error();
+            wp_send_json_error( [
+                'message' => sprintf(
+                    __( 'No se pudo revocar el acceso en Google Calendar: %s', 'aura' ),
+                    $err ?: __( 'Error en la petición a Google.', 'aura' )
+                ),
+            ] );
+        }
+
+        wp_send_json_success( [
+            'message' => __( 'Acceso revocado de inmediato. El usuario ya no tiene acceso al calendario en Google.', 'aura' ),
+            'rule_id' => $rule_id,
+        ] );
+    }
 }
+

@@ -232,6 +232,72 @@ $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_port
         </div>
 
         <!-- ═════════════════════════════════════════════════════════════
+             2.1 CONTROL DE ACCESOS Y CALENDARIO COMPARTIDO (GOOGLE CALENDAR ACL)
+             ═════════════════════════════════════════════════════════════ -->
+        <div class="adp-card" id="card-gcal-acl-manager" style="padding: 28px; border-radius: 14px; box-shadow: var(--aura-shadow-sm, 0 1px 3px rgba(0,0,0,0.06));">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+                <div>
+                    <span class="adp-badge badge-indigo has-dot" style="margin-bottom: 8px; display: inline-flex;">
+                        <span class="pulse-dot"></span> <?php esc_html_e( 'Gestión Oficial de Permisos ACL', 'aura' ); ?>
+                    </span>
+                    <h3 class="adp-card-title" style="font-size: 19px; margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;">
+                        <span>🛡️</span> <?php esc_html_e( 'Control de Accesos y Calendario Compartido', 'aura' ); ?>
+                    </h3>
+                    <p class="adp-card-desc" style="margin: 0; font-size: 13px;">
+                        <?php esc_html_e( 'Comparte el calendario de clases de forma segura con cuentas de Google autorizadas. Las reglas ACL te permiten revocar el acceso de inmediato a cualquier usuario cuando deje de pertenecer a la organización.', 'aura' ); ?>
+                    </p>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-sm btn-ghost" id="btn-refresh-gcal-acl" style="font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                        <span class="dashicons dashicons-update" style="font-size: 14px; width: 14px; height: 14px;"></span>
+                        <?php esc_html_e( 'Actualizar', 'aura' ); ?>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-indigo btn-lift" id="btn-open-share-contact-modal" style="font-size: 12px; font-weight: 600; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;">
+                        ➕ <?php esc_html_e( 'Compartir con un Contacto', 'aura' ); ?>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Callout Informativo de Trazabilidad con Contactos de Aura -->
+            <div style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div style="font-size: 12.5px; color: var(--aura-text-secondary); line-height: 1.45;">
+                    <strong style="color: var(--aura-text-primary);"><?php esc_html_e( 'Integración con Directorio Maestro de Contactos:', 'aura' ); ?></strong>
+                    <?php esc_html_e( 'Para garantizar la seguridad institucional, solo se puede conceder acceso a personas registradas en el Directorio de Contactos. Si el contacto tiene dos correos registrados, podrás elegir con cuál compartir.', 'aura' ); ?>
+                </div>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-contacts' ) ); ?>" class="btn btn-sm btn-ghost" target="_blank" style="font-size: 12px; white-space: nowrap; text-decoration: none;">
+                    👥 <?php esc_html_e( 'Ir a Directorio de Contactos', 'aura' ); ?> ↗
+                </a>
+            </div>
+
+            <!-- Feedback de ACL -->
+            <div id="gcal-acl-feedback" style="margin-bottom: 16px; display: none;"></div>
+
+            <!-- Tabla de Usuarios Compartidos (ACL) -->
+            <div class="adp-table-responsive" style="border: 1px solid var(--aura-border, #e2e8f0); border-radius: 10px; overflow: hidden; background: #fff;">
+                <table class="adp-table" id="table-gcal-acl-users" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--aura-surface-alt, #f8fafc); border-bottom: 1px solid var(--aura-border, #e2e8f0); text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #64748b);">
+                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Contacto en Directorio', 'aura' ); ?></th>
+                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Cuenta Google / Correo', 'aura' ); ?></th>
+                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Nivel de Permiso', 'aura' ); ?></th>
+                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Origen / Tipo', 'aura' ); ?></th>
+                            <th style="padding: 12px 16px; text-align: right;"><?php esc_html_e( 'Acción', 'aura' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-gcal-acl-users">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 24px; color: var(--aura-text-muted);">
+                                <span class="spinner is-active" style="float: none; margin: 0 8px 0 0;"></span>
+                                <?php esc_html_e( 'Cargando accesos de Google Calendar...', 'aura' ); ?>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═════════════════════════════════════════════════════════════
              3. CATÁLOGO DE EVENTOS GENÉRICOS Y RÁPIDOS (CRUD)
              ═════════════════════════════════════════════════════════════ -->
         <?php
@@ -536,3 +602,119 @@ $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_port
         </form>
     </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL: COMPARTIR CALENDARIO CON CONTACTO DE AURA (GOOGLE CALENDAR ACL)
+     ══════════════════════════════════════════════════════════════════ -->
+<div id="modal-gcal-share-contact" class="aura-modal-overlay" style="display: none;">
+    <div class="aura-modal-container" style="max-width: 560px; border-radius: 16px; overflow: hidden; padding: 0;">
+        
+        <!-- Header con degradado Glassmorphism -->
+        <div class="aura-modal-header" style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #fff; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: none;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px; line-height: 1;">🛡️</span>
+                <div>
+                    <h3 style="margin: 0; font-size: 16.5px; font-weight: 700; color: #fff; line-height: 1.2;">
+                        <?php esc_html_e( 'Compartir Calendario con un Contacto', 'aura' ); ?>
+                    </h3>
+                    <p style="margin: 2px 0 0 0; font-size: 12px; opacity: 0.9; color: rgba(255,255,255,0.9);">
+                        <?php esc_html_e( 'Otorga acceso oficial mediante Google Calendar ACL', 'aura' ); ?>
+                    </p>
+                </div>
+            </div>
+            <button type="button" class="aura-modal-close" data-close-modal="#modal-gcal-share-contact" style="color: #fff; font-size: 20px; line-height: 1; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.15); border: none; cursor: pointer;">&times;</button>
+        </div>
+
+        <form id="form-gcal-share-contact" class="aura-modal-form" style="margin: 0; display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+            <div class="aura-modal-body" style="padding: 22px 24px; overflow-y: auto; max-height: min(72vh, 600px); display: flex; flex-direction: column; gap: 18px;">
+                
+                <!-- Paso 1: Buscador de Contactos -->
+                <div class="form-group" style="margin: 0; position: relative;">
+                    <label class="form-label" for="gcal-search-contact-input" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block; color: var(--aura-text-primary, #0f172a);">
+                        👥 <?php esc_html_e( 'Buscar Contacto en el Directorio', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                    </label>
+                    <div style="position: relative;">
+                        <input type="text" id="gcal-search-contact-input" class="form-control" placeholder="<?php esc_attr_e( 'Escribe nombre, apellido, empresa o correo...', 'aura' ); ?>" autocomplete="off" style="width: 100%; border-radius: 8px; padding-left: 36px; padding-right: 36px; height: 40px; font-size: 13.5px;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; opacity: 0.5;">🔍</span>
+                        <div id="gcal-search-contact-spinner" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: none;">
+                            <span class="spinner is-active" style="float: none; margin: 0;"></span>
+                        </div>
+                    </div>
+                    <small style="font-size: 11.5px; color: var(--aura-text-muted, #64748b); display: block; margin-top: 5px;">
+                        <?php esc_html_e( 'Solo se muestran contactos que tengan al menos un correo electrónico registrado en el Directorio.', 'aura' ); ?>
+                    </small>
+
+                    <!-- Lista desplegable flotante de resultados -->
+                    <div id="gcal-contact-dropdown-results" style="display: none; position: absolute; z-index: 1000; left: 0; right: 0; top: 100%; max-height: 230px; overflow-y: auto; background: #ffffff; border: 1px solid var(--aura-border, #cbd5e1); border-radius: 10px; box-shadow: 0 12px 24px -4px rgba(0,0,0,0.15); margin-top: 6px;"></div>
+                </div>
+
+                <!-- Tarjeta de Contacto Seleccionado -->
+                <div id="gcal-selected-contact-card" style="display: none; background: rgba(79, 70, 229, 0.05); border: 1px solid rgba(79, 70, 229, 0.3); border-radius: 10px; padding: 14px 16px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div id="gcal-selected-avatar" style="width: 44px; height: 44px; border-radius: 50%; background: #4f46e5; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; overflow: hidden; flex-shrink: 0; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"></div>
+                            <div>
+                                <h4 id="gcal-selected-name" style="margin: 0 0 2px 0; font-size: 14px; font-weight: 700; color: var(--aura-text-primary, #0f172a);"></h4>
+                                <span id="gcal-selected-meta" style="font-size: 12px; color: var(--aura-text-secondary, #475569);"></span>
+                            </div>
+                        </div>
+                        <button type="button" id="btn-gcal-unselect-contact" class="btn btn-ghost btn-sm" style="font-size: 12px; padding: 4px 10px; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;">
+                            ✕ <?php esc_html_e( 'Cambiar', 'aura' ); ?>
+                        </button>
+                    </div>
+                </div>
+
+                <input type="hidden" name="contact_id" id="gcal-share-contact-id" value="">
+
+                <!-- Paso 2: Selector de Correo Electrónico (cuando tiene 1 o 2) -->
+                <div id="gcal-email-selection-container" style="display: none;">
+                    <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block; color: var(--aura-text-primary, #0f172a);">
+                        ✉️ <?php esc_html_e( 'Selecciona la Cuenta / Correo para Compartir', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                    </label>
+                    <div id="gcal-email-options-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                    <small style="font-size: 11.5px; color: var(--aura-text-muted, #64748b); display: block; margin-top: 6px;">
+                        <?php esc_html_e( 'Elige la cuenta con la que este contacto iniciará sesión en Google Calendar.', 'aura' ); ?>
+                    </small>
+                </div>
+
+                <!-- Paso 3: Selector de Nivel de Rol / Permiso -->
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label" for="gcal-share-role" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block; color: var(--aura-text-primary, #0f172a);">
+                        🔑 <?php esc_html_e( 'Nivel de Permiso (Rol ACL en Google Calendar)', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                    </label>
+                    <select name="role" id="gcal-share-role" class="form-control" style="width: 100%; border-radius: 8px; height: 40px; font-size: 13.5px;">
+                        <option value="reader" selected>👁️ <?php esc_html_e( 'Lector (Solo Lectura) — Consulta eventos y horarios (Recomendado para Docentes/Alumnos)', 'aura' ); ?></option>
+                        <option value="writer">✏️ <?php esc_html_e( 'Editor (Lectura y Escritura) — Puede crear, editar y mover clases en Google Calendar', 'aura' ); ?></option>
+                    </select>
+                </div>
+
+                <!-- Paso 4: Enviar Notificación de Invitación -->
+                <div style="background: var(--aura-surface-alt, #f8fafc); padding: 12px 14px; border-radius: 10px; border: 1px solid var(--aura-border, #e2e8f0);">
+                    <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; cursor: pointer; margin: 0;">
+                        <input type="checkbox" name="send_notifications" id="gcal-share-notifications" value="1" checked style="margin-top: 3px;">
+                        <div>
+                            <strong style="display: block; color: var(--aura-text-primary, #0f172a); font-size: 13px;"><?php esc_html_e( 'Enviar correo oficial de invitación desde Google', 'aura' ); ?></strong>
+                            <span style="font-size: 12px; color: var(--aura-text-secondary, #475569); display: block; line-height: 1.4;">
+                                <?php esc_html_e( 'Google Calendar enviará un correo automático con el botón "Añadir este calendario" a la cuenta seleccionada.', 'aura' ); ?>
+                            </span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Mensajes de feedback dentro del modal -->
+                <div id="modal-gcal-share-feedback" style="display: none;"></div>
+
+            </div>
+
+            <div class="aura-modal-footer" style="padding: 16px 24px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--aura-border, #e2e8f0); background: #fafafa; flex-shrink: 0;">
+                <button type="button" class="btn btn-ghost" data-close-modal="#modal-gcal-share-contact" style="padding: 8px 16px; font-size: 13px;">
+                    <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                </button>
+                <button type="submit" class="btn btn-indigo btn-lift" id="btn-confirm-gcal-share" disabled style="font-weight: 600; padding: 8px 22px; font-size: 13.5px;">
+                    🚀 <?php esc_html_e( 'Conceder Acceso y Compartir', 'aura' ); ?>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
