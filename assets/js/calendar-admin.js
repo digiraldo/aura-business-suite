@@ -1075,7 +1075,7 @@
         var progId = $(this).val();
         var $subSelect = $('#filter-subject');
 
-        $subSelect.html('<option value="">Todas las materias</option>');
+        $subSelect.html('<option value="">' + (auraCalData.i18n && auraCalData.i18n.all_subjects ? auraCalData.i18n.all_subjects : 'Materia: Todas') + '</option>');
 
         if (progId) {
             $.post(auraCalData.ajax_url, {
@@ -1103,8 +1103,9 @@
 
     $('#btn-filter-reset').on('click', function() {
         $('#filter-program').val('');
-        $('#filter-subject').html('<option value="">Todas las materias</option>').val('');
+        $('#filter-subject').html('<option value="">' + (auraCalData.i18n && auraCalData.i18n.all_subjects ? auraCalData.i18n.all_subjects : 'Materia: Todas') + '</option>').val('');
         $('#filter-event-type').val('');
+        $('#filter-assignment-status').val('');
         if (calendar) calendar.refetchEvents();
     });
 

@@ -22,18 +22,21 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
 <div class="aura-calendar-view-container">
 
-    <!-- ── BARRA DE FILTROS SUPERIOR ── -->
-    <div class="adp-card aura-calendar-filter-bar" style="padding: 16px 20px; margin-bottom: 20px; border-radius: 12px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 12px; flex: 1;">
-                
+    <!-- ── BARRA DE FILTROS SUPERIOR (COMPACT TOOLBAR) ── -->
+    <div class="adp-card aura-calendar-filter-bar">
+        <div class="aura-cal-toolbar-inner">
+            <!-- Zona de Filtros Rápidos -->
+            <div class="aura-cal-filters-group">
+                <span class="aura-cal-filter-header" title="<?php esc_attr_e( 'Filtros del Calendario', 'aura' ); ?>">
+                    <span class="dashicons dashicons-filter" style="font-size: 15px; width: 15px; height: 15px; line-height: 15px;"></span>
+                    <span class="aura-cal-filter-label-text"><?php esc_html_e( 'Filtros', 'aura' ); ?></span>
+                </span>
+
                 <!-- Filtro Programa -->
-                <div style="min-width: 220px;">
-                    <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #64748b); margin-bottom: 4px; display: block;">
-                        🎓 <?php esc_html_e( 'Programa', 'aura' ); ?>
-                    </label>
-                    <select id="filter-program" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; font-size: 13px;">
-                        <option value=""><?php esc_html_e( 'Todos los programas', 'aura' ); ?></option>
+                <div class="aura-cal-filter-item" title="<?php esc_attr_e( 'Filtrar por Programa', 'aura' ); ?>">
+                    <span class="aura-cal-item-icon" aria-hidden="true">🎓</span>
+                    <select id="filter-program" class="aura-cal-select" aria-label="<?php esc_attr_e( 'Programa', 'aura' ); ?>">
+                        <option value=""><?php esc_html_e( 'Programa: Todos', 'aura' ); ?></option>
                         <?php foreach ( $programs as $p ) : ?>
                             <option value="<?php echo esc_attr( $p->id ); ?>" data-color="<?php echo esc_attr( $p->color ); ?>">
                                 <?php echo esc_html( $p->name . ( ! empty( $p->code ) ? ' (' . $p->code . ')' : '' ) ); ?>
@@ -43,65 +46,66 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                 </div>
 
                 <!-- Filtro Materia -->
-                <div style="min-width: 200px;">
-                    <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #64748b); margin-bottom: 4px; display: block;">
-                        📚 <?php esc_html_e( 'Materia', 'aura' ); ?>
-                    </label>
-                    <select id="filter-subject" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; font-size: 13px;">
-                        <option value=""><?php esc_html_e( 'Todas las materias', 'aura' ); ?></option>
+                <div class="aura-cal-filter-item" title="<?php esc_attr_e( 'Filtrar por Materia', 'aura' ); ?>">
+                    <span class="aura-cal-item-icon" aria-hidden="true">📚</span>
+                    <select id="filter-subject" class="aura-cal-select" aria-label="<?php esc_attr_e( 'Materia', 'aura' ); ?>">
+                        <option value=""><?php esc_html_e( 'Materia: Todas', 'aura' ); ?></option>
                     </select>
                 </div>
 
                 <!-- Filtro Tipo de Evento -->
-                <div style="min-width: 170px;">
-                    <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #64748b); margin-bottom: 4px; display: block;">
-                        📌 <?php esc_html_e( 'Tipo de Evento', 'aura' ); ?>
-                    </label>
-                    <select id="filter-event-type" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; font-size: 13px;">
-                        <option value=""><?php esc_html_e( 'Todos los tipos', 'aura' ); ?></option>
+                <div class="aura-cal-filter-item" title="<?php esc_attr_e( 'Filtrar por Tipo de Evento', 'aura' ); ?>">
+                    <span class="aura-cal-item-icon" aria-hidden="true">📌</span>
+                    <select id="filter-event-type" class="aura-cal-select" aria-label="<?php esc_attr_e( 'Tipo de Evento', 'aura' ); ?>">
+                        <option value=""><?php esc_html_e( 'Tipo: Todos', 'aura' ); ?></option>
                         <option value="class">📖 <?php esc_html_e( 'Clases regulares', 'aura' ); ?></option>
-                        <option value="exam">📝 <?php esc_html_e( 'Exámenes / Evaluaciones', 'aura' ); ?></option>
+                        <option value="exam">📝 <?php esc_html_e( 'Exámenes', 'aura' ); ?></option>
                         <option value="workshop">🔬 <?php esc_html_e( 'Talleres / Prácticas', 'aura' ); ?></option>
                         <option value="activity">🎯 <?php esc_html_e( 'Actividades', 'aura' ); ?></option>
-                        <option value="break">☕ <?php esc_html_e( 'Recesos / Descansos', 'aura' ); ?></option>
+                        <option value="break">☕ <?php esc_html_e( 'Recesos', 'aura' ); ?></option>
                     </select>
                 </div>
 
                 <!-- Filtro Asignación al Calendario -->
-                <div style="min-width: 170px;">
-                    <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #64748b); margin-bottom: 4px; display: block;">
-                        📋 <?php esc_html_e( 'Asignación', 'aura' ); ?>
-                    </label>
-                    <select id="filter-assignment-status" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; font-size: 13px;">
-                        <option value=""><?php esc_html_e( 'Todas las clases', 'aura' ); ?></option>
-                        <option value="unassigned"><?php esc_html_e( '⏳ Sin agendar / Pendientes', 'aura' ); ?></option>
+                <div class="aura-cal-filter-item" title="<?php esc_attr_e( 'Filtrar por Asignación', 'aura' ); ?>">
+                    <span class="aura-cal-item-icon" aria-hidden="true">📋</span>
+                    <select id="filter-assignment-status" class="aura-cal-select" aria-label="<?php esc_attr_e( 'Asignación', 'aura' ); ?>">
+                        <option value=""><?php esc_html_e( 'Asignación: Todas', 'aura' ); ?></option>
+                        <option value="unassigned"><?php esc_html_e( '⏳ Sin agendar', 'aura' ); ?></option>
                     </select>
                 </div>
+
+                <!-- Botón Reset filtros compacto -->
+                <button type="button" id="btn-filter-reset" class="aura-cal-btn-icon-subtle" title="<?php esc_attr_e( 'Restablecer todos los filtros', 'aura' ); ?>" aria-label="<?php esc_attr_e( 'Limpiar Filtros', 'aura' ); ?>">
+                    <span class="dashicons dashicons-image-rotate" style="font-size: 15px; width: 15px; height: 15px; line-height: 15px;"></span>
+                    <span class="btn-text-sm"><?php esc_html_e( 'Limpiar', 'aura' ); ?></span>
+                </button>
             </div>
 
-            <!-- Acciones rápidas de vista -->
-            <div style="display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;">
+            <!-- Zona de Acciones Rápidas -->
+            <div class="aura-cal-actions-group">
                 <?php if ( current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-                    <button type="button" id="btn-toggle-unassigned-drawer" class="btn btn-secondary btn-lift" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--aura-border, #cbd5e1);" title="<?php esc_attr_e( 'Ver materias pendientes de programar y arrastrarlas al calendario', 'aura' ); ?>">
-                        <span>📦</span> <span><?php esc_html_e( 'Materias Pendientes', 'aura' ); ?></span>
-                        <span id="unassigned-badge-count" style="background: #ef4444; color: #fff; font-size: 11px; padding: 1px 7px; border-radius: 10px; font-weight: 700; margin-left: 2px;">0</span>
+                    <button type="button" id="btn-toggle-unassigned-drawer" class="aura-cal-action-btn btn-unassigned-toggle" title="<?php esc_attr_e( 'Ver materias pendientes de programar y arrastrarlas al calendario', 'aura' ); ?>">
+                        <span class="btn-icon">📦</span>
+                        <span class="btn-label"><?php esc_html_e( 'Pendientes', 'aura' ); ?></span>
+                        <span id="unassigned-badge-count" class="aura-unassigned-pill">0</span>
                     </button>
 
-                    <button type="button" id="btn-create-event-modal" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;" title="<?php esc_attr_e( 'Crear nuevo evento en el calendario', 'aura' ); ?>">
-                        ➕ <?php esc_html_e( 'Crear Evento', 'aura' ); ?>
+                    <button type="button" id="btn-create-event-modal" class="aura-cal-action-btn btn-primary-event btn-trigger-agendar" title="<?php esc_attr_e( 'Crear nuevo evento en el calendario', 'aura' ); ?>">
+                        <span class="btn-icon">➕</span>
+                        <span class="btn-label"><?php esc_html_e( 'Crear Evento', 'aura' ); ?></span>
                     </button>
                 <?php endif; ?>
 
-                <button type="button" id="btn-filter-reset" class="btn btn-ghost" style="padding: 8px 14px; font-size: 13px;">
-                    🧹 <?php esc_html_e( 'Limpiar Filtros', 'aura' ); ?>
+                <button type="button" id="btn-toggle-fullscreen" class="aura-cal-action-btn btn-ghost-compact" title="<?php esc_attr_e( 'Ver calendario en pantalla completa', 'aura' ); ?>">
+                    <span class="btn-icon">⛶</span>
+                    <span class="btn-label-responsive"><?php esc_html_e( 'Pantalla Completa', 'aura' ); ?></span>
                 </button>
 
-                <button type="button" id="btn-toggle-fullscreen" class="btn btn-ghost" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;" title="<?php esc_attr_e( 'Ver calendario en pantalla completa', 'aura' ); ?>">
-                    ⛶ <?php esc_html_e( 'Pantalla Completa', 'aura' ); ?>
-                </button>
-
-                <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer" id="btn-open-gcal" class="btn btn-ghost aura-btn-gcal-link" style="padding: 8px 14px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: inherit;" title="<?php esc_attr_e( 'Abrir esta misma fecha y vista en Google Calendar', 'aura' ); ?>">
-                    <span style="font-size: 14px;">📅</span> <?php esc_html_e( 'Google Calendar', 'aura' ); ?> ↗
+                <a href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener noreferrer" id="btn-open-gcal" class="aura-cal-action-btn btn-ghost-compact aura-btn-gcal-link" title="<?php esc_attr_e( 'Abrir esta misma fecha y vista en Google Calendar', 'aura' ); ?>">
+                    <span class="btn-icon">📅</span>
+                    <span class="btn-label-responsive"><?php esc_html_e( 'Google Cal', 'aura' ); ?></span>
+                    <span class="btn-arrow" style="font-size: 11px; opacity: 0.7;">↗</span>
                 </a>
             </div>
         </div>
