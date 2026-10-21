@@ -189,11 +189,15 @@ class Aura_Contacts_Import_Export {
         foreach ( (array) $rows as $r ) {
             $tags_str = '';
             if ( ! empty( $r['tags'] ) ) {
-                $decoded = json_decode( $r['tags'], true );
-                if ( is_array( $decoded ) ) {
-                    $tags_str = implode( ', ', $decoded );
-                } else {
-                    $tags_str = (string) $r['tags'];
+                if ( is_array( $r['tags'] ) ) {
+                    $tags_str = implode( ', ', $r['tags'] );
+                } elseif ( is_string( $r['tags'] ) ) {
+                    $decoded = json_decode( $r['tags'], true );
+                    if ( is_array( $decoded ) ) {
+                        $tags_str = implode( ', ', $decoded );
+                    } else {
+                        $tags_str = (string) $r['tags'];
+                    }
                 }
             }
 
@@ -341,10 +345,16 @@ class Aura_Contacts_Import_Export {
                 $groups[] = ucfirst( $r['category'] );
             }
             if ( ! empty( $r['tags'] ) ) {
-                $tags_arr = json_decode( $r['tags'], true );
-                if ( is_array( $tags_arr ) ) {
-                    foreach ( $tags_arr as $t ) {
+                if ( is_array( $r['tags'] ) ) {
+                    foreach ( $r['tags'] as $t ) {
                         $groups[] = trim( $t );
+                    }
+                } elseif ( is_string( $r['tags'] ) ) {
+                    $tags_arr = json_decode( $r['tags'], true );
+                    if ( is_array( $tags_arr ) ) {
+                        foreach ( $tags_arr as $t ) {
+                            $groups[] = trim( $t );
+                        }
                     }
                 }
             }
@@ -571,8 +581,12 @@ class Aura_Contacts_Import_Export {
             'contacts'          => array_map( function( $r ) {
                 $tags_arr = array();
                 if ( ! empty( $r['tags'] ) ) {
-                    $decoded = json_decode( $r['tags'], true );
-                    $tags_arr = is_array( $decoded ) ? $decoded : array( $r['tags'] );
+                    if ( is_array( $r['tags'] ) ) {
+                        $tags_arr = $r['tags'];
+                    } elseif ( is_string( $r['tags'] ) ) {
+                        $decoded = json_decode( $r['tags'], true );
+                        $tags_arr = is_array( $decoded ) ? $decoded : array( $r['tags'] );
+                    }
                 }
                 return array(
                     'id'                   => (int) $r['id'],

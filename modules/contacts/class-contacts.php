@@ -1356,9 +1356,13 @@ class Aura_Contacts {
 
         $tags = array();
         if ( ! empty( $row['tags'] ) ) {
-            $decoded = json_decode( $row['tags'], true );
-            if ( is_array( $decoded ) ) {
-                $tags = $decoded;
+            if ( is_array( $row['tags'] ) ) {
+                $tags = $row['tags'];
+            } elseif ( is_string( $row['tags'] ) ) {
+                $decoded = json_decode( $row['tags'], true );
+                if ( is_array( $decoded ) ) {
+                    $tags = $decoded;
+                }
             }
         }
 
@@ -2080,7 +2084,7 @@ class Aura_Contacts {
 
         $submitted_email = sanitize_email( $sub['submitted_email'] ?? '' );
         $submitted_name  = sanitize_text_field( $sub['submitted_name'] ?? '' );
-        $data_json       = json_decode( $sub['data_json'] ?? '{}', true ) ?: array();
+        $data_json       = is_array( $sub['data_json'] ?? null ) ? $sub['data_json'] : ( json_decode( (string) ( $sub['data_json'] ?? '{}' ), true ) ?: array() );
 
         // Si no hay email en las columnas directas, intentar extraer de data_json
         if ( empty( $submitted_email ) ) {
