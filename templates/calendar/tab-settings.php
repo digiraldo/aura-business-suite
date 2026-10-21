@@ -28,7 +28,7 @@ $all_wp_pages           = get_pages( [ 'post_status' => 'publish', 'sort_column'
 $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_portal_page_id ) : '';
 ?>
 
-<div class="aura-calendar-settings-container" style="max-width: 920px;">
+<div class="aura-calendar-settings-container" style="width: 100%; max-width: 100%; box-sizing: border-box;">
 
     <form id="form-calendar-settings" style="display: flex; flex-direction: column; gap: 24px;">
 
@@ -232,62 +232,109 @@ $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_port
         </div>
 
         <!-- ═════════════════════════════════════════════════════════════
-             2.1 CONTROL DE ACCESOS Y CALENDARIO COMPARTIDO (GOOGLE CALENDAR ACL)
+             2.1 CONTROL DE ACCESOS Y CALENDARIO COMPARTIDO (GOOGLE CALENDAR ACL - FULL CRUD)
              ═════════════════════════════════════════════════════════════ -->
-        <div class="adp-card" id="card-gcal-acl-manager" style="padding: 28px; border-radius: 14px; box-shadow: var(--aura-shadow-sm, 0 1px 3px rgba(0,0,0,0.06));">
-            <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+        <div class="adp-card" id="card-gcal-acl-manager" style="padding: 28px; border-radius: 14px; box-shadow: var(--aura-shadow-sm, 0 1px 3px rgba(0,0,0,0.06)); background: #ffffff;">
+            
+            <!-- Encabezado con Título y Acciones Principales -->
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
                 <div>
                     <span class="adp-badge badge-indigo has-dot" style="margin-bottom: 8px; display: inline-flex;">
-                        <span class="pulse-dot"></span> <?php esc_html_e( 'Gestión Oficial de Permisos ACL', 'aura' ); ?>
+                        <span class="pulse-dot"></span> <?php esc_html_e( 'Gestión Oficial de Permisos ACL — Google Calendar', 'aura' ); ?>
                     </span>
-                    <h3 class="adp-card-title" style="font-size: 19px; margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;">
+                    <h3 class="adp-card-title" style="font-size: 20px; margin: 0 0 6px 0; display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--aura-text-primary, #0f172a);">
                         <span>🛡️</span> <?php esc_html_e( 'Control de Accesos y Calendario Compartido', 'aura' ); ?>
                     </h3>
-                    <p class="adp-card-desc" style="margin: 0; font-size: 13px;">
-                        <?php esc_html_e( 'Comparte el calendario de clases de forma segura con cuentas de Google autorizadas. Las reglas ACL te permiten revocar el acceso de inmediato a cualquier usuario cuando deje de pertenecer a la organización.', 'aura' ); ?>
+                    <p class="adp-card-desc" style="margin: 0; font-size: 13.5px; color: var(--aura-text-secondary, #475569); max-width: 860px; line-height: 1.5;">
+                        <?php esc_html_e( 'Gestiona de extremo a extremo (CRUD) los permisos del calendario en Google Calendar vinculado al Directorio de Contactos de Aura. Puedes conceder accesos, alternar roles entre Lector y Editor con 1 clic en tiempo real, o revocar de inmediato cuando un colaborador finalice su ciclo.', 'aura' ); ?>
                     </p>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-sm btn-ghost" id="btn-refresh-gcal-acl" style="font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;">
-                        <span class="dashicons dashicons-update" style="font-size: 14px; width: 14px; height: 14px;"></span>
-                        <?php esc_html_e( 'Actualizar', 'aura' ); ?>
+                    <button type="button" class="btn btn-sm btn-ghost" id="btn-refresh-gcal-acl" style="font-size: 12.5px; padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border-radius: 8px;">
+                        <span class="dashicons dashicons-update" style="font-size: 15px; width: 15px; height: 15px;"></span>
+                        <?php esc_html_e( 'Sincronizar Lista', 'aura' ); ?>
                     </button>
-                    <button type="button" class="btn btn-sm btn-indigo btn-lift" id="btn-open-share-contact-modal" style="font-size: 12px; font-weight: 600; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;">
-                        ➕ <?php esc_html_e( 'Compartir con un Contacto', 'aura' ); ?>
+                    <button type="button" class="btn btn-sm btn-indigo btn-lift" id="btn-open-share-contact-modal" style="font-size: 13px; font-weight: 700; padding: 8px 18px; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; box-shadow: 0 4px 12px rgba(79,70,229,0.25);">
+                        <span>➕</span> <?php esc_html_e( 'Compartir con un Contacto', 'aura' ); ?>
                     </button>
                 </div>
             </div>
 
-            <!-- Callout Informativo de Trazabilidad con Contactos de Aura -->
-            <div style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                <div style="font-size: 12.5px; color: var(--aura-text-secondary); line-height: 1.45;">
-                    <strong style="color: var(--aura-text-primary);"><?php esc_html_e( 'Integración con Directorio Maestro de Contactos:', 'aura' ); ?></strong>
-                    <?php esc_html_e( 'Para garantizar la seguridad institucional, solo se puede conceder acceso a personas registradas en el Directorio de Contactos. Si el contacto tiene dos correos registrados, podrás elegir con cuál compartir.', 'aura' ); ?>
+            <!-- Resumen de Métricas / KPI Badges de Accesos -->
+            <div id="gcal-acl-kpis-bar" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; padding: 12px 18px; background: var(--aura-surface-alt, #f8fafc); border: 1px solid var(--aura-border, #e2e8f0); border-radius: 12px;">
+                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--aura-text-muted, #64748b); margin-right: 6px;">
+                    <?php esc_html_e( 'Estado ACL:', 'aura' ); ?>
                 </div>
-                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-contacts' ) ); ?>" class="btn btn-sm btn-ghost" target="_blank" style="font-size: 12px; white-space: nowrap; text-decoration: none;">
-                    👥 <?php esc_html_e( 'Ir a Directorio de Contactos', 'aura' ); ?> ↗
+                <div id="kpi-badge-total" class="adp-badge badge-ghost" style="font-size: 12px; font-weight: 600; padding: 4px 10px;">
+                    📊 <?php esc_html_e( 'Total:', 'aura' ); ?> <span id="kpi-count-total" style="font-weight: 700; margin-left: 4px;">0</span>
+                </div>
+                <div id="kpi-badge-writers" class="adp-badge badge-indigo" style="font-size: 12px; font-weight: 600; padding: 4px 10px;">
+                    ✏️ <?php esc_html_e( 'Editores:', 'aura' ); ?> <span id="kpi-count-writers" style="font-weight: 700; margin-left: 4px;">0</span>
+                </div>
+                <div id="kpi-badge-readers" class="adp-badge badge-blue" style="font-size: 12px; font-weight: 600; padding: 4px 10px; background: rgba(59,130,246,0.1); color: #1d4ed8;">
+                    👁️ <?php esc_html_e( 'Lectores:', 'aura' ); ?> <span id="kpi-count-readers" style="font-weight: 700; margin-left: 4px;">0</span>
+                </div>
+                <div id="kpi-badge-contacts" class="adp-badge badge-emerald" style="font-size: 12px; font-weight: 600; padding: 4px 10px;">
+                    ✓ <?php esc_html_e( 'Directorio Aura:', 'aura' ); ?> <span id="kpi-count-contacts" style="font-weight: 700; margin-left: 4px;">0</span>
+                </div>
+                <div id="kpi-badge-system" class="adp-badge badge-ghost" style="font-size: 12px; font-weight: 600; padding: 4px 10px; opacity: 0.85;">
+                    ⚙️ <?php esc_html_e( 'Sistema / API:', 'aura' ); ?> <span id="kpi-count-system" style="font-weight: 700; margin-left: 4px;">0</span>
+                </div>
+            </div>
+
+            <!-- Callout Informativo de Trazabilidad con Contactos de Aura -->
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(59, 130, 246, 0.04) 100%); border: 1px solid rgba(99, 102, 241, 0.22); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                <div style="font-size: 13px; color: var(--aura-text-secondary, #334155); line-height: 1.5; max-width: 820px;">
+                    <strong style="color: var(--aura-primary, #4f46e5); display: inline-flex; align-items: center; gap: 6px;">
+                        <span>👥</span> <?php esc_html_e( 'Directorio Maestro de Contactos:', 'aura' ); ?>
+                    </strong>
+                    <?php esc_html_e( 'Para maximizar la trazabilidad y seguridad institucional, las invitaciones se cruzan directamente con la ficha de Contactos de Aura Suite. Si el contacto cuenta con correo principal o secundario, puedes auditarlo y cambiar su rol de lectura/escritura de forma reactiva sin interrumpir la sincronización.', 'aura' ); ?>
+                </div>
+                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-contacts' ) ); ?>" class="btn btn-sm btn-ghost btn-lift" target="_blank" style="font-size: 12px; white-space: nowrap; text-decoration: none; font-weight: 600; padding: 6px 14px; border: 1px solid rgba(99,102,241,0.25); border-radius: 8px;">
+                    👥 <?php esc_html_e( 'Gestionar Contactos', 'aura' ); ?> ↗
                 </a>
+            </div>
+
+            <!-- Barra de Búsqueda y Filtros Rápidos en Vivo -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                <div style="position: relative; flex: 1; min-width: 260px; max-width: 440px;">
+                    <input type="text" id="gcal-acl-filter-search" class="form-control" placeholder="<?php esc_attr_e( 'Filtrar por nombre, correo o empresa...', 'aura' ); ?>" style="width: 100%; border-radius: 8px; padding-left: 36px; height: 38px; font-size: 13px;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; opacity: 0.5;">🔍</span>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label for="gcal-acl-filter-role" style="font-size: 12.5px; font-weight: 600; color: var(--aura-text-secondary, #64748b);">
+                        <?php esc_html_e( 'Filtrar rol:', 'aura' ); ?>
+                    </label>
+                    <select id="gcal-acl-filter-role" class="form-control" style="border-radius: 8px; height: 38px; font-size: 12.5px; padding: 0 12px; min-width: 170px;">
+                        <option value="all"><?php esc_html_e( 'Todos los Roles', 'aura' ); ?></option>
+                        <option value="owner"><?php esc_html_e( '👑 Propietarios', 'aura' ); ?></option>
+                        <option value="writer"><?php esc_html_e( '✏️ Editores (Escritura)', 'aura' ); ?></option>
+                        <option value="reader"><?php esc_html_e( '👁️ Lectores (Solo Lectura)', 'aura' ); ?></option>
+                        <option value="contacts_only"><?php esc_html_e( '✓ Solo Directorio Aura', 'aura' ); ?></option>
+                    </select>
+                </div>
             </div>
 
             <!-- Feedback de ACL -->
             <div id="gcal-acl-feedback" style="margin-bottom: 16px; display: none;"></div>
 
-            <!-- Tabla de Usuarios Compartidos (ACL) -->
-            <div class="adp-table-responsive" style="border: 1px solid var(--aura-border, #e2e8f0); border-radius: 10px; overflow: hidden; background: #fff;">
+            <!-- Tabla de Usuarios Compartidos (ACL - Full CRUD) -->
+            <div class="adp-table-responsive" style="border: 1px solid var(--aura-border, #e2e8f0); border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
                 <table class="adp-table" id="table-gcal-acl-users" style="width: 100%; border-collapse: collapse;">
                     <thead>
-                        <tr style="background: var(--aura-surface-alt, #f8fafc); border-bottom: 1px solid var(--aura-border, #e2e8f0); text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #64748b);">
-                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Contacto en Directorio', 'aura' ); ?></th>
-                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Cuenta Google / Correo', 'aura' ); ?></th>
-                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Nivel de Permiso', 'aura' ); ?></th>
-                            <th style="padding: 12px 16px;"><?php esc_html_e( 'Origen / Tipo', 'aura' ); ?></th>
-                            <th style="padding: 12px 16px; text-align: right;"><?php esc_html_e( 'Acción', 'aura' ); ?></th>
+                        <tr style="background: var(--aura-surface-alt, #f8fafc); border-bottom: 2px solid var(--aura-border, #e2e8f0); text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary, #475569);">
+                            <th style="padding: 14px 18px; width: 32%;"><?php esc_html_e( 'Contacto en Directorio', 'aura' ); ?></th>
+                            <th style="padding: 14px 18px; width: 28%;"><?php esc_html_e( 'Cuenta Google Autorizada', 'aura' ); ?></th>
+                            <th style="padding: 14px 18px; width: 20%;"><?php esc_html_e( 'Nivel de Permiso (Rol)', 'aura' ); ?></th>
+                            <th style="padding: 14px 18px; width: 10%;"><?php esc_html_e( 'Trazabilidad', 'aura' ); ?></th>
+                            <th style="padding: 14px 18px; text-align: right; width: 10%;"><?php esc_html_e( 'Acciones', 'aura' ); ?></th>
                         </tr>
                     </thead>
                     <tbody id="tbody-gcal-acl-users">
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 24px; color: var(--aura-text-muted);">
+                            <td colspan="5" style="text-align: center; padding: 32px; color: var(--aura-text-muted);">
                                 <span class="spinner is-active" style="float: none; margin: 0 8px 0 0;"></span>
                                 <?php esc_html_e( 'Cargando accesos de Google Calendar...', 'aura' ); ?>
                             </td>

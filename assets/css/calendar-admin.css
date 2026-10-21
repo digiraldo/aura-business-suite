@@ -4220,4 +4220,47 @@ body.aura-dark-mode .aura-drag-title {
     position: relative !important;
 }
 
+/* ── GESTIÓN DE CONTROL DE ACCESOS (GOOGLE CALENDAR ACL) ── */
+.aura-calendar-settings-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.aura-calendar-settings-container .adp-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+#table-gcal-acl-users tbody tr:hover {
+    background-color: rgba(248, 250, 252, 0.8) !important;
+}
+
+.gcal-change-acl-role {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gcal-change-acl-role:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+    outline: none !important;
+}
+
+.btn-revoke-gcal-acl:hover {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border-color: #ef4444 !important;
+    color: #dc2626 !important;
+}
+
+.btn-copy-gcal-email:hover {
+    background: rgba(99, 102, 241, 0.1) !important;
+    color: #4f46e5 !important;
+}
+
+#gcal-acl-kpis-bar .adp-badge {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+
 

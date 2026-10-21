@@ -4684,10 +4684,183 @@
     });
 
     // ─────────────────────────────────────────────────────────────
-    // GESTIÓN DE CONTROL DE ACCESOS (GOOGLE CALENDAR ACL)
+    // GESTIÓN DE CONTROL DE ACCESOS (GOOGLE CALENDAR ACL - FULL CRUD)
     // ─────────────────────────────────────────────────────────────
     var gcalAclContactsCache = [];
+    var gcalAclUsersCache = [];
     var gcalSearchTimer = null;
+
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function updateGCalAclKpis(users) {
+        users = users || [];
+        var total = users.length;
+        var writers = 0;
+        var readers = 0;
+        var contacts = 0;
+        var system = 0;
+
+        users.forEach(function(u) {
+            if (u.role === 'writer') {
+                writers++;
+            } else if (u.role === 'reader' && !u.is_owner) {
+                readers++;
+            }
+            if (u.contact) {
+                contacts++;
+            }
+            if (u.is_service_account || u.is_owner) {
+                system++;
+            }
+        });
+
+        $('#kpi-count-total').text(total);
+        $('#kpi-count-writers').text(writers);
+        $('#kpi-count-readers').text(readers);
+        $('#kpi-count-contacts').text(contacts);
+        $('#kpi-count-system').text(system);
+    }
+
+    function renderGCalAclTable() {
+        var $tbody = $('#tbody-gcal-acl-users');
+        if (!$tbody.length) return;
+
+        var searchQuery = ($('#gcal-acl-filter-search').val() || '').toLowerCase().trim();
+        var roleFilter = $('#gcal-acl-filter-role').val() || 'all';
+
+        var filtered = gcalAclUsersCache.filter(function(u) {
+            // Filtro de rol
+            if (roleFilter === 'owner' && !u.is_owner) return false;
+            if (roleFilter === 'writer' && u.role !== 'writer') return false;
+            if (roleFilter === 'reader' && (u.role !== 'reader' || u.is_owner)) return false;
+            if (roleFilter === 'contacts_only' && !u.contact) return false;
+
+            // Filtro de búsqueda
+            if (searchQuery) {
+                var emailMatch = (u.email || '').toLowerCase().indexOf(searchQuery) !== -1;
+                var nameMatch = u.contact && (u.contact.name || '').toLowerCase().indexOf(searchQuery) !== -1;
+                var companyMatch = u.contact && (u.contact.company || '').toLowerCase().indexOf(searchQuery) !== -1;
+                if (!emailMatch && !nameMatch && !companyMatch) return false;
+            }
+
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            if (gcalAclUsersCache.length === 0) {
+                $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 36px 20px; color: var(--aura-text-muted); font-size: 13.5px;">' +
+                    '<div style="font-size: 28px; margin-bottom: 8px;">🛡️</div>' +
+                    '<strong>No hay usuarios ni accesos compartidos adicionales en Google Calendar.</strong><br>' +
+                    '<span style="font-size: 12.5px; opacity: 0.85; margin-top: 4px; display: inline-block;">Haz clic en <strong>"➕ Compartir con un Contacto"</strong> para conceder permisos a profesores, instructores o coordinadores.</span>' +
+                    '</td></tr>');
+            } else {
+                $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 28px; color: var(--aura-text-muted); font-size: 13px;">' +
+                    '🔍 No se encontraron accesos que coincidan con los filtros aplicados.' +
+                    '</td></tr>');
+            }
+            return;
+        }
+
+        var html = '';
+        filtered.forEach(function(u) {
+            // Columna 1: Contacto
+            var contactHtml = '';
+            if (u.contact) {
+                var avatar = u.contact.photo_url 
+                    ? '<img src="' + escapeHtml(u.contact.photo_url) + '" style="width:38px;height:38px;min-width:38px;min-height:38px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;flex-shrink:0;aspect-ratio:1/1;display:inline-block;overflow:hidden;">'
+                    : '<div style="width:38px;height:38px;min-width:38px;min-height:38px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;box-shadow:0 2px 4px rgba(79,70,229,0.2);aspect-ratio:1/1;overflow:hidden;">' + escapeHtml((u.contact.name || 'C').charAt(0).toUpperCase()) + '</div>';
+                
+                var badgeMatch = u.contact.matched_as === 'primary' 
+                    ? '<span class="badge" style="font-size:10px;background:rgba(99,102,241,0.12);color:#4338ca;margin-left:6px;font-weight:600;padding:2px 6px;border-radius:4px;">Email Principal</span>' 
+                    : '<span class="badge" style="font-size:10px;background:rgba(100,116,139,0.12);color:#475569;margin-left:6px;font-weight:600;padding:2px 6px;border-radius:4px;">Email Secundario</span>';
+
+                var contactLink = 'admin.php?page=aura-contacts&action=view&id=' + u.contact.id;
+                contactHtml = '<div style="display:flex;align-items:center;gap:12px;">' + avatar +
+                    '<div style="min-width:0;">' +
+                    '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">' +
+                    '<a href="' + escapeHtml(contactLink) + '" target="_blank" style="text-decoration:none;font-weight:700;font-size:13.5px;color:var(--aura-text-primary,#0f172a);line-height:1.2;" title="Ver perfil en Directorio de Contactos">' + escapeHtml(u.contact.name) + '</a>' +
+                    badgeMatch +
+                    '</div>' +
+                    '<span style="font-size:12px;color:var(--aura-text-secondary,#64748b);display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(u.contact.company || 'Directorio Aura') + '</span>' +
+                    '</div></div>';
+            } else {
+                var initial = (u.email || 'G').charAt(0).toUpperCase();
+                var title = u.is_service_account ? 'Cuenta de Servicio (Google API)' : 'Usuario Externo';
+                contactHtml = '<div style="display:flex;align-items:center;gap:12px;">' +
+                    '<div style="width:38px;height:38px;min-width:38px;min-height:38px;border-radius:50%;background:#94a3b8;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;aspect-ratio:1/1;overflow:hidden;">' + escapeHtml(initial) + '</div>' +
+                    '<div>' +
+                    '<strong style="font-size:13.5px;color:var(--aura-text-secondary,#475569);display:block;">' + title + '</strong>' +
+                    '<span style="font-size:11.5px;color:var(--aura-text-muted,#94a3b8);display:block;">No registrado en Directorio</span>' +
+                    '</div></div>';
+            }
+
+            // Columna 2: Cuenta Google con corte de línea automático (break-all) y botón Copiar
+            var emailHtml = '<div style="display:flex;align-items:flex-start;gap:6px;max-width:240px;">' +
+                '<code style="font-family:monospace;font-size:12px;background:#f8fafc;border:1px solid #e2e8f0;padding:4px 8px;border-radius:6px;color:#334155;word-break:break-all;overflow-wrap:anywhere;white-space:normal;display:inline-block;line-height:1.45;">' + escapeHtml(u.email) + '</code>' +
+                '<button type="button" class="btn btn-ghost btn-xs btn-copy-gcal-email" data-email="' + escapeHtml(u.email) + '" title="Copiar correo al portapapeles" style="padding:2px 6px;font-size:12px;color:#64748b;border-radius:4px;flex-shrink:0;margin-top:2px;">📋</button>' +
+                '</div>';
+
+            // Columna 3: Rol / CRUD Update
+            var roleHtml = '';
+            if (u.is_owner) {
+                roleHtml = '<span class="badge" style="background:rgba(16,185,129,0.15);color:#047857;font-weight:700;padding:5px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;">👑 Propietario</span>';
+            } else if (u.is_service_account) {
+                roleHtml = '<span class="badge" style="background:rgba(99,102,241,0.15);color:#4338ca;font-weight:700;padding:5px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;">⚙️ Service Account (Admin)</span>';
+            } else if (u.is_deletable) {
+                // Selector interactivo para cambiar rol en 1 clic (CRUD UPDATE)
+                roleHtml = '<div style="display:inline-flex;align-items:center;gap:6px;">' +
+                    '<select class="form-control form-control-sm gcal-change-acl-role" data-rule-id="' + escapeHtml(u.rule_id) + '" data-current-role="' + escapeHtml(u.role) + '" style="font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;border:1px solid #cbd5e1;cursor:pointer;background:#ffffff;height:30px;min-width:170px;">' +
+                    '<option value="reader" ' + (u.role === 'reader' ? 'selected' : '') + '>👁️ Lector (Lectura)</option>' +
+                    '<option value="writer" ' + (u.role === 'writer' ? 'selected' : '') + '>✏️ Editor (Escritura)</option>' +
+                    '</select>' +
+                    '<span class="spinner gcal-role-spinner" style="float:none;margin:0;display:none;"></span>' +
+                    '</div>';
+            } else {
+                roleHtml = '<span class="badge" style="background:rgba(100,116,139,0.15);color:#475569;font-weight:600;padding:4px 8px;border-radius:6px;">' + escapeHtml(u.role_label) + '</span>';
+            }
+
+            // Columna 4: Trazabilidad / Origen
+            var originBadge = '';
+            if (u.is_service_account) {
+                originBadge = '<span class="adp-badge badge-ghost" style="font-size:11px;font-weight:600;">⚙️ Sistema</span>';
+            } else if (u.contact) {
+                originBadge = '<span class="adp-badge badge-emerald" style="font-size:11px;font-weight:600;">✓ Directorio Aura</span>';
+            } else {
+                originBadge = '<span class="adp-badge badge-amber" style="font-size:11px;background:rgba(245,158,11,0.12);color:#b45309;font-weight:600;">⚠️ Externo</span>';
+            }
+
+            // Columna 5: Acciones (CRUD DELETE & LINKS)
+            var actionHtml = '';
+            if (u.contact) {
+                actionHtml += '<a href="admin.php?page=aura-contacts&action=view&id=' + u.contact.id + '" target="_blank" class="btn btn-ghost btn-sm" title="Ver ficha en Directorio de Contactos" style="padding:4px 8px;font-size:13px;border-radius:6px;border:1px solid #e2e8f0;margin-right:6px;text-decoration:none;">👤</a>';
+            }
+
+            if (u.is_deletable) {
+                var cName = u.contact ? u.contact.name : u.email;
+                actionHtml += '<button type="button" class="btn btn-ghost btn-sm btn-revoke-gcal-acl" data-rule-id="' + escapeHtml(u.rule_id) + '" data-email="' + escapeHtml(u.email) + '" data-contact-name="' + escapeHtml(cName) + '" style="font-size:12px;padding:4px 10px;color:#ef4444;border:1px solid rgba(239,68,68,0.25);border-radius:6px;font-weight:600;transition:all 0.15s;" title="Revocar de inmediato acceso a este usuario en Google Calendar">✕ Revocar</button>';
+            } else {
+                actionHtml += '<span class="adp-badge badge-ghost" style="font-size:11px;opacity:0.75;" title="Cuenta esencial del sistema o propietaria del recurso">🔒 Protegido</span>';
+            }
+
+            html += '<tr data-rule-id="' + escapeHtml(u.rule_id) + '" style="border-bottom: 1px solid var(--aura-border, #f1f5f9); transition: background 0.15s;">' +
+                '<td style="padding: 14px 18px;">' + contactHtml + '</td>' +
+                '<td style="padding: 14px 18px;">' + emailHtml + '</td>' +
+                '<td style="padding: 14px 18px;">' + roleHtml + '</td>' +
+                '<td style="padding: 14px 18px;">' + originBadge + '</td>' +
+                '<td style="padding: 14px 18px; text-align: right; white-space: nowrap;">' + actionHtml + '</td>' +
+                '</tr>';
+        });
+
+        $tbody.html(html);
+    }
 
     function initGCalAclManager() {
         if (!$('#card-gcal-acl-manager').length) return;
@@ -4701,6 +4874,81 @@
             loadGCalSharedUsers();
         });
 
+        // Filtro de búsqueda en vivo
+        $('#gcal-acl-filter-search').on('input', function() {
+            renderGCalAclTable();
+        });
+
+        // Filtro de rol en vivo
+        $('#gcal-acl-filter-role').on('change', function() {
+            renderGCalAclTable();
+        });
+
+        // Botón Copiar Correo al portapapeles
+        $(document).on('click', '.btn-copy-gcal-email', function(e) {
+            e.preventDefault();
+            var email = $(this).data('email');
+            if (email && navigator.clipboard) {
+                navigator.clipboard.writeText(email);
+                showToast('Correo copiado: ' + email, 'info');
+            }
+        });
+
+        // CRUD UPDATE: Cambiar rol directamente desde la tabla en tiempo real
+        $(document).on('change', '.gcal-change-acl-role', function() {
+            var $select = $(this);
+            var ruleId = $select.data('rule-id');
+            var newRole = $select.val();
+            var prevRole = $select.data('current-role');
+            var $spinner = $select.siblings('.gcal-role-spinner');
+            var $row = $select.closest('tr');
+
+            if (newRole === prevRole) return;
+
+            $select.prop('disabled', true);
+            $spinner.addClass('is-active').show();
+
+            $.post(auraCalData.ajax_url, {
+                action: 'aura_cal_gcal_update_role',
+                nonce: auraCalData.nonce,
+                rule_id: ruleId,
+                role: newRole
+            }, function(res) {
+                $select.prop('disabled', false);
+                $spinner.removeClass('is-active').hide();
+
+                if (res && res.success) {
+                    $select.data('current-role', newRole);
+                    
+                    // Actualizar en caché local
+                    var cached = gcalAclUsersCache.find(function(u) { return u.rule_id === ruleId; });
+                    if (cached) {
+                        cached.role = newRole;
+                        cached.role_label = res.data.role_label;
+                    }
+                    updateGCalAclKpis(gcalAclUsersCache);
+
+                    var msg = res.data && res.data.message ? res.data.message : '¡Permiso de Google Calendar actualizado!';
+                    showToast(msg, 'success');
+
+                    // Destello de feedback visual en la fila
+                    $row.css('transition', 'background 0.3s').css('background', 'rgba(16, 185, 129, 0.12)');
+                    setTimeout(function() {
+                        $row.css('background', '');
+                    }, 800);
+                } else {
+                    $select.val(prevRole);
+                    var errMsg = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
+                    showToast(errMsg, 'error');
+                    alert('⚠️ Error al actualizar permiso en Google Calendar:\n' + errMsg);
+                }
+            }).fail(function() {
+                $select.prop('disabled', false).val(prevRole);
+                $spinner.removeClass('is-active').hide();
+                showToast('Error de red al actualizar permiso en Google Calendar', 'error');
+            });
+        });
+
         // Botón Abrir Modal Compartir
         $('#btn-open-share-contact-modal').on('click', function(e) {
             e.preventDefault();
@@ -4709,7 +4957,7 @@
             searchContactsForGCalShare('');
         });
 
-        // Búsqueda reactiva de contactos con debounce
+        // Búsqueda reactiva de contactos con debounce en el modal
         $('#gcal-search-contact-input').on('input', function() {
             var q = $(this).val().trim();
             clearTimeout(gcalSearchTimer);
@@ -4751,7 +4999,7 @@
             searchContactsForGCalShare('');
         });
 
-        // Submit del formulario de compartir
+        // CRUD CREATE: Submit del formulario de compartir
         $('#form-gcal-share-contact').on('submit', function(e) {
             e.preventDefault();
             var contactId = parseInt($('#gcal-share-contact-id').val(), 10);
@@ -4798,7 +5046,7 @@
             });
         });
 
-        // Revocar Acceso
+        // CRUD DELETE: Revocar Acceso
         $(document).on('click', '.btn-revoke-gcal-acl', function(e) {
             e.preventDefault();
             var $btn = $(this);
@@ -4822,15 +5070,18 @@
             }, function(res) {
                 if (res && res.success) {
                     showToast(res.data && res.data.message ? res.data.message : 'Acceso revocado correctamente.', 'success');
-                    loadGCalSharedUsers();
+                    // Remover de caché y re-renderizar
+                    gcalAclUsersCache = gcalAclUsersCache.filter(function(u) { return u.rule_id !== ruleId; });
+                    updateGCalAclKpis(gcalAclUsersCache);
+                    renderGCalAclTable();
                 } else {
                     var errMsg = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
                     alert('Error al revocar acceso: ' + errMsg);
-                    $btn.prop('disabled', false).text('Revocar Acceso');
+                    $btn.prop('disabled', false).text('✕ Revocar');
                 }
             }).fail(function() {
                 alert('Error de red al intentar revocar acceso en Google Calendar.');
-                $btn.prop('disabled', false).text('Revocar Acceso');
+                $btn.prop('disabled', false).text('✕ Revocar');
             });
         });
     }
@@ -4839,87 +5090,28 @@
         var $tbody = $('#tbody-gcal-acl-users');
         if (!$tbody.length) return;
 
-        $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--aura-text-muted);"><span class="spinner is-active" style="float: none; margin: 0 8px 0 0;"></span>Consultando reglas de Google Calendar...</td></tr>');
+        $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 28px; color: var(--aura-text-muted);"><span class="spinner is-active" style="float: none; margin: 0 8px 0 0;"></span>Consultando reglas de Google Calendar...</td></tr>');
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_gcal_get_shared_users',
             nonce: auraCalData.nonce
         }, function(res) {
             if (res && res.success && res.data) {
-                var users = res.data.users || [];
-                if (users.length === 0) {
-                    $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 26px; color: var(--aura-text-muted); font-size: 13px;">No hay accesos de usuario compartidos adicionales en Google Calendar.<br><span style="font-size:12px;opacity:0.8;">Haz clic en <strong>"Compartir con un Contacto"</strong> para conceder acceso a profesores o coordinadores.</span></td></tr>');
-                    return;
-                }
-
-                var html = '';
-                users.forEach(function(u) {
-                    var contactHtml = '';
-                    if (u.contact) {
-                        var avatar = u.contact.photo_url 
-                            ? '<img src="' + escapeHtml(u.contact.photo_url) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #e2e8f0;">'
-                            : '<div style="width:32px;height:32px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">' + escapeHtml((u.contact.name || 'C').charAt(0).toUpperCase()) + '</div>';
-                        
-                        var badgeMatch = u.contact.matched_as === 'primary' 
-                            ? '<span class="badge" style="font-size:10px;background:rgba(99,102,241,0.1);color:#4f46e5;margin-left:4px;">Principal</span>' 
-                            : '<span class="badge" style="font-size:10px;background:rgba(100,116,139,0.1);color:#64748b;margin-left:4px;">Secundario</span>';
-
-                        contactHtml = '<div style="display:flex;align-items:center;gap:10px;">' + avatar +
-                            '<div><strong style="font-size:13px;color:var(--aura-text-primary,#0f172a);display:flex;align-items:center;">' + escapeHtml(u.contact.name) + badgeMatch + '</strong>' +
-                            '<span style="font-size:11.5px;color:var(--aura-text-secondary,#64748b);display:block;">' + escapeHtml(u.contact.company || 'Directorio Aura') + '</span></div></div>';
-                    } else {
-                        var initial = (u.email || 'G').charAt(0).toUpperCase();
-                        contactHtml = '<div style="display:flex;align-items:center;gap:10px;">' +
-                            '<div style="width:32px;height:32px;border-radius:50%;background:#94a3b8;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">' + escapeHtml(initial) + '</div>' +
-                            '<div><strong style="font-size:13px;color:var(--aura-text-secondary,#475569);">' + (u.is_service_account ? 'Cuenta de Servicio' : 'Usuario Externo') + '</strong>' +
-                            '<span style="font-size:11px;color:var(--aura-text-muted,#94a3b8);display:block;">No vinculado a Contacto</span></div></div>';
-                    }
-
-                    // Badge de Rol
-                    var roleBadge = '';
-                    if (u.is_owner) {
-                        roleBadge = '<span class="badge" style="background:rgba(16,185,129,0.15);color:#047857;font-weight:600;padding:3px 8px;border-radius:6px;">👑 Propietario</span>';
-                    } else if (u.role === 'writer') {
-                        roleBadge = '<span class="badge" style="background:rgba(99,102,241,0.15);color:#4338ca;font-weight:600;padding:3px 8px;border-radius:6px;">✏️ Editor (Escritura)</span>';
-                    } else {
-                        roleBadge = '<span class="badge" style="background:rgba(59,130,246,0.15);color:#1d4ed8;font-weight:600;padding:3px 8px;border-radius:6px;">👁️ Lector (Lectura)</span>';
-                    }
-
-                    // Badge de Origen
-                    var originBadge = '';
-                    if (u.is_service_account) {
-                        originBadge = '<span class="adp-badge badge-ghost" style="font-size:11px;">⚙️ Sistema / Service Account</span>';
-                    } else if (u.contact) {
-                        originBadge = '<span class="adp-badge badge-emerald" style="font-size:11px;">✓ Contacto Verificado</span>';
-                    } else {
-                        originBadge = '<span class="adp-badge badge-ghost" style="font-size:11px;opacity:0.7;">Externo</span>';
-                    }
-
-                    // Acciones
-                    var actionHtml = '';
-                    if (u.is_deletable) {
-                        var cName = u.contact ? u.contact.name : u.email;
-                        actionHtml = '<button type="button" class="btn btn-ghost btn-sm btn-revoke-gcal-acl" data-rule-id="' + escapeHtml(u.rule_id) + '" data-email="' + escapeHtml(u.email) + '" data-contact-name="' + escapeHtml(cName) + '" style="font-size:12px;padding:4px 10px;color:#ef4444;border:1px solid rgba(239,68,68,0.25);border-radius:6px;" title="Revocar acceso de forma definitiva a este usuario">✕ Revocar Acceso</button>';
-                    } else {
-                        actionHtml = '<span class="adp-badge badge-ghost" style="font-size:11px;opacity:0.75;" title="Cuenta esencial del sistema o propietaria del recurso">🔒 Protegido</span>';
-                    }
-
-                    html += '<tr style="border-bottom: 1px solid var(--aura-border, #e2e8f0);">' +
-                        '<td style="padding: 12px 16px;">' + contactHtml + '</td>' +
-                        '<td style="padding: 12px 16px; font-family: monospace; font-size: 12.5px; color: var(--aura-text-secondary);">' + escapeHtml(u.email) + '</td>' +
-                        '<td style="padding: 12px 16px;">' + roleBadge + '</td>' +
-                        '<td style="padding: 12px 16px;">' + originBadge + '</td>' +
-                        '<td style="padding: 12px 16px; text-align: right; white-space: nowrap;">' + actionHtml + '</td>' +
-                        '</tr>';
-                });
-
-                $tbody.html(html);
+                gcalAclUsersCache = res.data.users || [];
+                updateGCalAclKpis(gcalAclUsersCache);
+                renderGCalAclTable();
             } else {
                 var err = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
-                $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 20px; color: #ef4444;">⚠️ ' + escapeHtml(err) + '</td></tr>');
+                $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 24px; color: #ef4444; font-size: 13.5px;">⚠️ ' + escapeHtml(err) + '</td></tr>');
             }
-        }).fail(function() {
-            $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 20px; color: #ef4444;">⚠️ Error al consultar usuarios en Google Calendar.</td></tr>');
+        }).fail(function(xhr) {
+            var err = 'Error al consultar usuarios en Google Calendar.';
+            if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                err = xhr.responseJSON.data.message;
+            } else if (xhr && xhr.statusText) {
+                err += ' (' + xhr.status + ': ' + xhr.statusText + ')';
+            }
+            $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 24px; color: #ef4444; font-size: 13.5px;">⚠️ ' + escapeHtml(err) + '</td></tr>');
         });
     }
 

@@ -76,7 +76,7 @@ class Aura_Google_Calendar {
     // CREDENCIALES — Service Account JSON
     // ─────────────────────────────────────────────────────────────
 
-    private static function get_credentials(): ?array {
+    public static function get_credentials(): ?array {
         $json = get_option( 'aura_gcal_service_account_json', '' );
         if ( empty( $json ) ) {
             return null;
@@ -90,6 +90,14 @@ class Aura_Google_Calendar {
             return null;
         }
         return $creds;
+    }
+
+    /**
+     * Obtiene el email de la Service Account de Google configurada.
+     */
+    public static function get_service_account_email(): string {
+        $creds = self::get_credentials();
+        return (string) ( $creds['client_email'] ?? '' );
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -418,6 +426,33 @@ class Aura_Google_Calendar {
         $res = self::api_request( 'DELETE', $url );
 
         return ( null !== $res );
+    }
+
+    /**
+     * Actualiza el rol / nivel de acceso de una regla ACL en Google Calendar (Update).
+     *
+     * @param string $cal_id   ID del calendario.
+     * @param string $rule_id  ID de la regla de acceso (ej. 'user:correo@gmail.com').
+     * @param string $role     'reader'|'writer'|'freeBusyReader'
+     * @return array|null      Respuesta de Google o null en caso de error.
+     */
+    public static function update_acl_rule( string $cal_id, string $rule_id, string $role = 'reader' ): ?array {
+        if ( empty( $cal_id ) || empty( $rule_id ) ) {
+            self::$last_error = __( 'Parámetros inválidos para actualizar regla de acceso.', 'aura-suite' );
+            return null;
+        }
+
+        $allowed_roles = [ 'reader', 'writer', 'freeBusyReader' ];
+        if ( ! in_array( $role, $allowed_roles, true ) ) {
+            $role = 'reader';
+        }
+
+        $url  = 'https://www.googleapis.com/calendar/v3/calendars/' . rawurlencode( $cal_id ) . '/acl/' . rawurlencode( $rule_id );
+        $body = [
+            'role' => $role,
+        ];
+
+        return self::api_request( 'PATCH', $url, $body );
     }
 
     // ─────────────────────────────────────────────────────────────

@@ -41,7 +41,7 @@ $programs      = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit
 ?>
 
 
-<div class="wrap aura-portal-wrap adp-settings-wrap" style="max-width: 1400px; margin: 20px auto; padding: 0 16px;">
+<div class="wrap aura-portal-wrap adp-settings-wrap" style="width: 100%; max-width: 100%; box-sizing: border-box; margin: 20px 0; padding: 0 20px 20px 0;">
 
     <!-- ── HEADER AURA SUITE ── -->
     <header class="adp-header" style="margin-bottom: 24px;">
