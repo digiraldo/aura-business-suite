@@ -185,9 +185,9 @@ class Aura_Google_Contacts {
      */
     public static function update_contact_photo( string $resource_name, string $photo_base64 ) {
         $endpoint = sprintf( '%s:updateContactPhoto', ltrim( $resource_name, '/' ) );
-        return self::api_request( 'POST', $endpoint, array(
+        return self::api_request( 'PATCH', $endpoint, array(
             'photoBytes' => $photo_base64,
-        ) );
+        ), array( 'personFields' => 'photos' ) );
     }
 
     /**
@@ -198,7 +198,7 @@ class Aura_Google_Contacts {
      */
     public static function delete_contact_photo( string $resource_name ) {
         $endpoint = sprintf( '%s:deleteContactPhoto', ltrim( $resource_name, '/' ) );
-        return self::api_request( 'POST', $endpoint, array() );
+        return self::api_request( 'DELETE', $endpoint );
     }
 
     /**

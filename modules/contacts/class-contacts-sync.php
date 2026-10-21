@@ -289,7 +289,7 @@ class Aura_Contacts_Sync {
 
                 // Sincronizar foto de perfil si el contacto tiene avatar_url
                 if ( ! empty( $contact['avatar_url'] ) ) {
-                    $photo_res = self::sync_contact_photo( $map['resource_name'], $contact['avatar_url'], $contact_id );
+                    $photo_res = self::sync_contact_photo( $map['resource_name'], $contact['avatar_url'], $contact_id, $google_account );
                     if ( is_array( $photo_res ) && ! empty( $photo_res['person']['etag'] ) ) {
                         $new_etag = $photo_res['person']['etag'];
                     }
@@ -334,7 +334,7 @@ class Aura_Contacts_Sync {
         if ( ! empty( $resource_name ) ) {
             // Sincronizar foto de perfil si el contacto tiene avatar_url
             if ( ! empty( $contact['avatar_url'] ) ) {
-                $photo_res = self::sync_contact_photo( $resource_name, $contact['avatar_url'], $contact_id );
+                $photo_res = self::sync_contact_photo( $resource_name, $contact['avatar_url'], $contact_id, $google_account );
                 if ( is_array( $photo_res ) && ! empty( $photo_res['person']['etag'] ) ) {
                     $etag = $photo_res['person']['etag'];
                 }
@@ -1106,9 +1106,14 @@ class Aura_Contacts_Sync {
      * @param int         $contact_id    ID del contacto en Aura
      * @return array|bool|WP_Error
      */
-    public static function sync_contact_photo( string $resource_name, ?string $avatar_url, int $contact_id = 0 ) {
+    public static function sync_contact_photo( string $resource_name, ?string $avatar_url, int $contact_id = 0, string $google_account = '' ) {
         if ( empty( $avatar_url ) || empty( $resource_name ) ) {
             return false;
+        }
+
+        if ( empty( $google_account ) ) {
+            $provider       = Aura_Google_Auth_Factory::get_provider();
+            $google_account = $provider->get_account_email();
         }
 
         try {
@@ -1119,6 +1124,9 @@ class Aura_Contacts_Sync {
             }
             if ( false !== strpos( $avatar_url, ':/wp-content' ) ) {
                 $avatar_url = str_replace( ':/wp-content', site_url( '/wp-content' ), $avatar_url );
+            }
+            if ( 0 === strpos( $avatar_url, ':/' ) ) {
+                $avatar_url = site_url( '/' . ltrim( $avatar_url, ':/' ) );
             }
 
             // Si es un Gravatar por defecto genérico sin avatar real registrado en gravatar.com,
@@ -1155,8 +1163,10 @@ class Aura_Contacts_Sync {
             $response = Aura_Google_Contacts::update_contact_photo( $resource_name, $photo_base64 );
 
             if ( is_wp_error( $response ) ) {
+                $err_msg = $response->get_error_message();
+                Aura_Contacts_Setup::log_sync( $contact_id, $google_account, 'push', 'photo', 'error', 'Error al sincronizar foto en Google: ' . $err_msg );
                 if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-                    error_log( sprintf( '[Aura Google Contacts Photo] Error para %s (#%d): %s', $resource_name, $contact_id, $response->get_error_message() ) );
+                    error_log( sprintf( '[Aura Google Contacts Photo] Error para %s (#%d): %s', $resource_name, $contact_id, $err_msg ) );
                 }
                 return $response;
             }
@@ -1164,6 +1174,8 @@ class Aura_Contacts_Sync {
             if ( $contact_id > 0 ) {
                 set_transient( $cache_key, $hash, 30 * DAY_IN_SECONDS );
             }
+
+            Aura_Contacts_Setup::log_sync( $contact_id, $google_account, 'push', 'photo', 'success', 'Foto de perfil sincronizada en Google Contacts' );
 
             return $response;
         } catch ( \Throwable $t ) {
@@ -1186,23 +1198,46 @@ class Aura_Contacts_Sync {
             return null;
         }
 
+        // Limpieza de prefijos de URL residuales
+        if ( false !== strpos( $url, '/:/' ) ) {
+            $url = str_replace( '/:/', '/', $url );
+        }
+        if ( false !== strpos( $url, ':/wp-content' ) ) {
+            $url = str_replace( ':/wp-content', site_url( '/wp-content' ), $url );
+        }
+        if ( 0 === strpos( $url, ':/' ) ) {
+            $url = site_url( '/' . ltrim( $url, ':/' ) );
+        }
+
         // 1. Resolver ruta directa si está dentro de wp-content/uploads
         $upload_dir = wp_upload_dir();
         $base_url   = $upload_dir['baseurl'];
         $base_dir   = $upload_dir['basedir'];
 
-        if ( 0 === strpos( $url, $base_url ) ) {
-            $rel_path  = substr( $url, strlen( $base_url ) );
-            $file_path = $base_dir . $rel_path;
+        if ( false !== strpos( $url, '/wp-content/uploads/' ) ) {
+            $rel_sub   = substr( $url, strpos( $url, '/wp-content/uploads/' ) + strlen( '/wp-content/uploads/' ) );
+            $rel_sub   = strtok( $rel_sub, '?#' );
+            $file_path = $base_dir . '/' . ltrim( $rel_sub, '/\\' );
             if ( file_exists( $file_path ) && is_readable( $file_path ) ) {
                 $content = file_get_contents( $file_path );
                 if ( false !== $content && strlen( $content ) > 0 ) {
                     return $content;
                 }
             }
-        } elseif ( false !== strpos( $url, '/wp-content/uploads/' ) ) {
-            $rel_sub   = substr( $url, strpos( $url, '/wp-content/uploads/' ) + strlen( '/wp-content/uploads/' ) );
-            $file_path = $base_dir . '/' . ltrim( $rel_sub, '/\\' );
+        } elseif ( false !== strpos( $url, '/wp-content/' ) ) {
+            $rel_sub   = substr( $url, strpos( $url, '/wp-content/' ) + strlen( '/wp-content/' ) );
+            $rel_sub   = strtok( $rel_sub, '?#' );
+            $file_path = WP_CONTENT_DIR . '/' . ltrim( $rel_sub, '/\\' );
+            if ( file_exists( $file_path ) && is_readable( $file_path ) ) {
+                $content = file_get_contents( $file_path );
+                if ( false !== $content && strlen( $content ) > 0 ) {
+                    return $content;
+                }
+            }
+        } elseif ( 0 === strpos( $url, $base_url ) ) {
+            $rel_path  = substr( $url, strlen( $base_url ) );
+            $rel_path  = strtok( $rel_path, '?#' );
+            $file_path = $base_dir . $rel_path;
             if ( file_exists( $file_path ) && is_readable( $file_path ) ) {
                 $content = file_get_contents( $file_path );
                 if ( false !== $content && strlen( $content ) > 0 ) {
@@ -1212,7 +1247,8 @@ class Aura_Contacts_Sync {
         }
 
         // 2. Resolver por ID de adjunto de WordPress
-        $attachment_id = attachment_url_to_postid( $url );
+        $clean_url     = strtok( $url, '?#' );
+        $attachment_id = attachment_url_to_postid( $clean_url );
         if ( $attachment_id > 0 ) {
             $attached_file = get_attached_file( $attachment_id );
             if ( $attached_file && file_exists( $attached_file ) && is_readable( $attached_file ) ) {
@@ -1225,8 +1261,9 @@ class Aura_Contacts_Sync {
 
         // 3. Si la URL es relativa al root (/wp-content/...)
         if ( 0 === strpos( $url, '/' ) && ! empty( $_SERVER['DOCUMENT_ROOT'] ) ) {
+            $clean_rel = strtok( $url, '?#' );
             $doc_root  = rtrim( wp_unslash( $_SERVER['DOCUMENT_ROOT'] ), '/\\' );
-            $file_path = $doc_root . $url;
+            $file_path = $doc_root . $clean_rel;
             if ( file_exists( $file_path ) && is_readable( $file_path ) ) {
                 $content = file_get_contents( $file_path );
                 if ( false !== $content && strlen( $content ) > 0 ) {

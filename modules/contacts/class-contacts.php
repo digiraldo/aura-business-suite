@@ -85,6 +85,45 @@ class Aura_Contacts {
                 update_option( 'aura_contacts_recovered_archived_v1', 1 );
             }
         }
+
+        // ── Auto-reparación v2: Sincronización de fotos de contactos hacia Google People API (PATCH) ──
+        if ( ! get_option( 'aura_contacts_photo_sync_patch_v2' ) ) {
+            global $wpdb;
+            $table = $wpdb->prefix . 'aura_contacts';
+            if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) === $table ) {
+                // Sincronizar logotipos de terceros a avatar_url del contacto si estaba vacío
+                $tp_table = class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_table_name() : $wpdb->prefix . 'aura_finance_third_parties';
+                if ( $wpdb->get_var( "SHOW TABLES LIKE '{$tp_table}'" ) === $tp_table ) {
+                    $tps = $wpdb->get_results( "SELECT id, logo_id FROM {$tp_table} WHERE logo_id IS NOT NULL AND logo_id > 0", ARRAY_A );
+                    foreach ( (array) $tps as $tp ) {
+                        $att_url = wp_get_attachment_image_url( (int) $tp['logo_id'], 'full' ) ?: wp_get_attachment_url( (int) $tp['logo_id'] );
+                        if ( $att_url ) {
+                            $wpdb->query( $wpdb->prepare( "UPDATE {$table} SET avatar_url = %s WHERE third_party_id = %d AND (avatar_url IS NULL OR avatar_url = '')", $att_url, (int) $tp['id'] ) );
+                        }
+                    }
+                }
+                // Sincronizar fotos de estudiantes si estaba vacío
+                $st_table = $wpdb->prefix . 'aura_students';
+                if ( $wpdb->get_var( "SHOW TABLES LIKE '{$st_table}'" ) === $st_table ) {
+                    $st_photos = $wpdb->get_results( "SELECT id, photo FROM {$st_table} WHERE photo IS NOT NULL AND photo != ''", ARRAY_A );
+                    foreach ( (array) $st_photos as $st ) {
+                        if ( ! empty( $st['photo'] ) ) {
+                            $wpdb->query( $wpdb->prepare( "UPDATE {$table} SET avatar_url = %s WHERE student_id = %d AND (avatar_url IS NULL OR avatar_url = '')", $st['photo'], (int) $st['id'] ) );
+                        }
+                    }
+                }
+                // Sincronizar avatares de usuarios de WP si estaba vacío
+                $users_with_av = $wpdb->get_results( "SELECT user_id, meta_value FROM {$wpdb->usermeta} WHERE meta_key = 'aura_avatar_url' AND meta_value != ''", ARRAY_A );
+                foreach ( (array) $users_with_av as $uav ) {
+                    $wpdb->query( $wpdb->prepare( "UPDATE {$table} SET avatar_url = %s WHERE wp_user_id = %d AND (avatar_url IS NULL OR avatar_url = '')", $uav['meta_value'], (int) $uav['user_id'] ) );
+                }
+                // Marcar como 'pending' todos los contactos que tienen foto o entidad vinculada para subir foto a Google con PATCH
+                $wpdb->query( "UPDATE {$table} SET sync_status = 'pending' WHERE is_active = 1 AND ( (avatar_url IS NOT NULL AND avatar_url != '') OR wp_user_id > 0 OR third_party_id > 0 OR student_id > 0 )" );
+                // Limpiar transients de fotos para forzar subida a Google
+                $wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_aura_gc_photo_%' OR option_name LIKE '_transient_timeout_aura_gc_photo_%'" );
+                update_option( 'aura_contacts_photo_sync_patch_v2', 1 );
+            }
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -1377,6 +1416,26 @@ class Aura_Contacts {
                 $avatar = $user_avatar;
             } else {
                 $avatar = get_avatar_url( (int) $row['wp_user_id'], array( 'size' => 128 ) );
+            }
+        }
+        if ( empty( $avatar ) && ! empty( $row['third_party_id'] ) ) {
+            global $wpdb;
+            $tp_table = class_exists( 'Aura_Third_Parties' ) ? Aura_Third_Parties::get_table_name() : $wpdb->prefix . 'aura_finance_third_parties';
+            if ( $wpdb->get_var( "SHOW TABLES LIKE '{$tp_table}'" ) === $tp_table ) {
+                $tp = $wpdb->get_row( $wpdb->prepare( "SELECT logo_id FROM {$tp_table} WHERE id = %d LIMIT 1", (int) $row['third_party_id'] ), ARRAY_A );
+                if ( ! empty( $tp['logo_id'] ) ) {
+                    $avatar = wp_get_attachment_image_url( (int) $tp['logo_id'], 'full' ) ?: wp_get_attachment_url( (int) $tp['logo_id'] );
+                }
+            }
+        }
+        if ( empty( $avatar ) && ! empty( $row['student_id'] ) ) {
+            global $wpdb;
+            $st_table = $wpdb->prefix . 'aura_students';
+            if ( $wpdb->get_var( "SHOW TABLES LIKE '{$st_table}'" ) === $st_table ) {
+                $st = $wpdb->get_row( $wpdb->prepare( "SELECT photo FROM {$st_table} WHERE id = %d LIMIT 1", (int) $row['student_id'] ), ARRAY_A );
+                if ( ! empty( $st['photo'] ) ) {
+                    $avatar = $st['photo'];
+                }
             }
         }
         if ( empty( $avatar ) && ! empty( $email ) ) {
