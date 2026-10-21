@@ -325,6 +325,23 @@ $category_icons = array(
                     </div>
                 </div>
 
+                <!-- Banner de Filtro Individual de Contacto (Activado por Enlace Externo/Directorio Aura) -->
+                <div id="contacts-id-filter-banner" style="display: none; align-items: center; justify-content: space-between; padding: 12px 18px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 12px; margin-bottom: 14px; backdrop-filter: blur(10px); box-shadow: 0 4px 15px -2px rgba(59, 130, 246, 0.15); flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="dashicons dashicons-filter" style="color: #60a5fa; font-size: 20px; width: 20px; height: 20px;"></span>
+                        <span style="color: #f1f5f9; font-weight: 600; font-size: 0.92rem;">
+                            <?php esc_html_e( 'Filtrando por contacto específico:', 'aura-suite' ); ?>
+                            <span id="contacts-id-filter-label" style="color: #93c5fd; font-weight: 700; margin-left: 4px;"></span>
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button type="button" class="btn btn-glass btn-sm btn-lift" id="btn-clear-id-filter" style="color: #f8fafc; border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.08); font-weight: 600;">
+                            <span class="dashicons dashicons-no-alt" style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;"></span>
+                            <span><?php esc_html_e( 'Ver todos los contactos', 'aura-suite' ); ?></span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Barra Flotante de Acciones Masivas (Aura Enterprise Bulk Toolbar) -->
                 <div id="contacts-bulk-bar" style="display: none; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 12px; margin-bottom: 14px; backdrop-filter: blur(12px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); flex-wrap: wrap; gap: 12px;">
                     <div style="display: flex; align-items: center; gap: 12px;">

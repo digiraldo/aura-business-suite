@@ -17,6 +17,7 @@
         category: '',
         syncStatus: '',
         activeTab: 'directory',
+        filterId: (cfg.initialId ? parseInt(cfg.initialId, 10) : 0),
         totalItems: 0,
         totalPages: 1,
         items: [],
@@ -38,6 +39,7 @@
     };
 
     // ── Inicialización al cargar el DOM ──────────────────────────────────────────
+    // ── Inicialización al cargar el DOM ──────────────────────────────────────────
     $(document).ready(function() {
         initTabs();
         initFilters();
@@ -50,16 +52,70 @@
         initSyncLogs();
         initContactCard();
 
-        // Cargar primera página de contactos
-        fetchContacts();
+        // Inicializar filtro de ID previo a la primera petición AJAX si viene en URL o Hash
+        initUrlParamsState();
 
-        // Verificar si la URL trae un hash directo (#new, #sync, #google, #import, #duplicates)
-        handleUrlHash();
+        // Cargar primera página de contactos y al completar ejecutar la acción de URL
+        fetchContacts(function() {
+            handleUrlActions();
+        });
+
+        // Escuchar cambios de hash en la ventana
+        $(window).on('hashchange', function() {
+            initUrlParamsState();
+            fetchContacts(function() {
+                handleUrlActions();
+            });
+        });
     });
 
-    function handleUrlHash() {
-        var hash = window.location.hash;
-        if (hash === '#new') {
+    function initUrlParamsState() {
+        var hash = window.location.hash || '';
+        var urlParams = null;
+        try {
+            urlParams = new URLSearchParams(window.location.search);
+        } catch (e) {
+            urlParams = null;
+        }
+
+        var idParam = cfg.initialId || (urlParams ? parseInt(urlParams.get('id') || urlParams.get('contact_id') || '0', 10) : 0) || 0;
+        var hashMatch = hash.match(/^#(view|edit)-(\d+)$/);
+        if (hashMatch) {
+            idParam = parseInt(hashMatch[2], 10);
+        }
+
+        if (idParam > 0) {
+            state.filterId = idParam;
+        }
+    }
+
+    function handleUrlActions() {
+        var hash = window.location.hash || '';
+        var urlParams = null;
+        try {
+            urlParams = new URLSearchParams(window.location.search);
+        } catch (e) {
+            urlParams = null;
+        }
+
+        var actionParam = cfg.initialAction || (urlParams ? urlParams.get('action') : '') || '';
+        var idParam = state.filterId || cfg.initialId || (urlParams ? parseInt(urlParams.get('id') || urlParams.get('contact_id') || '0', 10) : 0) || 0;
+
+        // Comprobar patrones de hash como #view-123 o #edit-123
+        var hashMatch = hash.match(/^#(view|edit)-(\d+)$/);
+        if (hashMatch) {
+            actionParam = hashMatch[1];
+            idParam = parseInt(hashMatch[2], 10);
+        }
+
+        if (idParam > 0) {
+            if (actionParam === 'edit') {
+                openEditModal(idParam);
+            } else {
+                // 'view' o por defecto al especificar id: abrir tarjeta
+                viewContactCard(idParam);
+            }
+        } else if (hash === '#new') {
             openCreateModal();
         } else if (hash === '#sync') {
             switchTab('sync_logs');
@@ -71,6 +127,17 @@
             switchTab('duplicates_merge');
             $('#btn-scan-duplicates').trigger('click');
         }
+    }
+
+    function clearIdFilter() {
+        state.filterId = 0;
+        $('#contacts-id-filter-banner').slideUp(180);
+        if (window.history && window.history.replaceState) {
+            var cleanUrl = window.location.pathname + '?page=aura-contacts';
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+        state.page = 1;
+        fetchContacts();
     }
 
     // ── Control de Pestañas (Tabs) ───────────────────────────────────────────────
@@ -85,6 +152,10 @@
             $btn.addClass('is-active active');
 
             if (tabTarget === 'directory') {
+                if (state.filterId) {
+                    state.filterId = 0;
+                    $('#contacts-id-filter-banner').hide();
+                }
                 state.category = (typeof catFilter !== 'undefined') ? catFilter : '';
                 $('#contacts-filter-category').val(state.category);
                 state.page = 1;
@@ -118,6 +189,10 @@
     function initFilters() {
         $('#contacts-search-input').on('input', function() {
             var val = $(this).val().trim();
+            if (state.filterId) {
+                state.filterId = 0;
+                $('#contacts-id-filter-banner').hide();
+            }
             clearTimeout(searchTimer);
             searchTimer = setTimeout(function() {
                 state.search = val;
@@ -133,6 +208,10 @@
         });
 
         $('#contacts-filter-category').on('change', function() {
+            if (state.filterId) {
+                state.filterId = 0;
+                $('#contacts-id-filter-banner').hide();
+            }
             state.category = $(this).val();
             state.page = 1;
             // Actualizar estilo visual en navbar
@@ -156,6 +235,12 @@
             fetchContacts();
         });
 
+        // Botón para limpiar filtro de contacto individual
+        $('#btn-clear-id-filter').on('click', function(e) {
+            e.preventDefault();
+            clearIdFilter();
+        });
+
         // Clic en tarjetas KPI para filtrar automáticamente el directorio
         $('.kpi-card.accent-rose, #kpi-error-val').css('cursor', 'pointer').on('click', function() {
             $('.aura-navbar-item[data-tab="directory"]').trigger('click');
@@ -174,7 +259,7 @@
     }
 
     // ── Obtener Listado de Contactos vía AJAX ────────────────────────────────────
-    function fetchContacts() {
+    function fetchContacts(cb) {
         if (state.isLoading) return;
         state.isLoading = true;
 
@@ -192,12 +277,14 @@
                 per_page: state.perPage,
                 search: state.search,
                 category: state.category,
-                sync_status: state.syncStatus
+                sync_status: state.syncStatus,
+                id: state.filterId || 0
             },
             success: function(res) {
                 state.isLoading = false;
                 if (!res.success) {
                     $tbody.html('<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 24px;">' + (res.data && res.data.message ? res.data.message : 'Error al cargar contactos') + '</td></tr>');
+                    if (typeof cb === 'function') cb(res);
                     return;
                 }
 
@@ -206,13 +293,33 @@
                 state.totalItems = data.total || 0;
                 state.totalPages = data.pages || 1;
 
+                if (state.filterId > 0) {
+                    var singleContact = (state.items && state.items.length) ? state.items[0] : null;
+                    var contactName = '';
+                    if (singleContact) {
+                        var fn = ((singleContact.first_name || '') + ' ' + (singleContact.last_name || '')).trim();
+                        contactName = fn || singleContact.organization || ('#' + singleContact.id);
+                    }
+                    $('#contacts-id-filter-label').text('#' + state.filterId + (contactName ? ' (' + contactName + ')' : ''));
+                    $('#contacts-id-filter-banner').css('display', 'flex').show();
+                } else {
+                    $('#contacts-id-filter-banner').hide();
+                }
+
                 renderTableRows(state.items);
                 renderPagination(data);
                 refreshStats();
+
+                if (typeof cb === 'function') {
+                    cb(res);
+                }
             },
             error: function() {
                 state.isLoading = false;
                 $tbody.html('<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 24px;">' + (cfg.i18n.connError || 'Error de conexión con el servidor') + '</td></tr>');
+                if (typeof cb === 'function') {
+                    cb(null);
+                }
             }
         });
     }
@@ -1962,20 +2069,31 @@
         if (item) {
             populateAndShowContactCard(item);
         } else {
-            // 2. Si no está en memoria, consultar vía AJAX
-            showToast('Cargando información del contacto...');
+            // 2. Si no está en memoria, consultar vía AJAX al endpoint canónico
+            if (typeof showToast === 'function') {
+                showToast('Cargando información del contacto...');
+            }
             $.post(cfg.ajaxUrl, {
-                action: 'aura_contacts_get_contact',
+                action: 'aura_contacts_get_detail',
                 id: contactId,
                 nonce: cfg.nonce
             }, function(res) {
-                if (res.success && res.data && res.data.contact) {
-                    populateAndShowContactCard(res.data.contact);
+                if (res && res.success && res.data) {
+                    var contact = res.data.contact || res.data;
+                    populateAndShowContactCard(contact);
                 } else {
-                    alert('No se pudo obtener la información del contacto.');
+                    var msg = (res && res.data && res.data.message) ? res.data.message : 'No se pudo obtener la información del contacto.';
+                    if (typeof showToast === 'function') {
+                        showToast(msg);
+                    } else {
+                        alert(msg);
+                    }
                 }
-            }).fail(function() {
-                alert('Error al conectar con el servidor.');
+            }).fail(function(xhr, status, err) {
+                console.warn('Error al conectar con el servidor para detalle de contacto:', status, err);
+                if (typeof showToast === 'function') {
+                    showToast('Error al conectar con el servidor.');
+                }
             });
         }
     }

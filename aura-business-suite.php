@@ -2310,6 +2310,8 @@ class Aura_Business_Suite
                 'redirectUri' => Aura_Google_Auth_OAuth_User::get_redirect_uri(),
                 'categories' => Aura_Contacts::CATEGORIES,
                 'availableTags' => Aura_Contacts::get_all_unique_tags(),
+                'initialAction' => isset($_GET['action']) ? sanitize_key($_GET['action']) : '',
+                'initialId' => isset($_GET['id']) ? intval($_GET['id']) : (isset($_GET['contact_id']) ? intval($_GET['contact_id']) : 0),
                 'i18n' => array(
                     'confirmDelete' => __('¿Estás seguro de mover este contacto a la papelera?', 'aura-suite'),
                     'confirmPermanent' => __('¿Estás seguro de eliminar permanentemente este contacto? Esta acción es irreversible.', 'aura-suite'),

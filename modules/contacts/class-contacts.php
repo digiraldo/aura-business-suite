@@ -37,6 +37,7 @@ class Aura_Contacts {
         $ajax_actions = array(
             'get_list'               => 'ajax_get_list',
             'get_detail'             => 'ajax_get_detail',
+            'get_contact'            => 'ajax_get_detail',
             'save'                   => 'ajax_save',
             'delete'                 => 'ajax_delete',
             'restore'                => 'ajax_restore',
@@ -312,6 +313,7 @@ class Aura_Contacts {
             'sync_status'  => '',
             'is_active'    => 1,
             'orderby'      => 'first_name',
+            'id'           => 0,
             'order'        => 'ASC',
             'page'         => 1,
             'per_page'     => 20,
@@ -321,6 +323,11 @@ class Aura_Contacts {
 
         $where   = array( '1=1' );
         $values  = array();
+
+        if ( ! empty( $params['id'] ) ) {
+            $where[]  = 'c.id = %d';
+            $values[] = (int) $params['id'];
+        }
 
         if ( null !== $params['is_active'] && '' !== $params['is_active'] ) {
             $where[]  = 'c.is_active = %d';
@@ -650,6 +657,7 @@ class Aura_Contacts {
         }
 
         $args = array(
+            'id'           => isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0,
             'search'       => sanitize_text_field( wp_unslash( $_POST['search'] ?? '' ) ),
             'category'     => sanitize_text_field( wp_unslash( $_POST['category'] ?? '' ) ),
             'contact_type' => sanitize_text_field( wp_unslash( $_POST['contact_type'] ?? '' ) ),
