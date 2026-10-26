@@ -1129,23 +1129,46 @@ body:not(.aura-has-global-tooltip) [data-tooltip]:hover::before {
     flex: 0 0 auto;
 }
 
-/* ── 10. FORMULARIO EN MODAL ─────────────────────────────── */
-#aura-budget-form {
+/* ── 10. FORMULARIO EN MODAL (OPTIMIZADO ANTI-CORTE DE BOTONES) ── */
+#aura-budget-form,
+#aura-cat-budget-form {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+}
+
+.aura-form-grid,
+#aura-cat-budget-form .aura-modal-body {
     display: flex;
     flex-direction: column;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
+    padding: 22px 24px;
+    overflow-y: auto !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: calc(88vh - 140px);
 }
 
 .aura-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    padding: 22px 24px;
-    overflow-y: auto;
-    flex: 1 1 auto;
-    min-height: 0;
+}
+
+.aura-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+    flex: 0 0 auto !important;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
 }
 
 .aura-form-group {
@@ -2278,4 +2301,1300 @@ body[data-theme="dark"] .aura-cat-tx-total-badge {
     background: rgba(99, 102, 241, 0.2);
     color: #c7d2fe;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ESTILOS MODERNOS: PRESUPUESTOS Y ESTADÍSTICAS POR CATEGORÍAS & SUBCATEGORÍAS
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Pestañas de Navegación Principal ─────────────────────────────────────── */
+.aura-budget-main-nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 2px;
+}
+
+.aura-main-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    top: 2px;
+}
+
+.aura-main-tab-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s;
+}
+
+.aura-main-tab-btn:hover {
+    color: #2563eb;
+    background: #f8fafc;
+}
+
+.aura-main-tab-btn.active {
+    color: #2563eb;
+    background: #ffffff;
+    border-color: #cbd5e1;
+    border-bottom: 3px solid #2563eb;
+    font-weight: 700;
+    box-shadow: 0 -4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.aura-main-tab-panel {
+    display: none;
+    animation: auraFadeSlideIn 0.3s ease-out;
+}
+
+.aura-main-tab-panel.active {
+    display: block;
+}
+
+@keyframes auraFadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Barra de Control Superior de Categoría ──────────────────────────────── */
+.aura-cat-budget-control-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+    flex-wrap: wrap;
+}
+
+.aura-cat-control-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex: 1 1 540px;
+    flex-wrap: wrap;
+}
+
+.aura-control-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.aura-control-field label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.aura-control-field label .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: #2563eb;
+}
+
+.aura-control-field--grow {
+    flex: 1 1 320px;
+}
+
+.aura-select-styled {
+    min-height: 40px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    outline: none;
+    transition: all 0.2s;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.aura-select-styled:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.aura-cat-control-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ── Banner de Estado Presupuestario ─────────────────────────────────────── */
+.aura-cat-status-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    animation: auraFadeSlideIn 0.25s ease-out;
+}
+
+.aura-cat-status-banner.status-ok {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.aura-cat-status-banner.status-warning {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+}
+
+.aura-cat-status-banner.status-critical {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #9a3412;
+}
+
+.aura-cat-status-banner.status-overrun {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.aura-cat-status-banner.status-nobudget {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+}
+
+/* ── Grid de Tarjetas KPI Gerenciales ────────────────────────────────────── */
+.aura-cat-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.aura-kpi-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.aura-kpi-card.card-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+}
+
+.aura-kpi-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3.5px;
+}
+
+.aura-kpi-card.kpi-blue::before { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+.aura-kpi-card.kpi-emerald::before { background: linear-gradient(90deg, #059669, #10b981); }
+.aura-kpi-card.kpi-indigo::before { background: linear-gradient(90deg, #4f46e5, #6366f1); }
+.aura-kpi-card.kpi-amber::before { background: linear-gradient(90deg, #d97706, #f59e0b); }
+.aura-kpi-card.kpi-purple::before { background: linear-gradient(90deg, #7c3aed, #8b5cf6); }
+
+.aura-kpi-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.aura-kpi-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+}
+
+.aura-kpi-icon-box {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.aura-kpi-card.kpi-blue .aura-kpi-icon-box { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+.aura-kpi-card.kpi-emerald .aura-kpi-icon-box { background: rgba(16, 185, 129, 0.1); color: #059669; }
+.aura-kpi-card.kpi-indigo .aura-kpi-icon-box { background: rgba(99, 102, 241, 0.1); color: #4f46e5; }
+.aura-kpi-card.kpi-amber .aura-kpi-icon-box { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+.aura-kpi-card.kpi-purple .aura-kpi-icon-box { background: rgba(139, 92, 246, 0.1); color: #7c3aed; }
+
+.aura-kpi-icon-box .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.aura-kpi-value {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+}
+
+.aura-kpi-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #64748b;
+    gap: 8px;
+}
+
+.aura-kpi-sub {
+    font-weight: 500;
+}
+
+.aura-badge-mini {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.aura-kpi-progress-bar-wrap {
+    width: 100%;
+    height: 7px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.aura-kpi-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #10b981;
+}
+
+.aura-kpi-progress-fill.fill-warning { background: #f59e0b; }
+.aura-kpi-progress-fill.fill-critical { background: #f97316; }
+.aura-kpi-progress-fill.fill-overrun { background: #ef4444; }
+
+.aura-kpi-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.status-badge--ok { background: #d1fae5; color: #065f46; }
+.status-badge--warning { background: #fef3c7; color: #92400e; }
+.status-badge--critical { background: #ffedd5; color: #9a3412; }
+.status-badge--overrun { background: #fee2e2; color: #991b1b; }
+.status-badge--nobudget { background: #f1f5f9; color: #475569; }
+
+/* ── Grid de Gráficos ApexCharts ─────────────────────────────────────────── */
+.aura-cat-charts-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+    .aura-cat-charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.aura-chart-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.04);
+}
+
+.aura-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.aura-card-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aura-card-badge-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.aura-card-badge-icon .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.aura-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px 0;
+    line-height: 1.3;
+}
+
+.aura-card-subtitle {
+    font-size: 12.5px;
+    color: #64748b;
+    margin: 0;
+}
+
+.aura-badge-count {
+    font-size: 11.5px;
+    font-weight: 700;
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* ── Tabla Desplegable Tipo Árbol ────────────────────────────────────────── */
+.aura-cat-table-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.04);
+}
+
+.aura-cat-budget-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.aura-cat-budget-table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.aura-cat-budget-table tbody td {
+    padding: 14px 16px;
+    font-size: 13.5px;
+    color: #1e293b;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Fila Categoría Principal (Padre) */
+.aura-row-parent {
+    background: #f8fafc !important;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.aura-row-parent:hover {
+    background: #f1f5f9 !important;
+}
+
+.aura-row-parent td {
+    border-bottom: 1.5px solid #cbd5e1 !important;
+    font-size: 14px;
+}
+
+.aura-cat-parent-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.aura-tree-expander-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: #e2e8f0;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.aura-tree-expander-btn:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.aura-tree-expander-btn .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s;
+}
+
+.aura-tree-expander-btn.collapsed .dashicons {
+    transform: rotate(-90deg);
+}
+
+/* Filas Subcategorías (Hijas) */
+.aura-row-child {
+    background: #ffffff;
+    transition: background 0.15s;
+}
+
+.aura-row-child:hover {
+    background: #f8fafc;
+}
+
+.aura-row-child.is-hidden {
+    display: none;
+}
+
+.aura-subcat-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 32px;
+    position: relative;
+}
+
+.aura-subcat-title::before {
+    content: "";
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    width: 12px;
+    height: 1px;
+    background: #cbd5e1;
+}
+
+.aura-subcat-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Mini Barras de Porcentaje en Tabla */
+.aura-table-pct-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.aura-mini-bar-wrap {
+    width: 80px;
+    height: 5px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.aura-mini-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #2563eb;
+}
+
+/* Footer / Totales */
+.aura-cat-budget-table tfoot td {
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 14px;
+    color: #0f172a;
+    padding: 14px 16px;
+    border-top: 2px solid #cbd5e1;
+}
+
+/* ── Estilos de Impresión Profesional Adaptable (Carta / Oficio / Vertical / Horizontal) ── */
+@page {
+    size: auto;
+    margin: 8mm 10mm;
+}
+
+@media print {
+    /* Ocultar elementos de navegación, administración y botones */
+    #adminmenumain, #adminmenuwrap, #wpadminbar, #wpfooter,
+    #aura-wp-notices-container, .notice,
+    .aura-hero-header, .aura-budget-main-nav,
+    .aura-cat-budget-control-bar, .aura-card-actions,
+    #tab-area-budgets, .aura-modal, .aura-modal-backdrop,
+    .aura-tree-expander-btn, .aura-help-icon,
+    .aura-cat-budget-table th:last-child,
+    .aura-cat-budget-table td:last-child {
+        display: none !important;
+    }
+
+    body, html, #wpwrap, #wpcontent, .wrap.aura-budgets-wrap {
+        background: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 11pt !important;
+    }
+
+    .aura-app-wrapper, .aura-budgets-wrap {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Encabezado Oficial de Impresión */
+    .aura-cat-print-header {
+        display: block !important;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .aura-print-header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .aura-print-title {
+        font-size: 16pt !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        margin: 0 0 4px 0 !important;
+        letter-spacing: -0.3px;
+    }
+
+    .aura-print-subtitle {
+        font-size: 10pt !important;
+        color: #475569 !important;
+        margin: 0 !important;
+    }
+
+    .aura-print-meta {
+        font-size: 9.5pt !important;
+        text-align: right;
+        color: #334155;
+    }
+
+    .aura-print-category-info {
+        display: flex;
+        justify-content: space-between;
+        background: #f1f5f9;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 10.5pt;
+        border: 1px solid #cbd5e1;
+        margin-top: 6px;
+    }
+
+    /* Banner de Alerta Presupuestaria */
+    .aura-cat-status-banner {
+        border: 1px solid #cbd5e1 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        padding: 8px 12px !important;
+        font-size: 9.5pt !important;
+        margin-bottom: 14px !important;
+        box-shadow: none !important;
+    }
+
+    /* Grid de KPIs Compacto para Impresión */
+    .aura-cat-kpi-grid {
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 8px !important;
+        margin-bottom: 14px !important;
+    }
+
+    .aura-kpi-card {
+        padding: 10px 12px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        break-inside: avoid;
+    }
+
+    .aura-kpi-card::before {
+        display: none !important;
+    }
+
+    .aura-kpi-label {
+        font-size: 8pt !important;
+        color: #475569 !important;
+    }
+
+    .aura-kpi-icon-box {
+        display: none !important;
+    }
+
+    .aura-kpi-value {
+        font-size: 13pt !important;
+        font-weight: 700 !important;
+        margin: 4px 0 !important;
+        color: #0f172a !important;
+    }
+
+    .aura-kpi-foot {
+        font-size: 7.5pt !important;
+    }
+
+    .aura-kpi-progress-bar-wrap {
+        height: 4px !important;
+        margin-bottom: 4px !important;
+        border: 1px solid #cbd5e1;
+    }
+
+    /* Gráficos en Impresión */
+    .aura-cat-charts-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 12px !important;
+        margin-bottom: 16px !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .aura-chart-card {
+        flex: 1 1 50% !important;
+        padding: 12px 14px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+    }
+
+    .aura-card-head {
+        margin-bottom: 8px !important;
+    }
+
+    .aura-card-badge-icon {
+        display: none !important;
+    }
+
+    .aura-card-title {
+        font-size: 10pt !important;
+    }
+
+    .aura-card-subtitle {
+        font-size: 8pt !important;
+    }
+
+    .aura-chart-body,
+    #aura-cat-trend-chart,
+    #aura-cat-donut-chart {
+        min-height: 220px !important;
+        height: 220px !important;
+    }
+
+    .apexcharts-canvas, svg {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    /* Tabla Árbol Adaptable */
+    .aura-cat-table-card {
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .aura-table-responsive-wrap {
+        overflow: visible !important;
+    }
+
+    .aura-cat-budget-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border: 1px solid #0f172a !important;
+        font-size: 9pt !important;
+    }
+
+    .aura-cat-budget-table thead th {
+        background: #f1f5f9 !important;
+        color: #0f172a !important;
+        border: 1px solid #94a3b8 !important;
+        padding: 6px 8px !important;
+        font-size: 8.5pt !important;
+    }
+
+    .aura-cat-budget-table tbody td {
+        padding: 6px 8px !important;
+        border: 1px solid #cbd5e1 !important;
+        font-size: 9pt !important;
+    }
+
+    .aura-row-parent {
+        background: #f8fafc !important;
+        font-weight: 700 !important;
+    }
+
+    .aura-row-child {
+        display: table-row !important;
+        background: #ffffff !important;
+    }
+
+    .aura-row-child.is-hidden {
+        display: table-row !important;
+    }
+
+    .aura-cat-budget-table tfoot td {
+        background: #f1f5f9 !important;
+        font-weight: 700 !important;
+        border: 1px solid #0f172a !important;
+        padding: 8px !important;
+    }
+
+    .aura-mini-bar-wrap {
+        border: 1px solid #94a3b8 !important;
+    }
+
+    tr {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* Pie de Página con Firmas */
+    .aura-cat-print-footer {
+        display: block !important;
+        margin-top: 30px !important;
+        padding-top: 14px !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .aura-print-signatures {
+        display: flex;
+        justify-content: space-around;
+        gap: 40px;
+        margin-bottom: 20px;
+    }
+
+    .aura-print-sig-box {
+        flex: 1;
+        text-align: center;
+    }
+
+    .aura-sig-line {
+        border-bottom: 1.5px solid #0f172a;
+        margin-bottom: 8px;
+        height: 40px;
+    }
+
+    .aura-print-sig-box span {
+        font-size: 9pt;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .aura-print-watermark-note {
+        text-align: center;
+        font-size: 8pt;
+        color: #64748b;
+        font-style: italic;
+        border-top: 1px dashed #cbd5e1;
+        padding-top: 8px;
+    }
+}
+
+/* ── Modo Oscuro (Dark Mode) ─────────────────────────────────────────────── */
+html[data-wp-dark-mode-scheme="dark"] .aura-main-tab-btn,
+html.wp-dark-mode-active .aura-main-tab-btn,
+body.wp-dark-mode-active .aura-main-tab-btn,
+body.aura-dark-mode .aura-main-tab-btn,
+body[data-theme="dark"] .aura-main-tab-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-main-tab-btn.active,
+html.wp-dark-mode-active .aura-main-tab-btn.active,
+body.wp-dark-mode-active .aura-main-tab-btn.active,
+body.aura-dark-mode .aura-main-tab-btn.active,
+body[data-theme="dark"] .aura-main-tab-btn.active {
+    background: #0f172a;
+    color: #60a5fa;
+    border-color: #475569;
+    border-bottom-color: #3b82f6;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-cat-budget-control-bar,
+html[data-wp-dark-mode-scheme="dark"] .aura-kpi-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-chart-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-cat-table-card,
+html.wp-dark-mode-active .aura-cat-budget-control-bar,
+html.wp-dark-mode-active .aura-kpi-card,
+html.wp-dark-mode-active .aura-chart-card,
+html.wp-dark-mode-active .aura-cat-table-card,
+body.wp-dark-mode-active .aura-cat-budget-control-bar,
+body.wp-dark-mode-active .aura-kpi-card,
+body.wp-dark-mode-active .aura-chart-card,
+body.wp-dark-mode-active .aura-cat-table-card,
+body.aura-dark-mode .aura-cat-budget-control-bar,
+body.aura-dark-mode .aura-kpi-card,
+body.aura-dark-mode .aura-chart-card,
+body.aura-dark-mode .aura-cat-table-card,
+body[data-theme="dark"] .aura-cat-budget-control-bar,
+body[data-theme="dark"] .aura-kpi-card,
+body[data-theme="dark"] .aura-chart-card,
+body[data-theme="dark"] .aura-cat-table-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-kpi-value,
+html[data-wp-dark-mode-scheme="dark"] .aura-card-title,
+html.wp-dark-mode-active .aura-kpi-value,
+html.wp-dark-mode-active .aura-card-title,
+body.wp-dark-mode-active .aura-kpi-value,
+body.wp-dark-mode-active .aura-card-title,
+body.aura-dark-mode .aura-kpi-value,
+body.aura-dark-mode .aura-card-title,
+body[data-theme="dark"] .aura-kpi-value,
+body[data-theme="dark"] .aura-card-title {
+    color: #f1f5f9;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-select-styled,
+html.wp-dark-mode-active .aura-select-styled,
+body.wp-dark-mode-active .aura-select-styled,
+body.aura-dark-mode .aura-select-styled,
+body[data-theme="dark"] .aura-select-styled {
+    background: #0f172a;
+    border-color: #475569;
+    color: #f1f5f9;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-cat-budget-table thead th,
+html[data-wp-dark-mode-scheme="dark"] .aura-cat-budget-table tfoot td,
+html[data-wp-dark-mode-scheme="dark"] .aura-row-parent,
+html.wp-dark-mode-active .aura-cat-budget-table thead th,
+html.wp-dark-mode-active .aura-cat-budget-table tfoot td,
+html.wp-dark-mode-active .aura-row-parent,
+body.wp-dark-mode-active .aura-cat-budget-table thead th,
+body.wp-dark-mode-active .aura-cat-budget-table tfoot td,
+body.wp-dark-mode-active .aura-row-parent,
+body.aura-dark-mode .aura-cat-budget-table thead th,
+body.aura-dark-mode .aura-cat-budget-table tfoot td,
+body.aura-dark-mode .aura-row-parent,
+body[data-theme="dark"] .aura-cat-budget-table thead th,
+body[data-theme="dark"] .aura-cat-budget-table tfoot td,
+body[data-theme="dark"] .aura-row-parent {
+    background: #0f172a !important;
+    color: #cbd5e1;
+    border-color: #334155;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-row-child,
+html.wp-dark-mode-active .aura-row-child,
+body.wp-dark-mode-active .aura-row-child,
+body.aura-dark-mode .aura-row-child,
+body[data-theme="dark"] .aura-row-child {
+    background: #1e293b !important;
+    color: #e2e8f0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOTOR DE IMPRESIÓN OFICIAL (CARTA / OFICIO / HORIZONTAL / VERTICAL)
+   Modo claro forzado, auto-ajuste sin desbordes y validez ejecutiva
+   ═══════════════════════════════════════════════════════════════════ */
+@page {
+    size: auto;
+    margin: 8mm 10mm;
+}
+
+@media print {
+    /* Forzar representación de colores exacta y modo claro integral */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    html, body,
+    html[data-wp-dark-mode-scheme="dark"],
+    html.wp-dark-mode-active,
+    body.wp-dark-mode-active,
+    body.aura-dark-mode,
+    body[data-theme="dark"] {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-size: 11px !important;
+    }
+
+    /* Ocultar elementos no imprimibles de WordPress y UI interactiva */
+    #adminmenumain,
+    #adminmenuback,
+    #wpadminbar,
+    #wpfooter,
+    .notice,
+    .updated,
+    .error,
+    .aura-budgets-nav,
+    .aura-main-tabs,
+    #tab-area-budgets,
+    .aura-header-actions,
+    .aura-card-actions,
+    .aura-cat-table-card .aura-card-actions,
+    .aura-tree-expander-btn,
+    .aura-modal-overlay,
+    .aura-help-icon,
+    .aura-btn,
+    button,
+    .button,
+    select,
+    #aura-cat-budget-loading,
+    .aura-budgets-filters,
+    #aura-filters-clear {
+        display: none !important;
+    }
+
+    /* Contenedor principal a pantalla completa sin márgenes */
+    #wpcontent,
+    #wpbody,
+    #wpbody-content,
+    .aura-budgets-wrap {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        background: #ffffff !important;
+    }
+
+    #aura-cat-budget-content {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: 100% !important;
+    }
+
+    /* Encabezado formal de reporte */
+    .aura-cat-print-header,
+    #aura-cat-print-header {
+        display: block !important;
+        margin-bottom: 12px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 2px solid #0f172a !important;
+    }
+
+    .aura-print-header-top {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+    }
+
+    .aura-print-title {
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        margin: 0 0 2px 0 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .aura-print-subtitle {
+        font-size: 9.5px !important;
+        color: #64748b !important;
+        margin: 0 !important;
+    }
+
+    .aura-print-meta {
+        text-align: right !important;
+        font-size: 9.5px !important;
+        color: #334155 !important;
+        line-height: 1.3 !important;
+    }
+
+    .aura-print-category-info {
+        display: flex !important;
+        justify-content: space-between !important;
+        margin-top: 6px !important;
+        padding: 5px 8px !important;
+        background: #f1f5f9 !important;
+        border-radius: 4px !important;
+        font-size: 10px !important;
+        color: #0f172a !important;
+    }
+
+    /* Tira horizontal de 5 KPIs compacta */
+    .aura-cat-kpi-grid,
+    #aura-cat-budget-kpis {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .aura-cat-kpi-grid .aura-kpi-card {
+        flex: 1 1 20% !important;
+        padding: 6px 8px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        background: #f8fafc !important;
+        box-shadow: none !important;
+    }
+
+    .aura-kpi-head {
+        margin-bottom: 4px !important;
+    }
+
+    .aura-kpi-label {
+        font-size: 8.5px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        color: #475569 !important;
+    }
+
+    .aura-kpi-icon-box {
+        display: none !important;
+    }
+
+    .aura-kpi-value {
+        font-size: 13.5px !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        line-height: 1.2 !important;
+    }
+
+    .aura-kpi-foot,
+    .aura-kpi-sub {
+        font-size: 8px !important;
+        color: #64748b !important;
+    }
+
+    .aura-badge-mini,
+    .aura-kpi-status-badge {
+        font-size: 7.5px !important;
+        padding: 1px 4px !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    /* Gráficos lado a lado al 50% con altura compacta */
+    .aura-cat-charts-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 10px !important;
+        margin-bottom: 12px !important;
+        page-break-inside: avoid !important;
+    }
+
+    .aura-cat-charts-grid .aura-glass-card {
+        flex: 1 1 50% !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        padding: 8px !important;
+        background: #ffffff !important;
+    }
+
+    .aura-card-head {
+        margin-bottom: 4px !important;
+        padding-bottom: 4px !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+
+    .aura-card-title {
+        font-size: 10.5px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        margin: 0 !important;
+    }
+
+    .aura-card-subtitle {
+        font-size: 8.5px !important;
+        color: #64748b !important;
+        margin: 2px 0 0 0 !important;
+    }
+
+    .aura-card-badge-icon {
+        display: none !important;
+    }
+
+    .aura-chart-body,
+    #aura-cat-trend-chart,
+    #aura-cat-donut-chart {
+        min-height: 180px !important;
+        max-height: 200px !important;
+    }
+
+    /* Tabla tipo árbol de desglose presupuestario */
+    .aura-cat-table-card {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        margin-bottom: 12px !important;
+        background: #ffffff !important;
+        page-break-inside: avoid !important;
+    }
+
+    .aura-cat-budget-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    .aura-cat-budget-table th,
+    .aura-cat-budget-table td {
+        padding: 4px 6px !important;
+        font-size: 9.5px !important;
+        line-height: 1.25 !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+        background: transparent !important;
+    }
+
+    /* Ocultar columna de botones de acción en impresión */
+    .aura-cat-budget-table th:last-child,
+    .aura-cat-budget-table td:last-child {
+        display: none !important;
+    }
+
+    .aura-cat-budget-table thead th {
+        background: #f1f5f9 !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+    }
+
+    .aura-row-parent td {
+        background: #f8fafc !important;
+        font-weight: 700 !important;
+    }
+
+    /* Forzar visibilidad de todas las subcategorías en la hoja */
+    .aura-row-child {
+        display: table-row !important;
+        background: #ffffff !important;
+    }
+
+    .aura-row-child.is-hidden {
+        display: table-row !important;
+    }
+
+    .aura-cat-budget-table tfoot td {
+        background: #f1f5f9 !important;
+        font-weight: 800 !important;
+        border-top: 2px solid #0f172a !important;
+    }
+
+    /* Pie de firmas para validez formal */
+    .aura-cat-print-footer,
+    #aura-cat-print-footer {
+        display: block !important;
+        margin-top: 18px !important;
+        padding-top: 10px !important;
+        border-top: 1px solid #cbd5e1 !important;
+        page-break-inside: avoid !important;
+    }
+
+    .aura-print-signatures {
+        display: flex !important;
+        justify-content: space-around !important;
+        margin: 18px 0 8px 0 !important;
+    }
+
+    .aura-print-sig-box {
+        text-align: center !important;
+        width: 220px !important;
+    }
+
+    .aura-sig-line {
+        border-bottom: 1px solid #0f172a !important;
+        height: 28px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .aura-print-sig-box span {
+        font-size: 8.5px !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+        text-transform: uppercase !important;
+    }
+
+    .aura-print-watermark-note {
+        text-align: center !important;
+        font-size: 7.5px !important;
+        color: #94a3b8 !important;
+        margin-top: 6px !important;
+    }
+}
+
+
 

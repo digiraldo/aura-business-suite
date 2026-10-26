@@ -342,6 +342,11 @@ jQuery(document).ready(function($) {
                         </div>
 
                         <div style="display: flex; gap: 6px; align-items: center;">
+                            ${parent.type !== 'income' ? `
+                                <a href="admin.php?page=aura-financial-budgets&category_id=${parent.id}" class="button button-small" data-tooltip="Ver Estadísticas y Presupuesto de '${escapeHtml(parent.name)}'">
+                                    <span class="dashicons dashicons-chart-pie" style="margin-top: 2px; color: #10b981;"></span> Presupuesto
+                                </a>
+                            ` : ''}
                             <button type="button" class="button button-small btn-add-sub" data-parent="${parent.id}" data-name="${escapeHtml(parent.name)}" data-tooltip="Agregar una nueva subcategoría dentro de '${escapeHtml(parent.name)}'">
                                 ➕ Subcategoría
                             </button>

@@ -17,7 +17,7 @@ class Aura_Financial_Budgets {
     public static function init() {
         add_action( 'admin_init', [ __CLASS__, 'maybe_upgrade_table' ] );
 
-        // AJAX
+        // AJAX Presupuestos Generales y por Área
         add_action( 'wp_ajax_aura_get_budgets',         [ __CLASS__, 'ajax_get_budgets' ] );
         add_action( 'wp_ajax_aura_save_budget',         [ __CLASS__, 'ajax_save_budget' ] );
         add_action( 'wp_ajax_aura_delete_budget',       [ __CLASS__, 'ajax_delete_budget' ] );
@@ -27,6 +27,11 @@ class Aura_Financial_Budgets {
         add_action( 'wp_ajax_aura_budget_widget_data',            [ __CLASS__, 'ajax_widget_data' ] );
         add_action( 'wp_ajax_aura_get_area_budget_categories',    [ __CLASS__, 'ajax_get_area_budget_categories' ] );
         add_action( 'wp_ajax_aura_budget_category_breakdown',     [ __CLASS__, 'ajax_budget_category_breakdown' ] );
+
+        // AJAX Presupuestos y Estadísticas por Categoría & Subcategorías (Nuevo)
+        add_action( 'wp_ajax_aura_get_category_budget_stats',    [ __CLASS__, 'ajax_get_category_budget_stats' ] );
+        add_action( 'wp_ajax_aura_save_category_budget',         [ __CLASS__, 'ajax_save_category_budget' ] );
+        add_action( 'wp_ajax_aura_delete_category_budget',       [ __CLASS__, 'ajax_delete_category_budget' ] );
 
         // Cron diario de alertas
         add_action( 'aura_finance_check_budgets_daily', [ __CLASS__, 'check_budgets_and_alert' ] );
@@ -73,6 +78,27 @@ class Aura_Financial_Budgets {
         $col_cat = $wpdb->get_row( "SHOW COLUMNS FROM `{$table}` LIKE 'category_id'" );
         if ( $col_cat && strpos( $col_cat->Null, 'YES' ) === false ) {
             $wpdb->query( "ALTER TABLE `{$table}` MODIFY COLUMN `category_id` INT(11) NULL DEFAULT NULL" );
+        }
+
+        // Soporte Presupuestos y Estadísticas por Categoría (Año Fiscal, Modo Cálculo, Porcentaje y Distribución Mensual)
+        if ( ! in_array( 'fiscal_year', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `fiscal_year` INT(4) NULL DEFAULT NULL AFTER `category_id`" );
+            $wpdb->query( "UPDATE `{$table}` SET `fiscal_year` = YEAR(start_date) WHERE (`fiscal_year` IS NULL OR `fiscal_year` = 0) AND start_date IS NOT NULL" );
+        }
+        if ( ! in_array( 'calculation_mode', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `calculation_mode` ENUM('amount','percentage') DEFAULT 'amount' AFTER `budget_amount`" );
+        }
+        if ( ! in_array( 'budget_percentage', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `budget_percentage` DECIMAL(5,2) NULL DEFAULT NULL AFTER `calculation_mode`" );
+        }
+        if ( ! in_array( 'monthly_distribution', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `monthly_distribution` LONGTEXT NULL DEFAULT NULL AFTER `budget_percentage`" );
+        }
+
+        // Índices de optimización para presupuestos de categorías
+        $indices = $wpdb->get_results( "SHOW INDEX FROM `{$table}` WHERE Key_name = 'idx_cat_fiscal_year'" );
+        if ( empty( $indices ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD INDEX `idx_cat_fiscal_year` (`category_id`, `fiscal_year`, `is_active`)" );
         }
     }
 
@@ -942,6 +968,635 @@ class Aura_Financial_Budgets {
                 wp_mail( $email, $subject, $message, $headers );
             }
         }
+    }
+
+    /* ----------------------------------------------------------------
+     * Presupuestos y Estadísticas por Categoría & Subcategorías (Nuevo)
+     * -------------------------------------------------------------- */
+
+    /**
+     * Obtener lista de categorías principales de egreso con estado de presupuesto y gasto en el año fiscal.
+     *
+     * @param int $fiscal_year Año fiscal (ej. 2026).
+     * @return array
+     */
+    public static function get_budgetable_categories( int $fiscal_year ): array {
+        global $wpdb;
+        $c_table = $wpdb->prefix . 'aura_finance_categories';
+        $b_table = $wpdb->prefix . 'aura_finance_budgets';
+        $t_table = $wpdb->prefix . 'aura_finance_transactions';
+
+        // 1. Obtener todas las categorías padre activas de egresos, ambos o capex
+        $parents = $wpdb->get_results(
+            "SELECT c.id, c.name, c.color, c.icon, c.slug, c.type,
+                    (SELECT COUNT(*) FROM {$c_table} sc WHERE sc.parent_id = c.id AND sc.is_active = 1) AS subcategories_count
+             FROM {$c_table} c
+             WHERE c.is_active = 1
+               AND c.parent_id IS NULL
+               AND c.type IN ('expense', 'both', 'capital')
+             ORDER BY c.name ASC"
+        );
+
+        if ( empty( $parents ) ) {
+            return [];
+        }
+
+        $results    = [];
+        $start_date = sprintf( '%04d-01-01', $fiscal_year );
+        $end_date   = sprintf( '%04d-12-31', $fiscal_year );
+
+        foreach ( $parents as $cat ) {
+            $cat_id = (int) $cat->id;
+
+            // Presupuesto activo para el año fiscal
+            $budget = $wpdb->get_row( $wpdb->prepare(
+                "SELECT id, budget_amount, calculation_mode, budget_percentage, monthly_distribution, alert_threshold, alert_on_exceed
+                 FROM {$b_table}
+                 WHERE category_id = %d
+                   AND is_active = 1
+                   AND (fiscal_year = %d OR (start_date <= %s AND end_date >= %s))
+                 ORDER BY id DESC LIMIT 1",
+                $cat_id, $fiscal_year, $end_date, $start_date
+            ) );
+
+            // Subcategorías IDs
+            $sub_ids = $wpdb->get_col( $wpdb->prepare(
+                "SELECT id FROM {$c_table} WHERE parent_id = %d AND is_active = 1",
+                $cat_id
+            ) );
+            $all_ids = array_merge( [ $cat_id ], array_map( 'intval', (array) $sub_ids ) );
+            $placeholders = implode( ',', array_fill( 0, count( $all_ids ), '%d' ) );
+
+            // Total gastado en el año fiscal
+            $spent_row = $wpdb->get_row( $wpdb->prepare(
+                "SELECT COUNT(id) AS tx_count, COALESCE(SUM(amount), 0) AS total_spent
+                 FROM {$t_table}
+                 WHERE (category_id IN ({$placeholders}) OR expense_category_id IN ({$placeholders}))
+                   AND transaction_type = 'expense'
+                   AND status = 'approved'
+                   AND deleted_at IS NULL
+                   AND transaction_date BETWEEN %s AND %s",
+                ...array_merge( $all_ids, $all_ids, [ $start_date, $end_date ] )
+            ) );
+
+            $budget_amount = $budget ? (float) $budget->budget_amount : 0.00;
+            $total_spent   = $spent_row ? (float) $spent_row->total_spent : 0.00;
+            $tx_count      = $spent_row ? (int) $spent_row->tx_count : 0;
+            $pct           = $budget_amount > 0 ? round( ( $total_spent / $budget_amount ) * 100, 1 ) : 0.0;
+
+            $status = 'no_budget';
+            if ( $budget_amount > 0 ) {
+                if ( $pct >= 100 ) {
+                    $status = 'overrun';
+                } elseif ( $pct >= 90 ) {
+                    $status = 'critical';
+                } elseif ( $pct >= 70 ) {
+                    $status = 'warning';
+                } else {
+                    $status = 'ok';
+                }
+            }
+
+            $results[] = [
+                'id'                  => $cat_id,
+                'name'                => $cat->name,
+                'color'               => ! empty( $cat->color ) ? $cat->color : '#475569',
+                'icon'                => ! empty( $cat->icon ) ? $cat->icon : 'dashicons-category',
+                'slug'                => $cat->slug,
+                'type'                => $cat->type,
+                'subcategories_count' => (int) $cat->subcategories_count,
+                'has_budget'          => (bool) $budget,
+                'budget_id'           => $budget ? (int) $budget->id : 0,
+                'budget_amount'       => $budget_amount,
+                'budget_percentage'   => $budget ? (float) $budget->budget_percentage : null,
+                'calculation_mode'    => $budget ? ( $budget->calculation_mode ?? 'amount' ) : 'amount',
+                'total_spent'         => $total_spent,
+                'tx_count'            => $tx_count,
+                'execution_pct'       => $pct,
+                'status'              => $status,
+                'remaining'           => max( 0, $budget_amount - $total_spent ),
+                'overrun'             => max( 0, $total_spent - $budget_amount ),
+            ];
+        }
+
+        return $results;
+    }
+
+    /**
+     * Calcular estadísticas y desglose completo para una Categoría y sus Subcategorías en un año fiscal.
+     *
+     * @param int $category_id ID de la categoría padre seleccionada.
+     * @param int $fiscal_year Año fiscal a consultar.
+     * @return array|null
+     */
+    public static function get_category_budget_stats( int $category_id, int $fiscal_year ): ?array {
+        global $wpdb;
+        $c_table = $wpdb->prefix . 'aura_finance_categories';
+        $b_table = $wpdb->prefix . 'aura_finance_budgets';
+        $t_table = $wpdb->prefix . 'aura_finance_transactions';
+
+        // 1. Obtener datos de la categoría principal
+        $parent = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id, name, color, icon, slug, type, description, parent_id
+             FROM {$c_table}
+             WHERE id = %d AND is_active = 1",
+            $category_id
+        ) );
+
+        if ( ! $parent ) {
+            return null;
+        }
+
+        $start_date = sprintf( '%04d-01-01', $fiscal_year );
+        $end_date   = sprintf( '%04d-12-31', $fiscal_year );
+
+        // 2. Presupuesto asignado para la categoría
+        $budget = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id, budget_amount, calculation_mode, budget_percentage, monthly_distribution,
+                    alert_threshold, alert_on_exceed, notify_creator, notify_admins, notify_emails,
+                    created_at, updated_at
+             FROM {$b_table}
+             WHERE category_id = %d
+               AND is_active = 1
+               AND (fiscal_year = %d OR (start_date <= %s AND end_date >= %s))
+             ORDER BY id DESC LIMIT 1",
+            $category_id, $fiscal_year, $end_date, $start_date
+        ) );
+
+        $budget_amount     = $budget ? (float) $budget->budget_amount : 0.00;
+        $budget_percentage = $budget && $budget->budget_percentage !== null ? (float) $budget->budget_percentage : null;
+        $calculation_mode  = $budget ? ( $budget->calculation_mode ?? 'amount' ) : 'amount';
+
+        // Presupuesto global total de egresos de la organización para el año (para contexto de porcentaje)
+        $global_expense_total = (float) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COALESCE(SUM(amount), 0)
+             FROM {$t_table}
+             WHERE transaction_type = 'expense'
+               AND status = 'approved'
+               AND deleted_at IS NULL
+               AND transaction_date BETWEEN %s AND %s",
+            $start_date, $end_date
+        ) );
+
+        // Si se configuró porcentaje pero no amount, o viceversa, sincronizar porcentaje representativo
+        $pct_of_global_expenses = ( $global_expense_total > 0 && $budget_amount > 0 )
+            ? round( ( $budget_amount / $global_expense_total ) * 100, 2 )
+            : ( $budget_percentage ?? 0.00 );
+
+        // 3. Subcategorías de esta categoría padre
+        $subcategories_raw = $wpdb->get_results( $wpdb->prepare(
+            "SELECT id, name, color, icon, slug, description
+             FROM {$c_table}
+             WHERE parent_id = %d AND is_active = 1
+             ORDER BY name ASC",
+            $category_id
+        ) );
+
+        $sub_ids = array_map( function( $sub ) { return (int) $sub->id; }, $subcategories_raw );
+        $all_family_ids = array_merge( [ $category_id ], $sub_ids );
+
+        // 4. Gasto directo en la categoría padre
+        $direct_spent_row = $wpdb->get_row( $wpdb->prepare(
+            "SELECT COUNT(id) AS tx_count, COALESCE(SUM(amount), 0) AS total_spent
+             FROM {$t_table}
+             WHERE (category_id = %d OR expense_category_id = %d)
+               AND transaction_type = 'expense'
+               AND status = 'approved'
+               AND deleted_at IS NULL
+               AND transaction_date BETWEEN %s AND %s",
+            $category_id, $category_id, $start_date, $end_date
+        ) );
+        $direct_spent = $direct_spent_row ? (float) $direct_spent_row->total_spent : 0.00;
+        $direct_tx    = $direct_spent_row ? (int) $direct_spent_row->tx_count : 0;
+
+        // 5. Gasto detallado de cada subcategoría
+        $subcategories_stats = [];
+        $subs_total_spent    = 0.00;
+        $subs_total_tx       = 0;
+
+        foreach ( $subcategories_raw as $sub ) {
+            $sid = (int) $sub->id;
+            $sub_spent_row = $wpdb->get_row( $wpdb->prepare(
+                "SELECT COUNT(id) AS tx_count, COALESCE(SUM(amount), 0) AS total_spent
+                 FROM {$t_table}
+                 WHERE (category_id = %d OR expense_category_id = %d)
+                   AND transaction_type = 'expense'
+                   AND status = 'approved'
+                   AND deleted_at IS NULL
+                   AND transaction_date BETWEEN %s AND %s",
+                $sid, $sid, $start_date, $end_date
+            ) );
+
+            $sub_spent = $sub_spent_row ? (float) $sub_spent_row->total_spent : 0.00;
+            $sub_tx    = $sub_spent_row ? (int) $sub_spent_row->tx_count : 0;
+
+            $subs_total_spent += $sub_spent;
+            $subs_total_tx    += $sub_tx;
+
+            $subcategories_stats[] = [
+                'id'          => $sid,
+                'name'        => $sub->name,
+                'color'       => ! empty( $sub->color ) ? $sub->color : ( $parent->color ?: '#3b82f6' ),
+                'icon'        => ! empty( $sub->icon ) ? $sub->icon : 'dashicons-tag',
+                'slug'        => $sub->slug,
+                'tx_count'    => $sub_tx,
+                'total_spent' => $sub_spent,
+            ];
+        }
+
+        // Total consolidado de la familia (Padre + Todas sus Subcategorías)
+        $consolidated_spent = $direct_spent + $subs_total_spent;
+        $consolidated_tx    = $direct_tx + $subs_total_tx;
+
+        // Calcular porcentaje que representa cada subcategoría sobre el gasto total
+        foreach ( $subcategories_stats as &$s_stat ) {
+            $s_stat['pct_of_category'] = $consolidated_spent > 0
+                ? round( ( $s_stat['total_spent'] / $consolidated_spent ) * 100, 1 )
+                : 0.0;
+            $s_stat['pct_of_budget']   = $budget_amount > 0
+                ? round( ( $s_stat['total_spent'] / $budget_amount ) * 100, 1 )
+                : 0.0;
+        }
+        unset( $s_stat );
+
+        // Ordenar subcategorías por gasto descendente (las que más gastaron primero)
+        usort( $subcategories_stats, function( $a, $b ) {
+            return $b['total_spent'] <=> $a['total_spent'];
+        } );
+
+        // 6. Evolución mensualizada en 12 meses (gasto mes a mes)
+        $placeholders_family = implode( ',', array_fill( 0, count( $all_family_ids ), '%d' ) );
+        $monthly_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT MONTH(transaction_date) AS tx_month,
+                    COUNT(id) AS tx_count,
+                    COALESCE(SUM(amount), 0) AS month_spent
+             FROM {$t_table}
+             WHERE (category_id IN ({$placeholders_family}) OR expense_category_id IN ({$placeholders_family}))
+               AND transaction_type = 'expense'
+               AND status = 'approved'
+               AND deleted_at IS NULL
+               AND transaction_date BETWEEN %s AND %s
+             GROUP BY MONTH(transaction_date)
+             ORDER BY tx_month ASC",
+            ...array_merge( $all_family_ids, $all_family_ids, [ $start_date, $end_date ] )
+        ) );
+
+        $monthly_spent_map = [];
+        foreach ( $monthly_rows as $mr ) {
+            $monthly_spent_map[ (int) $mr->tx_month ] = (float) $mr->month_spent;
+        }
+
+        // Distribución mensual del presupuesto (si se guardó manual en JSON o prorrateo / 12)
+        $custom_monthly = [];
+        if ( ! empty( $budget->monthly_distribution ) ) {
+            $decoded = json_decode( $budget->monthly_distribution, true );
+            if ( is_array( $decoded ) ) {
+                $custom_monthly = $decoded;
+            }
+        }
+
+        $default_month_budget = $budget_amount > 0 ? round( $budget_amount / 12, 2 ) : 0.00;
+        $monthly_trend        = [];
+        $accum_budget         = 0.00;
+        $accum_spent          = 0.00;
+        $month_names          = [
+            1 => 'Ene', 2 => 'Feb', 3 => 'Mar', 4 => 'Abr',
+            5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Ago',
+            9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dic'
+        ];
+
+        for ( $m = 1; $m <= 12; $m++ ) {
+            $m_budget = isset( $custom_monthly[ $m ] ) ? (float) $custom_monthly[ $m ] : $default_month_budget;
+            $m_spent  = isset( $monthly_spent_map[ $m ] ) ? (float) $monthly_spent_map[ $m ] : 0.00;
+
+            $accum_budget += $m_budget;
+            $accum_spent  += $m_spent;
+
+            $monthly_trend[] = [
+                'month'               => $m,
+                'month_name'          => $month_names[ $m ],
+                'budget'              => $m_budget,
+                'spent'               => $m_spent,
+                'cumulative_budget'   => round( $accum_budget, 2 ),
+                'cumulative_spent'    => round( $accum_spent, 2 ),
+                'diff'                => round( $m_budget - $m_spent, 2 ),
+            ];
+        }
+
+        // 7. Métricas de Cierre y Proyección
+        $current_year   = (int) current_time( 'Y' );
+        $is_year_closed = $fiscal_year < $current_year;
+
+        // Días transcurridos
+        $year_start_ts = strtotime( $start_date );
+        $year_end_ts   = strtotime( $end_date );
+        $today_ts      = strtotime( current_time( 'Y-m-d' ) );
+
+        $total_days_in_year = (int) round( ( $year_end_ts - $year_start_ts ) / 86400 ) + 1;
+
+        if ( $is_year_closed ) {
+            $days_elapsed = $total_days_in_year;
+            $projection   = $consolidated_spent;
+        } else {
+            $days_elapsed = max( 1, min( $total_days_in_year, (int) round( ( $today_ts - $year_start_ts ) / 86400 ) + 1 ) );
+            $projection   = $days_elapsed > 0
+                ? round( ( $consolidated_spent / $days_elapsed ) * $total_days_in_year, 2 )
+                : $consolidated_spent;
+        }
+
+        $execution_pct = $budget_amount > 0 ? round( ( $consolidated_spent / $budget_amount ) * 100, 1 ) : 0.0;
+        $remaining     = max( 0, $budget_amount - $consolidated_spent );
+        $overrun       = max( 0, $consolidated_spent - $budget_amount );
+
+        $status = 'no_budget';
+        if ( $budget_amount > 0 ) {
+            if ( $execution_pct >= 100 ) {
+                $status = 'overrun';
+            } elseif ( $execution_pct >= 90 ) {
+                $status = 'critical';
+            } elseif ( $execution_pct >= 70 ) {
+                $status = 'warning';
+            } else {
+                $status = 'ok';
+            }
+        }
+
+        $category_data = [
+            'id'                  => (int) $parent->id,
+            'name'                => $parent->name,
+            'color'               => ! empty( $parent->color ) ? $parent->color : '#3b82f6',
+            'icon'                => ! empty( $parent->icon ) ? $parent->icon : 'dashicons-category',
+            'slug'                => $parent->slug,
+            'type'                => $parent->type,
+            'description'         => $parent->description,
+            'subcategories_count' => count( $subcategories_raw ),
+        ];
+
+        return [
+            'category' => $category_data,
+            'family'   => $category_data, // Alias retrocompatible
+            'budget' => [
+                'has_budget'             => (bool) $budget,
+                'budget_id'              => $budget ? (int) $budget->id : 0,
+                'fiscal_year'            => $fiscal_year,
+                'budget_amount'          => $budget_amount,
+                'budget_annual'          => $budget_amount, // Alias retrocompatible
+                'budget_monthly'         => $default_month_budget,
+                'budget_percentage'      => $budget_percentage,
+                'calculation_mode'       => $calculation_mode,
+                'pct_of_global_expenses' => $pct_of_global_expenses,
+                'alert_threshold'        => $budget ? (int) $budget->alert_threshold : 80,
+                'alert_on_exceed'        => $budget ? (bool) $budget->alert_on_exceed : true,
+                'custom_monthly'         => $custom_monthly,
+            ],
+            'execution' => [
+                'total_spent'            => $consolidated_spent,
+                'tx_count'               => $consolidated_tx,
+                'direct_spent'           => $direct_spent,
+                'direct_tx'              => $direct_tx,
+                'subs_spent'             => $subs_total_spent,
+                'subs_tx'                => $subs_total_tx,
+                'remaining'              => $remaining,
+                'overrun'                => $overrun,
+                'execution_pct'          => $execution_pct,
+                'status'                 => $status,
+                'is_year_closed'         => $is_year_closed,
+                'days_elapsed'           => $days_elapsed,
+                'days_in_year'           => $total_days_in_year,
+                'projection_year_end'    => $projection,
+                'diff_vs_projection'     => $budget_amount > 0 ? round( $budget_amount - $projection, 2 ) : 0.00,
+            ],
+            'subcategories' => $subcategories_stats,
+            'monthly_trend' => $monthly_trend,
+        ];
+    }
+
+    /* ----------------------------------------------------------------
+     * AJAX Handlers para Presupuestos de Categorías
+     * -------------------------------------------------------------- */
+
+    /**
+     * AJAX: Obtener categorías y estadísticas completas de la categoría seleccionada
+     */
+    public static function ajax_get_category_budget_stats() {
+        check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
+
+        if (
+            ! current_user_can( 'aura_finance_view_all' ) &&
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_finance_budgets' ) &&
+            ! current_user_can( 'aura_areas_view_own' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para consultar presupuestos.', 'aura-suite' ) ], 403 );
+        }
+
+        $fiscal_year = isset( $_POST['fiscal_year'] ) ? absint( $_POST['fiscal_year'] ) : (int) current_time( 'Y' );
+        if ( $fiscal_year < 2000 || $fiscal_year > 2100 ) {
+            $fiscal_year = (int) current_time( 'Y' );
+        }
+
+        $category_id = isset( $_POST['category_id'] ) ? absint( $_POST['category_id'] ) : 0;
+
+        // 1. Obtener todas las categorías presupuestables
+        $categories = self::get_budgetable_categories( $fiscal_year );
+
+        if ( empty( $categories ) ) {
+            wp_send_json_success( [
+                'fiscal_year'          => $fiscal_year,
+                'categories'           => [],
+                'selected_category_id' => 0,
+                'stats'                => null,
+            ] );
+            return;
+        }
+
+        // Si no se pasó categoría, tomar la que corresponda (primera con presupuesto o primera en lista)
+        if ( ! $category_id ) {
+            foreach ( $categories as $c ) {
+                if ( $c['has_budget'] ) {
+                    $category_id = $c['id'];
+                    break;
+                }
+            }
+            if ( ! $category_id ) {
+                $category_id = $categories[0]['id'];
+            }
+        }
+
+        // 2. Obtener estadísticas de la categoría seleccionada
+        $stats = self::get_category_budget_stats( $category_id, $fiscal_year );
+
+        wp_send_json_success( [
+            'fiscal_year'          => $fiscal_year,
+            'categories'           => $categories,
+            'selected_category_id' => $category_id,
+            'stats'                => $stats,
+        ] );
+    }
+
+    /**
+     * AJAX: Guardar o actualizar presupuesto para una categoría
+     */
+    public static function ajax_save_category_budget() {
+        check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_finance_create' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para guardar presupuestos.', 'aura-suite' ) ], 403 );
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_budgets';
+
+        $category_id = isset( $_POST['category_id'] ) ? absint( $_POST['category_id'] ) : 0;
+        $fiscal_year = isset( $_POST['fiscal_year'] ) ? absint( $_POST['fiscal_year'] ) : (int) current_time( 'Y' );
+
+        if ( ! $category_id ) {
+            wp_send_json_error( [ 'message' => __( 'Debes seleccionar una categoría válida.', 'aura-suite' ) ] );
+        }
+
+        $calculation_mode  = isset( $_POST['calculation_mode'] ) && in_array( $_POST['calculation_mode'], [ 'amount', 'percentage' ], true )
+            ? sanitize_text_field( $_POST['calculation_mode'] )
+            : 'amount';
+
+        $budget_amount     = isset( $_POST['budget_amount'] ) ? max( 0.00, (float) $_POST['budget_amount'] ) : 0.00;
+        $budget_percentage = isset( $_POST['budget_percentage'] ) && $_POST['budget_percentage'] !== ''
+            ? max( 0.00, min( 100.00, (float) $_POST['budget_percentage'] ) )
+            : null;
+
+        $alert_threshold   = isset( $_POST['alert_threshold'] ) ? max( 1, min( 99, absint( $_POST['alert_threshold'] ) ) ) : 80;
+        $alert_on_exceed   = ! empty( $_POST['alert_on_exceed'] ) ? 1 : 0;
+        $notify_creator    = ! empty( $_POST['notify_creator'] ) ? 1 : 0;
+        $notify_admins     = ! empty( $_POST['notify_admins'] ) ? 1 : 0;
+        $notify_emails     = isset( $_POST['notify_emails'] ) ? sanitize_textarea_field( $_POST['notify_emails'] ) : '';
+
+        // Distribución mensual si viene especificada
+        $monthly_dist_json = null;
+        if ( ! empty( $_POST['monthly_distribution'] ) ) {
+            $raw_dist = is_array( $_POST['monthly_distribution'] )
+                ? $_POST['monthly_distribution']
+                : json_decode( stripslashes( $_POST['monthly_distribution'] ), true );
+
+            if ( is_array( $raw_dist ) ) {
+                $clean_dist = [];
+                for ( $m = 1; $m <= 12; $m++ ) {
+                    $clean_dist[ $m ] = isset( $raw_dist[ $m ] ) ? max( 0.00, (float) $raw_dist[ $m ] ) : 0.00;
+                }
+                $monthly_dist_json = wp_json_encode( $clean_dist );
+            }
+        }
+
+        $start_date = sprintf( '%04d-01-01', $fiscal_year );
+        $end_date   = sprintf( '%04d-12-31', $fiscal_year );
+        $now        = current_time( 'mysql' );
+
+        // Verificar si ya existe presupuesto para esta categoría y año fiscal
+        $existing = $wpdb->get_row( $wpdb->prepare(
+            "SELECT id FROM {$table}
+             WHERE category_id = %d
+               AND (fiscal_year = %d OR (start_date <= %s AND end_date >= %s))
+               AND is_active = 1
+             LIMIT 1",
+            $category_id, $fiscal_year, $end_date, $start_date
+        ) );
+
+        $data = [
+            'category_id'          => $category_id,
+            'fiscal_year'          => $fiscal_year,
+            'budget_amount'        => $budget_amount,
+            'calculation_mode'     => $calculation_mode,
+            'budget_percentage'    => $budget_percentage,
+            'monthly_distribution' => $monthly_dist_json,
+            'period_type'          => 'yearly',
+            'start_date'           => $start_date,
+            'end_date'             => $end_date,
+            'alert_threshold'      => $alert_threshold,
+            'alert_on_exceed'      => $alert_on_exceed,
+            'notify_creator'       => $notify_creator,
+            'notify_admins'        => $notify_admins,
+            'notify_emails'        => $notify_emails,
+            'alert_sent_threshold' => 0,
+            'alert_sent_exceed'    => 0,
+            'is_active'            => 1,
+            'updated_at'           => $now,
+        ];
+
+        $formats = [
+            '%d', '%d', '%f', '%s', '%f', '%s', '%s', '%s', '%s',
+            '%d', '%d', '%d', '%d', '%s', '%d', '%d', '%d', '%s'
+        ];
+
+        if ( $existing ) {
+            $wpdb->update(
+                $table,
+                $data,
+                [ 'id' => (int) $existing->id ],
+                $formats,
+                [ '%d' ]
+            );
+            $budget_id = (int) $existing->id;
+            $msg = __( 'Presupuesto de la categoría actualizado exitosamente.', 'aura-suite' );
+        } else {
+            $data['created_by'] = get_current_user_id();
+            $data['created_at'] = $now;
+            $formats[] = '%d';
+            $formats[] = '%s';
+
+            $wpdb->insert( $table, $data, $formats );
+            $budget_id = (int) $wpdb->insert_id;
+            $msg = __( 'Presupuesto para la categoría asignado exitosamente.', 'aura-suite' );
+        }
+
+        // Retornar estadísticas actualizadas
+        $stats = self::get_category_budget_stats( $category_id, $fiscal_year );
+
+        wp_send_json_success( [
+            'message'              => $msg,
+            'budget_id'            => $budget_id,
+            'fiscal_year'          => $fiscal_year,
+            'selected_category_id' => $category_id,
+            'stats'                => $stats,
+        ] );
+    }
+
+    /**
+     * AJAX: Eliminar presupuesto de una categoría
+     */
+    public static function ajax_delete_category_budget() {
+        check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
+
+        if ( ! current_user_can( 'aura_finance_delete_all' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para eliminar presupuestos.', 'aura-suite' ) ], 403 );
+        }
+
+        global $wpdb;
+        $table       = $wpdb->prefix . 'aura_finance_budgets';
+        $category_id = isset( $_POST['category_id'] ) ? absint( $_POST['category_id'] ) : 0;
+        $fiscal_year = isset( $_POST['fiscal_year'] ) ? absint( $_POST['fiscal_year'] ) : (int) current_time( 'Y' );
+
+        if ( ! $category_id ) {
+            wp_send_json_error( [ 'message' => __( 'Categoría inválida.', 'aura-suite' ) ] );
+        }
+
+        $wpdb->query( $wpdb->prepare(
+            "UPDATE {$table}
+             SET is_active = 0, updated_at = %s
+             WHERE category_id = %d
+               AND (fiscal_year = %d OR (start_date <= %s AND end_date >= %s))",
+            current_time( 'mysql' ),
+            $category_id,
+            $fiscal_year,
+            sprintf( '%04d-12-31', $fiscal_year ),
+            sprintf( '%04d-01-01', $fiscal_year )
+        ) );
+
+        $stats = self::get_category_budget_stats( $category_id, $fiscal_year );
+
+        wp_send_json_success( [
+            'message'              => __( 'Presupuesto de la categoría eliminado.', 'aura-suite' ),
+            'fiscal_year'          => $fiscal_year,
+            'selected_category_id' => $category_id,
+            'stats'                => $stats,
+        ] );
     }
 
     /* ----------------------------------------------------------------
