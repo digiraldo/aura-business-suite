@@ -171,6 +171,32 @@ class Aura_Financial_Budgets {
      * @param string      $end_date    Fecha fin (Y-m-d).
      * @param int|null    $category_id Opcional: desglose por categoría.
      */
+    /**
+     * Obtener el ID de la categoría y todos los IDs de sus subcategorías activas.
+     */
+    public static function get_category_and_subcategories_ids( int $category_id ): array {
+        global $wpdb;
+        $c_table = $wpdb->prefix . 'aura_finance_categories';
+        $sub_ids = $wpdb->get_col( $wpdb->prepare(
+            "SELECT id FROM {$c_table} WHERE parent_id = %d AND is_active = 1",
+            $category_id
+        ) );
+        $ids = [ $category_id ];
+        if ( ! empty( $sub_ids ) ) {
+            $ids = array_merge( $ids, array_map( 'intval', $sub_ids ) );
+        }
+        return array_unique( $ids );
+    }
+
+    /**
+     * Calcular monto ejecutado (egresos) para un Área en un rango de fechas.
+     * Incluye automáticamente transacciones de subcategorías si la categoría padre fue seleccionada.
+     *
+     * @param int         $area_id     ID del área.
+     * @param string      $start_date  Fecha inicio (Y-m-d).
+     * @param string      $end_date    Fecha fin (Y-m-d).
+     * @param int|null    $category_id Opcional: desglose por categoría.
+     */
     public static function get_executed( $area_id, $start_date, $end_date, ?int $category_id = null ) {
         global $wpdb;
         $tx_table = $wpdb->prefix . 'aura_finance_transactions';
@@ -185,8 +211,10 @@ class Aura_Financial_Budgets {
         $args = [ (int) $area_id, $start_date, $end_date ];
 
         if ( $category_id !== null ) {
-            $sql  .= ' AND category_id = %d';
-            $args[] = $category_id;
+            $cat_ids = self::get_category_and_subcategories_ids( (int) $category_id );
+            $placeholders = implode( ',', array_fill( 0, count( $cat_ids ), '%d' ) );
+            $sql  .= " AND (category_id IN ({$placeholders}) OR expense_category_id IN ({$placeholders}))";
+            $args = array_merge( $args, $cat_ids, $cat_ids );
         }
 
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -195,6 +223,7 @@ class Aura_Financial_Budgets {
 
     /**
      * Contar número de transacciones ejecutadas (egresos aprobados) para un Área y opcionalmente Categoría en un rango de fechas.
+     * Incluye automáticamente transacciones de subcategorías.
      *
      * @param int         $area_id     ID del área.
      * @param string      $start_date  Fecha inicio (Y-m-d).
@@ -215,8 +244,10 @@ class Aura_Financial_Budgets {
         $args = [ (int) $area_id, $start_date, $end_date ];
 
         if ( $category_id !== null ) {
-            $sql  .= ' AND category_id = %d';
-            $args[] = $category_id;
+            $cat_ids = self::get_category_and_subcategories_ids( (int) $category_id );
+            $placeholders = implode( ',', array_fill( 0, count( $cat_ids ), '%d' ) );
+            $sql  .= " AND (category_id IN ({$placeholders}) OR expense_category_id IN ({$placeholders}))";
+            $args = array_merge( $args, $cat_ids, $cat_ids );
         }
 
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -228,7 +259,7 @@ class Aura_Financial_Budgets {
      * -------------------------------------------------------------- */
 
     private static function enrich( $budget ) {
-        // Fase 8.3+: Si el presupuesto tiene categoría asignada, computar contra esa categoría; si no, contra todo el área
+        // Fase 8.3+: Si el presupuesto tiene categoría asignada, computar contra esa categoría y sus subcategorías; si no, contra todo el área
         $cat_id   = ! empty( $budget->category_id ) ? (int) $budget->category_id : null;
         $area_id  = (int) ( $budget->area_id ?? 0 );
         $executed = self::get_executed( $area_id, $budget->start_date, $budget->end_date, $cat_id );
@@ -252,6 +283,34 @@ class Aura_Financial_Budgets {
         $budget->overrun     = max( 0, $executed - $budget->budget_amount );
         $budget->projection  = $projection;
         $budget->status      = $pct > 100 ? 'overrun' : ( $pct >= 90 ? 'critical' : ( $pct >= 70 ? 'warning' : 'ok' ) );
+
+        // Desglose de subcategorías vinculadas al presupuesto para visualización árbol en Área
+        global $wpdb;
+        $c_table = $wpdb->prefix . 'aura_finance_categories';
+        $subcategories = [];
+
+        if ( ! empty( $budget->category_id ) ) {
+            $raw_subs = $wpdb->get_results( $wpdb->prepare(
+                "SELECT id, name, color, icon FROM {$c_table} WHERE parent_id = %d AND is_active = 1 ORDER BY name ASC",
+                $budget->category_id
+            ) );
+            if ( ! empty( $raw_subs ) ) {
+                foreach ( $raw_subs as $rs ) {
+                    $s_exec = self::get_executed( $area_id, $budget->start_date, $budget->end_date, (int) $rs->id );
+                    $s_tx   = self::get_tx_count( $area_id, $budget->start_date, $budget->end_date, (int) $rs->id );
+                    $subcategories[] = [
+                        'id'         => (int) $rs->id,
+                        'name'       => $rs->name,
+                        'color'      => ! empty( $rs->color ) ? $rs->color : ( ! empty( $budget->category_color ) ? $budget->category_color : '#6366f1' ),
+                        'icon'       => ! empty( $rs->icon ) ? $rs->icon : 'dashicons-tag',
+                        'executed'   => $s_exec,
+                        'tx_count'   => $s_tx,
+                        'percentage' => $budget->budget_amount > 0 ? round( ( $s_exec / $budget->budget_amount ) * 100, 1 ) : 0.0,
+                    ];
+                }
+            }
+        }
+        $budget->subcategories = $subcategories;
 
         return $budget;
     }
@@ -478,45 +537,55 @@ class Aura_Financial_Budgets {
 
         $budget = self::enrich( $budget );
 
-        // Transacciones del período filtradas por área y categoría si está definida
+        // Transacciones del período filtradas por área y categoría (incluyendo subcategorías) si está definida
         $where_tx = "t.area_id = %d AND t.transaction_date BETWEEN %s AND %s AND t.transaction_type = 'expense' AND t.status != 'rejected' AND t.deleted_at IS NULL";
         $tx_args  = [ (int) ( $budget->area_id ?? 0 ), $budget->start_date, $budget->end_date ];
 
         if ( ! empty( $budget->category_id ) ) {
-            $where_tx .= " AND t.category_id = %d";
-            $tx_args[] = (int) $budget->category_id;
+            $cat_ids = self::get_category_and_subcategories_ids( (int) $budget->category_id );
+            $placeholders = implode( ',', array_fill( 0, count( $cat_ids ), '%d' ) );
+            $where_tx .= " AND (t.category_id IN ({$placeholders}) OR t.expense_category_id IN ({$placeholders}))";
+            $tx_args = array_merge( $tx_args, $cat_ids, $cat_ids );
         }
 
         $transactions = $wpdb->get_results( $wpdb->prepare(
             "SELECT t.id, t.transaction_date, t.amount, t.description, t.status, t.payment_method,
-                    c.name AS category_name, c.color AS category_color,
+                    c.name AS category_name, c.color AS category_color, c.icon AS category_icon,
                     u.display_name AS created_by_name
              FROM {$tx_table} t
              LEFT JOIN {$c_table} c ON c.id = t.category_id
              LEFT JOIN {$wpdb->users} u ON u.ID = t.created_by
              WHERE {$where_tx}
              ORDER BY t.transaction_date DESC
-             LIMIT 100",
+             LIMIT 150",
             ...$tx_args
         ) );
 
         // Desglose por categoría dentro del área con conteo de transacciones
+        $by_cat_where = "t.area_id = %d AND t.transaction_date BETWEEN %s AND %s AND t.transaction_type = 'expense' AND t.status != 'rejected' AND t.deleted_at IS NULL";
+        $by_cat_args  = [ (int) ( $budget->area_id ?? 0 ), $budget->start_date, $budget->end_date ];
+
+        if ( ! empty( $budget->category_id ) ) {
+            $family_ids = self::get_category_and_subcategories_ids( (int) $budget->category_id );
+            $placeholders = implode( ',', array_fill( 0, count( $family_ids ), '%d' ) );
+            $by_cat_where .= " AND (t.category_id IN ({$placeholders}) OR t.expense_category_id IN ({$placeholders}))";
+            $by_cat_args = array_merge( $by_cat_args, $family_ids, $family_ids );
+        }
+
         $by_category = $wpdb->get_results( $wpdb->prepare(
             "SELECT COALESCE(c.id, 0) AS id,
                     COALESCE(c.name, '— Sin categoría —') AS name,
                     COALESCE(c.color, '#8c8f94') AS color,
+                    COALESCE(c.icon, 'dashicons-category') AS icon,
+                    COALESCE(c.parent_id, 0) AS parent_id,
                     COUNT(t.id) AS tx_count,
-                    SUM(t.amount) AS total
+                    COALESCE(SUM(t.amount), 0) AS total
              FROM {$tx_table} t
              LEFT JOIN {$c_table} c ON c.id = t.category_id
-             WHERE t.area_id = %d
-               AND t.transaction_date BETWEEN %s AND %s
-               AND t.transaction_type = 'expense'
-               AND t.status != 'rejected'
-               AND t.deleted_at IS NULL
+             WHERE {$by_cat_where}
              GROUP BY t.category_id
              ORDER BY total DESC",
-            (int) ( $budget->area_id ?? 0 ), $budget->start_date, $budget->end_date
+            ...$by_cat_args
         ) );
 
         // Historial últimos 6 períodos equivalentes
@@ -801,23 +870,31 @@ class Aura_Financial_Budgets {
         $start_date = $budget->start_date;
         $end_date   = $budget->end_date;
 
+        $where_breakdown = "t.area_id = %d AND t.transaction_date BETWEEN %s AND %s AND t.transaction_type = 'expense' AND t.status = 'approved' AND t.deleted_at IS NULL";
+        $breakdown_args  = [ $area_id, $start_date, $end_date ];
+
+        if ( ! empty( $budget->category_id ) ) {
+            $family_ids = self::get_category_and_subcategories_ids( (int) $budget->category_id );
+            $placeholders = implode( ',', array_fill( 0, count( $family_ids ), '%d' ) );
+            $where_breakdown .= " AND (t.category_id IN ({$placeholders}) OR t.expense_category_id IN ({$placeholders}))";
+            $breakdown_args = array_merge( $breakdown_args, $family_ids, $family_ids );
+        }
+
         // Desglose de transacciones aprobadas agrupadas por categoría
         $rows = $wpdb->get_results( $wpdb->prepare(
             "SELECT COALESCE(c.id, 0) AS id,
                     COALESCE(c.name, '— Sin categoría —') AS name,
                     COALESCE(c.color, '#8c8f94') AS color,
+                    COALESCE(c.icon, 'dashicons-category') AS icon,
+                    COALESCE(c.parent_id, 0) AS parent_id,
                     COUNT(t.id) AS tx_count,
                     COALESCE(SUM(t.amount), 0) AS total_amount
              FROM {$tx_table} t
              LEFT JOIN {$c_table} c ON c.id = t.category_id
-             WHERE t.area_id = %d
-               AND t.transaction_date BETWEEN %s AND %s
-               AND t.transaction_type = 'expense'
-               AND t.status = 'approved'
-               AND t.deleted_at IS NULL
+             WHERE {$where_breakdown}
              GROUP BY t.category_id
              ORDER BY total_amount DESC",
-            $area_id, $start_date, $end_date
+            ...$breakdown_args
         ) );
 
         $grand_total = array_sum( array_column( (array) $rows, 'total_amount' ) );

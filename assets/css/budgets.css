@@ -773,6 +773,169 @@
     border-color: #fecaca;
 }
 
+/* ── Subcategorías en Tabla de Presupuestos de Área ─────── */
+.aura-subcat-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 2px 7px 2px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.aura-subcat-toggle-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    border-color: #94a3b8;
+    transform: translateY(-0.5px);
+}
+
+.aura-subcat-arrow {
+    font-size: 13px !important;
+    width: 13px !important;
+    height: 13px !important;
+    line-height: 1 !important;
+    color: #64748b;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aura-subcat-toggle-btn[aria-expanded="true"] .aura-subcat-arrow {
+    transform: rotate(90deg);
+    color: #2563eb;
+}
+
+.aura-subcat-toggle-btn[aria-expanded="true"] {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.aura-subcat-badge {
+    line-height: 1;
+}
+
+/* Fila de subcategoría desplegada */
+.aura-subcat-row {
+    background: #f8fafc !important;
+    transition: background-color 0.15s ease;
+}
+
+.aura-subcat-row td {
+    background: #f8fafc !important;
+    padding: 9px 16px !important;
+    font-size: 12.5px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+}
+
+.aura-subcat-row:hover td {
+    background: #f1f5f9 !important;
+}
+
+.aura-subcat-cell-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 14px;
+}
+
+.aura-tree-branch {
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.aura-subcat-name {
+    font-weight: 600;
+    color: #334155;
+}
+
+.aura-subcat-period-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #64748b;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-weight: 500;
+}
+
+.aura-subcat-period-tag .dashicons {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+    color: #94a3b8;
+}
+
+.aura-subcat-parent-note {
+    font-size: 11.5px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.aura-prog-bar--sub {
+    height: 6px !important;
+    background: #e2e8f0;
+}
+
+/* Dark mode para subcategorías en tabla */
+html[data-wp-dark-mode-scheme="dark"] .aura-subcat-row td,
+html.wp-dark-mode-active .aura-subcat-row td,
+body.wp-dark-mode-active .aura-subcat-row td,
+body.aura-dark-mode .aura-subcat-row td,
+body[data-theme="dark"] .aura-subcat-row td {
+    background: #151e2e !important;
+    border-top: 1px dashed #243248 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-subcat-row:hover td,
+html.wp-dark-mode-active .aura-subcat-row:hover td,
+body.wp-dark-mode-active .aura-subcat-row:hover td,
+body.aura-dark-mode .aura-subcat-row:hover td,
+body[data-theme="dark"] .aura-subcat-row:hover td {
+    background: #1e293b !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-subcat-toggle-btn,
+html.wp-dark-mode-active .aura-subcat-toggle-btn,
+body.wp-dark-mode-active .aura-subcat-toggle-btn,
+body.aura-dark-mode .aura-subcat-toggle-btn,
+body[data-theme="dark"] .aura-subcat-toggle-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-subcat-period-tag,
+html.wp-dark-mode-active .aura-subcat-period-tag,
+body.wp-dark-mode-active .aura-subcat-period-tag,
+body.aura-dark-mode .aura-subcat-period-tag,
+body[data-theme="dark"] .aura-subcat-period-tag {
+    background: #0f172a;
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-subcat-name,
+html.wp-dark-mode-active .aura-subcat-name,
+body.wp-dark-mode-active .aura-subcat-name,
+body.aura-dark-mode .aura-subcat-name,
+body[data-theme="dark"] .aura-subcat-name {
+    color: #e2e8f0;
+}
+
 /* ── 8. MOTOR UNIVERSAL DE TOOLTIPS FLOTANTES (ZERO-CLIPPING) ─ */
 .aura-help-icon {
     display: inline-flex;

@@ -31,6 +31,8 @@ if ( $_aura_user_area_only ) {
     $_aura_single_area = null;
     $_aura_user_area_id = 0;
 }
+
+$aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 'areas' : 'categories';
 ?>
 <div class="wrap aura-budgets-wrap aura-module-wrap aura-app-wrapper">
     <h1 class="screen-reader-text"><?php esc_html_e( 'Presupuestos por Área', 'aura-suite' ); ?></h1>
@@ -62,6 +64,12 @@ if ( $_aura_user_area_only ) {
         </div>
 
         <div class="aura-hero-actions">
+            <?php if ( $can_manage ) : ?>
+            <button type="button" class="aura-btn aura-btn-primary aura-btn-shimmer" id="aura-new-budget-btn" style="<?php echo ( $aura_active_main_tab === 'areas' ) ? '' : 'display:none;'; ?>" data-tooltip="<?php esc_attr_e( 'Crear un nuevo presupuesto por área o programa', 'aura-suite' ); ?>">
+                <span class="dashicons dashicons-plus-alt2"></span>
+                <span><?php esc_html_e( 'Nuevo Presupuesto por Área', 'aura-suite' ); ?></span>
+            </button>
+            <?php endif; ?>
             <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-financial-transactions' ) ); ?>" class="aura-btn aura-btn-secondary" data-tooltip="<?php esc_attr_e( 'Ir al listado general de transacciones de egresos', 'aura-suite' ); ?>">
                 <span class="dashicons dashicons-list-view"></span>
                 <span><?php esc_html_e( 'Transacciones', 'aura-suite' ); ?></span>
@@ -75,11 +83,11 @@ if ( $_aura_user_area_only ) {
 
     <!-- ── PESTAÑAS DE PRIMER NIVEL (TABS MODERNOS) ─────────────────── -->
     <div class="aura-budget-main-nav">
-        <button type="button" class="aura-main-tab-btn active" data-tab="tab-category-budgets" id="aura-tab-btn-categories">
+        <button type="button" class="aura-main-tab-btn <?php echo ( $aura_active_main_tab === 'categories' ) ? 'active' : ''; ?>" data-tab="tab-category-budgets" id="aura-tab-btn-categories">
             <span class="dashicons dashicons-category"></span>
             <span><?php esc_html_e( '📊 Presupuesto por Categorías & Subcategorías', 'aura-suite' ); ?></span>
         </button>
-        <button type="button" class="aura-main-tab-btn" data-tab="tab-area-budgets" id="aura-tab-btn-areas">
+        <button type="button" class="aura-main-tab-btn <?php echo ( $aura_active_main_tab === 'areas' ) ? 'active' : ''; ?>" data-tab="tab-area-budgets" id="aura-tab-btn-areas">
             <span class="dashicons dashicons-portfolio"></span>
             <span><?php esc_html_e( '🏢 Presupuestos por Áreas / Departamentos', 'aura-suite' ); ?></span>
         </button>
@@ -88,7 +96,7 @@ if ( $_aura_user_area_only ) {
     <!-- ================================================================
          PESTAÑA 1: PRESUPUESTOS Y ESTADÍSTICAS POR CATEGORÍA
          ============================================================== -->
-    <div id="tab-category-budgets" class="aura-main-tab-panel active">
+    <div id="tab-category-budgets" class="aura-main-tab-panel <?php echo ( $aura_active_main_tab === 'categories' ) ? 'active' : ''; ?>" style="<?php echo ( $aura_active_main_tab === 'categories' ) ? '' : 'display:none;'; ?>">
         
         <!-- Barra de Control y Filtros de Categoría -->
         <div class="aura-cat-budget-control-bar aura-glass-card">
@@ -342,7 +350,7 @@ if ( $_aura_user_area_only ) {
     <!-- ================================================================
          PESTAÑA 2: PRESUPUESTOS POR ÁREAS / DEPARTAMENTOS (Legacy/Existente)
          ============================================================== -->
-    <div id="tab-area-budgets" class="aura-main-tab-panel" style="display:none;">
+    <div id="tab-area-budgets" class="aura-main-tab-panel <?php echo ( $aura_active_main_tab === 'areas' ) ? 'active' : ''; ?>" style="<?php echo ( $aura_active_main_tab === 'areas' ) ? '' : 'display:none;'; ?>">
 
         <!-- ── Resumen rápido / KPIs por Área ───────────────────────────── -->
         <div class="aura-budget-summary-bar" id="aura-budget-summary-bar">
@@ -424,6 +432,12 @@ if ( $_aura_user_area_only ) {
             <?php endif; ?>
 
             <div class="aura-filter-actions">
+                <?php if ( $can_manage ) : ?>
+                <button type="button" class="aura-btn aura-btn-primary aura-btn-sm aura-btn-shimmer aura-trigger-new-budget" data-tooltip="<?php esc_attr_e( 'Crear un nuevo presupuesto por área o programa', 'aura-suite' ); ?>">
+                    <span class="dashicons dashicons-plus-alt2"></span>
+                    <span><?php esc_html_e( 'Nuevo Presupuesto', 'aura-suite' ); ?></span>
+                </button>
+                <?php endif; ?>
                 <button type="button" class="button" id="aura-filters-clear" data-tooltip="<?php esc_attr_e( 'Restablecer todos los filtros y búsqueda', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-image-rotate"></span>
                     <?php esc_html_e( 'Limpiar', 'aura-suite' ); ?>
@@ -439,9 +453,21 @@ if ( $_aura_user_area_only ) {
 
         <div id="aura-budgets-list" style="display:none"></div>
 
-        <p id="aura-budgets-empty" style="display:none;color:#8c8f94;font-style:italic">
-            <?php esc_html_e( 'No hay presupuestos registrados. Crea el primero con el botón superior.', 'aura-suite' ); ?>
-        </p>
+        <div id="aura-budgets-empty" class="aura-empty-state" style="display:none; text-align: center; padding: 48px 24px; background: #fff; border-radius: 12px; border: 1px dashed #cbd5e1; margin-top: 16px;">
+            <div style="font-size: 42px; line-height: 1; margin-bottom: 12px;">📊</div>
+            <h3 style="margin: 0 0 8px 0; font-size: 17px; font-weight: 600; color: #1e293b;">
+                <?php esc_html_e( 'No hay presupuestos registrados para los filtros seleccionados', 'aura-suite' ); ?>
+            </h3>
+            <p style="color: #64748b; font-size: 13px; max-width: 480px; margin: 0 auto 20px auto; line-height: 1.5;">
+                <?php esc_html_e( 'Establece un techo presupuestario para un Área o Programa con desglose automático de categorías y subcategorías para monitorear el gasto en tiempo real.', 'aura-suite' ); ?>
+            </p>
+            <?php if ( $can_manage ) : ?>
+            <button type="button" class="aura-btn aura-btn-primary aura-trigger-new-budget" style="display: inline-flex;">
+                <span class="dashicons dashicons-plus-alt2"></span>
+                <span><?php esc_html_e( 'Crear Nuevo Presupuesto por Área', 'aura-suite' ); ?></span>
+            </button>
+            <?php endif; ?>
+        </div>
 
     </div><!-- #tab-area-budgets -->
 
@@ -502,17 +528,80 @@ if ( $_aura_user_area_only ) {
                         </span>
                     </label>
                     <select id="budget_category_id" name="category_id">
-                        <option value=""><?php esc_html_e( '— Sin categoría de referencia —', 'aura-suite' ); ?></option>
+                        <option value=""><?php esc_html_e( '— Sin categoría de referencia (Techo Global del Área) —', 'aura-suite' ); ?></option>
                         <?php
                         global $wpdb;
-                        $cats = $wpdb->get_results( "SELECT id, name, type, color FROM {$wpdb->prefix}aura_finance_categories WHERE is_active = 1 AND type = 'expense' ORDER BY name" );
-                        foreach ( $cats as $cat ) :
+                        $raw_cats = $wpdb->get_results( "SELECT id, name, type, color, icon, parent_id FROM {$wpdb->prefix}aura_finance_categories WHERE is_active = 1 AND type = 'expense' ORDER BY name ASC" );
+                        
+                        $p_cats   = [];
+                        $ch_cats  = [];
+                        foreach ( $raw_cats as $rc ) {
+                            if ( empty( $rc->parent_id ) ) {
+                                $p_cats[ (int) $rc->id ] = $rc;
+                            } else {
+                                $ch_cats[ (int) $rc->parent_id ][] = $rc;
+                            }
+                        }
+
+                        // Helper inline para asignación semántica de emoji en PHP
+                        $sem_emoji_resolver = function( $name, $raw_icon ) {
+                            $icon = trim( (string) $raw_icon );
+                            if ( ! empty( $icon ) && strpos( $icon, 'dashicons' ) === false ) {
+                                return $icon;
+                            }
+                            $n = strtolower( iconv( 'UTF-8', 'ASCII//TRANSLIT', (string) $name ) );
+                            if ( preg_match( '/piscina|alberca/', $n ) ) return '🏊';
+                            if ( preg_match( '/taller|reparac|manten|mecanic|herramient/', $n ) ) return '🛠️';
+                            if ( preg_match( '/limpiez|aseo|lavad|higien/', $n ) ) return '🧼';
+                            if ( preg_match( '/quimic|cloro/', $n ) ) return '🧪';
+                            if ( preg_match( '/agua|hidric/', $n ) ) return '💧';
+                            if ( preg_match( '/jardin|planta|paisaj|cesped/', $n ) ) return '🍃';
+                            if ( preg_match( '/nomin|sueld|salar|honorari|personal|rrhh/', $n ) ) return '👥';
+                            if ( preg_match( '/combust|gasolin|diesel/', $n ) ) return '⛽';
+                            if ( preg_match( '/vehicul|auto|camionet|flot/', $n ) ) return '🚗';
+                            if ( preg_match( '/camion|flete|transp|carga|mudanz/', $n ) ) return '🚚';
+                            if ( preg_match( '/viaj|viatic|vuelo|hotel|hospedaj/', $n ) ) return '✈️';
+                            if ( preg_match( '/segur|poliz|siniestr/', $n ) ) return '🛡️';
+                            if ( preg_match( '/aliment|comid|restaur|almuerz/', $n ) ) return '🍔';
+                            if ( preg_match( '/cafe|bebid|cafeter/', $n ) ) return '☕';
+                            if ( preg_match( '/impuest|fiscal|sat|haciend/', $n ) ) return '🏛️';
+                            if ( preg_match( '/oficin|papel|utiles|toner/', $n ) ) return '📎';
+                            if ( preg_match( '/tecno|softw|comput|sistem|hosting|nube|licenc/', $n ) ) return '💻';
+                            if ( preg_match( '/telef|celular|internet/', $n ) ) return '📱';
+                            if ( preg_match( '/market|publi|pauta|redes/', $n ) ) return '📢';
+                            if ( preg_match( '/ventas|comision/', $n ) ) return '🏷️';
+                            if ( preg_match( '/compras|proveed/', $n ) ) return '🛒';
+                            if ( preg_match( '/legal|abogad|juridic/', $n ) ) return '⚖️';
+                            if ( preg_match( '/banco|financ|prestam/', $n ) ) return '🏦';
+                            if ( preg_match( '/alquiler|renta|inmuebl/', $n ) ) return '🏢';
+                            if ( preg_match( '/luz|electr|energia/', $n ) ) return '⚡';
+                            if ( preg_match( '/capacit|curso|educac/', $n ) ) return '🎓';
+                            if ( preg_match( '/salud|medic|farmac|botiquin/', $n ) ) return '🩺';
+                            return '📁';
+                        };
+
+                        foreach ( $p_cats as $pid => $pcat ) :
+                            $pe = $sem_emoji_resolver( $pcat->name, $pcat->icon );
+                            $subs = $ch_cats[ $pid ] ?? [];
+                            $sub_cnt = count( $subs );
+                            $optgroup_lbl = $pe . ' ' . $pcat->name . ( $sub_cnt > 0 ? " ({$sub_cnt} subcategorías)" : '' );
                         ?>
-                            <option value="<?php echo esc_attr( $cat->id ); ?>"><?php echo esc_html( $cat->name ); ?></option>
+                            <optgroup label="<?php echo esc_attr( $optgroup_lbl ); ?>">
+                                <option value="<?php echo esc_attr( $pcat->id ); ?>">
+                                    ⭐ <?php echo esc_html( "{$pe} {$pcat->name} (Todo el rubro consolidado)" ); ?>
+                                </option>
+                                <?php foreach ( $subs as $scat ) :
+                                    $se = $sem_emoji_resolver( $scat->name, $scat->icon );
+                                ?>
+                                    <option value="<?php echo esc_attr( $scat->id ); ?>">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;↳ <?php echo esc_html( "{$se} {$scat->name}" ); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
                         <?php endforeach; ?>
                     </select>
                     <p class="description">
-                        <?php esc_html_e( 'El presupuesto se mide a nivel de área. La categoría de referencia es solo informativa.', 'aura-suite' ); ?>
+                        <?php esc_html_e( 'Si seleccionas un rubro principal, el presupuesto sumará y consolidará automáticamente todos los gastos de sus subcategorías.', 'aura-suite' ); ?>
                     </p>
                 </div>
 

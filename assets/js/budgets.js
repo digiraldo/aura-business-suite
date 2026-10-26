@@ -117,14 +117,57 @@ jQuery(function ($) {
             + '</div>';
     }
 
-    // ── Renderizar icono de categoría ────────────────────────────────
-    function catIcon(b) {
-        var rawIcon = (b.category_icon || '📁').trim();
-        var color   = b.category_color || '#607d8b';
-        if (rawIcon.indexOf('dashicons-') === 0 || rawIcon.indexOf('dashicons') !== -1) {
-            return '<span class="dashicons ' + rawIcon + ' aura-cat-icon" style="color:' + color + '"></span>';
+    // ── Helper universal para detección semántica de emojis ───────────
+    function getCategoryEmoji(name, rawIcon) {
+        var icon = (rawIcon || '').trim();
+        if (icon && icon.indexOf('dashicons') === -1) {
+            return icon;
         }
-        return '<span class="aura-cat-emoji" style="font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-right:4px;">' + rawIcon + '</span>';
+        var n = (name || '').toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+
+        if (!n) return '📁';
+
+        // Mapeo semántico exhaustivo de palabras clave contables y de negocio
+        if (/piscina|alberca|natacion/.test(n)) return '🏊';
+        if (/taller|reparac|manten|mecanic|correctiv|preventiv|herramient|ferreter|refaccion/.test(n)) return '🛠️';
+        if (/limpiez|aseo|lavad|higien|saniti|conserj|jabon|desinfect/.test(n)) return '🧼';
+        if (/quimic|cloro|tratamiento de agua/.test(n)) return '🧪';
+        if (/agua|hidric|potable|acueducto/.test(n)) return '💧';
+        if (/jardin|planta|paisaj|cesped|poda|arbol|vivero|verde/.test(n)) return '🍃';
+        if (/nomin|sueld|salar|honorari|personal|rrhh|recursos humanos|emplead|gratific|liquidac|aguinald/.test(n)) return '👥';
+        if (/combust|gasolin|diesel|carburant|gas lp|petroleo|tanque/.test(n)) return '⛽';
+        if (/vehicul|auto|camionet|flot|carro|coche|motos|rodaje/.test(n)) return '🚗';
+        if (/camion|flete|transp|carga|mudanz|acarreo|logist|envio|courier/.test(n)) return '🚚';
+        if (/viaj|viatic|vuelo|bolet|hotel|hospedaj|pasaj|aerol/.test(n)) return '✈️';
+        if (/segur|poliz|siniestr|asegura|cobertura|fianza/.test(n)) return '🛡️';
+        if (/aliment|comid|restaur|almuerz|desayun|cena|catering|despens|refrigeri|snack/.test(n)) return '🍔';
+        if (/cafe|bebid|cafeter|hidratac|refresco|bar/.test(n)) return '☕';
+        if (/impuest|fiscal|sat|haciend|tribut|arancel|retenc|iva|isr/.test(n)) return '🏛️';
+        if (/oficin|papel|utiles|suminist|toner|librer|impres|archiv/.test(n)) return '📎';
+        if (/tecno|softw|comput|sistem|hosting|domini|nube|cloud|servidor|licenc|it|informatic|programac|app|web/.test(n)) return '💻';
+        if (/telef|celular|movil|internet|comunicac|fibra|wifi/.test(n)) return '📱';
+        if (/market|publi|pauta|redes|anunci|promo|brand|disen|campana/.test(n)) return '📢';
+        if (/ventas|comision|comercial|client|cierre/.test(n)) return '🏷️';
+        if (/compras|proveed|adquisic|insumo|mercader/.test(n)) return '🛒';
+        if (/legal|abogad|juridic|notar|contrat|litigi|demand|ley/.test(n)) return '⚖️';
+        if (/banco|financ|prestam|interes|credito|hipotec|amortiz|comision bancar/.test(n)) return '🏦';
+        if (/alquiler|renta|inmuebl|arrend|local|predial|bodega|oficinas/.test(n)) return '🏢';
+        if (/luz|electr|energia|cfe|alumbrad|planta electrica/.test(n)) return '⚡';
+        if (/capacit|curso|entrenam|educac|taller formativ|certific/.test(n)) return '🎓';
+        if (/salud|medic|farmac|botiquin|enferm|epp|seguridad ocupacional|clinica/.test(n)) return '🩺';
+        if (/seguridad|vigilanc|alarma|camara|guardia|custodi/.test(n)) return '🚨';
+        if (/evento|conferenc|congres|reunion|asamble/.test(n)) return '🎪';
+        if (/capital|activo|inversion|equip|maquinar|infraestruct/.test(n)) return '🏗️';
+
+        return '📁';
+    }
+
+    // ── Renderizar icono/emoji de categoría ───────────────────────────
+    function catIcon(b) {
+        var emoji = getCategoryEmoji(b.category_name, b.category_icon);
+        return '<span class="aura-cat-emoji" style="font-size:16px;line-height:1;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-right:6px;">' + emoji + '</span>';
     }
 
     // ── Renderizar tabla de presupuestos ─────────────────────────────
@@ -175,7 +218,7 @@ jQuery(function ($) {
         var html = '<div class="aura-dt-wrapper">'
             + '<table class="widefat aura-budgets-table">'
             + '<thead><tr>'
-            + '<th style="min-width:210px;">' + (auraBudgets.txt.h_category || 'Categoría / Área') + ' <span class="aura-help-icon" data-tooltip="Departamento o programa responsable y rubro contable de referencia"><span class="dashicons dashicons-editor-help"></span></span></th>'
+            + '<th style="min-width:210px;">' + (auraBudgets.txt.h_category || 'Categoría / Área') + ' <span class="aura-help-icon" data-tooltip="Departamento o programa responsable y rubro contable de referencia con subcategorías"><span class="dashicons dashicons-editor-help"></span></span></th>'
             + '<th>' + (auraBudgets.txt.h_period || 'Período & Vigencia') + ' <span class="aura-help-icon" data-tooltip="Ciclo temporal y fechas exactas de vigencia del presupuesto"><span class="dashicons dashicons-editor-help"></span></span></th>'
             + '<th>' + (auraBudgets.txt.h_budget || 'Presupuesto') + ' <span class="aura-help-icon" data-tooltip="Límite máximo monetario asignado y autorizado"><span class="dashicons dashicons-editor-help"></span></span></th>'
             + '<th>' + (auraBudgets.txt.h_executed || 'Ejecutado') + ' <span class="aura-help-icon" data-tooltip="Gasto acumulado en transacciones aprobadas durante el ciclo"><span class="dashicons dashicons-editor-help"></span></span></th>'
@@ -237,6 +280,7 @@ jQuery(function ($) {
                 var txCount   = parseInt(b.tx_count || 0);
                 var txTip     = txCount === 1 ? '1 transacción aprobada registrada en este período' : txCount + ' transacciones aprobadas registradas en este período';
                 var txBadge   = '<span class="aura-tx-counter-pill ' + (txCount > 0 ? 'has-txs' : 'no-txs') + '" data-tooltip="' + escAttr(txTip) + '"><span class="dashicons dashicons-tickets-alt"></span> ' + txCount + ' ' + (txCount === 1 ? 'tx' : 'txs') + '</span>';
+                var hasSubs   = b.subcategories && b.subcategories.length > 0;
 
                 // Tooltip enriquecido de vigencia
                 var periodTip = '<div class="aura-tip-card">'
@@ -248,9 +292,23 @@ jQuery(function ($) {
                     + '<div class="aura-tip-row"><span>Proyección al Cierre:</span> <strong>' + fmt(b.projection) + '</strong></div>'
                     + '</div>';
 
-                var catHtml = b.category_name
-                    ? '<div class="aura-cat-cell-title">' + catIcon(b) + '<span>' + escHtml(b.category_name) + '</span></div>'
-                    : '<div class="aura-cat-cell-title"><span class="dashicons dashicons-portfolio aura-cat-icon" style="color:' + escHtml(b.area_color || '#607d8b') + '"></span><span>Techo Global de Área</span></div>';
+                var catHtml = '';
+                if (b.category_name) {
+                    var catEmoji = getCategoryEmoji(b.category_name, b.category_icon);
+                    catHtml = '<div class="aura-cat-cell-title">'
+                        + '<span class="aura-cat-emoji" style="font-size:16px;line-height:1;margin-right:4px;">' + catEmoji + '</span>'
+                        + '<strong>' + escHtml(b.category_name) + '</strong>';
+
+                    if (hasSubs) {
+                        catHtml += ' <button type="button" class="aura-subcat-toggle-btn" data-budget-id="' + b.id + '" aria-expanded="false" data-tooltip="Ver desglose de ' + b.subcategories.length + ' subcategorías vinculadas a este presupuesto">'
+                            + '<span class="dashicons dashicons-arrow-right-alt2 aura-subcat-arrow"></span>'
+                            + '<span class="aura-subcat-badge">' + b.subcategories.length + ' subcat.</span>'
+                            + '</button>';
+                    }
+                    catHtml += '</div>';
+                } else {
+                    catHtml = '<div class="aura-cat-cell-title"><span class="dashicons dashicons-portfolio aura-cat-icon" style="color:' + escHtml(b.area_color || '#607d8b') + '"></span><span>Techo Global de Área</span></div>';
+                }
 
                 var areaSubHtml = b.area_name
                     ? '<div class="aura-cat-cell-sub"><span class="aura-area-dot" style="background:' + escHtml(b.area_color || '#607d8b') + '"></span>' + escHtml(b.area_name) + '</div>'
@@ -273,6 +331,37 @@ jQuery(function ($) {
                     + '<button type="button" class="button button-small aura-btn-icon aura-edit-btn" data-id="' + b.id + '" data-tooltip="✏️ Editar presupuesto, montos y alertas"><span class="dashicons dashicons-edit"></span></button> '
                     + '<button type="button" class="button button-small aura-btn-icon aura-btn-icon--danger aura-delete-btn" data-id="' + b.id + '" data-tooltip="🗑️ Eliminar este presupuesto"><span class="dashicons dashicons-trash"></span></button>'
                     + '</td></tr>';
+
+                // Filas de subcategorías vinculadas (desplegables)
+                if (hasSubs) {
+                    b.subcategories.forEach(function (sub) {
+                        var sEmoji    = getCategoryEmoji(sub.name, sub.icon);
+                        var sPct      = parseFloat(sub.percentage || 0);
+                        var sBarColor = sub.color || '#6366f1';
+                        var sTx       = parseInt(sub.tx_count || 0);
+                        var sTxTip    = sTx === 1 ? '1 transacción aprobada en ' + sub.name : sTx + ' transacciones aprobadas en ' + sub.name;
+                        var sTxBadge  = '<a href="admin.php?page=aura-financial-transactions&filter_category=' + sub.id + '" target="_blank" rel="noopener noreferrer" class="aura-tx-counter-pill ' + (sTx > 0 ? 'has-txs' : 'no-txs') + '" data-tooltip="' + escAttr(sTxTip) + '"><span class="dashicons dashicons-tickets-alt"></span> ' + sTx + ' ' + (sTx === 1 ? 'tx' : 'txs') + '</a>';
+
+                        html += '<tr class="aura-subcat-row aura-group-row" data-group-member="' + escHtml(key) + '" data-parent-budget="' + b.id + '" style="display:none;">'
+                            + '<td class="aura-subcat-cell">'
+                            + '  <div class="aura-subcat-cell-inner">'
+                            + '    <span class="aura-tree-branch">↳</span>'
+                            + '    <span class="aura-cat-emoji" style="font-size:14px;line-height:1;margin-right:4px;">' + sEmoji + '</span>'
+                            + '    <span class="aura-subcat-name">' + escHtml(sub.name) + '</span>'
+                            + '  </div>'
+                            + '</td>'
+                            + '<td><span class="aura-subcat-period-tag"><span class="dashicons dashicons-tag"></span> Subrubro</span></td>'
+                            + '<td><span class="aura-subcat-parent-note" data-tooltip="Consolidado en el presupuesto del rubro principal">(Consolidado)</span></td>'
+                            + '<td><div class="aura-exec-cell-wrap"><span class="aura-cell-executed">' + fmt(sub.executed) + '</span>' + sTxBadge + '</div></td>'
+                            + '<td><span style="color:#94a3b8;font-size:12px;">—</span></td>'
+                            + '<td style="text-align:center;"><strong style="color:' + sBarColor + '">' + fmtPct(sPct) + '</strong></td>'
+                            + '<td><div class="aura-prog-bar aura-prog-bar--sub"><div class="aura-prog-fill" style="width:' + Math.min(sPct, 100) + '%;background:' + sBarColor + '"></div></div></td>'
+                            + '<td class="aura-row-actions">'
+                            + '  <a href="admin.php?page=aura-financial-transactions&filter_category=' + sub.id + '" target="_blank" class="button button-small aura-btn-icon" data-tooltip="Ver transacciones de ' + escAttr(sub.name) + '"><span class="dashicons dashicons-external"></span></a>'
+                            + '</td>'
+                            + '</tr>';
+                    });
+                }
             });
         });
 
@@ -280,7 +369,7 @@ jQuery(function ($) {
         $('#aura-budgets-list').html(html).show();
         $('#aura-budgets-empty').hide();
 
-        // Toggle collapse/expand de grupos
+        // Toggle collapse/expand de grupos de área
         $(document).off('click.auraGroupToggle').on('click.auraGroupToggle', '.aura-group-toggle', function (e) {
             e.stopPropagation();
             var grp      = $(this).data('group');
@@ -290,8 +379,32 @@ jQuery(function ($) {
                 $rows.hide();
                 $(this).attr('aria-expanded', 'false').text(auraBudgets.txt.expand_area || '▼');
             } else {
-                $rows.show();
+                $rows.each(function () {
+                    // Si es una fila de subcategoría y su padre está colapsado, no mostrarla
+                    if ($(this).hasClass('aura-subcat-row')) {
+                        var pId = $(this).data('parent-budget');
+                        var isParentExp = $('.aura-subcat-toggle-btn[data-budget-id="' + pId + '"]').attr('aria-expanded') === 'true';
+                        if (isParentExp) $(this).show();
+                    } else {
+                        $(this).show();
+                    }
+                });
                 $(this).attr('aria-expanded', 'true').text(auraBudgets.txt.collapse_area || '▲');
+            }
+        });
+
+        // Toggle collapse/expand de subcategorías dentro de un presupuesto
+        $(document).off('click.auraSubcatToggle').on('click.auraSubcatToggle', '.aura-subcat-toggle-btn', function (e) {
+            e.stopPropagation();
+            var bId = $(this).data('budget-id');
+            var $rows = $('tr.aura-subcat-row[data-parent-budget="' + bId + '"]');
+            var isExp = $(this).attr('aria-expanded') === 'true';
+            if (isExp) {
+                $rows.hide();
+                $(this).attr('aria-expanded', 'false');
+            } else {
+                $rows.show();
+                $(this).attr('aria-expanded', 'true');
             }
         });
     }
@@ -473,7 +586,7 @@ jQuery(function ($) {
         $('#aura-budget-detail-modal').removeClass('active').css({ 'display': 'none', 'opacity': '0', 'visibility': 'hidden' });
     }
 
-    $(document).on('click', '#aura-new-budget-btn', function (e) {
+    $(document).on('click', '#aura-new-budget-btn, .aura-trigger-new-budget', function (e) {
         e.preventDefault();
         openBudgetModal(null);
     });
@@ -630,7 +743,11 @@ jQuery(function ($) {
                     $('#aura-tab-cat-badge').text(d.by_category.length).show();
                 }
 
-                $('#aura-detail-title').text(d.budget.category_name || (d.budget.area_name ? d.budget.area_name + ' (Techo Global)' : auraBudgets.txt.detail_title));
+                var modalTitleEmoji = d.budget.category_name ? getCategoryEmoji(d.budget.category_name, d.budget.category_icon) : '🏢';
+                var modalTitleText  = d.budget.category_name
+                    ? (modalTitleEmoji + ' ' + d.budget.category_name + (d.budget.area_name ? ' — Área ' + d.budget.area_name : ''))
+                    : (d.budget.area_name ? '🏢 ' + d.budget.area_name + ' (Techo Global del Área)' : (auraBudgets.txt.detail_title || 'Detalle del Presupuesto'));
+                $('#aura-detail-title').text(modalTitleText);
             });
     }
 
@@ -733,9 +850,11 @@ jQuery(function ($) {
             // Columna categoría: badge con punto de color
             var catCell;
             if (t.category_name) {
+                var catEmoji = getCategoryEmoji(t.category_name, t.category_icon);
                 var dotColor = t.category_color ? escHtml(t.category_color) : '#607d8b';
-                catCell = '<span style="display:inline-flex;align-items:center;gap:5px;">'
-                    + '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;"></span>'
+                catCell = '<span style="display:inline-flex;align-items:center;gap:6px;">'
+                    + '<span class="aura-cat-emoji" style="font-size:14px;line-height:1;">' + catEmoji + '</span>'
+                    + '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;"></span>'
                     + escHtml(t.category_name)
                     + '</span>';
             } else {
@@ -903,8 +1022,9 @@ jQuery(function ($) {
             var pct    = parseFloat(c.pct) || 0;
             var color  = c.color || '#607d8b';
             var amount = parseFloat(c.total_amount) || 0;
+            var cEmoji = getCategoryEmoji(c.name, c.icon);
             barHtml += '<div class="aura-cat-bar-row">'
-                + '<div class="aura-cat-bar-label" title="' + escHtml(c.name) + '">' + escHtml(c.name) + '</div>'
+                + '<div class="aura-cat-bar-label" title="' + escHtml(c.name) + '"><span class="aura-cat-emoji" style="font-size:14px;line-height:1;margin-right:4px;">' + cEmoji + '</span>' + escHtml(c.name) + '</div>'
                 + '<div class="aura-cat-bar-track">'
                 + '  <div class="aura-cat-bar-fill" style="width:' + Math.min(pct, 100) + '%;background:' + escHtml(color) + '">'
                 + '    <span class="aura-cat-bar-val">$' + fmt(amount) + ' (' + pct.toFixed(1) + '%)</span>'
@@ -924,8 +1044,9 @@ jQuery(function ($) {
             var pct      = parseFloat(c.pct) || 0;
             var barColor = pct > 50 ? '#d63638' : (pct > 25 ? '#dba617' : '#00a32a');
             var cTx      = parseInt(c.tx_count || 0);
+            var cEmoji   = getCategoryEmoji(c.name, c.icon);
             bodyHtml += '<tr>'
-                + '<td><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + escHtml(color) + ';margin-right:6px;vertical-align:middle;"></span>'
+                + '<td><span class="aura-cat-emoji" style="font-size:14px;line-height:1;margin-right:6px;">' + cEmoji + '</span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:' + escHtml(color) + ';margin-right:6px;vertical-align:middle;"></span>'
                 + escHtml(c.name) + '</td>'
                 + '<td style="text-align:center;"><span class="aura-tx-counter-pill has-txs"><span class="dashicons dashicons-tickets-alt"></span> ' + cTx + ' ' + (cTx === 1 ? 'tx' : 'txs') + '</span></td>'
                 + '<td><strong>' + fmt(c.total_amount) + '</strong></td>'
@@ -1076,6 +1197,12 @@ jQuery(function ($) {
 
     // ── Navegación Principal por Pestañas ───────────────────────────────
     function initMainTabs() {
+        if ($('#tab-area-budgets').hasClass('active') || $('#aura-tab-btn-areas').hasClass('active')) {
+            $('#aura-new-budget-btn').show();
+        } else {
+            $('#aura-new-budget-btn').hide();
+        }
+
         $('.aura-main-tab-btn').on('click', function () {
             var targetTab = $(this).data('tab');
             $('.aura-main-tab-btn').removeClass('active');
@@ -1083,6 +1210,13 @@ jQuery(function ($) {
 
             $('.aura-main-tab-panel').removeClass('active').hide();
             $('#' + targetTab).addClass('active').show();
+
+            // Sincronizar visibilidad del botón "Nuevo Presupuesto por Área"
+            if (targetTab === 'tab-area-budgets') {
+                $('#aura-new-budget-btn').show();
+            } else {
+                $('#aura-new-budget-btn').hide();
+            }
 
             // Sincronizar parámetro URL sin recargar
             try {
@@ -1314,25 +1448,7 @@ jQuery(function ($) {
 
             // Asignación inteligente de icono o emoji por palabras clave
             function getCatEmoji(c) {
-                var ic = (c.icon || '').trim();
-                if (!ic || ic.indexOf('dashicons') !== -1) {
-                    var n = (c.name || '').toLowerCase();
-                    if (n.indexOf('mant') !== -1 || n.indexOf('repar') !== -1 || n.indexOf('taller') !== -1) return '🔧';
-                    if (n.indexOf('serv') !== -1 || n.indexOf('luz') !== -1 || n.indexOf('agua') !== -1 || n.indexOf('gas') !== -1) return '⚡';
-                    if (n.indexOf('nomin') !== -1 || n.indexOf('sueld') !== -1 || n.indexOf('salar') !== -1 || n.indexOf('personal') !== -1 || n.indexOf('rrhh') !== -1) return '👥';
-                    if (n.indexOf('market') !== -1 || n.indexOf('publi') !== -1 || n.indexOf('promo') !== -1 || n.indexOf('anunc') !== -1) return '📢';
-                    if (n.indexOf('tecno') !== -1 || n.indexOf('soft') !== -1 || n.indexOf('sistem') !== -1 || n.indexOf('comput') !== -1 || n.indexOf('ti') !== -1) return '💻';
-                    if (n.indexOf('viaj') !== -1 || n.indexOf('viatic') !== -1 || n.indexOf('vuelo') !== -1 || n.indexOf('hotel') !== -1) return '✈️';
-                    if (n.indexOf('ofic') !== -1 || n.indexOf('papel') !== -1 || n.indexOf('util') !== -1 || n.indexOf('suminist') !== -1) return '📎';
-                    if (n.indexOf('transp') !== -1 || n.indexOf('vehi') !== -1 || n.indexOf('gasol') !== -1 || n.indexOf('auto') !== -1 || n.indexOf('flete') !== -1) return '🚗';
-                    if (n.indexOf('impuest') !== -1 || n.indexOf('fiscal') !== -1 || n.indexOf('tasa') !== -1 || n.indexOf('tribut') !== -1) return '🏛️';
-                    if (n.indexOf('alquiler') !== -1 || n.indexOf('renta') !== -1 || n.indexOf('inmueble') !== -1) return '🏢';
-                    if (n.indexOf('segur') !== -1 || n.indexOf('poliz') !== -1) return '🛡️';
-                    if (n.indexOf('limp') !== -1 || n.indexOf('aseo') !== -1) return '🧹';
-                    if (n.indexOf('aliment') !== -1 || n.indexOf('comid') !== -1 || n.indexOf('restaur') !== -1) return '🍽️';
-                    return c.type === 'capital' ? '🏗️' : '💼';
-                }
-                return ic;
+                return getCategoryEmoji(c.name, c.icon);
             }
 
             // Grupo 1: Categorías con Presupuesto Asignado
@@ -1759,6 +1875,7 @@ jQuery(function ($) {
                 + '      <span class="dashicons dashicons-arrow-down-alt2"></span>'
                 + '    </button>'
                 + '    <span class="aura-cat-color-circle" style="background:' + escHtml(fam.color || '#2563eb') + ';width:12px;height:12px;border-radius:50%;display:inline-block;"></span>'
+                + '    <span class="aura-cat-emoji" style="font-size:16px;line-height:1;margin-right:6px;">' + getCategoryEmoji(fam.name, fam.icon) + '</span>'
                 + '    <strong style="font-size:14.5px;color:#0f172a;">' + escHtml(fam.name) + '</strong>'
                 + '    <span class="aura-badge-mini" style="background:#e0e7ff;color:#3730a3;">Categoría Principal</span>'
                 + '  </div>'
@@ -1792,6 +1909,7 @@ jQuery(function ($) {
                     + '<td>'
                     + '  <div class="aura-subcat-title">'
                     + '    <span class="aura-subcat-color-dot" style="background:#94a3b8;"></span>'
+                    + '    <span class="aura-cat-emoji" style="font-size:14px;line-height:1;margin-right:4px;">📁</span>'
                     + '    <em style="color:#64748b;">(Movimientos directos a la raíz)</em>'
                     + '  </div>'
                     + '</td>'
@@ -1833,11 +1951,13 @@ jQuery(function ($) {
                     var sPctBudget = parseFloat(s.pct_of_budget || 0);
                     var sTxUrl = 'admin.php?page=aura-financial-transactions&filter_category=' + s.id;
                     var sColor = s.color || '#6366f1';
+                    var sEmoji = getCategoryEmoji(s.name, s.icon);
 
                     var childRow = '<tr class="aura-row-child" data-id="' + s.id + '">'
                         + '<td>'
                         + '  <div class="aura-subcat-title">'
                         + '    <span class="aura-subcat-color-dot" style="background:' + escHtml(sColor) + ';"></span>'
+                        + '    <span class="aura-cat-emoji" style="font-size:14px;line-height:1;margin-right:4px;">' + sEmoji + '</span>'
                         + '    <span style="font-weight:600;color:#334155;">' + escHtml(s.name) + '</span>'
                         + '  </div>'
                         + '</td>'
@@ -1970,6 +2090,7 @@ jQuery(function ($) {
                 return;
             }
 
+            $('#aura-cat-modal-icon-badge').text(getCategoryEmoji(fam.name, fam.icon));
             $('#aura-cat-modal-cat-name, #aura-modal-cat-name-display').text(fam.name || 'Categoría');
             $('#aura-cat-modal-year-display, #aura-modal-fiscal-year-display').text(self.currentYear);
             $('#aura-modal-cat-id, #aura-modal-hidden-cat-id').val(fam.id);
