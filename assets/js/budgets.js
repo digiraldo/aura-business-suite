@@ -484,17 +484,32 @@ jQuery(function ($) {
         closeBudgetModal();
     });
 
+    // Cerrar modal detalle
+    $(document).on('click', '#aura-detail-modal-close, #aura-detail-modal-close-btn', function (e) {
+        e.preventDefault();
+        closeDetailModal();
+    });
+
     $(document).on('click', '#aura-budget-modal', function (e) {
         if ($(e.target).is('#aura-budget-modal')) {
             closeBudgetModal();
         }
     });
 
-    // Cerrar con Escape
+    $(document).on('click', '#aura-budget-detail-modal', function (e) {
+        if ($(e.target).is('#aura-budget-detail-modal')) {
+            closeDetailModal();
+        }
+    });
+
+    // Cerrar con Escape (todos los modales)
     $(document).on('keydown', function (e) {
         if (e.key === 'Escape' || e.keyCode === 27) {
             closeBudgetModal();
             closeDetailModal();
+            if (window.AuraCategoryBudgets && typeof window.AuraCategoryBudgets.closeModal === 'function') {
+                window.AuraCategoryBudgets.closeModal();
+            }
         }
     });
 
@@ -1178,6 +1193,14 @@ jQuery(function ($) {
                 $btn.toggleClass('collapsed');
                 var isCollapsed = $btn.hasClass('collapsed');
                 $('.aura-row-child').toggleClass('is-hidden', isCollapsed);
+
+                self.treeExpanded = !isCollapsed;
+                var $toggleAll = $('#aura-cat-toggle-all-tree');
+                if (self.treeExpanded) {
+                    $toggleAll.html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>Colapsar Subcategorías</span>');
+                } else {
+                    $toggleAll.html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>Desplegar Subcategorías</span>');
+                }
             });
 
             // Inicializar eventos del modal de presupuesto de categoría
@@ -1268,7 +1291,7 @@ jQuery(function ($) {
             });
         },
 
-        // Poblar selector de categorías agrupado visualmente
+        // Poblar selector de categorías agrupado visualmente con emojis y semáforos
         populateCategorySelect: function (categories, selectedId) {
             var $sel = $('#aura-cat-budget-category-select');
             $sel.empty();
@@ -1289,17 +1312,32 @@ jQuery(function ($) {
                 }
             });
 
+            // Asignación inteligente de icono o emoji por palabras clave
             function getCatEmoji(c) {
                 var ic = (c.icon || '').trim();
                 if (!ic || ic.indexOf('dashicons') !== -1) {
+                    var n = (c.name || '').toLowerCase();
+                    if (n.indexOf('mant') !== -1 || n.indexOf('repar') !== -1 || n.indexOf('taller') !== -1) return '🔧';
+                    if (n.indexOf('serv') !== -1 || n.indexOf('luz') !== -1 || n.indexOf('agua') !== -1 || n.indexOf('gas') !== -1) return '⚡';
+                    if (n.indexOf('nomin') !== -1 || n.indexOf('sueld') !== -1 || n.indexOf('salar') !== -1 || n.indexOf('personal') !== -1 || n.indexOf('rrhh') !== -1) return '👥';
+                    if (n.indexOf('market') !== -1 || n.indexOf('publi') !== -1 || n.indexOf('promo') !== -1 || n.indexOf('anunc') !== -1) return '📢';
+                    if (n.indexOf('tecno') !== -1 || n.indexOf('soft') !== -1 || n.indexOf('sistem') !== -1 || n.indexOf('comput') !== -1 || n.indexOf('ti') !== -1) return '💻';
+                    if (n.indexOf('viaj') !== -1 || n.indexOf('viatic') !== -1 || n.indexOf('vuelo') !== -1 || n.indexOf('hotel') !== -1) return '✈️';
+                    if (n.indexOf('ofic') !== -1 || n.indexOf('papel') !== -1 || n.indexOf('util') !== -1 || n.indexOf('suminist') !== -1) return '📎';
+                    if (n.indexOf('transp') !== -1 || n.indexOf('vehi') !== -1 || n.indexOf('gasol') !== -1 || n.indexOf('auto') !== -1 || n.indexOf('flete') !== -1) return '🚗';
+                    if (n.indexOf('impuest') !== -1 || n.indexOf('fiscal') !== -1 || n.indexOf('tasa') !== -1 || n.indexOf('tribut') !== -1) return '🏛️';
+                    if (n.indexOf('alquiler') !== -1 || n.indexOf('renta') !== -1 || n.indexOf('inmueble') !== -1) return '🏢';
+                    if (n.indexOf('segur') !== -1 || n.indexOf('poliz') !== -1) return '🛡️';
+                    if (n.indexOf('limp') !== -1 || n.indexOf('aseo') !== -1) return '🧹';
+                    if (n.indexOf('aliment') !== -1 || n.indexOf('comid') !== -1 || n.indexOf('restaur') !== -1) return '🍽️';
                     return c.type === 'capital' ? '🏗️' : '💼';
                 }
                 return ic;
             }
 
-            // Grupo 1: Categorías con Presupuesto
+            // Grupo 1: Categorías con Presupuesto Asignado
             if (budgeted.length > 0) {
-                var $grpBudgeted = $('<optgroup label="💰 CATEGORÍAS CON PRESUPUESTO ASIGNADO (' + budgeted.length + ')"></optgroup>');
+                var $grpBudgeted = $('<optgroup label="🟢 💰 CATEGORÍAS CON PRESUPUESTO ASIGNADO (' + budgeted.length + ')"></optgroup>');
                 budgeted.forEach(function (c) {
                     var isSelected = (parseInt(c.id, 10) === parseInt(selectedId, 10)) ? ' selected' : '';
                     var bAmt = parseFloat(c.budget_amount || 0);
@@ -1307,26 +1345,39 @@ jQuery(function ($) {
                     var icon = getCatEmoji(c);
                     var subs = c.subcategories_count > 0 ? ' (' + c.subcategories_count + ' subcat.)' : '';
 
-                    var optText = '💰 ✅ ' + icon + ' ' + c.name + subs + ' — Presupuesto: ' + fmt(bAmt) + ' (' + pct.toFixed(1) + '% ejecutado)';
+                    var statusBadge = '🟢';
+                    if (pct >= 100) {
+                        statusBadge = '🚨 🔴 SOBREGIRO';
+                    } else if (pct >= 70) {
+                        statusBadge = '⚠️ 🟡 ALERTA';
+                    } else {
+                        statusBadge = '✅ 🟢 SALUDABLE';
+                    }
+
+                    var optText = statusBadge + ' | ' + icon + ' ' + c.name + subs + ' — Presupuesto: ' + fmt(bAmt) + ' (' + pct.toFixed(1) + '% consumido)';
                     $grpBudgeted.append('<option value="' + c.id + '"' + isSelected + '>' + escHtml(optText) + '</option>');
                 });
                 $sel.append($grpBudgeted);
             }
 
-            // Grupo 2: Categorías sin Presupuesto
+            // Grupo 2: Categorías sin Presupuesto Asignado
             if (unbudgeted.length > 0) {
-                var $grpUnbudgeted = $('<optgroup label="📋 CATEGORÍAS SIN PRESUPUESTO (' + unbudgeted.length + ')"></optgroup>');
+                var $grpUnbudgeted = $('<optgroup label="⚪ 📋 CATEGORÍAS SIN PRESUPUESTO (' + unbudgeted.length + ')"></optgroup>');
                 unbudgeted.forEach(function (c) {
                     var isSelected = (parseInt(c.id, 10) === parseInt(selectedId, 10)) ? ' selected' : '';
                     var spent = parseFloat(c.total_spent || 0);
                     var icon = getCatEmoji(c);
                     var subs = c.subcategories_count > 0 ? ' (' + c.subcategories_count + ' subcat.)' : '';
-                    var spentInfo = spent > 0 ? ' | Gastado: ' + fmt(spent) : ' | 0 movs.';
+                    var spentInfo = spent > 0 ? ' (Gastado YTD: ' + fmt(spent) + ')' : ' (Sin movimientos)';
 
-                    var optText = '⚪ ❌ ' + icon + ' ' + c.name + subs + ' — (Sin Presupuesto' + spentInfo + ')';
+                    var optText = '⚪ ❌ SIN PRESUPUESTO | ' + icon + ' ' + c.name + subs + ' — ' + spentInfo;
                     $grpUnbudgeted.append('<option value="' + c.id + '"' + isSelected + '>' + escHtml(optText) + '</option>');
                 });
                 $sel.append($grpUnbudgeted);
+            }
+
+            if (selectedId) {
+                $sel.val(selectedId);
             }
         },
 
@@ -1382,10 +1433,12 @@ jQuery(function ($) {
             // 4. % de Ejecución y Semáforo
             var execPct = parseFloat(ex.execution_pct || 0);
             var status  = ex.status || 'nobudget';
+            var fam     = stats.category || stats.family || {};
+            var famColor = fam.color || '';
             var $fill   = $('#kpi-cat-progress-fill');
             var $badge  = $('#kpi-cat-status-badge');
 
-            $fill.removeClass('fill-warning fill-critical fill-overrun');
+            $fill.removeClass('fill-warning fill-critical fill-overrun').css('background', '');
             $badge.removeClass('status-badge--ok status-badge--warning status-badge--critical status-badge--overrun status-badge--nobudget');
 
             if (!b.has_budget) {
@@ -1407,6 +1460,9 @@ jQuery(function ($) {
                     $badge.addClass('status-badge--warning').text('Preventivo (70-89%)');
                 } else {
                     $badge.addClass('status-badge--ok').text('Saludable (<70%)');
+                    if (famColor) {
+                        $fill.css('background', famColor);
+                    }
                 }
             }
 
@@ -1481,6 +1537,8 @@ jQuery(function ($) {
 
             var trend = stats.monthly_trend || [];
             var isDark = isDarkModeActive();
+            var fam = stats.category || stats.family || {};
+            var famColor = fam.color || '#2563eb';
 
             var categories = trend.map(function (m) { return m.month_name || m.month; });
             var realSpent  = trend.map(function (m) { return parseFloat(m.spent !== undefined ? m.spent : (m.spent_actual || 0)); });
@@ -1514,7 +1572,7 @@ jQuery(function ($) {
                     background: 'transparent'
                 },
                 theme: { mode: isDark ? 'dark' : 'light' },
-                colors: ['#2563eb', '#10b981', '#94a3b8'],
+                colors: [famColor, '#10b981', famColor + '99'],
                 stroke: {
                     width: [3, 2.5, 0],
                     curve: 'smooth',
@@ -1757,9 +1815,17 @@ jQuery(function ($) {
             }
 
             // Filas Hijas: Subcategorías
+            var $toggleTreeBtn = $('#aura-cat-toggle-all-tree');
             if (!subs.length && parentDirectTxs === 0) {
                 $tbody.append('<tr class="aura-row-child"><td colspan="6" style="text-align:center;color:#94a3b8;padding:24px;">No hay subcategorías ni transacciones registradas bajo este rubro.</td></tr>');
+                $toggleTreeBtn.prop('disabled', true).css('opacity', '0.6').html('<span class="dashicons dashicons-minus"></span> <span>Sin Subcategorías</span>');
             } else {
+                $toggleTreeBtn.prop('disabled', false).css('opacity', '1');
+                if (self.treeExpanded) {
+                    $toggleTreeBtn.html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>Colapsar Subcategorías</span>');
+                } else {
+                    $toggleTreeBtn.html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>Desplegar Subcategorías</span>');
+                }
                 subs.forEach(function (s) {
                     var sTx = parseInt(s.tx_count || 0, 10);
                     var sSpent = parseFloat(s.total_spent || 0);

@@ -770,6 +770,10 @@ if ( $_aura_user_area_only ) {
             </div>
 
         </div><!-- .aura-detail-grid -->
+
+        <div class="aura-modal-footer">
+            <button type="button" class="button button-secondary" id="aura-detail-modal-close-btn"><?php esc_html_e( 'Cerrar Detalle', 'aura-suite' ); ?></button>
+        </div>
     </div>
 </div>
 

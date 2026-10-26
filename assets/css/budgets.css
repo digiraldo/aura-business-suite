@@ -6,9 +6,10 @@
 
 /* ── 1. WRAP Y CONTENEDOR GENERAL ────────────────────────── */
 .aura-budgets-wrap {
-    max-width: 1280px;
-    margin: 20px auto 40px;
-    padding: 0 12px;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 15px 0 40px 0;
+    padding: 0 20px;
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
     color: #1e293b;
@@ -2021,6 +2022,135 @@ body.aura-dark-mode .aura-detail-tx-wrap thead th,
 body[data-theme="dark"] .aura-detail-tx-wrap thead th {
     background: #0f172a;
     color: #cbd5e1;
+}
+
+/* Modal Categoría & Subcategorías en Dark Mode */
+html[data-wp-dark-mode-scheme="dark"] .aura-cat-modal-info-box,
+html.wp-dark-mode-active .aura-cat-modal-info-box,
+body.wp-dark-mode-active .aura-cat-modal-info-box,
+body.aura-dark-mode .aura-cat-modal-info-box,
+body[data-theme="dark"] .aura-cat-modal-info-box {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-cat-modal-cat-name,
+html.wp-dark-mode-active #aura-cat-modal-cat-name,
+body.wp-dark-mode-active #aura-cat-modal-cat-name,
+body.aura-dark-mode #aura-cat-modal-cat-name,
+body[data-theme="dark"] #aura-cat-modal-cat-name {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-cat-modal-year-display,
+html.wp-dark-mode-active #aura-cat-modal-year-display,
+body.wp-dark-mode-active #aura-cat-modal-year-display,
+body.aura-dark-mode #aura-cat-modal-year-display,
+body[data-theme="dark"] #aura-cat-modal-year-display {
+    color: #60a5fa !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-cat-modal-subs-info,
+html.wp-dark-mode-active #aura-cat-modal-subs-info,
+body.wp-dark-mode-active #aura-cat-modal-subs-info,
+body.aura-dark-mode #aura-cat-modal-subs-info,
+body[data-theme="dark"] #aura-cat-modal-subs-info {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-cat-budget-form label,
+html.wp-dark-mode-active #aura-cat-budget-form label,
+body.wp-dark-mode-active #aura-cat-budget-form label,
+body.aura-dark-mode #aura-cat-budget-form label,
+body[data-theme="dark"] #aura-cat-budget-form label {
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-cat-budget-form .description,
+html.wp-dark-mode-active #aura-cat-budget-form .description,
+body.wp-dark-mode-active #aura-cat-budget-form .description,
+body.aura-dark-mode #aura-cat-budget-form .description,
+body[data-theme="dark"] #aura-cat-budget-form .description {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-monthly-dist-container,
+html.wp-dark-mode-active #aura-monthly-dist-container,
+body.wp-dark-mode-active #aura-monthly-dist-container,
+body.aura-dark-mode #aura-monthly-dist-container,
+body[data-theme="dark"] #aura-monthly-dist-container {
+    background: #0b1120 !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-monthly-grid-12 > div,
+html.wp-dark-mode-active .aura-monthly-grid-12 > div,
+body.wp-dark-mode-active .aura-monthly-grid-12 > div,
+body.aura-dark-mode .aura-monthly-grid-12 > div,
+body[data-theme="dark"] .aura-monthly-grid-12 > div {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-monthly-grid-12 label,
+html.wp-dark-mode-active .aura-monthly-grid-12 label,
+body.wp-dark-mode-active .aura-monthly-grid-12 label,
+body.aura-dark-mode .aura-monthly-grid-12 label,
+body[data-theme="dark"] .aura-monthly-grid-12 label {
+    color: #94a3b8 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-modal-month-input,
+html.wp-dark-mode-active .aura-modal-month-input,
+body.wp-dark-mode-active .aura-modal-month-input,
+body.aura-dark-mode .aura-modal-month-input,
+body[data-theme="dark"] .aura-modal-month-input {
+    background: #0f172a !important;
+    border-color: #475569 !important;
+    color: #f8fafc !important;
+    color-scheme: dark;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-category-budget-modal .aura-modal-footer,
+html.wp-dark-mode-active #aura-category-budget-modal .aura-modal-footer,
+body.wp-dark-mode-active #aura-category-budget-modal .aura-modal-footer,
+body.aura-dark-mode #aura-category-budget-modal .aura-modal-footer,
+body[data-theme="dark"] #aura-category-budget-modal .aura-modal-footer {
+    background: #0f172a !important;
+    border-top-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-detail-modal-close-btn,
+html.wp-dark-mode-active #aura-detail-modal-close-btn,
+body.wp-dark-mode-active #aura-detail-modal-close-btn,
+body.aura-dark-mode #aura-detail-modal-close-btn,
+body[data-theme="dark"] #aura-detail-modal-close-btn {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-cat-breakdown-table thead th,
+html.wp-dark-mode-active #aura-cat-breakdown-table thead th,
+body.wp-dark-mode-active #aura-cat-breakdown-table thead th,
+body.aura-dark-mode #aura-cat-breakdown-table thead th,
+body[data-theme="dark"] #aura-cat-breakdown-table thead th {
+    background: #0f172a !important;
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] #aura-cat-breakdown-table tbody td,
+html[data-wp-dark-mode-scheme="dark"] #aura-cat-breakdown-table tfoot td,
+html.wp-dark-mode-active #aura-cat-breakdown-table tbody td,
+html.wp-dark-mode-active #aura-cat-breakdown-table tfoot td,
+body.wp-dark-mode-active #aura-cat-breakdown-table tbody td,
+body.wp-dark-mode-active #aura-cat-breakdown-table tfoot td,
+body.aura-dark-mode #aura-cat-breakdown-table tbody td,
+body.aura-dark-mode #aura-cat-breakdown-table tfoot td,
+body[data-theme="dark"] #aura-cat-breakdown-table tbody td,
+body[data-theme="dark"] #aura-cat-breakdown-table tfoot td {
+    color: #cbd5e1 !important;
+    border-color: #334155 !important;
 }
 
 /* ── 13. RESPONSIVE DESIGN TOTAL (BREAKPOINTS) ───────────── */
