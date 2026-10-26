@@ -822,7 +822,7 @@ if (!empty($filter_account)) $active_filters_count++;
                 </label>
                 <div id="aura-bulk-wrap-area" style="opacity:0.45;pointer-events:none;transition:all 0.2s ease;">
                     <select id="aura-bulk-val-area" class="widefat" style="height:38px;border-radius:8px;">
-                        <option value="0">🏢 <?php _e('General (Sin área asignada)', 'aura-suite'); ?></option>
+                        <option value="0">🏢 <?php _e('— Sin área asignada (Gasto Institucional) —', 'aura-suite'); ?></option>
                         <?php
                         $all_areas = $wpdb->get_results("SELECT id, name, color, type FROM {$wpdb->prefix}aura_areas WHERE status = 'active' ORDER BY sort_order ASC, name ASC");
                         if (empty($all_areas) && class_exists('Aura_Areas_Setup')) {

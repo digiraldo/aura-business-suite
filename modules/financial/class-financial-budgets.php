@@ -201,14 +201,24 @@ class Aura_Financial_Budgets {
         global $wpdb;
         $tx_table = $wpdb->prefix . 'aura_finance_transactions';
 
+        $args = [];
+        if ( ! empty( $area_id ) && (int) $area_id > 0 ) {
+            $area_sql = "area_id = %d";
+            $args[] = (int) $area_id;
+        } else {
+            // Sin área específica o global: computar transacciones generales (area_id = 0 o NULL)
+            $area_sql = "(area_id = 0 OR area_id IS NULL)";
+        }
+
         $sql  = "SELECT COALESCE(SUM(amount), 0)
                  FROM {$tx_table}
-                 WHERE area_id = %d
+                 WHERE {$area_sql}
                    AND transaction_date BETWEEN %s AND %s
                    AND transaction_type = 'expense'
                    AND status = 'approved'
                    AND deleted_at IS NULL";
-        $args = [ (int) $area_id, $start_date, $end_date ];
+        $args[] = $start_date;
+        $args[] = $end_date;
 
         if ( $category_id !== null ) {
             $cat_ids = self::get_category_and_subcategories_ids( (int) $category_id );
@@ -225,7 +235,7 @@ class Aura_Financial_Budgets {
      * Contar número de transacciones ejecutadas (egresos aprobados) para un Área y opcionalmente Categoría en un rango de fechas.
      * Incluye automáticamente transacciones de subcategorías.
      *
-     * @param int         $area_id     ID del área.
+     * @param int|null    $area_id     ID del área.
      * @param string      $start_date  Fecha inicio (Y-m-d).
      * @param string      $end_date    Fecha fin (Y-m-d).
      * @param int|null    $category_id Opcional: filtro por categoría específica.
@@ -234,14 +244,24 @@ class Aura_Financial_Budgets {
         global $wpdb;
         $tx_table = $wpdb->prefix . 'aura_finance_transactions';
 
+        $args = [];
+        if ( ! empty( $area_id ) && (int) $area_id > 0 ) {
+            $area_sql = "area_id = %d";
+            $args[] = (int) $area_id;
+        } else {
+            // Sin área específica o global: computar transacciones generales (area_id = 0 o NULL)
+            $area_sql = "(area_id = 0 OR area_id IS NULL)";
+        }
+
         $sql  = "SELECT COUNT(id)
                  FROM {$tx_table}
-                 WHERE area_id = %d
+                 WHERE {$area_sql}
                    AND transaction_date BETWEEN %s AND %s
                    AND transaction_type = 'expense'
                    AND status = 'approved'
                    AND deleted_at IS NULL";
-        $args = [ (int) $area_id, $start_date, $end_date ];
+        $args[] = $start_date;
+        $args[] = $end_date;
 
         if ( $category_id !== null ) {
             $cat_ids = self::get_category_and_subcategories_ids( (int) $category_id );
@@ -538,8 +558,13 @@ class Aura_Financial_Budgets {
         $budget = self::enrich( $budget );
 
         // Transacciones del período filtradas por área y categoría (incluyendo subcategorías) si está definida
-        $where_tx = "t.area_id = %d AND t.transaction_date BETWEEN %s AND %s AND t.transaction_type = 'expense' AND t.status != 'rejected' AND t.deleted_at IS NULL";
-        $tx_args  = [ (int) ( $budget->area_id ?? 0 ), $budget->start_date, $budget->end_date ];
+        if ( ! empty( $budget->area_id ) && (int) $budget->area_id > 0 ) {
+            $where_tx = "t.area_id = %d AND t.transaction_date BETWEEN %s AND %s AND t.transaction_type = 'expense' AND t.status != 'rejected' AND t.deleted_at IS NULL";
+            $tx_args  = [ (int) $budget->area_id, $budget->start_date, $budget->end_date ];
+        } else {
+            $where_tx = "(t.area_id = 0 OR t.area_id IS NULL) AND t.transaction_date BETWEEN %s AND %s AND t.transaction_type = 'expense' AND t.status != 'rejected' AND t.deleted_at IS NULL";
+            $tx_args  = [ $budget->start_date, $budget->end_date ];
+        }
 
         if ( ! empty( $budget->category_id ) ) {
             $cat_ids = self::get_category_and_subcategories_ids( (int) $budget->category_id );

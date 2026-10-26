@@ -245,6 +245,7 @@ jQuery(function ($) {
 
             // Badge de área en la cabecera del grupo
             var areaLabel;
+            var subtotalLabel;
             if (g.area_name) {
                 var aColor = g.area_color || '#607d8b';
                 areaLabel = '<span class="aura-area-title-wrap">'
@@ -252,8 +253,19 @@ jQuery(function ($) {
                     + '<strong>' + escHtml(g.area_name) + '</strong>'
                     + ' <span class="aura-area-count-badge">' + g.items.length + ' ' + (g.items.length === 1 ? 'presupuesto' : 'presupuestos') + '</span>'
                     + '</span>';
+                subtotalLabel = auraBudgets.txt.area_subtotal || 'Subtotal Área';
             } else {
-                areaLabel = '<em style="color:#94a3b8;">' + (auraBudgets.txt.no_area || 'General') + '</em>';
+                areaLabel = '<span class="aura-area-title-wrap">'
+                    + '<span class="aura-area-color-swatch" style="background:#6366f1;"></span>'
+                    + '<strong>' + (auraBudgets.txt.category_budgets_group || 'Presupuestos por Categoría (Sin Área asignada)') + '</strong>'
+                    + ' <span class="aura-area-count-badge" style="background:rgba(99,102,241,0.12);color:#4338ca;border:1px solid rgba(99,102,241,0.25);">' + g.items.length + ' ' + (g.items.length === 1 ? 'rubro' : 'rubros') + '</span>'
+                    + '</span>';
+                subtotalLabel = auraBudgets.txt.cat_subtotal || 'Subtotal Categorías';
+            }
+
+            var areaActionBtn = '';
+            if (g.area_id && parseInt(g.area_id) > 0) {
+                areaActionBtn = ' <button type="button" class="aura-btn aura-btn-secondary aura-btn-xs aura-add-area-budget" data-area-id="' + escAttr(g.area_id) + '" data-area-name="' + escAttr(g.area_name || '') + '" data-tooltip="Crear nuevo presupuesto específico para ' + escAttr(g.area_name || '') + '" style="margin-left:8px;padding:3px 9px;font-size:11.5px;font-weight:600;"><span class="dashicons dashicons-plus-alt2" style="font-size:13px;width:13px;height:13px;vertical-align:middle;margin-right:2px;"></span>' + (auraBudgets.txt.add_budget_to_area || '+ Presupuesto') + '</button>';
             }
 
             // Fila cabecera del grupo (colapsable)
@@ -265,11 +277,11 @@ jQuery(function ($) {
                 + '</td>'
                 + '<td><strong class="aura-subtotal-val">' + fmt(subtotalBudget) + '</strong></td>'
                 + '<td><div class="aura-exec-cell-wrap"><span class="aura-subtotal-val">' + fmt(subtotalExecuted) + '</span>'
-                + '<span class="aura-tx-counter-pill aura-tx-counter-pill--subtotal" data-tooltip="Total de transacciones registradas del área en este período"><span class="dashicons dashicons-tickets-alt"></span> ' + subtotalTxCount + ' ' + (subtotalTxCount === 1 ? 'tx' : 'txs') + '</span></div></td>'
+                + '<span class="aura-tx-counter-pill aura-tx-counter-pill--subtotal" data-tooltip="Total de transacciones registradas en este período"><span class="dashicons dashicons-tickets-alt"></span> ' + subtotalTxCount + ' ' + (subtotalTxCount === 1 ? 'tx' : 'txs') + '</span></div></td>'
                 + '<td>' + (subtotalOverrun > 0 ? '<span class="aura-overrun-badge">-' + fmt(subtotalOverrun) + '</span>' : '<span class="aura-avail-badge">' + fmt(subtotalAvailable) + '</span>') + '</td>'
                 + '<td style="text-align:center;"><strong style="color:' + subtotalBarColor + '">' + fmtPct(subtotalPct) + '</strong></td>'
                 + '<td><div class="aura-prog-bar"><div class="aura-prog-fill" style="width:' + Math.min(subtotalPct, 100) + '%;background:' + subtotalBarColor + '">' + (subtotalPct > 100 ? '<div class="aura-overrun-stripe"></div>' : '') + '</div></div></td>'
-                + '<td style="text-align:right;"><span class="aura-subtotal-tag">' + (auraBudgets.txt.area_subtotal || 'Subtotal Área') + '</span></td>'
+                + '<td style="text-align:right;white-space:nowrap;"><span class="aura-subtotal-tag">' + subtotalLabel + '</span>' + areaActionBtn + '</td>'
                 + '</tr>';
 
             // Filas individuales del grupo
@@ -312,7 +324,7 @@ jQuery(function ($) {
 
                 var areaSubHtml = b.area_name
                     ? '<div class="aura-cat-cell-sub"><span class="aura-area-dot" style="background:' + escHtml(b.area_color || '#607d8b') + '"></span>' + escHtml(b.area_name) + '</div>'
-                    : '';
+                    : '<div class="aura-cat-cell-sub"><span class="aura-tag-badge aura-tag-secondary" style="font-size:10px;padding:1px 6px;margin-top:2px;">🏷️ Presupuesto de Categoría (Sin Área)</span></div>';
 
                 var availCell = parseFloat(b.overrun) > 0
                     ? '<span class="aura-overrun-badge" data-tooltip="⚠️ Presupuesto excedido en ' + fmt(b.overrun) + '">-' + fmt(b.overrun) + '</span>'
@@ -521,7 +533,7 @@ jQuery(function ($) {
     });
 
     // ── Abrir / Cerrar modal crear y editar ────────────────────────────
-    function openBudgetModal(id) {
+    function openBudgetModal(id, prefillAreaId) {
         state.editingId = id;
         var $form  = $('#aura-budget-form');
         var $modal = $('#aura-budget-modal');
@@ -543,6 +555,11 @@ jQuery(function ($) {
             $('input[name="period_type"][value="monthly"]').prop('checked', true).closest('.aura-radio-pill').addClass('selected').siblings().removeClass('selected');
             $('#notify_extra_toggle').prop('checked', false);
             $('#notify_emails').val('').hide();
+
+            // Pre-seleccionar área si viene dada
+            if (prefillAreaId && $('#budget_area_id').length) {
+                $('#budget_area_id').val(prefillAreaId);
+            }
         }
 
         if (id) {
@@ -572,23 +589,31 @@ jQuery(function ($) {
             }
         }
 
-        $modal.addClass('active').css({ 'display': 'flex', 'opacity': '1', 'visibility': 'visible' });
+        $modal.removeAttr('style').removeClass('is-hidden').addClass('active').css({ 'display': 'flex', 'opacity': '1', 'visibility': 'visible' });
         setTimeout(function() {
             $('#budget_area_id, #budget_category_id').first().focus();
         }, 50);
     }
 
     function closeBudgetModal() {
-        $('#aura-budget-modal').removeClass('active').css({ 'display': 'none', 'opacity': '0', 'visibility': 'hidden' });
+        $('#aura-budget-modal').removeClass('active').addClass('is-hidden').css({ 'display': 'none', 'opacity': '0', 'visibility': 'hidden' });
     }
 
     function closeDetailModal() {
-        $('#aura-budget-detail-modal').removeClass('active').css({ 'display': 'none', 'opacity': '0', 'visibility': 'hidden' });
+        $('#aura-budget-detail-modal').removeClass('active').addClass('is-hidden').css({ 'display': 'none', 'opacity': '0', 'visibility': 'hidden' });
     }
 
     $(document).on('click', '#aura-new-budget-btn, .aura-trigger-new-budget', function (e) {
         e.preventDefault();
-        openBudgetModal(null);
+        var filterArea = $('#aura-filter-area').val();
+        openBudgetModal(null, filterArea || null);
+    });
+
+    $(document).on('click', '.aura-add-area-budget', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var areaId = $(this).data('area-id');
+        openBudgetModal(null, areaId || null);
     });
 
     // Cerrar modal presupuesto

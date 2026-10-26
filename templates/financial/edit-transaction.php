@@ -167,8 +167,8 @@ foreach ($finance_accounts as $account) {
 }
 
 $history_area_map = array(
-    '' => __('General (sin área)', 'aura-suite'),
-    '0' => __('General (sin área)', 'aura-suite'),
+    '' => __('Sin asignar a Área (Gasto Institucional)', 'aura-suite'),
+    '0' => __('Sin asignar a Área (Gasto Institucional)', 'aura-suite'),
 );
 foreach ($_edit_areas as $area) {
     $history_area_map[(string) $area->id] = $area->name;
@@ -522,7 +522,7 @@ $amount_formatted = number_format($amount_raw, 2, '.', '');
                                 </div>
                             <?php else : ?>
                                 <select id="transaction_area_id" name="area_id" data-original="<?php echo esc_attr($transaction['area_id']); ?>">
-                                    <option value=""><?php _e('General (sin área)', 'aura-suite'); ?></option>
+                                    <option value=""><?php _e('— Sin asignar a Área / Programa (Gasto Institucional) —', 'aura-suite'); ?></option>
                                     <?php foreach ($_edit_areas as $_ea) : ?>
                                     <option value="<?php echo (int) $_ea->id; ?>" <?php selected($transaction['area_id'], $_ea->id); ?>>
                                         <?php echo esc_html($_ea->name); ?>

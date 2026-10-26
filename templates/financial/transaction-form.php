@@ -202,7 +202,7 @@ if ( $_frm_view_own ) {
                                 <div class="aura-input-group">
                                     <span class="aura-input-group-text"><span class="dashicons dashicons-building"></span></span>
                                     <select id="transaction_area_id" name="area_id">
-                                        <option value=""><?php _e('General (sin área)', 'aura-suite'); ?></option>
+                                        <option value=""><?php _e('— Sin asignar a Área / Programa (Gasto Institucional) —', 'aura-suite'); ?></option>
                                         <?php foreach ( $_frm_areas as $_fa ) : ?>
                                         <option value="<?php echo (int) $_fa->id; ?>">
                                             <?php echo esc_html( $_fa->name ); ?>

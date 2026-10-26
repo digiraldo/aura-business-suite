@@ -477,7 +477,7 @@ $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 
 <!-- ================================================================
      MODAL: Crear / Editar Presupuesto
      ============================================================== -->
-<div id="aura-budget-modal" class="aura-modal-overlay" style="display:none" role="dialog" aria-modal="true">
+<div id="aura-budget-modal" class="aura-modal-overlay is-hidden" role="dialog" aria-modal="true">
     <div class="aura-modal-container aura-modal-content aura-budget-form-modal">
         <div class="aura-modal-header">
             <h2 id="aura-budget-modal-title"><?php esc_html_e( 'Nuevo Presupuesto', 'aura-suite' ); ?></h2>
@@ -735,7 +735,7 @@ $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 
 <!-- ================================================================
      MODAL: Detalle de Presupuesto
      ============================================================== -->
-<div id="aura-budget-detail-modal" class="aura-modal-overlay" style="display:none" role="dialog" aria-modal="true">
+<div id="aura-budget-detail-modal" class="aura-modal-overlay is-hidden" role="dialog" aria-modal="true">
     <div class="aura-modal-container aura-modal-content aura-budget-detail-modal">
         <div class="aura-modal-header">
             <h2 id="aura-detail-title"><?php esc_html_e( 'Detalle del Presupuesto', 'aura-suite' ); ?></h2>
