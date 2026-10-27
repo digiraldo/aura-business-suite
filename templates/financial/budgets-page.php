@@ -159,20 +159,52 @@ $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 
         <div id="aura-cat-budget-content">
 
             <!-- Encabezado Imprimible Formal (Visible solo en @media print) -->
+            <?php
+            $org_logo_url = '';
+            $org_logo_id  = (int) get_option( 'aura_org_logo_id', 0 );
+            if ( $org_logo_id ) {
+                $org_logo_url = wp_get_attachment_image_url( $org_logo_id, 'full' );
+            }
+            if ( empty( $org_logo_url ) ) {
+                $org_logo_url = get_option( 'aura_org_logo_url', '' );
+            }
+            if ( empty( $org_logo_url ) && function_exists( 'aura_get_org_logo_url' ) ) {
+                $org_logo_url = aura_get_org_logo_url( 'full' );
+            }
+            if ( empty( $org_logo_url ) ) {
+                $site_logo_id = get_theme_mod( 'custom_logo' );
+                $org_logo_url = $site_logo_id ? wp_get_attachment_image_url( $site_logo_id, 'full' ) : get_site_icon_url( 120 );
+            }
+            $org_name     = function_exists( 'aura_get_org_name' ) ? aura_get_org_name() : get_option( 'aura_org_name', get_bloginfo( 'name' ) );
+            $org_tagline  = get_option( 'aura_org_tagline', '' );
+            $cur_user_str = wp_get_current_user()->display_name;
+            $cur_year_str = (int) current_time( 'Y' );
+            ?>
             <div class="aura-cat-print-header" id="aura-cat-print-header" style="display:none;">
                 <div class="aura-print-header-top">
-                    <div class="aura-print-brand">
-                        <h2 class="aura-print-title"><?php esc_html_e( 'REPORTE EJECUTIVO DE EJECUCIÓN PRESUPUESTARIA', 'aura-suite' ); ?></h2>
-                        <p class="aura-print-subtitle"><?php esc_html_e( 'Aura Business Suite — Módulo de Inteligencia Financiera', 'aura-suite' ); ?></p>
+                    <div class="aura-print-brand-box">
+                        <?php if ( ! empty( $org_logo_url ) ) : ?>
+                            <img src="<?php echo esc_url( $org_logo_url ); ?>" alt="<?php echo esc_attr( $org_name ); ?>" class="aura-print-logo" loading="eager">
+                        <?php endif; ?>
+                        <div class="aura-print-brand-text">
+                            <span class="aura-print-company-name"><?php echo esc_html( $org_name ); ?></span>
+                            <?php if ( ! empty( $org_tagline ) ) : ?>
+                                <span class="aura-print-org-tagline"><?php echo esc_html( $org_tagline ); ?></span>
+                            <?php endif; ?>
+                            <h2 class="aura-print-title"><?php esc_html_e( 'REPORTE EJECUTIVO DE EJECUCIÓN PRESUPUESTARIA', 'aura-suite' ); ?></h2>
+                            <p class="aura-print-subtitle"><?php esc_html_e( 'Aura Business Suite — Módulo de Inteligencia Financiera & Control Presupuestal', 'aura-suite' ); ?></p>
+                        </div>
                     </div>
-                    <div class="aura-print-meta">
-                        <div><strong><?php esc_html_e( 'Fecha de Emisión:', 'aura-suite' ); ?></strong> <span id="aura-print-date"><?php echo esc_html( date_i18n( 'd/m/Y H:i' ) ); ?></span></div>
-                        <div><strong><?php esc_html_e( 'Ejercicio Fiscal:', 'aura-suite' ); ?></strong> <span id="aura-print-fiscal-year">2026</span></div>
+                    <div class="aura-print-meta-box">
+                        <div class="aura-print-meta-row"><strong><?php esc_html_e( 'Emisión:', 'aura-suite' ); ?></strong> <span id="aura-print-date"><?php echo esc_html( date_i18n( 'd/m/Y H:i' ) ); ?></span></div>
+                        <div class="aura-print-meta-row"><strong><?php esc_html_e( 'Ejercicio Fiscal:', 'aura-suite' ); ?></strong> <span id="aura-print-fiscal-year"><?php echo esc_html( $cur_year_str ); ?></span></div>
+                        <div class="aura-print-meta-row"><strong><?php esc_html_e( 'Auditor / Emisor:', 'aura-suite' ); ?></strong> <span><?php echo esc_html( $cur_user_str ); ?></span></div>
+                        <div class="aura-print-meta-row"><span class="aura-print-badge-official"><?php esc_html_e( 'DOCUMENTO OFICIAL AUDITABLE', 'aura-suite' ); ?></span></div>
                     </div>
                 </div>
                 <div class="aura-print-category-info">
-                    <div><strong><?php esc_html_e( 'Rubro / Categoría Principal:', 'aura-suite' ); ?></strong> <span id="aura-print-category-name">—</span></div>
-                    <div><strong><?php esc_html_e( 'Dictamen de Consumo:', 'aura-suite' ); ?></strong> <span id="aura-print-status-label">—</span></div>
+                    <div class="aura-print-cat-col"><strong><?php esc_html_e( 'Rubro / Categoría Principal:', 'aura-suite' ); ?></strong> <span id="aura-print-category-name">—</span></div>
+                    <div class="aura-print-cat-col"><strong><?php esc_html_e( 'Dictamen Presupuestario:', 'aura-suite' ); ?></strong> <span id="aura-print-status-label">—</span></div>
                 </div>
             </div>
 
@@ -266,7 +298,7 @@ $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 
                 </div>
 
                 <!-- Gráfico 2: Desglose y Concentración por Subcategorías -->
-                <div class="aura-glass-card aura-chart-card">
+                <div class="aura-glass-card aura-chart-card aura-donut-card-wrap">
                     <div class="aura-card-head">
                         <div class="aura-card-title-group">
                             <span class="aura-card-badge-icon"><span class="dashicons dashicons-chart-pie"></span></span>
@@ -276,8 +308,11 @@ $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 
                             </div>
                         </div>
                     </div>
-                    <div class="aura-chart-body" id="aura-cat-donut-chart" style="min-height:330px;">
-                        <div class="aura-chart-placeholder"><?php esc_html_e( 'Cargando distribución de subcategorías…', 'aura-suite' ); ?></div>
+                    <div class="aura-donut-visual-grid">
+                        <div class="aura-chart-body" id="aura-cat-donut-chart" style="min-height:240px;">
+                            <div class="aura-chart-placeholder"><?php esc_html_e( 'Cargando distribución de subcategorías…', 'aura-suite' ); ?></div>
+                        </div>
+                        <div class="aura-donut-breakdown" id="aura-cat-donut-breakdown"></div>
                     </div>
                 </div>
             </div>
@@ -330,15 +365,18 @@ $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 
                 <div class="aura-print-signatures">
                     <div class="aura-print-sig-box">
                         <div class="aura-sig-line"></div>
-                        <span><?php esc_html_e( 'Responsable de Área / Solicitante', 'aura-suite' ); ?></span>
+                        <span class="aura-sig-role"><?php esc_html_e( 'Responsable de Área / Solicitante', 'aura-suite' ); ?></span>
+                        <small class="aura-sig-desc"><?php esc_html_e( 'Firma y Sello de Conformidad', 'aura-suite' ); ?></small>
                     </div>
                     <div class="aura-print-sig-box">
                         <div class="aura-sig-line"></div>
-                        <span><?php esc_html_e( 'Dirección Financiera / Aprobación', 'aura-suite' ); ?></span>
+                        <span class="aura-sig-role"><?php esc_html_e( 'Dirección Financiera / Aprobación', 'aura-suite' ); ?></span>
+                        <small class="aura-sig-desc"><?php esc_html_e( 'Validación Oficial de Presupuesto', 'aura-suite' ); ?></small>
                     </div>
                 </div>
                 <div class="aura-print-watermark-note">
-                    <?php esc_html_e( 'Documento generado automáticamente por Aura Business Suite. Todos los importes expresados en moneda de curso legal.', 'aura-suite' ); ?>
+                    <p class="aura-print-legal-notice"><?php esc_html_e( 'Documento confidencial emitido por Aura Business Suite. Todos los importes expresados en moneda de curso legal. Válido para efectos administrativos, contables y de auditoría interna.', 'aura-suite' ); ?> — <?php echo esc_html( get_bloginfo( 'name' ) ); ?></p>
+                    <p class="aura-print-legal-notice" style="margin-top:3px;font-weight:700;color:#0f172a;"><?php printf( esc_html__( 'Desarrollado con ❤️ por DiGiraldo | © %s AURA Business Suite &nbsp;•&nbsp; AURA Suite v%s', 'aura-suite' ), esc_html( date( 'Y' ) ), esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.8.3' ) ); ?></p>
                 </div>
             </div>
 

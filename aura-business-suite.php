@@ -1015,8 +1015,8 @@ class Aura_Business_Suite
             ));
 
             // Widget presupuestos en dashboard (Fase 5, Item 5.1)
-            wp_enqueue_style('aura-budgets', AURA_PLUGIN_URL . 'assets/css/budgets.css', array('aura-admin-styles'), AURA_VERSION);
-            wp_enqueue_script('aura-budgets', AURA_PLUGIN_URL . 'assets/js/budgets.js', array('jquery'), AURA_VERSION, true);
+            wp_enqueue_style('aura-budgets', AURA_PLUGIN_URL . 'assets/css/budgets.css', array('aura-admin-styles'), AURA_VERSION . '.' . (file_exists(AURA_PLUGIN_DIR . 'assets/css/budgets.css') ? filemtime(AURA_PLUGIN_DIR . 'assets/css/budgets.css') : time()));
+            wp_enqueue_script('aura-budgets', AURA_PLUGIN_URL . 'assets/js/budgets.js', array('jquery'), AURA_VERSION . '.' . (file_exists(AURA_PLUGIN_DIR . 'assets/js/budgets.js') ? filemtime(AURA_PLUGIN_DIR . 'assets/js/budgets.js') : time()), true);
             wp_localize_script('aura-budgets', 'auraBudgets', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('aura_budgets_nonce'),

@@ -1364,21 +1364,45 @@ jQuery(function ($) {
 
             // Inicializar eventos del modal de presupuesto de categoría
             self.initModalEvents();
+
+            // Listeners globales para impresión nativa (Ctrl+P o Menú -> Imprimir)
+            window.addEventListener('beforeprint', function () {
+                if ($('#tab-category-budgets').is(':visible') && self.data) {
+                    self.applyPrintOptimizations();
+                }
+            });
+            window.addEventListener('afterprint', function () {
+                if ($('#tab-category-budgets').is(':visible') && self.data) {
+                    self.restoreAfterPrint();
+                }
+            });
         },
 
-        // Preparar página y disparar impresión (se ajusta a Carta / Oficio / Horizontal / Vertical)
-        prepareAndPrint: function () {
+        // Aplicar optimizaciones para impresión (se adapta a Carta / Oficio / Horizontal / Vertical)
+        applyPrintOptimizations: function () {
             var self = this;
-            if (!self.data) {
-                window.print();
-                return;
-            }
+            if (!self.data) return;
+
+            self._wasDarkMode = typeof isDarkModeActive === 'function' ? isDarkModeActive() : false;
+            self._previousExpanded = self.treeExpanded;
+
             var fam = self.data.category || self.data.family || {};
             var ex  = self.data.execution || {};
             var b   = self.data.budget || {};
 
             $('#aura-print-fiscal-year').text(self.currentYear);
             $('#aura-print-category-name').text(fam.name || 'Categoría');
+
+            // Actualizar fecha y hora actual exacta
+            try {
+                var now = new Date();
+                var dStr = String(now.getDate()).padStart(2, '0') + '/' +
+                           String(now.getMonth() + 1).padStart(2, '0') + '/' +
+                           now.getFullYear() + ' ' +
+                           String(now.getHours()).padStart(2, '0') + ':' +
+                           String(now.getMinutes()).padStart(2, '0');
+                $('#aura-print-date').text(dStr);
+            } catch (e) {}
 
             var statusLabels = {
                 ok: 'Consumo Saludable (< 70%)',
@@ -1393,17 +1417,57 @@ jQuery(function ($) {
             }
             $('#aura-print-status-label').text(stText);
 
-            // Asegurarse de que todas las subcategorías estén expandidas y visibles
+            // Auto-expandir todas las subcategorías para que toda la información aparezca sin cortes en el reporte
             $('.aura-row-child').removeClass('is-hidden');
             $('.aura-tree-expander-btn').removeClass('collapsed');
+            $('#aura-cat-toggle-all-tree').html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>Colapsar Subcategorías</span>');
 
-            // Forzar renderizado y ajuste de ApexCharts antes del diálogo de impresión
-            if (self.trendChart) self.trendChart.render();
-            if (self.donutChart) self.donutChart.render();
+            // Si el usuario está en modo oscuro, renderizar temporalmente en modo claro para máxima legibilidad en papel
+            if (self._wasDarkMode) {
+                self.renderTrendChart(self.data, true);
+                self.renderDonutChart(self.data, true);
+            }
 
+            // Forzar resize de los gráficos para que ApexCharts se adapte al 100% de ancho de página
+            try {
+                window.dispatchEvent(new Event('resize'));
+            } catch (e) {}
+        },
+
+        // Restaurar estado visual original tras cerrar el diálogo de impresión
+        restoreAfterPrint: function () {
+            var self = this;
+            if (!self.data) return;
+
+            // Restaurar modo oscuro si estaba activo
+            if (self._wasDarkMode) {
+                self.renderTrendChart(self.data);
+                self.renderDonutChart(self.data);
+            }
+
+            // Si el usuario tenía las subcategorías colapsadas, restaurar el colapso
+            if (self._previousExpanded === false) {
+                $('.aura-row-child').addClass('is-hidden');
+                $('.aura-tree-expander-btn').addClass('collapsed');
+                self.treeExpanded = false;
+                $('#aura-cat-toggle-all-tree').html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>Desplegar Subcategorías</span>');
+            }
+        },
+
+        // Preparar página y disparar diálogo de impresión
+        prepareAndPrint: function () {
+            var self = this;
+            if (!self.data) {
+                window.print();
+                return;
+            }
+
+            self.applyPrintOptimizations();
+
+            // Esperar reflujo del DOM para asegurar despliegue completo de filas antes del diálogo
             setTimeout(function () {
                 window.print();
-            }, 200);
+            }, 120);
         },
 
         // Cargar estadísticas completas desde el Backend
@@ -1665,7 +1729,7 @@ jQuery(function ($) {
         },
 
         // Renderizar Gráfico de Curva de Evolución Mensual (ApexCharts)
-        renderTrendChart: function (stats) {
+        renderTrendChart: function (stats, forceLight) {
             var self = this;
             var $el = document.getElementById('aura-cat-trend-chart');
             if (!$el) return;
@@ -1677,7 +1741,7 @@ jQuery(function ($) {
             $el.innerHTML = '';
 
             var trend = stats.monthly_trend || [];
-            var isDark = isDarkModeActive();
+            var isDark = forceLight ? false : isDarkModeActive();
             var fam = stats.category || stats.family || {};
             var famColor = fam.color || '#2563eb';
 
@@ -1734,15 +1798,56 @@ jQuery(function ($) {
                         borderRadius: 4
                     }
                 },
+                dataLabels: {
+                    enabled: true,
+                    enabledOnSeries: [2],
+                    formatter: function (val) {
+                        if (!val || val <= 0) return '';
+                        if (val >= 1000000) return '$' + (val / 1000000).toFixed(1) + 'M';
+                        if (val >= 1000) return '$' + (val / 1000).toFixed(0) + 'k';
+                        return '$' + Math.round(val);
+                    },
+                    offsetY: -6,
+                    style: {
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        colors: [isDark ? '#cbd5e1' : '#0f172a']
+                    },
+                    background: {
+                        enabled: true,
+                        foreColor: isDark ? '#f8fafc' : '#0f172a',
+                        padding: 3,
+                        borderRadius: 3,
+                        borderWidth: 1,
+                        borderColor: isDark ? '#475569' : '#cbd5e1',
+                        opacity: 0.95
+                    }
+                },
                 xaxis: {
                     categories: categories,
-                    labels: { style: { fontSize: '11px', colors: isDark ? '#94a3b8' : '#64748b' } }
+                    labels: {
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            colors: isDark ? '#94a3b8' : '#0f172a'
+                        }
+                    }
                 },
                 yaxis: {
                     labels: {
-                        style: { colors: isDark ? '#94a3b8' : '#64748b' },
+                        style: {
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            colors: isDark ? '#94a3b8' : '#0f172a'
+                        },
                         formatter: function (v) { return '$' + Math.round(v).toLocaleString('es'); }
                     }
+                },
+                markers: {
+                    size: [5, 4, 0],
+                    strokeColors: '#ffffff',
+                    strokeWidth: 2,
+                    hover: { size: 7 }
                 },
                 tooltip: {
                     shared: true,
@@ -1755,7 +1860,9 @@ jQuery(function ($) {
                 },
                 legend: {
                     position: 'top',
-                    labels: { colors: isDark ? '#f8fafc' : '#334155' }
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    labels: { colors: isDark ? '#f8fafc' : '#0f172a' }
                 },
                 series: series
             };
@@ -1765,9 +1872,10 @@ jQuery(function ($) {
         },
 
         // Renderizar Gráfico Donut de Participación de Subcategorías
-        renderDonutChart: function (stats) {
+        renderDonutChart: function (stats, forceLight) {
             var self = this;
             var $el = document.getElementById('aura-cat-donut-chart');
+            var $breakdown = $('#aura-cat-donut-breakdown');
             if (!$el) return;
 
             if (self.donutChart) {
@@ -1775,10 +1883,13 @@ jQuery(function ($) {
                 self.donutChart = null;
             }
             $el.innerHTML = '';
+            if ($breakdown.length) {
+                $breakdown.empty();
+            }
 
             var fam  = stats.category || stats.family || {};
             var subs = stats.subcategories || [];
-            var isDark = isDarkModeActive();
+            var isDark = forceLight ? false : isDarkModeActive();
 
             // Filtrar las que tienen gasto > 0
             var activeSubs = subs.filter(function (s) {
@@ -1802,7 +1913,7 @@ jQuery(function ($) {
             }
 
             if (!activeSubs.length) {
-                $el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;color:#94a3b8;text-align:center;">'
+                $el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:240px;color:#94a3b8;text-align:center;">'
                     + '<span class="dashicons dashicons-chart-pie" style="font-size:42px;width:42px;height:42px;opacity:0.4;margin-bottom:8px;"></span>'
                     + '<p style="margin:0;font-size:13.5px;">No hay transacciones registradas en este ejercicio para generar el desglose.</p>'
                     + '</div>';
@@ -1820,7 +1931,7 @@ jQuery(function ($) {
             var options = {
                 chart: {
                     type: 'donut',
-                    height: 330,
+                    height: 280,
                     toolbar: { show: false },
                     background: 'transparent'
                 },
@@ -1829,29 +1940,51 @@ jQuery(function ($) {
                 labels: labels,
                 colors: colors,
                 legend: {
-                    position: 'bottom',
-                    fontSize: '12px',
-                    labels: { colors: isDark ? '#f8fafc' : '#334155' }
+                    show: false // Se reemplaza por la tabla de desglose completa y auditable con montos y porcentajes
                 },
                 plotOptions: {
                     pie: {
                         donut: {
-                            size: '65%',
+                            size: '64%',
                             labels: {
                                 show: true,
                                 total: {
                                     show: true,
                                     label: 'Total Gastado',
+                                    fontSize: '12px',
+                                    fontWeight: 700,
                                     color: isDark ? '#f8fafc' : '#0f172a',
                                     formatter: function () {
                                         return fmt(totalSpent);
                                     }
+                                },
+                                value: {
+                                    fontSize: '16px',
+                                    fontWeight: 800,
+                                    color: isDark ? '#f8fafc' : '#0f172a'
                                 }
                             }
                         }
                     }
                 },
-                dataLabels: { enabled: false },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function (val) {
+                        return val >= 4 ? val.toFixed(1) + '%' : '';
+                    },
+                    style: {
+                        fontSize: '11.5px',
+                        fontWeight: '700',
+                        colors: ['#ffffff']
+                    },
+                    dropShadow: {
+                        enabled: true,
+                        top: 1,
+                        left: 1,
+                        blur: 2,
+                        opacity: 0.6
+                    }
+                },
                 tooltip: {
                     y: {
                         formatter: function (v) {
@@ -1868,6 +2001,40 @@ jQuery(function ($) {
 
             self.donutChart = new ApexCharts($el, options);
             self.donutChart.render();
+
+            // Desglose informativo completo de cada subcategoría con importes y porcentajes
+            if ($breakdown.length) {
+                var breakdownHtml = '<div class="aura-donut-breakdown-list">';
+                breakdownHtml += '<div class="aura-breakdown-header">'
+                    + '<span>Subcategoría</span>'
+                    + '<span style="text-align:right;">Gasto Real (% Part.)</span>'
+                    + '</div>';
+                activeSubs.forEach(function (s) {
+                    var sPct = totalSpent > 0 ? ((s.total_spent / totalSpent) * 100) : 0;
+                    breakdownHtml += '<div class="aura-breakdown-row">'
+                        + '  <div class="aura-breakdown-name-wrap">'
+                        + '    <span class="aura-subcat-color-dot" style="background:' + escHtml(s.color || '#2563eb') + ';"></span>'
+                        + '    <span class="aura-breakdown-name">' + escHtml(s.name) + '</span>'
+                        + '  </div>'
+                        + '  <div class="aura-breakdown-amt-wrap">'
+                        + '    <strong class="aura-breakdown-amt">' + fmt(s.total_spent) + '</strong>'
+                        + '    <span class="aura-breakdown-pct">(' + sPct.toFixed(1) + '%)</span>'
+                        + '  </div>'
+                        + '</div>';
+                });
+                // Fila final de Total Consolidado
+                breakdownHtml += '<div class="aura-breakdown-row aura-breakdown-total" style="border-top:1.5px solid ' + (isDark ? '#475569' : '#0f172a') + ';margin-top:4px;padding-top:4px;">'
+                    + '  <div class="aura-breakdown-name-wrap">'
+                    + '    <strong class="aura-breakdown-name" style="font-weight:900;font-size:12px;">TOTAL CONSOLIDADO</strong>'
+                    + '  </div>'
+                    + '  <div class="aura-breakdown-amt-wrap">'
+                    + '    <strong class="aura-breakdown-amt" style="font-size:12.5px;color:' + (isDark ? '#f8fafc' : '#000000') + ';">' + fmt(totalSpent) + '</strong>'
+                    + '    <span class="aura-breakdown-pct" style="font-size:12px;font-weight:800;color:' + (isDark ? '#93c5fd' : '#0f172a') + ';">(100.0%)</span>'
+                    + '  </div>'
+                    + '</div>';
+                breakdownHtml += '</div>';
+                $breakdown.html(breakdownHtml);
+            }
         },
 
         // Renderizar Tabla Árbol Desplegable de Categoría y Subcategorías
@@ -1910,7 +2077,7 @@ jQuery(function ($) {
                 + '    <span class="dashicons dashicons-tickets-alt"></span> ' + parentTotalTxs + ' ' + (parentTotalTxs === 1 ? 'tx' : 'txs')
                 + '  </a>'
                 + '</td>'
-                + '<td style="text-align:right;"><strong style="font-size:14.5px;">' + fmt(parentTotalSpent) + '</strong></td>'
+                + '<td style="text-align:right;"><strong class="aura-cat-cell-spent" style="font-size:14.5px;color:#0f172a;font-weight:800;">' + fmt(parentTotalSpent) + '</strong></td>'
                 + '<td style="text-align:center;"><strong style="color:#2563eb;">100.0%</strong></td>'
                 + '<td style="text-align:center;">'
                 + (b.has_budget && budgetAmt > 0 ? '<strong>' + fmtPct(ex.execution_pct) + '</strong>' : '—')
@@ -1943,7 +2110,7 @@ jQuery(function ($) {
                     + '    <span class="dashicons dashicons-tickets-alt"></span> ' + parentDirectTxs + ' txs'
                     + '  </a>'
                     + '</td>'
-                    + '<td style="text-align:right;">' + fmt(directSpent) + '</td>'
+                    + '<td style="text-align:right;"><strong class="aura-cat-cell-spent" style="color:#0f172a;font-weight:700;font-size:13.5px;">' + fmt(directSpent) + '</strong></td>'
                     + '<td style="text-align:center;">'
                     + '  <div class="aura-table-pct-cell">'
                     + '    <span>' + directPctOfParent.toFixed(1) + '%</span>'
@@ -1991,7 +2158,7 @@ jQuery(function ($) {
                             ? '<a href="' + sTxUrl + '" target="_blank" rel="noopener noreferrer" class="aura-tx-counter-pill has-txs"><span class="dashicons dashicons-tickets-alt"></span> ' + sTx + ' ' + (sTx === 1 ? 'tx' : 'txs') + '</a>'
                             : '<span class="aura-tx-counter-pill no-txs">0 txs</span>')
                         + '</td>'
-                        + '<td style="text-align:right;font-weight:600;">' + fmt(sSpent) + '</td>'
+                        + '<td style="text-align:right;"><strong class="aura-cat-cell-spent" style="color:#0f172a;font-weight:700;font-size:13.5px;">' + fmt(sSpent) + '</strong></td>'
                         + '<td style="text-align:center;">'
                         + '  <div class="aura-table-pct-cell">'
                         + '    <span style="font-weight:700;color:#1e293b;">' + sPctParent.toFixed(1) + '%</span>'
@@ -2018,7 +2185,7 @@ jQuery(function ($) {
             var footRow = '<tr>'
                 + '<td><strong>TOTAL CONSOLIDADO (' + escHtml(fam.name || 'Categoría') + ')</strong></td>'
                 + '<td style="text-align:center;"><strong class="aura-cat-tx-total-badge"><span class="dashicons dashicons-tickets-alt"></span> ' + parentTotalTxs + ' transacciones</strong></td>'
-                + '<td style="text-align:right;"><strong style="font-size:15px;color:#0f172a;">' + fmt(parentTotalSpent) + '</strong></td>'
+                + '<td style="text-align:right;"><strong class="aura-cat-cell-spent" style="font-size:15px;color:#0f172a;font-weight:800;">' + fmt(parentTotalSpent) + '</strong></td>'
                 + '<td style="text-align:center;"><strong>100.0%</strong></td>'
                 + '<td style="text-align:center;"><strong>' + (b.has_budget && budgetAmt > 0 ? fmtPct(ex.execution_pct) : '—') + '</strong></td>'
                 + '<td></td>'
