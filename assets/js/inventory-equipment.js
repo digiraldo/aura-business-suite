@@ -66,6 +66,10 @@
             var h = '<div class="aura-row-actions aura-inv-row-actions">';
             h += '<button type="button" class="aura-btn-action-icon aura-btn-view aura-inv-btn-detail" data-id="' + eq.id + '" data-tooltip="Ver detalle" title="Ver detalle">' +
                  '<span class="dashicons dashicons-visibility"></span></button>';
+            if (cfg.can_maint !== false) {
+                h += '<button type="button" class="aura-btn-action-icon aura-btn-maint aura-inv-btn-maint" data-id="' + eq.id + '" data-tooltip="' + (cfg.txt.register_maint || 'Registrar Mantenimiento') + '" title="' + (cfg.txt.register_maint || 'Registrar Mantenimiento') + '">' +
+                     '<span class="dashicons dashicons-admin-tools"></span></button>';
+            }
             if (eq.can_edit) {
                 h += '<button type="button" class="aura-btn-action-icon aura-btn-edit aura-inv-btn-edit" data-id="' + eq.id + '" data-tooltip="Editar" title="Editar">' +
                      '<span class="dashicons dashicons-edit"></span></button>';
@@ -225,6 +229,10 @@
             $(document).on('click', '.aura-inv-btn-detail', function () {
                 self.showDetail($(this).data('id'));
             });
+            $(document).on('click', '.aura-inv-btn-maint', function () {
+                var eqId = $(this).data('id');
+                window.location.href = self.cfg.newMaintUrl + '&equipment_id=' + eqId;
+            });
             $(document).on('click', '.aura-inv-btn-edit', function () {
                 window.location.href = self.cfg.newEquipUrl + '&id=' + $(this).data('id');
             });
@@ -344,6 +352,18 @@
                     html += detailRow('Próximo mantenimiento', eq.next_maintenance_date ? '<strong style="color:#d63638;">' + eq.next_maintenance_date + '</strong>' : '—');
                     html += detailRow('Total invertido', eq.total_maintenance_cost > 0 ? '$' + parseFloat(eq.total_maintenance_cost).toLocaleString() : '—');
                     html += '</div>';
+
+                    // Acciones rápidas de mantenimiento para este equipo
+                    if (cfg.can_maint !== false) {
+                        html += '<div style="margin-top:14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:10px;">';
+                        html += '<a href="' + cfg.newMaintUrl + '&equipment_id=' + eq.id + '" class="button button-primary" style="display:inline-flex;align-items:center;gap:6px;">' +
+                                '<span class="dashicons dashicons-admin-tools" style="font-size:16px;width:16px;height:16px;line-height:16px;"></span> ' + (cfg.txt.register_maint || 'Registrar Mantenimiento') + '</a>';
+                        if (cfg.maintListUrl) {
+                            html += '<a href="' + cfg.maintListUrl + '&equipment_id=' + eq.id + '" class="button" style="display:inline-flex;align-items:center;gap:6px;">' +
+                                    '<span class="dashicons dashicons-list-view" style="font-size:16px;width:16px;height:16px;line-height:16px;"></span> ' + (cfg.txt.view_maint_history || 'Historial de Mantenimientos') + '</a>';
+                        }
+                        html += '</div>';
+                    }
 
                     // Instrucciones de mantenimiento
                     if (eq.maintenance_instructions) {

@@ -24,6 +24,7 @@ $areas = $wpdb->get_results(
 $can_create = current_user_can( 'aura_inventory_create' ) || current_user_can( 'manage_options' );
 $can_edit   = current_user_can( 'aura_inventory_edit'   ) || current_user_can( 'manage_options' );
 $can_delete = current_user_can( 'aura_inventory_delete' ) || current_user_can( 'manage_options' );
+$can_maint  = current_user_can( 'aura_inventory_maintenance_create' ) || current_user_can( 'manage_options' );
 ?>
 
 <div class="aura-app-wrapper aura-inventory-equipment-page">
@@ -170,8 +171,11 @@ $_inv_list_js = wp_json_encode( [
     'ajaxurl'     => admin_url( 'admin-ajax.php' ),
     'nonce'       => wp_create_nonce( 'aura_inventory_nonce' ),
     'newEquipUrl' => admin_url( 'admin.php?page=aura-inventory-new-equipment' ),
+    'newMaintUrl' => admin_url( 'admin.php?page=aura-inventory-new-maintenance' ),
+    'maintListUrl'=> admin_url( 'admin.php?page=aura-inventory-maintenance' ),
     'can_edit'    => $can_edit,
     'can_delete'  => $can_delete,
+    'can_maint'   => $can_maint,
     'txt' => [
         'loading'        => __( 'Cargando…', 'aura-suite' ),
         'no_results'     => __( 'No se encontraron equipos.', 'aura-suite' ),
@@ -182,6 +186,8 @@ $_inv_list_js = wp_json_encode( [
         'page_of'        => __( 'Página %1$s de %2$s', 'aura-suite' ),
         'n_items'        => __( '%s equipos', 'aura-suite' ),
         'detail_title'   => __( 'Detalle: %s', 'aura-suite' ),
+        'register_maint' => __( 'Registrar Mantenimiento', 'aura-suite' ),
+        'view_maint_history' => __( 'Historial de Mantenimientos', 'aura-suite' ),
         'status_labels'  => [
             'available'   => __( 'Disponible',   'aura-suite' ),
             'in_use'      => __( 'En uso',        'aura-suite' ),

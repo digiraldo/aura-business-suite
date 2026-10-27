@@ -1569,6 +1569,12 @@ body.admin-color-coffee {
     color: #ca8a04;
 }
 
+.aura-btn-action-icon.aura-btn-maint:hover {
+    background: #fffbeb;
+    border-color: #fcd34d;
+    color: #d97706;
+}
+
 .aura-btn-action-icon.aura-btn-delete:hover {
     background: #fef2f2;
     border-color: #fca5a5;

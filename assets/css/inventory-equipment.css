@@ -284,3 +284,17 @@ table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::
     background-color: #646970 !important; /* Gris WP */
 }
 
+/* ── Botón Acción: Mantenimiento ────────────────────────────── */
+.aura-btn-action-icon.aura-btn-maint:hover {
+    background: #fffbeb;
+    border-color: #fcd34d;
+    color: #d97706;
+}
+
+body.aura-dark-mode .aura-btn-action-icon.aura-btn-maint:hover {
+    background: rgba(217, 119, 6, 0.18);
+    border-color: #f59e0b;
+    color: #fbbf24;
+}
+
+

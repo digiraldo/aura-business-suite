@@ -37,11 +37,15 @@ $pending_followup = (int)   $wpdb->get_var( "SELECT COUNT(*) FROM {$t_maint} WHE
 $currency = get_option( 'aura_currency_symbol', '$' );
 ?>
 <div class="aura-app-wrapper aura-inv-maintenance-list">
-
     <?php
-    $actions_html = '';
+    $header_actions = [];
     if ( $can_create ) {
-        $actions_html .= '<a href="' . esc_url( admin_url( 'admin.php?page=aura-inventory-new-maintenance' ) ) . '" class="aura-btn aura-btn-primary"><span class="dashicons dashicons-plus-alt2"></span> ' . esc_html__( 'Registrar Mantenimiento', 'aura-business-suite' ) . '</a>';
+        $header_actions[] = [
+            'label' => __( 'Registrar Mantenimiento', 'aura-business-suite' ),
+            'url'   => admin_url( 'admin.php?page=aura-inventory-new-maintenance' ),
+            'class' => 'aura-btn aura-btn-primary',
+            'icon'  => 'dashicons-plus-alt2',
+        ];
     }
 
     Aura_UI::render_page_header( [
@@ -52,7 +56,7 @@ $currency = get_option( 'aura_currency_symbol', '$' );
             [ 'label' => __( 'Inventario', 'aura-business-suite' ), 'url' => admin_url( 'admin.php?page=aura-inventory' ) ],
             [ 'label' => __( 'Mantenimientos', 'aura-business-suite' ) ],
         ],
-        'actions_html'=> $actions_html,
+        'actions'     => $header_actions,
     ] );
 
     if ( $pending_followup > 0 ) : ?>

@@ -384,7 +384,12 @@
             if (typeof auraMaintForm === 'undefined') return;
             this.cfg = auraMaintForm;
             this.bindEvents();
+            this.initEquipmentCatalogPicker();
             this.updateTotal();
+
+            if ($('#maint_equipment_id').val()) {
+                $('#maint_equipment_id').trigger('change');
+            }
         },
 
         bindEvents: function () {
@@ -430,12 +435,180 @@
                 self.submit();
             });
 
-            // Foto del equipo al cambiar el select
+            // Foto y Ficha Técnica del equipo al cambiar el select
             $('#maint_equipment_id').on('change', function () {
                 var equipId = $(this).val();
+                self.updateEquipmentCard( equipId );
                 self.loadEquipmentPhoto( equipId );
                 self.loadEquipmentInstructions( equipId );
             });
+        },
+
+        initEquipmentCatalogPicker: function () {
+            var self = this;
+            var $modal = $('#aura-equip-picker-modal');
+            if (!$modal.length) return;
+
+            // Abrir modal con display: flex
+            $('#aura-open-equip-catalog-btn').on('click', function (e) {
+                e.preventDefault();
+                $modal.css('display', 'flex').hide().fadeIn(150);
+                $('#aura-equip-picker-search').val('').focus();
+                self.applyCatalogFilter('all', '');
+            });
+
+            // Cerrar modal
+            $modal.on('click', '.aura-equip-modal-close', function (e) {
+                e.preventDefault();
+                $modal.fadeOut(150);
+            });
+
+            $modal.on('click', '.aura-inv-modal-overlay', function () {
+                $modal.fadeOut(150);
+            });
+
+            $(document).on('keydown', function (e) {
+                if (e.key === 'Escape' && $modal.is(':visible')) {
+                    $modal.fadeOut(150);
+                }
+            });
+
+            // Filtro por Chips
+            var currentChip = 'all';
+            $('#aura-equip-picker-chips').on('click', '.aura-equip-chip', function (e) {
+                e.preventDefault();
+                $('#aura-equip-picker-chips .aura-equip-chip').removeClass('is-active');
+                $(this).addClass('is-active');
+                currentChip = $(this).data('filter') || 'all';
+                self.applyCatalogFilter(currentChip, $('#aura-equip-picker-search').val());
+            });
+
+            // Búsqueda en vivo
+            $('#aura-equip-picker-search').on('input', function () {
+                var query = $(this).val();
+                self.applyCatalogFilter(currentChip, query);
+            });
+
+            // Selección de equipo desde el modal
+            $modal.on('click', '.aura-equip-picker-select-btn', function (e) {
+                e.preventDefault();
+                var equipId = $(this).data('id');
+                if (equipId) {
+                    $('#maint_equipment_id').val(equipId).trigger('change');
+                    $modal.fadeOut(150);
+                    $('html, body').animate({
+                        scrollTop: $('#maint_equipment_id').offset().top - 80
+                    }, 300);
+                }
+            });
+
+            // Botón rápido de adelantar mantenimiento
+            $('#aura-fast-forward-maint-btn').on('click', function (e) {
+                e.preventDefault();
+                $('#maint_type').val('preventive');
+                var today = new Date().toISOString().substring(0, 10);
+                $('#maint_date').val(today);
+                var currentDesc = $('#maint_description').val().trim();
+                var note = '⚡ Mantenimiento preventivo adelantado por retorno de préstamo / inspección de piezas.';
+                if (!currentDesc) {
+                    $('#maint_description').val(note);
+                } else if (currentDesc.indexOf(note) === -1) {
+                    $('#maint_description').val(note + '\n\n' + currentDesc);
+                }
+                
+                // Resaltar visualmente
+                var $box = $('#maint_type, #maint_date, #maint_description');
+                $box.css({ transition: 'background-color 0.4s', backgroundColor: '#e8f5e9' });
+                setTimeout(function () {
+                    $box.css('backgroundColor', '');
+                }, 1500);
+            });
+        },
+
+        applyCatalogFilter: function (groupFilter, searchQuery) {
+            var q = (searchQuery || '').toLowerCase().trim();
+            var visibleCount = 0;
+
+            $('#aura-equip-picker-tbody .aura-equip-picker-row').each(function () {
+                var $row = $(this);
+                var rowGroup = $row.data('group') || '';
+                var rowSearch = ($row.data('search') || '').toString().toLowerCase();
+
+                var matchGroup = (groupFilter === 'all') || (rowGroup === groupFilter);
+                var matchSearch = !q || (rowSearch.indexOf(q) !== -1);
+
+                if (matchGroup && matchSearch) {
+                    $row.show();
+                    visibleCount++;
+                } else {
+                    $row.hide();
+                }
+            });
+
+            $('#aura-equip-picker-empty').toggle(visibleCount === 0);
+        },
+
+        updateEquipmentCard: function (equipId) {
+            var $card = $('#maint-equip-card');
+            if (!$card.length) return;
+
+            if (!equipId) {
+                $card.hide();
+                return;
+            }
+
+            var $opt = $('#maint_equipment_id').find('option:selected');
+            if (!$opt.length || !$opt.val()) {
+                $card.hide();
+                return;
+            }
+
+            var rawText = $opt.text().trim();
+            var title   = rawText.replace(/^[🔴🟡🔵✅\s]+/, '').split(' — ')[0].trim();
+            var code    = $opt.data('code') || '';
+            var status  = $opt.data('status') || 'available';
+            var hours   = $opt.data('hours') || 0;
+            var oil     = $opt.data('oil') || 'No especificado';
+            var interval = $opt.data('cycle') ? ($opt.data('cycle') + ' días') : 'Bajo demanda';
+            var photo   = $opt.data('photo') || '';
+
+            $('#maint-card-title').text(title);
+            if (code) {
+                $('#maint-card-code-badge').text('Cód: ' + code).show();
+            } else {
+                $('#maint-card-code-badge').text('Activo').show();
+            }
+
+            var statusBadge = {
+                'available': '<span style="background:#def7ec;color:#03543f;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">✅ Disponible</span>',
+                'in_use': '<span style="background:#e1effe;color:#1e429f;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">🔵 En Uso / Prestado</span>',
+                'maintenance': '<span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">🟡 En Mantenimiento</span>',
+                'repair': '<span style="background:#fde8e8;color:#9b1c1c;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">🔴 En Reparación</span>',
+                'retired': '<span style="background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">⚪ De Baja</span>',
+            }[status] || ('<span>' + status + '</span>');
+
+            $('#maint-card-status-badge').html(statusBadge);
+            $('#maint-card-hours').text(parseFloat(hours).toLocaleString('es', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + ' h');
+            $('#maint-card-oil').text(oil);
+            $('#maint-card-interval').text(interval);
+
+            if (photo) {
+                $('#maint-equip-photo-img').attr('src', photo).show();
+                $('#maint-equip-photo-placeholder').hide();
+            } else {
+                $('#maint-equip-photo-img').hide();
+                $('#maint-equip-photo-placeholder').show();
+            }
+
+            // Precargar horas actuales si el input de horas está en 0 o vacío
+            var $hoursInput = $('#maint_hours');
+            if ($hoursInput.length && (!$hoursInput.val() || parseFloat($hoursInput.val()) === 0)) {
+                if (parseFloat(hours) > 0) {
+                    $hoursInput.val(hours);
+                }
+            }
+
+            $card.slideDown(200);
         },
 
         loadEquipmentPhoto: function (equipId) {
@@ -683,8 +856,11 @@
     }
 
     // ─────────────────────────────────────────────────────────────
-    // ARRANQUE
+    // ARRANQUE Y EXPOSICIÓN GLOBAL
     // ─────────────────────────────────────────────────────────────
+    window.MaintenanceList = MaintenanceList;
+    window.MaintenanceForm = MaintenanceForm;
+
     $(function () {
         MaintenanceList.init();
         MaintenanceForm.init();

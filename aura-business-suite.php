@@ -2126,13 +2126,15 @@ class Aura_Business_Suite
         }
 
         // ── Assets Inventario — Mantenimientos ───────────────────────────────────
-        if (
-            in_array($hook, [
-                'inventario_page_aura-inventory-maintenance',
-                'inventario_page_aura-inventory-new-maintenance',
-                'admin_page_aura-inventory-new-maintenance',
-            ])
-        ) {
+        $is_maint_page = in_array($hook, [
+            'inventario_page_aura-inventory-maintenance',
+            'inventario_page_aura-inventory-new-maintenance',
+            'aura-inventory_page_aura-inventory-maintenance',
+            'aura-inventory_page_aura-inventory-new-maintenance',
+            'admin_page_aura-inventory-new-maintenance',
+        ], true) || (isset($_GET['page']) && in_array($_GET['page'], ['aura-inventory-maintenance', 'aura-inventory-new-maintenance'], true));
+
+        if ($is_maint_page) {
             wp_enqueue_media();
             wp_enqueue_script('jquery-ui-datepicker');
             wp_enqueue_style(
@@ -2894,6 +2896,18 @@ class Aura_Business_Suite
                 );
             }
 
+            // Registrar Mantenimiento Nuevo
+            if (current_user_can('aura_inventory_maintenance_create') || current_user_can('manage_options')) {
+                add_submenu_page(
+                    'aura-inventory',
+                    __('Registrar Mantenimiento', 'aura-suite'),
+                    __('+ Registrar Mantenimiento', 'aura-suite'),
+                    'read',
+                    'aura-inventory-new-maintenance',
+                    array('Aura_Inventory_Maintenance', 'render_form')
+                );
+            }
+
             // Préstamos
             if (current_user_can('aura_inventory_checkout') || current_user_can('aura_inventory_checkin') || current_user_can('manage_options')) {
                 add_submenu_page(
@@ -2927,18 +2941,6 @@ class Aura_Business_Suite
                     'read',
                     'aura-inventory-settings',
                     array('Aura_Inventory_Categories', 'render_settings')
-                );
-            }
-
-            // Página oculta: Registrar / Editar Mantenimiento
-            if (current_user_can('aura_inventory_maintenance_create') || current_user_can('aura_inventory_maintenance_edit') || current_user_can('manage_options')) {
-                add_submenu_page(
-                    null,
-                    __('Registrar Mantenimiento', 'aura-suite'),
-                    __('Registrar Mantenimiento', 'aura-suite'),
-                    'read',
-                    'aura-inventory-new-maintenance',
-                    array('Aura_Inventory_Maintenance', 'render_form')
                 );
             }
         } // fin $has_inventory_access
