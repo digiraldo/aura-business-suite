@@ -222,9 +222,15 @@
             var statusLabel = { active: '✅ Activo', draft: '📝 Borrador', finished: '🏁 Terminado', archived: '📦 Archivado' };
             var html = '';
             courses.forEach( function ( c ) {
+                var subjectsBadge = c.subjects_count > 0
+                    ? ' <span class="aura-tag-badge" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:10px;background:#e0f2fe;color:#0369a1;margin-top:4px;" title="Materias asignadas en el Calendario Académico">📚 ' + c.subjects_count + ' ' + (c.subjects_count === 1 ? 'materia' : 'materias') + '</span>'
+                    : ' <span class="aura-tag-badge" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:10px;background:#f8fafc;color:#94a3b8;margin-top:4px;">📚 0 materias</span>';
+                var calProgId = c.cal_program_id || c.id;
+
                 html += '<tr>' +
                     '<td><strong>' + escHtml( c.name ) + '</strong>' +
-                        ( c.code ? '<br><small style="color:#6b7280;">' + escHtml( c.code ) + '</small>' : '' ) + '</td>' +
+                        ( c.code ? '<br><small style="color:#6b7280;">' + escHtml( c.code ) + '</small>' : '' ) +
+                        '<div style="margin-top:2px;">' + subjectsBadge + '</div></td>' +
                     '<td>' + escHtml( c.area_name || '—' ) + '</td>' +
                     '<td>' + escHtml( c.instructor_name || '—' ) + '</td>' +
                     '<td style="text-align:center;">' + escHtml( String( c.duration_weeks || '—' ) ) + '</td>' +
@@ -232,8 +238,9 @@
                     '<td style="text-align:center;">' + escHtml( statusLabel[ c.status ] || c.status ) + '</td>' +
                     '<td style="text-align:center;">' + escHtml( String( c.enrolled_count || 0 ) ) + '</td>' +
                     '<td style="white-space:nowrap;">' +
-                        '<button class="button button-small btn-edit-course" data-id="' + escHtml( String( c.id ) ) + '">✏️</button> ' +
-                        '<button class="button button-small btn-del-course" data-id="' + escHtml( String( c.id ) ) + '" style="color:#dc2626;">🗑</button>' +
+                        '<a href="admin.php?page=aura-calendar-programs&program_id=' + calProgId + '" class="button button-small" title="Ver materias y calendario de clases" style="text-decoration:none;">📅</a> ' +
+                        '<button class="button button-small btn-edit-course" data-id="' + escHtml( String( c.id ) ) + '" title="Editar Curso / Programa">✏️</button> ' +
+                        '<button class="button button-small btn-del-course" data-id="' + escHtml( String( c.id ) ) + '" style="color:#dc2626;" title="Archivar Curso">🗑</button>' +
                     '</td></tr>';
             } );
             $tbody.html( html );

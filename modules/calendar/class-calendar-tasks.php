@@ -419,10 +419,10 @@ class Aura_Calendar_Tasks {
                              JOIN {$table_stud} st ON st.id = enr.student_id
                              LEFT JOIN {$table_crs} c ON c.id = enr.course_id
                              LEFT JOIN {$table_prog} p ON p.id = %d
-                             WHERE (enr.course_id = %d OR (p.name IS NOT NULL AND c.name = p.name))
+                             WHERE (enr.course_id = %d OR p.course_id = enr.course_id OR c.cal_program_id = %d OR (p.name IS NOT NULL AND c.name = p.name))
                                AND enr.status IN ('active', 'completed', 'pending')
                              ORDER BY st.last_name ASC, st.first_name ASC";
-            $students = $wpdb->get_results( $wpdb->prepare( $students_sql, $program_id, $program_id ) );
+            $students = $wpdb->get_results( $wpdb->prepare( $students_sql, $program_id, $program_id, $program_id ) );
         }
 
         if ( empty( $students ) ) {

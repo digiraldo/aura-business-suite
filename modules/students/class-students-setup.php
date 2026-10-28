@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class Aura_Students_Setup {
 
     /** Versión del esquema de BD del módulo */
-    const DB_VERSION        = '1.1.0'; // 1.1.0: agrega preferred_areas a aura_students
+    const DB_VERSION        = '1.2.0'; // 1.2.0: agrega cal_program_id y enlace con Calendario
     const DB_VERSION_OPTION = 'aura_students_db_version';
 
     // ─────────────────────────────────────────────────────────────

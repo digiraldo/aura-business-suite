@@ -16,6 +16,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Aura_Calendar_Programs {
 
+    /** Bandera para evitar bucles infinitos de sincronización */
+    public static $is_syncing = false;
+
     /**
      * Inicializar hooks y AJAX
      */
@@ -263,6 +266,102 @@ class Aura_Calendar_Programs {
      * @param array $data
      * @return int|WP_Error ID del programa o error
      */
+
+    /**
+     * Sincronizar un programa de Calendario hacia Cursos de Estudiantes
+     */
+    public static function sync_to_student_course( int $program_id ): ?int {
+        if ( self::$is_syncing || $program_id <= 0 ) {
+            return null;
+        }
+
+        self::$is_syncing = true;
+        global $wpdb;
+        $t_courses  = $wpdb->prefix . 'aura_student_courses';
+        $t_programs = $wpdb->prefix . 'aura_cal_programs';
+
+        try {
+            $prog = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$t_programs} WHERE id = %d", $program_id ) );
+            if ( ! $prog ) {
+                self::$is_syncing = false;
+                return null;
+            }
+
+            // Buscar curso correspondiente
+            $course_id = null;
+            if ( ! empty( $prog->course_id ) ) {
+                $course_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$t_courses} WHERE id = %d", $prog->course_id ) );
+            }
+            if ( ! $course_id ) {
+                $course_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$t_courses} WHERE cal_program_id = %d", $prog->id ) );
+            }
+            if ( ! $course_id ) {
+                $course_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$t_courses} WHERE name = %s LIMIT 1", $prog->name ) );
+            }
+
+            $area_id = ! empty( $prog->area_id ) ? (int) $prog->area_id : null;
+            $inst_id = ! empty( $prog->coordinator_id ) ? (int) $prog->coordinator_id : null;
+            $is_active = ( $prog->status === 'active' && empty( $prog->deleted_at ) );
+
+            if ( $course_id ) {
+                $wpdb->update(
+                    $t_courses,
+                    [
+                        'name'           => $prog->name,
+                        'description'    => $prog->description ?? '',
+                        'area_id'        => $area_id,
+                        'instructor_id'  => $inst_id,
+                        'start_date'     => ! empty( $prog->start_date ) ? $prog->start_date : null,
+                        'end_date'       => ! empty( $prog->end_date ) ? $prog->end_date : null,
+                        'status'         => $is_active ? 'active' : 'archived',
+                        'cal_program_id' => $prog->id,
+                        'updated_at'     => current_time( 'mysql' ),
+                    ],
+                    [ 'id' => $course_id ]
+                );
+
+                if ( (int) $prog->course_id !== $course_id ) {
+                    $wpdb->update( $t_programs, [ 'course_id' => $course_id ], [ 'id' => $prog->id ] );
+                }
+            } else {
+                $slug = sanitize_title( $prog->name );
+                if ( empty( $slug ) ) $slug = 'prog-' . $prog->id;
+
+                $slug_exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$t_courses} WHERE slug = %s", $slug ) );
+                if ( $slug_exists ) $slug .= '-' . $prog->id;
+
+                $inserted = $wpdb->insert(
+                    $t_courses,
+                    [
+                        'name'           => $prog->name,
+                        'slug'           => $slug,
+                        'description'    => $prog->description ?? '',
+                        'area_id'        => $area_id,
+                        'instructor_id'  => $inst_id,
+                        'start_date'     => ! empty( $prog->start_date ) ? $prog->start_date : null,
+                        'end_date'       => ! empty( $prog->end_date ) ? $prog->end_date : null,
+                        'status'         => $is_active ? 'active' : 'inactive',
+                        'cal_program_id' => $prog->id,
+                        'created_by'     => $prog->created_by ?: get_current_user_id(),
+                        'created_at'     => $prog->created_at ?: current_time( 'mysql' ),
+                        'updated_at'     => current_time( 'mysql' ),
+                    ]
+                );
+
+                if ( $inserted ) {
+                    $course_id = (int) $wpdb->insert_id;
+                    $wpdb->update( $t_programs, [ 'course_id' => $course_id ], [ 'id' => $prog->id ] );
+                }
+            }
+
+            self::$is_syncing = false;
+            return $course_id;
+        } catch ( \Throwable $e ) {
+            self::$is_syncing = false;
+            return null;
+        }
+    }
+
     public static function save( array $data ) {
         global $wpdb;
         $table = $wpdb->prefix . 'aura_cal_programs';
@@ -408,6 +507,7 @@ class Aura_Calendar_Programs {
             if ( $updated === false ) {
                 return new WP_Error( 'db_error', __( 'Error al actualizar el programa.', 'aura' ) );
             }
+            self::sync_to_student_course( $id );
             return $id;
         } else {
             $clean_fields['created_by'] = get_current_user_id();
@@ -419,7 +519,9 @@ class Aura_Calendar_Programs {
             if ( ! $inserted ) {
                 return new WP_Error( 'db_error', __( 'Error al registrar el programa.', 'aura' ) );
             }
-            return (int) $wpdb->insert_id;
+            $new_prog_id = (int) $wpdb->insert_id;
+            self::sync_to_student_course( $new_prog_id );
+            return $new_prog_id;
         }
     }
 
@@ -460,7 +562,11 @@ class Aura_Calendar_Programs {
             ) );
         }
 
-        return $updated !== false;
+        if ( $updated !== false ) {
+            self::sync_to_student_course( $id );
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -494,7 +600,11 @@ class Aura_Calendar_Programs {
             ) );
         }
 
-        return $updated !== false;
+        if ( $updated !== false ) {
+            self::sync_to_student_course( $id );
+            return true;
+        }
+        return false;
     }
 
     /**
