@@ -95,6 +95,15 @@ class Aura_Financial_Budgets {
             $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `monthly_distribution` LONGTEXT NULL DEFAULT NULL AFTER `budget_percentage`" );
         }
 
+        // Fase 8.4+: Título del Presupuesto y Enlace a Curso / Programa Académico
+        if ( ! in_array( 'title', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `title` VARCHAR(255) NULL DEFAULT NULL AFTER `area_id`" );
+        }
+        if ( ! in_array( 'course_id', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `course_id` BIGINT UNSIGNED NULL DEFAULT NULL AFTER `title`" );
+            $wpdb->query( "ALTER TABLE `{$table}` ADD INDEX `idx_course_id` (`course_id`)" );
+        }
+
         // Índices de optimización para presupuestos de categorías
         $indices = $wpdb->get_results( "SHOW INDEX FROM `{$table}` WHERE Key_name = 'idx_cat_fiscal_year'" );
         if ( empty( $indices ) ) {
@@ -389,15 +398,22 @@ class Aura_Financial_Budgets {
             $args = array_merge( $args, $allowed_area_ids );
         }
 
+        $crs_table = $wpdb->prefix . 'aura_student_courses';
+        $has_crs   = $wpdb->get_var( "SHOW TABLES LIKE '{$crs_table}'" ) === $crs_table;
+        $crs_join  = $has_crs ? "LEFT JOIN {$crs_table} crs ON crs.id = b.course_id" : "";
+        $crs_cols  = $has_crs ? ", crs.name AS course_name, crs.slug AS course_slug" : ", NULL AS course_name, NULL AS course_slug";
+
         $sql = "SELECT b.*,
                        c.name  AS category_name,
                        c.color AS category_color,
                        c.icon  AS category_icon,
                        a.name  AS area_name,
                        a.color AS area_color
+                       {$crs_cols}
                 FROM   {$b_table} b
                 LEFT   JOIN {$c_table} c ON c.id = b.category_id
                 LEFT   JOIN {$a_table} a ON a.id = b.area_id
+                {$crs_join}
                 WHERE  {$where}
                 ORDER  BY a.name ASC, b.start_date DESC";
 
@@ -428,6 +444,8 @@ class Aura_Financial_Budgets {
 
         // Fase 8.3+: Presupuesto por Área — area_id es requerido, category_id es referencia opcional
         $data = [
+            'title'          => ! empty( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : null,
+            'course_id'      => ! empty( $_POST['course_id'] ) ? absint( $_POST['course_id'] ) : null,
             'area_id'        => ! empty( $_POST['area_id'] ) ? absint( $_POST['area_id'] ) : null,
             'category_id'    => ! empty( $_POST['category_id'] ) ? (int) $_POST['category_id'] : null,
             'budget_amount'  => (float) ( $_POST['budget_amount'] ?? 0 ),
@@ -450,19 +468,24 @@ class Aura_Financial_Budgets {
         //    (area_id, category_id, start_date, end_date), excluyendo el actual en edición.
         $existing = $wpdb->get_row( $wpdb->prepare(
             "SELECT b.id,
-                    c.name  AS cat_name,
-                    a.name  AS area_name
+                    b.title,
+                    c.name   AS cat_name,
+                    a.name   AS area_name,
+                    crs.name AS course_name
              FROM {$table} b
-             LEFT JOIN {$wpdb->prefix}aura_finance_categories c ON c.id = b.category_id
-             LEFT JOIN {$wpdb->prefix}aura_areas              a ON a.id = b.area_id
+             LEFT JOIN {$wpdb->prefix}aura_finance_categories c   ON c.id = b.category_id
+             LEFT JOIN {$wpdb->prefix}aura_areas              a   ON a.id = b.area_id
+             LEFT JOIN {$wpdb->prefix}aura_student_courses    crs ON crs.id = b.course_id
              WHERE b.area_id  = %d
                AND b.category_id <=> %s
+               AND b.course_id   <=> %s
                AND b.start_date = %s
                AND b.end_date   = %s
                AND b.is_active  = 1
                AND b.id        != %d",
             $data['area_id'],
             $data['category_id'],
+            $data['course_id'],
             $data['start_date'],
             $data['end_date'],
             $id
@@ -471,12 +494,14 @@ class Aura_Financial_Budgets {
         if ( $existing ) {
             $cat_label  = $existing->cat_name  ?: __( 'sin categoría', 'aura-suite' );
             $area_label = $existing->area_name ?: __( 'general', 'aura-suite' );
+            $prog_label = ! empty( $existing->course_name ) ? sprintf( __( ' para el programa "%s"', 'aura-suite' ), $existing->course_name ) : '';
             wp_send_json_error( [
                 'message' => sprintf(
-                    /* translators: 1: category name, 2: area name */
-                    __( 'Ya existe un presupuesto de "%1$s" para el área "%2$s" en este período.', 'aura-suite' ),
+                    /* translators: 1: category name, 2: area name, 3: optional course label */
+                    __( 'Ya existe un presupuesto de "%1$s" para el área "%2$s"%3$s en este período.', 'aura-suite' ),
                     $cat_label,
-                    $area_label
+                    $area_label,
+                    $prog_label
                 ),
             ] );
         }
@@ -540,13 +565,20 @@ class Aura_Financial_Budgets {
 
         $a_table  = $wpdb->prefix . 'aura_areas';
 
+        $crs_table = $wpdb->prefix . 'aura_student_courses';
+        $has_crs   = $wpdb->get_var( "SHOW TABLES LIKE '{$crs_table}'" ) === $crs_table;
+        $crs_join  = $has_crs ? "LEFT JOIN {$crs_table} crs ON crs.id = b.course_id" : "";
+        $crs_cols  = $has_crs ? ", crs.name AS course_name, crs.slug AS course_slug" : ", NULL AS course_name, NULL AS course_slug";
+
         $budget = $wpdb->get_row( $wpdb->prepare(
             "SELECT b.*,
                     c.name  AS category_name,  c.color AS category_color,  c.icon AS category_icon,
                     a.name  AS area_name,       a.color AS area_color,       a.icon AS area_icon
+                    {$crs_cols}
              FROM {$b_table} b
              LEFT JOIN {$c_table} c ON c.id = b.category_id
              LEFT JOIN {$a_table} a ON a.id = b.area_id
+             {$crs_join}
              WHERE b.id = %d",
             $id
         ) );

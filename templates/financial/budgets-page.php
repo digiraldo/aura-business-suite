@@ -32,6 +32,18 @@ if ( $_aura_user_area_only ) {
     $_aura_user_area_id = 0;
 }
 
+// Cursos / Programas Académicos activos para vinculación en presupuestos
+$table_courses = $wpdb->prefix . 'aura_student_courses';
+$_aura_academic_programs = [];
+if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table_courses}'" ) === $table_courses ) {
+    $_aura_academic_programs = $wpdb->get_results(
+        "SELECT id, name, slug, area_id, base_cost, status 
+         FROM {$table_courses} 
+         WHERE status = 'active' 
+         ORDER BY name ASC"
+    );
+}
+
 $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 'areas' : 'categories';
 ?>
 <div class="wrap aura-budgets-wrap aura-module-wrap aura-app-wrapper">
@@ -526,6 +538,47 @@ $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 
             <input type="hidden" id="budget_id" name="id" value="0">
 
             <div class="aura-form-grid">
+
+                <!-- Título del Presupuesto (OPCIONAL / PERSONALIZADO) -->
+                <div class="aura-form-group full-width">
+                    <label for="budget_title">
+                        <?php esc_html_e( 'Título / Nombre del Presupuesto', 'aura-suite' ); ?>
+                        <span style="font-weight:400;color:#8c8f94;font-size:12px;margin-left:4px;">(<?php esc_html_e( 'opcional', 'aura-suite' ); ?>)</span>
+                        <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Nombre identificador del presupuesto (ej: Presupuesto Operativo Hadime Raíces 2026). Puedes escribirlo o se autocompleta al seleccionar un programa.', 'aura-suite' ); ?>">
+                            <span class="dashicons dashicons-editor-help"></span>
+                        </span>
+                    </label>
+                    <input type="text" id="budget_title" name="title" class="regular-text" placeholder="<?php esc_attr_e( 'Ej: Presupuesto Hadime Raíces 2026', 'aura-suite' ); ?>" style="width:100%;font-size:13.5px;font-weight:600;">
+                </div>
+
+                <!-- Vincular a Programa Académico (OPCIONAL) -->
+                <div class="aura-form-group full-width">
+                    <label for="budget_course_id">
+                        <?php esc_html_e( 'Vincular a Programa Académico', 'aura-suite' ); ?>
+                        <span style="font-weight:400;color:#8c8f94;font-size:12px;margin-left:4px;">(<?php esc_html_e( 'opcional', 'aura-suite' ); ?>)</span>
+                        <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Asocia este presupuesto a un curso o programa creado en el Módulo de Estudiantes (Hadime Raíces, Hadime Más, etc.). Autocompleta el título y preselecciona su área.', 'aura-suite' ); ?>">
+                            <span class="dashicons dashicons-editor-help"></span>
+                        </span>
+                    </label>
+                    <select id="budget_course_id" name="course_id" style="width:100%;">
+                        <option value=""><?php esc_html_e( '— Sin vincular a Programa Académico (Presupuesto General de Área) —', 'aura-suite' ); ?></option>
+                        <?php if ( ! empty( $_aura_academic_programs ) ) : ?>
+                            <?php foreach ( $_aura_academic_programs as $_p ) : ?>
+                            <option value="<?php echo esc_attr( $_p->id ); ?>"
+                                    data-name="<?php echo esc_attr( $_p->name ); ?>"
+                                    data-area-id="<?php echo esc_attr( $_p->area_id ); ?>"
+                                    data-cost="<?php echo esc_attr( $_p->base_cost ); ?>">
+                                🎓 <?php echo esc_html( $_p->name ); ?>
+                            </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                    <?php if ( empty( $_aura_academic_programs ) ) : ?>
+                    <p class="description" style="margin-top:3px;font-size:11.5px;color:#64748b;">
+                        <?php esc_html_e( 'No hay programas académicos registrados aún en el Módulo de Estudiantes.', 'aura-suite' ); ?>
+                    </p>
+                    <?php endif; ?>
+                </div>
 
                 <!-- Área / Programa (REQUERIDO — Fase 8.3+) -->
                 <div class="aura-form-group full-width">

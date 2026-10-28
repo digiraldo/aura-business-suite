@@ -182,10 +182,12 @@ jQuery(function ($) {
             if (filterStatus && b.status    !== filterStatus)   return false;
             if (filterArea   && String(b.area_id) !== filterArea) return false;
             if (searchVal) {
-                var aName = (b.area_name || '').toLowerCase();
-                var cName = (b.category_name || '').toLowerCase();
-                var notes = (b.notes || '').toLowerCase();
-                if (aName.indexOf(searchVal) === -1 && cName.indexOf(searchVal) === -1 && notes.indexOf(searchVal) === -1) {
+                var aName   = (b.area_name || '').toLowerCase();
+                var cName   = (b.category_name || '').toLowerCase();
+                var tName   = (b.title || '').toLowerCase();
+                var crsName = (b.course_name || '').toLowerCase();
+                var notes   = (b.notes || '').toLowerCase();
+                if (aName.indexOf(searchVal) === -1 && cName.indexOf(searchVal) === -1 && tName.indexOf(searchVal) === -1 && crsName.indexOf(searchVal) === -1 && notes.indexOf(searchVal) === -1) {
                     return false;
                 }
             }
@@ -305,11 +307,23 @@ jQuery(function ($) {
                     + '</div>';
 
                 var catHtml = '';
+                var budgetTitle = b.title ? escHtml(b.title) : '';
+                var progBadge   = b.course_name ? ' <span class="aura-tag-badge aura-tag-primary" style="font-size:11px;padding:2px 7px;margin-left:4px;" title="Programa Académico vinculado">🎓 ' + escHtml(b.course_name) + '</span>' : '';
+
+                if (budgetTitle) {
+                    catHtml += '<div class="aura-budget-title-row" style="margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">'
+                        + '<strong style="font-size:13.5px;color:#0f172a;">' + budgetTitle + '</strong>'
+                        + progBadge
+                        + '</div>';
+                } else if (progBadge) {
+                    catHtml += '<div class="aura-budget-title-row" style="margin-bottom:4px;">' + progBadge + '</div>';
+                }
+
                 if (b.category_name) {
                     var catEmoji = getCategoryEmoji(b.category_name, b.category_icon);
-                    catHtml = '<div class="aura-cat-cell-title">'
+                    catHtml += '<div class="aura-cat-cell-title">'
                         + '<span class="aura-cat-emoji" style="font-size:16px;line-height:1;margin-right:4px;">' + catEmoji + '</span>'
-                        + '<strong>' + escHtml(b.category_name) + '</strong>';
+                        + '<span style="font-weight:600;color:#334155;">' + escHtml(b.category_name) + '</span>';
 
                     if (hasSubs) {
                         catHtml += ' <button type="button" class="aura-subcat-toggle-btn" data-budget-id="' + b.id + '" aria-expanded="false" data-tooltip="Ver desglose de ' + b.subcategories.length + ' subcategorías vinculadas a este presupuesto">'
@@ -442,10 +456,12 @@ jQuery(function ($) {
             if (filterStatus && b.status    !== filterStatus)   return false;
             if (filterArea   && String(b.area_id) !== filterArea) return false;
             if (searchVal) {
-                var aName = (b.area_name || '').toLowerCase();
-                var cName = (b.category_name || '').toLowerCase();
-                var notes = (b.notes || '').toLowerCase();
-                if (aName.indexOf(searchVal) === -1 && cName.indexOf(searchVal) === -1 && notes.indexOf(searchVal) === -1) {
+                var aName   = (b.area_name || '').toLowerCase();
+                var cName   = (b.category_name || '').toLowerCase();
+                var tName   = (b.title || '').toLowerCase();
+                var crsName = (b.course_name || '').toLowerCase();
+                var notes   = (b.notes || '').toLowerCase();
+                if (aName.indexOf(searchVal) === -1 && cName.indexOf(searchVal) === -1 && tName.indexOf(searchVal) === -1 && crsName.indexOf(searchVal) === -1 && notes.indexOf(searchVal) === -1) {
                     return false;
                 }
             }
@@ -542,6 +558,8 @@ jQuery(function ($) {
             $form[0].reset();
         }
         $('#budget_id').val(0);
+        $('#budget_title').val('');
+        $('#budget_course_id').val('');
         $('#aura-budget-modal-title').text(id ? (auraBudgets.txt.edit_title || 'Editar Presupuesto') : (auraBudgets.txt.new_title || 'Nuevo Presupuesto'));
         $('#aura-budget-form-error').hide();
 
@@ -566,6 +584,8 @@ jQuery(function ($) {
             var b = state.budgets.find(function (x) { return parseInt(x.id) === parseInt(id); });
             if (b) {
                 $('#budget_id').val(b.id);
+                $('#budget_title').val(b.title || '');
+                $('#budget_course_id').val(b.course_id || '');
                 $('#budget_category_id').val(b.category_id || '');
                 // Área / Programa (Fase 8.1)
                 if ($('#budget_area_id').length) {
@@ -602,6 +622,24 @@ jQuery(function ($) {
     function closeDetailModal() {
         $('#aura-budget-detail-modal').removeClass('active').addClass('is-hidden').css({ 'display': 'none', 'opacity': '0', 'visibility': 'hidden' });
     }
+
+    // Autocompletar Título y preseleccionar Área al cambiar Programa Académico
+    $(document).on('change', '#budget_course_id', function () {
+        var $opt = $(this).find('option:selected');
+        var progName = $opt.data('name');
+        var areaId   = $opt.data('area-id');
+        if (progName) {
+            var curTitle = $('#budget_title').val().trim();
+            var prevName = $(this).data('prev-prog-name') || '';
+            if (!curTitle || curTitle === prevName) {
+                $('#budget_title').val(progName);
+            }
+            $(this).data('prev-prog-name', progName);
+        }
+        if (areaId && $('#budget_area_id').length && !$('#budget_area_id').is(':disabled')) {
+            $('#budget_area_id').val(areaId);
+        }
+    });
 
     $(document).on('click', '#aura-new-budget-btn, .aura-trigger-new-budget', function (e) {
         e.preventDefault();
