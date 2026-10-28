@@ -173,12 +173,14 @@ class Aura_Calendar_Admin {
             'calendario_page_aura-calendar-grades',
             'calendario_page_aura-calendar-tasks',
             'calendario_page_aura-calendar-settings',
+            'estudiantes_page_aura-students-grades',
+            'estudiantes_page_aura-students-tasks',
         ];
 
-        // Verificar si la página actual pertenece al módulo
+        // Verificar si la página actual pertenece al módulo o a las vistas académicas integradas
         $is_calendar_page = false;
         foreach ( $allowed_hooks as $h ) {
-            if ( strpos( $hook, 'aura-calendar' ) !== false ) {
+            if ( strpos( $hook, 'aura-calendar' ) !== false || strpos( $hook, 'aura-students-grades' ) !== false || strpos( $hook, 'aura-students-tasks' ) !== false ) {
                 $is_calendar_page = true;
                 break;
             }

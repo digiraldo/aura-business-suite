@@ -56,8 +56,16 @@ class Aura_Calendar_Subjects {
         $params = [];
 
         if ( ! empty( $r['program_id'] ) ) {
+            $prog_id = intval( $r['program_id'] );
+            $check_prog = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table_prog} WHERE id = %d", $prog_id ) );
+            if ( ! $check_prog ) {
+                $alt_prog_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table_prog} WHERE course_id = %d", $prog_id ) );
+                if ( $alt_prog_id ) {
+                    $prog_id = (int) $alt_prog_id;
+                }
+            }
             $where[]  = 's.program_id = %d';
-            $params[] = intval( $r['program_id'] );
+            $params[] = $prog_id;
         }
 
         if ( ! empty( $r['status'] ) ) {
@@ -583,7 +591,7 @@ class Aura_Calendar_Subjects {
     public static function ajax_get_subjects(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_cal_view_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_cal_view_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 
@@ -600,7 +608,7 @@ class Aura_Calendar_Subjects {
     public static function ajax_get_subject(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_cal_view_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_cal_view_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 

@@ -25,6 +25,8 @@ $page_to_tab  = [
     'aura-calendar-grades'   => 'grades',
     'aura-calendar-tasks'    => 'tasks',
     'aura-calendar-settings' => 'settings',
+    'aura-students-grades'   => 'grades',
+    'aura-students-tasks'    => 'tasks',
 ];
 
 $tab = sanitize_key( $_GET['tab'] ?? ( $page_to_tab[ $current_page ] ?? ( $active_tab ?? 'calendar' ) ) );

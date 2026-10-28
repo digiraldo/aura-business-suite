@@ -27,6 +27,24 @@ $can_manage = current_user_can( 'aura_students_courses_manage' ) || current_user
         ];
     }
 
+    if ( current_user_can( 'aura_cal_view_grades' ) || current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'manage_options' ) ) {
+        $header_actions[] = [
+            'label' => __( 'Calificaciones', 'aura-suite' ),
+            'url'   => admin_url( 'admin.php?page=aura-students-grades' ),
+            'icon'  => 'dashicons-awards',
+            'class' => 'aura-btn-secondary',
+        ];
+    }
+
+    if ( current_user_can( 'aura_cal_view_tasks' ) || current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'manage_options' ) ) {
+        $header_actions[] = [
+            'label' => __( 'Tareas', 'aura-suite' ),
+            'url'   => admin_url( 'admin.php?page=aura-students-tasks' ),
+            'icon'  => 'dashicons-clipboard',
+            'class' => 'aura-btn-secondary',
+        ];
+    }
+
     Aura_UI::render_page_header( [
         'title'       => __( 'Cursos y Programas', 'aura-suite' ),
         'description' => __( 'Catálogo general de cursos, áreas académicas, duraciones y costos.', 'aura-suite' ),

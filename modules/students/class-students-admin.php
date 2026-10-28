@@ -3,8 +3,9 @@
  * Admin del Módulo de Estudiantes e Inscripciones
  *
  * Responsabilidades:
- *  - Registrar menús en WordPress Admin
+ *  - Registrar menús en WordPress Admin (incluyendo Libro de Calificaciones y Tareas centralizadas)
  *  - Encolar CSS y JS del módulo exclusivamente en páginas de estudiantes
+ *  - Interconectar vistas de evaluación académica con el motor de Calendario
  *
  * @package AuraBusinessSuite
  * @subpackage Students
@@ -37,6 +38,11 @@ class Aura_Students_Admin {
             current_user_can( 'aura_students_payments_register' ) ||
             current_user_can( 'aura_students_approve' ) ||
             current_user_can( 'aura_students_reports' ) ||
+            current_user_can( 'aura_cal_view_grades' ) ||
+            current_user_can( 'aura_cal_manage_grades' ) ||
+            current_user_can( 'aura_record_grades' ) ||
+            current_user_can( 'aura_cal_view_tasks' ) ||
+            current_user_can( 'aura_cal_manage_tasks' ) ||
             current_user_can( 'manage_options' )
         );
 
@@ -117,6 +123,43 @@ class Aura_Students_Admin {
             );
         }
 
+        // Calificaciones y Boletines
+        if (
+            current_user_can( 'aura_cal_view_grades' ) ||
+            current_user_can( 'aura_cal_manage_grades' ) ||
+            current_user_can( 'aura_record_grades' ) ||
+            current_user_can( 'aura_students_courses_manage' ) ||
+            current_user_can( 'manage_options' )
+        ) {
+            add_submenu_page(
+                'aura-students',
+                __( 'Libro de Calificaciones — AURA', 'aura-suite' ),
+                __( 'Calificaciones', 'aura-suite' ),
+                'read',
+                'aura-students-grades',
+                [ __CLASS__, 'render_grades' ]
+            );
+        }
+
+        // Tareas y Evaluaciones
+        if (
+            current_user_can( 'aura_cal_view_tasks' ) ||
+            current_user_can( 'aura_cal_manage_tasks' ) ||
+            current_user_can( 'aura_cal_grade_tasks' ) ||
+            current_user_can( 'aura_teach_calendar' ) ||
+            current_user_can( 'aura_students_courses_manage' ) ||
+            current_user_can( 'manage_options' )
+        ) {
+            add_submenu_page(
+                'aura-students',
+                __( 'Tareas y Evaluaciones — AURA', 'aura-suite' ),
+                __( 'Tareas', 'aura-suite' ),
+                'read',
+                'aura-students-tasks',
+                [ __CLASS__, 'render_tasks' ]
+            );
+        }
+
         // Pagos y Cuotas
         if (
             current_user_can( 'aura_students_payments_view_all' ) ||
@@ -183,6 +226,20 @@ class Aura_Students_Admin {
     }
 
     // ─────────────────────────────────────────────────────────────
+    // RENDERIZADO DE VISTAS INTEGRADAS (FASE 3)
+    // ─────────────────────────────────────────────────────────────
+
+    public static function render_grades(): void {
+        $active_tab = 'grades';
+        include AURA_PLUGIN_DIR . 'templates/students/grades.php';
+    }
+
+    public static function render_tasks(): void {
+        $active_tab = 'tasks';
+        include AURA_PLUGIN_DIR . 'templates/students/tasks.php';
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // ASSETS
     // ─────────────────────────────────────────────────────────────
 
@@ -193,6 +250,8 @@ class Aura_Students_Admin {
             'estudiantes_page_aura-students-new',
             'estudiantes_page_aura-students-courses',
             'estudiantes_page_aura-students-enrollments',
+            'estudiantes_page_aura-students-grades',
+            'estudiantes_page_aura-students-tasks',
             'estudiantes_page_aura-students-payments',
             'estudiantes_page_aura-students-scholarships',
             'estudiantes_page_aura-students-paz-salvo',
@@ -238,6 +297,13 @@ class Aura_Students_Admin {
                 'lib_due'       => __( 'Vence:', 'aura-suite' ),
             ],
         ] );
+
+        // Encolar assets de evaluación y calendario si se visita Calificaciones o Tareas
+        if ( in_array( $hook, [ 'estudiantes_page_aura-students-grades', 'estudiantes_page_aura-students-tasks' ], true ) ) {
+            if ( class_exists( 'Aura_Calendar_Admin' ) ) {
+                Aura_Calendar_Admin::enqueue_assets( $hook );
+            }
+        }
 
         // Nonces para el módulo de reportes
         if ( $hook === 'estudiantes_page_aura-students-reports' ) {

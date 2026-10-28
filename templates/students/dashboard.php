@@ -195,6 +195,12 @@ $currency    = get_option( 'aura_students_settings', [] )['default_currency'] ??
                 <li><a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-students-enrollments' ) ); ?>" style="text-decoration:none;color:var(--aura-primary,#6366f1);font-weight:500;">
                     → <?php _e( 'Gestionar inscripciones', 'aura-suite' ); ?>
                 </a></li>
+                <li><a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-students-grades' ) ); ?>" style="text-decoration:none;color:var(--aura-primary,#6366f1);font-weight:500;">
+                    → <?php _e( 'Libro de calificaciones', 'aura-suite' ); ?>
+                </a></li>
+                <li><a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-students-tasks' ) ); ?>" style="text-decoration:none;color:var(--aura-primary,#6366f1);font-weight:500;">
+                    → <?php _e( 'Tareas y evaluaciones', 'aura-suite' ); ?>
+                </a></li>
             </ul>
         </div>
 

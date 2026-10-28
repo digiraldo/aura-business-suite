@@ -38,20 +38,46 @@ class Aura_Calendar_Grades {
         global $wpdb;
         $table_grd  = $wpdb->prefix . 'aura_cal_grades';
         $table_stud = $wpdb->prefix . 'aura_students';
-        $table_enr  = $wpdb->prefix . 'aura_students_enrollments';
+        $table_enr  = $wpdb->prefix . 'aura_student_enrollments';
+        $table_crs  = $wpdb->prefix . 'aura_student_courses';
+        $table_prog = $wpdb->prefix . 'aura_cal_programs';
 
         $has_students = $wpdb->get_var( "SHOW TABLES LIKE '{$table_stud}'" ) === $table_stud;
         if ( ! $has_students ) {
             return [];
         }
 
-        // Obtener estudiantes inscritos
-        $students_sql = "SELECT st.id AS student_id, st.first_name, st.last_name, COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, st.email
-                         FROM {$table_enr} enr
-                         JOIN {$table_stud} st ON st.id = enr.student_id
-                         WHERE enr.course_id = %d AND enr.status = 'active'
-                         ORDER BY st.last_name ASC, st.first_name ASC";
-        $students = $wpdb->get_results( $wpdb->prepare( $students_sql, $program_id ) );
+        // Resolver ID canónico tanto si se envió un program_id (Calendario) como un course_id (Estudiantes)
+        $cal_prog_id = $program_id;
+        $course_id   = $program_id;
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table_prog}'" ) === $table_prog ) {
+            $prog_row = $wpdb->get_row( $wpdb->prepare( "SELECT id, course_id FROM {$table_prog} WHERE id = %d", $program_id ) );
+            if ( $prog_row ) {
+                $cal_prog_id = (int) $prog_row->id;
+                $course_id   = (int) ( $prog_row->course_id ?: $prog_row->id );
+            } else {
+                $alt_prog = $wpdb->get_row( $wpdb->prepare( "SELECT id, course_id FROM {$table_prog} WHERE course_id = %d", $program_id ) );
+                if ( $alt_prog ) {
+                    $cal_prog_id = (int) $alt_prog->id;
+                    $course_id   = (int) ( $alt_prog->course_id ?: $alt_prog->id );
+                }
+            }
+        }
+
+        // Obtener estudiantes inscritos activos en el programa o curso unificado
+        $students = [];
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table_enr}'" ) === $table_enr ) {
+            $students_sql = "SELECT DISTINCT st.id AS student_id, st.first_name, st.last_name, 
+                                    COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, st.email
+                             FROM {$table_enr} enr
+                             JOIN {$table_stud} st ON st.id = enr.student_id
+                             LEFT JOIN {$table_crs} c ON c.id = enr.course_id
+                             LEFT JOIN {$table_prog} p ON p.id = %d
+                             WHERE (enr.course_id = %d OR enr.course_id = %d OR p.course_id = enr.course_id OR c.cal_program_id = %d)
+                               AND enr.status IN ('active', 'enrolled', 'approved')
+                             ORDER BY st.last_name ASC, st.first_name ASC";
+            $students = $wpdb->get_results( $wpdb->prepare( $students_sql, $cal_prog_id, $course_id, $cal_prog_id, $cal_prog_id ) );
+        }
 
         if ( empty( $students ) ) {
             $fallback_sql = "SELECT st.id AS student_id, st.first_name, st.last_name, COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, st.email
@@ -65,9 +91,9 @@ class Aura_Calendar_Grades {
         $grades_sql = "SELECT g.*, u.display_name AS graded_by_name
                        FROM {$table_grd} g
                        LEFT JOIN {$wpdb->users} u ON u.ID = g.graded_by
-                       WHERE g.program_id = %d AND g.subject_id = %d
+                       WHERE (g.program_id = %d OR g.program_id = %d) AND g.subject_id = %d
                        ORDER BY g.graded_at ASC, g.id ASC";
-        $all_grades = $wpdb->get_results( $wpdb->prepare( $grades_sql, $program_id, $subject_id ) );
+        $all_grades = $wpdb->get_results( $wpdb->prepare( $grades_sql, $cal_prog_id, $course_id, $subject_id ) );
 
         $grades_by_student = [];
         foreach ( $all_grades as $g ) {
@@ -154,6 +180,18 @@ class Aura_Calendar_Grades {
         $subject_id = ! empty( $data['subject_id'] ) ? intval( $data['subject_id'] ) : 0;
         $student_id = ! empty( $data['student_id'] ) ? intval( $data['student_id'] ) : 0;
 
+        // Auto-resolver cal_program_id canónico si se suministró un course_id
+        $table_prog = $wpdb->prefix . 'aura_cal_programs';
+        if ( $program_id > 0 && $wpdb->get_var( "SHOW TABLES LIKE '{$table_prog}'" ) === $table_prog ) {
+            $check_prog = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table_prog} WHERE id = %d", $program_id ) );
+            if ( ! $check_prog ) {
+                $alt_prog_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table_prog} WHERE course_id = %d", $program_id ) );
+                if ( $alt_prog_id ) {
+                    $program_id = (int) $alt_prog_id;
+                }
+            }
+        }
+
         if ( ! $program_id || ! $subject_id || ! $student_id ) {
             return new WP_Error( 'missing_keys', __( 'Programa, materia y estudiante son requeridos.', 'aura' ) );
         }
@@ -229,7 +267,7 @@ class Aura_Calendar_Grades {
     public static function ajax_get_grades(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 
@@ -247,7 +285,7 @@ class Aura_Calendar_Grades {
     public static function ajax_save_grade(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para registrar notas.', 'aura' ) ] );
         }
 
@@ -265,7 +303,7 @@ class Aura_Calendar_Grades {
     public static function ajax_get_grade(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 
@@ -285,7 +323,7 @@ class Aura_Calendar_Grades {
     public static function ajax_delete_grade(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_delete_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_delete_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 

@@ -36,7 +36,8 @@ class Aura_Calendar_Attendance {
         $table_prog   = $wpdb->prefix . 'aura_cal_programs';
         $table_att    = $wpdb->prefix . 'aura_cal_attendance';
         $table_stud   = $wpdb->prefix . 'aura_students';
-        $table_enr    = $wpdb->prefix . 'aura_students_enrollments';
+        $table_enr    = $wpdb->prefix . 'aura_student_enrollments';
+        $table_crs    = $wpdb->prefix . 'aura_student_courses';
 
         $event = $wpdb->get_row( $wpdb->prepare(
             "SELECT e.id, e.program_id, e.subject_id, e.title, e.start_datetime, p.name AS program_name
@@ -56,17 +57,20 @@ class Aura_Calendar_Attendance {
             return [];
         }
 
-        // Obtener estudiantes inscritos activos en el programa
-        $sql = "SELECT st.id AS student_id, st.first_name, st.last_name, COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, st.email,
+        // Obtener estudiantes inscritos activos en el programa o curso
+        $sql = "SELECT DISTINCT st.id AS student_id, st.first_name, st.last_name, COALESCE(st.id_number, CONCAT('EST-', st.id)) AS student_code, st.email,
                        att.id AS attendance_id, att.status AS attendance_status, att.notes AS attendance_notes,
                        att.recorded_at
                 FROM {$table_enr} enr
                 JOIN {$table_stud} st ON st.id = enr.student_id
+                LEFT JOIN {$table_crs} c ON c.id = enr.course_id
+                LEFT JOIN {$table_prog} p ON p.id = %d
                 LEFT JOIN {$table_att} att ON att.event_id = %d AND att.student_id = st.id
-                WHERE enr.course_id = %d AND enr.status = 'active'
+                WHERE (enr.course_id = %d OR p.course_id = enr.course_id OR c.cal_program_id = %d)
+                  AND enr.status IN ('active', 'enrolled', 'approved')
                 ORDER BY st.last_name ASC, st.first_name ASC";
 
-        $roster = $wpdb->get_results( $wpdb->prepare( $sql, $event_id, $event->program_id ) );
+        $roster = $wpdb->get_results( $wpdb->prepare( $sql, $event->program_id, $event_id, $event->program_id, $event->program_id ) );
 
         // Si no hay inscripciones por course_id directo, buscar estudiantes activos/aprobados o que ya tengan asistencia registrada
         if ( empty( $roster ) ) {
