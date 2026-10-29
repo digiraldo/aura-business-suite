@@ -161,25 +161,39 @@
                     }
                     html += '</div>';
 
-                    if ( parseFloat( c.net_cost ) > 0 ) {
+                    var baseCost = parseFloat( c.base_cost ) || parseFloat( c.net_cost ) || 0;
+                    var netCost  = parseFloat( c.net_cost ) || 0;
+                    var totPaid  = parseFloat( c.total_paid ) || 0;
+                    var balance  = parseFloat( c.balance_due ) || 0;
+
+                    if ( baseCost > 0 || netCost > 0 ) {
                         var schInfo = '';
-                        if ( c.scholarship_pct > 0 ) {
+                        if ( parseInt( c.scholarship_pct, 10 ) > 0 ) {
                             var schType = c.scholarship_type === 'internal'
                                 ? ( STR.internal || 'interna' )
                                 : ( STR.external || 'externa' );
-                            schInfo = '<span class="aura-badge-pct">🎓 ' + c.scholarship_pct + '% '
-                                    + ( STR.scholarship || 'beca' ) + ' (' + schType + ')</span> ';
+                            var sponsorText = c.scholarship_sponsor ? ' · ' + escHtml( c.scholarship_sponsor ) : '';
+                            var discountVal = baseCost - netCost;
+                            var discText = discountVal > 0.01 ? ' (-' + fmtMoney( discountVal ) + ')' : '';
+                            schInfo = '<div style="margin-bottom:6px;"><span class="aura-badge-pct" style="display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:3px 8px;border-radius:6px;background:rgba(99,102,241,0.12);color:#4338ca;font-weight:600;">🎓 ' + c.scholarship_pct + '% '
+                                    + ( STR.scholarship || 'beca' ) + discText + ' (' + schType + sponsorText + ')</span></div>';
                         }
-                        var balance = parseFloat( c.balance_due ) || 0;
-                        var balHtml = balance > 0.009
-                            ? '<span class="text-red">' + ( STR.balance_lbl || 'Saldo:' ) + ' ' + fmtMoney( c.balance_due ) + '</span>'
-                            : '<span class="text-green">✅ ' + ( STR.up_to_date || 'Al día' ) + '</span>';
 
-                        html += '<div class="aura-course-payment">'
+                        var balHtml = balance > 0.009
+                            ? '<span class="text-red" style="font-weight:700;">' + ( STR.balance_lbl || 'Saldo pendiente:' ) + ' ' + fmtMoney( balance ) + '</span>'
+                            : '<span class="text-green" style="font-weight:700;color:#059669;">✅ ' + ( STR.up_to_date || 'Al día (Paz y Salvo)' ) + '</span>';
+
+                        html += '<div class="aura-course-payment" style="background:var(--aura-surface-alt, #f8fafc);border:1px solid var(--aura-border,#e2e8f0);border-radius:8px;padding:12px;margin-top:10px;">'
                              +  schInfo
-                             +  '<span class="aura-cost-net">' + fmtMoney( c.net_cost ) + '</span>'
-                             +  progressBar( c.total_paid, c.net_cost )
+                             +  '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:4px;color:var(--aura-text-secondary,#64748b);">'
+                             +  '<span>Costo del programa: <strong>' + fmtMoney( baseCost ) + '</strong></span>'
+                             +  '<span>Total a pagar: <strong class="aura-cost-net">' + fmtMoney( netCost ) + '</strong></span>'
+                             +  '</div>'
+                             +  progressBar( totPaid, netCost )
+                             +  '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-top:6px;">'
+                             +  '<span style="color:var(--aura-text-secondary,#64748b);">Abonado: <strong>' + fmtMoney( totPaid ) + '</strong></span>'
                              +  '<div class="aura-balance">' + balHtml + '</div>'
+                             +  '</div>'
                              +  '</div>';
                     }
 

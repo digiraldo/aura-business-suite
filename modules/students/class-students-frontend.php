@@ -502,7 +502,7 @@ class Aura_Students_Frontend {
         $rows = $wpdb->get_results( $wpdb->prepare(
             "SELECT e.id AS enrollment_id, e.status AS enrollment_status,
                     e.enrollment_date, e.base_cost, e.net_cost,
-                    e.scholarship_pct, e.scholarship_type,
+                    e.scholarship_pct, e.scholarship_type, e.scholarship_sponsor, e.scholarship_notes,
                     e.payment_scheme, e.installment_count, e.installment_amount,
                     e.total_paid, e.balance_due, e.payment_status,
                     c.id AS course_id, c.name AS course_name,

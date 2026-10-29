@@ -58,10 +58,38 @@ if ( $has_tasks_table ) {
         $student_id
     ) );
 
-    // Filtrar tareas que le corresponden al estudiante según modalidad y mapear libros diferenciados
+    // Obtener IDs de programas y cursos donde el estudiante está matriculado activamente
+    $table_enroll  = $wpdb->prefix . 'aura_student_enrollments';
+    $table_courses = $wpdb->prefix . 'aura_student_courses';
+    $enrolled_prog_ids = [];
+    if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table_enroll}'" ) === $table_enroll ) {
+        $enr_rows = $wpdb->get_results( $wpdb->prepare(
+            "SELECT DISTINCT enr.course_id, c.cal_program_id, p.id AS cal_prog_id
+             FROM {$table_enroll} enr
+             LEFT JOIN {$table_courses} c ON c.id = enr.course_id
+             LEFT JOIN {$table_prog} p ON p.course_id = enr.course_id
+             WHERE enr.student_id = %d AND enr.status IN ('active', 'enrolled', 'approved', 'completed')",
+            $student_id
+        ) );
+        foreach ( (array) $enr_rows as $er ) {
+            if ( ! empty( $er->course_id ) )      $enrolled_prog_ids[] = (int) $er->course_id;
+            if ( ! empty( $er->cal_program_id ) ) $enrolled_prog_ids[] = (int) $er->cal_program_id;
+            if ( ! empty( $er->cal_prog_id ) )    $enrolled_prog_ids[] = (int) $er->cal_prog_id;
+        }
+        $enrolled_prog_ids = array_unique( array_filter( $enrolled_prog_ids ) );
+    }
+
+    // Filtrar tareas que le corresponden al estudiante según programa y modalidad
     $assigned_tasks = [];
     foreach ( (array) $raw_tasks as $tsk ) {
         $target_type = $tsk->target_type ?: 'all';
+
+        // Aislamiento por programa: Si la tarea es general ('all'), verificar que el alumno pertenezca al programa
+        if ( $target_type === 'all' && ! empty( $tsk->program_id ) ) {
+            if ( ! empty( $enrolled_prog_ids ) && ! in_array( (int) $tsk->program_id, $enrolled_prog_ids, true ) ) {
+                continue;
+            }
+        }
         $target_ids  = ! empty( $tsk->target_student_ids ) ? json_decode( $tsk->target_student_ids, true ) : [];
         if ( ! is_array( $target_ids ) ) $target_ids = [];
         $assignments = ! empty( $tsk->student_assignments ) ? json_decode( $tsk->student_assignments, true ) : [];

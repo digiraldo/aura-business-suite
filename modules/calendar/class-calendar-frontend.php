@@ -653,6 +653,21 @@ class Aura_Calendar_Frontend {
                 $user_id,
                 $user_id_like
             ) );
+
+            // Si es administrador o coordinador y no tiene tareas asignadas directamente, traer todas las tareas institucionales activas
+            if ( empty( $my_tasks ) && $can_view_all_academic ) {
+                $my_tasks = $wpdb->get_results(
+                    "SELECT t.*, p.name AS program_name, p.code AS program_code, s.name AS subject_name
+                            {$book_cols},
+                            (SELECT COUNT(*) FROM {$table_subs} sub WHERE sub.task_id = t.id) AS submissions_count
+                     FROM {$table_tasks} t
+                     LEFT JOIN {$table_prog} p ON p.id = t.program_id
+                     LEFT JOIN {$table_subj} s ON s.id = t.subject_id
+                     {$book_join}
+                     WHERE t.deleted_at IS NULL
+                     ORDER BY t.created_at DESC"
+                );
+            }
         }
 
         // Catálogo de libros de la biblioteca disponibles para asignar
@@ -663,6 +678,17 @@ class Aura_Calendar_Frontend {
 
         // Programas activos
         $programs = class_exists( 'Aura_Calendar_Programs' ) ? Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 100 ] ) : [];
+
+        // Para docentes que no son administradores, filtrar el catálogo a los programas en los que realmente imparten docencia
+        if ( ! $can_view_all_academic && ! empty( $my_subjects ) ) {
+            $my_prog_ids = array_unique( array_map( function( $s ) { return (int) $s->program_id; }, $my_subjects ) );
+            $my_programs = array_filter( $programs, function( $p ) use ( $my_prog_ids ) {
+                return in_array( (int) $p->id, $my_prog_ids, true );
+            } );
+            if ( ! empty( $my_programs ) ) {
+                $programs = array_values( $my_programs );
+            }
+        }
 
         // Avatar
         $avatar_url = get_avatar_url( $user_id, [ 'size' => 120 ] );

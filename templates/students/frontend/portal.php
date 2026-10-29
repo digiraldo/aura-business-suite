@@ -46,6 +46,51 @@ if ( $has_enroll_table && ! empty( $student->id ) ) {
         $student->id
     ) );
 }
+
+// ── Validación de los 3 Ejes de Paz y Salvo Integral ──
+$tot_debt = floatval( $enroll_stats->total_debt ?? 0 );
+$tot_cost = floatval( $enroll_stats->total_cost ?? 0 );
+$tot_paid = floatval( $enroll_stats->total_paid ?? 0 );
+$wp_uid   = intval( $student->wp_user_id ?? get_current_user_id() );
+
+// 1. Recursos: Libros adeudados en Biblioteca
+$table_lib_loans = $wpdb->prefix . 'aura_library_loans';
+$pending_books   = 0;
+if ( $wp_uid > 0 && $wpdb->get_var( "SHOW TABLES LIKE '{$table_lib_loans}'" ) === $table_lib_loans ) {
+    $pending_books = (int) $wpdb->get_var( $wpdb->prepare(
+        "SELECT COUNT(*) FROM {$table_lib_loans} WHERE borrower_user_id = %d AND status IN ('active','overdue')",
+        $wp_uid
+    ) );
+}
+
+// 2. Recursos: Equipos/herramientas adeudados en Inventario
+$table_inv_loans = $wpdb->prefix . 'aura_inventory_loans';
+$pending_tools   = 0;
+if ( $wp_uid > 0 && $wpdb->get_var( "SHOW TABLES LIKE '{$table_inv_loans}'" ) === $table_inv_loans ) {
+    $name_like = '%' . $wpdb->esc_like( $full_name ) . '%';
+    $pending_tools = (int) $wpdb->get_var( $wpdb->prepare(
+        "SELECT COUNT(*) FROM {$table_inv_loans} WHERE (borrowed_by_user_id = %d OR (borrowed_to_name != '' AND borrowed_to_name LIKE %s)) AND actual_return_date IS NULL AND returned_at IS NULL",
+        $wp_uid,
+        $name_like
+    ) );
+}
+
+// 3. Certificados y Diplomas emitidos
+$table_certs  = $wpdb->prefix . 'aura_certificates';
+$active_certs = [];
+if ( ! empty( $student->id ) && $wpdb->get_var( "SHOW TABLES LIKE '{$table_certs}'" ) === $table_certs ) {
+    $active_certs = $wpdb->get_results( $wpdb->prepare(
+        "SELECT id, folio, course_name, program_name, issued_at, status, verify_url
+         FROM {$table_certs}
+         WHERE student_id = %d AND status = 'active'
+         ORDER BY issued_at DESC",
+        $student->id
+    ) );
+}
+
+$is_financially_clear = ( $tot_debt <= 0.009 );
+$is_fully_paz_salvo   = ( $is_financially_clear && $pending_books === 0 && $pending_tools === 0 );
+$is_graduated         = ( $stu_status === 'graduated' || ! empty( $active_certs ) );
 ?>
 <div class="aura-portal-wrap" id="aura-student-portal">
 
@@ -90,39 +135,78 @@ if ( $has_enroll_table && ! empty( $student->id ) ) {
         </div>
     </div>
 
-    <!-- ══════════════ BANNER DE ESTADO FINANCIERO Y PAZ Y SALVO ══════════════ -->
-    <?php if ( $enroll_stats && (int) $enroll_stats->total_courses > 0 ) : 
-        $tot_debt = floatval( $enroll_stats->total_debt ?? 0 );
-        $tot_cost = floatval( $enroll_stats->total_cost ?? 0 );
-        $tot_paid = floatval( $enroll_stats->total_paid ?? 0 );
-    ?>
-        <div class="adp-card" style="margin-bottom: 20px; padding: 14px 18px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: <?php echo $tot_debt > 0 ? 'rgba(245, 158, 11, 0.08)' : 'rgba(16, 185, 129, 0.08)'; ?>; border: 1px solid <?php echo $tot_debt > 0 ? '#f59e0b' : '#10b981'; ?>;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 26px;">
-                    <?php echo $tot_debt > 0 ? '💳' : '🎖️'; ?>
+    <!-- ══════════════ BANNER DE ESTADO FINANCIERO Y PAZ Y SALVO INTEGRAL ══════════════ -->
+    <?php if ( $enroll_stats && (int) $enroll_stats->total_courses > 0 ) : ?>
+        <div class="adp-card" style="margin-bottom: 20px; padding: 16px 20px; border-radius: 12px; background: <?php echo $is_fully_paz_salvo ? 'rgba(16, 185, 129, 0.08)' : 'rgba(245, 158, 11, 0.08)'; ?>; border: 1.5px solid <?php echo $is_fully_paz_salvo ? '#10b981' : '#f59e0b'; ?>;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                <div style="display: flex; align-items: flex-start; gap: 14px; max-width: 780px;">
+                    <div style="font-size: 32px; line-height: 1;">
+                        <?php echo $is_fully_paz_salvo ? '🎖️' : '⚠️'; ?>
+                    </div>
+                    <div>
+                        <?php if ( $is_fully_paz_salvo ) : ?>
+                            <div style="font-weight: 700; font-size: 15px; color: #047857; display: flex; align-items: center; gap: 6px;">
+                                <span>✅ <?php esc_html_e( 'Paz y Salvo Integral: Financiero, Académico y de Recursos', 'aura-suite' ); ?></span>
+                            </div>
+                            <div style="font-size: 13px; color: var(--aura-text-secondary, #64748b); margin-top: 3px;">
+                                <?php esc_html_e( '¡Felicitaciones! Te encuentras al día en tus cuotas de programa, no adeudas libros de biblioteca ni herramientas de inventario.', 'aura-suite' ); ?>
+                            </div>
+
+                            <?php if ( ! empty( $active_certs ) ) : 
+                                $main_cert = $active_certs[0];
+                                $dl_url = add_query_arg( [
+                                    'action' => 'aura_cert_download',
+                                    'folio'  => $main_cert->folio,
+                                    'nonce'  => wp_create_nonce( 'aura_download_' . $main_cert->folio ),
+                                ], admin_url( 'admin-ajax.php' ) );
+                            ?>
+                                <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <a href="<?php echo esc_url( $dl_url ); ?>" class="btn btn-emerald btn-lift" style="font-size: 12.5px; padding: 7px 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
+                                        🎓 <?php esc_html_e( 'Descargar Diploma Oficial (PDF)', 'aura-suite' ); ?>
+                                    </a>
+                                    <?php if ( ! empty( $main_cert->verify_url ) ) : ?>
+                                        <a href="<?php echo esc_url( $main_cert->verify_url ); ?>" target="_blank" class="btn btn-ghost" style="font-size: 12px; padding: 6px 12px; text-decoration: none;">
+                                            🔍 <?php esc_html_e( 'Verificar QR Oficial', 'aura-suite' ); ?>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            <?php elseif ( $is_graduated ) : ?>
+                                <div style="margin-top: 6px; font-size: 12.5px; color: #065f46; font-weight: 600;">
+                                    🎓 <?php esc_html_e( 'Estado: Graduado. Tu diploma oficial se encuentra en emisión final por la directiva académica.', 'aura-suite' ); ?>
+                                </div>
+                            <?php endif; ?>
+
+                        <?php else : ?>
+                            <div style="font-weight: 700; font-size: 15px; color: #b45309;">
+                                ⚠️ <?php esc_html_e( 'Requisitos Pendientes para Paz y Salvo Oficial', 'aura-suite' ); ?>
+                            </div>
+                            <div style="font-size: 12.5px; color: var(--aura-text-secondary, #64748b); margin-top: 4px; display: flex; flex-direction: column; gap: 3px;">
+                                <?php if ( ! $is_financially_clear ) : ?>
+                                    <div>💳 <strong><?php esc_html_e( 'Saldo pendiente del programa:', 'aura-suite' ); ?></strong> <?php printf( esc_html__( '%s (Abonado: %s de %s)', 'aura-suite' ), '<strong>$' . number_format( $tot_debt, 2 ) . '</strong>', '$' . number_format( $tot_paid, 2 ), '$' . number_format( $tot_cost, 2 ) ); ?></div>
+                                <?php endif; ?>
+                                <?php if ( $pending_books > 0 ) : ?>
+                                    <div>📖 <strong><?php esc_html_e( 'Biblioteca:', 'aura-suite' ); ?></strong> <?php printf( esc_html__( 'Tienes %d libro(s) pendiente(s) de devolución.', 'aura-suite' ), $pending_books ); ?></div>
+                                <?php endif; ?>
+                                <?php if ( $pending_tools > 0 ) : ?>
+                                    <div>🛠️ <strong><?php esc_html_e( 'Inventario:', 'aura-suite' ); ?></strong> <?php printf( esc_html__( 'Tienes %d equipo(s) o herramienta(s) bajo tu cargo sin retornar.', 'aura-suite' ), $pending_tools ); ?></div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <div>
-                    <?php if ( $tot_debt > 0 ) : ?>
-                        <div style="font-weight: 700; font-size: 14px; color: #b45309;">
-                            <?php esc_html_e( 'Estado Financiero del Programa: Saldo Pendiente de Pago', 'aura-suite' ); ?>
-                        </div>
-                        <div style="font-size: 12.5px; color: var(--aura-text-secondary, #64748b); margin-top: 2px;">
-                            <?php printf( esc_html__( 'Tienes un saldo pendiente de %s (Abonado: %s de %s en tus inscripciones).', 'aura-suite' ), '<strong>$' . number_format( $tot_debt, 2 ) . '</strong>', '$' . number_format( $tot_paid, 2 ), '$' . number_format( $tot_cost, 2 ) ); ?>
-                        </div>
-                    <?php else : ?>
-                        <div style="font-weight: 700; font-size: 14px; color: #047857;">
-                            ✅ <?php esc_html_e( 'Paz y Salvo Académico y Financiero', 'aura-suite' ); ?>
-                        </div>
-                        <div style="font-size: 12.5px; color: var(--aura-text-secondary, #64748b); margin-top: 2px;">
-                            <?php esc_html_e( '¡Felicitaciones! Te encuentras 100% al día con todos los costos de tus programas académicos.', 'aura-suite' ); ?>
-                        </div>
+
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <?php if ( ! $is_financially_clear ) : ?>
+                        <button type="button" class="btn btn-sm btn-ghost aura-portal-tab-btn" data-target="payments" style="font-size: 12px; padding: 6px 14px; border: 1px solid rgba(245, 158, 11, 0.4);">
+                            💰 <?php esc_html_e( 'Ver Historial de Pagos', 'aura-suite' ); ?>
+                        </button>
+                    <?php endif; ?>
+                    <?php if ( $pending_tools > 0 ) : ?>
+                        <button type="button" class="btn btn-sm btn-ghost aura-portal-tab-btn" data-target="equipment" style="font-size: 12px; padding: 6px 14px; border: 1px solid rgba(245, 158, 11, 0.4);">
+                            🧰 <?php esc_html_e( 'Mis Herramientas', 'aura-suite' ); ?>
+                        </button>
                     <?php endif; ?>
                 </div>
-            </div>
-            <div>
-                <button type="button" class="btn btn-sm btn-ghost aura-portal-tab-btn" data-target="payments" style="font-size: 12px; padding: 6px 14px;">
-                    💰 <?php esc_html_e( 'Ver Historial de Pagos', 'aura-suite' ); ?>
-                </button>
             </div>
         </div>
     <?php endif; ?>
