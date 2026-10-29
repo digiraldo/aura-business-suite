@@ -161,7 +161,7 @@ class Aura_Calendar_Attendance {
     public static function ajax_get_attendance_roster(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_view_attendance' ) && ! current_user_can( 'aura_cal_take_attendance' ) && ! current_user_can( 'aura_take_attendance' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_view_attendance' ) && ! current_user_can( 'aura_cal_take_attendance' ) && ! current_user_can( 'aura_take_attendance' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para ver o tomar asistencia.', 'aura' ) ] );
         }
 
@@ -177,7 +177,7 @@ class Aura_Calendar_Attendance {
     public static function ajax_save_attendance(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_take_attendance' ) && ! current_user_can( 'aura_take_attendance' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cal_take_attendance' ) && ! current_user_can( 'aura_take_attendance' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para registrar asistencia.', 'aura' ) ] );
         }
 

@@ -271,7 +271,11 @@ class Aura_Students_Courses {
     public static function ajax_save_course(): void {
         check_ajax_referer( 'aura_students_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
+        if (
+            ! current_user_can( 'aura_students_courses_manage' ) &&
+            ! current_user_can( 'aura_areas_enrollment_manage' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
@@ -319,6 +323,26 @@ class Aura_Students_Courses {
         $instructor_id  = $instructor_id  ?: null;
         $finance_cat_id = $finance_cat_id ?: null;
         $duration_weeks = $duration_weeks ?: null;
+
+        // Aislamiento multi-área CBAC
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_students_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_all' )
+        );
+
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( $area_id && ! in_array( (int) $area_id, $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'No tienes autorización para asignar cursos a esta área.', 'aura-suite' ) ], 403 );
+            }
+            if ( $id > 0 ) {
+                $prev_area_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT area_id FROM {$table} WHERE id = %d", $id ) );
+                if ( $prev_area_id && ! in_array( $prev_area_id, $allowed_area_ids, true ) ) {
+                    wp_send_json_error( [ 'message' => __( 'No tienes autorización para modificar cursos de esta área.', 'aura-suite' ) ], 403 );
+                }
+            }
+        }
 
         if ( $id > 0 ) {
             // UPDATE
@@ -421,6 +445,20 @@ class Aura_Students_Courses {
         $enroll_table  = $wpdb->prefix . 'aura_student_enrollments';
         $courses_table = $wpdb->prefix . 'aura_student_courses';
 
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_students_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_all' )
+        );
+
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $course_area_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT area_id FROM {$courses_table} WHERE id = %d", $id ) );
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( $course_area_id && ! in_array( $course_area_id, $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'No tienes autorización para eliminar cursos de esta área.', 'aura-suite' ) ], 403 );
+            }
+        }
+
         // Bloquear si hay inscripciones activas o pendientes
         $active_count = (int) $wpdb->get_var( $wpdb->prepare(
             "SELECT COUNT(*) FROM {$enroll_table} WHERE course_id = %d AND status IN ('pending','active')",
@@ -458,8 +496,15 @@ class Aura_Students_Courses {
     public static function ajax_get_course(): void {
         check_ajax_referer( 'aura_students_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
+        if (
+            ! current_user_can( 'aura_students_courses_manage' ) &&
+            ! current_user_can( 'aura_students_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_own' ) &&
+            ! current_user_can( 'aura_areas_enrollment_manage' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ], 403 );
         }
 
         $id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
@@ -486,6 +531,19 @@ class Aura_Students_Courses {
             wp_send_json_error( [ 'message' => __( 'Curso no encontrado.', 'aura-suite' ) ] );
         }
 
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_students_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_all' )
+        );
+
+        if ( $is_restricted && ! empty( $row->area_id ) && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( ! in_array( (int) $row->area_id, $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'Acceso no autorizado al curso de esta área.', 'aura-suite' ) ], 403 );
+            }
+        }
+
         $row->instructor_name = self::get_instructor_name( (int) $row->instructor_id );
 
         wp_send_json_success( [ 'course' => self::format_course( $row ) ] );
@@ -498,8 +556,15 @@ class Aura_Students_Courses {
     public static function ajax_list_courses(): void {
         check_ajax_referer( 'aura_students_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
+        if (
+            ! current_user_can( 'aura_students_courses_manage' ) &&
+            ! current_user_can( 'aura_students_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_own' ) &&
+            ! current_user_can( 'aura_areas_enrollment_manage' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ], 403 );
         }
 
         global $wpdb;
@@ -513,6 +578,33 @@ class Aura_Students_Courses {
 
         $where  = [ '1=1' ];
         $params = [];
+
+        // Scoping multi-área CBAC
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_students_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ( current_user_can( 'aura_areas_view_own' ) || current_user_can( 'aura_areas_enrollment_manage' ) )
+        );
+
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( empty( $allowed_area_ids ) ) {
+                wp_send_json_success( [
+                    'courses' => [],
+                    'total'   => 0,
+                    'pages'   => 0,
+                    'page'    => $page,
+                ] );
+                return;
+            }
+            if ( $area_id && ! in_array( $area_id, $allowed_area_ids, true ) ) {
+                $area_id = 0;
+            }
+            $placeholders = implode( ',', array_fill( 0, count( $allowed_area_ids ), '%d' ) );
+            $where[]  = "c.area_id IN ({$placeholders})";
+            $params   = array_merge( $params, $allowed_area_ids );
+        }
 
         if ( $status && in_array( $status, [ 'active', 'inactive', 'archived' ], true ) ) {
             $where[]  = 'c.status = %s';

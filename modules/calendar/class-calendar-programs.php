@@ -48,6 +48,7 @@ class Aura_Calendar_Programs {
             'status'           => '', // active, archived, draft o vacío para no eliminados
             'search'           => '',
             'area_id'          => null,
+            'allowed_area_ids' => null,
             'orderby'          => 'p.created_at',
             'order'            => 'DESC',
             'limit'            => 100,
@@ -82,6 +83,10 @@ class Aura_Calendar_Programs {
         if ( $r['area_id'] !== null && $r['area_id'] !== '' ) {
             $where[]  = 'p.area_id = %d';
             $params[] = intval( $r['area_id'] );
+        } elseif ( ! empty( $r['allowed_area_ids'] ) && is_array( $r['allowed_area_ids'] ) ) {
+            $placeholders = implode( ',', array_fill( 0, count( $r['allowed_area_ids'] ), '%d' ) );
+            $where[]      = "p.area_id IN ({$placeholders})";
+            $params       = array_merge( $params, array_map( 'intval', $r['allowed_area_ids'] ) );
         }
 
         $where_sql = implode( ' AND ', $where );
@@ -702,7 +707,16 @@ class Aura_Calendar_Programs {
     public static function ajax_get_programs(): void {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_cal_view_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
+        if (
+            ! current_user_can( 'aura_cal_view_calendar' ) &&
+            ! current_user_can( 'aura_view_calendar' ) &&
+            ! current_user_can( 'aura_cal_view_programs' ) &&
+            ! current_user_can( 'aura_cal_manage_programs' ) &&
+            ! current_user_can( 'aura_students_courses_manage' ) &&
+            ! current_user_can( 'aura_areas_view_own' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para ver programas.', 'aura' ) ] );
         }
 
@@ -717,10 +731,32 @@ class Aura_Calendar_Programs {
             $archived_filter = true;
         }
 
+        // Multi-área scoping CBAC
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_cal_portal_view_all' ) &&
+            ! current_user_can( 'aura_students_view_all' ) &&
+            ( current_user_can( 'aura_areas_view_own' ) || current_user_can( 'aura_areas_enrollment_manage' ) )
+        );
+
+        $allowed_area_ids = null;
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( empty( $allowed_area_ids ) ) {
+                wp_send_json_success( [ 'programs' => [] ] );
+                return;
+            }
+            if ( $area_id && ! in_array( $area_id, $allowed_area_ids, true ) ) {
+                $area_id = null;
+            }
+        }
+
         $programs = self::get_all( [
             'status'           => sanitize_text_field( $_POST['status'] ?? '' ),
             'search'           => sanitize_text_field( $_POST['search'] ?? '' ),
             'area_id'          => $area_id,
+            'allowed_area_ids' => $allowed_area_ids,
             'include_archived' => $archived_filter,
         ] );
 
@@ -754,6 +790,28 @@ class Aura_Calendar_Programs {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para gestionar programas.', 'aura' ) ] );
         }
 
+        global $wpdb;
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_cal_portal_view_all' )
+        );
+
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            $target_area      = ! empty( $_POST['area_id'] ) ? intval( $_POST['area_id'] ) : 0;
+            if ( $target_area && ! in_array( $target_area, $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'No tienes autorización para gestionar programas en esta área.', 'aura' ) ], 403 );
+            }
+            $prog_id = intval( $_POST['id'] ?? 0 );
+            if ( $prog_id > 0 ) {
+                $prev_area = (int) $wpdb->get_var( $wpdb->prepare( "SELECT area_id FROM {$wpdb->prefix}aura_cal_programs WHERE id = %d", $prog_id ) );
+                if ( $prev_area && ! in_array( $prev_area, $allowed_area_ids, true ) ) {
+                    wp_send_json_error( [ 'message' => __( 'No tienes autorización para modificar programas de esta área.', 'aura' ) ], 403 );
+                }
+            }
+        }
+
         $res = self::save( $_POST );
         if ( is_wp_error( $res ) ) {
             wp_send_json_error( [ 'message' => $res->get_error_message() ] );
@@ -775,6 +833,21 @@ class Aura_Calendar_Programs {
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
             wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+        }
+
+        global $wpdb;
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_cal_portal_view_all' )
+        );
+
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $prog_area = (int) $wpdb->get_var( $wpdb->prepare( "SELECT area_id FROM {$wpdb->prefix}aura_cal_programs WHERE id = %d", $id ) );
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( $prog_area && ! in_array( $prog_area, $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'No tienes autorización para eliminar programas de esta área.', 'aura' ) ], 403 );
+            }
         }
 
         $force = ! empty( $_POST['force'] );

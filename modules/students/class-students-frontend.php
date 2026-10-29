@@ -694,12 +694,23 @@ class Aura_Students_Frontend {
      * Termina el request con error si el usuario no tiene capacidad de portal.
      */
     private static function require_student_cap(): void {
-        if (
-            ! current_user_can( 'aura_students_view_own' ) &&
-            ! current_user_can( 'manage_options' )
-        ) {
-            wp_send_json_error( [ 'message' => __( 'Acceso denegado.', 'aura-suite' ) ] );
+        $user_id = get_current_user_id();
+        if ( ! $user_id ) {
+            wp_send_json_error( [ 'message' => __( 'No autenticado.', 'aura-suite' ) ], 401 );
         }
+
+        if ( current_user_can( 'manage_options' ) || current_user_can( 'aura_students_view_own' ) ) {
+            return;
+        }
+
+        if ( class_exists( 'Aura_Roles_Manager' ) ) {
+            $access = Aura_Roles_Manager::get_user_portal_access( $user_id );
+            if ( ! empty( $access['can_student_portal'] ) || ! empty( $access['is_student'] ) ) {
+                return;
+            }
+        }
+
+        wp_send_json_error( [ 'message' => __( 'Acceso denegado.', 'aura-suite' ) ], 403 );
     }
 
     /**

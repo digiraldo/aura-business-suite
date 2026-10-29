@@ -354,8 +354,11 @@ class Aura_Financial_Budgets {
         // Usuarios con aura_areas_view_own pueden ver el presupuesto de su propia área
         if (
             ! current_user_can( 'aura_finance_view_all' ) &&
-            ! current_user_can( 'manage_options' ) &&
-            ! current_user_can( 'aura_areas_view_own' )
+            ! current_user_can( 'aura_finance_budgets' ) &&
+            ! current_user_can( 'aura_areas_budget_view' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_own' ) &&
+            ! current_user_can( 'manage_options' )
         ) {
             wp_send_json_error( [ 'message' => __( 'Sin permisos', 'aura-suite' ) ], 403 );
         }
@@ -434,8 +437,13 @@ class Aura_Financial_Budgets {
     public static function ajax_save_budget() {
         check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_finance_create' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos', 'aura-suite' ) ], 403 );
+        if (
+            ! current_user_can( 'aura_finance_budgets' ) &&
+            ! current_user_can( 'aura_areas_budget_manage' ) &&
+            ! current_user_can( 'aura_finance_create' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para gestionar presupuestos', 'aura-suite' ) ], 403 );
         }
 
         global $wpdb;
@@ -462,6 +470,27 @@ class Aura_Financial_Budgets {
 
         if ( ! $data['area_id'] || $data['budget_amount'] <= 0 || ! $data['start_date'] || ! $data['end_date'] ) {
             wp_send_json_error( [ 'message' => __( 'Área, monto y fechas son obligatorios', 'aura-suite' ) ] );
+        }
+
+        // Aislamiento multi-área CBAC: validar que el usuario tenga acceso a esta área
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_finance_view_all' )
+        );
+
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( empty( $allowed_area_ids ) || ! in_array( (int) $data['area_id'], $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'No tienes autorización para gestionar presupuestos en esta área.', 'aura-suite' ) ], 403 );
+            }
+
+            if ( $id > 0 ) {
+                $prev_area_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT area_id FROM {$table} WHERE id = %d", $id ) );
+                if ( ! in_array( $prev_area_id, $allowed_area_ids, true ) ) {
+                    wp_send_json_error( [ 'message' => __( 'No tienes autorización para modificar el presupuesto de esta área.', 'aura-suite' ) ], 403 );
+                }
+            }
         }
 
         // ── Verificar unicidad: no puede haber otro presupuesto activo con el mismo
@@ -529,7 +558,12 @@ class Aura_Financial_Budgets {
     public static function ajax_delete_budget() {
         check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_finance_delete_all' ) && ! current_user_can( 'manage_options' ) ) {
+        if (
+            ! current_user_can( 'aura_finance_delete_all' ) &&
+            ! current_user_can( 'aura_finance_budgets' ) &&
+            ! current_user_can( 'aura_areas_budget_manage' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
             wp_send_json_error( [ 'message' => __( 'Sin permisos', 'aura-suite' ) ], 403 );
         }
 
@@ -537,6 +571,20 @@ class Aura_Financial_Budgets {
         if ( ! $id ) wp_send_json_error( [ 'message' => __( 'ID inválido', 'aura-suite' ) ] );
 
         global $wpdb;
+
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_finance_view_all' )
+        );
+
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $budget_area_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT area_id FROM {$wpdb->prefix}aura_finance_budgets WHERE id = %d", $id ) );
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( ! in_array( $budget_area_id, $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'No tienes autorización para eliminar presupuestos de esta área.', 'aura-suite' ) ], 403 );
+            }
+        }
         $wpdb->update(
             $wpdb->prefix . 'aura_finance_budgets',
             [ 'is_active' => 0 ],
@@ -554,6 +602,17 @@ class Aura_Financial_Budgets {
 
     public static function ajax_get_budget_detail() {
         check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
+
+        if (
+            ! current_user_can( 'aura_finance_view_all' ) &&
+            ! current_user_can( 'aura_finance_budgets' ) &&
+            ! current_user_can( 'aura_areas_budget_view' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_own' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para consultar detalles de presupuestos', 'aura-suite' ) ], 403 );
+        }
 
         $id = (int) ( $_POST['id'] ?? 0 );
         if ( ! $id ) wp_send_json_error( [ 'message' => __( 'ID inválido', 'aura-suite' ) ] );
@@ -585,6 +644,19 @@ class Aura_Financial_Budgets {
 
         if ( ! $budget ) {
             wp_send_json_error( [ 'message' => __( 'Presupuesto no encontrado', 'aura-suite' ) ] );
+        }
+
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_finance_view_all' )
+        );
+
+        if ( $is_restricted && ! empty( $budget->area_id ) && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( ! in_array( (int) $budget->area_id, $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'Acceso denegado al presupuesto de esta área.', 'aura-suite' ) ], 403 );
+            }
         }
 
         $budget = self::enrich( $budget );
@@ -663,17 +735,44 @@ class Aura_Financial_Budgets {
     public static function ajax_get_budget_progress() {
         check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
 
+        if (
+            ! current_user_can( 'aura_finance_view_all' ) &&
+            ! current_user_can( 'aura_finance_budgets' ) &&
+            ! current_user_can( 'aura_areas_budget_view' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_own' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos', 'aura-suite' ) ], 403 );
+        }
+
         global $wpdb;
         $b_table = $wpdb->prefix . 'aura_finance_budgets';
         $c_table = $wpdb->prefix . 'aura_finance_categories';
         $today   = current_time( 'Y-m-d' );
 
+        $where_scope = "b.is_active = 1 AND '{$today}' BETWEEN b.start_date AND b.end_date";
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_finance_view_all' )
+        );
+
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( empty( $allowed_area_ids ) ) {
+                wp_send_json_success( [ 'budgets' => [] ] );
+                return;
+            }
+            $placeholders = implode( ',', array_fill( 0, count( $allowed_area_ids ), '%d' ) );
+            $where_scope .= $wpdb->prepare( " AND b.area_id IN ({$placeholders})", ...$allowed_area_ids );
+        }
+
         $budgets = $wpdb->get_results(
             "SELECT b.*, c.name AS category_name, c.color AS category_color, c.icon AS category_icon
              FROM {$b_table} b
              LEFT JOIN {$c_table} c ON c.id = b.category_id
-             WHERE b.is_active = 1
-               AND '{$today}' BETWEEN b.start_date AND b.end_date
+             WHERE {$where_scope}
              ORDER BY b.start_date DESC"
         );
 
@@ -689,12 +788,40 @@ class Aura_Financial_Budgets {
     public static function ajax_widget_data() {
         check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
 
+        if (
+            ! current_user_can( 'aura_finance_view_all' ) &&
+            ! current_user_can( 'aura_finance_budgets' ) &&
+            ! current_user_can( 'aura_areas_budget_view' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_own' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos', 'aura-suite' ) ], 403 );
+        }
+
         global $wpdb;
         $b_table = $wpdb->prefix . 'aura_finance_budgets';
         $c_table = $wpdb->prefix . 'aura_finance_categories';
         $today   = current_time( 'Y-m-d' );
 
         $a_table = $wpdb->prefix . 'aura_areas';
+
+        $where_scope = "b.is_active = 1 AND '{$today}' BETWEEN b.start_date AND b.end_date";
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_finance_view_all' )
+        );
+
+        if ( $is_restricted && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( empty( $allowed_area_ids ) ) {
+                wp_send_json_success( [ 'budgets' => [] ] );
+                return;
+            }
+            $placeholders = implode( ',', array_fill( 0, count( $allowed_area_ids ), '%d' ) );
+            $where_scope .= $wpdb->prepare( " AND b.area_id IN ({$placeholders})", ...$allowed_area_ids );
+        }
 
         $budgets = $wpdb->get_results(
             "SELECT b.*,
@@ -707,8 +834,7 @@ class Aura_Financial_Budgets {
              FROM {$b_table} b
              LEFT JOIN {$c_table} c ON c.id = b.category_id
              LEFT JOIN {$a_table} a ON a.id = b.area_id
-             WHERE b.is_active = 1
-               AND '{$today}' BETWEEN b.start_date AND b.end_date"
+             WHERE {$where_scope}"
         );
 
         $budgets = array_map( [ __CLASS__, 'enrich' ], $budgets );
@@ -731,7 +857,12 @@ class Aura_Financial_Budgets {
     public static function ajax_adjust_budget() {
         check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_finance_edit_all' ) && ! current_user_can( 'manage_options' ) ) {
+        if (
+            ! current_user_can( 'aura_finance_edit_all' ) &&
+            ! current_user_can( 'aura_finance_budgets' ) &&
+            ! current_user_can( 'aura_areas_budget_manage' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
             wp_send_json_error( [ 'message' => __( 'Sin permisos', 'aura-suite' ) ], 403 );
         }
 
@@ -746,6 +877,19 @@ class Aura_Financial_Budgets {
         $budget = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ) );
 
         if ( ! $budget ) wp_send_json_error( [ 'message' => __( 'Presupuesto no encontrado', 'aura-suite' ) ] );
+
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_finance_view_all' )
+        );
+
+        if ( $is_restricted && ! empty( $budget->area_id ) && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( ! in_array( (int) $budget->area_id, $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'No tienes autorización para ajustar el presupuesto de esta área.', 'aura-suite' ) ], 403 );
+            }
+        }
 
         $new_amount = $adj_type === 'percent'
             ? $budget->budget_amount * ( 1 + $adj_value / 100 )
@@ -904,6 +1048,17 @@ class Aura_Financial_Budgets {
     public static function ajax_budget_category_breakdown() {
         check_ajax_referer( 'aura_budgets_nonce', 'nonce' );
 
+        if (
+            ! current_user_can( 'aura_finance_view_all' ) &&
+            ! current_user_can( 'aura_finance_budgets' ) &&
+            ! current_user_can( 'aura_areas_budget_view' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_areas_view_own' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos', 'aura-suite' ) ], 403 );
+        }
+
         $budget_id = absint( $_POST['budget_id'] ?? 0 );
         if ( ! $budget_id ) {
             wp_send_json_error( [ 'message' => __( 'ID de presupuesto inválido', 'aura-suite' ) ] );
@@ -921,6 +1076,19 @@ class Aura_Financial_Budgets {
 
         if ( ! $budget ) {
             wp_send_json_error( [ 'message' => __( 'Presupuesto no encontrado', 'aura-suite' ) ] );
+        }
+
+        $is_restricted = (
+            ! current_user_can( 'manage_options' ) &&
+            ! current_user_can( 'aura_areas_view_all' ) &&
+            ! current_user_can( 'aura_finance_view_all' )
+        );
+
+        if ( $is_restricted && ! empty( $budget->area_id ) && class_exists( 'Aura_Areas_Setup' ) ) {
+            $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
+            if ( ! in_array( (int) $budget->area_id, $allowed_area_ids, true ) ) {
+                wp_send_json_error( [ 'message' => __( 'Acceso denegado a datos de esta área.', 'aura-suite' ) ], 403 );
+            }
         }
 
         $area_id    = (int) ( $budget->area_id ?? 0 );
