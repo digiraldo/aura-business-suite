@@ -683,3 +683,164 @@ html[data-wp-dark-mode-scheme="dark"] .aura-user-dashboard-wrap {
         color: #64748b;
     }
 }
+
+
+/* ── 11. Modernización de Paginación (.aura-tablenav-modern) ─── */
+.aura-tablenav-modern {
+    padding: 16px 22px !important;
+    background: var(--bg-alt, #f8fafc) !important;
+    border-top: 1px solid var(--border-color, #e2e8f0) !important;
+    border-radius: 0 0 var(--r-xl, 18px) var(--r-xl, 18px) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 14px !important;
+    margin: 0 !important;
+    height: auto !important;
+}
+
+.aura-pagination-summary {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--tx-secondary, #64748b);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aura-page-current-num {
+    color: var(--primary, #2563eb);
+    font-weight: 800;
+}
+
+.aura-pagination-dot {
+    color: var(--tx-muted, #94a3b8);
+}
+
+.aura-pagination-total {
+    color: var(--tx-muted, #64748b);
+}
+
+.aura-pages-cluster {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    float: none !important;
+    margin: 0 !important;
+}
+
+.aura-pages-cluster .page-numbers {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    border: 1px solid var(--border-color, #cbd5e1) !important;
+    background: var(--bg-surface, #ffffff) !important;
+    color: var(--tx-primary, #1e293b) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    line-height: 1 !important;
+}
+
+.aura-pages-cluster .page-numbers:hover:not(.current):not(.dots) {
+    background: var(--bg-hover, #f1f5f9) !important;
+    border-color: var(--primary, #2563eb) !important;
+    color: var(--primary, #2563eb) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15) !important;
+}
+
+.aura-pages-cluster .page-numbers.current {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+    transform: translateY(-1px) !important;
+}
+
+.aura-pages-cluster .page-numbers.dots {
+    border: none !important;
+    background: transparent !important;
+    color: var(--tx-muted, #94a3b8) !important;
+    box-shadow: none !important;
+    min-width: 22px !important;
+}
+
+.aura-pages-cluster .page-numbers.prev,
+.aura-pages-cluster .page-numbers.next {
+    padding: 0 14px !important;
+    font-weight: 700 !important;
+    gap: 4px !important;
+}
+
+.aura-pages-cluster .page-numbers.prev .dashicons,
+.aura-pages-cluster .page-numbers.next .dashicons {
+    font-size: 14px !important;
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* ── 12. Componentes de Propósito, Observaciones y Banner ───── */
+.aura-child-purpose-card {
+    transition: all 0.2s ease;
+}
+
+.aura-child-purpose-card:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.aura-badge-ref {
+    display: inline-flex;
+    align-items: center;
+    letter-spacing: 0.3px;
+}
+
+.aura-consulted-user-banner {
+    width: 100%;
+}
+
+/* ── Dark Mode Adaptations ──────────────────────────────────── */
+[data-theme="dark"] .aura-tablenav-modern {
+    background: #111022 !important;
+    border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .aura-pages-cluster .page-numbers {
+    background: #16152b !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .aura-pages-cluster .page-numbers:hover:not(.current):not(.dots) {
+    background: #201e3d !important;
+    border-color: #3b82f6 !important;
+    color: #60a5fa !important;
+}
+
+[data-theme="dark"] .aura-child-purpose-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    border-left-color: #3b82f6 !important;
+}
+
+[data-theme="dark"] .aura-child-purpose-text {
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .aura-badge-ref {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .aura-consulted-user-banner {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}

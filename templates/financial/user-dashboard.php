@@ -34,6 +34,16 @@ if ( $can_view_others && ! empty( $_GET['view_user'] ) ) {
 
 $viewing_user_data = get_userdata( $viewing_user_id );
 
+// Lista completa de usuarios para selector amigable de administradores
+$all_system_users = [];
+if ( $can_view_others ) {
+    $all_system_users = get_users( [
+        'fields'  => [ 'ID', 'display_name', 'user_email' ],
+        'orderby' => 'display_name',
+        'order'   => 'ASC',
+    ] );
+}
+
 // Filtros sanitizados
 $filters = [
     'date_from' => sanitize_text_field( $_GET['date_from'] ?? '' ),
@@ -173,37 +183,94 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
     <!-- ====================================================
          Selector de Usuario (Solo Administradores / Supervisores)
     ===================================================== -->
-    <?php if ( $can_view_others ) : ?>
-    <div class="aura-user-selector-card glass-card" style="margin-bottom:24px; padding:16px 20px; border-radius:var(--r-xl, 18px); background:var(--bg-surface, #ffffff); border:1px solid var(--border-color, #e2e8f0); display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-        <div class="aura-user-selector-card__icon" style="display:flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:12px; background:rgba(37,99,235,0.1); color:var(--primary, #2563eb); flex-shrink:0;">
-            <span class="dashicons dashicons-admin-users" style="font-size:22px; width:22px; height:22px;"></span>
+    <?php if ( $can_view_others ) : 
+        $is_consulting_other = ( $viewing_user_id !== $current_user_id );
+        $user_avatar_url = $viewing_user_data ? get_avatar_url( $viewing_user_id, [ 'size' => 96 ] ) : '';
+        $user_roles = $viewing_user_data && ! empty( $viewing_user_data->roles ) ? array_map( 'ucfirst', (array) $viewing_user_data->roles ) : [ 'Usuario' ];
+    ?>
+    <div class="aura-user-selector-container card glass-card" style="margin-bottom:24px; padding:20px; border-radius:var(--r-xl, 18px); background:var(--bg-surface, #ffffff); border:1px solid var(--border-color, #e2e8f0); box-shadow:0 4px 20px rgba(0,0,0,0.03);">
+        
+        <!-- Ficha de Usuario Consultado Actualmente -->
+        <div class="aura-consulted-user-banner" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid var(--border-color, #f1f5f9);">
+            <div style="display:flex; align-items:center; gap:14px;">
+                <div class="aura-consulted-avatar-wrap" style="position:relative;">
+                    <?php if ( $user_avatar_url ) : ?>
+                        <img src="<?php echo esc_url( $user_avatar_url ); ?>" alt="" class="avatar-zoomable" style="width:52px; height:52px; border-radius:50%; border:2px solid var(--primary, #2563eb); object-fit:cover; box-shadow:0 2px 8px rgba(37,99,235,0.2);" />
+                    <?php else : ?>
+                        <div style="width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700;">👤</div>
+                    <?php endif; ?>
+                    <span class="aura-status-indicator" style="position:absolute; bottom:0; right:0; width:14px; height:14px; border-radius:50%; background:<?php echo $is_consulting_other ? '#f59e0b' : '#10b981'; ?>; border:2px solid #fff;"></span>
+                </div>
+                <div>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--tx-muted, #64748b);">
+                            <?php echo $is_consulting_other ? esc_html__( 'Consultando Perfil de Usuario', 'aura-suite' ) : esc_html__( 'Mi Perfil Financiero', 'aura-suite' ); ?>
+                        </span>
+                        <?php if ( $is_consulting_other ) : ?>
+                            <span class="badge badge-amber pill" style="font-size:11px;"><span class="dashicons dashicons-visibility" style="font-size:13px;width:13px;height:13px;margin-right:2px;"></span><?php esc_html_e( 'Modo Supervisor', 'aura-suite' ); ?></span>
+                        <?php else : ?>
+                            <span class="badge badge-emerald pill" style="font-size:11px;"><span class="dashicons dashicons-yes-alt" style="font-size:13px;width:13px;height:13px;margin-right:2px;"></span><?php esc_html_e( 'Sesión Activa', 'aura-suite' ); ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <h3 style="margin:4px 0 2px 0; font-size:1.15rem; font-weight:800; color:var(--tx-primary, #0f172a); display:flex; align-items:center; gap:8px;">
+                        <?php echo esc_html( $viewing_user_data ? $viewing_user_data->display_name : "Usuario #{$viewing_user_id}" ); ?>
+                        <span class="badge badge-slate pill" style="font-size:11px;">#<?php echo esc_html( $viewing_user_id ); ?></span>
+                    </h3>
+                    <div style="display:flex; align-items:center; gap:12px; font-size:12.5px; color:var(--tx-secondary, #64748b); flex-wrap:wrap;">
+                        <span><span class="dashicons dashicons-email" style="font-size:14px; width:14px; height:14px; vertical-align:text-top;"></span> <?php echo esc_html( $viewing_user_data ? $viewing_user_data->user_email : '—' ); ?></span>
+                        <span><span class="dashicons dashicons-groups" style="font-size:14px; width:14px; height:14px; vertical-align:text-top;"></span> <?php echo esc_html( implode( ', ', $user_roles ) ); ?></span>
+                    </div>
+                </div>
+            </div>
+
+            <?php if ( $is_consulting_other ) : ?>
+            <div>
+                <a href="<?php echo esc_url( $base_url ); ?>" class="btn btn-secondary btn-lift" data-tooltip="<?php esc_attr_e( 'Regresar a la consulta de mi propio estado de cuenta', 'aura-suite' ); ?>">
+                    <span class="dashicons dashicons-undo" style="margin-right:4px;"></span>
+                    <?php esc_html_e( 'Volver a mi resumen personal', 'aura-suite' ); ?>
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
-        <div class="aura-user-selector-card__label" style="font-size:13.5px; font-weight:700; color:var(--tx-primary, #0f172a);">
-            <?php esc_html_e( 'Consultar otro usuario:', 'aura-suite' ); ?>
+
+        <!-- Controles de Búsqueda y Selección de Usuario -->
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+            <div style="font-size:13px; font-weight:700; color:var(--tx-primary, #0f172a); display:flex; align-items:center; gap:6px;">
+                <span class="dashicons dashicons-admin-users" style="color:var(--primary, #2563eb);"></span>
+                <?php esc_html_e( 'Cambiar o Consultar Usuario:', 'aura-suite' ); ?>
+            </div>
+
+            <!-- Selector Desplegable Directo de Usuarios (Para no tener que recordar o escribir nombres) -->
+            <div style="flex:1; min-width:280px; max-width:440px;">
+                <select id="ud-user-quick-select" class="form-control select-fancy" style="width:100%;">
+                    <option value=""><?php printf( esc_html__( '— 📋 Seleccionar de la lista (%d usuarios) —', 'aura-suite' ), count( $all_system_users ) ); ?></option>
+                    <?php foreach ( $all_system_users as $u ) : ?>
+                        <option value="<?php echo esc_attr( $u->ID ); ?>" <?php selected( $viewing_user_id, $u->ID ); ?>>
+                            <?php echo esc_html( "{$u->display_name} ({$u->user_email}) — #{$u->ID}" ); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Alternativa de Búsqueda Rápida por Teclado -->
+            <div class="aura-user-autocomplete-wrap input-group" style="flex:1; min-width:220px; max-width:320px; margin:0;">
+                <span class="input-group-text" style="background:var(--bg-alt, #f8fafc); border-color:var(--border-color, #cbd5e1); color:var(--tx-muted, #64748b);">🔍</span>
+                <input type="text"
+                       id="ud-user-search"
+                       class="form-control"
+                       placeholder="<?php esc_attr_e( 'O buscar por texto…', 'aura-suite' ); ?>"
+                       autocomplete="off"
+                       value="<?php echo $is_consulting_other && $viewing_user_data ? esc_attr( $viewing_user_data->display_name ) : ''; ?>">
+                <input type="hidden" id="ud-user-id" value="<?php echo esc_attr( $is_consulting_other ? $viewing_user_id : '' ); ?>">
+            </div>
+
+            <button type="button" id="ud-view-user-btn" class="btn btn-primary btn-lift" data-tooltip="<?php esc_attr_e( 'Cargar el dashboard financiero del usuario seleccionado', 'aura-suite' ); ?>">
+                <span class="dashicons dashicons-visibility" style="margin-right:4px;"></span>
+                <?php esc_html_e( 'Consultar', 'aura-suite' ); ?>
+            </button>
         </div>
-        <div class="aura-user-autocomplete-wrap input-group" style="flex:1; min-width:260px; max-width:420px; margin:0;">
-            <span class="input-group-text" style="background:var(--bg-alt, #f8fafc); border-color:var(--border-color, #cbd5e1); color:var(--tx-muted, #64748b);">👤</span>
-            <input type="text"
-                   id="ud-user-search"
-                   class="form-control"
-                   placeholder="<?php esc_attr_e( 'Escribe nombre o correo electrónico…', 'aura-suite' ); ?>"
-                   autocomplete="off"
-                   value="<?php echo $viewing_user_id !== $current_user_id && $viewing_user_data ? esc_attr( $viewing_user_data->display_name ) : ''; ?>">
-            <input type="hidden" id="ud-user-id" value="<?php echo esc_attr( $viewing_user_id !== $current_user_id ? $viewing_user_id : '' ); ?>">
-        </div>
-        <button type="button" id="ud-view-user-btn" class="btn btn-primary btn-lift" data-tooltip="<?php esc_attr_e( 'Cargar el dashboard financiero del usuario seleccionado', 'aura-suite' ); ?>">
-            <span class="dashicons dashicons-visibility" style="margin-right:4px;"></span>
-            <?php esc_html_e( 'Ver Dashboard', 'aura-suite' ); ?>
-        </button>
-        <?php if ( $viewing_user_id !== $current_user_id ) : ?>
-        <a href="<?php echo esc_url( $base_url ); ?>" class="btn btn-secondary btn-lift" data-tooltip="<?php esc_attr_e( 'Regresar a la consulta de mi propio estado de cuenta', 'aura-suite' ); ?>">
-            <span class="dashicons dashicons-undo" style="margin-right:4px;"></span>
-            <?php esc_html_e( 'Volver a mi resumen', 'aura-suite' ); ?>
-        </a>
-        <?php endif; ?>
     </div>
     <?php endif; ?>
-
     <!-- ====================================================
          Tarjetas de Estadísticas (KPIs) con Tooltips
     ===================================================== -->
@@ -439,7 +506,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                 <tbody>
                     <?php foreach ( $movements as $mov ) :
                         $is_income     = ( $mov->transaction_type === 'expense' );
-                        $concept_label = $concepts[ $mov->related_user_concept ] ?? ( $mov->related_user_concept ?: '—' );
+                        $concept_label = Aura_Financial_User_Dashboard::get_concept_label( $mov->related_user_concept );
                         $date_fmt      = date_i18n( 'd M Y', strtotime( $mov->transaction_date ) );
                         $amount_fmt    = $currency . number_format( (float) $mov->amount, 2, '.', ',' );
                         $creator       = get_userdata( $mov->created_by );
@@ -479,6 +546,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '<div class="aura-tip-row"><span>📅 Fecha:</span><strong>' . esc_html( $date_fmt ) . '</strong></div>'
                             . '<div class="aura-tip-row"><span>💵 Monto:</span><strong>' . ( $is_income ? '+' : '-' ) . esc_html( $amount_fmt ) . '</strong></div>'
                             . '<div class="aura-tip-row"><span>🏷️ Concepto:</span><strong>' . esc_html( $concept_label ) . '</strong></div>'
+                            . ( ! empty( $mov->category_name ) ? '<div class="aura-tip-row"><span>📁 Categoría:</span><strong>' . esc_html( $mov->category_name ) . '</strong></div>' : '' )
                             . '<div class="aura-tip-row"><span>📌 Estado:</span><strong>' . esc_html( ucfirst( $mov->status ) ) . '</strong></div>'
                             . '</div>'
                             . '</div>';
@@ -512,6 +580,9 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '<div class="aura-tip-card-body">'
                             . '<div class="aura-tip-row"><span>📝 Descripción:</span><strong>' . esc_html( $mov->description ) . '</strong></div>'
                             . '<div class="aura-tip-row"><span>🏷️ Concepto:</span><strong>' . esc_html( $concept_label ) . '</strong></div>'
+                            . ( ! empty( $mov->category_name ) ? '<div class="aura-tip-row"><span>📁 Categoría:</span><strong>' . esc_html( $mov->category_name ) . '</strong></div>' : '' )
+                            . ( ! empty( $mov->reference_number ) ? '<div class="aura-tip-row"><span>🔖 Referencia:</span><strong>' . esc_html( $mov->reference_number ) . '</strong></div>' : '' )
+                            . ( ! empty( $mov->notes ) ? '<div class="aura-tip-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><span>📌 Propósito / Notas:</span><div style="font-size:11.5px;color:#e2e8f0;background:rgba(255,255,255,0.06);padding:6px 8px;border-radius:6px;width:100%;white-space:normal;line-height:1.4;">' . esc_html( $mov->notes ) . '</div></div>' : '' )
                             . '</div>'
                             . '</div>';
 
@@ -526,7 +597,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '</div>'
                             . '</div>'
                             . '<div class="aura-tip-card-body">'
-                            . '<div class="aura-tip-row"><span>📌 Clave Concepto:</span><strong>' . esc_html( $mov->related_user_concept ?: 'general' ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>📌 Concepto:</span><strong>' . esc_html( $concept_label ) . '</strong></div>'
                             . '<div class="aura-tip-row"><span>📄 Transacción:</span><strong>#' . esc_html( $mov->id ) . '</strong></div>'
                             . '</div>'
                             . '</div>';
@@ -582,7 +653,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                     <tr class="aura-parent-row" data-row-id="<?php echo esc_attr( $mov->id ); ?>">
                         <td style="text-align:center;">
                             <div class="aura-id-toggle-wrap">
-                                <button type="button" class="aura-row-toggle" aria-expanded="false" title="<?php esc_attr_e( 'Expandir / Ver detalles', 'aura-suite' ); ?>">+</button>
+                                <button type="button" class="aura-row-toggle" aria-expanded="false" title="<?php esc_attr_e( 'Expandir / Ver detalles y observaciones', 'aura-suite' ); ?>">+</button>
                                 <span class="aura-txn-id-pill" data-tooltip="<?php echo esc_attr( $tip_txn_html ); ?>" style="cursor:help;">#<?php echo esc_html( $mov->id ); ?></span>
                             </div>
                         </td>
@@ -593,7 +664,30 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             </span>
                         </td>
                         <td class="aura-col-desc">
-                            <strong class="aura-desc-trigger" data-tooltip="<?php echo esc_attr( $tip_desc_html ); ?>" style="cursor:help;"><?php echo esc_html( $mov->description ); ?></strong>
+                            <div style="display:flex; flex-direction:column; gap:3px;">
+                                <strong class="aura-desc-trigger" data-tooltip="<?php echo esc_attr( $tip_desc_html ); ?>" style="cursor:help;">
+                                    <?php echo esc_html( $mov->description ); ?>
+                                </strong>
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:11.5px;">
+                                    <?php if ( ! empty( $mov->reference_number ) ) : ?>
+                                        <span class="aura-badge-ref" style="font-size:10.5px; background:var(--bg-alt, #f1f5f9); color:var(--tx-secondary, #475569); padding:1px 6px; border-radius:4px; border:1px solid var(--border-color, #cbd5e1); font-family:monospace;">
+                                            #<?php echo esc_html( $mov->reference_number ); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if ( ! empty( $mov->category_name ) ) : ?>
+                                        <span style="display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--tx-secondary, #475569);">
+                                            <span style="width:7px; height:7px; border-radius:50%; background:<?php echo esc_attr( $mov->category_color ?: '#2563eb' ); ?>;"></span>
+                                            <?php echo esc_html( $mov->category_name ); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if ( ! empty( $mov->notes ) ) : ?>
+                                        <span class="aura-mov-notes-inline" data-tooltip="<?php echo esc_attr( $mov->notes ); ?>" style="color:var(--tx-muted, #64748b); font-style:italic; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-flex; align-items:center; gap:3px; cursor:help;">
+                                            <span class="dashicons dashicons-edit-page" style="font-size:12px; width:12px; height:12px;"></span>
+                                            <?php echo esc_html( wp_trim_words( $mov->notes, 6, '…' ) ); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
                         </td>
                         <td class="aura-col-tablet-hidden">
                             <span class="aura-concept-pill" data-tooltip="<?php echo esc_attr( $tip_concept_html ); ?>" style="cursor:help;">
@@ -625,7 +719,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                         </td>
                     </tr>
 
-                    <!-- Fila Hija Expandible (Child Row) -->
+                    <!-- Fila Hija Expandible (Child Row Enriquecida con Propósito y Observaciones) -->
                     <tr class="aura-child-row" data-child-for="<?php echo esc_attr( $mov->id ); ?>">
                         <td colspan="8" style="padding:0 !important; width:100% !important;">
                             <div class="aura-child-card" style="width:100% !important; max-width:100% !important; box-sizing:border-box !important;">
@@ -636,7 +730,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                                         </span>
                                         <div>
                                             <h4 class="aura-child-hero-title"><?php echo esc_html( $mov->description ); ?></h4>
-                                            <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">
+                                            <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center;">
                                                 <span class="aura-concept-pill">
                                                     <span class="dashicons dashicons-calendar-alt"></span>
                                                     <?php echo esc_html( $date_fmt ); ?>
@@ -645,6 +739,12 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                                                     <span class="dashicons dashicons-tag"></span>
                                                     <?php echo esc_html( $concept_label ); ?>
                                                 </span>
+                                                <?php if ( ! empty( $mov->category_name ) ) : ?>
+                                                <span class="aura-concept-pill" style="border-left:3px solid <?php echo esc_attr( $mov->category_color ?: '#2563eb' ); ?>;">
+                                                    <span class="dashicons dashicons-category"></span>
+                                                    <?php echo esc_html( $mov->category_name ); ?>
+                                                </span>
+                                                <?php endif; ?>
                                                 <span class="aura-txn-id-pill">
                                                     #<?php echo esc_html( $mov->id ); ?>
                                                 </span>
@@ -658,11 +758,35 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                                     </div>
                                 </div>
 
+                                <!-- Sección Destacada de Propósito, Observaciones y Evidencias -->
+                                <div class="aura-child-purpose-card" style="margin-bottom:16px; padding:14px 16px; border-radius:12px; background:var(--bg-alt, #f8fafc); border:1px solid var(--border-color, #e2e8f0); border-left:4px solid var(--primary, #2563eb);">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                                        <div style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--tx-primary, #0f172a);">
+                                            <span class="dashicons dashicons-edit-page" style="color:var(--primary, #2563eb);"></span>
+                                            <span><?php esc_html_e( 'Propósito, Justificación y Observaciones', 'aura-suite' ); ?></span>
+                                        </div>
+                                        <?php if ( ! empty( $mov->receipt_file ) ) : ?>
+                                        <a href="<?php echo esc_url( $mov->receipt_file ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary btn-lift" style="padding:3px 10px; font-size:11.5px;">
+                                            <span class="dashicons dashicons-media-document" style="font-size:14px; width:14px; height:14px; margin-right:4px;"></span>
+                                            <?php esc_html_e( 'Ver Comprobante / Evidencia', 'aura-suite' ); ?>
+                                        </a>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="aura-child-purpose-text" style="font-size:13px; line-height:1.55; color:var(--tx-primary, #1e293b);">
+                                        <?php if ( ! empty( $mov->notes ) ) : ?>
+                                            <div style="white-space:pre-wrap;"><?php echo esc_html( $mov->notes ); ?></div>
+                                        <?php else : ?>
+                                            <span style="color:var(--tx-muted, #94a3b8); font-style:italic;"><?php esc_html_e( 'Sin observaciones o notas registradas para este movimiento.', 'aura-suite' ); ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+
+                                <!-- Grid de Metadatos Contables, Registro y Auditoría -->
                                 <div class="aura-child-sections-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; width:100% !important; box-sizing:border-box !important;">
                                     <div class="aura-child-subcard">
                                         <div class="aura-subcard-header">
                                             <span class="dashicons dashicons-info"></span>
-                                            <span><?php esc_html_e( 'Datos del Registro', 'aura-suite' ); ?></span>
+                                            <span><?php esc_html_e( 'Clasificación Contable', 'aura-suite' ); ?></span>
                                         </div>
                                         <div class="aura-child-meta-item">
                                             <span class="aura-child-meta-label"><?php esc_html_e( 'ID Transacción', 'aura-suite' ); ?>:</span>
@@ -672,10 +796,36 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                                             <span class="aura-child-meta-label"><?php esc_html_e( 'Flujo Personal', 'aura-suite' ); ?>:</span>
                                             <span class="aura-child-meta-val"><?php echo $is_income ? esc_html__( 'Cobro Recibido (+)', 'aura-suite' ) : esc_html__( 'Pago Realizado (-)', 'aura-suite' ); ?></span>
                                         </div>
+                                        <?php if ( ! empty( $mov->category_name ) ) : ?>
                                         <div class="aura-child-meta-item">
-                                            <span class="aura-child-meta-label"><?php esc_html_e( 'Fecha', 'aura-suite' ); ?>:</span>
-                                            <span class="aura-child-meta-val"><?php echo esc_html( $date_fmt ); ?></span>
+                                            <span class="aura-child-meta-label"><?php esc_html_e( 'Categoría', 'aura-suite' ); ?>:</span>
+                                            <span class="aura-child-meta-val"><?php echo esc_html( $mov->category_name ); ?></span>
                                         </div>
+                                        <?php endif; ?>
+                                        <?php if ( ! empty( $mov->account_name ) ) : ?>
+                                        <div class="aura-child-meta-item">
+                                            <span class="aura-child-meta-label"><?php esc_html_e( 'Cuenta / Fondo', 'aura-suite' ); ?>:</span>
+                                            <span class="aura-child-meta-val"><?php echo esc_html( $mov->account_name ); ?></span>
+                                        </div>
+                                        <?php endif; ?>
+                                        <?php if ( ! empty( $mov->payment_method ) ) : ?>
+                                        <div class="aura-child-meta-item">
+                                            <span class="aura-child-meta-label"><?php esc_html_e( 'Método de Pago', 'aura-suite' ); ?>:</span>
+                                            <span class="aura-child-meta-val"><?php echo esc_html( ucfirst( $mov->payment_method ) ); ?></span>
+                                        </div>
+                                        <?php endif; ?>
+                                        <?php if ( ! empty( $mov->reference_number ) ) : ?>
+                                        <div class="aura-child-meta-item">
+                                            <span class="aura-child-meta-label"><?php esc_html_e( 'No. Referencia', 'aura-suite' ); ?>:</span>
+                                            <span class="aura-child-meta-val" style="font-family:monospace;">#<?php echo esc_html( $mov->reference_number ); ?></span>
+                                        </div>
+                                        <?php endif; ?>
+                                        <?php if ( ! empty( $mov->recipient_payer ) ) : ?>
+                                        <div class="aura-child-meta-item">
+                                            <span class="aura-child-meta-label"><?php esc_html_e( 'Tercero / Contacto', 'aura-suite' ); ?>:</span>
+                                            <span class="aura-child-meta-val"><?php echo esc_html( $mov->recipient_payer ); ?></span>
+                                        </div>
+                                        <?php endif; ?>
                                     </div>
 
                                     <div class="aura-child-subcard">
@@ -685,12 +835,16 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                                         </div>
                                         <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
                                             <?php if ( $creator_avatar ) : ?>
-                                            <img src="<?php echo esc_url( $creator_avatar ); ?>" alt="" class="avatar-zoomable" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border-color, #cbd5e1);flex-shrink:0;" />
+                                            <img src="<?php echo esc_url( $creator_avatar ); ?>" alt="" class="avatar-zoomable" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--border-color, #cbd5e1);flex-shrink:0;" />
                                             <?php endif; ?>
                                             <div>
-                                                <strong><?php echo esc_html( $creator_name ); ?></strong>
+                                                <strong style="color:var(--tx-primary, #0f172a);"><?php echo esc_html( $creator_name ); ?></strong>
                                                 <div style="font-size:11.5px;color:var(--tx-muted, #64748b);"><?php echo esc_html( $creator ? $creator->user_email : 'Sistema' ); ?></div>
                                             </div>
+                                        </div>
+                                        <div class="aura-child-meta-item" style="margin-top:10px;">
+                                            <span class="aura-child-meta-label"><?php esc_html_e( 'Fecha de Registro', 'aura-suite' ); ?>:</span>
+                                            <span class="aura-child-meta-val"><?php echo esc_html( $date_fmt ); ?></span>
                                         </div>
                                     </div>
 
@@ -702,12 +856,12 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                                         <div style="margin-top:6px;">
                                             <?php echo $status_html; ?>
                                         </div>
-                                        <div style="font-size:11.5px;color:var(--tx-muted, #64748b);margin-top:6px;">
+                                        <div style="font-size:11.5px;color:var(--tx-muted, #64748b);margin-top:8px;line-height:1.45;">
                                             <?php
                                             if ( $mov->status === 'approved' ) {
-                                                esc_html_e( 'Operación validada contablemente.', 'aura-suite' );
+                                                esc_html_e( 'Operación validada contablemente en libro mayor.', 'aura-suite' );
                                             } elseif ( $mov->status === 'pending' ) {
-                                                esc_html_e( 'En espera de aprobación administrativa.', 'aura-suite' );
+                                                esc_html_e( 'En espera de aprobación administrativa o contable.', 'aura-suite' );
                                             } else {
                                                 esc_html_e( 'Transacción anulada o rechazada.', 'aura-suite' );
                                             }
@@ -724,17 +878,36 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
 
             <?php
             if ( $total_pages > 1 ) :
+                $paged_url_base = add_query_arg( array_filter( [
+                    'page'      => 'aura-my-finance',
+                    'view_user' => ( $viewing_user_id !== $current_user_id ? $viewing_user_id : null ),
+                    'date_from' => $filters['date_from'] ?: null,
+                    'date_to'   => $filters['date_to'] ?: null,
+                    'concept'   => $filters['concept'] ?: null,
+                    'status'    => $filters['status'] ?: null,
+                    'paged'     => '%#%',
+                ] ), admin_url( 'admin.php' ) );
+
                 $page_links = paginate_links( [
-                    'base'      => add_query_arg( 'paged', '%#%', $base_url ),
+                    'base'      => $paged_url_base,
                     'format'    => '',
-                    'prev_text' => '&laquo;',
-                    'next_text' => '&raquo;',
+                    'prev_text' => '<span class="dashicons dashicons-arrow-left-alt2"></span> ' . esc_html__( 'Anterior', 'aura-suite' ),
+                    'next_text' => esc_html__( 'Siguiente', 'aura-suite' ) . ' <span class="dashicons dashicons-arrow-right-alt2"></span>',
                     'total'     => $total_pages,
                     'current'   => $filters['paged'],
                 ] );
-                echo '<div class="tablenav bottom" style="padding:14px 18px;border-top:1px solid var(--border-color, #e2e8f0);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;"><div class="tablenav-pages">' . $page_links . '</div></div>';
-            endif;
             ?>
+            <div class="tablenav bottom aura-tablenav-modern">
+                <div class="aura-pagination-summary">
+                    <span><?php esc_html_e( 'Página', 'aura-suite' ); ?> <strong class="aura-page-current-num"><?php echo esc_html( $filters['paged'] ); ?></strong> <?php esc_html_e( 'de', 'aura-suite' ); ?> <strong><?php echo esc_html( $total_pages ); ?></strong></span>
+                    <span class="aura-pagination-dot">•</span>
+                    <span class="aura-pagination-total"><?php printf( esc_html__( '%d movimientos en total', 'aura-suite' ), $total_movs ); ?></span>
+                </div>
+                <div class="tablenav-pages aura-pages-cluster">
+                    <?php echo $page_links; ?>
+                </div>
+            </div>
+            <?php endif; ?>
             <?php endif; ?>
 
         </div>
@@ -1045,9 +1218,21 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
             }
         });
 
-        // ── 6. Autocomplete con jQuery UI para Selector Admin ─
+        // ── 6. Selector Admin (Dropdown directo + Autocomplete sincronizado) ─
+        const $udQuickSelect = $('#ud-user-quick-select');
         const $udSearch = $('#ud-user-search');
         const $udHidden = $('#ud-user-id');
+
+        $udQuickSelect.on('change', function() {
+            const uid = $(this).val();
+            if (uid) {
+                $udHidden.val(uid);
+                const currentViewing = <?php echo json_encode( (string) $viewing_user_id ); ?>;
+                if (uid !== currentViewing) {
+                    window.location.href = <?php echo json_encode( $base_url . '&view_user=' ); ?> + uid;
+                }
+            }
+        });
 
         if ($udSearch.length && typeof $.fn.autocomplete !== 'undefined') {
             $udSearch.autocomplete({
@@ -1065,6 +1250,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                 select: function(event, ui) {
                     $udSearch.val(ui.item.name);
                     $udHidden.val(ui.item.id);
+                    $udQuickSelect.val(ui.item.id);
                     return false;
                 }
             }).autocomplete('instance')._renderItem = function(ul, item) {
@@ -1080,16 +1266,14 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
             };
         }
 
-        // Botón "Ver Dashboard"
+        // Botón "Consultar / Ver Dashboard"
         $('#ud-view-user-btn').on('click', function() {
-            const uid = $udHidden.val();
+            const uid = $udHidden.val() || $udQuickSelect.val();
             if (! uid) {
-                alert(<?php echo json_encode( __( 'Selecciona un usuario de la lista.', 'aura-suite' ) ); ?>);
+                alert(<?php echo json_encode( __( 'Selecciona un usuario de la lista o escribe en el buscador.', 'aura-suite' ) ); ?>);
                 return;
             }
             window.location.href = <?php echo json_encode( $base_url . '&view_user=' ); ?> + uid;
         });
-
-    });
 })(jQuery);
 </script>

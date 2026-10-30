@@ -265,38 +265,50 @@ class Aura_Financial_User_Dashboard {
      */
     public static function get_recent_movements( int $user_id, int $limit = 10, array $filters = [] ): array {
         global $wpdb;
-        $table = $wpdb->prefix . 'aura_finance_transactions';
+        $table      = $wpdb->prefix . 'aura_finance_transactions';
+        $categories = $wpdb->prefix . 'aura_finance_categories';
+        $accounts   = $wpdb->prefix . 'aura_finance_accounts';
 
-        $where  = $wpdb->prepare( '(related_user_id = %d OR (related_user_id IS NULL AND created_by = %d)) AND deleted_at IS NULL', $user_id, $user_id );
-        $params = [];
+        $where = $wpdb->prepare( '(t.related_user_id = %d OR (t.related_user_id IS NULL AND t.created_by = %d)) AND t.deleted_at IS NULL', $user_id, $user_id );
 
         if ( ! empty( $filters['date_from'] ) ) {
-            $where .= $wpdb->prepare( ' AND transaction_date >= %s', $filters['date_from'] );
+            $where .= $wpdb->prepare( ' AND t.transaction_date >= %s', $filters['date_from'] );
         }
         if ( ! empty( $filters['date_to'] ) ) {
-            $where .= $wpdb->prepare( ' AND transaction_date <= %s', $filters['date_to'] );
+            $where .= $wpdb->prepare( ' AND t.transaction_date <= %s', $filters['date_to'] );
         }
         if ( ! empty( $filters['concept'] ) ) {
-            $where .= $wpdb->prepare( ' AND related_user_concept = %s', $filters['concept'] );
+            $where .= $wpdb->prepare( ' AND t.related_user_concept = %s', $filters['concept'] );
         }
         if ( ! empty( $filters['status'] ) ) {
-            $where .= $wpdb->prepare( ' AND status = %s', $filters['status'] );
+            $where .= $wpdb->prepare( ' AND t.status = %s', $filters['status'] );
         }
 
-        // Paginación
-        $per_page = 20;
-        $paged    = max( 1, (int) ( $filters['paged'] ?? 1 ) );
-        $offset   = ( $paged - 1 ) * $per_page;
-        $data_limit = $limit > 0 ? $limit : $per_page;
+        // Paginación y límites
+        $limit_clause = '';
+        if ( $limit > 0 ) {
+            $limit_clause = "LIMIT " . intval( $limit );
+        } elseif ( $limit === 0 ) {
+            $per_page     = 20;
+            $paged        = max( 1, (int) ( $filters['paged'] ?? 1 ) );
+            $offset       = ( $paged - 1 ) * $per_page;
+            $limit_clause = "LIMIT {$per_page} OFFSET {$offset}";
+        } // Si $limit === -1, no se aplica cláusula LIMIT (retorna todos para exportaciones)
 
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         return $wpdb->get_results(
-            "SELECT id, transaction_type, amount, description, transaction_date,
-                    status, related_user_concept, created_by
-             FROM {$table}
+            "SELECT t.id, t.transaction_type, t.amount, t.description, t.transaction_date,
+                    t.status, t.related_user_concept, t.created_by, t.notes,
+                    t.reference_number, t.receipt_file, t.payment_method, t.recipient_payer,
+                    t.category_id, t.source_account_id,
+                    c.name AS category_name, c.color AS category_color,
+                    a.name AS account_name
+             FROM {$table} t
+             LEFT JOIN {$categories} c ON t.category_id = c.id
+             LEFT JOIN {$accounts} a ON t.source_account_id = a.id
              WHERE {$where}
-             ORDER BY transaction_date DESC, id DESC
-             LIMIT {$data_limit} OFFSET {$offset}"
+             ORDER BY t.transaction_date DESC, t.id DESC
+             {$limit_clause}"
         ) ?: [];
     }
 
@@ -437,8 +449,6 @@ class Aura_Financial_User_Dashboard {
         $user_data = get_userdata( $target_user_id );
         $currency  = get_option( 'aura_currency_symbol', '$' );
 
-        $concepts = self::get_concepts_labels();
-
         $filename = 'resumen-financiero-' . sanitize_file_name( $user_data ? $user_data->user_login : $target_user_id ) . '-' . date( 'Y-m-d' ) . '.csv';
 
         header( 'Content-Type: text/csv; charset=UTF-8' );
@@ -447,14 +457,17 @@ class Aura_Financial_User_Dashboard {
         echo "\xEF\xBB\xBF"; // BOM UTF-8
 
         $out = fopen( 'php://output', 'w' );
-        fputcsv( $out, [ 'Fecha', 'Descripción', 'Tipo', 'Concepto', 'Monto', 'Estado' ], ';' );
+        fputcsv( $out, [ 'Fecha', 'Descripción', 'Tipo', 'Concepto', 'Categoría', 'Referencia', 'Propósito / Observaciones', 'Monto', 'Estado' ], ';' );
 
         foreach ( $movements as $mov ) {
             fputcsv( $out, [
                 $mov->transaction_date,
                 $mov->description,
-                $mov->transaction_type === 'expense' ? 'Ingreso' : 'Egreso', // Perspectiva usuario
-                $concepts[ $mov->related_user_concept ] ?? $mov->related_user_concept,
+                $mov->transaction_type === 'expense' ? 'Cobro Recibido' : 'Pago Realizado', // Perspectiva usuario
+                self::get_concept_label( $mov->related_user_concept ),
+                $mov->category_name ?? '',
+                $mov->reference_number ?? '',
+                $mov->notes ?? '',
                 number_format( (float) $mov->amount, 2, '.', '' ),
                 ucfirst( $mov->status ),
             ], ';' );
@@ -470,13 +483,41 @@ class Aura_Financial_User_Dashboard {
 
     public static function get_concepts_labels(): array {
         return [
-            'payment_to_user'       => __( 'Pago realizado a un usuario', 'aura-suite' ),
-            'charge_to_user'        => __( 'Cobro realizado a un usuario', 'aura-suite' ),
-            'salary'                => __( 'Pago de salario/nómina', 'aura-suite' ),
-            'scholarship'           => __( 'Beca asignada', 'aura-suite' ),
-            'loan_payment'          => __( 'Pago de préstamo', 'aura-suite' ),
+            'payment_to_user'       => __( 'Pago a Usuario', 'aura-suite' ),
+            'charge_to_user'        => __( 'Cobro a Usuario', 'aura-suite' ),
+            'salary'                => __( 'Salario / Nómina', 'aura-suite' ),
+            'scholarship'           => __( 'Beca Asignada', 'aura-suite' ),
+            'loan_payment'          => __( 'Pago de Préstamo', 'aura-suite' ),
+            'loan'                  => __( 'Préstamo', 'aura-suite' ),
             'refund'                => __( 'Reembolso', 'aura-suite' ),
-            'expense_reimbursement' => __( 'Reembolso de gastos', 'aura-suite' ),
+            'expense_reimbursement' => __( 'Reembolso de Gastos', 'aura-suite' ),
+            'reimbursement'         => __( 'Reembolso de Gastos', 'aura-suite' ),
+            'petty_cash_settlement' => __( 'Rendición de Caja Chica', 'aura-suite' ),
+            'petty_cash_advance'    => __( 'Anticipo de Caja Chica', 'aura-suite' ),
+            'petty_cash'            => __( 'Caja Chica', 'aura-suite' ),
+            'unlinked'              => __( 'General / Sin Vincular', 'aura-suite' ),
+            'general'               => __( 'General', 'aura-suite' ),
+            'cash_count'            => __( 'Arqueo de Caja', 'aura-suite' ),
+            'adjustment'            => __( 'Ajuste Contable', 'aura-suite' ),
+            'transfer'              => __( 'Transferencia', 'aura-suite' ),
+            'purchase'              => __( 'Compra', 'aura-suite' ),
+            'sale'                  => __( 'Venta', 'aura-suite' ),
+            'service'               => __( 'Servicio', 'aura-suite' ),
+            'other'                 => __( 'Otros', 'aura-suite' ),
         ];
+    }
+
+    /**
+     * Helper para formatear amigablemente cualquier concepto en español.
+     */
+    public static function get_concept_label( ?string $concept ): string {
+        if ( empty( $concept ) || $concept === 'unlinked' ) {
+            return __( 'General / Sin Vincular', 'aura-suite' );
+        }
+        $labels = self::get_concepts_labels();
+        if ( isset( $labels[ $concept ] ) ) {
+            return $labels[ $concept ];
+        }
+        return ucwords( str_replace( [ '_', '-' ], ' ', $concept ) );
     }
 }
