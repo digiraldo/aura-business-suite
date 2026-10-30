@@ -1361,12 +1361,12 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <?php esc_html_e('A diferencia de las exportaciones en texto plano (CSV), este asistente genera un archivo .ZIP con los datos en JSON y los archivos binarios de imágenes (logotipos de terceros, portadas de áreas y fotos de perfil de usuarios de WordPress). Al restaurarlo en tu hosting (ej. Hostinger), las imágenes se vuelven a registrar automáticamente en la Biblioteca de Medios sin generar enlaces rotos.', 'aura-suite'); ?>
                             </p>
                         </div>
-                        <div style="display:flex; gap:16px; flex-wrap:wrap;">
-                            <button type="button" class="button button-primary" onclick="openAuraBundleModal('export')" style="background:linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); border:none; padding:10px 20px; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
+                        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px;">
+                            <button type="button" class="btn btn-primary btn-shimmer btn-lift" onclick="openAuraBundleModal('export')" style="display:inline-flex; align-items:center; gap:8px;">
                                 <span class="dashicons dashicons-download"></span>
                                 <?php esc_html_e('Abrir Asistente de Exportación (.ZIP)', 'aura-suite'); ?>
                             </button>
-                            <button type="button" class="button button-secondary" onclick="openAuraBundleModal('import')" style="padding:10px 20px; font-weight:600; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
+                            <button type="button" class="btn btn-secondary btn-lift" onclick="openAuraBundleModal('import')" style="display:inline-flex; align-items:center; gap:8px;">
                                 <span class="dashicons dashicons-upload"></span>
                                 <?php esc_html_e('Abrir Asistente de Importación (.ZIP)', 'aura-suite'); ?>
                             </button>

@@ -332,8 +332,11 @@ function openAuraBundleModal(defaultTab) {
     var modal = document.getElementById('aura-bundle-modal');
     if (!modal) return;
 
-    modal.classList.add('is-active');
+    modal.classList.add('is-active', 'active');
     modal.style.display = 'flex';
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    modal.style.pointerEvents = 'auto';
     document.body.style.overflow = 'hidden';
 
     switchBundleTab(defaultTab || 'export');
@@ -368,8 +371,11 @@ function closeAuraBundleModal() {
     var modal = document.getElementById('aura-bundle-modal');
     if (!modal) return;
 
-    modal.classList.remove('is-active');
+    modal.classList.remove('is-active', 'active');
     modal.style.display = 'none';
+    modal.style.opacity = '0';
+    modal.style.visibility = 'hidden';
+    modal.style.pointerEvents = 'none';
     document.body.style.overflow = '';
 
     if (typeof AuraUI !== 'undefined' && typeof AuraUI.hideModalSkeleton === 'function') {

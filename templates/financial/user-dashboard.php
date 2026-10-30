@@ -71,7 +71,7 @@ $nonce_field       = wp_create_nonce( 'aura_user_dashboard_nonce' );
 $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Usuario #{$viewing_user_id}";
 ?>
 
-<div class="wrap aura-user-dashboard-wrap">
+<div class="wrap aura-user-dashboard-wrap" style="width:100% !important; max-width:100% !important; margin:16px 0 40px 0 !important; padding-right:20px !important; box-sizing:border-box !important;">
 
     <!-- ====================================================
          Cabecera de Impresión Oficial (@media print)
@@ -399,7 +399,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
             </div>
             <?php else : ?>
 
-            <table class="aura-ud-table">
+            <table class="aura-ud-table" style="width:100% !important; min-width:100% !important; max-width:100% !important; table-layout:auto !important; box-sizing:border-box !important;">
                 <thead>
                     <tr>
                         <th style="width:70px;text-align:center;">
@@ -627,8 +627,8 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
 
                     <!-- Fila Hija Expandible (Child Row) -->
                     <tr class="aura-child-row" data-child-for="<?php echo esc_attr( $mov->id ); ?>">
-                        <td colspan="8">
-                            <div class="aura-child-card">
+                        <td colspan="8" style="padding:0 !important; width:100% !important;">
+                            <div class="aura-child-card" style="width:100% !important; max-width:100% !important; box-sizing:border-box !important;">
                                 <div class="aura-child-hero-bar">
                                     <div class="aura-child-hero-left">
                                         <span class="aura-type-pill <?php echo $is_income ? 'income' : 'expense'; ?>">
@@ -658,7 +658,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                                     </div>
                                 </div>
 
-                                <div class="aura-child-sections-grid">
+                                <div class="aura-child-sections-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; width:100% !important; box-sizing:border-box !important;">
                                     <div class="aura-child-subcard">
                                         <div class="aura-subcard-header">
                                             <span class="dashicons dashicons-info"></span>
@@ -753,7 +753,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
             </h2>
         </div>
         <div class="aura-ud-table-wrap">
-            <table class="aura-ud-table">
+            <table class="aura-ud-table" style="width:100% !important; min-width:100% !important; max-width:100% !important; table-layout:auto !important; box-sizing:border-box !important;">
                 <thead>
                     <tr>
                         <th>

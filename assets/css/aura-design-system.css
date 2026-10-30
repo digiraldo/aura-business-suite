@@ -747,7 +747,14 @@ body.admin-color-coffee {
     padding: 16px; opacity: 0; visibility: hidden;
     transition: all .25s ease;
 }
-.aura-modal-overlay.active { opacity: 1; visibility: visible; }
+.aura-modal-overlay.active,
+.aura-modal-overlay.is-active,
+.aura-modal-overlay[style*="display: flex"],
+.aura-modal-overlay[style*="display: block"] { 
+    opacity: 1 !important; 
+    visibility: visible !important; 
+    pointer-events: auto !important;
+}
 
 /* WP Media Library sobre modales de Aura */
 .media-modal-backdrop { z-index: 1000000 !important; }
@@ -4662,6 +4669,9 @@ html[data-wp-dark-mode-scheme="dark"] .btn-glass:hover {
 .aura-modal-overlay[style*="display: flex"],
 .aura-modal-overlay[style*="display: block"] {
     display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
 }
 
 .aura-modal-container {

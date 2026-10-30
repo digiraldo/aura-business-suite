@@ -4,11 +4,13 @@
  * Soporte Universal Claro / Oscuro vía CSS Variables.
  */
 
-/* ── 1. Contenedor Principal ────────────────────────────────── */
+/* ── 1. Contenedor Principal (100% Full-Width) ──────────────── */
 .aura-user-dashboard-wrap {
-    max-width: 1400px;
-    margin: 20px 20px 40px 0;
-    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 16px 0 40px 0 !important;
+    padding-right: 20px !important;
+    box-sizing: border-box !important;
     color: var(--tx-primary, #0f172a);
 }
 
@@ -20,6 +22,9 @@
 
 /* ── 2. Cabecera de Pantalla ────────────────────────────────── */
 .aura-ud-header {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -63,6 +68,9 @@
 
 /* ── 3. Selector de Usuario para Administradores ────────────── */
 .aura-user-selector-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     transition: all 0.2s ease;
 }
 
@@ -72,10 +80,22 @@
 
 /* ── 4. Panel de Filtros y Chips de Período Rápido ──────────── */
 .aura-ud-filters-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     transition: all 0.2s ease;
 }
 
+.aura-ud-filters-grid {
+    width: 100% !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+}
+
 .aura-quick-date-chips {
+    width: 100% !important;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -111,11 +131,16 @@
 
 /* ── 5. Tarjeta de Tabla y Reglas Zero Horizontal Scroll ────── */
 .aura-ud-table-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .aura-ud-table-wrap {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -297,12 +322,16 @@
 }
 
 .aura-child-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
     background: var(--bg-alt, #f8fafc);
     padding: 18px 24px 22px;
     border-top: 1px dashed var(--border-color, #cbd5e1);
 }
 
 .aura-child-hero-bar {
+    width: 100% !important;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -327,6 +356,8 @@
 }
 
 .aura-child-sections-grid {
+    width: 100% !important;
+    box-sizing: border-box !important;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 14px;
