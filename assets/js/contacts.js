@@ -847,13 +847,33 @@
     }
 
     function openEditModal(id) {
+        // Abrir modal de inmediato (0ms lag) con Skeleton en ola continua
+        $('#contact-modal-title').html('✏️ Cargando contacto...');
+        $('#contact-modal-subtitle').text('Consultando información del directorio...');
+        $('#modal-contact-form')
+            .removeClass('is-hidden')
+            .addClass('active')
+            .css({ display: 'flex', opacity: 1, visibility: 'visible' });
+
+        if (typeof AuraUI !== 'undefined') {
+            AuraUI.showModalSkeleton('modal-contact-form', { async: true });
+        }
+
         $.post(cfg.ajaxUrl, { action: 'aura_contacts_get_detail', nonce: cfg.nonce, id: id }, function(res) {
             if (!res.success || !res.data) {
+                if (typeof AuraUI !== 'undefined') {
+                    AuraUI.hideModalSkeleton('modal-contact-form');
+                }
+                closeContactModal();
                 alert('No se pudo cargar la información del contacto.');
                 return;
             }
             var c = (res.data && res.data.contact) ? res.data.contact : res.data;
             if (!c || !c.id) {
+                if (typeof AuraUI !== 'undefined') {
+                    AuraUI.hideModalSkeleton('modal-contact-form');
+                }
+                closeContactModal();
                 alert('No se pudo procesar la información del contacto.');
                 return;
             }
@@ -928,10 +948,16 @@
             $('.contact-modal-tab-pane').hide();
             $('#cmodal-tab-general').show();
 
-            $('#modal-contact-form')
-                .removeClass('is-hidden')
-                .addClass('active')
-                .css({ display: 'flex', opacity: 1, visibility: 'visible' });
+            // Ocultar Skeleton y revelar contenido fluido
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.hideModalSkeleton('modal-contact-form');
+            }
+        }).fail(function() {
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.hideModalSkeleton('modal-contact-form');
+            }
+            closeContactModal();
+            alert('Error de conexión al cargar la información del contacto.');
         });
     }
 
@@ -2069,10 +2095,16 @@
         if (item) {
             populateAndShowContactCard(item);
         } else {
-            // 2. Si no está en memoria, consultar vía AJAX al endpoint canónico
-            if (typeof showToast === 'function') {
-                showToast('Cargando información del contacto...');
+            // 2. Si no está en memoria, abrir el modal de inmediato con Skeleton en espera del AJAX
+            $('#modal-contact-card')
+                .removeClass('is-hidden')
+                .addClass('active')
+                .css({ display: 'flex', opacity: 1, visibility: 'visible' });
+
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.showModalSkeleton('modal-contact-card', { async: true });
             }
+
             $.post(cfg.ajaxUrl, {
                 action: 'aura_contacts_get_detail',
                 id: contactId,
@@ -2082,6 +2114,10 @@
                     var contact = res.data.contact || res.data;
                     populateAndShowContactCard(contact);
                 } else {
+                    if (typeof AuraUI !== 'undefined') {
+                        AuraUI.hideModalSkeleton('modal-contact-card');
+                    }
+                    closeContactCard();
                     var msg = (res && res.data && res.data.message) ? res.data.message : 'No se pudo obtener la información del contacto.';
                     if (typeof showToast === 'function') {
                         showToast(msg);
@@ -2091,6 +2127,10 @@
                 }
             }).fail(function(xhr, status, err) {
                 console.warn('Error al conectar con el servidor para detalle de contacto:', status, err);
+                if (typeof AuraUI !== 'undefined') {
+                    AuraUI.hideModalSkeleton('modal-contact-card');
+                }
+                closeContactCard();
                 if (typeof showToast === 'function') {
                     showToast('Error al conectar con el servidor.');
                 }
@@ -2251,9 +2291,15 @@
         }
 
         $('#modal-contact-card').css('display', 'flex').hide().fadeIn(200);
+        if (typeof AuraUI !== 'undefined') {
+            AuraUI.hideModalSkeleton('modal-contact-card');
+        }
     }
 
     function closeContactCard() {
+        if (typeof AuraUI !== 'undefined') {
+            AuraUI.hideModalSkeleton('modal-contact-card');
+        }
         $('#modal-contact-card').fadeOut(180);
         currentCardContact = null;
     }

@@ -198,18 +198,26 @@
     }
     window.renderGoogleStyleEvent = renderGoogleStyleEvent;
 
-    function openModal(selector) {
+    function openModal(selector, options) {
         var $modal = $(selector);
         if (!$modal.length) return;
         $modal.removeClass('is-hidden')
               .addClass('active is-active')
               .attr('style', 'display: flex !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;');
         $('body').addClass('aura-modal-open');
+
+        // Coordinación de Skeleton Loader global (Dark/Light mode)
+        if (typeof AuraUI !== 'undefined' && AuraUI.showModalSkeleton) {
+            AuraUI.showModalSkeleton($modal[0], options);
+        }
     }
 
     function closeModal(selector) {
         var $modal = $(selector);
         if (!$modal.length) return;
+        if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+            AuraUI.hideModalSkeleton($modal[0]);
+        }
         $modal.removeClass('active is-active')
               .addClass('is-hidden')
               .attr('style', 'display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;');
@@ -3381,7 +3389,7 @@
         $('#att-modal-subtitle').text(currentDetailEvent.start.toLocaleDateString() + ' ' + currentDetailEvent.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         $('#att-table-body').html('<tr><td colspan="3" style="text-align:center;padding:20px;">Cargando lista de estudiantes...</td></tr>');
 
-        openModal('#modal-attendance');
+        openModal('#modal-attendance', { async: true });
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_get_attendance_roster',
@@ -3394,6 +3402,9 @@
 
                 if (!roster.length) {
                     $('#att-table-body').html('<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--aura-text-muted);">No hay estudiantes inscritos en este programa.</td></tr>');
+                    if (typeof AuraUI !== 'undefined') {
+                        AuraUI.hideModalSkeleton('#modal-attendance');
+                    }
                     return;
                 }
 
@@ -3422,6 +3433,14 @@
 
                 $('#att-table-body').html(tbody);
             }
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.hideModalSkeleton('#modal-attendance');
+            }
+        }).fail(function() {
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.hideModalSkeleton('#modal-attendance');
+            }
+            showToast('Error de conexión al cargar la lista de asistencia.', 'error');
         });
     });
 
@@ -3997,6 +4016,9 @@
     // Editar Materia
     $('.btn-edit-subject').on('click', function() {
         var subjId = $(this).data('subject-id');
+        $('#modal-subj-title').text('✏️ Cargando información de la materia...');
+        openModal('#modal-subject-editor', { async: true });
+
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_get_subject',
             nonce: auraCalData.nonce,
@@ -4033,8 +4055,16 @@
                 renderSubjectMaterialsList('student');
                 $('.aura-modal-subtab-btn[data-subtab="subj-tab-general"]').click();
 
-                openModal('#modal-subject-editor');
+                if (typeof AuraUI !== 'undefined') {
+                    AuraUI.hideModalSkeleton('#modal-subject-editor');
+                }
+            } else {
+                closeModal('#modal-subject-editor');
+                showToast('No se pudo cargar la materia seleccionada.', 'error');
             }
+        }).fail(function() {
+            closeModal('#modal-subject-editor');
+            showToast('Error de conexión al cargar la materia.', 'error');
         });
     });
 
@@ -4198,6 +4228,9 @@
         var gradeId = $(this).data('grade-id');
         var fallbackStName = $(this).data('student-name') || '';
 
+        $('#modal-grade-title').text('✏️ Cargando calificación...');
+        openModal('#modal-grade-editor', { async: true });
+
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_get_grade',
             nonce:  auraCalData.nonce,
@@ -4221,11 +4254,16 @@
                 $('#grd-feedback').val(g.feedback || '');
 
                 $('#btn-delete-grade-modal').show();
-                openModal('#modal-grade-editor');
+
+                if (typeof AuraUI !== 'undefined') {
+                    AuraUI.hideModalSkeleton('#modal-grade-editor');
+                }
             } else {
+                closeModal('#modal-grade-editor');
                 showToast('No se pudo cargar la calificación seleccionada.', 'error');
             }
         }).fail(function() {
+            closeModal('#modal-grade-editor');
             showToast('Error de conexión al cargar la calificación.', 'error');
         });
     });
@@ -4298,6 +4336,9 @@
     // Editar tarea
     $(document).on('click', '.btn-edit-task', function() {
         var taskId = $(this).data('task-id');
+        $('#modal-task-title').text('✏️ Cargando información de la tarea...');
+        openModal('#modal-task-editor', { async: true });
+
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_get_task',
             nonce:  auraCalData.nonce,
@@ -4348,11 +4389,16 @@
                 $('#tsk-desc').val(t.description || '');
 
                 $('#btn-delete-task-modal').show();
-                openModal('#modal-task-editor');
+
+                if (typeof AuraUI !== 'undefined') {
+                    AuraUI.hideModalSkeleton('#modal-task-editor');
+                }
             } else {
+                closeModal('#modal-task-editor');
                 showToast('No se pudo cargar la información de la tarea.', 'error');
             }
         }).fail(function() {
+            closeModal('#modal-task-editor');
             showToast('Error de conexión al cargar la tarea.', 'error');
         });
     });
@@ -4467,7 +4513,7 @@
 
         $('#subs-modal-title').text('📥 Entregas — ' + taskTitle);
         $('#subs-container').html('<p style="text-align:center;padding:20px;">Cargando entregas...</p>');
-        openModal('#modal-task-submissions');
+        openModal('#modal-task-submissions', { async: true });
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_get_submissions',
@@ -4478,6 +4524,9 @@
                 var subs = res.data.submissions;
                 if (!subs.length) {
                     $('#subs-container').html('<p style="text-align:center;padding:24px;color:var(--aura-text-muted);">Aún no se han recibido entregas para esta tarea.</p>');
+                    if (typeof AuraUI !== 'undefined') {
+                        AuraUI.hideModalSkeleton('#modal-task-submissions');
+                    }
                     return;
                 }
 
@@ -4501,6 +4550,14 @@
                 html += '</div>';
                 $('#subs-container').html(html);
             }
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.hideModalSkeleton('#modal-task-submissions');
+            }
+        }).fail(function() {
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.hideModalSkeleton('#modal-task-submissions');
+            }
+            showToast('Error de conexión al cargar las entregas.', 'error');
         });
     });
 

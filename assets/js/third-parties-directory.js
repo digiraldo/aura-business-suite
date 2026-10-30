@@ -990,6 +990,9 @@
         // Cerrar modal de ficha 360°
         $(document).on('click', '#aura-tp-360-close, #aura-tp-360-btn-close', function(e) {
             e.preventDefault();
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.hideModalSkeleton('aura-tp-modal-360');
+            }
             $('#aura-tp-modal-360').removeClass('is-active').hide();
         });
 
@@ -1005,6 +1008,9 @@
         // Cerrar modal de creación de usuario WP
         $(document).on('click', '#aura-wp-user-modal-close, #aura-wp-user-modal-cancel', function(e) {
             e.preventDefault();
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.hideModalSkeleton('aura-modal-create-wp-user');
+            }
             $('#aura-modal-create-wp-user').removeClass('is-active').hide();
         });
 
@@ -1407,8 +1413,11 @@
         $('#aura-tp-360-loader').css('display', 'flex');
         $('#aura-tp-360-content-wrap').hide();
 
-        // 4. Abrir modal INSTANTÁNEAMENTE
+        // 4. Abrir modal INSTANTÁNEAMENTE con Skeleton Loader asíncrono
         $('#aura-tp-modal-360').addClass('is-active').show();
+        if (typeof AuraUI !== 'undefined') {
+            AuraUI.showModalSkeleton('aura-tp-modal-360', { async: true });
+        }
 
         // 5. Petición AJAX en segundo plano
         $.ajax({
@@ -1427,6 +1436,9 @@
 
                 if (!res.success || !res.data) {
                     $('#aura-tp-360-loader').hide();
+                    if (typeof AuraUI !== 'undefined') {
+                        AuraUI.hideModalSkeleton('aura-tp-modal-360');
+                    }
                     alert(res.data && res.data.message ? res.data.message : 'Error al obtener la ficha 360°.');
                     return;
                 }
@@ -1495,12 +1507,19 @@
                 // Ocultar loader y revelar contenido con animación suave
                 $('#aura-tp-360-loader').hide();
                 $('#aura-tp-360-content-wrap').fadeIn(150);
+                if (typeof AuraUI !== 'undefined') {
+                    AuraUI.hideModalSkeleton('aura-tp-modal-360');
+                }
             },
             error: function() {
                 if ($btn && $btn.length) {
                     $btn.find('.dashicons').attr('class', 'dashicons dashicons-visibility');
                 }
                 $('#aura-tp-360-loader').hide();
+                if (typeof AuraUI !== 'undefined') {
+                    AuraUI.hideModalSkeleton('aura-tp-modal-360');
+                }
+                $('#aura-tp-modal-360').removeClass('is-active').hide();
                 alert('Error de conexión al cargar la Ficha 360°.');
             }
         });
@@ -1512,6 +1531,13 @@
     function openCreateWpUserModal(id) {
         const item = thirdPartiesMap[id];
         if (!item) {
+            $('#aura-modal-create-wp-user').addClass('is-active').show();
+        if (typeof AuraUI !== 'undefined') {
+            AuraUI.hideModalSkeleton('aura-modal-create-wp-user');
+        }
+            if (typeof AuraUI !== 'undefined') {
+                AuraUI.showModalSkeleton('aura-modal-create-wp-user', { async: true });
+            }
             $.ajax({
                 url: auraThirdPartiesData.ajaxUrl,
                 type: 'POST',
@@ -1524,7 +1550,18 @@
                     if (res.success && res.data && res.data.third_party) {
                         thirdPartiesMap[id] = res.data.third_party;
                         populateCreateWpUserModal(res.data.third_party);
+                    } else {
+                        if (typeof AuraUI !== 'undefined') {
+                            AuraUI.hideModalSkeleton('aura-modal-create-wp-user');
+                        }
+                        $('#aura-modal-create-wp-user').removeClass('is-active').hide();
                     }
+                },
+                error: function() {
+                    if (typeof AuraUI !== 'undefined') {
+                        AuraUI.hideModalSkeleton('aura-modal-create-wp-user');
+                    }
+                    $('#aura-modal-create-wp-user').removeClass('is-active').hide();
                 }
             });
             return;
@@ -1553,6 +1590,9 @@
         $submitBtn.find('span:last-child').text('Crear Usuario Suscriptor');
 
         $('#aura-modal-create-wp-user').addClass('is-active').show();
+        if (typeof AuraUI !== 'undefined') {
+            AuraUI.hideModalSkeleton('aura-modal-create-wp-user');
+        }
     }
 
     /**
