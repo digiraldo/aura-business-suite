@@ -181,96 +181,89 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
     <?php endif; ?>
 
     <!-- ====================================================
-         Selector de Usuario (Solo Administradores / Supervisores)
+         Selector de Usuario (Solo Administradores / Supervisores) - Barra Slim 100% Ancho
     ===================================================== -->
     <?php if ( $can_view_others ) : 
         $is_consulting_other = ( $viewing_user_id !== $current_user_id );
-        $user_avatar_url = $viewing_user_data ? get_avatar_url( $viewing_user_id, [ 'size' => 96 ] ) : '';
+        $user_avatar_url = $viewing_user_data ? get_avatar_url( $viewing_user_id, [ 'size' => 72 ] ) : '';
         $user_roles = $viewing_user_data && ! empty( $viewing_user_data->roles ) ? array_map( 'ucfirst', (array) $viewing_user_data->roles ) : [ 'Usuario' ];
+        $role_primary = reset( $user_roles );
     ?>
-    <div class="aura-user-selector-container card glass-card" style="margin-bottom:24px; padding:20px; border-radius:var(--r-xl, 18px); background:var(--bg-surface, #ffffff); border:1px solid var(--border-color, #e2e8f0); box-shadow:0 4px 20px rgba(0,0,0,0.03);">
+    <div class="aura-user-selector-bar" style="width:100% !important; max-width:100% !important; box-sizing:border-box !important; margin:0 0 22px 0 !important; padding:8px 16px !important; border-radius:12px !important; background:var(--bg-surface, #ffffff) !important; border:1px solid var(--border-color, #e2e8f0) !important; display:flex !important; align-items:center !important; justify-content:space-between !important; flex-wrap:wrap !important; gap:12px !important; box-shadow:0 2px 8px rgba(0,0,0,0.03) !important;">
         
-        <!-- Ficha de Usuario Consultado Actualmente -->
-        <div class="aura-consulted-user-banner" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid var(--border-color, #f1f5f9);">
-            <div style="display:flex; align-items:center; gap:14px;">
-                <div class="aura-consulted-avatar-wrap" style="position:relative;">
-                    <?php if ( $user_avatar_url ) : ?>
-                        <img src="<?php echo esc_url( $user_avatar_url ); ?>" alt="" class="avatar-zoomable" style="width:52px; height:52px; border-radius:50%; border:2px solid var(--primary, #2563eb); object-fit:cover; box-shadow:0 2px 8px rgba(37,99,235,0.2);" />
-                    <?php else : ?>
-                        <div style="width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700;">👤</div>
-                    <?php endif; ?>
-                    <span class="aura-status-indicator" style="position:absolute; bottom:0; right:0; width:14px; height:14px; border-radius:50%; background:<?php echo $is_consulting_other ? '#f59e0b' : '#10b981'; ?>; border:2px solid #fff;"></span>
-                </div>
-                <div>
-                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                        <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--tx-muted, #64748b);">
-                            <?php echo $is_consulting_other ? esc_html__( 'Consultando Perfil de Usuario', 'aura-suite' ) : esc_html__( 'Mi Perfil Financiero', 'aura-suite' ); ?>
-                        </span>
-                        <?php if ( $is_consulting_other ) : ?>
-                            <span class="badge badge-amber pill" style="font-size:11px;"><span class="dashicons dashicons-visibility" style="font-size:13px;width:13px;height:13px;margin-right:2px;"></span><?php esc_html_e( 'Modo Supervisor', 'aura-suite' ); ?></span>
-                        <?php else : ?>
-                            <span class="badge badge-emerald pill" style="font-size:11px;"><span class="dashicons dashicons-yes-alt" style="font-size:13px;width:13px;height:13px;margin-right:2px;"></span><?php esc_html_e( 'Sesión Activa', 'aura-suite' ); ?></span>
-                        <?php endif; ?>
-                    </div>
-                    <h3 style="margin:4px 0 2px 0; font-size:1.15rem; font-weight:800; color:var(--tx-primary, #0f172a); display:flex; align-items:center; gap:8px;">
-                        <?php echo esc_html( $viewing_user_data ? $viewing_user_data->display_name : "Usuario #{$viewing_user_id}" ); ?>
-                        <span class="badge badge-slate pill" style="font-size:11px;">#<?php echo esc_html( $viewing_user_id ); ?></span>
-                    </h3>
-                    <div style="display:flex; align-items:center; gap:12px; font-size:12.5px; color:var(--tx-secondary, #64748b); flex-wrap:wrap;">
-                        <span><span class="dashicons dashicons-email" style="font-size:14px; width:14px; height:14px; vertical-align:text-top;"></span> <?php echo esc_html( $viewing_user_data ? $viewing_user_data->user_email : '—' ); ?></span>
-                        <span><span class="dashicons dashicons-groups" style="font-size:14px; width:14px; height:14px; vertical-align:text-top;"></span> <?php echo esc_html( implode( ', ', $user_roles ) ); ?></span>
-                    </div>
-                </div>
+        <!-- Extremo Izquierdo: Ficha Compacta del Usuario Actual -->
+        <div class="aura-consulted-compact-chip" style="display:inline-flex; align-items:center; gap:10px; flex-wrap:wrap; min-height:34px;">
+            <div style="position:relative; width:34px; height:34px; flex-shrink:0;">
+                <?php if ( $user_avatar_url ) : ?>
+                    <img src="<?php echo esc_url( $user_avatar_url ); ?>" alt="" class="avatar-zoomable" style="width:34px; height:34px; border-radius:50%; border:2px solid var(--primary, #2563eb); object-fit:cover;" />
+                <?php else : ?>
+                    <div style="width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700;">👤</div>
+                <?php endif; ?>
+                <span style="position:absolute; bottom:-1px; right:-1px; width:10px; height:10px; border-radius:50%; background:<?php echo $is_consulting_other ? '#f59e0b' : '#10b981'; ?>; border:2px solid #fff;"></span>
+            </div>
+
+            <div style="display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--tx-muted, #64748b);">
+                    <?php echo $is_consulting_other ? esc_html__( 'Consultando:', 'aura-suite' ) : esc_html__( 'Mi Perfil:', 'aura-suite' ); ?>
+                </span>
+                <strong style="font-size:13.5px; font-weight:800; color:var(--tx-primary, #0f172a);">
+                    <?php echo esc_html( $viewing_user_data ? $viewing_user_data->display_name : "Usuario #{$viewing_user_id}" ); ?>
+                </strong>
+                <span class="badge badge-slate pill" style="font-size:10.5px; padding:2px 8px;">#<?php echo esc_html( $viewing_user_id ); ?></span>
+                <span class="badge badge-indigo pill" style="font-size:10.5px; padding:2px 8px;"><?php echo esc_html( $role_primary ); ?></span>
+                <?php if ( $is_consulting_other ) : ?>
+                    <span class="badge badge-amber pill" style="font-size:10.5px; padding:2px 8px;">
+                        <span class="dashicons dashicons-visibility" style="font-size:12px; width:12px; height:12px; margin-right:3px;"></span>
+                        <?php esc_html_e( 'Modo Supervisor', 'aura-suite' ); ?>
+                    </span>
+                <?php endif; ?>
+                <span style="font-size:12px; color:var(--tx-muted, #64748b); display:inline-flex; align-items:center; gap:4px;">
+                    <span>•</span>
+                    <span class="dashicons dashicons-email" style="font-size:13px; width:13px; height:13px; vertical-align:middle;"></span>
+                    <?php echo esc_html( $viewing_user_data ? $viewing_user_data->user_email : '' ); ?>
+                </span>
             </div>
 
             <?php if ( $is_consulting_other ) : ?>
-            <div>
-                <a href="<?php echo esc_url( $base_url ); ?>" class="btn btn-secondary btn-lift" data-tooltip="<?php esc_attr_e( 'Regresar a la consulta de mi propio estado de cuenta', 'aura-suite' ); ?>">
-                    <span class="dashicons dashicons-undo" style="margin-right:4px;"></span>
-                    <?php esc_html_e( 'Volver a mi resumen personal', 'aura-suite' ); ?>
+            <div style="margin-left:4px;">
+                <a href="<?php echo esc_url( $base_url ); ?>" class="btn btn-sm btn-secondary btn-lift" style="height:28px; padding:0 10px; font-size:11.5px; border-radius:7px; display:inline-flex; align-items:center; gap:4px;" title="<?php esc_attr_e( 'Regresar a mi estado de cuenta personal', 'aura-suite' ); ?>">
+                    <span class="dashicons dashicons-undo" style="font-size:13px; width:13px; height:13px;"></span>
+                    <?php esc_html_e( 'Volver a mi resumen', 'aura-suite' ); ?>
                 </a>
             </div>
             <?php endif; ?>
         </div>
 
-        <!-- Controles de Búsqueda y Selección de Usuario -->
-        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-            <div style="font-size:13px; font-weight:700; color:var(--tx-primary, #0f172a); display:flex; align-items:center; gap:6px;">
-                <span class="dashicons dashicons-admin-users" style="color:var(--primary, #2563eb);"></span>
-                <?php esc_html_e( 'Cambiar o Consultar Usuario:', 'aura-suite' ); ?>
-            </div>
+        <!-- Extremo Derecho: Selector Rápido Slim y Botón de Consulta -->
+        <div class="aura-consulted-controls" style="display:inline-flex; align-items:center; gap:10px; flex-shrink:0;">
+            <label for="ud-user-quick-select" style="font-size:12px; font-weight:700; color:var(--tx-secondary, #475569); display:inline-flex; align-items:center; gap:4px; margin:0; cursor:pointer;">
+                <span class="dashicons dashicons-admin-users" style="font-size:15px; width:15px; height:15px; color:var(--primary, #2563eb);"></span>
+                <?php esc_html_e( 'Cambiar Usuario:', 'aura-suite' ); ?>
+            </label>
 
-            <!-- Selector Desplegable Directo de Usuarios (Para no tener que recordar o escribir nombres) -->
-            <div style="flex:1; min-width:280px; max-width:440px;">
-                <select id="ud-user-quick-select" class="form-control select-fancy" style="width:100%;">
-                    <option value=""><?php printf( esc_html__( '— 📋 Seleccionar de la lista (%d usuarios) —', 'aura-suite' ), count( $all_system_users ) ); ?></option>
-                    <?php foreach ( $all_system_users as $u ) : ?>
+            <div style="position:relative;">
+                <select id="ud-user-quick-select" class="form-control select-fancy" style="height:32px; min-width:270px; max-width:360px; font-size:12px; border-radius:8px; padding:0 26px 0 10px; margin:0;">
+                    <option value=""><?php printf( esc_html__( '— Cambiar a otro usuario (%d registrados) —', 'aura-suite' ), count( $all_system_users ) ); ?></option>
+                    <?php foreach ( $all_system_users as $u ) : 
+                        $u_roles = (array) ( get_userdata( $u->ID )->roles ?? [] );
+                        $u_role_label = ! empty( $u_roles ) ? ucfirst( reset( $u_roles ) ) : 'Usuario';
+                    ?>
                         <option value="<?php echo esc_attr( $u->ID ); ?>" <?php selected( $viewing_user_id, $u->ID ); ?>>
-                            <?php echo esc_html( "{$u->display_name} ({$u->user_email}) — #{$u->ID}" ); ?>
+                            <?php echo esc_html( "{$u->display_name} • {$u->user_email} (#{$u->ID} - {$u_role_label})" ); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
+                
             </div>
 
-            <!-- Alternativa de Búsqueda Rápida por Teclado -->
-            <div class="aura-user-autocomplete-wrap input-group" style="flex:1; min-width:220px; max-width:320px; margin:0;">
-                <span class="input-group-text" style="background:var(--bg-alt, #f8fafc); border-color:var(--border-color, #cbd5e1); color:var(--tx-muted, #64748b);">🔍</span>
-                <input type="text"
-                       id="ud-user-search"
-                       class="form-control"
-                       placeholder="<?php esc_attr_e( 'O buscar por texto…', 'aura-suite' ); ?>"
-                       autocomplete="off"
-                       value="<?php echo $is_consulting_other && $viewing_user_data ? esc_attr( $viewing_user_data->display_name ) : ''; ?>">
-                <input type="hidden" id="ud-user-id" value="<?php echo esc_attr( $is_consulting_other ? $viewing_user_id : '' ); ?>">
-            </div>
-
-            <button type="button" id="ud-view-user-btn" class="btn btn-primary btn-lift" data-tooltip="<?php esc_attr_e( 'Cargar el dashboard financiero del usuario seleccionado', 'aura-suite' ); ?>">
-                <span class="dashicons dashicons-visibility" style="margin-right:4px;"></span>
-                <?php esc_html_e( 'Consultar', 'aura-suite' ); ?>
+            <button type="button" id="ud-view-user-btn" class="btn btn-sm btn-primary btn-lift" style="height:32px; padding:0 12px; font-size:12px; border-radius:8px; display:inline-flex; align-items:center; gap:4px;" data-tooltip="<?php esc_attr_e( 'Cargar el dashboard financiero del usuario seleccionado', 'aura-suite' ); ?>">
+                <span class="dashicons dashicons-visibility" style="font-size:13px; width:13px; height:13px;"></span>
+                <?php esc_html_e( 'Ver', 'aura-suite' ); ?>
             </button>
         </div>
     </div>
     <?php endif; ?>
+    
     <!-- ====================================================
          Tarjetas de Estadísticas (KPIs) con Tooltips
     ===================================================== -->
@@ -1203,9 +1196,11 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
         // ── 5. Sistema Universal de Child Rows ─────────────────
         $(document).on('click', '.aura-row-toggle', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const $btn = $(this);
             const $parentRow = $btn.closest('tr');
-            const $childRow = $parentRow.next('.aura-child-row');
+            const rowId = $parentRow.data('row-id');
+            const $childRow = rowId ? $('tr.aura-child-row[data-child-for="' + rowId + '"]') : $parentRow.next('.aura-child-row');
 
             const isOpen = $childRow.hasClass('is-open');
 
@@ -1218,62 +1213,32 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
             }
         });
 
-        // ── 6. Selector Admin (Dropdown directo + Autocomplete sincronizado) ─
+        // ── 6. Selector Admin (Cambiar / Consultar Usuario) ──────
         const $udQuickSelect = $('#ud-user-quick-select');
-        const $udSearch = $('#ud-user-search');
-        const $udHidden = $('#ud-user-id');
 
-        $udQuickSelect.on('change', function() {
-            const uid = $(this).val();
-            if (uid) {
-                $udHidden.val(uid);
-                const currentViewing = <?php echo json_encode( (string) $viewing_user_id ); ?>;
-                if (uid !== currentViewing) {
-                    window.location.href = <?php echo json_encode( $base_url . '&view_user=' ); ?> + uid;
-                }
-            }
-        });
-
-        if ($udSearch.length && typeof $.fn.autocomplete !== 'undefined') {
-            $udSearch.autocomplete({
-                minLength: 2,
-                delay: 300,
-                source: function(request, response) {
-                    $.post(ajaxurl, {
-                        action: 'aura_search_users',
-                        nonce: <?php echo json_encode( wp_create_nonce( 'aura_transaction_nonce' ) ); ?>,
-                        term: request.term
-                    }, function(res) {
-                        response(res.success && Array.isArray(res.data) ? res.data : []);
-                    });
-                },
-                select: function(event, ui) {
-                    $udSearch.val(ui.item.name);
-                    $udHidden.val(ui.item.id);
-                    $udQuickSelect.val(ui.item.id);
-                    return false;
-                }
-            }).autocomplete('instance')._renderItem = function(ul, item) {
-                return $('<li>')
-                    .append(
-                        '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;">' +
-                        '<img src="' + item.avatar_url + '" width="24" height="24" style="border-radius:50%;">' +
-                        '<div><strong>' + $('<span>').text(item.name).html() + '</strong>' +
-                        '<br><small style="color:var(--tx-muted, #64748b)">' + $('<span>').text(item.email).html() + '</small></div>' +
-                        '</div>'
-                    )
-                    .appendTo(ul);
-            };
-        }
-
-        // Botón "Consultar / Ver Dashboard"
-        $('#ud-view-user-btn').on('click', function() {
-            const uid = $udHidden.val() || $udQuickSelect.val();
-            if (! uid) {
-                alert(<?php echo json_encode( __( 'Selecciona un usuario de la lista o escribe en el buscador.', 'aura-suite' ) ); ?>);
+        function loadSelectedUser(uid) {
+            const targetId = uid || $udQuickSelect.val();
+            if (! targetId) {
+                alert(<?php echo json_encode( __( 'Por favor selecciona un usuario de la lista.', 'aura-suite' ) ); ?>);
                 return;
             }
-            window.location.href = <?php echo json_encode( $base_url . '&view_user=' ); ?> + uid;
+            window.location.href = <?php echo json_encode( $base_url . '&view_user=' ); ?> + encodeURIComponent(targetId);
+        }
+
+        // Navegación inmediata al seleccionar en el dropdown
+        $udQuickSelect.on('change', function() {
+            const val = $(this).val();
+            if (val) {
+                loadSelectedUser(val);
+            }
         });
+
+        // Clic en el botón "Ver"
+        $('#ud-view-user-btn').on('click', function(e) {
+            e.preventDefault();
+            loadSelectedUser();
+        });
+
+    }); // Fin document.ready
 })(jQuery);
 </script>

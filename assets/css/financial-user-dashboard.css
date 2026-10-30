@@ -66,16 +66,61 @@
     flex-wrap: wrap;
 }
 
-/* ── 3. Selector de Usuario para Administradores ────────────── */
+/* ── 3. Selector de Usuario para Administradores (Barra Slim 100% Ancho) ── */
+.aura-user-selector-bar,
 .aura-user-selector-card {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+    margin: 0 0 20px 0 !important;
+    padding: 8px 16px !important;
+    border-radius: 12px !important;
+    background: var(--bg-surface, #ffffff) !important;
+    border: 1px solid var(--border-color, #e2e8f0) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
     transition: all 0.2s ease;
+    min-height: 48px !important;
 }
 
+.aura-user-selector-bar:hover,
 .aura-user-selector-card:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05) !important;
+}
+
+.aura-consulted-compact-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-height: 34px;
+}
+
+.aura-consulted-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.aura-consulted-controls .select-fancy {
+    height: 32px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+    border-color: var(--border-color, #cbd5e1) !important;
+    background: var(--bg-surface, #ffffff) !important;
+    color: var(--tx-primary, #0f172a) !important;
+    transition: all 0.2s ease !important;
+}
+
+.aura-consulted-controls .select-fancy:hover,
+.aura-consulted-controls .select-fancy:focus {
+    border-color: var(--primary, #2563eb) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
 }
 
 /* ── 4. Panel de Filtros y Chips de Período Rápido ──────────── */
@@ -309,11 +354,11 @@
 }
 
 .aura-child-row {
-    display: none;
+    display: none !important;
 }
 
 .aura-child-row.is-open {
-    display: table-row;
+    display: table-row !important;
 }
 
 .aura-child-row td {
@@ -808,6 +853,19 @@ html[data-wp-dark-mode-scheme="dark"] .aura-user-dashboard-wrap {
 }
 
 /* ── Dark Mode Adaptations ──────────────────────────────────── */
+[data-theme="dark"] .aura-user-selector-bar,
+[data-theme="dark"] .aura-user-selector-card {
+    background: #111022 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-theme="dark"] .aura-consulted-controls .select-fancy {
+    background: #16152b !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #e2e8f0 !important;
+}
+
 [data-theme="dark"] .aura-tablenav-modern {
     background: #111022 !important;
     border-top-color: rgba(255, 255, 255, 0.08) !important;
