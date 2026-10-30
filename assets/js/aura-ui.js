@@ -625,10 +625,70 @@ const AuraUI = {
         // Cerrar con Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                const activeModal = document.querySelector('.aura-modal-overlay.active');
+                const activeModal = document.querySelector('.aura-modal-overlay.active, .aura-finance-modal.active, .aura-modal-overlay.is-active');
                 if (activeModal) this.closeModal(activeModal.id);
             }
         });
+
+        // 💀 Observador Universal de Modales para Skeleton Loader Automático
+        if (window.MutationObserver) {
+            const modalObserver = new MutationObserver((mutations) => {
+                for (let i = 0; i < mutations.length; i++) {
+                    const m = mutations[i];
+                    const target = m.target;
+                    if (!target || target.nodeType !== 1) continue;
+
+                    const isModal = target.classList && (
+                        target.classList.contains('aura-modal-overlay') ||
+                        target.classList.contains('aura-finance-modal') ||
+                        target.classList.contains('aura-dialog-backdrop') ||
+                        target.classList.contains('contact-modal-dialog-wrap') ||
+                        (target.id && (target.id.includes('modal') || target.id.startsWith('aura-modal-') || target.id.startsWith('modal-')))
+                    );
+
+                    if (isModal) {
+                        const isVisible = target.classList.contains('active') ||
+                                          target.classList.contains('is-active') ||
+                                          target.classList.contains('show') ||
+                                          (target.style.display && target.style.display !== 'none');
+
+                        if (isVisible) {
+                            if (!target._auraSkeletonActive && !target._auraSkeletonRecentlyShown) {
+                                target._auraSkeletonRecentlyShown = true;
+                                AuraUI.showModalSkeleton(target);
+                                setTimeout(() => { target._auraSkeletonRecentlyShown = false; }, 600);
+                            }
+                        } else {
+                            target._auraSkeletonRecentlyShown = false;
+                            target._auraSkeletonActive = false;
+                        }
+                    }
+                }
+            });
+
+            modalObserver.observe(document.body, {
+                attributes: true,
+                attributeFilter: ['class', 'style'],
+                subtree: true
+            });
+        }
+
+        // Bridge para jQuery si está presente
+        if (typeof jQuery !== 'undefined') {
+            const self = this;
+            jQuery.fn.auraModalSkeleton = function(action, options) {
+                return this.each(function() {
+                    if (action === 'hide') {
+                        self.hideModalSkeleton(this, typeof options === 'function' ? options : (options && options.onHide));
+                    } else {
+                        self.showModalSkeleton(this, options);
+                    }
+                });
+            };
+            jQuery(document).on('show.aura.modal', function(e, modal) {
+                self.showModalSkeleton(modal || e.target);
+            });
+        }
     },
 
     /**
@@ -828,7 +888,163 @@ const AuraUI = {
         });
     },
 
-    openModal: function(modalId) {
+    /**
+     * Genera la estructura HTML canónica del Skeleton Loader para modales
+     */
+    createModalSkeletonHTML: function(type) {
+        return `
+            <div class="aura-modal-skeleton" data-aura-auto-skeleton="true">
+                <div class="aura-modal-skeleton-header">
+                    <div class="skeleton skel-avatar" style="width: 52px; height: 52px;"></div>
+                    <div style="flex: 1;">
+                        <div class="skeleton skel-title w-50" style="margin-bottom: 8px;"></div>
+                        <div class="skeleton skel-line w-30"></div>
+                    </div>
+                </div>
+                <div class="aura-modal-skeleton-grid">
+                    <div>
+                        <div class="skeleton skel-line w-35" style="height: 12px; margin-bottom: 8px;"></div>
+                        <div class="skeleton skel-input"></div>
+                    </div>
+                    <div>
+                        <div class="skeleton skel-line w-40" style="height: 12px; margin-bottom: 8px;"></div>
+                        <div class="skeleton skel-input"></div>
+                    </div>
+                </div>
+                <div class="aura-modal-skeleton-grid">
+                    <div>
+                        <div class="skeleton skel-line w-30" style="height: 12px; margin-bottom: 8px;"></div>
+                        <div class="skeleton skel-input"></div>
+                    </div>
+                    <div>
+                        <div class="skeleton skel-line w-45" style="height: 12px; margin-bottom: 8px;"></div>
+                        <div class="skeleton skel-input"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 4px;">
+                    <div class="skeleton skel-line w-25" style="height: 12px; margin-bottom: 8px;"></div>
+                    <div class="skeleton skel-textarea"></div>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Muestra el Skeleton Loader dentro de un modal y oculta transitoriamente su contenido
+     *
+     * @param {HTMLElement|string} modalElement Elemento modal o su ID
+     * @param {Object} options Opciones { duration: 280, async: false, onHide: function }
+     */
+    showModalSkeleton: function(modalElement, options) {
+        options = options || {};
+        const modal = typeof modalElement === 'string' ? document.getElementById(modalElement) : modalElement;
+        if (!modal) return;
+
+        // Evitar doble invocación concurrente en el mismo modal
+        if (modal._auraSkeletonActive) return;
+
+        const bodyContainer = modal.querySelector('.aura-modal-body, .modal-body, .aura-modal-container form, .aura-modal-container');
+        if (!bodyContainer) return;
+
+        modal._auraSkeletonActive = true;
+        modal._auraSkeletonRecentlyShown = true;
+
+        let skeleton = bodyContainer.querySelector('.aura-modal-skeleton');
+
+        if (!skeleton) {
+            const tempWrapper = document.createElement('div');
+            tempWrapper.innerHTML = this.createModalSkeletonHTML();
+            skeleton = tempWrapper.firstElementChild;
+            bodyContainer.insertBefore(skeleton, bodyContainer.firstChild);
+        } else {
+            skeleton.classList.remove('is-hiding');
+            skeleton.style.display = 'flex';
+        }
+
+        // Ocultar elementos hermanos dentro del contenedor mientras corre el skeleton
+        Array.from(bodyContainer.children).forEach(child => {
+            if (child !== skeleton && !child.classList.contains('aura-modal-header') && !child.classList.contains('aura-modal-tabs') && !child.classList.contains('aura-modal-footer')) {
+                if (!child.classList.contains('aura-modal-content-hidden')) {
+                    child.setAttribute('data-aura-hidden-by-skeleton', 'true');
+                    child.classList.add('aura-modal-content-hidden');
+                }
+            }
+        });
+
+        // Configuración de auto-revelado para modales síncronos
+        const isAsync = options.async === true || modal.hasAttribute('data-async-modal') || modal.hasAttribute('data-skeleton-manual');
+        const duration = typeof options.duration === 'number' ? options.duration : 280;
+
+        if (modal._auraSkeletonTimer) {
+            clearTimeout(modal._auraSkeletonTimer);
+            modal._auraSkeletonTimer = null;
+        }
+
+        if (!isAsync) {
+            modal._auraSkeletonTimer = setTimeout(() => {
+                this.hideModalSkeleton(modal, options.onHide);
+            }, duration);
+        }
+    },
+
+    /**
+     * Oculta el Skeleton Loader y revela fluidamente el contenido real del modal
+     *
+     * @param {HTMLElement|string} modalElement Elemento modal o su ID
+     * @param {Function} callback Callback ejecutado al completar la transición
+     */
+    hideModalSkeleton: function(modalElement, callback) {
+        const modal = typeof modalElement === 'string' ? document.getElementById(modalElement) : modalElement;
+        if (!modal) return;
+
+        if (modal._auraSkeletonTimer) {
+            clearTimeout(modal._auraSkeletonTimer);
+            modal._auraSkeletonTimer = null;
+        }
+
+        const bodyContainer = modal.querySelector('.aura-modal-body, .modal-body, .aura-modal-container form, .aura-modal-container');
+        if (!bodyContainer) {
+            modal._auraSkeletonActive = false;
+            return;
+        }
+
+        const skeleton = bodyContainer.querySelector('.aura-modal-skeleton');
+        if (skeleton) {
+            skeleton.classList.add('is-hiding');
+        }
+
+        setTimeout(() => {
+            if (skeleton) {
+                skeleton.style.display = 'none';
+                skeleton.classList.remove('is-hiding');
+            }
+
+            // Restaurar y animar el contenido oculto
+            Array.from(bodyContainer.querySelectorAll('[data-aura-hidden-by-skeleton="true"]')).forEach(child => {
+                child.removeAttribute('data-aura-hidden-by-skeleton');
+                child.classList.remove('aura-modal-content-hidden');
+                child.classList.add('aura-modal-content-revealing');
+                setTimeout(() => child.classList.remove('aura-modal-content-revealing'), 350);
+            });
+
+            modal._auraSkeletonActive = false;
+
+            if (typeof callback === 'function') {
+                callback();
+            }
+
+            // Disparar evento personalizado para listeners jQuery o Vanilla
+            try {
+                const event = new CustomEvent('aura:modal-ready', { detail: { modal: modal }, bubbles: true });
+                modal.dispatchEvent(event);
+                if (typeof jQuery !== 'undefined') {
+                    jQuery(modal).trigger('aura:modal-ready');
+                }
+            } catch (e) {}
+        }, 160);
+    },
+
+    openModal: function(modalId, options) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.add('active', 'is-active');
@@ -838,6 +1054,9 @@ const AuraUI = {
                 modal.style.display = 'flex';
             }
             document.body.style.overflow = 'hidden'; // prevenir scroll
+
+            // 💀 Disparar efecto Skeleton Loader global de inmediato
+            this.showModalSkeleton(modal, options);
         }
     },
 
@@ -851,6 +1070,23 @@ const AuraUI = {
                 modal.style.display = 'none';
             }
             document.body.style.overflow = '';
+
+            // Resetear estados del Skeleton
+            if (modal._auraSkeletonTimer) {
+                clearTimeout(modal._auraSkeletonTimer);
+                modal._auraSkeletonTimer = null;
+            }
+            modal._auraSkeletonActive = false;
+            modal._auraSkeletonRecentlyShown = false;
+            const skeleton = modal.querySelector('.aura-modal-skeleton');
+            if (skeleton) {
+                skeleton.style.display = 'none';
+                skeleton.classList.remove('is-hiding');
+            }
+            Array.from(modal.querySelectorAll('[data-aura-hidden-by-skeleton="true"]')).forEach(child => {
+                child.removeAttribute('data-aura-hidden-by-skeleton');
+                child.classList.remove('aura-modal-content-hidden', 'aura-modal-content-revealing');
+            });
         }
     }
 };
