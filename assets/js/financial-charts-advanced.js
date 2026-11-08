@@ -792,7 +792,7 @@
         $('#ann-tab').val(tab);
         $('#ann-date').val(new Date().toISOString().slice(0, 10));
         $('#ann-note').val('');
-        $('#aura-annotation-modal').removeClass('aura-modal-hidden').fadeIn(200);
+        $('#aura-annotation-modal').removeClass('aura-modal-hidden').css('display', 'flex').hide().fadeIn(200);
     }
 
     function saveAnnotation() {
@@ -833,21 +833,28 @@
         const year  = $('#budget-year').val();
         const month = $('#budget-month').val();
         const $items = $('#budget-form-items');
-        $items.html('<div class="aura-spinner">' + (auraAnalytics?.txt?.loading || 'Cargando…') + '</div>');
-        $('#aura-budget-modal').removeClass('aura-modal-hidden').fadeIn(200);
+        $items.html(
+            '<div class="skeleton-modal-wrap" style="display:flex;flex-direction:column;gap:10px;padding:12px 0;">' +
+            '<div class="skeleton skel-rect" style="height:44px;border-radius:8px;"></div>' +
+            '<div class="skeleton skel-rect" style="height:44px;border-radius:8px;"></div>' +
+            '<div class="skeleton skel-rect" style="height:44px;border-radius:8px;"></div>' +
+            '<div class="skeleton skel-rect" style="height:44px;border-radius:8px;"></div>' +
+            '</div>'
+        );
+        $('#aura-budget-modal').removeClass('aura-modal-hidden').css('display', 'flex').hide().fadeIn(200);
 
         ajaxPost('aura_analytics_budget', { year, month }).done(function (res) {
             if (!res.success) return;
             $items.empty();
             res.data.items.forEach(item => {
                 $items.append(
-                    '<div class="budget-form-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #e2e8f0;">' +
-                    '<label style="font-weight:600;font-size:13px;">' + $('<div>').text(item.name).html() + '</label>' +
-                    '<div style="display:flex;align-items:center;gap:4px;">' +
-                    '<span>' + (auraAnalytics?.currency_symbol || '$') + '</span>' +
-                    '<input type="number" class="budget-input" min="0" step="100" ' +
+                    '<div class="budget-form-row" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--aura-border-color, #e2e8f0);">' +
+                    '<label style="font-weight:600;font-size:13px;color:inherit;">' + $('<div>').text(item.name).html() + '</label>' +
+                    '<div style="display:flex;align-items:center;gap:6px;">' +
+                    '<span style="font-weight:600;color:var(--aura-text-muted, #64748b);">' + (auraAnalytics?.currency_symbol || '$') + '</span>' +
+                    '<input type="number" class="budget-input input-fancy" min="0" step="100" ' +
                     'data-id="' + item.id + '" data-name="' + $('<div>').text(item.name).html() + '" ' +
-                    'value="' + item.budget + '" style="width:140px;height:32px;text-align:right;border-radius:4px;border:1px solid #cbd5e1;padding:4px 8px;">' +
+                    'value="' + item.budget + '" style="width:140px;height:34px;text-align:right;border-radius:6px;padding:4px 8px;">' +
                     '</div></div>'
                 );
             });
@@ -884,7 +891,7 @@
 
     function closeModals() {
         $('.aura-modal').fadeOut(200, function() {
-            $(this).addClass('aura-modal-hidden');
+            $(this).addClass('aura-modal-hidden').css('display', 'none');
         });
     }
 
@@ -1052,8 +1059,18 @@
             $fs.empty();
         });
 
-        // Cerrar modales
-        $(document).on('click', '.aura-modal-close, .aura-modal-overlay', closeModals);
+        // Cerrar modales (Protección dos fases Item 26 contra arrastre involuntario)
+        let isBackdropMouseDown = false;
+        $(document).on('mousedown', '.aura-modal-overlay', function (e) {
+            if (e.target === this) isBackdropMouseDown = true;
+        });
+        $(document).on('mouseup', function (e) {
+            if (isBackdropMouseDown && $(e.target).hasClass('aura-modal-overlay')) {
+                closeModals();
+            }
+            isBackdropMouseDown = false;
+        });
+        $(document).on('click', '.aura-modal-close', closeModals);
         $(document).on('keydown', function (e) {
             if (e.key === 'Escape') {
                 closeModals();

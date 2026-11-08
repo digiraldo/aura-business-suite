@@ -84,9 +84,9 @@ $current_month = date('n');
                 </div>
             </div>
             <div class="aura-analytics-hero__actions">
-                <button type="button" id="aura-print-analytics-btn" class="button aura-ud-btn aura-ud-btn--amber" style="background:#f59e0b;color:#fff;border:none;">
+                <button type="button" id="aura-print-analytics-btn" class="btn btn-amber btn-shimmer btn-lift">
                     <span class="dashicons dashicons-printer"></span>
-                    <?php esc_html_e('Imprimir / PDF', 'aura-suite'); ?>
+                    <span><?php esc_html_e('Imprimir / PDF', 'aura-suite'); ?></span>
                 </button>
             </div>
         </header>
@@ -102,14 +102,14 @@ $current_month = date('n');
                     <label for="aura-filter-start">
                         <?php esc_html_e('Desde', 'aura-suite'); ?>
                     </label>
-                    <input type="date" id="aura-filter-start" value="<?php echo esc_attr($current_year . '-01-01'); ?>">
+                    <input type="date" id="aura-filter-start" class="input-fancy" value="<?php echo esc_attr($current_year . '-01-01'); ?>">
                 </div>
 
                 <div class="aura-filter-field">
                     <label for="aura-filter-end">
                         <?php esc_html_e('Hasta', 'aura-suite'); ?>
                     </label>
-                    <input type="date" id="aura-filter-end" value="<?php echo esc_attr(date('Y-m-d')); ?>">
+                    <input type="date" id="aura-filter-end" class="input-fancy" value="<?php echo esc_attr(date('Y-m-d')); ?>">
                 </div>
 
                 <!-- Chips de Períodos Rápidos -->
@@ -121,12 +121,13 @@ $current_month = date('n');
                 </div>
 
                 <div class="aura-filter-actions">
-                    <button type="button" id="aura-apply-filters" class="button button-primary aura-ud-btn">
+                    <button type="button" id="aura-apply-filters" class="btn btn-primary btn-shimmer btn-lift">
                         <span class="dashicons dashicons-update"></span>
-                        <?php esc_html_e('Actualizar Gráficos', 'aura-suite'); ?>
+                        <span><?php esc_html_e('Actualizar Gráficos', 'aura-suite'); ?></span>
                     </button>
-                    <button type="button" id="aura-reset-filters" class="button aura-ud-btn">
-                        <?php esc_html_e('Resetear', 'aura-suite'); ?>
+                    <button type="button" id="aura-reset-filters" class="btn btn-secondary btn-lift">
+                        <span class="dashicons dashicons-undo"></span>
+                        <span><?php esc_html_e('Resetear', 'aura-suite'); ?></span>
                     </button>
                 </div>
             </div>
@@ -194,11 +195,11 @@ $current_month = date('n');
                     </div>
                 </div>
                 <div class="aura-toolbar-right">
-                    <button type="button" class="aura-add-annotation button button-secondary" data-tab="trends">
+                    <button type="button" class="aura-add-annotation btn btn-secondary btn-sm btn-lift" data-tab="trends">
                         <span class="dashicons dashicons-edit-large"></span>
-                        <?php esc_html_e('Agregar Anotación', 'aura-suite'); ?>
+                        <span><?php esc_html_e('Agregar Anotación', 'aura-suite'); ?></span>
                     </button>
-                    <button type="button" class="aura-fullscreen-btn button" data-chart="chart-trends" title="<?php esc_attr_e('Pantalla Completa', 'aura-suite'); ?>">
+                    <button type="button" class="aura-fullscreen-btn btn btn-glass btn-sm btn-lift" data-chart="chart-trends" title="<?php esc_attr_e('Pantalla Completa', 'aura-suite'); ?>">
                         <span class="dashicons dashicons-fullscreen-alt"></span>
                     </button>
                 </div>
@@ -237,14 +238,14 @@ $current_month = date('n');
                     </div>
 
                     <label for="cat-limit"><?php esc_html_e('Límite Top:', 'aura-suite'); ?></label>
-                    <select id="cat-limit" style="height:32px;padding:2px 8px;border-radius:4px;">
+                    <select id="cat-limit" class="select-fancy" style="height:34px;padding:4px 10px;border-radius:8px;">
                         <option value="5">Top 5</option>
                         <option value="10" selected>Top 10</option>
                         <option value="20">Top 20</option>
                     </select>
                 </div>
                 <div class="aura-toolbar-right">
-                    <button type="button" class="aura-fullscreen-btn button" data-chart="chart-categories" title="<?php esc_attr_e('Pantalla Completa', 'aura-suite'); ?>">
+                    <button type="button" class="aura-fullscreen-btn btn btn-glass btn-sm btn-lift" data-chart="chart-categories" title="<?php esc_attr_e('Pantalla Completa', 'aura-suite'); ?>">
                         <span class="dashicons dashicons-fullscreen-alt"></span>
                     </button>
                 </div>
@@ -262,12 +263,12 @@ $current_month = date('n');
                     <h3><span class="dashicons dashicons-calendar-alt"></span> <?php esc_html_e('Período Base (A)', 'aura-suite'); ?></h3>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <div>
-                            <label><?php esc_html_e('Desde', 'aura-suite'); ?></label>
-                            <input type="date" id="cmp-a-start" value="<?php echo esc_attr($current_year . '-01-01'); ?>">
+                            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--aura-text-muted,#64748b);"><?php esc_html_e('Desde', 'aura-suite'); ?></label>
+                            <input type="date" id="cmp-a-start" class="input-fancy" value="<?php echo esc_attr($current_year . '-01-01'); ?>">
                         </div>
                         <div>
-                            <label><?php esc_html_e('Hasta', 'aura-suite'); ?></label>
-                            <input type="date" id="cmp-a-end" value="<?php echo esc_attr($current_year . '-06-30'); ?>">
+                            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--aura-text-muted,#64748b);"><?php esc_html_e('Hasta', 'aura-suite'); ?></label>
+                            <input type="date" id="cmp-a-end" class="input-fancy" value="<?php echo esc_attr($current_year . '-06-30'); ?>">
                         </div>
                     </div>
                 </div>
@@ -276,18 +277,18 @@ $current_month = date('n');
                     <h3><span class="dashicons dashicons-calendar-alt"></span> <?php esc_html_e('Período Comparativo (B)', 'aura-suite'); ?></h3>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <div>
-                            <label><?php esc_html_e('Desde', 'aura-suite'); ?></label>
-                            <input type="date" id="cmp-b-start" value="<?php echo esc_attr($current_year . '-07-01'); ?>">
+                            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--aura-text-muted,#64748b);"><?php esc_html_e('Desde', 'aura-suite'); ?></label>
+                            <input type="date" id="cmp-b-start" class="input-fancy" value="<?php echo esc_attr($current_year . '-07-01'); ?>">
                         </div>
                         <div>
-                            <label><?php esc_html_e('Hasta', 'aura-suite'); ?></label>
-                            <input type="date" id="cmp-b-end" value="<?php echo esc_attr(date('Y-m-d')); ?>">
+                            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--aura-text-muted,#64748b);"><?php esc_html_e('Hasta', 'aura-suite'); ?></label>
+                            <input type="date" id="cmp-b-end" class="input-fancy" value="<?php echo esc_attr(date('Y-m-d')); ?>">
                         </div>
                     </div>
                 </div>
-                <button type="button" id="cmp-apply" class="button button-primary aura-ud-btn" style="height:40px;align-self:flex-end;">
+                <button type="button" id="cmp-apply" class="btn btn-primary btn-shimmer btn-lift" style="height:38px;align-self:flex-end;">
                     <span class="dashicons dashicons-controls-repeat"></span>
-                    <?php esc_html_e('Comparar Períodos', 'aura-suite'); ?>
+                    <span><?php esc_html_e('Comparar Períodos', 'aura-suite'); ?></span>
                 </button>
             </div>
 
@@ -335,7 +336,7 @@ $current_month = date('n');
                         <?php esc_html_e('Dispersión: Frecuencia vs Monto por Categoría', 'aura-suite'); ?>
                     </h3>
                     <div class="aura-fullscreen-btn-wrap">
-                        <button type="button" class="aura-fullscreen-btn button" data-chart="chart-scatter" title="<?php esc_attr_e('Pantalla Completa', 'aura-suite'); ?>">
+                        <button type="button" class="aura-fullscreen-btn btn btn-glass btn-sm btn-lift" data-chart="chart-scatter" title="<?php esc_attr_e('Pantalla Completa', 'aura-suite'); ?>">
                             <span class="dashicons dashicons-fullscreen-alt"></span>
                         </button>
                     </div>
@@ -373,14 +374,14 @@ $current_month = date('n');
         <div id="tab-budget" class="aura-tab-content aura-glass-card" style="display:none;">
             <div class="aura-budget-controls">
                 <label for="budget-year"><?php esc_html_e('Año Fiscal:', 'aura-suite'); ?></label>
-                <select id="budget-year" style="height:36px;padding:4px 8px;border-radius:6px;">
+                <select id="budget-year" class="select-fancy" style="height:36px;padding:4px 8px;border-radius:6px;">
                     <?php for ($y = $current_year - 2; $y <= $current_year + 1; $y++): ?>
                         <option value="<?php echo $y; ?>" <?php selected($y, $current_year); ?>><?php echo $y; ?></option>
                     <?php endfor; ?>
                 </select>
 
                 <label for="budget-month"><?php esc_html_e('Mes:', 'aura-suite'); ?></label>
-                <select id="budget-month" style="height:36px;padding:4px 8px;border-radius:6px;">
+                <select id="budget-month" class="select-fancy" style="height:36px;padding:4px 8px;border-radius:6px;">
                     <?php
                     $months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
                     foreach ($months as $i => $m):
@@ -390,13 +391,13 @@ $current_month = date('n');
                     <?php endforeach; ?>
                 </select>
 
-                <button type="button" id="budget-load" class="button button-primary aura-ud-btn">
+                <button type="button" id="budget-load" class="btn btn-primary btn-shimmer btn-lift">
                     <span class="dashicons dashicons-search"></span>
-                    <?php esc_html_e('Cargar Presupuesto', 'aura-suite'); ?>
+                    <span><?php esc_html_e('Cargar Presupuesto', 'aura-suite'); ?></span>
                 </button>
-                <button type="button" id="budget-edit" class="button aura-ud-btn">
+                <button type="button" id="budget-edit" class="btn btn-secondary btn-lift">
                     <span class="dashicons dashicons-edit"></span>
-                    <?php esc_html_e('Configurar Metas Presupuestarias', 'aura-suite'); ?>
+                    <span><?php esc_html_e('Configurar Metas Presupuestarias', 'aura-suite'); ?></span>
                 </button>
             </div>
 
@@ -427,6 +428,15 @@ $current_month = date('n');
             </div>
         </div>
 
+        <!-- ====================================================
+             Footer Canónico Aura Design System
+        ===================================================== -->
+        <div class="adp-footer">
+            <p>
+                Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>DiGiraldo</a></strong> &nbsp;|&nbsp; © 2026 AURA Business Suite
+            </p>
+        </div>
+
         <!-- Pie de Impresión Oficial (@media print) -->
         <div class="aura-print-footer">
             <div class="aura-print-footer__left">
@@ -448,32 +458,32 @@ $current_month = date('n');
 <!-- ================================================================ -->
 
 <!-- Modal: Anotación -->
-<div id="aura-annotation-modal" class="aura-modal aura-modal-hidden" style="display:none;">
+<div id="aura-annotation-modal" class="aura-modal aura-modal-hidden" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-annotation-modal-title">
     <div class="aura-modal-overlay"></div>
     <div class="aura-modal-content">
-        <div class="aura-modal-header" style="background:#1e3a5f;">
-            <h2>
+        <div class="aura-modal-header">
+            <h2 id="aura-annotation-modal-title">
                 <span class="dashicons dashicons-edit"></span>
                 <?php esc_html_e('Agregar Anotación al Gráfico', 'aura-suite'); ?>
             </h2>
             <button type="button" class="aura-modal-close" aria-label="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>">
-                <span class="dashicons dashicons-no"></span>
+                <span class="dashicons dashicons-no-alt"></span>
             </button>
         </div>
         <div class="aura-modal-body">
             <form id="aura-annotation-form">
                 <input type="hidden" id="ann-tab" name="tab">
-                <div class="form-group" style="margin-bottom:12px;">
-                    <label for="ann-date" style="display:block;font-weight:700;font-size:12px;margin-bottom:4px;color:#475569;"><?php esc_html_e('Fecha de la Anotación', 'aura-suite'); ?></label>
-                    <input type="date" id="ann-date" name="date" required style="width:100%;height:36px;border-radius:6px;border:1px solid #cbd5e1;padding:6px 10px;">
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label for="ann-date" style="display:block;font-weight:700;font-size:12px;margin-bottom:6px;color:var(--aura-text-secondary, #475569);text-transform:uppercase;letter-spacing:0.5px;"><?php esc_html_e('Fecha de la Anotación', 'aura-suite'); ?></label>
+                    <input type="date" id="ann-date" name="date" required class="input-fancy" style="width:100%;height:38px;border-radius:8px;padding:6px 12px;">
                 </div>
-                <div class="form-group" style="margin-bottom:16px;">
-                    <label for="ann-note" style="display:block;font-weight:700;font-size:12px;margin-bottom:4px;color:#475569;"><?php esc_html_e('Nota Explicativa (Hito, Evento, Ajuste)', 'aura-suite'); ?></label>
-                    <textarea id="ann-note" name="note" rows="3" required style="width:100%;border-radius:6px;border:1px solid #cbd5e1;padding:8px;" placeholder="<?php esc_attr_e('Ej: Inicio de campaña publicitaria, Pago extraordinario...', 'aura-suite'); ?>"></textarea>
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label for="ann-note" style="display:block;font-weight:700;font-size:12px;margin-bottom:6px;color:var(--aura-text-secondary, #475569);text-transform:uppercase;letter-spacing:0.5px;"><?php esc_html_e('Nota Explicativa (Hito, Evento, Ajuste)', 'aura-suite'); ?></label>
+                    <textarea id="ann-note" name="note" rows="3" required class="input-fancy form-control" style="width:100%;border-radius:8px;padding:10px;" placeholder="<?php esc_attr_e('Ej: Inicio de campaña publicitaria, Pago extraordinario...', 'aura-suite'); ?>"></textarea>
                 </div>
-                <div class="form-actions" style="display:flex;justify-content:flex-end;gap:8px;">
-                    <button type="button" class="button aura-modal-close"><?php esc_html_e('Cancelar', 'aura-suite'); ?></button>
-                    <button type="submit" class="button button-primary" style="background:#2563eb;border-color:#1d4ed8;"><?php esc_html_e('Guardar Anotación', 'aura-suite'); ?></button>
+                <div class="form-actions" style="display:flex;justify-content:flex-end;gap:10px;padding-top:12px;border-top:1px solid var(--aura-border-color, #e2e8f0);">
+                    <button type="button" class="btn btn-secondary btn-lift aura-modal-close"><?php esc_html_e('Cancelar', 'aura-suite'); ?></button>
+                    <button type="submit" class="btn btn-primary btn-shimmer btn-lift"><?php esc_html_e('Guardar Anotación', 'aura-suite'); ?></button>
                 </div>
             </form>
         </div>
@@ -481,28 +491,33 @@ $current_month = date('n');
 </div>
 
 <!-- Modal: Editar presupuesto -->
-<div id="aura-budget-modal" class="aura-modal aura-modal-hidden" style="display:none;">
+<div id="aura-budget-modal" class="aura-modal aura-modal-hidden" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-budget-modal-title">
     <div class="aura-modal-overlay"></div>
-    <div class="aura-modal-content aura-budget-modal-box" style="max-width:650px;">
-        <div class="aura-modal-header" style="background:#1e3a5f;">
-            <h2>
+    <div class="aura-modal-content aura-budget-modal-box">
+        <div class="aura-modal-header">
+            <h2 id="aura-budget-modal-title">
                 <span class="dashicons dashicons-money-alt"></span>
                 <?php esc_html_e('Definir Metas Presupuestarias', 'aura-suite'); ?>
             </h2>
             <button type="button" class="aura-modal-close" aria-label="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>">
-                <span class="dashicons dashicons-no"></span>
+                <span class="dashicons dashicons-no-alt"></span>
             </button>
         </div>
         <div class="aura-modal-body">
-            <p class="description" style="color:#64748b;margin:0 0 14px 0;font-size:13px;">
+            <p class="description" style="color:var(--aura-text-muted, #64748b);margin:0 0 16px 0;font-size:13px;line-height:1.5;">
                 <?php esc_html_e('Asigna el límite presupuestario mensual para cada categoría de egreso.', 'aura-suite'); ?>
             </p>
             <div id="budget-form-items" style="max-height:360px;overflow-y:auto;padding-right:6px;">
-                <div class="aura-spinner"><?php esc_html_e('Cargando categorías…', 'aura-suite'); ?></div>
+                <div class="skeleton-modal-wrap" style="display:flex;flex-direction:column;gap:10px;padding:12px 0;">
+                    <div class="skeleton skel-rect" style="height:44px;border-radius:8px;"></div>
+                    <div class="skeleton skel-rect" style="height:44px;border-radius:8px;"></div>
+                    <div class="skeleton skel-rect" style="height:44px;border-radius:8px;"></div>
+                    <div class="skeleton skel-rect" style="height:44px;border-radius:8px;"></div>
+                </div>
             </div>
-            <div class="form-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid #e2e8f0;">
-                <button type="button" class="button aura-modal-close"><?php esc_html_e('Cancelar', 'aura-suite'); ?></button>
-                <button type="button" id="budget-save" class="button button-primary" style="background:#10b981;border-color:#059669;"><?php esc_html_e('Guardar Presupuestos', 'aura-suite'); ?></button>
+            <div class="form-actions" style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--aura-border-color, #e2e8f0);">
+                <button type="button" class="btn btn-secondary btn-lift aura-modal-close"><?php esc_html_e('Cancelar', 'aura-suite'); ?></button>
+                <button type="button" id="budget-save" class="btn btn-emerald btn-shimmer btn-lift"><?php esc_html_e('Guardar Presupuestos', 'aura-suite'); ?></button>
             </div>
         </div>
     </div>
@@ -510,7 +525,7 @@ $current_month = date('n');
 
 <!-- Fullscreen overlay -->
 <div id="aura-fullscreen-overlay" class="aura-fullscreen-overlay" style="display:none;">
-    <button type="button" id="aura-exit-fullscreen" class="aura-exit-fullscreen">
+    <button type="button" id="aura-exit-fullscreen" class="aura-exit-fullscreen btn btn-danger btn-lift">
         <span class="dashicons dashicons-fullscreen-exit-alt"></span>
         <?php esc_html_e('Salir de Pantalla Completa', 'aura-suite'); ?>
     </button>

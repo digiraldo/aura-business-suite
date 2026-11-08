@@ -118,15 +118,6 @@ class Aura_Areas_Setup {
         }
         
         update_option( self::AREA_USERS_TABLE_KEY, true, false );
-        
-        // Agregar aviso de éxito en admin (solo si es admin)
-        if ( current_user_can( 'manage_options' ) ) {
-            add_action( 'admin_notices', function() {
-                echo '<div class="notice notice-success is-dismissible">';
-                echo '<p><strong>✅ Aura Business Suite:</strong> Tabla de relaciones área-usuarios creada exitosamente. Sistema multi-usuario activado.</p>';
-                echo '</div>';
-            } );
-        }
     }
 
     /* ======================================================================
