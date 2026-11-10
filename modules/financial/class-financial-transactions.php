@@ -47,6 +47,8 @@ class Aura_Financial_Transactions {
         add_action('admin_init', array(__CLASS__, 'maybe_migrate_capital_type'));
         // Migración: modificar receipt_file a TEXT para soporte de múltiples comprobantes y Drive
         add_action('admin_init', array(__CLASS__, 'maybe_migrate_receipt_file_text'));
+        // Migración: agregar columnas currency, original_amount y exchange_rate para multidivisa inteligente
+        add_action('admin_init', array(__CLASS__, 'maybe_migrate_currency_fields'));
         
         // Enqueue scripts and styles
         add_action('admin_enqueue_scripts', array(__CLASS__, 'enqueue_scripts'));
@@ -99,10 +101,17 @@ class Aura_Financial_Transactions {
             $budgeted_map[ (int) $br->category_id ][] = (int) $br->area_id;
         }
 
+        $base_currency = get_option('aura_finance_base_currency', get_option('aura_finance_currency', 'MXN'));
+        if (empty($base_currency)) {
+            $base_currency = 'MXN';
+        }
+
         wp_localize_script('aura-transaction-form', 'auraTransactionData', array(
             'ajaxUrl'      => admin_url('admin-ajax.php'),
             'nonce'        => wp_create_nonce('aura_transaction_nonce'),
             'budgetsNonce' => wp_create_nonce('aura_budgets_nonce'),
+            'baseCurrency' => $base_currency,
+            'currencySymbol' => get_option('aura_currency_symbol', '$'),
             'messages' => array(
                 'saving'                  => __('Guardando transacción...', 'aura-suite'),
                 'success'                 => __('Transacción guardada exitosamente', 'aura-suite'),
@@ -162,6 +171,15 @@ class Aura_Financial_Transactions {
         $expense_category_id = intval($_POST['expense_category_id'] ?? 0);
         $source_account_id = intval($_POST['source_account_id'] ?? 0);
         $destination_account_id = intval($_POST['destination_account_id'] ?? 0);
+
+        // Bloque Multidivisa Inteligente: Moneda, Monto original y Tipo de cambio
+        $base_currency = get_option('aura_finance_base_currency', get_option('aura_finance_currency', 'MXN'));
+        if (empty($base_currency)) {
+            $base_currency = 'MXN';
+        }
+        $currency = !empty($_POST['currency']) ? strtoupper(sanitize_text_field($_POST['currency'])) : $base_currency;
+        $original_amount = (isset($_POST['original_amount']) && $_POST['original_amount'] !== '') ? floatval($_POST['original_amount']) : null;
+        $exchange_rate = (isset($_POST['exchange_rate']) && $_POST['exchange_rate'] !== '') ? floatval($_POST['exchange_rate']) : null;
 
         // Fase 8.2: área / programa con soporte CBAC y Scope Multi-Área
         $current_uid = get_current_user_id();
@@ -341,6 +359,10 @@ class Aura_Financial_Transactions {
             'area_id'              => $area_id,
             // Fase 8.4: categoría detallada del gasto
             'expense_category_id'  => $expense_category_id > 0 ? $expense_category_id : null,
+            // Multidivisa Inteligente
+            'currency'             => $currency,
+            'original_amount'      => ($original_amount !== null && $original_amount > 0) ? $original_amount : null,
+            'exchange_rate'        => ($exchange_rate !== null && $exchange_rate > 0) ? $exchange_rate : null,
             'created_by' => $current_user_id,
             'created_at' => current_time('mysql'),
             'updated_at' => current_time('mysql'),
@@ -369,6 +391,9 @@ class Aura_Financial_Transactions {
             '%d', // third_party_id
             '%d', // area_id (Fase 8.2)
             '%d', // expense_category_id (Fase 8.4)
+            '%s', // currency
+            '%f', // original_amount
+            '%f', // exchange_rate
             '%d', // created_by
             '%s', // created_at
             '%s', // updated_at
@@ -405,8 +430,10 @@ class Aura_Financial_Transactions {
                 $source_account_id,
                 $destination_account_id,
                 array(
-                    'currency' => 'COP',
-                    'notes' => $description,
+                    'currency'        => $currency,
+                    'account_amount'  => $original_amount,
+                    'exchange_rate'   => $exchange_rate,
+                    'notes'           => $description,
                 )
             );
 
@@ -931,6 +958,9 @@ class Aura_Financial_Transactions {
             transaction_type ENUM('income', 'expense', 'capital') NOT NULL,
             category_id BIGINT UNSIGNED NOT NULL,
             amount DECIMAL(15, 2) NOT NULL,
+            currency VARCHAR(10) NULL DEFAULT 'MXN',
+            original_amount DECIMAL(15, 2) NULL,
+            exchange_rate DECIMAL(12, 4) NULL,
             transaction_date DATE NOT NULL,
             description TEXT NOT NULL,
             notes TEXT,
@@ -1326,6 +1356,43 @@ class Aura_Financial_Transactions {
         }
 
         update_option( 'aura_finance_receipt_file_text_migrated_v1', '1.0' );
+    }
+
+    /**
+     * Migración: agregar columnas currency, original_amount y exchange_rate
+     * para el soporte de multidivisa inteligente en transacciones.
+     *
+     * @since 1.8.4
+     * @return void
+     */
+    public static function maybe_migrate_currency_fields(): void {
+        if ( get_option( 'aura_finance_currency_fields_migrated_v1' ) ) {
+            return;
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_transactions';
+
+        $columns = $wpdb->get_col( $wpdb->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
+            DB_NAME,
+            $table
+        ) );
+
+        if ( ! in_array( 'currency', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN currency VARCHAR(10) NULL DEFAULT 'MXN' AFTER amount" );
+        }
+
+        if ( ! in_array( 'original_amount', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN original_amount DECIMAL(15,2) NULL AFTER currency" );
+        }
+
+        if ( ! in_array( 'exchange_rate', $columns, true ) ) {
+            $wpdb->query( "ALTER TABLE {$table} ADD COLUMN exchange_rate DECIMAL(12,4) NULL AFTER original_amount" );
+        }
+
+        update_option( 'aura_finance_currency_fields_migrated_v1', '1.0' );
     }
 
     /**

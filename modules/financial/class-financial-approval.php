@@ -108,8 +108,10 @@ class Aura_Financial_Approval {
                 isset( $transaction['source_account_id'] ) ? (int) $transaction['source_account_id'] : 0,
                 isset( $transaction['destination_account_id'] ) ? (int) $transaction['destination_account_id'] : 0,
                 array(
-                    'currency' => 'COP',
-                    'notes' => $approval_note,
+                    'currency'        => !empty($transaction['currency']) ? $transaction['currency'] : 'MXN',
+                    'account_amount'  => !empty($transaction['original_amount']) ? (float) $transaction['original_amount'] : null,
+                    'exchange_rate'   => !empty($transaction['exchange_rate']) ? (float) $transaction['exchange_rate'] : null,
+                    'notes'           => $approval_note,
                 )
             );
         }
@@ -301,8 +303,10 @@ class Aura_Financial_Approval {
                         isset( $transaction['source_account_id'] ) ? (int) $transaction['source_account_id'] : 0,
                         isset( $transaction['destination_account_id'] ) ? (int) $transaction['destination_account_id'] : 0,
                         array(
-                            'currency' => 'COP',
-                            'notes' => $approval_note,
+                            'currency'        => !empty($transaction['currency']) ? $transaction['currency'] : 'MXN',
+                            'account_amount'  => !empty($transaction['original_amount']) ? (float) $transaction['original_amount'] : null,
+                            'exchange_rate'   => !empty($transaction['exchange_rate']) ? (float) $transaction['exchange_rate'] : null,
+                            'notes'           => $approval_note,
                         )
                     );
                 }

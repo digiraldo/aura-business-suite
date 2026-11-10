@@ -333,6 +333,75 @@ if ( $_frm_view_own ) {
                         </div>
                     </div>
 
+                    <!-- Bloque Inteligente de Conversión Multidivisa (Aparece cuando la cuenta seleccionada no es la moneda base) -->
+                    <div id="aura-currency-conversion-card" class="aura-currency-card" style="display:none;" role="region" aria-label="<?php esc_attr_e('Conversión de Divisas', 'aura-suite'); ?>">
+                        <div class="aura-currency-card__header">
+                            <div class="aura-currency-card__title">
+                                <span class="aura-currency-card__icon">💱</span>
+                                <div>
+                                    <strong><?php _e('Conversión de Divisa Detectada', 'aura-suite'); ?></strong>
+                                    <span class="aura-currency-badge" id="aura-currency-badge">USD ⇄ MXN</span>
+                                </div>
+                            </div>
+                            <p class="aura-currency-card__desc" id="aura-currency-help-text">
+                                <?php _e('La cuenta seleccionada opera en una moneda diferente a la moneda base (MXN). Especifica el importe en la divisa de la cuenta y el tipo de cambio aplicado para sincronizar automáticamente el saldo bancario y la contabilidad.', 'aura-suite'); ?>
+                            </p>
+                        </div>
+
+                        <div class="aura-form-row aura-currency-fields-grid">
+                            <!-- 1. Monto en Divisa de la Cuenta -->
+                            <div class="aura-form-field aura-field-33">
+                                <label for="foreign_amount" class="required aura-label-with-help">
+                                    <span id="foreign-amount-label"><?php _e('Monto en Cuenta (USD)', 'aura-suite'); ?></span>
+                                    <span class="aura-help-icon aura-has-tooltip" data-tooltip="<?php esc_attr_e('Importe real que suma o resta al saldo bancario de la cuenta en su divisa nativa.', 'aura-suite'); ?>" tabindex="0" role="button" aria-label="<?php esc_attr_e('Ayuda: Monto en Cuenta', 'aura-suite'); ?>">
+                                        <span class="dashicons dashicons-editor-help"></span>
+                                    </span>
+                                </label>
+                                <div class="aura-input-group aura-amount-group">
+                                    <span class="aura-input-group-text foreign-currency-symbol">USD $</span>
+                                    <input type="number" id="foreign_amount" name="foreign_amount" step="0.01" min="0.01" placeholder="0.00" class="aura-input-highlight">
+                                </div>
+                                <span class="aura-field-subhint" id="foreign-amount-subhint"><?php _e('Afecta el saldo bancario real', 'aura-suite'); ?></span>
+                            </div>
+
+                            <!-- 2. Tipo de Cambio (T.C.) -->
+                            <div class="aura-form-field aura-field-33">
+                                <label for="exchange_rate" class="required aura-label-with-help">
+                                    <span id="exchange-rate-label"><?php _e('Tipo de Cambio (T.C.)', 'aura-suite'); ?></span>
+                                    <span class="aura-help-icon aura-has-tooltip" data-tooltip="<?php esc_attr_e('Tasa de cambio: precio de 1 unidad de divisa extranjera en pesos (MXN).', 'aura-suite'); ?>" tabindex="0" role="button" aria-label="<?php esc_attr_e('Ayuda: Tipo de Cambio', 'aura-suite'); ?>">
+                                        <span class="dashicons dashicons-editor-help"></span>
+                                    </span>
+                                </label>
+                                <div class="aura-input-group">
+                                    <span class="aura-input-group-text rate-prefix">1 <span id="rate-currency-code">USD</span> =</span>
+                                    <input type="number" id="exchange_rate" name="exchange_rate" step="0.0001" min="0.0001" placeholder="18.5000" value="18.5000">
+                                    <span class="aura-input-group-text rate-suffix">MXN</span>
+                                </div>
+                                <span class="aura-field-subhint"><?php _e('Tasa de conversión aplicada', 'aura-suite'); ?></span>
+                            </div>
+
+                            <!-- 3. Equivalente en Moneda Base -->
+                            <div class="aura-form-field aura-field-33">
+                                <label for="converted_base_display" class="aura-label-with-help">
+                                    <span><?php _e('Equivalente Contable (MXN)', 'aura-suite'); ?></span>
+                                    <span class="aura-help-icon aura-has-tooltip" data-tooltip="<?php esc_attr_e('Monto que se imputa a los presupuestos por área, categorías y reportes contables generales.', 'aura-suite'); ?>" tabindex="0" role="button" aria-label="<?php esc_attr_e('Ayuda: Equivalente Contable', 'aura-suite'); ?>">
+                                        <span class="dashicons dashicons-editor-help"></span>
+                                    </span>
+                                </label>
+                                <div class="aura-input-group aura-amount-group is-calculated">
+                                    <span class="aura-input-group-text">MXN $</span>
+                                    <input type="text" id="converted_base_display" readonly placeholder="0.00" class="aura-input-readonly">
+                                </div>
+                                <span class="aura-field-subhint" style="color:#059669;font-weight:600;"><?php _e('✓ Sincronizado con presupuestos', 'aura-suite'); ?></span>
+                            </div>
+                        </div>
+
+                        <!-- Variables ocultas enviadas al backend -->
+                        <input type="hidden" id="tx_currency" name="tx_currency" value="MXN">
+                        <input type="hidden" id="tx_original_amount" name="tx_original_amount" value="">
+                        <input type="hidden" id="tx_exchange_rate" name="tx_exchange_rate" value="">
+                    </div>
+
                     <div class="aura-form-row">
                         <div class="aura-form-field aura-field-100">
                             <label for="description" class="required aura-label-with-help">
@@ -678,6 +747,10 @@ if ( $_frm_view_own ) {
                     <div class="preview-amount">
                         <span class="amount-symbol">$</span>
                         <span class="amount-value">0.00</span>
+                    </div>
+                    <div class="preview-foreign-amount" style="display:none;font-size:12px;font-weight:600;color:#7c3aed;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;padding:3px 10px;margin-bottom:8px;text-align:center;">
+                        <span class="dashicons dashicons-money-alt" style="font-size:14px;width:14px;height:14px;vertical-align:middle;margin-right:3px;"></span>
+                        <span class="foreign-amount-text"></span>
                     </div>
 
                     <div class="preview-date">

@@ -225,10 +225,14 @@
         // Monto
         const amountPrefix = data.transaction_type === 'income' ? '+' : '-';
         const amountClass = data.transaction_type === 'income' ? 'income' : 'expense';
+        let amountText = amountPrefix + ' $' + formatNumber(data.amount || 0);
+        if (data.currency && data.currency !== 'MXN' && parseFloat(data.original_amount) > 0) {
+            amountText += ' (' + formatNumber(data.original_amount) + ' ' + data.currency + (parseFloat(data.exchange_rate) > 0 ? ' · T.C. ' + parseFloat(data.exchange_rate).toFixed(4) : '') + ')';
+        }
         $('#modal-amount')
             .removeClass()
             .addClass('amount-value amount-' + amountClass)
-            .text(amountPrefix + ' $' + formatNumber(data.amount || 0));
+            .text(amountText);
         
         // Icono de tipo
         const typeIcon = data.transaction_type === 'income' ? '💰' : '💸';

@@ -16,6 +16,7 @@
     let areaBudgetCategoriesMap = {};
     let activeAreaHasBudgetCategories = false;
     let currentAreaBudget = null;
+    let isSyncingCurrency = false;
     
     /**
      * Inicializar
@@ -67,16 +68,23 @@
             updateContextNote();
         });
 
-        // Cambios en selección de cuentas para guías visuales en tiempo real
+        // Cambios en selección de cuentas para guías visuales en tiempo real y multidivisa
         $(document).on('change', '#source_account_id, #destination_account_id', function () {
             updateAccountSelectionState();
+            checkCurrencyConversion();
             updateAccountImpactSummaries();
             updateContextNote();
         });
 
         $(document).on('input change', '#amount', function () {
+            syncFromBase();
             updateAccountImpactSummaries();
             checkOverspend();
+        });
+
+        // Multidivisa: eventos en importe extranjero y tipo de cambio
+        $(document).on('input change', '#foreign_amount, #exchange_rate', function () {
+            syncFromForeign();
         });
 
         // Fase 8: categoría → muestra banner de presupuesto + auto-filtrado inverso de áreas
@@ -193,11 +201,13 @@
             // Fase 8.4: recargar categoría del gasto por tipo
             loadExpenseCategoriesForType(type);
             toggleAccountFields(type);
+            checkCurrencyConversion();
             updateAccountGuidance(type);
         });
 
         const initialType = $('input[name="transaction_type"]:checked').val() || 'income';
         toggleAccountFields(initialType);
+        checkCurrencyConversion();
         updateContextNote();
         updateAccountGuidance(initialType);
         updateAccountSelectionState();
@@ -251,7 +261,8 @@
         const $selected = $select.find('option:selected');
         const id = ($selected.val() || '').toString().trim();
         const balanceRaw = parseFloat($selected.data('balance'));
-        const currency = ($selected.data('currency') || 'COP').toString();
+        const baseCurrency = (window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN';
+        const currency = ($selected.data('currency') || baseCurrency).toString();
 
         return {
             selected: !!id,
@@ -263,8 +274,10 @@
     }
 
     function formatAccountMoney(amount, currency) {
+        const baseCurrency = (window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN';
+        const curr = (currency || baseCurrency).toString().toUpperCase();
         const value = parseFloat(amount || 0);
-        return (currency || 'COP') + ' ' + value.toLocaleString('es-CO', {
+        return curr + ' $' + value.toLocaleString('es-MX', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
@@ -272,7 +285,11 @@
 
     function updateAccountImpactSummaries() {
         const type = $('input[name="transaction_type"]:checked').val() || 'income';
-        const amount = parseFloat($('#amount').val()) || 0;
+        const baseCurrency = ((window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN').toUpperCase();
+        const baseAmount = parseFloat($('#amount').val()) || 0;
+        const foreignAmount = parseFloat($('#foreign_amount').val()) || 0;
+        const isConversionActive = $('#aura-currency-conversion-card').is(':visible');
+
         const source = getSelectedAccountData('#source_account_id');
         const destination = getSelectedAccountData('#destination_account_id');
 
@@ -292,8 +309,10 @@
         $destinationImpact.hide().removeClass('has-impact').empty();
 
         if ((type === 'expense' || type === 'capital') && source.selected) {
-            const estimated = source.balance - amount;
-            const label = amount > 0 ? 'Impacto estimado al guardar (' + (type === 'capital' ? 'capital' : 'egreso') + ')' : 'Selecciona un monto para estimar impacto';
+            const isSourceForeign = source.currency && source.currency.toUpperCase() !== baseCurrency;
+            const effectiveImpact = (isSourceForeign && isConversionActive && foreignAmount > 0) ? foreignAmount : baseAmount;
+            const estimated = source.balance - effectiveImpact;
+            const label = effectiveImpact > 0 ? 'Impacto estimado al guardar (' + (type === 'capital' ? 'capital' : 'egreso') + ')' : 'Selecciona un monto para estimar impacto';
             $sourceImpact
                 .html(buildImpactHtml(label, source.balance, estimated, source.currency, 'down'))
                 .addClass('has-impact')
@@ -301,13 +320,149 @@
         }
 
         if (type === 'income' && destination.selected) {
-            const estimated = destination.balance + amount;
-            const label = amount > 0 ? 'Impacto estimado al guardar (ingreso)' : 'Selecciona un monto para estimar impacto';
+            const isDestForeign = destination.currency && destination.currency.toUpperCase() !== baseCurrency;
+            const effectiveImpact = (isDestForeign && isConversionActive && foreignAmount > 0) ? foreignAmount : baseAmount;
+            const estimated = destination.balance + effectiveImpact;
+            const label = effectiveImpact > 0 ? 'Impacto estimado al guardar (ingreso)' : 'Selecciona un monto para estimar impacto';
             $destinationImpact
                 .html(buildImpactHtml(label, destination.balance, estimated, destination.currency, 'up'))
                 .addClass('has-impact')
                 .show();
         }
+    }
+
+    /**
+     * Comprobar si la cuenta seleccionada requiere conversión de divisa
+     */
+    function checkCurrencyConversion() {
+        const type = $('input[name="transaction_type"]:checked').val() || 'income';
+        const isExpense = type === 'expense' || type === 'capital';
+        const baseCurrency = ((window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN').toUpperCase();
+        
+        const activeSelectId = isExpense ? '#source_account_id' : '#destination_account_id';
+        const accountData = getSelectedAccountData(activeSelectId);
+        
+        const $card = $('#aura-currency-conversion-card');
+        if (!$card.length) return;
+
+        const isForeign = accountData.selected && accountData.currency && (accountData.currency.toUpperCase() !== baseCurrency);
+
+        if (isForeign) {
+            const foreignCurr = accountData.currency.toUpperCase();
+            
+            // Actualizar etiquetas visuales con la divisa correspondiente
+            $('#aura-currency-badge').text(foreignCurr + ' ⇄ ' + baseCurrency);
+            $('#foreign-amount-label').text('Monto en Cuenta (' + foreignCurr + ')');
+            $('.foreign-currency-symbol').text(foreignCurr + ' $');
+            $('#rate-currency-code').text(foreignCurr);
+            $('#foreign-amount-subhint').text('Afecta el saldo bancario real (' + foreignCurr + ')');
+            
+            // Variables ocultas
+            $('#tx_currency').val(foreignCurr);
+
+            // Asegurar tipo de cambio por defecto si está vacío o en 0
+            let rate = parseFloat($('#exchange_rate').val());
+            if (isNaN(rate) || rate <= 0) {
+                rate = foreignCurr === 'USD' ? 18.50 : 1.0;
+                $('#exchange_rate').val(rate.toFixed(4));
+            }
+            $('#tx_exchange_rate').val(parseFloat($('#exchange_rate').val()).toFixed(4));
+
+            // Si hay un monto extranjero o monto base ya ingresado, sincronizar
+            const baseAmount = parseFloat($('#amount').val()) || 0;
+            const foreignAmount = parseFloat($('#foreign_amount').val()) || 0;
+
+            if (foreignAmount > 0) {
+                syncFromForeign();
+            } else if (baseAmount > 0) {
+                syncFromBase();
+            }
+
+            $card.slideDown(250);
+        } else {
+            $card.slideUp(200);
+            $('#tx_currency').val(baseCurrency);
+            $('#tx_original_amount').val('');
+            $('#tx_exchange_rate').val('');
+            $('#converted_base_display').val('');
+            $('#foreign_amount').val('');
+        }
+
+        updateAccountImpactSummaries();
+        updatePreview();
+    }
+
+    /**
+     * Sincronizar desde Monto en Divisa Extranjera -> Monto Base Contable
+     */
+    function syncFromForeign() {
+        const $card = $('#aura-currency-conversion-card');
+        if (!$card.is(':visible') || isSyncingCurrency) return;
+
+        isSyncingCurrency = true;
+        try {
+            const foreignAmount = parseFloat($('#foreign_amount').val());
+            const rate = parseFloat($('#exchange_rate').val());
+            const baseCurrency = ((window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN').toUpperCase();
+
+            if (!isNaN(foreignAmount) && !isNaN(rate) && rate > 0) {
+                const baseAmount = (foreignAmount * rate).toFixed(2);
+                $('#amount').val(baseAmount);
+                $('#converted_base_display').val(baseCurrency + ' $' + parseFloat(baseAmount).toLocaleString('es-MX', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }));
+                $('#tx_original_amount').val(foreignAmount.toFixed(2));
+                $('#tx_exchange_rate').val(rate.toFixed(4));
+            } else {
+                $('#converted_base_display').val('');
+                $('#tx_original_amount').val('');
+            }
+        } finally {
+            isSyncingCurrency = false;
+        }
+
+        updateAccountImpactSummaries();
+        updatePreview();
+        checkOverspend();
+        updateFormCompletion();
+    }
+
+    /**
+     * Sincronizar desde Monto Base Contable -> Monto en Divisa Extranjera
+     */
+    function syncFromBase() {
+        const $card = $('#aura-currency-conversion-card');
+        if (!$card.is(':visible') || isSyncingCurrency) return;
+
+        isSyncingCurrency = true;
+        try {
+            const baseAmount = parseFloat($('#amount').val());
+            const rate = parseFloat($('#exchange_rate').val());
+            const baseCurrency = ((window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN').toUpperCase();
+
+            if (!isNaN(baseAmount) && !isNaN(rate) && rate > 0) {
+                const foreignAmount = (baseAmount / rate).toFixed(2);
+                $('#foreign_amount').val(foreignAmount);
+                $('#converted_base_display').val(baseCurrency + ' $' + parseFloat(baseAmount).toLocaleString('es-MX', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }));
+                $('#tx_original_amount').val(foreignAmount);
+                $('#tx_exchange_rate').val(rate.toFixed(4));
+            } else {
+                $('#foreign_amount').val('');
+                $('#converted_base_display').val('');
+                $('#tx_original_amount').val('');
+            }
+        } finally {
+            isSyncingCurrency = false;
+        }
+
+        updateAccountImpactSummaries();
+        updatePreview();
+        checkOverspend();
+        updateFormCompletion();
     }
 
     function updateContextNote() {
@@ -898,6 +1053,30 @@
             setFieldSuccess($('#amount'));
         }
 
+        // Validar conversión multidivisa si está activa
+        if ($('#aura-currency-conversion-card').is(':visible')) {
+            const foreignAmount = parseFloat($('#foreign_amount').val());
+            const exchangeRate = parseFloat($('#exchange_rate').val());
+
+            if (!foreignAmount || foreignAmount <= 0) {
+                const msg = 'El monto en divisa de la cuenta debe ser mayor a 0';
+                errors.push(msg);
+                setFieldError($('#foreign_amount'), msg);
+                isValid = false;
+            } else {
+                setFieldSuccess($('#foreign_amount'));
+            }
+
+            if (!exchangeRate || exchangeRate <= 0) {
+                const msg = 'El tipo de cambio debe ser mayor a 0';
+                errors.push(msg);
+                setFieldError($('#exchange_rate'), msg);
+                isValid = false;
+            } else {
+                setFieldSuccess($('#exchange_rate'));
+            }
+        }
+
         // Validar fecha
         const date = $('#transaction_date').val();
         if (!date) {
@@ -957,12 +1136,18 @@
         // Preparar datos — incluyendo area_id desde el select o el hidden input
         const areaVal = $('#transaction_area_id').val() || $('input[type="hidden"][name="area_id"]').val() || '';
 
+        const isConversionActive = $('#aura-currency-conversion-card').is(':visible');
+        const baseCurrency = (window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN';
+
         const formData = {
             action: 'aura_save_transaction',
             nonce: auraTransactionData.nonce,
             transaction_type: $('input[name="transaction_type"]:checked').val(),
             category_id: $('#category_id').val(),
             amount: $('#amount').val(),
+            currency: isConversionActive ? ($('#tx_currency').val() || baseCurrency) : baseCurrency,
+            original_amount: isConversionActive ? ($('#tx_original_amount').val() || '') : '',
+            exchange_rate: isConversionActive ? ($('#tx_exchange_rate').val() || '') : '',
             transaction_date: formattedDate,
             description: $('#description').val(),
             payment_method: $('#payment_method').val(),
@@ -1384,6 +1569,22 @@
 
         // Monto
         $('.preview-amount .amount-value').text(parseFloat(amount).toFixed(2));
+        const baseSymbol = (window.auraTransactionData && window.auraTransactionData.currencySymbol) ? window.auraTransactionData.currencySymbol : '$';
+        $('.preview-amount .amount-symbol').text(baseSymbol);
+
+        // Previsualización de divisa extranjera
+        const $previewForeign = $('.preview-foreign-amount');
+        if ($previewForeign.length) {
+            if ($('#aura-currency-conversion-card').is(':visible') && $('#foreign_amount').val()) {
+                const fAmt = parseFloat($('#foreign_amount').val()) || 0;
+                const fCurr = $('#tx_currency').val() || 'USD';
+                const fRate = parseFloat($('#exchange_rate').val()) || 0;
+                $previewForeign.find('.foreign-amount-text').text(fAmt.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + fCurr + ' (T.C. ' + fRate.toFixed(4) + ')');
+                $previewForeign.show();
+            } else {
+                $previewForeign.hide();
+            }
+        }
 
         // Fecha
         $('.preview-date .date-text').text(date);
@@ -1922,6 +2123,8 @@
             related_user_concept: $('#related_user_concept').val(),
             notes: $('#notes').val(),
             tags: $('#tags').val(),
+            foreign_amount: $('#foreign_amount').val() || '',
+            exchange_rate: $('#exchange_rate').val() || '',
             timestamp: new Date().getTime()
         };
         
@@ -1968,6 +2171,13 @@
                 if (typeof draft.destination_account_id !== 'undefined') {
                     $('#destination_account_id').val(draft.destination_account_id);
                 }
+                if (typeof draft.foreign_amount !== 'undefined' && draft.foreign_amount !== '') {
+                    $('#foreign_amount').val(draft.foreign_amount);
+                }
+                if (typeof draft.exchange_rate !== 'undefined' && draft.exchange_rate !== '') {
+                    $('#exchange_rate').val(draft.exchange_rate);
+                }
+                checkCurrencyConversion();
                 if (draft.related_user_concept) {
                     $('#related_user_concept').val(draft.related_user_concept);
                 }

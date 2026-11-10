@@ -5195,26 +5195,39 @@ class Aura_Financial_Accounts {
             return false;
         }
 
+        // Si se especificó un monto en la divisa de la cuenta (account_amount / original_amount), usar ese
+        $movement_amount = $amount;
+        if (!empty($options['account_amount']) && (float) $options['account_amount'] > 0) {
+            $movement_amount = (float) $options['account_amount'];
+        } elseif (!empty($options['original_amount']) && (float) $options['original_amount'] > 0) {
+            $movement_amount = (float) $options['original_amount'];
+        }
+
+        $currency = !empty($options['currency']) ? sanitize_text_field($options['currency']) : null;
+        $exchange_rate = isset($options['exchange_rate']) && (float) $options['exchange_rate'] > 0 ? (float) $options['exchange_rate'] : null;
+
         if ($transaction_type === 'income' && $destination_account_id > 0) {
             return self::register_account_movement(array(
                 'account_id' => $destination_account_id,
                 'transaction_id' => $transaction_id,
                 'movement_type' => 'credit',
-                'amount' => $amount,
-                'currency' => $options['currency'] ?? 'COP',
+                'amount' => $movement_amount,
+                'currency' => $currency,
+                'exchange_rate' => $exchange_rate,
                 'reference_type' => 'transaction',
                 'reference_id' => $transaction_id,
                 'notes' => $options['notes'] ?? '',
             ));
         }
 
-        if ($transaction_type === 'expense' && $source_account_id > 0) {
+        if (($transaction_type === 'expense' || $transaction_type === 'capital') && $source_account_id > 0) {
             return self::register_account_movement(array(
                 'account_id' => $source_account_id,
                 'transaction_id' => $transaction_id,
                 'movement_type' => 'debit',
-                'amount' => $amount,
-                'currency' => $options['currency'] ?? 'COP',
+                'amount' => $movement_amount,
+                'currency' => $currency,
+                'exchange_rate' => $exchange_rate,
                 'reference_type' => 'transaction',
                 'reference_id' => $transaction_id,
                 'notes' => $options['notes'] ?? '',

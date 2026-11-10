@@ -831,13 +831,27 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             . '</div>'
             . '</div>'
             . '</div>';
+
+        $fx_badge = '';
+        if ( ! empty( $item->currency ) && $item->currency !== 'MXN' && ! empty( $item->original_amount ) && (float) $item->original_amount > 0 ) {
+            $formatted_orig = number_format( (float) $item->original_amount, 2, '.', ',' );
+            $rate_txt = ! empty( $item->exchange_rate ) ? ' · T.C. ' . number_format( (float) $item->exchange_rate, 4, '.', ',' ) : '';
+            $fx_badge = sprintf(
+                '<div style="font-size:11px;color:#4f46e5;font-weight:600;margin-top:2px;display:flex;align-items:center;gap:3px;" title="%s">%s %s%s</div>',
+                esc_attr( sprintf( __( 'Monto en cuenta: %s %s%s', 'aura-suite' ), $formatted_orig, $item->currency, $rate_txt ) ),
+                esc_html( $formatted_orig ),
+                esc_html( $item->currency ),
+                $rate_txt ? ' <span style="color:#64748b;font-weight:normal;font-size:10px;">(' . esc_html( trim( $rate_txt, ' ·' ) ) . ')</span>' : ''
+            );
+        }
         
         return sprintf(
-            '<strong class="aura-has-tooltip" data-tooltip="%s" style="color:%s;font-weight:700;white-space:nowrap;cursor:help;font-size:13px;">%s$%s</strong>',
+            '<strong class="aura-has-tooltip" data-tooltip="%s" style="color:%s;font-weight:700;white-space:nowrap;cursor:help;font-size:13px;">%s$%s</strong>%s',
             esc_attr( $tip_html ),
             esc_attr( $color ),
             esc_html( $sign ),
-            $formatted_amt
+            $formatted_amt,
+            $fx_badge
         );
     }
     
