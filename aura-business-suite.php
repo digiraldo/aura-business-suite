@@ -2631,8 +2631,8 @@ class Aura_Business_Suite
                 );
             }
 
-            // Resumen de Usuarios
-            if (current_user_can('aura_finance_view_user_summary') || current_user_can('aura_finance_view_all') || current_user_can('manage_options')) {
+            // Resumen de Usuarios (solo si la clase existe)
+            if (class_exists('Aura_Financial_User_Summary') && (current_user_can('aura_finance_view_user_summary') || current_user_can('aura_finance_view_all') || current_user_can('manage_options'))) {
                 add_submenu_page(
                     'aura-financial-dashboard',
                     __('Resumen de Usuarios', 'aura-suite'),
