@@ -77,14 +77,22 @@
         });
 
         $(document).on('input change', '#amount', function () {
-            syncFromBase();
+            syncFromBase('main');
             updateAccountImpactSummaries();
             checkOverspend();
         });
 
-        // Multidivisa: eventos en importe extranjero y tipo de cambio
-        $(document).on('input change', '#foreign_amount, #exchange_rate', function () {
+        // Multidivisa: eventos en importe extranjero, tipo de cambio y equivalente base
+        $(document).on('input change', '#foreign_amount', function () {
             syncFromForeign();
+        });
+
+        $(document).on('input change', '#exchange_rate', function () {
+            syncFromRate();
+        });
+
+        $(document).on('input change', '#converted_base_display', function () {
+            syncFromBase('display');
         });
 
         // Fase 8: categoría → muestra banner de presupuesto + auto-filtrado inverso de áreas
@@ -380,22 +388,26 @@
             // Variables ocultas
             $('#tx_currency').val(foreignCurr);
 
-            // Asegurar tipo de cambio por defecto si está vacío o en 0
-            let rate = parseFloat($('#exchange_rate').val());
-            if (isNaN(rate) || rate <= 0) {
-                rate = foreignCurr === 'USD' ? 18.50 : 1.0;
+            // Si hay un monto extranjero o monto base ya ingresado, sincronizar o estimar tasa
+            const baseAmount = parseFloat($('#amount').val()) || parseFloat($('#converted_base_display').val()) || 0;
+            const foreignAmount = parseFloat($('#foreign_amount').val()) || 0;
+            let rate = parseFloat($('#exchange_rate').val()) || 0;
+
+            if (rate <= 0 && foreignAmount > 0 && baseAmount > 0) {
+                rate = baseAmount / foreignAmount;
                 $('#exchange_rate').val(rate.toFixed(4));
             }
-            $('#tx_exchange_rate').val(parseFloat($('#exchange_rate').val()).toFixed(4));
 
-            // Si hay un monto extranjero o monto base ya ingresado, sincronizar
-            const baseAmount = parseFloat($('#amount').val()) || 0;
-            const foreignAmount = parseFloat($('#foreign_amount').val()) || 0;
+            if (rate > 0) {
+                $('#tx_exchange_rate').val(rate.toFixed(4));
+            }
 
-            if (foreignAmount > 0) {
+            if (foreignAmount > 0 && rate > 0) {
                 syncFromForeign();
-            } else if (baseAmount > 0) {
-                syncFromBase();
+            } else if (baseAmount > 0 && foreignAmount > 0) {
+                syncFromBase('main');
+            } else if (baseAmount > 0 && rate > 0) {
+                syncFromBase('main');
             }
 
             $card.slideDown(250);
@@ -413,7 +425,7 @@
     }
 
     /**
-     * Sincronizar desde Monto en Divisa Extranjera -> Monto Base Contable
+     * Sincronizar desde Monto en Divisa Extranjera (#foreign_amount)
      */
     function syncFromForeign() {
         const $card = $('#aura-currency-conversion-card');
@@ -423,16 +435,25 @@
         try {
             const foreignAmount = parseFloat($('#foreign_amount').val());
             const rate = parseFloat($('#exchange_rate').val());
-            const baseCurrency = ((window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN').toUpperCase();
+            const rawBase = $('#converted_base_display').val() || $('#amount').val();
+            const baseAmount = parseFloat(rawBase);
 
-            if (!isNaN(foreignAmount) && !isNaN(rate) && rate > 0) {
-                const baseAmount = (foreignAmount * rate).toFixed(2);
-                $('#amount').val(baseAmount);
-                $('#converted_base_display').val(formatAuraMoney(baseAmount, baseCurrency));
+            if (!isNaN(foreignAmount) && foreignAmount > 0) {
                 $('#tx_original_amount').val(foreignAmount.toFixed(2));
-                $('#tx_exchange_rate').val(rate.toFixed(4));
+
+                if (!isNaN(rate) && rate > 0) {
+                    // Si ya hay tasa, calcular monto base: B = F * R
+                    const calculatedBase = (foreignAmount * rate).toFixed(2);
+                    $('#amount').val(calculatedBase);
+                    $('#converted_base_display').val(calculatedBase);
+                    $('#tx_exchange_rate').val(rate.toFixed(4));
+                } else if (!isNaN(baseAmount) && baseAmount > 0) {
+                    // Si no hay tasa pero sí monto base, calcular tasa: R = B / F
+                    const calculatedRate = (baseAmount / foreignAmount);
+                    $('#exchange_rate').val(calculatedRate.toFixed(4));
+                    $('#tx_exchange_rate').val(calculatedRate.toFixed(4));
+                }
             } else {
-                $('#converted_base_display').val('');
                 $('#tx_original_amount').val('');
             }
         } finally {
@@ -446,28 +467,34 @@
     }
 
     /**
-     * Sincronizar desde Monto Base Contable -> Monto en Divisa Extranjera
+     * Sincronizar cuando el usuario escribe en Tipo de Cambio (#exchange_rate)
      */
-    function syncFromBase() {
+    function syncFromRate() {
         const $card = $('#aura-currency-conversion-card');
         if (!$card.is(':visible') || isSyncingCurrency) return;
 
         isSyncingCurrency = true;
         try {
-            const baseAmount = parseFloat($('#amount').val());
             const rate = parseFloat($('#exchange_rate').val());
-            const baseCurrency = ((window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN').toUpperCase();
+            const foreignAmount = parseFloat($('#foreign_amount').val());
+            const rawBase = $('#converted_base_display').val() || $('#amount').val();
+            const baseAmount = parseFloat(rawBase);
 
-            if (!isNaN(baseAmount) && !isNaN(rate) && rate > 0) {
-                const foreignAmount = (baseAmount / rate).toFixed(2);
-                $('#foreign_amount').val(foreignAmount);
-                $('#converted_base_display').val(formatAuraMoney(baseAmount, baseCurrency));
-                $('#tx_original_amount').val(foreignAmount);
+            if (!isNaN(rate) && rate > 0) {
                 $('#tx_exchange_rate').val(rate.toFixed(4));
+                if (!isNaN(foreignAmount) && foreignAmount > 0) {
+                    // B = F * R
+                    const calculatedBase = (foreignAmount * rate).toFixed(2);
+                    $('#amount').val(calculatedBase);
+                    $('#converted_base_display').val(calculatedBase);
+                } else if (!isNaN(baseAmount) && baseAmount > 0) {
+                    // F = B / R
+                    const calculatedForeign = (baseAmount / rate).toFixed(2);
+                    $('#foreign_amount').val(calculatedForeign);
+                    $('#tx_original_amount').val(calculatedForeign);
+                }
             } else {
-                $('#foreign_amount').val('');
-                $('#converted_base_display').val('');
-                $('#tx_original_amount').val('');
+                $('#tx_exchange_rate').val('');
             }
         } finally {
             isSyncingCurrency = false;
@@ -475,6 +502,60 @@
 
         updateAccountImpactSummaries();
         updatePreview();
+        checkOverspend();
+        updateFormCompletion();
+    }
+
+    /**
+     * Sincronizar desde Monto Base (#converted_base_display o #amount)
+     */
+    function syncFromBase(sourceField) {
+        const $card = $('#aura-currency-conversion-card');
+        if (!$card.is(':visible') || isSyncingCurrency) return;
+
+        isSyncingCurrency = true;
+        try {
+            const rawVal = sourceField === 'display' ? $('#converted_base_display').val() : $('#amount').val();
+            const baseAmount = parseFloat(rawVal);
+            const foreignAmount = parseFloat($('#foreign_amount').val());
+            const rate = parseFloat($('#exchange_rate').val());
+
+            if (!isNaN(baseAmount) && baseAmount >= 0) {
+                if (sourceField === 'display') {
+                    $('#amount').val(baseAmount.toFixed(2));
+                } else {
+                    $('#converted_base_display').val(baseAmount.toFixed(2));
+                }
+
+                if (!isNaN(foreignAmount) && foreignAmount > 0) {
+                    // ¡Calcular Tasa de Cambio R = B / F!
+                    const calculatedRate = (baseAmount / foreignAmount);
+                    $('#exchange_rate').val(calculatedRate.toFixed(4));
+                    $('#tx_exchange_rate').val(calculatedRate.toFixed(4));
+                    $('#tx_original_amount').val(foreignAmount.toFixed(2));
+                } else if (!isNaN(rate) && rate > 0) {
+                    // Si no hay monto extranjero pero sí tasa, F = B / R
+                    const calculatedForeign = (baseAmount / rate).toFixed(2);
+                    $('#foreign_amount').val(calculatedForeign);
+                    $('#tx_original_amount').val(calculatedForeign);
+                    $('#tx_exchange_rate').val(rate.toFixed(4));
+                }
+            } else {
+                if (sourceField === 'display') {
+                    $('#amount').val('');
+                } else {
+                    $('#converted_base_display').val('');
+                }
+            }
+        } finally {
+            isSyncingCurrency = false;
+        }
+
+        updateAccountImpactSummaries();
+        updatePreview();
+        checkOverspend();
+        updateFormCompletion();
+    }
         checkOverspend();
         updateFormCompletion();
     }

@@ -377,7 +377,7 @@ if ( $_frm_view_own ) {
                                 </label>
                                 <div class="aura-input-group">
                                     <span class="aura-input-group-text rate-prefix">1 <span id="rate-currency-code">USD</span> =</span>
-                                    <input type="number" id="exchange_rate" name="exchange_rate" step="0.0001" min="0.0001" placeholder="18.5000" value="18.5000">
+                                    <input type="number" id="exchange_rate" name="exchange_rate" step="0.0001" min="0.0001" placeholder="0.0000">
                                     <span class="aura-input-group-text rate-suffix"><?php echo esc_html($base_currency); ?></span>
                                 </div>
                                 <span class="aura-field-subhint"><?php _e('Tasa de conversión aplicada', 'aura-suite'); ?></span>
@@ -387,15 +387,15 @@ if ( $_frm_view_own ) {
                             <div class="aura-form-field aura-field-33">
                                 <label for="converted_base_display" class="aura-label-with-help">
                                     <span><?php printf(__('Equivalente Contable (%s)', 'aura-suite'), esc_html($base_currency)); ?></span>
-                                    <span class="aura-help-icon aura-has-tooltip" data-tooltip="<?php esc_attr_e('Monto que se imputa a los presupuestos por área, categorías y reportes contables generales.', 'aura-suite'); ?>" tabindex="0" role="button" aria-label="<?php esc_attr_e('Ayuda: Equivalente Contable', 'aura-suite'); ?>">
+                                    <span class="aura-help-icon aura-has-tooltip" data-tooltip="<?php esc_attr_e('Monto que se imputa a los presupuestos por área, categorías y reportes contables generales. Puedes editarlo para que calcule el Tipo de Cambio automáticamente.', 'aura-suite'); ?>" tabindex="0" role="button" aria-label="<?php esc_attr_e('Ayuda: Equivalente Contable', 'aura-suite'); ?>">
                                         <span class="dashicons dashicons-editor-help"></span>
                                     </span>
                                 </label>
-                                <div class="aura-input-group aura-amount-group is-calculated">
+                                <div class="aura-input-group aura-amount-group">
                                     <span class="aura-input-group-text base-currency-addon"><?php echo esc_html($base_currency . ' ' . $currency_symbol); ?></span>
-                                    <input type="text" id="converted_base_display" readonly placeholder="0.00" class="aura-input-readonly">
+                                    <input type="number" id="converted_base_display" step="0.01" min="0.01" placeholder="0.00" class="aura-input-highlight">
                                 </div>
-                                <span class="aura-field-subhint" style="color:#059669;font-weight:600;"><?php _e('✓ Sincronizado con presupuestos', 'aura-suite'); ?></span>
+                                <span class="aura-field-subhint" style="color:#059669;font-weight:600;"><?php _e('✓ Sincronizado con presupuestos (editable)', 'aura-suite'); ?></span>
                             </div>
                         </div>
 
