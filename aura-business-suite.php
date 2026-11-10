@@ -87,6 +87,7 @@ class Aura_Business_Suite
         require_once AURA_PLUGIN_DIR . 'modules/common/class-portable-bundle.php';
 
         // Módulo Financiero
+        require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-currency.php';
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-cpt.php';
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-categories-cpt.php';
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-categories.php';

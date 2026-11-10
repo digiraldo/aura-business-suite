@@ -112,11 +112,20 @@ jQuery(function ($) {
     }
 
     function formatNumber(value) {
+        const config = (window.auraFinancialAccounts && window.auraFinancialAccounts.currencyConfig) || {};
         const amount = parseFloat(value || 0);
-        return amount.toLocaleString('es-CO', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        const decimals = typeof config.decimals !== 'undefined' ? parseInt(config.decimals, 10) : 2;
+        const decSep = config.decimal_separator || '.';
+        const thoSep = typeof config.thousand_separator !== 'undefined' ? config.thousand_separator : ',';
+
+        const parts = amount.toFixed(decimals).split('.');
+        let intPart = parts[0];
+        const decPart = parts[1] || '';
+
+        if (thoSep !== '') {
+            intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, thoSep);
+        }
+        return decimals > 0 ? (intPart + decSep + decPart) : intPart;
     }
 
     function typeBadge(type) {
@@ -762,14 +771,15 @@ jQuery(function ($) {
         let active = 0;
         let balLocal = 0;
         let balUsd = 0;
+        const baseCurr = ((window.auraFinancialAccounts && window.auraFinancialAccounts.baseCurrency) || 'MXN').toUpperCase();
 
         accounts.forEach(function (a) {
             if (parseInt(a.is_active, 10) === 1) {
                 active++;
             }
             const bal = parseFloat(a.current_balance || 0);
-            const curr = String(a.currency || 'COP').toUpperCase();
-            if (curr === 'USD') {
+            const curr = String(a.currency || baseCurr).toUpperCase();
+            if (curr === 'USD' && baseCurr !== 'USD') {
                 balUsd += bal;
             } else {
                 balLocal += bal;

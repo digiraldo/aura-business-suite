@@ -9,6 +9,9 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+
+$base_curr = function_exists('aura_get_base_currency') ? aura_get_base_currency() : 'MXN';
+$base_symbol = function_exists('aura_get_currency_symbol') ? aura_get_currency_symbol() : '$';
 ?>
 
 <div class="aura-app-wrapper aura-financial-accounts-page">
@@ -34,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </span>
                         <span class="badge badge-emerald">
                             <span class="pulse-dot"></span>
-                            <?php _e('Multi-divisa (COP/USD/EUR)', 'aura-suite'); ?>
+                            <?php printf(__('Multi-divisa (%s/USD/EUR)', 'aura-suite'), esc_html($base_curr)); ?>
                         </span>
                     </div>
                     <p class="aura-page-subtitle hero-desc" style="margin: 6px 0 0; color: rgba(255, 255, 255, 0.88) !important; font-size: 0.88rem; line-height: 1.45;">
@@ -113,9 +116,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                     <div class="kpi-card kpi-blue card-lift">
                         <div class="kpi-icon"><span class="dashicons dashicons-money-alt"></span></div>
-                        <span class="kpi-label"><?php _e('Saldo Total (COP)', 'aura-suite'); ?></span>
+                        <span class="kpi-label"><?php printf(__('Saldo Total (%s)', 'aura-suite'), esc_html($base_curr)); ?></span>
                         <div class="kpi-value"><strong id="aura-kpi-balance-cop">0</strong></div>
-                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Moneda Local', 'aura-suite'); ?></div>
+                        <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Moneda Base', 'aura-suite'); ?></div>
                     </div>
                     <div class="kpi-card kpi-cyan card-lift">
                         <div class="kpi-icon"><span class="dashicons dashicons-chart-line"></span></div>
@@ -169,7 +172,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <tr>
                                 <th><span class="dashicons dashicons-bank" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Cuenta', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Nombre de la cuenta bancaria o caja y su entidad financiera.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
                                 <th><span class="dashicons dashicons-category" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Tipo', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Clasificación operativa: Banco, Caja Menor, Tarjeta, etc.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
-                                <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Moneda', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Moneda base de la cuenta (COP, USD, EUR, etc.).', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
+                                <th><span class="dashicons dashicons-money-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Moneda', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php echo esc_attr(sprintf(__('Moneda base de la cuenta (%s, USD, EUR, etc.).', 'aura-suite'), $base_curr)); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
                                 <th><span class="dashicons dashicons-chart-area" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Saldo actual', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Saldo disponible consolidado y número enmascarado.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
                                 <th><span class="dashicons dashicons-yes-alt" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Estado', 'aura-suite'); ?> <button type="button" class="aura-help-tip" data-tooltip="<?php esc_attr_e('Condición de operatividad: Activa o Inactiva.', 'aura-suite'); ?>" aria-label="<?php esc_attr_e('Ayuda', 'aura-suite'); ?>">?</button></th>
                                 <th><span class="dashicons dashicons-admin-generic" style="vertical-align:middle;margin-right:4px;"></span><?php _e('Acciones', 'aura-suite'); ?></th>
@@ -1919,7 +1922,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                     <div class="aura-field">
                         <label for="aura-account-currency" class="aura-label"><strong><?php _e('Moneda', 'aura-suite'); ?></strong></label>
-                        <input type="text" class="aura-input" name="currency" id="aura-account-currency" required value="COP">
+                        <input type="text" class="aura-input" name="currency" id="aura-account-currency" required value="<?php echo esc_attr($base_curr); ?>">
                     </div>
                     <div class="aura-field">
                         <label for="aura-account-institution" class="aura-label"><strong><?php _e('Institución', 'aura-suite'); ?></strong></label>

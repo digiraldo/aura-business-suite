@@ -64,6 +64,37 @@ if (isset($_POST['aura_save_settings']) && wp_verify_nonce($_POST['aura_settings
     update_option('aura_notification_email',       sanitize_email($_POST['notification_email']));
     update_option('aura_notification_from_name',   sanitize_text_field($_POST['notification_from_name']));
 
+    // ── Moneda Base y Formato Internacional (ISO 4217) ──────────────────────
+    if (isset($_POST['aura_finance_base_currency'])) {
+        $clean_base_curr = strtoupper(sanitize_text_field($_POST['aura_finance_base_currency']));
+        if (!empty($clean_base_curr)) {
+            update_option('aura_finance_base_currency', $clean_base_curr);
+            update_option('aura_finance_currency', $clean_base_curr); // Sincronizar clave heredada
+        }
+    }
+    if (isset($_POST['aura_currency_symbol'])) {
+        update_option('aura_currency_symbol', sanitize_text_field($_POST['aura_currency_symbol']));
+    }
+    if (isset($_POST['aura_currency_symbol_position'])) {
+        $pos = sanitize_key($_POST['aura_currency_symbol_position']);
+        if (in_array($pos, ['before', 'after'], true)) {
+            update_option('aura_currency_symbol_position', $pos);
+        }
+    }
+    if (isset($_POST['aura_currency_decimal_separator'])) {
+        $dec_sep = sanitize_text_field($_POST['aura_currency_decimal_separator']);
+        if (in_array($dec_sep, ['.', ','], true)) {
+            update_option('aura_currency_decimal_separator', $dec_sep);
+        }
+    }
+    if (isset($_POST['aura_currency_thousand_separator'])) {
+        $tho_sep = sanitize_text_field($_POST['aura_currency_thousand_separator']);
+        update_option('aura_currency_thousand_separator', $tho_sep);
+    }
+    if (isset($_POST['aura_currency_decimals'])) {
+        update_option('aura_currency_decimals', absint($_POST['aura_currency_decimals']));
+    }
+
     $auto_approval_mode = sanitize_text_field($_POST['auto_approval_mode'] ?? 'expenses_threshold_income_auto');
     update_option('aura_finance_auto_approval_enabled',               isset($_POST['auto_approval_enabled']));
     update_option('aura_finance_auto_approval_threshold',             floatval($_POST['auto_approval_threshold'] ?? 0));
@@ -144,6 +175,15 @@ if (isset($_POST['aura_save_settings']) && wp_verify_nonce($_POST['aura_settings
 }
 
 // ── Obtener configuración actual ──────────────────────────────────────────
+$currency_config          = class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_config() : [
+    'base_currency'      => 'MXN',
+    'symbol'             => '$',
+    'symbol_position'    => 'before',
+    'decimal_separator'  => '.',
+    'thousand_separator' => ',',
+    'decimals'           => 2,
+];
+$all_currencies           = class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_currencies() : [];
 $notification_email       = get_option('aura_notification_email', get_option('admin_email'));
 $notification_from_name   = get_option('aura_notification_from_name', get_bloginfo('name'));
 $auto_approval_enabled    = get_option('aura_finance_auto_approval_enabled', false);
@@ -523,7 +563,162 @@ document.addEventListener('DOMContentLoaded', function () {
                  TAB: FINANZAS
                  ═══════════════════════════════════════════ -->
             <div class="aura-tab-panel" id="tab-finance">
-                <!-- Aprobación Automática -->
+                <!-- ── 1. Moneda Base y Formato Internacional (ISO 4217) ── -->
+                <div class="aura-glass-card glass-card fade-up" style="margin-bottom:24px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+                        <h2 class="aura-section-title" style="margin:0;">
+                            <span class="dashicons dashicons-money-alt"></span>
+                            <?php esc_html_e('Moneda Base y Formato Monetario Internacional (ISO 4217)', 'aura-suite'); ?>
+                        </h2>
+                        <span class="badge badge-indigo" id="aura-active-currency-badge" style="font-size:12px;padding:5px 12px;">
+                            <?php echo esc_html($currency_config['base_currency']); ?> (<?php echo esc_html($currency_config['symbol']); ?>)
+                        </span>
+                    </div>
+                    <p class="aura-desc" style="margin-bottom:20px;line-height:1.6;">
+                        <?php esc_html_e('Define la moneda funcional de la empresa de acuerdo a normas contables internacionales (NIC 21). Todos los presupuestos por área, categorías y reportes consolidados se liquidan en esta moneda base. Las cuentas bancarias y transacciones individuales pueden operar en cualquier otra divisa (USD, EUR, etc.) con conversión inteligente en tiempo real.', 'aura-suite'); ?>
+                    </p>
+
+                    <div class="aura-field-group cols-3" style="margin-bottom:18px;">
+                        <!-- Selector de Moneda Base -->
+                        <div class="aura-field">
+                            <label class="aura-label" for="aura_finance_base_currency">
+                                <?php esc_html_e('Moneda Base Principal', 'aura-suite'); ?>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Moneda operativa principal de la organización (ISO 4217). Al cambiarla, se actualizan los valores recomendados de símbolo y separadores.', 'aura-suite'); ?>">?</span>
+                            </label>
+                            <select id="aura_finance_base_currency" name="aura_finance_base_currency" class="aura-select select-fancy" style="font-weight:600;">
+                                <?php foreach ($all_currencies as $code => $curr_data) : ?>
+                                    <option value="<?php echo esc_attr($code); ?>"
+                                            data-symbol="<?php echo esc_attr($curr_data['symbol']); ?>"
+                                            data-decimals="<?php echo esc_attr($curr_data['decimals']); ?>"
+                                            data-pos="<?php echo esc_attr($curr_data['pos']); ?>"
+                                            data-dec="<?php echo esc_attr($curr_data['dec']); ?>"
+                                            data-tho="<?php echo esc_attr($curr_data['tho']); ?>"
+                                            <?php selected($currency_config['base_currency'], $code); ?>>
+                                        <?php echo esc_html($code . ' — ' . $curr_data['name'] . ' (' . $curr_data['symbol'] . ')'); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <span class="aura-desc"><?php esc_html_e('Moneda oficial de reporte y presupuestos.', 'aura-suite'); ?></span>
+                        </div>
+
+                        <!-- Símbolo de Moneda -->
+                        <div class="aura-field">
+                            <label class="aura-label" for="aura_currency_symbol">
+                                <?php esc_html_e('Símbolo de la Moneda', 'aura-suite'); ?>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Símbolo que acompaña las cantidades monetarias ($, €, US$, S/, £, etc.).', 'aura-suite'); ?>">?</span>
+                            </label>
+                            <input type="text" id="aura_currency_symbol" name="aura_currency_symbol" class="aura-input input-fancy"
+                                   value="<?php echo esc_attr($currency_config['symbol']); ?>" maxlength="10" required>
+                            <span class="aura-desc"><?php esc_html_e('Ejemplo: $, €, US$, S/, C$, £', 'aura-suite'); ?></span>
+                        </div>
+
+                        <!-- Ubicación del Símbolo -->
+                        <div class="aura-field">
+                            <label class="aura-label" for="aura_currency_symbol_position">
+                                <?php esc_html_e('Posición del Símbolo', 'aura-suite'); ?>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Ubicación del símbolo monetario respecto a la cantidad numérica.', 'aura-suite'); ?>">?</span>
+                            </label>
+                            <select id="aura_currency_symbol_position" name="aura_currency_symbol_position" class="aura-select select-fancy">
+                                <option value="before" <?php selected($currency_config['symbol_position'], 'before'); ?>>
+                                    <?php esc_html_e('Antes del número ($ 1,000.00)', 'aura-suite'); ?>
+                                </option>
+                                <option value="after" <?php selected($currency_config['symbol_position'], 'after'); ?>>
+                                    <?php esc_html_e('Después del número (1,000.00 $)', 'aura-suite'); ?>
+                                </option>
+                            </select>
+                            <span class="aura-desc"><?php esc_html_e('Formato según la costumbre regional.', 'aura-suite'); ?></span>
+                        </div>
+                    </div>
+
+                    <div class="aura-field-group cols-3" style="margin-bottom:20px;">
+                        <!-- Separador Decimal -->
+                        <div class="aura-field">
+                            <label class="aura-label" for="aura_currency_decimal_separator">
+                                <?php esc_html_e('Separador Decimal', 'aura-suite'); ?>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Carácter que separa la parte entera de los centavos.', 'aura-suite'); ?>">?</span>
+                            </label>
+                            <select id="aura_currency_decimal_separator" name="aura_currency_decimal_separator" class="aura-select select-fancy">
+                                <option value="." <?php selected($currency_config['decimal_separator'], '.'); ?>>
+                                    <?php esc_html_e('Punto (.) — Estándar América / México / EE.UU.', 'aura-suite'); ?>
+                                </option>
+                                <option value="," <?php selected($currency_config['decimal_separator'], ','); ?>>
+                                    <?php esc_html_e('Coma (,) — Estándar Europa / Sudamérica', 'aura-suite'); ?>
+                                </option>
+                            </select>
+                            <span class="aura-desc"><?php esc_html_e('Ejemplo: 1250.50 vs 1250,50', 'aura-suite'); ?></span>
+                        </div>
+
+                        <!-- Separador de Miles -->
+                        <div class="aura-field">
+                            <label class="aura-label" for="aura_currency_thousand_separator">
+                                <?php esc_html_e('Separador de Miles', 'aura-suite'); ?>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Carácter que separa los millares.', 'aura-suite'); ?>">?</span>
+                            </label>
+                            <select id="aura_currency_thousand_separator" name="aura_currency_thousand_separator" class="aura-select select-fancy">
+                                <option value="," <?php selected($currency_config['thousand_separator'], ','); ?>>
+                                    <?php esc_html_e('Coma (,) — ej. 1,000,000', 'aura-suite'); ?>
+                                </option>
+                                <option value="." <?php selected($currency_config['thousand_separator'], '.'); ?>>
+                                    <?php esc_html_e('Punto (.) — ej. 1.000.000', 'aura-suite'); ?>
+                                </option>
+                                <option value=" " <?php selected($currency_config['thousand_separator'], ' '); ?>>
+                                    <?php esc_html_e('Espacio ( ) — ej. 1 000 000', 'aura-suite'); ?>
+                                </option>
+                                <option value="" <?php selected($currency_config['thousand_separator'], ''); ?>>
+                                    <?php esc_html_e('Sin separador — ej. 1000000', 'aura-suite'); ?>
+                                </option>
+                            </select>
+                            <span class="aura-desc"><?php esc_html_e('Legibilidad para importes grandes.', 'aura-suite'); ?></span>
+                        </div>
+
+                        <!-- Cantidad de Decimales -->
+                        <div class="aura-field">
+                            <label class="aura-label" for="aura_currency_decimals">
+                                <?php esc_html_e('Cantidad de Decimales', 'aura-suite'); ?>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Número de cifras decimales a mostrar.', 'aura-suite'); ?>">?</span>
+                            </label>
+                            <select id="aura_currency_decimals" name="aura_currency_decimals" class="aura-select select-fancy">
+                                <option value="2" <?php selected($currency_config['decimals'], 2); ?>>
+                                    <?php esc_html_e('2 decimales (0.00 — Estándar)', 'aura-suite'); ?>
+                                </option>
+                                <option value="0" <?php selected($currency_config['decimals'], 0); ?>>
+                                    <?php esc_html_e('0 decimales (Sin centavos: JPY, CLP, COP)', 'aura-suite'); ?>
+                                </option>
+                                <option value="3" <?php selected($currency_config['decimals'], 3); ?>>
+                                    <?php esc_html_e('3 decimales (0.000)', 'aura-suite'); ?>
+                                </option>
+                                <option value="4" <?php selected($currency_config['decimals'], 4); ?>>
+                                    <?php esc_html_e('4 decimales (0.0000 — Precisión alta)', 'aura-suite'); ?>
+                                </option>
+                            </select>
+                            <span class="aura-desc"><?php esc_html_e('Precisión de centavos en la plataforma.', 'aura-suite'); ?></span>
+                        </div>
+                    </div>
+
+                    <!-- Vista Previa en Tiempo Real -->
+                    <div style="background:rgba(248,250,252,0.8);border:1px dashed #cbd5e1;border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:22px;">👁️</span>
+                            <div>
+                                <strong style="font-size:13px;color:#1e293b;display:block;"><?php esc_html_e('Vista Previa en Tiempo Real del Formato Monetario', 'aura-suite'); ?></strong>
+                                <span style="font-size:12px;color:#64748b;"><?php esc_html_e('Así se verán los importes en toda la plataforma:', 'aura-suite'); ?></span>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+                            <span style="padding:4px 10px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:8px;font-weight:700;font-size:13px;" id="aura-curr-preview-income">
+                                +<?php echo esc_html(aura_format_money(12500.50)); ?>
+                            </span>
+                            <span style="padding:4px 10px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:8px;font-weight:700;font-size:13px;" id="aura-curr-preview-expense">
+                                -<?php echo esc_html(aura_format_money(3420.00)); ?>
+                            </span>
+                            <span style="padding:4px 10px;background:#f5f3ff;border:1px solid #ddd6fe;color:#5b21b6;border-radius:8px;font-weight:700;font-size:13px;" id="aura-curr-preview-fx">
+                                <?php echo esc_html(aura_format_money(100.00, 'USD')); ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── 2. Aprobación Automática ── -->
                 <div class="aura-glass-card glass-card fade-up">
                     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
                         <h2 class="aura-section-title" style="margin:0;">
@@ -596,7 +791,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Monto límite para la regla. Los egresos menores a este valor se aprueban automáticamente; montos iguales o mayores quedan pendientes de revisión.', 'aura-suite'); ?>">?</span>
                                 </label>
                                 <div class="aura-input-group aura-amount-group">
-                                    <span class="aura-input-group-text currency-symbol">$</span>
+                                    <span class="aura-input-group-text currency-symbol"><?php echo esc_html($currency_config['symbol']); ?></span>
                                     <input type="number" id="auto_approval_threshold" name="auto_approval_threshold" class="aura-input input-fancy"
                                            value="<?php echo esc_attr($auto_approval_threshold); ?>"
                                            step="0.01" min="0" placeholder="500.00">
@@ -1461,6 +1656,56 @@ jQuery(document).ready(function ($) {
     $('input[name="gdrive_type"]').on('change', function () {
         $('.aura-storage-type-card').removeClass('is-selected');
         $(this).closest('.aura-storage-type-card').addClass('is-selected');
+    });
+
+    // ── Moneda Base y Formato Regional: Actualización y Vista Previa en Vivo ──
+    function updateCurrencyLivePreview() {
+        var baseCurr = $('#aura_finance_base_currency').val() || 'MXN';
+        var symbol   = $('#aura_currency_symbol').val() || '$';
+        var pos      = $('#aura_currency_symbol_position').val() || 'before';
+        var decSep   = $('#aura_currency_decimal_separator').val() || '.';
+        var thoSep   = $('#aura_currency_thousand_separator').val();
+        var decimals = parseInt($('#aura_currency_decimals').val(), 10);
+        if (isNaN(decimals)) decimals = 2;
+
+        function formatVal(val) {
+            var parts = val.toFixed(decimals).split('.');
+            var intPart = parts[0];
+            var decPart = parts[1] || '';
+
+            if (thoSep !== '') {
+                intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, thoSep);
+            }
+            var numStr = decimals > 0 ? intPart + decSep + decPart : intPart;
+            return pos === 'after' ? (numStr + ' ' + symbol) : (symbol + numStr);
+        }
+
+        $('#aura-active-currency-badge').text(baseCurr + ' (' + symbol + ')');
+        $('.currency-symbol').text(symbol);
+        $('#aura-curr-preview-income').text('+' + formatVal(12500.50));
+        $('#aura-curr-preview-expense').text('-' + formatVal(3420.00));
+        $('#aura-curr-preview-fx').text(formatVal(100.00) + ' USD');
+    }
+
+    $('#aura_finance_base_currency').on('change', function () {
+        var $opt = $(this).find('option:selected');
+        var sym = $opt.data('symbol');
+        var pos = $opt.data('pos');
+        var dec = $opt.data('dec');
+        var tho = $opt.data('tho');
+        var decs = $opt.data('decimals');
+
+        if (typeof sym !== 'undefined') $('#aura_currency_symbol').val(sym);
+        if (typeof pos !== 'undefined') $('#aura_currency_symbol_position').val(pos);
+        if (typeof dec !== 'undefined') $('#aura_currency_decimal_separator').val(dec);
+        if (typeof tho !== 'undefined') $('#aura_currency_thousand_separator').val(tho);
+        if (typeof decs !== 'undefined') $('#aura_currency_decimals').val(decs);
+
+        updateCurrencyLivePreview();
+    });
+
+    $('#aura_currency_symbol, #aura_currency_symbol_position, #aura_currency_decimal_separator, #aura_currency_thousand_separator, #aura_currency_decimals').on('input change', function () {
+        updateCurrencyLivePreview();
     });
 
     // ── WhatsApp: visibilidad de campos según proveedor ───────────

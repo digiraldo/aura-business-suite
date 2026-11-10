@@ -1200,7 +1200,10 @@ class Aura_Financial_Dashboard {
         );
     }
 
-    private static function fmt_money( $amount ) {
+    private static function fmt_money( $amount, $currency = null ) {
+        if ( function_exists( 'aura_format_money' ) ) {
+            return aura_format_money( $amount, $currency );
+        }
         return '$' . number_format( (float) $amount, 2, '.', ',' );
     }
 

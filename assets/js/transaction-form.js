@@ -273,14 +273,34 @@
         };
     }
 
+    function formatAuraMoney(amount, currency) {
+        const config = (window.auraTransactionData && window.auraTransactionData.currencyConfig) || {};
+        const baseCurr = ((window.auraTransactionData && window.auraTransactionData.baseCurrency) || config.base_currency || 'MXN').toUpperCase();
+        const curr = currency ? String(currency).toUpperCase() : baseCurr;
+        const isBase = (curr === baseCurr);
+
+        const decimals = typeof config.decimals !== 'undefined' ? parseInt(config.decimals, 10) : 2;
+        const decSep   = config.decimal_separator || '.';
+        const thoSep   = typeof config.thousand_separator !== 'undefined' ? config.thousand_separator : ',';
+        const pos      = config.symbol_position || 'before';
+        const symbol   = isBase ? ((window.auraTransactionData && window.auraTransactionData.currencySymbol) || config.symbol || '$') : '$';
+
+        const val = parseFloat(amount || 0);
+        const parts = val.toFixed(decimals).split('.');
+        let intPart = parts[0];
+        const decPart = parts[1] || '';
+
+        if (thoSep !== '') {
+            intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, thoSep);
+        }
+        const numStr = decimals > 0 ? (intPart + decSep + decPart) : intPart;
+        const formatted = (pos === 'after') ? (numStr + ' ' + symbol) : (symbol + numStr);
+
+        return isBase ? formatted : (formatted + ' ' + curr);
+    }
+
     function formatAccountMoney(amount, currency) {
-        const baseCurrency = (window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN';
-        const curr = (currency || baseCurrency).toString().toUpperCase();
-        const value = parseFloat(amount || 0);
-        return curr + ' $' + value.toLocaleString('es-MX', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        return formatAuraMoney(amount, currency);
     }
 
     function updateAccountImpactSummaries() {
@@ -408,10 +428,7 @@
             if (!isNaN(foreignAmount) && !isNaN(rate) && rate > 0) {
                 const baseAmount = (foreignAmount * rate).toFixed(2);
                 $('#amount').val(baseAmount);
-                $('#converted_base_display').val(baseCurrency + ' $' + parseFloat(baseAmount).toLocaleString('es-MX', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
+                $('#converted_base_display').val(formatAuraMoney(baseAmount, baseCurrency));
                 $('#tx_original_amount').val(foreignAmount.toFixed(2));
                 $('#tx_exchange_rate').val(rate.toFixed(4));
             } else {
@@ -444,10 +461,7 @@
             if (!isNaN(baseAmount) && !isNaN(rate) && rate > 0) {
                 const foreignAmount = (baseAmount / rate).toFixed(2);
                 $('#foreign_amount').val(foreignAmount);
-                $('#converted_base_display').val(baseCurrency + ' $' + parseFloat(baseAmount).toLocaleString('es-MX', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }));
+                $('#converted_base_display').val(formatAuraMoney(baseAmount, baseCurrency));
                 $('#tx_original_amount').val(foreignAmount);
                 $('#tx_exchange_rate').val(rate.toFixed(4));
             } else {

@@ -602,6 +602,9 @@ class Aura_Financial_Accounts {
         wp_localize_script('aura-financial-accounts', 'auraFinancialAccounts', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('aura_financial_accounts_nonce'),
+            'baseCurrency'   => class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_base_currency() : 'MXN',
+            'currencySymbol' => class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_currency_symbol() : '$',
+            'currencyConfig' => class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_config() : array(),
             'canManage' => (current_user_can('aura_finance_view_all') || current_user_can('manage_options')),
             'canExchangeCreate' => (current_user_can('aura_finance_exchange_create') || current_user_can('manage_options') || current_user_can('aura_finance_accounts_manage')),
             'canExchangeEdit'   => (current_user_can('aura_finance_exchange_edit') || current_user_can('manage_options') || current_user_can('aura_finance_accounts_manage')),

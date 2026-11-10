@@ -818,35 +818,36 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             $type_desc = __('Egreso (-) de balance contable', 'aura-suite');
         }
 
-        $formatted_amt = number_format((float) $item->amount, 2, '.', ',');
+        $base_curr = function_exists('aura_get_base_currency') ? aura_get_base_currency() : 'MXN';
+        $symbol    = function_exists('aura_get_currency_symbol') ? aura_get_currency_symbol() : '$';
+        $formatted_amt = function_exists('aura_format_money') ? aura_format_money((float) $item->amount) : ($symbol . number_format((float) $item->amount, 2, '.', ','));
         
         $tip_html = '<div class="aura-tip-card">'
             . '<div class="aura-tip-card-header">'
             . '<div class="aura-tip-avatar-large" style="background:' . esc_attr($color) . '25;border-color:' . esc_attr($color) . '55;color:' . esc_attr($color) . ';font-size:20px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;">'
-            . esc_html($sign) . '$'
+            . esc_html($sign) . esc_html($symbol)
             . '</div>'
             . '<div class="aura-tip-info">'
-            . '<div class="aura-tip-title" style="color:#ffffff;font-size:15px;">' . esc_html($sign) . '$' . esc_html($formatted_amt) . '</div>'
+            . '<div class="aura-tip-title" style="color:#ffffff;font-size:15px;">' . esc_html($sign) . ' ' . esc_html($formatted_amt) . '</div>'
             . '<div class="aura-tip-subtitle">' . esc_html($type_desc) . '</div>'
             . '</div>'
             . '</div>'
             . '</div>';
 
         $fx_badge = '';
-        if ( ! empty( $item->currency ) && $item->currency !== 'MXN' && ! empty( $item->original_amount ) && (float) $item->original_amount > 0 ) {
-            $formatted_orig = number_format( (float) $item->original_amount, 2, '.', ',' );
+        if ( ! empty( $item->currency ) && $item->currency !== $base_curr && ! empty( $item->original_amount ) && (float) $item->original_amount > 0 ) {
+            $formatted_orig = function_exists('aura_format_money') ? aura_format_money((float) $item->original_amount, $item->currency) : (number_format((float) $item->original_amount, 2, '.', ',') . ' ' . $item->currency);
             $rate_txt = ! empty( $item->exchange_rate ) ? ' · T.C. ' . number_format( (float) $item->exchange_rate, 4, '.', ',' ) : '';
             $fx_badge = sprintf(
-                '<div style="font-size:11px;color:#4f46e5;font-weight:600;margin-top:2px;display:flex;align-items:center;gap:3px;" title="%s">%s %s%s</div>',
-                esc_attr( sprintf( __( 'Monto en cuenta: %s %s%s', 'aura-suite' ), $formatted_orig, $item->currency, $rate_txt ) ),
+                '<div style="font-size:11px;color:#4f46e5;font-weight:600;margin-top:2px;display:flex;align-items:center;gap:3px;" title="%s">%s%s</div>',
+                esc_attr( sprintf( __( 'Monto en cuenta: %s%s', 'aura-suite' ), $formatted_orig, $rate_txt ) ),
                 esc_html( $formatted_orig ),
-                esc_html( $item->currency ),
                 $rate_txt ? ' <span style="color:#64748b;font-weight:normal;font-size:10px;">(' . esc_html( trim( $rate_txt, ' ·' ) ) . ')</span>' : ''
             );
         }
         
         return sprintf(
-            '<strong class="aura-has-tooltip" data-tooltip="%s" style="color:%s;font-weight:700;white-space:nowrap;cursor:help;font-size:13px;">%s$%s</strong>%s',
+            '<strong class="aura-has-tooltip" data-tooltip="%s" style="color:%s;font-weight:700;white-space:nowrap;cursor:help;font-size:13px;">%s %s</strong>%s',
             esc_attr( $tip_html ),
             esc_attr( $color ),
             esc_html( $sign ),
@@ -2334,7 +2335,7 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             }
         }
 
-        $formatted_amount = '$' . number_format( (float) $item->amount, 2, '.', ',' );
+        $formatted_amount = function_exists('aura_format_money') ? aura_format_money((float) $item->amount) : ('$' . number_format((float) $item->amount, 2, '.', ','));
         $sign = ( $type === 'income' ) ? '+' : ( ( $type === 'capital' || $type === 'expense' ) ? '-' : '' );
         ?>
         <!-- Hero Header de la Fila Hija -->

@@ -101,17 +101,16 @@ class Aura_Financial_Transactions {
             $budgeted_map[ (int) $br->category_id ][] = (int) $br->area_id;
         }
 
-        $base_currency = get_option('aura_finance_base_currency', get_option('aura_finance_currency', 'MXN'));
-        if (empty($base_currency)) {
-            $base_currency = 'MXN';
-        }
+        $base_currency = class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_base_currency() : 'MXN';
+        $curr_config   = class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_config() : array();
 
         wp_localize_script('aura-transaction-form', 'auraTransactionData', array(
-            'ajaxUrl'      => admin_url('admin-ajax.php'),
-            'nonce'        => wp_create_nonce('aura_transaction_nonce'),
-            'budgetsNonce' => wp_create_nonce('aura_budgets_nonce'),
-            'baseCurrency' => $base_currency,
-            'currencySymbol' => get_option('aura_currency_symbol', '$'),
+            'ajaxUrl'        => admin_url('admin-ajax.php'),
+            'nonce'          => wp_create_nonce('aura_transaction_nonce'),
+            'budgetsNonce'   => wp_create_nonce('aura_budgets_nonce'),
+            'baseCurrency'   => $base_currency,
+            'currencySymbol' => class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_currency_symbol() : '$',
+            'currencyConfig' => $curr_config,
             'messages' => array(
                 'saving'                  => __('Guardando transacción...', 'aura-suite'),
                 'success'                 => __('Transacción guardada exitosamente', 'aura-suite'),
@@ -173,10 +172,7 @@ class Aura_Financial_Transactions {
         $destination_account_id = intval($_POST['destination_account_id'] ?? 0);
 
         // Bloque Multidivisa Inteligente: Moneda, Monto original y Tipo de cambio
-        $base_currency = get_option('aura_finance_base_currency', get_option('aura_finance_currency', 'MXN'));
-        if (empty($base_currency)) {
-            $base_currency = 'MXN';
-        }
+        $base_currency = class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_base_currency() : 'MXN';
         $currency = !empty($_POST['currency']) ? strtoupper(sanitize_text_field($_POST['currency'])) : $base_currency;
         $original_amount = (isset($_POST['original_amount']) && $_POST['original_amount'] !== '') ? floatval($_POST['original_amount']) : null;
         $exchange_rate = (isset($_POST['exchange_rate']) && $_POST['exchange_rate'] !== '') ? floatval($_POST['exchange_rate']) : null;
