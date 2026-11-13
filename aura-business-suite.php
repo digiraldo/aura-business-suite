@@ -310,6 +310,148 @@ class Aura_Business_Suite
 
         // Hook AJAX para crear un nuevo usuario (por usuarios con aura_admin_users_create)
         add_action('wp_ajax_aura_create_user', array($this, 'ajax_create_user'));
+
+        // Botón "Purgar todo" en la barra de admin para usuarios no administradores
+        add_action('admin_bar_menu', array($this, 'admin_bar_purge_all_for_non_admins'), 100);
+        add_action('admin_head', array($this, 'output_purge_all_mobile_css'));
+        add_action('admin_post_aura_purge_all_cache', array($this, 'handle_purge_all_cache'));
+        add_action('admin_notices', array($this, 'render_purge_all_cache_notice'));
+    }
+
+    /**
+     * Muestra únicamente la opción "Purgar todo" (caché) en la barra de administración
+     * para usuarios autenticados que no son administradores.
+     */
+    public function admin_bar_purge_all_for_non_admins($wp_admin_bar)
+    {
+        if (!is_admin() || !is_user_logged_in() || current_user_can('manage_options')) {
+            return;
+        }
+
+        // Ocultar cualquier submenú avanzado de LiteSpeed si estuviera presente
+        $litespeed_nodes = array(
+            'litespeed-menu',
+            'litespeed-manage',
+            'litespeed-settings',
+            'litespeed-img_optm',
+            'litespeed-purge-all',
+            'litespeed-purge-all-lscache',
+            'litespeed-purge-cssjs',
+            'litespeed-purge-opcache',
+        );
+        foreach ($litespeed_nodes as $node_id) {
+            $wp_admin_bar->remove_node($node_id);
+        }
+
+        $scheme      = is_ssl() ? 'https://' : 'http://';
+        $host        = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])) : '';
+        $request_uri = isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '/wp-admin/';
+        $current_url = $host ? ($scheme . $host . $request_uri) : admin_url();
+
+        $purge_url = wp_nonce_url(
+            add_query_arg(
+                array(
+                    'action'      => 'aura_purge_all_cache',
+                    'redirect_to' => rawurlencode($current_url),
+                ),
+                admin_url('admin-post.php')
+            ),
+            'aura_purge_all_cache'
+        );
+
+        $wp_admin_bar->add_node(array(
+            'id'    => 'aura-purge-all-cache',
+            'title' => '<span class="ab-icon dashicons dashicons-update" style="top:2px;"></span><span class="ab-label">' . esc_html__('Purgar todo', 'aura-business-suite') . '</span>',
+            'href'  => $purge_url,
+            'meta'  => array(
+                'title' => __('Purgar toda la caché de LiteSpeed y WordPress', 'aura-business-suite'),
+            ),
+        ));
+    }
+
+    /**
+     * Garantiza que el botón "Purgar todo" sea visible también en dispositivos móviles
+     * (WordPress oculta por defecto los nodos personalizados en <= 782px).
+     */
+    public function output_purge_all_mobile_css()
+    {
+        if (!is_admin() || !is_user_logged_in() || current_user_can('manage_options')) {
+            return;
+        }
+        ?>
+        <style>
+            @media screen and (max-width: 782px) {
+                #wpadminbar #wp-admin-bar-aura-purge-all-cache {
+                    display: block !important;
+                }
+                #wpadminbar #wp-admin-bar-aura-purge-all-cache > .ab-item {
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 4px !important;
+                    padding: 0 8px !important;
+                    height: 46px !important;
+                }
+                #wpadminbar #wp-admin-bar-aura-purge-all-cache .ab-icon {
+                    font: normal 22px/1 dashicons !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    top: 0 !important;
+                    width: auto !important;
+                    height: auto !important;
+                }
+                #wpadminbar #wp-admin-bar-aura-purge-all-cache .ab-label {
+                    display: inline-block !important;
+                    font-size: 12px !important;
+                    line-height: 1 !important;
+                }
+            }
+        </style>
+        <?php
+    }
+
+    /**
+     * Ejecuta la purga completa de caché para usuarios autenticados en el panel.
+     */
+    public function handle_purge_all_cache()
+    {
+        if (!is_user_logged_in()) {
+            wp_die(esc_html__('Debes iniciar sesión para realizar esta acción.', 'aura-business-suite'));
+        }
+
+        check_admin_referer('aura_purge_all_cache');
+
+        // Purgar LiteSpeed Cache (LSCache, CSS/JS, etc.)
+        do_action('litespeed_purge_all');
+
+        // Purgar caché de objetos de WordPress y OPcache si está disponible
+        if (function_exists('wp_cache_flush')) {
+            wp_cache_flush();
+        }
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+
+        $raw_redirect = isset($_GET['redirect_to']) ? rawurldecode(wp_unslash($_GET['redirect_to'])) : admin_url();
+        $redirect_url = wp_validate_redirect($raw_redirect, admin_url());
+        $redirect_url = add_query_arg('aura_cache_purged', '1', remove_query_arg(array('_wpnonce', 'action'), $redirect_url));
+
+        wp_safe_redirect($redirect_url);
+        exit;
+    }
+
+    /**
+     * Muestra aviso de confirmación tras purgar la caché.
+     */
+    public function render_purge_all_cache_notice()
+    {
+        if (!is_user_logged_in() || !isset($_GET['aura_cache_purged']) || $_GET['aura_cache_purged'] !== '1') {
+            return;
+        }
+        ?>
+        <div class="notice notice-success is-dismissible">
+            <p>✅ <strong><?php esc_html_e('Caché purgada correctamente.', 'aura-business-suite'); ?></strong> <?php esc_html_e('Ya estás viendo los cambios más recientes del sistema.', 'aura-business-suite'); ?></p>
+        </div>
+        <?php
     }
 
     /**
