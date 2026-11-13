@@ -1825,12 +1825,12 @@
         if (!item || !item.svg) return '';
 
         var bgMap = {
-            'profile-male-neutral'    : '#e0f2fe',
-            'profile-female-neutral'  : '#f3e8ff',
-            'profile-male-graduate'   : '#dbeafe',
-            'profile-female-graduate' : '#ede9fe'
+            'profile-male-neutral'    : '#f1f5f9',
+            'profile-female-neutral'  : '#f8fafc',
+            'profile-male-graduate'   : '#f1f5f9',
+            'profile-female-graduate' : '#f8fafc'
         };
-        var bg = bgMap[pid] || '#e2e8f0';
+        var bg = bgMap[pid] || '#f1f5f9';
         var svg = String(item.svg)
             .replace(/<svg\b([^>]*)>/i, function (_, attrs) {
                 var cleanAttrs = attrs.replace(/\s+(width|height)=["'][^"']*["']/gi, '');
