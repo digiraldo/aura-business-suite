@@ -297,6 +297,11 @@
         $(document).on('click', '#aura-lib-btn-close-remote-qr', function () {
             stopRemoteScan();
         });
+
+        // Indicador visual para campos manuales de Clasificación
+        $(document).on('input change', '.aura-lib-manual-input', function () {
+            syncManualFieldState($(this));
+        });
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -517,6 +522,14 @@
         if (b.cover_image_id && b.cover_thumb_url) {
             setDropzoneCover(b.cover_thumb_url, b.cover_image_id);
         }
+
+        $('.aura-lib-manual-input').each(function () { syncManualFieldState($(this)); });
+    }
+
+    function syncManualFieldState($el) {
+        var val = $.trim(String($el.val() || ''));
+        var filled = $el.is('select') ? (val !== '' && val !== '0') : (val !== '');
+        $el.closest('.aura-lib-manual-highlight').toggleClass('is-filled', filled);
     }
 
     function resetForm() {
@@ -539,6 +552,7 @@
         $('.aura-lib-dewey-pill').removeClass('active');
         $('.aura-lib-char-counter').text('0 / 255');
         $('.aura-lib-field-icon').removeClass('valid invalid');
+        $('.aura-lib-manual-highlight').removeClass('is-filled');
         // Clear tag chips
         $('#aura-lib-tags-container .aura-lib-tag-chip').remove();
         $('#aura-lib-f-keywords').val('');
@@ -988,10 +1002,13 @@
     var _html5QrScanner = null;
     var _scannerActive  = false;
 
-    function lookupIsbn(rawIsbn) {
-        var clean = String(rawIsbn || '').replace(/[^0-9X]/gi, '').toUpperCase();
-        if (!clean || !validateIsbn(clean)) {
-            showToast('Ingresa o escanea un ISBN-10 o ISBN-13 válido.', 'error');
+    function lookupIsbn(rawInput) {
+        var raw   = $.trim(String(rawInput || ''));
+        var clean = raw.replace(/[^0-9X]/gi, '').toUpperCase();
+        var isIsbn = (clean.length === 10 || clean.length === 13) && validateIsbn(clean);
+
+        if (!isIsbn && raw.length < 3) {
+            showToast('Ingresa un ISBN válido o al menos 3 letras del Título y Autor.', 'error');
             return;
         }
 
@@ -1000,20 +1017,20 @@
         $btnMain.prop('disabled', true).addClass('loading');
         $btnInline.prop('disabled', true).addClass('loading');
 
-        $.post(cfg.ajaxurl, {
-            action : 'aura_library_books_lookup_isbn',
-            nonce  : cfg.nonce,
-            isbn   : clean,
-        }, function (res) {
+        var payload = isIsbn
+            ? { action: 'aura_library_books_lookup_isbn', nonce: cfg.nonce, isbn: clean }
+            : { action: 'aura_library_books_search_external', nonce: cfg.nonce, query: raw };
+
+        $.post(cfg.ajaxurl, payload, function (res) {
             $btnMain.prop('disabled', false).removeClass('loading');
             $btnInline.prop('disabled', false).removeClass('loading');
 
             if (!res.success || !res.data) {
-                showToast((res.data && res.data.message) ? res.data.message : 'No se encontraron datos para este ISBN.', 'error');
+                showToast((res.data && res.data.message) ? res.data.message : 'No se encontraron datos para esa búsqueda.', 'error');
                 return;
             }
 
-            applyBookMetadata(res.data);
+            applyBookMetadata(res.data, !isIsbn);
         }).fail(function () {
             $btnMain.prop('disabled', false).removeClass('loading');
             $btnInline.prop('disabled', false).removeClass('loading');
@@ -1021,8 +1038,9 @@
         });
     }
 
-    function applyBookMetadata(d) {
-        if (d.isbn) {
+    function applyBookMetadata(d, preserveExistingIsbn) {
+        var currentIsbn = $.trim($('#aura-lib-f-isbn').val());
+        if (d.isbn && !(preserveExistingIsbn && currentIsbn)) {
             $('#aura-lib-quick-isbn').val(d.isbn);
             $('#aura-lib-f-isbn').val(d.isbn).trigger('input');
         }
@@ -1047,7 +1065,11 @@
         updateCharCounter($('#aura-lib-f-title'), '#aura-lib-f-title', 255);
 
         var srcTxt = (d.sources && d.sources.length) ? ' (' + d.sources.join(' + ') + ')' : '';
-        showToast('Ficha, clasificación y portada cargadas' + srcTxt + '.', 'success');
+        if (d.language && d.language !== 'Español') {
+            showToast('Cargado en ' + d.language + srcTxt + '. Si buscas la edición en español, escribe el Título y Autor arriba y pulsa Buscar.', 'success');
+        } else {
+            showToast('Ficha, clasificación y portada cargadas' + srcTxt + '.', 'success');
+        }
     }
 
     function getScannerConfig() {

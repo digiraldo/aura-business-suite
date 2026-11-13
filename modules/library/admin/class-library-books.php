@@ -28,6 +28,7 @@ class Aura_Library_Books {
             'get_detail'         => 'ajax_get_detail',
             'search'             => 'ajax_search',
             'lookup_isbn'        => 'ajax_lookup_isbn',
+            'search_external'    => 'ajax_search_external',
             'create_remote_scan' => 'ajax_create_remote_scan',
             'poll_remote_scan'   => 'ajax_poll_remote_scan',
         ];
@@ -535,13 +536,13 @@ class Aura_Library_Books {
             wp_send_json_error( [ 'message' => __( 'Ingresa o escanea un ISBN-10 o ISBN-13 válido.', 'aura-business-suite' ) ] );
         }
 
-        $cache_key = 'aura_lib_isbn_' . $clean_isbn;
+        $cache_key = 'aura_lib_isbn_v3_' . $clean_isbn;
         $cached    = get_transient( $cache_key );
         if ( is_array( $cached ) && ! empty( $cached['title'] ) ) {
             wp_send_json_success( $cached );
         }
 
-        $google = self::fetch_google_books( $clean_isbn );
+        $google  = self::fetch_google_books( $clean_isbn );
         $openlib = self::fetch_open_library( $clean_isbn );
 
         $merged = [
@@ -571,15 +572,103 @@ class Aura_Library_Books {
             ] );
         }
 
+        // Fallback Open Library Search API para Dewey y primera oración si faltan
+        if ( empty( $merged['dewey_number'] ) || empty( $merged['description'] ) ) {
+            $ol_search = self::fetch_open_library_search( $clean_isbn );
+            if ( empty( $merged['dewey_number'] ) && ! empty( $ol_search['dewey_number'] ) ) {
+                $merged['dewey_number'] = $ol_search['dewey_number'];
+            }
+            if ( empty( $merged['description'] ) && ! empty( $ol_search['description'] ) ) {
+                $merged['description'] = $ol_search['description'];
+            }
+        }
+
+        // Fallback Google Books por Título + Autor si la ficha ISBN no trajo descripción
+        if ( empty( $merged['description'] ) && ! empty( $merged['title'] ) ) {
+            $desc_fallback = self::fetch_description_fallback( $merged['title'], $merged['author'] );
+            if ( ! empty( $desc_fallback ) ) {
+                $merged['description'] = $desc_fallback;
+            }
+        }
+
+        // Clasificador Dewey inteligente (especializado en libros cristianos, liderazgo y teología)
+        if ( empty( $merged['dewey_number'] ) ) {
+            $merged['dewey_number'] = self::infer_dewey_number( $merged );
+        }
+
         set_transient( $cache_key, $merged, 12 * HOUR_IN_SECONDS );
         wp_send_json_success( $merged );
     }
 
     /**
-     * Consulta Google Books API por ISBN.
+     * AJAX — Búsqueda externa en español por Título / Autor cuando el ISBN
+     * apunta a una ficha en otro idioma.
+     */
+    public static function ajax_search_external(): void {
+        check_ajax_referer( self::NONCE, 'nonce' );
+
+        if (
+            ! current_user_can( 'aura_library_create' ) &&
+            ! current_user_can( 'aura_library_edit' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para consultar libros.', 'aura-business-suite' ) ] );
+        }
+
+        $query = sanitize_text_field( wp_unslash( $_POST['query'] ?? '' ) );
+        if ( mb_strlen( $query ) < 3 ) {
+            wp_send_json_error( [ 'message' => __( 'Escribe al menos 3 caracteres (título o autor) para buscar.', 'aura-business-suite' ) ] );
+        }
+
+        $url      = 'https://www.googleapis.com/books/v1/volumes?q=' . rawurlencode( $query ) . '&langRestrict=es&maxResults=5';
+        $response = wp_remote_get( $url, [ 'timeout' => 10 ] );
+
+        $items = [];
+        if ( ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) === 200 ) {
+            $body  = json_decode( wp_remote_retrieve_body( $response ), true );
+            $items = $body['items'] ?? [];
+        }
+
+        if ( empty( $items ) ) {
+            $url_any  = 'https://www.googleapis.com/books/v1/volumes?q=' . rawurlencode( $query ) . '&maxResults=5';
+            $resp_any = wp_remote_get( $url_any, [ 'timeout' => 10 ] );
+            if ( ! is_wp_error( $resp_any ) && wp_remote_retrieve_response_code( $resp_any ) === 200 ) {
+                $body_any = json_decode( wp_remote_retrieve_body( $resp_any ), true );
+                $items    = $body_any['items'] ?? [];
+            }
+        }
+
+        if ( empty( $items ) ) {
+            wp_send_json_error( [ 'message' => __( 'No se encontraron ediciones para esa búsqueda.', 'aura-business-suite' ) ] );
+        }
+
+        $parsed = self::pick_best_google_volume( $items, true );
+        if ( empty( $parsed['title'] ) ) {
+            wp_send_json_error( [ 'message' => __( 'No se encontraron datos completos para esa búsqueda.', 'aura-business-suite' ) ] );
+        }
+
+        if ( empty( $parsed['description'] ) ) {
+            $parsed['description'] = self::fetch_description_fallback( $parsed['title'], $parsed['author'] );
+        }
+        if ( empty( $parsed['dewey_number'] ) && ! empty( $parsed['isbn'] ) ) {
+            $ol_s = self::fetch_open_library_search( $parsed['isbn'] );
+            if ( ! empty( $ol_s['dewey_number'] ) ) {
+                $parsed['dewey_number'] = $ol_s['dewey_number'];
+            }
+        }
+        if ( empty( $parsed['dewey_number'] ) ) {
+            $parsed['dewey_number'] = self::infer_dewey_number( $parsed );
+        }
+
+        $parsed['sources'] = [ 'Google Books (ES)' ];
+        wp_send_json_success( $parsed );
+    }
+
+    /**
+     * Consulta Google Books API por ISBN (priorizando registros en español).
      */
     private static function fetch_google_books( string $isbn ): array {
-        $url      = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' . rawurlencode( $isbn );
+        $url      = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' . rawurlencode( $isbn ) . '&maxResults=5';
         $response = wp_remote_get( $url, [ 'timeout' => 10 ] );
 
         if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
@@ -587,12 +676,69 @@ class Aura_Library_Books {
         }
 
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
-        if ( empty( $body['items'][0]['volumeInfo'] ) ) {
+        if ( empty( $body['items'] ) || ! is_array( $body['items'] ) ) {
             return [];
         }
 
-        $info = $body['items'][0]['volumeInfo'];
+        return self::pick_best_google_volume( $body['items'], true );
+    }
 
+    /**
+     * Selecciona el mejor volumen de Google Books priorizando idioma español
+     * y combinando campos faltantes de otros registros coincidentes.
+     */
+    private static function pick_best_google_volume( array $items, bool $prefer_spanish = true ): array {
+        $scored = [];
+        foreach ( $items as $idx => $item ) {
+            if ( empty( $item['volumeInfo'] ) ) {
+                continue;
+            }
+            $info  = $item['volumeInfo'];
+            $score = 0;
+            $lang  = strtolower( substr( (string) ( $info['language'] ?? '' ), 0, 2 ) );
+            if ( $prefer_spanish && $lang === 'es' ) {
+                $score += 20;
+            }
+            if ( ! empty( $info['description'] ) ) {
+                $score += 5;
+            }
+            if ( ! empty( $info['imageLinks'] ) ) {
+                $score += 3;
+            }
+            if ( ! empty( $info['categories'] ) ) {
+                $score += 2;
+            }
+            $snippet = $item['searchInfo']['textSnippet'] ?? '';
+            $scored[] = [ 'score' => $score, 'idx' => $idx, 'data' => self::parse_google_volume( $info, $snippet ) ];
+        }
+
+        if ( empty( $scored ) ) {
+            return [];
+        }
+
+        usort( $scored, static function ( $a, $b ) {
+            if ( $a['score'] === $b['score'] ) {
+                return $a['idx'] <=> $b['idx'];
+            }
+            return $b['score'] <=> $a['score'];
+        } );
+
+        $best = $scored[0]['data'];
+        foreach ( array_slice( $scored, 1 ) as $other ) {
+            foreach ( $other['data'] as $k => $v ) {
+                if ( empty( $best[ $k ] ) && ! empty( $v ) ) {
+                    $best[ $k ] = $v;
+                }
+            }
+        }
+
+        return $best;
+    }
+
+    /**
+     * Normaliza un volumeInfo de Google Books a los campos del formulario.
+     */
+    private static function parse_google_volume( array $info, string $snippet = '' ): array {
         $year = '';
         if ( ! empty( $info['publishedDate'] ) && preg_match( '/\b(1[89]\d{2}|20\d{2})\b/', $info['publishedDate'], $m ) ) {
             $year = $m[1];
@@ -609,7 +755,7 @@ class Aura_Library_Books {
 
         $cover_url = '';
         if ( ! empty( $info['imageLinks'] ) ) {
-            $raw_img   = $info['imageLinks']['extraLarge']
+            $raw_img = $info['imageLinks']['extraLarge']
                 ?? $info['imageLinks']['large']
                 ?? $info['imageLinks']['medium']
                 ?? $info['imageLinks']['thumbnail']
@@ -621,9 +767,25 @@ class Aura_Library_Books {
             }
         }
 
+        $isbn = '';
+        if ( ! empty( $info['industryIdentifiers'] ) && is_array( $info['industryIdentifiers'] ) ) {
+            foreach ( $info['industryIdentifiers'] as $id_obj ) {
+                if ( ( $id_obj['type'] ?? '' ) === 'ISBN_13' && ! empty( $id_obj['identifier'] ) ) {
+                    $isbn = sanitize_text_field( $id_obj['identifier'] );
+                    break;
+                }
+                if ( ( $id_obj['type'] ?? '' ) === 'ISBN_10' && empty( $isbn ) && ! empty( $id_obj['identifier'] ) ) {
+                    $isbn = sanitize_text_field( $id_obj['identifier'] );
+                }
+            }
+        }
+
         $keywords = array_slice( array_unique( array_filter( array_map( 'sanitize_text_field', $categories ) ) ), 0, 6 );
 
+        $raw_desc = ! empty( $info['description'] ) ? $info['description'] : $snippet;
+
         return [
+            'isbn'           => $isbn,
             'title'          => sanitize_text_field( $info['title'] ?? '' ),
             'subtitle'       => sanitize_text_field( $info['subtitle'] ?? '' ),
             'author'         => ! empty( $info['authors'] ) ? sanitize_text_field( implode( ', ', (array) $info['authors'] ) ) : '',
@@ -633,10 +795,163 @@ class Aura_Library_Books {
             'language'       => self::map_language_code( $info['language'] ?? '' ),
             'category'       => $category,
             'subcategory'    => $subcategory,
-            'description'    => sanitize_textarea_field( wp_strip_all_tags( $info['description'] ?? '' ) ),
+            'description'    => sanitize_textarea_field( html_entity_decode( wp_strip_all_tags( (string) $raw_desc ), ENT_QUOTES, 'UTF-8' ) ),
             'keywords'       => implode( ', ', $keywords ),
             'cover_url'      => esc_url_raw( $cover_url ),
         ];
+    }
+
+    /**
+     * Consulta Open Library Search API por ISBN para obtener Número Dewey (ddc)
+     * o primera oración cuando el endpoint books no los incluye.
+     */
+    private static function fetch_open_library_search( string $isbn ): array {
+        $url      = 'https://openlibrary.org/search.json?isbn=' . rawurlencode( $isbn ) . '&fields=ddc,first_sentence,subject&limit=1';
+        $response = wp_remote_get( $url, [ 'timeout' => 8 ] );
+
+        if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+            return [];
+        }
+
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+        $doc  = $body['docs'][0] ?? [];
+        if ( empty( $doc ) ) {
+            return [];
+        }
+
+        $dewey = '';
+        if ( ! empty( $doc['ddc'][0] ) ) {
+            $dewey = sanitize_text_field( (string) $doc['ddc'][0] );
+        }
+
+        $desc = '';
+        if ( ! empty( $doc['first_sentence'] ) ) {
+            $fs   = is_array( $doc['first_sentence'] ) ? ( $doc['first_sentence'][0] ?? '' ) : $doc['first_sentence'];
+            $desc = sanitize_textarea_field( (string) $fs );
+        }
+
+        return [
+            'dewey_number' => $dewey,
+            'description'  => $desc,
+        ];
+    }
+
+    /**
+     * Busca la sinopsis en Google Books por Título + Autor (priorizando español)
+     * cuando el registro por ISBN viene sin descripción.
+     */
+    private static function fetch_description_fallback( string $title, string $author = '' ): string {
+        $q_parts = [ 'intitle:' . $title ];
+        if ( ! empty( $author ) ) {
+            $first_author = trim( explode( ',', $author )[0] );
+            if ( $first_author ) {
+                $q_parts[] = 'inauthor:' . $first_author;
+            }
+        }
+        $query = implode( ' ', $q_parts );
+
+        foreach ( [ '&langRestrict=es', '' ] as $lang_param ) {
+            $url      = 'https://www.googleapis.com/books/v1/volumes?q=' . rawurlencode( $query ) . $lang_param . '&maxResults=5';
+            $response = wp_remote_get( $url, [ 'timeout' => 8 ] );
+            if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+                continue;
+            }
+            $body  = json_decode( wp_remote_retrieve_body( $response ), true );
+            $items = $body['items'] ?? [];
+            foreach ( $items as $item ) {
+                $desc = $item['volumeInfo']['description'] ?? ( $item['searchInfo']['textSnippet'] ?? '' );
+                if ( ! empty( $desc ) ) {
+                    return sanitize_textarea_field( html_entity_decode( wp_strip_all_tags( (string) $desc ), ENT_QUOTES, 'UTF-8' ) );
+                }
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Clasificador Decimal Dewey automático basado en título, categoría y descripción,
+     * optimizado para bibliotecas cristianas, teológicas y de liderazgo.
+     */
+    private static function infer_dewey_number( array $book ): string {
+        $haystack = strtolower( remove_accents( implode( ' ', [
+            $book['title']       ?? '',
+            $book['subtitle']    ?? '',
+            $book['category']    ?? '',
+            $book['subcategory'] ?? '',
+            $book['keywords']    ?? '',
+            $book['description'] ?? '',
+        ] ) ) );
+
+        if ( trim( $haystack ) === '' ) {
+            return '';
+        }
+
+        $rules = [
+            // ── Religión / Teología / Vida Cristiana / Liderazgo Cristiano (200-299) ──
+            '222.8' => [ 'nehemias', 'nehemiah', 'esdras', 'ezra' ],
+            '223.2' => [ 'salmos', 'psalms' ],
+            '226'   => [ 'evangelios', 'gospels', 'mateo', 'marcos', 'lucas', 'juan', 'parabolas' ],
+            '227'   => [ 'epistolas', 'romanos', 'corintios', 'galatas', 'efesios', 'filipenses', 'colosenses', 'hebreos' ],
+            '228'   => [ 'apocalipsis', 'revelation' ],
+            '220'   => [ 'biblia', 'bible', 'estudio biblico', 'escrituras', 'antiguo testamento', 'nuevo testamento' ],
+            '231.3' => [ 'espiritu santo', 'holy spirit' ],
+            '232'   => [ 'jesucristo', 'jesus', 'cristologia', 'mesias' ],
+            '234'   => [ 'salvacion', 'gracia', 'redencion', 'fe cristiana', 'justificacion' ],
+            '236'   => [ 'escatologia', 'segunda venida', 'fin de los tiempos', 'profecia' ],
+            '239'   => [ 'apologetica', 'defensa de la fe' ],
+            '230'   => [ 'teologia', 'theology', 'doctrina cristiana', 'sistematica' ],
+            '242'   => [ 'devocional', 'devotional', 'meditaciones diarias' ],
+            '248.3' => [ 'oracion', 'prayer', 'intercesion', 'ayuno' ],
+            '248.84'=> [ 'matrimonio cristiano', 'familia cristiana', 'padres cristianos', 'esposos', 'noviazgo cristiano' ],
+            '248.83'=> [ 'jovenes cristianos', 'adolescentes cristianos', 'juventud cristiana' ],
+            '251'   => [ 'predicacion', 'homiletica', 'sermones', 'preaching' ],
+            '253.7' => [ 'discipulado', 'discipleship', 'celulas', 'grupos pequenos' ],
+            '253'   => [ 'liderazgo cristiano', 'christian leadership', 'liderazgo con proposito', 'purpose driven leadership', 'pastoral', 'pastor', 'ministerio cristiano', 'christian ministry', 'ancianos', 'diaconos' ],
+            '254'   => [ 'administracion eclesiastica', 'crecimiento de iglesia', 'church growth', 'iglesia con proposito' ],
+            '264'   => [ 'adoracion', 'alabanza', 'worship', 'liturgia' ],
+            '266'   => [ 'misiones', 'misionero', 'evangelismo', 'evangelizacion', 'gran comision' ],
+            '268'   => [ 'educacion cristiana', 'escuela dominical', 'maestro cristiano' ],
+            '270'   => [ 'historia de la iglesia', 'historia del cristianismo', 'reforma protestante', 'padres de la iglesia' ],
+            '248.4' => [ 'vida cristiana', 'proposito de vida', 'caracter cristiano', 'christian living', 'santidad', 'mayordomia', 'proposito' ],
+            '200'   => [ 'religion', 'cristianismo', 'christianity', 'iglesia', 'church', 'dios', 'god', 'fe', 'editorial vida', 'unilit', 'portavoz', 'carisma' ],
+
+            // ── Liderazgo General / Administración / Finanzas (650-659) ──
+            '658.4' => [ 'liderazgo', 'leadership', 'gerencia', 'management', 'ejecutivo', 'estrategia', 'organizacion' ],
+            '658.15'=> [ 'finanzas', 'contabilidad', 'presupuesto', 'inversion' ],
+            '658'   => [ 'administracion', 'negocios', 'business', 'emprendimiento' ],
+
+            // ── Psicología / Autoayuda / Familia (150-159) ──
+            '158.1' => [ 'autoayuda', 'superacion', 'habitos', 'exito personal', 'inteligencia emocional', 'self-help' ],
+            '150'   => [ 'psicologia', 'psychology', 'mente', 'conducta' ],
+            '100'   => [ 'filosofia', 'etica', 'logica' ],
+
+            // ── Ciencias Sociales / Educación (300-399) ──
+            '370'   => [ 'educacion', 'pedagogia', 'ensenanza', 'docencia' ],
+            '330'   => [ 'economia', 'economics' ],
+            '300'   => [ 'sociologia', 'sociedad', 'politica', 'derecho' ],
+
+            // ── Informática / Idiomas / Ciencias / Artes / Literatura / Historia ──
+            '005'   => [ 'programacion', 'software', 'desarrollo web', 'python', 'javascript', 'php' ],
+            '004'   => [ 'informatica', 'computacion', 'tecnologia', 'computers' ],
+            '400'   => [ 'gramatica', 'linguistica', 'diccionario', 'idioma', 'ortografia' ],
+            '500'   => [ 'ciencia', 'fisica', 'quimica', 'biologia', 'matematica' ],
+            '780'   => [ 'musica', 'canto', 'instrumentos' ],
+            '700'   => [ 'arte', 'diseno', 'pintura', 'arquitectura' ],
+            '800'   => [ 'novela', 'ficcion', 'literatura', 'poesia', 'cuentos', 'fiction' ],
+            '920'   => [ 'biografia', 'biography', 'memorias', 'autobiografia' ],
+            '900'   => [ 'historia', 'history', 'geografia' ],
+        ];
+
+        foreach ( $rules as $dewey => $terms ) {
+            foreach ( $terms as $term ) {
+                if ( strpos( $haystack, $term ) !== false ) {
+                    return $dewey;
+                }
+            }
+        }
+
+        return '';
     }
 
     /**

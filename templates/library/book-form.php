@@ -89,8 +89,8 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
         <div class="aura-lib-isbn-toolbar-actions">
             <div class="aura-lib-isbn-quick-input-wrap">
                 <input type="text" id="aura-lib-quick-isbn" class="aura-lib-quick-isbn-input"
-                       placeholder="<?php esc_attr_e( 'ISBN-10 o ISBN-13…', 'aura-business-suite' ); ?>"
-                       inputmode="numeric" autocomplete="off">
+                       placeholder="<?php esc_attr_e( 'ISBN o Título y Autor…', 'aura-business-suite' ); ?>"
+                       autocomplete="off">
                 <button type="button" id="aura-lib-btn-lookup-isbn" class="aura-lib-btn-lookup">
                     <span class="dashicons dashicons-search"></span>
                     <span><?php esc_html_e( 'Buscar', 'aura-business-suite' ); ?></span>
@@ -341,9 +341,12 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
             </div>
 
             <?php if ( ! empty( $areas ) ) : ?>
-            <div class="aura-lib-form-row aura-lib-col-third">
-                <label for="aura-lib-f-area"><?php esc_html_e( 'Área organizacional', 'aura-business-suite' ); ?></label>
-                <select id="aura-lib-f-area" name="area_id" class="widefat">
+            <div class="aura-lib-form-row aura-lib-col-third aura-lib-manual-highlight" data-manual-field="area">
+                <label for="aura-lib-f-area">
+                    <?php esc_html_e( 'Área organizacional', 'aura-business-suite' ); ?>
+                    <span class="aura-lib-manual-badge"><?php esc_html_e( 'Llenar manual', 'aura-business-suite' ); ?></span>
+                </label>
+                <select id="aura-lib-f-area" name="area_id" class="widefat aura-lib-manual-input">
                     <option value="0"><?php esc_html_e( '— Sin área (global) —', 'aura-business-suite' ); ?></option>
                     <?php foreach ( $areas as $area ) : ?>
                     <option value="<?php echo esc_attr( $area->id ); ?>"><?php echo esc_html( $area->name ); ?></option>
@@ -355,18 +358,22 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
             <?php endif; ?>
 
             <!-- Sala / Estante -->
-            <div class="aura-lib-form-row aura-lib-col-third">
+            <div class="aura-lib-form-row aura-lib-col-third aura-lib-manual-highlight" data-manual-field="location">
                 <label for="aura-lib-f-location">
                     <?php esc_html_e( 'Sala / Ubicación física', 'aura-business-suite' ); ?>
+                    <span class="aura-lib-manual-badge"><?php esc_html_e( 'Llenar manual', 'aura-business-suite' ); ?></span>
                 </label>
-                <input type="text" id="aura-lib-f-location" name="physical_location" class="widefat"
+                <input type="text" id="aura-lib-f-location" name="physical_location" class="widefat aura-lib-manual-input"
                        maxlength="100"
                        placeholder="<?php esc_attr_e( 'Ej: Sala Principal', 'aura-business-suite' ); ?>">
             </div>
 
-            <div class="aura-lib-form-row aura-lib-col-quarter">
-                <label for="aura-lib-f-shelf"><?php esc_html_e( 'Código de estante', 'aura-business-suite' ); ?></label>
-                <input type="text" id="aura-lib-f-shelf" name="shelf_code" class="widefat"
+            <div class="aura-lib-form-row aura-lib-col-quarter aura-lib-manual-highlight" data-manual-field="shelf">
+                <label for="aura-lib-f-shelf">
+                    <?php esc_html_e( 'Código de estante', 'aura-business-suite' ); ?>
+                    <span class="aura-lib-manual-badge"><?php esc_html_e( 'Llenar manual', 'aura-business-suite' ); ?></span>
+                </label>
+                <input type="text" id="aura-lib-f-shelf" name="shelf_code" class="widefat aura-lib-manual-input"
                        maxlength="50"
                        placeholder="<?php esc_attr_e( 'Ej: A3-F2', 'aura-business-suite' ); ?>">
             </div>
