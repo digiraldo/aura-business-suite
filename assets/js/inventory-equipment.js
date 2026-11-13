@@ -527,6 +527,87 @@
             this.cfg = auraInvFormData;
             this.bindEvents();
             this.bindCropModal();
+            this.initThirdPartySelectors();
+        },
+
+        initThirdPartySelectors: function () {
+            if (typeof window.AuraThirdPartySelector === 'undefined') return;
+
+            function applySupplierItem(item) {
+                var name = item.commercial_name || item.name || '';
+                var tpId = item.third_party_id || item.id || '';
+                $('#inv_supplier').val(name);
+                $('#inv_supplier_third_party_id').val(tpId);
+                if (tpId) {
+                    $('#aura-inv-supplier-badge').show();
+                    $('#aura-inv-btn-supplier-clear').show();
+                }
+            }
+
+            function applyResponsibleItem(item) {
+                var name = item.commercial_name || item.name || '';
+                var isUser = !!(item.is_wp_user || item.party_type === 'user' || item.user_id);
+                $('#inv_responsible_display').val(name);
+                if (isUser) {
+                    $('#inv_responsible_user_id').val(item.user_id || item.id || '');
+                    $('#inv_responsible_third_party_id').val('');
+                    $('#aura-inv-responsible-badge-text').text('Usuario WP');
+                } else {
+                    $('#inv_responsible_third_party_id').val(item.third_party_id || item.id || '');
+                    $('#inv_responsible_user_id').val('');
+                    $('#aura-inv-responsible-badge-text').text('Tercero');
+                }
+                $('#aura-inv-responsible-badge').show();
+                $('#aura-inv-btn-responsible-clear').show();
+            }
+
+            window.AuraThirdPartySelector.attach({
+                input: '#inv_supplier',
+                hiddenId: '#inv_supplier_third_party_id',
+                allowUsers: false,
+                onSelect: applySupplierItem,
+                onClear: function () {
+                    $('#inv_supplier_third_party_id').val('');
+                    $('#aura-inv-supplier-badge, #aura-inv-btn-supplier-clear').hide();
+                }
+            });
+
+            $('#aura-inv-btn-supplier-explorer').on('click', function () {
+                window.AuraThirdPartySelector.openExplorer({
+                    defaultTab: 'all',
+                    onSelect: applySupplierItem
+                });
+            });
+
+            $('#aura-inv-btn-supplier-clear').on('click', function () {
+                $('#inv_supplier').val('');
+                $('#inv_supplier_third_party_id').val('');
+                $('#aura-inv-supplier-badge, #aura-inv-btn-supplier-clear').hide();
+            });
+
+            window.AuraThirdPartySelector.attach({
+                input: '#inv_responsible_display',
+                allowUsers: true,
+                onSelect: applyResponsibleItem,
+                onClear: function () {
+                    $('#inv_responsible_user_id, #inv_responsible_third_party_id').val('');
+                    $('#aura-inv-responsible-badge, #aura-inv-btn-responsible-clear').hide();
+                }
+            });
+
+            $('#aura-inv-btn-responsible-explorer').on('click', function () {
+                window.AuraThirdPartySelector.openExplorer({
+                    defaultTab: 'all',
+                    allowUsers: true,
+                    onSelect: applyResponsibleItem
+                });
+            });
+
+            $('#aura-inv-btn-responsible-clear').on('click', function () {
+                $('#inv_responsible_display').val('');
+                $('#inv_responsible_user_id, #inv_responsible_third_party_id').val('');
+                $('#aura-inv-responsible-badge, #aura-inv-btn-responsible-clear').hide();
+            });
         },
 
         bindEvents: function () {

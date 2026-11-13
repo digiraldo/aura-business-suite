@@ -162,23 +162,44 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                                 <th><label for="inv_acquisition_date"><?php _e( 'Fecha de adquisición', 'aura-suite' ); ?></label></th>
                                 <td><input type="date" id="inv_acquisition_date" name="acquisition_date" value="<?php echo $v('acquisition_date'); ?>"></td>
                             </tr>
+                            <?php $inv_currency_sym = function_exists( 'aura_get_base_currency' ) ? ( aura_get_base_currency()['symbol'] ?? '$' ) : get_option( 'aura_currency_symbol', '$' ); ?>
                             <tr>
                                 <th><label for="inv_cost"><?php _e( 'Costo de adquisición', 'aura-suite' ); ?></label></th>
                                 <td>
                                     <input type="number" id="inv_cost" name="cost" value="<?php echo $v('cost','0'); ?>" step="0.01" min="0" class="small-text">
-                                    <span><?php echo esc_html( get_option( 'aura_currency_symbol', '$' ) ); ?></span>
+                                    <span><?php echo esc_html( $inv_currency_sym ); ?></span>
                                 </td>
                             </tr>
                             <tr>
                                 <th><label for="inv_estimated_value"><?php _e( 'Valor estimado actual', 'aura-suite' ); ?></label></th>
                                 <td>
                                     <input type="number" id="inv_estimated_value" name="estimated_value" value="<?php echo $v('estimated_value','0'); ?>" step="0.01" min="0" class="small-text">
-                                    <span><?php echo esc_html( get_option( 'aura_currency_symbol', '$' ) ); ?></span>
+                                    <span><?php echo esc_html( $inv_currency_sym ); ?></span>
                                 </td>
                             </tr>
                             <tr>
                                 <th><label for="inv_supplier"><?php _e( 'Proveedor', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_supplier" name="supplier" value="<?php echo $v('supplier'); ?>" class="regular-text"></td>
+                                <td>
+                                    <?php $sup_tp_id = intval( $v( 'supplier_third_party_id', 0 ) ); ?>
+                                    <input type="hidden" id="inv_supplier_third_party_id" name="supplier_third_party_id" value="<?php echo esc_attr( $sup_tp_id ?: '' ); ?>">
+                                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                                        <input type="text" id="inv_supplier" name="supplier" value="<?php echo $v('supplier'); ?>"
+                                               class="regular-text" autocomplete="off"
+                                               placeholder="<?php esc_attr_e( 'Buscar o escribir proveedor…', 'aura-suite' ); ?>">
+                                        <button type="button" id="aura-inv-btn-supplier-explorer" class="button">
+                                            <span class="dashicons dashicons-groups" style="vertical-align:text-bottom;font-size:16px;width:16px;height:16px;"></span>
+                                            <?php _e( 'Explorar Terceros', 'aura-suite' ); ?>
+                                        </button>
+                                        <button type="button" id="aura-inv-btn-supplier-clear" class="button"
+                                                title="<?php esc_attr_e( 'Desvincular proveedor', 'aura-suite' ); ?>"
+                                                style="<?php echo $sup_tp_id ? '' : 'display:none;'; ?>">&times;</button>
+                                    </div>
+                                    <div id="aura-inv-supplier-badge" style="margin-top:6px;<?php echo $sup_tp_id ? '' : 'display:none;'; ?>">
+                                        <span class="aura-badge" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:2px 8px;border-radius:999px;font-size:11.5px;">
+                                            🔗 <?php _e( 'Vinculado a Tercero del Directorio', 'aura-suite' ); ?>
+                                        </span>
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
                                 <th><label for="inv_warranty_date"><?php _e( 'Vencimiento de garantía', 'aura-suite' ); ?></label></th>
@@ -341,17 +362,51 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                 <div class="postbox">
                     <h2 class="hndle"><?php _e( 'Asignación', 'aura-suite' ); ?></h2>
                     <div class="inside">
+                        <?php
+                        $resp_user_id = intval( $v( 'responsible_user_id', 0 ) );
+                        $resp_tp_id   = intval( $v( 'responsible_third_party_id', 0 ) );
+                        $resp_display = '';
+                        $resp_type_label = '';
+                        if ( $resp_user_id ) {
+                            $u_obj = get_user_by( 'id', $resp_user_id );
+                            if ( $u_obj ) {
+                                $resp_display    = $u_obj->display_name;
+                                $resp_type_label = __( 'Usuario WP', 'aura-suite' );
+                            }
+                        } elseif ( $resp_tp_id ) {
+                            global $wpdb;
+                            $tp_name = $wpdb->get_var( $wpdb->prepare(
+                                "SELECT COALESCE(NULLIF(commercial_name, ''), name) FROM {$wpdb->prefix}aura_third_parties WHERE id = %d",
+                                $resp_tp_id
+                            ) );
+                            if ( $tp_name ) {
+                                $resp_display    = $tp_name;
+                                $resp_type_label = __( 'Tercero', 'aura-suite' );
+                            }
+                        }
+                        ?>
                         <p>
-                            <label for="inv_responsible"><?php _e( 'Responsable', 'aura-suite' ); ?></label><br>
-                            <select id="inv_responsible" name="responsible_user_id" style="width:100%;">
-                                <option value=""><?php _e( '— Sin asignar —', 'aura-suite' ); ?></option>
-                                <?php foreach ( $users as $user ) : ?>
-                                <option value="<?php echo esc_attr( $user->ID ); ?>"
-                                    <?php selected( intval( $v('responsible_user_id') ), $user->ID ); ?>>
-                                    <?php echo esc_html( $user->display_name ); ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <label for="inv_responsible_display"><?php _e( 'Responsable', 'aura-suite' ); ?></label><br>
+                            <input type="hidden" id="inv_responsible_user_id" name="responsible_user_id" value="<?php echo esc_attr( $resp_user_id ?: '' ); ?>">
+                            <input type="hidden" id="inv_responsible_third_party_id" name="responsible_third_party_id" value="<?php echo esc_attr( $resp_tp_id ?: '' ); ?>">
+                            <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
+                                <input type="text" id="inv_responsible_display" class="widefat" autocomplete="off"
+                                       value="<?php echo esc_attr( $resp_display ); ?>"
+                                       placeholder="<?php esc_attr_e( 'Buscar usuario WP o tercero…', 'aura-suite' ); ?>"
+                                       style="flex:1;min-width:0;">
+                                <button type="button" id="aura-inv-btn-responsible-clear" class="button"
+                                        title="<?php esc_attr_e( 'Quitar responsable', 'aura-suite' ); ?>"
+                                        style="<?php echo ( $resp_user_id || $resp_tp_id ) ? '' : 'display:none;'; ?>">&times;</button>
+                            </div>
+                            <button type="button" id="aura-inv-btn-responsible-explorer" class="button" style="width:100%;margin-top:6px;">
+                                <span class="dashicons dashicons-admin-users" style="vertical-align:text-bottom;font-size:16px;width:16px;height:16px;"></span>
+                                <?php _e( 'Seleccionar Usuario WP o Tercero', 'aura-suite' ); ?>
+                            </button>
+                            <div id="aura-inv-responsible-badge" style="margin-top:6px;<?php echo $resp_type_label ? '' : 'display:none;'; ?>">
+                                <span class="aura-badge" style="background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;padding:2px 8px;border-radius:999px;font-size:11.5px;">
+                                    👤 <span id="aura-inv-responsible-badge-text"><?php echo esc_html( $resp_type_label ); ?></span>
+                                </span>
+                            </div>
                         </p>
                         <?php if ( ! empty( $areas ) ) : ?>
                         <p>

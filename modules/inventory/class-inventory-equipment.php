@@ -37,6 +37,50 @@ class Aura_Inventory_Equipment {
         foreach ( $ajax_actions as $action => $handler ) {
             add_action( 'wp_ajax_aura_inventory_equipment_' . $action, [ __CLASS__, $handler ] );
         }
+
+        self::maybe_add_third_party_columns();
+    }
+
+    /**
+     * Asegurar columnas de vinculación con Terceros (Proveedor y Responsable externo).
+     */
+    public static function maybe_add_third_party_columns(): void {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_inventory_equipment';
+        if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table}'" ) !== $table ) {
+            return;
+        }
+        $cols = $wpdb->get_col( "SHOW COLUMNS FROM `{$table}`", 0 );
+        if ( ! in_array( 'supplier_third_party_id', $cols, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `supplier_third_party_id` BIGINT(20) UNSIGNED DEFAULT NULL AFTER `supplier`" );
+        }
+        if ( ! in_array( 'responsible_third_party_id', $cols, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `responsible_third_party_id` BIGINT(20) UNSIGNED DEFAULT NULL AFTER `responsible_user_id`" );
+        }
+    }
+
+    /**
+     * Resuelve el nombre del responsable (Usuario WP o Tercero).
+     */
+    public static function resolve_responsible_name( object $row ): string {
+        if ( ! empty( $row->responsible_user_id ) ) {
+            $u = get_user_by( 'id', (int) $row->responsible_user_id );
+            if ( $u ) {
+                return $u->display_name;
+            }
+        }
+        if ( ! empty( $row->responsible_third_party_id ) ) {
+            global $wpdb;
+            $tp_table = $wpdb->prefix . 'aura_third_parties';
+            $tp_name  = $wpdb->get_var( $wpdb->prepare(
+                "SELECT COALESCE(NULLIF(commercial_name, ''), name) FROM {$tp_table} WHERE id = %d",
+                (int) $row->responsible_third_party_id
+            ) );
+            if ( $tp_name ) {
+                return (string) $tp_name;
+            }
+        }
+        return '—';
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -128,9 +172,7 @@ class Aura_Inventory_Equipment {
         foreach ( $rows as &$row ) {
             $row->status_label            = self::get_status_label( $row->status );
             $row->maintenance_status      = self::get_maintenance_status( $row );
-            $row->responsible_name        = $row->responsible_user_id
-                ? ( get_user_by( 'id', $row->responsible_user_id )->display_name ?? '—' )
-                : '—';
+            $row->responsible_name        = self::resolve_responsible_name( $row );
             $row->can_edit   = current_user_can( 'aura_inventory_edit' ) || current_user_can( 'manage_options' );
             $row->can_delete = current_user_can( 'aura_inventory_delete' ) || current_user_can( 'manage_options' );
             // URLs de imagen en ambos tamaños
@@ -177,6 +219,14 @@ class Aura_Inventory_Equipment {
         $status_allowed = [ 'available', 'in_use', 'maintenance', 'repair', 'retired' ];
         $interval_allowed = [ 'time', 'hours', 'both', 'none' ];
 
+        $resp_user_id = intval( $_POST['responsible_user_id'] ?? 0 ) ?: null;
+        $resp_tp_id   = intval( $_POST['responsible_third_party_id'] ?? 0 ) ?: null;
+        if ( $resp_user_id ) {
+            $resp_tp_id = null;
+        } elseif ( $resp_tp_id ) {
+            $resp_user_id = null;
+        }
+
         $data = [
             'name'                 => $name,
             'brand'                => sanitize_text_field( $_POST['brand']         ?? '' ) ?: null,
@@ -190,8 +240,9 @@ class Aura_Inventory_Equipment {
             'acquisition_date'     => self::sanitize_date( $_POST['acquisition_date'] ?? '' ),
             'cost'                 => floatval( $_POST['cost']             ?? 0 ),
             'estimated_value'      => floatval( $_POST['estimated_value']  ?? 0 ),
-            'supplier'             => sanitize_text_field( $_POST['supplier']      ?? '' ) ?: null,
-            'warranty_date'        => self::sanitize_date( $_POST['warranty_date'] ?? '' ),
+            'supplier'                 => sanitize_text_field( $_POST['supplier'] ?? '' ) ?: null,
+            'supplier_third_party_id'  => intval( $_POST['supplier_third_party_id'] ?? 0 ) ?: null,
+            'warranty_date'            => self::sanitize_date( $_POST['warranty_date'] ?? '' ),
             'requires_maintenance' => isset( $_POST['requires_maintenance'] ) ? 1 : 0,
             'interval_type'        => in_array( $_POST['interval_type'] ?? '', $interval_allowed ) ? $_POST['interval_type'] : 'time',
             'interval_months'      => intval( $_POST['interval_months'] ?? 0 ) ?: null,
@@ -202,7 +253,8 @@ class Aura_Inventory_Equipment {
             'fuel_type'            => sanitize_text_field( $_POST['fuel_type']           ?? '' ) ?: null,
             'voltage'              => intval( $_POST['voltage']          ?? 0 ) ?: null,
             'hydraulic_pressure'   => sanitize_text_field( $_POST['hydraulic_pressure'] ?? '' ) ?: null,
-            'responsible_user_id'  => intval( $_POST['responsible_user_id'] ?? 0 ) ?: null,
+            'responsible_user_id'        => $resp_user_id,
+            'responsible_third_party_id' => $resp_tp_id,
             'area_id'              => intval( $_POST['area_id']              ?? 0 ) ?: null,
             'photo'                => sanitize_text_field( $_POST['photo']              ?? '' ) ?: null,
             'accessories'             => sanitize_textarea_field( $_POST['accessories'] ?? '' ) ?: null,
@@ -371,9 +423,7 @@ class Aura_Inventory_Equipment {
         // Enriquecer equipo
         $equipment->status_label       = self::get_status_label( $equipment->status );
         $equipment->maintenance_status = self::get_maintenance_status( $equipment );
-        $equipment->responsible_name   = $equipment->responsible_user_id
-            ? ( get_user_by( 'id', $equipment->responsible_user_id )->display_name ?? '—' )
-            : '—';
+        $equipment->responsible_name   = self::resolve_responsible_name( $equipment );
         // URLs de imagen en ambos tamaños
         $photo_urls                  = aura_get_equipment_photo_urls( $equipment->photo ?? '' );
         $equipment->photo_full_url   = $photo_urls['full'];
