@@ -39,29 +39,32 @@ class Aura_Certificates_Signers {
         global $wpdb;
         $table = $wpdb->prefix . 'aura_certificate_signers';
 
-        $id            = absint( $_POST['id'] ?? 0 );
-        $name          = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
-        $title         = sanitize_text_field( wp_unslash( $_POST['title'] ?? '' ) );
-        $is_active     = absint( $_POST['is_active'] ?? 1 );
-        $attachment_id = absint( $_POST['attachment_id'] ?? 0 );
+        $id             = absint( $_POST['id'] ?? 0 );
+        $name           = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
+        $title          = sanitize_text_field( wp_unslash( $_POST['title'] ?? '' ) );
+        $is_active      = absint( $_POST['is_active'] ?? 1 ) ? 1 : 0;
+        $attachment_id  = absint( $_POST['attachment_id'] ?? 0 );
+        $signature_url  = esc_url_raw( wp_unslash( $_POST['signature_url'] ?? '' ) );
+        $wp_user_id     = absint( $_POST['wp_user_id'] ?? 0 );
+        $third_party_id = absint( $_POST['third_party_id'] ?? 0 );
 
         if ( empty( $name ) ) {
             wp_send_json_error( [ 'message' => __( 'El nombre del firmante es obligatorio.', 'aura-suite' ) ], 400 );
         }
 
-        // Validar adjunto: debe ser PNG y existir en la biblioteca de medios
-        $signature_url = '';
+        // Validar adjunto si se seleccionó uno nuevo
         if ( $attachment_id > 0 ) {
             $mime = get_post_mime_type( $attachment_id );
-            if ( $mime !== 'image/png' ) {
+            if ( ! in_array( $mime, [ 'image/png', 'image/webp', 'image/jpeg' ], true ) ) {
                 wp_send_json_error( [
-                    'message' => __( 'La imagen de firma debe ser un archivo PNG.', 'aura-suite' ),
+                    'message' => __( 'La imagen de firma debe ser PNG, WebP o JPG.', 'aura-suite' ),
                 ], 400 );
             }
-            $signature_url = wp_get_attachment_url( $attachment_id );
-            if ( ! $signature_url ) {
+            $resolved_url = wp_get_attachment_url( $attachment_id );
+            if ( ! $resolved_url ) {
                 wp_send_json_error( [ 'message' => __( 'Imagen no encontrada en la Biblioteca de Medios.', 'aura-suite' ) ], 400 );
             }
+            $signature_url = $resolved_url;
         }
 
         // Límite de firmantes activos
@@ -87,14 +90,20 @@ class Aura_Certificates_Signers {
 
         if ( $id > 0 ) {
             // Actualizar
-            $data   = [ 'name' => $name, 'title' => $title, 'is_active' => $is_active ];
-            $format = [ '%s', '%s', '%d' ];
+            $data = [
+                'name'           => $name,
+                'title'          => $title,
+                'is_active'      => $is_active,
+                'wp_user_id'     => $wp_user_id > 0 ? $wp_user_id : null,
+                'third_party_id' => $third_party_id > 0 ? $third_party_id : null,
+            ];
+            $format = [ '%s', '%s', '%d', '%d', '%d' ];
 
-            if ( $attachment_id > 0 ) {
-                $data['signature_url']  = $signature_url;
-                $data['attachment_id']  = $attachment_id;
-                $format[]               = '%s';
-                $format[]               = '%d';
+            if ( $attachment_id > 0 || $signature_url !== '' ) {
+                $data['signature_url'] = $signature_url;
+                $data['attachment_id'] = $attachment_id;
+                $format[]              = '%s';
+                $format[]              = '%d';
             }
 
             $wpdb->update( $table, $data, [ 'id' => $id ], $format, [ '%d' ] );
@@ -108,15 +117,18 @@ class Aura_Certificates_Signers {
             $wpdb->insert(
                 $table,
                 [
-                    'name'          => $name,
-                    'title'         => $title,
-                    'signature_url' => $signature_url,
-                    'attachment_id' => $attachment_id,
-                    'is_active'     => $is_active,
-                    'sort_order'    => $sort_order,
-                    'created_at'    => current_time( 'mysql' ),
+                    'name'           => $name,
+                    'title'          => $title,
+                    'signature_url'  => $signature_url,
+                    'attachment_id'  => $attachment_id,
+                    'wp_user_id'     => $wp_user_id > 0 ? $wp_user_id : null,
+                    'third_party_id' => $third_party_id > 0 ? $third_party_id : null,
+                    'is_active'      => $is_active,
+                    'sort_order'     => $sort_order,
+                    'created_by'     => get_current_user_id(),
+                    'created_at'     => current_time( 'mysql' ),
                 ],
-                [ '%s', '%s', '%s', '%d', '%d', '%d', '%s' ]
+                [ '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%s' ]
             );
 
             $new_id = (int) $wpdb->insert_id;
@@ -182,10 +194,17 @@ class Aura_Certificates_Signers {
         global $wpdb;
         $table  = $wpdb->prefix . 'aura_certificate_signers';
         $id     = absint( $_POST['id'] ?? 0 );
-        $active = absint( $_POST['active'] ?? 1 );
 
         if ( ! $id ) {
             wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ], 400 );
+        }
+
+        if ( isset( $_POST['active'] ) ) {
+            $active = absint( $_POST['active'] ) ? 1 : 0;
+        } else {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $current = (int) $wpdb->get_var( $wpdb->prepare( "SELECT is_active FROM {$table} WHERE id = %d", $id ) );
+            $active  = $current ? 0 : 1;
         }
 
         // Verificar límite al activar
@@ -286,15 +305,32 @@ class Aura_Certificates_Signers {
      * Formatea una fila de BD para devolver en respuestas AJAX.
      */
     private static function format_signer_row( object $r ): array {
+        $wp_user_id     = (int) ( $r->wp_user_id ?? 0 );
+        $third_party_id = (int) ( $r->third_party_id ?? 0 );
+        $linked_label   = '';
+
+        if ( $wp_user_id > 0 ) {
+            $u = get_user_by( 'id', $wp_user_id );
+            $linked_label = $u ? $u->display_name : '#' . $wp_user_id;
+        } elseif ( $third_party_id > 0 && class_exists( 'Aura_Third_Parties' ) ) {
+            $tp = Aura_Third_Parties::get_third_party( $third_party_id );
+            if ( $tp ) {
+                $linked_label = $tp->commercial_name ?: $tp->full_name;
+            }
+        }
+
         return [
-            'id'            => (int) $r->id,
-            'name'          => $r->name,
-            'title'         => $r->title,
-            'signature_url' => $r->signature_url,
-            'attachment_id' => (int) $r->attachment_id,
-            'is_active'     => (bool) $r->is_active,
-            'sort_order'    => (int) $r->sort_order,
-            'created_at'    => $r->created_at,
+            'id'             => (int) $r->id,
+            'name'           => $r->name,
+            'title'          => $r->title,
+            'signature_url'  => $r->signature_url,
+            'attachment_id'  => (int) ( $r->attachment_id ?? 0 ),
+            'wp_user_id'     => $wp_user_id,
+            'third_party_id' => $third_party_id,
+            'linked_label'   => $linked_label,
+            'is_active'      => (bool) $r->is_active,
+            'sort_order'     => (int) $r->sort_order,
+            'created_at'     => $r->created_at,
         ];
     }
 }

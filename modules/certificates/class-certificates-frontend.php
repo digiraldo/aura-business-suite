@@ -50,23 +50,36 @@ class Aura_Certificates_Frontend {
             $wpdb->prepare( "SELECT id FROM {$students_table} WHERE wp_user_id = %d LIMIT 1", $wp_user_id )
         );
 
-        if ( ! $student_id ) {
-            return '<div class="aura-notice"><p>' .
-                   esc_html__( 'No se encontró un perfil de estudiante vinculado a tu cuenta.', 'aura-suite' ) .
-                   '</p></div>';
+        $table = $wpdb->prefix . 'aura_certificates';
+        if ( $student_id > 0 ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $certificates = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT folio, course_name, program_name, issued_at, status, verify_url
+                     FROM {$table}
+                     WHERE (student_id = %d OR wp_user_id = %d) AND status = 'active'
+                     ORDER BY issued_at DESC",
+                    $student_id, $wp_user_id
+                )
+            );
+        } else {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $certificates = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT folio, course_name, program_name, issued_at, status, verify_url
+                     FROM {$table}
+                     WHERE wp_user_id = %d AND status = 'active'
+                     ORDER BY issued_at DESC",
+                    $wp_user_id
+                )
+            );
         }
 
-        // Reutiliza la misma consulta que render_student_tab
-        $table        = $wpdb->prefix . 'aura_certificates';
-        $certificates = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT folio, course_name, program_name, issued_at, status, verify_url
-                 FROM {$table}
-                 WHERE student_id = %d AND status = 'active'
-                 ORDER BY issued_at DESC",
-                $student_id
-            )
-        );
+        if ( ! $student_id && empty( $certificates ) ) {
+            return '<div class="aura-notice"><p>' .
+                   esc_html__( 'Aún no tienes certificados registrados en tu cuenta.', 'aura-suite' ) .
+                   '</p></div>';
+        }
 
         $grouped = [];
         foreach ( ( $certificates ?: [] ) as $cert ) {
@@ -142,16 +155,29 @@ class Aura_Certificates_Frontend {
         global $wpdb;
         $table = $wpdb->prefix . 'aura_certificates';
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $certificates = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT folio, course_name, program_name, issued_at, status, verify_url
-                 FROM {$table}
-                 WHERE student_id = %d AND status = 'active'
-                 ORDER BY issued_at DESC",
-                $student_id
-            )
-        );
+        $where  = [ "status = 'active'" ];
+        $params = [];
+        $owner  = [];
+        if ( $student_id > 0 ) {
+            $owner[]  = 'student_id = %d';
+            $params[] = $student_id;
+        }
+        if ( $wp_user_id > 0 ) {
+            $owner[]  = 'wp_user_id = %d';
+            $params[] = $wp_user_id;
+        }
+
+        if ( empty( $owner ) ) {
+            $certificates = [];
+        } else {
+            $where[] = '(' . implode( ' OR ', $owner ) . ')';
+            $sql     = "SELECT folio, course_name, program_name, issued_at, status, verify_url
+                        FROM {$table}
+                        WHERE " . implode( ' AND ', $where ) . '
+                        ORDER BY issued_at DESC';
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $certificates = $wpdb->get_results( $wpdb->prepare( $sql, ...$params ) );
+        }
 
         // Agrupar por programa
         $grouped = [];

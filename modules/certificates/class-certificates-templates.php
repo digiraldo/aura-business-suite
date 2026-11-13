@@ -33,22 +33,43 @@ class Aura_Certificates_Templates {
 
     /**
      * Lista de variables dinámicas disponibles para el editor.
-     * Retorna array [ ['key' => '{variable}', 'label' => 'Descripción'] ]
+     * Retorna array [ ['key' => '{variable}', 'label' => 'Descripción', 'group' => 'Grupo', 'example' => 'Ejemplo'] ]
      */
     public static function get_dynamic_variables_list(): array {
         return [
-            [ 'key' => '{nombre}',           'label' => __( 'Primer nombre', 'aura-suite' ) ],
-            [ 'key' => '{apellido}',          'label' => __( 'Apellido', 'aura-suite' ) ],
-            [ 'key' => '{nombre_completo}',   'label' => __( 'Nombre y apellido completos', 'aura-suite' ) ],
-            [ 'key' => '{curso}',             'label' => __( 'Nombre del curso', 'aura-suite' ) ],
-            [ 'key' => '{programa}',          'label' => __( 'Nombre del área/programa', 'aura-suite' ) ],
-            [ 'key' => '{fecha_emision}',     'label' => __( 'Fecha de emisión (dd/mm/yyyy)', 'aura-suite' ) ],
-            [ 'key' => '{fecha_graduacion}',  'label' => __( 'Fecha de graduación', 'aura-suite' ) ],
-            [ 'key' => '{instructor}',        'label' => __( 'Nombre del instructor', 'aura-suite' ) ],
-            [ 'key' => '{organizacion}',      'label' => __( 'Nombre de la organización', 'aura-suite' ) ],
-            [ 'key' => '{folio}',             'label' => __( 'Folio único (ej: CEM-2026-0042)', 'aura-suite' ) ],
-            [ 'key' => '{año}',               'label' => __( 'Año de emisión', 'aura-suite' ) ],
-            [ 'key' => '{descripcion}',       'label' => __( 'Descripción adicional', 'aura-suite' ) ],
+            // Destinatario
+            [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{nombre}',            'label' => __( 'Primer nombre', 'aura-suite' ),             'example' => 'María' ],
+            [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{apellido}',          'label' => __( 'Apellido(s)', 'aura-suite' ),               'example' => 'González' ],
+            [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{nombre_completo}',   'label' => __( 'Nombre completo', 'aura-suite' ),           'example' => 'María González Pérez' ],
+            [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{documento}',         'label' => __( 'Documento / Cédula / ID', 'aura-suite' ), 'example' => 'CC 1020304050' ],
+            [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{correo}',            'label' => __( 'Correo electrónico', 'aura-suite' ),        'example' => 'maria@ejemplo.com' ],
+            [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{tipo_destinatario}', 'label' => __( 'Tipo (Estudiante/Usuario/Tercero)', 'aura-suite' ), 'example' => 'Estudiante' ],
+
+            // Curso / Programa
+            [ 'group' => __( 'Programa y Logro', 'aura-suite' ), 'key' => '{curso}',         'label' => __( 'Nombre del curso / evento', 'aura-suite' ), 'example' => 'Liderazgo Ministerial' ],
+            [ 'group' => __( 'Programa y Logro', 'aura-suite' ), 'key' => '{programa}',      'label' => __( 'Área / Programa', 'aura-suite' ),           'example' => 'Escuela de Formación' ],
+            [ 'group' => __( 'Programa y Logro', 'aura-suite' ), 'key' => '{categoria}',     'label' => __( 'Categoría / Tipo de logro', 'aura-suite' ), 'example' => 'Diplomado' ],
+            [ 'group' => __( 'Programa y Logro', 'aura-suite' ), 'key' => '{horas}',         'label' => __( 'Intensidad horaria', 'aura-suite' ),      'example' => '40 horas académicas' ],
+            [ 'group' => __( 'Programa y Logro', 'aura-suite' ), 'key' => '{calificacion}',  'label' => __( 'Calificación / Mención', 'aura-suite' ),  'example' => 'Sobresaliente' ],
+            [ 'group' => __( 'Programa y Logro', 'aura-suite' ), 'key' => '{instructor}',    'label' => __( 'Instructor / Docente', 'aura-suite' ),    'example' => 'Dr. Carlos Ruiz' ],
+            [ 'group' => __( 'Programa y Logro', 'aura-suite' ), 'key' => '{descripcion}',   'label' => __( 'Descripción adicional', 'aura-suite' ),   'example' => 'Por su destacada participación y cumplimiento' ],
+
+            // Institución y Fechas
+            [ 'group' => __( 'Institución y Fechas', 'aura-suite' ), 'key' => '{organizacion}',        'label' => __( 'Nombre de la organización', 'aura-suite' ), 'example' => 'Centro Cristiano Mateo' ],
+            [ 'group' => __( 'Institución y Fechas', 'aura-suite' ), 'key' => '{fecha_emision}',       'label' => __( 'Fecha de emisión (dd/mm/yyyy)', 'aura-suite' ), 'example' => '13/11/2026' ],
+            [ 'group' => __( 'Institución y Fechas', 'aura-suite' ), 'key' => '{fecha_emision_larga}', 'label' => __( 'Fecha de emisión larga', 'aura-suite' ), 'example' => '13 de noviembre de 2026' ],
+            [ 'group' => __( 'Institución y Fechas', 'aura-suite' ), 'key' => '{fecha_graduacion}',    'label' => __( 'Fecha de graduación / evento', 'aura-suite' ), 'example' => '10/11/2026' ],
+            [ 'group' => __( 'Institución y Fechas', 'aura-suite' ), 'key' => '{ciudad}',              'label' => __( 'Ciudad / Lugar', 'aura-suite' ), 'example' => 'Bogotá D.C.' ],
+            [ 'group' => __( 'Institución y Fechas', 'aura-suite' ), 'key' => '{año}',                 'label' => __( 'Año de emisión', 'aura-suite' ), 'example' => '2026' ],
+
+            // Verificación y Firmas
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{folio}',               'label' => __( 'Folio único', 'aura-suite' ),          'example' => 'CEM-2026-0042' ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{codigo_verificacion}', 'label' => __( 'Código de verificación', 'aura-suite' ), 'example' => 'A7F2-9C1B' ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{url_verificacion}',    'label' => __( 'URL de verificación', 'aura-suite' ),  'example' => home_url( '/verificar-certificado/CEM-2026-0042' ) ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_1_nombre}',   'label' => __( 'Nombre firmante 1', 'aura-suite' ),    'example' => 'Director Académico' ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_1_cargo}',    'label' => __( 'Cargo firmante 1', 'aura-suite' ),     'example' => 'Dirección General' ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_2_nombre}',   'label' => __( 'Nombre firmante 2', 'aura-suite' ),    'example' => 'Coordinador de Área' ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_2_cargo}',    'label' => __( 'Cargo firmante 2', 'aura-suite' ),     'example' => 'Coordinación Académica' ],
         ];
     }
 
@@ -60,28 +81,68 @@ class Aura_Certificates_Templates {
      * @return string
      */
     public static function replace_vars( string $text, array $data ): string {
+        $issued_ts     = ! empty( $data['issued_at'] ) ? strtotime( $data['issued_at'] ) : false;
+        $grad_ts       = ! empty( $data['graduation_date'] ) ? strtotime( $data['graduation_date'] ) : false;
+        $full_name     = ! empty( $data['full_name'] )
+                            ? (string) $data['full_name']
+                            : trim( ( $data['first_name'] ?? '' ) . ' ' . ( $data['last_name'] ?? '' ) );
+        $first_name    = (string) ( $data['first_name'] ?? '' );
+        $last_name     = (string) ( $data['last_name'] ?? '' );
+        if ( $first_name === '' && $full_name !== '' ) {
+            $parts      = preg_split( '/\s+/', trim( $full_name ), 2 );
+            $first_name = $parts[0] ?? '';
+            $last_name  = $parts[1] ?? $last_name;
+        }
+
+        $signers = $data['signers'] ?? null;
+        if ( $signers === null && class_exists( 'Aura_Certificates_Signers' ) ) {
+            $signers = Aura_Certificates_Signers::get_active_signers_for_js();
+        }
+        $s1 = is_array( $signers ) && isset( $signers[0] ) ? (array) $signers[0] : [];
+        $s2 = is_array( $signers ) && isset( $signers[1] ) ? (array) $signers[1] : [];
+
         $map = [
-            '{nombre}'          => $data['first_name']      ?? '',
-            '{apellido}'        => $data['last_name']        ?? '',
-            '{nombre_completo}' => trim( ( $data['first_name'] ?? '' ) . ' ' . ( $data['last_name'] ?? '' ) ),
-            '{curso}'           => $data['course_name']     ?? '',
-            '{programa}'        => $data['program_name']    ?? '',
-            '{fecha_emision}'   => isset( $data['issued_at'] )
-                                    ? date_i18n( 'd/m/Y', strtotime( $data['issued_at'] ) )
-                                    : '',
-            '{fecha_graduacion}'=> isset( $data['graduation_date'] )
-                                    ? date_i18n( 'd/m/Y', strtotime( $data['graduation_date'] ) )
-                                    : '',
-            '{instructor}'      => $data['instructor_name'] ?? '',
-            '{organizacion}'    => $data['organization_name'] ?? '',
-            '{folio}'           => $data['folio']           ?? '',
-            '{año}'             => isset( $data['issued_at'] )
-                                    ? date( 'Y', strtotime( $data['issued_at'] ) )
-                                    : (string) date( 'Y' ),
-            '{descripcion}'     => $data['description']     ?? '',
+            '{nombre}'              => $first_name,
+            '{apellido}'            => $last_name,
+            '{nombre_completo}'     => $full_name,
+            '{documento}'           => (string) ( $data['document_id'] ?? '' ),
+            '{correo}'              => (string) ( $data['email'] ?? '' ),
+            '{tipo_destinatario}'   => (string) ( $data['recipient_type_label'] ?? __( 'Estudiante', 'aura-suite' ) ),
+            '{curso}'               => (string) ( $data['course_name'] ?? '' ),
+            '{programa}'            => (string) ( $data['program_name'] ?? '' ),
+            '{categoria}'           => (string) ( $data['category'] ?? '' ),
+            '{horas}'               => (string) ( $data['hours'] ?? '' ),
+            '{calificacion}'        => (string) ( $data['grade'] ?? '' ),
+            '{instructor}'          => (string) ( $data['instructor_name'] ?? '' ),
+            '{descripcion}'         => (string) ( $data['description'] ?? '' ),
+            '{organizacion}'        => (string) ( $data['organization_name'] ?? '' ),
+            '{fecha_emision}'       => $issued_ts ? date_i18n( 'd/m/Y', $issued_ts ) : '',
+            '{fecha_emision_larga}' => $issued_ts ? date_i18n( 'j \d\e F \d\e Y', $issued_ts ) : '',
+            '{fecha_graduacion}'    => $grad_ts ? date_i18n( 'd/m/Y', $grad_ts ) : '',
+            '{ciudad}'              => (string) ( $data['city'] ?? '' ),
+            '{año}'                 => $issued_ts ? date( 'Y', $issued_ts ) : (string) date( 'Y' ),
+            '{folio}'               => (string) ( $data['folio'] ?? '' ),
+            '{codigo_verificacion}' => (string) ( $data['verification_code'] ?? '' ),
+            '{url_verificacion}'    => (string) ( $data['verify_url'] ?? '' ),
+            '{firmante_1_nombre}'   => (string) ( $s1['name'] ?? '' ),
+            '{firmante_1_cargo}'    => (string) ( $s1['title'] ?? '' ),
+            '{firmante_2_nombre}'   => (string) ( $s2['name'] ?? '' ),
+            '{firmante_2_cargo}'    => (string) ( $s2['title'] ?? '' ),
         ];
 
         return str_replace( array_keys( $map ), array_values( $map ), $text );
+    }
+
+    /**
+     * Dimensiones estándar en mm según orientación.
+     */
+    private static function orientation_mm( string $orientation ): array {
+        return match ( $orientation ) {
+            'portrait'         => [ 210.0, 297.0 ],
+            'letter_landscape' => [ 279.4, 215.9 ],
+            'letter_portrait'  => [ 215.9, 279.4 ],
+            default            => [ 297.0, 210.0 ],
+        };
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -104,11 +165,12 @@ class Aura_Certificates_Templates {
         $id          = absint( $_POST['id'] ?? 0 );
         $name        = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
         $description = sanitize_textarea_field( wp_unslash( $_POST['description'] ?? '' ) );
-        $orientation = in_array( $_POST['orientation'] ?? 'landscape', [ 'landscape', 'portrait' ], true )
-                        ? sanitize_text_field( $_POST['orientation'] )
-                        : 'landscape';
-        $width_mm    = floatval( $_POST['width_mm']  ?? 297 );
-        $height_mm   = floatval( $_POST['height_mm'] ?? 210 );
+        $allowed_ori = [ 'landscape', 'portrait', 'letter_landscape', 'letter_portrait' ];
+        $raw_ori     = sanitize_key( $_POST['orientation'] ?? 'landscape' );
+        $orientation = in_array( $raw_ori, $allowed_ori, true ) ? $raw_ori : 'landscape';
+        [ $def_w, $def_h ] = self::orientation_mm( $orientation );
+        $width_mm    = ! empty( $_POST['width_mm'] ) ? floatval( $_POST['width_mm'] ) : $def_w;
+        $height_mm   = ! empty( $_POST['height_mm'] ) ? floatval( $_POST['height_mm'] ) : $def_h;
         $design_json = wp_unslash( $_POST['design_json'] ?? '' );
 
         if ( empty( $name ) ) {
@@ -318,17 +380,26 @@ class Aura_Certificates_Templates {
         global $wpdb;
         $table  = $wpdb->prefix . 'aura_certificate_templates';
         $id     = absint( $_POST['id'] ?? 0 );
-        $active = absint( $_POST['active'] ?? 1 );
 
         if ( ! $id ) {
             wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ], 400 );
         }
 
+        if ( isset( $_POST['active'] ) ) {
+            $active = absint( $_POST['active'] ) ? 1 : 0;
+        } else {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $current = (int) $wpdb->get_var( $wpdb->prepare( "SELECT is_active FROM {$table} WHERE id = %d", $id ) );
+            $active  = $current ? 0 : 1;
+        }
+
         $wpdb->update( $table, [ 'is_active' => $active ], [ 'id' => $id ], [ '%d' ], [ '%d' ] );
 
-        wp_send_json_success( [ 'message' => $active
-            ? __( 'Plantilla activada.', 'aura-suite' )
-            : __( 'Plantilla desactivada.', 'aura-suite' ),
+        wp_send_json_success( [
+            'is_active' => (bool) $active,
+            'message'   => $active
+                ? __( 'Plantilla activada.', 'aura-suite' )
+                : __( 'Plantilla desactivada.', 'aura-suite' ),
         ] );
     }
 
@@ -339,14 +410,14 @@ class Aura_Certificates_Templates {
     public static function ajax_save_thumbnail(): void {
         check_ajax_referer( 'aura_certificates_nonce', 'nonce' );
 
-        if ( ! current_user_can( 'aura_cert_template_edit' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_cert_template_edit' ) && ! current_user_can( 'aura_cert_template_create' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ], 403 );
         }
 
         global $wpdb;
         $table       = $wpdb->prefix . 'aura_certificate_templates';
-        $template_id = absint( $_POST['template_id'] ?? 0 );
-        $data_url    = sanitize_text_field( wp_unslash( $_POST['data_url'] ?? '' ) );
+        $template_id = absint( $_POST['template_id'] ?? ( $_POST['id'] ?? 0 ) );
+        $data_url    = sanitize_text_field( wp_unslash( $_POST['data_url'] ?? ( $_POST['thumbnail'] ?? '' ) ) );
 
         if ( ! $template_id || empty( $data_url ) ) {
             wp_send_json_error( [ 'message' => __( 'Datos inválidos.', 'aura-suite' ) ], 400 );

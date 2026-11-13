@@ -7,12 +7,12 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
-<div class="wrap aura-certificates-wrap">
+<div class="wrap aura-certificates-wrap" id="aura-cert-reports-page">
     <h1 class="wp-heading-inline">📊 <?php esc_html_e( 'Reportes de Certificados', 'aura-suite' ); ?></h1>
     <hr class="wp-header-end">
 
     <!-- Selector de reporte -->
-    <div class="aura-card" style="max-width:700px;margin-bottom:24px;">
+    <div class="aura-card" style="max-width:740px;margin-bottom:24px;">
         <h2><?php esc_html_e( 'Generar Reporte', 'aura-suite' ); ?></h2>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end;">
             <label>
@@ -27,9 +27,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <label id="aura-cert-report-date-wrap">
                 <?php esc_html_e( 'Período', 'aura-suite' ); ?>
                 <div style="display:flex;gap:4px;margin-top:4px;">
-                    <input type="date" id="aura-cert-report-from" class="aura-input"
+                    <input type="date" id="aura-cert-date-from" class="aura-input"
+                           value="<?php echo esc_attr( gmdate( 'Y-m-01' ) ); ?>"
                            placeholder="<?php esc_attr_e( 'Desde', 'aura-suite' ); ?>">
-                    <input type="date" id="aura-cert-report-to" class="aura-input"
+                    <input type="date" id="aura-cert-date-to" class="aura-input"
+                           value="<?php echo esc_attr( current_time( 'Y-m-d' ) ); ?>"
                            placeholder="<?php esc_attr_e( 'Hasta', 'aura-suite' ); ?>">
                 </div>
             </label>
@@ -48,8 +50,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     </div>
 
     <!-- Resultado del reporte -->
-    <div id="aura-cert-report-result" style="display:none;">
-        <p id="aura-cert-report-summary" style="color:#555;margin-bottom:8px;"></p>
+    <div id="aura-cert-report-result" class="aura-card" style="display:none;">
+        <p id="aura-cert-report-summary" style="color:#334155;font-weight:600;margin-top:0;margin-bottom:10px;"></p>
         <div id="aura-cert-report-table-wrap" style="overflow-x:auto;"></div>
     </div>
 

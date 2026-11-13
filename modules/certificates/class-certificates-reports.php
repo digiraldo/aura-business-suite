@@ -84,6 +84,8 @@ class Aura_Certificates_Reports {
 
         wp_send_json_success( [
             'report_type' => $type,
+            'columns'     => $data['headers'],
+            'headers'     => $data['headers'],
             'rows'        => $data['rows'],
             'totals'      => $data['totals'],
             'generated_at'=> current_time( 'mysql' ),
@@ -316,7 +318,7 @@ class Aura_Certificates_Reports {
             $params[] = $to . ' 23:59:59';
         }
 
-        $sql = "SELECT c.folio, CONCAT(s.first_name,' ',s.last_name) as estudiante, c.course_name, c.revoked_at, c.revoke_reason
+        $sql = "SELECT c.folio, COALESCE(NULLIF(c.student_name, ''), CONCAT(s.first_name,' ',s.last_name)) as estudiante, c.course_name, c.revoked_at, c.revoke_reason
                 FROM {$table} c
                 LEFT JOIN {$students_table} s ON c.student_id = s.id
                 {$where}

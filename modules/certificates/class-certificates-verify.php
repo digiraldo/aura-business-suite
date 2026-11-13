@@ -124,7 +124,7 @@ class Aura_Certificates_Verify {
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $cert = $wpdb->get_row(
             $wpdb->prepare(
-                "SELECT c.folio, c.course_name, c.program_name, c.issued_at, c.status, c.revoke_reason, c.revoked_at, c.student_id
+                "SELECT c.folio, c.student_name, c.course_name, c.program_name, c.category, c.hours, c.grade, c.issued_at, c.status, c.revoke_reason, c.revoked_at, c.student_id
                  FROM {$certs_table} c
                  WHERE c.folio = %s",
                 $folio
@@ -135,24 +135,31 @@ class Aura_Certificates_Verify {
             return null;
         }
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $student = $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT first_name, last_name FROM {$students_table} WHERE id = %d",
-                $cert->student_id
-            )
-        );
+        $recipient_name = trim( (string) ( $cert->student_name ?? '' ) );
+        if ( $recipient_name === '' && ! empty( $cert->student_id ) ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $student = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT first_name, last_name FROM {$students_table} WHERE id = %d",
+                    $cert->student_id
+                )
+            );
+            if ( $student ) {
+                $recipient_name = trim( $student->first_name . ' ' . $student->last_name );
+            }
+        }
 
         $org_name = Aura_Certificates_Settings::get( 'org_name', get_option( 'blogname', '' ) );
         $org_logo = Aura_Certificates_Settings::get( 'org_logo_url', '' );
 
         return [
             'folio'           => $cert->folio,
-            'student_name'    => $student
-                                    ? trim( $student->first_name . ' ' . $student->last_name )
-                                    : '',
+            'student_name'    => $recipient_name,
             'course_name'     => $cert->course_name,
             'program_name'    => $cert->program_name,
+            'category'        => $cert->category ?? '',
+            'hours'           => $cert->hours ?? '',
+            'grade'           => $cert->grade ?? '',
             'issued_at'       => $cert->issued_at
                                     ? date_i18n( get_option( 'date_format' ), strtotime( $cert->issued_at ) )
                                     : '',

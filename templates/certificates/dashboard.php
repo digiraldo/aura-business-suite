@@ -23,7 +23,8 @@ $stats = [
 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 $recents = $wpdb->get_results(
     "SELECT c.id, c.folio, c.course_name, c.issued_at, c.status,
-            s.first_name, s.last_name
+            c.recipient_type, c.student_id, c.wp_user_id, c.third_party_id,
+            COALESCE(NULLIF(c.student_name,''), TRIM(CONCAT(COALESCE(s.first_name,''),' ',COALESCE(s.last_name,'')))) AS recipient_name
      FROM {$table} c
      LEFT JOIN {$wpdb->prefix}aura_students s ON c.student_id = s.id
      ORDER BY c.issued_at DESC LIMIT 10"
@@ -150,7 +151,7 @@ $pending_count  = (int) $wpdb->get_var(
                 <thead>
                     <tr>
                         <th><?php esc_html_e( 'Folio', 'aura-suite' ); ?></th>
-                        <th><?php esc_html_e( 'Estudiante', 'aura-suite' ); ?></th>
+                        <th><?php esc_html_e( 'Destinatario', 'aura-suite' ); ?></th>
                         <th><?php esc_html_e( 'Curso / Programa', 'aura-suite' ); ?></th>
                         <th><?php esc_html_e( 'Fecha Emisión', 'aura-suite' ); ?></th>
                         <th><?php esc_html_e( 'Estado', 'aura-suite' ); ?></th>
@@ -158,10 +159,23 @@ $pending_count  = (int) $wpdb->get_var(
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ( $recents as $cert ) : ?>
+                    <?php
+                    $type_map = [
+                        'student'     => __( 'Estudiante', 'aura-suite' ),
+                        'wp_user'     => __( 'Usuario WP', 'aura-suite' ),
+                        'third_party' => __( 'Tercero', 'aura-suite' ),
+                        'manual'      => __( 'Manual', 'aura-suite' ),
+                    ];
+                    foreach ( $recents as $cert ) :
+                        $rtype = $cert->recipient_type ?: ( ! empty( $cert->student_id ) ? 'student' : ( ! empty( $cert->wp_user_id ) ? 'wp_user' : ( ! empty( $cert->third_party_id ) ? 'third_party' : 'manual' ) ) );
+                        $rlabel = $type_map[ $rtype ] ?? __( 'Estudiante', 'aura-suite' );
+                    ?>
                     <tr>
                         <td><code style="background: var(--aura-primary-50, #f5f3ff); color: var(--aura-primary-800, #5b21b6); padding: 2px 8px; border-radius: var(--aura-radius-sm, 4px); font-weight: 600; font-size: 12px;"><?php echo esc_html( $cert->folio ); ?></code></td>
-                        <td style="font-weight: 500;"><?php echo esc_html( trim( $cert->first_name . ' ' . $cert->last_name ) ); ?></td>
+                        <td style="font-weight: 500;">
+                            <?php echo esc_html( $cert->recipient_name ?: '—' ); ?>
+                            <span class="aura-cert-badge aura-cert-badge--<?php echo esc_attr( $rtype ); ?>" style="margin-left:6px;"><?php echo esc_html( $rlabel ); ?></span>
+                        </td>
                         <td><?php echo esc_html( $cert->course_name ); ?></td>
                         <td style="color: var(--aura-text-secondary, #64748b); font-size: 13px;"><?php echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $cert->issued_at ) ) ); ?></td>
                         <td>

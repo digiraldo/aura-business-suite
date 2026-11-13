@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class Aura_Certificates_Setup {
 
     /** Versión del esquema de BD del módulo */
-    const DB_VERSION        = '1.0.0';
+    const DB_VERSION        = '1.1.0';
     const DB_VERSION_OPTION = 'aura_certificates_db_version';
 
     // ─────────────────────────────────────────────────────────────
@@ -82,14 +82,14 @@ class Aura_Certificates_Setup {
             name            VARCHAR(200) NOT NULL,
             slug            VARCHAR(200) NOT NULL,
             description     TEXT DEFAULT NULL,
-            orientation     VARCHAR(10) NOT NULL DEFAULT 'landscape',
+            orientation     VARCHAR(30) NOT NULL DEFAULT 'landscape',
             width_mm        DECIMAL(6,2) NOT NULL DEFAULT '297.00',
             height_mm       DECIMAL(6,2) NOT NULL DEFAULT '210.00',
             design_json     LONGTEXT NOT NULL,
             thumbnail_url   VARCHAR(500) DEFAULT NULL,
             is_default      TINYINT(1) NOT NULL DEFAULT 0,
             is_active       TINYINT(1) NOT NULL DEFAULT 1,
-            created_by      BIGINT(20) UNSIGNED NOT NULL,
+            created_by      BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
             created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -104,13 +104,18 @@ class Aura_Certificates_Setup {
             name            VARCHAR(200) NOT NULL,
             title           VARCHAR(200) NOT NULL,
             signature_url   VARCHAR(500) DEFAULT NULL,
+            attachment_id   BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
+            wp_user_id      BIGINT(20) UNSIGNED DEFAULT NULL,
+            third_party_id  BIGINT(20) UNSIGNED DEFAULT NULL,
             is_active       TINYINT(1) NOT NULL DEFAULT 1,
             sort_order      TINYINT(3) UNSIGNED NOT NULL DEFAULT 0,
-            created_by      BIGINT(20) UNSIGNED NOT NULL,
+            created_by      BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
             created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
-            KEY idx_active (is_active)
+            KEY idx_active (is_active),
+            KEY idx_wp_user (wp_user_id),
+            KEY idx_third_party (third_party_id)
         ) ENGINE=InnoDB {$charset_collate};";
 
         // ── 3. Secuencia de folios ────────────────────────────────
@@ -123,23 +128,37 @@ class Aura_Certificates_Setup {
         // ── 4. Certificados emitidos ──────────────────────────────
         $sql_certs = "CREATE TABLE {$t_certs} (
             id                  BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-            student_id          BIGINT(20) UNSIGNED NOT NULL,
+            student_id          BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
             enrollment_id       BIGINT(20) UNSIGNED DEFAULT NULL,
+            recipient_type      VARCHAR(20) NOT NULL DEFAULT 'student',
+            wp_user_id          BIGINT(20) UNSIGNED DEFAULT NULL,
+            third_party_id      BIGINT(20) UNSIGNED DEFAULT NULL,
+            recipient_email     VARCHAR(200) DEFAULT NULL,
+            recipient_document  VARCHAR(100) DEFAULT NULL,
             template_id         BIGINT(20) UNSIGNED NOT NULL,
             folio               VARCHAR(50) NOT NULL,
-            verification_code   VARCHAR(36) NOT NULL,
-            student_name        VARCHAR(300) NOT NULL,
+            uuid                VARCHAR(36) DEFAULT NULL,
+            verification_code   VARCHAR(36) NOT NULL DEFAULT '',
+            student_name        VARCHAR(300) NOT NULL DEFAULT '',
             course_name         VARCHAR(300) NOT NULL,
             program_name        VARCHAR(300) DEFAULT NULL,
+            category            VARCHAR(150) DEFAULT NULL,
+            hours               VARCHAR(100) DEFAULT NULL,
+            grade               VARCHAR(100) DEFAULT NULL,
+            city                VARCHAR(150) DEFAULT NULL,
             instructor_name     VARCHAR(300) DEFAULT NULL,
             organization_name   VARCHAR(300) DEFAULT NULL,
             graduation_date     DATE DEFAULT NULL,
             issued_at           DATETIME NOT NULL,
             pdf_path            VARCHAR(500) DEFAULT NULL,
+            qr_path             VARCHAR(500) DEFAULT NULL,
+            verify_url          VARCHAR(500) DEFAULT NULL,
+            send_email          TINYINT(1) NOT NULL DEFAULT 0,
+            send_whatsapp       TINYINT(1) NOT NULL DEFAULT 0,
             include_signatures  TINYINT(1) NOT NULL DEFAULT 1,
             signers_json        TEXT DEFAULT NULL,
             description         TEXT DEFAULT NULL,
-            issued_by           BIGINT(20) UNSIGNED NOT NULL,
+            issued_by           BIGINT(20) UNSIGNED NOT NULL DEFAULT 0,
             status              VARCHAR(10) NOT NULL DEFAULT 'active',
             revoked_at          DATETIME DEFAULT NULL,
             revoked_by          BIGINT(20) UNSIGNED DEFAULT NULL,
@@ -150,7 +169,10 @@ class Aura_Certificates_Setup {
             PRIMARY KEY (id),
             UNIQUE KEY uq_folio         (folio),
             UNIQUE KEY uq_verify_code   (verification_code),
+            KEY idx_uuid        (uuid),
             KEY idx_student     (student_id),
+            KEY idx_wp_user     (wp_user_id),
+            KEY idx_third_party (third_party_id),
             KEY idx_enrollment  (enrollment_id),
             KEY idx_template    (template_id),
             KEY idx_status      (status),
@@ -162,7 +184,62 @@ class Aura_Certificates_Setup {
         dbDelta( $sql_folio_seq );
         dbDelta( $sql_certs );
 
+        self::ensure_migrated_columns( $t_templates, $t_signers, $t_certs );
+
         update_option( self::DB_VERSION_OPTION, self::DB_VERSION );
+    }
+
+    /**
+     * Garantiza columnas y longitudes exactas en instalaciones previas.
+     */
+    private static function ensure_migrated_columns( string $t_templates, string $t_signers, string $t_certs ): void {
+        global $wpdb;
+
+        // Ampliar orientation para soportar letter_landscape / letter_portrait
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $wpdb->query( "ALTER TABLE {$t_templates} MODIFY COLUMN orientation VARCHAR(30) NOT NULL DEFAULT 'landscape'" );
+
+        // Signers: asegurar attachment_id, wp_user_id, third_party_id y default en created_by
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $signer_cols = $wpdb->get_col( "DESCRIBE {$t_signers}", 0 ) ?: [];
+        if ( ! in_array( 'attachment_id', $signer_cols, true ) ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $wpdb->query( "ALTER TABLE {$t_signers} ADD COLUMN attachment_id BIGINT(20) UNSIGNED NOT NULL DEFAULT 0 AFTER signature_url" );
+        }
+        if ( ! in_array( 'wp_user_id', $signer_cols, true ) ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $wpdb->query( "ALTER TABLE {$t_signers} ADD COLUMN wp_user_id BIGINT(20) UNSIGNED DEFAULT NULL AFTER attachment_id" );
+        }
+        if ( ! in_array( 'third_party_id', $signer_cols, true ) ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $wpdb->query( "ALTER TABLE {$t_signers} ADD COLUMN third_party_id BIGINT(20) UNSIGNED DEFAULT NULL AFTER wp_user_id" );
+        }
+
+        // Certs: asegurar columnas usadas por Issuer + Terceros/Usuarios WP + variables extras
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $cert_cols = $wpdb->get_col( "DESCRIBE {$t_certs}", 0 ) ?: [];
+        $alter_certs = [
+            'recipient_type'     => "ADD COLUMN recipient_type VARCHAR(20) NOT NULL DEFAULT 'student' AFTER enrollment_id",
+            'wp_user_id'         => "ADD COLUMN wp_user_id BIGINT(20) UNSIGNED DEFAULT NULL AFTER recipient_type",
+            'third_party_id'     => "ADD COLUMN third_party_id BIGINT(20) UNSIGNED DEFAULT NULL AFTER wp_user_id",
+            'recipient_email'    => "ADD COLUMN recipient_email VARCHAR(200) DEFAULT NULL AFTER third_party_id",
+            'recipient_document' => "ADD COLUMN recipient_document VARCHAR(100) DEFAULT NULL AFTER recipient_email",
+            'uuid'               => "ADD COLUMN uuid VARCHAR(36) DEFAULT NULL AFTER folio",
+            'category'           => "ADD COLUMN category VARCHAR(150) DEFAULT NULL AFTER program_name",
+            'hours'              => "ADD COLUMN hours VARCHAR(100) DEFAULT NULL AFTER category",
+            'grade'              => "ADD COLUMN grade VARCHAR(100) DEFAULT NULL AFTER hours",
+            'city'               => "ADD COLUMN city VARCHAR(150) DEFAULT NULL AFTER grade",
+            'qr_path'            => "ADD COLUMN qr_path VARCHAR(500) DEFAULT NULL AFTER pdf_path",
+            'verify_url'         => "ADD COLUMN verify_url VARCHAR(500) DEFAULT NULL AFTER qr_path",
+            'send_email'         => "ADD COLUMN send_email TINYINT(1) NOT NULL DEFAULT 0 AFTER verify_url",
+            'send_whatsapp'      => "ADD COLUMN send_whatsapp TINYINT(1) NOT NULL DEFAULT 0 AFTER send_email",
+        ];
+        foreach ( $alter_certs as $col => $ddl ) {
+            if ( ! in_array( $col, $cert_cols, true ) ) {
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $wpdb->query( "ALTER TABLE {$t_certs} {$ddl}" );
+            }
+        }
     }
 
     // ─────────────────────────────────────────────────────────────

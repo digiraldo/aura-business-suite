@@ -61,6 +61,10 @@ $pages = get_pages( [ 'post_status' => 'publish' ] );
                             <button type="button" id="aura-cert-logo-btn" class="button">
                                 <?php esc_html_e( 'Seleccionar Logo', 'aura-suite' ); ?>
                             </button>
+                            <button type="button" id="aura-cert-logo-clear" class="button"
+                                    style="<?php echo empty( $settings['org_logo_url'] ) ? 'display:none;' : ''; ?>">
+                                <?php esc_html_e( 'Quitar', 'aura-suite' ); ?>
+                            </button>
                         </div>
                     </td>
                 </tr>

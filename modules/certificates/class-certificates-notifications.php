@@ -257,38 +257,63 @@ class Aura_Certificates_Notifications {
             return null;
         }
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $student = $wpdb->get_row(
-            $wpdb->prepare( "SELECT * FROM {$students_table} WHERE id = %d", $cert->student_id )
-        );
-
-        if ( ! $student ) {
-            return null;
+        $student = null;
+        if ( ! empty( $cert->student_id ) ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $student = $wpdb->get_row(
+                $wpdb->prepare( "SELECT * FROM {$students_table} WHERE id = %d", $cert->student_id )
+            );
         }
 
-        $org_name = Aura_Certificates_Settings::get( 'org_name', get_option( 'blogname', '' ) );
+        $org_name = Aura_Certificates_Settings::get( 'org_name', '' ) ?: get_option( 'blogname', '' );
 
-        // Email del estudiante: via WP user si existe, o campo directo
-        $student_email = '';
-        if ( $student->wp_user_id ) {
+        $student_name = trim( (string) ( $cert->student_name ?? '' ) );
+        if ( $student_name === '' && $student ) {
+            $student_name = trim( $student->first_name . ' ' . $student->last_name );
+        }
+
+        $student_email = trim( (string) ( $cert->recipient_email ?? '' ) );
+        if ( empty( $student_email ) && ! empty( $cert->wp_user_id ) ) {
+            $wp_u = get_user_by( 'id', (int) $cert->wp_user_id );
+            if ( $wp_u ) {
+                $student_email = $wp_u->user_email;
+            }
+        }
+        if ( empty( $student_email ) && $student && ! empty( $student->wp_user_id ) ) {
             $wp_user = get_user_by( 'id', (int) $student->wp_user_id );
             if ( $wp_user ) {
                 $student_email = $wp_user->user_email;
             }
         }
-        if ( empty( $student_email ) && ! empty( $student->email ) ) {
+        if ( empty( $student_email ) && $student && ! empty( $student->email ) ) {
             $student_email = $student->email;
         }
 
-        $student_phone = $student->phone ?? '';
+        $student_phone = $student ? ( $student->phone ?? '' ) : '';
+        if ( empty( $student_phone ) && ! empty( $cert->third_party_id ) && class_exists( 'Aura_Third_Parties' ) ) {
+            $tp = Aura_Third_Parties::get_third_party( (int) $cert->third_party_id );
+            if ( $tp ) {
+                $student_phone = $tp->phone ?? '';
+                if ( empty( $student_email ) && ! empty( $tp->email ) ) {
+                    $student_email = $tp->email;
+                }
+            }
+        }
 
-        // URL de descarga: admin-ajax con nonce
+        if ( empty( $student_email ) && empty( $student_phone ) ) {
+            return null;
+        }
+
+        $code  = (string) ( $cert->uuid ?: $cert->verification_code ?: '' );
+        $token = $code !== '' ? Aura_Certificates_Issuer::build_download_token( $cert->folio, $code ) : '';
+
+        // URL de descarga: con token HMAC para acceso directo desde email
         $download_url = add_query_arg(
-            [
+            array_filter( [
                 'action' => 'aura_cert_download',
                 'folio'  => $cert->folio,
-                'nonce'  => wp_create_nonce( 'aura_download_' . $cert->folio ),
-            ],
+                'token'  => $token,
+            ] ),
             admin_url( 'admin-ajax.php' )
         );
 
@@ -303,7 +328,7 @@ class Aura_Certificates_Notifications {
             'pdf_path'       => $cert->pdf_path,
             'verify_url'     => $cert->verify_url,
             'download_url'   => $download_url,
-            'student_name'   => trim( $student->first_name . ' ' . $student->last_name ),
+            'student_name'   => $student_name,
             'student_email'  => $student_email,
             'student_phone'  => $student_phone,
             'org_name'       => $org_name,

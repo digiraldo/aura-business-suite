@@ -215,7 +215,11 @@ class Aura_Third_Parties {
                 current_user_can('aura_finance_view_all') ||
                 current_user_can('aura_finance_view_own') ||
                 current_user_can('aura_inventory_view_all') ||
-                current_user_can('aura_inventory_checkout')) {
+                current_user_can('aura_inventory_checkout') ||
+                current_user_can('aura_cert_issue') ||
+                current_user_can('aura_cert_view_all') ||
+                current_user_can('aura_cert_signatures_manage') ||
+                current_user_can('aura_cert_reports')) {
                 return;
             }
         }

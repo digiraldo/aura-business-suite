@@ -223,11 +223,11 @@ html.admin-bar .aura-cert-builder-wrap { top: 0; } /* queremos cubrirla intencio
 
 .aura-cert-builder-layout {
     display: grid;
-    grid-template-columns: 200px 1fr 240px;
+    grid-template-columns: 238px 1fr 280px;
     flex: 1;
-    min-height: 0;           /* necesario para que flex:1 recorte el overfllow correctamente */
+    min-height: 0;
     overflow: hidden;
-    height: calc(100vh - 52px); /* 52px = topbar */
+    height: calc(100vh - 52px);
 }
 
 /* Panel tools izquierdo */
@@ -636,4 +636,347 @@ html.admin-bar .aura-cert-builder-wrap { top: 0; } /* queremos cubrirla intencio
 
 .aura-count { color: var(--cert-gray-500); font-size: .85rem; margin: 4px 0 8px; }
 .aura-empty { color: var(--cert-gray-500); font-style: italic; }
-.aura-cert-actions-cell { display: flex; gap: 4px; }
+.aura-cert-actions-cell { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MEJORAS BUILDER v2 (Elementos, Variables, Diseños, Guías)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-cb-divider-v {
+    width: 1px;
+    height: 22px;
+    background: rgba(255,255,255,.25);
+    margin: 0 4px;
+    display: inline-block;
+}
+
+.aura-cb-tool-btn.is-active {
+    background: #7c3aed;
+    color: #fff;
+}
+
+.aura-cb-save-status {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+.aura-cb-save-status.is-ok {
+    background: rgba(22, 163, 74, .22);
+    color: #bbf7d0;
+    border: 1px solid rgba(74, 222, 128, .4);
+}
+.aura-cb-save-status.is-error {
+    background: rgba(220, 38, 38, .25);
+    color: #fecaca;
+    border: 1px solid rgba(248, 113, 113, .45);
+}
+
+.aura-cb-elem-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+}
+
+.aura-cb-elem-grid .aura-cb-elem-btn {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    gap: 3px;
+    padding: 8px 4px;
+    font-size: 11px;
+    line-height: 1.2;
+    margin: 0;
+}
+.aura-cb-elem-grid .aura-cb-elem-btn span {
+    font-size: 15px;
+}
+
+.aura-cb-var-cat {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--cert-gray-500);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 8px 0 4px;
+}
+
+.aura-cb-var-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    width: 100%;
+    text-align: left;
+    padding: 5px 7px;
+    margin-bottom: 3px;
+    border-radius: 4px;
+    border: 1px solid var(--cert-gray-200);
+    background: #fff;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+.aura-cb-var-btn:hover {
+    border-color: var(--cert-primary);
+    background: var(--cert-primary-lt);
+}
+.aura-cb-var-btn code {
+    font-size: 10px;
+    background: var(--cert-gray-100);
+    color: var(--cert-primary-dk);
+    padding: 1px 4px;
+    border-radius: 3px;
+    max-width: 96px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.aura-cb-prebuilt-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+    border: 1px solid var(--cert-gray-200);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+}
+.aura-cb-prebuilt-btn:hover {
+    border-color: var(--cert-primary);
+    box-shadow: 0 2px 6px rgba(124, 58, 237, .14);
+}
+.aura-cb-prebuilt-swatch {
+    width: 34px;
+    height: 24px;
+    border-radius: 3px;
+    border: 1px solid #cbd5e1;
+    flex-shrink: 0;
+}
+.aura-cb-prebuilt-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.aura-cb-prebuilt-meta strong {
+    font-size: 11.5px;
+    color: #0f172a;
+    line-height: 1.25;
+}
+.aura-cb-prebuilt-meta small {
+    font-size: 10px;
+    color: var(--cert-gray-500);
+    line-height: 1.25;
+}
+
+.aura-cb-stage {
+    position: relative;
+    display: inline-block;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .18);
+    background: #fff;
+}
+.aura-cb-stage.is-snap-grid::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(to right, rgba(124, 58, 237, .08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(124, 58, 237, .08) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.aura-cb-guides-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.aura-cb-guides-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 28px;
+    border: 1px dashed rgba(37, 99, 235, .55);
+}
+.aura-cb-guides-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px dashed rgba(239, 68, 68, .55);
+}
+
+.aura-cb-subblock {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--cert-gray-200);
+}
+.aura-cb-sublabel {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--cert-gray-500);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.aura-cb-align-bar {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 3px;
+}
+.aura-cb-align-btn {
+    padding: 2px 0 !important;
+    text-align: center;
+    font-size: 13px !important;
+}
+
+.aura-cb-toggle-btn.is-active {
+    background: var(--cert-primary) !important;
+    border-color: var(--cert-primary) !important;
+    color: #fff !important;
+}
+
+.aura-cb-layers-list {
+    max-height: 170px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.aura-cb-layer-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 5px 8px;
+    border: 1px solid var(--cert-gray-200);
+    border-radius: 4px;
+    background: #fff;
+    font-size: 11.5px;
+    cursor: pointer;
+}
+.aura-cb-layer-item:hover {
+    background: var(--cert-gray-100);
+}
+.aura-cb-layer-item.is-selected {
+    border-color: var(--cert-primary);
+    background: var(--cert-primary-lt);
+    font-weight: 600;
+}
+.aura-cb-layer-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.aura-cb-muted {
+    font-size: 11.5px;
+    color: var(--cert-gray-500);
+    margin: 4px 0;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EMISIÓN INDIVIDUAL / DETALLE / BADGES / BULK TABS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.aura-issue-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    gap: 20px;
+    align-items: start;
+}
+.aura-issue-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+.aura-issue-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+.aura-issue-main label > span {
+    display: block;
+    font-weight: 600;
+    font-size: 12.5px;
+    margin-bottom: 4px;
+}
+
+.aura-recipient-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.aura-recipient-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+}
+.aura-recipient-tab:hover {
+    border-color: var(--cert-primary);
+    color: var(--cert-primary-dk);
+}
+.aura-recipient-tab.is-active {
+    background: var(--cert-primary);
+    border-color: var(--cert-primary);
+    color: #fff;
+}
+
+.aura-search-dropdown {
+    position: relative;
+    margin-top: 4px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .12);
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 30;
+}
+.aura-search-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+}
+.aura-search-item:last-child { border-bottom: none; }
+.aura-search-item:hover { background: #f5f3ff; }
+.aura-search-item-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+.aura-search-empty { padding: 10px 12px; color: #64748b; font-size: 12.5px; }
+
+.aura-selected-chip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    font-size: 13px;
+}
+
+.aura-cert-badge--student { background: #dbeafe; color: #1e40af; }
+.aura-cert-badge--wpuser { background: #ede9fe; color: #5b21b6; }
+.aura-cert-badge--thirdparty { background: #dcfce7; color: #166534; }
+.aura-cert-badge--manual { background: #f1f5f9; color: #475569; }
+.aura-cert-badge--info { background: #e0f2fe; color: #0369a1; }
+.aura-cert-badge--warning { background: #fef3c7; color: #92400e; }
+
+@media (max-width: 1024px) {
+    .aura-issue-layout { grid-template-columns: 1fr; }
+    .aura-issue-grid-3 { grid-template-columns: 1fr; }
+    .aura-issue-grid-2 { grid-template-columns: 1fr; }
+}
