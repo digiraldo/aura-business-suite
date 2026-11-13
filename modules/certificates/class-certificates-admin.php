@@ -1155,6 +1155,90 @@ class Aura_Certificates_Admin {
                 'category' => __( 'Insignias & Iconos', 'aura-suite' ),
                 'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M60,100 C60,100 14,72 14,42 C14,26 27,16 40,16 C50,16 56,22 60,30 C64,22 70,16 80,16 C93,16 106,26 106,42 C106,72 60,100 60,100 Z" fill="#e11d48"/><circle cx="40" cy="36" r="6" fill="#fda4af"/></svg>',
             ],
+            [
+                'id'       => 'rosette-gold',
+                'name'     => __( 'Roseta Ceremonial', 'aura-suite' ),
+                'category' => __( 'Sellos & Medallas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><polygon points="44,72 34,114 50,104 58,114 60,72" fill="#991b1b"/><polygon points="76,72 86,114 70,104 62,114 60,72" fill="#b91c1c"/><circle cx="60" cy="48" r="34" fill="#b45309"/><circle cx="60" cy="48" r="28" fill="#f59e0b"/><circle cx="60" cy="48" r="20" fill="#fef3c7" stroke="#92400e" stroke-width="2"/><circle cx="60" cy="48" r="8" fill="#d97706"/></svg>',
+            ],
+            [
+                'id'       => 'laurel-shield',
+                'name'     => __( 'Escudo con Laurel', 'aura-suite' ),
+                'category' => __( 'Sellos & Medallas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M28,88 C12,72 12,42 30,26 C26,46 30,68 42,84 Z" fill="#d97706"/><path d="M92,88 C108,72 108,42 90,26 C94,46 90,68 78,84 Z" fill="#d97706"/><path d="M36,24 H84 V56 C84,78 60,94 60,94 C60,94 36,78 36,56 Z" fill="#1e3a8a" stroke="#f59e0b" stroke-width="3"/><polygon points="60,38 64,48 75,49 67,56 69,67 60,61 51,67 53,56 45,49 56,48" fill="#fde047"/></svg>',
+            ],
+            [
+                'id'       => 'radiant-cross',
+                'name'     => __( 'Cruz Radiante', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="50" r="34" fill="#fef3c7"/><rect x="52" y="16" width="16" height="86" rx="3" fill="#92400e"/><rect x="30" y="38" width="60" height="16" rx="3" fill="#92400e"/><rect x="56" y="20" width="8" height="78" rx="2" fill="#d97706"/><rect x="34" y="42" width="52" height="8" rx="2" fill="#d97706"/></svg>',
+            ],
+            [
+                'id'       => 'sanctuary-church',
+                'name'     => __( 'Templo / Ministerio', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect x="57" y="8" width="6" height="18" fill="#b45309"/><rect x="51" y="13" width="18" height="5" fill="#b45309"/><polygon points="60,24 22,56 98,56" fill="#1e3a8a"/><rect x="28" y="56" width="64" height="48" fill="#f8fafc" stroke="#1e293b" stroke-width="3"/><rect x="48" y="72" width="24" height="32" rx="12" fill="#b45309"/><circle cx="60" cy="43" r="6" fill="#fde047"/></svg>',
+            ],
+            [
+                'id'       => 'spirit-flame',
+                'name'     => __( 'Llama del Espíritu', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M60,12 C86,36 96,68 78,94 C70,104 50,104 42,94 C24,68 34,36 60,12 Z" fill="#dc2626"/><path d="M60,34 C76,50 80,72 68,90 C63,96 57,96 52,90 C40,72 44,50 60,34 Z" fill="#f59e0b"/><path d="M60,56 C68,66 70,78 60,88 C50,78 52,66 60,56 Z" fill="#fef08a"/></svg>',
+            ],
+            [
+                'id'       => 'quill-ink',
+                'name'     => __( 'Pluma de Caligrafía', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M96,14 C72,18 46,38 34,74 L48,86 C78,72 96,42 96,14 Z" fill="#1e40af"/><path d="M34,74 L24,94 L48,86 Z" fill="#f59e0b"/><rect x="20" y="92" width="34" height="16" rx="4" fill="#1e293b"/><rect x="26" y="88" width="22" height="6" rx="2" fill="#b45309"/></svg>',
+            ],
+            [
+                'id'       => 'knowledge-key',
+                'name'     => __( 'Llave del Saber', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="38" cy="60" r="22" fill="#f59e0b" stroke="#92400e" stroke-width="4"/><circle cx="38" cy="60" r="9" fill="#fef3c7"/><rect x="58" y="54" width="46" height="12" rx="4" fill="#d97706"/><rect x="82" y="66" width="8" height="14" rx="2" fill="#92400e"/><rect x="94" y="66" width="8" height="10" rx="2" fill="#92400e"/></svg>',
+            ],
+            [
+                'id'       => 'corner-filigree',
+                'name'     => __( 'Esquina Filigrana', 'aura-suite' ),
+                'category' => __( 'Ornamentos & Esquinas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M10,110 V10 H110 V22 H22 V110 Z" fill="#1e3a8a"/><path d="M26,94 V26 H94 V34 H34 V94 Z" fill="#d97706"/><rect x="12" y="12" width="16" height="16" rx="3" fill="#f59e0b"/><circle cx="46" cy="46" r="6" fill="#92400e"/></svg>',
+            ],
+            [
+                'id'       => 'crest-header',
+                'name'     => __( 'Cresta Ornamental', 'aura-suite' ),
+                'category' => __( 'Ornamentos & Esquinas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60"><line x1="10" y1="34" x2="86" y2="34" stroke="#1e293b" stroke-width="2.5"/><line x1="154" y1="34" x2="230" y2="34" stroke="#1e293b" stroke-width="2.5"/><polygon points="120,10 144,34 120,52 96,34" fill="#1e3a8a"/><polygon points="120,17 136,34 120,45 104,34" fill="#f59e0b"/><circle cx="86" cy="34" r="4" fill="#b45309"/><circle cx="154" cy="34" r="4" fill="#b45309"/></svg>',
+            ],
+            [
+                'id'       => 'corner-botanical',
+                'name'     => __( 'Esquina Hojas Oro', 'aura-suite' ),
+                'category' => __( 'Ornamentos & Esquinas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M14,104 C14,44 44,14 104,14 C72,30 30,72 14,104 Z" fill="#b45309"/><circle cx="24" cy="24" r="10" fill="#f59e0b"/><circle cx="48" cy="20" r="6" fill="#d97706"/><circle cx="20" cy="48" r="6" fill="#d97706"/></svg>',
+            ],
+            [
+                'id'       => 'five-stars-arc',
+                'name'     => __( 'Cinco Estrellas', 'aura-suite' ),
+                'category' => __( 'Insignias & Iconos', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 70"><polygon points="30,28 34,37 44,38 36,44 38,54 30,49 22,54 24,44 16,38 26,37" fill="#d97706"/><polygon points="68,18 72,27 82,28 74,34 76,44 68,39 60,44 62,34 54,28 64,27" fill="#f59e0b"/><polygon points="110,10 116,22 128,23 119,31 121,44 110,37 99,44 101,31 92,23 104,22" fill="#eab308"/><polygon points="152,18 156,27 166,28 158,34 160,44 152,39 144,44 146,34 138,28 148,27" fill="#f59e0b"/><polygon points="190,28 194,37 204,38 196,44 198,54 190,49 182,54 184,44 176,38 186,37" fill="#d97706"/></svg>',
+            ],
+            [
+                'id'       => 'fellowship-hands',
+                'name'     => __( 'Unidad y Servicio', 'aura-suite' ),
+                'category' => __( 'Insignias & Iconos', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="#0f766e"/><circle cx="38" cy="48" r="10" fill="#fef3c7"/><circle cx="82" cy="48" r="10" fill="#fde68a"/><circle cx="60" cy="36" r="12" fill="#ffffff"/><path d="M28,84 C28,66 92,66 92,84 Z" fill="#14b8a6"/></svg>',
+            ],
+            [
+                'id'       => 'compass-vision',
+                'name'     => __( 'Brújula / Visión', 'aura-suite' ),
+                'category' => __( 'Insignias & Iconos', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="#1e293b" stroke="#f59e0b" stroke-width="5"/><circle cx="60" cy="60" r="34" fill="#f8fafc"/><polygon points="60,24 72,60 60,54 48,60" fill="#dc2626"/><polygon points="60,96 72,60 60,66 48,60" fill="#1e3a8a"/><circle cx="60" cy="60" r="5" fill="#f59e0b"/></svg>',
+            ],
+            [
+                'id'       => 'tech-award-gear',
+                'name'     => __( 'Mérito Técnico', 'aura-suite' ),
+                'category' => __( 'Insignias & Iconos', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="40" fill="#334155" stroke="#0284c7" stroke-width="8" stroke-dasharray="14,8"/><circle cx="60" cy="60" r="26" fill="#0ea5e9"/><polyline points="46,60 56,70 76,48" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+            ],
         ];
     }
 }

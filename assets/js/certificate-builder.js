@@ -21,7 +21,7 @@
     var CUSTOM_PROPS = [
         'name', 'auraElementType', 'signerSlot',
         'auraSvgMarkup', 'auraSvgOriginal', 'auraClipartLabel',
-        'rx', 'ry', 'strokeDashArray', 'auraLocked', 'shadow'
+        'rx', 'ry', 'strokeDashArray', 'auraLocked', 'shadow', 'perPixelTargetFind'
     ];
 
     // Dimensiones lógicas del documento en píxeles (96 dpi) y milímetros
@@ -190,6 +190,14 @@
         return names[obj.type] || obj.type || ('Objeto #' + (idx + 1));
     }
 
+    function syncTransparentHitTest(obj) {
+        if (!obj) return;
+        var isTransparent = !obj.fill || obj.fill === 'transparent' || obj.fill === 'none';
+        if (obj.type === 'rect' || obj.type === 'circle' || obj.type === 'triangle' || obj.type === 'polygon' || obj.name === 'decorative_frame') {
+            obj.set('perPixelTargetFind', isTransparent);
+        }
+    }
+
     /* ═════════════════════════════════════════
        INICIALIZACIÓN DEL CANVAS
        ═════════════════════════════════════════ */
@@ -208,7 +216,8 @@
             height                 : dim.h,
             backgroundColor        : bgColor,
             preserveObjectStacking : true,
-            selection              : true
+            selection              : true,
+            targetFindTolerance    : 8
         });
 
         // Selección
@@ -295,6 +304,7 @@
                 if (obj.auraLocked) {
                     applyLockState(obj, true);
                 }
+                syncTransparentHitTest(obj);
             });
 
             var bg = canvas.backgroundColor;
@@ -781,6 +791,7 @@
             var obj = canvas.getActiveObject();
             if (obj && !isTextObject(obj)) {
                 obj.set('fill', $(this).val());
+                syncTransparentHitTest(obj);
                 canvas.requestRenderAll();
                 saveHistoryStep();
             }
@@ -790,6 +801,7 @@
             var obj = canvas.getActiveObject();
             if (obj && !isTextObject(obj)) {
                 obj.set('fill', 'transparent');
+                syncTransparentHitTest(obj);
                 canvas.requestRenderAll();
                 saveHistoryStep();
             }
@@ -1348,20 +1360,23 @@
     function addFrame() {
         var pad = 28;
         var obj = new fabric.Rect({
-            left        : pad,
-            top         : pad,
-            width       : docW - pad * 2,
-            height      : docH - pad * 2,
-            fill        : 'transparent',
-            stroke      : '#b8860b',
-            strokeWidth : 4,
-            rx          : 4,
-            ry          : 4,
-            name        : 'decorative_frame'
+            left               : pad,
+            top                : pad,
+            width              : docW - pad * 2,
+            height             : docH - pad * 2,
+            fill               : 'transparent',
+            stroke             : '#b8860b',
+            strokeWidth        : 4,
+            rx                 : 4,
+            ry                 : 4,
+            name               : 'decorative_frame',
+            perPixelTargetFind : true
         });
         canvas.add(obj);
+        canvas.sendToBack(obj);
         canvas.setActiveObject(obj);
         canvas.requestRenderAll();
+        renderLayersList();
     }
 
     function addCircle() {
