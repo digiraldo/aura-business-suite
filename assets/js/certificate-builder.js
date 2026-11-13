@@ -18,7 +18,11 @@
     var NONCE   = CB.nonce    || '';
     var TMPL_ID = parseInt(CB.templateId, 10) || parseInt($('#aura-cb-template-id').val(), 10) || 0;
 
-    var CUSTOM_PROPS = ['name', 'auraElementType', 'rx', 'ry', 'strokeDashArray', 'auraLocked', 'shadow'];
+    var CUSTOM_PROPS = [
+        'name', 'auraElementType', 'signerSlot',
+        'auraSvgMarkup', 'auraSvgOriginal', 'auraClipartLabel',
+        'rx', 'ry', 'strokeDashArray', 'auraLocked', 'shadow'
+    ];
 
     // Dimensiones lógicas del documento en píxeles (96 dpi) y milímetros
     var DIM = {
@@ -59,7 +63,11 @@
         '{firmante_1_nombre}'   : (CB.signers && CB.signers[0] && CB.signers[0].name) || 'Dr. Juan García',
         '{firmante_1_cargo}'    : (CB.signers && CB.signers[0] && CB.signers[0].title) || 'Director Académico',
         '{firmante_2_nombre}'   : (CB.signers && CB.signers[1] && CB.signers[1].name) || 'Dra. Sofía Restrepo',
-        '{firmante_2_cargo}'    : (CB.signers && CB.signers[1] && CB.signers[1].title) || 'Coordinadora General'
+        '{firmante_2_cargo}'    : (CB.signers && CB.signers[1] && CB.signers[1].title) || 'Coordinadora General',
+        '{firmante_3_nombre}'   : (CB.signers && CB.signers[2] && CB.signers[2].name) || 'Mg. Andrés Torres',
+        '{firmante_3_cargo}'    : (CB.signers && CB.signers[2] && CB.signers[2].title) || 'Secretario Académico',
+        '{firmante_4_nombre}'   : (CB.signers && CB.signers[3] && CB.signers[3].name) || 'Lic. Paula Mendoza',
+        '{firmante_4_cargo}'    : (CB.signers && CB.signers[3] && CB.signers[3].title) || 'Decana de Facultad'
     };
 
     /* ─────────────────────────────────────────
@@ -132,6 +140,8 @@
         var d = DIM[orientation] || DIM.landscape;
         $('#aura-cb-width-mm').val(d.w_mm);
         $('#aura-cb-height-mm').val(d.h_mm);
+        var label = orientation.indexOf('letter') === 0 ? 'Carta' : 'A4';
+        $('#aura-cb-hud-dims').text(label + ' · ' + d.w_mm + ' × ' + d.h_mm + ' mm (' + d.w + '×' + d.h + 'px)');
     }
 
     function isTextObject(obj) {
@@ -156,6 +166,13 @@
     function getObjectLabel(obj, idx) {
         if (!obj) return 'Elemento ' + (idx + 1);
         if (obj.auraElementType === 'qr' || obj.name === 'qr_placeholder') return 'Código QR';
+        if (obj.auraElementType === 'signer_sig' || (obj.name && String(obj.name).indexOf('signer_slot_') === 0)) {
+            var slotNum = obj.signerSlot || String(obj.name || '').replace('signer_slot_', '') || '1';
+            return '✍ Slot Firma #' + slotNum;
+        }
+        if (obj.auraElementType === 'svg_clipart' || obj.auraSvgMarkup) {
+            return '🎨 ' + (obj.auraClipartLabel || 'SVG Clipart');
+        }
         if (obj.name && String(obj.name).indexOf('signer_') === 0) return 'Firma (' + obj.name + ')';
         if (isTextObject(obj)) {
             var txt = (obj.text || '').replace(/\s+/g, ' ').trim();
@@ -353,9 +370,9 @@
     function fitToScreen() {
         var $wrap = $('.aura-cert-builder-canvas-wrap');
         if (!$wrap.length) return;
-        var areaW = Math.max(240, $wrap.width() - 60);
-        var areaH = Math.max(200, $wrap.height() - 60);
-        currentZoom = Math.min(areaW / docW, areaH / docH, 1);
+        var areaW = Math.max(240, $wrap.width() - 44);
+        var areaH = Math.max(200, $wrap.height() - 48);
+        currentZoom = Math.min(areaW / docW, areaH / docH, 1.35);
         currentZoom = Math.max(0.15, Math.round(currentZoom * 100) / 100);
         applyZoom();
     }
@@ -364,7 +381,20 @@
     function zoomOut() { currentZoom = Math.max(0.15, Math.round((currentZoom - 0.1) * 10) / 10); applyZoom(); }
 
     function updateZoomLabel() {
-        $('#aura-cb-zoom-label').text(Math.round(currentZoom * 100) + '%');
+        var pct = Math.round(currentZoom * 100) + '%';
+        $('#aura-cb-zoom-label').text(pct);
+        var $sel = $('#aura-cb-zoom-select');
+        if ($sel.length) {
+            var matched = false;
+            $sel.find('option').each(function () {
+                if (this.value !== 'fit' && Math.abs(parseFloat(this.value) - currentZoom) < 0.02) {
+                    $sel.val(this.value);
+                    matched = true;
+                    return false;
+                }
+            });
+            if (!matched) $sel.val('fit');
+        }
     }
 
     function updateGuidesSize() {
@@ -447,12 +477,16 @@
         var obj = e.selected && e.selected[0] ? e.selected[0] : canvas.getActiveObject();
         updateObjectPanel(obj);
         renderLayersList();
+        if (e && e.e) {
+            $('.aura-cb-rpane-tab[data-rpane="props"]').trigger('click');
+        }
     }
 
     function onSelectionCleared() {
         $('#aura-cb-obj-props').hide();
         $('#aura-cb-text-props').hide();
         $('#aura-cb-shape-props').hide();
+        $('#aura-cb-svg-props').hide();
         renderLayersList();
     }
 
@@ -484,6 +518,7 @@
         if (isTextObject(obj)) {
             $('#aura-cb-text-props').show();
             $('#aura-cb-shape-props').hide();
+            $('#aura-cb-svg-props').hide();
 
             $('#aura-cb-text-content').val(obj.text || '');
             $('#aura-cb-obj-font-family').val(obj.fontFamily || 'Arial');
@@ -498,8 +533,14 @@
             $('#aura-cb-obj-italic').toggleClass('is-active', obj.fontStyle === 'italic');
             $('#aura-cb-obj-underline').toggleClass('is-active', !!obj.underline);
             $('#aura-cb-obj-linethrough').toggleClass('is-active', !!obj.linethrough);
+        } else if (obj.auraElementType === 'svg_clipart' || obj.auraSvgMarkup) {
+            $('#aura-cb-text-props').hide();
+            $('#aura-cb-shape-props').hide();
+            $('#aura-cb-svg-props').show();
+            renderSvgColorsPanel(obj);
         } else {
             $('#aura-cb-text-props').hide();
+            $('#aura-cb-svg-props').hide();
 
             if (obj.type === 'rect' || obj.type === 'circle' || obj.type === 'triangle' || obj.type === 'polygon' || obj.type === 'line') {
                 $('#aura-cb-shape-props').show();
@@ -532,6 +573,7 @@
 
         var objs   = canvas.getObjects();
         var active = canvas.getActiveObject();
+        $('#aura-cb-layers-count').text(objs.length);
 
         if (!objs.length) {
             $list.html('<p class="aura-cb-muted">Sin elementos en el lienzo.</p>');
@@ -997,6 +1039,276 @@
         canvas.requestRenderAll();
     }
 
+    function cssColorToHex(val) {
+        if (!val || typeof val !== 'string') return '';
+        var s = val.trim().toLowerCase();
+        if (!s || s === 'none' || s === 'transparent' || s.indexOf('url(') === 0 || s === 'currentcolor') {
+            return '';
+        }
+        if (/^#[0-9a-f]{6}$/.test(s)) return s;
+        if (/^#[0-9a-f]{3}$/.test(s)) {
+            return '#' + s[1] + s[1] + s[2] + s[2] + s[3] + s[3];
+        }
+        if (/^rgba?\(/.test(s)) return toHexColor(s, '').toLowerCase();
+        try {
+            var probe = document.createElement('span');
+            probe.style.color = '';
+            probe.style.color = s;
+            if (!probe.style.color) return '';
+            document.body.appendChild(probe);
+            var computed = window.getComputedStyle(probe).color;
+            document.body.removeChild(probe);
+            return computed ? toHexColor(computed, '').toLowerCase() : '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function normalizeSvgForColoring(rawSvg) {
+        if (!rawSvg || typeof rawSvg !== 'string') return '';
+        try {
+            var parser = new DOMParser();
+            var doc    = parser.parseFromString(rawSvg.trim(), 'image/svg+xml');
+            var root   = doc.querySelector('svg');
+            if (!root) return '';
+
+            doc.querySelectorAll('script, foreignObject, iframe, object, embed').forEach(function (n) {
+                if (n.parentNode) n.parentNode.removeChild(n);
+            });
+
+            if (!root.getAttribute('xmlns')) {
+                root.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            }
+            if (!root.getAttribute('viewBox')) {
+                var rw = parseFloat(root.getAttribute('width')) || 120;
+                var rh = parseFloat(root.getAttribute('height')) || 120;
+                root.setAttribute('viewBox', '0 0 ' + rw + ' ' + rh);
+            }
+
+            var shapeSelector = 'path, circle, rect, polygon, polyline, ellipse, line';
+            doc.querySelectorAll(shapeSelector).forEach(function (el) {
+                var st = el.getAttribute('style') || '';
+                if (st) {
+                    var fillMatch = st.match(/(?:^|;)\s*fill\s*:\s*([^;]+)/i);
+                    if (fillMatch && !el.getAttribute('fill')) el.setAttribute('fill', fillMatch[1].trim());
+                    var strokeMatch = st.match(/(?:^|;)\s*stroke\s*:\s*([^;]+)/i);
+                    if (strokeMatch && !el.getAttribute('stroke')) el.setAttribute('stroke', strokeMatch[1].trim());
+                    el.removeAttribute('style');
+                }
+
+                var fAttr = el.getAttribute('fill');
+                if (fAttr) {
+                    var fHex = cssColorToHex(fAttr);
+                    if (fHex) el.setAttribute('fill', fHex);
+                } else {
+                    var pFill = el.parentElement && el.parentElement.getAttribute('fill');
+                    if (el.tagName.toLowerCase() === 'line' || el.tagName.toLowerCase() === 'polyline') {
+                        el.setAttribute('fill', 'none');
+                    } else if (pFill) {
+                        var pfHex = cssColorToHex(pFill);
+                        if (pfHex) el.setAttribute('fill', pfHex);
+                    } else {
+                        el.setAttribute('fill', '#1e293b');
+                    }
+                }
+
+                var sAttr = el.getAttribute('stroke');
+                if (sAttr) {
+                    var sHex = cssColorToHex(sAttr);
+                    if (sHex) el.setAttribute('stroke', sHex);
+                }
+            });
+
+            return new XMLSerializer().serializeToString(root);
+        } catch (e) {
+            return rawSvg;
+        }
+    }
+
+    function updateSvgMarkupColors(svgMarkup, mutator) {
+        if (!svgMarkup) return svgMarkup;
+        try {
+            var doc  = new DOMParser().parseFromString(svgMarkup, 'image/svg+xml');
+            var root = doc.querySelector('svg');
+            if (!root) return svgMarkup;
+            doc.querySelectorAll('path, circle, rect, polygon, polyline, ellipse, line, g').forEach(function (el) {
+                ['fill', 'stroke'].forEach(function (attr) {
+                    var raw = el.getAttribute(attr);
+                    var hex = cssColorToHex(raw);
+                    if (hex) {
+                        var next = mutator(hex, attr, el);
+                        if (next) el.setAttribute(attr, next);
+                    }
+                });
+            });
+            return new XMLSerializer().serializeToString(root);
+        } catch (e) {
+            return svgMarkup;
+        }
+    }
+
+    function getSvgColorTargets(obj) {
+        if (!obj) return [];
+        if (obj.type === 'group' && typeof obj.getObjects === 'function') {
+            var out = [];
+            obj.getObjects().forEach(function (child) {
+                out = out.concat(getSvgColorTargets(child));
+            });
+            return out;
+        }
+        return [obj];
+    }
+
+    function extractSvgColors(obj) {
+        var colors = [];
+        getSvgColorTargets(obj).forEach(function (t) {
+            [t.fill, t.stroke].forEach(function (raw) {
+                var hex = cssColorToHex(raw);
+                if (hex && colors.indexOf(hex) === -1) {
+                    colors.push(hex);
+                }
+            });
+        });
+        return colors;
+    }
+
+    function replaceSvgColor(obj, oldHex, newHex) {
+        var targetOld = oldHex.toLowerCase();
+        var nextHex   = newHex.toLowerCase();
+        getSvgColorTargets(obj).forEach(function (t) {
+            if (cssColorToHex(t.fill) === targetOld) {
+                t.set('fill', nextHex);
+            }
+            if (cssColorToHex(t.stroke) === targetOld) {
+                t.set('stroke', nextHex);
+            }
+        });
+        if (obj.auraSvgMarkup) {
+            obj.auraSvgMarkup = updateSvgMarkupColors(obj.auraSvgMarkup, function (hex) {
+                return hex === targetOld ? nextHex : hex;
+            });
+        }
+        obj.dirty = true;
+        canvas.requestRenderAll();
+    }
+
+    function tintSvgMonochrome(obj, newHex) {
+        var nextHex = newHex.toLowerCase();
+        getSvgColorTargets(obj).forEach(function (t) {
+            if (cssColorToHex(t.fill)) t.set('fill', nextHex);
+            if (cssColorToHex(t.stroke)) t.set('stroke', nextHex);
+        });
+        if (obj.auraSvgMarkup) {
+            obj.auraSvgMarkup = updateSvgMarkupColors(obj.auraSvgMarkup, function () {
+                return nextHex;
+            });
+        }
+        obj.dirty = true;
+        canvas.requestRenderAll();
+        renderSvgColorsPanel(obj);
+    }
+
+    function resetSvgColors(obj) {
+        if (!obj || !obj.auraSvgOriginal) return;
+        fabric.loadSVGFromString(obj.auraSvgOriginal, function (srcObjs) {
+            var destTargets = getSvgColorTargets(obj);
+            var flatSrc     = [];
+            srcObjs.forEach(function (s) {
+                flatSrc = flatSrc.concat(getSvgColorTargets(s));
+            });
+            destTargets.forEach(function (t, idx) {
+                if (flatSrc[idx]) {
+                    t.set({
+                        fill   : flatSrc[idx].fill,
+                        stroke : flatSrc[idx].stroke
+                    });
+                }
+            });
+            obj.auraSvgMarkup = obj.auraSvgOriginal;
+            obj.dirty         = true;
+            canvas.requestRenderAll();
+            renderSvgColorsPanel(obj);
+            saveHistoryStep();
+        });
+    }
+
+    function renderSvgColorsPanel(obj) {
+        var $list = $('#aura-cb-svg-colors-list');
+        if (!$list.length || !obj) return;
+        $list.empty();
+        var colors = extractSvgColors(obj);
+        if (!colors.length) {
+            $list.html('<p class="aura-cb-muted">No se detectaron colores editables en este SVG.</p>');
+            return;
+        }
+        colors.forEach(function (hex, i) {
+            var $row = $('<div class="aura-cb-svg-color-row">');
+            var $lbl = $('<span>').text('Color ' + (i + 1));
+            var $hex = $('<code>').text(hex);
+            var $inp = $('<input type="color" class="aura-cb-svg-color-input">')
+                .val(hex)
+                .attr('data-old-color', hex);
+            $row.append($inp, $lbl, $hex);
+            $list.append($row);
+        });
+        $('#aura-cb-svg-mono-color').val(colors[0]);
+    }
+
+    function addSvgFromString(rawSvg, label, extraOpts) {
+        var cleanSvg = normalizeSvgForColoring(rawSvg);
+        if (!cleanSvg || typeof fabric === 'undefined') {
+            alert('No se pudo leer el contenido SVG.');
+            return;
+        }
+        fabric.loadSVGFromString(cleanSvg, function (objects, options) {
+            if (!objects || !objects.length) {
+                alert('El SVG no contiene trazos vectoriales visibles.');
+                return;
+            }
+            var svgObj = fabric.util.groupSVGElements(objects, options);
+            var maxDim = (extraOpts && extraOpts.maxW) || 140;
+            var curW   = svgObj.width || 120;
+            var curH   = svgObj.height || 120;
+            var scale  = Math.min(maxDim / curW, maxDim / curH, 2.5);
+            if (scale !== 1 && curW > 0) {
+                svgObj.scale(scale);
+            }
+            svgObj.set($.extend({
+                left             : Math.round((docW - svgObj.getScaledWidth()) / 2),
+                top              : Math.round((docH - svgObj.getScaledHeight()) / 2),
+                name             : 'svg_clipart_' + Date.now(),
+                auraElementType  : 'svg_clipart',
+                auraClipartLabel : label || 'Clipart SVG',
+                auraSvgMarkup    : cleanSvg,
+                auraSvgOriginal  : cleanSvg
+            }, extraOpts || {}));
+            canvas.add(svgObj);
+            canvas.setActiveObject(svgObj);
+            canvas.requestRenderAll();
+        });
+    }
+
+    function handleImageUrlInsert(attOrUrl, label, extraOpts) {
+        var url  = typeof attOrUrl === 'string' ? attOrUrl : (attOrUrl && attOrUrl.url);
+        if (!url) return;
+        var mime = (attOrUrl && (attOrUrl.mime || attOrUrl.subtype)) || '';
+        var isSvg = mime.indexOf('svg') !== -1 || /\.svg(?:\?.*)?$/i.test(url);
+
+        if (isSvg) {
+            $.ajax({ url: url, dataType: 'text' }).done(function (svgText) {
+                if (svgText && svgText.indexOf('<svg') !== -1) {
+                    addSvgFromString(svgText, label || (attOrUrl && attOrUrl.title) || 'SVG', extraOpts);
+                } else {
+                    addImage(url, extraOpts);
+                }
+            }).fail(function () {
+                addImage(url, extraOpts);
+            });
+            return;
+        }
+        addImage(url, extraOpts);
+    }
+
     function addImage(url, extraOpts) {
         if (!url) return;
         fabric.Image.fromURL(url, function (img) {
@@ -1015,7 +1327,7 @@
     function addOrgLogo() {
         var logoUrl = CB.orgLogoUrl || '';
         if (logoUrl) {
-            addImage(logoUrl, { maxW: 180, top: 48, name: 'org_logo' });
+            handleImageUrlInsert(logoUrl, 'Logo Organización', { maxW: 180, top: 48, name: 'org_logo' });
         } else {
             addTextbox(CB.orgName || '{organizacion}', {
                 top: 56, width: 500, fontSize: 22, fontFamily: 'Cinzel', fontWeight: 'bold', fill: '#1e3a8a', charSpacing: 120
@@ -1149,18 +1461,82 @@
         canvas.requestRenderAll();
     }
 
-    function addSignatureBlock() {
-        var line = new fabric.Line([10, 0, 230, 0], { stroke: '#1e293b', strokeWidth: 1.5 });
-        var txt  = new fabric.Textbox('{firmante_1_nombre}\n{firmante_1_cargo}', {
-            left: 0, top: 10, width: 240, fontSize: 13, fontFamily: 'Lato',
-            fill: '#1e293b', textAlign: 'center'
+    function createSingleSignatureColumn(slot, centerX, lineTop, blockW) {
+        var sigW = Math.min(130, blockW - 14);
+        var sigH = 44;
+        var sigSlot = new fabric.Rect({
+            left            : Math.round(centerX - sigW / 2),
+            top             : Math.round(lineTop - sigH - 6),
+            width           : sigW,
+            height          : sigH,
+            fill            : 'rgba(99, 102, 241, 0.05)',
+            stroke          : '#94a3b8',
+            strokeWidth     : 1,
+            strokeDashArray : [4, 3],
+            rx              : 4,
+            ry              : 4,
+            name            : 'signer_slot_' + slot,
+            auraElementType : 'signer_sig',
+            signerSlot      : slot
         });
-        var grp = new fabric.Group([line, txt], {
-            left: 160, top: docH - 170, name: 'signature_block'
+        var line = new fabric.Line([
+            Math.round(centerX - (blockW - 16) / 2), lineTop,
+            Math.round(centerX + (blockW - 16) / 2), lineTop
+        ], {
+            stroke      : '#1e293b',
+            strokeWidth : 1.5
         });
-        canvas.add(grp);
-        canvas.setActiveObject(grp);
+        var txt = new fabric.Textbox('{firmante_' + slot + '_nombre}\n{firmante_' + slot + '_cargo}', {
+            left       : Math.round(centerX - blockW / 2),
+            top        : lineTop + 8,
+            width      : blockW,
+            fontSize   : slot > 2 ? 11.5 : 13,
+            fontFamily : 'Lato',
+            fill       : '#1e293b',
+            textAlign  : 'center',
+            lineHeight : 1.25
+        });
+        return [sigSlot, line, txt];
+    }
+
+    function insertSignaturesRow(count) {
+        count = Math.max(1, Math.min(4, parseInt(count, 10) || 1));
+        var marginX  = Math.round(docW * 0.06);
+        var usableW  = docW - marginX * 2;
+        var gap      = count === 4 ? 16 : (count === 3 ? 24 : 40);
+        var blockW   = Math.min(230, Math.floor((usableW - gap * (count - 1)) / count));
+        var totalRow = blockW * count + gap * (count - 1);
+        var startX   = Math.round((docW - totalRow) / 2);
+        var lineTop  = docH - 135;
+        var added    = [];
+
+        historyLock = true;
+        for (var i = 0; i < count; i++) {
+            var slot    = i + 1;
+            var centerX = startX + i * (blockW + gap) + blockW / 2;
+            var parts   = createSingleSignatureColumn(slot, centerX, lineTop, blockW);
+            parts.forEach(function (obj) {
+                canvas.add(obj);
+                added.push(obj);
+            });
+        }
+        historyLock = false;
+
+        if (added.length) {
+            if (added.length > 1) {
+                var sel = new fabric.ActiveSelection(added, { canvas: canvas });
+                canvas.setActiveObject(sel);
+            } else {
+                canvas.setActiveObject(added[0]);
+            }
+        }
         canvas.requestRenderAll();
+        saveHistoryStep();
+        renderLayersList();
+    }
+
+    function addSignatureBlock() {
+        insertSignaturesRow(1);
     }
 
     function addOfficialSeal() {
@@ -1182,19 +1558,35 @@
         canvas.requestRenderAll();
     }
 
-    function addSignerImage(signer) {
+    function addSignerImage(signer, slot) {
         if (!signer) return;
-        var baseTop = Math.max(120, docH - 220);
+        slot = parseInt(slot, 10) || 1;
+        var marginX = Math.round(docW * 0.08);
+        var stepX   = Math.round((docW - marginX * 2) / 4);
+        var posX    = marginX + (Math.min(slot, 4) - 1) * stepX + 10;
+        var baseTop = Math.max(120, docH - 135);
+
         if (signer.signature_url) {
             fabric.Image.fromURL(signer.signature_url, function (img) {
-                img.set({ left: 140, top: baseTop - 70, name: 'signer_' + signer.id });
-                img.scaleToWidth(160);
+                img.set({
+                    left            : posX + 20,
+                    top             : baseTop - 52,
+                    name            : 'signer_slot_' + slot,
+                    auraElementType : 'signer_sig',
+                    signerSlot      : slot
+                });
+                img.scaleToWidth(140);
                 canvas.add(img);
                 canvas.requestRenderAll();
             }, { crossOrigin: 'anonymous' });
         }
-        addTextbox(signer.name + '\n' + (signer.title || ''), {
-            left: 110, top: baseTop, width: 220, fontSize: 13, fontFamily: 'Lato', textAlign: 'center'
+        addTextbox('{firmante_' + slot + '_nombre}\n{firmante_' + slot + '_cargo}', {
+            left      : posX,
+            top       : baseTop + 6,
+            width     : 185,
+            fontSize  : 12,
+            fontFamily: 'Lato',
+            textAlign : 'center'
         });
     }
 
@@ -1324,21 +1716,32 @@
         var $list   = $('#aura-cb-signers-list');
         if (!$list.length) return;
         $list.empty();
-        var signers = CB.signers || [];
+        var signers = (CB.signers || []).slice(0, 4);
+        $('#aura-cb-signers-count').text(signers.length);
         if (!signers.length) {
-            $list.html('<p class="aura-cb-muted">No hay firmantes activos configurados.</p>');
+            $list.html('<p class="aura-cb-muted">No hay firmantes activos configurados. Puedes usar los botones "1–4 Firmas" arriba para añadir espacios dinámicos.</p>');
             return;
         }
-        signers.forEach(function (s) {
-            var $btn = $('<button type="button" class="aura-cb-signer-btn">')
-                .html('✍ <strong>' + escHtml(s.name) + '</strong>' + (s.title ? '<small>' + escHtml(s.title) + '</small>' : ''));
+        signers.forEach(function (s, idx) {
+            var slot = idx + 1;
+            var thumb = s.signature_url
+                ? '<img src="' + escHtml(s.signature_url) + '" alt="" class="aura-cb-signer-thumb">'
+                : '<span class="aura-cb-signer-nothumb">Sin imagen</span>';
+            var $btn = $('<button type="button" class="aura-cb-signer-btn" title="Insertar firma #' + slot + ' en el lienzo">')
+                .html(
+                    '<div class="aura-cb-signer-head"><span class="aura-cb-signer-slot-badge">#' + slot + '</span>' + thumb + '</div>' +
+                    '<div class="aura-cb-signer-info"><strong>' + escHtml(s.name) + '</strong>' +
+                    (s.title ? '<small>' + escHtml(s.title) + '</small>' : '') +
+                    '<code>{firmante_' + slot + '_nombre}</code></div>'
+                );
             $btn.data('signer', s);
+            $btn.data('slot', slot);
             $list.append($btn);
         });
     }
 
     $(document).on('click', '.aura-cb-signer-btn', function () {
-        addSignerImage($(this).data('signer'));
+        addSignerImage($(this).data('signer'), $(this).data('slot'));
     });
 
     /* ═════════════════════════════════════════
@@ -1381,23 +1784,250 @@
         });
     });
 
-    $(document).on('click', '.aura-cb-elem-btn[data-type="image"]', function (e) {
-        e.stopImmediatePropagation();
+    $(document).on('input', '.aura-cb-svg-color-input', function () {
+        var obj    = canvas.getActiveObject();
+        var oldHex = $(this).attr('data-old-color');
+        var newHex = $(this).val();
+        if (!obj || !oldHex || !newHex) return;
+        replaceSvgColor(obj, oldHex, newHex);
+        $(this).attr('data-old-color', newHex.toLowerCase());
+        $(this).closest('.aura-cb-svg-color-row').find('code').text(newHex.toLowerCase());
+    });
+
+    $(document).on('change', '.aura-cb-svg-color-input', function () {
+        saveHistoryStep();
+    });
+
+    $(document).on('click', '#aura-cb-svg-mono-apply', function () {
+        var obj    = canvas.getActiveObject();
+        var newHex = $('#aura-cb-svg-mono-color').val();
+        if (!obj || !newHex) return;
+        tintSvgMonochrome(obj, newHex);
+        saveHistoryStep();
+    });
+
+    $(document).on('click', '#aura-cb-svg-reset-colors', function () {
+        var obj = canvas.getActiveObject();
+        if (!obj) return;
+        resetSvgColors(obj);
+    });
+
+    /* ═════════════════════════════════════════
+       CLIPART LIBRARY Y SUBIDA SVG / PNG / JPG
+       ═════════════════════════════════════════ */
+
+    function populateCliparts() {
+        var $grid = $('#aura-cb-clipart-grid');
+        var $cat  = $('#aura-cb-clipart-cat');
+        if (!$grid.length) return;
+        var items = CB.clipartLibrary || [];
+
+        if ($cat.length && !$cat.data('populated')) {
+            var cats = [];
+            items.forEach(function (it) {
+                if (it.category && cats.indexOf(it.category) === -1) cats.push(it.category);
+            });
+            cats.forEach(function (c) {
+                $cat.append($('<option>').val(c).text(c));
+            });
+            $cat.data('populated', true);
+        }
+
+        var query  = ($('#aura-cb-clipart-search').val() || '').trim().toLowerCase();
+        var selCat = $cat.val() || '';
+        $grid.empty();
+
+        var filtered = items.filter(function (it) {
+            if (selCat && it.category !== selCat) return false;
+            if (query && ((it.name || '') + ' ' + (it.category || '')).toLowerCase().indexOf(query) === -1) return false;
+            return true;
+        });
+
+        if (!filtered.length) {
+            $grid.html('<p class="aura-cb-muted" style="grid-column:1/-1;">No se encontraron cliparts con ese filtro.</p>');
+            return;
+        }
+
+        filtered.forEach(function (it) {
+            var $card = $('<button type="button" class="aura-cb-clipart-card" title="Insertar ' + escHtml(it.name) + '">')
+                .html('<div class="aura-cb-clipart-thumb">' + it.svg + '</div><span>' + escHtml(it.name) + '</span>');
+            $card.data('clipart', it);
+            $grid.append($card);
+        });
+    }
+
+    $(document).on('input', '#aura-cb-clipart-search', populateCliparts);
+    $(document).on('change', '#aura-cb-clipart-cat', populateCliparts);
+
+    $(document).on('click', '.aura-cb-clipart-card', function () {
+        var item = $(this).data('clipart');
+        if (!item || !item.svg) return;
+        addSvgFromString(item.svg, item.name);
+    });
+
+    function uploadAndInsertMediaFile(file) {
+        if (!file) return;
+        var ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (['svg', 'png', 'jpg', 'jpeg', 'webp'].indexOf(ext) === -1) {
+            alert('Formato no permitido. Sube archivos SVG, PNG, JPG o WEBP.');
+            return;
+        }
+
+        var $st = $('#aura-cb-upload-status');
+        $st.text('Subiendo ' + file.name + '…').removeClass('is-err').show();
+
+        var fd = new FormData();
+        fd.append('action', 'aura_cert_upload_media');
+        fd.append('nonce', NONCE);
+        fd.append('file', file);
+
+        $.ajax({
+            url         : AJAX,
+            type        : 'POST',
+            data        : fd,
+            processData : false,
+            contentType : false
+        }).done(function (res) {
+            if (res && res.success && res.data) {
+                $st.text('✓ Insertado: ' + file.name);
+                setTimeout(function () { $st.fadeOut(300); }, 2200);
+                if (res.data.is_svg && res.data.svg_markup) {
+                    addSvgFromString(res.data.svg_markup, file.name);
+                } else {
+                    addImage(res.data.url);
+                }
+            } else {
+                // Fallback local para SVG si fallara la subida al servidor
+                if (ext === 'svg' && window.FileReader) {
+                    var reader = new FileReader();
+                    reader.onload = function (ev) {
+                        $st.hide();
+                        addSvgFromString(ev.target.result, file.name);
+                    };
+                    reader.readAsText(file);
+                } else {
+                    $st.text(extractError(res, 'Error al subir archivo.')).addClass('is-err');
+                }
+            }
+        }).fail(function () {
+            if (ext === 'svg' && window.FileReader) {
+                var reader = new FileReader();
+                reader.onload = function (ev) {
+                    $st.hide();
+                    addSvgFromString(ev.target.result, file.name);
+                };
+                reader.readAsText(file);
+            } else {
+                $st.text('Error de conexión al subir el archivo.').addClass('is-err');
+            }
+        });
+    }
+
+    $(document).on('change', '#aura-cb-file-upload', function () {
+        if (this.files && this.files[0]) {
+            uploadAndInsertMediaFile(this.files[0]);
+            $(this).val('');
+        }
+    });
+
+    $(document).on('dragover', '#aura-cb-upload-dropzone', function (e) {
+        e.preventDefault();
+        $(this).addClass('is-dragover');
+    }).on('dragleave drop', '#aura-cb-upload-dropzone', function (e) {
+        e.preventDefault();
+        $(this).removeClass('is-dragover');
+        var dt = e.originalEvent && e.originalEvent.dataTransfer;
+        if (e.type === 'drop' && dt && dt.files && dt.files[0]) {
+            uploadAndInsertMediaFile(dt.files[0]);
+        }
+    });
+
+    function openWpMediaPicker() {
         if (!window.wp || !wp.media) {
             alert('La librería multimedia de WordPress no está disponible.');
             return;
         }
         var frame = wp.media({
-            title    : 'Insertar imagen',
+            title    : 'Insertar imagen o SVG',
             button   : { text: 'Insertar' },
-            library  : { type: 'image' },
+            library  : { type: ['image', 'image/svg+xml'] },
             multiple : false
         });
         frame.on('select', function () {
             var att = frame.state().get('selection').first().toJSON();
-            addImage(att.url);
+            handleImageUrlInsert(att, att.title || 'Imagen');
         });
         frame.open();
+    }
+
+    $(document).on('click', '#aura-cb-open-wp-media', function (e) {
+        e.preventDefault();
+        openWpMediaPicker();
+    });
+
+    $(document).on('click', '.aura-cb-elem-btn[data-type="image"]', function (e) {
+        e.stopImmediatePropagation();
+        openWpMediaPicker();
+    });
+
+    $(document).on('click', '.aura-cb-elem-btn[data-type="cliparts-tab"]', function (e) {
+        e.stopImmediatePropagation();
+        $('.aura-cb-side-tab[data-lpane="cliparts"]').trigger('click');
+    });
+
+    $(document).on('click', '.aura-cb-sig-row-btn', function () {
+        var count = parseInt($(this).attr('data-sig-count'), 10) || 1;
+        insertSignaturesRow(count);
+    });
+
+    $(document).on('click', '.aura-cb-side-tab[data-lpane]', function () {
+        var pane = $(this).attr('data-lpane');
+        $('.aura-cb-side-tab[data-lpane]').removeClass('is-active');
+        $(this).addClass('is-active');
+        $('[data-lpane-content]').removeClass('is-active');
+        $('[data-lpane-content="' + pane + '"]').addClass('is-active');
+    });
+
+    $(document).on('click', '.aura-cb-rpane-tab[data-rpane]', function () {
+        var pane = $(this).attr('data-rpane');
+        $('.aura-cb-rpane-tab').removeClass('is-active');
+        $(this).addClass('is-active');
+        $('[data-rpane-content]').removeClass('is-active');
+        $('[data-rpane-content="' + pane + '"]').addClass('is-active');
+    });
+
+    $(document).on('click', '#aura-cb-toggle-left', function () {
+        $('#aura-cb-layout').toggleClass('is-left-collapsed');
+        $(this).toggleClass('is-active', !$('#aura-cb-layout').hasClass('is-left-collapsed'));
+        setTimeout(fitToScreen, 180);
+    });
+
+    $(document).on('click', '#aura-cb-toggle-right', function () {
+        $('#aura-cb-layout').toggleClass('is-right-collapsed');
+        $(this).toggleClass('is-active', !$('#aura-cb-layout').hasClass('is-right-collapsed'));
+        setTimeout(fitToScreen, 180);
+    });
+
+    $(document).on('change', '#aura-cb-zoom-select', function () {
+        var val = $(this).val();
+        if (val === 'fit') {
+            fitToScreen();
+        } else {
+            var z = parseFloat(val);
+            if (!isNaN(z) && z > 0) {
+                currentZoom = z;
+                applyZoom();
+            }
+        }
+    });
+
+    $(document).on('click', '#aura-cb-native-fullscreen', function () {
+        var docEl = document.documentElement;
+        if (!document.fullscreenElement) {
+            if (docEl.requestFullscreen) docEl.requestFullscreen().catch(function () {});
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen().catch(function () {});
+        }
     });
 
     $(document).on('click', '.aura-cb-elem-btn', function () {
@@ -1594,6 +2224,7 @@
 
     $(function () {
         if (!document.getElementById('aura-cert-canvas')) return;
+        document.documentElement.classList.add('aura-cb-fullscreen-mode');
         if (typeof fabric === 'undefined') {
             alert('Error: No se pudo cargar Fabric.js. Verifica tu conexión o recarga la página.');
             return;
@@ -1601,6 +2232,7 @@
 
         initCanvas();
         populateFonts();
+        populateCliparts();
         populateVarsList('');
         populatePrebuilt();
         populateSigners();
@@ -1666,9 +2298,9 @@
             resizeTimer = setTimeout(function () {
                 var $wrap = $('.aura-cert-builder-canvas-wrap');
                 if (!$wrap.length) return;
-                var areaW = $wrap.width() - 60;
-                var areaH = $wrap.height() - 60;
-                var fitZ  = Math.min(areaW / docW, areaH / docH, 1);
+                var areaW = $wrap.width() - 44;
+                var areaH = $wrap.height() - 48;
+                var fitZ  = Math.min(areaW / docW, areaH / docH, 1.35);
                 if (currentZoom <= fitZ + 0.05) {
                     fitToScreen();
                 }

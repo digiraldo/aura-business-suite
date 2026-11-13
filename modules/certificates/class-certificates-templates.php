@@ -70,6 +70,10 @@ class Aura_Certificates_Templates {
             [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_1_cargo}',    'label' => __( 'Cargo firmante 1', 'aura-suite' ),     'example' => 'Dirección General' ],
             [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_2_nombre}',   'label' => __( 'Nombre firmante 2', 'aura-suite' ),    'example' => 'Coordinador de Área' ],
             [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_2_cargo}',    'label' => __( 'Cargo firmante 2', 'aura-suite' ),     'example' => 'Coordinación Académica' ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_3_nombre}',   'label' => __( 'Nombre firmante 3', 'aura-suite' ),    'example' => 'Decano / Pastor' ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_3_cargo}',    'label' => __( 'Cargo firmante 3', 'aura-suite' ),     'example' => 'Decanatura' ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_4_nombre}',   'label' => __( 'Nombre firmante 4', 'aura-suite' ),    'example' => 'Secretario General' ],
+            [ 'group' => __( 'Verificación y Firmas', 'aura-suite' ), 'key' => '{firmante_4_cargo}',    'label' => __( 'Cargo firmante 4', 'aura-suite' ),     'example' => 'Secretaría Académica' ],
         ];
     }
 
@@ -100,11 +104,14 @@ class Aura_Certificates_Templates {
         }
         $s1 = is_array( $signers ) && isset( $signers[0] ) ? (array) $signers[0] : [];
         $s2 = is_array( $signers ) && isset( $signers[1] ) ? (array) $signers[1] : [];
+        $s3 = is_array( $signers ) && isset( $signers[2] ) ? (array) $signers[2] : [];
+        $s4 = is_array( $signers ) && isset( $signers[3] ) ? (array) $signers[3] : [];
 
         $map = [
             '{nombre}'              => $first_name,
             '{apellido}'            => $last_name,
             '{nombre_completo}'     => $full_name,
+            '{nombre_estudiante}'   => $full_name,
             '{documento}'           => (string) ( $data['document_id'] ?? '' ),
             '{correo}'              => (string) ( $data['email'] ?? '' ),
             '{tipo_destinatario}'   => (string) ( $data['recipient_type_label'] ?? __( 'Estudiante', 'aura-suite' ) ),
@@ -121,6 +128,7 @@ class Aura_Certificates_Templates {
             '{fecha_graduacion}'    => $grad_ts ? date_i18n( 'd/m/Y', $grad_ts ) : '',
             '{ciudad}'              => (string) ( $data['city'] ?? '' ),
             '{año}'                 => $issued_ts ? date( 'Y', $issued_ts ) : (string) date( 'Y' ),
+            '{anio_actual}'         => $issued_ts ? date( 'Y', $issued_ts ) : (string) date( 'Y' ),
             '{folio}'               => (string) ( $data['folio'] ?? '' ),
             '{codigo_verificacion}' => (string) ( $data['verification_code'] ?? '' ),
             '{url_verificacion}'    => (string) ( $data['verify_url'] ?? '' ),
@@ -128,6 +136,10 @@ class Aura_Certificates_Templates {
             '{firmante_1_cargo}'    => (string) ( $s1['title'] ?? '' ),
             '{firmante_2_nombre}'   => (string) ( $s2['name'] ?? '' ),
             '{firmante_2_cargo}'    => (string) ( $s2['title'] ?? '' ),
+            '{firmante_3_nombre}'   => (string) ( $s3['name'] ?? '' ),
+            '{firmante_3_cargo}'    => (string) ( $s3['title'] ?? '' ),
+            '{firmante_4_nombre}'   => (string) ( $s4['name'] ?? '' ),
+            '{firmante_4_cargo}'    => (string) ( $s4['title'] ?? '' ),
         ];
 
         return str_replace( array_keys( $map ), array_values( $map ), $text );

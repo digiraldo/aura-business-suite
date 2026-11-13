@@ -21,8 +21,12 @@ class Aura_Certificates_Admin {
     // ─────────────────────────────────────────────────────────────
 
     public static function init(): void {
-        add_action( 'admin_menu',            [ __CLASS__, 'register_menus' ], 16 );
-        add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
+        add_action( 'admin_menu',                  [ __CLASS__, 'register_menus' ], 16 );
+        add_action( 'admin_enqueue_scripts',       [ __CLASS__, 'enqueue_assets' ] );
+        add_filter( 'upload_mimes',                [ __CLASS__, 'allow_svg_mime' ] );
+        add_filter( 'wp_check_filetype_and_ext',   [ __CLASS__, 'fix_svg_filetype' ], 10, 5 );
+        add_filter( 'wp_handle_upload_prefilter',  [ __CLASS__, 'sanitize_svg_upload' ] );
+        add_action( 'wp_ajax_aura_cert_upload_media', [ __CLASS__, 'ajax_upload_media' ] );
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -298,6 +302,7 @@ class Aura_Certificates_Admin {
                     'dynamicVars'     => Aura_Certificates_Templates::get_dynamic_variables_list(),
                     'signers'         => Aura_Certificates_Signers::get_active_signers_for_js(),
                     'prebuiltDesigns' => self::get_prebuilt_designs(),
+                    'clipartLibrary'  => self::get_clipart_library(),
                 ]
             ) );
         }
@@ -353,6 +358,7 @@ class Aura_Certificates_Admin {
             self::preset_diploma_solemne_vertical(),
             self::preset_reconocimiento_honorifico(),
             self::preset_constancia_taller(),
+            self::preset_institucional_4_firmas(),
         ];
     }
 
@@ -837,6 +843,317 @@ class Aura_Certificates_Admin {
                 'version'    => '5.3.1',
                 'background' => '#f1f5f9',
                 'objects'    => $objects,
+            ],
+        ];
+    }
+
+    // ─── Institucional 4 Firmas (A4 Landscape) ────────────────────
+    private static function preset_institucional_4_firmas(): array {
+        $w = 1122;
+        $h = 794;
+
+        $objects = [
+            [ 'type' => 'rect', 'left' => 24, 'top' => 24, 'width' => $w - 48, 'height' => $h - 48, 'fill' => 'transparent', 'stroke' => '#1e293b', 'strokeWidth' => 3 ],
+            [ 'type' => 'rect', 'left' => 34, 'top' => 34, 'width' => $w - 68, 'height' => $h - 68, 'fill' => 'transparent', 'stroke' => '#b45309', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 64, 'width' => 962, 'text' => '{organizacion}', 'fontSize' => 17, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#1e293b', 'textAlign' => 'center', 'charSpacing' => 160 ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 104, 'width' => 962, 'text' => 'DIPLOMA DE GRADUACIÓN', 'fontSize' => 42, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center', 'charSpacing' => 100 ],
+            [ 'type' => 'rect', 'left' => 411, 'top' => 162, 'width' => 300, 'height' => 2.5, 'fill' => '#b45309', 'stroke' => null ],
+            [ 'type' => 'textbox', 'left' => 100, 'top' => 188, 'width' => 922, 'text' => 'Se confiere el presente título y diploma oficial a:', 'fontSize' => 16, 'fontFamily' => 'Merriweather', 'fontStyle' => 'italic', 'fill' => '#475569', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 228, 'width' => 962, 'text' => '{nombre_completo}', 'fontSize' => 46, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 120, 'top' => 294, 'width' => 882, 'text' => 'Por haber completado y aprobado todos los requisitos del programa:', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#334155', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 328, 'width' => 962, 'text' => '{curso}', 'fontSize' => 29, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#92400e', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 120, 'top' => 376, 'width' => 882, 'text' => 'Programa: {programa}  •  Intensidad: {horas}  •  Expedido en {ciudad}, {fecha_emision_larga}', 'fontSize' => 13.5, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'center' ],
+            // 4 bloques de firma alineados
+            [ 'type' => 'rect', 'left' => 92,  'top' => 480, 'width' => 140, 'height' => 54, 'fill' => 'transparent', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4], 'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 62,  'top' => 542, 'x1' => 0, 'y1' => 0, 'x2' => 200, 'y2' => 0, 'stroke' => '#1e293b', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 52,  'top' => 550, 'width' => 220, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 12, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 342, 'top' => 480, 'width' => 140, 'height' => 54, 'fill' => 'transparent', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4], 'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 312, 'top' => 542, 'x1' => 0, 'y1' => 0, 'x2' => 200, 'y2' => 0, 'stroke' => '#1e293b', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 302, 'top' => 550, 'width' => 220, 'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 12, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 592, 'top' => 480, 'width' => 140, 'height' => 54, 'fill' => 'transparent', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4], 'name' => 'signer_slot_3', 'auraElementType' => 'signer_sig', 'signerSlot' => 3 ],
+            [ 'type' => 'line', 'left' => 562, 'top' => 542, 'x1' => 0, 'y1' => 0, 'x2' => 200, 'y2' => 0, 'stroke' => '#1e293b', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 552, 'top' => 550, 'width' => 220, 'text' => "{firmante_3_nombre}\n{firmante_3_cargo}", 'fontSize' => 12, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 842, 'top' => 480, 'width' => 140, 'height' => 54, 'fill' => 'transparent', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4], 'name' => 'signer_slot_4', 'auraElementType' => 'signer_sig', 'signerSlot' => 4 ],
+            [ 'type' => 'line', 'left' => 812, 'top' => 542, 'x1' => 0, 'y1' => 0, 'x2' => 200, 'y2' => 0, 'stroke' => '#1e293b', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 802, 'top' => 550, 'width' => 220, 'text' => "{firmante_4_nombre}\n{firmante_4_cargo}", 'fontSize' => 12, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            // Pie + QR
+            [ 'type' => 'rect', 'left' => 62, 'top' => 650, 'width' => 84, 'height' => 84, 'fill' => '#ffffff', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 162, 'top' => 682, 'width' => 500, 'text' => 'Folio: {folio}  •  Verificación: {codigo_verificacion}', 'fontSize' => 12, 'fontFamily' => 'Courier New', 'fill' => '#475569', 'textAlign' => 'left' ],
+        ];
+
+        return [
+            'name'        => __( 'Institucional (4 Firmas)', 'aura-suite' ),
+            'orientation' => 'landscape',
+            'accent'      => '#92400e',
+            'description' => __( 'Cuatro espacios de firma + slots dinámicos y código QR', 'aura-suite' ),
+            'json'        => [
+                'version'    => '5.3.1',
+                'background' => '#fffef8',
+                'objects'    => $objects,
+            ],
+        ];
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SOPORTE SVG SEGURO Y SUBIDA DESDE EL EDITOR
+    // ─────────────────────────────────────────────────────────────
+
+    public static function allow_svg_mime( array $mimes ): array {
+        if (
+            current_user_can( 'upload_files' ) ||
+            current_user_can( 'aura_cert_template_edit' ) ||
+            current_user_can( 'manage_options' )
+        ) {
+            $mimes['svg'] = 'image/svg+xml';
+        }
+        return $mimes;
+    }
+
+    public static function fix_svg_filetype( array $data, string $file, string $filename, ?array $mimes, $real_mime = '' ): array {
+        $ext = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
+        if ( $ext === 'svg' ) {
+            $data['ext']  = 'svg';
+            $data['type'] = 'image/svg+xml';
+        }
+        return $data;
+    }
+
+    public static function sanitize_svg_markup( string $svg ): string {
+        $svg = trim( $svg );
+        if ( $svg === '' || stripos( $svg, '<svg' ) === false ) {
+            return '';
+        }
+
+        // Extraer desde <svg hasta </svg> eliminando prólogos XML / DOCTYPE inseguros
+        if ( preg_match( '/<svg\b[^>]*>.*<\/svg>/is', $svg, $m ) ) {
+            $svg = $m[0];
+        } else {
+            return '';
+        }
+
+        // Eliminar etiquetas ejecutables o externas peligrosas
+        $svg = preg_replace( '#<(script|foreignObject|iframe|object|embed|link|meta|applet)\b[^>]*>.*?</\1>#is', '', $svg );
+        $svg = preg_replace( '#<(script|foreignObject|iframe|object|embed|link|meta|applet)\b[^>]*/?>#is', '', $svg );
+
+        // Eliminar atributos de eventos on* y URLs javascript:/data:text/html
+        $svg = preg_replace( '/\s+on[a-z]+\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $svg );
+        $svg = preg_replace( '/\s+(?:xlink:)?href\s*=\s*(?:"\s*(?:javascript:|data:text)[^"]*"|\'\s*(?:javascript:|data:text)[^\']*\')/i', '', $svg );
+
+        // Asegurar namespace xmlns
+        if ( stripos( substr( $svg, 0, 220 ), 'xmlns=' ) === false ) {
+            $svg = preg_replace( '/^<svg\b/i', '<svg xmlns="http://www.w3.org/2000/svg"', $svg, 1 );
+        }
+
+        return $svg;
+    }
+
+    public static function sanitize_svg_upload( array $file ): array {
+        $name = (string) ( $file['name'] ?? '' );
+        $ext  = strtolower( pathinfo( $name, PATHINFO_EXTENSION ) );
+        if ( $ext !== 'svg' ) {
+            return $file;
+        }
+        if ( empty( $file['tmp_name'] ) || ! file_exists( $file['tmp_name'] ) ) {
+            return $file;
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+        $raw   = (string) file_get_contents( $file['tmp_name'] );
+        $clean = self::sanitize_svg_markup( $raw );
+        if ( $clean === '' ) {
+            $file['error'] = __( 'El archivo SVG no es válido o no contiene un elemento raíz <svg>.', 'aura-suite' );
+            return $file;
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+        file_put_contents( $file['tmp_name'], $clean );
+        $file['type'] = 'image/svg+xml';
+        return $file;
+    }
+
+    public static function ajax_upload_media(): void {
+        check_ajax_referer( 'aura_certificates_nonce', 'nonce' );
+
+        if (
+            ! current_user_can( 'aura_cert_template_edit' ) &&
+            ! current_user_can( 'aura_cert_template_create' ) &&
+            ! current_user_can( 'upload_files' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para subir archivos.', 'aura-suite' ) ], 403 );
+        }
+
+        if ( empty( $_FILES['file'] ) || ! is_array( $_FILES['file'] ) ) {
+            wp_send_json_error( [ 'message' => __( 'No se recibió ningún archivo.', 'aura-suite' ) ], 400 );
+        }
+
+        $filename = sanitize_file_name( $_FILES['file']['name'] ?? '' );
+        $ext      = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
+        $allowed  = [ 'svg', 'png', 'jpg', 'jpeg', 'webp' ];
+
+        if ( ! in_array( $ext, $allowed, true ) ) {
+            wp_send_json_error( [ 'message' => __( 'Formato no permitido. Sube archivos SVG, PNG, JPG o WEBP.', 'aura-suite' ) ], 400 );
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+
+        $svg_markup = '';
+        if ( $ext === 'svg' && ! empty( $_FILES['file']['tmp_name'] ) && file_exists( $_FILES['file']['tmp_name'] ) ) {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+            $svg_markup = self::sanitize_svg_markup( (string) file_get_contents( $_FILES['file']['tmp_name'] ) );
+            if ( $svg_markup === '' ) {
+                wp_send_json_error( [ 'message' => __( 'Archivo SVG vacío o inválido.', 'aura-suite' ) ], 400 );
+            }
+        }
+
+        $attach_id = media_handle_upload( 'file', 0 );
+        if ( is_wp_error( $attach_id ) ) {
+            wp_send_json_error( [ 'message' => $attach_id->get_error_message() ], 400 );
+        }
+
+        $url = wp_get_attachment_url( $attach_id );
+        wp_send_json_success( [
+            'id'         => (int) $attach_id,
+            'url'        => (string) $url,
+            'name'       => $filename,
+            'is_svg'     => ( $ext === 'svg' ),
+            'svg_markup' => $svg_markup,
+        ] );
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // BIBLIOTECA DE CLIPARTS SVG EDITABLES EN COLOR
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Cliparts vectoriales SVG integrados con colores hexadecimales limpios
+     * listos para edición de color en tiempo real desde el editor.
+     */
+    public static function get_clipart_library(): array {
+        return [
+            [
+                'id'       => 'medal-gold',
+                'name'     => __( 'Medalla de Honor', 'aura-suite' ),
+                'category' => __( 'Sellos & Medallas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><polygon points="36,68 24,114 48,102 60,116 60,68" fill="#1e3a8a"/><polygon points="84,68 96,114 72,102 60,116 60,68" fill="#1d4ed8"/><circle cx="60" cy="46" r="34" fill="#d97706"/><circle cx="60" cy="46" r="28" fill="#f59e0b"/><circle cx="60" cy="46" r="22" fill="#fef3c7" stroke="#b45309" stroke-width="2"/><polygon points="60,29 65,40 77,41 68,49 71,61 60,55 49,61 52,49 43,41 55,40" fill="#b45309"/></svg>',
+            ],
+            [
+                'id'       => 'laurel-wreath',
+                'name'     => __( 'Corona de Laurel', 'aura-suite' ),
+                'category' => __( 'Sellos & Medallas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M36,96 C16,78 16,42 38,22 C36,42 36,68 48,90 Z" fill="#b45309"/><path d="M84,96 C104,78 104,42 82,22 C84,42 84,68 72,90 Z" fill="#b45309"/><circle cx="24" cy="64" r="6" fill="#d97706"/><circle cx="23" cy="46" r="6" fill="#d97706"/><circle cx="30" cy="30" r="5" fill="#d97706"/><circle cx="96" cy="64" r="6" fill="#d97706"/><circle cx="97" cy="46" r="6" fill="#d97706"/><circle cx="90" cy="30" r="5" fill="#d97706"/><polygon points="60,18 65,29 77,30 68,38 71,50 60,44 49,50 52,38 43,30 55,29" fill="#f59e0b"/><rect x="44" y="92" width="32" height="10" rx="5" fill="#1e293b"/></svg>',
+            ],
+            [
+                'id'       => 'wax-seal',
+                'name'     => __( 'Sello Notarial', 'aura-suite' ),
+                'category' => __( 'Sellos & Medallas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><polygon points="60,6 70,18 85,12 88,27 104,29 99,44 112,53 101,65 109,79 94,85 95,101 80,99 73,113 60,104 47,113 40,99 25,101 26,85 11,79 19,65 8,53 21,44 16,29 32,27 35,12 50,18" fill="#991b1b"/><circle cx="60" cy="60" r="34" fill="#dc2626" stroke="#fef2f2" stroke-width="2.5"/><circle cx="60" cy="60" r="24" fill="#b91c1c" stroke="#fde047" stroke-width="2"/><polygon points="60,42 65,53 77,54 68,62 71,74 60,68 49,74 52,62 43,54 55,53" fill="#fde047"/></svg>',
+            ],
+            [
+                'id'       => 'trophy-cup',
+                'name'     => __( 'Copa Trofeo', 'aura-suite' ),
+                'category' => __( 'Sellos & Medallas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M32,22 H88 V50 C88,70 76,82 60,82 C44,82 32,70 32,50 Z" fill="#f59e0b"/><path d="M32,28 H16 C16,48 22,58 34,58" fill="none" stroke="#d97706" stroke-width="6"/><path d="M88,28 H104 C104,48 98,58 86,58" fill="none" stroke="#d97706" stroke-width="6"/><rect x="53" y="80" width="14" height="18" fill="#d97706"/><rect x="36" y="98" width="48" height="12" rx="4" fill="#1e293b"/><polygon points="60,34 64,43 74,44 67,50 69,60 60,55 51,60 53,50 46,44 56,43" fill="#fef3c7"/></svg>',
+            ],
+            [
+                'id'       => 'ribbon-banner',
+                'name'     => __( 'Cinta Banner', 'aura-suite' ),
+                'category' => __( 'Sellos & Medallas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 80"><polygon points="8,24 44,24 44,64 8,64 22,44" fill="#1e3a8a"/><polygon points="212,24 176,24 176,64 212,64 198,44" fill="#1e3a8a"/><rect x="32" y="14" width="156" height="44" rx="6" fill="#2563eb"/><rect x="38" y="20" width="144" height="32" rx="4" fill="none" stroke="#fde047" stroke-width="2"/></svg>',
+            ],
+            [
+                'id'       => 'grad-cap',
+                'name'     => __( 'Birrete Académico', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><polygon points="60,22 108,46 60,70 12,46" fill="#1e293b"/><path d="M30,57 V82 C30,92 90,92 90,82 V57 L60,72 Z" fill="#334155"/><line x1="98" y1="50" x2="98" y2="86" stroke="#f59e0b" stroke-width="4"/><circle cx="98" cy="90" r="6" fill="#d97706"/></svg>',
+            ],
+            [
+                'id'       => 'scroll-diploma',
+                'name'     => __( 'Pergamino Diploma', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect x="22" y="20" width="76" height="80" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="3"/><rect x="34" y="34" width="52" height="6" rx="3" fill="#92400e"/><rect x="34" y="48" width="52" height="5" rx="2.5" fill="#d97706"/><rect x="34" y="60" width="40" height="5" rx="2.5" fill="#d97706"/><circle cx="78" cy="82" r="12" fill="#dc2626"/><polygon points="73,92 78,110 84,96" fill="#991b1b"/></svg>',
+            ],
+            [
+                'id'       => 'open-book',
+                'name'     => __( 'Libro Abierto', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M12,30 C32,22 50,26 60,38 C70,26 88,22 108,30 V92 C88,84 70,88 60,98 C50,88 32,84 12,92 Z" fill="#1e3a8a"/><path d="M18,34 C34,28 48,32 58,42 V88 C48,80 34,78 18,84 Z" fill="#f8fafc"/><path d="M102,34 C86,28 72,32 62,42 V88 C72,80 86,78 102,84 Z" fill="#e2e8f0"/><line x1="26" y1="48" x2="48" y2="48" stroke="#64748b" stroke-width="3"/><line x1="26" y1="60" x2="48" y2="60" stroke="#64748b" stroke-width="3"/><line x1="72" y1="48" x2="94" y2="48" stroke="#64748b" stroke-width="3"/><line x1="72" y1="60" x2="94" y2="60" stroke="#64748b" stroke-width="3"/></svg>',
+            ],
+            [
+                'id'       => 'bible-cross',
+                'name'     => __( 'Biblia & Cruz', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect x="26" y="16" width="68" height="88" rx="6" fill="#4c1d95"/><rect x="34" y="16" width="6" height="88" fill="#7c3aed"/><rect x="57" y="34" width="10" height="44" rx="2" fill="#f59e0b"/><rect x="44" y="46" width="36" height="10" rx="2" fill="#f59e0b"/><rect x="32" y="96" width="58" height="6" fill="#fde68a"/></svg>',
+            ],
+            [
+                'id'       => 'peace-dove',
+                'name'     => __( 'Paloma & Luz', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="#eff6ff" stroke="#3b82f6" stroke-width="3"/><path d="M28,74 C44,72 52,58 58,42 C64,28 78,24 90,32 C80,38 78,48 84,58 C72,60 66,70 72,82 C54,84 40,80 28,74 Z" fill="#1d4ed8"/><polygon points="88,30 98,28 91,36" fill="#f59e0b"/></svg>',
+            ],
+            [
+                'id'       => 'torch-flame',
+                'name'     => __( 'Antorcha / Sabiduría', 'aura-suite' ),
+                'category' => __( 'Académico & Ministerio', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M60,12 C76,28 78,46 60,54 C42,46 44,28 60,12 Z" fill="#ef4444"/><path d="M60,24 C69,33 70,44 60,50 C50,44 51,33 60,24 Z" fill="#fbbf24"/><polygon points="44,54 76,54 66,104 54,104" fill="#1e293b"/><rect x="42" y="52" width="36" height="8" rx="3" fill="#d97706"/></svg>',
+            ],
+            [
+                'id'       => 'corner-ornament',
+                'name'     => __( 'Esquina Clásica', 'aura-suite' ),
+                'category' => __( 'Ornamentos & Esquinas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M12,108 V12 H108 V24 H24 V108 Z" fill="#b45309"/><path d="M32,88 V32 H88 V40 H40 V88 Z" fill="#d97706"/><circle cx="24" cy="24" r="8" fill="#92400e"/></svg>',
+            ],
+            [
+                'id'       => 'divider-classic',
+                'name'     => __( 'Separador Elegante', 'aura-suite' ),
+                'category' => __( 'Ornamentos & Esquinas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60"><line x1="12" y1="30" x2="96" y2="30" stroke="#b45309" stroke-width="3"/><line x1="144" y1="30" x2="228" y2="30" stroke="#b45309" stroke-width="3"/><polygon points="120,12 138,30 120,48 102,30" fill="#d97706"/><circle cx="120" cy="30" r="6" fill="#fef3c7"/></svg>',
+            ],
+            [
+                'id'       => 'heraldic-shield',
+                'name'     => __( 'Escudo Heráldico', 'aura-suite' ),
+                'category' => __( 'Ornamentos & Esquinas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M20,18 H100 V62 C100,88 60,108 60,108 C60,108 20,88 20,62 Z" fill="#1e3a8a" stroke="#d97706" stroke-width="5"/><polygon points="60,36 66,49 80,50 69,59 72,73 60,65 48,73 51,59 40,50 54,49" fill="#fde047"/></svg>',
+            ],
+            [
+                'id'       => 'royal-crown',
+                'name'     => __( 'Corona Real', 'aura-suite' ),
+                'category' => __( 'Ornamentos & Esquinas', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><polygon points="16,84 22,36 44,58 60,26 76,58 98,36 104,84" fill="#f59e0b"/><rect x="16" y="84" width="88" height="14" rx="4" fill="#b45309"/><circle cx="22" cy="32" r="5" fill="#dc2626"/><circle cx="60" cy="22" r="6" fill="#dc2626"/><circle cx="98" cy="32" r="5" fill="#dc2626"/></svg>',
+            ],
+            [
+                'id'       => 'triple-stars',
+                'name'     => __( 'Tres Estrellas', 'aura-suite' ),
+                'category' => __( 'Insignias & Iconos', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 80"><polygon points="40,22 45,34 58,35 48,44 51,57 40,50 29,57 32,44 22,35 35,34" fill="#d97706"/><polygon points="90,10 97,27 115,28 101,40 105,58 90,48 75,58 79,40 65,28 83,27" fill="#f59e0b"/><polygon points="140,22 145,34 158,35 148,44 151,57 140,50 129,57 132,44 122,35 135,34" fill="#d97706"/></svg>',
+            ],
+            [
+                'id'       => 'verified-check',
+                'name'     => __( 'Sello Verificado', 'aura-suite' ),
+                'category' => __( 'Insignias & Iconos', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="#059669"/><circle cx="60" cy="60" r="38" fill="none" stroke="#a7f3d0" stroke-width="2.5" stroke-dasharray="6,4"/><polyline points="38,62 54,78 84,42" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+            ],
+            [
+                'id'       => 'sparkle-star',
+                'name'     => __( 'Estrella Brillo', 'aura-suite' ),
+                'category' => __( 'Insignias & Iconos', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M60,8 L72,48 L112,60 L72,72 L60,112 L48,72 L8,60 L48,48 Z" fill="#7c3aed"/><circle cx="60" cy="60" r="10" fill="#fde047"/></svg>',
+            ],
+            [
+                'id'       => 'diamond-badge',
+                'name'     => __( 'Diamante Excelencia', 'aura-suite' ),
+                'category' => __( 'Insignias & Iconos', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><polygon points="32,24 88,24 108,48 60,102 12,48" fill="#0284c7"/><polygon points="32,24 88,24 72,48 48,48" fill="#38bdf8"/><polygon points="48,48 72,48 60,102" fill="#0369a1"/></svg>',
+            ],
+            [
+                'id'       => 'heart-service',
+                'name'     => __( 'Corazón Servicio', 'aura-suite' ),
+                'category' => __( 'Insignias & Iconos', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M60,100 C60,100 14,72 14,42 C14,26 27,16 40,16 C50,16 56,22 60,30 C64,22 70,16 80,16 C93,16 106,26 106,42 C106,72 60,100 60,100 Z" fill="#e11d48"/><circle cx="40" cy="36" r="6" fill="#fda4af"/></svg>',
             ],
         ];
     }

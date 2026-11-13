@@ -89,7 +89,8 @@ $pages = get_pages( [ 'post_status' => 'publish' ] );
                     <th><?php esc_html_e( 'Máx. Firmantes Activos', 'aura-suite' ); ?></th>
                     <td>
                         <input type="number" name="max_active_signers" class="small-text"
-                               value="<?php echo esc_attr( $settings['max_active_signers'] ?? 4 ); ?>" min="1" max="10">
+                               value="<?php echo esc_attr( min( 4, max( 1, (int) ( $settings['max_active_signers'] ?? 4 ) ) ) ); ?>" min="1" max="4">
+                        <p class="description"><?php esc_html_e( 'Hasta 4 firmantes activos por certificado.', 'aura-suite' ); ?></p>
                     </td>
                 </tr>
                 <tr>

@@ -1207,6 +1207,58 @@ class Aura_Certificates_Issuer {
             return '';
         }
 
+        // ── Slot dinámico de Imagen de Firma (1..4) ──
+        $signer_slot = 0;
+        if ( ( $obj['auraElementType'] ?? '' ) === 'signer_sig' && ! empty( $obj['signerSlot'] ) ) {
+            $signer_slot = (int) $obj['signerSlot'];
+        } elseif ( preg_match( '/^signer_slot_([1-4])$/', $name, $slot_match ) ) {
+            $signer_slot = (int) $slot_match[1];
+        }
+        if ( $signer_slot >= 1 && $signer_slot <= 4 ) {
+            $signers = $vars_data['signers'] ?? [];
+            $sig_url = is_array( $signers ) && isset( $signers[ $signer_slot - 1 ]['signature_url'] )
+                ? (string) $signers[ $signer_slot - 1 ]['signature_url']
+                : '';
+            if ( $sig_url !== '' ) {
+                $src = self::resolve_image_src( $sig_url );
+                if ( $src ) {
+                    return sprintf(
+                        '<img src="%s" style="%swidth:%spx;height:%spx;object-fit:contain;">',
+                        esc_attr( $src ),
+                        $style,
+                        max( 40, $w ),
+                        max( 20, $h )
+                    );
+                }
+            }
+            return '';
+        }
+
+        // ── Cliparts e Imágenes SVG Vectoriales (con colores editados en tiempo real) ──
+        if ( ! empty( $obj['auraSvgMarkup'] ) && is_string( $obj['auraSvgMarkup'] ) ) {
+            $svg_clean = Aura_Certificates_Admin::sanitize_svg_markup( $obj['auraSvgMarkup'] );
+            if ( $svg_clean !== '' ) {
+                $svg_w = max( 8, round( $w, 2 ) );
+                $svg_h = max( 8, round( $h, 2 ) );
+                $svg_sized = preg_replace_callback(
+                    '/^<svg\b([^>]*)>/i',
+                    static function ( array $m ) use ( $svg_w, $svg_h ): string {
+                        $attrs = preg_replace( '/\s+(?:width|height)\s*=\s*(?:"[^"]*"|\'[^\']*\')/i', '', $m[1] );
+                        return sprintf( '<svg%s width="%s" height="%s" preserveAspectRatio="xMidYMid meet">', $attrs, $svg_w, $svg_h );
+                    },
+                    $svg_clean,
+                    1
+                );
+                return sprintf(
+                    '<div style="%swidth:%spx;height:%spx;">%s</div>',
+                    $style,
+                    $svg_w,
+                    $svg_h,
+                    $svg_sized
+                );
+            }
+        }
+
         // ── Grupos recursivos (ej. Sellos, Bloques de Firma, Divisores) ──
         if ( $type === 'group' && ! empty( $obj['objects'] ) && is_array( $obj['objects'] ) ) {
             $group_html = '';
@@ -1334,6 +1386,38 @@ class Aura_Certificates_Issuer {
             return '';
         }
 
+        // ── Paths SVG individuales ──
+        if ( $type === 'path' && ! empty( $obj['path'] ) ) {
+            $d_str = '';
+            if ( is_string( $obj['path'] ) ) {
+                $d_str = $obj['path'];
+            } elseif ( is_array( $obj['path'] ) ) {
+                $chunks = [];
+                foreach ( $obj['path'] as $cmd ) {
+                    if ( is_array( $cmd ) && ! empty( $cmd ) ) {
+                        $chunks[] = implode( ' ', array_map( 'strval', $cmd ) );
+                    }
+                }
+                $d_str = implode( ' ', $chunks );
+            }
+            if ( $d_str !== '' ) {
+                $fill   = ! empty( $obj['fill'] ) ? esc_attr( $obj['fill'] ) : 'none';
+                $stroke = ! empty( $obj['stroke'] ) ? esc_attr( $obj['stroke'] ) : 'none';
+                $sw     = (float) ( $obj['strokeWidth'] ?? 0 );
+                $vb_w   = max( 4, (float) ( $obj['width'] ?? $w ) );
+                $vb_h   = max( 4, (float) ( $obj['height'] ?? $h ) );
+                $po_x   = (float) ( $obj['pathOffset']['x'] ?? ( $vb_w / 2 ) );
+                $po_y   = (float) ( $obj['pathOffset']['y'] ?? ( $vb_h / 2 ) );
+                $tx     = round( ( $vb_w / 2 ) - $po_x, 2 );
+                $ty     = round( ( $vb_h / 2 ) - $po_y, 2 );
+                return sprintf(
+                    '<div style="%swidth:%spx;height:%spx;"><svg width="%s" height="%s" viewBox="0 0 %s %s" xmlns="http://www.w3.org/2000/svg"><g transform="translate(%s,%s)"><path d="%s" fill="%s" stroke="%s" stroke-width="%s" /></g></svg></div>',
+                    $style, max( 4, $w ), max( 4, $h ), max( 4, $w ), max( 4, $h ), $vb_w, $vb_h, $tx, $ty, esc_attr( $d_str ), $fill, $stroke, $sw
+                );
+            }
+            return '';
+        }
+
         // ── Rectángulos, Círculos y Elipses ──
         if ( in_array( $type, [ 'rect', 'circle', 'ellipse' ], true ) ) {
             $fill         = ! empty( $obj['fill'] ) ? esc_attr( $obj['fill'] ) : 'transparent';
@@ -1407,23 +1491,25 @@ class Aura_Certificates_Issuer {
             return '';
         }
 
-        // Solo imágenes permitidas
-        $allowed_mime = [ 'image/png', 'image/jpeg', 'image/gif', 'image/webp' ];
+        // Solo imágenes permitidas (incluye SVG)
+        $ext_file     = strtolower( pathinfo( $local_path, PATHINFO_EXTENSION ) );
+        $allowed_mime = [ 'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml' ];
         $finfo        = new \finfo( FILEINFO_MIME_TYPE );
         $mime         = $finfo->file( $local_path );
+
+        // Archivos .svg sin cabecera <?xml suelen detectarse como text/plain o text/xml
+        if ( $ext_file === 'svg' || $mime === 'image/svg+xml' || $mime === 'image/svg' ) {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+            $clean_svg = Aura_Certificates_Admin::sanitize_svg_markup( (string) file_get_contents( $local_path ) );
+            if ( $clean_svg === '' ) {
+                return '';
+            }
+            return 'data:image/svg+xml;base64,' . base64_encode( $clean_svg );
+        }
 
         if ( ! in_array( $mime, $allowed_mime, true ) ) {
             return '';
         }
-
-        $ext_map = [
-            'image/png'  => 'png',
-            'image/jpeg' => 'jpeg',
-            'image/gif'  => 'gif',
-            'image/webp' => 'webp',
-        ];
-
-        $ext = $ext_map[ $mime ] ?? 'png';
 
         // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
         return 'data:' . $mime . ';base64,' . base64_encode( file_get_contents( $local_path ) );

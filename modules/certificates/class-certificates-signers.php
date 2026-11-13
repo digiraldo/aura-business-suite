@@ -286,8 +286,12 @@ class Aura_Certificates_Signers {
     public static function get_active_signers_for_js(): array {
         global $wpdb;
         $table = $wpdb->prefix . 'aura_certificate_signers';
+        $max   = max( 1, min( 4, (int) Aura_Certificates_Settings::get( 'max_active_signers', 4 ) ) );
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $rows  = $wpdb->get_results( "SELECT id, name, title, signature_url FROM {$table} WHERE is_active = 1 ORDER BY sort_order ASC" );
+        $rows  = $wpdb->get_results( $wpdb->prepare(
+            "SELECT id, name, title, signature_url FROM {$table} WHERE is_active = 1 ORDER BY sort_order ASC, id ASC LIMIT %d",
+            $max
+        ) );
         if ( ! $rows ) {
             return [];
         }
