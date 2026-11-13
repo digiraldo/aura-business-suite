@@ -14,7 +14,7 @@ if ( ! current_user_can( 'aura_library_view_loans_all' ) && ! current_user_can( 
 
 $can_cancel = current_user_can( 'aura_library_view_loans_all' ) || current_user_can( 'manage_options' );
 $expire_days = absint( get_option( 'aura_library_reservation_expire_days', 7 ) );
-?>
+
 global $wpdb;
 $table_res = $wpdb->prefix . 'aura_library_reservations';
 $res_stats = [

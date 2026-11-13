@@ -263,6 +263,40 @@
         $(document).on('blur', '#aura-lib-f-isbn', function () {
             validateIsbnField($(this).val());
         });
+
+        // Búsqueda inteligente por ISBN (barra superior e inline en Paso 1)
+        $(document).on('click', '#aura-lib-btn-lookup-isbn', function () {
+            lookupIsbn($('#aura-lib-quick-isbn').val());
+        });
+        $(document).on('click', '#aura-lib-btn-lookup-isbn-inline', function () {
+            lookupIsbn($('#aura-lib-f-isbn').val());
+        });
+        $(document).on('keydown', '#aura-lib-quick-isbn', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                lookupIsbn($(this).val());
+            }
+        });
+
+        // Escáner de código de barras por cámara
+        $(document).on('click', '#aura-lib-btn-scan-barcode', function () {
+            startBarcodeScanner();
+        });
+        $(document).on('click', '#aura-lib-btn-close-scanner', function () {
+            stopBarcodeScanner();
+        });
+        $(document).on('change', '#aura-lib-camera-select', function () {
+            var camId = $(this).val();
+            if (camId) switchScannerCamera(camId);
+        });
+
+        // Escáner remoto desde celular (QR)
+        $(document).on('click', '#aura-lib-btn-remote-scan', function () {
+            startRemoteScan();
+        });
+        $(document).on('click', '#aura-lib-btn-close-remote-qr', function () {
+            stopRemoteScan();
+        });
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -490,6 +524,10 @@
         if (form) form.reset();
         $('#aura-lib-book-id').val(0);
         $('#aura-lib-f-cover-id').val(0);
+        $('#aura-lib-f-cover-url').val('');
+        $('#aura-lib-quick-isbn').val('');
+        stopBarcodeScanner();
+        stopRemoteScan();
         $('#aura-lib-cover-preview')
             .html('<span class="dashicons dashicons-format-image aura-lib-cover-placeholder"></span>' +
                   '<div class="aura-lib-dz-hint"><strong>Arrastra una imagen aquí</strong><span>o</span></div>');
@@ -866,6 +904,7 @@
             var thumbUrl = (attachment.sizes && attachment.sizes.thumbnail)
                 ? attachment.sizes.thumbnail.url
                 : attachment.url;
+            $('#aura-lib-f-cover-url').val('');
             setDropzoneCover(thumbUrl, attachment.id);
         });
 
@@ -874,6 +913,7 @@
 
     function removeCover() {
         $('#aura-lib-f-cover-id').val(0);
+        $('#aura-lib-f-cover-url').val('');
         $('#aura-lib-cover-preview')
             .html('<span class="dashicons dashicons-format-image aura-lib-cover-placeholder"></span>' +
                   '<div class="aura-lib-dz-hint"><strong>Arrastra una imagen aquí</strong><span>o</span></div>');
@@ -935,9 +975,342 @@
         $('body').addClass('aura-lib-modal-open');
     }
     function closeAllModals() {
+        stopBarcodeScanner();
+        stopRemoteScan();
         $('.aura-lib-modal').fadeOut(150);
         $('body').removeClass('aura-lib-modal-open');
         $('.aura-lib-cover-tooltip').remove();
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // BÚSQUEDA INTELIGENTE POR ISBN & ESCÁNER DE CÓDIGO DE BARRAS
+    // ──────────────────────────────────────────────────────────────
+    var _html5QrScanner = null;
+    var _scannerActive  = false;
+
+    function lookupIsbn(rawIsbn) {
+        var clean = String(rawIsbn || '').replace(/[^0-9X]/gi, '').toUpperCase();
+        if (!clean || !validateIsbn(clean)) {
+            showToast('Ingresa o escanea un ISBN-10 o ISBN-13 válido.', 'error');
+            return;
+        }
+
+        var $btnMain   = $('#aura-lib-btn-lookup-isbn');
+        var $btnInline = $('#aura-lib-btn-lookup-isbn-inline');
+        $btnMain.prop('disabled', true).addClass('loading');
+        $btnInline.prop('disabled', true).addClass('loading');
+
+        $.post(cfg.ajaxurl, {
+            action : 'aura_library_books_lookup_isbn',
+            nonce  : cfg.nonce,
+            isbn   : clean,
+        }, function (res) {
+            $btnMain.prop('disabled', false).removeClass('loading');
+            $btnInline.prop('disabled', false).removeClass('loading');
+
+            if (!res.success || !res.data) {
+                showToast((res.data && res.data.message) ? res.data.message : 'No se encontraron datos para este ISBN.', 'error');
+                return;
+            }
+
+            applyBookMetadata(res.data);
+        }).fail(function () {
+            $btnMain.prop('disabled', false).removeClass('loading');
+            $btnInline.prop('disabled', false).removeClass('loading');
+            showToast('Error de conexión al consultar las bases de datos de libros.', 'error');
+        });
+    }
+
+    function applyBookMetadata(d) {
+        if (d.isbn) {
+            $('#aura-lib-quick-isbn').val(d.isbn);
+            $('#aura-lib-f-isbn').val(d.isbn).trigger('input');
+        }
+        if (d.title)          $('#aura-lib-f-title').val(d.title).trigger('input');
+        if (d.subtitle)       $('#aura-lib-f-subtitle').val(d.subtitle);
+        if (d.author)         $('#aura-lib-f-author').val(d.author).trigger('input');
+        if (d.publisher)      $('#aura-lib-f-publisher').val(d.publisher);
+        if (d.dewey_number)   $('#aura-lib-f-dewey').val(d.dewey_number).trigger('input');
+        if (d.year_published) $('#aura-lib-f-year').val(d.year_published);
+        if (d.pages)          $('#aura-lib-f-pages').val(d.pages);
+        if (d.language)       $('#aura-lib-f-language').val(d.language);
+        if (d.category)       $('#aura-lib-f-category').val(d.category);
+        if (d.subcategory)    $('#aura-lib-f-subcategory').val(d.subcategory);
+        if (d.description)    $('#aura-lib-f-description').val(d.description).trigger('input');
+        if (d.keywords)       loadTagsFromString(d.keywords);
+
+        if (d.cover_url) {
+            $('#aura-lib-f-cover-url').val(d.cover_url);
+            setDropzoneCover(d.cover_url, 0);
+        }
+
+        updateCharCounter($('#aura-lib-f-title'), '#aura-lib-f-title', 255);
+
+        var srcTxt = (d.sources && d.sources.length) ? ' (' + d.sources.join(' + ') + ')' : '';
+        showToast('Ficha, clasificación y portada cargadas' + srcTxt + '.', 'success');
+    }
+
+    function getScannerConfig() {
+        return {
+            fps: 10,
+            qrbox: function (viewfinderWidth, viewfinderHeight) {
+                var w = Math.min(320, Math.floor(viewfinderWidth * 0.85));
+                var h = Math.min(160, Math.floor(viewfinderHeight * 0.55));
+                return { width: Math.max(180, w), height: Math.max(100, h) };
+            },
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.CODE_128,
+            ],
+        };
+    }
+
+    function launchScannerWithTarget(cameraTarget, fallbackList) {
+        var $status = $('#aura-lib-scanner-status');
+        if (!_html5QrScanner) {
+            _html5QrScanner = new Html5Qrcode('aura-lib-qr-reader');
+        }
+        _scannerActive = true;
+
+        _html5QrScanner.start(
+            cameraTarget,
+            getScannerConfig(),
+            function (decodedText) {
+                var clean = String(decodedText || '').replace(/[^0-9X]/gi, '');
+                if (clean.length === 10 || clean.length === 13) {
+                    playScanBeep();
+                    if (navigator.vibrate) { try { navigator.vibrate(100); } catch (e) {} }
+                    stopBarcodeScanner();
+                    $('#aura-lib-quick-isbn').val(clean);
+                    lookupIsbn(clean);
+                }
+            },
+            function () {
+                // Frame without barcode — silent
+            }
+        ).then(function () {
+            $status.text('Encuadra el código de barras ISBN dentro del recuadro.');
+        }).catch(function (err) {
+            if (fallbackList && fallbackList.length > 0) {
+                var nextCam = fallbackList[0].id;
+                $('#aura-lib-camera-select').val(nextCam);
+                launchScannerWithTarget(nextCam, []);
+                return;
+            }
+            _scannerActive = false;
+            $status.text('No se pudo abrir la cámara: ' + (err && err.message ? err.message : err));
+            showToast('No se pudo acceder a la cámara. Revisa los permisos o usa "Cámara del celular (QR)".', 'error');
+        });
+    }
+
+    function startBarcodeScanner() {
+        var $panel  = $('#aura-lib-scanner-panel');
+        var $status = $('#aura-lib-scanner-status');
+
+        if (_scannerActive) {
+            stopBarcodeScanner();
+            return;
+        }
+
+        stopRemoteScan();
+
+        if (typeof Html5Qrcode === 'undefined') {
+            showToast('El módulo de cámara no pudo cargarse. Verifica tu conexión a internet.', 'error');
+            return;
+        }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showToast('Tu navegador o conexión (HTTP sin HTTPS) no permite cámara local. Usa "Cámara del celular (QR)".', 'error');
+            return;
+        }
+
+        $panel.slideDown(180);
+        $status.text('Detectando cámaras disponibles (local, Enlace Móvil, Continuity Camera)…');
+
+        Html5Qrcode.getCameras().then(function (devices) {
+            var $selWrap = $('#aura-lib-camera-select-wrap');
+            var $sel     = $('#aura-lib-camera-select').empty();
+
+            if (devices && devices.length > 0) {
+                $.each(devices, function (idx, cam) {
+                    var label = cam.label || ('Cámara ' + (idx + 1));
+                    $sel.append('<option value="' + escAttr(cam.id) + '">' + escHtml(label) + '</option>');
+                });
+
+                if (devices.length > 1) {
+                    $selWrap.show();
+                } else {
+                    $selWrap.hide();
+                }
+
+                // Preferir cámara trasera o cámara móvil virtual (Continuity / Phone Link / Samsung)
+                var preferred = null;
+                $.each(devices, function (_, cam) {
+                    var lbl = (cam.label || '').toLowerCase();
+                    if (lbl.indexOf('back') !== -1 || lbl.indexOf('rear') !== -1 || lbl.indexOf('environment') !== -1 ||
+                        lbl.indexOf('iphone') !== -1 || lbl.indexOf('galaxy') !== -1 || lbl.indexOf('samsung') !== -1 ||
+                        lbl.indexOf('phone link') !== -1 || lbl.indexOf('enlace') !== -1) {
+                        preferred = cam.id;
+                        return false;
+                    }
+                });
+
+                var target = preferred || { facingMode: 'environment' };
+                if (preferred) $sel.val(preferred);
+                launchScannerWithTarget(target, devices);
+            } else {
+                $selWrap.hide();
+                launchScannerWithTarget({ facingMode: 'environment' }, []);
+            }
+        }).catch(function () {
+            $('#aura-lib-camera-select-wrap').hide();
+            launchScannerWithTarget({ facingMode: 'environment' }, []);
+        });
+    }
+
+    function switchScannerCamera(camId) {
+        if (!_html5QrScanner || !_scannerActive) return;
+        $('#aura-lib-scanner-status').text('Cambiando de cámara…');
+        _html5QrScanner.stop().then(function () {
+            launchScannerWithTarget(camId, []);
+        }).catch(function () {
+            launchScannerWithTarget(camId, []);
+        });
+    }
+
+    function stopBarcodeScanner() {
+        var $panel = $('#aura-lib-scanner-panel');
+        if (_html5QrScanner && _scannerActive) {
+            _scannerActive = false;
+            _html5QrScanner.stop().then(function () {
+                try { _html5QrScanner.clear(); } catch (e) {}
+                _html5QrScanner = null;
+            }).catch(function () {
+                _html5QrScanner = null;
+            });
+        } else {
+            _scannerActive = false;
+            _html5QrScanner = null;
+        }
+        if ($panel.length && $panel.is(':visible')) {
+            $panel.slideUp(150);
+        }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // ESCÁNER REMOTO DESDE CELULAR VÍA QR (Samsung Galaxy / iPhone)
+    // ──────────────────────────────────────────────────────────────
+    var _remoteScanTimer = null;
+    var _remoteScanToken = '';
+
+    function startRemoteScan() {
+        var $panel = $('#aura-lib-remote-qr-panel');
+        if ($panel.is(':visible')) {
+            stopRemoteScan();
+            return;
+        }
+
+        stopBarcodeScanner();
+        $('#aura-lib-remote-qr-box').html('<span class="spinner is-active" style="float:none;"></span>');
+        $('#aura-lib-remote-qr-url').val('');
+        $('#aura-lib-remote-qr-status').html('<span class="spinner is-active" style="float:none;margin:0 6px 0 0;"></span> Generando enlace QR…');
+        $panel.slideDown(180);
+
+        $.post(cfg.ajaxurl, {
+            action : 'aura_library_books_create_remote_scan',
+            nonce  : cfg.nonce,
+        }, function (res) {
+            if (!res.success || !res.data) {
+                showToast('No se pudo crear la sesión de escaneo remoto.', 'error');
+                stopRemoteScan();
+                return;
+            }
+
+            _remoteScanToken = res.data.token;
+            var scanUrl = res.data.scan_url;
+            $('#aura-lib-remote-qr-url').val(scanUrl);
+
+            var $qrBox = $('#aura-lib-remote-qr-box').empty();
+            if (typeof QRCode !== 'undefined') {
+                new QRCode($qrBox[0], {
+                    text: scanUrl,
+                    width: 160,
+                    height: 160,
+                    colorDark: '#0f172a',
+                    colorLight: '#ffffff',
+                });
+            } else {
+                $qrBox.html('<a href="' + escAttr(scanUrl) + '" target="_blank" class="button button-primary">Abrir enlace en celular</a>');
+            }
+
+            var httpsNote = res.data.is_https
+                ? ''
+                : '<br><small style="color:#b45309;">⚠️ Nota: En entornos locales HTTP el navegador móvil puede bloquear la cámara; en HTTPS funcionará directo.</small>';
+
+            $('#aura-lib-remote-qr-status').html(
+                '<span class="spinner is-active" style="float:none;margin:0 6px 0 0;"></span> Esperando escaneo desde tu celular…' + httpsNote
+            );
+
+            if (_remoteScanTimer) clearInterval(_remoteScanTimer);
+            _remoteScanTimer = setInterval(pollRemoteScan, 1500);
+        }).fail(function () {
+            showToast('Error al conectar con el servidor para generar el QR.', 'error');
+            stopRemoteScan();
+        });
+    }
+
+    function pollRemoteScan() {
+        if (!_remoteScanToken) return;
+        $.post(cfg.ajaxurl, {
+            action : 'aura_library_books_poll_remote_scan',
+            nonce  : cfg.nonce,
+            token  : _remoteScanToken,
+        }, function (res) {
+            if (!res.success || !res.data) return;
+            if (res.data.status === 'expired') {
+                stopRemoteScan();
+                showToast('La sesión QR expiró. Vuelve a abrirla si deseas escanear.', 'error');
+                return;
+            }
+            if (res.data.status === 'scanned' && res.data.isbn) {
+                playScanBeep();
+                stopRemoteScan();
+                $('#aura-lib-quick-isbn').val(res.data.isbn);
+                lookupIsbn(res.data.isbn);
+            }
+        });
+    }
+
+    function stopRemoteScan() {
+        if (_remoteScanTimer) {
+            clearInterval(_remoteScanTimer);
+            _remoteScanTimer = null;
+        }
+        _remoteScanToken = '';
+        var $panel = $('#aura-lib-remote-qr-panel');
+        if ($panel.length && $panel.is(':visible')) {
+            $panel.slideUp(150);
+        }
+    }
+
+    function playScanBeep() {
+        try {
+            var AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            var ctx  = new AudioCtx();
+            var osc  = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1046.5, ctx.currentTime);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.15);
+        } catch (e) {}
     }
 
     // ──────────────────────────────────────────────────────────────

@@ -831,10 +831,381 @@ body.aura-lib-modal-open { overflow: hidden; }
     80%       { transform: translateX(4px); }
 }
 
-/* ── Responsive wizard ── */
+/* ── Responsive wizard & Mobile Optimization ── */
+body.aura-lib-modal-open {
+    overflow: hidden !important;
+}
+
+/* ── Barra Escáner / Búsqueda por ISBN ── */
+.aura-lib-isbn-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(135deg, #f0fdf4, #ecfeff);
+    border: 1px solid #a7f3d0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 12px 16px 0;
+    flex-wrap: wrap;
+}
+.aura-lib-isbn-toolbar-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 240px;
+    min-width: 0;
+}
+.aura-lib-isbn-toolbar-icon {
+    font-size: 1.6em;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.aura-lib-isbn-toolbar-info strong {
+    display: block;
+    font-size: .88em;
+    color: #065f46;
+}
+.aura-lib-isbn-toolbar-info span {
+    display: block;
+    font-size: .79em;
+    color: #047857;
+}
+.aura-lib-isbn-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.aura-lib-isbn-quick-input-wrap {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #10b981;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+}
+.aura-lib-quick-isbn-input {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 6px 10px !important;
+    font-size: 13px !important;
+    width: 155px;
+    min-height: 34px;
+}
+.aura-lib-btn-lookup,
+.aura-lib-btn-scan {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: none;
+    padding: 7px 13px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 36px;
+    transition: background .2s, transform .1s;
+    white-space: nowrap;
+}
+.aura-lib-btn-lookup {
+    background: #059669;
+    color: #fff;
+}
+.aura-lib-btn-lookup:hover { background: #047857; }
+.aura-lib-btn-scan {
+    background: #0f766e;
+    color: #fff;
+    border-radius: 6px;
+}
+.aura-lib-btn-scan:hover { background: #115e59; }
+.aura-lib-btn-remote {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: none;
+    padding: 7px 13px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 36px;
+    transition: background .2s, transform .1s;
+    white-space: nowrap;
+    background: #0284c7;
+    color: #fff;
+    border-radius: 6px;
+}
+.aura-lib-btn-remote:hover { background: #0369a1; }
+.aura-lib-btn-remote .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+.aura-lib-btn-lookup.loading,
+.aura-lib-isbn-inline-btn.loading {
+    opacity: .65;
+    pointer-events: none;
+}
+.aura-lib-btn-lookup .dashicons,
+.aura-lib-btn-scan .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+
+/* Botón búsqueda inline junto al campo ISBN del Paso 1 */
+.aura-lib-isbn-field-group {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+}
+.aura-lib-isbn-field-group input {
+    flex: 1;
+    min-width: 0;
+}
+.aura-lib-isbn-inline-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #059669;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 0 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.aura-lib-isbn-inline-btn:hover { background: #047857; }
+.aura-lib-isbn-inline-btn .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* ── Visor Cámara Escáner de Código de Barras ── */
+.aura-lib-scanner-panel {
+    margin: 12px 16px 0;
+    border: 2px solid #0f766e;
+    border-radius: 10px;
+    background: #0f172a;
+    color: #fff;
+    overflow: hidden;
+}
+.aura-lib-scanner-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #1e293b;
+    font-size: 13px;
+    font-weight: 600;
+}
+.aura-lib-scanner-close {
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.aura-lib-scanner-close:hover { background: #ef4444; }
+.aura-lib-scanner-viewport {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 8px;
+}
+.aura-lib-scanner-status {
+    text-align: center;
+    padding: 8px 12px 12px;
+    font-size: 12px;
+    color: #cbd5e1;
+}
+.aura-lib-scanner-cam-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: #162032;
+    border-bottom: 1px solid #334155;
+    font-size: 12px;
+    color: #e2e8f0;
+}
+.aura-lib-camera-select {
+    flex: 1;
+    min-width: 0;
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    border: 1px solid #475569 !important;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12.5px;
+}
+
+/* ── Panel QR Escáner Remoto ── */
+.aura-lib-remote-qr-panel {
+    margin: 12px 16px 0;
+    border: 2px solid #0284c7;
+    border-radius: 10px;
+    background: #f0f9ff;
+    overflow: hidden;
+}
+.aura-lib-remote-qr-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #0284c7;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+}
+.aura-lib-remote-qr-body {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 16px;
+    flex-wrap: wrap;
+}
+.aura-lib-remote-qr-box {
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #bae6fd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+    min-height: 180px;
+    margin: 0 auto;
+}
+.aura-lib-remote-qr-info {
+    flex: 1 1 240px;
+    font-size: 13px;
+    color: #0c4a6e;
+}
+.aura-lib-remote-qr-info p { margin: 0 0 6px; }
+.aura-lib-remote-qr-info ol { margin: 0 0 10px 18px; padding: 0; line-height: 1.5; }
+.aura-lib-remote-qr-status {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    font-weight: 600;
+    color: #0369a1;
+    margin-bottom: 8px;
+}
+.aura-lib-remote-qr-link-wrap input {
+    font-size: 11.5px !important;
+    background: #fff !important;
+    color: #334155 !important;
+}
+
+@media (max-width: 782px) {
+    .aura-lib-modal {
+        padding: 0 !important;
+        align-items: stretch !important;
+    }
+    .aura-lib-modal-content,
+    .aura-lib-modal-large {
+        max-width: 100% !important;
+        width: 100% !important;
+        min-height: 100dvh;
+        border-radius: 0 !important;
+    }
+    .aura-lib-modal-header {
+        border-radius: 0 !important;
+        padding: 12px 16px !important;
+    }
+    .aura-lib-modal-body {
+        padding: 0 0 16px !important;
+    }
+    .aura-lib-wstep-panel {
+        padding: 14px 16px !important;
+    }
+    .aura-lib-col-half,
+    .aura-lib-col-third,
+    .aura-lib-col-quarter,
+    .aura-lib-col-sixth {
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+    .aura-lib-form-row input[type="text"],
+    .aura-lib-form-row input[type="number"],
+    .aura-lib-form-row input[type="search"],
+    .aura-lib-form-row select,
+    .aura-lib-form-row textarea {
+        font-size: 16px !important; /* Evita zoom automático en iOS */
+        min-height: 40px;
+    }
+    .aura-lib-isbn-toolbar {
+        margin: 10px 12px 0;
+        padding: 10px 12px;
+    }
+    .aura-lib-isbn-toolbar-actions {
+        width: 100%;
+    }
+    .aura-lib-isbn-quick-input-wrap {
+        flex: 1 1 auto;
+    }
+    .aura-lib-quick-isbn-input {
+        width: 100% !important;
+        flex: 1;
+        font-size: 16px !important;
+    }
+    .aura-lib-btn-scan,
+    .aura-lib-btn-remote {
+        width: 100%;
+        min-height: 42px;
+    }
+    .aura-lib-ai-prompt-banner {
+        margin: 10px 12px 0;
+        padding: 10px 12px;
+    }
+    .aura-lib-dropzone {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .aura-lib-dz-actions {
+        width: 100%;
+    }
+    .aura-lib-dz-actions .button {
+        width: 100%;
+        justify-content: center;
+        min-height: 40px;
+    }
+    .aura-lib-wizard-nav {
+        flex-wrap: wrap;
+        gap: 10px;
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        padding: 12px 0 4px;
+        border-top: 1px solid #e2e8f0;
+        z-index: 5;
+    }
+    .aura-lib-wizard-nav .button {
+        min-height: 42px;
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+    .aura-lib-toast {
+        left: 12px;
+        right: 12px;
+        bottom: 14px;
+        max-width: none;
+    }
+}
+
 @media (max-width: 600px) {
+    .aura-lib-wizard-progress { padding: 12px 16px; }
     .aura-lib-wizard-step span { display: none; }
-    .aura-lib-wizard-connector { max-width: 20px; }
-    .aura-lib-dewey-pills { gap: 3px; }
-    .aura-lib-dewey-pill { padding: 2px 7px; font-size: 10px; }
+    .aura-lib-wizard-connector { max-width: 24px; }
+    .aura-lib-dewey-pills { gap: 4px; }
+    .aura-lib-dewey-pill { padding: 4px 8px; font-size: 11px; }
 }

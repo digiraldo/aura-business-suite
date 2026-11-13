@@ -22,16 +22,25 @@ class Aura_Library_Books {
 
     public static function init(): void {
         $ajax_actions = [
-            'get_list'   => 'ajax_get_list',
-            'save'       => 'ajax_save',
-            'delete'     => 'ajax_delete',
-            'get_detail' => 'ajax_get_detail',
-            'search'     => 'ajax_search',
+            'get_list'           => 'ajax_get_list',
+            'save'               => 'ajax_save',
+            'delete'             => 'ajax_delete',
+            'get_detail'         => 'ajax_get_detail',
+            'search'             => 'ajax_search',
+            'lookup_isbn'        => 'ajax_lookup_isbn',
+            'create_remote_scan' => 'ajax_create_remote_scan',
+            'poll_remote_scan'   => 'ajax_poll_remote_scan',
         ];
 
         foreach ( $ajax_actions as $action => $handler ) {
             add_action( 'wp_ajax_aura_library_books_' . $action, [ __CLASS__, $handler ] );
         }
+
+        // Endpoints públicos (autenticados por token temporal) para escáner remoto desde celular
+        add_action( 'wp_ajax_aura_library_remote_scanner',        [ __CLASS__, 'ajax_render_remote_scanner' ] );
+        add_action( 'wp_ajax_nopriv_aura_library_remote_scanner', [ __CLASS__, 'ajax_render_remote_scanner' ] );
+        add_action( 'wp_ajax_aura_library_remote_scan_submit',        [ __CLASS__, 'ajax_remote_scan_submit' ] );
+        add_action( 'wp_ajax_nopriv_aura_library_remote_scan_submit', [ __CLASS__, 'ajax_remote_scan_submit' ] );
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -194,6 +203,15 @@ class Aura_Library_Books {
             $year = $year ?: null;
         }
 
+        $cover_image_id = intval( $_POST['cover_image_id'] ?? 0 );
+        $cover_url      = esc_url_raw( wp_unslash( $_POST['cover_url'] ?? '' ) );
+        if ( ! $cover_image_id && $cover_url ) {
+            $sideloaded_id = self::sideload_cover_image( $cover_url, $title );
+            if ( $sideloaded_id > 0 ) {
+                $cover_image_id = $sideloaded_id;
+            }
+        }
+
         $data = [
             'dewey_number'      => sanitize_text_field( $_POST['dewey_number']      ?? '' ),
             'title'             => $title,
@@ -210,7 +228,7 @@ class Aura_Library_Books {
             'physical_location' => sanitize_text_field( $_POST['physical_location'] ?? '' ) ?: null,
             'shelf_code'        => sanitize_text_field( $_POST['shelf_code']        ?? '' ) ?: null,
             'total_copies'      => $total_copies,
-            'cover_image_id'    => intval( $_POST['cover_image_id'] ?? 0 ) ?: null,
+            'cover_image_id'    => $cover_image_id ?: null,
             'description'       => sanitize_textarea_field( $_POST['description']  ?? '' ) ?: null,
             'keywords'          => sanitize_text_field( $_POST['keywords']          ?? '' ) ?: null,
             'area_id'           => intval( $_POST['area_id'] ?? 0 ) ?: null,
@@ -492,5 +510,510 @@ class Aura_Library_Books {
         }
 
         return false;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // AJAX — Búsqueda inteligente de metadatos por ISBN
+    //        (Google Books API + Open Library API)
+    // ─────────────────────────────────────────────────────────────
+
+    public static function ajax_lookup_isbn(): void {
+        check_ajax_referer( self::NONCE, 'nonce' );
+
+        if (
+            ! current_user_can( 'aura_library_create' ) &&
+            ! current_user_can( 'aura_library_edit' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para consultar libros.', 'aura-business-suite' ) ] );
+        }
+
+        $raw_isbn   = sanitize_text_field( wp_unslash( $_POST['isbn'] ?? '' ) );
+        $clean_isbn = preg_replace( '/[^0-9X]/i', '', strtoupper( $raw_isbn ) );
+
+        if ( empty( $clean_isbn ) || ! self::validate_isbn( $clean_isbn ) ) {
+            wp_send_json_error( [ 'message' => __( 'Ingresa o escanea un ISBN-10 o ISBN-13 válido.', 'aura-business-suite' ) ] );
+        }
+
+        $cache_key = 'aura_lib_isbn_' . $clean_isbn;
+        $cached    = get_transient( $cache_key );
+        if ( is_array( $cached ) && ! empty( $cached['title'] ) ) {
+            wp_send_json_success( $cached );
+        }
+
+        $google = self::fetch_google_books( $clean_isbn );
+        $openlib = self::fetch_open_library( $clean_isbn );
+
+        $merged = [
+            'isbn'           => $clean_isbn,
+            'title'          => $google['title']          ?: ( $openlib['title'] ?? '' ),
+            'subtitle'       => $google['subtitle']       ?: ( $openlib['subtitle'] ?? '' ),
+            'author'         => $google['author']         ?: ( $openlib['author'] ?? '' ),
+            'publisher'      => $google['publisher']      ?: ( $openlib['publisher'] ?? '' ),
+            'year_published' => $google['year_published'] ?: ( $openlib['year_published'] ?? '' ),
+            'pages'          => $google['pages']          ?: ( $openlib['pages'] ?? '' ),
+            'language'       => $google['language']       ?: ( $openlib['language'] ?? 'Español' ),
+            'dewey_number'   => $openlib['dewey_number']  ?: '',
+            'category'       => $google['category']       ?: ( $openlib['category'] ?? '' ),
+            'subcategory'    => $google['subcategory']    ?: ( $openlib['subcategory'] ?? '' ),
+            'description'    => $google['description']    ?: ( $openlib['description'] ?? '' ),
+            'keywords'       => $google['keywords']       ?: ( $openlib['keywords'] ?? '' ),
+            'cover_url'      => $google['cover_url']      ?: ( $openlib['cover_url'] ?? '' ),
+            'sources'        => array_values( array_filter( [
+                ! empty( $google['title'] ) ? 'Google Books' : '',
+                ! empty( $openlib['title'] ) ? 'Open Library' : '',
+            ] ) ),
+        ];
+
+        if ( empty( $merged['title'] ) ) {
+            wp_send_json_error( [
+                'message' => __( 'No se encontraron datos para este ISBN en Google Books ni en Open Library.', 'aura-business-suite' ),
+            ] );
+        }
+
+        set_transient( $cache_key, $merged, 12 * HOUR_IN_SECONDS );
+        wp_send_json_success( $merged );
+    }
+
+    /**
+     * Consulta Google Books API por ISBN.
+     */
+    private static function fetch_google_books( string $isbn ): array {
+        $url      = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' . rawurlencode( $isbn );
+        $response = wp_remote_get( $url, [ 'timeout' => 10 ] );
+
+        if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+            return [];
+        }
+
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+        if ( empty( $body['items'][0]['volumeInfo'] ) ) {
+            return [];
+        }
+
+        $info = $body['items'][0]['volumeInfo'];
+
+        $year = '';
+        if ( ! empty( $info['publishedDate'] ) && preg_match( '/\b(1[89]\d{2}|20\d{2})\b/', $info['publishedDate'], $m ) ) {
+            $year = $m[1];
+        }
+
+        $categories  = is_array( $info['categories'] ?? null ) ? $info['categories'] : [];
+        $category    = '';
+        $subcategory = '';
+        if ( ! empty( $categories[0] ) ) {
+            $parts       = array_map( 'trim', explode( '/', $categories[0] ) );
+            $category    = sanitize_text_field( $parts[0] ?? '' );
+            $subcategory = sanitize_text_field( $parts[1] ?? ( $categories[1] ?? '' ) );
+        }
+
+        $cover_url = '';
+        if ( ! empty( $info['imageLinks'] ) ) {
+            $raw_img   = $info['imageLinks']['extraLarge']
+                ?? $info['imageLinks']['large']
+                ?? $info['imageLinks']['medium']
+                ?? $info['imageLinks']['thumbnail']
+                ?? $info['imageLinks']['smallThumbnail']
+                ?? '';
+            if ( $raw_img ) {
+                $cover_url = set_url_scheme( $raw_img, 'https' );
+                $cover_url = str_replace( '&edge=curl', '', $cover_url );
+            }
+        }
+
+        $keywords = array_slice( array_unique( array_filter( array_map( 'sanitize_text_field', $categories ) ) ), 0, 6 );
+
+        return [
+            'title'          => sanitize_text_field( $info['title'] ?? '' ),
+            'subtitle'       => sanitize_text_field( $info['subtitle'] ?? '' ),
+            'author'         => ! empty( $info['authors'] ) ? sanitize_text_field( implode( ', ', (array) $info['authors'] ) ) : '',
+            'publisher'      => sanitize_text_field( $info['publisher'] ?? '' ),
+            'year_published' => $year,
+            'pages'          => ! empty( $info['pageCount'] ) ? (string) absint( $info['pageCount'] ) : '',
+            'language'       => self::map_language_code( $info['language'] ?? '' ),
+            'category'       => $category,
+            'subcategory'    => $subcategory,
+            'description'    => sanitize_textarea_field( wp_strip_all_tags( $info['description'] ?? '' ) ),
+            'keywords'       => implode( ', ', $keywords ),
+            'cover_url'      => esc_url_raw( $cover_url ),
+        ];
+    }
+
+    /**
+     * Consulta Open Library API por ISBN (Dewey, metadatos y portada).
+     */
+    private static function fetch_open_library( string $isbn ): array {
+        $key      = 'ISBN:' . $isbn;
+        $url      = 'https://openlibrary.org/api/books?bibkeys=' . rawurlencode( $key ) . '&jscmd=data&format=json';
+        $response = wp_remote_get( $url, [ 'timeout' => 10 ] );
+
+        if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+            return [];
+        }
+
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+        if ( empty( $body[ $key ] ) ) {
+            return [];
+        }
+
+        $info = $body[ $key ];
+
+        $authors = [];
+        if ( ! empty( $info['authors'] ) && is_array( $info['authors'] ) ) {
+            foreach ( $info['authors'] as $a ) {
+                if ( ! empty( $a['name'] ) ) {
+                    $authors[] = sanitize_text_field( $a['name'] );
+                }
+            }
+        }
+
+        $publisher = '';
+        if ( ! empty( $info['publishers'][0]['name'] ) ) {
+            $publisher = sanitize_text_field( $info['publishers'][0]['name'] );
+        }
+
+        $year = '';
+        if ( ! empty( $info['publish_date'] ) && preg_match( '/\b(1[89]\d{2}|20\d{2})\b/', $info['publish_date'], $m ) ) {
+            $year = $m[1];
+        }
+
+        $dewey = '';
+        if ( ! empty( $info['classifications']['dewey_decimal_class'][0] ) ) {
+            $dewey = sanitize_text_field( $info['classifications']['dewey_decimal_class'][0] );
+        }
+
+        $subjects = [];
+        if ( ! empty( $info['subjects'] ) && is_array( $info['subjects'] ) ) {
+            foreach ( array_slice( $info['subjects'], 0, 6 ) as $s ) {
+                if ( ! empty( $s['name'] ) ) {
+                    $subjects[] = sanitize_text_field( $s['name'] );
+                }
+            }
+        }
+
+        $cover_url = '';
+        if ( ! empty( $info['cover'] ) ) {
+            $cover_url = $info['cover']['large'] ?? $info['cover']['medium'] ?? $info['cover']['small'] ?? '';
+        }
+
+        $description = '';
+        if ( ! empty( $info['notes'] ) && is_string( $info['notes'] ) ) {
+            $description = sanitize_textarea_field( wp_strip_all_tags( $info['notes'] ) );
+        } elseif ( ! empty( $info['excerpts'][0]['text'] ) ) {
+            $description = sanitize_textarea_field( wp_strip_all_tags( $info['excerpts'][0]['text'] ) );
+        }
+
+        return [
+            'title'          => sanitize_text_field( $info['title'] ?? '' ),
+            'subtitle'       => sanitize_text_field( $info['subtitle'] ?? '' ),
+            'author'         => implode( ', ', $authors ),
+            'publisher'      => $publisher,
+            'year_published' => $year,
+            'pages'          => ! empty( $info['number_of_pages'] ) ? (string) absint( $info['number_of_pages'] ) : '',
+            'language'       => '',
+            'dewey_number'   => $dewey,
+            'category'       => $subjects[0] ?? '',
+            'subcategory'    => $subjects[1] ?? '',
+            'description'    => $description,
+            'keywords'       => implode( ', ', $subjects ),
+            'cover_url'      => esc_url_raw( $cover_url ),
+        ];
+    }
+
+    /**
+     * Mapea códigos ISO 639-1 al catálogo de idiomas del formulario.
+     */
+    private static function map_language_code( string $code ): string {
+        $map = [
+            'es' => 'Español',
+            'en' => 'Inglés',
+            'fr' => 'Francés',
+            'pt' => 'Portugués',
+            'de' => 'Alemán',
+            'it' => 'Italiano',
+        ];
+        $c = strtolower( substr( trim( $code ), 0, 2 ) );
+        return $map[ $c ] ?? 'Otro';
+    }
+
+    /**
+     * Descarga e importa una portada externa a la Biblioteca de Medios de WordPress.
+     */
+    private static function sideload_cover_image( string $url, string $title ): int {
+        if ( ! preg_match( '#^https?://#i', $url ) ) {
+            return 0;
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+
+        $tmp = download_url( $url, 15 );
+        if ( is_wp_error( $tmp ) ) {
+            return 0;
+        }
+
+        $mime = function_exists( 'mime_content_type' ) ? mime_content_type( $tmp ) : '';
+        $ext  = 'jpg';
+        if ( $mime === 'image/png' ) {
+            $ext = 'png';
+        } elseif ( $mime === 'image/webp' ) {
+            $ext = 'webp';
+        } elseif ( $mime === 'image/gif' ) {
+            $ext = 'gif';
+        }
+
+        $slug       = sanitize_title( $title ?: 'libro-portada' );
+        $file_array = [
+            'name'     => $slug . '-' . wp_rand( 100, 999 ) . '.' . $ext,
+            'tmp_name' => $tmp,
+        ];
+
+        $attachment_id = media_handle_sideload( $file_array, 0, $title );
+        if ( is_wp_error( $attachment_id ) ) {
+            @unlink( $tmp );
+            return 0;
+        }
+
+        return (int) $attachment_id;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // ESCÁNER REMOTO DESDE CELULAR (Samsung Galaxy / iPhone / QR)
+    // ─────────────────────────────────────────────────────────────
+
+    public static function ajax_create_remote_scan(): void {
+        check_ajax_referer( self::NONCE, 'nonce' );
+
+        if (
+            ! current_user_can( 'aura_library_create' ) &&
+            ! current_user_can( 'aura_library_edit' ) &&
+            ! current_user_can( 'manage_options' )
+        ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+        }
+
+        try {
+            $token = bin2hex( random_bytes( 16 ) );
+        } catch ( \Exception $e ) {
+            $token = wp_generate_password( 32, false, false );
+        }
+
+        set_transient( 'aura_lib_rscan_' . $token, [
+            'status'  => 'waiting',
+            'isbn'    => '',
+            'user_id' => get_current_user_id(),
+        ], 10 * MINUTE_IN_SECONDS );
+
+        $scan_url = add_query_arg( [
+            'action' => 'aura_library_remote_scanner',
+            'token'  => $token,
+        ], admin_url( 'admin-ajax.php' ) );
+
+        wp_send_json_success( [
+            'token'    => $token,
+            'scan_url' => $scan_url,
+            'is_https' => is_ssl(),
+        ] );
+    }
+
+    public static function ajax_poll_remote_scan(): void {
+        check_ajax_referer( self::NONCE, 'nonce' );
+
+        $token = sanitize_key( wp_unslash( $_POST['token'] ?? '' ) );
+        if ( empty( $token ) ) {
+            wp_send_json_error( [ 'status' => 'invalid' ] );
+        }
+
+        $key   = 'aura_lib_rscan_' . $token;
+        $state = get_transient( $key );
+        if ( ! is_array( $state ) ) {
+            wp_send_json_success( [ 'status' => 'expired' ] );
+        }
+
+        if ( ! empty( $state['isbn'] ) ) {
+            $isbn = $state['isbn'];
+            // Reiniciar para permitir escaneos sucesivos si el usuario sigue en el modal
+            $state['status'] = 'waiting';
+            $state['isbn']   = '';
+            set_transient( $key, $state, 10 * MINUTE_IN_SECONDS );
+            wp_send_json_success( [ 'status' => 'scanned', 'isbn' => $isbn ] );
+        }
+
+        wp_send_json_success( [ 'status' => 'waiting' ] );
+    }
+
+    public static function ajax_remote_scan_submit(): void {
+        $token = sanitize_key( wp_unslash( $_POST['token'] ?? '' ) );
+        $raw   = sanitize_text_field( wp_unslash( $_POST['isbn'] ?? '' ) );
+        $isbn  = preg_replace( '/[^0-9X]/i', '', strtoupper( $raw ) );
+
+        $key   = 'aura_lib_rscan_' . $token;
+        $state = get_transient( $key );
+        if ( empty( $token ) || ! is_array( $state ) ) {
+            wp_send_json_error( [ 'message' => __( 'Sesión expirada. Genera un nuevo código QR en tu computadora.', 'aura-business-suite' ) ] );
+        }
+
+        if ( empty( $isbn ) || ! self::validate_isbn( $isbn ) ) {
+            wp_send_json_error( [ 'message' => __( 'Código no válido como ISBN-10 o ISBN-13.', 'aura-business-suite' ) ] );
+        }
+
+        $state['status'] = 'scanned';
+        $state['isbn']   = $isbn;
+        set_transient( $key, $state, 10 * MINUTE_IN_SECONDS );
+
+        wp_send_json_success( [ 'isbn' => $isbn ] );
+    }
+
+    public static function ajax_render_remote_scanner(): void {
+        $token = sanitize_key( wp_unslash( $_GET['token'] ?? '' ) );
+        $state = $token ? get_transient( 'aura_lib_rscan_' . $token ) : false;
+
+        header( 'Content-Type: text/html; charset=utf-8' );
+        ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title><?php esc_html_e( 'Escáner Móvil — Aura Biblioteca', 'aura-business-suite' ); ?></title>
+<style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; min-height: 100dvh; display: flex; flex-direction: column; }
+    header { padding: 14px 16px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { margin: 0; font-size: 16px; font-weight: 700; }
+    .wrap { flex: 1; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; max-width: 520px; width: 100%; margin: 0 auto; }
+    .cam-select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569; background: #1e293b; color: #fff; font-size: 15px; }
+    #reader { width: 100%; border-radius: 12px; overflow: hidden; background: #000; border: 2px solid #0ea5e9; }
+    .status { text-align: center; font-size: 14px; color: #cbd5e1; padding: 10px 14px; border-radius: 8px; background: #1e293b; width: 100%; }
+    .status.ok { background: #065f46; color: #ecfdf5; border: 1px solid #10b981; font-weight: 600; }
+    .status.err { background: #7f1d1d; color: #fef2f2; border: 1px solid #ef4444; }
+    .btn { padding: 12px 18px; border: none; border-radius: 8px; background: #0ea5e9; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; }
+</style>
+</head>
+<body>
+<header>
+    <h1>📷 <?php esc_html_e( 'Escáner de Libros — Aura', 'aura-business-suite' ); ?></h1>
+</header>
+<div class="wrap">
+<?php if ( ! is_array( $state ) ) : ?>
+    <div class="status err">
+        <?php esc_html_e( 'Este enlace de escaneo ha expirado. Genera un nuevo código QR desde tu computadora.', 'aura-business-suite' ); ?>
+    </div>
+<?php else : ?>
+    <select id="cam-select" class="cam-select" style="display:none;"></select>
+    <div id="reader"></div>
+    <div id="status" class="status"><?php esc_html_e( 'Iniciando cámara del teléfono…', 'aura-business-suite' ); ?></div>
+    <button type="button" id="btn-retry" class="btn" style="display:none;"><?php esc_html_e( 'Escanear otro libro', 'aura-business-suite' ); ?></button>
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+    (function() {
+        var token   = <?php echo wp_json_encode( $token ); ?>;
+        var ajaxUrl = <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
+        var statusEl = document.getElementById('status');
+        var selectEl = document.getElementById('cam-select');
+        var retryBtn = document.getElementById('btn-retry');
+        var scanner  = new Html5Qrcode('reader');
+        var locked   = false;
+
+        function beep() {
+            try {
+                var Ctx = window.AudioContext || window.webkitAudioContext;
+                if (!Ctx) return;
+                var c = new Ctx(), o = c.createOscillator(), g = c.createGain();
+                o.frequency.value = 1046.5; g.gain.value = 0.15;
+                o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 0.15);
+            } catch (e) {}
+        }
+
+        function startWith(cameraConfig) {
+            locked = false;
+            retryBtn.style.display = 'none';
+            statusEl.className = 'status';
+            statusEl.textContent = 'Apunta al código de barras (ISBN) del libro…';
+
+            var cfg = {
+                fps: 12,
+                qrbox: function(w, h) {
+                    return { width: Math.max(200, Math.floor(w * 0.85)), height: Math.max(110, Math.floor(h * 0.45)) };
+                },
+                formatsToSupport: [
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.CODE_128
+                ]
+            };
+
+            scanner.start(cameraConfig, cfg, function(text) {
+                if (locked) return;
+                var clean = String(text || '').replace(/[^0-9X]/gi, '');
+                if (clean.length !== 10 && clean.length !== 13) return;
+                locked = true;
+                beep();
+                if (navigator.vibrate) { try { navigator.vibrate(120); } catch (e) {} }
+                statusEl.textContent = 'Enviando ISBN ' + clean + ' a tu computadora…';
+
+                var fd = new FormData();
+                fd.append('action', 'aura_library_remote_scan_submit');
+                fd.append('token', token);
+                fd.append('isbn', clean);
+
+                fetch(ajaxUrl, { method: 'POST', body: fd })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        if (res.success) {
+                            statusEl.className = 'status ok';
+                            statusEl.textContent = '✅ ISBN ' + clean + ' enviado. Mira la pantalla de tu computadora.';
+                            retryBtn.style.display = 'block';
+                        } else {
+                            locked = false;
+                            statusEl.className = 'status err';
+                            statusEl.textContent = (res.data && res.data.message) ? res.data.message : 'Error al enviar el código.';
+                        }
+                    })
+                    .catch(function() {
+                        locked = false;
+                        statusEl.className = 'status err';
+                        statusEl.textContent = 'Error de red al enviar el código.';
+                    });
+            }, function() {}).catch(function(err) {
+                statusEl.className = 'status err';
+                statusEl.textContent = 'No se pudo iniciar la cámara: ' + (err && err.message ? err.message : err) + ' (Requiere HTTPS)';
+            });
+        }
+
+        Html5Qrcode.getCameras().then(function(cams) {
+            if (cams && cams.length > 1) {
+                cams.forEach(function(c, i) {
+                    var opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.label || ('Cámara ' + (i + 1));
+                    selectEl.appendChild(opt);
+                });
+                selectEl.style.display = 'block';
+                selectEl.addEventListener('change', function() {
+                    scanner.stop().then(function() { startWith(selectEl.value); }).catch(function() { startWith(selectEl.value); });
+                });
+            }
+            startWith({ facingMode: 'environment' });
+        }).catch(function() {
+            startWith({ facingMode: 'environment' });
+        });
+
+        retryBtn.addEventListener('click', function() {
+            locked = false;
+            retryBtn.style.display = 'none';
+            statusEl.className = 'status';
+            statusEl.textContent = 'Listo. Apunta al siguiente código de barras…';
+        });
+    })();
+    </script>
+<?php endif; ?>
+</div>
+</body>
+</html>
+        <?php
+        exit;
     }
 }

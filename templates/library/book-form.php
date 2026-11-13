@@ -77,6 +77,81 @@ Palabras clave: (Al menos 5 términos separados por comas)
 
 Por favor, asegúrate de que el Número Dewey sea el correcto según la clasificación temática del libro.' ); ?></textarea>
 
+    <!-- ══ BANNER: ESCÁNER / BÚSQUEDA POR ISBN ═════════════════════ -->
+    <div class="aura-lib-isbn-toolbar">
+        <div class="aura-lib-isbn-toolbar-info">
+            <span class="aura-lib-isbn-toolbar-icon">📷</span>
+            <div>
+                <strong><?php esc_html_e( 'Autocompletar desde ISBN o Código de Barras', 'aura-business-suite' ); ?></strong>
+                <span><?php esc_html_e( 'Escanea el código de barras del libro o escribe su ISBN para llenar ficha, clasificación y portada.', 'aura-business-suite' ); ?></span>
+            </div>
+        </div>
+        <div class="aura-lib-isbn-toolbar-actions">
+            <div class="aura-lib-isbn-quick-input-wrap">
+                <input type="text" id="aura-lib-quick-isbn" class="aura-lib-quick-isbn-input"
+                       placeholder="<?php esc_attr_e( 'ISBN-10 o ISBN-13…', 'aura-business-suite' ); ?>"
+                       inputmode="numeric" autocomplete="off">
+                <button type="button" id="aura-lib-btn-lookup-isbn" class="aura-lib-btn-lookup">
+                    <span class="dashicons dashicons-search"></span>
+                    <span><?php esc_html_e( 'Buscar', 'aura-business-suite' ); ?></span>
+                </button>
+            </div>
+            <button type="button" id="aura-lib-btn-scan-barcode" class="aura-lib-btn-scan">
+                <span class="dashicons dashicons-camera"></span>
+                <span><?php esc_html_e( 'Escanear código', 'aura-business-suite' ); ?></span>
+            </button>
+            <button type="button" id="aura-lib-btn-remote-scan" class="aura-lib-btn-remote"
+                    title="<?php esc_attr_e( 'Conecta tu celular (Samsung Galaxy / iPhone) por QR para escanear desde el teléfono', 'aura-business-suite' ); ?>">
+                <span class="dashicons dashicons-smartphone"></span>
+                <span><?php esc_html_e( 'Cámara del celular (QR)', 'aura-business-suite' ); ?></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Visor de Cámara para Escáner de Código de Barras -->
+    <div id="aura-lib-scanner-panel" class="aura-lib-scanner-panel" style="display:none;">
+        <div class="aura-lib-scanner-header">
+            <span>📷 <?php esc_html_e( 'Apunta la cámara al código de barras (ISBN) del libro', 'aura-business-suite' ); ?></span>
+            <button type="button" id="aura-lib-btn-close-scanner" class="aura-lib-scanner-close" aria-label="<?php esc_attr_e( 'Cerrar cámara', 'aura-business-suite' ); ?>">✕</button>
+        </div>
+        <div class="aura-lib-scanner-cam-bar" id="aura-lib-camera-select-wrap" style="display:none;">
+            <label for="aura-lib-camera-select"><?php esc_html_e( 'Cámara:', 'aura-business-suite' ); ?></label>
+            <select id="aura-lib-camera-select" class="aura-lib-camera-select"></select>
+        </div>
+        <div id="aura-lib-scanner-viewport" class="aura-lib-scanner-viewport">
+            <div id="aura-lib-qr-reader" style="width:100%;"></div>
+        </div>
+        <div id="aura-lib-scanner-status" class="aura-lib-scanner-status">
+            <?php esc_html_e( 'Iniciando cámara…', 'aura-business-suite' ); ?>
+        </div>
+    </div>
+
+    <!-- Panel QR para Escanear Remotamente con Celular (Samsung / iPhone) -->
+    <div id="aura-lib-remote-qr-panel" class="aura-lib-remote-qr-panel" style="display:none;">
+        <div class="aura-lib-remote-qr-header">
+            <span>📱 <?php esc_html_e( 'Escanea este QR con tu celular (Samsung Galaxy / iPhone)', 'aura-business-suite' ); ?></span>
+            <button type="button" id="aura-lib-btn-close-remote-qr" class="aura-lib-scanner-close" aria-label="<?php esc_attr_e( 'Cerrar QR', 'aura-business-suite' ); ?>">✕</button>
+        </div>
+        <div class="aura-lib-remote-qr-body">
+            <div id="aura-lib-remote-qr-box" class="aura-lib-remote-qr-box"></div>
+            <div class="aura-lib-remote-qr-info">
+                <p><strong><?php esc_html_e( '¿Cómo funciona?', 'aura-business-suite' ); ?></strong></p>
+                <ol>
+                    <li><?php esc_html_e( 'Abre la cámara de tu teléfono y escanea este código QR.', 'aura-business-suite' ); ?></li>
+                    <li><?php esc_html_e( 'Apunta la cámara del celular al código de barras del libro.', 'aura-business-suite' ); ?></li>
+                    <li><?php esc_html_e( 'Los datos, clasificación y portada se llenarán aquí automáticamente.', 'aura-business-suite' ); ?></li>
+                </ol>
+                <div class="aura-lib-remote-qr-status" id="aura-lib-remote-qr-status">
+                    <span class="spinner is-active" style="float:none;margin:0 6px 0 0;"></span>
+                    <?php esc_html_e( 'Esperando escaneo desde tu celular…', 'aura-business-suite' ); ?>
+                </div>
+                <div class="aura-lib-remote-qr-link-wrap">
+                    <input type="text" id="aura-lib-remote-qr-url" class="widefat" readonly onclick="this.select();">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ══ BARRA DE PROGRESO (Wizard) ══════════════════════════════ -->
     <div class="aura-lib-wizard-progress" aria-label="<?php esc_attr_e( 'Pasos del formulario', 'aura-business-suite' ); ?>">
         <div class="aura-lib-wizard-step active" data-step="1">
@@ -178,10 +253,14 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
                     <?php esc_html_e( 'ISBN', 'aura-business-suite' ); ?>
                     <span class="aura-lib-hint"><?php esc_html_e( 'ISBN-10 o ISBN-13', 'aura-business-suite' ); ?></span>
                 </label>
-                <div class="aura-lib-input-wrap">
+                <div class="aura-lib-input-wrap aura-lib-isbn-field-group">
                     <input type="text" id="aura-lib-f-isbn" name="isbn" class="widefat"
-                           maxlength="30" autocomplete="off"
+                           maxlength="30" autocomplete="off" inputmode="numeric"
                            placeholder="978-0-00-000000-0">
+                    <button type="button" id="aura-lib-btn-lookup-isbn-inline" class="aura-lib-isbn-inline-btn"
+                            title="<?php esc_attr_e( 'Autocompletar datos y portada por ISBN', 'aura-business-suite' ); ?>">
+                        <span class="dashicons dashicons-search"></span>
+                    </button>
                     <span class="aura-lib-field-icon" id="aura-lib-isbn-icon"></span>
                 </div>
                 <span class="aura-lib-isbn-error aura-lib-field-error" style="display:none;">
@@ -382,6 +461,7 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
                 <?php esc_html_e( 'Imagen de Portada', 'aura-business-suite' ); ?>
             </label>
             <input type="hidden" id="aura-lib-f-cover-id" name="cover_image_id" value="0">
+            <input type="hidden" id="aura-lib-f-cover-url" name="cover_url" value="">
 
             <div class="aura-lib-dropzone" id="aura-lib-dropzone">
                 <div id="aura-lib-cover-preview" class="aura-lib-dz-preview-wrap">

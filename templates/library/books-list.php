@@ -139,6 +139,18 @@ $can_loan   = current_user_can( 'aura_library_loan_create' ) || current_user_can
 
 <?php
 wp_enqueue_script(
+    'html5-qrcode',
+    'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js',
+    [],
+    '2.3.8', true
+);
+wp_enqueue_script(
+    'qrcodejs',
+    'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js',
+    [],
+    '1.0.0', true
+);
+wp_enqueue_script(
     'aura-lib-books',
     AURA_PLUGIN_URL . 'assets/js/library-books.js',
     [ 'jquery', 'datatables-responsive-js', 'aura-ui-core' ],

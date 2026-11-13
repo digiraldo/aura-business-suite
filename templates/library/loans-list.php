@@ -24,7 +24,7 @@ $fines_enabled     = (bool) get_option( 'aura_library_fines_enabled', false );
 $fines_to_finance  = (bool) get_option( 'aura_library_fines_to_finance', false );
 $max_extensions    = (int)  get_option( 'aura_library_max_extensions', 2 );
 $extension_days    = (int)  get_option( 'aura_library_extension_days', 7 );
-?>
+
 global $wpdb;
 $table_loans = $wpdb->prefix . 'aura_library_loans';
 $loan_stats = [
