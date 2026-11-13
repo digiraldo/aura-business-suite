@@ -1160,6 +1160,9 @@ class Aura_Certificates_Issuer {
      * Renderiza un objeto Fabric.js individual (o grupo) a HTML/SVG compatible con mPDF.
      */
     private static function render_fabric_object_html( array $obj, array $vars_data, ?string $qr_path, float $offset_x = 0.0, float $offset_y = 0.0 ): string {
+        if ( isset( $obj['visible'] ) && $obj['visible'] === false ) {
+            return '';
+        }
         $type   = strtolower( (string) ( $obj['type'] ?? '' ) );
         $name   = (string) ( $obj['name'] ?? '' );
         $scaleX = (float) ( $obj['scaleX'] ?? 1 );

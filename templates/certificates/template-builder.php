@@ -480,9 +480,15 @@ document.documentElement.classList.add('aura-cb-fullscreen-mode');
 
                 <!-- Right Pane 2: Capas -->
                 <div class="aura-cb-side-pane" data-rpane-content="layers">
-                    <div class="aura-cb-pane-label"><?php esc_html_e( 'Orden de Capas del Diseño', 'aura-suite' ); ?></div>
+                    <div class="aura-cb-pane-label"><?php esc_html_e( 'Organizador de Capas', 'aura-suite' ); ?></div>
+                    <div class="aura-cb-layers-toolbar" title="<?php esc_attr_e( 'Mover capa seleccionada', 'aura-suite' ); ?>">
+                        <button type="button" id="aura-cb-layer-front" class="button button-small" title="<?php esc_attr_e( 'Enviar encima de todo', 'aura-suite' ); ?>">⇈ <?php esc_html_e( 'Frente', 'aura-suite' ); ?></button>
+                        <button type="button" id="aura-cb-layer-up"    class="button button-small" title="<?php esc_attr_e( 'Subir 1 nivel', 'aura-suite' ); ?>">↑</button>
+                        <button type="button" id="aura-cb-layer-down"  class="button button-small" title="<?php esc_attr_e( 'Bajar 1 nivel', 'aura-suite' ); ?>">↓</button>
+                        <button type="button" id="aura-cb-layer-back"  class="button button-small" title="<?php esc_attr_e( 'Enviar al fondo', 'aura-suite' ); ?>">⇊ <?php esc_html_e( 'Fondo', 'aura-suite' ); ?></button>
+                    </div>
                     <p class="aura-cb-help-tiny" style="margin-bottom:8px;">
-                        <?php esc_html_e( 'Haz clic para seleccionar un elemento o bloquea/elimina capas rápidamente.', 'aura-suite' ); ?>
+                        <?php esc_html_e( 'Arrastra o usa ↑↓ para apilar capas encima de otras · Ojo: ver/ocultar · Eslabón: bloquear.', 'aura-suite' ); ?>
                     </p>
                     <div id="aura-cb-layers-list" class="aura-cb-layers-list"></div>
                 </div>

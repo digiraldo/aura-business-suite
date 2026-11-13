@@ -21,7 +21,7 @@
     var CUSTOM_PROPS = [
         'name', 'auraElementType', 'signerSlot',
         'auraSvgMarkup', 'auraSvgOriginal', 'auraClipartLabel',
-        'rx', 'ry', 'strokeDashArray', 'auraLocked', 'shadow', 'perPixelTargetFind'
+        'rx', 'ry', 'strokeDashArray', 'auraLocked', 'shadow', 'perPixelTargetFind', 'visible'
     ];
 
     // Dimensiones lógicas del documento en píxeles (96 dpi) y milímetros
@@ -293,7 +293,9 @@
         historyLock = true;
         var parsed = typeof designObj === 'string' ? JSON.parse(designObj) : designObj;
 
-        if (parsed.canvasW && parsed.canvasH) {
+        var srcW = (parsed.canvasW || docW);
+        var srcH = (parsed.canvasH || docH);
+        if (parsed.canvasW && parsed.canvasH && !onDone) {
             docW = parsed.canvasW;
             docH = parsed.canvasH;
         }
@@ -304,8 +306,15 @@
                 if (obj.auraLocked) {
                     applyLockState(obj, true);
                 }
+                if (obj.visible === false) {
+                    obj.set({ selectable: false, evented: false });
+                }
                 syncTransparentHitTest(obj);
             });
+
+            if (srcW && srcH && (Math.abs(srcW - docW) > 4 || Math.abs(srcH - docH) > 4)) {
+                adaptCanvasToDimensions(srcW, srcH, docW, docH);
+            }
 
             var bg = canvas.backgroundColor;
             if (typeof bg === 'string' && bg) {
@@ -576,6 +585,21 @@
         }
     }
 
+    var ICON_EYE_OPEN   = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    var ICON_EYE_CLOSED = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    var ICON_CHAIN_LOCK = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+
+    function getLayerTypeBadge(obj) {
+        if (!obj) return '◆';
+        if (obj.auraElementType === 'qr' || obj.name === 'qr_placeholder') return 'QR';
+        if (obj.auraElementType === 'signer_sig' || (obj.name && String(obj.name).indexOf('signer_slot_') === 0)) return '✍';
+        if (obj.auraElementType === 'svg_clipart' || obj.auraSvgMarkup) return 'SVG';
+        if (obj.name === 'decorative_frame') return '▣';
+        if (isTextObject(obj)) return 'T';
+        if (obj.type === 'image') return '🖼';
+        return '◇';
+    }
+
     function renderLayersList() {
         var $list = $('#aura-cb-layers-list');
         if (!$list.length || !canvas) return;
@@ -585,34 +609,196 @@
         var active = canvas.getActiveObject();
         $('#aura-cb-layers-count').text(objs.length);
 
+        var hasSel = !!active;
+        $('.aura-cb-layers-toolbar button').prop('disabled', !hasSel);
+
         if (!objs.length) {
             $list.html('<p class="aura-cb-muted">Sin elementos en el lienzo.</p>');
             return;
         }
 
         for (var i = objs.length - 1; i >= 0; i--) {
-            var obj = objs[i];
-            var isSel = active === obj;
-            var $row = $('<div class="aura-cb-layer-item">')
+            var obj      = objs[i];
+            var isSel    = active === obj;
+            var isHidden = obj.visible === false;
+            var isLocked = !!obj.auraLocked;
+            var canUp    = i < objs.length - 1;
+            var canDown  = i > 0;
+
+            var $row = $('<div class="aura-cb-layer-item" draggable="true">')
                 .toggleClass('is-selected', isSel)
+                .toggleClass('is-hidden-layer', isHidden)
+                .toggleClass('is-locked-layer', isLocked)
                 .attr('data-index', i)
                 .html(
-                    '<span class="aura-cb-layer-name">' + escHtml(getObjectLabel(obj, i)) + '</span>' +
-                    (obj.auraLocked ? '<span title="Bloqueado">🔒</span>' : '')
+                    '<span class="aura-cb-layer-grip" title="Arrastrar para reordenar">⠿</span>' +
+                    '<span class="aura-cb-layer-badge">' + escHtml(getLayerTypeBadge(obj)) + '</span>' +
+                    '<span class="aura-cb-layer-name" title="' + escHtml(getObjectLabel(obj, i)) + '">' + escHtml(getObjectLabel(obj, i)) + '</span>' +
+                    '<span class="aura-cb-layer-actions">' +
+                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-move-up" title="Subir capa (encima)"' + (canUp ? '' : ' disabled') + '>↑</button>' +
+                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-move-down" title="Bajar capa (detrás)"' + (canDown ? '' : ' disabled') + '>↓</button>' +
+                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-vis' + (isHidden ? ' is-off' : '') + '" title="' + (isHidden ? 'Mostrar capa' : 'Ocultar capa') + '">' + (isHidden ? ICON_EYE_CLOSED : ICON_EYE_OPEN) + '</button>' +
+                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-lock' + (isLocked ? ' is-on' : '') + '" title="' + (isLocked ? 'Desbloquear (eslabón activo)' : 'Bloquear posición (eslabón)') + '">' + ICON_CHAIN_LOCK + '</button>' +
+                    '</span>'
                 );
             $list.append($row);
         }
     }
 
-    $(document).on('click', '.aura-cb-layer-item', function () {
+    // Seleccionar capa al hacer clic en su fila
+    $(document).on('click', '.aura-cb-layer-item', function (e) {
+        if ($(e.target).closest('.aura-cb-layer-act').length) return;
         var idx  = parseInt($(this).attr('data-index'), 10);
         var objs = canvas.getObjects();
-        if (!isNaN(idx) && objs[idx]) {
-            canvas.setActiveObject(objs[idx]);
-            canvas.requestRenderAll();
-            updateObjectPanel(objs[idx]);
-            renderLayersList();
+        var obj  = !isNaN(idx) ? objs[idx] : null;
+        if (!obj) return;
+        if (obj.visible === false) {
+            obj.set({ visible: true, selectable: true, evented: true });
         }
+        canvas.setActiveObject(obj);
+        canvas.requestRenderAll();
+        updateObjectPanel(obj);
+        renderLayersList();
+    });
+
+    // Ver / Ocultar capa (Ojo)
+    $(document).on('click', '.aura-cb-layer-vis', function (e) {
+        e.stopPropagation();
+        var idx  = parseInt($(this).closest('.aura-cb-layer-item').attr('data-index'), 10);
+        var objs = canvas.getObjects();
+        var obj  = !isNaN(idx) ? objs[idx] : null;
+        if (!obj) return;
+        var nextVis = (obj.visible === false);
+        obj.set({
+            visible    : nextVis,
+            selectable : nextVis,
+            evented    : nextVis
+        });
+        if (!nextVis && canvas.getActiveObject() === obj) {
+            canvas.discardActiveObject();
+            onSelectionCleared();
+        }
+        canvas.requestRenderAll();
+        renderLayersList();
+        saveHistoryStep();
+    });
+
+    // Bloquear / Desbloquear capa (Eslabón de cadena)
+    $(document).on('click', '.aura-cb-layer-lock', function (e) {
+        e.stopPropagation();
+        var idx  = parseInt($(this).closest('.aura-cb-layer-item').attr('data-index'), 10);
+        var objs = canvas.getObjects();
+        var obj  = !isNaN(idx) ? objs[idx] : null;
+        if (!obj) return;
+        var nextLock = !obj.auraLocked;
+        applyLockState(obj, nextLock);
+        if (canvas.getActiveObject() === obj) {
+            $('#aura-cb-obj-lock').prop('checked', nextLock);
+        }
+        canvas.requestRenderAll();
+        renderLayersList();
+        saveHistoryStep();
+    });
+
+    // Subir / Bajar 1 nivel desde botones de cada fila
+    $(document).on('click', '.aura-cb-layer-move-up', function (e) {
+        e.stopPropagation();
+        var idx  = parseInt($(this).closest('.aura-cb-layer-item').attr('data-index'), 10);
+        var objs = canvas.getObjects();
+        var obj  = !isNaN(idx) ? objs[idx] : null;
+        if (!obj) return;
+        canvas.bringForward(obj);
+        canvas.setActiveObject(obj);
+        canvas.requestRenderAll();
+        updateObjectPanel(obj);
+        renderLayersList();
+        saveHistoryStep();
+    });
+
+    $(document).on('click', '.aura-cb-layer-move-down', function (e) {
+        e.stopPropagation();
+        var idx  = parseInt($(this).closest('.aura-cb-layer-item').attr('data-index'), 10);
+        var objs = canvas.getObjects();
+        var obj  = !isNaN(idx) ? objs[idx] : null;
+        if (!obj) return;
+        canvas.sendBackwards(obj);
+        canvas.setActiveObject(obj);
+        canvas.requestRenderAll();
+        updateObjectPanel(obj);
+        renderLayersList();
+        saveHistoryStep();
+    });
+
+    // Toolbar superior dentro de la pestaña Capas
+    $(document).on('click', '#aura-cb-layer-front', function () {
+        var obj = canvas.getActiveObject();
+        if (obj) { canvas.bringToFront(obj); canvas.requestRenderAll(); renderLayersList(); saveHistoryStep(); }
+    });
+    $(document).on('click', '#aura-cb-layer-up', function () {
+        var obj = canvas.getActiveObject();
+        if (obj) { canvas.bringForward(obj); canvas.requestRenderAll(); renderLayersList(); saveHistoryStep(); }
+    });
+    $(document).on('click', '#aura-cb-layer-down', function () {
+        var obj = canvas.getActiveObject();
+        if (obj) { canvas.sendBackwards(obj); canvas.requestRenderAll(); renderLayersList(); saveHistoryStep(); }
+    });
+    $(document).on('click', '#aura-cb-layer-back', function () {
+        var obj = canvas.getActiveObject();
+        if (obj) { canvas.sendToBack(obj); canvas.requestRenderAll(); renderLayersList(); saveHistoryStep(); }
+    });
+
+    // Drag & Drop entre capas
+    var draggedLayerIdx = null;
+
+    $(document).on('dragstart', '.aura-cb-layer-item', function (e) {
+        draggedLayerIdx = parseInt($(this).attr('data-index'), 10);
+        $(this).addClass('is-dragging');
+        if (e.originalEvent && e.originalEvent.dataTransfer) {
+            e.originalEvent.dataTransfer.effectAllowed = 'move';
+            e.originalEvent.dataTransfer.setData('text/plain', String(draggedLayerIdx));
+        }
+    });
+
+    $(document).on('dragend', '.aura-cb-layer-item', function () {
+        draggedLayerIdx = null;
+        $('.aura-cb-layer-item').removeClass('is-dragging is-drop-before is-drop-after');
+    });
+
+    $(document).on('dragover', '.aura-cb-layer-item', function (e) {
+        e.preventDefault();
+        if (draggedLayerIdx === null) return;
+        var rect = this.getBoundingClientRect();
+        var isBefore = (e.clientY - rect.top) < (rect.height / 2);
+        $('.aura-cb-layer-item').removeClass('is-drop-before is-drop-after');
+        $(this).addClass(isBefore ? 'is-drop-before' : 'is-drop-after');
+    });
+
+    $(document).on('drop', '.aura-cb-layer-item', function (e) {
+        e.preventDefault();
+        var toIdx   = parseInt($(this).attr('data-index'), 10);
+        var fromIdx = draggedLayerIdx;
+        var isBefore = $(this).hasClass('is-drop-before');
+        $('.aura-cb-layer-item').removeClass('is-dragging is-drop-before is-drop-after');
+        draggedLayerIdx = null;
+
+        if (fromIdx === null || isNaN(fromIdx) || isNaN(toIdx) || fromIdx === toIdx) return;
+        var objs = canvas.getObjects();
+        var n    = objs.length;
+        var obj  = objs[fromIdx];
+        if (!obj || n < 2) return;
+
+        var fromUi   = (n - 1) - fromIdx;
+        var toUi     = (n - 1) - toIdx;
+        var insertUi = isBefore ? toUi : (toUi + 1);
+        if (fromUi < insertUi) insertUi -= 1;
+        var newFabricIdx = Math.max(0, Math.min(n - 1, (n - 1) - insertUi));
+
+        obj.moveTo(newFabricIdx);
+        canvas.setActiveObject(obj);
+        canvas.requestRenderAll();
+        updateObjectPanel(obj);
+        renderLayersList();
+        saveHistoryStep();
     });
 
     function populateFonts() {
@@ -981,7 +1167,7 @@
         $('#aura-cb-delete-obj').on('click', deleteSelected);
         $('#aura-cb-clone-obj').on('click', cloneSelected);
 
-        // Color de fondo y orientación del documento
+        // Color de fondo y orientación del documento (reflow inteligente entre A4/Carta/Horiz/Vert)
         $('#aura-cb-bg-color').on('input change', function () {
             canvas.setBackgroundColor($(this).val(), function () {
                 canvas.requestRenderAll();
@@ -990,14 +1176,98 @@
         });
 
         $('#aura-cb-orientation').on('change', function () {
-            var ori = $(this).val();
-            var dim = DIM[ori] || DIM.landscape;
+            var ori   = $(this).val();
+            var dim   = DIM[ori] || DIM.landscape;
+            var oldW  = docW;
+            var oldH  = docH;
             docW = dim.w;
             docH = dim.h;
             syncDimInputs(ori);
+            adaptCanvasToDimensions(oldW, oldH, docW, docH);
             fitToScreen();
+            updateObjectPanel(canvas.getActiveObject());
             saveHistoryStep();
         });
+    }
+
+    /**
+     * Adapta proporcionalmente todos los elementos cuando cambia el tamaño/orientación
+     * del documento (ej. A4 -> Carta o Horizontal <-> Vertical).
+     */
+    function adaptCanvasToDimensions(oldW, oldH, newW, newH) {
+        if (!canvas || !oldW || !oldH || (Math.abs(oldW - newW) < 2 && Math.abs(oldH - newH) < 2)) {
+            return;
+        }
+        var rx        = newW / oldW;
+        var ry        = newH / oldH;
+        var uScale    = Math.min(rx, ry);
+        var flipped   = (oldW > oldH) !== (newW > newH);
+        var fontScale = flipped ? Math.max(0.74, Math.min(1.12, uScale * 1.1)) : Math.max(0.88, Math.min(1.06, uScale));
+
+        if (canvas.backgroundImage) {
+            var bg = canvas.backgroundImage;
+            bg.set({
+                scaleX : newW / (bg.width || newW),
+                scaleY : newH / (bg.height || newH)
+            });
+        }
+
+        canvas.getObjects().forEach(function (obj) {
+            var curW = obj.getScaledWidth ? obj.getScaledWidth() : ((obj.width || 0) * (obj.scaleX || 1));
+            var curH = obj.getScaledHeight ? obj.getScaledHeight() : ((obj.height || 0) * (obj.scaleY || 1));
+            var isFrameOrWide = (
+                obj.name === 'decorative_frame' ||
+                (obj.type === 'rect' && (curW > oldW * 0.65 || curH > oldH * 0.65 || curW > oldW * 0.65 && curH <= 8))
+            );
+
+            if (isFrameOrWide) {
+                var newRectW = Math.max(4, curW * rx);
+                var newRectH = Math.max(1, curH * ry);
+                obj.set({
+                    left   : Math.round((obj.left || 0) * rx),
+                    top    : Math.round((obj.top || 0) * ry),
+                    width  : Math.round(newRectW),
+                    height : Math.round(newRectH),
+                    scaleX : 1,
+                    scaleY : 1
+                });
+            } else if (obj.type === 'line') {
+                obj.set({
+                    left   : Math.round((obj.left || 0) * rx),
+                    top    : Math.round((obj.top || 0) * ry),
+                    scaleX : (obj.scaleX || 1) * rx,
+                    scaleY : (obj.scaleY || 1) * ry
+                });
+            } else if (isTextObject(obj)) {
+                var newBoxW = obj.width ? Math.min(newW - 24, Math.max(40, Math.round(obj.width * rx))) : obj.width;
+                var newLeft = Math.round((obj.left || 0) * rx);
+                if (newBoxW && newLeft + newBoxW > newW - 8) {
+                    newLeft = Math.max(8, Math.round((newW - newBoxW) / 2));
+                }
+                obj.set({
+                    left     : newLeft,
+                    top      : Math.max(8, Math.round((obj.top || 0) * ry)),
+                    width    : newBoxW,
+                    fontSize : Math.max(8, Math.round((obj.fontSize || 16) * fontScale * 10) / 10)
+                });
+            } else {
+                var oldCx = (obj.left || 0) + curW / 2;
+                var oldCy = (obj.top || 0) + curH / 2;
+                var nextScaleX = (obj.scaleX || 1) * uScale;
+                var nextScaleY = (obj.scaleY || 1) * uScale;
+                var nextW = (obj.width || curW) * nextScaleX;
+                var nextH = (obj.height || curH) * nextScaleY;
+                obj.set({
+                    scaleX : nextScaleX,
+                    scaleY : nextScaleY,
+                    left   : Math.round(oldCx * rx - nextW / 2),
+                    top    : Math.round(oldCy * ry - nextH / 2)
+                });
+            }
+            obj.setCoords();
+        });
+
+        canvas.requestRenderAll();
     }
 
     function deleteSelected() {
@@ -1704,18 +1974,31 @@
         if (!d || !d.json) return;
         if (canvas.getObjects().length && !confirm('¿Reemplazar el diseño actual con "' + d.name + '"?')) return;
 
-        var ori = d.orientation || 'landscape';
-        $('#aura-cb-orientation').val(ori);
-        var dim = DIM[ori] || DIM.landscape;
-        docW = dim.w;
-        docH = dim.h;
-        syncDimInputs(ori);
+        var presetOri  = d.orientation || 'landscape';
+        var currentOri = $('#aura-cb-orientation').val() || 'landscape';
+        // Si el usuario ya eligió Tamaño Carta, adaptamos automáticamente el diseño A4 al Carta equivalente
+        var targetOri = presetOri;
+        if (currentOri.indexOf('letter_') === 0) {
+            targetOri = presetOri === 'portrait' ? 'letter_portrait' : 'letter_landscape';
+        }
+
+        $('#aura-cb-orientation').val(targetOri);
+        var presetDim = DIM[presetOri] || DIM.landscape;
+        var targetDim = DIM[targetOri] || DIM.landscape;
+        docW = targetDim.w;
+        docH = targetDim.h;
+        syncDimInputs(targetOri);
 
         if (!$('#aura-cb-tmpl-name').val().trim()) {
             $('#aura-cb-tmpl-name').val(d.name);
         }
 
-        restoreCanvasFromData(d.json, function () {
+        var jsonClone = $.extend(true, {}, d.json, {
+            canvasW: presetDim.w,
+            canvasH: presetDim.h
+        });
+
+        restoreCanvasFromData(jsonClone, function () {
             onSelectionCleared();
             history.push(serializeCanvas());
             historyFuture = [];
