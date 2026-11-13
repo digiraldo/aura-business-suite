@@ -1089,7 +1089,24 @@
         };
     }
 
-    function launchScannerWithTarget(cameraTarget, fallbackList) {
+    function populateCameraSelect() {
+        if (typeof Html5Qrcode === 'undefined') return;
+        Html5Qrcode.getCameras().then(function (devices) {
+            var $selWrap = $('#aura-lib-camera-select-wrap');
+            var $sel     = $('#aura-lib-camera-select').empty();
+            if (devices && devices.length > 1) {
+                $.each(devices, function (idx, cam) {
+                    var label = cam.label || ('Cámara ' + (idx + 1));
+                    $sel.append('<option value="' + escAttr(cam.id) + '">' + escHtml(label) + '</option>');
+                });
+                $selWrap.show();
+            } else {
+                $selWrap.hide();
+            }
+        }).catch(function () {});
+    }
+
+    function launchScannerWithTarget(cameraTarget, allowDeviceFallback) {
         var $status = $('#aura-lib-scanner-status');
         if (!_html5QrScanner) {
             _html5QrScanner = new Html5Qrcode('aura-lib-qr-reader');
@@ -1114,17 +1131,53 @@
             }
         ).then(function () {
             $status.text('Encuadra el código de barras ISBN dentro del recuadro.');
+            populateCameraSelect();
         }).catch(function (err) {
-            if (fallbackList && fallbackList.length > 0) {
-                var nextCam = fallbackList[0].id;
-                $('#aura-lib-camera-select').val(nextCam);
-                launchScannerWithTarget(nextCam, []);
+            if (allowDeviceFallback) {
+                Html5Qrcode.getCameras().then(function (devices) {
+                    if (devices && devices.length > 0) {
+                        var preferred = devices[0].id;
+                        $.each(devices, function (_, cam) {
+                            var lbl = (cam.label || '').toLowerCase();
+                            if (lbl.indexOf('back') !== -1 || lbl.indexOf('rear') !== -1 || lbl.indexOf('environment') !== -1 ||
+                                lbl.indexOf('iphone') !== -1 || lbl.indexOf('galaxy') !== -1 || lbl.indexOf('samsung') !== -1 ||
+                                lbl.indexOf('phone link') !== -1 || lbl.indexOf('enlace') !== -1) {
+                                preferred = cam.id;
+                                return false;
+                            }
+                        });
+                        launchScannerWithTarget(preferred, false);
+                        return;
+                    }
+                    _scannerActive = false;
+                    $status.text('No se detectó ninguna cámara disponible.');
+                    showToast('No se pudo acceder a la cámara. Revisa los permisos del navegador.', 'error');
+                }).catch(function () {
+                    _scannerActive = false;
+                    $status.text('No se pudo abrir la cámara: ' + (err && err.message ? err.message : err));
+                    showToast('No se pudo acceder a la cámara. Revisa los permisos del navegador.', 'error');
+                });
                 return;
             }
             _scannerActive = false;
             $status.text('No se pudo abrir la cámara: ' + (err && err.message ? err.message : err));
             showToast('No se pudo acceder a la cámara. Revisa los permisos o usa "Cámara del celular (QR)".', 'error');
         });
+    }
+
+    function loadHtml5QrcodeScript(callback) {
+        if (typeof Html5Qrcode !== 'undefined') {
+            callback();
+            return;
+        }
+        $.getScript('https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js')
+            .done(function () {
+                callback();
+            })
+            .fail(function () {
+                $('#aura-lib-scanner-status').text('No se pudo descargar el lector de cámara.');
+                showToast('No se pudo cargar el módulo de cámara. Verifica tu conexión.', 'error');
+            });
     }
 
     function startBarcodeScanner() {
@@ -1138,58 +1191,27 @@
 
         stopRemoteScan();
 
-        if (typeof Html5Qrcode === 'undefined') {
-            showToast('El módulo de cámara no pudo cargarse. Verifica tu conexión a internet.', 'error');
-            return;
-        }
-
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            showToast('Tu navegador o conexión (HTTP sin HTTPS) no permite cámara local. Usa "Cámara del celular (QR)".', 'error');
+            $panel.slideDown(180);
+            $status.text('El navegador bloqueó el acceso a la cámara (requiere HTTPS y permiso de cámara).');
+            showToast('Tu navegador o conexión (HTTP sin HTTPS) no permite abrir la cámara.', 'error');
             return;
         }
 
-        $panel.slideDown(180);
-        $status.text('Detectando cámaras disponibles (local, Enlace Móvil, Continuity Camera)…');
-
-        Html5Qrcode.getCameras().then(function (devices) {
-            var $selWrap = $('#aura-lib-camera-select-wrap');
-            var $sel     = $('#aura-lib-camera-select').empty();
-
-            if (devices && devices.length > 0) {
-                $.each(devices, function (idx, cam) {
-                    var label = cam.label || ('Cámara ' + (idx + 1));
-                    $sel.append('<option value="' + escAttr(cam.id) + '">' + escHtml(label) + '</option>');
-                });
-
-                if (devices.length > 1) {
-                    $selWrap.show();
-                } else {
-                    $selWrap.hide();
-                }
-
-                // Preferir cámara trasera o cámara móvil virtual (Continuity / Phone Link / Samsung)
-                var preferred = null;
-                $.each(devices, function (_, cam) {
-                    var lbl = (cam.label || '').toLowerCase();
-                    if (lbl.indexOf('back') !== -1 || lbl.indexOf('rear') !== -1 || lbl.indexOf('environment') !== -1 ||
-                        lbl.indexOf('iphone') !== -1 || lbl.indexOf('galaxy') !== -1 || lbl.indexOf('samsung') !== -1 ||
-                        lbl.indexOf('phone link') !== -1 || lbl.indexOf('enlace') !== -1) {
-                        preferred = cam.id;
-                        return false;
-                    }
-                });
-
-                var target = preferred || { facingMode: 'environment' };
-                if (preferred) $sel.val(preferred);
-                launchScannerWithTarget(target, devices);
-            } else {
-                $selWrap.hide();
-                launchScannerWithTarget({ facingMode: 'environment' }, []);
-            }
-        }).catch(function () {
-            $('#aura-lib-camera-select-wrap').hide();
-            launchScannerWithTarget({ facingMode: 'environment' }, []);
+        $panel.slideDown(180, function () {
+            try { $panel[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
         });
+        $status.text('Iniciando cámara…');
+
+        if (typeof Html5Qrcode === 'undefined') {
+            $status.text('Cargando módulo de cámara…');
+            loadHtml5QrcodeScript(function () {
+                launchScannerWithTarget({ facingMode: 'environment' }, true);
+            });
+            return;
+        }
+
+        launchScannerWithTarget({ facingMode: 'environment' }, true);
     }
 
     function switchScannerCamera(camId) {

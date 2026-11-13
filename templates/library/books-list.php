@@ -138,6 +138,9 @@ $can_loan   = current_user_can( 'aura_library_loan_create' ) || current_user_can
 </div><!-- .aura-app-wrapper -->
 
 <?php
+$books_js_ver  = file_exists( AURA_PLUGIN_DIR . 'assets/js/library-books.js' ) ? (string) filemtime( AURA_PLUGIN_DIR . 'assets/js/library-books.js' ) : AURA_VERSION;
+$books_css_ver = file_exists( AURA_PLUGIN_DIR . 'assets/css/library-books.css' ) ? (string) filemtime( AURA_PLUGIN_DIR . 'assets/css/library-books.css' ) : AURA_VERSION;
+
 wp_enqueue_script(
     'html5-qrcode',
     'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js',
@@ -153,13 +156,13 @@ wp_enqueue_script(
 wp_enqueue_script(
     'aura-lib-books',
     AURA_PLUGIN_URL . 'assets/js/library-books.js',
-    [ 'jquery', 'datatables-responsive-js', 'aura-ui-core' ],
-    AURA_VERSION, true
+    [ 'jquery', 'datatables-responsive-js', 'aura-ui-core', 'html5-qrcode' ],
+    $books_js_ver, true
 );
 wp_enqueue_style(
     'aura-lib-books-css',
     AURA_PLUGIN_URL . 'assets/css/library-books.css',
-    [ 'aura-design-system' ], AURA_VERSION
+    [ 'aura-design-system' ], $books_css_ver
 );
 // Media uploader para modal de form
 wp_enqueue_media();
