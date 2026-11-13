@@ -1742,6 +1742,58 @@ class Aura_Certificates_Admin {
                 'category' => __( 'Insignias & Iconos', 'aura-suite' ),
                 'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="40" fill="#334155" stroke="#0284c7" stroke-width="8" stroke-dasharray="14,8"/><circle cx="60" cy="60" r="26" fill="#0ea5e9"/><polyline points="46,60 56,70 76,48" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
             ],
+            // ── Perfiles & Graduados ──
+            [
+                'id'       => 'profile-male-neutral',
+                'name'     => __( 'Perfil Hombre (Neutro)', 'aura-suite' ),
+                'category' => __( 'Perfiles & Graduados', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="#e0f2fe"/><path d="M17,96 C23,82 40,78 60,78 C80,78 97,82 103,96 A56,56 0 0,1 17,96 Z" fill="#1e3a8a"/><polygon points="50,78 60,96 70,78" fill="#ffffff"/><polygon points="57,84 63,84 62,102 60,106 58,102" fill="#2563eb"/><rect x="53" y="65" width="14" height="16" rx="6" fill="#eab696"/><ellipse cx="43" cy="51" rx="3.5" ry="5" fill="#eab696"/><ellipse cx="77" cy="51" rx="3.5" ry="5" fill="#eab696"/><ellipse cx="60" cy="49" rx="17" ry="20" fill="#f5cbb0"/><path d="M43,45 C42,30 50,24 61,24 C72,24 78,31 77,45 C75,38 71,34 65,34 C57,34 51,36 43,45 Z" fill="#3b2f2f"/><circle cx="53.5" cy="49.5" r="2" fill="#1e293b"/><circle cx="66.5" cy="49.5" r="2" fill="#1e293b"/><path d="M55,58 Q60,62 65,58" fill="none" stroke="#b47b66" stroke-width="2" stroke-linecap="round"/></svg>',
+            ],
+            [
+                'id'       => 'profile-female-neutral',
+                'name'     => __( 'Perfil Mujer (Neutro)', 'aura-suite' ),
+                'category' => __( 'Perfiles & Graduados', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="#f3e8ff"/><path d="M36,52 C36,30 46,23 60,23 C74,23 84,30 84,52 L86,79 C86,83 80,86 74,84 L46,84 C40,86 34,83 34,79 Z" fill="#4a2c2a"/><path d="M17,96 C23,82 40,78 60,78 C80,78 97,82 103,96 A56,56 0 0,1 17,96 Z" fill="#6d28d9"/><path d="M48,78 L60,95 L72,78 Z" fill="#ffffff"/><rect x="54" y="66" width="12" height="15" rx="5" fill="#eab696"/><ellipse cx="60" cy="50" rx="16.5" ry="19.5" fill="#f5cbb0"/><path d="M43,46 C45,31 53,26 62,27 C70,27 76,33 77,46 C72,38 66,35 58,36 C51,37 46,41 43,46 Z" fill="#4a2c2a"/><circle cx="43.5" cy="56" r="2" fill="#eab308"/><circle cx="76.5" cy="56" r="2" fill="#eab308"/><circle cx="53.5" cy="50" r="2" fill="#1e293b"/><circle cx="66.5" cy="50" r="2" fill="#1e293b"/><path d="M55,59 Q60,63 65,59" fill="none" stroke="#c06c7a" stroke-width="2" stroke-linecap="round"/></svg>',
+            ],
+            [
+                'id'       => 'profile-male-graduate',
+                'name'     => __( 'Estudiante Hombre Graduado', 'aura-suite' ),
+                'category' => __( 'Perfiles & Graduados', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="#dbeafe"/><path d="M20,99 C26,85 42,81 60,81 C78,81 94,85 100,99 A56,56 0 0,1 20,99 Z" fill="#1e293b"/><polygon points="44,82 52,81 56,115 47,114" fill="#2563eb"/><polygon points="76,82 68,81 64,115 73,114" fill="#2563eb"/><polygon points="52,81 60,96 68,81" fill="#ffffff"/><rect x="54" y="70" width="12" height="14" rx="5" fill="#eab696"/><ellipse cx="44" cy="56" rx="3.2" ry="4.5" fill="#eab696"/><ellipse cx="76" cy="56" rx="3.2" ry="4.5" fill="#eab696"/><ellipse cx="60" cy="56" rx="16" ry="18" fill="#f5cbb0"/><path d="M44,50 C45,42 52,39 60,39 C68,39 75,42 76,50 C72,46 66,44 60,44 C54,44 48,46 44,50 Z" fill="#3b2f2f"/><circle cx="54" cy="56.5" r="1.9" fill="#1e293b"/><circle cx="66" cy="56.5" r="1.9" fill="#1e293b"/><path d="M55,64 Q60,68 65,64" fill="none" stroke="#b47b66" stroke-width="2" stroke-linecap="round"/><path d="M43,39 L77,39 L75,48 C66,51 54,51 45,48 Z" fill="#1e293b"/><polygon points="60,18 92,30 60,42 28,30" fill="#0f172a"/><circle cx="60" cy="30" r="2.4" fill="#eab308"/><path d="M60,30 L85,35 L86,52" fill="none" stroke="#eab308" stroke-width="2.4" stroke-linecap="round"/><circle cx="86" cy="54" r="3" fill="#f59e0b"/></svg>',
+            ],
+            [
+                'id'       => 'profile-female-graduate',
+                'name'     => __( 'Estudiante Mujer Graduada', 'aura-suite' ),
+                'category' => __( 'Perfiles & Graduados', 'aura-suite' ),
+                'svg'      => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="#ede9fe"/><path d="M38,54 C38,38 48,34 60,34 C72,34 82,38 82,54 L84,82 C84,86 78,88 73,86 L47,86 C42,88 36,86 36,82 Z" fill="#4a2c2a"/><path d="M20,99 C26,85 42,81 60,81 C78,81 94,85 100,99 A56,56 0 0,1 20,99 Z" fill="#1e293b"/><polygon points="44,82 52,81 56,115 47,114" fill="#7c3aed"/><polygon points="76,82 68,81 64,115 73,114" fill="#7c3aed"/><polygon points="52,81 60,96 68,81" fill="#ffffff"/><rect x="54" y="70" width="12" height="14" rx="5" fill="#eab696"/><ellipse cx="60" cy="56" rx="15.5" ry="17.5" fill="#f5cbb0"/><path d="M44.5,51 C46,42 53,39 60,39 C67,39 74,42 75.5,51 C70,45 64,43 58,44 C52,44 48,47 44.5,51 Z" fill="#4a2c2a"/><circle cx="44" cy="61" r="1.9" fill="#eab308"/><circle cx="76" cy="61" r="1.9" fill="#eab308"/><circle cx="54" cy="56.5" r="1.9" fill="#1e293b"/><circle cx="66" cy="56.5" r="1.9" fill="#1e293b"/><path d="M55,64.5 Q60,68 65,64.5" fill="none" stroke="#c06c7a" stroke-width="2" stroke-linecap="round"/><path d="M43,39 L77,39 L75,48 C66,51 54,51 45,48 Z" fill="#1e293b"/><polygon points="60,18 92,30 60,42 28,30" fill="#0f172a"/><circle cx="60" cy="30" r="2.4" fill="#eab308"/><path d="M60,30 L85,35 L86,52" fill="none" stroke="#eab308" stroke-width="2.4" stroke-linecap="round"/><circle cx="86" cy="54" r="3" fill="#f59e0b"/></svg>',
+            ],
         ];
+    }
+
+    /**
+     * Devuelve el SVG de avatar de perfil por defecto cuando el destinatario no tiene foto.
+     *
+     * @param string $preset_id ID del clipart o 'auto' / 'none'.
+     * @param string $gender    Género opcional del estudiante ('M', 'F', etc.).
+     * @return string Markup SVG o '' si está configurado como 'none'.
+     */
+    public static function get_default_profile_avatar_svg( string $preset_id = 'profile-male-graduate', string $gender = '' ): string {
+        $preset_id = sanitize_key( $preset_id );
+        if ( $preset_id === 'none' ) {
+            return '';
+        }
+
+        if ( $preset_id === '' || $preset_id === 'auto' ) {
+            $g = strtoupper( trim( $gender ) );
+            $preset_id = ( $g === 'F' ) ? 'profile-female-graduate' : 'profile-male-graduate';
+        }
+
+        foreach ( self::get_clipart_library() as $item ) {
+            if ( ( $item['id'] ?? '' ) === $preset_id && ! empty( $item['svg'] ) ) {
+                return (string) $item['svg'];
+            }
+        }
+
+        return '';
     }
 }

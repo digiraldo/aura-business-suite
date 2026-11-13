@@ -690,7 +690,7 @@
                     $('#aura-signer-counterparty-clear').hide();
                 }
 
-                $('#aura-signer-cancel-btn').show();
+                $('#aura-signer-cancel-btn, #aura-signer-delete-editing-btn').show();
                 $('html, body').animate({ scrollTop: signersPage.$form.offset().top - 40 }, 300);
             });
 
@@ -699,18 +699,53 @@
                 signersPage.resetForm();
             });
 
-            // Eliminar firmante
-            $(document).on('click', '.aura-signer-delete-btn', function () {
-                if (!confirm('¿Eliminar este firmante?')) return;
-                var $btn = $(this);
-                var id   = $btn.data('id');
+            function performDeleteSigner(id, label, $btn) {
+                if (!id) return;
+                var msg = label
+                    ? '¿Eliminar al firmante "' + label + '"? Esta acción no se puede deshacer.'
+                    : '¿Eliminar este firmante? Esta acción no se puede deshacer.';
+                if (!confirm(msg)) return;
+                btnLoading($btn);
                 ajaxPost('aura_cert_delete_signer', { id: id }).done(function (res) {
-                    if (res.success) {
-                        $btn.closest('tr').fadeOut(300, function () { $(this).remove(); });
+                    if (res && res.success) {
+                        if (signersPage.editingId === id) {
+                            signersPage.resetForm();
+                        }
+                        var $row = signersPage.$table.find('tr[data-id="' + id + '"]');
+                        if ($row.length) {
+                            $row.fadeOut(220, function () {
+                                location.reload();
+                            });
+                        } else {
+                            location.reload();
+                        }
                     } else {
-                        alert(extractError(res, 'Error al eliminar.'));
+                        alert(extractError(res, 'Error al eliminar el firmante.'));
+                        btnReset($btn);
                     }
+                }).fail(function (xhr) {
+                    var errRes = xhr && xhr.responseJSON ? xhr.responseJSON : null;
+                    alert(extractError(errRes, 'Error de conexión al eliminar firmante.'));
+                    btnReset($btn);
                 });
+            }
+
+            // Eliminar firmante desde la tabla
+            $(document).on('click', '.aura-signer-delete-btn', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var $btn = $(this);
+                var id   = parseInt($btn.attr('data-id'), 10) || parseInt($btn.data('id'), 10) || 0;
+                var name = $btn.attr('data-name') || '';
+                performDeleteSigner(id, name, $btn);
+            });
+
+            // Eliminar firmante actualmente en edición
+            $(document).on('click', '#aura-signer-delete-editing-btn', function (e) {
+                e.preventDefault();
+                var id   = signersPage.editingId || parseInt($('#aura-signer-id').val(), 10) || 0;
+                var name = $('#aura-signer-name').val().trim();
+                performDeleteSigner(id, name, $(this));
             });
 
             // Activar / desactivar firmante
@@ -751,7 +786,7 @@
             $('#aura-signer-signature-url').val('');
             $('#aura-signer-wp-user-id').val('0');
             $('#aura-signer-third-party-id').val('0');
-            $('#aura-signer-counterparty-preview, #aura-signer-counterparty-clear, #aura-signer-cancel-btn').hide();
+            $('#aura-signer-counterparty-preview, #aura-signer-counterparty-clear, #aura-signer-cancel-btn, #aura-signer-delete-editing-btn').hide();
             $('#aura-signer-sig-preview').html('<span style="color:#aaa;">Sin imagen</span>');
         }
     };

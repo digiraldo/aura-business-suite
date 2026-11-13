@@ -490,6 +490,18 @@ document.documentElement.classList.add('aura-cb-fullscreen-mode');
                                 </div>
                             </div>
 
+                            <div id="aura-cb-photo-default-row" style="margin-top:8px;">
+                                <label style="font-size:11px;display:block;"><?php esc_html_e( 'Avatar si el estudiante no tiene foto:', 'aura-suite' ); ?>
+                                    <select id="aura-cb-photo-default-avatar" class="aura-input" style="width:100%;margin-top:3px;">
+                                        <option value="auto"><?php esc_html_e( 'Graduado / Auto por género (Cliparts)', 'aura-suite' ); ?></option>
+                                        <option value="profile-male-graduate"><?php esc_html_e( 'Estudiante Hombre Graduado', 'aura-suite' ); ?></option>
+                                        <option value="profile-female-graduate"><?php esc_html_e( 'Estudiante Mujer Graduada', 'aura-suite' ); ?></option>
+                                        <option value="profile-male-neutral"><?php esc_html_e( 'Perfil Hombre (Neutro)', 'aura-suite' ); ?></option>
+                                        <option value="profile-female-neutral"><?php esc_html_e( 'Perfil Mujer (Neutro)', 'aura-suite' ); ?></option>
+                                        <option value="none"><?php esc_html_e( 'Sin avatar (ocultar si no tiene foto)', 'aura-suite' ); ?></option>
+                                    </select>
+                                </label>
+                            </div>
                             <div style="display:flex;gap:4px;margin-top:8px;">
                                 <button type="button" id="aura-cb-photo-sample-btn" class="button button-small" style="flex:1;" title="<?php esc_attr_e( 'Elegir una foto de muestra o fija desde la biblioteca', 'aura-suite' ); ?>">
                                     🖼 <?php esc_html_e( 'Foto de muestra', 'aura-suite' ); ?>

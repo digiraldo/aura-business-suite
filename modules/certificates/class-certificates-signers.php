@@ -153,15 +153,21 @@ class Aura_Certificates_Signers {
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_certificate_signers';
-        $id    = absint( $_POST['id'] ?? 0 );
+        $id    = absint( $_POST['id'] ?? $_REQUEST['id'] ?? 0 );
 
         if ( ! $id ) {
             wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ], 400 );
         }
 
-        $wpdb->delete( $table, [ 'id' => $id ], [ '%d' ] );
+        $deleted = $wpdb->delete( $table, [ 'id' => $id ], [ '%d' ] );
+        if ( false === $deleted ) {
+            wp_send_json_error( [ 'message' => __( 'No se pudo eliminar el firmante en la base de datos.', 'aura-suite' ) ], 500 );
+        }
 
-        wp_send_json_success( [ 'message' => __( 'Firmante eliminado.', 'aura-suite' ) ] );
+        wp_send_json_success( [
+            'message' => __( 'Firmante eliminado.', 'aura-suite' ),
+            'id'      => $id,
+        ] );
     }
 
     // ─────────────────────────────────────────────────────────────

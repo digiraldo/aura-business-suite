@@ -83,6 +83,9 @@ $active_cnt = count( array_filter( $signers, fn( $s ) => $s['is_active'] ) );
             <button type="button" id="aura-signer-cancel-btn" class="button" style="display:none;">
                 <?php esc_html_e( 'Cancelar edición', 'aura-suite' ); ?>
             </button>
+            <button type="button" id="aura-signer-delete-editing-btn" class="button" style="display:none;color:#b91c1c;border-color:#fca5a5;background:#fef2f2;margin-left:auto;">
+                🗑 <?php esc_html_e( 'Eliminar firmante', 'aura-suite' ); ?>
+            </button>
         </div>
         <input type="hidden" id="aura-signer-id" value="0">
     </form>
@@ -147,8 +150,12 @@ $active_cnt = count( array_filter( $signers, fn( $s ) => $s['is_active'] ) );
                             <?php echo $s['is_active'] ? esc_html__( 'Desactivar', 'aura-suite' ) : esc_html__( 'Activar', 'aura-suite' ); ?>
                         </button>
                         <button type="button" class="button button-small aura-signer-delete-btn"
-                                data-id="<?php echo esc_attr( $s['id'] ); ?>">
-                            🗑
+                                data-id="<?php echo esc_attr( $s['id'] ); ?>"
+                                data-name="<?php echo esc_attr( $s['name'] ); ?>"
+                                title="<?php esc_attr_e( 'Eliminar firmante', 'aura-suite' ); ?>"
+                                aria-label="<?php esc_attr_e( 'Eliminar firmante', 'aura-suite' ); ?>"
+                                style="color:#b91c1c;border-color:#fca5a5;background:#fef2f2;">
+                            🗑 <?php esc_html_e( 'Eliminar', 'aura-suite' ); ?>
                         </button>
                     </td>
                 </tr>

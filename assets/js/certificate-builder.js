@@ -21,7 +21,7 @@
     var CUSTOM_PROPS = [
         'name', 'auraElementType', 'signerSlot',
         'auraSvgMarkup', 'auraSvgOriginal', 'auraClipartLabel',
-        'auraPhotoShape', 'auraPhotoRadius', 'auraPhotoPad', 'auraPhotoBorderStyle', 'auraCustomPhotoSrc',
+        'auraPhotoShape', 'auraPhotoRadius', 'auraPhotoPad', 'auraPhotoBorderStyle', 'auraCustomPhotoSrc', 'auraPhotoDefaultAvatar',
         'rx', 'ry', 'strokeDashArray', 'auraLocked', 'shadow', 'perPixelTargetFind', 'visible'
     ];
 
@@ -539,6 +539,8 @@
         $('#aura-cb-photo-border-color').val(bColor);
         $('#aura-cb-photo-bg-color').val(bgCol);
         $('#aura-cb-photo-pad').val(pad);
+        $('#aura-cb-photo-default-row').toggle(isPhotoObject(obj));
+        $('#aura-cb-photo-default-avatar').val(obj.auraPhotoDefaultAvatar || 'auto');
         $('#aura-cb-photo-sample-clear').toggle(!!obj.auraCustomPhotoSrc);
     }
 
@@ -1805,12 +1807,49 @@
         ctx.closePath();
     }
 
+    var _defaultAvatarCache = {};
+    function getDefaultAvatarDataUrl(presetId) {
+        var pid = presetId || 'auto';
+        if (pid === 'none') return '';
+        if (pid === 'auto') pid = 'profile-male-graduate';
+        if (_defaultAvatarCache[pid]) return _defaultAvatarCache[pid];
+
+        var items = CB.clipartLibrary || [];
+        var item = null;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i] && items[i].id === pid) {
+                item = items[i];
+                break;
+            }
+        }
+        if (!item || !item.svg) return '';
+
+        var bgMap = {
+            'profile-male-neutral'    : '#e0f2fe',
+            'profile-female-neutral'  : '#f3e8ff',
+            'profile-male-graduate'   : '#dbeafe',
+            'profile-female-graduate' : '#ede9fe'
+        };
+        var bg = bgMap[pid] || '#e2e8f0';
+        var svg = String(item.svg)
+            .replace(/<svg\b([^>]*)>/i, function (_, attrs) {
+                var cleanAttrs = attrs.replace(/\s+(width|height)=["'][^"']*["']/gi, '');
+                return '<svg width="120" height="120"' + cleanAttrs + '><rect x="0" y="0" width="120" height="120" fill="' + bg + '"/>';
+            });
+        var url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        _defaultAvatarCache[pid] = url;
+        return url;
+    }
+
     function decoratePhotoObject(obj) {
         if (!obj || obj._auraPhotoDecorated) return;
         obj._auraPhotoDecorated = true;
 
         function syncSampleImg(target) {
             var src = target.auraCustomPhotoSrc || '';
+            if (!src && isPhotoObject(target)) {
+                src = getDefaultAvatarDataUrl(target.auraPhotoDefaultAvatar || 'auto');
+            }
             if (!src) {
                 target._sampleImgEl = null;
                 target._sampleImgSrc = '';
@@ -2023,6 +2062,7 @@
             auraPhotoRadius      : 22,
             auraPhotoPad         : 4,
             auraPhotoBorderStyle : 'double',
+            auraPhotoDefaultAvatar : 'auto',
             shadow               : new fabric.Shadow({ color: 'rgba(15, 23, 42, 0.25)', blur: 12, offsetX: 0, offsetY: 4 })
         });
         decoratePhotoObject(obj);
@@ -2761,6 +2801,13 @@
         obj.set('shadow', sh);
         $('#aura-cb-obj-shadow').prop('checked', !!sh);
         canvas.requestRenderAll();
+        saveHistoryStep();
+    });
+
+    $(document).on('change', '#aura-cb-photo-default-avatar', function () {
+        var obj = canvas.getActiveObject();
+        if (!obj) return;
+        applyPhotoStyleToObject(obj, { auraPhotoDefaultAvatar: $(this).val() || 'auto' });
         saveHistoryStep();
     });
 

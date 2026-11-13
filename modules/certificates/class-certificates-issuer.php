@@ -312,6 +312,7 @@ class Aura_Certificates_Issuer {
             'student_photo_url'    => ! empty( $extra['student_photo_url'] )
                                         ? (string) $extra['student_photo_url']
                                         : (string) ( $student->photo_url ?? '' ),
+            'recipient_gender'     => (string) ( $student->gender ?? '' ),
         ];
 
         $result = self::create_and_store_certificate( $record_data, $vars_data, $template_id, $extra );
@@ -489,6 +490,12 @@ class Aura_Certificates_Issuer {
                 absint( $record_data['student_id'] ?? 0 ),
                 absint( $record_data['wp_user_id'] ?? 0 ),
                 (string) ( $extra['student_photo_url'] ?? '' )
+            );
+        }
+        if ( empty( $vars_data['recipient_gender'] ) ) {
+            $vars_data['recipient_gender'] = self::resolve_recipient_gender(
+                absint( $record_data['student_id'] ?? 0 ),
+                absint( $record_data['wp_user_id'] ?? 0 )
             );
         }
 
@@ -1229,6 +1236,18 @@ class Aura_Certificates_Issuer {
             }
             $photo_src = $raw_photo !== '' ? self::resolve_image_src( $raw_photo ) : '';
             if ( $photo_src === '' ) {
+                $default_avatar = (string) ( $obj['auraPhotoDefaultAvatar'] ?? 'auto' );
+                if ( $default_avatar !== 'none' && class_exists( 'Aura_Certificates_Admin' ) ) {
+                    $avatar_svg = Aura_Certificates_Admin::get_default_profile_avatar_svg(
+                        $default_avatar,
+                        (string) ( $vars_data['recipient_gender'] ?? '' )
+                    );
+                    if ( $avatar_svg !== '' ) {
+                        $photo_src = '__inline_svg__:' . $avatar_svg;
+                    }
+                }
+            }
+            if ( $photo_src === '' ) {
                 return '';
             }
             return self::render_framed_image_html( $photo_src, $obj, $style, max( 32, $w ), max( 32, $h ), $scaleX );
@@ -1674,10 +1693,22 @@ class Aura_Certificates_Issuer {
             }
         }
 
-        $img_tag = sprintf(
-            '<image href="%s" xlink:href="%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)" />',
-            esc_attr( $src ), esc_attr( $src ), $img_x, $img_y, $img_w, $img_h, esc_attr( $clip_id )
-        );
+        if ( str_starts_with( $src, '__inline_svg__:' ) ) {
+            $raw_svg   = substr( $src, strlen( '__inline_svg__:' ) );
+            $inner_svg = preg_replace( '/^\s*<svg\b[^>]*>|<\/svg>\s*$/i', '', trim( $raw_svg ) );
+            $sc        = round( min( $img_w, $img_h ) / 120.0, 4 );
+            $tx        = round( $img_x + ( $img_w - 120.0 * $sc ) / 2.0, 2 );
+            $ty        = round( $img_y + ( $img_h - 120.0 * $sc ) / 2.0, 2 );
+            $img_tag   = sprintf(
+                '<g transform="translate(%s %s) scale(%s %s)" clip-path="url(#%s)">%s</g>',
+                $tx, $ty, $sc, $sc, esc_attr( $clip_id ), $inner_svg
+            );
+        } else {
+            $img_tag = sprintf(
+                '<image href="%s" xlink:href="%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)" />',
+                esc_attr( $src ), esc_attr( $src ), $img_x, $img_y, $img_w, $img_h, esc_attr( $clip_id )
+            );
+        }
 
         return sprintf(
             '<div style="%swidth:%spx;height:%spx;"><svg width="%s" height="%s" viewBox="0 0 %s %s" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">%s%s%s%s%s</svg></div>',
@@ -1736,6 +1767,32 @@ class Aura_Certificates_Issuer {
                         return $att_url;
                     }
                 }
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * Resuelve el género del estudiante o destinatario para seleccionar el avatar predeterminado.
+     */
+    private static function resolve_recipient_gender( int $student_id = 0, int $wp_user_id = 0 ): string {
+        global $wpdb;
+        $students_table = $wpdb->prefix . 'aura_students';
+
+        if ( $student_id > 0 ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $g = $wpdb->get_var( $wpdb->prepare( "SELECT gender FROM {$students_table} WHERE id = %d LIMIT 1", $student_id ) );
+            if ( is_string( $g ) && $g !== '' ) {
+                return $g;
+            }
+        }
+
+        if ( $wp_user_id > 0 ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $g = $wpdb->get_var( $wpdb->prepare( "SELECT gender FROM {$students_table} WHERE wp_user_id = %d LIMIT 1", $wp_user_id ) );
+            if ( is_string( $g ) && $g !== '' ) {
+                return $g;
             }
         }
 
