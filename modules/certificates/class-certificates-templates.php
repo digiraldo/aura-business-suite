@@ -44,6 +44,7 @@ class Aura_Certificates_Templates {
             [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{documento}',         'label' => __( 'Documento / Cédula / ID', 'aura-suite' ), 'example' => 'CC 1020304050' ],
             [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{correo}',            'label' => __( 'Correo electrónico', 'aura-suite' ),        'example' => 'maria@ejemplo.com' ],
             [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{tipo_destinatario}', 'label' => __( 'Tipo (Estudiante/Usuario/Tercero)', 'aura-suite' ), 'example' => 'Estudiante' ],
+            [ 'group' => __( 'Destinatario', 'aura-suite' ), 'key' => '{foto_estudiante}',   'label' => __( 'Foto de perfil del estudiante (Elemento)', 'aura-suite' ), 'example' => '[Foto Perfil]' ],
 
             // Curso / Programa
             [ 'group' => __( 'Programa y Logro', 'aura-suite' ), 'key' => '{curso}',         'label' => __( 'Nombre del curso / evento', 'aura-suite' ), 'example' => 'Liderazgo Ministerial' ],

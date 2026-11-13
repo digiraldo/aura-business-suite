@@ -151,6 +151,9 @@ document.documentElement.classList.add('aura-cb-fullscreen-mode');
                         <button type="button" class="aura-cb-elem-btn" data-type="qr">
                             <span>🔲</span><?php esc_html_e( 'Código QR', 'aura-suite' ); ?>
                         </button>
+                        <button type="button" class="aura-cb-elem-btn aura-cb-elem-btn--photo" data-type="student-photo" title="<?php esc_attr_e( 'Foto de perfil dinámica del estudiante (Cuadrada, Redondeada o Circular con marcos y sombras)', 'aura-suite' ); ?>">
+                            <span>👤</span><?php esc_html_e( 'Foto Estudiante', 'aura-suite' ); ?>
+                        </button>
                         <button type="button" class="aura-cb-elem-btn" data-type="signature-block">
                             <span>✍</span><?php esc_html_e( '1 Firma', 'aura-suite' ); ?>
                         </button>
@@ -214,12 +217,18 @@ document.documentElement.classList.add('aura-cb-fullscreen-mode');
                     </div>
                 </div>
 
-                <!-- Pane 3: Diseños Base -->
+                <!-- Pane 4: Diseños Base -->
                 <div class="aura-cb-side-pane" data-lpane-content="designs">
                     <div class="aura-cb-pane-label"><?php esc_html_e( 'Plantillas de Inicio Rápido', 'aura-suite' ); ?></div>
-                    <p class="aura-cb-help-tiny" style="margin-bottom:8px;">
-                        <?php esc_html_e( 'Haz clic en un diseño base para cargarlo en el lienzo (incluye diseño de 4 firmas).', 'aura-suite' ); ?>
+                    <p class="aura-cb-help-tiny" style="margin-bottom:6px;">
+                        <?php esc_html_e( '13 diseños profesionales adaptables a A4 y Carta (incluyen foto de estudiante y hasta 4 firmas).', 'aura-suite' ); ?>
                     </p>
+                    <div class="aura-cb-preset-filter-bar" id="aura-cb-preset-filters">
+                        <button type="button" class="aura-cb-preset-filter is-active" data-filter="all"><?php esc_html_e( 'Todas', 'aura-suite' ); ?></button>
+                        <button type="button" class="aura-cb-preset-filter" data-filter="photo">👤 <?php esc_html_e( 'Con Foto', 'aura-suite' ); ?></button>
+                        <button type="button" class="aura-cb-preset-filter" data-filter="landscape"><?php esc_html_e( 'Horizontal', 'aura-suite' ); ?></button>
+                        <button type="button" class="aura-cb-preset-filter" data-filter="portrait"><?php esc_html_e( 'Vertical', 'aura-suite' ); ?></button>
+                    </div>
                     <div id="aura-cb-prebuilt-list" class="aura-cb-prebuilt-list">
                         <!-- Poblado por JS desde auraCertBuilder.prebuiltDesigns -->
                     </div>
@@ -411,6 +420,83 @@ document.documentElement.classList.add('aura-cb-fullscreen-mode');
                                 <label id="aura-cb-obj-rx-wrap" style="font-size:11px;"><?php esc_html_e( 'Esquinas (rx)', 'aura-suite' ); ?>
                                     <input type="number" id="aura-cb-obj-rx" class="aura-input" style="width:100%;" min="0" max="150" value="0">
                                 </label>
+                            </div>
+                        </div>
+
+                        <!-- Propiedades de Foto de Perfil / Imagen con Marco, Forma y Sombra -->
+                        <div id="aura-cb-photo-props" class="aura-cb-subblock" style="display:none;">
+                            <span class="aura-cb-sublabel">👤 <?php esc_html_e( 'Forma, Marco y Sombra de Foto', 'aura-suite' ); ?></span>
+                            <p class="aura-cb-help-tiny" id="aura-cb-photo-hint">
+                                <?php esc_html_e( 'Al emitir el certificado se inserta automáticamente la foto del estudiante con este estilo:', 'aura-suite' ); ?>
+                            </p>
+
+                            <div class="aura-cb-photo-shape-bar" role="group" aria-label="<?php esc_attr_e( 'Forma de la foto', 'aura-suite' ); ?>">
+                                <button type="button" class="aura-cb-photo-shape-btn" data-photo-shape="square" title="<?php esc_attr_e( 'Cuadrada (esquinas rectas)', 'aura-suite' ); ?>">
+                                    <span class="aura-cb-shape-ico is-square"></span>
+                                    <?php esc_html_e( 'Cuadrada', 'aura-suite' ); ?>
+                                </button>
+                                <button type="button" class="aura-cb-photo-shape-btn" data-photo-shape="rounded" title="<?php esc_attr_e( 'Cuadrada con bordes redondeados', 'aura-suite' ); ?>">
+                                    <span class="aura-cb-shape-ico is-rounded"></span>
+                                    <?php esc_html_e( 'Redondeada', 'aura-suite' ); ?>
+                                </button>
+                                <button type="button" class="aura-cb-photo-shape-btn is-active" data-photo-shape="circle" title="<?php esc_attr_e( 'Completamente circular', 'aura-suite' ); ?>">
+                                    <span class="aura-cb-shape-ico is-circle"></span>
+                                    <?php esc_html_e( 'Circular', 'aura-suite' ); ?>
+                                </button>
+                            </div>
+
+                            <div id="aura-cb-photo-radius-row" style="margin-top:8px;display:none;">
+                                <label style="font-size:11px;display:block;"><?php esc_html_e( 'Redondeo de esquinas (px)', 'aura-suite' ); ?>
+                                    <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+                                        <input type="range" id="aura-cb-photo-radius-range" min="4" max="80" step="2" value="20" style="flex:1;">
+                                        <input type="number" id="aura-cb-photo-radius" class="aura-input" min="0" max="120" value="20" style="width:58px;">
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+                                <label style="font-size:11px;"><?php esc_html_e( 'Estilo de marco', 'aura-suite' ); ?>
+                                    <select id="aura-cb-photo-border-style" class="aura-input" style="width:100%;">
+                                        <option value="solid"><?php esc_html_e( 'Sólido Clásico', 'aura-suite' ); ?></option>
+                                        <option value="double"><?php esc_html_e( 'Doble Anillo VIP', 'aura-suite' ); ?></option>
+                                        <option value="dashed"><?php esc_html_e( 'Punteado / Sello', 'aura-suite' ); ?></option>
+                                        <option value="none"><?php esc_html_e( 'Sin marco', 'aura-suite' ); ?></option>
+                                    </select>
+                                </label>
+                                <label style="font-size:11px;"><?php esc_html_e( 'Grosor marco (px)', 'aura-suite' ); ?>
+                                    <input type="number" id="aura-cb-photo-border-width" class="aura-input" style="width:100%;" min="0" max="24" step="0.5" value="4">
+                                </label>
+                            </div>
+
+                            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px;align-items:end;">
+                                <label style="font-size:11px;"><?php esc_html_e( 'Color marco', 'aura-suite' ); ?>
+                                    <input type="color" id="aura-cb-photo-border-color" value="#c9a84c" style="width:100%;height:28px;padding:1px;margin-top:2px;">
+                                </label>
+                                <label style="font-size:11px;"><?php esc_html_e( 'Fondo / Aro', 'aura-suite' ); ?>
+                                    <input type="color" id="aura-cb-photo-bg-color" value="#ffffff" style="width:100%;height:28px;padding:1px;margin-top:2px;">
+                                </label>
+                                <label style="font-size:11px;"><?php esc_html_e( 'Margen int.', 'aura-suite' ); ?>
+                                    <input type="number" id="aura-cb-photo-pad" class="aura-input" style="width:100%;" min="0" max="24" step="1" value="4" title="<?php esc_attr_e( 'Espacio interior entre el marco y la foto (px)', 'aura-suite' ); ?>">
+                                </label>
+                            </div>
+
+                            <div style="margin-top:8px;">
+                                <span style="font-size:11px;color:var(--cert-gray-600);display:block;margin-bottom:4px;"><?php esc_html_e( 'Sombra y Elevación:', 'aura-suite' ); ?></span>
+                                <div class="aura-cb-photo-shadow-bar">
+                                    <button type="button" class="aura-cb-shadow-preset" data-shadow-preset="none"><?php esc_html_e( 'Ninguna', 'aura-suite' ); ?></button>
+                                    <button type="button" class="aura-cb-shadow-preset" data-shadow-preset="soft"><?php esc_html_e( 'Suave', 'aura-suite' ); ?></button>
+                                    <button type="button" class="aura-cb-shadow-preset" data-shadow-preset="medium"><?php esc_html_e( 'Media', 'aura-suite' ); ?></button>
+                                    <button type="button" class="aura-cb-shadow-preset" data-shadow-preset="deep"><?php esc_html_e( 'Profunda', 'aura-suite' ); ?></button>
+                                </div>
+                            </div>
+
+                            <div style="display:flex;gap:4px;margin-top:8px;">
+                                <button type="button" id="aura-cb-photo-sample-btn" class="button button-small" style="flex:1;" title="<?php esc_attr_e( 'Elegir una foto de muestra o fija desde la biblioteca', 'aura-suite' ); ?>">
+                                    🖼 <?php esc_html_e( 'Foto de muestra', 'aura-suite' ); ?>
+                                </button>
+                                <button type="button" id="aura-cb-photo-sample-clear" class="button button-small" style="display:none;color:#dc2626;" title="<?php esc_attr_e( 'Restaurar avatar dinámico', 'aura-suite' ); ?>">
+                                    ↺
+                                </button>
                             </div>
                         </div>
 

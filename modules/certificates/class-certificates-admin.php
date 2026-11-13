@@ -351,215 +351,240 @@ class Aura_Certificates_Admin {
     private static function get_prebuilt_designs(): array {
         return [
             self::preset_diploma_clasico_dorado(),
-            self::preset_moderno_minimalista(),
-            self::preset_participacion(),
+            self::preset_credencial_academica_foto(),
             self::preset_academico_azul_real(),
+            self::preset_ministerial_liderazgo(),
+            self::preset_moderno_minimalista(),
             self::preset_corporativo_oscuro_vip(),
-            self::preset_diploma_solemne_vertical(),
-            self::preset_reconocimiento_honorifico(),
+            self::preset_participacion(),
             self::preset_constancia_taller(),
             self::preset_institucional_4_firmas(),
+            self::preset_diploma_solemne_vertical(),
+            self::preset_ejecutivo_foto_vertical(),
+            self::preset_reconocimiento_honorifico(),
+            self::preset_gala_excelencia_carta(),
         ];
     }
 
-    // ─── Diploma Clásico Dorado ───────────────────────────────────
+    // ─── 1. Diploma Clásico Dorado (A4 Landscape) ─────────────────
     private static function preset_diploma_clasico_dorado(): array {
-        $w = 1122;  // A4 landscape, 96 dpi
+        $w = 1122;
         $h = 794;
 
         $objects = [
-            // ── Esquinas doradas (4 cuadrados decorativos) ──────
-            [ 'type' => 'rect', 'left' => 0,      'top' => 0,      'width' => 50, 'height' => 50, 'fill' => '#B8860B', 'stroke' => null ],
-            [ 'type' => 'rect', 'left' => $w - 50, 'top' => 0,      'width' => 50, 'height' => 50, 'fill' => '#B8860B', 'stroke' => null ],
-            [ 'type' => 'rect', 'left' => 0,      'top' => $h - 50, 'width' => 50, 'height' => 50, 'fill' => '#B8860B', 'stroke' => null ],
-            [ 'type' => 'rect', 'left' => $w - 50,'top' => $h - 50, 'width' => 50, 'height' => 50, 'fill' => '#B8860B', 'stroke' => null ],
+            // ── Marco exterior e interior (click-through) ────────
+            [ 'type' => 'rect', 'left' => 22, 'top' => 22, 'width' => $w - 44, 'height' => $h - 44,
+              'fill' => 'transparent', 'stroke' => '#B8860B', 'strokeWidth' => 4, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+            [ 'type' => 'rect', 'left' => 34, 'top' => 34, 'width' => $w - 68, 'height' => $h - 68,
+              'fill' => 'transparent', 'stroke' => '#D4AA4A', 'strokeWidth' => 1.5, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
 
-            // ── Marco exterior e interior ────────────────────────
-            [ 'type' => 'rect', 'left' => 12, 'top' => 12,
-              'width' => $w - 24, 'height' => $h - 24,
-              'fill' => 'rgba(0,0,0,0)', 'stroke' => '#B8860B', 'strokeWidth' => 5 ],
-            [ 'type' => 'rect', 'left' => 22, 'top' => 22,
-              'width' => $w - 44, 'height' => $h - 44,
-              'fill' => 'rgba(0,0,0,0)', 'stroke' => '#D4AA4A', 'strokeWidth' => 1.5 ],
+            // ── Esquinas ornamentales alineadas al marco ─────────
+            [ 'type' => 'rect', 'left' => 18,      'top' => 18,      'width' => 24, 'height' => 24, 'fill' => '#B8860B', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => $w - 42, 'top' => 18,      'width' => 24, 'height' => 24, 'fill' => '#B8860B', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => 18,      'top' => $h - 42, 'width' => 24, 'height' => 24, 'fill' => '#B8860B', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => $w - 42, 'top' => $h - 42, 'width' => 24, 'height' => 24, 'fill' => '#B8860B', 'stroke' => null ],
 
-            // ── Título DIPLOMA ────────────────────────────────────
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 62,
-              'width' => 1000, 'text' => 'D I P L O M A',
-              'fontSize' => 72, 'fontFamily' => 'Times New Roman',
-              'fontWeight' => 'bold', 'fill' => '#B8860B',
-              'textAlign' => 'center', 'charSpacing' => 250 ],
+            // ── Institución superior ─────────────────────────────
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 58, 'width' => $w - 160,
+              'text' => '{organizacion}', 'fontSize' => 16, 'fontFamily' => 'Cinzel',
+              'fontWeight' => 'bold', 'fill' => '#7B6040', 'textAlign' => 'center', 'charSpacing' => 200 ],
+
+            // ── Título DIPLOMA ───────────────────────────────────
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 88, 'width' => $w - 160,
+              'text' => 'D I P L O M A', 'fontSize' => 58, 'fontFamily' => 'Times New Roman',
+              'fontWeight' => 'bold', 'fill' => '#B8860B', 'textAlign' => 'center', 'charSpacing' => 180 ],
 
             // ── Separador dorado bajo título ─────────────────────
-            [ 'type' => 'rect', 'left' => 261, 'top' => 157, 'width' => 600, 'height' => 3,
+            [ 'type' => 'rect', 'left' => 331, 'top' => 164, 'width' => 460, 'height' => 2.5,
               'fill' => '#B8860B', 'stroke' => null ],
 
-            // ── "Se otorga el presente Diploma a:" ───────────────
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 172,
-              'width' => 1000, 'text' => 'Se otorga el presente Diploma a:',
-              'fontSize' => 18, 'fontFamily' => 'Times New Roman',
+            // ── Introducción ─────────────────────────────────────
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 184, 'width' => $w - 160,
+              'text' => 'Se otorga el presente Diploma de Honor a:',
+              'fontSize' => 17, 'fontFamily' => 'Times New Roman',
               'fontStyle' => 'italic', 'fill' => '#7B6040', 'textAlign' => 'center' ],
 
-            // ── Nombre del estudiante ─────────────────────────────
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 204,
-              'width' => 1000, 'text' => '{nombre_completo}',
-              'fontSize' => 52, 'fontFamily' => 'Times New Roman',
+            // ── Nombre del estudiante ────────────────────────────
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 218, 'width' => $w - 160,
+              'text' => '{nombre_completo}', 'fontSize' => 48, 'fontFamily' => 'Playfair Display',
               'fontWeight' => 'bold', 'fill' => '#2D1B0E', 'textAlign' => 'center' ],
 
             // ── Separador bajo nombre ────────────────────────────
-            [ 'type' => 'rect', 'left' => 281, 'top' => 276, 'width' => 560, 'height' => 2,
-              'fill' => '#B8860B', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => 311, 'top' => 286, 'width' => 500, 'height' => 1.5,
+              'fill' => '#D4AA4A', 'stroke' => null ],
 
-            // ── "Por haber completado..." ────────────────────────
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 292,
-              'width' => 1000, 'text' => 'Por haber completado satisfactoriamente el curso:',
-              'fontSize' => 17, 'fontFamily' => 'Times New Roman',
+            // ── Motivo y Curso ───────────────────────────────────
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 304, 'width' => $w - 160,
+              'text' => 'Por haber completado satisfactoriamente el programa académico:',
+              'fontSize' => 16, 'fontFamily' => 'Times New Roman',
               'fontStyle' => 'italic', 'fill' => '#7B6040', 'textAlign' => 'center' ],
 
-            // ── Nombre del curso ─────────────────────────────────
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 326,
-              'width' => 1000, 'text' => '{curso}',
-              'fontSize' => 38, 'fontFamily' => 'Times New Roman',
-              'fontWeight' => 'bold', 'fontStyle' => 'italic',
-              'fill' => '#B8860B', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 336, 'width' => $w - 160,
+              'text' => '{curso}', 'fontSize' => 34, 'fontFamily' => 'Times New Roman',
+              'fontWeight' => 'bold', 'fontStyle' => 'italic', 'fill' => '#9A6E08', 'textAlign' => 'center' ],
 
-            // ── Programa ─────────────────────────────────────────
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 380,
-              'width' => 1000, 'text' => '{programa}',
-              'fontSize' => 20, 'fontFamily' => 'Times New Roman',
-              'fill' => '#555540', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 160, 'top' => 390, 'width' => $w - 320,
+              'text' => '{programa}  •  Intensidad: {horas}', 'fontSize' => 15, 'fontFamily' => 'Times New Roman',
+              'fill' => '#5C4B32', 'textAlign' => 'center' ],
 
-            // ── Descripción opcional ─────────────────────────────
-            [ 'type' => 'textbox', 'left' => 201, 'top' => 418,
-              'width' => 720, 'text' => '{descripcion}',
-              'fontSize' => 15, 'fontFamily' => 'Times New Roman',
-              'fontStyle' => 'italic', 'fill' => '#888876', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 180, 'top' => 420, 'width' => $w - 360,
+              'text' => '{descripcion}', 'fontSize' => 14, 'fontFamily' => 'Times New Roman',
+              'fontStyle' => 'italic', 'fill' => '#7C7259', 'textAlign' => 'center' ],
 
-            // ── Separador footer ─────────────────────────────────
-            [ 'type' => 'rect', 'left' => 61, 'top' => 624, 'width' => $w - 122, 'height' => 1,
-              'fill' => '#B8860B', 'stroke' => null ],
+            [ 'type' => 'textbox', 'left' => 180, 'top' => 468, 'width' => $w - 360,
+              'text' => 'Dado en {ciudad}, a los {fecha_emision_larga}', 'fontSize' => 14, 'fontFamily' => 'Times New Roman',
+              'fill' => '#6E6248', 'textAlign' => 'center' ],
 
-            // ── Fecha (izquierda) ────────────────────────────────
-            [ 'type' => 'textbox', 'left' => 80, 'top' => 636,
-              'width' => 340, 'text' => 'Otorgado el día:',
-              'fontSize' => 13, 'fontFamily' => 'Times New Roman',
-              'fill' => '#888876', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 80, 'top' => 654,
-              'width' => 340, 'text' => '{fecha_emision}',
-              'fontSize' => 17, 'fontFamily' => 'Times New Roman',
-              'fontWeight' => 'bold', 'fill' => '#444433', 'textAlign' => 'left' ],
+            // ── Firmante 1 (Izquierda) ───────────────────────────
+            [ 'type' => 'rect', 'left' => 165, 'top' => 548, 'width' => 170, 'height' => 60,
+              'fill' => 'transparent', 'stroke' => '#D4AA4A', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 130, 'top' => 616, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0,
+              'stroke' => '#8B6914', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 120, 'top' => 626, 'width' => 260,
+              'text' => "{firmante_1_nombre}\n{firmante_1_cargo}",
+              'fontSize' => 13, 'fontFamily' => 'Times New Roman', 'fill' => '#2D1B0E', 'textAlign' => 'center' ],
 
-            // ── Organización (derecha) ───────────────────────────
-            [ 'type' => 'textbox', 'left' => 702, 'top' => 636,
-              'width' => 340, 'text' => '{organizacion}',
-              'fontSize' => 20, 'fontFamily' => 'Times New Roman',
-              'fontWeight' => 'bold', 'fill' => '#2D1B0E', 'textAlign' => 'right' ],
-
-            // ── Instructor (derecha bajo organización) ───────────
-            [ 'type' => 'textbox', 'left' => 702, 'top' => 662,
-              'width' => 340, 'text' => '{instructor}',
-              'fontSize' => 14, 'fontFamily' => 'Times New Roman',
-              'fontStyle' => 'italic', 'fill' => '#888876', 'textAlign' => 'right' ],
-
-            // ── Folio (centro, pie) ──────────────────────────────
-            [ 'type' => 'textbox', 'left' => 411, 'top' => 654,
-              'width' => 300, 'text' => 'Folio: {folio}',
-              'fontSize' => 13, 'fontFamily' => 'Times New Roman',
-              'fill' => '#BBBBAA', 'textAlign' => 'center' ],
-
-            // ── Placeholder QR (esquina inferior derecha) ────────
-            [ 'type' => 'rect', 'left' => $w - 130, 'top' => $h - 130,
-              'width' => 100, 'height' => 100,
-              'fill' => '#EEE8D5', 'stroke' => '#BBBBAA', 'strokeWidth' => 1,
+            // ── QR Central + Folio ───────────────────────────────
+            [ 'type' => 'rect', 'left' => 519, 'top' => 560, 'width' => 84, 'height' => 84,
+              'fill' => '#FFFDF7', 'stroke' => '#D4AA4A', 'strokeWidth' => 1.5,
               'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 441, 'top' => 652, 'width' => 240,
+              'text' => 'Folio: {folio}', 'fontSize' => 12, 'fontFamily' => 'Courier New',
+              'fill' => '#8C7A5B', 'textAlign' => 'center' ],
+
+            // ── Firmante 2 (Derecha) ─────────────────────────────
+            [ 'type' => 'rect', 'left' => 787, 'top' => 548, 'width' => 170, 'height' => 60,
+              'fill' => 'transparent', 'stroke' => '#D4AA4A', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 752, 'top' => 616, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0,
+              'stroke' => '#8B6914', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 742, 'top' => 626, 'width' => 260,
+              'text' => "{firmante_2_nombre}\n{firmante_2_cargo}",
+              'fontSize' => 13, 'fontFamily' => 'Times New Roman', 'fill' => '#2D1B0E', 'textAlign' => 'center' ],
         ];
 
         return [
             'name'        => __( 'Diploma Clásico Dorado', 'aura-suite' ),
             'orientation' => 'landscape',
             'accent'      => '#B8860B',
-            'description' => __( 'Marco dorado tradicional sobre fondo marfil', 'aura-suite' ),
+            'description' => __( 'Marco dorado tradicional con doble firma y QR central', 'aura-suite' ),
             'json'        => [
                 'version'    => '5.3.1',
-                'background' => '#FFFDF0',
+                'background' => '#FFFDF2',
                 'objects'    => $objects,
             ],
         ];
     }
 
-    // ─── Moderno Minimalista (A4 Landscape) ──────────────────────
-    private static function preset_moderno_minimalista(): array {
+    // ─── 2. Credencial & Diploma con Foto (A4 Landscape - NUEVA) ──
+    private static function preset_credencial_academica_foto(): array {
         $w = 1122;
         $h = 794;
 
         $objects = [
-            // Barra superior violeta
-            [ 'type' => 'rect', 'left' => 0, 'top' => 0, 'width' => $w, 'height' => 10,
-              'fill' => '#8b5cf6', 'stroke' => null ],
-            // Barra inferior violeta
-            [ 'type' => 'rect', 'left' => 0, 'top' => $h - 10, 'width' => $w, 'height' => 10,
-              'fill' => '#8b5cf6', 'stroke' => null ],
-            // Rectángulo lateral izquierdo
-            [ 'type' => 'rect', 'left' => 0, 'top' => 0, 'width' => 8, 'height' => $h,
-              'fill' => '#8b5cf6', 'stroke' => null ],
-            // Título
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 70,
-              'width' => $w - 100, 'text' => 'DIPLOMA',
-              'fontSize' => 80, 'fontFamily' => 'Montserrat',
-              'fontWeight' => 'bold', 'fill' => '#111827', 'textAlign' => 'left' ],
-            // Línea de acento
-            [ 'type' => 'rect', 'left' => 60, 'top' => 175, 'width' => 120, 'height' => 5,
-              'fill' => '#8b5cf6', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 200,
-              'width' => $w - 100, 'text' => 'Se certifica que:',
-              'fontSize' => 18, 'fontFamily' => 'Lato',
-              'fill' => '#6b7280', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 235,
-              'width' => $w - 100, 'text' => '{nombre_completo}',
-              'fontSize' => 50, 'fontFamily' => 'Montserrat',
-              'fontWeight' => 'bold', 'fill' => '#8b5cf6', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 310,
-              'width' => $w - 100, 'text' => 'Ha completado exitosamente el curso:',
-              'fontSize' => 17, 'fontFamily' => 'Lato',
-              'fill' => '#6b7280', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 342,
-              'width' => $w - 100, 'text' => '{curso}',
-              'fontSize' => 40, 'fontFamily' => 'Montserrat',
-              'fontWeight' => 'bold', 'fill' => '#111827', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 400,
-              'width' => 600, 'text' => '{programa}',
-              'fontSize' => 20, 'fontFamily' => 'Lato',
-              'fill' => '#6b7280', 'textAlign' => 'left' ],
-            // QR y Firmante
-            [ 'type' => 'line', 'left' => 60, 'top' => 590, 'x1' => 0, 'y1' => 0, 'x2' => 230, 'y2' => 0,
-              'stroke' => '#cbd5e1', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 600,
-              'width' => 240, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}",
-              'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#374151', 'textAlign' => 'left' ],
-            [ 'type' => 'rect', 'left' => $w - 160, 'top' => 555, 'width' => 96, 'height' => 96,
-              'fill' => '#f8fafc', 'stroke' => '#8b5cf6', 'strokeWidth' => 1.5,
+            // Marcos
+            [ 'type' => 'rect', 'left' => 20, 'top' => 20, 'width' => $w - 40, 'height' => $h - 40,
+              'fill' => 'transparent', 'stroke' => '#1e3a8a', 'strokeWidth' => 3, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+            [ 'type' => 'rect', 'left' => 30, 'top' => 30, 'width' => $w - 60, 'height' => $h - 60,
+              'fill' => 'transparent', 'stroke' => '#c9a84c', 'strokeWidth' => 1.5, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+
+            // Franja decorativa izquierda azul real
+            [ 'type' => 'rect', 'left' => 30, 'top' => 30, 'width' => 270, 'height' => $h - 60,
+              'fill' => '#0f172a', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => 300, 'top' => 30, 'width' => 6, 'height' => $h - 60,
+              'fill' => '#c9a84c', 'stroke' => null ],
+
+            // Foto de perfil del estudiante (Circular con borde dorado y sombra)
+            [ 'type' => 'rect', 'left' => 95, 'top' => 88, 'width' => 140, 'height' => 140,
+              'fill' => '#1e293b', 'stroke' => '#c9a84c', 'strokeWidth' => 4,
+              'rx' => 70, 'ry' => 70,
+              'name' => 'student_photo_placeholder',
+              'auraElementType' => 'student_photo',
+              'auraPhotoShape' => 'circle',
+              'auraPhotoRadius' => 70,
+              'auraPhotoPad' => 4,
+              'auraPhotoBorderStyle' => 'double',
+              'shadow' => [ 'color' => 'rgba(0,0,0,0.35)', 'blur' => 12, 'offsetX' => 0, 'offsetY' => 4 ] ],
+
+            // Datos bajo la foto en columna lateral
+            [ 'type' => 'textbox', 'left' => 48, 'top' => 252, 'width' => 234,
+              'text' => "ACREDITACIÓN OFICIAL\n{tipo_destinatario}", 'fontSize' => 12, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#fde68a', 'textAlign' => 'center', 'charSpacing' => 140 ],
+            [ 'type' => 'rect', 'left' => 95, 'top' => 302, 'width' => 140, 'height' => 1.5,
+              'fill' => '#c9a84c', 'stroke' => null ],
+            [ 'type' => 'textbox', 'left' => 48, 'top' => 320, 'width' => 234,
+              'text' => "ID: {documento}\nCalificación: {calificacion}\nIntensidad: {horas}",
+              'fontSize' => 12.5, 'fontFamily' => 'Lato', 'fill' => '#cbd5e1', 'textAlign' => 'center', 'lineHeight' => 1.45 ],
+
+            // QR en la columna lateral
+            [ 'type' => 'rect', 'left' => 113, 'top' => 560, 'width' => 104, 'height' => 104,
+              'fill' => '#ffffff', 'stroke' => '#c9a84c', 'strokeWidth' => 2,
               'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
-            // Footer
-            [ 'type' => 'rect', 'left' => 60, 'top' => 700, 'width' => 500, 'height' => 1,
-              'fill' => '#e5e7eb', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 710,
-              'width' => 350, 'text' => '{organizacion}',
-              'fontSize' => 17, 'fontFamily' => 'Montserrat',
-              'fontWeight' => 'bold', 'fill' => '#374151', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 734,
-              'width' => 350, 'text' => '{fecha_emision}',
-              'fontSize' => 16, 'fontFamily' => 'Lato',
-              'fill' => '#6b7280', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 650, 'top' => 710,
-              'width' => 400, 'text' => 'Folio: {folio}',
-              'fontSize' => 14, 'fontFamily' => 'Courier New',
-              'fill' => '#9ca3af', 'textAlign' => 'right' ],
+            [ 'type' => 'textbox', 'left' => 48, 'top' => 676, 'width' => 234,
+              'text' => "FOLIO: {folio}\nCÓD: {codigo_verificacion}",
+              'fontSize' => 11, 'fontFamily' => 'Courier New', 'fill' => '#94a3b8', 'textAlign' => 'center' ],
+
+            // Cuerpo principal derecho
+            [ 'type' => 'textbox', 'left' => 350, 'top' => 66, 'width' => 700,
+              'text' => '{organizacion}', 'fontSize' => 16, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#1e3a8a', 'textAlign' => 'left', 'charSpacing' => 180 ],
+            [ 'type' => 'textbox', 'left' => 350, 'top' => 102, 'width' => 700,
+              'text' => 'DIPLOMA DE EXCELENCIA', 'fontSize' => 38, 'fontFamily' => 'Cinzel',
+              'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'left', 'charSpacing' => 60 ],
+            [ 'type' => 'rect', 'left' => 350, 'top' => 158, 'width' => 180, 'height' => 3,
+              'fill' => '#c9a84c', 'stroke' => null ],
+
+            [ 'type' => 'textbox', 'left' => 350, 'top' => 188, 'width' => 700,
+              'text' => 'Se confiere la presente acreditación académica y profesional a:',
+              'fontSize' => 16, 'fontFamily' => 'Merriweather', 'fontStyle' => 'italic',
+              'fill' => '#475569', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 350, 'top' => 226, 'width' => 700,
+              'text' => '{nombre_completo}', 'fontSize' => 44, 'fontFamily' => 'Playfair Display',
+              'fontWeight' => 'bold', 'fill' => '#1e3a8a', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 350, 'top' => 298, 'width' => 700,
+              'text' => 'Por haber cursado y aprobado satisfactoriamente el programa:',
+              'fontSize' => 15.5, 'fontFamily' => 'Lato', 'fill' => '#334155', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 350, 'top' => 332, 'width' => 700,
+              'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 350, 'top' => 386, 'width' => 680,
+              'text' => '{descripcion}', 'fontSize' => 14.5, 'fontFamily' => 'Lato',
+              'fontStyle' => 'italic', 'fill' => '#64748b', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 350, 'top' => 452, 'width' => 680,
+              'text' => 'Área: {programa}  •  Expedido en {ciudad}, el {fecha_emision_larga}',
+              'fontSize' => 13.5, 'fontFamily' => 'Lato', 'fill' => '#475569', 'textAlign' => 'left' ],
+
+            // 2 Firmas alineadas en el panel derecho
+            [ 'type' => 'rect', 'left' => 390, 'top' => 560, 'width' => 160, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 360, 'top' => 626, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0,
+              'stroke' => '#1e3a8a', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 350, 'top' => 636, 'width' => 240,
+              'text' => "{firmante_1_nombre}\n{firmante_1_cargo}",
+              'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 740, 'top' => 560, 'width' => 160, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 710, 'top' => 626, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0,
+              'stroke' => '#1e3a8a', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 700, 'top' => 636, 'width' => 240,
+              'text' => "{firmante_2_nombre}\n{firmante_2_cargo}",
+              'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
         ];
 
         return [
-            'name'        => __( 'Moderno Minimalista', 'aura-suite' ),
+            'name'        => __( 'Credencial & Diploma con Foto', 'aura-suite' ),
             'orientation' => 'landscape',
-            'accent'      => '#8b5cf6',
-            'description' => __( 'Tipografía moderna y barra de acento violeta', 'aura-suite' ),
+            'accent'      => '#1e3a8a',
+            'description' => __( 'Incluye foto circular del estudiante, QR y doble firma', 'aura-suite' ),
             'json'        => [
                 'version'    => '5.3.1',
                 'background' => '#ffffff',
@@ -568,83 +593,192 @@ class Aura_Certificates_Admin {
         ];
     }
 
-    // ─── Certificado de Participación (A4 Landscape) ─────────────
+    // ─── 3. Moderno Minimalista (A4 Landscape) ───────────────────
+    private static function preset_moderno_minimalista(): array {
+        $w = 1122;
+        $h = 794;
+
+        $objects = [
+            // Barra superior e inferior violeta
+            [ 'type' => 'rect', 'left' => 0, 'top' => 0, 'width' => $w, 'height' => 10, 'fill' => '#7c3aed', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => 0, 'top' => $h - 10, 'width' => $w, 'height' => 10, 'fill' => '#7c3aed', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => 0, 'top' => 0, 'width' => 10, 'height' => $h, 'fill' => '#7c3aed', 'stroke' => null ],
+
+            // Marco interior sutil (click-through)
+            [ 'type' => 'rect', 'left' => 36, 'top' => 32, 'width' => $w - 72, 'height' => $h - 64,
+              'fill' => 'transparent', 'stroke' => '#ede9fe', 'strokeWidth' => 2, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+
+            // Organización arriba
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 58, 'width' => 700,
+              'text' => '{organizacion}', 'fontSize' => 15, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#7c3aed', 'textAlign' => 'left', 'charSpacing' => 180 ],
+
+            // Título
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 88, 'width' => 800,
+              'text' => 'CERTIFICADO', 'fontSize' => 62, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#111827', 'textAlign' => 'left', 'charSpacing' => 60 ],
+
+            // Línea de acento
+            [ 'type' => 'rect', 'left' => 72, 'top' => 168, 'width' => 130, 'height' => 5,
+              'fill' => '#7c3aed', 'stroke' => null ],
+
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 196, 'width' => 880,
+              'text' => 'Se certifica oficialmente que:', 'fontSize' => 17, 'fontFamily' => 'Lato',
+              'fill' => '#6b7280', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 228, 'width' => 940,
+              'text' => '{nombre_completo}', 'fontSize' => 48, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#6d28d9', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 300, 'width' => 880,
+              'text' => 'Ha completado exitosamente el programa de formación:',
+              'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#6b7280', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 332, 'width' => 920,
+              'text' => '{curso}', 'fontSize' => 36, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#111827', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 388, 'width' => 820,
+              'text' => '{programa}  •  Intensidad: {horas}  •  Calificación: {calificacion}',
+              'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#4b5563', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 424, 'width' => 820,
+              'text' => '{descripcion}', 'fontSize' => 14.5, 'fontFamily' => 'Lato',
+              'fontStyle' => 'italic', 'fill' => '#6b7280', 'textAlign' => 'left' ],
+
+            // 2 Firmas + QR a la derecha
+            [ 'type' => 'rect', 'left' => 102, 'top' => 538, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#ddd6fe', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 72, 'top' => 602, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0,
+              'stroke' => '#7c3aed', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 612, 'width' => 230,
+              'text' => "{firmante_1_nombre}\n{firmante_1_cargo}",
+              'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#374151', 'textAlign' => 'left' ],
+
+            [ 'type' => 'rect', 'left' => 412, 'top' => 538, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#ddd6fe', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 382, 'top' => 602, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0,
+              'stroke' => '#7c3aed', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 382, 'top' => 612, 'width' => 230,
+              'text' => "{firmante_2_nombre}\n{firmante_2_cargo}",
+              'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#374151', 'textAlign' => 'left' ],
+
+            [ 'type' => 'rect', 'left' => 938, 'top' => 548, 'width' => 96, 'height' => 96,
+              'fill' => '#f8fafc', 'stroke' => '#7c3aed', 'strokeWidth' => 1.5,
+              'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+
+            // Footer limpio y bien separado del borde inferior
+            [ 'type' => 'rect', 'left' => 72, 'top' => 686, 'width' => $w - 144, 'height' => 1,
+              'fill' => '#e5e7eb', 'stroke' => null ],
+            [ 'type' => 'textbox', 'left' => 72, 'top' => 702, 'width' => 520,
+              'text' => 'Expedido en {ciudad} el {fecha_emision_larga}',
+              'fontSize' => 13.5, 'fontFamily' => 'Lato', 'fill' => '#6b7280', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 680, 'top' => 702, 'width' => 368,
+              'text' => 'Folio: {folio}  •  Cód: {codigo_verificacion}',
+              'fontSize' => 12.5, 'fontFamily' => 'Courier New', 'fill' => '#6b7280', 'textAlign' => 'right' ],
+        ];
+
+        return [
+            'name'        => __( 'Moderno Minimalista', 'aura-suite' ),
+            'orientation' => 'landscape',
+            'accent'      => '#7c3aed',
+            'description' => __( 'Tipografía moderna, doble firma y acento violeta', 'aura-suite' ),
+            'json'        => [
+                'version'    => '5.3.1',
+                'background' => '#ffffff',
+                'objects'    => $objects,
+            ],
+        ];
+    }
+
+    // ─── 4. Certificado de Participación (A4 Landscape) ──────────
     private static function preset_participacion(): array {
         $w = 1122;
         $h = 794;
 
         $objects = [
-            // Marco verde
+            // Marco verde (click-through)
             [ 'type' => 'rect', 'left' => 20, 'top' => 20, 'width' => $w - 40, 'height' => $h - 40,
-              'fill' => 'rgba(0,0,0,0)', 'stroke' => '#16a34a', 'strokeWidth' => 4,
-              'rx' => 12, 'ry' => 12 ],
-            [ 'type' => 'rect', 'left' => 28, 'top' => 28, 'width' => $w - 56, 'height' => $h - 56,
-              'fill' => 'rgba(0,0,0,0)', 'stroke' => '#86efac', 'strokeWidth' => 1.5,
-              'rx' => 8, 'ry' => 8 ],
+              'fill' => 'transparent', 'stroke' => '#16a34a', 'strokeWidth' => 4,
+              'rx' => 12, 'ry' => 12, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+            [ 'type' => 'rect', 'left' => 30, 'top' => 30, 'width' => $w - 60, 'height' => $h - 60,
+              'fill' => 'transparent', 'stroke' => '#86efac', 'strokeWidth' => 1.5,
+              'rx' => 8, 'ry' => 8, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 54, 'width' => $w - 160,
+              'text' => '{organizacion}', 'fontSize' => 15, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#15803d', 'textAlign' => 'center', 'charSpacing' => 180 ],
+
             // Encabezado
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 60,
-              'width' => 1000, 'text' => 'CERTIFICADO',
-              'fontSize' => 68, 'fontFamily' => 'Arial',
-              'fontWeight' => 'bold', 'fill' => '#15803d', 'textAlign' => 'center',
-              'charSpacing' => 180 ],
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 148,
-              'width' => 1000, 'text' => 'DE PARTICIPACIÓN',
-              'fontSize' => 24, 'fontFamily' => 'Arial',
-              'fill' => '#4ade80', 'textAlign' => 'center', 'charSpacing' => 100 ],
+            [ 'type' => 'textbox', 'left' => 61, 'top' => 84, 'width' => 1000,
+              'text' => 'CERTIFICADO', 'fontSize' => 56, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#14532d', 'textAlign' => 'center', 'charSpacing' => 160 ],
+            [ 'type' => 'textbox', 'left' => 61, 'top' => 152, 'width' => 1000,
+              'text' => 'DE PARTICIPACIÓN Y CUMPLIMIENTO', 'fontSize' => 17, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#16a34a', 'textAlign' => 'center', 'charSpacing' => 220 ],
+
             // Separador
-            [ 'type' => 'rect', 'left' => 361, 'top' => 185, 'width' => 400, 'height' => 3,
+            [ 'type' => 'rect', 'left' => 381, 'top' => 186, 'width' => 360, 'height' => 3,
               'fill' => '#16a34a', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 204,
-              'width' => 1000, 'text' => 'Este certificado se otorga a:',
-              'fontSize' => 18, 'fontFamily' => 'Arial',
-              'fill' => '#4b7c59', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 236,
-              'width' => 1000, 'text' => '{nombre_completo}',
-              'fontSize' => 50, 'fontFamily' => 'Arial',
+
+            [ 'type' => 'textbox', 'left' => 61, 'top' => 206, 'width' => 1000,
+              'text' => 'Se otorga el presente certificado a:',
+              'fontSize' => 17, 'fontFamily' => 'Lato', 'fill' => '#3f6212', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 61, 'top' => 238, 'width' => 1000,
+              'text' => '{nombre_completo}', 'fontSize' => 46, 'fontFamily' => 'Playfair Display',
               'fontWeight' => 'bold', 'fill' => '#14532d', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 306,
-              'width' => 1000, 'text' => 'Por su participación en:',
-              'fontSize' => 17, 'fontFamily' => 'Arial',
-              'fill' => '#4b7c59', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 336,
-              'width' => 1000, 'text' => '{curso}',
-              'fontSize' => 36, 'fontFamily' => 'Arial',
+
+            [ 'type' => 'textbox', 'left' => 61, 'top' => 306, 'width' => 1000,
+              'text' => 'Por su activa y destacada participación en:',
+              'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#3f6212', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 81, 'top' => 338, 'width' => 960,
+              'text' => '{curso}', 'fontSize' => 32, 'fontFamily' => 'Montserrat',
               'fontWeight' => 'bold', 'fill' => '#15803d', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 61, 'top' => 388,
-              'width' => 1000, 'text' => '{descripcion}',
-              'fontSize' => 16, 'fontFamily' => 'Arial',
-              'fontStyle' => 'italic', 'fill' => '#6b7280', 'textAlign' => 'center' ],
-            // Firmante y QR
-            [ 'type' => 'line', 'left' => 140, 'top' => 615, 'x1' => 0, 'y1' => 0, 'x2' => 230, 'y2' => 0,
+
+            [ 'type' => 'textbox', 'left' => 141, 'top' => 392, 'width' => 840,
+              'text' => '{descripcion}', 'fontSize' => 15, 'fontFamily' => 'Lato',
+              'fontStyle' => 'italic', 'fill' => '#4b5563', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 141, 'top' => 446, 'width' => 840,
+              'text' => 'Intensidad: {horas}  •  Fecha: {fecha_emision_larga}  •  {ciudad}',
+              'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#4b7c59', 'textAlign' => 'center' ],
+
+            // 2 Firmantes + QR central
+            [ 'type' => 'rect', 'left' => 165, 'top' => 540, 'width' => 170, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#86efac', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 130, 'top' => 606, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0,
               'stroke' => '#16a34a', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 130, 'top' => 625,
-              'width' => 250, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}",
+            [ 'type' => 'textbox', 'left' => 120, 'top' => 616, 'width' => 260,
+              'text' => "{firmante_1_nombre}\n{firmante_1_cargo}",
               'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#14532d', 'textAlign' => 'center' ],
-            [ 'type' => 'rect', 'left' => $w - 165, 'top' => 570, 'width' => 94, 'height' => 94,
+
+            [ 'type' => 'rect', 'left' => 517, 'top' => 552, 'width' => 88, 'height' => 88,
               'fill' => '#ffffff', 'stroke' => '#16a34a', 'strokeWidth' => 1.5,
               'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
-            // Footer
-            [ 'type' => 'rect', 'left' => 61, 'top' => 700, 'width' => $w - 122, 'height' => 1,
-              'fill' => '#86efac', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 80, 'top' => 712,
-              'width' => 350, 'text' => '{organizacion}',
-              'fontSize' => 17, 'fontFamily' => 'Montserrat',
-              'fontWeight' => 'bold', 'fill' => '#15803d', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 80, 'top' => 734,
-              'width' => 350, 'text' => '{fecha_emision}',
-              'fontSize' => 16, 'fontFamily' => 'Lato',
-              'fill' => '#6b7280', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 650, 'top' => 712,
-              'width' => 400, 'text' => 'Folio: {folio}',
-              'fontSize' => 14, 'fontFamily' => 'Courier New',
-              'fill' => '#15803d', 'textAlign' => 'right' ],
+            [ 'type' => 'textbox', 'left' => 441, 'top' => 648, 'width' => 240,
+              'text' => 'Folio: {folio}', 'fontSize' => 12, 'fontFamily' => 'Courier New',
+              'fill' => '#15803d', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 787, 'top' => 540, 'width' => 170, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#86efac', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 752, 'top' => 606, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0,
+              'stroke' => '#16a34a', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 742, 'top' => 616, 'width' => 260,
+              'text' => "{firmante_2_nombre}\n{firmante_2_cargo}",
+              'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#14532d', 'textAlign' => 'center' ],
         ];
 
         return [
             'name'        => __( 'Certificado de Participación', 'aura-suite' ),
             'orientation' => 'landscape',
             'accent'      => '#15803d',
-            'description' => __( 'Estilo limpio y fresco en tonos verdes', 'aura-suite' ),
+            'description' => __( 'Estilo limpio y fresco en tonos esmeralda con doble firma', 'aura-suite' ),
             'json'        => [
                 'version'    => '5.3.1',
                 'background' => '#f0fdf4',
@@ -653,33 +787,48 @@ class Aura_Certificates_Admin {
         ];
     }
 
-    // ─── Académico Azul Real & Oro ───────────────────────────────
+    // ─── 5. Académico Azul Real & Oro (A4 Landscape) ─────────────
     private static function preset_academico_azul_real(): array {
         $w = 1122;
         $h = 794;
 
         $objects = [
-            [ 'type' => 'rect', 'left' => 0, 'top' => 0, 'width' => $w, 'height' => 28, 'fill' => '#1e3a8a', 'stroke' => null ],
-            [ 'type' => 'rect', 'left' => 0, 'top' => $h - 28, 'width' => $w, 'height' => 28, 'fill' => '#1e3a8a', 'stroke' => null ],
-            [ 'type' => 'rect', 'left' => 26, 'top' => 42, 'width' => $w - 52, 'height' => $h - 84, 'fill' => 'transparent', 'stroke' => '#ca8a04', 'strokeWidth' => 2.5 ],
-            [ 'type' => 'rect', 'left' => 36, 'top' => 52, 'width' => $w - 72, 'height' => $h - 104, 'fill' => 'transparent', 'stroke' => '#93c5fd', 'strokeWidth' => 1 ],
-            [ 'type' => 'circle', 'left' => 533, 'top' => 74, 'radius' => 28, 'fill' => '#1e3a8a', 'stroke' => '#ca8a04', 'strokeWidth' => 3 ],
-            [ 'type' => 'textbox', 'left' => 533, 'top' => 91, 'width' => 56, 'text' => '★', 'fontSize' => 24, 'fontFamily' => 'Georgia', 'fill' => '#fde047', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 80, 'top' => 145, 'width' => 962, 'text' => '{organizacion}', 'fontSize' => 16, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#1e3a8a', 'textAlign' => 'center', 'charSpacing' => 180 ],
-            [ 'type' => 'textbox', 'left' => 80, 'top' => 182, 'width' => 962, 'text' => 'CERTIFICADO ACADÉMICO', 'fontSize' => 40, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center', 'charSpacing' => 120 ],
-            [ 'type' => 'rect', 'left' => 411, 'top' => 242, 'width' => 300, 'height' => 3, 'fill' => '#ca8a04', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 100, 'top' => 266, 'width' => 922, 'text' => 'Se otorga con distinción el presente reconocimiento a:', 'fontSize' => 16, 'fontFamily' => 'Merriweather', 'fontStyle' => 'italic', 'fill' => '#475569', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 80, 'top' => 310, 'width' => 962, 'text' => '{nombre_estudiante}', 'fontSize' => 46, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#1e3a8a', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 140, 'top' => 378, 'width' => 842, 'text' => 'Por haber completado y aprobado satisfactoriamente el programa de', 'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#334155', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 410, 'width' => 942, 'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 130, 'top' => 462, 'width' => 862, 'text' => 'Intensidad horaria: {horas}  •  Calificación: {calificacion}  •  {programa}', 'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 130, 'top' => 494, 'width' => 862, 'text' => 'Expedido en {ciudad}, el {fecha_emision_larga}', 'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'center' ],
-            [ 'type' => 'line', 'left' => 180, 'top' => 645, 'x1' => -110, 'y1' => 0, 'x2' => 110, 'y2' => 0, 'stroke' => '#1e3a8a', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 160, 'top' => 655, 'width' => 260, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
-            [ 'type' => 'line', 'left' => 560, 'top' => 645, 'x1' => -110, 'y1' => 0, 'x2' => 110, 'y2' => 0, 'stroke' => '#1e3a8a', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 540, 'top' => 655, 'width' => 260, 'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
-            [ 'type' => 'rect', 'left' => 940, 'top' => 585, 'width' => 90, 'height' => 90, 'fill' => '#f8fafc', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
-            [ 'type' => 'textbox', 'left' => 920, 'top' => 682, 'width' => 130, 'text' => 'Folio: {folio}', 'fontSize' => 11, 'fontFamily' => 'Courier New', 'fill' => '#475569', 'textAlign' => 'center' ],
+            [ 'type' => 'rect', 'left' => 0, 'top' => 0, 'width' => $w, 'height' => 24, 'fill' => '#1e3a8a', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => 0, 'top' => $h - 24, 'width' => $w, 'height' => 24, 'fill' => '#1e3a8a', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => 26, 'top' => 38, 'width' => $w - 52, 'height' => $h - 76,
+              'fill' => 'transparent', 'stroke' => '#ca8a04', 'strokeWidth' => 2.5, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+            [ 'type' => 'rect', 'left' => 36, 'top' => 48, 'width' => $w - 72, 'height' => $h - 96,
+              'fill' => 'transparent', 'stroke' => '#93c5fd', 'strokeWidth' => 1, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+
+            // Medalla superior perfectamente centrada (centro X = 561, diámetro = 56 → left = 533)
+            [ 'type' => 'circle', 'left' => 533, 'top' => 64, 'radius' => 28, 'fill' => '#1e3a8a', 'stroke' => '#ca8a04', 'strokeWidth' => 3 ],
+            [ 'type' => 'textbox', 'left' => 533, 'top' => 77, 'width' => 56, 'text' => '★', 'fontSize' => 24, 'fontFamily' => 'Georgia', 'fill' => '#fde047', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 132, 'width' => 962, 'text' => '{organizacion}', 'fontSize' => 16, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#1e3a8a', 'textAlign' => 'center', 'charSpacing' => 180 ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 166, 'width' => 962, 'text' => 'CERTIFICADO ACADÉMICO', 'fontSize' => 40, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center', 'charSpacing' => 120 ],
+            [ 'type' => 'rect', 'left' => 411, 'top' => 224, 'width' => 300, 'height' => 3, 'fill' => '#ca8a04', 'stroke' => null ],
+            [ 'type' => 'textbox', 'left' => 100, 'top' => 246, 'width' => 922, 'text' => 'Se otorga con distinción el presente reconocimiento a:', 'fontSize' => 16, 'fontFamily' => 'Merriweather', 'fontStyle' => 'italic', 'fill' => '#475569', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 282, 'width' => 962, 'text' => '{nombre_completo}', 'fontSize' => 46, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#1e3a8a', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 140, 'top' => 350, 'width' => 842, 'text' => 'Por haber completado y aprobado satisfactoriamente el programa de', 'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#334155', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 380, 'width' => 942, 'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 130, 'top' => 432, 'width' => 862, 'text' => 'Intensidad horaria: {horas}  •  Calificación: {calificacion}  •  {programa}', 'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 130, 'top' => 462, 'width' => 862, 'text' => 'Expedido en {ciudad}, el {fecha_emision_larga}', 'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'center' ],
+
+            // Firmas con slots dinámicos y líneas alineadas
+            [ 'type' => 'rect', 'left' => 185, 'top' => 548, 'width' => 170, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#93c5fd', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 150, 'top' => 614, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0, 'stroke' => '#1e3a8a', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 140, 'top' => 624, 'width' => 260, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 565, 'top' => 548, 'width' => 170, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#93c5fd', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 530, 'top' => 614, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0, 'stroke' => '#1e3a8a', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 520, 'top' => 624, 'width' => 260, 'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 935, 'top' => 552, 'width' => 90, 'height' => 90, 'fill' => '#f8fafc', 'stroke' => '#cbd5e1', 'strokeWidth' => 1.5, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 905, 'top' => 650, 'width' => 150, 'text' => 'Folio: {folio}', 'fontSize' => 11, 'fontFamily' => 'Courier New', 'fill' => '#475569', 'textAlign' => 'center' ],
         ];
 
         return [
@@ -695,35 +844,143 @@ class Aura_Certificates_Admin {
         ];
     }
 
-    // ─── Corporativo Oscuro & Turquesa VIP ───────────────────────
+    // ─── 6. Ordenación & Liderazgo Ministerial (A4 Landscape - NUEVA) ──
+    private static function preset_ministerial_liderazgo(): array {
+        $w = 1122;
+        $h = 794;
+
+        $objects = [
+            // Doble marco vino tinto y oro viejo (click-through)
+            [ 'type' => 'rect', 'left' => 22, 'top' => 22, 'width' => $w - 44, 'height' => $h - 44,
+              'fill' => 'transparent', 'stroke' => '#7f1d1d', 'strokeWidth' => 3.5, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+            [ 'type' => 'rect', 'left' => 34, 'top' => 34, 'width' => $w - 68, 'height' => $h - 68,
+              'fill' => 'transparent', 'stroke' => '#b45309', 'strokeWidth' => 1.5, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+
+            // Cabecera solemne
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 58, 'width' => 962,
+              'text' => '{organizacion}', 'fontSize' => 17, 'fontFamily' => 'Cinzel',
+              'fontWeight' => 'bold', 'fill' => '#7f1d1d', 'textAlign' => 'center', 'charSpacing' => 200 ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 92, 'width' => 962,
+              'text' => 'CERTIFICADO MINISTERIAL', 'fontSize' => 42, 'fontFamily' => 'Cinzel',
+              'fontWeight' => 'bold', 'fill' => '#1c1917', 'textAlign' => 'center', 'charSpacing' => 100 ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 148, 'width' => 962,
+              'text' => 'ESCUELA DE FORMACIÓN Y LIDERAZGO', 'fontSize' => 14, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#b45309', 'textAlign' => 'center', 'charSpacing' => 240 ],
+
+            [ 'type' => 'rect', 'left' => 381, 'top' => 178, 'width' => 360, 'height' => 2,
+              'fill' => '#b45309', 'stroke' => null ],
+
+            [ 'type' => 'textbox', 'left' => 100, 'top' => 198, 'width' => 922,
+              'text' => 'Con gratitud y reconocimiento espiritual, se extiende el presente certificado a:',
+              'fontSize' => 16, 'fontFamily' => 'Georgia', 'fontStyle' => 'italic',
+              'fill' => '#57534e', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 232, 'width' => 962,
+              'text' => '{nombre_completo}', 'fontSize' => 46, 'fontFamily' => 'Playfair Display',
+              'fontWeight' => 'bold', 'fill' => '#7f1d1d', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 120, 'top' => 298, 'width' => 882,
+              'text' => 'Por su fidelidad, dedicación y culminación satisfactoria de:',
+              'fontSize' => 15.5, 'fontFamily' => 'Lato', 'fill' => '#44403c', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 330, 'width' => 962,
+              'text' => '{curso}', 'fontSize' => 31, 'fontFamily' => 'Playfair Display',
+              'fontWeight' => 'bold', 'fill' => '#1c1917', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 140, 'top' => 382, 'width' => 842,
+              'text' => '{descripcion}', 'fontSize' => 14.5, 'fontFamily' => 'Georgia',
+              'fontStyle' => 'italic', 'fill' => '#57534e', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 140, 'top' => 436, 'width' => 842,
+              'text' => '{programa}  •  Intensidad: {horas}  •  Expedido en {ciudad}, {fecha_emision_larga}',
+              'fontSize' => 13.5, 'fontFamily' => 'Lato', 'fill' => '#78716c', 'textAlign' => 'center' ],
+
+            // 3 bloques de firma + QR a la derecha
+            [ 'type' => 'rect', 'left' => 95,  'top' => 538, 'width' => 150, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#d6d3d1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 65,  'top' => 602, 'x1' => 0, 'y1' => 0, 'x2' => 210, 'y2' => 0, 'stroke' => '#7f1d1d', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 55,  'top' => 612, 'width' => 230,
+              'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 12.5, 'fontFamily' => 'Lato', 'fill' => '#292524', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 375, 'top' => 538, 'width' => 150, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#d6d3d1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 345, 'top' => 602, 'x1' => 0, 'y1' => 0, 'x2' => 210, 'y2' => 0, 'stroke' => '#7f1d1d', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 335, 'top' => 612, 'width' => 230,
+              'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 12.5, 'fontFamily' => 'Lato', 'fill' => '#292524', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 655, 'top' => 538, 'width' => 150, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#d6d3d1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_3', 'auraElementType' => 'signer_sig', 'signerSlot' => 3 ],
+            [ 'type' => 'line', 'left' => 625, 'top' => 602, 'x1' => 0, 'y1' => 0, 'x2' => 210, 'y2' => 0, 'stroke' => '#7f1d1d', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 615, 'top' => 612, 'width' => 230,
+              'text' => "{firmante_3_nombre}\n{firmante_3_cargo}", 'fontSize' => 12.5, 'fontFamily' => 'Lato', 'fill' => '#292524', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 940, 'top' => 545, 'width' => 92, 'height' => 92,
+              'fill' => '#ffffff', 'stroke' => '#b45309', 'strokeWidth' => 1.5,
+              'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 906, 'top' => 646, 'width' => 160,
+              'text' => 'Folio: {folio}', 'fontSize' => 11, 'fontFamily' => 'Courier New', 'fill' => '#78716c', 'textAlign' => 'center' ],
+        ];
+
+        return [
+            'name'        => __( 'Liderazgo Ministerial (3 Firmas)', 'aura-suite' ),
+            'orientation' => 'landscape',
+            'accent'      => '#7f1d1d',
+            'description' => __( 'Diseño solemne en vino tinto y oro con 3 firmas y QR', 'aura-suite' ),
+            'json'        => [
+                'version'    => '5.3.1',
+                'background' => '#fffdf7',
+                'objects'    => $objects,
+            ],
+        ];
+    }
+
+    // ─── 7. Corporativo Oscuro & Turquesa VIP (A4 Landscape) ─────
     private static function preset_corporativo_oscuro_vip(): array {
         $w = 1122;
         $h = 794;
 
         $objects = [
-            [ 'type' => 'rect', 'left' => 28, 'top' => 28, 'width' => $w - 56, 'height' => $h - 56, 'fill' => 'transparent', 'stroke' => '#2dd4bf', 'strokeWidth' => 2 ],
+            [ 'type' => 'rect', 'left' => 28, 'top' => 28, 'width' => $w - 56, 'height' => $h - 56,
+              'fill' => 'transparent', 'stroke' => '#2dd4bf', 'strokeWidth' => 2, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
             [ 'type' => 'rect', 'left' => 40, 'top' => 40, 'width' => 14, 'height' => $h - 80, 'fill' => '#14b8a6', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 76, 'width' => 700, 'text' => '{organizacion}', 'fontSize' => 16, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#5eead4', 'textAlign' => 'left', 'charSpacing' => 200 ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 118, 'width' => 780, 'text' => 'CERTIFICACIÓN EJECUTIVA', 'fontSize' => 40, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#f8fafc', 'textAlign' => 'left' ],
-            [ 'type' => 'rect', 'left' => 90, 'top' => 176, 'width' => 140, 'height' => 4, 'fill' => '#14b8a6', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 226, 'width' => 880, 'text' => 'OTORGADO A', 'fontSize' => 13, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#94a3b8', 'textAlign' => 'left', 'charSpacing' => 220 ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 256, 'width' => 940, 'text' => '{nombre_estudiante}', 'fontSize' => 48, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#ffffff', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 324, 'width' => 880, 'text' => 'Doc.: {documento}  •  {correo}', 'fontSize' => 14, 'fontFamily' => 'Roboto', 'fill' => '#94a3b8', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 378, 'width' => 880, 'text' => 'Por acreditar las competencias del programa:', 'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#cbd5e1', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 410, 'width' => 900, 'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#2dd4bf', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 462, 'width' => 760, 'text' => '{descripcion}', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#94a3b8', 'textAlign' => 'left' ],
-            [ 'type' => 'line', 'left' => 90, 'top' => 638, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0, 'stroke' => '#2dd4bf', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 648, 'width' => 260, 'text' => "{instructor}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#e2e8f0', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 410, 'top' => 648, 'width' => 300, 'text' => "Fecha: {fecha_emision}\nFolio: {folio}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#94a3b8', 'textAlign' => 'left' ],
-            [ 'type' => 'rect', 'left' => 940, 'top' => 580, 'width' => 96, 'height' => 96, 'fill' => '#ffffff', 'stroke' => '#2dd4bf', 'strokeWidth' => 2, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
-            [ 'type' => 'textbox', 'left' => 918, 'top' => 686, 'width' => 140, 'text' => 'VERIFICAR QR', 'fontSize' => 11, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#5eead4', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 68, 'width' => 700, 'text' => '{organizacion}', 'fontSize' => 16, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#5eead4', 'textAlign' => 'left', 'charSpacing' => 200 ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 104, 'width' => 820, 'text' => 'CERTIFICACIÓN EJECUTIVA', 'fontSize' => 40, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#f8fafc', 'textAlign' => 'left' ],
+            [ 'type' => 'rect', 'left' => 90, 'top' => 162, 'width' => 140, 'height' => 4, 'fill' => '#14b8a6', 'stroke' => null ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 202, 'width' => 880, 'text' => 'OTORGADO OFICIALMENTE A', 'fontSize' => 13, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#94a3b8', 'textAlign' => 'left', 'charSpacing' => 220 ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 232, 'width' => 940, 'text' => '{nombre_completo}', 'fontSize' => 48, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#ffffff', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 302, 'width' => 880, 'text' => 'ID: {documento}  •  Intensidad: {horas}  •  Calificación: {calificacion}', 'fontSize' => 14, 'fontFamily' => 'Roboto', 'fill' => '#94a3b8', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 348, 'width' => 880, 'text' => 'Por acreditar las competencias del programa:', 'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#cbd5e1', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 380, 'width' => 900, 'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#2dd4bf', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 432, 'width' => 760, 'text' => '{descripcion}', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#94a3b8', 'textAlign' => 'left' ],
+
+            // 2 Firmas con slots dinámicos + metadatos y QR
+            [ 'type' => 'rect', 'left' => 115, 'top' => 544, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#334155', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 90, 'top' => 608, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#2dd4bf', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 618, 'width' => 230, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#e2e8f0', 'textAlign' => 'left' ],
+
+            [ 'type' => 'rect', 'left' => 405, 'top' => 544, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#334155', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 380, 'top' => 608, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#2dd4bf', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 380, 'top' => 618, 'width' => 230, 'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#e2e8f0', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 650, 'top' => 612, 'width' => 250, 'text' => "Expedido: {fecha_emision}\nCiudad: {ciudad}\nFolio: {folio}", 'fontSize' => 12.5, 'fontFamily' => 'Lato', 'fill' => '#94a3b8', 'textAlign' => 'left', 'lineHeight' => 1.4 ],
+            [ 'type' => 'rect', 'left' => 940, 'top' => 560, 'width' => 96, 'height' => 96, 'fill' => '#ffffff', 'stroke' => '#2dd4bf', 'strokeWidth' => 2, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 918, 'top' => 664, 'width' => 140, 'text' => 'VERIFICAR QR', 'fontSize' => 11, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#5eead4', 'textAlign' => 'center' ],
         ];
 
         return [
             'name'        => __( 'Corporativo Oscuro & Turquesa', 'aura-suite' ),
             'orientation' => 'landscape',
             'accent'      => '#0f172a',
-            'description' => __( 'Elegante fondo oscuro con acentos turquesa VIP', 'aura-suite' ),
+            'description' => __( 'Elegante fondo oscuro con acentos turquesa VIP y doble firma', 'aura-suite' ),
             'json'        => [
                 'version'    => '5.3.1',
                 'background' => '#0f172a',
@@ -732,31 +989,45 @@ class Aura_Certificates_Admin {
         ];
     }
 
-    // ─── Diploma Solemne Vertical (A4 Portrait) ───────────────────
+    // ─── 8. Diploma Solemne Vertical (A4 Portrait) ───────────────
     private static function preset_diploma_solemne_vertical(): array {
         $w = 794;
         $h = 1122;
 
         $objects = [
-            [ 'type' => 'rect', 'left' => 28, 'top' => 28, 'width' => $w - 56, 'height' => $h - 56, 'fill' => 'transparent', 'stroke' => '#7c2d12', 'strokeWidth' => 3 ],
-            [ 'type' => 'rect', 'left' => 40, 'top' => 40, 'width' => $w - 80, 'height' => $h - 80, 'fill' => 'transparent', 'stroke' => '#d97706', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 70, 'top' => 92, 'width' => $w - 140, 'text' => '{organizacion}', 'fontSize' => 18, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#7c2d12', 'textAlign' => 'center', 'charSpacing' => 140 ],
-            [ 'type' => 'textbox', 'left' => 70, 'top' => 152, 'width' => $w - 140, 'text' => 'DIPLOMA', 'fontSize' => 54, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#1c1917', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 70, 'top' => 222, 'width' => $w - 140, 'text' => 'DE HONOR Y MÉRITO', 'fontSize' => 16, 'fontFamily' => 'Montserrat', 'fill' => '#b45309', 'textAlign' => 'center', 'charSpacing' => 260 ],
-            [ 'type' => 'rect', 'left' => 267, 'top' => 270, 'width' => 260, 'height' => 2, 'fill' => '#d97706', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 80, 'top' => 325, 'width' => $w - 160, 'text' => 'Por la presente se confiere el presente diploma a:', 'fontSize' => 17, 'fontFamily' => 'Georgia', 'fontStyle' => 'italic', 'fill' => '#57534e', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 60, 'top' => 388, 'width' => $w - 120, 'text' => '{nombre_estudiante}', 'fontSize' => 46, 'fontFamily' => 'Great Vibes', 'fill' => '#7c2d12', 'textAlign' => 'center' ],
-            [ 'type' => 'rect', 'left' => 197, 'top' => 458, 'width' => 400, 'height' => 1.5, 'fill' => '#d6d3d1', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 80, 'top' => 502, 'width' => $w - 160, 'text' => 'Por haber concluido con excelencia académica:', 'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#44403c', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 70, 'top' => 544, 'width' => $w - 140, 'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#1c1917', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 618, 'width' => $w - 180, 'text' => '{descripcion}', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#57534e', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 700, 'width' => $w - 180, 'text' => 'Duración: {horas}  •  Ciudad: {ciudad}  •  Fecha: {fecha_emision_larga}', 'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#78716c', 'textAlign' => 'center' ],
-            [ 'type' => 'line', 'left' => 120, 'top' => 895, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#44403c', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 110, 'top' => 905, 'width' => 240, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#292524', 'textAlign' => 'center' ],
-            [ 'type' => 'line', 'left' => 454, 'top' => 895, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#44403c', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 444, 'top' => 905, 'width' => 240, 'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#292524', 'textAlign' => 'center' ],
-            [ 'type' => 'rect', 'left' => 352, 'top' => 965, 'width' => 90, 'height' => 90, 'fill' => '#ffffff', 'stroke' => '#d97706', 'strokeWidth' => 1, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
-            [ 'type' => 'textbox', 'left' => 247, 'top' => 1062, 'width' => 300, 'text' => 'Folio: {folio}', 'fontSize' => 11, 'fontFamily' => 'Courier New', 'fill' => '#78716c', 'textAlign' => 'center' ],
+            [ 'type' => 'rect', 'left' => 28, 'top' => 28, 'width' => $w - 56, 'height' => $h - 56,
+              'fill' => 'transparent', 'stroke' => '#7c2d12', 'strokeWidth' => 3, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+            [ 'type' => 'rect', 'left' => 40, 'top' => 40, 'width' => $w - 80, 'height' => $h - 80,
+              'fill' => 'transparent', 'stroke' => '#d97706', 'strokeWidth' => 1.5, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+
+            [ 'type' => 'textbox', 'left' => 70, 'top' => 84, 'width' => $w - 140, 'text' => '{organizacion}', 'fontSize' => 18, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#7c2d12', 'textAlign' => 'center', 'charSpacing' => 140 ],
+            [ 'type' => 'textbox', 'left' => 70, 'top' => 138, 'width' => $w - 140, 'text' => 'DIPLOMA', 'fontSize' => 54, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#1c1917', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 70, 'top' => 206, 'width' => $w - 140, 'text' => 'DE HONOR Y MÉRITO', 'fontSize' => 16, 'fontFamily' => 'Montserrat', 'fill' => '#b45309', 'textAlign' => 'center', 'charSpacing' => 260 ],
+            [ 'type' => 'rect', 'left' => 267, 'top' => 250, 'width' => 260, 'height' => 2, 'fill' => '#d97706', 'stroke' => null ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 296, 'width' => $w - 160, 'text' => 'Por la presente se confiere el presente diploma a:', 'fontSize' => 17, 'fontFamily' => 'Georgia', 'fontStyle' => 'italic', 'fill' => '#57534e', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 60, 'top' => 350, 'width' => $w - 120, 'text' => '{nombre_completo}', 'fontSize' => 46, 'fontFamily' => 'Great Vibes', 'fill' => '#7c2d12', 'textAlign' => 'center' ],
+            [ 'type' => 'rect', 'left' => 197, 'top' => 424, 'width' => 400, 'height' => 1.5, 'fill' => '#d6d3d1', 'stroke' => null ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 464, 'width' => $w - 160, 'text' => 'Por haber concluido con excelencia académica:', 'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#44403c', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 70, 'top' => 506, 'width' => $w - 140, 'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#1c1917', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 580, 'width' => $w - 180, 'text' => '{descripcion}', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#57534e', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 664, 'width' => $w - 180, 'text' => 'Duración: {horas}  •  Ciudad: {ciudad}  •  Fecha: {fecha_emision_larga}', 'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#78716c', 'textAlign' => 'center' ],
+
+            // 2 Firmas con slots dinámicos
+            [ 'type' => 'rect', 'left' => 140, 'top' => 776, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#d6d3d1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 110, 'top' => 840, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#44403c', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 100, 'top' => 850, 'width' => 240, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#292524', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 494, 'top' => 776, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#d6d3d1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 464, 'top' => 840, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#44403c', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 454, 'top' => 850, 'width' => 240, 'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#292524', 'textAlign' => 'center' ],
+
+            // QR y Folio holgados dentro del marco inferior
+            [ 'type' => 'rect', 'left' => 353, 'top' => 926, 'width' => 88, 'height' => 88, 'fill' => '#ffffff', 'stroke' => '#d97706', 'strokeWidth' => 1.5, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 247, 'top' => 1024, 'width' => 300, 'text' => 'Folio: {folio}  •  Cód: {codigo_verificacion}', 'fontSize' => 11.5, 'fontFamily' => 'Courier New', 'fill' => '#78716c', 'textAlign' => 'center' ],
         ];
 
         return [
@@ -772,30 +1043,146 @@ class Aura_Certificates_Admin {
         ];
     }
 
-    // ─── Reconocimiento Honorífico (Carta Horizontal) ─────────────
+    // ─── 9. Diploma Ejecutivo con Foto Vertical (A4 Portrait - NUEVA) ──
+    private static function preset_ejecutivo_foto_vertical(): array {
+        $w = 794;
+        $h = 1122;
+
+        $objects = [
+            // Cabecera azul oscuro / esmeralda
+            [ 'type' => 'rect', 'left' => 0, 'top' => 0, 'width' => $w, 'height' => 180, 'fill' => '#0f172a', 'stroke' => null ],
+            [ 'type' => 'rect', 'left' => 0, 'top' => 180, 'width' => $w, 'height' => 6, 'fill' => '#c9a84c', 'stroke' => null ],
+
+            // Marco interior (click-through)
+            [ 'type' => 'rect', 'left' => 32, 'top' => 206, 'width' => $w - 64, 'height' => $h - 238,
+              'fill' => 'transparent', 'stroke' => '#cbd5e1', 'strokeWidth' => 1.5, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+
+            [ 'type' => 'textbox', 'left' => 60, 'top' => 42, 'width' => $w - 120,
+              'text' => '{organizacion}', 'fontSize' => 15, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#fde68a', 'textAlign' => 'center', 'charSpacing' => 200 ],
+            [ 'type' => 'textbox', 'left' => 60, 'top' => 76, 'width' => $w - 120,
+              'text' => 'ACREDITACIÓN PROFESIONAL', 'fontSize' => 32, 'fontFamily' => 'Cinzel',
+              'fontWeight' => 'bold', 'fill' => '#ffffff', 'textAlign' => 'center', 'charSpacing' => 80 ],
+
+            // Foto del estudiante (Cuadrada con bordes redondeados superpuesta al banner)
+            [ 'type' => 'rect', 'left' => 332, 'top' => 132, 'width' => 130, 'height' => 130,
+              'fill' => '#ffffff', 'stroke' => '#c9a84c', 'strokeWidth' => 4,
+              'rx' => 22, 'ry' => 22,
+              'name' => 'student_photo_placeholder',
+              'auraElementType' => 'student_photo',
+              'auraPhotoShape' => 'rounded',
+              'auraPhotoRadius' => 22,
+              'auraPhotoPad' => 4,
+              'auraPhotoBorderStyle' => 'solid',
+              'shadow' => [ 'color' => 'rgba(15,23,42,0.28)', 'blur' => 12, 'offsetX' => 0, 'offsetY' => 4 ] ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 286, 'width' => $w - 160,
+              'text' => 'Se certifica que el titular:', 'fontSize' => 16, 'fontFamily' => 'Lato',
+              'fill' => '#64748b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 60, 'top' => 320, 'width' => $w - 120,
+              'text' => '{nombre_completo}', 'fontSize' => 42, 'fontFamily' => 'Playfair Display',
+              'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 100, 'top' => 380, 'width' => $w - 200,
+              'text' => 'Documento: {documento}', 'fontSize' => 14, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#b45309', 'textAlign' => 'center', 'charSpacing' => 100 ],
+
+            [ 'type' => 'rect', 'left' => 277, 'top' => 414, 'width' => 240, 'height' => 2, 'fill' => '#e2e8f0', 'stroke' => null ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 442, 'width' => $w - 160,
+              'text' => 'Ha aprobado satisfactoriamente todos los créditos y evaluaciones de:',
+              'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#334155', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 70, 'top' => 480, 'width' => $w - 140,
+              'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 552, 'width' => $w - 180,
+              'text' => '{descripcion}', 'fontSize' => 15, 'fontFamily' => 'Lato',
+              'fontStyle' => 'italic', 'fill' => '#475569', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 636, 'width' => $w - 160,
+              'text' => 'Programa: {programa}  •  Horas: {horas}  •  Calificación: {calificacion}',
+              'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 668, 'width' => $w - 160,
+              'text' => 'Expedido en {ciudad}, el {fecha_emision_larga}',
+              'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'center' ],
+
+            // 2 Firmas + QR inferior
+            [ 'type' => 'rect', 'left' => 135, 'top' => 768, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 105, 'top' => 832, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#0f172a', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 95, 'top' => 842, 'width' => 240,
+              'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 499, 'top' => 768, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#cbd5e1', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 469, 'top' => 832, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#0f172a', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 459, 'top' => 842, 'width' => 240,
+              'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 353, 'top' => 924, 'width' => 88, 'height' => 88,
+              'fill' => '#f8fafc', 'stroke' => '#c9a84c', 'strokeWidth' => 1.5,
+              'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 247, 'top' => 1022, 'width' => 300,
+              'text' => 'Folio: {folio}  •  Verificación: {codigo_verificacion}',
+              'fontSize' => 11.5, 'fontFamily' => 'Courier New', 'fill' => '#64748b', 'textAlign' => 'center' ],
+        ];
+
+        return [
+            'name'        => __( 'Ejecutivo con Foto Vertical (A4)', 'aura-suite' ),
+            'orientation' => 'portrait',
+            'accent'      => '#0f172a',
+            'description' => __( 'Vertical moderno con foto redondeada del estudiante', 'aura-suite' ),
+            'json'        => [
+                'version'    => '5.3.1',
+                'background' => '#ffffff',
+                'objects'    => $objects,
+            ],
+        ];
+    }
+
+    // ─── 10. Reconocimiento Honorífico (Carta Horizontal) ─────────
     private static function preset_reconocimiento_honorifico(): array {
         $w = 1056;
         $h = 816;
 
         $objects = [
             [ 'type' => 'rect', 'left' => 0, 'top' => 0, 'width' => 190, 'height' => $h, 'fill' => '#581c87', 'stroke' => null ],
-            [ 'type' => 'rect', 'left' => 190, 'top' => 0, 'width' => 12, 'height' => $h, 'fill' => '#f59e0b', 'stroke' => null ],
-            [ 'type' => 'circle', 'left' => 52, 'top' => 70, 'radius' => 42, 'fill' => '#f59e0b', 'stroke' => '#fef3c7', 'strokeWidth' => 3 ],
-            [ 'type' => 'textbox', 'left' => 20, 'top' => 180, 'width' => 150, 'text' => "MENCIÓN\nDE HONOR\n{anio_actual}", 'fontSize' => 16, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#fef3c7', 'textAlign' => 'center' ],
-            [ 'type' => 'rect', 'left' => 45, 'top' => 620, 'width' => 100, 'height' => 100, 'fill' => '#ffffff', 'stroke' => '#f59e0b', 'strokeWidth' => 2, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
-            [ 'type' => 'textbox', 'left' => 20, 'top' => 732, 'width' => 150, 'text' => '{folio}', 'fontSize' => 11, 'fontFamily' => 'Courier New', 'fill' => '#e9d5ff', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 255, 'top' => 86, 'width' => 730, 'text' => '{organizacion}', 'fontSize' => 16, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#6b21a8', 'textAlign' => 'left', 'charSpacing' => 150 ],
-            [ 'type' => 'textbox', 'left' => 255, 'top' => 128, 'width' => 730, 'text' => 'RECONOCIMIENTO ESPECIAL', 'fontSize' => 38, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#1e1b4b', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 255, 'top' => 210, 'width' => 730, 'text' => 'Concedido con gratitud y distinción a:', 'fontSize' => 17, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 255, 'top' => 258, 'width' => 740, 'text' => '{nombre_estudiante}', 'fontSize' => 46, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#581c87', 'textAlign' => 'left' ],
-            [ 'type' => 'rect', 'left' => 255, 'top' => 324, 'width' => 480, 'height' => 2, 'fill' => '#e2e8f0', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 255, 'top' => 360, 'width' => 730, 'text' => '{curso}', 'fontSize' => 26, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 255, 'top' => 414, 'width' => 730, 'text' => '{descripcion}', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#475569', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 255, 'top' => 495, 'width' => 730, 'text' => 'Categoría: {categoria}  •  Otorgado el {fecha_emision_larga}', 'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'left' ],
-            [ 'type' => 'line', 'left' => 255, 'top' => 675, 'x1' => 0, 'y1' => 0, 'x2' => 230, 'y2' => 0, 'stroke' => '#581c87', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 255, 'top' => 686, 'width' => 240, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'left' ],
-            [ 'type' => 'line', 'left' => 600, 'top' => 675, 'x1' => 0, 'y1' => 0, 'x2' => 230, 'y2' => 0, 'stroke' => '#581c87', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 600, 'top' => 686, 'width' => 240, 'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'left' ],
+            [ 'type' => 'rect', 'left' => 190, 'top' => 0, 'width' => 10, 'height' => $h, 'fill' => '#f59e0b', 'stroke' => null ],
+            // Sello dorado centrado en barra de 190px (radio 42 → ancho 84 → left = (190-84)/2 = 53)
+            [ 'type' => 'circle', 'left' => 53, 'top' => 68, 'radius' => 42, 'fill' => '#f59e0b', 'stroke' => '#fef3c7', 'strokeWidth' => 3 ],
+            [ 'type' => 'textbox', 'left' => 53, 'top' => 92, 'width' => 84, 'text' => '★', 'fontSize' => 32, 'fontFamily' => 'Georgia', 'fill' => '#581c87', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 20, 'top' => 176, 'width' => 150, 'text' => "MENCIÓN\nDE HONOR\n{anio_actual}", 'fontSize' => 15, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#fef3c7', 'textAlign' => 'center', 'lineHeight' => 1.35 ],
+            [ 'type' => 'rect', 'left' => 45, 'top' => 596, 'width' => 100, 'height' => 100, 'fill' => '#ffffff', 'stroke' => '#f59e0b', 'strokeWidth' => 2, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 20, 'top' => 708, 'width' => 150, 'text' => 'Folio: {folio}', 'fontSize' => 11, 'fontFamily' => 'Courier New', 'fill' => '#e9d5ff', 'textAlign' => 'center' ],
+
+            // Cuerpo principal
+            [ 'type' => 'textbox', 'left' => 255, 'top' => 76, 'width' => 730, 'text' => '{organizacion}', 'fontSize' => 16, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#6b21a8', 'textAlign' => 'left', 'charSpacing' => 150 ],
+            [ 'type' => 'textbox', 'left' => 255, 'top' => 114, 'width' => 730, 'text' => 'RECONOCIMIENTO ESPECIAL', 'fontSize' => 38, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#1e1b4b', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 255, 'top' => 186, 'width' => 730, 'text' => 'Concedido con gratitud y distinción a:', 'fontSize' => 17, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 255, 'top' => 228, 'width' => 740, 'text' => '{nombre_completo}', 'fontSize' => 46, 'fontFamily' => 'Playfair Display', 'fontWeight' => 'bold', 'fill' => '#581c87', 'textAlign' => 'left' ],
+            [ 'type' => 'rect', 'left' => 255, 'top' => 296, 'width' => 480, 'height' => 2, 'fill' => '#e2e8f0', 'stroke' => null ],
+            [ 'type' => 'textbox', 'left' => 255, 'top' => 326, 'width' => 730, 'text' => '{curso}', 'fontSize' => 28, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 255, 'top' => 382, 'width' => 730, 'text' => '{descripcion}', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#475569', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 255, 'top' => 456, 'width' => 730, 'text' => 'Categoría: {categoria}  •  Otorgado en {ciudad}, el {fecha_emision_larga}', 'fontSize' => 14, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'left' ],
+
+            // 2 Firmas con slots dinámicos
+            [ 'type' => 'rect', 'left' => 285, 'top' => 580, 'width' => 165, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#e9d5ff', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 255, 'top' => 646, 'x1' => 0, 'y1' => 0, 'x2' => 230, 'y2' => 0, 'stroke' => '#581c87', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 255, 'top' => 656, 'width' => 240, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'left' ],
+
+            [ 'type' => 'rect', 'left' => 630, 'top' => 580, 'width' => 165, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#e9d5ff', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 600, 'top' => 646, 'x1' => 0, 'y1' => 0, 'x2' => 230, 'y2' => 0, 'stroke' => '#581c87', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 600, 'top' => 656, 'width' => 240, 'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'left' ],
         ];
 
         return [
@@ -811,27 +1198,141 @@ class Aura_Certificates_Admin {
         ];
     }
 
-    // ─── Constancia de Taller / Seminario ────────────────────────
+    // ─── 11. Gala de Excelencia con Foto (Carta Horizontal - NUEVA) ──
+    private static function preset_gala_excelencia_carta(): array {
+        $w = 1056;
+        $h = 816;
+
+        $objects = [
+            // Marco dorado imperial sobre fondo negro carbón (click-through)
+            [ 'type' => 'rect', 'left' => 24, 'top' => 24, 'width' => $w - 48, 'height' => $h - 48,
+              'fill' => 'transparent', 'stroke' => '#d4af37', 'strokeWidth' => 3, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+            [ 'type' => 'rect', 'left' => 36, 'top' => 36, 'width' => $w - 72, 'height' => $h - 72,
+              'fill' => 'transparent', 'stroke' => '#785c12', 'strokeWidth' => 1.5, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+
+            // Foto de perfil del estudiante a la derecha superior
+            [ 'type' => 'rect', 'left' => 846, 'top' => 76, 'width' => 130, 'height' => 130,
+              'fill' => '#1e293b', 'stroke' => '#d4af37', 'strokeWidth' => 3.5,
+              'rx' => 65, 'ry' => 65,
+              'name' => 'student_photo_placeholder',
+              'auraElementType' => 'student_photo',
+              'auraPhotoShape' => 'circle',
+              'auraPhotoRadius' => 65,
+              'auraPhotoPad' => 3,
+              'auraPhotoBorderStyle' => 'double',
+              'shadow' => [ 'color' => 'rgba(0,0,0,0.45)', 'blur' => 12, 'offsetX' => 0, 'offsetY' => 4 ] ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 74, 'width' => 720,
+              'text' => '{organizacion}', 'fontSize' => 15, 'fontFamily' => 'Cinzel',
+              'fontWeight' => 'bold', 'fill' => '#d4af37', 'textAlign' => 'left', 'charSpacing' => 220 ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 110, 'width' => 720,
+              'text' => 'GALARDÓN A LA EXCELENCIA', 'fontSize' => 38, 'fontFamily' => 'Cinzel',
+              'fontWeight' => 'bold', 'fill' => '#fef9c3', 'textAlign' => 'left', 'charSpacing' => 60 ],
+
+            [ 'type' => 'rect', 'left' => 80, 'top' => 168, 'width' => 220, 'height' => 2.5,
+              'fill' => '#d4af37', 'stroke' => null ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 204, 'width' => 740,
+              'text' => 'Se confiere este reconocimiento de honor a:', 'fontSize' => 16, 'fontFamily' => 'Merriweather',
+              'fontStyle' => 'italic', 'fill' => '#cbd5e1', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 242, 'width' => 880,
+              'text' => '{nombre_completo}', 'fontSize' => 46, 'fontFamily' => 'Playfair Display',
+              'fontWeight' => 'bold', 'fill' => '#fde047', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 314, 'width' => 880,
+              'text' => 'Por su sobresaliente desempeño y mérito en:', 'fontSize' => 16, 'fontFamily' => 'Lato',
+              'fill' => '#cbd5e1', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 348, 'width' => 880,
+              'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Montserrat',
+              'fontWeight' => 'bold', 'fill' => '#ffffff', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 404, 'width' => 840,
+              'text' => '{descripcion}', 'fontSize' => 15, 'fontFamily' => 'Lato',
+              'fontStyle' => 'italic', 'fill' => '#94a3b8', 'textAlign' => 'left' ],
+
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 466, 'width' => 840,
+              'text' => 'Programa: {programa}  •  Mención: {calificacion}  •  {ciudad}, {fecha_emision_larga}',
+              'fontSize' => 13.5, 'fontFamily' => 'Lato', 'fill' => '#d4af37', 'textAlign' => 'left' ],
+
+            // 2 Firmas + QR
+            [ 'type' => 'rect', 'left' => 110, 'top' => 572, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#785c12', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 80, 'top' => 636, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#d4af37', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 80, 'top' => 646, 'width' => 230,
+              'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#fef9c3', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 430, 'top' => 572, 'width' => 160, 'height' => 56,
+              'fill' => 'transparent', 'stroke' => '#785c12', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 400, 'top' => 636, 'x1' => 0, 'y1' => 0, 'x2' => 220, 'y2' => 0, 'stroke' => '#d4af37', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 400, 'top' => 646, 'width' => 230,
+              'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#fef9c3', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 866, 'top' => 580, 'width' => 96, 'height' => 96,
+              'fill' => '#ffffff', 'stroke' => '#d4af37', 'strokeWidth' => 2,
+              'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 824, 'top' => 686, 'width' => 180,
+              'text' => 'Folio: {folio}', 'fontSize' => 11.5, 'fontFamily' => 'Courier New', 'fill' => '#d4af37', 'textAlign' => 'center' ],
+        ];
+
+        return [
+            'name'        => __( 'Gala de Excelencia con Foto (Carta)', 'aura-suite' ),
+            'orientation' => 'letter_landscape',
+            'accent'      => '#b45309',
+            'description' => __( 'Edición de lujo en negro y oro con foto en formato Carta', 'aura-suite' ),
+            'json'        => [
+                'version'    => '5.3.1',
+                'background' => '#111827',
+                'objects'    => $objects,
+            ],
+        ];
+    }
+
+    // ─── 12. Constancia de Taller / Seminario (A4 Landscape) ─────
     private static function preset_constancia_taller(): array {
         $w = 1122;
         $h = 794;
 
         $objects = [
-            [ 'type' => 'rect', 'left' => 36, 'top' => 36, 'width' => $w - 72, 'height' => $h - 72, 'fill' => '#ffffff', 'stroke' => '#0284c7', 'strokeWidth' => 2, 'rx' => 16, 'ry' => 16 ],
-            [ 'type' => 'rect', 'left' => 36, 'top' => 36, 'width' => $w - 72, 'height' => 110, 'fill' => '#0284c7', 'stroke' => null ],
-            [ 'type' => 'textbox', 'left' => 76, 'top' => 64, 'width' => 650, 'text' => 'CONSTANCIA DE PARTICIPACIÓN', 'fontSize' => 30, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#ffffff', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 76, 'top' => 104, 'width' => 650, 'text' => '{organizacion}', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#e0f2fe', 'textAlign' => 'left' ],
-            [ 'type' => 'textbox', 'left' => 780, 'top' => 78, 'width' => 260, 'text' => 'FOLIO: {folio}', 'fontSize' => 14, 'fontFamily' => 'Courier New', 'fontWeight' => 'bold', 'fill' => '#ffffff', 'textAlign' => 'right' ],
-            [ 'type' => 'textbox', 'left' => 86, 'top' => 205, 'width' => 950, 'text' => 'Se extiende la presente constancia a:', 'fontSize' => 18, 'fontFamily' => 'Lato', 'fill' => '#475569', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 86, 'top' => 255, 'width' => 950, 'text' => '{nombre_estudiante}', 'fontSize' => 44, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#0369a1', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 120, 'top' => 332, 'width' => 882, 'text' => 'Por su destacada participación en el taller / evento:', 'fontSize' => 17, 'fontFamily' => 'Lato', 'fill' => '#334155', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 90, 'top' => 372, 'width' => 942, 'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center' ],
-            [ 'type' => 'textbox', 'left' => 140, 'top' => 432, 'width' => 842, 'text' => 'Duración: {horas}  •  Fecha: {fecha_emision_larga}  •  {ciudad}', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#64748b', 'textAlign' => 'center' ],
-            [ 'type' => 'line', 'left' => 190, 'top' => 625, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0, 'stroke' => '#0284c7', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 180, 'top' => 636, 'width' => 260, 'text' => "{instructor}\nInstructor / Facilitador", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
-            [ 'type' => 'line', 'left' => 540, 'top' => 625, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0, 'stroke' => '#0284c7', 'strokeWidth' => 1.5 ],
-            [ 'type' => 'textbox', 'left' => 530, 'top' => 636, 'width' => 260, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
-            [ 'type' => 'rect', 'left' => 925, 'top' => 565, 'width' => 95, 'height' => 95, 'fill' => '#f8fafc', 'stroke' => '#0284c7', 'strokeWidth' => 1.5, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            // Marco tarjeta redondeado (click-through)
+            [ 'type' => 'rect', 'left' => 36, 'top' => 36, 'width' => $w - 72, 'height' => $h - 72,
+              'fill' => 'transparent', 'stroke' => '#0284c7', 'strokeWidth' => 2.5,
+              'rx' => 16, 'ry' => 16, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+
+            // Cabecera interna con bordes redondeados (sin sobresalir del marco)
+            [ 'type' => 'rect', 'left' => 52, 'top' => 52, 'width' => $w - 104, 'height' => 104,
+              'fill' => '#0284c7', 'stroke' => null, 'rx' => 12, 'ry' => 12 ],
+
+            [ 'type' => 'textbox', 'left' => 84, 'top' => 72, 'width' => 650, 'text' => 'CONSTANCIA DE PARTICIPACIÓN', 'fontSize' => 28, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#ffffff', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 84, 'top' => 110, 'width' => 650, 'text' => '{organizacion}', 'fontSize' => 15, 'fontFamily' => 'Lato', 'fill' => '#e0f2fe', 'textAlign' => 'left' ],
+            [ 'type' => 'textbox', 'left' => 770, 'top' => 88, 'width' => 260, 'text' => 'FOLIO: {folio}', 'fontSize' => 14, 'fontFamily' => 'Courier New', 'fontWeight' => 'bold', 'fill' => '#ffffff', 'textAlign' => 'right' ],
+
+            [ 'type' => 'textbox', 'left' => 86, 'top' => 196, 'width' => 950, 'text' => 'Se extiende la presente constancia a:', 'fontSize' => 17, 'fontFamily' => 'Lato', 'fill' => '#475569', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 86, 'top' => 236, 'width' => 950, 'text' => '{nombre_completo}', 'fontSize' => 44, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#0369a1', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 120, 'top' => 308, 'width' => 882, 'text' => 'Por su destacada participación en el taller / seminario:', 'fontSize' => 16, 'fontFamily' => 'Lato', 'fill' => '#334155', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 90, 'top' => 344, 'width' => 942, 'text' => '{curso}', 'fontSize' => 30, 'fontFamily' => 'Montserrat', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 140, 'top' => 400, 'width' => 842, 'text' => '{descripcion}', 'fontSize' => 14.5, 'fontFamily' => 'Lato', 'fontStyle' => 'italic', 'fill' => '#64748b', 'textAlign' => 'center' ],
+            [ 'type' => 'textbox', 'left' => 140, 'top' => 448, 'width' => 842, 'text' => 'Duración: {horas}  •  Fecha: {fecha_emision_larga}  •  {ciudad}', 'fontSize' => 14.5, 'fontFamily' => 'Lato', 'fill' => '#475569', 'textAlign' => 'center' ],
+
+            // 2 Firmas con slots dinámicos + QR
+            [ 'type' => 'rect', 'left' => 205, 'top' => 548, 'width' => 170, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#bae6fd', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_1', 'auraElementType' => 'signer_sig', 'signerSlot' => 1 ],
+            [ 'type' => 'line', 'left' => 170, 'top' => 614, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0, 'stroke' => '#0284c7', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 160, 'top' => 624, 'width' => 260, 'text' => "{firmante_1_nombre}\n{firmante_1_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 555, 'top' => 548, 'width' => 170, 'height' => 58,
+              'fill' => 'transparent', 'stroke' => '#bae6fd', 'strokeWidth' => 1, 'strokeDashArray' => [4, 4],
+              'name' => 'signer_slot_2', 'auraElementType' => 'signer_sig', 'signerSlot' => 2 ],
+            [ 'type' => 'line', 'left' => 520, 'top' => 614, 'x1' => 0, 'y1' => 0, 'x2' => 240, 'y2' => 0, 'stroke' => '#0284c7', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'textbox', 'left' => 510, 'top' => 624, 'width' => 260, 'text' => "{firmante_2_nombre}\n{firmante_2_cargo}", 'fontSize' => 13, 'fontFamily' => 'Lato', 'fill' => '#1e293b', 'textAlign' => 'center' ],
+
+            [ 'type' => 'rect', 'left' => 920, 'top' => 556, 'width' => 96, 'height' => 96, 'fill' => '#f8fafc', 'stroke' => '#0284c7', 'strokeWidth' => 1.5, 'name' => 'qr_placeholder', 'auraElementType' => 'qr' ],
+            [ 'type' => 'textbox', 'left' => 898, 'top' => 660, 'width' => 140, 'text' => 'Cód: {codigo_verificacion}', 'fontSize' => 11, 'fontFamily' => 'Courier New', 'fill' => '#64748b', 'textAlign' => 'center' ],
         ];
 
         return [
@@ -841,20 +1342,22 @@ class Aura_Certificates_Admin {
             'description' => __( 'Tarjeta moderna azul cielo para eventos y talleres', 'aura-suite' ),
             'json'        => [
                 'version'    => '5.3.1',
-                'background' => '#f1f5f9',
+                'background' => '#ffffff',
                 'objects'    => $objects,
             ],
         ];
     }
 
-    // ─── Institucional 4 Firmas (A4 Landscape) ────────────────────
+    // ─── 13. Institucional 4 Firmas (A4 Landscape) ───────────────
     private static function preset_institucional_4_firmas(): array {
         $w = 1122;
         $h = 794;
 
         $objects = [
-            [ 'type' => 'rect', 'left' => 24, 'top' => 24, 'width' => $w - 48, 'height' => $h - 48, 'fill' => 'transparent', 'stroke' => '#1e293b', 'strokeWidth' => 3 ],
-            [ 'type' => 'rect', 'left' => 34, 'top' => 34, 'width' => $w - 68, 'height' => $h - 68, 'fill' => 'transparent', 'stroke' => '#b45309', 'strokeWidth' => 1.5 ],
+            [ 'type' => 'rect', 'left' => 24, 'top' => 24, 'width' => $w - 48, 'height' => $h - 48,
+              'fill' => 'transparent', 'stroke' => '#1e293b', 'strokeWidth' => 3, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
+            [ 'type' => 'rect', 'left' => 34, 'top' => 34, 'width' => $w - 68, 'height' => $h - 68,
+              'fill' => 'transparent', 'stroke' => '#b45309', 'strokeWidth' => 1.5, 'perPixelTargetFind' => true, 'targetFindTolerance' => 8 ],
             [ 'type' => 'textbox', 'left' => 80, 'top' => 64, 'width' => 962, 'text' => '{organizacion}', 'fontSize' => 17, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#1e293b', 'textAlign' => 'center', 'charSpacing' => 160 ],
             [ 'type' => 'textbox', 'left' => 80, 'top' => 104, 'width' => 962, 'text' => 'DIPLOMA DE GRADUACIÓN', 'fontSize' => 42, 'fontFamily' => 'Cinzel', 'fontWeight' => 'bold', 'fill' => '#0f172a', 'textAlign' => 'center', 'charSpacing' => 100 ],
             [ 'type' => 'rect', 'left' => 411, 'top' => 162, 'width' => 300, 'height' => 2.5, 'fill' => '#b45309', 'stroke' => null ],

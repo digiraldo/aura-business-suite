@@ -21,6 +21,7 @@
     var CUSTOM_PROPS = [
         'name', 'auraElementType', 'signerSlot',
         'auraSvgMarkup', 'auraSvgOriginal', 'auraClipartLabel',
+        'auraPhotoShape', 'auraPhotoRadius', 'auraPhotoPad', 'auraPhotoBorderStyle', 'auraCustomPhotoSrc',
         'rx', 'ry', 'strokeDashArray', 'auraLocked', 'shadow', 'perPixelTargetFind', 'visible'
     ];
 
@@ -163,8 +164,13 @@
         });
     }
 
+    function isPhotoObject(obj) {
+        return !!(obj && (obj.auraElementType === 'student_photo' || obj.name === 'student_photo_placeholder'));
+    }
+
     function getObjectLabel(obj, idx) {
         if (!obj) return 'Elemento ' + (idx + 1);
+        if (isPhotoObject(obj)) return '👤 Foto Estudiante';
         if (obj.auraElementType === 'qr' || obj.name === 'qr_placeholder') return 'Código QR';
         if (obj.auraElementType === 'signer_sig' || (obj.name && String(obj.name).indexOf('signer_slot_') === 0)) {
             var slotNum = obj.signerSlot || String(obj.name || '').replace('signer_slot_', '') || '1';
@@ -308,6 +314,9 @@
                 }
                 if (obj.visible === false) {
                     obj.set({ selectable: false, evented: false });
+                }
+                if (isPhotoObject(obj) || (obj.type === 'image' && obj.auraPhotoShape)) {
+                    decoratePhotoObject(obj);
                 }
                 syncTransparentHitTest(obj);
             });
@@ -505,8 +514,32 @@
         $('#aura-cb-obj-props').hide();
         $('#aura-cb-text-props').hide();
         $('#aura-cb-shape-props').hide();
+        $('#aura-cb-photo-props').hide();
         $('#aura-cb-svg-props').hide();
         renderLayersList();
+    }
+
+    function renderPhotoPropsPanel(obj) {
+        if (!obj) return;
+        var shape  = obj.auraPhotoShape || 'circle';
+        var radius = obj.auraPhotoRadius != null ? parseInt(obj.auraPhotoRadius, 10) : (obj.rx || 20);
+        var bStyle = obj.auraPhotoBorderStyle || (Array.isArray(obj.strokeDashArray) && obj.strokeDashArray.length ? 'dashed' : ((obj.strokeWidth || 0) > 0 ? 'solid' : 'none'));
+        var bWidth = obj.strokeWidth != null ? parseFloat(obj.strokeWidth) : 4;
+        var bColor = toHexColor(obj.stroke, '#c9a84c');
+        var bgCol  = toHexColor(obj.fill, '#ffffff');
+        var pad    = obj.auraPhotoPad != null ? parseInt(obj.auraPhotoPad, 10) : 4;
+
+        $('.aura-cb-photo-shape-btn').removeClass('is-active');
+        $('.aura-cb-photo-shape-btn[data-photo-shape="' + shape + '"]').addClass('is-active');
+        $('#aura-cb-photo-radius-row').toggle(shape === 'rounded');
+        $('#aura-cb-photo-radius, #aura-cb-photo-radius-range').val(radius);
+
+        $('#aura-cb-photo-border-style').val(bStyle);
+        $('#aura-cb-photo-border-width').val(bWidth);
+        $('#aura-cb-photo-border-color').val(bColor);
+        $('#aura-cb-photo-bg-color').val(bgCol);
+        $('#aura-cb-photo-pad').val(pad);
+        $('#aura-cb-photo-sample-clear').toggle(!!obj.auraCustomPhotoSrc);
     }
 
     function updateObjectPanel(obj) {
@@ -537,6 +570,7 @@
         if (isTextObject(obj)) {
             $('#aura-cb-text-props').show();
             $('#aura-cb-shape-props').hide();
+            $('#aura-cb-photo-props').hide();
             $('#aura-cb-svg-props').hide();
 
             $('#aura-cb-text-content').val(obj.text || '');
@@ -552,13 +586,21 @@
             $('#aura-cb-obj-italic').toggleClass('is-active', obj.fontStyle === 'italic');
             $('#aura-cb-obj-underline').toggleClass('is-active', !!obj.underline);
             $('#aura-cb-obj-linethrough').toggleClass('is-active', !!obj.linethrough);
+        } else if (isPhotoObject(obj) || obj.type === 'image') {
+            $('#aura-cb-text-props').hide();
+            $('#aura-cb-shape-props').hide();
+            $('#aura-cb-svg-props').hide();
+            $('#aura-cb-photo-props').show();
+            renderPhotoPropsPanel(obj);
         } else if (obj.auraElementType === 'svg_clipart' || obj.auraSvgMarkup) {
             $('#aura-cb-text-props').hide();
             $('#aura-cb-shape-props').hide();
+            $('#aura-cb-photo-props').hide();
             $('#aura-cb-svg-props').show();
             renderSvgColorsPanel(obj);
         } else {
             $('#aura-cb-text-props').hide();
+            $('#aura-cb-photo-props').hide();
             $('#aura-cb-svg-props').hide();
 
             if (obj.type === 'rect' || obj.type === 'circle' || obj.type === 'triangle' || obj.type === 'polygon' || obj.type === 'line') {
@@ -591,6 +633,7 @@
 
     function getLayerTypeBadge(obj) {
         if (!obj) return '◆';
+        if (isPhotoObject(obj)) return '👤';
         if (obj.auraElementType === 'qr' || obj.name === 'qr_placeholder') return 'QR';
         if (obj.auraElementType === 'signer_sig' || (obj.name && String(obj.name).indexOf('signer_slot_') === 0)) return '✍';
         if (obj.auraElementType === 'svg_clipart' || obj.auraSvgMarkup) return 'SVG';
@@ -1292,6 +1335,9 @@
                     cloned[p] = obj[p];
                 }
             });
+            if (isPhotoObject(cloned) || (cloned.type === 'image' && cloned.auraPhotoShape)) {
+                decoratePhotoObject(cloned);
+            }
             canvas.add(cloned);
             canvas.setActiveObject(cloned);
             canvas.requestRenderAll();
@@ -1746,6 +1792,247 @@
         canvas.requestRenderAll();
     }
 
+    /* ─── Foto de Perfil del Estudiante / Imágenes con Marco, Forma y Sombra ─── */
+
+    function buildRoundedPath(ctx, x, y, w, h, r) {
+        var rr = Math.max(0, Math.min(r, w / 2, h / 2));
+        ctx.beginPath();
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + h, rr);
+        ctx.arcTo(x + w, y + h, x, y + h, rr);
+        ctx.arcTo(x, y + h, x, y, rr);
+        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.closePath();
+    }
+
+    function decoratePhotoObject(obj) {
+        if (!obj || obj._auraPhotoDecorated) return;
+        obj._auraPhotoDecorated = true;
+
+        function syncSampleImg(target) {
+            var src = target.auraCustomPhotoSrc || '';
+            if (!src) {
+                target._sampleImgEl = null;
+                target._sampleImgSrc = '';
+                return;
+            }
+            if (target._sampleImgSrc === src && target._sampleImgEl) return;
+            target._sampleImgSrc = src;
+            var imgEl = new Image();
+            imgEl.crossOrigin = 'anonymous';
+            imgEl.onload = function () {
+                target._sampleImgEl = imgEl;
+                target.dirty = true;
+                if (canvas) canvas.requestRenderAll();
+            };
+            imgEl.src = src;
+        }
+
+        syncSampleImg(obj);
+        obj._syncSampleImg = function () { syncSampleImg(obj); };
+
+        var baseRender = obj._render;
+        obj._render = function (ctx) {
+            var w      = this.width || 130;
+            var h      = this.height || 130;
+            var shape  = this.auraPhotoShape || 'circle';
+            var bStyle = this.auraPhotoBorderStyle || (Array.isArray(this.strokeDashArray) && this.strokeDashArray.length ? 'dashed' : ((this.strokeWidth || 0) > 0 ? 'solid' : 'none'));
+            var sw     = bStyle === 'none' ? 0 : Math.max(0, parseFloat(this.strokeWidth) || 0);
+            var pad    = Math.max(0, parseFloat(this.auraPhotoPad) || 0);
+            var rx     = shape === 'circle'
+                ? Math.min(w, h) / 2
+                : (shape === 'rounded' ? Math.max(4, parseFloat(this.auraPhotoRadius != null ? this.auraPhotoRadius : (this.rx || 20))) : 0);
+
+            if (this.type === 'rect') {
+                this.rx = rx;
+                this.ry = rx;
+            }
+
+            // Si es un rect de student_photo o imagen con estilo
+            if (isPhotoObject(this)) {
+                baseRender.call(this, ctx);
+
+                var inset = Math.max(1, sw / 2) + pad;
+                var ix    = -w / 2 + inset;
+                var iy    = -h / 2 + inset;
+                var iw    = Math.max(16, w - inset * 2);
+                var ih    = Math.max(16, h - inset * 2);
+                var irx   = shape === 'circle' ? Math.min(iw, ih) / 2 : Math.max(0, rx - pad);
+
+                ctx.save();
+                if (shape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, Math.min(iw, ih) / 2, 0, Math.PI * 2);
+                    ctx.closePath();
+                } else {
+                    buildRoundedPath(ctx, ix, iy, iw, ih, irx);
+                }
+                ctx.clip();
+
+                if (this._sampleImgEl && this._sampleImgEl.complete && this._sampleImgEl.naturalWidth > 0) {
+                    var nw = this._sampleImgEl.naturalWidth;
+                    var nh = this._sampleImgEl.naturalHeight;
+                    var sc = Math.max(iw / nw, ih / nh);
+                    var dw = nw * sc;
+                    var dh = nh * sc;
+                    ctx.drawImage(this._sampleImgEl, -dw / 2, -dh / 2, dw, dh);
+                } else {
+                    // Retrato de estudiante vectorial elegante
+                    var grad = ctx.createLinearGradient(ix, iy, ix, iy + ih);
+                    grad.addColorStop(0, '#e2e8f0');
+                    grad.addColorStop(1, '#cbd5e1');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(ix, iy, iw, ih);
+
+                    // Silueta cabeza + hombros
+                    var minD = Math.min(iw, ih);
+                    ctx.fillStyle = '#64748b';
+                    ctx.beginPath();
+                    ctx.arc(0, -minD * 0.11, minD * 0.19, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.ellipse(0, minD * 0.36, minD * 0.36, minD * 0.28, 0, Math.PI, 0, false);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Cinta inferior "FOTO ESTUDIANTE"
+                    var bandH = Math.max(18, minD * 0.22);
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.76)';
+                    ctx.fillRect(ix, iy + ih - bandH, iw, bandH);
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.font = 'bold ' + Math.max(8, Math.round(minD * 0.085)) + 'px Montserrat, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('FOTO PERFIL', 0, iy + ih - bandH / 2);
+                }
+                ctx.restore();
+
+                // Si el estilo de marco es doble anillo ("double"), dibujar segundo aro interior
+                if (bStyle === 'double' && sw > 0 && this.stroke) {
+                    ctx.save();
+                    var dOff = Math.max(3, sw * 1.15);
+                    ctx.strokeStyle = this.stroke;
+                    ctx.lineWidth   = Math.max(1, sw * 0.45);
+                    ctx.globalAlpha = 0.78;
+                    if (shape === 'circle') {
+                        var rIn = Math.max(6, Math.min(w, h) / 2 - sw / 2 - dOff);
+                        ctx.beginPath();
+                        ctx.arc(0, 0, rIn, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else {
+                        var bx = -w / 2 + sw / 2 + dOff;
+                        var by = -h / 2 + sw / 2 + dOff;
+                        var bw = Math.max(10, w - sw - dOff * 2);
+                        var bh = Math.max(10, h - sw - dOff * 2);
+                        buildRoundedPath(ctx, bx, by, bw, bh, Math.max(0, rx - dOff));
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+                return;
+            }
+
+            // Imagen subida normal con forma/marco aplicado
+            if (this.type === 'image' && this.auraPhotoShape) {
+                ctx.save();
+                if (shape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, Math.min(w, h) / 2, 0, Math.PI * 2);
+                    ctx.closePath();
+                } else {
+                    buildRoundedPath(ctx, -w / 2, -h / 2, w, h, rx);
+                }
+                ctx.clip();
+                baseRender.call(this, ctx);
+                ctx.restore();
+
+                if (sw > 0 && this.stroke) {
+                    ctx.save();
+                    ctx.strokeStyle = this.stroke;
+                    ctx.lineWidth   = sw;
+                    if (bStyle === 'dashed') ctx.setLineDash([8, 5]);
+                    if (shape === 'circle') {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, Math.max(4, Math.min(w, h) / 2 - sw / 2), 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else {
+                        buildRoundedPath(ctx, -w / 2 + sw / 2, -h / 2 + sw / 2, w - sw, h - sw, rx);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+                return;
+            }
+
+            baseRender.call(this, ctx);
+        };
+    }
+
+    function applyPhotoStyleToObject(obj, changes) {
+        if (!obj) return;
+        decoratePhotoObject(obj);
+        if (changes) {
+            obj.set(changes);
+        }
+        var shape  = obj.auraPhotoShape || 'circle';
+        var radius = parseInt(obj.auraPhotoRadius != null ? obj.auraPhotoRadius : 20, 10) || 20;
+        var bStyle = obj.auraPhotoBorderStyle || 'solid';
+        var bWidth = parseFloat(obj.strokeWidth != null ? obj.strokeWidth : 4);
+        var w      = obj.width || 130;
+        var h      = obj.height || 130;
+
+        if (bStyle === 'none') {
+            obj.set({ strokeWidth: 0, strokeDashArray: null });
+        } else {
+            if (!bWidth || bWidth <= 0) bWidth = 3;
+            obj.set({
+                strokeWidth     : bWidth,
+                stroke          : obj.stroke || '#c9a84c',
+                strokeDashArray : bStyle === 'dashed' ? [7, 5] : null
+            });
+        }
+
+        if (obj.type === 'rect') {
+            var rx = shape === 'circle' ? Math.round(Math.min(w, h) / 2) : (shape === 'rounded' ? radius : 0);
+            obj.set({ rx: rx, ry: rx });
+        }
+
+        if (typeof obj._syncSampleImg === 'function') {
+            obj._syncSampleImg();
+        }
+        obj.dirty = true;
+        canvas.requestRenderAll();
+    }
+
+    function addStudentPhotoPlaceholder() {
+        var size = 136;
+        var obj  = new fabric.Rect({
+            left                 : Math.round((docW - size) / 2),
+            top                  : Math.round(docH * 0.14),
+            width                : size,
+            height               : size,
+            fill                 : '#ffffff',
+            stroke               : '#c9a84c',
+            strokeWidth          : 4,
+            rx                   : size / 2,
+            ry                   : size / 2,
+            name                 : 'student_photo_placeholder',
+            auraElementType      : 'student_photo',
+            auraPhotoShape       : 'circle',
+            auraPhotoRadius      : 22,
+            auraPhotoPad         : 4,
+            auraPhotoBorderStyle : 'double',
+            shadow               : new fabric.Shadow({ color: 'rgba(15, 23, 42, 0.25)', blur: 12, offsetX: 0, offsetY: 4 })
+        });
+        decoratePhotoObject(obj);
+        canvas.add(obj);
+        canvas.setActiveObject(obj);
+        canvas.requestRenderAll();
+        updateObjectPanel(obj);
+        renderLayersList();
+    }
+
     function createSingleSignatureColumn(slot, centerX, lineTop, blockW) {
         var sigW = Math.min(130, blockW - 14);
         var sigH = 44;
@@ -1926,17 +2213,23 @@
     });
 
     $(document).on('click', '.aura-cb-var-btn', function () {
-        addTextbox($(this).data('var'), { width: 340, fontSize: 20, fontFamily: 'Montserrat', textAlign: 'center' });
+        var vKey = $(this).data('var');
+        if (vKey === '{foto_estudiante}') {
+            addStudentPhotoPlaceholder();
+            return;
+        }
+        addTextbox(vKey, { width: 340, fontSize: 20, fontFamily: 'Montserrat', textAlign: 'center' });
     });
 
     /* ═════════════════════════════════════════
-       DISEÑOS PREDEFINIDOS (8 PLANTILLAS BASE)
+       DISEÑOS PREDEFINIDOS (13 PLANTILLAS BASE)
        ═════════════════════════════════════════ */
 
-    function populatePrebuilt() {
+    function populatePrebuilt(filterMode) {
         var $list = $('#aura-cb-prebuilt-list');
         if (!$list.length) return;
         $list.empty();
+        filterMode = filterMode || ($('#aura-cb-preset-filters .is-active').attr('data-filter') || 'all');
 
         var designs = Array.isArray(CB.prebuiltDesigns)
             ? CB.prebuiltDesigns
@@ -1947,27 +2240,64 @@
             return;
         }
 
+        var oriLabels = {
+            landscape        : 'A4 Horiz.',
+            portrait         : 'A4 Vert.',
+            letter_landscape : 'Carta Horiz.',
+            letter_portrait  : 'Carta Vert.'
+        };
+
+        var shown = 0;
         designs.forEach(function (d) {
-            var oriLabels = {
-                landscape        : 'A4 Horiz.',
-                portrait         : 'A4 Vert.',
-                letter_landscape : 'Carta Horiz.',
-                letter_portrait  : 'Carta Vert.'
-            };
+            var objs     = (d.json && d.json.objects) || [];
+            var hasPhoto = objs.some(function (o) {
+                return o && (o.auraElementType === 'student_photo' || o.name === 'student_photo_placeholder');
+            });
+            var sigCount = objs.filter(function (o) {
+                return o && (o.auraElementType === 'signer_sig' || (o.name && String(o.name).indexOf('signer_slot_') === 0));
+            }).length;
+            var isVert   = d.orientation === 'portrait' || d.orientation === 'letter_portrait';
+
+            if (filterMode === 'photo' && !hasPhoto) return;
+            if (filterMode === 'landscape' && isVert) return;
+            if (filterMode === 'portrait' && !isVert) return;
+            shown++;
+
             var bgPrev = (d.json && d.json.background) || '#ffffff';
             var accent = d.accent || '#7c3aed';
+            var badges = '<span class="aura-cb-preset-tag">' + escHtml(oriLabels[d.orientation] || d.orientation) + '</span>';
+            if (hasPhoto) {
+                badges += '<span class="aura-cb-preset-tag is-photo">👤 Con Foto</span>';
+            }
+            if (sigCount > 0) {
+                badges += '<span class="aura-cb-preset-tag">✍ ' + sigCount + (sigCount === 1 ? ' Firma' : ' Firmas') + '</span>';
+            }
+
             var $card = $('<button type="button" class="aura-cb-prebuilt-btn">')
                 .html(
-                    '<span class="aura-cb-prebuilt-swatch" style="background:' + escHtml(bgPrev) + ';border-top:4px solid ' + escHtml(accent) + ';"></span>' +
+                    '<span class="aura-cb-prebuilt-swatch' + (isVert ? ' is-vert' : '') + '" style="background:' + escHtml(bgPrev) + ';border-top:4px solid ' + escHtml(accent) + ';border-color:' + escHtml(accent) + ';">' +
+                        (hasPhoto ? '<i class="aura-cb-swatch-dot" style="border-color:' + escHtml(accent) + ';"></i>' : '') +
+                    '</span>' +
                     '<span class="aura-cb-prebuilt-meta">' +
-                    '<strong>' + escHtml(d.name) + '</strong>' +
-                    '<small>' + escHtml(oriLabels[d.orientation] || d.orientation) + (d.description ? ' • ' + escHtml(d.description) : '') + '</small>' +
+                        '<strong>' + escHtml(d.name) + '</strong>' +
+                        '<span class="aura-cb-preset-tags">' + badges + '</span>' +
+                        (d.description ? '<small>' + escHtml(d.description) + '</small>' : '') +
                     '</span>'
                 );
             $card.data('design', d);
             $list.append($card);
         });
+
+        if (!shown) {
+            $list.html('<p class="aura-cb-muted">No hay plantillas en esta categoría.</p>');
+        }
     }
+
+    $(document).on('click', '.aura-cb-preset-filter', function () {
+        $('.aura-cb-preset-filter').removeClass('is-active');
+        $(this).addClass('is-active');
+        populatePrebuilt($(this).attr('data-filter'));
+    });
 
     $(document).on('click', '.aura-cb-prebuilt-btn', function () {
         var d = $(this).data('design');
@@ -2343,9 +2673,123 @@
             case 'line':            addLine(); break;
             case 'divider':         addOrnateDivider(); break;
             case 'qr':              addQrPlaceholder(); break;
+            case 'student-photo':   addStudentPhotoPlaceholder(); break;
             case 'signature-block': addSignatureBlock(); break;
             case 'seal':            addOfficialSeal(); break;
         }
+    });
+
+    /* ─── Controles de Forma, Marco y Sombra de Foto / Imagen ─── */
+    $(document).on('click', '.aura-cb-photo-shape-btn', function () {
+        var obj   = canvas.getActiveObject();
+        var shape = $(this).attr('data-photo-shape');
+        if (!obj || !shape) return;
+        $('.aura-cb-photo-shape-btn').removeClass('is-active');
+        $(this).addClass('is-active');
+        $('#aura-cb-photo-radius-row').toggle(shape === 'rounded');
+        applyPhotoStyleToObject(obj, { auraPhotoShape: shape });
+        saveHistoryStep();
+    });
+
+    $(document).on('input change', '#aura-cb-photo-radius-range, #aura-cb-photo-radius', function () {
+        var val = Math.max(0, Math.min(120, parseInt($(this).val(), 10) || 0));
+        $('#aura-cb-photo-radius-range, #aura-cb-photo-radius').val(val);
+        var obj = canvas.getActiveObject();
+        if (!obj) return;
+        applyPhotoStyleToObject(obj, { auraPhotoRadius: val, auraPhotoShape: 'rounded' });
+        saveHistoryStep();
+    });
+
+    $(document).on('change', '#aura-cb-photo-border-style', function () {
+        var obj = canvas.getActiveObject();
+        if (!obj) return;
+        var st = $(this).val();
+        var curW = parseFloat($('#aura-cb-photo-border-width').val()) || 0;
+        if (st !== 'none' && curW <= 0) {
+            curW = 4;
+            $('#aura-cb-photo-border-width').val(4);
+        }
+        applyPhotoStyleToObject(obj, { auraPhotoBorderStyle: st, strokeWidth: st === 'none' ? 0 : curW });
+        saveHistoryStep();
+    });
+
+    $(document).on('input change', '#aura-cb-photo-border-width', function () {
+        var obj = canvas.getActiveObject();
+        if (!obj) return;
+        var w = Math.max(0, parseFloat($(this).val()) || 0);
+        var bStyle = w === 0 ? 'none' : ($('#aura-cb-photo-border-style').val() === 'none' ? 'solid' : $('#aura-cb-photo-border-style').val());
+        $('#aura-cb-photo-border-style').val(bStyle);
+        applyPhotoStyleToObject(obj, { strokeWidth: w, auraPhotoBorderStyle: bStyle });
+        saveHistoryStep();
+    });
+
+    $(document).on('input change', '#aura-cb-photo-border-color', function () {
+        var obj = canvas.getActiveObject();
+        if (!obj) return;
+        applyPhotoStyleToObject(obj, { stroke: $(this).val() });
+        saveHistoryStep();
+    });
+
+    $(document).on('input change', '#aura-cb-photo-bg-color', function () {
+        var obj = canvas.getActiveObject();
+        if (!obj) return;
+        applyPhotoStyleToObject(obj, { fill: $(this).val() });
+        saveHistoryStep();
+    });
+
+    $(document).on('input change', '#aura-cb-photo-pad', function () {
+        var obj = canvas.getActiveObject();
+        if (!obj) return;
+        var p = Math.max(0, Math.min(28, parseInt($(this).val(), 10) || 0));
+        applyPhotoStyleToObject(obj, { auraPhotoPad: p });
+        saveHistoryStep();
+    });
+
+    $(document).on('click', '.aura-cb-shadow-preset', function () {
+        var obj    = canvas.getActiveObject();
+        var preset = $(this).attr('data-shadow-preset');
+        if (!obj) return;
+        var col = $('#aura-cb-obj-shadow-color').val() || '#0f172a';
+        var sh  = null;
+        if (preset === 'soft') {
+            sh = new fabric.Shadow({ color: 'rgba(15, 23, 42, 0.16)', blur: 8, offsetX: 0, offsetY: 3 });
+        } else if (preset === 'medium') {
+            sh = new fabric.Shadow({ color: 'rgba(15, 23, 42, 0.28)', blur: 14, offsetX: 0, offsetY: 5 });
+        } else if (preset === 'deep') {
+            sh = new fabric.Shadow({ color: col, blur: 22, offsetX: 0, offsetY: 8 });
+        }
+        obj.set('shadow', sh);
+        $('#aura-cb-obj-shadow').prop('checked', !!sh);
+        canvas.requestRenderAll();
+        saveHistoryStep();
+    });
+
+    $(document).on('click', '#aura-cb-photo-sample-btn', function () {
+        var obj = canvas.getActiveObject();
+        if (!obj || !window.wp || !wp.media) return;
+        var frame = wp.media({
+            title    : 'Seleccionar foto de muestra / perfil',
+            button   : { text: 'Usar foto' },
+            library  : { type: 'image' },
+            multiple : false
+        });
+        frame.on('select', function () {
+            var att = frame.state().get('selection').first().toJSON();
+            if (att && att.url) {
+                applyPhotoStyleToObject(obj, { auraCustomPhotoSrc: att.url });
+                $('#aura-cb-photo-sample-clear').show();
+                saveHistoryStep();
+            }
+        });
+        frame.open();
+    });
+
+    $(document).on('click', '#aura-cb-photo-sample-clear', function () {
+        var obj = canvas.getActiveObject();
+        if (!obj) return;
+        applyPhotoStyleToObject(obj, { auraCustomPhotoSrc: '' });
+        $(this).hide();
+        saveHistoryStep();
     });
 
     /* ═════════════════════════════════════════

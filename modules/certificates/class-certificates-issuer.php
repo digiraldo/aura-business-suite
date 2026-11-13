@@ -309,6 +309,9 @@ class Aura_Certificates_Issuer {
             'instructor_name'      => $record_data['instructor_name'],
             'organization_name'    => $org_name,
             'description'          => $extra['description'] ?? '',
+            'student_photo_url'    => ! empty( $extra['student_photo_url'] )
+                                        ? (string) $extra['student_photo_url']
+                                        : (string) ( $student->photo_url ?? '' ),
         ];
 
         $result = self::create_and_store_certificate( $record_data, $vars_data, $template_id, $extra );
@@ -477,9 +480,17 @@ class Aura_Certificates_Issuer {
             : [];
 
         $vars_data['folio']             = $folio;
-            $vars_data['verification_code'] = $short_code;
+        $vars_data['verification_code'] = $short_code;
         $vars_data['verify_url']        = $verify_url;
         $vars_data['signers']           = $signers;
+
+        if ( empty( $vars_data['student_photo_url'] ) ) {
+            $vars_data['student_photo_url'] = self::resolve_recipient_photo_url(
+                absint( $record_data['student_id'] ?? 0 ),
+                absint( $record_data['wp_user_id'] ?? 0 ),
+                (string) ( $extra['student_photo_url'] ?? '' )
+            );
+        }
 
         $pdf_result = self::generate_pdf( $template, $vars_data, $folio, $qr_path );
         if ( is_wp_error( $pdf_result ) ) {
@@ -1210,6 +1221,19 @@ class Aura_Certificates_Issuer {
             return '';
         }
 
+        // ── Foto de Perfil del Estudiante / Destinatario (Cuadrada, Redondeada o Circular con Marcos y Sombras) ──
+        if ( $name === 'student_photo_placeholder' || ( $obj['auraElementType'] ?? '' ) === 'student_photo' ) {
+            $raw_photo = (string) ( $vars_data['student_photo_url'] ?? '' );
+            if ( $raw_photo === '' && ! empty( $obj['auraCustomPhotoSrc'] ) ) {
+                $raw_photo = (string) $obj['auraCustomPhotoSrc'];
+            }
+            $photo_src = $raw_photo !== '' ? self::resolve_image_src( $raw_photo ) : '';
+            if ( $photo_src === '' ) {
+                return '';
+            }
+            return self::render_framed_image_html( $photo_src, $obj, $style, max( 32, $w ), max( 32, $h ), $scaleX );
+        }
+
         // ── Slot dinámico de Imagen de Firma (1..4) ──
         $signer_slot = 0;
         if ( ( $obj['auraElementType'] ?? '' ) === 'signer_sig' && ! empty( $obj['signerSlot'] ) ) {
@@ -1325,6 +1349,14 @@ class Aura_Certificates_Issuer {
             }
 
             if ( $src ) {
+                if (
+                    ! empty( $obj['auraPhotoShape'] )
+                    || (float) ( $obj['strokeWidth'] ?? 0 ) > 0
+                    || (float) ( $obj['auraPhotoPad'] ?? 0 ) > 0
+                    || ! empty( $obj['shadow'] )
+                ) {
+                    return self::render_framed_image_html( $src, $obj, $style, $w, $h, $scaleX );
+                }
                 return sprintf(
                     '<img src="%s" style="%swidth:%spx;height:%spx;">',
                     esc_attr( $src ), $style, $w, $h
@@ -1516,5 +1548,197 @@ class Aura_Certificates_Issuer {
 
         // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
         return 'data:' . $mime . ';base64,' . base64_encode( file_get_contents( $local_path ) );
+    }
+
+    /**
+     * Renderiza una foto de perfil o imagen con forma (cuadrada, redondeada, circular),
+     * marco/borde (sólido, punteado, doble), relleno interior y sombra usando SVG para compatibilidad total con mPDF.
+     */
+    private static function render_framed_image_html( string $src, array $obj, string $base_style, float $w, float $h, float $scaleX = 1.0 ): string {
+        $shape        = strtolower( (string) ( $obj['auraPhotoShape'] ?? 'circle' ) );
+        $stroke       = ! empty( $obj['stroke'] ) && $obj['stroke'] !== 'transparent' ? (string) $obj['stroke'] : '#c9a84c';
+        $sw           = max( 0.0, (float) ( $obj['strokeWidth'] ?? 0 ) );
+        $fill         = ! empty( $obj['fill'] ) && $obj['fill'] !== 'transparent' ? (string) $obj['fill'] : '#ffffff';
+        $pad          = max( 0.0, (float) ( $obj['auraPhotoPad'] ?? 0 ) );
+        $border_style = strtolower( (string) ( $obj['auraPhotoBorderStyle'] ?? 'solid' ) );
+        if ( ! empty( $obj['strokeDashArray'] ) && is_array( $obj['strokeDashArray'] ) && $border_style === 'solid' ) {
+            $border_style = 'dashed';
+        }
+
+        $radius = 0.0;
+        if ( $shape === 'rounded' ) {
+            $raw_rx = isset( $obj['auraPhotoRadius'] ) ? (float) $obj['auraPhotoRadius'] : (float) ( $obj['rx'] ?? 18 );
+            $radius = max( 4.0, min( min( $w, $h ) / 2, $raw_rx * $scaleX ) );
+        }
+
+        $has_shadow = ! empty( $obj['shadow'] );
+        $sh_dx      = 0.0;
+        $sh_dy      = 0.0;
+        if ( is_array( $obj['shadow'] ?? null ) ) {
+            $sh_dx = max( 0.0, (float) ( $obj['shadow']['offsetX'] ?? 4 ) );
+            $sh_dy = max( 0.0, (float) ( $obj['shadow']['offsetY'] ?? 5 ) );
+        } elseif ( $has_shadow ) {
+            $sh_dx = 4.0;
+            $sh_dy = 5.0;
+        }
+
+        $svg_w   = round( $w + $sh_dx + 4, 2 );
+        $svg_h   = round( $h + $sh_dy + 4, 2 );
+        $clip_id = 'aura_clip_' . substr( md5( uniqid( '', true ) ), 0, 8 );
+
+        $inset   = max( 1.0, $sw / 2 ) + $pad;
+        $img_x   = round( $inset, 2 );
+        $img_y   = round( $inset, 2 );
+        $img_w   = max( 10.0, round( $w - ( $inset * 2 ), 2 ) );
+        $img_h   = max( 10.0, round( $h - ( $inset * 2 ), 2 ) );
+        $dash    = $border_style === 'dashed' ? ' stroke-dasharray="6,4"' : '';
+
+        $defs_html   = '';
+        $shadow_html = '';
+        $frame_bg    = '';
+        $frame_ring  = '';
+
+        if ( $shape === 'circle' ) {
+            $cx = round( $w / 2, 2 );
+            $cy = round( $h / 2, 2 );
+            $r_outer = max( 8.0, round( min( $w, $h ) / 2 - max( 1.0, $sw / 2 ), 2 ) );
+            $r_clip  = max( 6.0, round( min( $img_w, $img_h ) / 2, 2 ) );
+
+            $defs_html = sprintf(
+                '<defs><clipPath id="%s"><circle cx="%s" cy="%s" r="%s" /></clipPath></defs>',
+                esc_attr( $clip_id ), $cx, $cy, $r_clip
+            );
+            if ( $has_shadow ) {
+                $shadow_html = sprintf(
+                    '<circle cx="%s" cy="%s" r="%s" fill="#0f172a" fill-opacity="0.16" />',
+                    round( $cx + $sh_dx, 2 ), round( $cy + $sh_dy, 2 ), $r_outer
+                );
+            }
+            $frame_bg = sprintf(
+                '<circle cx="%s" cy="%s" r="%s" fill="%s" />',
+                $cx, $cy, $r_outer, esc_attr( $fill )
+            );
+            if ( $sw > 0 ) {
+                $frame_ring = sprintf(
+                    '<circle cx="%s" cy="%s" r="%s" fill="none" stroke="%s" stroke-width="%s"%s />',
+                    $cx, $cy, $r_outer, esc_attr( $stroke ), round( $sw, 2 ), $dash
+                );
+                if ( $border_style === 'double' ) {
+                    $r_inner = max( 4.0, round( $r_outer - max( 3.0, $sw * 1.15 ), 2 ) );
+                    $frame_ring .= sprintf(
+                        '<circle cx="%s" cy="%s" r="%s" fill="none" stroke="%s" stroke-width="%s" stroke-opacity="0.7" />',
+                        $cx, $cy, $r_inner, esc_attr( $stroke ), max( 1.0, round( $sw * 0.45, 2 ) )
+                    );
+                }
+            }
+        } else {
+            $rx_outer = $shape === 'rounded' ? round( $radius, 2 ) : 0;
+            $rx_clip  = $shape === 'rounded' ? max( 2.0, round( $radius - $pad, 2 ) ) : 0;
+            $b_inset  = round( max( 0.5, $sw / 2 ), 2 );
+            $b_w      = max( 10.0, round( $w - $sw, 2 ) );
+            $b_h      = max( 10.0, round( $h - $sw, 2 ) );
+
+            $defs_html = sprintf(
+                '<defs><clipPath id="%s"><rect x="%s" y="%s" width="%s" height="%s" rx="%s" ry="%s" /></clipPath></defs>',
+                esc_attr( $clip_id ), $img_x, $img_y, $img_w, $img_h, $rx_clip, $rx_clip
+            );
+            if ( $has_shadow ) {
+                $shadow_html = sprintf(
+                    '<rect x="%s" y="%s" width="%s" height="%s" rx="%s" ry="%s" fill="#0f172a" fill-opacity="0.16" />',
+                    round( $b_inset + $sh_dx, 2 ), round( $b_inset + $sh_dy, 2 ), $b_w, $b_h, $rx_outer, $rx_outer
+                );
+            }
+            $frame_bg = sprintf(
+                '<rect x="%s" y="%s" width="%s" height="%s" rx="%s" ry="%s" fill="%s" />',
+                $b_inset, $b_inset, $b_w, $b_h, $rx_outer, $rx_outer, esc_attr( $fill )
+            );
+            if ( $sw > 0 ) {
+                $frame_ring = sprintf(
+                    '<rect x="%s" y="%s" width="%s" height="%s" rx="%s" ry="%s" fill="none" stroke="%s" stroke-width="%s"%s />',
+                    $b_inset, $b_inset, $b_w, $b_h, $rx_outer, $rx_outer, esc_attr( $stroke ), round( $sw, 2 ), $dash
+                );
+                if ( $border_style === 'double' ) {
+                    $d_off = max( 3.0, $sw * 1.15 );
+                    $frame_ring .= sprintf(
+                        '<rect x="%s" y="%s" width="%s" height="%s" rx="%s" ry="%s" fill="none" stroke="%s" stroke-width="%s" stroke-opacity="0.7" />',
+                        round( $b_inset + $d_off, 2 ),
+                        round( $b_inset + $d_off, 2 ),
+                        max( 6.0, round( $b_w - $d_off * 2, 2 ) ),
+                        max( 6.0, round( $b_h - $d_off * 2, 2 ) ),
+                        max( 0.0, round( $rx_outer - $d_off, 2 ) ),
+                        max( 0.0, round( $rx_outer - $d_off, 2 ) ),
+                        esc_attr( $stroke ),
+                        max( 1.0, round( $sw * 0.45, 2 ) )
+                    );
+                }
+            }
+        }
+
+        $img_tag = sprintf(
+            '<image href="%s" xlink:href="%s" x="%s" y="%s" width="%s" height="%s" preserveAspectRatio="xMidYMid slice" clip-path="url(#%s)" />',
+            esc_attr( $src ), esc_attr( $src ), $img_x, $img_y, $img_w, $img_h, esc_attr( $clip_id )
+        );
+
+        return sprintf(
+            '<div style="%swidth:%spx;height:%spx;"><svg width="%s" height="%s" viewBox="0 0 %s %s" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">%s%s%s%s%s</svg></div>',
+            $base_style, $svg_w, $svg_h, $svg_w, $svg_h, $svg_w, $svg_h,
+            $defs_html, $shadow_html, $frame_bg, $img_tag, $frame_ring
+        );
+    }
+
+    /**
+     * Obtiene la URL de la foto de perfil del destinatario (estudiante o usuario WP).
+     */
+    private static function resolve_recipient_photo_url( int $student_id = 0, int $wp_user_id = 0, string $explicit_url = '' ): string {
+        if ( $explicit_url !== '' ) {
+            return $explicit_url;
+        }
+
+        global $wpdb;
+        $students_table = $wpdb->prefix . 'aura_students';
+
+        if ( $student_id > 0 ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $s_row = $wpdb->get_row( $wpdb->prepare( "SELECT photo_url, wp_user_id FROM {$students_table} WHERE id = %d", $student_id ) );
+            if ( $s_row ) {
+                if ( ! empty( $s_row->photo_url ) ) {
+                    return (string) $s_row->photo_url;
+                }
+                if ( $wp_user_id === 0 && ! empty( $s_row->wp_user_id ) ) {
+                    $wp_user_id = (int) $s_row->wp_user_id;
+                }
+            }
+        }
+
+        if ( $wp_user_id > 0 ) {
+            // 1. Buscar en aura_students por wp_user_id
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $photo_from_student = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT photo_url FROM {$students_table} WHERE wp_user_id = %d AND photo_url IS NOT NULL AND photo_url != '' LIMIT 1",
+                    $wp_user_id
+                )
+            );
+            if ( ! empty( $photo_from_student ) ) {
+                return (string) $photo_from_student;
+            }
+
+            // 2. Buscar en user_meta comunes de foto de perfil
+            $meta_keys = [ 'aura_photo_url', 'aura_student_photo', 'profile_photo', 'custom_avatar' ];
+            foreach ( $meta_keys as $mk ) {
+                $val = get_user_meta( $wp_user_id, $mk, true );
+                if ( is_string( $val ) && $val !== '' ) {
+                    return $val;
+                }
+                if ( is_numeric( $val ) && (int) $val > 0 ) {
+                    $att_url = wp_get_attachment_image_url( (int) $val, 'medium' );
+                    if ( $att_url ) {
+                        return $att_url;
+                    }
+                }
+            }
+        }
+
+        return '';
     }
 }
