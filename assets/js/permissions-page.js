@@ -201,6 +201,261 @@ jQuery(document).ready(function($) {
         $('#aura-modal-user-manager').removeClass('active').css('display', 'none');
     }
 
+    // --------------------------------------------------------------------------
+    // Uploader & Recortador 1:1 de Avatar (preserva transparencia y máscara)
+    // --------------------------------------------------------------------------
+    let cuCropper = null;
+    let cuRawDataUrl = '';
+    let cuRawMime = 'image/png';
+    let cuLastSquareCanvas = null;
+    let cuCroppedBlob = null;
+    let cuCroppedExt = 'png';
+    let cuMaskShape = 'circle';
+    let cuThumbObjectUrl = '';
+
+    function destroyCuCropper() {
+        if (cuCropper) {
+            cuCropper.destroy();
+            cuCropper = null;
+        }
+    }
+
+    function revokeCuThumbUrl() {
+        if (cuThumbObjectUrl) {
+            URL.revokeObjectURL(cuThumbObjectUrl);
+            cuThumbObjectUrl = '';
+        }
+    }
+
+    function canvasHasTransparency(canvas) {
+        try {
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            for (let i = 3; i < pixels.length; i += 4) {
+                if (pixels[i] < 255) {
+                    return true;
+                }
+            }
+        } catch (e) {}
+        return false;
+    }
+
+    function applyMaskShapeToCanvas(sourceCanvas, maskShape) {
+        const size = 512;
+        const out = document.createElement('canvas');
+        out.width = size;
+        out.height = size;
+        const ctx = out.getContext('2d');
+        ctx.clearRect(0, 0, size, size);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        if (maskShape === 'circle') {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2, true);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(sourceCanvas, 0, 0, size, size);
+            ctx.restore();
+        } else {
+            ctx.drawImage(sourceCanvas, 0, 0, size, size);
+        }
+        return out;
+    }
+
+    function buildSquareFallbackCanvas(imgEl, maskShape) {
+        const size = 512;
+        const nw = imgEl.naturalWidth || size;
+        const nh = imgEl.naturalHeight || size;
+        const side = Math.min(nw, nh);
+        const sx = Math.floor((nw - side) / 2);
+        const sy = Math.floor((nh - side) / 2);
+        const temp = document.createElement('canvas');
+        temp.width = size;
+        temp.height = size;
+        const tctx = temp.getContext('2d');
+        tctx.clearRect(0, 0, size, size);
+        tctx.drawImage(imgEl, sx, sy, side, side, 0, 0, size, size);
+        return applyMaskShapeToCanvas(temp, maskShape);
+    }
+
+    function renderAvatarCropBlob(callback) {
+        const imgEl = document.getElementById('aura-cu-crop-img');
+        let croppedCanvas = null;
+
+        if (cuCropper) {
+            const rawCanvas = cuCropper.getCroppedCanvas({
+                width: 512,
+                height: 512,
+                fillColor: 'transparent',
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+            if (rawCanvas) {
+                cuLastSquareCanvas = rawCanvas;
+                croppedCanvas = applyMaskShapeToCanvas(cuLastSquareCanvas, cuMaskShape);
+            }
+        } else if (cuLastSquareCanvas) {
+            croppedCanvas = applyMaskShapeToCanvas(cuLastSquareCanvas, cuMaskShape);
+        } else if (imgEl && imgEl.src) {
+            croppedCanvas = buildSquareFallbackCanvas(imgEl, cuMaskShape);
+        }
+
+        if (!croppedCanvas) {
+            if (callback) callback(false);
+            return;
+        }
+
+        const keepAlpha = (
+            cuMaskShape === 'circle' ||
+            cuRawMime === 'image/png' ||
+            cuRawMime === 'image/webp' ||
+            cuRawMime === 'image/gif' ||
+            canvasHasTransparency(croppedCanvas)
+        );
+        const outMime = keepAlpha ? 'image/png' : 'image/jpeg';
+        cuCroppedExt = keepAlpha ? 'png' : 'jpg';
+
+        croppedCanvas.toBlob(function(blob) {
+            if (!blob) {
+                if (callback) callback(false);
+                return;
+            }
+            cuCroppedBlob = blob;
+            revokeCuThumbUrl();
+            cuThumbObjectUrl = URL.createObjectURL(blob);
+            $('#aura-cu-avatar-thumb').attr('src', cuThumbObjectUrl).show();
+            $('.aura-cu-avatar-placeholder').hide();
+            $('#aura-cu-avatar-edit, #aura-cu-avatar-clear').css('display', 'inline-flex');
+            if (callback) callback(true);
+        }, outMime, keepAlpha ? undefined : 0.92);
+    }
+
+    function openCuCropperBox() {
+        if (!cuRawDataUrl) return;
+        const $box = $('#aura-cu-crop-box').slideDown(150);
+        const imgEl = document.getElementById('aura-cu-crop-img');
+        destroyCuCropper();
+
+        imgEl.onload = function() {
+            destroyCuCropper();
+            if (typeof Cropper === 'function') {
+                cuCropper = new Cropper(imgEl, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.9,
+                    responsive: true,
+                    background: false,
+                    guides: true,
+                    center: true,
+                    toggleDragModeOnDblclick: false
+                });
+            }
+        };
+        imgEl.src = cuRawDataUrl;
+        if (imgEl.complete && imgEl.naturalWidth > 0 && $box.is(':visible')) {
+            imgEl.onload();
+        }
+    }
+
+    function resetCuAvatarState() {
+        destroyCuCropper();
+        revokeCuThumbUrl();
+        cuRawDataUrl = '';
+        cuRawMime = 'image/png';
+        cuLastSquareCanvas = null;
+        cuCroppedBlob = null;
+        cuCroppedExt = 'png';
+        $('#aura_cu_avatar_file').val('');
+        $('#aura-cu-crop-box').hide();
+        $('#aura-cu-crop-img').attr('src', '');
+        $('#aura-cu-avatar-thumb').hide().attr('src', '');
+        $('.aura-cu-avatar-placeholder').show();
+        $('#aura-cu-avatar-edit, #aura-cu-avatar-clear').hide();
+    }
+
+    $('#aura-cu-avatar-pick').on('click', function() {
+        $('#aura_cu_avatar_file').trigger('click');
+    });
+
+    $('#aura-cu-avatar-edit').on('click', function() {
+        openCuCropperBox();
+    });
+
+    $('#aura-cu-avatar-clear').on('click', function() {
+        resetCuAvatarState();
+    });
+
+    $('.aura-cu-mask-btn').on('click', function() {
+        cuMaskShape = $(this).data('mask') === 'square' ? 'square' : 'circle';
+        $('.aura-cu-mask-btn').removeClass('is-active');
+        $(this).addClass('is-active');
+        $('#aura-cu-avatar-preview').toggleClass('is-square', cuMaskShape === 'square');
+        $('#aura-cu-crop-stage').toggleClass('aura-cu-mask-circle', cuMaskShape === 'circle');
+
+        // Re-generar el recorte si ya había una imagen recortada y el editor está cerrado
+        if (cuRawDataUrl && !$('#aura-cu-crop-box').is(':visible')) {
+            renderAvatarCropBlob();
+        }
+    });
+
+    $('#aura_cu_avatar_file').on('change', function(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const $err = $('#aura-crear-usuario-error').hide().text('');
+
+        if (!/^image\/(png|jpe?g|webp|gif)$/i.test(file.type)) {
+            $err.text('Formato de imagen inválido. Usa PNG, JPG, WebP o GIF.').show();
+            $(this).val('');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            $err.text('La imagen de perfil no debe superar los 5 MB.').show();
+            $(this).val('');
+            return;
+        }
+
+        cuRawMime = file.type || 'image/png';
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            cuRawDataUrl = evt.target.result;
+            cuCroppedBlob = null;
+            openCuCropperBox();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    $('.aura-cu-crop-zoom').on('click', function() {
+        if (cuCropper) {
+            cuCropper.zoom(parseFloat($(this).data('zoom')) || 0);
+        }
+    });
+
+    $('#aura-cu-crop-rotate').on('click', function() {
+        if (cuCropper) {
+            cuCropper.rotate(90);
+        }
+    });
+
+    $('#aura-cu-crop-cancel').on('click', function() {
+        destroyCuCropper();
+        $('#aura-cu-crop-box').slideUp(150);
+        if (!cuCroppedBlob) {
+            resetCuAvatarState();
+        }
+    });
+
+    $('#aura-cu-crop-apply').on('click', function() {
+        renderAvatarCropBlob(function(ok) {
+            if (ok) {
+                destroyCuCropper();
+                $('#aura-cu-crop-box').slideUp(150);
+            }
+        });
+    });
+
     $(document).on('click', '#aura-btn-open-user-modal, .aura-btn-open-user-modal', function(e) {
         e.preventDefault();
         openAuraUserModal('select-wp');
@@ -337,38 +592,64 @@ jQuery(document).ready(function($) {
 
         const $btn = $(this).prop('disabled', true).text(i18n.creating || 'Creando...');
 
-        $.post(data.ajaxUrl || ajaxurl, {
-            action:     'aura_create_user',
-            nonce:      data.nonce,
-            first_name: first,
-            last_name:  $.trim($('#aura_cu_last_name').val()),
-            email:      email,
-            user_login: userLogin,
-            phone:      $.trim($('#aura_cu_phone').val()),
-            password:   pwd
-        }, function(res) {
-            if (res.success) {
-                window.location.href = res.data.redirect_url;
-            } else {
-                const msg = (res.data && res.data.message) ? res.data.message : (i18n.connError || 'Error al procesar la solicitud.');
-                $err.text(msg).show();
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || 'Crear y asignar permisos'));
+        const sendCreateRequest = function() {
+            const formData = new FormData();
+            formData.append('action', 'aura_create_user');
+            formData.append('nonce', data.nonce);
+            formData.append('first_name', first);
+            formData.append('last_name', $.trim($('#aura_cu_last_name').val()));
+            formData.append('email', email);
+            formData.append('user_login', userLogin);
+            formData.append('phone', $.trim($('#aura_cu_phone').val()));
+            formData.append('password', pwd);
+            if (cuCroppedBlob) {
+                formData.append('avatar', cuCroppedBlob, 'avatar-' + Date.now() + '.' + cuCroppedExt);
             }
-        }).fail(function(xhr) {
-            let errorMsg = i18n.connError || 'Error de conexión. Inténtalo de nuevo.';
-            if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
-                errorMsg = xhr.responseJSON.data.message;
-            } else if (xhr.responseText) {
-                try {
-                    const parsed = JSON.parse(xhr.responseText);
-                    if (parsed.data && parsed.data.message) {
-                        errorMsg = parsed.data.message;
+
+            $.ajax({
+                url: data.ajaxUrl || ajaxurl,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(res) {
+                    if (res.success) {
+                        window.location.href = res.data.redirect_url;
+                    } else {
+                        const msg = (res.data && res.data.message) ? res.data.message : (i18n.connError || 'Error al procesar la solicitud.');
+                        $err.text(msg).show();
+                        $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || 'Crear y asignar permisos'));
                     }
-                } catch(e) {}
-            }
-            $err.text(errorMsg).show();
-            $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || 'Crear y asignar permisos'));
-        });
+                },
+                error: function(xhr) {
+                    let errorMsg = i18n.connError || 'Error de conexión. Inténtalo de nuevo.';
+                    if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                        errorMsg = xhr.responseJSON.data.message;
+                    } else if (xhr.responseText) {
+                        try {
+                            const parsed = JSON.parse(xhr.responseText);
+                            if (parsed.data && parsed.data.message) {
+                                errorMsg = parsed.data.message;
+                            }
+                        } catch(e) {}
+                    }
+                    $err.text(errorMsg).show();
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || 'Crear y asignar permisos'));
+                }
+            });
+        };
+
+        // Si el recortador 1:1 sigue abierto con una imagen, aplicar el recorte automáticamente antes de enviar
+        if (cuRawDataUrl && $('#aura-cu-crop-box').is(':visible')) {
+            renderAvatarCropBlob(function() {
+                destroyCuCropper();
+                $('#aura-cu-crop-box').hide();
+                sendCreateRequest();
+            });
+        } else {
+            sendCreateRequest();
+        }
     });
 
     $(document).on('submit', '#aura-form-create-user', function(e) {

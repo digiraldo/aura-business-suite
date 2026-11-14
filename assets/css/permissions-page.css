@@ -1344,3 +1344,210 @@ body.aura-dark-mode .aura-permissions-wrap .aura-row-toggle {
         max-width: 120px;
     }
 }
+
+/* ── AVATAR 1:1 Y RECORTADOR EN MODAL CREAR USUARIO ───────────────────────── */
+.aura-checkerboard {
+    background-color: #f8fafc;
+    background-image:
+        linear-gradient(45deg, #e2e8f0 25%, transparent 25%),
+        linear-gradient(-45deg, #e2e8f0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #e2e8f0 75%),
+        linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.aura-cu-avatar-box {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    background: var(--bg-alt, #f8fafc);
+}
+
+.aura-cu-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.aura-cu-avatar-preview {
+    width: 76px;
+    height: 76px;
+    min-width: 76px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color, #cbd5e1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transition: border-radius 0.2s ease;
+}
+
+.aura-cu-avatar-preview.is-square {
+    border-radius: 12px;
+}
+
+.aura-cu-avatar-placeholder {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: var(--tx-muted, #94a3b8);
+}
+
+#aura-cu-avatar-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.aura-cu-avatar-controls {
+    flex: 1;
+    min-width: 210px;
+}
+
+.aura-cu-avatar-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-cu-avatar-btns .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 11px;
+    font-size: 12px;
+}
+
+.aura-cu-avatar-btns .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+
+.aura-cu-mask-switch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.aura-cu-mask-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--tx-muted, #64748b);
+}
+
+.aura-cu-mask-btn {
+    border: 1px solid var(--border-color, #cbd5e1);
+    background: #ffffff;
+    color: var(--tx-secondary, #475569);
+    border-radius: 9999px;
+    padding: 3px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.aura-cu-mask-btn.is-active {
+    background: var(--aura-blue, #2563eb);
+    border-color: var(--aura-blue, #2563eb);
+    color: #ffffff;
+}
+
+.aura-cu-avatar-hint {
+    margin: 6px 0 0;
+    font-size: 11.5px;
+    color: var(--tx-muted, #64748b);
+    line-height: 1.4;
+}
+
+.aura-cu-crop-box {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-color, #cbd5e1);
+}
+
+.aura-cu-crop-stage {
+    width: 100%;
+    height: 260px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border-color, #cbd5e1);
+}
+
+.aura-cu-crop-stage img {
+    display: block;
+    max-width: 100%;
+}
+
+.aura-cu-mask-circle .cropper-view-box,
+.aura-cu-mask-circle .cropper-face {
+    border-radius: 50%;
+}
+
+.aura-cu-crop-stage .cropper-bg {
+    background: transparent !important;
+}
+
+.aura-cu-crop-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.aura-cu-crop-tools,
+.aura-cu-crop-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aura-cu-crop-toolbar .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.aura-cu-crop-toolbar .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+
+[data-theme="dark"] .aura-checkerboard,
+html[data-wp-dark-mode-scheme="dark"] .aura-checkerboard,
+body.aura-dark-mode .aura-checkerboard {
+    background-color: #0f172a;
+    background-image:
+        linear-gradient(45deg, #1e293b 25%, transparent 25%),
+        linear-gradient(-45deg, #1e293b 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1e293b 75%),
+        linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+}
+
+[data-theme="dark"] .aura-cu-avatar-box,
+html[data-wp-dark-mode-scheme="dark"] .aura-cu-avatar-box,
+body.aura-dark-mode .aura-cu-avatar-box {
+    background: var(--bg-alt, #0f172a) !important;
+    border-color: var(--border-color, #334155) !important;
+}
+
+[data-theme="dark"] .aura-cu-mask-btn:not(.is-active),
+html[data-wp-dark-mode-scheme="dark"] .aura-cu-mask-btn:not(.is-active),
+body.aura-dark-mode .aura-cu-mask-btn:not(.is-active) {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}

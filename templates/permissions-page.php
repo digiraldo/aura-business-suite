@@ -1408,6 +1408,78 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                         <div id="aura-crear-usuario-error" style="display:none; background:#fef2f2; border-left:4px solid #ef4444; padding:10px 14px; border-radius:6px; margin-bottom:16px; color:#b91c1c; font-size:13px;"></div>
                         
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div style="grid-column: 1 / -1;">
+                                <label style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
+                                    <?php _e('Imagen de perfil (opcional · 1:1)', 'aura-suite'); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Sube una foto o avatar cuadrado (1:1). Respeta máscara circular/cuadrada y transparencia PNG/WebP.', 'aura-suite'); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                                </label>
+                                <div class="aura-cu-avatar-box">
+                                    <div class="aura-cu-avatar-row">
+                                        <div id="aura-cu-avatar-preview" class="aura-cu-avatar-preview aura-checkerboard" aria-label="<?php esc_attr_e('Vista previa del avatar 1:1', 'aura-suite'); ?>">
+                                            <span class="dashicons dashicons-admin-users aura-cu-avatar-placeholder"></span>
+                                            <img id="aura-cu-avatar-thumb" src="" alt="" style="display:none;">
+                                        </div>
+                                        <div class="aura-cu-avatar-controls">
+                                            <input type="file" id="aura_cu_avatar_file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;">
+                                            <div class="aura-cu-avatar-btns">
+                                                <button type="button" id="aura-cu-avatar-pick" class="btn btn-secondary">
+                                                    <span class="dashicons dashicons-camera"></span>
+                                                    <span><?php _e('Subir imagen', 'aura-suite'); ?></span>
+                                                </button>
+                                                <button type="button" id="aura-cu-avatar-edit" class="btn btn-secondary" style="display:none;">
+                                                    <span class="dashicons dashicons-image-crop"></span>
+                                                    <span><?php _e('Recortar 1:1', 'aura-suite'); ?></span>
+                                                </button>
+                                                <button type="button" id="aura-cu-avatar-clear" class="btn btn-secondary" style="display:none;">
+                                                    <span class="dashicons dashicons-trash"></span>
+                                                    <span><?php _e('Quitar', 'aura-suite'); ?></span>
+                                                </button>
+                                            </div>
+                                            <div class="aura-cu-mask-switch" role="group" aria-label="<?php esc_attr_e('Forma de máscara 1:1', 'aura-suite'); ?>">
+                                                <span class="aura-cu-mask-label"><?php _e('Máscara:', 'aura-suite'); ?></span>
+                                                <button type="button" class="aura-cu-mask-btn is-active" data-mask="circle">
+                                                    <?php _e('Circular (1:1)', 'aura-suite'); ?>
+                                                </button>
+                                                <button type="button" class="aura-cu-mask-btn" data-mask="square">
+                                                    <?php _e('Cuadrada (1:1)', 'aura-suite'); ?>
+                                                </button>
+                                            </div>
+                                            <p class="aura-cu-avatar-hint">
+                                                <?php _e('Proporción 1:1 · Preserva transparencia PNG/WebP y la máscara seleccionada.', 'aura-suite'); ?>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div id="aura-cu-crop-box" class="aura-cu-crop-box" style="display:none;">
+                                        <div id="aura-cu-crop-stage" class="aura-cu-crop-stage aura-checkerboard aura-cu-mask-circle">
+                                            <img id="aura-cu-crop-img" src="" alt="">
+                                        </div>
+                                        <div class="aura-cu-crop-toolbar">
+                                            <div class="aura-cu-crop-tools">
+                                                <button type="button" class="btn btn-secondary aura-cu-crop-zoom" data-zoom="-0.1" title="<?php esc_attr_e('Alejar', 'aura-suite'); ?>">
+                                                    <span class="dashicons dashicons-minus"></span>
+                                                </button>
+                                                <button type="button" class="btn btn-secondary aura-cu-crop-zoom" data-zoom="0.1" title="<?php esc_attr_e('Acercar', 'aura-suite'); ?>">
+                                                    <span class="dashicons dashicons-plus"></span>
+                                                </button>
+                                                <button type="button" id="aura-cu-crop-rotate" class="btn btn-secondary" title="<?php esc_attr_e('Rotar 90°', 'aura-suite'); ?>">
+                                                    <span class="dashicons dashicons-image-rotate"></span>
+                                                </button>
+                                            </div>
+                                            <div class="aura-cu-crop-actions">
+                                                <button type="button" id="aura-cu-crop-cancel" class="btn btn-secondary">
+                                                    <?php _e('Cancelar', 'aura-suite'); ?>
+                                                </button>
+                                                <button type="button" id="aura-cu-crop-apply" class="btn btn-primary">
+                                                    <span class="dashicons dashicons-yes"></span>
+                                                    <span><?php _e('Aplicar recorte 1:1', 'aura-suite'); ?></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div>
                                 <label for="aura_cu_first_name" style="font-weight:700; font-size:12.5px; display:block; margin-bottom:6px; color:var(--tx-primary, inherit);">
                                     <?php _e('Nombre *', 'aura-suite'); ?>

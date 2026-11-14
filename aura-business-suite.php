@@ -2345,16 +2345,31 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
             $perms_js_ver = AURA_VERSION . '.' . (file_exists(AURA_PLUGIN_DIR . 'assets/js/permissions-page.js') ? filemtime(AURA_PLUGIN_DIR . 'assets/js/permissions-page.js') : time());
 
             wp_enqueue_style(
+                'cropperjs-css',
+                'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css',
+                array(),
+                '1.6.2'
+            );
+
+            wp_enqueue_script(
+                'cropperjs',
+                'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js',
+                array(),
+                '1.6.2',
+                true
+            );
+
+            wp_enqueue_style(
                 'aura-permissions-page',
                 AURA_PLUGIN_URL . 'assets/css/permissions-page.css',
-                array('aura-admin-styles', 'aura-design-system'),
+                array('aura-admin-styles', 'aura-design-system', 'cropperjs-css'),
                 $perms_css_ver
             );
 
             wp_enqueue_script(
                 'aura-permissions-page',
                 AURA_PLUGIN_URL . 'assets/js/permissions-page.js',
-                array('jquery', 'aura-ui-core'),
+                array('jquery', 'aura-ui-core', 'cropperjs'),
                 $perms_js_ver,
                 true
             );
@@ -3249,6 +3264,27 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
             }
         }
 
+        // Validar imagen de perfil opcional antes de crear el usuario
+        $has_avatar_upload = !empty($_FILES['avatar']) && !empty($_FILES['avatar']['tmp_name']);
+        if (!empty($_FILES['avatar']['error']) && UPLOAD_ERR_NO_FILE !== (int) $_FILES['avatar']['error']) {
+            wp_send_json_error(array('message' => __('No se pudo recibir la imagen de perfil subida.', 'aura-suite')));
+        }
+        if ($has_avatar_upload) {
+            if ((int) ($_FILES['avatar']['size'] ?? 0) > 5 * 1024 * 1024) {
+                wp_send_json_error(array('message' => __('La imagen de perfil no debe superar 5 MB.', 'aura-suite')));
+            }
+            $allowed_mimes = array(
+                'jpg|jpeg|jpe' => 'image/jpeg',
+                'png'          => 'image/png',
+                'gif'          => 'image/gif',
+                'webp'         => 'image/webp',
+            );
+            $checked = wp_check_filetype_and_ext($_FILES['avatar']['tmp_name'], $_FILES['avatar']['name'] ?? 'avatar.png', $allowed_mimes);
+            if (empty($checked['type'])) {
+                wp_send_json_error(array('message' => __('Formato de imagen inválido. Usa PNG, JPG, WebP o GIF.', 'aura-suite')));
+            }
+        }
+
         $user_id = wp_insert_user(array(
             'user_login' => $username,
             'user_email' => $email,
@@ -3264,6 +3300,65 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
 
         if (is_wp_error($user_id)) {
             wp_send_json_error(array('message' => $user_id->get_error_message()));
+        }
+
+        // Procesar y asignar imagen de perfil 1:1 (preservando transparencia PNG/WebP/GIF)
+        $avatar_url = '';
+        if ($has_avatar_upload) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+            require_once ABSPATH . 'wp-admin/includes/media.php';
+            require_once ABSPATH . 'wp-admin/includes/image.php';
+
+            $display_label = trim($first_name . ' ' . $last_name);
+            $attachment_id = media_handle_upload('avatar', 0, array(
+                'post_title' => $display_label ? sprintf(__('Avatar — %s', 'aura-suite'), $display_label) : __('Avatar de usuario', 'aura-suite'),
+            ));
+
+            if (!is_wp_error($attachment_id) && $attachment_id > 0) {
+                $attached_file = get_attached_file($attachment_id);
+                if ($attached_file && file_exists($attached_file)) {
+                    $size = @getimagesize($attached_file);
+                    // Respaldo servidor si llegara sin relación 1:1 exacta (conservando alfa)
+                    if (is_array($size) && !empty($size[0]) && !empty($size[1]) && abs((int) $size[0] - (int) $size[1]) > 2) {
+                        $editor = wp_get_image_editor($attached_file);
+                        if (!is_wp_error($editor)) {
+                            $side   = min((int) $size[0], (int) $size[1]);
+                            $crop_x = (int) floor(((int) $size[0] - $side) / 2);
+                            $crop_y = (int) floor(((int) $size[1] - $side) / 2);
+                            if (!is_wp_error($editor->crop($crop_x, $crop_y, $side, $side))) {
+                                if ($side > 512) {
+                                    $editor->resize(512, 512, true);
+                                }
+                                $mime   = (string) (get_post_mime_type($attachment_id) ?: 'image/png');
+                                $editor->save($attached_file, $mime);
+                                $meta = wp_generate_attachment_metadata($attachment_id, $attached_file);
+                                if (!is_wp_error($meta) && is_array($meta)) {
+                                    wp_update_attachment_metadata($attachment_id, $meta);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (class_exists('Aura_Third_Parties') && method_exists('Aura_Third_Parties', 'sync_avatar_to_wp_user')) {
+                    Aura_Third_Parties::sync_avatar_to_wp_user($user_id, $attachment_id);
+                } else {
+                    $full_url = wp_get_attachment_url($attachment_id);
+                    if ($full_url) {
+                        update_user_meta($user_id, 'simple_local_avatar', array(
+                            'media_id' => $attachment_id,
+                            'full'     => $full_url,
+                            'blog_id'  => get_current_blog_id(),
+                        ));
+                        update_user_meta($user_id, 'simple_local_avatar_rating', 'G');
+                        update_user_meta($user_id, 'wp_user_avatar', $attachment_id);
+                        update_user_meta($user_id, 'aura_avatar_id', $attachment_id);
+                        update_user_meta($user_id, 'aura_avatar_url', $full_url);
+                        do_action('simple_local_avatar_updated', $user_id);
+                    }
+                }
+                $avatar_url = (string) wp_get_attachment_url($attachment_id);
+            }
         }
 
         $contact_id = absint($_POST['contact_id'] ?? 0);
@@ -3286,6 +3381,7 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
             'contact_id' => $contact_id,
             'display_name' => trim($first_name . ' ' . $last_name),
             'email' => $email,
+            'avatar_url' => $avatar_url,
             'redirect_url' => admin_url('admin.php?page=aura-permissions&user_id=' . $user_id . '&created=1'),
         ));
     }
