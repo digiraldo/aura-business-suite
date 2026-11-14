@@ -29,155 +29,253 @@ class Aura_Financial_Settings {
     }
     
     /**
+     * Evaluar el estado inicial y el motivo legible de una transacción.
+     *
+     * Centraliza la evaluación del motor de aprobación automática:
+     * 1. Estado global del motor (habilitado / pausado)
+     * 2. Excepciones por categoría (category_id y expense_category_id), módulo y presupuesto de área
+     * 3. Política configurada (mode) y umbral (threshold) para income, expense y capital (CapEx)
+     *
+     * @param array $transaction_data Datos de la transacción
+     * @return array {status: 'approved'|'pending', reason: string, reason_code: string, mode: string, threshold: float}
+     */
+    public static function evaluate_transaction($transaction_data) {
+        $auto_approval_enabled = (bool) get_option('aura_finance_auto_approval_enabled', false);
+        $threshold             = (float) get_option('aura_finance_auto_approval_threshold', 0);
+        $mode                  = self::resolve_auto_approval_mode();
+        $currency_symbol       = get_option('aura_currency_symbol', '$');
+        $threshold_formatted   = $currency_symbol . number_format($threshold, 2);
+
+        $base_result = array(
+            'status'      => 'pending',
+            'reason'      => '',
+            'reason_code' => '',
+            'mode'        => $mode,
+            'threshold'   => $threshold,
+        );
+
+        // 1. Motor pausado globalmente
+        if (!$auto_approval_enabled) {
+            $base_result['reason_code'] = 'engine_disabled';
+            $base_result['reason']      = __('Motor de aprobación automática deshabilitado; requiere aprobación manual.', 'aura-suite');
+            return $base_result;
+        }
+
+        // 2. Excepciones (categoría, módulo/acción o presupuesto excedido)
+        $exception_reason = self::get_manual_approval_reason($transaction_data);
+        if ($exception_reason !== '') {
+            $base_result['reason_code'] = 'exception';
+            $base_result['reason']      = $exception_reason;
+            return $base_result;
+        }
+
+        $type       = $transaction_data['transaction_type'] ?? '';
+        $amount     = (float) ($transaction_data['amount'] ?? 0);
+        $is_income  = ($type === 'income');
+        $is_outflow = ($type === 'expense' || $type === 'capital');
+
+        // 3. Evaluar política por tipo de transacción y umbral
+        switch ($mode) {
+            case 'expenses_threshold_income_auto':
+                if ($is_income) {
+                    return array_merge($base_result, array(
+                        'status'      => 'approved',
+                        'reason_code' => 'income_auto_policy',
+                        'reason'      => __('Auto-aprobada según política de ingresos automáticos (sin límite de umbral).', 'aura-suite'),
+                    ));
+                }
+                if ($is_outflow && $threshold > 0 && $amount < $threshold) {
+                    return array_merge($base_result, array(
+                        'status'      => 'approved',
+                        'reason_code' => 'below_threshold',
+                        'reason'      => sprintf(__('Auto-aprobada por estar bajo el umbral configurado de %s.', 'aura-suite'), $threshold_formatted),
+                    ));
+                }
+                break;
+
+            case 'both_threshold':
+                if (($is_income || $is_outflow) && $threshold > 0 && $amount < $threshold) {
+                    return array_merge($base_result, array(
+                        'status'      => 'approved',
+                        'reason_code' => 'below_threshold',
+                        'reason'      => sprintf(__('Auto-aprobada por estar bajo el umbral común de %s.', 'aura-suite'), $threshold_formatted),
+                    ));
+                }
+                break;
+
+            case 'expenses_only_threshold':
+                if ($is_outflow && $threshold > 0 && $amount < $threshold) {
+                    return array_merge($base_result, array(
+                        'status'      => 'approved',
+                        'reason_code' => 'below_threshold',
+                        'reason'      => sprintf(__('Egreso auto-aprobado por estar bajo el umbral configurado de %s.', 'aura-suite'), $threshold_formatted),
+                    ));
+                }
+                if ($is_income) {
+                    return array_merge($base_result, array(
+                        'reason_code' => 'income_requires_manual',
+                        'reason'      => __('Los ingresos requieren aprobación manual según la política activa.', 'aura-suite'),
+                    ));
+                }
+                break;
+
+            case 'income_only_threshold':
+                if ($is_income && $threshold > 0 && $amount < $threshold) {
+                    return array_merge($base_result, array(
+                        'status'      => 'approved',
+                        'reason_code' => 'below_threshold',
+                        'reason'      => sprintf(__('Ingreso auto-aprobado por estar bajo el umbral configurado de %s.', 'aura-suite'), $threshold_formatted),
+                    ));
+                }
+                if ($is_outflow) {
+                    return array_merge($base_result, array(
+                        'reason_code' => 'expense_requires_manual',
+                        'reason'      => __('Los egresos y gastos de capital requieren aprobación manual según la política activa.', 'aura-suite'),
+                    ));
+                }
+                break;
+        }
+
+        // Si no cumplió criterio de auto-aprobación (umbral en 0, monto >= umbral o tipo desconocido)
+        return array_merge($base_result, array(
+            'reason_code' => $threshold <= 0 ? 'zero_threshold' : 'above_or_equal_threshold',
+            'reason'      => $threshold <= 0
+                ? __('Umbral configurado en 0; requiere aprobación manual.', 'aura-suite')
+                : sprintf(__('Monto igual o superior al umbral configurado (%s); requiere aprobación manual.', 'aura-suite'), $threshold_formatted),
+        ));
+    }
+
+    /**
+     * Resolver la política efectiva con retrocompatibilidad para opciones heredadas.
+     */
+    public static function resolve_auto_approval_mode(): string {
+        $mode = (string) get_option('aura_finance_auto_approval_mode', '');
+        $valid_modes = array(
+            'expenses_threshold_income_auto',
+            'both_threshold',
+            'expenses_only_threshold',
+            'income_only_threshold',
+        );
+        if (in_array($mode, $valid_modes, true)) {
+            return $mode;
+        }
+
+        $apply_only_expenses = (bool) get_option('aura_finance_auto_approval_apply_to_expenses_only', false);
+        $apply_only_income   = (bool) get_option('aura_finance_auto_approval_apply_to_income_only', false);
+        if ($apply_only_expenses) {
+            return 'expenses_threshold_income_auto';
+        }
+        if ($apply_only_income) {
+            return 'income_only_threshold';
+        }
+        return 'both_threshold';
+    }
+
+    /**
+     * Sincronizar en la base de datos las categorías marcadas con aprobación manual obligatoria.
+     *
+     * @param array $category_ids IDs de categorías que siempre requieren aprobación manual.
+     * @return int Cantidad de categorías activas marcadas.
+     */
+    public static function save_category_exceptions(array $category_ids): int {
+        global $wpdb;
+        $table = $wpdb->prefix . 'aura_finance_categories';
+
+        $clean_ids = array_values(array_unique(array_filter(array_map('intval', $category_ids), function ($id) {
+            return $id > 0;
+        })));
+
+        $wpdb->query("UPDATE {$table} SET always_require_approval = 0 WHERE is_active = 1");
+
+        if (!empty($clean_ids)) {
+            $placeholders = implode(',', array_fill(0, count($clean_ids), '%d'));
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $wpdb->query($wpdb->prepare(
+                "UPDATE {$table} SET always_require_approval = 1 WHERE is_active = 1 AND id IN ({$placeholders})",
+                ...$clean_ids
+            ));
+        }
+
+        return count($clean_ids);
+    }
+
+    /**
      * Determinar el estado inicial de una transacción basado en configuraciones
-     * 
-     * Esta función implementa la lógica de aprobación automática basada en umbral.
-     * Ver prdFinanzas.md - Item 2.6 para especificaciones completas.
-     * 
+     *
      * @param array $transaction_data Datos de la transacción
      * @return string 'approved' o 'pending'
      * @since 1.0.0
      */
     public static function determine_initial_status($transaction_data) {
-        // 1. Obtener configuraciones del sistema
-        $auto_approval_enabled = get_option('aura_finance_auto_approval_enabled', false);
-        $threshold             = (float) get_option('aura_finance_auto_approval_threshold', 0);
-        $mode                  = get_option('aura_finance_auto_approval_mode', '');
-        
-        // Retrocompatibilidad con opciones heredadas si aún no se ha guardado el modo explícito
-        if (empty($mode)) {
-            $apply_only_expenses = get_option('aura_finance_auto_approval_apply_to_expenses_only', false);
-            $apply_only_income   = get_option('aura_finance_auto_approval_apply_to_income_only', false);
-            if ($apply_only_expenses) {
-                $mode = 'expenses_threshold_income_auto';
-            } elseif ($apply_only_income) {
-                $mode = 'income_only_threshold';
-            } else {
-                $mode = 'both_threshold';
-            }
-        }
-        
-        // Si no está habilitada la auto-aprobación global, todo requiere aprobación manual
-        if (!$auto_approval_enabled) {
-            return 'pending';
-        }
-        
-        // 2. Verificar excepciones que fuerzan aprobación manual (por categoría o módulo)
-        if (self::requires_manual_approval($transaction_data)) {
-            return 'pending';
-        }
-
-        $type   = $transaction_data['transaction_type'] ?? '';
-        $amount = (float) ($transaction_data['amount'] ?? 0);
-        
-        // 3. Evaluar según el modo de política seleccionado
-        // MODO A: Ingresos siempre se auto-aprueban; Egresos sujetos a umbral (Recomendado estándar empresarial)
-        if ($mode === 'expenses_threshold_income_auto') {
-            if ($type === 'income') {
-                return 'approved'; // Los ingresos no requieren aprobación
-            }
-            if ($type === 'expense') {
-                if ($threshold > 0 && $amount < $threshold) {
-                    return 'approved'; // Gasto menor al umbral -> aprobado
-                }
-                return 'pending'; // Gasto mayor o igual al umbral -> requiere aprobación manual
-            }
-        }
-        
-        // MODO B: Umbral común tanto para ingresos como para egresos
-        if ($mode === 'both_threshold') {
-            if ($threshold > 0 && $amount < $threshold) {
-                return 'approved';
-            }
-            return 'pending';
-        }
-
-        // MODO C: Solo egresos pueden auto-aprobarse (Ingresos siempre requieren revisión manual)
-        if ($mode === 'expenses_only_threshold') {
-            if ($type === 'income') {
-                return 'pending';
-            }
-            if ($threshold > 0 && $amount < $threshold) {
-                return 'approved';
-            }
-            return 'pending';
-        }
-
-        // MODO D: Solo ingresos pueden auto-aprobarse (Egresos siempre requieren revisión manual)
-        if ($mode === 'income_only_threshold') {
-            if ($type === 'expense') {
-                return 'pending';
-            }
-            if ($threshold > 0 && $amount < $threshold) {
-                return 'approved';
-            }
-            return 'pending';
-        }
-        
-        // Regla general por defecto: si el monto es menor al umbral se aprueba, de lo contrario queda pendiente
-        if ($threshold > 0 && $amount < $threshold) {
-            return 'approved';
-        }
-        
-        return 'pending';
+        $evaluation = self::evaluate_transaction($transaction_data);
+        return $evaluation['status'];
     }
-    
+
+    /**
+     * Determinar el motivo si alguna excepción obliga a aprobación manual.
+     *
+     * @param array $transaction_data Datos de la transacción
+     * @return string Motivo de excepción o cadena vacía si no aplica.
+     */
+    private static function get_manual_approval_reason($transaction_data): string {
+        global $wpdb;
+
+        // 1. Verificar excepciones por categoría (presupuesto y categoría detallada del gasto)
+        $cat_ids = array();
+        if (!empty($transaction_data['category_id'])) {
+            $cat_ids[] = (int) $transaction_data['category_id'];
+        }
+        if (!empty($transaction_data['expense_category_id'])) {
+            $cat_ids[] = (int) $transaction_data['expense_category_id'];
+        }
+        $cat_ids = array_values(array_unique(array_filter($cat_ids)));
+
+        if (!empty($cat_ids)) {
+            $category_table = $wpdb->prefix . 'aura_finance_categories';
+            $placeholders   = implode(',', array_fill(0, count($cat_ids), '%d'));
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $flagged_count = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$category_table} WHERE id IN ({$placeholders}) AND always_require_approval = 1",
+                ...$cat_ids
+            ));
+            if ($flagged_count > 0) {
+                return __('Categoría marcada con excepción de aprobación manual obligatoria.', 'aura-suite');
+            }
+        }
+
+        // 2. Verificar excepciones por módulo de origen
+        $exceptions = get_option('aura_finance_auto_approval_exceptions', array());
+        if (!empty($transaction_data['related_module'])) {
+            $exception_key = $transaction_data['related_module'];
+            if (!empty($transaction_data['related_action'])) {
+                $exception_key .= '_' . $transaction_data['related_action'];
+            }
+            if (isset($exceptions[$exception_key]) && $exceptions[$exception_key]) {
+                return __('Transacción de módulo restringido; requiere aprobación manual.', 'aura-suite');
+            }
+        }
+
+        // 3. Verificar presupuesto de área sobrepasado (aplica únicamente a egresos / capital)
+        $type = $transaction_data['transaction_type'] ?? '';
+        $is_outflow = ($type === 'expense' || $type === 'capital' || $type === '');
+        if ($is_outflow && !empty($transaction_data['area_id']) && !empty($transaction_data['amount'])) {
+            if (self::is_budget_exceeded((int) $transaction_data['area_id'], (float) $transaction_data['amount'])) {
+                return __('El monto supera el presupuesto vigente del área; requiere aprobación manual.', 'aura-suite');
+            }
+        }
+
+        return '';
+    }
+
     /**
      * Verificar si una transacción requiere aprobación manual por excepciones
-     * 
-     * Excepciones incluyen:
-     * - Categorías marcadas como "siempre requiere aprobación"
-     * - Transacciones de módulos con restricciones
-     * - Presupuestos sobrepasados
-     * 
+     *
      * @param array $transaction_data Datos de la transacción
      * @return bool true si requiere aprobación manual, false si puede auto-aprobar
      * @since 1.0.0
      */
     public static function requires_manual_approval($transaction_data) {
-        global $wpdb;
-        
-        // 1. Verificar excepciones por categoría
-        if (!empty($transaction_data['category_id'])) {
-            $category_table = $wpdb->prefix . 'aura_finance_categories';
-            $category = $wpdb->get_row($wpdb->prepare(
-                "SELECT always_require_approval FROM $category_table WHERE id = %d",
-                $transaction_data['category_id']
-            ));
-            
-            // Si la categoría tiene el flag activado, requiere aprobación manual
-            if ($category && !empty($category->always_require_approval)) {
-                return true;
-            }
-        }
-        
-        // 2. Verificar excepciones por módulo de origen
-        $exceptions = get_option('aura_finance_auto_approval_exceptions', array());
-        
-        if (!empty($transaction_data['related_module'])) {
-            // Generar clave única: módulo_acción (ej: "vehicles_fuel_expense")
-            $exception_key = $transaction_data['related_module'];
-            
-            if (!empty($transaction_data['related_action'])) {
-                $exception_key .= '_' . $transaction_data['related_action'];
-            }
-            
-            // Si existe excepción configurada para este módulo/acción
-            if (isset($exceptions[$exception_key]) && $exceptions[$exception_key]) {
-                return true;
-            }
-        }
-        
-        // 3. Verificar presupuesto sobrepasado: fuerza aprobación manual si se excede
-        // Fase 8.3+: el presupuesto es por área; se necesita area_id de la transacción
-        if (!empty($transaction_data['area_id']) && !empty($transaction_data['amount'])) {
-            if (self::is_budget_exceeded((int) $transaction_data['area_id'], (float) $transaction_data['amount'])) {
-                return true;
-            }
-        }
-
-        // No hay excepciones, puede proceder con auto-aprobación si cumple umbral
-        return false;
+        return self::get_manual_approval_reason($transaction_data) !== '';
     }
     
     /**
@@ -218,12 +316,28 @@ class Aura_Financial_Settings {
      * @return array Configuraciones actuales
      * @since 1.0.0
      */
+    /**
+     * Verificar si el usuario actual puede administrar configuraciones financieras.
+     */
+    private static function current_user_can_manage(): bool {
+        return current_user_can('aura_admin_settings')
+            || current_user_can('manage_options')
+            || current_user_can('aura_finance_settings_manage');
+    }
+
+    /**
+     * Obtener configuraciones del módulo financiero
+     *
+     * @return array Configuraciones actuales
+     * @since 1.0.0
+     */
     public static function get_settings() {
         return array(
-            'auto_approval_enabled' => get_option('aura_finance_auto_approval_enabled', false),
+            'auto_approval_enabled' => (bool) get_option('aura_finance_auto_approval_enabled', false),
             'auto_approval_threshold' => (float) get_option('aura_finance_auto_approval_threshold', 0),
-            'apply_to_expenses_only' => get_option('aura_finance_auto_approval_apply_to_expenses_only', true),
-            'apply_to_income_only' => get_option('aura_finance_auto_approval_apply_to_income_only', false),
+            'auto_approval_mode' => self::resolve_auto_approval_mode(),
+            'apply_to_expenses_only' => (bool) get_option('aura_finance_auto_approval_apply_to_expenses_only', true),
+            'apply_to_income_only' => (bool) get_option('aura_finance_auto_approval_apply_to_income_only', false),
             'exceptions' => get_option('aura_finance_auto_approval_exceptions', array()),
             'edit_time_limit_days' => (int) get_option('aura_finance_edit_time_limit_days', 30),
             'trash_auto_delete_days' => (int) get_option('aura_finance_trash_auto_delete_days', 30),
@@ -235,28 +349,45 @@ class Aura_Financial_Settings {
             'notification_email_on_rejected' => get_option('aura_finance_notification_email_on_rejected', true),
         );
     }
-    
+
     /**
      * Guardar configuraciones del módulo (AJAX)
-     * 
+     *
      * @since 1.0.0
      */
     public static function ajax_save_settings() {
         check_ajax_referer('aura_settings_nonce', 'nonce');
-        
+
         // Verificar permisos (solo administradores)
-        if (!current_user_can('aura_finance_settings_manage')) {
+        if (!self::current_user_can_manage()) {
             wp_send_json_error(array(
                 'message' => __('No tienes permisos para modificar configuraciones', 'aura-suite')
             ));
         }
-        
+
         // Obtener y sanitizar datos
+        $mode = sanitize_text_field($_POST['auto_approval_mode'] ?? '');
+        $apply_only_expenses = isset($_POST['apply_to_expenses_only']) && $_POST['apply_to_expenses_only'] === 'true';
+        $apply_only_income   = isset($_POST['apply_to_income_only']) && $_POST['apply_to_income_only'] === 'true';
+
+        if (!empty($mode)) {
+            $apply_only_expenses = ($mode === 'expenses_threshold_income_auto' || $mode === 'expenses_only_threshold');
+            $apply_only_income   = ($mode === 'income_only_threshold');
+        } else {
+            if ($apply_only_expenses && $apply_only_income) {
+                wp_send_json_error(array(
+                    'message' => __('No puedes aplicar auto-aprobación solo a egresos Y solo a ingresos simultáneamente', 'aura-suite')
+                ));
+            }
+            $mode = $apply_only_expenses ? 'expenses_threshold_income_auto' : ($apply_only_income ? 'income_only_threshold' : 'both_threshold');
+        }
+
         $settings = array(
             'auto_approval_enabled' => isset($_POST['auto_approval_enabled']) && $_POST['auto_approval_enabled'] === 'true',
             'auto_approval_threshold' => floatval($_POST['auto_approval_threshold'] ?? 0),
-            'apply_to_expenses_only' => isset($_POST['apply_to_expenses_only']) && $_POST['apply_to_expenses_only'] === 'true',
-            'apply_to_income_only' => isset($_POST['apply_to_income_only']) && $_POST['apply_to_income_only'] === 'true',
+            'auto_approval_mode' => $mode,
+            'auto_approval_apply_to_expenses_only' => $apply_only_expenses,
+            'auto_approval_apply_to_income_only' => $apply_only_income,
             'edit_time_limit_days' => absint($_POST['edit_time_limit_days'] ?? 30),
             'trash_auto_delete_days' => absint($_POST['trash_auto_delete_days'] ?? 30),
             'require_receipts' => isset($_POST['require_receipts']) && $_POST['require_receipts'] === 'true',
@@ -266,58 +397,52 @@ class Aura_Financial_Settings {
             'notification_email_on_approved' => isset($_POST['notification_email_on_approved']) && $_POST['notification_email_on_approved'] === 'true',
             'notification_email_on_rejected' => isset($_POST['notification_email_on_rejected']) && $_POST['notification_email_on_rejected'] === 'true',
         );
-        
+
         // Validaciones
         if ($settings['auto_approval_threshold'] < 0) {
             wp_send_json_error(array(
                 'message' => __('El umbral de aprobación automática no puede ser negativo', 'aura-suite')
             ));
         }
-        
-        if ($settings['apply_to_expenses_only'] && $settings['apply_to_income_only']) {
-            wp_send_json_error(array(
-                'message' => __('No puedes aplicar auto-aprobación solo a egresos Y solo a ingresos simultáneamente', 'aura-suite')
-            ));
-        }
-        
+
         // Guardar cada configuración
         foreach ($settings as $key => $value) {
             update_option('aura_finance_' . $key, $value);
         }
-        
+
         // Guardar excepciones si vienen en el POST
         if (isset($_POST['exceptions']) && is_array($_POST['exceptions'])) {
             $exceptions = array_map('sanitize_text_field', $_POST['exceptions']);
             update_option('aura_finance_auto_approval_exceptions', $exceptions);
         }
-        
+
         // Log de auditoría
         self::log_settings_change(get_current_user_id(), $settings);
-        
+
         // Hook para extensibilidad
         do_action('aura_finance_settings_updated', $settings, get_current_user_id());
-        
+
         wp_send_json_success(array(
             'message' => __('Configuraciones guardadas exitosamente', 'aura-suite'),
             'settings' => self::get_settings()
         ));
     }
-    
+
     /**
      * Obtener configuraciones (AJAX)
-     * 
+     *
      * @since 1.0.0
      */
     public static function ajax_get_settings() {
         check_ajax_referer('aura_settings_nonce', 'nonce');
-        
+
         // Verificar permisos
-        if (!current_user_can('aura_finance_settings_manage')) {
+        if (!self::current_user_can_manage()) {
             wp_send_json_error(array(
                 'message' => __('No tienes permisos para ver configuraciones', 'aura-suite')
             ));
         }
-        
+
         wp_send_json_success(array(
             'settings' => self::get_settings()
         ));
@@ -600,10 +725,20 @@ class Aura_Financial_Settings {
                 }
             </style>
             
+            <?php
+            $currency_symbol = get_option('aura_currency_symbol', '$');
+            $mode_labels = array(
+                'expenses_threshold_income_auto' => __('Ingresos libres + Egresos por umbral', 'aura-suite'),
+                'both_threshold'                 => __('Umbral común para ingresos y egresos', 'aura-suite'),
+                'expenses_only_threshold'        => __('Solo egresos por umbral (ingresos manuales)', 'aura-suite'),
+                'income_only_threshold'          => __('Solo ingresos por umbral (egresos manuales)', 'aura-suite'),
+            );
+            $mode_label = $mode_labels[$settings['auto_approval_mode']] ?? '';
+            ?>
             <div class="aura-stats-header">
                 <h4><?php _e('Este Mes', 'aura-suite'); ?></h4>
                 <?php if ($auto_approval_enabled): ?>
-                    <p><?php printf(__('Umbral de auto-aprobación: $%s', 'aura-suite'), number_format($threshold, 2)); ?></p>
+                    <p><?php printf(__('Umbral: %s%s — %s', 'aura-suite'), esc_html($currency_symbol), number_format($threshold, 2), esc_html($mode_label)); ?></p>
                 <?php else: ?>
                     <p><?php _e('Auto-aprobación deshabilitada', 'aura-suite'); ?></p>
                 <?php endif; ?>
@@ -671,13 +806,12 @@ class Aura_Financial_Settings {
                 <a href="<?php echo admin_url('admin.php?page=aura-financial-transactions'); ?>" class="button button-primary">
                     <?php _e('Ver Todas las Transacciones', 'aura-suite'); ?>
                 </a>
-                <?php if (current_user_can('aura_finance_settings_manage')): ?>
-                    <a href="<?php echo admin_url('admin.php?page=aura-settings'); ?>" class="button" style="margin-left: 5px;">
+                <?php if (self::current_user_can_manage()): ?>
+                    <a href="<?php echo admin_url('admin.php?page=aura-settings&tab=finance'); ?>" class="button" style="margin-left: 5px;">
                         <?php _e('⚙️ Configurar', 'aura-suite'); ?>
                     </a>
                 <?php endif; ?>
             </div>
-        </div>
         </div>
         <?php
     }

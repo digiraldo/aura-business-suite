@@ -95,10 +95,15 @@ if (isset($_POST['aura_save_settings']) && wp_verify_nonce($_POST['aura_settings
         update_option('aura_currency_decimals', absint($_POST['aura_currency_decimals']));
     }
 
+    $valid_modes = ['expenses_threshold_income_auto', 'both_threshold', 'expenses_only_threshold', 'income_only_threshold'];
     $auto_approval_mode = sanitize_text_field($_POST['auto_approval_mode'] ?? 'expenses_threshold_income_auto');
-    update_option('aura_finance_auto_approval_enabled',               isset($_POST['auto_approval_enabled']));
-    update_option('aura_finance_auto_approval_threshold',             floatval($_POST['auto_approval_threshold'] ?? 0));
-    update_option('aura_finance_auto_approval_mode',                  $auto_approval_mode);
+    if (!in_array($auto_approval_mode, $valid_modes, true)) {
+        $auto_approval_mode = 'expenses_threshold_income_auto';
+    }
+    $auto_approval_threshold = max(0.0, floatval($_POST['auto_approval_threshold'] ?? 0));
+    update_option('aura_finance_auto_approval_enabled',   isset($_POST['auto_approval_enabled']));
+    update_option('aura_finance_auto_approval_threshold', $auto_approval_threshold);
+    update_option('aura_finance_auto_approval_mode',      $auto_approval_mode);
     if ($auto_approval_mode === 'expenses_threshold_income_auto' || $auto_approval_mode === 'expenses_only_threshold') {
         update_option('aura_finance_auto_approval_apply_to_expenses_only', true);
         update_option('aura_finance_auto_approval_apply_to_income_only', false);
@@ -108,6 +113,13 @@ if (isset($_POST['aura_save_settings']) && wp_verify_nonce($_POST['aura_settings
     } else {
         update_option('aura_finance_auto_approval_apply_to_expenses_only', false);
         update_option('aura_finance_auto_approval_apply_to_income_only', false);
+    }
+
+    if (isset($_POST['aura_category_exceptions_submitted']) && class_exists('Aura_Financial_Settings')) {
+        $posted_exceptions = isset($_POST['aura_category_exceptions']) && is_array($_POST['aura_category_exceptions'])
+            ? $_POST['aura_category_exceptions']
+            : [];
+        Aura_Financial_Settings::save_category_exceptions($posted_exceptions);
     }
 
     update_option('aura_electric_threshold',  floatval($_POST['electric_threshold']));
@@ -209,9 +221,11 @@ $org_logo_url   = $org_logo_id ? wp_get_attachment_image_url($org_logo_id, 'medi
 $org_logo_in_login = get_option('aura_org_logo_in_login', false);
 $org_logo_in_email = get_option('aura_org_logo_in_email', true);
 
+$currency_symbol          = !empty($currency_config['symbol']) ? $currency_config['symbol'] : '$';
+
 // Stats ApexCharts
-$stats_chart = ['auto_approved' => 0, 'manual_approved' => 0, 'rejected' => 0, 'pending' => 0, 'time_saved_hours' => 0];
-if ($auto_approval_enabled && $auto_approval_threshold > 0) {
+$stats_chart = ['auto_approved' => 0, 'manual_approved' => 0, 'rejected' => 0, 'pending' => 0, 'time_saved_hours' => 0, 'auto_approved_percent' => 0, 'manual_approved_percent' => 0, 'rejected_percent' => 0];
+if ($auto_approval_enabled) {
     $stats_chart = Aura_Financial_Settings::get_auto_approval_stats('month');
 }
 
@@ -724,7 +738,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 <!-- ── 2. Aprobación Automática ── -->
                 <div class="aura-glass-card glass-card fade-up">
-                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:10px;">
                         <h2 class="aura-section-title" style="margin:0;">
                             <span class="dashicons dashicons-saved"></span>
                             <?php esc_html_e('Aprobación Automática de Transacciones', 'aura-suite'); ?>
@@ -733,12 +747,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             <?php echo $auto_approval_enabled ? esc_html__('Motor Activo', 'aura-suite') : esc_html__('Motor Pausado', 'aura-suite'); ?>
                         </span>
                     </div>
-                    <p class="aura-desc" style="margin-bottom:20px;">
-                        <?php esc_html_e('Configura las reglas contables inteligentes para admitir ingresos directos y fijar un límite de autorización manual para egresos.', 'aura-suite'); ?>
+                    <p class="aura-desc" style="margin-bottom:18px;">
+                        <?php esc_html_e('Define cuándo las transacciones nuevas ingresan como Aprobadas de inmediato (actualizando saldos bancarios al instante) o cuándo pasan a la cola de Pendientes para revisión manual.', 'aura-suite'); ?>
                     </p>
 
                     <!-- Switch General -->
-                    <div class="aura-toggle-wrap" style="margin-bottom:24px;padding:14px 18px;background:rgba(241,245,249,0.6);border:1px solid #e2e8f0;border-radius:12px;">
+                    <div class="aura-toggle-wrap" style="margin-bottom:18px;padding:14px 18px;background:rgba(241,245,249,0.65);border:1px solid #e2e8f0;border-radius:12px;">
                         <label class="aura-toggle">
                             <input type="checkbox" id="auto_approval_enabled" name="auto_approval_enabled" value="1" <?php checked($auto_approval_enabled, true); ?>>
                             <span class="aura-toggle-slider"></span>
@@ -746,68 +760,74 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div>
                             <span class="aura-label" style="font-size:14px;">
                                 <?php esc_html_e('Habilitar Motor de Aprobación Automática', 'aura-suite'); ?>
-                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Si está activo, las transacciones se evalúan al crearse o importarse. Si se desactiva, absolutamente todo queda en estado Pendiente.', 'aura-suite'); ?>">?</span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Cuando está activo, cada nueva transacción se evalúa contra tu política, umbral, presupuesto del área y excepciones de categoría. Si se pausa, toda operación queda Pendiente.', 'aura-suite'); ?>">?</span>
                             </span>
-                            <p class="aura-desc" style="margin:2px 0 0;"><?php esc_html_e('Activa o pausa globalmente las políticas de auto-aprobación en la suite financiera.', 'aura-suite'); ?></p>
+                            <p class="aura-desc" style="margin:2px 0 0;"><?php esc_html_e('Activa o pausa globalmente el flujo de aprobación automática en el módulo financiero.', 'aura-suite'); ?></p>
                         </div>
                     </div>
 
+                    <!-- Aviso visible cuando el motor está pausado -->
+                    <div id="aura-engine-paused-notice" class="aura-info-box warning" style="margin-bottom:4px;<?php echo $auto_approval_enabled ? 'display:none;' : ''; ?>">
+                        <p style="margin:0;font-size:13px;line-height:1.55;">
+                            <strong>⏸️ <?php esc_html_e('Motor en pausa:', 'aura-suite'); ?></strong>
+                            <?php esc_html_e('Actualmente todas las transacciones nuevas (ingresos, egresos y gastos de capital) quedarán en estado Pendiente hasta que un supervisor o administrador las apruebe manualmente.', 'aura-suite'); ?>
+                        </p>
+                    </div>
+
                     <div id="aura-approval-fields" style="<?php echo !$auto_approval_enabled ? 'display:none;' : ''; ?>">
-                        
-                        <!-- BARRA DE CONFIGURACIONES PREDETERMINADAS (PRESETS EN 1 CLIC) -->
-                        <div class="aura-presets-card" style="margin-bottom:24px;padding:16px;background:linear-gradient(135deg,rgba(37,99,235,0.04) 0%,rgba(16,185,129,0.04) 100%);border:1px solid rgba(37,99,235,0.15);border-radius:12px;">
+
+                        <!-- PASO 1: PERFILES RÁPIDOS (1 CLIC) -->
+                        <div class="aura-presets-card" style="margin-bottom:22px;padding:16px;background:linear-gradient(135deg,rgba(37,99,235,0.04) 0%,rgba(16,185,129,0.04) 100%);border:1px solid rgba(37,99,235,0.16);border-radius:12px;">
                             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
                                 <div style="display:flex;align-items:center;gap:8px;">
-                                    <span style="font-size:18px;">⚡</span>
+                                    <span style="font-size:16px;">⚡</span>
                                     <span style="font-weight:700;font-size:13.5px;color:#1e293b;">
-                                        <?php esc_html_e('Ajustes Predeterminados Recomendados (1 Clic)', 'aura-suite'); ?>
+                                        <?php esc_html_e('Paso 1 · Perfiles Recomendados (1 Clic)', 'aura-suite'); ?>
                                     </span>
                                 </div>
-                                <span class="aura-desc" style="font-size:12px;"><?php esc_html_e('Haz clic en un perfil para autoconfigurar las opciones recomendadas:', 'aura-suite'); ?></span>
+                                <span class="aura-desc" style="font-size:12px;"><?php esc_html_e('Selecciona un perfil base o personaliza abajo tu regla exacta:', 'aura-suite'); ?></span>
                             </div>
                             <div style="display:flex;gap:10px;flex-wrap:wrap;">
                                 <button type="button" class="aura-btn-preset <?php echo ($auto_approval_mode === 'expenses_threshold_income_auto' && (float)$auto_approval_threshold == 500) ? 'is-active' : ''; ?>" data-mode="expenses_threshold_income_auto" data-threshold="500">
                                     <span class="dashicons dashicons-star-filled" style="color:#eab308;font-size:15px;width:15px;height:15px;"></span>
                                     <strong><?php esc_html_e('Estándar Empresarial', 'aura-suite'); ?></strong>
-                                    <span style="font-size:11px;opacity:.85;">(Ingresos Libres + Egresos &lt; $500)</span>
+                                    <span style="font-size:11px;opacity:.85;">(<?php printf(esc_html__('Ingresos Libres + Egresos < %s500', 'aura-suite'), esc_html($currency_symbol)); ?>)</span>
                                 </button>
 
                                 <button type="button" class="aura-btn-preset <?php echo ($auto_approval_mode === 'expenses_threshold_income_auto' && (float)$auto_approval_threshold == 1500) ? 'is-active' : ''; ?>" data-mode="expenses_threshold_income_auto" data-threshold="1500">
                                     <span class="dashicons dashicons-chart-line" style="color:#059669;font-size:15px;width:15px;height:15px;"></span>
                                     <strong><?php esc_html_e('Operación Ágil', 'aura-suite'); ?></strong>
-                                    <span style="font-size:11px;opacity:.85;">(Ingresos Libres + Egresos &lt; $1,500)</span>
+                                    <span style="font-size:11px;opacity:.85;">(<?php printf(esc_html__('Ingresos Libres + Egresos < %s1,500', 'aura-suite'), esc_html($currency_symbol)); ?>)</span>
                                 </button>
 
                                 <button type="button" class="aura-btn-preset <?php echo ($auto_approval_mode === 'both_threshold' && (float)$auto_approval_threshold == 100) ? 'is-active' : ''; ?>" data-mode="both_threshold" data-threshold="100">
                                     <span class="dashicons dashicons-shield" style="color:#2563eb;font-size:15px;width:15px;height:15px;"></span>
                                     <strong><?php esc_html_e('Auditoría Estricta', 'aura-suite'); ?></strong>
-                                    <span style="font-size:11px;opacity:.85;">(Umbral $100 Ambos)</span>
+                                    <span style="font-size:11px;opacity:.85;">(<?php printf(esc_html__('Umbral %s100 Ambos', 'aura-suite'), esc_html($currency_symbol)); ?>)</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- FILA: UMBRAL DE MONTO + SELECTOR DE POLÍTICA -->
-                        <div class="aura-field-group cols-2" style="margin-bottom:20px;">
+                        <!-- PASO 2: UMBRAL DE MONTO + SELECTOR DE POLÍTICA -->
+                        <div class="aura-field-group cols-2" style="margin-bottom:20px;align-items:start;">
                             <!-- Campo de Umbral -->
                             <div class="aura-field">
                                 <label class="aura-label" for="auto_approval_threshold">
-                                    <?php esc_html_e('Monto Umbral de Aprobación ($)', 'aura-suite'); ?>
-                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Monto límite para la regla. Los egresos menores a este valor se aprueban automáticamente; montos iguales o mayores quedan pendientes de revisión.', 'aura-suite'); ?>">?</span>
+                                    <?php printf(esc_html__('Paso 2A · Monto Umbral (%s)', 'aura-suite'), esc_html($currency_symbol)); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Límite estricto (<): solo las transacciones estrictamente menores a este monto aplican para auto-aprobación por umbral. Si pones 0, ningún tipo sujeto a umbral se auto-aprueba.', 'aura-suite'); ?>">?</span>
                                 </label>
                                 <div class="aura-input-group aura-amount-group">
-                                    <span class="aura-input-group-text currency-symbol"><?php echo esc_html($currency_config['symbol']); ?></span>
+                                    <span class="aura-input-group-text currency-symbol"><?php echo esc_html($currency_symbol); ?></span>
                                     <input type="number" id="auto_approval_threshold" name="auto_approval_threshold" class="aura-input input-fancy"
                                            value="<?php echo esc_attr($auto_approval_threshold); ?>"
                                            step="0.01" min="0" placeholder="500.00">
                                 </div>
-                                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;flex-wrap:wrap;gap:6px;">
-                                    <span class="aura-desc"><?php esc_html_e('Menores a este valor se aprueban automáticamente.', 'aura-suite'); ?></span>
-                                    <span class="aura-threshold-examples">
-                                        <a href="#" data-amount="100">$100</a> |
-                                        <a href="#" data-amount="250">$250</a> |
-                                        <a href="#" data-amount="500">$500</a> |
-                                        <a href="#" data-amount="1000">$1,000</a> |
-                                        <a href="#" data-amount="2000">$2,000</a>
+                                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;flex-wrap:wrap;gap:6px;">
+                                    <span class="aura-desc"><?php esc_html_e('Montos menores a este valor se aprueban solos (0 = desactivar por monto).', 'aura-suite'); ?></span>
+                                    <span class="aura-threshold-examples" style="display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                                        <?php foreach ([100, 250, 500, 1000, 2000] as $ex_amt): ?>
+                                            <a href="#" class="aura-chip-amount <?php echo ((float)$auto_approval_threshold === (float)$ex_amt) ? 'is-active' : ''; ?>" data-amount="<?php echo $ex_amt; ?>"><?php echo esc_html($currency_symbol . number_format($ex_amt, 0)); ?></a>
+                                        <?php endforeach; ?>
                                     </span>
                                 </div>
                             </div>
@@ -815,12 +835,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             <!-- Selector de Política de Aprobación -->
                             <div class="aura-field">
                                 <label class="aura-label">
-                                    <?php esc_html_e('Política de Aprobación por Tipo:', 'aura-suite'); ?>
-                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Selecciona la regla deseada. Para que los ingresos no requieran aprobación y los egresos sí requieran revisión si superan el umbral, elige la primera opción.', 'aura-suite'); ?>">?</span>
+                                    <?php esc_html_e('Paso 2B · Política por Tipo de Movimiento:', 'aura-suite'); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e('Define cómo se aplicará el umbral sobre Ingresos, Egresos y Gastos de Capital (CapEx). Las excepciones de categoría y presupuestos excedidos siempre tienen prioridad.', 'aura-suite'); ?>">?</span>
                                 </label>
-                                
-                                <div class="aura-policy-options" style="display:flex;flex-direction:column;gap:10px;">
-                                    <!-- Opción 1: Ingresos libres + Egresos por umbral (Recomendada) -->
+
+                                <div class="aura-policy-options" style="display:flex;flex-direction:column;gap:9px;">
+                                    <!-- Opción 1: Ingresos libres + Egresos por umbral -->
                                     <label class="aura-policy-card <?php echo $auto_approval_mode === 'expenses_threshold_income_auto' ? 'is-selected' : ''; ?>">
                                         <input type="radio" name="auto_approval_mode" value="expenses_threshold_income_auto" <?php checked($auto_approval_mode, 'expenses_threshold_income_auto'); ?>>
                                         <div class="aura-policy-card__content">
@@ -829,7 +849,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                                 <span class="aura-badge aura-badge-green" style="font-size:10.5px;"><?php esc_html_e('Recomendado', 'aura-suite'); ?></span>
                                             </div>
                                             <p class="aura-policy-card__desc">
-                                                <?php esc_html_e('Todo ingreso se aprueba de inmediato. Los egresos menores al umbral se aprueban solos; los que superen el umbral quedan pendientes.', 'aura-suite'); ?>
+                                                <?php esc_html_e('Todo ingreso se aprueba de inmediato sin importar su monto. Egresos y CapEx menores al umbral se aprueban solos; iguales o mayores quedan pendientes.', 'aura-suite'); ?>
                                             </p>
                                         </div>
                                     </label>
@@ -839,10 +859,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                         <input type="radio" name="auto_approval_mode" value="both_threshold" <?php checked($auto_approval_mode, 'both_threshold'); ?>>
                                         <div class="aura-policy-card__content">
                                             <div class="aura-policy-card__header">
-                                                <strong>⚖️ <?php esc_html_e('Umbral Común para Ambos (Ingresos y Egresos)', 'aura-suite'); ?></strong>
+                                                <strong>⚖️ <?php esc_html_e('Umbral Común (Ingresos, Egresos y CapEx)', 'aura-suite'); ?></strong>
                                             </div>
                                             <p class="aura-policy-card__desc">
-                                                <?php esc_html_e('Cualquier transacción (ingreso o egreso) que supere el umbral quedará pendiente de aprobación manual.', 'aura-suite'); ?>
+                                                <?php esc_html_e('Cualquier transacción menor al umbral se auto-aprueba; cualquier ingreso, egreso o CapEx igual o mayor al umbral queda pendiente.', 'aura-suite'); ?>
                                             </p>
                                         </div>
                                     </label>
@@ -852,10 +872,23 @@ document.addEventListener('DOMContentLoaded', function () {
                                         <input type="radio" name="auto_approval_mode" value="expenses_only_threshold" <?php checked($auto_approval_mode, 'expenses_only_threshold'); ?>>
                                         <div class="aura-policy-card__content">
                                             <div class="aura-policy-card__header">
-                                                <strong>🔒 <?php esc_html_e('Solo Egresos por Umbral (Ingresos siempre manuales)', 'aura-suite'); ?></strong>
+                                                <strong>🔒 <?php esc_html_e('Solo Egresos/CapEx por Umbral (Ingresos Manuales)', 'aura-suite'); ?></strong>
                                             </div>
                                             <p class="aura-policy-card__desc">
-                                                <?php esc_html_e('Los ingresos siempre requieren aprobación manual. Los egresos menores al umbral se aprueban automáticamente.', 'aura-suite'); ?>
+                                                <?php esc_html_e('Los ingresos siempre requieren validación manual. Solo los egresos y CapEx menores al umbral se auto-aprueban.', 'aura-suite'); ?>
+                                            </p>
+                                        </div>
+                                    </label>
+
+                                    <!-- Opción 4: Solo ingresos por umbral; egresos manuales -->
+                                    <label class="aura-policy-card <?php echo $auto_approval_mode === 'income_only_threshold' ? 'is-selected' : ''; ?>">
+                                        <input type="radio" name="auto_approval_mode" value="income_only_threshold" <?php checked($auto_approval_mode, 'income_only_threshold'); ?>>
+                                        <div class="aura-policy-card__content">
+                                            <div class="aura-policy-card__header">
+                                                <strong>🧾 <?php esc_html_e('Solo Ingresos por Umbral (Egresos Manuales)', 'aura-suite'); ?></strong>
+                                            </div>
+                                            <p class="aura-policy-card__desc">
+                                                <?php esc_html_e('Todos los egresos y CapEx requieren aprobación manual. Únicamente ingresos menores al umbral se aprueban automáticamente.', 'aura-suite'); ?>
                                             </p>
                                         </div>
                                     </label>
@@ -863,30 +896,61 @@ document.addEventListener('DOMContentLoaded', function () {
                             </div>
                         </div>
 
-                        <!-- CAJA DE RESUMEN EN VIVO (SIMULADOR DE REGLA) -->
-                        <div class="aura-rule-summary-box" id="aura-live-rule-summary" style="margin-top:14px;padding:16px 20px;background:rgba(248,250,252,0.85);border:1px solid #cbd5e1;border-radius:12px;">
-                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                                <span class="dashicons dashicons-visibility" style="color:var(--aura-primary);font-size:18px;width:18px;height:18px;"></span>
-                                <strong style="font-size:13.5px;color:#1e293b;"><?php esc_html_e('Resumen del Comportamiento en Tiempo Real:', 'aura-suite'); ?></strong>
+                        <!-- PASO 3: RESUMEN EN VIVO Y SIMULADOR INTERACTIVO -->
+                        <div class="aura-rule-summary-box" id="aura-live-rule-summary" style="margin-top:14px;padding:18px 20px;background:rgba(248,250,252,0.9);border:1px solid #cbd5e1;border-radius:12px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span class="dashicons dashicons-visibility" style="color:var(--aura-primary);font-size:18px;width:18px;height:18px;"></span>
+                                    <strong style="font-size:13.5px;color:#1e293b;"><?php esc_html_e('Paso 3 · Resumen en Vivo y Simulador de Regla', 'aura-suite'); ?></strong>
+                                </div>
+                                <span class="aura-desc" style="font-size:12px;"><?php esc_html_e('Prioridad de evaluación: 1) Motor activo → 2) Excepciones/Presupuesto → 3) Política y Umbral', 'aura-suite'); ?></span>
                             </div>
-                            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:12px;font-size:13px;line-height:1.6;">
-                                <div style="padding:10px 14px;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">
+
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px;font-size:12.8px;line-height:1.55;">
+                                <div class="aura-summary-tile" style="padding:10px 14px;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">
                                     <div style="font-weight:700;color:#059669;margin-bottom:3px;">💰 <?php esc_html_e('Tratamiento de INGRESOS:', 'aura-suite'); ?></div>
-                                    <span id="summary-income-text"><?php esc_html_e('Aprobación inmediata automática sin importar el monto.', 'aura-suite'); ?></span>
+                                    <span id="summary-income-text"></span>
                                 </div>
-                                <div style="padding:10px 14px;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">
-                                    <div style="font-weight:700;color:#dc2626;margin-bottom:3px;">💸 <?php esc_html_e('Tratamiento de EGRESOS:', 'aura-suite'); ?></div>
-                                    <span id="summary-expense-text"><?php printf(esc_html__('Menores a $%s se aprueban solos. De $%s o más quedan PENDIENTES.', 'aura-suite'), number_format((float)$auto_approval_threshold, 2), number_format((float)$auto_approval_threshold, 2)); ?></span>
+                                <div class="aura-summary-tile" style="padding:10px 14px;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">
+                                    <div style="font-weight:700;color:#dc2626;margin-bottom:3px;">💸 <?php esc_html_e('EGRESOS y CapEx:', 'aura-suite'); ?></div>
+                                    <span id="summary-expense-text"></span>
                                 </div>
-                                <div style="padding:10px 14px;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">
-                                    <div style="font-weight:700;color:#4f46e5;margin-bottom:3px;">🛡️ <?php esc_html_e('Categorías con Excepción:', 'aura-suite'); ?></div>
-                                    <span><?php esc_html_e('Siempre requieren aprobación manual, sin importar el monto.', 'aura-suite'); ?></span>
+                                <div class="aura-summary-tile" style="padding:10px 14px;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">
+                                    <div style="font-weight:700;color:#d97706;margin-bottom:3px;">📊 <?php esc_html_e('Presupuesto de Área:', 'aura-suite'); ?></div>
+                                    <span><?php esc_html_e('Si un egreso o CapEx supera el presupuesto vigente del área, pasa a PENDIENTE.', 'aura-suite'); ?></span>
                                 </div>
+                                <div class="aura-summary-tile" style="padding:10px 14px;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;">
+                                    <div style="font-weight:700;color:#4f46e5;margin-bottom:3px;">🛡️ <?php esc_html_e('Excepciones de Categoría:', 'aura-suite'); ?></div>
+                                    <span id="summary-exceptions-text"><?php esc_html_e('Siempre requieren aprobación manual, sin importar el monto.', 'aura-suite'); ?></span>
+                                </div>
+                            </div>
+
+                            <!-- Simulador rápido en vivo -->
+                            <div class="aura-rule-simulator" style="margin-top:14px;padding-top:14px;border-top:1px dashed #cbd5e1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                                <strong style="font-size:12.5px;color:#334155;">🧪 <?php esc_html_e('Probar ahora:', 'aura-suite'); ?></strong>
+                                <select id="sim-tx-type" class="aura-input" style="width:auto;min-width:155px;padding:6px 10px;font-size:12.5px;">
+                                    <option value="expense"><?php esc_html_e('Egreso (Gasto)', 'aura-suite'); ?></option>
+                                    <option value="income"><?php esc_html_e('Ingreso', 'aura-suite'); ?></option>
+                                    <option value="capital"><?php esc_html_e('Gasto de Capital (CapEx)', 'aura-suite'); ?></option>
+                                </select>
+                                <div style="display:inline-flex;align-items:center;gap:4px;">
+                                    <span style="font-weight:600;color:#475569;font-size:13px;"><?php echo esc_html($currency_symbol); ?></span>
+                                    <input type="number" id="sim-tx-amount" class="aura-input" value="250" min="0" step="0.01" style="width:110px;padding:6px 10px;font-size:12.5px;">
+                                </div>
+                                <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#475569;cursor:pointer;">
+                                    <input type="checkbox" id="sim-has-exception">
+                                    <?php esc_html_e('Categoría con excepción', 'aura-suite'); ?>
+                                </label>
+                                <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#475569;cursor:pointer;">
+                                    <input type="checkbox" id="sim-budget-exceeded">
+                                    <?php esc_html_e('Supera presupuesto', 'aura-suite'); ?>
+                                </label>
+                                <div id="sim-tx-result" style="flex:1;min-width:220px;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:8px;background:#ffffff;border:1px solid #e2e8f0;"></div>
                             </div>
                         </div>
 
                         <!-- ApexChart de estadísticas -->
-                        <?php if ($auto_approval_enabled && $auto_approval_threshold > 0): ?>
+                        <?php if ($auto_approval_enabled): ?>
                         <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
                             <div>
                                 <label class="aura-label" style="margin-bottom:14px;"><?php esc_html_e('Estadísticas del Mes', 'aura-suite'); ?></label>
@@ -907,18 +971,30 @@ document.addEventListener('DOMContentLoaded', function () {
                                         <span class="aura-badge aura-badge-red" style="margin-top:6px;"><?php echo esc_html($stats_chart['rejected_percent']); ?>%</span>
                                     </div>
                                     <?php if ($stats_chart['time_saved_hours'] > 0): ?>
-                                     <div class="aura-stat-card" style="background:rgba(99,102,241,.06);border-color:rgba(99,102,241,.25);">
+                                    <div class="aura-stat-card" style="background:rgba(99,102,241,.06);border-color:rgba(99,102,241,.25);">
                                         <div class="aura-stat-val" style="color:#4f46e5;">⏱ <?php echo esc_html($stats_chart['time_saved_hours']); ?>h</div>
                                         <div class="aura-stat-label"><?php esc_html_e('Tiempo ahorrado', 'aura-suite'); ?></div>
+                                    </div>
+                                    <?php else: ?>
+                                    <div class="aura-stat-card" style="background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.25);">
+                                        <div class="aura-stat-val" style="color:#d97706;"><?php echo (int)$stats_chart['pending']; ?></div>
+                                        <div class="aura-stat-label"><?php esc_html_e('Pendientes', 'aura-suite'); ?></div>
                                     </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
                             <div>
                                 <label class="aura-label" style="margin-bottom:14px;"><?php esc_html_e('Distribución de Aprobaciones', 'aura-suite'); ?></label>
-                                <div id="aura-approval-chart" style="height:200px;"></div>
+                                <?php if (($stats_chart['auto_approved'] + $stats_chart['manual_approved'] + $stats_chart['rejected']) > 0): ?>
+                                    <div id="aura-approval-chart" style="height:200px;"></div>
+                                <?php else: ?>
+                                    <div style="height:180px;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;border:1px dashed #cbd5e1;border-radius:10px;color:#64748b;font-size:13px;">
+                                        <?php esc_html_e('Aún no hay transacciones aprobadas o rechazadas registradas en lo que va del mes.', 'aura-suite'); ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
+                        <?php if (($stats_chart['auto_approved'] + $stats_chart['manual_approved'] + $stats_chart['rejected']) > 0): ?>
                         <script>
                         document.addEventListener('DOMContentLoaded', function(){
                             if(typeof ApexCharts !== 'undefined'){
@@ -940,11 +1016,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         });
                         </script>
                         <?php endif; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <!-- Excepciones de Aprobación Automática -->
                 <div class="aura-glass-card">
+                    <input type="hidden" name="aura_category_exceptions_submitted" value="1">
                     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:10px;">
                         <h2 class="aura-section-title" style="margin:0;">
                             <span class="dashicons dashicons-shield"></span>
@@ -955,15 +1033,19 @@ document.addEventListener('DOMContentLoaded', function () {
                             <span id="aura-exceptions-num">0</span> <?php esc_html_e('excepciones activas', 'aura-suite'); ?>
                         </span>
                     </div>
-                    <p class="aura-desc" style="margin-bottom:16px;">
-                        <?php esc_html_e('Las categorías marcadas requerirán SIEMPRE revisión y aprobación manual por un supervisor contable, ignorando las reglas de umbral de monto.', 'aura-suite'); ?>
+                    <p class="aura-desc" style="margin-bottom:14px;">
+                        <?php esc_html_e('Las categorías marcadas requerirán SIEMPRE revisión y aprobación manual por un supervisor contable, ignorando la política y el umbral de monto (aplica tanto a categoría presupuestal como a categoría detallada del gasto).', 'aura-suite'); ?>
                     </p>
+
+                    <div id="aura-exceptions-standby-note" class="aura-info-box" style="margin-bottom:16px;padding:10px 14px;<?php echo $auto_approval_enabled ? 'display:none;' : ''; ?>">
+                        <span style="font-size:12.5px;">ℹ️ <?php esc_html_e('En espera: mientras el Motor de Aprobación Automática esté pausado, todas las categorías ya requieren aprobación manual. Estas excepciones entrarán en vigor en cuanto reactives el motor.', 'aura-suite'); ?></span>
+                    </div>
 
                     <!-- Barra de Búsqueda y Acciones Rápidas -->
                     <div class="aura-cat-filter-bar" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:18px;padding:12px 16px;background:rgba(248,250,252,0.85);border:1px solid #e2e8f0;border-radius:10px;">
                         <div style="flex:1;min-width:240px;position:relative;">
                             <span class="dashicons dashicons-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:16px;"></span>
-                            <input type="text" id="aura-cat-search-input" class="aura-input" style="padding-left:32px;font-size:13px;" placeholder="<?php esc_attr_e('🔍 Buscar categoría en tiempo real (ej: Combustible, Nómina, Donación)...', 'aura-suite'); ?>">
+                            <input type="text" id="aura-cat-search-input" class="aura-input" style="padding-left:32px;font-size:13px;" placeholder="<?php esc_attr_e('Buscar categoría (ej: Combustible, Nómina, Donación)...', 'aura-suite'); ?>">
                         </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
                             <button type="button" class="aura-btn-quick" id="btn-select-all-income">
@@ -998,8 +1080,10 @@ document.addEventListener('DOMContentLoaded', function () {
                             <div class="aura-category-exception-box aura-categories-scroll-box" id="aura-income-cats-box">
                                 <?php foreach ($income_cats as $cat): $checked = !empty($cat->always_require_approval) ? 'checked' : ''; ?>
                                 <label class="aura-category-exception-item <?php echo $checked ? 'is-checked' : ''; ?>" data-name="<?php echo esc_attr(strtolower($cat->name)); ?>">
-                                    <input type="checkbox" class="category-exception cat-type-income" data-category-id="<?php echo (int)$cat->id; ?>" <?php echo $checked; ?>>
-                                    <span class="cat-title"><?php echo esc_html($cat->name); ?></span>
+                                    <span style="display:flex;align-items:center;gap:8px;">
+                                        <input type="checkbox" class="category-exception cat-type-income" name="aura_category_exceptions[]" value="<?php echo (int)$cat->id; ?>" data-category-id="<?php echo (int)$cat->id; ?>" <?php echo $checked; ?>>
+                                        <span class="cat-title"><?php echo esc_html($cat->name); ?></span>
+                                    </span>
                                     <span class="aura-badge aura-badge-blue badge-forced" style="font-size:10px;<?php echo $checked ? '' : 'display:none;'; ?>">
                                         <?php esc_html_e('Manual Obligatorio', 'aura-suite'); ?>
                                     </span>
@@ -1008,19 +1092,27 @@ document.addEventListener('DOMContentLoaded', function () {
                             </div>
                         </div>
 
-                        <!-- Columna Egresos -->
+                        <!-- Columna Egresos y Capital -->
                         <div>
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                                 <label class="aura-label" style="color:#dc2626;margin:0;font-size:13.5px;font-weight:700;">
-                                    🔴 <?php esc_html_e('Egresos', 'aura-suite'); ?> (<?php echo count($expense_cats); ?>)
+                                    🔴 <?php esc_html_e('Egresos y CapEx', 'aura-suite'); ?> (<?php echo count($expense_cats); ?>)
                                 </label>
                                 <a href="#" id="toggle-expense-select" style="font-size:12px;color:#dc2626;text-decoration:none;font-weight:600;"><?php esc_html_e('Invertir', 'aura-suite'); ?></a>
                             </div>
                             <div class="aura-category-exception-box aura-categories-scroll-box" id="aura-expense-cats-box">
-                                <?php foreach ($expense_cats as $cat): $checked = !empty($cat->always_require_approval) ? 'checked' : ''; ?>
+                                <?php foreach ($expense_cats as $cat):
+                                    $checked = !empty($cat->always_require_approval) ? 'checked' : '';
+                                    $type_tag = $cat->type === 'capital' ? 'CapEx' : ($cat->type === 'both' ? __('Ambos', 'aura-suite') : '');
+                                ?>
                                 <label class="aura-category-exception-item <?php echo $checked ? 'is-checked' : ''; ?>" data-name="<?php echo esc_attr(strtolower($cat->name)); ?>">
-                                    <input type="checkbox" class="category-exception cat-type-expense" data-category-id="<?php echo (int)$cat->id; ?>" <?php echo $checked; ?>>
-                                    <span class="cat-title"><?php echo esc_html($cat->name); ?></span>
+                                    <span style="display:flex;align-items:center;gap:8px;">
+                                        <input type="checkbox" class="category-exception cat-type-expense" name="aura_category_exceptions[]" value="<?php echo (int)$cat->id; ?>" data-category-id="<?php echo (int)$cat->id; ?>" <?php echo $checked; ?>>
+                                        <span class="cat-title"><?php echo esc_html($cat->name); ?></span>
+                                        <?php if ($type_tag): ?>
+                                            <span class="badge badge-gray" style="font-size:9.5px;padding:1px 6px;"><?php echo esc_html($type_tag); ?></span>
+                                        <?php endif; ?>
+                                    </span>
                                     <span class="aura-badge aura-badge-red badge-forced" style="font-size:10px;<?php echo $checked ? '' : 'display:none;'; ?>">
                                         <?php esc_html_e('Manual Obligatorio', 'aura-suite'); ?>
                                     </span>
@@ -1032,18 +1124,19 @@ document.addEventListener('DOMContentLoaded', function () {
                     <?php endif; ?>
 
                     <div style="margin-top:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-                        <button type="button" id="save-category-exceptions" class="aura-btn-primary btn-shimmer btn-indigo" style="padding:10px 20px;font-weight:600;">
+                        <button type="button" id="save-category-exceptions" class="aura-btn-secondary btn-glass" style="padding:10px 18px;font-weight:600;">
                             <span class="dashicons dashicons-saved"></span>
-                            <?php esc_html_e('Guardar Lista de Excepciones', 'aura-suite'); ?>
+                            <?php esc_html_e('Guardar Excepciones Ahora', 'aura-suite'); ?>
                         </button>
+                        <span class="aura-desc" style="font-size:12px;"><?php esc_html_e('También se guardan automáticamente al pulsar «Guardar Configuración» abajo.', 'aura-suite'); ?></span>
                         <span id="category-save-status"></span>
                     </div>
 
                     <div class="aura-info-box info" style="margin-top:20px;">
                         <p style="font-size:13.5px;font-weight:700;margin:0 0 8px;">ℹ️ <?php esc_html_e('Casos de Uso Típicos:', 'aura-suite'); ?></p>
                         <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.75;">
-                            <li><strong><?php esc_html_e('Empresa / Negocio Comercial:', 'aura-suite'); ?></strong> <?php esc_html_e('Ingresos Libres + Egresos con umbral $500. Se cobra rápido sin demoras, y gastos superiores a $500 requieren firma del administrador.', 'aura-suite'); ?></li>
-                            <li><strong><?php esc_html_e('Asociación / ONG con Auditoría:', 'aura-suite'); ?></strong> <?php esc_html_e('Umbral común de $200 tanto para ingresos como egresos para asegurar comprobantes en todo movimiento relevante.', 'aura-suite'); ?></li>
+                            <li><strong><?php esc_html_e('Empresa / Negocio Comercial:', 'aura-suite'); ?></strong> <?php printf(esc_html__('Ingresos Libres + Egresos con umbral %s500. Se cobra rápido sin demoras, y gastos superiores a %s500 requieren firma del administrador.', 'aura-suite'), esc_html($currency_symbol), esc_html($currency_symbol)); ?></li>
+                            <li><strong><?php esc_html_e('Asociación / ONG con Auditoría:', 'aura-suite'); ?></strong> <?php printf(esc_html__('Umbral común de %s200 para ingresos, egresos y CapEx para asegurar comprobantes en todo movimiento relevante.', 'aura-suite'), esc_html($currency_symbol)); ?></li>
                             <li><strong><?php esc_html_e('Nómina y Compras Mayores:', 'aura-suite'); ?></strong> <?php esc_html_e('Marca "Nómina" o "Honorarios" en las excepciones de arriba para que siempre requieran aprobación formal sin importar la regla.', 'aura-suite'); ?></li>
                         </ul>
                     </div>
@@ -1806,46 +1899,152 @@ jQuery(document).ready(function ($) {
         var isEnabled = $(this).is(':checked');
         if (isEnabled) {
             $('#aura-approval-fields').slideDown(250);
+            $('#aura-engine-paused-notice, #aura-exceptions-standby-note').slideUp(180);
             $('#aura-status-policy-badge').removeClass('badge-gray aura-badge-gray').addClass('badge-emerald aura-badge-green').text('<?php echo esc_js(__('Motor Activo', 'aura-suite')); ?>');
         } else {
             $('#aura-approval-fields').slideUp(250);
+            $('#aura-engine-paused-notice, #aura-exceptions-standby-note').slideDown(180);
             $('#aura-status-policy-badge').removeClass('badge-emerald aura-badge-green').addClass('badge-gray aura-badge-gray').text('<?php echo esc_js(__('Motor Pausado', 'aura-suite')); ?>');
         }
+        updateRuleSummary();
     });
 
     // ── Simulador / Resumen en Vivo de la Regla de Aprobación ──────
+    var auraCurrencySymbol = '<?php echo esc_js($currency_symbol); ?>';
+    function formatAuraCurrency(val) {
+        return auraCurrencySymbol + (parseFloat(val) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function syncPresetAndChipHighlight(mode, threshold) {
+        $('.aura-btn-preset').each(function () {
+            var match = $(this).data('mode') === mode && parseFloat($(this).data('threshold')) === threshold;
+            $(this).toggleClass('is-active', match);
+        });
+        $('.aura-chip-amount').each(function () {
+            $(this).toggleClass('is-active', parseFloat($(this).data('amount')) === threshold);
+        });
+    }
+
+    function updateRuleSimulator() {
+        var isEnabled = $('#auto_approval_enabled').is(':checked');
+        var threshold = parseFloat($('#auto_approval_threshold').val()) || 0;
+        var mode = $('input[name="auto_approval_mode"]:checked').val() || 'expenses_threshold_income_auto';
+        var txType = $('#sim-tx-type').val() || 'expense';
+        var txAmount = parseFloat($('#sim-tx-amount').val()) || 0;
+        var hasException = $('#sim-has-exception').is(':checked');
+        var budgetExceeded = $('#sim-budget-exceeded').is(':checked');
+        var thFormatted = formatAuraCurrency(threshold);
+        var isOutflow = (txType === 'expense' || txType === 'capital');
+
+        var approved = false;
+        var reason = '';
+
+        if (!isEnabled) {
+            reason = '<?php echo esc_js(__('Motor pausado globalmente.', 'aura-suite')); ?>';
+        } else if (hasException) {
+            reason = '<?php echo esc_js(__('Categoría marcada con excepción manual obligatoria.', 'aura-suite')); ?>';
+        } else if (isOutflow && budgetExceeded) {
+            reason = '<?php echo esc_js(__('Excede el presupuesto vigente del área.', 'aura-suite')); ?>';
+        } else if (mode === 'expenses_threshold_income_auto') {
+            if (txType === 'income') {
+                approved = true;
+                reason = '<?php echo esc_js(__('Política de ingresos automáticos (sin umbral).', 'aura-suite')); ?>';
+            } else if (threshold > 0 && txAmount < threshold) {
+                approved = true;
+                reason = '<?php echo esc_js(__('Egreso/CapEx menor al umbral de ', 'aura-suite')); ?>' + thFormatted + '.';
+            } else {
+                reason = threshold <= 0
+                    ? '<?php echo esc_js(__('Umbral en 0: requiere aprobación manual.', 'aura-suite')); ?>'
+                    : '<?php echo esc_js(__('Monto igual o superior al umbral de ', 'aura-suite')); ?>' + thFormatted + '.';
+            }
+        } else if (mode === 'both_threshold') {
+            if (threshold > 0 && txAmount < threshold) {
+                approved = true;
+                reason = '<?php echo esc_js(__('Monto menor al umbral común de ', 'aura-suite')); ?>' + thFormatted + '.';
+            } else {
+                reason = threshold <= 0
+                    ? '<?php echo esc_js(__('Umbral en 0: requiere aprobación manual.', 'aura-suite')); ?>'
+                    : '<?php echo esc_js(__('Monto igual o superior al umbral común de ', 'aura-suite')); ?>' + thFormatted + '.';
+            }
+        } else if (mode === 'expenses_only_threshold') {
+            if (txType === 'income') {
+                reason = '<?php echo esc_js(__('La política exige aprobación manual para todos los ingresos.', 'aura-suite')); ?>';
+            } else if (threshold > 0 && txAmount < threshold) {
+                approved = true;
+                reason = '<?php echo esc_js(__('Egreso/CapEx menor al umbral de ', 'aura-suite')); ?>' + thFormatted + '.';
+            } else {
+                reason = threshold <= 0
+                    ? '<?php echo esc_js(__('Umbral en 0: requiere aprobación manual.', 'aura-suite')); ?>'
+                    : '<?php echo esc_js(__('Monto igual o superior al umbral de ', 'aura-suite')); ?>' + thFormatted + '.';
+            }
+        } else if (mode === 'income_only_threshold') {
+            if (isOutflow) {
+                reason = '<?php echo esc_js(__('La política exige aprobación manual para egresos y CapEx.', 'aura-suite')); ?>';
+            } else if (threshold > 0 && txAmount < threshold) {
+                approved = true;
+                reason = '<?php echo esc_js(__('Ingreso menor al umbral de ', 'aura-suite')); ?>' + thFormatted + '.';
+            } else {
+                reason = threshold <= 0
+                    ? '<?php echo esc_js(__('Umbral en 0: requiere aprobación manual.', 'aura-suite')); ?>'
+                    : '<?php echo esc_js(__('Monto igual o superior al umbral de ', 'aura-suite')); ?>' + thFormatted + '.';
+            }
+        }
+
+        var $res = $('#sim-tx-result');
+        if (approved) {
+            $res.css({ background: 'rgba(16,185,129,0.12)', borderColor: '#10b981', color: '#065f46' })
+                .html('✅ <strong><?php echo esc_js(__('APROBADA AUTOMÁTICAMENTE', 'aura-suite')); ?></strong> — ' + reason);
+        } else {
+            $res.css({ background: 'rgba(245,158,11,0.12)', borderColor: '#f59e0b', color: '#92400e' })
+                .html('⏳ <strong><?php echo esc_js(__('PENDIENTE DE APROBACIÓN', 'aura-suite')); ?></strong> — ' + reason);
+        }
+    }
+
     function updateRuleSummary() {
         var threshold = parseFloat($('#auto_approval_threshold').val()) || 0;
         var mode = $('input[name="auto_approval_mode"]:checked').val() || 'expenses_threshold_income_auto';
-        var thFormatted = '$' + threshold.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        var thFormatted = formatAuraCurrency(threshold);
+        var zeroMsg = '⚠️ <?php echo esc_js(__('Umbral en ', 'aura-suite')); ?>' + formatAuraCurrency(0) + ': <?php echo esc_js(__('requiere aprobación manual.', 'aura-suite')); ?>';
+
+        syncPresetAndChipHighlight(mode, threshold);
 
         if (mode === 'expenses_threshold_income_auto') {
             $('#summary-income-text').html('✅ <strong><?php echo esc_js(__('Ingresos Libres:','aura-suite')); ?></strong> <?php echo esc_js(__('Se aprueban de forma inmediata automática sin importar el monto.','aura-suite')); ?>');
             if (threshold > 0) {
-                $('#summary-expense-text').html('💸 <?php echo esc_js(__('Menores a ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('se aprueban automáticamente. De ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('o más quedan PENDIENTES para aprobación manual.','aura-suite')); ?>');
+                $('#summary-expense-text').html('💸 <?php echo esc_js(__('Menores a ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('se aprueban automáticamente. De ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('o más quedan PENDIENTES.','aura-suite')); ?>');
             } else {
-                $('#summary-expense-text').html('⚠️ <?php echo esc_js(__('Umbral en $0: Todos los egresos requerirán aprobación manual.','aura-suite')); ?>');
+                $('#summary-expense-text').html(zeroMsg);
             }
         } else if (mode === 'both_threshold') {
             if (threshold > 0) {
                 $('#summary-income-text').html('💰 <?php echo esc_js(__('Menores a ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('se auto-aprueban. De ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('o más quedan PENDIENTES.','aura-suite')); ?>');
                 $('#summary-expense-text').html('💸 <?php echo esc_js(__('Menores a ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('se auto-aprueban. De ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('o más quedan PENDIENTES.','aura-suite')); ?>');
             } else {
-                $('#summary-income-text').html('⚠️ <?php echo esc_js(__('Umbral en $0: Todos los ingresos requerirán aprobación manual.','aura-suite')); ?>');
-                $('#summary-expense-text').html('⚠️ <?php echo esc_js(__('Umbral en $0: Todos los egresos requerirán aprobación manual.','aura-suite')); ?>');
+                $('#summary-income-text').html(zeroMsg);
+                $('#summary-expense-text').html(zeroMsg);
             }
         } else if (mode === 'expenses_only_threshold') {
             $('#summary-income-text').html('🔒 <strong><?php echo esc_js(__('Ingresos en Revisión:','aura-suite')); ?></strong> <?php echo esc_js(__('Siempre quedan PENDIENTES de revisión contable.','aura-suite')); ?>');
             if (threshold > 0) {
                 $('#summary-expense-text').html('💸 <?php echo esc_js(__('Menores a ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('se auto-aprueban. De ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('o más quedan PENDIENTES.','aura-suite')); ?>');
             } else {
-                $('#summary-expense-text').html('⚠️ <?php echo esc_js(__('Umbral en $0: Todos los egresos requerirán aprobación manual.','aura-suite')); ?>');
+                $('#summary-expense-text').html(zeroMsg);
             }
+        } else if (mode === 'income_only_threshold') {
+            if (threshold > 0) {
+                $('#summary-income-text').html('💰 <?php echo esc_js(__('Menores a ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('se auto-aprueban. De ','aura-suite')); ?><strong>' + thFormatted + '</strong> <?php echo esc_js(__('o más quedan PENDIENTES.','aura-suite')); ?>');
+            } else {
+                $('#summary-income-text').html(zeroMsg);
+            }
+            $('#summary-expense-text').html('🔒 <strong><?php echo esc_js(__('Egresos y CapEx en Revisión:','aura-suite')); ?></strong> <?php echo esc_js(__('Siempre quedan PENDIENTES de autorización manual.','aura-suite')); ?>');
         }
+
+        updateRuleSimulator();
     }
 
-    // Al escribir monto o cambiar radio
+    // Al escribir monto, cambiar radio o usar el simulador
     $('#auto_approval_threshold').on('input change', updateRuleSummary);
+    $('#sim-tx-type, #sim-tx-amount, #sim-has-exception, #sim-budget-exceeded').on('input change', updateRuleSimulator);
     $('input[name="auto_approval_mode"]').on('change', function () {
         $('.aura-policy-card').removeClass('is-selected');
         $(this).closest('.aura-policy-card').addClass('is-selected');
@@ -1855,9 +2054,6 @@ jQuery(document).ready(function ($) {
     // ── Botones de Presets / Configuraciones Predeterminadas ────────
     $('.aura-btn-preset').on('click', function (e) {
         e.preventDefault();
-        $('.aura-btn-preset').removeClass('is-active');
-        $(this).addClass('is-active');
-
         var mode = $(this).data('mode');
         var threshold = $(this).data('threshold');
 
@@ -1879,11 +2075,14 @@ jQuery(document).ready(function ($) {
         $('#aura-exceptions-num').text(count);
         if (count > 0) {
             $('#aura-exceptions-badge-count').removeClass('aura-badge-gray').addClass('aura-badge-blue');
+            $('#summary-exceptions-text').html('<strong>' + count + '</strong> <?php echo esc_js(__('categorías marcadas abajo siempre requieren aprobación manual.','aura-suite')); ?>');
         } else {
             $('#aura-exceptions-badge-count').removeClass('aura-badge-blue').addClass('aura-badge-gray');
+            $('#summary-exceptions-text').text('<?php echo esc_js(__('Ninguna categoría marcada aún; puedes seleccionarlas en la tarjeta de abajo.','aura-suite')); ?>');
         }
     }
     updateExceptionsCount();
+    updateRuleSummary();
 
     // Filtro / Buscador en tiempo real de categorías
     $('#aura-cat-search-input').on('input', function () {

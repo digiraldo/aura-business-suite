@@ -552,9 +552,16 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             $is_auto = ( $item->approved_by == $item->created_by );
             if ( $is_auto ) {
                 $threshold = (float) get_option('aura_finance_auto_approval_threshold', 0);
-                $tip_html .= '<div class="aura-tip-row"><span>⚡ Tipo de Aprobación:</span><strong>' 
-                    . ( $threshold > 0 ? sprintf( __('Auto-aprobada (monto < $%s)', 'aura-suite'), number_format($threshold, 0, '.', ',') ) : __('Auto-aprobada por el sistema', 'aura-suite') )
-                    . '</strong></div>';
+                $mode      = class_exists('Aura_Financial_Settings') ? Aura_Financial_Settings::resolve_auto_approval_mode() : '';
+                $sym       = get_option('aura_currency_symbol', '$');
+                if ( $item->transaction_type === 'income' && $mode === 'expenses_threshold_income_auto' ) {
+                    $auto_label = __('Auto-aprobada (política de ingresos automáticos)', 'aura-suite');
+                } elseif ( $threshold > 0 ) {
+                    $auto_label = sprintf( __('Auto-aprobada (monto < %s%s)', 'aura-suite'), esc_html($sym), number_format($threshold, 2, '.', ',') );
+                } else {
+                    $auto_label = __('Auto-aprobada por el sistema', 'aura-suite');
+                }
+                $tip_html .= '<div class="aura-tip-row"><span>⚡ Tipo de Aprobación:</span><strong>' . $auto_label . '</strong></div>';
             } else {
                 $approver = get_userdata( $item->approved_by );
                 $approver_name = $approver ? $approver->display_name : __('N/D', 'aura-suite');

@@ -796,39 +796,19 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
         check_ajax_referer('aura_category_exceptions', 'nonce');
 
         // Verificar permisos
-        if (!current_user_can('aura_admin_settings')) {
+        if (!current_user_can('aura_admin_settings') && !current_user_can('manage_options')) {
             wp_send_json_error(array(
                 'message' => __('No tienes permisos para realizar esta acción', 'aura-suite')
             ));
             return;
         }
 
-        global $wpdb;
-        $table = $wpdb->prefix . 'aura_finance_categories';
-
-        // Obtener IDs de categorías marcadas
+        // Obtener IDs de categorías marcadas y delegar a Aura_Financial_Settings
         $category_ids = isset($_POST['category_ids']) && is_array($_POST['category_ids'])
             ? array_map('intval', $_POST['category_ids'])
             : array();
 
-        // Primero, quitar el flag de todas las categorías
-        $wpdb->query(
-            "UPDATE $table SET always_require_approval = 0 WHERE is_active = 1"
-        );
-
-        // Luego, activar el flag solo en las categorías seleccionadas
-        if (!empty($category_ids)) {
-            $ids_placeholder = implode(',', array_fill(0, count($category_ids), '%d'));
-            $wpdb->query(
-                $wpdb->prepare(
-                    "UPDATE $table SET always_require_approval = 1 WHERE id IN ($ids_placeholder)",
-                    ...$category_ids
-                )
-            );
-        }
-
-        // Contar categorías actualizadas
-        $count = count($category_ids);
+        $count = Aura_Financial_Settings::save_category_exceptions($category_ids);
 
         wp_send_json_success(array(
             'message' => sprintf(

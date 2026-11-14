@@ -316,17 +316,19 @@ class Aura_Financial_Transactions {
         $related_action = sanitize_text_field($_POST['related_action'] ?? '');
         
         // SISTEMA DE APROBACIÓN AUTOMÁTICA (Item 2.6)
-        // Determinar estado inicial basado en configuración de umbral
+        // Determinar estado inicial y motivo basado en política, umbral y excepciones
         $transaction_data = array(
             'transaction_type' => $transaction_type,
             'category_id' => $effective_category_id,
+            'expense_category_id' => $expense_category_id > 0 ? $expense_category_id : null,
             'amount' => $amount,
             'area_id' => $area_id,
             'related_module' => !empty($related_module) ? $related_module : null,
             'related_action' => !empty($related_action) ? $related_action : null,
         );
         
-        $initial_status = Aura_Financial_Settings::determine_initial_status($transaction_data);
+        $approval_eval  = Aura_Financial_Settings::evaluate_transaction($transaction_data);
+        $initial_status = $approval_eval['status'];
         $current_user_id = get_current_user_id();
         
         // Preparar datos de inserción
@@ -450,11 +452,14 @@ class Aura_Financial_Transactions {
         // Preparar mensaje de respuesta según el estado
         if ($initial_status === 'approved') {
             // Transacción auto-aprobada
-            $threshold = (float) get_option('aura_finance_auto_approval_threshold', 0);
+            $threshold = (float) ($approval_eval['threshold'] ?? get_option('aura_finance_auto_approval_threshold', 0));
+            $currency_symbol = get_option('aura_currency_symbol', '$');
+            $auto_reason = !empty($approval_eval['reason'])
+                ? $approval_eval['reason']
+                : sprintf(__('Auto-aprobada por estar bajo el umbral configurado de %s%s', 'aura-suite'), $currency_symbol, number_format($threshold, 2));
             $message = sprintf(
-                __('✅ Transacción aprobada automáticamente (Monto: $%s, Umbral: $%s)', 'aura-suite'),
-                number_format($amount, 2),
-                number_format($threshold, 2)
+                __('✅ Transacción aprobada automáticamente (%s)', 'aura-suite'),
+                $auto_reason
             );
             
             // Registrar en historial de auditoría
@@ -466,10 +471,7 @@ class Aura_Financial_Transactions {
                     'field_changed' => 'status',
                     'old_value' => '-',
                     'new_value' => 'approved',
-                    'change_reason' => sprintf(
-                        'Auto-aprobada por estar bajo el umbral configurado de $%s',
-                        number_format($threshold, 2)
-                    ),
+                    'change_reason' => $auto_reason,
                     'changed_by' => $current_user_id,
                     'changed_at' => current_time('mysql')
                 ),
@@ -481,7 +483,8 @@ class Aura_Financial_Transactions {
             
         } else {
             // Transacción pendiente de aprobación
-            $message = __('Transacción guardada exitosamente. Está pendiente de aprobación.', 'aura-suite');
+            $pending_reason = !empty($approval_eval['reason']) ? ' ' . $approval_eval['reason'] : '';
+            $message = __('Transacción guardada exitosamente. Está pendiente de aprobación.', 'aura-suite') . $pending_reason;
             
             // Notificar a aprobadores (hook existente)
             do_action('aura_finance_transaction_pending_approval', $transaction_id);
@@ -497,6 +500,7 @@ class Aura_Financial_Transactions {
             'transaction_id' => $transaction_id,
             'status' => $initial_status,
             'is_auto_approved' => $initial_status === 'approved',
+            'approval_reason' => $approval_eval['reason'] ?? '',
             'budget_warning' => $budget_warning,
             'redirect_url' => admin_url('admin.php?page=aura-financial-transactions')
         ));
