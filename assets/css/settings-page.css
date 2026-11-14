@@ -1099,8 +1099,215 @@ body.aura-dark-mode .aura-settings-wrap .aura-category-exception-item.is-checked
     color: #1d4ed8;
 }
 
+/* ── 12b. PLUGINS RECOMENDADOS Y COMPLEMENTARIOS ────────────────────────── */
+.aura-settings-wrap .aura-rec-plugins-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.aura-settings-wrap .aura-rec-plugin-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.aura-settings-wrap .aura-rec-plugin-card:hover {
+    border-color: #93c5fd;
+    box-shadow: 0 8px 20px -8px rgba(37, 99, 235, 0.18);
+    transform: translateY(-1px);
+}
+
+.aura-settings-wrap .aura-rec-plugin-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.aura-settings-wrap .aura-rec-plugin-title-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+}
+
+.aura-settings-wrap .aura-rec-plugin-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(79, 70, 229, 0.1);
+    color: #4f46e5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.aura-settings-wrap .aura-rec-plugin-icon .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.aura-settings-wrap .aura-rec-plugin-name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #0f172a;
+}
+
+.aura-settings-wrap .aura-rec-plugin-author {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.aura-settings-wrap .aura-rec-plugin-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.aura-settings-wrap .aura-rec-plugin-status.is-active {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.aura-settings-wrap .aura-rec-plugin-status.is-inactive {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.aura-settings-wrap .aura-rec-plugin-status.is-missing {
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+}
+
+.aura-settings-wrap .aura-rec-plugin-note {
+    margin: 0;
+    font-size: 12.8px;
+    line-height: 1.55;
+    color: #334155;
+}
+
+.aura-settings-wrap .aura-rec-plugin-note code {
+    font-size: 11.5px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(148, 163, 184, 0.16);
+}
+
+.aura-settings-wrap .aura-rec-plugin-alert {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #9a3412;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.aura-settings-wrap .aura-rec-plugin-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+.aura-settings-wrap .aura-rec-plugin-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #1e293b;
+    transition: all 0.15s ease;
+}
+
+.aura-settings-wrap .aura-rec-plugin-btn:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+}
+
+.aura-settings-wrap .aura-rec-plugin-btn .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-rec-plugin-card,
+html.wp-dark-mode-active .aura-settings-wrap .aura-rec-plugin-card,
+body.aura-dark-mode .aura-settings-wrap .aura-rec-plugin-card,
+[data-theme="dark"] .aura-settings-wrap .aura-rec-plugin-card {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-rec-plugin-name,
+html.wp-dark-mode-active .aura-settings-wrap .aura-rec-plugin-name,
+body.aura-dark-mode .aura-settings-wrap .aura-rec-plugin-name,
+[data-theme="dark"] .aura-settings-wrap .aura-rec-plugin-name {
+    color: #f8fafc !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-rec-plugin-author,
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-rec-plugin-note,
+html.wp-dark-mode-active .aura-settings-wrap .aura-rec-plugin-author,
+html.wp-dark-mode-active .aura-settings-wrap .aura-rec-plugin-note,
+body.aura-dark-mode .aura-settings-wrap .aura-rec-plugin-author,
+body.aura-dark-mode .aura-settings-wrap .aura-rec-plugin-note,
+[data-theme="dark"] .aura-settings-wrap .aura-rec-plugin-author,
+[data-theme="dark"] .aura-settings-wrap .aura-rec-plugin-note {
+    color: #cbd5e1 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-rec-plugin-alert,
+html.wp-dark-mode-active .aura-settings-wrap .aura-rec-plugin-alert,
+body.aura-dark-mode .aura-settings-wrap .aura-rec-plugin-alert,
+[data-theme="dark"] .aura-settings-wrap .aura-rec-plugin-alert {
+    background: rgba(154, 52, 18, 0.25) !important;
+    border-color: #9a3412 !important;
+    color: #fdba74 !important;
+}
+
+html[data-wp-dark-mode-scheme="dark"] .aura-settings-wrap .aura-rec-plugin-btn,
+html.wp-dark-mode-active .aura-settings-wrap .aura-rec-plugin-btn,
+body.aura-dark-mode .aura-settings-wrap .aura-rec-plugin-btn,
+[data-theme="dark"] .aura-settings-wrap .aura-rec-plugin-btn {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
 /* ── 13. RESPONSIVE BREAKPOINTS ─────────────────────────────────────────── */
 @media (max-width: 768px) {
+    .aura-settings-wrap .aura-rec-plugins-grid {
+        grid-template-columns: 1fr;
+    }
     .aura-settings-wrap .aura-page-header {
         flex-direction: column;
         align-items: flex-start;

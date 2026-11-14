@@ -528,6 +528,151 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     </div>
                 </div>
+
+                <!-- Tarjeta de Plugins de Terceros Recomendados -->
+                <?php
+                if (!function_exists('get_plugins') && defined('ABSPATH') && file_exists(ABSPATH . 'wp-admin/includes/plugin.php')) {
+                    require_once ABSPATH . 'wp-admin/includes/plugin.php';
+                }
+                $installed_plugins = function_exists('get_plugins') ? get_plugins() : [];
+                $detect_plugin = static function (string $slug) use ($installed_plugins): array {
+                    foreach ($installed_plugins as $plugin_file => $plugin_data) {
+                        if (strpos($plugin_file, $slug . '/') === 0 || strpos($plugin_file, $slug . '.php') === 0) {
+                            $is_active = function_exists('is_plugin_active') && is_plugin_active($plugin_file);
+                            return [
+                                'installed' => true,
+                                'active'    => $is_active,
+                                'file'      => $plugin_file,
+                            ];
+                        }
+                    }
+                    return ['installed' => false, 'active' => false, 'file' => ''];
+                };
+
+                $recommended_plugins = [
+                    [
+                        'slug'       => 'wp-dark-mode',
+                        'search'     => 'Dark Mode WPPOOL',
+                        'name'       => 'Dark Mode – Improve Accessibility with AI Powered Dark Theme',
+                        'author'     => __('Por WPPOOL', 'aura-suite'),
+                        'icon'       => 'dashicons-visibility',
+                        'desc'       => __('Controla el modo oscuro dentro del panel administrativo de WordPress y editores de contenido.', 'aura-suite'),
+                        'alert'      => __('Importante en sus Ajustes: activa únicamente «Activar el modo oscuro del escritorio de administración», «Modo oscuro del editor de bloques» y «Modo oscuro del editor clásico». El «Modo oscuro del frontend» debe permanecer desactivado, ya que Aura incluye su propio conmutador frontend.', 'aura-suite'),
+                        'action_url' => '',
+                        'action_lbl' => '',
+                    ],
+                    [
+                        'slug'       => 'post-smtp',
+                        'search'     => 'Post SMTP Saad Iqbal',
+                        'name'       => 'Post SMTP – Complete Email Delivery and SMTP Solution with Email Logs, Alerts, Backup SMTP & Mobile App',
+                        'author'     => __('Por Saad Iqbal', 'aura-suite'),
+                        'icon'       => 'dashicons-email-alt',
+                        'desc'       => __('Asegura la entrega confiable de correos electrónicos del sistema (por ejemplo conectándolo con Brevo u otro servicio SMTP), incluyendo registro de envíos (Email Logs) y alertas.', 'aura-suite'),
+                        'alert'      => '',
+                        'action_url' => '',
+                        'action_lbl' => '',
+                    ],
+                    [
+                        'slug'       => 'simple-local-avatars',
+                        'search'     => 'Simple Local Avatars 10up',
+                        'name'       => 'Simple Local Avatars',
+                        'author'     => __('Por 10up', 'aura-suite'),
+                        'icon'       => 'dashicons-admin-users',
+                        'desc'       => __('Permite subir o asignar fotos de avatar locales a los usuarios de WordPress directamente desde la ficha de cada usuario.', 'aura-suite'),
+                        'alert'      => '',
+                        'action_url' => admin_url('users.php'),
+                        'action_lbl' => __('Ir a Usuarios', 'aura-suite'),
+                    ],
+                    [
+                        'slug'       => 'litespeed-cache',
+                        'search'     => 'LiteSpeed Cache',
+                        'name'       => 'LiteSpeed Cache',
+                        'author'     => __('Por LiteSpeed Technologies', 'aura-suite'),
+                        'icon'       => 'dashicons-update',
+                        'desc'       => __('Habilitado para optimizar el rendimiento y permitir borrar todo el caché (Purge All) cuando los usuarios o administradores no visualicen cambios recientes o datos actualizados tras una actualización de Aura.', 'aura-suite'),
+                        'alert'      => '',
+                        'action_url' => '',
+                        'action_lbl' => '',
+                    ],
+                ];
+                ?>
+                <div class="aura-glass-card glass-card fade-up delay-2" style="margin-top:20px;">
+                    <h2 class="aura-section-title">
+                        <span class="dashicons dashicons-plugins-checked"></span>
+                        <?php esc_html_e('Plugins Recomendados para el Correcto Funcionamiento', 'aura-suite'); ?>
+                    </h2>
+                    <p class="aura-desc" style="margin-bottom:20px;">
+                        <?php esc_html_e('Para aprovechar todas las funciones de modo oscuro en administración, envío de correos, avatares locales y limpieza de caché tras actualizaciones, se recomienda instalar y configurar los siguientes plugins de terceros:', 'aura-suite'); ?>
+                    </p>
+
+                    <div class="aura-rec-plugins-grid">
+                        <?php foreach ($recommended_plugins as $rec_plugin) :
+                            $plugin_state = $detect_plugin($rec_plugin['slug']);
+                            if ($plugin_state['active']) {
+                                $status_class = 'is-active';
+                                $status_text  = __('Activo', 'aura-suite');
+                            } elseif ($plugin_state['installed']) {
+                                $status_class = 'is-inactive';
+                                $status_text  = __('Instalado (Inactivo)', 'aura-suite');
+                            } else {
+                                $status_class = 'is-missing';
+                                $status_text  = __('Recomendado', 'aura-suite');
+                            }
+                            $install_url = admin_url('plugin-install.php?s=' . rawurlencode($rec_plugin['search']) . '&tab=search&type=term');
+                        ?>
+                        <div class="aura-rec-plugin-card">
+                            <div>
+                                <div class="aura-rec-plugin-head">
+                                    <div class="aura-rec-plugin-title-wrap">
+                                        <span class="aura-rec-plugin-icon" aria-hidden="true">
+                                            <span class="dashicons <?php echo esc_attr($rec_plugin['icon']); ?>"></span>
+                                        </span>
+                                        <div>
+                                            <h3 class="aura-rec-plugin-name"><?php echo esc_html($rec_plugin['name']); ?></h3>
+                                            <p class="aura-rec-plugin-author"><?php echo esc_html($rec_plugin['author']); ?></p>
+                                        </div>
+                                    </div>
+                                    <span class="aura-rec-plugin-status <?php echo esc_attr($status_class); ?>">
+                                        <?php echo esc_html($status_text); ?>
+                                    </span>
+                                </div>
+
+                                <p class="aura-rec-plugin-note" style="margin-top:12px;">
+                                    <?php echo esc_html($rec_plugin['desc']); ?>
+                                </p>
+
+                                <?php if (!empty($rec_plugin['alert'])) : ?>
+                                <div class="aura-rec-plugin-alert" style="margin-top:10px;">
+                                    <strong><?php esc_html_e('Configuración clave:', 'aura-suite'); ?></strong>
+                                    <?php echo esc_html($rec_plugin['alert']); ?>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="aura-rec-plugin-actions">
+                                <?php if (!$plugin_state['installed']) : ?>
+                                <a href="<?php echo esc_url($install_url); ?>" class="aura-rec-plugin-btn">
+                                    <span class="dashicons dashicons-download"></span>
+                                    <span><?php esc_html_e('Buscar e Instalar', 'aura-suite'); ?></span>
+                                </a>
+                                <?php elseif (!$plugin_state['active']) : ?>
+                                <a href="<?php echo esc_url(admin_url('plugins.php')); ?>" class="aura-rec-plugin-btn">
+                                    <span class="dashicons dashicons-admin-plugins"></span>
+                                    <span><?php esc_html_e('Ir a Plugins para Activar', 'aura-suite'); ?></span>
+                                </a>
+                                <?php endif; ?>
+
+                                <?php if (!empty($rec_plugin['action_url'])) : ?>
+                                <a href="<?php echo esc_url($rec_plugin['action_url']); ?>" class="aura-rec-plugin-btn">
+                                    <span class="dashicons dashicons-external"></span>
+                                    <span><?php echo esc_html($rec_plugin['action_lbl']); ?></span>
+                                </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
             </div>
 
             <!-- ═══════════════════════════════════════════
