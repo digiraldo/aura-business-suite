@@ -45,16 +45,21 @@ class Aura_Nav_Login_Menu {
      */
     public static function defaults(): array {
         return [
-            'menu_target'        => '',
-            'apply_legacy_class' => true,
-            'display_mode'       => 'icon_only',
-            'icon_key'           => 'user',
-            'label_text'         => __( 'Acceso', 'aura-suite' ),
-            'icon_size'          => 18,
-            'hover_scale'        => 1.15,
-            'custom_color'       => '',
-            'logged_in_mode'     => 'portal_profile',
-            'avatar_shape'       => 'circle',
+            'menu_target'         => '',
+            'apply_legacy_class'  => true,
+            'display_mode'        => 'icon_only',
+            'icon_key'            => 'user',
+            'label_text'          => __( 'Acceso', 'aura-suite' ),
+            'icon_size'           => 18,
+            'hover_scale'         => 1.15,
+            'custom_color'        => '',
+            'logged_in_mode'      => 'portal_profile',
+            'avatar_shape'        => 'circle',
+            'avatar_size'         => 28,
+            'avatar_border_width' => 2,
+            'avatar_border_color' => '',
+            'logged_name_color'   => '',
+            'logged_name_size'    => 0,
         ];
     }
 
@@ -70,18 +75,26 @@ class Aura_Nav_Login_Menu {
         }
         $cfg = array_merge( self::defaults(), $saved );
 
-        $cfg['menu_target']        = sanitize_text_field( (string) $cfg['menu_target'] );
-        $cfg['apply_legacy_class'] = ! empty( $cfg['apply_legacy_class'] );
-        $cfg['display_mode']       = in_array( $cfg['display_mode'], [ 'icon_only', 'icon_text', 'text_only' ], true ) ? $cfg['display_mode'] : 'icon_only';
-        $icons                     = self::get_icons();
-        $cfg['icon_key']           = isset( $icons[ $cfg['icon_key'] ] ) ? $cfg['icon_key'] : 'user';
-        $cfg['label_text']         = trim( sanitize_text_field( (string) $cfg['label_text'] ) ) ?: __( 'Acceso', 'aura-suite' );
-        $cfg['icon_size']          = max( 14, min( 32, (int) $cfg['icon_size'] ) );
-        $cfg['hover_scale']        = max( 1.0, min( 1.35, (float) $cfg['hover_scale'] ) );
-        $color                     = sanitize_hex_color( (string) $cfg['custom_color'] );
-        $cfg['custom_color']       = $color ? $color : '';
-        $cfg['logged_in_mode']     = in_array( $cfg['logged_in_mode'], [ 'portal_profile', 'keep_login' ], true ) ? $cfg['logged_in_mode'] : 'portal_profile';
-        $cfg['avatar_shape']       = in_array( $cfg['avatar_shape'], [ 'circle', 'square' ], true ) ? $cfg['avatar_shape'] : 'circle';
+        $cfg['menu_target']         = sanitize_text_field( (string) $cfg['menu_target'] );
+        $cfg['apply_legacy_class']  = ! empty( $cfg['apply_legacy_class'] );
+        $cfg['display_mode']        = in_array( $cfg['display_mode'], [ 'icon_only', 'icon_text', 'text_only' ], true ) ? $cfg['display_mode'] : 'icon_only';
+        $icons                      = self::get_icons();
+        $cfg['icon_key']            = isset( $icons[ $cfg['icon_key'] ] ) ? $cfg['icon_key'] : 'user';
+        $cfg['label_text']          = trim( sanitize_text_field( (string) $cfg['label_text'] ) ) ?: __( 'Acceso', 'aura-suite' );
+        $cfg['icon_size']           = max( 14, min( 36, (int) $cfg['icon_size'] ) );
+        $cfg['hover_scale']         = max( 1.0, min( 1.35, (float) $cfg['hover_scale'] ) );
+        $color                      = sanitize_hex_color( (string) $cfg['custom_color'] );
+        $cfg['custom_color']        = $color ? $color : '';
+        $cfg['logged_in_mode']      = in_array( $cfg['logged_in_mode'], [ 'portal_profile', 'keep_login' ], true ) ? $cfg['logged_in_mode'] : 'portal_profile';
+        $cfg['avatar_shape']        = in_array( $cfg['avatar_shape'], [ 'circle', 'square' ], true ) ? $cfg['avatar_shape'] : 'circle';
+        $cfg['avatar_size']         = max( 20, min( 48, (int) $cfg['avatar_size'] ) );
+        $cfg['avatar_border_width'] = max( 0, min( 4, (int) $cfg['avatar_border_width'] ) );
+        $border_color               = sanitize_hex_color( (string) $cfg['avatar_border_color'] );
+        $cfg['avatar_border_color'] = $border_color ? $border_color : '';
+        $name_color                 = sanitize_hex_color( (string) $cfg['logged_name_color'] );
+        $cfg['logged_name_color']   = $name_color ? $name_color : '';
+        $raw_name_size              = (int) $cfg['logged_name_size'];
+        $cfg['logged_name_size']    = $raw_name_size > 0 ? max( 11, min( 22, $raw_name_size ) ) : 0;
 
         return $cfg;
     }
@@ -393,21 +406,38 @@ class Aura_Nav_Login_Menu {
             return;
         }
 
-        $size       = (int) $cfg['icon_size'];
-        $hover      = number_format( (float) $cfg['hover_scale'], 2, '.', '' );
-        $avatar_px  = max( 24, $size + 10 );
-        $color_rule = '' !== $cfg['custom_color'] ? 'color: ' . $cfg['custom_color'] . ' !important;' : '';
+        $size        = (int) $cfg['icon_size'];
+        $hover       = number_format( (float) $cfg['hover_scale'], 2, '.', '' );
+        $avatar_px   = (int) $cfg['avatar_size'];
+        $border_w    = (int) $cfg['avatar_border_width'];
+        $border_col  = '' !== $cfg['avatar_border_color'] ? $cfg['avatar_border_color'] : 'currentColor';
+        $border_rule = $border_w > 0 ? sprintf( 'border:%dpx solid %s;', $border_w, $border_col ) : 'border:none;';
+
+        $guest_color_rule = '' !== $cfg['custom_color']
+            ? sprintf( '.%1$s a:not(.aura-nav-login-link--logged),.aura-nav-login-item .aura-nav-login-link:not(.aura-nav-login-link--logged){color:%2$s !important;}', self::LEGACY_CLASS, $cfg['custom_color'] )
+            : '';
+
+        $logged_color_rule = '' !== $cfg['logged_name_color']
+            ? sprintf( '.aura-nav-login-link--logged,.aura-nav-login-link--logged .aura-nav-user-name{color:%s !important;}', $cfg['logged_name_color'] )
+            : '';
+
+        $logged_size_rule = (int) $cfg['logged_name_size'] > 0
+            ? sprintf( '.aura-nav-login-link--logged .aura-nav-user-name{font-size:%dpx !important;}', (int) $cfg['logged_name_size'] )
+            : '';
 
         // Anular el viejo hack font-size: 0 si el usuario olvidó borrar CSS manual previo
         $css = sprintf(
             '.aura-nav-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .et_pb_menu li.%1$s a::before,#top-menu li.%1$s a::before,.%1$s a::before{content:none !important;display:none !important;}
-.%1$s a,.aura-nav-login-item .aura-nav-login-link{font-size:inherit !important;display:inline-flex !important;align-items:center !important;gap:7px !important;line-height:1.25 !important;vertical-align:middle !important;%5$s}
+.%1$s a,.aura-nav-login-item .aura-nav-login-link{font-size:inherit !important;display:inline-flex !important;align-items:center !important;gap:7px !important;line-height:1.25 !important;vertical-align:middle !important;}
+%6$s
+%7$s
+%8$s
 .aura-nav-login-icon{display:inline-flex;align-items:center;justify-content:center;line-height:0;flex-shrink:0;}
-.aura-nav-login-icon svg{width:%2$dpx;height:%2$dpx;display:block;transition:transform 0.2s ease-in-out;}
+.aura-nav-login-icon svg{width:%2$dpx;height:%2$dpx;display:block;stroke:currentColor;transition:transform 0.2s ease-in-out;}
 .aura-nav-login-link:hover .aura-nav-login-icon svg,.aura-nav-login-link:focus-visible .aura-nav-login-icon svg{transform:scale(%3$s);}
 .aura-nav-login-label{display:inline-block;line-height:1.2;}
-.aura-nav-user-avatar-wrap,.aura-nav-user-avatar-fallback{width:%4$dpx;height:%4$dpx;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border:2px solid currentColor;box-shadow:0 1px 4px rgba(0,0,0,0.14);transition:transform 0.2s ease-in-out;}
+.aura-nav-user-avatar-wrap,.aura-nav-user-avatar-fallback{width:%4$dpx;height:%4$dpx;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;%5$sbox-shadow:0 1px 4px rgba(0,0,0,0.14);transition:transform 0.2s ease-in-out,border-color 0.2s ease;}
 .aura-nav-user-avatar-wrap.is-circle,.aura-nav-user-avatar-fallback.is-circle{border-radius:50%%;}
 .aura-nav-user-avatar-wrap.is-square,.aura-nav-user-avatar-fallback.is-square{border-radius:6px;}
 .aura-nav-user-avatar{width:100%% !important;height:100%% !important;object-fit:cover !important;display:block !important;margin:0 !important;}
@@ -417,7 +447,10 @@ class Aura_Nav_Login_Menu {
             $size,
             $hover,
             $avatar_px,
-            $color_rule
+            $border_rule,
+            $guest_color_rule,
+            $logged_color_rule,
+            $logged_size_rule
         );
 
         wp_register_style( 'aura-nav-login', false, [], defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0' );
@@ -440,18 +473,26 @@ class Aura_Nav_Login_Menu {
         $logged_mode  = sanitize_key( $_POST['logged_in_mode'] ?? 'portal_profile' );
         $avatar_shape = sanitize_key( $_POST['avatar_shape'] ?? 'circle' );
         $custom_color = ! empty( $_POST['use_custom_color'] ) ? sanitize_hex_color( (string) ( $_POST['custom_color'] ?? '' ) ) : '';
+        $border_color = ! empty( $_POST['use_custom_border_color'] ) ? sanitize_hex_color( (string) ( $_POST['avatar_border_color'] ?? '' ) ) : '';
+        $name_color   = ! empty( $_POST['use_custom_name_color'] ) ? sanitize_hex_color( (string) ( $_POST['logged_name_color'] ?? '' ) ) : '';
+        $raw_name_sz  = absint( $_POST['logged_name_size'] ?? 0 );
 
         $new = [
-            'menu_target'        => sanitize_text_field( wp_unslash( $_POST['menu_target'] ?? '' ) ),
-            'apply_legacy_class' => ! empty( $_POST['apply_legacy_class'] ),
-            'display_mode'       => in_array( $display_mode, [ 'icon_only', 'icon_text', 'text_only' ], true ) ? $display_mode : 'icon_only',
-            'icon_key'           => isset( $icons[ $icon_key ] ) ? $icon_key : 'user',
-            'label_text'         => sanitize_text_field( wp_unslash( $_POST['label_text'] ?? __( 'Acceso', 'aura-suite' ) ) ) ?: __( 'Acceso', 'aura-suite' ),
-            'icon_size'          => max( 14, min( 32, absint( $_POST['icon_size'] ?? 18 ) ) ),
-            'hover_scale'        => max( 1.0, min( 1.35, floatval( $_POST['hover_scale'] ?? 1.15 ) ) ),
-            'custom_color'       => $custom_color ?: '',
-            'logged_in_mode'     => in_array( $logged_mode, [ 'portal_profile', 'keep_login' ], true ) ? $logged_mode : 'portal_profile',
-            'avatar_shape'       => in_array( $avatar_shape, [ 'circle', 'square' ], true ) ? $avatar_shape : 'circle',
+            'menu_target'         => sanitize_text_field( wp_unslash( $_POST['menu_target'] ?? '' ) ),
+            'apply_legacy_class'  => ! empty( $_POST['apply_legacy_class'] ),
+            'display_mode'        => in_array( $display_mode, [ 'icon_only', 'icon_text', 'text_only' ], true ) ? $display_mode : 'icon_only',
+            'icon_key'            => isset( $icons[ $icon_key ] ) ? $icon_key : 'user',
+            'label_text'          => sanitize_text_field( wp_unslash( $_POST['label_text'] ?? __( 'Acceso', 'aura-suite' ) ) ) ?: __( 'Acceso', 'aura-suite' ),
+            'icon_size'           => max( 14, min( 36, absint( $_POST['icon_size'] ?? 18 ) ) ),
+            'hover_scale'         => max( 1.0, min( 1.35, floatval( $_POST['hover_scale'] ?? 1.15 ) ) ),
+            'custom_color'        => $custom_color ?: '',
+            'logged_in_mode'      => in_array( $logged_mode, [ 'portal_profile', 'keep_login' ], true ) ? $logged_mode : 'portal_profile',
+            'avatar_shape'        => in_array( $avatar_shape, [ 'circle', 'square' ], true ) ? $avatar_shape : 'circle',
+            'avatar_size'         => max( 20, min( 48, absint( $_POST['avatar_size'] ?? 28 ) ) ),
+            'avatar_border_width' => max( 0, min( 4, absint( $_POST['avatar_border_width'] ?? 2 ) ) ),
+            'avatar_border_color' => $border_color ?: '',
+            'logged_name_color'   => $name_color ?: '',
+            'logged_name_size'    => $raw_name_sz > 0 ? max( 11, min( 22, $raw_name_sz ) ) : 0,
         ];
 
         update_option( self::OPTION_NAME, $new );
@@ -491,13 +532,27 @@ class Aura_Nav_Login_Menu {
                     #aura-nav-login-card .aura-nav-icon-opt svg { width:20px; height:20px; }
                     #aura-nav-login-card .aura-nav-icon-opt span { font-size:11.5px; font-weight:600; text-align:center; }
                     #aura-nav-login-card .aura-nav-icon-opt.is-selected { border-color:#4f46e5; background:#eef2ff; color:#3730a3; box-shadow:0 0 0 2px rgba(79,70,229,0.18); }
-                    #aura-nav-login-card .aura-nav-preview-bar { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:14px 18px; border-radius:12px; background:#0f172a; color:#f8fafc; margin-top:16px; }
+                    #aura-nav-login-card .aura-nav-preview-bar { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:14px 18px; border-radius:12px; background:#0f172a; color:#f8fafc; margin-top:16px; border:1px solid #334155; transition:background-color 0.2s ease,color 0.2s ease,border-color 0.2s ease; }
+                    #aura-nav-login-card .aura-nav-preview-bar.is-light { background:#ffffff; color:#0f172a; border-color:#cbd5e1; }
                     #aura-nav-login-card .aura-nav-preview-pills { display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
                     #aura-nav-login-card .aura-nav-preview-slot { display:flex; flex-direction:column; gap:5px; }
                     #aura-nav-login-card .aura-nav-preview-slot small { font-size:11px; color:#94a3b8; }
-                    #aura-nav-login-card .aura-nav-preview-link { display:inline-flex; align-items:center; gap:7px; color:#f8fafc; text-decoration:none; font-weight:600; font-size:14px; }
-                    #aura-nav-login-card .aura-nav-preview-link svg { transition:transform 0.2s ease; }
+                    #aura-nav-login-card .aura-nav-preview-bar.is-light .aura-nav-preview-slot small { color:#64748b; }
+                    #aura-nav-login-card .aura-nav-preview-link { display:inline-flex; align-items:center; gap:7px; color:inherit; text-decoration:none; font-weight:600; font-size:14px; }
+                    #aura-nav-login-card .aura-nav-preview-link:focus { box-shadow:none; outline:none; }
+                    #aura-nav-login-card .aura-nav-preview-link svg { transition:transform 0.2s ease; stroke:currentColor; }
                     #aura-nav-login-card .aura-nav-preview-link:hover svg { transform:scale(var(--aura-preview-scale, 1.15)); }
+                    #aura-nav-login-card .aura-nav-preview-bg-switch { display:inline-flex; gap:4px; background:rgba(148,163,184,0.18); padding:3px; border-radius:8px; }
+                    #aura-nav-login-card .aura-nav-bg-btn { border:none; background:transparent; color:inherit; font-size:11px; font-weight:600; padding:4px 8px; border-radius:6px; cursor:pointer; opacity:0.75; }
+                    #aura-nav-login-card .aura-nav-bg-btn.is-active { background:#4f46e5; color:#ffffff; opacity:1; }
+                    #aura-nav-login-card .aura-nav-subpanel { padding:14px; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; }
+                    #aura-nav-login-card .aura-nav-subpanel h4 { margin:0 0 10px; font-size:13px; font-weight:700; color:#0f172a; }
+                    html[data-wp-dark-mode-scheme="dark"] #aura-nav-login-card .aura-nav-subpanel,
+                    html.wp-dark-mode-active #aura-nav-login-card .aura-nav-subpanel,
+                    body.aura-dark-mode #aura-nav-login-card .aura-nav-subpanel { background:#0f172a; border-color:#334155; }
+                    html[data-wp-dark-mode-scheme="dark"] #aura-nav-login-card .aura-nav-subpanel h4,
+                    html.wp-dark-mode-active #aura-nav-login-card .aura-nav-subpanel h4,
+                    body.aura-dark-mode #aura-nav-login-card .aura-nav-subpanel h4 { color:#f8fafc; }
                     html[data-wp-dark-mode-scheme="dark"] #aura-nav-login-card .aura-nav-icon-opt,
                     html.wp-dark-mode-active #aura-nav-login-card .aura-nav-icon-opt,
                     body.aura-dark-mode #aura-nav-login-card .aura-nav-icon-opt { background:#0f172a; border-color:#334155; color:#cbd5e1; }
@@ -583,55 +638,119 @@ class Aura_Nav_Login_Menu {
                 </div>
 
                 <div class="aura-nav-cfg-grid" style="margin-top:16px;">
-                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
-                        <div>
-                            <label for="aura_nav_icon_size" style="font-weight:700;display:block;margin-bottom:6px;">
-                                <?php esc_html_e( 'Tamaño ícono (px)', 'aura-suite' ); ?>
-                            </label>
-                            <input type="number" id="aura_nav_icon_size" min="14" max="32" value="<?php echo esc_attr( $cfg['icon_size'] ); ?>" style="width:84px;">
+                    <div class="aura-nav-subpanel">
+                        <h4><?php esc_html_e( 'Estilo del Ícono SVG / Visitante', 'aura-suite' ); ?></h4>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+                            <div>
+                                <label for="aura_nav_icon_size" style="font-weight:700;display:block;margin-bottom:6px;">
+                                    <?php esc_html_e( 'Tamaño ícono (px)', 'aura-suite' ); ?>
+                                </label>
+                                <input type="number" id="aura_nav_icon_size" min="14" max="36" value="<?php echo esc_attr( $cfg['icon_size'] ); ?>" style="width:82px;">
+                            </div>
+                            <div>
+                                <label for="aura_nav_hover_scale" style="font-weight:700;display:block;margin-bottom:6px;">
+                                    <?php esc_html_e( 'Efecto hover', 'aura-suite' ); ?>
+                                </label>
+                                <select id="aura_nav_hover_scale">
+                                    <option value="1.00" <?php selected( number_format( (float) $cfg['hover_scale'], 2 ), '1.00' ); ?>><?php esc_html_e( 'Sin zoom (1.0x)', 'aura-suite' ); ?></option>
+                                    <option value="1.10" <?php selected( number_format( (float) $cfg['hover_scale'], 2 ), '1.10' ); ?>><?php esc_html_e( 'Suave (1.10x)', 'aura-suite' ); ?></option>
+                                    <option value="1.15" <?php selected( number_format( (float) $cfg['hover_scale'], 2 ), '1.15' ); ?>><?php esc_html_e( 'Estándar (1.15x)', 'aura-suite' ); ?></option>
+                                    <option value="1.25" <?php selected( number_format( (float) $cfg['hover_scale'], 2 ), '1.25' ); ?>><?php esc_html_e( 'Destacado (1.25x)', 'aura-suite' ); ?></option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:flex;align-items:center;gap:6px;font-weight:700;margin-bottom:6px;cursor:pointer;">
+                                    <input type="checkbox" id="aura_nav_use_custom_color" <?php checked( '' !== $cfg['custom_color'] ); ?>>
+                                    <span><?php esc_html_e( 'Color personalizado', 'aura-suite' ); ?></span>
+                                </label>
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <input type="color" id="aura_nav_custom_color" value="<?php echo esc_attr( $cfg['custom_color'] ?: '#38bdf8' ); ?>" <?php disabled( '' === $cfg['custom_color'] ); ?>>
+                                    <small id="aura_nav_color_hint" style="color:#64748b;"><?php echo '' !== $cfg['custom_color'] ? esc_html( $cfg['custom_color'] ) : esc_html__( 'Auto (menú)', 'aura-suite' ); ?></small>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label for="aura_nav_hover_scale" style="font-weight:700;display:block;margin-bottom:6px;">
-                                <?php esc_html_e( 'Efecto hover', 'aura-suite' ); ?>
-                            </label>
-                            <select id="aura_nav_hover_scale">
-                                <option value="1.00" <?php selected( (string) $cfg['hover_scale'], '1' ); ?>><?php esc_html_e( 'Sin zoom (1.0x)', 'aura-suite' ); ?></option>
-                                <option value="1.10" <?php selected( number_format( (float) $cfg['hover_scale'], 2 ), '1.10' ); ?>><?php esc_html_e( 'Suave (1.10x)', 'aura-suite' ); ?></option>
-                                <option value="1.15" <?php selected( number_format( (float) $cfg['hover_scale'], 2 ), '1.15' ); ?>><?php esc_html_e( 'Estándar (1.15x)', 'aura-suite' ); ?></option>
-                                <option value="1.25" <?php selected( number_format( (float) $cfg['hover_scale'], 2 ), '1.25' ); ?>><?php esc_html_e( 'Destacado (1.25x)', 'aura-suite' ); ?></option>
-                            </select>
-                        </div>
-                        <div>
-                            <label style="display:flex;align-items:center;gap:6px;font-weight:700;margin-bottom:6px;cursor:pointer;">
-                                <input type="checkbox" id="aura_nav_use_custom_color" <?php checked( '' !== $cfg['custom_color'] ); ?>>
-                                <span><?php esc_html_e( 'Color personalizado', 'aura-suite' ); ?></span>
-                            </label>
-                            <input type="color" id="aura_nav_custom_color" value="<?php echo esc_attr( $cfg['custom_color'] ?: '#ffffff' ); ?>" <?php disabled( '' === $cfg['custom_color'] ); ?>>
-                        </div>
+                        <p style="margin:8px 0 0;font-size:11.5px;color:#64748b;">
+                            <?php esc_html_e( 'Si desmarcas «Color personalizado», el ícono y texto heredan automáticamente el color claro u oscuro del menú de Divi.', 'aura-suite' ); ?>
+                        </p>
                     </div>
 
-                    <div>
+                    <div class="aura-nav-subpanel">
+                        <h4><?php esc_html_e( 'Usuario con Sesión Iniciada (Avatar y Primer Nombre)', 'aura-suite' ); ?></h4>
                         <label for="aura_nav_logged_in_mode" style="font-weight:700;display:block;margin-bottom:6px;">
-                            <?php esc_html_e( 'Cuando el usuario ya inició sesión', 'aura-suite' ); ?>
+                            <?php esc_html_e( 'Comportamiento al iniciar sesión', 'aura-suite' ); ?>
                         </label>
                         <select id="aura_nav_logged_in_mode" style="width:100%;max-width:100%;">
                             <option value="portal_profile" <?php selected( $cfg['logged_in_mode'], 'portal_profile' ); ?>>
-                                <?php esc_html_e( 'Cambiar por foto de perfil + Primer Nombre y abrir su Portal', 'aura-suite' ); ?>
+                                <?php esc_html_e( 'Cambiar por foto de perfil + Primer Nombre y abrir Acceso/Portal', 'aura-suite' ); ?>
                             </option>
                             <option value="keep_login" <?php selected( $cfg['logged_in_mode'], 'keep_login' ); ?>>
                                 <?php esc_html_e( 'Mantener ícono/texto de Acceso a la Plataforma', 'aura-suite' ); ?>
                             </option>
                         </select>
-                        <div id="aura-nav-avatar-shape-wrap" style="margin-top:8px;display:flex;align-items:center;gap:12px;font-size:13px;">
-                            <span style="font-weight:600;"><?php esc_html_e( 'Forma avatar en menú:', 'aura-suite' ); ?></span>
-                            <label style="cursor:pointer;"><input type="radio" name="aura_nav_avatar_shape" value="circle" <?php checked( $cfg['avatar_shape'], 'circle' ); ?>> <?php esc_html_e( 'Circular', 'aura-suite' ); ?></label>
-                            <label style="cursor:pointer;"><input type="radio" name="aura_nav_avatar_shape" value="square" <?php checked( $cfg['avatar_shape'], 'square' ); ?>> <?php esc_html_e( 'Cuadrada 1:1', 'aura-suite' ); ?></label>
+
+                        <div id="aura-nav-avatar-opts-wrap" style="margin-top:12px;">
+                            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+                                <div>
+                                    <span style="font-weight:700;font-size:12px;display:block;margin-bottom:4px;"><?php esc_html_e( 'Forma del avatar', 'aura-suite' ); ?></span>
+                                    <div style="display:flex;gap:10px;font-size:12.5px;">
+                                        <label style="cursor:pointer;"><input type="radio" name="aura_nav_avatar_shape" value="circle" <?php checked( $cfg['avatar_shape'], 'circle' ); ?>> <?php esc_html_e( 'Circular', 'aura-suite' ); ?></label>
+                                        <label style="cursor:pointer;"><input type="radio" name="aura_nav_avatar_shape" value="square" <?php checked( $cfg['avatar_shape'], 'square' ); ?>> <?php esc_html_e( 'Cuadrada 1:1', 'aura-suite' ); ?></label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="aura_nav_avatar_size" style="font-weight:700;font-size:12px;display:block;margin-bottom:4px;">
+                                        <?php esc_html_e( 'Tamaño avatar (px)', 'aura-suite' ); ?>
+                                    </label>
+                                    <input type="number" id="aura_nav_avatar_size" min="20" max="48" value="<?php echo esc_attr( $cfg['avatar_size'] ); ?>" style="width:76px;">
+                                </div>
+                                <div>
+                                    <label for="aura_nav_logged_name_size" style="font-weight:700;font-size:12px;display:block;margin-bottom:4px;">
+                                        <?php esc_html_e( 'Fuente nombre (px · 0=Auto)', 'aura-suite' ); ?>
+                                    </label>
+                                    <input type="number" id="aura_nav_logged_name_size" min="0" max="22" value="<?php echo esc_attr( $cfg['logged_name_size'] ); ?>" style="width:76px;">
+                                </div>
+                            </div>
+
+                            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-top:10px;">
+                                <div>
+                                    <label for="aura_nav_border_width" style="font-weight:700;font-size:12px;display:block;margin-bottom:4px;">
+                                        <?php esc_html_e( 'Trazo / borde exterior', 'aura-suite' ); ?>
+                                    </label>
+                                    <select id="aura_nav_border_width">
+                                        <option value="0" <?php selected( (int) $cfg['avatar_border_width'], 0 ); ?>><?php esc_html_e( 'Sin trazo (0px)', 'aura-suite' ); ?></option>
+                                        <option value="1" <?php selected( (int) $cfg['avatar_border_width'], 1 ); ?>>1 px</option>
+                                        <option value="2" <?php selected( (int) $cfg['avatar_border_width'], 2 ); ?>>2 px</option>
+                                        <option value="3" <?php selected( (int) $cfg['avatar_border_width'], 3 ); ?>>3 px</option>
+                                        <option value="4" <?php selected( (int) $cfg['avatar_border_width'], 4 ); ?>>4 px</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display:flex;align-items:center;gap:5px;font-weight:700;font-size:12px;margin-bottom:4px;cursor:pointer;">
+                                        <input type="checkbox" id="aura_nav_use_custom_border_color" <?php checked( '' !== $cfg['avatar_border_color'] ); ?>>
+                                        <span><?php esc_html_e( 'Color del trazo', 'aura-suite' ); ?></span>
+                                    </label>
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <input type="color" id="aura_nav_border_color" value="<?php echo esc_attr( $cfg['avatar_border_color'] ?: '#38bdf8' ); ?>" <?php disabled( '' === $cfg['avatar_border_color'] ); ?>>
+                                        <small id="aura_nav_border_hint" style="color:#64748b;"><?php echo '' !== $cfg['avatar_border_color'] ? esc_html( $cfg['avatar_border_color'] ) : esc_html__( 'Auto (menú)', 'aura-suite' ); ?></small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display:flex;align-items:center;gap:5px;font-weight:700;font-size:12px;margin-bottom:4px;cursor:pointer;">
+                                        <input type="checkbox" id="aura_nav_use_custom_name_color" <?php checked( '' !== $cfg['logged_name_color'] ); ?>>
+                                        <span><?php esc_html_e( 'Color del nombre', 'aura-suite' ); ?></span>
+                                    </label>
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <input type="color" id="aura_nav_name_color" value="<?php echo esc_attr( $cfg['logged_name_color'] ?: '#38bdf8' ); ?>" <?php disabled( '' === $cfg['logged_name_color'] ); ?>>
+                                        <small id="aura_nav_name_hint" style="color:#64748b;"><?php echo '' !== $cfg['logged_name_color'] ? esc_html( $cfg['logged_name_color'] ) : esc_html__( 'Auto (menú)', 'aura-suite' ); ?></small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Vista previa en vivo -->
-                <div class="aura-nav-preview-bar">
+                <!-- Vista previa en vivo con selector de fondo claro / oscuro -->
+                <div class="aura-nav-preview-bar" id="aura-nav-preview-bar">
                     <div class="aura-nav-preview-pills">
                         <div class="aura-nav-preview-slot">
                             <small><?php esc_html_e( 'Vista previa — Visitante (sin sesión):', 'aura-suite' ); ?></small>
@@ -642,10 +761,16 @@ class Aura_Nav_Login_Menu {
                             <a href="javascript:void(0)" class="aura-nav-preview-link" id="aura-nav-preview-logged"></a>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-primary" id="aura-nav-login-save">
-                        <span class="dashicons dashicons-saved" style="vertical-align:middle;"></span>
-                        <span><?php esc_html_e( 'Guardar configuración del menú', 'aura-suite' ); ?></span>
-                    </button>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <div class="aura-nav-preview-bg-switch" role="group" aria-label="<?php esc_attr_e( 'Simular fondo de cabecera', 'aura-suite' ); ?>">
+                            <button type="button" class="aura-nav-bg-btn is-active" data-bg="dark"><?php esc_html_e( 'Cabecera oscura', 'aura-suite' ); ?></button>
+                            <button type="button" class="aura-nav-bg-btn" data-bg="light"><?php esc_html_e( 'Cabecera clara', 'aura-suite' ); ?></button>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="aura-nav-login-save">
+                            <span class="dashicons dashicons-saved" style="vertical-align:middle;"></span>
+                            <span><?php esc_html_e( 'Guardar configuración del menú', 'aura-suite' ); ?></span>
+                        </button>
+                    </div>
                 </div>
                 <p id="aura-nav-login-msg" style="margin:8px 0 0;font-weight:600;"></p>
             </div>
@@ -656,16 +781,41 @@ class Aura_Nav_Login_Menu {
             var curFirst = '<?php echo esc_js( $cur_name ); ?>';
             var curAvatar = '<?php echo esc_js( esc_url_raw( $cur_av ) ); ?>';
             var selectedIcon = '<?php echo esc_js( $cfg['icon_key'] ); ?>';
+            var previewBg = 'dark';
 
             function renderPreview() {
                 var mode = $('#aura_nav_display_mode').val();
                 var label = $.trim($('#aura_nav_label_text').val()) || 'Acceso';
-                var size = Math.max(14, Math.min(32, parseInt($('#aura_nav_icon_size').val(), 10) || 18));
+                var size = Math.max(14, Math.min(36, parseInt($('#aura_nav_icon_size').val(), 10) || 18));
                 var scale = parseFloat($('#aura_nav_hover_scale').val()) || 1.15;
-                var useColor = $('#aura_nav_use_custom_color').is(':checked');
-                var color = useColor ? $('#aura_nav_custom_color').val() : '#f8fafc';
+                var menuAutoColor = (previewBg === 'light') ? '#0f172a' : '#f8fafc';
+
+                var useGuestColor = $('#aura_nav_use_custom_color').is(':checked');
+                var guestCustom = $('#aura_nav_custom_color').val() || '#38bdf8';
+                var guestColor = useGuestColor ? guestCustom : menuAutoColor;
+                $('#aura_nav_color_hint').text(useGuestColor ? guestCustom : 'Auto (menú)');
+
                 var loggedMode = $('#aura_nav_logged_in_mode').val();
                 var shape = $('input[name="aura_nav_avatar_shape"]:checked').val() || 'circle';
+                var avSize = Math.max(20, Math.min(48, parseInt($('#aura_nav_avatar_size').val(), 10) || 28));
+                var borderW = Math.max(0, Math.min(4, parseInt($('#aura_nav_border_width').val(), 10) || 0));
+
+                var useBorderColor = $('#aura_nav_use_custom_border_color').is(':checked');
+                var borderCustom = $('#aura_nav_border_color').val() || '#38bdf8';
+                $('#aura_nav_border_hint').text(useBorderColor ? borderCustom : 'Auto (menú)');
+
+                var useNameColor = $('#aura_nav_use_custom_name_color').is(':checked');
+                var nameCustom = $('#aura_nav_name_color').val() || '#38bdf8';
+                var loggedColor = useNameColor ? nameCustom : menuAutoColor;
+                $('#aura_nav_name_hint').text(useNameColor ? nameCustom : 'Auto (menú)');
+
+                var borderColor = useBorderColor ? borderCustom : loggedColor;
+                var nameSize = parseInt($('#aura_nav_logged_name_size').val(), 10) || 0;
+                if (nameSize > 0) {
+                    nameSize = Math.max(11, Math.min(22, nameSize));
+                }
+
+                $('#aura-nav-preview-bar').toggleClass('is-light', previewBg === 'light');
 
                 var $selBtn = $('#aura-nav-icon-picker .aura-nav-icon-opt.is-selected');
                 var svg = $selBtn.attr('data-svg') || '';
@@ -679,23 +829,27 @@ class Aura_Nav_Login_Menu {
                     guestHtml = '<span style="display:inline-flex;">' + svg + '</span>';
                 }
 
-                var $guest = $('#aura-nav-preview-guest').html(guestHtml).css({ color: color, '--aura-preview-scale': scale });
-                $guest.find('svg').css({ width: size + 'px', height: size + 'px' });
+                var $guest = $('#aura-nav-preview-guest').html(guestHtml).css({ '--aura-preview-scale': scale });
+                $guest[0].style.setProperty('color', guestColor, 'important');
+                $guest.find('svg').css({ width: size + 'px', height: size + 'px', stroke: guestColor });
 
-                var $logged = $('#aura-nav-preview-logged').css({ color: color, '--aura-preview-scale': scale });
+                var $logged = $('#aura-nav-preview-logged').css({ '--aura-preview-scale': scale });
                 if (loggedMode === 'portal_profile') {
-                    var avPx = Math.max(24, size + 10);
+                    $logged[0].style.setProperty('color', loggedColor, 'important');
                     var radius = shape === 'square' ? '6px' : '50%';
+                    var borderCss = borderW > 0 ? (borderW + 'px solid ' + borderColor) : 'none';
                     var media = curAvatar
-                        ? '<img src="' + curAvatar + '" alt="" style="width:' + avPx + 'px;height:' + avPx + 'px;border-radius:' + radius + ';object-fit:cover;border:2px solid currentColor;display:block;">'
-                        : '<span style="width:' + avPx + 'px;height:' + avPx + 'px;border-radius:' + radius + ';border:2px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:rgba(79,70,229,0.28);">' + $('<div>').text(curFirst.charAt(0).toUpperCase()).html() + '</span>';
-                    $logged.html(media + '<span>' + $('<div>').text(curFirst).html() + '</span>');
+                        ? '<img src="' + curAvatar + '" alt="" style="width:' + avSize + 'px;height:' + avSize + 'px;border-radius:' + radius + ';object-fit:cover;border:' + borderCss + ';display:block;box-sizing:border-box;">'
+                        : '<span style="width:' + avSize + 'px;height:' + avSize + 'px;border-radius:' + radius + ';border:' + borderCss + ';color:' + loggedColor + ';display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:rgba(79,70,229,0.22);box-sizing:border-box;">' + $('<div>').text(curFirst.charAt(0).toUpperCase()).html() + '</span>';
+                    var nameStyle = nameSize > 0 ? ('font-size:' + nameSize + 'px;color:' + loggedColor + ';') : ('color:' + loggedColor + ';');
+                    $logged.html(media + '<span style="' + nameStyle + '">' + $('<div>').text(curFirst).html() + '</span>');
                 } else {
+                    $logged[0].style.setProperty('color', guestColor, 'important');
                     $logged.html(guestHtml);
-                    $logged.find('svg').css({ width: size + 'px', height: size + 'px' });
+                    $logged.find('svg').css({ width: size + 'px', height: size + 'px', stroke: guestColor });
                 }
 
-                $('#aura-nav-avatar-shape-wrap').toggle(loggedMode === 'portal_profile');
+                $('#aura-nav-avatar-opts-wrap').toggle(loggedMode === 'portal_profile');
             }
 
             $('#aura-nav-icon-picker').on('click', '.aura-nav-icon-opt', function () {
@@ -705,12 +859,27 @@ class Aura_Nav_Login_Menu {
                 renderPreview();
             });
 
+            $('.aura-nav-bg-btn').on('click', function () {
+                $('.aura-nav-bg-btn').removeClass('is-active');
+                $(this).addClass('is-active');
+                previewBg = $(this).data('bg') === 'light' ? 'light' : 'dark';
+                renderPreview();
+            });
+
             $('#aura_nav_use_custom_color').on('change', function () {
                 $('#aura_nav_custom_color').prop('disabled', !$(this).is(':checked'));
                 renderPreview();
             });
+            $('#aura_nav_use_custom_border_color').on('change', function () {
+                $('#aura_nav_border_color').prop('disabled', !$(this).is(':checked'));
+                renderPreview();
+            });
+            $('#aura_nav_use_custom_name_color').on('change', function () {
+                $('#aura_nav_name_color').prop('disabled', !$(this).is(':checked'));
+                renderPreview();
+            });
 
-            $('#aura_nav_display_mode, #aura_nav_label_text, #aura_nav_icon_size, #aura_nav_hover_scale, #aura_nav_custom_color, #aura_nav_logged_in_mode, input[name="aura_nav_avatar_shape"]')
+            $('#aura_nav_display_mode, #aura_nav_label_text, #aura_nav_icon_size, #aura_nav_hover_scale, #aura_nav_custom_color, #aura_nav_logged_in_mode, input[name="aura_nav_avatar_shape"], #aura_nav_avatar_size, #aura_nav_logged_name_size, #aura_nav_border_width, #aura_nav_border_color, #aura_nav_name_color')
                 .on('input change', renderPreview);
 
             $('#aura-nav-login-save').on('click', function () {
@@ -729,7 +898,14 @@ class Aura_Nav_Login_Menu {
                     use_custom_color: $('#aura_nav_use_custom_color').is(':checked') ? 1 : 0,
                     custom_color: $('#aura_nav_custom_color').val(),
                     logged_in_mode: $('#aura_nav_logged_in_mode').val(),
-                    avatar_shape: $('input[name="aura_nav_avatar_shape"]:checked').val() || 'circle'
+                    avatar_shape: $('input[name="aura_nav_avatar_shape"]:checked').val() || 'circle',
+                    avatar_size: $('#aura_nav_avatar_size').val(),
+                    avatar_border_width: $('#aura_nav_border_width').val(),
+                    use_custom_border_color: $('#aura_nav_use_custom_border_color').is(':checked') ? 1 : 0,
+                    avatar_border_color: $('#aura_nav_border_color').val(),
+                    use_custom_name_color: $('#aura_nav_use_custom_name_color').is(':checked') ? 1 : 0,
+                    logged_name_color: $('#aura_nav_name_color').val(),
+                    logged_name_size: $('#aura_nav_logged_name_size').val()
                 }, function (r) {
                     $btn.prop('disabled', false);
                     if (r && r.success) {
