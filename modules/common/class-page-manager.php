@@ -31,6 +31,11 @@ class Aura_Page_Manager {
         add_action( 'admin_init', [ __CLASS__, 'maybe_provision' ] );
         add_action( 'wp_ajax_aura_pages_sync', [ __CLASS__, 'ajax_sync' ] );
         add_action( 'wp_ajax_aura_pages_assign', [ __CLASS__, 'ajax_assign' ] );
+
+        if ( ! is_admin() ) {
+            add_filter( 'body_class', [ __CLASS__, 'filter_system_body_class' ], 20 );
+            add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_system_page_theme' ], 25 );
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -210,6 +215,113 @@ class Aura_Page_Manager {
     }
 
     /**
+     * Aplica configuración base de diseño (Divi sin barra lateral y marcador de página del sistema).
+     */
+    public static function apply_divi_defaults( int $page_id ): void {
+        if ( $page_id <= 0 || 'page' !== get_post_type( $page_id ) ) {
+            return;
+        }
+        $current_layout = get_post_meta( $page_id, '_et_pb_page_layout', true );
+        if ( '' === $current_layout || 'et_right_sidebar' === $current_layout ) {
+            update_post_meta( $page_id, '_et_pb_page_layout', 'et_no_sidebar' );
+        }
+        update_post_meta( $page_id, '_aura_system_page', '1' );
+    }
+
+    /**
+     * Devuelve los IDs de todas las páginas del sistema registradas y publicadas.
+     *
+     * @return int[]
+     */
+    public static function get_system_page_ids(): array {
+        $ids = [];
+        foreach ( array_keys( self::active_registry() ) as $key ) {
+            $id = self::get_id( $key );
+            if ( $id > 0 ) {
+                $ids[] = $id;
+            }
+        }
+        return array_values( array_unique( $ids ) );
+    }
+
+    /**
+     * Determina si la petición frontend actual corresponde a una página del sistema Aura.
+     */
+    public static function is_current_system_page(): bool {
+        if ( ! is_page() ) {
+            return false;
+        }
+        $post = get_queried_object();
+        if ( ! ( $post instanceof WP_Post ) ) {
+            return false;
+        }
+        if ( in_array( (int) $post->ID, self::get_system_page_ids(), true ) ) {
+            return true;
+        }
+        if ( '1' === (string) get_post_meta( $post->ID, '_aura_system_page', true ) ) {
+            return true;
+        }
+        foreach ( self::registry() as $def ) {
+            if ( ! empty( $def['tag'] ) && has_shortcode( $post->post_content, $def['tag'] ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Agrega clases CSS en <body> para habilitar el modo claro/oscuro automático y ocultar barra lateral en Divi.
+     *
+     * @param string[] $classes Clases actuales del body.
+     * @return string[]
+     */
+    public static function filter_system_body_class( array $classes ): array {
+        if ( ! self::is_current_system_page() ) {
+            return $classes;
+        }
+        $classes[] = 'aura-system-page';
+        $page_id   = get_queried_object_id();
+        $layout    = $page_id ? get_post_meta( $page_id, '_et_pb_page_layout', true ) : '';
+        if ( '' === $layout || 'et_no_sidebar' === $layout || 'et_full_width_page' === $layout ) {
+            $classes[] = 'aura-divi-no-sidebar';
+        }
+        return array_values( array_unique( $classes ) );
+    }
+
+    /**
+     * Garantiza que todas las páginas del sistema (incluyendo Certificados y Paz y Salvo)
+     * carguen los estilos de modo claro/oscuro y el script conmutador de tema.
+     */
+    public static function enqueue_system_page_theme(): void {
+        if ( ! self::is_current_system_page() ) {
+            return;
+        }
+        $plugin_url = defined( 'AURA_PLUGIN_URL' ) ? AURA_PLUGIN_URL : plugin_dir_url( dirname( __DIR__ ) . '/aura-business-suite.php' );
+        $version    = defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0';
+
+        if ( ! wp_style_is( 'dashicons', 'enqueued' ) ) {
+            wp_enqueue_style( 'dashicons' );
+        }
+        if ( ! wp_style_is( 'aura-frontend-dark-mode', 'enqueued' ) ) {
+            wp_enqueue_style(
+                'aura-frontend-dark-mode',
+                $plugin_url . 'assets/css/aura-frontend-dark-mode.css',
+                [ 'dashicons' ],
+                $version
+            );
+        }
+        if ( ! wp_script_is( 'aura-frontend-theme', 'enqueued' ) ) {
+            wp_enqueue_script(
+                'aura-frontend-theme',
+                $plugin_url . 'assets/js/aura-frontend-theme.js',
+                [],
+                $version,
+                false
+            );
+        }
+    }
+
+    /**
      * Garantiza que la página exista y esté vinculada.
      *
      * @return array{id:int,status:string}  status: existing|linked|created|error
@@ -223,6 +335,7 @@ class Aura_Page_Manager {
 
         $id = self::get_id( $key );
         if ( $id > 0 && 'publish' === get_post_status( $id ) ) {
+            self::apply_divi_defaults( $id );
             return [ 'id' => $id, 'status' => 'existing' ];
         }
 
@@ -235,6 +348,7 @@ class Aura_Page_Manager {
         }
         if ( $found ) {
             self::set_id( $key, $found );
+            self::apply_divi_defaults( $found );
             return [ 'id' => $found, 'status' => 'linked' ];
         }
 
@@ -250,6 +364,7 @@ class Aura_Page_Manager {
             return [ 'id' => 0, 'status' => 'error' ];
         }
         self::set_id( $key, (int) $new_id );
+        self::apply_divi_defaults( (int) $new_id );
         return [ 'id' => (int) $new_id, 'status' => 'created' ];
     }
 
@@ -310,6 +425,9 @@ class Aura_Page_Manager {
             wp_send_json_error( [ 'message' => __( 'Selecciona una página válida.', 'aura-suite' ) ] );
         }
         self::set_id( $key, $page_id );
+        if ( $page_id > 0 ) {
+            self::apply_divi_defaults( $page_id );
+        }
         wp_send_json_success( [ 'message' => __( 'Página asignada.', 'aura-suite' ) ] );
     }
 
@@ -347,6 +465,12 @@ class Aura_Page_Manager {
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="aura-info-box info" style="margin-bottom:16px;padding:12px 16px;">
+                        <p style="margin:0;font-size:13px;line-height:1.55;">
+                            <strong>🎨 <?php esc_html_e( 'Integración automática con Divi 4/5 y Modo Claro/Oscuro:', 'aura-suite' ); ?></strong>
+                            <?php esc_html_e( 'Al crear o sincronizar páginas aquí, el sistema configura automáticamente el diseño «Sin barra lateral» de Divi (_et_pb_page_layout = et_no_sidebar) y aplica el fondo adaptable de modo oscuro (clase aura-system-page) sin necesidad de editar cada página una por una.', 'aura-suite' ); ?>
+                        </p>
+                    </div>
                     <p>
                         <button type="button" class="btn btn-primary" id="aura-pages-sync-all">
                             <span class="dashicons dashicons-update" style="vertical-align:middle;"></span>

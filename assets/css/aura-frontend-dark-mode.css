@@ -2693,3 +2693,65 @@ body.aura-dark-mode .aura-teacher-portal .fc .fc-timegrid-allday {
     padding: 0 !important;
     box-sizing: border-box !important;
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   PÁGINAS DEL SISTEMA (Aura_Page_Manager) — ADAPTACIÓN AUTOMÁTICA
+   Para Divi 4 / Divi 5 y plantillas estándar de WordPress.
+   Aplica fondo adaptable claro/oscuro y elimina el ancho reservado
+   de la barra lateral derecha sin editar cada página manualmente.
+   ══════════════════════════════════════════════════════════════════ */
+body.aura-system-page,
+body.aura-system-page #page-container,
+body.aura-system-page #main-content,
+body.aura-system-page #left-area,
+body.aura-system-page .entry-content,
+body.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
+body.aura-system-page .et-l--post .et_pb_section:not(.no-dark-mode) {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Ancho completo automático cuando la página del sistema usa et_no_sidebar */
+body.aura-system-page.aura-divi-no-sidebar #left-area {
+    width: 100% !important;
+    float: none !important;
+    padding-right: 0 !important;
+}
+body.aura-system-page.aura-divi-no-sidebar #sidebar {
+    display: none !important;
+}
+body.aura-system-page.aura-divi-no-sidebar #main-content .container::before {
+    display: none !important;
+}
+
+/* Modo Oscuro automático en contenedores Divi / WordPress de páginas del sistema */
+html[data-theme="dark"] body.aura-system-page,
+html[data-theme="dark"] body.aura-system-page #page-container,
+html[data-theme="dark"] body.aura-system-page #main-content,
+html[data-theme="dark"] body.aura-system-page #left-area,
+html[data-theme="dark"] body.aura-system-page .entry-content,
+body.aura-dark-theme.aura-system-page,
+body.aura-dark-theme.aura-system-page #page-container,
+body.aura-dark-theme.aura-system-page #main-content,
+body.aura-dark-theme.aura-system-page #left-area,
+body.aura-dark-theme.aura-system-page .entry-content {
+    background-color: var(--aura-theme-bg, #090d16) !important;
+    color: var(--aura-text-primary, #f8fafc) !important;
+}
+
+html[data-theme="dark"] body.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-system-page .et-l--post .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page .et-l--post .et_pb_section:not(.no-dark-mode) {
+    background-color: var(--aura-surface-card, #162032) !important;
+    color: var(--aura-text-primary, #f8fafc) !important;
+    border-color: var(--aura-border, #2e3d56) !important;
+}
+
+html[data-theme="dark"] body.aura-system-page .et-l--post .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-system-page #main-content .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-system-page .entry-title,
+body.aura-dark-theme.aura-system-page .et-l--post .et_pb_module.et_pb_text,
+body.aura-dark-theme.aura-system-page #main-content .et_pb_module.et_pb_text,
+body.aura-dark-theme.aura-system-page .entry-title {
+    color: var(--aura-text-primary, #f8fafc) !important;
+}
