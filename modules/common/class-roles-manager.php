@@ -201,6 +201,7 @@ class Aura_Roles_Manager {
                 'aura_finance_budgets'             => __('Gestionar presupuestos y techos de gasto por área', 'aura-suite'),
                 'aura_finance_tags'                => __('Gestionar y fusionar etiquetas de transacciones', 'aura-suite'),
                 'aura_finance_accounts_manage'     => __('Gestionar cuentas bancarias, números de cuenta y cajas', 'aura-suite'),
+                'aura_finance_accounts_view_balances' => __('Ver saldos y totales de cuentas bancarias y cajas', 'aura-suite'),
                 'aura_finance_petty_cash_approve'  => __('Aprobar / rechazar gastos de caja chica', 'aura-suite'),
                 // Operaciones y Auditoría de Cambio de Divisas (Compra y Venta)
                 'aura_finance_exchange_view'       => __('Ver historial y auditoría de cambio de divisas', 'aura-suite'),
@@ -484,6 +485,7 @@ class Aura_Roles_Manager {
                     'aura_finance_import'              => array('label' => __('Importar transacciones desde CSV / Excel', 'aura-suite'), 'code' => 'import', 'star' => true),
                     'aura_finance_budgets'             => array('label' => __('Gestionar presupuestos y techos de gasto', 'aura-suite'), 'code' => 'budgets'),
                     'aura_finance_tags'                => array('label' => __('Gestionar etiquetas clasificatorias', 'aura-suite'), 'code' => 'tags'),
+                    'aura_finance_accounts_view_balances' => array('label' => __('Ver saldos y totales de cuentas bancarias y cajas', 'aura-suite'), 'code' => 'accounts_view_balances', 'star' => true),
                     'aura_finance_accounts_manage'     => array('label' => __('Gestionar cuentas bancarias y cajas', 'aura-suite'), 'code' => 'accounts_manage', 'star' => true),
                     'aura_finance_petty_cash_approve'  => array('label' => __('Aprobar / rechazar gastos de caja chica', 'aura-suite'), 'code' => 'petty_cash_approve', 'star' => true),
                     'aura_finance_delete_own'          => array('label' => __('Eliminar transacciones propias', 'aura-suite'), 'code' => 'delete_own'),
@@ -770,6 +772,7 @@ class Aura_Roles_Manager {
                     'aura_finance_budgets',
                     'aura_finance_tags',
                     'aura_finance_accounts_manage',
+                    'aura_finance_accounts_view_balances',
                     'aura_finance_petty_cash_approve',
                     'aura_finance_exchange_view',
                     'aura_finance_exchange_create',
@@ -805,6 +808,7 @@ class Aura_Roles_Manager {
                 'capabilities'  => array(
                     'aura_finance_approve',
                     'aura_finance_view_all',
+                    'aura_finance_accounts_view_balances',
                     'aura_finance_charts',
                     'aura_finance_export',
                     'aura_finance_user_ledger',
@@ -866,6 +870,7 @@ class Aura_Roles_Manager {
                 ),
                 'capabilities'  => array(
                     'aura_finance_view_all',
+                    'aura_finance_accounts_view_balances',
                     'aura_finance_charts',
                     'aura_finance_export',
                     'aura_finance_user_ledger',
@@ -1225,6 +1230,27 @@ class Aura_Roles_Manager {
                     'aura_library_alerts',
                     'aura_library_settings',
                     'aura_library_audit',
+                ),
+            ),
+            'library_cataloger' => array(
+                'name'          => __('Registrador / Catalogador de Libros', 'aura-suite'),
+                'category'      => __('Biblioteca & Catalogación', 'aura-suite'),
+                'category_slug' => 'library',
+                'badge_class'   => 'aura-pill--info',
+                'icon'          => 'dashicons-book',
+                'color'         => '#0d9488',
+                'description'   => __('Perfil enfocado exclusivamente en registrar, catalogar (ISBN/escáner) y actualizar libros y portadas en la biblioteca.', 'aura-suite'),
+                'highlights'    => array(
+                    __('✅ Acceso al módulo de Biblioteca y consulta completa del catálogo', 'aura-suite'),
+                    __('✅ Registrar libros nuevos, búsqueda ISBN/escáner y subir portadas', 'aura-suite'),
+                    __('✅ Editar información y fichas bibliográficas existentes', 'aura-suite'),
+                    __('🔒 Sin eliminación de libros ni gestión de préstamos, reportes o finanzas', 'aura-suite'),
+                ),
+                'capabilities'  => array(
+                    'aura_library_access',
+                    'aura_library_view_catalog',
+                    'aura_library_create',
+                    'aura_library_edit',
                 ),
             ),
             'field_operator' => array(
@@ -1781,6 +1807,8 @@ class Aura_Roles_Manager {
             'aura_cal_manage_programs',
             'aura_cal_manage_tasks',
             'aura_cal_submit_tasks',
+            'aura_library_create',
+            'aura_library_edit',
         ];
 
         foreach ( $media_required_caps as $cap ) {
@@ -1817,6 +1845,8 @@ class Aura_Roles_Manager {
             'aura_vehicles_edit',
             'aura_cal_manage_calendar',
             'aura_cal_manage_programs',
+            'aura_library_create',
+            'aura_library_edit',
         ];
 
         foreach ( $media_required_caps as $cap ) {
@@ -1988,7 +2018,7 @@ class Aura_Roles_Manager {
             'aura_finance_category_manage', 'aura_finance_bulk_edit', 'aura_finance_link_user',
             'aura_finance_user_ledger', 'aura_finance_integrations', 'aura_finance_audit',
             'aura_finance_import', 'aura_finance_budgets', 'aura_finance_tags',
-            'aura_finance_accounts_manage', 'aura_finance_petty_cash_approve',
+            'aura_finance_accounts_manage', 'aura_finance_accounts_view_balances', 'aura_finance_petty_cash_approve',
             'aura_vehicles_create', 'aura_vehicles_edit', 'aura_vehicles_delete',
             'aura_vehicles_exits_create', 'aura_vehicles_exits_edit_own', 'aura_vehicles_exits_edit_all',
             'aura_vehicles_exits_delete_own', 'aura_vehicles_exits_delete_all', 'aura_vehicles_km_update',

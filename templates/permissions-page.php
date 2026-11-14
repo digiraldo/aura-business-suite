@@ -1029,7 +1029,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                     <div class="aura-perm-global-controls">
                         <button type="button" class="btn btn-violet btn-shimmer btn-pulse-icon" id="aura-open-templates-btn">
                             <span class="dashicons dashicons-groups"></span>
-                            <span><?php _e('Perfiles Predefinidos (10)', 'aura-suite'); ?></span>
+                            <span><?php printf(__('Perfiles Predefinidos (%d)', 'aura-suite'), $count_profile_templates); ?></span>
                         </button>
                         <button type="button" class="btn btn-secondary btn-lift" id="aura-expand-all-btn">
                             <span class="dashicons dashicons-arrow-down-alt2"></span>
@@ -1218,7 +1218,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                             <?php _e('Modo de Exploración de Perfiles', 'aura-suite'); ?>
                         </div>
                         <div style="font-size:12.5px; color:var(--tx-secondary, #3b82f6);">
-                            <?php _e('Seleccione primero un usuario activo para poder aplicar directamente cualquiera de estas 10 plantillas predefinidas.', 'aura-suite'); ?>
+                            <?php printf(__('Seleccione primero un usuario activo para poder aplicar directamente cualquiera de estas %d plantillas predefinidas.', 'aura-suite'), $count_profile_templates); ?>
                         </div>
                     </div>
                 </div>

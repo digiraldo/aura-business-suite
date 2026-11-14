@@ -147,8 +147,11 @@ class Aura_Financial_Export {
     /* ------------------------------------------------------------------ */
 
     public static function ajax_export_accounts() {
-        if (!current_user_can('aura_finance_view_all') && !current_user_can('manage_options')) {
-            wp_send_json_error(['message' => __('Sin permisos.', 'aura-suite')]);
+        $can_export_accounts = class_exists('Aura_Financial_Accounts')
+            ? Aura_Financial_Accounts::current_user_can_view_balances()
+            : current_user_can('manage_options');
+        if (!$can_export_accounts) {
+            wp_send_json_error(['message' => __('Sin permisos.', 'aura-suite')], 403);
         }
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_accounts';

@@ -1838,6 +1838,7 @@ class Aura_Business_Suite
                 'nonce' => wp_create_nonce('aura_transaction_edit_nonce'),
                 'transactionNonce' => wp_create_nonce('aura_transaction_nonce'),
                 'budgetsNonce' => wp_create_nonce('aura_budgets_nonce'),
+                'canViewBalances' => class_exists('Aura_Financial_Accounts') && Aura_Financial_Accounts::current_user_can_view_balances(),
                 'budgetedAreasByCategory' => $budgeted_map,
                 'labels' => array(
                     'date' => __('Fecha de Transacción', 'aura-suite'),

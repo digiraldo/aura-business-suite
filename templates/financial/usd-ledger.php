@@ -10,6 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+if ( ! ( class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances() ) ) {
+    wp_die( esc_html__( 'No tienes permisos para acceder a esta página.', 'aura-suite' ) );
+}
+
 $balance   = Aura_Financial_USD_Ledger::get_current_balance();
 $summary   = Aura_Financial_USD_Ledger::get_transition_summary();
 $history   = Aura_Financial_USD_Ledger::get_unified_history( 120 );

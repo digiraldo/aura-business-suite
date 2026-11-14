@@ -48,11 +48,14 @@ class Aura_Financial_USD_Ledger {
     // ─────────────────────────────────────────────────────────────────
 
     public static function add_menu() {
+        $cap = ( class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances() )
+            ? 'read'
+            : 'manage_options';
         add_submenu_page(
             null,
             __( 'Caja Chica USD', 'aura-suite' ),
             __( 'Caja USD', 'aura-suite' ),
-            'aura_finance_view_all',
+            $cap,
             'aura-financial-usd-ledger',
             [ __CLASS__, 'render_page' ]
         );
@@ -243,7 +246,7 @@ class Aura_Financial_USD_Ledger {
 
     public static function ajax_get_balance() {
         check_ajax_referer( 'aura_usd_ledger_nonce', 'nonce' );
-        if ( ! current_user_can( 'aura_finance_view_all' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! ( class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances() ) ) {
             wp_send_json_error( [ 'message' => __( 'Sin permiso.', 'aura-suite' ) ], 403 );
         }
         wp_send_json_success( [ 'balance' => self::get_current_balance() ] );
@@ -273,7 +276,7 @@ class Aura_Financial_USD_Ledger {
 
     public static function ajax_get_history() {
         check_ajax_referer( 'aura_usd_ledger_nonce', 'nonce' );
-        if ( ! current_user_can( 'aura_finance_view_all' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! ( class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances() ) ) {
             wp_send_json_error( [ 'message' => __( 'Sin permiso.', 'aura-suite' ) ], 403 );
         }
 

@@ -84,8 +84,10 @@ $categories = $wpdb->get_results($wpdb->prepare(
 
 // Obtener cuentas financieras activas
 $accounts_table = $wpdb->prefix . 'aura_finance_accounts';
+$can_view_balances = class_exists('Aura_Financial_Accounts') && Aura_Financial_Accounts::current_user_can_view_balances();
+$balance_select = $can_view_balances ? ', current_balance' : '';
 $finance_accounts = $wpdb->get_results(
-    "SELECT id, name, account_type, currency, current_balance
+    "SELECT id, name, account_type, currency{$balance_select}
      FROM {$accounts_table}
      WHERE deleted_at IS NULL AND is_active = 1
      ORDER BY name ASC"
@@ -627,10 +629,18 @@ $amount_formatted = number_format($amount_raw, 2, '.', '');
                                 <?php foreach ($finance_accounts as $account) : ?>
                                 <option
                                     value="<?php echo (int) $account->id; ?>"
+                                    <?php if ($can_view_balances) : ?>
                                     data-balance="<?php echo esc_attr((string) (float) $account->current_balance); ?>"
+                                    <?php endif; ?>
                                     data-currency="<?php echo esc_attr($account->currency); ?>"
                                     <?php selected($transaction['source_account_id'], $account->id); ?>>
-                                    <?php echo esc_html($account->name . ' · ' . $account->currency . ' · ' . number_format((float) $account->current_balance, 2)); ?>
+                                    <?php
+                                    echo esc_html(
+                                        $can_view_balances
+                                            ? ($account->name . ' · ' . $account->currency . ' · ' . number_format((float) $account->current_balance, 2))
+                                            : ($account->name . ' · ' . $account->currency)
+                                    );
+                                    ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>
@@ -652,10 +662,18 @@ $amount_formatted = number_format($amount_raw, 2, '.', '');
                                 <?php foreach ($finance_accounts as $account) : ?>
                                 <option
                                     value="<?php echo (int) $account->id; ?>"
+                                    <?php if ($can_view_balances) : ?>
                                     data-balance="<?php echo esc_attr((string) (float) $account->current_balance); ?>"
+                                    <?php endif; ?>
                                     data-currency="<?php echo esc_attr($account->currency); ?>"
                                     <?php selected($transaction['destination_account_id'], $account->id); ?>>
-                                    <?php echo esc_html($account->name . ' · ' . $account->currency . ' · ' . number_format((float) $account->current_balance, 2)); ?>
+                                    <?php
+                                    echo esc_html(
+                                        $can_view_balances
+                                            ? ($account->name . ' · ' . $account->currency . ' · ' . number_format((float) $account->current_balance, 2))
+                                            : ($account->name . ' · ' . $account->currency)
+                                    );
+                                    ?>
                                 </option>
                                 <?php endforeach; ?>
                             </select>

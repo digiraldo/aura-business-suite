@@ -532,8 +532,20 @@ class Aura_Financial_Accounts {
         }
     }
 
+    /**
+     * Verifica si el usuario actual tiene autorización explícita para consultar
+     * saldos bancarios, disponibilidad de cuentas o totales consolidados de tesorería.
+     *
+     * @return bool
+     */
+    public static function current_user_can_view_balances() {
+        return current_user_can('manage_options')
+            || current_user_can('aura_finance_accounts_view_balances')
+            || current_user_can('aura_finance_accounts_manage');
+    }
+
     public static function add_menu() {
-        if (!(current_user_can('aura_finance_view_all') || current_user_can('aura_finance_accounts_manage') || current_user_can('manage_options'))) {
+        if (!self::current_user_can_view_balances()) {
             return;
         }
 
@@ -605,7 +617,8 @@ class Aura_Financial_Accounts {
             'baseCurrency'   => class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_base_currency() : 'MXN',
             'currencySymbol' => class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_currency_symbol() : '$',
             'currencyConfig' => class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_config() : array(),
-            'canManage' => (current_user_can('aura_finance_view_all') || current_user_can('manage_options')),
+            'canManage' => (current_user_can('aura_finance_accounts_manage') || current_user_can('manage_options')),
+            'canViewBalances' => self::current_user_can_view_balances(),
             'canExchangeCreate' => (current_user_can('aura_finance_exchange_create') || current_user_can('manage_options') || current_user_can('aura_finance_accounts_manage')),
             'canExchangeEdit'   => (current_user_can('aura_finance_exchange_edit') || current_user_can('manage_options') || current_user_can('aura_finance_accounts_manage')),
             'canExchangeDelete' => (current_user_can('aura_finance_exchange_delete') || current_user_can('manage_options')),
@@ -633,7 +646,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function render_page() {
-        if (!(current_user_can('aura_finance_view_all') || current_user_can('manage_options'))) {
+        if (!self::current_user_can_view_balances()) {
             wp_die(__('No tienes permisos para acceder a esta página.', 'aura-suite'));
         }
 
@@ -641,7 +654,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_list_accounts() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_accounts_view_balances', 'aura_finance_accounts_manage'));
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_accounts';
@@ -658,7 +671,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_save_account() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions('aura_finance_accounts_manage');
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_accounts';
@@ -743,7 +756,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_delete_account() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions('aura_finance_accounts_manage');
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_accounts';
@@ -897,7 +910,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_list_transfers() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_accounts_view_balances', 'aura_finance_accounts_manage'));
 
         global $wpdb;
         self::migrate_transfers_table();
@@ -939,7 +952,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_save_transfer() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions('aura_finance_accounts_manage');
 
         global $wpdb;
         self::migrate_transfers_table();
@@ -1118,7 +1131,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_get_transfer() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_accounts_view_balances', 'aura_finance_accounts_manage'));
 
         global $wpdb;
         $id = isset($_POST['id']) ? absint($_POST['id']) : 0;
@@ -1163,7 +1176,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_update_transfer() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions('aura_finance_accounts_manage');
         wp_send_json_error(array(
             'message' => __('Por principio de auditoría e inmutabilidad contable (estándar bancario), los traspasos completados no pueden sobreescribirse. Debes anular el traspaso con motivo de cancelación para revertir los saldos y registrar uno nuevo.', 'aura-suite')
         ));
@@ -1171,7 +1184,7 @@ class Aura_Financial_Accounts {
 
 
     public static function ajax_cancel_transfer() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions('aura_finance_accounts_manage');
 
         global $wpdb;
         $id     = isset($_POST['id']) ? absint($_POST['id']) : 0;
@@ -2215,8 +2228,11 @@ class Aura_Financial_Accounts {
         }
         unset($row);
 
+        $can_view_balances = self::current_user_can_view_balances();
+        $balance_col = $can_view_balances ? ', current_balance' : '';
+
         $petty_cash_accounts = $wpdb->get_results(
-            "SELECT id, name, currency, current_balance
+            "SELECT id, name, currency{$balance_col}
              FROM {$accounts}
              WHERE deleted_at IS NULL AND is_active = 1 AND account_type = 'petty_cash'
              ORDER BY name ASC",
@@ -2224,7 +2240,7 @@ class Aura_Financial_Accounts {
         );
 
         $all_accounts = $wpdb->get_results(
-            "SELECT id, name, currency, current_balance, account_type
+            "SELECT id, name, currency{$balance_col}, account_type
              FROM {$accounts}
              WHERE deleted_at IS NULL AND is_active = 1
              ORDER BY name ASC",
@@ -2386,7 +2402,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_delete_petty_cash_settlement() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_accounts_manage', 'aura_finance_petty_cash_approve', 'aura_finance_approve', 'aura_finance_delete_all'));
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_petty_cash_settlements';
@@ -2816,8 +2832,11 @@ class Aura_Financial_Accounts {
             unset( $r );
         }
 
+        $can_view_balances = self::current_user_can_view_balances();
+        $balance_col = $can_view_balances ? ', current_balance' : '';
+
         $paying_accounts = $wpdb->get_results(
-            "SELECT id, name, currency, current_balance
+            "SELECT id, name, currency{$balance_col}
              FROM {$accounts}
              WHERE deleted_at IS NULL AND is_active = 1
              ORDER BY name ASC",
@@ -3201,7 +3220,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_get_accounts_report() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_accounts_view_balances', 'aura_finance_accounts_manage'));
 
         $year = isset($_POST['year']) ? absint($_POST['year']) : (int) current_time('Y');
         if ($year < 2000 || $year > 2100) {
@@ -3272,7 +3291,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_pay_reimbursement() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_accounts_manage', 'aura_finance_approve', 'aura_finance_petty_cash_approve'));
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_reimbursements';
@@ -3471,7 +3490,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_delete_reimbursement() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_accounts_manage', 'aura_finance_delete_all'));
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_finance_reimbursements';
@@ -3889,7 +3908,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_get_budget() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_view_balances', 'aura_finance_accounts_manage'));
 
         global $wpdb;
         $year = isset($_POST['year']) ? absint($_POST['year']) : (int) current_time('Y');
@@ -3989,7 +4008,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_save_budget() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_manage'));
 
         $year = isset($_POST['year']) ? absint($_POST['year']) : 0;
         $annual_limit = isset($_POST['annual_limit']) ? (float) $_POST['annual_limit'] : 0;
@@ -4032,7 +4051,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_delete_budget() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_manage'));
 
         global $wpdb;
         $year = isset($_POST['year']) ? absint($_POST['year']) : 0;
@@ -4062,7 +4081,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_copy_budget() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_manage'));
 
         global $wpdb;
         $from_year = isset($_POST['from_year']) ? absint($_POST['from_year']) : 0;
@@ -4110,7 +4129,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_import_budget() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_manage'));
 
         if (empty($_FILES['budget_file'])) {
             wp_send_json_error(array('message' => __('No se recibió archivo de importación.', 'aura-suite')));
@@ -4217,7 +4236,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_budget_upload_preview() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_manage'));
 
         if (empty($_FILES['budget_file'])) {
             wp_send_json_error(array('message' => __('No se recibió archivo de importación.', 'aura-suite')));
@@ -4270,7 +4289,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_budget_validate_preview() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_manage'));
 
         $token = sanitize_text_field(wp_unslash($_POST['token'] ?? ''));
         $mapping = isset($_POST['mapping']) ? (array) $_POST['mapping'] : array();
@@ -4284,7 +4303,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_budget_execute_import() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_manage'));
 
         $token = sanitize_text_field(wp_unslash($_POST['token'] ?? ''));
         $mapping = isset($_POST['mapping']) ? (array) $_POST['mapping'] : array();
@@ -4339,7 +4358,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_download_budget_template() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_view_balances', 'aura_finance_accounts_manage'));
 
         $csv = "\xEF\xBB\xBF";
         $csv .= "year,annual_limit,exceed_policy,jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec\n";
@@ -4353,7 +4372,7 @@ class Aura_Financial_Accounts {
     }
 
     public static function ajax_export_all_budgets() {
-        self::check_ajax_permissions();
+        self::check_ajax_permissions(array('aura_finance_budgets', 'aura_finance_accounts_view_balances', 'aura_finance_accounts_manage'));
         global $wpdb;
 
         $env_table = $wpdb->prefix . 'aura_finance_budget_envelopes';
@@ -5247,13 +5266,21 @@ class Aura_Financial_Accounts {
             return true;
         }
 
-        if ($required_cap && current_user_can($required_cap)) {
-            return true;
-        }
-
-        if (!(current_user_can('aura_finance_view_all') || current_user_can('manage_options'))) {
+        if (!empty($required_cap)) {
+            $caps = is_array($required_cap) ? $required_cap : array($required_cap);
+            foreach ($caps as $cap) {
+                if (!empty($cap) && current_user_can($cap)) {
+                    return true;
+                }
+            }
             wp_send_json_error(array('message' => __('No autorizado.', 'aura-suite')), 403);
         }
+
+        if (!current_user_can('aura_finance_view_all')) {
+            wp_send_json_error(array('message' => __('No autorizado.', 'aura-suite')), 403);
+        }
+
+        return true;
     }
 
     private static function parse_csv_rows($filepath) {

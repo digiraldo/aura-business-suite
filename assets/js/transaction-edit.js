@@ -514,12 +514,14 @@ jQuery(document).ready(function($) {
         const $select = $(selectId);
         const $selected = $select.find('option:selected');
         const id = ($selected.val() || '').toString().trim();
-        const balanceRaw = parseFloat($selected.data('balance'));
+        const hasBalanceAttr = typeof $selected.attr('data-balance') !== 'undefined';
+        const balanceRaw = hasBalanceAttr ? parseFloat($selected.attr('data-balance')) : NaN;
         const currency = ($selected.data('currency') || 'COP').toString();
 
         return {
             selected: !!id,
             id: id,
+            hasBalance: hasBalanceAttr && !isNaN(balanceRaw),
             balance: isNaN(balanceRaw) ? 0 : balanceRaw,
             currency: currency,
             name: ($selected.text() || '').trim()
@@ -555,13 +557,18 @@ jQuery(document).ready(function($) {
         $sourceImpact.hide().removeClass('has-impact').empty();
         $destinationImpact.hide().removeClass('has-impact').empty();
 
-        if (type === 'expense' && source.selected) {
+        const canViewBalances = !!(window.auraTransactionEdit && window.auraTransactionEdit.canViewBalances);
+        if (!canViewBalances) {
+            return;
+        }
+
+        if ((type === 'expense' || type === 'capital') && source.selected && source.hasBalance) {
             const estimated = source.balance - amount;
-            const label = amount > 0 ? 'Impacto estimado al guardar (egreso)' : 'Selecciona un monto para estimar impacto';
+            const label = amount > 0 ? 'Impacto estimado al guardar (' + (type === 'capital' ? 'capital' : 'egreso') + ')' : 'Selecciona un monto para estimar impacto';
             $sourceImpact.html(buildImpactHtml(label, source.balance, estimated, source.currency, 'down')).addClass('has-impact').show();
         }
 
-        if (type === 'income' && destination.selected) {
+        if (type === 'income' && destination.selected && destination.hasBalance) {
             const estimated = destination.balance + amount;
             const label = amount > 0 ? 'Impacto estimado al guardar (ingreso)' : 'Selecciona un monto para estimar impacto';
             $destinationImpact.html(buildImpactHtml(label, destination.balance, estimated, destination.currency, 'up')).addClass('has-impact').show();

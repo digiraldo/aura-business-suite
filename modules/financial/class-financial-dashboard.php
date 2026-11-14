@@ -43,6 +43,8 @@ class Aura_Financial_Dashboard {
         $can_view_all = current_user_can( 'aura_finance_view_all' ) || current_user_can( 'manage_options' );
         $can_view_own = current_user_can( 'aura_finance_view_own' );
         $can_approve  = current_user_can( 'aura_finance_approve' );
+        $can_view_balances = class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances();
+        $can_manage_accounts = current_user_can( 'aura_finance_accounts_manage' ) || current_user_can( 'manage_options' );
         $tx_list_url      = admin_url( 'admin.php?page=aura-financial-transactions' );
         $pending_list_url = admin_url( 'admin.php?page=aura-financial-pending' );
         ?>
@@ -76,7 +78,7 @@ class Aura_Financial_Dashboard {
                             <span class="dashicons dashicons-warning"></span>
                             <?php esc_html_e( 'Alertas', 'aura-suite' ); ?>
                         </button>
-                        <?php if ( $can_view_all && class_exists( 'Aura_Financial_Accounts' ) ) : ?>
+                        <?php if ( $can_view_balances && class_exists( 'Aura_Financial_Accounts' ) ) : ?>
                         <button class="aura-navbar-item aura-tab-btn" data-tab="tab-bancos">
                             <span class="dashicons dashicons-bank"></span>
                             <?php esc_html_e( 'Presupuesto Bancos', 'aura-suite' ); ?>
@@ -184,16 +186,22 @@ class Aura_Financial_Dashboard {
                         </div><!-- .aura-kpis-row -->
 
                         <!-- Widget: Cuentas y Saldos Disponibles -->
-                        <?php if ( $can_view_all ) : ?>
+                        <?php if ( $can_view_balances ) : ?>
                         <div class="aura-widget-card aura-accounts-summary-card" style="margin-bottom: 24px;">
                             <div class="aura-widget-card__header">
                                 <h2 class="aura-widget-card__title">
                                     <span class="dashicons dashicons-money-alt" style="color:var(--aura-primary,#6366f1)"></span>
                                     <?php esc_html_e( 'Disponibilidad y Cuentas', 'aura-suite' ); ?>
                                 </h2>
+                                <?php if ( $can_manage_accounts ) : ?>
                                 <a class="aura-widget-card__link" href="<?php echo esc_url( admin_url( 'admin.php?page=aura-financial-accounts' ) ); ?>">
                                     <?php esc_html_e( 'Gestionar Cuentas →', 'aura-suite' ); ?>
                                 </a>
+                                <?php else : ?>
+                                <a class="aura-widget-card__link" href="<?php echo esc_url( admin_url( 'admin.php?page=aura-financial-accounts' ) ); ?>">
+                                    <?php esc_html_e( 'Ver Cuentas →', 'aura-suite' ); ?>
+                                </a>
+                                <?php endif; ?>
                             </div>
                             <div id="aura-accounts-grid" class="aura-accounts-grid">
                                 <div class="aura-empty-state"><p><?php esc_html_e( 'Cargando cuentas…', 'aura-suite' ); ?></p></div>
@@ -351,7 +359,7 @@ class Aura_Financial_Dashboard {
                     </div><!-- #tab-alertas -->
 
                     <!-- ── TAB: PRESUPUESTO BANCOS ── -->
-                    <?php if ( $can_view_all && class_exists( 'Aura_Financial_Accounts' ) ) : ?>
+                    <?php if ( $can_view_balances && class_exists( 'Aura_Financial_Accounts' ) ) : ?>
                     <div id="tab-bancos" class="aura-tab-panel">
                         <div class="aura-bank-budget-row">
                             <div class="aura-widget-card aura-widget-card--bank-budget">
@@ -453,12 +461,15 @@ class Aura_Financial_Dashboard {
             $prev_start = date( 'Y-m-d', strtotime( $prev_end ) - $days * DAY_IN_SECONDS );
         }
 
+        $can_view_balances = class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances();
+
         // ── FASE E: Caché con Transients (5 minutos) ──────────────────
         $cache_key = 'aura_dash_' . self::get_cache_version() . '_'
                    . get_current_user_id() . '_'
                    . md5( $start . '|' . $end . '|' . ( $compare ? '1' : '0' )
                 . '|' . ( $prev_start ?? '' ) . '|' . ( $prev_end ?? '' )
-                . '|bankbudget-v3|' . $bank_year );
+                . '|bankbudget-v3|' . $bank_year
+                . '|bal-' . ( $can_view_balances ? '1' : '0' ) );
 
         $cached = get_transient( $cache_key );
         if ( $cached !== false ) {
@@ -473,9 +484,9 @@ class Aura_Financial_Dashboard {
             'chart_donut'       => self::get_donut_data( $start, $end ),
             'recent'            => self::get_recent_transactions(),
             'alerts'            => self::get_alerts(),
-            'bank_budget'       => self::get_bank_budget_summary( $start, $end, $bank_year ),
+            'bank_budget'       => $can_view_balances ? self::get_bank_budget_summary( $start, $end, $bank_year ) : null,
             'area_distribution' => self::get_area_distribution( $start, $end ),
-            'accounts_summary'  => self::get_accounts_summary(),
+            'accounts_summary'  => $can_view_balances ? self::get_accounts_summary() : array(),
         );
 
         set_transient( $cache_key, $data, 5 * MINUTE_IN_SECONDS );
@@ -969,6 +980,10 @@ class Aura_Financial_Dashboard {
     }
 
     private static function get_accounts_summary() {
+        if ( ! ( class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances() ) ) {
+            return array();
+        }
+
         global $wpdb;
         $acc_table = $wpdb->prefix . 'aura_finance_accounts';
         $tx_table  = $wpdb->prefix . 'aura_finance_transactions';
@@ -1085,8 +1100,9 @@ class Aura_Financial_Dashboard {
         }
 
         if ( current_user_can( 'aura_finance_view_all' ) ) {
-            // Alertas de sobregiro mensual en Presupuesto de Bancos
-            if ( class_exists( 'Aura_Financial_Accounts' ) && method_exists( 'Aura_Financial_Accounts', 'build_accounts_report_data' ) ) {
+            // Alertas de sobregiro mensual en Presupuesto de Bancos (solo usuarios autorizados a ver saldos bancarios)
+            $can_view_balances = class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances();
+            if ( $can_view_balances && class_exists( 'Aura_Financial_Accounts' ) && method_exists( 'Aura_Financial_Accounts', 'build_accounts_report_data' ) ) {
                 $current_year = (int) current_time( 'Y' );
                 $rep = Aura_Financial_Accounts::build_accounts_report_data( $current_year );
                 if ( ! empty( $rep['budget']['months'] ) ) {
@@ -1173,7 +1189,7 @@ class Aura_Financial_Dashboard {
     }
 
     private static function get_bank_budget_summary( $start, $end, $manual_year = 0 ) {
-        if ( ! ( current_user_can( 'aura_finance_view_all' ) || current_user_can( 'manage_options' ) ) ) {
+        if ( ! ( class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances() ) ) {
             return null;
         }
 

@@ -268,13 +268,15 @@
         const $select = $(selectId);
         const $selected = $select.find('option:selected');
         const id = ($selected.val() || '').toString().trim();
-        const balanceRaw = parseFloat($selected.data('balance'));
+        const hasBalanceAttr = typeof $selected.attr('data-balance') !== 'undefined';
+        const balanceRaw = hasBalanceAttr ? parseFloat($selected.attr('data-balance')) : NaN;
         const baseCurrency = (window.auraTransactionData && window.auraTransactionData.baseCurrency) ? window.auraTransactionData.baseCurrency : 'MXN';
         const currency = ($selected.data('currency') || baseCurrency).toString();
 
         return {
             selected: !!id,
             id: id,
+            hasBalance: hasBalanceAttr && !isNaN(balanceRaw),
             balance: isNaN(balanceRaw) ? 0 : balanceRaw,
             currency: currency,
             name: ($selected.text() || '').trim()
@@ -336,7 +338,12 @@
         $sourceImpact.hide().removeClass('has-impact').empty();
         $destinationImpact.hide().removeClass('has-impact').empty();
 
-        if ((type === 'expense' || type === 'capital') && source.selected) {
+        const canViewBalances = !!(window.auraTransactionData && window.auraTransactionData.canViewBalances);
+        if (!canViewBalances) {
+            return;
+        }
+
+        if ((type === 'expense' || type === 'capital') && source.selected && source.hasBalance) {
             const isSourceForeign = source.currency && source.currency.toUpperCase() !== baseCurrency;
             const effectiveImpact = (isSourceForeign && isConversionActive && foreignAmount > 0) ? foreignAmount : baseAmount;
             const estimated = source.balance - effectiveImpact;
@@ -347,7 +354,7 @@
                 .show();
         }
 
-        if (type === 'income' && destination.selected) {
+        if (type === 'income' && destination.selected && destination.hasBalance) {
             const isDestForeign = destination.currency && destination.currency.toUpperCase() !== baseCurrency;
             const effectiveImpact = (isDestForeign && isConversionActive && foreignAmount > 0) ? foreignAmount : baseAmount;
             const estimated = destination.balance + effectiveImpact;
@@ -553,9 +560,6 @@
 
         updateAccountImpactSummaries();
         updatePreview();
-        checkOverspend();
-        updateFormCompletion();
-    }
         checkOverspend();
         updateFormCompletion();
     }

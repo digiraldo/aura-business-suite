@@ -111,6 +111,7 @@ class Aura_Financial_Transactions {
             'baseCurrency'   => $base_currency,
             'currencySymbol' => class_exists('Aura_Financial_Currency') ? Aura_Financial_Currency::get_currency_symbol() : '$',
             'currencyConfig' => $curr_config,
+            'canViewBalances' => class_exists('Aura_Financial_Accounts') && Aura_Financial_Accounts::current_user_can_view_balances(),
             'messages' => array(
                 'saving'                  => __('Guardando transacción...', 'aura-suite'),
                 'success'                 => __('Transacción guardada exitosamente', 'aura-suite'),

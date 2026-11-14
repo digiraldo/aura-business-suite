@@ -24,8 +24,10 @@ global $wpdb;
 $categories_table = $wpdb->prefix . 'aura_finance_categories';
 $categories = $wpdb->get_results("SELECT * FROM $categories_table WHERE is_active = 1 ORDER BY display_order ASC, name ASC");
 $accounts_table = $wpdb->prefix . 'aura_finance_accounts';
+$can_view_balances = class_exists( 'Aura_Financial_Accounts' ) && Aura_Financial_Accounts::current_user_can_view_balances();
+$balance_select = $can_view_balances ? ', current_balance' : '';
 $finance_accounts = $wpdb->get_results(
-    "SELECT id, name, account_type, currency, current_balance
+    "SELECT id, name, account_type, currency{$balance_select}
      FROM {$accounts_table}
      WHERE deleted_at IS NULL AND is_active = 1
      ORDER BY name ASC"
@@ -299,9 +301,17 @@ if ( $_frm_view_own ) {
                                     <?php foreach ( $finance_accounts as $account ) : ?>
                                     <option
                                         value="<?php echo (int) $account->id; ?>"
+                                        <?php if ( $can_view_balances ) : ?>
                                         data-balance="<?php echo esc_attr( (string) (float) $account->current_balance ); ?>"
+                                        <?php endif; ?>
                                         data-currency="<?php echo esc_attr( $account->currency ); ?>">
-                                        <?php echo esc_html( $account->name . ' · ' . $account->currency . ' · ' . number_format( (float) $account->current_balance, 2 ) ); ?>
+                                        <?php
+                                        echo esc_html(
+                                            $can_view_balances
+                                                ? ( $account->name . ' · ' . $account->currency . ' · ' . number_format( (float) $account->current_balance, 2 ) )
+                                                : ( $account->name . ' · ' . $account->currency )
+                                        );
+                                        ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -324,9 +334,17 @@ if ( $_frm_view_own ) {
                                     <?php foreach ( $finance_accounts as $account ) : ?>
                                     <option
                                         value="<?php echo (int) $account->id; ?>"
+                                        <?php if ( $can_view_balances ) : ?>
                                         data-balance="<?php echo esc_attr( (string) (float) $account->current_balance ); ?>"
+                                        <?php endif; ?>
                                         data-currency="<?php echo esc_attr( $account->currency ); ?>">
-                                        <?php echo esc_html( $account->name . ' · ' . $account->currency . ' · ' . number_format( (float) $account->current_balance, 2 ) ); ?>
+                                        <?php
+                                        echo esc_html(
+                                            $can_view_balances
+                                                ? ( $account->name . ' · ' . $account->currency . ' · ' . number_format( (float) $account->current_balance, 2 ) )
+                                                : ( $account->name . ' · ' . $account->currency )
+                                        );
+                                        ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
