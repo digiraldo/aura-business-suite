@@ -36,6 +36,9 @@ class Aura_Page_Manager {
             add_filter( 'body_class', [ __CLASS__, 'filter_system_body_class' ], 20 );
             add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_system_page_theme' ], 999 );
         }
+
+        require_once __DIR__ . '/class-nav-login-menu.php';
+        Aura_Nav_Login_Menu::init();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -589,6 +592,11 @@ class Aura_Page_Manager {
                     </table>
                 </div>
             </div>
+            <?php
+            if ( class_exists( 'Aura_Nav_Login_Menu' ) ) {
+                Aura_Nav_Login_Menu::render_settings_card();
+            }
+            ?>
         </div>
         <script>
         jQuery(function ($) {
