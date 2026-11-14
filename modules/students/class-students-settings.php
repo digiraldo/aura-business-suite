@@ -139,88 +139,24 @@ class Aura_Students_Settings {
             wp_send_json_error( [ 'message' => __( 'Sin permisos suficientes.', 'aura-suite' ) ], 403 );
         }
 
-        $pages_def = [
-            'login_page_id' => [
-                'title'     => __( 'Acceso a la Plataforma', 'aura-suite' ),
-                'slug'      => 'acceso',
-                'shortcode' => '[aura_login]',
-            ],
-            'portal_page_id' => [
-                'title'     => __( 'Portal del Estudiante', 'aura-suite' ),
-                'slug'      => 'portal-estudiante',
-                'shortcode' => '[aura_portal]',
-            ],
-            'enrollment_page_id' => [
-                'title'     => __( 'Inscripción a Programas', 'aura-suite' ),
-                'slug'      => 'inscripcion-estudiantes',
-                'shortcode' => '[aura_enrollment_form]',
-            ],
+        // Delegar en el gestor central (sin duplicar páginas)
+        $keys = [
+            'login_page_id'      => 'student_login',
+            'portal_page_id'     => 'student_portal',
+            'enrollment_page_id' => 'student_enrollment',
         ];
-
-        $settings = self::get_all();
-        $results  = [];
-
-        foreach ( $pages_def as $key => $pinfo ) {
-            $page_id = (int) ( $settings[ $key ] ?? 0 );
-            $post    = $page_id ? get_post( $page_id ) : null;
-
-            // Si ya está asignada una página existente y publicada, la mantenemos
-            if ( $post && 'publish' === $post->post_status ) {
-                $results[ $key ] = [
-                    'id'     => $post->ID,
-                    'title'  => $post->post_title,
-                    'url'    => get_permalink( $post->ID ),
-                    'status' => 'existing',
+        $results = [];
+        foreach ( $keys as $opt_key => $page_key ) {
+            $r = Aura_Page_Manager::ensure( $page_key );
+            if ( $r['id'] ) {
+                $results[ $opt_key ] = [
+                    'id'     => $r['id'],
+                    'title'  => get_the_title( $r['id'] ),
+                    'url'    => get_permalink( $r['id'] ),
+                    'status' => $r['status'],
                 ];
-                continue;
-            }
-
-            // Buscar si ya existe alguna página publicada con ese slug
-            $found_id = 0;
-            $existing_page = get_page_by_path( $pinfo['slug'] );
-            if ( $existing_page && 'publish' === $existing_page->post_status ) {
-                $found_id = $existing_page->ID;
-            } else {
-                // Buscar por contenido que tenga el shortcode
-                global $wpdb;
-                $found_id = (int) $wpdb->get_var( $wpdb->prepare(
-                    "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE %s LIMIT 1",
-                    '%' . $wpdb->esc_like( $pinfo['shortcode'] ) . '%'
-                ) );
-            }
-
-            if ( $found_id ) {
-                $settings[ $key ] = $found_id;
-                $results[ $key ]  = [
-                    'id'     => $found_id,
-                    'title'  => get_the_title( $found_id ),
-                    'url'    => get_permalink( $found_id ),
-                    'status' => 'linked',
-                ];
-            } else {
-                // Crear la página
-                $new_id = wp_insert_post( [
-                    'post_title'   => $pinfo['title'],
-                    'post_name'    => $pinfo['slug'],
-                    'post_content' => $pinfo['shortcode'],
-                    'post_status'  => 'publish',
-                    'post_type'    => 'page',
-                ] );
-
-                if ( $new_id && ! is_wp_error( $new_id ) ) {
-                    $settings[ $key ] = $new_id;
-                    $results[ $key ]  = [
-                        'id'     => $new_id,
-                        'title'  => $pinfo['title'],
-                        'url'    => get_permalink( $new_id ),
-                        'status' => 'created',
-                    ];
-                }
             }
         }
-
-        update_option( self::OPTION_KEY, $settings );
-
         wp_send_json_success( [
             'message' => __( 'Páginas del portal vinculadas correctamente.', 'aura-suite' ),
             'pages'   => $results,
@@ -232,14 +168,15 @@ class Aura_Students_Settings {
     // ─────────────────────────────────────────────────────────────
 
     private static function sanitize( array $raw ): array {
-        $defs = self::defaults();
+        $defs    = self::defaults();
+        $current = self::get_all();
 
         $settings = [
             'student_code_prefix'          => strtoupper( sanitize_text_field( $raw['student_code_prefix'] ?? $defs['student_code_prefix'] ) ),
             'default_currency'             => strtoupper( sanitize_text_field( $raw['default_currency']    ?? $defs['default_currency'] ) ),
-            'portal_page_id'               => absint( $raw['portal_page_id']      ?? 0 ),
-            'login_page_id'                => absint( $raw['login_page_id']       ?? 0 ),
-            'enrollment_page_id'           => absint( $raw['enrollment_page_id']  ?? 0 ),
+            'portal_page_id'               => isset( $raw['portal_page_id'] ) ? absint( $raw['portal_page_id'] ) : absint( $current['portal_page_id'] ?? 0 ),
+            'login_page_id'                => isset( $raw['login_page_id'] ) ? absint( $raw['login_page_id'] ) : absint( $current['login_page_id'] ?? 0 ),
+            'enrollment_page_id'           => isset( $raw['enrollment_page_id'] ) ? absint( $raw['enrollment_page_id'] ) : absint( $current['enrollment_page_id'] ?? 0 ),
             'auto_generate_password'       => ! empty( $raw['auto_generate_password'] ),
             'send_credentials_email'       => ! empty( $raw['send_credentials_email'] ),
             'finance_integration_enabled'  => ! empty( $raw['finance_integration_enabled'] ),

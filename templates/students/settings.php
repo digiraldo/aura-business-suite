@@ -114,119 +114,19 @@ $active_fields    = is_array( $s['enrollment_form_fields'] ?? null ) ? $s['enrol
                  ═══════════════════════════════════════════════════════════ -->
             <div class="aura-tab-panel active" id="tab-general" role="tabpanel">
 
-                <!-- Bloque A: Portales Frontend de Estudiantes (Destacado) -->
-                <div class="aura-settings-card" style="margin-bottom:32px;">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--aura-border, #e2e8f0);margin-bottom:20px;">
-                        <div>
-                            <h3 style="margin:0 0 6px;font-size:1.1rem;font-weight:700;color:var(--aura-text-primary, #0f172a);display:flex;align-items:center;gap:8px;">
-                                🌐 <?php esc_html_e( 'Páginas del Portal Frontend (Acceso Externo)', 'aura-suite' ); ?>
-                            </h3>
-                            <p style="margin:0;color:var(--aura-text-secondary, #64748b);font-size:13px;max-width:680px;line-height:1.5;">
-                                <?php esc_html_e( 'Para que los estudiantes inicien sesión, vean sus cursos y se inscriban sin ingresar al panel de administración de WordPress, vincule las páginas correspondientes o haga clic en el botón para crearlas automáticamente.', 'aura-suite' ); ?>
-                            </p>
-                        </div>
-                        <div>
-                            <button type="button" id="btn-st-auto-create-pages" class="btn btn-indigo btn-shimmer btn-lift" style="white-space:nowrap;font-size:13px;padding:9px 16px;">
-                                <span class="dashicons dashicons-magic" style="font-size:16px;width:16px;height:16px;margin-top:2px;"></span>
-                                <?php esc_html_e( 'Crear / Vincular Páginas Automáticamente', 'aura-suite' ); ?>
-                            </button>
-                        </div>
+                <!-- Bloque A: Portales Frontend de Estudiantes (Centralizado en Ajustes -> Páginas) -->
+                <div class="aura-settings-card" style="margin-bottom:24px;padding:16px 20px;border:1px solid var(--aura-border, #e2e8f0);border-radius:12px;background:var(--aura-surface-alt, #f8fafc);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <strong style="font-size:13.5px;color:var(--aura-text-primary, #0f172a);">
+                            🌐 <?php esc_html_e( 'Páginas del Portal Frontend (Acceso, Portal del Estudiante e Inscripciones)', 'aura-suite' ); ?>
+                        </strong>
+                        <p style="margin:4px 0 0;font-size:12.5px;color:var(--aura-text-secondary, #64748b);">
+                            <?php esc_html_e( 'La asignación y creación automática de estas páginas ahora se administra de forma centralizada para evitar duplicados.', 'aura-suite' ); ?>
+                        </p>
                     </div>
-
-                    <!-- Cuadrícula de 3 páginas requeridas -->
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;margin-bottom:24px;">
-
-                        <!-- Página 1: Login de Estudiantes -->
-                        <div class="aura-card card-lift" style="padding:16px;border-radius:12px;border:1px solid var(--aura-border, #e2e8f0);background:var(--aura-surface-alt, #f8fafc);">
-                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-                                <span style="font-weight:700;font-size:13px;color:var(--aura-text-primary, #0f172a);">
-                                    🔑 <?php esc_html_e( 'Acceso / Login Estudiantes', 'aura-suite' ); ?>
-                                </span>
-                                <?php
-                                $login_url = ! empty( $s['login_page_id'] ) ? get_permalink( $s['login_page_id'] ) : '';
-                                ?>
-                                <a id="link-login-page" href="<?php echo esc_url( $login_url ?: '#' ); ?>" target="_blank" rel="noopener noreferrer"
-                                   class="btn btn-sm btn-secondary" style="padding:2px 8px;font-size:11px;text-decoration:none;<?php echo ! $login_url ? 'display:none;' : ''; ?>">
-                                    <?php esc_html_e( 'Ver página ↗', 'aura-suite' ); ?>
-                                </a>
-                            </div>
-                            <p style="margin:0 0 10px;font-size:12px;color:var(--aura-text-secondary, #64748b);">
-                                <?php esc_html_e( 'Shortcode maestro:', 'aura-suite' ); ?> <code>[aura_login]</code> <span style="font-size:11px;opacity:0.8;">(alias: <code>[aura_student_login]</code>)</span>
-                            </p>
-                            <div class="input-group">
-                                <span class="input-group-text">📄</span>
-                                <select id="login-page-id" name="login_page_id" class="form-control" style="width:100%;">
-                                    <option value="0"><?php esc_html_e( '— Seleccionar página —', 'aura-suite' ); ?></option>
-                                    <?php foreach ( $pages as $page ) : ?>
-                                        <option value="<?php echo esc_attr( $page->ID ); ?>" <?php selected( (int) ( $s['login_page_id'] ?? 0 ), $page->ID ); ?>>
-                                            <?php echo esc_html( $page->post_title ); ?> (ID: <?php echo esc_html( $page->ID ); ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Página 2: Portal del Estudiante -->
-                        <div class="aura-card card-lift" style="padding:16px;border-radius:12px;border:1px solid var(--aura-border, #e2e8f0);background:var(--aura-surface-alt, #f8fafc);">
-                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-                                <span style="font-weight:700;font-size:13px;color:var(--aura-text-primary, #0f172a);">
-                                    🎓 <?php esc_html_e( 'Portal del Estudiante (Dashboard)', 'aura-suite' ); ?>
-                                </span>
-                                <?php
-                                $portal_url = ! empty( $s['portal_page_id'] ) ? get_permalink( $s['portal_page_id'] ) : '';
-                                ?>
-                                <a id="link-portal-page" href="<?php echo esc_url( $portal_url ?: '#' ); ?>" target="_blank" rel="noopener noreferrer"
-                                   class="btn btn-sm btn-secondary" style="padding:2px 8px;font-size:11px;text-decoration:none;<?php echo ! $portal_url ? 'display:none;' : ''; ?>">
-                                    <?php esc_html_e( 'Ver página ↗', 'aura-suite' ); ?>
-                                </a>
-                            </div>
-                            <p style="margin:0 0 10px;font-size:12px;color:var(--aura-text-secondary, #64748b);">
-                                <?php esc_html_e( 'Shortcode maestro:', 'aura-suite' ); ?> <code>[aura_portal]</code> <span style="font-size:11px;opacity:0.8;">(alias: <code>[aura_student_portal]</code>)</span>
-                            </p>
-                            <div class="input-group">
-                                <span class="input-group-text">📄</span>
-                                <select id="portal-page-id" name="portal_page_id" class="form-control" style="width:100%;">
-                                    <option value="0"><?php esc_html_e( '— Seleccionar página —', 'aura-suite' ); ?></option>
-                                    <?php foreach ( $pages as $page ) : ?>
-                                        <option value="<?php echo esc_attr( $page->ID ); ?>" <?php selected( (int) ( $s['portal_page_id'] ?? 0 ), $page->ID ); ?>>
-                                            <?php echo esc_html( $page->post_title ); ?> (ID: <?php echo esc_html( $page->ID ); ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Página 3: Formulario de Inscripción -->
-                        <div class="aura-card card-lift" style="padding:16px;border-radius:12px;border:1px solid var(--aura-border, #e2e8f0);background:var(--aura-surface-alt, #f8fafc);">
-                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-                                <span style="font-weight:700;font-size:13px;color:var(--aura-text-primary, #0f172a);">
-                                    📝 <?php esc_html_e( 'Formulario de Inscripción', 'aura-suite' ); ?>
-                                </span>
-                                <?php
-                                $enrollment_url = ! empty( $s['enrollment_page_id'] ) ? get_permalink( $s['enrollment_page_id'] ) : '';
-                                ?>
-                                <a id="link-enrollment-page" href="<?php echo esc_url( $enrollment_url ?: '#' ); ?>" target="_blank" rel="noopener noreferrer"
-                                   class="btn btn-sm btn-secondary" style="padding:2px 8px;font-size:11px;text-decoration:none;<?php echo ! $enrollment_url ? 'display:none;' : ''; ?>">
-                                    <?php esc_html_e( 'Ver página ↗', 'aura-suite' ); ?>
-                                </a>
-                            </div>
-                            <p style="margin:0 0 10px;font-size:12px;color:var(--aura-text-secondary, #64748b);">
-                                <?php esc_html_e( 'Shortcode:', 'aura-suite' ); ?> <code>[aura_enrollment_form]</code>
-                            </p>
-                            <div class="input-group">
-                                <span class="input-group-text">📄</span>
-                                <select id="enrollment-page-id" name="enrollment_page_id" class="form-control" style="width:100%;">
-                                    <option value="0"><?php esc_html_e( '— Seleccionar página —', 'aura-suite' ); ?></option>
-                                    <?php foreach ( $pages as $page ) : ?>
-                                        <option value="<?php echo esc_attr( $page->ID ); ?>" <?php selected( (int) ( $s['enrollment_page_id'] ?? 0 ), $page->ID ); ?>>
-                                            <?php echo esc_html( $page->post_title ); ?> (ID: <?php echo esc_html( $page->ID ); ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-
-                    </div>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-settings&tab=pages' ) ); ?>" class="btn btn-indigo btn-sm" style="text-decoration:none;white-space:nowrap;">
+                        <?php esc_html_e( 'Ir a Ajustes → Páginas →', 'aura-suite' ); ?>
+                    </a>
                 </div>
 
                 <!-- Bloque B: Identificación y Moneda -->

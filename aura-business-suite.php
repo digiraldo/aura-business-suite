@@ -85,6 +85,7 @@ class Aura_Business_Suite
         require_once AURA_PLUGIN_DIR . 'modules/common/class-google-calendar.php';
         require_once AURA_PLUGIN_DIR . 'modules/common/class-third-parties.php';
         require_once AURA_PLUGIN_DIR . 'modules/common/class-portable-bundle.php';
+require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
 
         // Módulo Financiero
         require_once AURA_PLUGIN_DIR . 'modules/financial/class-financial-currency.php';
@@ -467,6 +468,9 @@ class Aura_Business_Suite
 
         // Inicializar paquetes portátiles multimedia (ZIP Bundle)
         Aura_Portable_Bundle::init();
+
+        // Gestión centralizada y automática de páginas frontend (sin duplicados)
+        Aura_Page_Manager::init();
 
         Aura_Financial_Categories_CPT::init();
         Aura_Financial_Categories::get_instance();

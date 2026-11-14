@@ -84,27 +84,19 @@ $teacher_portal_url = $teacher_portal_page_id > 0 ? get_permalink( $teacher_port
             <!-- Campos de Configuración del Portal -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">
                 
-                <!-- Selector de Página WP -->
+                <!-- Enlace al Gestor Centralizado de Páginas -->
                 <div class="form-group">
-                    <label class="form-label" for="set-teacher-portal-page" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                        <?php esc_html_e( 'Página asignada para el Portal del Instructor', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                    <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
+                        <?php esc_html_e( 'Página del Portal del Instructor', 'aura' ); ?>
                     </label>
-                    <div style="display: flex; gap: 8px;">
-                        <select name="teacher_portal_page_id" id="set-teacher-portal-page" class="form-control" style="width: 100%; border-radius: 8px;">
-                            <option value="0"><?php esc_html_e( '— Seleccionar página de WordPress —', 'aura' ); ?></option>
-                            <?php foreach ( $all_wp_pages as $p ) : ?>
-                                <option value="<?php echo esc_attr( $p->ID ); ?>" <?php selected( $teacher_portal_page_id, $p->ID ); ?>>
-                                    <?php echo esc_html( $p->post_title ); ?> (#<?php echo (int) $p->ID; ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <button type="button" class="btn btn-ghost btn-sm" id="btn-create-teacher-portal-page" title="<?php esc_attr_e( 'Crear página automáticamente si no existe', 'aura' ); ?>" style="white-space: nowrap; font-size: 12px; padding: 0 12px; flex-shrink: 0;">
-                            ⚡ <?php esc_html_e( 'Auto-crear', 'aura' ); ?>
-                        </button>
+                    <div style="padding: 12px 14px; border-radius: 8px; border: 1px solid var(--aura-border, #e2e8f0); background: var(--aura-surface-alt, #f8fafc); display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                        <span style="font-size: 12.5px; color: var(--aura-text-secondary, #64748b);">
+                            <?php esc_html_e( 'Se administra de forma centralizada en Ajustes → Páginas.', 'aura' ); ?>
+                        </span>
+                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-settings&tab=pages' ) ); ?>" class="btn btn-sm btn-secondary" style="text-decoration:none;white-space:nowrap;">
+                            <?php esc_html_e( 'Configurar página →', 'aura' ); ?>
+                        </a>
                     </div>
-                    <small style="font-size: 12px; color: var(--aura-text-muted); display: block; margin-top: 5px;">
-                        <?php esc_html_e( 'El plugin detectará esta página para redirigir a los instructores al autenticarse en el login unificado.', 'aura' ); ?>
-                    </small>
                 </div>
 
                 <!-- Prefijo de Código Docente -->

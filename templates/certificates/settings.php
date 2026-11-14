@@ -174,18 +174,12 @@ $pages = get_pages( [ 'post_status' => 'publish' ] );
                     </td>
                 </tr>
                 <tr>
-                    <th><?php esc_html_e( 'Página "Mis Certificados"', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Páginas del Portal y Verificación', 'aura-suite' ); ?></th>
                     <td>
-                        <select name="cert_page_id" class="regular-text">
-                            <option value="0"><?php esc_html_e( '— Sin asignar —', 'aura-suite' ); ?></option>
-                            <?php foreach ( $pages as $page ) : ?>
-                            <option value="<?php echo esc_attr( $page->ID ); ?>"
-                                    <?php selected( (int)( $settings['cert_page_id'] ?? 0 ), $page->ID ); ?>>
-                                <?php echo esc_html( $page->post_title ); ?>
-                            </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <p class="description"><?php esc_html_e( 'Página que contiene el shortcode [aura_mis_certificados].', 'aura-suite' ); ?></p>
+                        <p class="description" style="margin:0;">
+                            <?php esc_html_e( 'Las páginas "Mis Certificados" y "Verificación de Certificados" se administran ahora desde', 'aura-suite' ); ?>
+                            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-settings&tab=pages' ) ); ?>"><strong><?php esc_html_e( 'Ajustes → Páginas del Sistema', 'aura-suite' ); ?></strong></a>.
+                        </p>
                     </td>
                 </tr>
             </table>

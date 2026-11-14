@@ -313,6 +313,10 @@ document.addEventListener('DOMContentLoaded', function () {
             <span class="dashicons dashicons-database-export"></span>
             <span><?php esc_html_e('Portabilidad (.ZIP)', 'aura-suite'); ?></span>
         </button>
+        <button type="button" class="aura-navbar-item aura-tab-btn tab-btn" data-tab="tab-pages" role="tab">
+            <span class="dashicons dashicons-admin-page"></span>
+            <span><?php esc_html_e('Páginas', 'aura-suite'); ?></span>
+        </button>
     </nav>
 
     <!-- ── FORMULARIO PRINCIPAL Y CONTENIDO ── -->
@@ -1536,6 +1540,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                 </div>
             </div>
+
+            <?php if ( class_exists( 'Aura_Page_Manager' ) ) { Aura_Page_Manager::render_panel(); } ?>
 
             <!-- ══════════════════════════════════════════════════════
                  TAB: PORTABILIDAD Y MIGRACIÓN (.ZIP)

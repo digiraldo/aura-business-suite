@@ -61,22 +61,11 @@ $all_pages = get_pages( [ 'post_status' => 'publish', 'sort_column' => 'post_tit
                 </tr>
 
                 <tr>
-                    <th scope="row">
-                        <label for="portal_page"><?php esc_html_e( 'Página del portal de formularios', 'aura-suite' ); ?></label>
-                    </th>
+                    <th scope="row"><?php esc_html_e( 'Página del portal de formularios', 'aura-suite' ); ?></th>
                     <td>
-                        <select name="portal_page" id="portal_page" class="regular-text">
-                            <option value="0"><?php esc_html_e( '— Ninguna —', 'aura-suite' ); ?></option>
-                            <?php foreach ( $all_pages as $page ) : ?>
-                                <option value="<?php echo esc_attr( $page->ID ); ?>"
-                                    <?php selected( (int) $settings['portal_page'], $page->ID ); ?>>
-                                    <?php echo esc_html( $page->post_title ); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <p class="description">
-                            <?php esc_html_e( 'Página con el shortcode [aura_form_portal], donde el estudiante ve sus encuestas asignadas. La URL de esta página se usa en emails de asignación mediante la variable', 'aura-suite' ); ?>
-                            <code>{portal}</code>.
+                        <p class="description" style="margin:0;">
+                            <?php esc_html_e( 'La página con el shortcode [aura_form_portal] (variable {portal} en emails) se administra ahora desde', 'aura-suite' ); ?>
+                            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-settings&tab=pages' ) ); ?>"><strong><?php esc_html_e( 'Ajustes → Páginas del Sistema', 'aura-suite' ); ?></strong></a>.
                         </p>
                     </td>
                 </tr>

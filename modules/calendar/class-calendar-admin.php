@@ -365,12 +365,13 @@ class Aura_Calendar_Admin {
         $cal_name  = sanitize_text_field( $_POST['cal_name'] ?? '' );
         $auto_sync = ! empty( $_POST['auto_sync'] ) ? '1' : '0';
 
-        $teacher_portal_page_id = intval( $_POST['teacher_portal_page_id'] ?? 0 );
         $teacher_code_prefix    = strtoupper( sanitize_text_field( $_POST['teacher_code_prefix'] ?? 'CEM-PROF' ) );
 
         update_option( Aura_Calendar_Google_Sync::CAL_NAME_OPTION, $cal_name );
         update_option( Aura_Calendar_Google_Sync::AUTO_SYNC_OPTION, $auto_sync );
-        update_option( self::OPTION_TEACHER_PORTAL_PAGE, $teacher_portal_page_id );
+        if ( isset( $_POST['teacher_portal_page_id'] ) ) {
+            update_option( self::OPTION_TEACHER_PORTAL_PAGE, intval( $_POST['teacher_portal_page_id'] ) );
+        }
         update_option( self::OPTION_TEACHER_CODE_PREFIX, $teacher_code_prefix );
 
         wp_send_json_success( [ 'message' => __( 'Ajustes guardados correctamente.', 'aura' ) ] );
@@ -512,36 +513,19 @@ class Aura_Calendar_Admin {
             wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
         }
 
-        // Comprobar si ya existe
-        $existing_id = self::get_teacher_portal_page_id();
-        if ( $existing_id > 0 ) {
-            wp_send_json_success( [
-                'message'   => __( 'Ya existe una página configurada para el Portal del Instructor.', 'aura' ),
-                'page_id'   => $existing_id,
-                'permalink' => get_permalink( $existing_id ),
-            ] );
-        }
+        // Delegar en el gestor central (vincula si ya existe, crea solo si falta)
+        $res     = Aura_Page_Manager::ensure( 'teacher_portal' );
+        $page_id = (int) $res['id'];
 
-        $page_data = [
-            'post_title'   => __( 'Portal del Instructor', 'aura' ),
-            'post_name'    => 'portal-instructor',
-            'post_content' => '<!-- wp:shortcode -->[aura_teacher_portal]<!-- /wp:shortcode -->',
-            'post_status'  => 'publish',
-            'post_type'    => 'page',
-            'post_author'  => get_current_user_id(),
-        ];
-
-        $page_id = wp_insert_post( $page_data );
-
-        if ( is_wp_error( $page_id ) || ! $page_id ) {
+        if ( ! $page_id ) {
             wp_send_json_error( [ 'message' => __( 'Error al crear la página en WordPress.', 'aura' ) ] );
         }
 
-        update_option( self::OPTION_TEACHER_PORTAL_PAGE, (int) $page_id );
-
         wp_send_json_success( [
-            'message'   => __( '¡Página del Portal del Instructor creada con éxito!', 'aura' ),
-            'page_id'   => (int) $page_id,
+            'message'   => 'created' === $res['status']
+                ? __( '¡Página del Portal del Instructor creada con éxito!', 'aura' )
+                : __( 'Ya existe una página configurada para el Portal del Instructor.', 'aura' ),
+            'page_id'   => $page_id,
             'permalink' => get_permalink( $page_id ),
         ] );
     }

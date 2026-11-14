@@ -79,8 +79,8 @@ class Aura_Forms_Settings {
         $defaults = self::defaults();
 
         $updated = [
-            'public_form_page'         => absint( $_POST['public_form_page'] ?? 0 ),
-            'portal_page'              => absint( $_POST['portal_page'] ?? 0 ),
+            'public_form_page'         => isset( $_POST['public_form_page'] ) ? absint( $_POST['public_form_page'] ) : absint( $current['public_form_page'] ?? 0 ),
+            'portal_page'              => isset( $_POST['portal_page'] ) ? absint( $_POST['portal_page'] ) : absint( $current['portal_page'] ?? 0 ),
             'honeypot_enabled'         => isset( $_POST['honeypot_enabled'] ) ? '1' : '0',
             'rate_limit_count'         => absint( $_POST['rate_limit_count'] ?? 5 ),
             'rate_limit_minutes'       => absint( $_POST['rate_limit_minutes'] ?? 10 ),
