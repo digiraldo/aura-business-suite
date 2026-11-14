@@ -104,7 +104,7 @@ html[data-theme="dark"],
 body[data-theme="dark"],
 .aura-dark-theme,
 [data-theme="dark"] {
-    --aura-theme-bg: #090d16;
+    --aura-theme-bg: #0e121a;
     --aura-theme-surface: #111827;
     --aura-theme-surface-card: #162032;
     --aura-theme-surface-alt: #1e293b;
@@ -128,10 +128,12 @@ body[data-theme="dark"],
     --aura-toggle-border: #475569;
 }
 
-/* ── ENTORNO GENERAL Y CONTENEDOR EN MODO OSCURO ───────────────── */
-html[data-theme="dark"] body,
-body[data-theme="dark"] {
-    background-color: var(--aura-theme-bg, #090d16) !important;
+/* ── ENTORNO DE CONTENIDO EN MODO OSCURO (SIN AFECTAR BODY/HEADER/FOOTER) ── */
+html[data-theme="dark"] #main-content,
+body[data-theme="dark"] #main-content,
+html[data-theme="dark"] #et-boc .et-l--post,
+html[data-theme="dark"] #et-boc .et-l--body {
+    background-color: var(--aura-theme-bg, #0e121a) !important;
     color: var(--aura-theme-text-secondary, #cbd5e1);
 }
 
@@ -2700,24 +2702,24 @@ body.aura-dark-mode .aura-teacher-portal .fc .fc-timegrid-allday {
    Aplica fondo adaptable claro/oscuro y elimina el ancho reservado
    de la barra lateral derecha sin editar cada página manualmente.
    ══════════════════════════════════════════════════════════════════ */
-body.aura-system-page,
-body.aura-system-page #page-container,
-body.aura-system-page #et-main-area,
 body.aura-system-page #main-content,
 body.aura-system-page #content-area,
 body.aura-system-page #left-area,
 body.aura-system-page .entry-content,
 body.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
-body.aura-system-page #et-boc .et-l .et_pb_section:not(.no-dark-mode),
-body.aura-has-theme-toggle,
-body.aura-has-theme-toggle #page-container,
-body.aura-has-theme-toggle #et-main-area,
+body.aura-system-page #et-boc .et-l--post,
+body.aura-system-page #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
+body.aura-system-page #et-boc .et-l--body,
+body.aura-system-page #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
 body.aura-has-theme-toggle #main-content,
 body.aura-has-theme-toggle #content-area,
 body.aura-has-theme-toggle #left-area,
 body.aura-has-theme-toggle .entry-content,
 body.aura-has-theme-toggle #main-content .et_pb_section:not(.no-dark-mode),
-body.aura-has-theme-toggle #et-boc .et-l .et_pb_section:not(.no-dark-mode) {
+body.aura-has-theme-toggle #et-boc .et-l--post,
+body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
+body.aura-has-theme-toggle #et-boc .et-l--body,
+body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_section:not(.no-dark-mode) {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -2734,86 +2736,95 @@ body.aura-system-page.aura-divi-no-sidebar #main-content .container::before {
     display: none !important;
 }
 
-/* Modo Oscuro automático en contenedores Divi 4 / WordPress */
-html[data-theme="dark"] body.aura-system-page,
-html[data-theme="dark"] body.aura-system-page.custom-background,
-html[data-theme="dark"] body.aura-system-page #page-container,
-html[data-theme="dark"] body.aura-system-page #et-main-area,
+/* Modo Oscuro automático SOLO en el área de contenido (#main-content / .et-l--post / .et-l--body),
+   preservando intactos <body> (debajo del footer), #page-container, #et-main-area, Header y Footer */
 html[data-theme="dark"] body.aura-system-page #main-content,
 html[data-theme="dark"] body.aura-system-page #content-area,
 html[data-theme="dark"] body.aura-system-page #left-area,
-html[data-theme="dark"] body.aura-system-page article.page,
-html[data-theme="dark"] body.aura-system-page article.et_pb_post,
-html[data-theme="dark"] body.aura-system-page .entry-content,
-html[data-theme="dark"] body.aura-has-theme-toggle,
-html[data-theme="dark"] body.aura-has-theme-toggle.custom-background,
-html[data-theme="dark"] body.aura-has-theme-toggle #page-container,
-html[data-theme="dark"] body.aura-has-theme-toggle #et-main-area,
+html[data-theme="dark"] body.aura-system-page #main-content article.page,
+html[data-theme="dark"] body.aura-system-page #main-content article.et_pb_post,
+html[data-theme="dark"] body.aura-system-page #main-content .entry-content,
+html[data-theme="dark"] body.aura-system-page main#primary,
+html[data-theme="dark"] body.aura-system-page main.site-main,
 html[data-theme="dark"] body.aura-has-theme-toggle #main-content,
 html[data-theme="dark"] body.aura-has-theme-toggle #content-area,
 html[data-theme="dark"] body.aura-has-theme-toggle #left-area,
-html[data-theme="dark"] body.aura-has-theme-toggle article.page,
-html[data-theme="dark"] body.aura-has-theme-toggle article.et_pb_post,
-html[data-theme="dark"] body.aura-has-theme-toggle .entry-content,
-body.aura-dark-theme.aura-system-page,
-body.aura-dark-theme.aura-system-page.custom-background,
-body.aura-dark-theme.aura-system-page #page-container,
-body.aura-dark-theme.aura-system-page #et-main-area,
+html[data-theme="dark"] body.aura-has-theme-toggle #main-content article.page,
+html[data-theme="dark"] body.aura-has-theme-toggle #main-content article.et_pb_post,
+html[data-theme="dark"] body.aura-has-theme-toggle #main-content .entry-content,
+html[data-theme="dark"] body.aura-has-theme-toggle main#primary,
+html[data-theme="dark"] body.aura-has-theme-toggle main.site-main,
 body.aura-dark-theme.aura-system-page #main-content,
 body.aura-dark-theme.aura-system-page #content-area,
 body.aura-dark-theme.aura-system-page #left-area,
-body.aura-dark-theme.aura-system-page .entry-content,
-body.aura-dark-theme.aura-has-theme-toggle,
-body.aura-dark-theme.aura-has-theme-toggle.custom-background,
-body.aura-dark-theme.aura-has-theme-toggle #page-container,
-body.aura-dark-theme.aura-has-theme-toggle #et-main-area,
+body.aura-dark-theme.aura-system-page #main-content article.page,
+body.aura-dark-theme.aura-system-page #main-content article.et_pb_post,
+body.aura-dark-theme.aura-system-page #main-content .entry-content,
+body.aura-dark-theme.aura-system-page main#primary,
+body.aura-dark-theme.aura-system-page main.site-main,
 body.aura-dark-theme.aura-has-theme-toggle #main-content,
 body.aura-dark-theme.aura-has-theme-toggle #content-area,
 body.aura-dark-theme.aura-has-theme-toggle #left-area,
-body.aura-dark-theme.aura-has-theme-toggle .entry-content {
-    background-color: var(--aura-theme-bg, #090d16) !important;
+body.aura-dark-theme.aura-has-theme-toggle #main-content article.page,
+body.aura-dark-theme.aura-has-theme-toggle #main-content article.et_pb_post,
+body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-content,
+body.aura-dark-theme.aura-has-theme-toggle main#primary,
+body.aura-dark-theme.aura-has-theme-toggle main.site-main {
+    background-color: var(--aura-theme-bg, #0e121a) !important;
     color: var(--aura-text-primary, #f8fafc) !important;
 }
 
-/* Alta especificidad para secciones/filas/columnas de Divi 4 Visual Builder */
-html[data-theme="dark"] body.aura-system-page #page-container #et-main-area #main-content .et_pb_section:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_section:not(.no-dark-mode),
+/* Alta especificidad para secciones/filas/columnas de contenido en Divi 4 (excluyendo Header y Footer globales) */
+html[data-theme="dark"] body.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
 html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
 html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #page-container #et-main-area #main-content .et_pb_section:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_section:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #main-content .et_pb_section:not(.no-dark-mode),
 html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
 html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
-body.aura-dark-theme.aura-system-page #page-container #et-main-area #main-content .et_pb_section:not(.no-dark-mode),
-body.aura-dark-theme.aura-system-page #et-boc .et-l .et_pb_section:not(.no-dark-mode),
-body.aura-dark-theme.aura-has-theme-toggle #page-container #et-main-area #main-content .et_pb_section:not(.no-dark-mode),
-body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l .et_pb_section:not(.no-dark-mode) {
-    background-color: var(--aura-theme-bg, #090d16) !important;
+body.aura-dark-theme.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #main-content .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l--body .et_pb_section:not(.no-dark-mode) {
+    background-color: var(--aura-theme-bg, #0e121a) !important;
     color: var(--aura-text-primary, #f8fafc) !important;
     border-color: var(--aura-border, #2e3d56) !important;
 }
 
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_row:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_column:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_row:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_column:not(.no-dark-mode),
-body.aura-dark-theme.aura-system-page #et-boc .et-l .et_pb_row:not(.no-dark-mode),
-body.aura-dark-theme.aura-system-page #et-boc .et-l .et_pb_column:not(.no-dark-mode),
-body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l .et_pb_row:not(.no-dark-mode),
-body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l .et_pb_column:not(.no-dark-mode) {
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_row:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_column:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_row:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_column:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_row:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_column:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_row:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_column:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #et-boc .et-l--post .et_pb_row:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #et-boc .et-l--post .et_pb_column:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #et-boc .et-l--body .et_pb_row:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #et-boc .et-l--body .et_pb_column:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l--post .et_pb_row:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l--post .et_pb_column:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l--body .et_pb_row:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l--body .et_pb_column:not(.no-dark-mode) {
     background-color: transparent !important;
 }
 
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_text_inner,
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_text_inner,
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_text_inner,
 html[data-theme="dark"] body.aura-system-page #main-content .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-system-page .entry-title,
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_text_inner,
+html[data-theme="dark"] body.aura-system-page #main-content .entry-title,
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_text_inner,
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_text_inner,
 html[data-theme="dark"] body.aura-has-theme-toggle #main-content .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-has-theme-toggle .entry-title,
-body.aura-dark-theme.aura-system-page .entry-title,
-body.aura-dark-theme.aura-has-theme-toggle .entry-title {
+html[data-theme="dark"] body.aura-has-theme-toggle #main-content .entry-title,
+body.aura-dark-theme.aura-system-page #main-content .entry-title,
+body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
     color: var(--aura-text-primary, #f8fafc) !important;
 }
 
@@ -2888,7 +2899,7 @@ body.aura-dark-theme.aura-has-theme-toggle .entry-title {
 .aura-dark-theme .aura-form-portal,
 .aura-dark-theme .aura-form-wrap {
     --af-surface: var(--aura-surface-card, #162032);
-    --af-bg: var(--aura-theme-bg, #090d16);
+    --af-bg: var(--aura-theme-bg, #0e121a);
     --af-border: var(--aura-border, #2e3d56);
     --af-text: var(--aura-text-primary, #f8fafc);
     --af-text-muted: var(--aura-text-muted, #94a3b8);
