@@ -12,6 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 <div class="aura-my-certificates">
 
+    <?php
+    if ( ! empty( $show_theme_toggle ) && class_exists( 'Aura_Page_Manager' ) ) {
+        echo Aura_Page_Manager::render_theme_toggle_bar(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    }
+    ?>
+
     <?php if ( empty( $grouped ) ) : ?>
         <div class="aura-my-certs-empty">
             <span class="aura-empty-icon">🏅</span>

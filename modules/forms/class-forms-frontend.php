@@ -59,22 +59,34 @@ class Aura_Forms_Frontend {
     // ─────────────────────────────────────────────────────────────
 
     public static function shortcode_portal( array $atts ): string {
+        $atts              = shortcode_atts( [ 'embedded' => '0' ], $atts, 'aura_form_portal' );
+        $show_theme_toggle = ( '1' !== (string) $atts['embedded'] && ! wp_doing_ajax() );
+        $toggle_bar        = ( $show_theme_toggle && class_exists( 'Aura_Page_Manager' ) )
+            ? Aura_Page_Manager::render_theme_toggle_bar()
+            : '';
+
+        if ( $show_theme_toggle && class_exists( 'Aura_Page_Manager' ) ) {
+            Aura_Page_Manager::enqueue_theme_assets( [ 'dashicons', 'aura-forms-frontend' ] );
+        }
+
         // ── 1. Autenticación ─────────────────────────────────────
         if ( ! is_user_logged_in() ) {
-            return '<p class="aura-form-notice aura-form-notice--login">' .
-                   wp_kses(
-                       sprintf(
-                           /* translators: %s login URL */
-                           __( 'Debes <a href="%s">iniciar sesión</a> para ver tus formularios.', 'aura-suite' ),
-                           esc_url( wp_login_url( get_permalink() ) )
-                       ),
-                       [ 'a' => [ 'href' => [] ] ]
-                   ) . '</p>';
+            $notice = '<p class="aura-form-notice aura-form-notice--login">' .
+                      wp_kses(
+                          sprintf(
+                              /* translators: %s login URL */
+                              __( 'Debes <a href="%s">iniciar sesión</a> para ver tus formularios.', 'aura-suite' ),
+                              esc_url( wp_login_url( get_permalink() ) )
+                          ),
+                          [ 'a' => [ 'href' => [] ] ]
+                      ) . '</p>';
+            return $show_theme_toggle ? '<div class="aura-form-portal">' . $toggle_bar . $notice . '</div>' : $notice;
         }
 
         if ( ! current_user_can( 'aura_students_view_own' ) && ! current_user_can( 'manage_options' ) ) {
-            return '<p class="aura-form-notice aura-form-notice--error">' .
-                   esc_html__( 'No tienes permiso para ver esta página.', 'aura-suite' ) . '</p>';
+            $notice = '<p class="aura-form-notice aura-form-notice--error">' .
+                      esc_html__( 'No tienes permiso para ver esta página.', 'aura-suite' ) . '</p>';
+            return $show_theme_toggle ? '<div class="aura-form-portal">' . $toggle_bar . $notice . '</div>' : $notice;
         }
 
         // ── 2. Cargar estudiante ─────────────────────────────────
@@ -87,8 +99,9 @@ class Aura_Forms_Frontend {
         );
 
         if ( ! $student_id ) {
-            return '<p class="aura-form-notice aura-form-notice--error">' .
-                   esc_html__( 'No se encontró tu perfil de estudiante.', 'aura-suite' ) . '</p>';
+            $notice = '<p class="aura-form-notice aura-form-notice--error">' .
+                      esc_html__( 'No se encontró tu perfil de estudiante.', 'aura-suite' ) . '</p>';
+            return $show_theme_toggle ? '<div class="aura-form-portal">' . $toggle_bar . $notice . '</div>' : $notice;
         }
 
         // ── 3. Encuestas pendientes ──────────────────────────────
@@ -114,7 +127,7 @@ class Aura_Forms_Frontend {
             foreach ( $pending_assignments as $assignment ) {
                 $form = self::load_form( (int) $assignment->form_id, '' );
                 $assignment->form_html = $form
-                    ? self::render_form( $form )
+                    ? self::render_form( $form, '', false )
                     : '<p class="aura-form-notice aura-form-notice--error">' .
                       esc_html__( 'Formulario no disponible.', 'aura-suite' ) . '</p>';
             }
@@ -188,7 +201,7 @@ class Aura_Forms_Frontend {
     <div class="afs-container">
         <?php
         if ( $form ) {
-            echo self::render_form( $form, '' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo self::render_form( $form, '', false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         } else {
             echo '<p class="aura-form-notice aura-form-notice--error">' .
                  esc_html__( 'Formulario no encontrado.', 'aura-suite' ) . '</p>';
@@ -243,7 +256,7 @@ class Aura_Forms_Frontend {
      * @param string $redirect URL de redirect override (opcional).
      * @return string HTML del formulario.
      */
-    public static function render_form( object $form, string $redirect = '' ): string {
+    public static function render_form( object $form, string $redirect = '', bool $show_theme_toggle = true ): string {
         // ── 1. Verificar estado del formulario ────────────────────
         if ( ! $form->is_active ) {
             return '<p class="aura-form-notice aura-form-notice--closed">' .
@@ -358,23 +371,8 @@ class Aura_Forms_Frontend {
             $ver
         );
 
-        if ( ! wp_style_is( 'aura-frontend-dark-mode', 'enqueued' ) ) {
-            wp_enqueue_style(
-                'aura-frontend-dark-mode',
-                AURA_PLUGIN_URL . 'assets/css/aura-frontend-dark-mode.css',
-                [ 'dashicons', 'aura-forms-frontend' ],
-                $ver
-            );
-        }
-
-        if ( ! wp_script_is( 'aura-frontend-theme', 'enqueued' ) ) {
-            wp_enqueue_script(
-                'aura-frontend-theme',
-                AURA_PLUGIN_URL . 'assets/js/aura-frontend-theme.js',
-                [],
-                $ver,
-                false
-            );
+        if ( class_exists( 'Aura_Page_Manager' ) ) {
+            Aura_Page_Manager::enqueue_theme_assets( [ 'dashicons', 'aura-forms-frontend' ] );
         }
 
         wp_enqueue_script(

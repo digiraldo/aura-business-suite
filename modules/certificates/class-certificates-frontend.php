@@ -36,10 +36,18 @@ class Aura_Certificates_Frontend {
      * @return string HTML de salida.
      */
     public static function shortcode_mis_certificados(): string {
+        if ( class_exists( 'Aura_Page_Manager' ) ) {
+            Aura_Page_Manager::enqueue_theme_assets( [ 'dashicons', 'aura-certificates-frontend' ] );
+        }
+        $show_theme_toggle = true;
+        $toggle_bar = ( $show_theme_toggle && class_exists( 'Aura_Page_Manager' ) )
+            ? Aura_Page_Manager::render_theme_toggle_bar()
+            : '';
+
         if ( ! is_user_logged_in() ) {
-            return '<div class="aura-notice aura-notice-warning"><p>' .
+            return '<div class="aura-my-certificates">' . $toggle_bar . '<div class="aura-notice aura-notice-warning"><p>' .
                    esc_html__( 'Debes iniciar sesión para ver tus certificados.', 'aura-suite' ) .
-                   '</p></div>';
+                   '</p></div></div>';
         }
 
         $wp_user_id = get_current_user_id();
@@ -76,9 +84,9 @@ class Aura_Certificates_Frontend {
         }
 
         if ( ! $student_id && empty( $certificates ) ) {
-            return '<div class="aura-notice"><p>' .
+            return '<div class="aura-my-certificates">' . $toggle_bar . '<div class="aura-notice"><p>' .
                    esc_html__( 'Aún no tienes certificados registrados en tu cuenta.', 'aura-suite' ) .
-                   '</p></div>';
+                   '</p></div></div>';
         }
 
         $grouped = [];
@@ -117,28 +125,38 @@ class Aura_Certificates_Frontend {
 
     public static function enqueue_frontend_assets(): void {
         global $post;
-        if ( ! $post || ! is_a( $post, 'WP_Post' ) ) return;
+        $is_verify = ! empty( get_query_var( 'aura_cert_verify' ) );
+        $has_sc    = false;
 
-        $has_sc = (
-            has_shortcode( $post->post_content, 'aura_portal' )          ||
-            has_shortcode( $post->post_content, 'aura_student_portal' )  ||
-            has_shortcode( $post->post_content, 'aura_mis_certificados' )||
-            has_shortcode( $post->post_content, 'aura_portal_estudiante' )
-        );
+        if ( $post && is_a( $post, 'WP_Post' ) ) {
+            $has_sc = (
+                has_shortcode( $post->post_content, 'aura_portal' )               ||
+                has_shortcode( $post->post_content, 'aura_student_portal' )       ||
+                has_shortcode( $post->post_content, 'aura_mis_certificados' )     ||
+                has_shortcode( $post->post_content, 'aura_verificar_certificado' )||
+                has_shortcode( $post->post_content, 'aura_portal_estudiante' )
+            );
+        }
 
-        if ( ! $has_sc ) {
+        if ( ! $has_sc && ! $is_verify ) {
             return;
         }
 
         $plugin_url     = defined( 'AURA_PLUGIN_URL' ) ? AURA_PLUGIN_URL : plugin_dir_url( dirname( dirname( __DIR__ ) ) . '/aura-business-suite.php' );
+        $plugin_dir     = defined( 'AURA_PLUGIN_DIR' ) ? AURA_PLUGIN_DIR : dirname( __DIR__, 2 ) . '/';
         $plugin_version = defined( 'AURA_VERSION' ) ? AURA_VERSION : ( defined( 'AURA_SUITE_VERSION' ) ? AURA_SUITE_VERSION : '1.0.0' );
+        $css_ver        = file_exists( $plugin_dir . 'assets/css/certificates.css' ) ? $plugin_version . '.' . filemtime( $plugin_dir . 'assets/css/certificates.css' ) : $plugin_version;
 
         wp_enqueue_style(
             'aura-certificates-frontend',
             $plugin_url . 'assets/css/certificates.css',
             [],
-            $plugin_version
+            $css_ver
         );
+
+        if ( class_exists( 'Aura_Page_Manager' ) ) {
+            Aura_Page_Manager::enqueue_theme_assets( [ 'dashicons', 'aura-certificates-frontend' ] );
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -200,6 +218,7 @@ class Aura_Certificates_Frontend {
             ];
         }
 
+        $show_theme_toggle = false;
         $template = defined( 'AURA_PLUGIN_DIR' )
             ? AURA_PLUGIN_DIR . 'templates/certificates/frontend/my-certificates.php'
             : plugin_dir_path( dirname( __DIR__ ) . '/templates/' ) . '../templates/certificates/frontend/my-certificates.php';

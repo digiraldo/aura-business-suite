@@ -21,6 +21,12 @@ $completed_count = is_array( $completed_assignments ) ? count( $completed_assign
 ?>
 <div class="aura-form-portal" id="aura-form-portal">
 
+    <?php
+    if ( ( ! isset( $show_theme_toggle ) || $show_theme_toggle ) && class_exists( 'Aura_Page_Manager' ) ) {
+        echo Aura_Page_Manager::render_theme_toggle_bar(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    }
+    ?>
+
     <?php if ( $pending_count === 0 && $completed_count === 0 ) : ?>
         <div class="aura-form-portal__empty">
             <span class="aura-form-portal__empty-icon">✅</span>

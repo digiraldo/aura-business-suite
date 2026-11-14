@@ -20,6 +20,12 @@ $primary_css = esc_attr( $form->primary_color ?: '#2563eb' );
 <div class="aura-form-wrap" id="aura-form-<?php echo esc_attr( $form->id ); ?>"
      style="--af-primary: <?php echo $primary_css; ?>;">
 
+    <?php
+    if ( ( ! isset( $show_theme_toggle ) || $show_theme_toggle ) && class_exists( 'Aura_Page_Manager' ) ) {
+        echo Aura_Page_Manager::render_theme_toggle_bar(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    }
+    ?>
+
     <?php // ── Cabecera del formulario ──────────────────────────── ?>
     <div class="aura-form-header">
         <?php if ( $form->logo_url ) : ?>

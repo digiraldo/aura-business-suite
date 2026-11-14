@@ -88,23 +88,8 @@ class Aura_Students_Frontend {
         );
 
         // Cargar Estilos de Modo Oscuro y Tema en Frontend
-        if ( ! wp_style_is( 'aura-frontend-dark-mode', 'enqueued' ) ) {
-            wp_enqueue_style(
-                'aura-frontend-dark-mode',
-                AURA_PLUGIN_URL . 'assets/css/aura-frontend-dark-mode.css',
-                [ 'dashicons', 'aura-students-frontend' ],
-                AURA_VERSION
-            );
-        }
-
-        if ( ! wp_script_is( 'aura-frontend-theme', 'enqueued' ) ) {
-            wp_enqueue_script(
-                'aura-frontend-theme',
-                AURA_PLUGIN_URL . 'assets/js/aura-frontend-theme.js',
-                [],
-                AURA_VERSION,
-                false
-            );
+        if ( class_exists( 'Aura_Page_Manager' ) ) {
+            Aura_Page_Manager::enqueue_theme_assets( [ 'dashicons', 'aura-students-frontend' ] );
         }
 
         wp_register_script(
@@ -282,10 +267,20 @@ class Aura_Students_Frontend {
     // ─────────────────────────────────────────────────────────────
 
     public static function shortcode_paz_salvo_check( array $atts ): string {
+        if ( class_exists( 'Aura_Page_Manager' ) ) {
+            Aura_Page_Manager::enqueue_theme_assets( [ 'dashicons', 'aura-students-frontend' ] );
+        }
         ob_start();
         ?>
         <div class="aura-paz-salvo-check">
-            <h3><?php esc_html_e( 'Verificar Estado de Paz y Salvo', 'aura-suite' ); ?></h3>
+            <div class="aura-paz-salvo-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+                <h3 style="margin:0;"><?php esc_html_e( 'Verificar Estado de Paz y Salvo', 'aura-suite' ); ?></h3>
+                <?php
+                if ( class_exists( 'Aura_Page_Manager' ) ) {
+                    echo Aura_Page_Manager::render_theme_toggle(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                }
+                ?>
+            </div>
             <div class="aura-ps-form">
                 <input type="email" id="aura-ps-email" placeholder="<?php esc_attr_e( 'Tu correo electrónico', 'aura-suite' ); ?>" class="aura-input aura-input-full" />
                 <button id="aura-ps-btn" class="aura-btn aura-btn-primary">
@@ -665,7 +660,7 @@ class Aura_Students_Frontend {
             wp_send_json_error( [ 'message' => __( 'El módulo de formularios no está disponible.', 'aura-suite' ) ] );
         }
 
-        $html = Aura_Forms_Frontend::shortcode_portal( [] );
+        $html = Aura_Forms_Frontend::shortcode_portal( [ 'embedded' => '1' ] );
         wp_send_json_success( [ 'html' => $html ] );
     }
 

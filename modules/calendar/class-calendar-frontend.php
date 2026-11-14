@@ -70,23 +70,8 @@ class Aura_Calendar_Frontend {
         }
 
         // Cargar Estilos de Modo Oscuro y Tema en Frontend
-        if ( ! wp_style_is( 'aura-frontend-dark-mode', 'enqueued' ) ) {
-            wp_enqueue_style(
-                'aura-frontend-dark-mode',
-                AURA_PLUGIN_URL . 'assets/css/aura-frontend-dark-mode.css',
-                [ 'dashicons', 'aura-design-system' ],
-                AURA_VERSION
-            );
-        }
-
-        if ( ! wp_script_is( 'aura-frontend-theme', 'enqueued' ) ) {
-            wp_enqueue_script(
-                'aura-frontend-theme',
-                AURA_PLUGIN_URL . 'assets/js/aura-frontend-theme.js',
-                [],
-                AURA_VERSION,
-                false
-            );
+        if ( class_exists( 'Aura_Page_Manager' ) ) {
+            Aura_Page_Manager::enqueue_theme_assets( [ 'dashicons', 'aura-design-system' ] );
         }
 
         // Cargar FullCalendar para los portales y vistas de calendario en frontend
@@ -2824,6 +2809,10 @@ class Aura_Calendar_Frontend {
                         <span><?php esc_html_e( 'Mi Calendario de Clases y Actividades', 'aura' ); ?></span>
                     </h3>
                     <div class="aura-calendar-top-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" class="aura-theme-toggle" aria-label="<?php esc_attr_e( 'Cambiar tema', 'aura' ); ?>">
+                            <span class="dashicons dashicons-moon"></span>
+                            <span class="aura-theme-toggle-label"><?php esc_html_e( 'Modo oscuro', 'aura' ); ?></span>
+                        </button>
                         <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-student-fullscreen" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 4px 10px; border-radius: 6px; font-size: 12px;">
                             <span class="dashicons dashicons-editor-expand" style="font-size: 16px; width: 16px; height: 16px;"></span> <span class="fs-text"><?php esc_html_e( 'Pantalla Completa', 'aura' ); ?></span>
                         </button>

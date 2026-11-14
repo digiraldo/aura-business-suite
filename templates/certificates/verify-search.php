@@ -8,6 +8,11 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 <div class="aura-cert-verify-wrap">
+    <?php
+    if ( class_exists( 'Aura_Page_Manager' ) ) {
+        echo Aura_Page_Manager::render_theme_toggle_bar(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    }
+    ?>
     <div class="aura-cert-verify-search">
         <h2><?php esc_html_e( 'Verificar Certificado', 'aura-suite' ); ?></h2>
         <p><?php esc_html_e( 'Ingresa el folio del certificado para comprobar su autenticidad.', 'aura-suite' ); ?></p>

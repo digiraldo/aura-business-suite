@@ -11,6 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
 <div class="aura-cert-verify-wrap">
 
+    <?php
+    if ( class_exists( 'Aura_Page_Manager' ) ) {
+        echo Aura_Page_Manager::render_theme_toggle_bar(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    }
+    ?>
+
     <?php if ( is_null( $cert ?? null ) ) : ?>
         <!-- No encontrado -->
         <div class="aura-cert-verify-card aura-cert-verify-card--notfound">

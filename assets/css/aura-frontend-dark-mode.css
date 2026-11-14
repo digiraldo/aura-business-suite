@@ -2702,11 +2702,22 @@ body.aura-dark-mode .aura-teacher-portal .fc .fc-timegrid-allday {
    ══════════════════════════════════════════════════════════════════ */
 body.aura-system-page,
 body.aura-system-page #page-container,
+body.aura-system-page #et-main-area,
 body.aura-system-page #main-content,
+body.aura-system-page #content-area,
 body.aura-system-page #left-area,
 body.aura-system-page .entry-content,
 body.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
-body.aura-system-page .et-l--post .et_pb_section:not(.no-dark-mode) {
+body.aura-system-page #et-boc .et-l .et_pb_section:not(.no-dark-mode),
+body.aura-has-theme-toggle,
+body.aura-has-theme-toggle #page-container,
+body.aura-has-theme-toggle #et-main-area,
+body.aura-has-theme-toggle #main-content,
+body.aura-has-theme-toggle #content-area,
+body.aura-has-theme-toggle #left-area,
+body.aura-has-theme-toggle .entry-content,
+body.aura-has-theme-toggle #main-content .et_pb_section:not(.no-dark-mode),
+body.aura-has-theme-toggle #et-boc .et-l .et_pb_section:not(.no-dark-mode) {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -2723,35 +2734,217 @@ body.aura-system-page.aura-divi-no-sidebar #main-content .container::before {
     display: none !important;
 }
 
-/* Modo Oscuro automático en contenedores Divi / WordPress de páginas del sistema */
+/* Modo Oscuro automático en contenedores Divi 4 / WordPress */
 html[data-theme="dark"] body.aura-system-page,
+html[data-theme="dark"] body.aura-system-page.custom-background,
 html[data-theme="dark"] body.aura-system-page #page-container,
+html[data-theme="dark"] body.aura-system-page #et-main-area,
 html[data-theme="dark"] body.aura-system-page #main-content,
+html[data-theme="dark"] body.aura-system-page #content-area,
 html[data-theme="dark"] body.aura-system-page #left-area,
+html[data-theme="dark"] body.aura-system-page article.page,
+html[data-theme="dark"] body.aura-system-page article.et_pb_post,
 html[data-theme="dark"] body.aura-system-page .entry-content,
+html[data-theme="dark"] body.aura-has-theme-toggle,
+html[data-theme="dark"] body.aura-has-theme-toggle.custom-background,
+html[data-theme="dark"] body.aura-has-theme-toggle #page-container,
+html[data-theme="dark"] body.aura-has-theme-toggle #et-main-area,
+html[data-theme="dark"] body.aura-has-theme-toggle #main-content,
+html[data-theme="dark"] body.aura-has-theme-toggle #content-area,
+html[data-theme="dark"] body.aura-has-theme-toggle #left-area,
+html[data-theme="dark"] body.aura-has-theme-toggle article.page,
+html[data-theme="dark"] body.aura-has-theme-toggle article.et_pb_post,
+html[data-theme="dark"] body.aura-has-theme-toggle .entry-content,
 body.aura-dark-theme.aura-system-page,
+body.aura-dark-theme.aura-system-page.custom-background,
 body.aura-dark-theme.aura-system-page #page-container,
+body.aura-dark-theme.aura-system-page #et-main-area,
 body.aura-dark-theme.aura-system-page #main-content,
+body.aura-dark-theme.aura-system-page #content-area,
 body.aura-dark-theme.aura-system-page #left-area,
-body.aura-dark-theme.aura-system-page .entry-content {
+body.aura-dark-theme.aura-system-page .entry-content,
+body.aura-dark-theme.aura-has-theme-toggle,
+body.aura-dark-theme.aura-has-theme-toggle.custom-background,
+body.aura-dark-theme.aura-has-theme-toggle #page-container,
+body.aura-dark-theme.aura-has-theme-toggle #et-main-area,
+body.aura-dark-theme.aura-has-theme-toggle #main-content,
+body.aura-dark-theme.aura-has-theme-toggle #content-area,
+body.aura-dark-theme.aura-has-theme-toggle #left-area,
+body.aura-dark-theme.aura-has-theme-toggle .entry-content {
     background-color: var(--aura-theme-bg, #090d16) !important;
     color: var(--aura-text-primary, #f8fafc) !important;
 }
 
-html[data-theme="dark"] body.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-system-page .et-l--post .et_pb_section:not(.no-dark-mode),
-body.aura-dark-theme.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
-body.aura-dark-theme.aura-system-page .et-l--post .et_pb_section:not(.no-dark-mode) {
-    background-color: var(--aura-surface-card, #162032) !important;
+/* Alta especificidad para secciones/filas/columnas de Divi 4 Visual Builder */
+html[data-theme="dark"] body.aura-system-page #page-container #et-main-area #main-content .et_pb_section:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_section:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #page-container #et-main-area #main-content .et_pb_section:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_section:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #page-container #et-main-area #main-content .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #et-boc .et-l .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #page-container #et-main-area #main-content .et_pb_section:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l .et_pb_section:not(.no-dark-mode) {
+    background-color: var(--aura-theme-bg, #090d16) !important;
     color: var(--aura-text-primary, #f8fafc) !important;
     border-color: var(--aura-border, #2e3d56) !important;
 }
 
-html[data-theme="dark"] body.aura-system-page .et-l--post .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_row:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_column:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_row:not(.no-dark-mode),
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_column:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #et-boc .et-l .et_pb_row:not(.no-dark-mode),
+body.aura-dark-theme.aura-system-page #et-boc .et-l .et_pb_column:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l .et_pb_row:not(.no-dark-mode),
+body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l .et_pb_column:not(.no-dark-mode) {
+    background-color: transparent !important;
+}
+
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-system-page #et-boc .et-l .et_pb_text_inner,
 html[data-theme="dark"] body.aura-system-page #main-content .et_pb_module.et_pb_text,
 html[data-theme="dark"] body.aura-system-page .entry-title,
-body.aura-dark-theme.aura-system-page .et-l--post .et_pb_module.et_pb_text,
-body.aura-dark-theme.aura-system-page #main-content .et_pb_module.et_pb_text,
-body.aura-dark-theme.aura-system-page .entry-title {
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l .et_pb_text_inner,
+html[data-theme="dark"] body.aura-has-theme-toggle #main-content .et_pb_module.et_pb_text,
+html[data-theme="dark"] body.aura-has-theme-toggle .entry-title,
+body.aura-dark-theme.aura-system-page .entry-title,
+body.aura-dark-theme.aura-has-theme-toggle .entry-title {
     color: var(--aura-text-primary, #f8fafc) !important;
+}
+
+/* ── MODO OSCURO: PAZ Y SALVO, CERTIFICADOS Y FORMULARIOS ─────── */
+[data-theme="dark"] .aura-paz-salvo-check,
+.aura-dark-theme .aura-paz-salvo-check {
+    background: var(--aura-surface-card, #162032);
+    border: 1px solid var(--aura-border, #2e3d56);
+    border-radius: 12px;
+    padding: 20px;
+    color: var(--aura-text-primary, #f8fafc);
+}
+[data-theme="dark"] .aura-paz-salvo-check h3,
+.aura-dark-theme .aura-paz-salvo-check h3 {
+    color: var(--aura-text-primary, #f8fafc);
+}
+
+[data-theme="dark"] .aura-cert-verify-card,
+[data-theme="dark"] .aura-cert-verify-search,
+[data-theme="dark"] .aura-my-cert-card,
+.aura-dark-theme .aura-cert-verify-card,
+.aura-dark-theme .aura-cert-verify-search,
+.aura-dark-theme .aura-my-cert-card {
+    background: var(--aura-surface-card, #162032) !important;
+    border-color: var(--aura-border, #2e3d56) !important;
+    color: var(--aura-text-primary, #f8fafc) !important;
+}
+[data-theme="dark"] .aura-cert-verify-card h2,
+[data-theme="dark"] .aura-cert-verify-search h2,
+[data-theme="dark"] .aura-cert-verify-search h3,
+[data-theme="dark"] .aura-my-cert-course,
+.aura-dark-theme .aura-cert-verify-card h2,
+.aura-dark-theme .aura-cert-verify-search h2,
+.aura-dark-theme .aura-cert-verify-search h3,
+.aura-dark-theme .aura-my-cert-course {
+    color: var(--aura-text-primary, #f8fafc) !important;
+}
+[data-theme="dark"] .aura-cert-verify-data,
+[data-theme="dark"] .aura-cert-verify-row,
+.aura-dark-theme .aura-cert-verify-data,
+.aura-dark-theme .aura-cert-verify-row {
+    border-color: var(--aura-border, #2e3d56) !important;
+}
+[data-theme="dark"] .aura-cert-verify-label,
+.aura-dark-theme .aura-cert-verify-label {
+    background: var(--aura-surface-alt, #1e293b) !important;
+    color: var(--aura-text-muted, #94a3b8) !important;
+}
+[data-theme="dark"] .aura-cert-verify-value,
+[data-theme="dark"] .aura-cert-verify-search p,
+[data-theme="dark"] .aura-my-certs-program,
+[data-theme="dark"] .aura-my-cert-meta,
+[data-theme="dark"] .aura-my-certs-empty,
+[data-theme="dark"] .aura-cert-verify-footer,
+.aura-dark-theme .aura-cert-verify-value,
+.aura-dark-theme .aura-cert-verify-search p,
+.aura-dark-theme .aura-my-certs-program,
+.aura-dark-theme .aura-my-cert-meta,
+.aura-dark-theme .aura-my-certs-empty,
+.aura-dark-theme .aura-cert-verify-footer {
+    color: var(--aura-text-secondary, #cbd5e1) !important;
+}
+[data-theme="dark"] .aura-my-cert-actions .aura-btn-outline,
+.aura-dark-theme .aura-my-cert-actions .aura-btn-outline {
+    background: var(--aura-surface-alt, #1e293b) !important;
+    border-color: var(--aura-border, #2e3d56) !important;
+    color: var(--aura-text-primary, #f8fafc) !important;
+}
+
+[data-theme="dark"] .aura-form-portal,
+[data-theme="dark"] .aura-form-wrap,
+.aura-dark-theme .aura-form-portal,
+.aura-dark-theme .aura-form-wrap {
+    --af-surface: var(--aura-surface-card, #162032);
+    --af-bg: var(--aura-theme-bg, #090d16);
+    --af-border: var(--aura-border, #2e3d56);
+    --af-text: var(--aura-text-primary, #f8fafc);
+    --af-text-muted: var(--aura-text-muted, #94a3b8);
+    color: var(--aura-text-primary, #f8fafc);
+}
+[data-theme="dark"] .aura-portal-card,
+[data-theme="dark"] .aura-form-portal__empty,
+[data-theme="dark"] .aura-form-wrap .aura-form,
+[data-theme="dark"] .aura-form-success,
+.aura-dark-theme .aura-portal-card,
+.aura-dark-theme .aura-form-portal__empty,
+.aura-dark-theme .aura-form-wrap .aura-form,
+.aura-dark-theme .aura-form-success {
+    background: var(--aura-surface-card, #162032) !important;
+    border-color: var(--aura-border, #2e3d56) !important;
+    color: var(--aura-text-primary, #f8fafc) !important;
+}
+[data-theme="dark"] .aura-portal-card__title,
+[data-theme="dark"] .aura-portal-section__title,
+[data-theme="dark"] .aura-form-title,
+[data-theme="dark"] .aura-form-wrap label,
+.aura-dark-theme .aura-portal-card__title,
+.aura-dark-theme .aura-portal-section__title,
+.aura-dark-theme .aura-form-title,
+.aura-dark-theme .aura-form-wrap label {
+    color: var(--aura-text-primary, #f8fafc) !important;
+}
+[data-theme="dark"] .aura-portal-card__desc,
+[data-theme="dark"] .aura-portal-card__meta,
+[data-theme="dark"] .aura-form-description,
+[data-theme="dark"] .aura-form-company,
+.aura-dark-theme .aura-portal-card__desc,
+.aura-dark-theme .aura-portal-card__meta,
+.aura-dark-theme .aura-form-description,
+.aura-dark-theme .aura-form-company {
+    color: var(--aura-text-secondary, #cbd5e1) !important;
+}
+[data-theme="dark"] .aura-form-wrap input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+[data-theme="dark"] .aura-form-wrap textarea,
+[data-theme="dark"] .aura-form-wrap select,
+[data-theme="dark"] .aura-cert-verify-search input,
+[data-theme="dark"] .aura-paz-salvo-check input,
+.aura-dark-theme .aura-form-wrap input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+.aura-dark-theme .aura-form-wrap textarea,
+.aura-dark-theme .aura-form-wrap select,
+.aura-dark-theme .aura-cert-verify-search input,
+.aura-dark-theme .aura-paz-salvo-check input {
+    background: var(--aura-surface-alt, #1e293b) !important;
+    border-color: var(--aura-border, #2e3d56) !important;
+    color: var(--aura-text-primary, #f8fafc) !important;
+}
+[data-theme="dark"] .aura-form-notice--closed,
+[data-theme="dark"] .aura-form-notice--login,
+.aura-dark-theme .aura-form-notice--closed,
+.aura-dark-theme .aura-form-notice--login {
+    background: var(--aura-surface-alt, #1e293b) !important;
+    border-color: var(--aura-border, #2e3d56) !important;
+    color: var(--aura-text-secondary, #cbd5e1) !important;
 }

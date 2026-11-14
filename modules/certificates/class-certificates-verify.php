@@ -57,6 +57,9 @@ class Aura_Certificates_Verify {
      * O si no se provee folio, muestra un formulario de búsqueda.
      */
     public static function shortcode_verificar( array $atts ): string {
+        if ( class_exists( 'Aura_Page_Manager' ) ) {
+            Aura_Page_Manager::enqueue_theme_assets( [ 'dashicons', 'aura-certificates-frontend' ] );
+        }
         $atts  = shortcode_atts( [ 'folio' => '' ], $atts );
         $folio = sanitize_text_field( $atts['folio'] );
 

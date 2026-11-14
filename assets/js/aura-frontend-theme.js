@@ -57,6 +57,9 @@
             } else {
                 body.classList.remove('aura-dark-theme');
             }
+            if (document.querySelector('.aura-theme-toggle')) {
+                body.classList.add('aura-has-theme-toggle');
+            }
         }
 
         // Guardar preferencia
@@ -138,16 +141,30 @@
         }
     }
 
-    // Al cargar el DOM, vincular botones existentes
-    document.addEventListener('DOMContentLoaded', function () {
-        applyTheme(initialTheme);
-
+    // Vincular clic delegado inmediatamente (funciona aunque el script cargue antes o después de DOMContentLoaded)
+    if (!window.__auraThemeClickBound) {
+        window.__auraThemeClickBound = true;
         document.addEventListener('click', function (e) {
-            var toggleBtn = e.target.closest('.aura-theme-toggle');
+            var target = e.target;
+            if (!target) {
+                return;
+            }
+            var el = target.nodeType === 1 ? target : target.parentElement;
+            var toggleBtn = el && el.closest ? el.closest('.aura-theme-toggle') : null;
             if (toggleBtn) {
                 e.preventDefault();
                 toggleTheme();
             }
         });
-    });
+    }
+
+    function syncThemeOnReady() {
+        applyTheme(getStoredTheme());
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', syncThemeOnReady);
+    } else {
+        syncThemeOnReady();
+    }
 })();

@@ -34,7 +34,7 @@ class Aura_Page_Manager {
 
         if ( ! is_admin() ) {
             add_filter( 'body_class', [ __CLASS__, 'filter_system_body_class' ], 20 );
-            add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_system_page_theme' ], 25 );
+            add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_system_page_theme' ], 999 );
         }
     }
 
@@ -245,10 +245,14 @@ class Aura_Page_Manager {
     }
 
     /**
-     * Determina si la petición frontend actual corresponde a una página del sistema Aura.
+     * Determina si la petición frontend actual corresponde a una página del sistema Aura
+     * o a una vista/shortcode público del plugin.
      */
     public static function is_current_system_page(): bool {
-        if ( ! is_page() ) {
+        if ( function_exists( 'get_query_var' ) && ! empty( get_query_var( 'aura_cert_verify' ) ) ) {
+            return true;
+        }
+        if ( ! is_page() && ! is_singular() ) {
             return false;
         }
         $post = get_queried_object();
@@ -261,8 +265,21 @@ class Aura_Page_Manager {
         if ( '1' === (string) get_post_meta( $post->ID, '_aura_system_page', true ) ) {
             return true;
         }
+        $tags = [];
         foreach ( self::registry() as $def ) {
-            if ( ! empty( $def['tag'] ) && has_shortcode( $post->post_content, $def['tag'] ) ) {
+            if ( ! empty( $def['tag'] ) ) {
+                $tags[] = $def['tag'];
+            }
+        }
+        $tags = array_unique( array_merge( $tags, [
+            'aura_student_login',
+            'aura_community_login',
+            'aura_student_portal',
+            'aura_portal_estudiante',
+            'aura_form',
+        ] ) );
+        foreach ( $tags as $tag ) {
+            if ( has_shortcode( $post->post_content, $tag ) ) {
                 return true;
             }
         }
@@ -289,15 +306,45 @@ class Aura_Page_Manager {
     }
 
     /**
-     * Garantiza que todas las páginas del sistema (incluyendo Certificados y Paz y Salvo)
-     * carguen los estilos de modo claro/oscuro y el script conmutador de tema.
+     * Devuelve el HTML estándar del botón conmutador de modo claro/oscuro (.aura-theme-toggle).
      */
-    public static function enqueue_system_page_theme(): void {
-        if ( ! self::is_current_system_page() ) {
-            return;
-        }
-        $plugin_url = defined( 'AURA_PLUGIN_URL' ) ? AURA_PLUGIN_URL : plugin_dir_url( dirname( __DIR__ ) . '/aura-business-suite.php' );
-        $version    = defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0';
+    public static function render_theme_toggle( string $label = '', string $extra_class = '' ): string {
+        $text  = '' !== $label ? $label : __( 'Modo oscuro', 'aura-suite' );
+        $class = trim( 'aura-theme-toggle ' . $extra_class );
+        return sprintf(
+            '<button type="button" class="%s" aria-label="%s"><span class="dashicons dashicons-moon"></span> <span class="aura-theme-toggle-label">%s</span></button>',
+            esc_attr( $class ),
+            esc_attr__( 'Cambiar tema', 'aura-suite' ),
+            esc_html( $text )
+        );
+    }
+
+    /**
+     * Devuelve una barra superior alineada a la derecha con el botón .aura-theme-toggle.
+     */
+    public static function render_theme_toggle_bar( string $label = '', string $margin = '0 0 14px 0' ): string {
+        return sprintf(
+            '<div class="aura-theme-toggle-bar" style="display:flex;justify-content:flex-end;align-items:center;margin:%s;">%s</div>',
+            esc_attr( $margin ),
+            self::render_theme_toggle( $label )
+        );
+    }
+
+    /**
+     * Encola los assets del conmutador de tema claro/oscuro con versionado por filemtime()
+     * para evitar caché obsoleta y asegurar precedencia sobre estilos de tema/Divi.
+     *
+     * @param string[] $style_deps Dependencias CSS adicionales.
+     */
+    public static function enqueue_theme_assets( array $style_deps = [ 'dashicons' ] ): void {
+        $plugin_dir = defined( 'AURA_PLUGIN_DIR' ) ? AURA_PLUGIN_DIR : dirname( __DIR__, 2 ) . '/';
+        $plugin_url = defined( 'AURA_PLUGIN_URL' ) ? AURA_PLUGIN_URL : plugin_dir_url( $plugin_dir . 'aura-business-suite.php' );
+        $base_ver   = defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0';
+
+        $css_file = $plugin_dir . 'assets/css/aura-frontend-dark-mode.css';
+        $js_file  = $plugin_dir . 'assets/js/aura-frontend-theme.js';
+        $css_ver  = file_exists( $css_file ) ? $base_ver . '.' . filemtime( $css_file ) : $base_ver;
+        $js_ver   = file_exists( $js_file ) ? $base_ver . '.' . filemtime( $js_file ) : $base_ver;
 
         if ( ! wp_style_is( 'dashicons', 'enqueued' ) ) {
             wp_enqueue_style( 'dashicons' );
@@ -306,8 +353,8 @@ class Aura_Page_Manager {
             wp_enqueue_style(
                 'aura-frontend-dark-mode',
                 $plugin_url . 'assets/css/aura-frontend-dark-mode.css',
-                [ 'dashicons' ],
-                $version
+                array_values( array_unique( array_merge( [ 'dashicons' ], $style_deps ) ) ),
+                $css_ver
             );
         }
         if ( ! wp_script_is( 'aura-frontend-theme', 'enqueued' ) ) {
@@ -315,10 +362,21 @@ class Aura_Page_Manager {
                 'aura-frontend-theme',
                 $plugin_url . 'assets/js/aura-frontend-theme.js',
                 [],
-                $version,
+                $js_ver,
                 false
             );
         }
+    }
+
+    /**
+     * Garantiza que todas las páginas del sistema (incluyendo Certificados y Paz y Salvo)
+     * carguen los estilos de modo claro/oscuro y el script conmutador de tema.
+     */
+    public static function enqueue_system_page_theme(): void {
+        if ( ! self::is_current_system_page() ) {
+            return;
+        }
+        self::enqueue_theme_assets();
     }
 
     /**

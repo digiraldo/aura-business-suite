@@ -23,6 +23,12 @@ $type_labels = [
 ?>
 <div class="aura-portal-wrap aura-enroll-wrap">
 
+    <?php
+    if ( class_exists( 'Aura_Page_Manager' ) ) {
+        echo Aura_Page_Manager::render_theme_toggle_bar(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    }
+    ?>
+
     <?php if ( $rate_blocked ) : ?>
         <div class="aura-notice-front aura-notice-error">
             <?php esc_html_e( 'Has enviado demasiadas solicitudes. Por favor espera 24 horas antes de intentarlo nuevamente.', 'aura-suite' ); ?>
