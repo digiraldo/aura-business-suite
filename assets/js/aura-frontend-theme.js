@@ -9,6 +9,23 @@
     'use strict';
 
     var STORAGE_KEY = 'aura_frontend_theme';
+    var AURA_CONTAINER_SELECTOR = [
+        '.aura-portal-wrap',
+        '.aura-login-wrap',
+        '.aura-student-schedule-wrap',
+        '.aura-enroll-wrap',
+        '.aura-teacher-portal',
+        '.aura-calendar-wrapper',
+        '.aura-my-certs-wrap',
+        '.aura-cert-verify-card',
+        '.aura-cert-verify-search',
+        '.aura-paz-salvo-check',
+        '.aura-form-portal',
+        '.aura-form-wrap',
+        '.aura-modal-overlay',
+        '#modal-student-event-detail',
+        '#aura-cal-event-tooltip'
+    ].join(', ');
 
     /**
      * Obtener tema actual guardado o preferencia del sistema
@@ -34,7 +51,8 @@
     }
 
     /**
-     * Aplicar tema al DOM
+     * Aplicar tema exclusivamente a los contenedores de Aura (sin tocar data-theme global en html/body
+     * para no alterar encabezados, barra de navegación, carrito ni footer del sitio).
      */
     function applyTheme(theme) {
         var isDark = theme === 'dark';
@@ -42,7 +60,7 @@
         var body = document.body;
 
         if (root) {
-            root.setAttribute('data-theme', theme);
+            root.setAttribute('data-aura-theme', theme);
             if (isDark) {
                 root.classList.add('aura-dark-theme');
             } else {
@@ -51,7 +69,7 @@
         }
 
         if (body) {
-            body.setAttribute('data-theme', theme);
+            body.setAttribute('data-aura-theme', theme);
             if (isDark) {
                 body.classList.add('aura-dark-theme');
             } else {
@@ -61,6 +79,18 @@
                 body.classList.add('aura-has-theme-toggle');
             }
         }
+
+        try {
+            document.querySelectorAll(AURA_CONTAINER_SELECTOR).forEach(function (el) {
+                el.setAttribute('data-aura-theme', theme);
+                el.setAttribute('data-theme', theme);
+                if (isDark) {
+                    el.classList.add('aura-dark-theme');
+                } else {
+                    el.classList.remove('aura-dark-theme');
+                }
+            });
+        } catch (e) {}
 
         // Guardar preferencia
         try {
@@ -116,7 +146,7 @@
      * Alternar entre tema claro y oscuro
      */
     function toggleTheme() {
-        var current = (document.documentElement.getAttribute('data-theme') === 'dark') ? 'dark' : 'light';
+        var current = (document.documentElement.getAttribute('data-aura-theme') === 'dark' || document.documentElement.classList.contains('aura-dark-theme')) ? 'dark' : 'light';
         var next = current === 'dark' ? 'light' : 'dark';
         applyTheme(next);
         return next;
@@ -125,17 +155,17 @@
     // Exponer API global
     window.AuraTheme = {
         getTheme: function () {
-            return document.documentElement.getAttribute('data-theme') || getStoredTheme();
+            return document.documentElement.getAttribute('data-aura-theme') || getStoredTheme();
         },
         setTheme: applyTheme,
         toggle: toggleTheme
     };
     window.AuraToggleTheme = toggleTheme;
 
-    // Ejecución inmediata para evitar FOUC
+    // Ejecución inmediata para evitar FOUC usando solo namespace exclusivo de Aura
     var initialTheme = getStoredTheme();
     if (document.documentElement) {
-        document.documentElement.setAttribute('data-theme', initialTheme);
+        document.documentElement.setAttribute('data-aura-theme', initialTheme);
         if (initialTheme === 'dark') {
             document.documentElement.classList.add('aura-dark-theme');
         }

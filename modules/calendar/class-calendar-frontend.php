@@ -828,10 +828,14 @@ class Aura_Calendar_Frontend {
                 box-sizing: border-box;
             }
 
+            [data-aura-theme="dark"] .avatar-stack .avatar,
+            .aura-dark-theme .avatar-stack .avatar,
             [data-theme="dark"] .avatar-stack .avatar,
             body.aura-dark-mode .avatar-stack .avatar {
                 border-color: var(--at-bg-card, #1e293b);
             }
+            [data-aura-theme="dark"] .avatar-stack .avatar-overflow,
+            .aura-dark-theme .avatar-stack .avatar-overflow,
             [data-theme="dark"] .avatar-stack .avatar-overflow,
             body.aura-dark-mode .avatar-stack .avatar-overflow {
                 background: #1e293b;

@@ -52,8 +52,7 @@
     letter-spacing: 0.01em;
 }
 
-/* Glifos y soporte visual para dashicons-moon (no existe nativo en Dashicons) y dashicons-lightbulb */
-.dashicons-moon:before,
+/* Glifos y soporte visual para dashicons-moon (exclusivo de .aura-theme-toggle) y dashicons-lightbulb */
 .aura-theme-toggle .dashicons-moon:before {
     content: "🌙" !important;
     font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
@@ -73,8 +72,9 @@
 
 /* ── VARIABLES MODO CLARO (DEFAULT) ────────────────────────────── */
 :root,
-html[data-theme="light"],
-body[data-theme="light"] {
+html[data-aura-theme="light"],
+body[data-aura-theme="light"],
+[data-aura-theme="light"] {
     --aura-theme-bg: #f8fafc;
     --aura-theme-surface: #ffffff;
     --aura-theme-surface-card: #ffffff;
@@ -99,11 +99,11 @@ body[data-theme="light"] {
     --aura-toggle-border: #cbd5e1;
 }
 
-/* ── VARIABLES MODO OSCURO FRONTEND ────────────────────────────── */
-html[data-theme="dark"],
-body[data-theme="dark"],
+/* ── VARIABLES MODO OSCURO FRONTEND (EXCLUSIVAS DE AURA) ────────── */
+html[data-aura-theme="dark"],
+body[data-aura-theme="dark"],
 .aura-dark-theme,
-[data-theme="dark"] {
+[data-aura-theme="dark"] {
     --aura-theme-bg: #0e121a;
     --aura-theme-surface: #111827;
     --aura-theme-surface-card: #162032;
@@ -128,30 +128,29 @@ body[data-theme="dark"],
     --aura-toggle-border: #475569;
 }
 
-/* ── ENTORNO DE CONTENIDO EN MODO OSCURO (SIN AFECTAR BODY/HEADER/FOOTER) ── */
-html[data-theme="dark"] #main-content,
-body[data-theme="dark"] #main-content,
-html[data-theme="dark"] #et-boc .et-l--post,
-html[data-theme="dark"] #et-boc .et-l--body {
+/* ── ENTORNO DE CONTENIDO EN MODO OSCURO (SIN AFECTAR BODY/HEADER/FOOTER/NAVBAR) ── */
+html[data-aura-theme="dark"] #main-content,
+body[data-aura-theme="dark"] #main-content,
+body.aura-dark-theme #main-content,
+html[data-aura-theme="dark"] #et-boc .et-l--post,
+body.aura-dark-theme #et-boc .et-l--post,
+html[data-aura-theme="dark"] #et-boc .et-l--body,
+body.aura-dark-theme #et-boc .et-l--body {
     background-color: var(--aura-theme-bg, #0e121a) !important;
     color: var(--aura-theme-text-secondary, #cbd5e1);
 }
 
-[data-theme="dark"] .aura-portal-wrap,
-[data-theme="dark"] .aura-login-wrap,
-[data-theme="dark"] .aura-student-schedule-wrap,
-[data-theme="dark"] .aura-enroll-wrap {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap),
+.aura-portal-wrap.aura-dark-theme,
+.aura-login-wrap.aura-dark-theme,
+.aura-student-schedule-wrap.aura-dark-theme,
+.aura-enroll-wrap.aura-dark-theme {
     color: var(--aura-theme-text-secondary, #cbd5e1);
 }
 
 /* ── TARJETAS Y CONTENEDORES (LOGIN, CARDS, ADP-CARDS) ──────────── */
-[data-theme="dark"] .aura-login-card,
-[data-theme="dark"] .adp-card,
-[data-theme="dark"] .aura-enrollment-form,
-[data-theme="dark"] .aura-course-card,
-[data-theme="dark"] .aura-cert-card,
-[data-theme="dark"] .aura-summary-kpi,
-[data-theme="dark"] .aura-child-card {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-login-card, .adp-card, .aura-enrollment-form, .aura-course-card, .aura-cert-card, .aura-summary-kpi, .aura-child-card),
+[data-theme="dark"] :is(.aura-login-card, .aura-enrollment-form, .aura-course-card, .aura-cert-card, .aura-summary-kpi, .aura-child-card) {
     background: var(--aura-theme-surface-card, #162032) !important;
     border-color: var(--aura-theme-border, #2e3d56) !important;
     color: var(--aura-theme-text-secondary, #cbd5e1) !important;
@@ -159,85 +158,67 @@ html[data-theme="dark"] #et-boc .et-l--body {
 }
 
 /* ── TÍTULOS Y TEXTOS ─────────────────────────────────────────── */
-[data-theme="dark"] .adp-card-title,
-[data-theme="dark"] .aura-login-site-name,
-[data-theme="dark"] .aura-section-title,
-[data-theme="dark"] .aura-course-name,
-[data-theme="dark"] .aura-section-sub,
-[data-theme="dark"] .aura-summary-kpi .kpi-value,
-[data-theme="dark"] .aura-login-card h2,
-[data-theme="dark"] .aura-login-card h3 {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.adp-card-title, .aura-login-site-name, .aura-section-title, .aura-course-name, .aura-section-sub, .aura-summary-kpi .kpi-value, .aura-login-card h2, .aura-login-card h3),
+[data-theme="dark"] :is(.aura-login-site-name, .aura-section-title, .aura-course-name, .aura-section-sub, .aura-summary-kpi .kpi-value, .aura-login-card h2, .aura-login-card h3) {
     color: var(--aura-theme-text-primary, #f8fafc) !important;
 }
 
-[data-theme="dark"] .adp-card-desc,
-[data-theme="dark"] .aura-login-subtitle,
-[data-theme="dark"] .aura-course-dates,
-[data-theme="dark"] .aura-summary-kpi .kpi-label,
-[data-theme="dark"] .aura-enroll-disclaimer {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.adp-card-desc, .aura-login-subtitle, .aura-course-dates, .aura-summary-kpi .kpi-label, .aura-enroll-disclaimer),
+[data-theme="dark"] :is(.aura-login-subtitle, .aura-course-dates, .aura-summary-kpi .kpi-label, .aura-enroll-disclaimer) {
     color: var(--aura-theme-text-muted, #94a3b8) !important;
 }
 
-/* ── FORMULARIOS, INPUTS Y CONTROLES ──────────────────────────── */
-[data-theme="dark"] .aura-input,
-[data-theme="dark"] .form-control,
-[data-theme="dark"] select.aura-input,
-[data-theme="dark"] .aura-textarea {
+/* ── FORMULARIOS, INPUTS Y CONTROLES (SOLO DENTRO DE AURA) ──────── */
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-form-wrap, .aura-cert-verify-search, .aura-paz-salvo-check, #modal-student-event-detail) :is(.aura-input, .form-control, select.aura-input, .aura-textarea) {
     background-color: var(--aura-theme-surface, #111827) !important;
     border-color: var(--aura-theme-border, #2e3d56) !important;
     color: var(--aura-theme-text-primary, #f8fafc) !important;
 }
-[data-theme="dark"] .aura-input:focus,
-[data-theme="dark"] .form-control:focus {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-form-wrap, .aura-cert-verify-search, .aura-paz-salvo-check, #modal-student-event-detail) :is(.aura-input:focus, .form-control:focus) {
     border-color: #6366f1 !important;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
 }
-[data-theme="dark"] .aura-input::placeholder,
-[data-theme="dark"] .form-control::placeholder {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-form-wrap, .aura-cert-verify-search, .aura-paz-salvo-check, #modal-student-event-detail) :is(.aura-input::placeholder, .form-control::placeholder) {
     color: #64748b !important;
 }
-[data-theme="dark"] .aura-field-group label,
-[data-theme="dark"] .form-label,
-[data-theme="dark"] .aura-field-inline label {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-form-wrap, .aura-cert-verify-search, .aura-paz-salvo-check, #modal-student-event-detail) :is(.aura-field-group label, .form-label, .aura-field-inline label) {
     color: var(--aura-theme-text-secondary, #cbd5e1) !important;
 }
-[data-theme="dark"] .input-prefix {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal) .input-prefix {
     color: #94a3b8 !important;
 }
-[data-theme="dark"] .aura-toggle-pass {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-toggle-pass {
     color: #94a3b8 !important;
 }
-[data-theme="dark"] .aura-toggle-pass:hover {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-toggle-pass:hover {
     color: #f8fafc !important;
 }
 
 /* Radio cards y checkboxes */
-[data-theme="dark"] .aura-radio-card,
-[data-theme="dark"] .aura-area-checkbox {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-radio-card, .aura-area-checkbox) {
     background: var(--aura-theme-surface, #111827) !important;
     border-color: var(--aura-theme-border, #2e3d56) !important;
     color: var(--aura-theme-text-secondary, #cbd5e1) !important;
 }
-[data-theme="dark"] .aura-radio-card:has(input:checked),
-[data-theme="dark"] .aura-area-checkbox:has(input:checked) {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-radio-card:has(input:checked), .aura-area-checkbox:has(input:checked)) {
     background: rgba(99, 102, 241, 0.15) !important;
     border-color: #818cf8 !important;
     color: #c7d2fe !important;
 }
 
 /* ── NAVEGACIÓN DE PESTAÑAS (PORTAL ESTUDIANTE) ───────────────── */
-[data-theme="dark"] .aura-portal-nav {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-nav {
     background: var(--aura-theme-surface, #111827) !important;
     border: 1px solid var(--aura-theme-border-subtle, #1f2d42) !important;
 }
-[data-theme="dark"] .aura-portal-tab-btn {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-tab-btn {
     color: var(--aura-theme-text-muted, #94a3b8) !important;
 }
-[data-theme="dark"] .aura-portal-tab-btn:hover:not(.active) {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-tab-btn:hover:not(.active) {
     background: var(--aura-theme-surface-alt, #1e293b) !important;
     color: var(--aura-theme-text-primary, #f8fafc) !important;
 }
-[data-theme="dark"] .aura-portal-tab-btn.active {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-tab-btn.active {
     background: var(--aura-theme-surface-card, #162032) !important;
     color: #818cf8 !important;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
@@ -245,26 +226,27 @@ html[data-theme="dark"] #et-boc .et-l--body {
 }
 
 /* ── TABLAS (PAGOS, CALIFICACIONES, LISTAS) ────────────────────── */
-[data-theme="dark"] .aura-portal-table thead th {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-table thead th {
     background: var(--aura-theme-surface, #111827) !important;
     color: var(--aura-theme-text-muted, #94a3b8) !important;
     border-bottom: 1px solid var(--aura-theme-border, #2e3d56) !important;
 }
-[data-theme="dark"] .aura-portal-table tbody tr {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-table tbody tr {
     border-bottom: 1px solid var(--aura-theme-border-subtle, #1f2d42) !important;
 }
-[data-theme="dark"] .aura-portal-table tbody tr:hover {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-table tbody tr:hover {
     background: rgba(255, 255, 255, 0.03) !important;
 }
-[data-theme="dark"] .aura-portal-table tbody td {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-table tbody td {
     color: var(--aura-theme-text-secondary, #cbd5e1) !important;
 }
-[data-theme="dark"] .row-overdue td {
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-table .row-overdue td {
     background: rgba(239, 68, 68, 0.12) !important;
     color: #fca5a5 !important;
 }
 
 /* ── FULLCALENDAR EN MODO OSCURO (ESTILO GOOGLE CALENDAR) ──────── */
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc,
 [data-theme="dark"] .fc,
 body.aura-dark-mode .fc,
 html[data-wp-dark-mode-scheme="dark"] .fc,
@@ -278,65 +260,65 @@ body.wp-dark-mode-active .fc {
     background-color: #181b21;
     color: #f1f3f4;
 }
-[data-theme="dark"] .fc-toolbar-title,
-body.aura-dark-mode .fc-toolbar-title {
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-toolbar-title,
+body.aura-dark-mode .fc .fc-toolbar-title {
     color: #f1f3f4 !important;
 }
-[data-theme="dark"] .fc-button,
-body.aura-dark-mode .fc-button {
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-button,
+body.aura-dark-mode .fc .fc-button {
     background-color: #20242c !important;
     border-color: #3c4043 !important;
     color: #e8eaed !important;
     box-shadow: none !important;
 }
-[data-theme="dark"] .fc-button:hover,
-body.aura-dark-mode .fc-button:hover {
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-button:hover,
+body.aura-dark-mode .fc .fc-button:hover {
     background-color: #2b313c !important;
     border-color: #5f6368 !important;
     color: #ffffff !important;
 }
-[data-theme="dark"] .fc-button-primary:not(:disabled).fc-button-active,
-[data-theme="dark"] .fc-button-primary:not(:disabled):active,
-body.aura-dark-mode .fc-button-primary:not(:disabled).fc-button-active,
-body.aura-dark-mode .fc-button-primary:not(:disabled):active {
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-button-primary:not(:disabled).fc-button-active,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-button-primary:not(:disabled):active,
+body.aura-dark-mode .fc .fc-button-primary:not(:disabled).fc-button-active,
+body.aura-dark-mode .fc .fc-button-primary:not(:disabled):active {
     background-color: #6366f1 !important;
     border-color: #6366f1 !important;
     color: #ffffff !important;
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35) !important;
 }
-[data-theme="dark"] .fc-col-header-cell-cushion,
-[data-theme="dark"] .fc-daygrid-day-number,
-[data-theme="dark"] .fc-timegrid-slot-label-cushion,
-body.aura-dark-mode .fc-col-header-cell-cushion,
-body.aura-dark-mode .fc-daygrid-day-number,
-body.aura-dark-mode .fc-timegrid-slot-label-cushion {
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-col-header-cell-cushion,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-daygrid-day-number,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-timegrid-slot-label-cushion,
+body.aura-dark-mode .fc .fc-col-header-cell-cushion,
+body.aura-dark-mode .fc .fc-daygrid-day-number,
+body.aura-dark-mode .fc .fc-timegrid-slot-label-cushion {
     color: #e8eaed !important;
 }
-[data-theme="dark"] .fc-theme-standard th,
-[data-theme="dark"] .fc-theme-standard td,
-[data-theme="dark"] .fc .fc-scrollgrid,
-[data-theme="dark"] .fc .fc-timegrid-slot,
-[data-theme="dark"] .fc .fc-daygrid-day,
-body.aura-dark-mode .fc-theme-standard th,
-body.aura-dark-mode .fc-theme-standard td,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-theme-standard th,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-theme-standard td,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-scrollgrid,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-timegrid-slot,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-daygrid-day,
+body.aura-dark-mode .fc .fc-theme-standard th,
+body.aura-dark-mode .fc .fc-theme-standard td,
 body.aura-dark-mode .fc .fc-scrollgrid,
 body.aura-dark-mode .fc .fc-timegrid-slot,
 body.aura-dark-mode .fc .fc-daygrid-day {
     border-color: #3c4043 !important;
 }
-[data-theme="dark"] .fc .fc-daygrid-day,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-daygrid-day,
 body.aura-dark-mode .fc .fc-daygrid-day {
     background-color: #181b21 !important;
 }
-[data-theme="dark"] .fc .fc-daygrid-day:hover,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-daygrid-day:hover,
 body.aura-dark-mode .fc .fc-daygrid-day:hover {
     background-color: #20242c !important;
 }
-[data-theme="dark"] .fc .fc-daygrid-day.fc-day-other,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-daygrid-day.fc-day-other,
 body.aura-dark-mode .fc .fc-daygrid-day.fc-day-other {
     background-color: #13151b !important;
 }
-[data-theme="dark"] .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number,
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number,
 body.aura-dark-mode .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
     background-color: #6366f1 !important;
     color: #ffffff !important;
@@ -350,89 +332,85 @@ body.aura-dark-mode .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
     margin: 3px 5px 0 0 !important;
     box-shadow: 0 0 8px rgba(99, 102, 241, 0.45) !important;
 }
-[data-theme="dark"] .fc-timegrid-now-indicator-line,
-body.aura-dark-mode .fc-timegrid-now-indicator-line {
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-timegrid-now-indicator-line,
+body.aura-dark-mode .fc .fc-timegrid-now-indicator-line {
     border-color: #ea4335 !important;
     border-width: 2px !important;
 }
-[data-theme="dark"] .fc-list-day-cushion,
-body.aura-dark-mode .fc-list-day-cushion {
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-list-day-cushion,
+body.aura-dark-mode .fc .fc-list-day-cushion {
     background-color: #20242c !important;
     border-color: #3c4043 !important;
     color: #f8fafc !important;
 }
-[data-theme="dark"] .fc-list-event td,
-body.aura-dark-mode .fc-list-event td {
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-list-event td,
+body.aura-dark-mode .fc .fc-list-event td {
     border-color: #3c4043 !important;
 }
-[data-theme="dark"] .fc-list-event:hover td,
-body.aura-dark-mode .fc-list-event:hover td {
+:is([data-aura-theme="dark"], .aura-dark-theme) .fc .fc-list-event:hover td,
+body.aura-dark-mode .fc .fc-list-event:hover td {
     background-color: #262b35 !important;
 }
 
-/* ── NOTIFICACIONES Y ALERTAS EN MODO OSCURO ───────────────────── */
-[data-theme="dark"] .alert-card,
-[data-theme="dark"] .aura-portal-notice {
+/* ── NOTIFICACIONES Y ALERTAS EN MODO OSCURO (SOLO DENTRO DE AURA) ── */
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-form-wrap, .aura-cert-verify-card, .aura-paz-salvo-check) .alert-card,
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-notice {
     background: #1e293b !important;
     border-color: #334155 !important;
     color: #e2e8f0 !important;
 }
-[data-theme="dark"] .alert-danger,
-[data-theme="dark"] .aura-portal-error,
-[data-theme="dark"] .aura-notice-error {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-form-wrap, .aura-cert-verify-card, .aura-paz-salvo-check) .alert-danger,
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-error, .aura-notice-error) {
     background: rgba(220, 38, 38, 0.15) !important;
     border-color: rgba(239, 68, 68, 0.3) !important;
     color: #fca5a5 !important;
 }
-[data-theme="dark"] .alert-success,
-[data-theme="dark"] .aura-notice-ok,
-[data-theme="dark"] .aura-ps-ok {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-form-wrap, .aura-cert-verify-card, .aura-paz-salvo-check) .alert-success,
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-notice-ok, .aura-ps-ok) {
     background: rgba(16, 185, 129, 0.15) !important;
     border-color: rgba(52, 211, 153, 0.3) !important;
     color: #6ee7b7 !important;
 }
-[data-theme="dark"] .alert-warning,
-[data-theme="dark"] .aura-portal-warning {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-form-wrap, .aura-cert-verify-card, .aura-paz-salvo-check) .alert-warning,
+:is([data-aura-theme="dark"], .aura-dark-theme) .aura-portal-warning {
     background: rgba(245, 158, 11, 0.15) !important;
     border-color: rgba(251, 191, 36, 0.3) !important;
     color: #fde68a !important;
 }
 
-/* ── BOTONES GHOST Y SECUNDARIOS EN MODO OSCURO ────────────────── */
-[data-theme="dark"] .btn-ghost,
-[data-theme="dark"] .aura-btn-secondary,
-[data-theme="dark"] .aura-btn-ghost {
+/* ── BOTONES GHOST Y SECUNDARIOS EN MODO OSCURO (SOLO DENTRO DE AURA) ── */
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-ghost,
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-btn-secondary, .aura-btn-ghost) {
     background: var(--aura-theme-surface-alt, #1e293b) !important;
     border-color: var(--aura-theme-border, #2e3d56) !important;
     color: var(--aura-theme-text-secondary, #cbd5e1) !important;
 }
-[data-theme="dark"] .btn-ghost:hover,
-[data-theme="dark"] .aura-btn-secondary:hover,
-[data-theme="dark"] .aura-btn-ghost:hover {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-ghost:hover,
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-btn-secondary:hover, .aura-btn-ghost:hover) {
     background: #334155 !important;
     color: #ffffff !important;
     border-color: #475569 !important;
 }
 
-/* ── INPUT GROUPS BOOTSTRAP 5.3 EN FRONTEND ────────────────────── */
-.input-group {
+/* ── INPUT GROUPS DENTRO DE AURA ────────────────────── */
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group {
     position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: stretch;
     width: 100%;
 }
-.input-group > .form-control,
-.input-group > .form-select {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group > .form-control,
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group > .form-select {
     position: relative;
     flex: 1 1 auto;
     width: 1%;
     min-width: 0;
 }
-.input-group .form-control:focus {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group .form-control:focus {
     z-index: 5;
 }
-.input-group-text {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group-text {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -449,41 +427,41 @@ body.aura-dark-mode .fc-list-event:hover td {
     box-sizing: border-box;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out, background-color .15s ease-in-out;
 }
-.input-group-text .dashicons {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group-text .dashicons {
     font-size: 18px;
     width: 18px;
     height: 18px;
     line-height: 18px;
     color: inherit;
 }
-.input-group-text.aura-btn-toggle-pass {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group-text.aura-btn-toggle-pass {
     cursor: pointer;
     background-color: #f8fafc;
     border: 1px solid #cbd5e1;
     outline: none;
     user-select: none;
 }
-.input-group-text.aura-btn-toggle-pass:hover {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group-text.aura-btn-toggle-pass:hover {
     background-color: #f1f5f9;
     color: #4f46e5;
 }
-.input-group > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),
-.input-group > .form-floating:not(:last-child) > .form-control,
-.input-group > .form-floating:not(:last-child) > .form-select {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group > .form-floating:not(:last-child) > .form-control,
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group > .form-floating:not(:last-child) > .form-select {
     border-top-right-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
 }
-.input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
     margin-left: -1px;
     border-top-left-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
 }
-[data-theme="dark"] .input-group-text {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group-text {
     background-color: var(--aura-theme-surface-alt, #1e293b) !important;
     border-color: var(--aura-theme-border, #2e3d56) !important;
     color: var(--aura-theme-text-muted, #94a3b8) !important;
 }
-[data-theme="dark"] .input-group-text.aura-btn-toggle-pass:hover {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-student-schedule-wrap, .aura-form-wrap) .input-group-text.aura-btn-toggle-pass:hover {
     background-color: #334155 !important;
     color: #818cf8 !important;
 }
@@ -527,13 +505,14 @@ body.aura-dark-mode .fc-list-event:hover td {
     transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-[data-theme="dark"] .aura-teacher-portal,
+[data-aura-theme="dark"] .aura-teacher-portal,
 .aura-dark-theme .aura-teacher-portal,
-html[data-theme="dark"] .aura-teacher-portal,
-body[data-theme="dark"] .aura-teacher-portal,
+html[data-aura-theme="dark"] .aura-teacher-portal,
+body[data-aura-theme="dark"] .aura-teacher-portal,
 html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
 .wp-dark-mode-active .aura-teacher-portal,
 .aura-teacher-portal.aura-dark-theme,
+.aura-teacher-portal[data-aura-theme="dark"],
 .aura-teacher-portal[data-theme="dark"] {
     --at-bg-card: #162032;
     --at-bg-card-alt: #1e293b;
@@ -575,6 +554,7 @@ html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
     transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
+[data-aura-theme="dark"] .aura-teacher-card,
 [data-theme="dark"] .aura-teacher-card,
 .aura-dark-theme .aura-teacher-card {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4) !important;
@@ -603,7 +583,7 @@ html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
 }
 
 /* Botón individual de pestaña */
-.teacher-tab-btn {
+.aura-teacher-portal .teacher-tab-btn {
     display: inline-flex !important;
     align-items: center !important;
     gap: 8px !important;
@@ -625,12 +605,12 @@ html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.teacher-tab-btn:hover {
+.aura-teacher-portal .teacher-tab-btn:hover {
     color: var(--at-tab-color-hover) !important;
     background: var(--at-tab-bg-hover) !important;
 }
 
-.teacher-tab-btn.active {
+.aura-teacher-portal .teacher-tab-btn.active {
     background: var(--at-tab-active-bg) !important;
     color: var(--at-tab-active-color) !important;
     border-color: var(--at-tab-active-border) !important;
@@ -639,7 +619,7 @@ html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
 }
 
 /* Iconos de Pestaña */
-.teacher-tab-icon {
+.aura-teacher-portal .teacher-tab-icon {
     font-size: 18px !important;
     width: 18px !important;
     height: 18px !important;
@@ -651,18 +631,18 @@ html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
     transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease !important;
 }
 
-.teacher-tab-btn:hover .teacher-tab-icon {
+.aura-teacher-portal .teacher-tab-btn:hover .teacher-tab-icon {
     opacity: 1 !important;
 }
 
-.teacher-tab-btn.active .teacher-tab-icon {
+.aura-teacher-portal .teacher-tab-btn.active .teacher-tab-icon {
     opacity: 1 !important;
     transform: scale(1.08) !important;
     color: var(--at-primary) !important;
 }
 
 /* Contadores / Badges de Pestaña */
-.teacher-tab-badge {
+.aura-teacher-portal .teacher-tab-badge {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -678,25 +658,26 @@ html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
     transition: all 0.2s ease !important;
 }
 
-.teacher-tab-btn.active .teacher-tab-badge {
+.aura-teacher-portal .teacher-tab-btn.active .teacher-tab-badge {
     background: var(--at-badge-active-bg) !important;
     color: var(--at-badge-active-color) !important;
     font-weight: 700 !important;
 }
 
 /* Distinción especial de tareas pendientes */
-.teacher-tab-badge.teacher-tab-badge-tasks {
+.aura-teacher-portal .teacher-tab-badge.teacher-tab-badge-tasks {
     background: rgba(99, 102, 241, 0.12) !important;
     color: #4f46e5 !important;
 }
 
-[data-theme="dark"] .teacher-tab-badge.teacher-tab-badge-tasks,
-.aura-dark-theme .teacher-tab-badge.teacher-tab-badge-tasks {
+[data-aura-theme="dark"] .aura-teacher-portal .teacher-tab-badge.teacher-tab-badge-tasks,
+[data-theme="dark"] .aura-teacher-portal .teacher-tab-badge.teacher-tab-badge-tasks,
+.aura-dark-theme .aura-teacher-portal .teacher-tab-badge.teacher-tab-badge-tasks {
     background: rgba(99, 102, 241, 0.25) !important;
     color: #a5b4fc !important;
 }
 
-.teacher-tab-btn.active .teacher-tab-badge.teacher-tab-badge-tasks {
+.aura-teacher-portal .teacher-tab-btn.active .teacher-tab-badge.teacher-tab-badge-tasks {
     background: var(--at-badge-active-bg) !important;
     color: var(--at-badge-active-color) !important;
 }
@@ -719,7 +700,9 @@ html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
     box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.12);
 }
 
-[data-theme="dark"] .aura-teacher-item-card:hover {
+[data-aura-theme="dark"] .aura-teacher-item-card:hover,
+[data-theme="dark"] .aura-teacher-item-card:hover,
+.aura-dark-theme .aura-teacher-item-card:hover {
     box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.45);
 }
 
@@ -843,7 +826,9 @@ html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal,
     padding: 8px 0;
 }
 
+[data-aura-theme="dark"] .aura-teacher-portal .fc-timegrid-slot,
 [data-theme="dark"] .aura-teacher-portal .fc-timegrid-slot,
+.aura-dark-theme .aura-teacher-portal .fc-timegrid-slot,
 body.aura-dark-mode .aura-teacher-portal .fc-timegrid-slot,
 html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal .fc-timegrid-slot,
 html.wp-dark-mode-active .aura-teacher-portal .fc-timegrid-slot,
@@ -851,7 +836,9 @@ body.wp-dark-mode-active .aura-teacher-portal .fc-timegrid-slot {
     border-bottom: 1px solid #3c4043 !important;
 }
 
+[data-aura-theme="dark"] .aura-teacher-portal .fc-event,
 [data-theme="dark"] .aura-teacher-portal .fc-event,
+.aura-dark-theme .aura-teacher-portal .fc-event,
 body.aura-dark-mode .aura-teacher-portal .fc-event,
 html[data-wp-dark-mode-scheme="dark"] .aura-teacher-portal .fc-event,
 html.wp-dark-mode-active .aura-teacher-portal .fc-event,
@@ -904,9 +891,9 @@ body.wp-dark-mode-active .aura-teacher-portal .fc-event {
     flex-direction: column !important;
 }
 
-[data-theme="dark"] .aura-calendar-is-fullscreen,
-body[data-theme="dark"] .aura-calendar-is-fullscreen,
-html[data-theme="dark"] .aura-calendar-is-fullscreen,
+[data-aura-theme="dark"] .aura-calendar-is-fullscreen,
+body[data-aura-theme="dark"] .aura-calendar-is-fullscreen,
+html[data-aura-theme="dark"] .aura-calendar-is-fullscreen,
 .aura-dark-theme .aura-calendar-is-fullscreen,
 body.aura-dark-mode .aura-calendar-is-fullscreen,
 html[data-wp-dark-mode-scheme="dark"] .aura-calendar-is-fullscreen,
@@ -1074,6 +1061,7 @@ body.aura-cal-fullscreen-active {
     border-bottom: 1px solid var(--aura-border, rgba(0, 0, 0, 0.06)) !important;
 }
 
+[data-aura-theme="dark"] .aura-calendar-is-fullscreen .fc-header-toolbar,
 [data-theme="dark"] .aura-calendar-is-fullscreen .fc-header-toolbar,
 .aura-dark-theme .aura-calendar-is-fullscreen .fc-header-toolbar,
 body.aura-dark-mode .aura-calendar-is-fullscreen .fc-header-toolbar {
@@ -1175,12 +1163,12 @@ body.aura-dark-mode .aura-calendar-is-fullscreen .fc-header-toolbar {
 }
 
 /* En Modo Oscuro, forzar color de texto blanco visible para el botón y sus elementos internos */
-[data-theme="dark"] #btn-toggle-teacher-fullscreen,
-[data-theme="dark"] #btn-toggle-student-fullscreen,
-[data-theme="dark"] #btn-toggle-fullscreen,
-body[data-theme="dark"] #btn-toggle-teacher-fullscreen,
-body[data-theme="dark"] #btn-toggle-student-fullscreen,
-body[data-theme="dark"] #btn-toggle-fullscreen,
+[data-aura-theme="dark"] #btn-toggle-teacher-fullscreen,
+[data-aura-theme="dark"] #btn-toggle-student-fullscreen,
+[data-aura-theme="dark"] #btn-toggle-fullscreen,
+body[data-aura-theme="dark"] #btn-toggle-teacher-fullscreen,
+body[data-aura-theme="dark"] #btn-toggle-student-fullscreen,
+body[data-aura-theme="dark"] #btn-toggle-fullscreen,
 .aura-dark-theme #btn-toggle-teacher-fullscreen,
 .aura-dark-theme #btn-toggle-student-fullscreen,
 .aura-dark-theme #btn-toggle-fullscreen {
@@ -1189,29 +1177,32 @@ body[data-theme="dark"] #btn-toggle-fullscreen,
     color: #ffffff !important;
 }
 
-[data-theme="dark"] #btn-toggle-teacher-fullscreen *,
-[data-theme="dark"] #btn-toggle-student-fullscreen *,
-[data-theme="dark"] #btn-toggle-fullscreen *,
-body[data-theme="dark"] #btn-toggle-teacher-fullscreen *,
-body[data-theme="dark"] #btn-toggle-student-fullscreen *,
-body[data-theme="dark"] #btn-toggle-fullscreen *,
+[data-aura-theme="dark"] #btn-toggle-teacher-fullscreen *,
+[data-aura-theme="dark"] #btn-toggle-student-fullscreen *,
+[data-aura-theme="dark"] #btn-toggle-fullscreen *,
+body[data-aura-theme="dark"] #btn-toggle-teacher-fullscreen *,
+body[data-aura-theme="dark"] #btn-toggle-student-fullscreen *,
+body[data-aura-theme="dark"] #btn-toggle-fullscreen *,
 .aura-dark-theme #btn-toggle-teacher-fullscreen *,
 .aura-dark-theme #btn-toggle-student-fullscreen *,
 .aura-dark-theme #btn-toggle-fullscreen *,
-[data-theme="dark"] #btn-toggle-teacher-fullscreen .fs-text,
-[data-theme="dark"] #btn-toggle-student-fullscreen .fs-text,
-body[data-theme="dark"] #btn-toggle-teacher-fullscreen .fs-text,
-body[data-theme="dark"] #btn-toggle-student-fullscreen .fs-text {
+[data-aura-theme="dark"] #btn-toggle-teacher-fullscreen .fs-text,
+[data-aura-theme="dark"] #btn-toggle-student-fullscreen .fs-text,
+body[data-aura-theme="dark"] #btn-toggle-teacher-fullscreen .fs-text,
+body[data-aura-theme="dark"] #btn-toggle-student-fullscreen .fs-text {
     color: #ffffff !important;
     fill: #ffffff !important;
 }
 
-[data-theme="dark"] #btn-toggle-teacher-fullscreen:hover,
-[data-theme="dark"] #btn-toggle-student-fullscreen:hover,
-[data-theme="dark"] #btn-toggle-fullscreen:hover,
-body[data-theme="dark"] #btn-toggle-teacher-fullscreen:hover,
-body[data-theme="dark"] #btn-toggle-student-fullscreen:hover,
-body[data-theme="dark"] #btn-toggle-fullscreen:hover {
+[data-aura-theme="dark"] #btn-toggle-teacher-fullscreen:hover,
+[data-aura-theme="dark"] #btn-toggle-student-fullscreen:hover,
+[data-aura-theme="dark"] #btn-toggle-fullscreen:hover,
+body[data-aura-theme="dark"] #btn-toggle-teacher-fullscreen:hover,
+body[data-aura-theme="dark"] #btn-toggle-student-fullscreen:hover,
+body[data-aura-theme="dark"] #btn-toggle-fullscreen:hover,
+.aura-dark-theme #btn-toggle-teacher-fullscreen:hover,
+.aura-dark-theme #btn-toggle-student-fullscreen:hover,
+.aura-dark-theme #btn-toggle-fullscreen:hover {
     background-color: #334155 !important;
     border-color: #64748b !important;
     color: #ffffff !important;
@@ -1224,22 +1215,22 @@ body[data-theme="dark"] #btn-toggle-fullscreen:hover {
     text-decoration: none !important;
 }
 
-[data-theme="dark"] .aura-btn-gcal-link,
-body[data-theme="dark"] .aura-btn-gcal-link,
+[data-aura-theme="dark"] .aura-btn-gcal-link,
+body[data-aura-theme="dark"] .aura-btn-gcal-link,
 .aura-dark-theme .aura-btn-gcal-link {
     background-color: #1e293b !important;
     border: 1px solid #475569 !important;
     color: #ffffff !important;
 }
 
-[data-theme="dark"] .aura-btn-gcal-link *,
-body[data-theme="dark"] .aura-btn-gcal-link *,
+[data-aura-theme="dark"] .aura-btn-gcal-link *,
+body[data-aura-theme="dark"] .aura-btn-gcal-link *,
 .aura-dark-theme .aura-btn-gcal-link * {
     color: #ffffff !important;
 }
 
-[data-theme="dark"] .aura-btn-gcal-link:hover,
-body[data-theme="dark"] .aura-btn-gcal-link:hover,
+[data-aura-theme="dark"] .aura-btn-gcal-link:hover,
+body[data-aura-theme="dark"] .aura-btn-gcal-link:hover,
 .aura-dark-theme .aura-btn-gcal-link:hover {
     background-color: #334155 !important;
     border-color: #64748b !important;
@@ -1282,10 +1273,10 @@ body[data-theme="dark"] .aura-btn-gcal-link:hover,
     background: var(--at-chip-bg, rgba(99, 102, 241, 0.08)) !important;
 }
 
-.row-diff-student {
+.aura-teacher-portal .row-diff-student {
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
-.row-diff-student:hover {
+.aura-teacher-portal .row-diff-student:hover {
     border-color: var(--at-primary, #6366f1) !important;
 }
 
@@ -1297,7 +1288,9 @@ body[data-theme="dark"] .aura-btn-gcal-link:hover,
     transition: all 0.2s ease;
 }
 
-[data-theme="dark"] .aura-submission-row {
+[data-aura-theme="dark"] .aura-submission-row,
+[data-theme="dark"] .aura-submission-row,
+.aura-dark-theme .aura-submission-row {
     background: #1e293b;
     border-color: #334155;
 }
@@ -1311,19 +1304,29 @@ body[data-theme="dark"] .aura-btn-gcal-link:hover,
     box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
 }
 
-[data-theme="dark"] .aura-student-equipment-wrapper .adp-card {
+[data-aura-theme="dark"] .aura-student-equipment-wrapper .adp-card,
+[data-theme="dark"] .aura-student-equipment-wrapper .adp-card,
+.aura-dark-theme .aura-student-equipment-wrapper .adp-card {
     background-color: #1e293b !important;
     border-color: #334155 !important;
 }
+[data-aura-theme="dark"] .aura-student-equipment-wrapper .adp-card-desc,
+[data-aura-theme="dark"] .aura-student-equipment-wrapper [style*="color: var(--aura-text-secondary)"],
 [data-theme="dark"] .aura-student-equipment-wrapper .adp-card-desc,
-[data-theme="dark"] .aura-student-equipment-wrapper [style*="color: var(--aura-text-secondary)"] {
+[data-theme="dark"] .aura-student-equipment-wrapper [style*="color: var(--aura-text-secondary)"],
+.aura-dark-theme .aura-student-equipment-wrapper .adp-card-desc,
+.aura-dark-theme .aura-student-equipment-wrapper [style*="color: var(--aura-text-secondary)"] {
     color: #94a3b8 !important;
 }
-[data-theme="dark"] .aura-student-equipment-wrapper [style*="background: var(--aura-surface-alt)"] {
+[data-aura-theme="dark"] .aura-student-equipment-wrapper [style*="background: var(--aura-surface-alt)"],
+[data-theme="dark"] .aura-student-equipment-wrapper [style*="background: var(--aura-surface-alt)"],
+.aura-dark-theme .aura-student-equipment-wrapper [style*="background: var(--aura-surface-alt)"] {
     background: #0f172a !important;
     border-color: #334155 !important;
 }
-[data-theme="dark"] .aura-student-equipment-wrapper [style*="color: var(--aura-text-primary)"] {
+[data-aura-theme="dark"] .aura-student-equipment-wrapper [style*="color: var(--aura-text-primary)"],
+[data-theme="dark"] .aura-student-equipment-wrapper [style*="color: var(--aura-text-primary)"],
+.aura-dark-theme .aura-student-equipment-wrapper [style*="color: var(--aura-text-primary)"] {
     color: #f1f5f9 !important;
 }
 
@@ -1336,78 +1339,67 @@ body[data-theme="dark"] .aura-btn-gcal-link:hover,
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.12);
     transform: translateY(-1px);
 }
-[data-theme="dark"] .aura-student-roster-row {
+[data-aura-theme="dark"] .aura-student-roster-row,
+[data-theme="dark"] .aura-student-roster-row,
+.aura-dark-theme .aura-student-roster-row {
     background: #1e293b !important;
     border-color: #334155 !important;
 }
-[data-theme="dark"] .aura-student-roster-row:hover {
+[data-aura-theme="dark"] .aura-student-roster-row:hover,
+[data-theme="dark"] .aura-student-roster-row:hover,
+.aura-dark-theme .aura-student-roster-row:hover {
     background: #243248 !important;
     border-color: #6366f1 !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════
    ADAPTACIÓN INTEGRAL DE BOTONES, BADGES Y MODALES EN FRONTEND
+   (ESTRICTAMENTE ACOTADOS A CONTENEDORES DE AURA)
    ══════════════════════════════════════════════════════════════════ */
 
 /* Botones Secundarios y Ghost */
-.btn-secondary {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-secondary {
     background: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
     color: #1e293b !important;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease !important;
 }
-.btn-secondary:hover {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-secondary:hover {
     background: #f8fafc !important;
     border-color: #94a3b8 !important;
     color: #0f172a !important;
 }
 
-[data-theme="dark"] .btn-secondary,
-body[data-theme="dark"] .btn-secondary,
-html[data-theme="dark"] .btn-secondary,
-.aura-dark-theme .btn-secondary,
-body.aura-dark-mode .btn-secondary {
+:is([data-aura-theme="dark"], .aura-dark-theme, body.aura-dark-mode) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-secondary {
     background: #1e293b !important;
     border-color: #334155 !important;
     color: #f1f5f9 !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
-[data-theme="dark"] .btn-secondary:hover,
-body[data-theme="dark"] .btn-secondary:hover,
-html[data-theme="dark"] .btn-secondary:hover,
-.aura-dark-theme .btn-secondary:hover,
-body.aura-dark-mode .btn-secondary:hover {
+:is([data-aura-theme="dark"], .aura-dark-theme, body.aura-dark-mode) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-secondary:hover {
     background: #273549 !important;
     border-color: #6366f1 !important;
     color: #ffffff !important;
 }
 
-.btn-ghost {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-ghost {
     background: transparent !important;
     border: 1px solid transparent !important;
     color: #475569 !important;
     transition: all 0.2s ease !important;
 }
-.btn-ghost:hover {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-ghost:hover {
     background: #f1f5f9 !important;
     color: #0f172a !important;
 }
 
-[data-theme="dark"] .btn-ghost,
-body[data-theme="dark"] .btn-ghost,
-html[data-theme="dark"] .btn-ghost,
-.aura-dark-theme .btn-ghost,
-body.aura-dark-mode .btn-ghost {
+:is([data-aura-theme="dark"], .aura-dark-theme, body.aura-dark-mode) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-ghost {
     background: rgba(255, 255, 255, 0.05) !important;
     border-color: #334155 !important;
     color: #cbd5e1 !important;
 }
-[data-theme="dark"] .btn-ghost:hover,
-body[data-theme="dark"] .btn-ghost:hover,
-html[data-theme="dark"] .btn-ghost:hover,
-.aura-dark-theme .btn-ghost:hover,
-body.aura-dark-mode .btn-ghost:hover {
+:is([data-aura-theme="dark"], .aura-dark-theme, body.aura-dark-mode) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .btn-ghost:hover {
     background: rgba(255, 255, 255, 0.12) !important;
     color: #ffffff !important;
 }
@@ -1424,73 +1416,71 @@ body.aura-dark-mode .btn-ghost:hover {
     line-height: 1.2;
 }
 
-.badge-indigo {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .badge-indigo {
     background: #e0e7ff;
     color: #3730a3;
     border: 1px solid #c7d2fe;
 }
-[data-theme="dark"] .badge-indigo,
-body[data-theme="dark"] .badge-indigo,
-.aura-dark-theme .badge-indigo {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .badge-indigo {
     background: rgba(99, 102, 241, 0.25) !important;
     color: #c7d2fe !important;
     border-color: rgba(99, 102, 241, 0.45) !important;
 }
 
-.badge-emerald {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .badge-emerald {
     background: #d1fae5;
     color: #065f46;
     border: 1px solid #a7f3d0;
 }
-[data-theme="dark"] .badge-emerald,
-body[data-theme="dark"] .badge-emerald,
-.aura-dark-theme .badge-emerald {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .badge-emerald {
     background: rgba(16, 185, 129, 0.22) !important;
     color: #6ee7b7 !important;
     border-color: rgba(16, 185, 129, 0.4) !important;
 }
 
-.badge-amber {
+:is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .badge-amber {
     background: #fef3c7;
     color: #92400e;
     border: 1px solid #fde68a;
 }
-[data-theme="dark"] .badge-amber,
-body[data-theme="dark"] .badge-amber,
-.aura-dark-theme .badge-amber {
+:is([data-aura-theme="dark"], .aura-dark-theme) :is(.aura-portal-wrap, .aura-login-wrap, .aura-student-schedule-wrap, .aura-enroll-wrap, .aura-teacher-portal, .aura-calendar-wrapper, .aura-my-certs-wrap, .aura-cert-verify-card, .aura-paz-salvo-check, .aura-form-portal, .aura-form-wrap, #modal-student-event-detail, .aura-modal-overlay) .badge-amber {
     background: rgba(245, 158, 11, 0.22) !important;
     color: #fcd34d !important;
     border-color: rgba(245, 158, 11, 0.45) !important;
 }
 
 /* Modal Detalle de Clase del Estudiante */
+[data-aura-theme="dark"] #modal-student-event-detail .aura-modal-container,
 [data-theme="dark"] #modal-student-event-detail .aura-modal-container,
-body[data-theme="dark"] #modal-student-event-detail .aura-modal-container,
 .aura-dark-theme #modal-student-event-detail .aura-modal-container {
     background: #162032 !important;
     border-color: #2e3d56 !important;
     color: #f8fafc !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
 }
+[data-aura-theme="dark"] #modal-student-event-detail div[style*="background: var(--aura-surface-alt)"],
 [data-theme="dark"] #modal-student-event-detail div[style*="background: var(--aura-surface-alt)"],
-body[data-theme="dark"] #modal-student-event-detail div[style*="background: var(--aura-surface-alt)"],
 .aura-dark-theme #modal-student-event-detail div[style*="background: var(--aura-surface-alt)"] {
     background: #111827 !important;
     border-color: #2e3d56 !important;
 }
+[data-aura-theme="dark"] #modal-student-event-detail #st-det-title,
 [data-theme="dark"] #modal-student-event-detail #st-det-title,
 .aura-dark-theme #modal-student-event-detail #st-det-title {
     color: #f8fafc !important;
 }
+[data-aura-theme="dark"] #modal-student-event-detail strong,
 [data-theme="dark"] #modal-student-event-detail strong,
 .aura-dark-theme #modal-student-event-detail strong {
     color: #f8fafc !important;
 }
+[data-aura-theme="dark"] #modal-student-event-detail span[style*="color: var(--aura-text-muted)"],
 [data-theme="dark"] #modal-student-event-detail span[style*="color: var(--aura-text-muted)"],
 .aura-dark-theme #modal-student-event-detail span[style*="color: var(--aura-text-muted)"] {
     color: #94a3b8 !important;
 }
 
+[data-aura-theme="dark"] #modal-student-event-detail #st-det-my-role-banner,
 [data-theme="dark"] #modal-student-event-detail #st-det-my-role-banner,
 .aura-dark-theme #modal-student-event-detail #st-det-my-role-banner {
     background: rgba(245, 158, 11, 0.2) !important;
@@ -1498,12 +1488,14 @@ body[data-theme="dark"] #modal-student-event-detail div[style*="background: var(
     color: #fde68a !important;
 }
 
+[data-aura-theme="dark"] #modal-student-event-detail #st-det-online-box,
 [data-theme="dark"] #modal-student-event-detail #st-det-online-box,
 .aura-dark-theme #modal-student-event-detail #st-det-online-box {
     background: rgba(99, 102, 241, 0.18) !important;
     border-color: rgba(129, 140, 248, 0.35) !important;
 }
 
+[data-aura-theme="dark"] .aura-leader-chip,
 [data-theme="dark"] .aura-leader-chip,
 .aura-dark-theme .aura-leader-chip {
     background: #1e293b !important;
@@ -1512,75 +1504,65 @@ body[data-theme="dark"] #modal-student-event-detail div[style*="background: var(
 }
 
 /* Toolbar de FullCalendar en Frontend */
-[data-theme="dark"] .fc-toolbar-title,
-body[data-theme="dark"] .fc-toolbar-title,
-.aura-dark-theme .fc-toolbar-title {
+[data-aura-theme="dark"] .fc .fc-toolbar-title,
+.aura-dark-theme .fc .fc-toolbar-title {
     color: #f8fafc !important;
     font-weight: 700;
 }
 
-[data-theme="dark"] .fc-button-primary,
-body[data-theme="dark"] .fc-button-primary,
-.aura-dark-theme .fc-button-primary {
+[data-aura-theme="dark"] .fc .fc-button-primary,
+.aura-dark-theme .fc .fc-button-primary {
     background: #1e293b !important;
     border-color: #334155 !important;
     color: #f8fafc !important;
     transition: all 0.2s ease !important;
 }
 
-[data-theme="dark"] .fc-button-primary:hover,
-body[data-theme="dark"] .fc-button-primary:hover,
-.aura-dark-theme .fc-button-primary:hover {
+[data-aura-theme="dark"] .fc .fc-button-primary:hover,
+.aura-dark-theme .fc .fc-button-primary:hover {
     background: #334155 !important;
     border-color: #6366f1 !important;
     color: #ffffff !important;
 }
 
-[data-theme="dark"] .fc-button-primary.fc-button-active,
-body[data-theme="dark"] .fc-button-primary.fc-button-active,
-.aura-dark-theme .fc-button-primary.fc-button-active {
+[data-aura-theme="dark"] .fc .fc-button-primary.fc-button-active,
+.aura-dark-theme .fc .fc-button-primary.fc-button-active {
     background: #6366f1 !important;
     border-color: #4f46e5 !important;
     color: #ffffff !important;
 }
 
-[data-theme="dark"] .fc-today-button,
-body[data-theme="dark"] .fc-today-button,
-.aura-dark-theme .fc-today-button {
+[data-aura-theme="dark"] .fc .fc-today-button,
+.aura-dark-theme .fc .fc-today-button {
     background: rgba(99, 102, 241, 0.2) !important;
     border-color: rgba(99, 102, 241, 0.4) !important;
     color: #c7d2fe !important;
 }
 
-[data-theme="dark"] .fc-col-header-cell,
-body[data-theme="dark"] .fc-col-header-cell,
-.aura-dark-theme .fc-col-header-cell {
+[data-aura-theme="dark"] .fc .fc-col-header-cell,
+.aura-dark-theme .fc .fc-col-header-cell {
     background: #111827 !important;
     color: #cbd5e1 !important;
     border-color: #2e3d56 !important;
 }
 
-[data-theme="dark"] .fc-col-header-cell a,
-body[data-theme="dark"] .fc-col-header-cell a,
-.aura-dark-theme .fc-col-header-cell a {
+[data-aura-theme="dark"] .fc .fc-col-header-cell a,
+.aura-dark-theme .fc .fc-col-header-cell a {
     color: #cbd5e1 !important;
 }
 
-[data-theme="dark"] .fc-daygrid-day-number,
-body[data-theme="dark"] .fc-daygrid-day-number,
-.aura-dark-theme .fc-daygrid-day-number {
+[data-aura-theme="dark"] .fc .fc-daygrid-day-number,
+.aura-dark-theme .fc .fc-daygrid-day-number {
     color: #94a3b8 !important;
 }
 
-[data-theme="dark"] .fc-timegrid-slot-label-cushion,
-body[data-theme="dark"] .fc-timegrid-slot-label-cushion,
-.aura-dark-theme .fc-timegrid-slot-label-cushion {
+[data-aura-theme="dark"] .fc .fc-timegrid-slot-label-cushion,
+.aura-dark-theme .fc .fc-timegrid-slot-label-cushion {
     color: #94a3b8 !important;
 }
 
-[data-theme="dark"] .fc-day-today,
-body[data-theme="dark"] .fc-day-today,
-.aura-dark-theme .fc-day-today {
+[data-aura-theme="dark"] .fc .fc-day-today,
+.aura-dark-theme .fc .fc-day-today {
     background: rgba(99, 102, 241, 0.08) !important;
 }
 
@@ -1789,9 +1771,10 @@ body[data-theme="dark"] .fc-day-today,
 }
 
 /* ── TOOLTIP EN MODO OSCURO (SLATE GLASSMORPHIC) ── */
+[data-aura-theme="dark"] #aura-cal-event-tooltip,
+body[data-aura-theme="dark"] #aura-cal-event-tooltip,
+html[data-aura-theme="dark"] #aura-cal-event-tooltip,
 [data-theme="dark"] #aura-cal-event-tooltip,
-body[data-theme="dark"] #aura-cal-event-tooltip,
-html[data-theme="dark"] #aura-cal-event-tooltip,
 .aura-dark-theme #aura-cal-event-tooltip,
 body.aura-dark-mode #aura-cal-event-tooltip {
     background: rgba(15, 23, 42, 0.96) !important;
@@ -1800,29 +1783,35 @@ body.aura-dark-mode #aura-cal-event-tooltip {
     box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.6), 0 8px 12px -4px rgba(0, 0, 0, 0.4) !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .tooltip-date,
 [data-theme="dark"] #aura-cal-event-tooltip .tooltip-date,
 .aura-dark-theme #aura-cal-event-tooltip .tooltip-date {
     color: #94a3b8 !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .tooltip-title,
 [data-theme="dark"] #aura-cal-event-tooltip .tooltip-title,
 .aura-dark-theme #aura-cal-event-tooltip .tooltip-title {
     color: #ffffff !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .tooltip-teacher-card,
 [data-theme="dark"] #aura-cal-event-tooltip .tooltip-teacher-card,
 .aura-dark-theme #aura-cal-event-tooltip .tooltip-teacher-card {
     background: rgba(255, 255, 255, 0.05) !important;
     border-color: rgba(255, 255, 255, 0.09) !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .tooltip-teacher-card [style*="color:#ffffff"],
+[data-aura-theme="dark"] #aura-cal-event-tooltip .tooltip-teacher-card div:has(> strong),
 [data-theme="dark"] #aura-cal-event-tooltip .tooltip-teacher-card [style*="color:#ffffff"],
 [data-theme="dark"] #aura-cal-event-tooltip .tooltip-teacher-card div:has(> strong),
 .aura-dark-theme #aura-cal-event-tooltip .tooltip-teacher-card [style*="color:#ffffff"] {
     color: #ffffff !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .aura-avatar-ring-animated,
 [data-theme="dark"] #aura-cal-event-tooltip .aura-avatar-ring-animated,
 .aura-dark-theme #aura-cal-event-tooltip .aura-avatar-ring-animated {
     box-shadow: 0 0 0 2px #0f172a, 0 0 0 3px rgba(99, 102, 241, 0.8) !important;
@@ -1841,6 +1830,7 @@ body.aura-dark-mode #aura-cal-event-tooltip {
     }
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .aura-avatar-stacked,
 [data-theme="dark"] #aura-cal-event-tooltip .aura-avatar-stacked,
 .aura-dark-theme #aura-cal-event-tooltip .aura-avatar-stacked {
     border-color: #0f172a !important;
@@ -1848,6 +1838,7 @@ body.aura-dark-mode #aura-cal-event-tooltip {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .aura-avatar-more,
 [data-theme="dark"] #aura-cal-event-tooltip .aura-avatar-more,
 .aura-dark-theme #aura-cal-event-tooltip .aura-avatar-more {
     background: #334155 !important;
@@ -1856,16 +1847,19 @@ body.aura-dark-mode #aura-cal-event-tooltip {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .tooltip-meta-row strong,
 [data-theme="dark"] #aura-cal-event-tooltip .tooltip-meta-row strong,
 .aura-dark-theme #aura-cal-event-tooltip .tooltip-meta-row strong {
     color: #94a3b8 !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .tooltip-meta-row span,
 [data-theme="dark"] #aura-cal-event-tooltip .tooltip-meta-row span,
 .aura-dark-theme #aura-cal-event-tooltip .tooltip-meta-row span {
     color: #f1f5f9 !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .tooltip-desc,
 [data-theme="dark"] #aura-cal-event-tooltip .tooltip-desc,
 .aura-dark-theme #aura-cal-event-tooltip .tooltip-desc {
     background: rgba(255, 255, 255, 0.06) !important;
@@ -1873,6 +1867,7 @@ body.aura-dark-mode #aura-cal-event-tooltip {
     border-left-color: #818cf8 !important;
 }
 
+[data-aura-theme="dark"] #aura-cal-event-tooltip .tooltip-footer,
 [data-theme="dark"] #aura-cal-event-tooltip .tooltip-footer,
 .aura-dark-theme #aura-cal-event-tooltip .tooltip-footer {
     border-top-color: rgba(255, 255, 255, 0.1) !important;
@@ -1880,6 +1875,12 @@ body.aura-dark-mode #aura-cal-event-tooltip {
 }
 
 /* Fila 'Todo el día', compactación y eliminación de scrollbars secundarias en Frontend Dark Mode */
+[data-aura-theme="dark"] .fc .fc-scrollgrid-section-header,
+[data-aura-theme="dark"] .fc .fc-scrollgrid-section-header th,
+[data-aura-theme="dark"] .fc .fc-scrollgrid-section-header td,
+[data-aura-theme="dark"] .fc .fc-timegrid-all-day,
+[data-aura-theme="dark"] .fc .fc-timegrid-all-day th,
+[data-aura-theme="dark"] .fc .fc-timegrid-all-day td,
 [data-theme="dark"] .fc .fc-scrollgrid-section-header,
 [data-theme="dark"] .fc .fc-scrollgrid-section-header th,
 [data-theme="dark"] .fc .fc-scrollgrid-section-header td,
@@ -1894,6 +1895,7 @@ body.aura-dark-mode #aura-cal-event-tooltip {
     vertical-align: middle !important;
 }
 
+[data-aura-theme="dark"] .fc .fc-col-header-cell,
 [data-theme="dark"] .fc .fc-col-header-cell,
 .aura-dark-theme .fc .fc-col-header-cell {
     padding: 3px 0 !important;
@@ -2000,26 +2002,26 @@ body.aura-dark-mode #aura-cal-event-tooltip {
     overflow: hidden !important;
 }
 
-[data-theme="dark"] .aura-calendar-wrapper:fullscreen,
-[data-theme="dark"] .aura-calendar-wrapper:-webkit-full-screen,
-[data-theme="dark"] .aura-calendar-wrapper.is-browser-fullscreen,
-[data-theme="dark"] .aura-calendar-wrapper.aura-calendar-is-fullscreen,
-[data-theme="dark"] .aura-teacher-card.aura-calendar-is-fullscreen,
-[data-theme="dark"] .aura-teacher-card:fullscreen,
-[data-theme="dark"] .aura-teacher-card:-webkit-full-screen,
-[data-theme="dark"] .adp-card.aura-calendar-is-fullscreen,
-[data-theme="dark"] .adp-card:fullscreen,
-[data-theme="dark"] .adp-card:-webkit-full-screen,
-body[data-theme="dark"] .aura-calendar-wrapper:fullscreen,
-body[data-theme="dark"] .aura-calendar-wrapper:-webkit-full-screen,
-body[data-theme="dark"] .aura-calendar-wrapper.is-browser-fullscreen,
-body[data-theme="dark"] .aura-calendar-wrapper.aura-calendar-is-fullscreen,
-body[data-theme="dark"] .aura-teacher-card.aura-calendar-is-fullscreen,
-body[data-theme="dark"] .aura-teacher-card:fullscreen,
-body[data-theme="dark"] .aura-teacher-card:-webkit-full-screen,
-body[data-theme="dark"] .adp-card.aura-calendar-is-fullscreen,
-body[data-theme="dark"] .adp-card:fullscreen,
-body[data-theme="dark"] .adp-card:-webkit-full-screen,
+[data-aura-theme="dark"] .aura-calendar-wrapper:fullscreen,
+[data-aura-theme="dark"] .aura-calendar-wrapper:-webkit-full-screen,
+[data-aura-theme="dark"] .aura-calendar-wrapper.is-browser-fullscreen,
+[data-aura-theme="dark"] .aura-calendar-wrapper.aura-calendar-is-fullscreen,
+[data-aura-theme="dark"] .aura-teacher-card.aura-calendar-is-fullscreen,
+[data-aura-theme="dark"] .aura-teacher-card:fullscreen,
+[data-aura-theme="dark"] .aura-teacher-card:-webkit-full-screen,
+[data-aura-theme="dark"] .adp-card.aura-calendar-is-fullscreen,
+[data-aura-theme="dark"] .adp-card:fullscreen,
+[data-aura-theme="dark"] .adp-card:-webkit-full-screen,
+body[data-aura-theme="dark"] .aura-calendar-wrapper:fullscreen,
+body[data-aura-theme="dark"] .aura-calendar-wrapper:-webkit-full-screen,
+body[data-aura-theme="dark"] .aura-calendar-wrapper.is-browser-fullscreen,
+body[data-aura-theme="dark"] .aura-calendar-wrapper.aura-calendar-is-fullscreen,
+body[data-aura-theme="dark"] .aura-teacher-card.aura-calendar-is-fullscreen,
+body[data-aura-theme="dark"] .aura-teacher-card:fullscreen,
+body[data-aura-theme="dark"] .aura-teacher-card:-webkit-full-screen,
+body[data-aura-theme="dark"] .adp-card.aura-calendar-is-fullscreen,
+body[data-aura-theme="dark"] .adp-card:fullscreen,
+body[data-aura-theme="dark"] .adp-card:-webkit-full-screen,
 .aura-dark-theme .aura-calendar-wrapper:fullscreen,
 .aura-dark-theme .aura-calendar-wrapper:-webkit-full-screen,
 .aura-dark-theme .aura-calendar-wrapper.is-browser-fullscreen,
@@ -2297,11 +2299,11 @@ body[data-theme="dark"] .adp-card:-webkit-full-screen,
     border-bottom: 2px solid #e0e0e0 !important;
 }
 
-html[data-theme="dark"] .aura-calendar-wrapper .fc .fc-timegrid-allday,
-body[data-theme="dark"] .aura-calendar-wrapper .fc .fc-timegrid-allday,
+[data-aura-theme="dark"] .aura-calendar-wrapper .fc .fc-timegrid-allday,
+.aura-dark-theme .aura-calendar-wrapper .fc .fc-timegrid-allday,
 body.aura-dark-mode .aura-calendar-wrapper .fc .fc-timegrid-allday,
-html[data-theme="dark"] .aura-teacher-portal .fc .fc-timegrid-allday,
-body[data-theme="dark"] .aura-teacher-portal .fc .fc-timegrid-allday,
+[data-aura-theme="dark"] .aura-teacher-portal .fc .fc-timegrid-allday,
+.aura-dark-theme .aura-teacher-portal .fc .fc-timegrid-allday,
 body.aura-dark-mode .aura-teacher-portal .fc .fc-timegrid-allday {
     border-bottom: 2px solid #3c4043 !important;
     background: rgba(255, 255, 255, 0.02) !important;
@@ -2385,7 +2387,7 @@ body.aura-dark-mode .aura-teacher-portal .fc .fc-timegrid-allday {
     }
 
     /* Tabs del profesor en fila con scroll horizontal */
-    .teacher-tabs-nav {
+    .aura-teacher-portal .teacher-tabs-nav {
         gap: 3px !important;
         margin-bottom: 6px !important;
         overflow-x: auto !important;
@@ -2394,7 +2396,7 @@ body.aura-dark-mode .aura-teacher-portal .fc .fc-timegrid-allday {
         -webkit-overflow-scrolling: touch !important;
     }
 
-    .teacher-tab-btn {
+    .aura-teacher-portal .teacher-tab-btn {
         padding: 5px 9px !important;
         font-size: 11px !important;
         flex-shrink: 0 !important;
@@ -2737,23 +2739,23 @@ body.aura-system-page.aura-divi-no-sidebar #main-content .container::before {
 }
 
 /* Modo Oscuro automático SOLO en el área de contenido (#main-content / .et-l--post / .et-l--body),
-   preservando intactos <body> (debajo del footer), #page-container, #et-main-area, Header y Footer */
-html[data-theme="dark"] body.aura-system-page #main-content,
-html[data-theme="dark"] body.aura-system-page #content-area,
-html[data-theme="dark"] body.aura-system-page #left-area,
-html[data-theme="dark"] body.aura-system-page #main-content article.page,
-html[data-theme="dark"] body.aura-system-page #main-content article.et_pb_post,
-html[data-theme="dark"] body.aura-system-page #main-content .entry-content,
-html[data-theme="dark"] body.aura-system-page main#primary,
-html[data-theme="dark"] body.aura-system-page main.site-main,
-html[data-theme="dark"] body.aura-has-theme-toggle #main-content,
-html[data-theme="dark"] body.aura-has-theme-toggle #content-area,
-html[data-theme="dark"] body.aura-has-theme-toggle #left-area,
-html[data-theme="dark"] body.aura-has-theme-toggle #main-content article.page,
-html[data-theme="dark"] body.aura-has-theme-toggle #main-content article.et_pb_post,
-html[data-theme="dark"] body.aura-has-theme-toggle #main-content .entry-content,
-html[data-theme="dark"] body.aura-has-theme-toggle main#primary,
-html[data-theme="dark"] body.aura-has-theme-toggle main.site-main,
+   preservando intactos <body> (debajo del footer), #page-container, #et-main-area, barra de navegación, carrito, Header y Footer */
+html[data-aura-theme="dark"] body.aura-system-page #main-content,
+html[data-aura-theme="dark"] body.aura-system-page #content-area,
+html[data-aura-theme="dark"] body.aura-system-page #left-area,
+html[data-aura-theme="dark"] body.aura-system-page #main-content article.page,
+html[data-aura-theme="dark"] body.aura-system-page #main-content article.et_pb_post,
+html[data-aura-theme="dark"] body.aura-system-page #main-content .entry-content,
+html[data-aura-theme="dark"] body.aura-system-page main#primary,
+html[data-aura-theme="dark"] body.aura-system-page main.site-main,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #content-area,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #left-area,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content article.page,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content article.et_pb_post,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content .entry-content,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle main#primary,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle main.site-main,
 body.aura-dark-theme.aura-system-page #main-content,
 body.aura-dark-theme.aura-system-page #content-area,
 body.aura-dark-theme.aura-system-page #left-area,
@@ -2775,12 +2777,12 @@ body.aura-dark-theme.aura-has-theme-toggle main.site-main {
 }
 
 /* Alta especificidad para secciones/filas/columnas de contenido en Divi 4 (excluyendo Header y Footer globales) */
-html[data-theme="dark"] body.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #main-content .et_pb_section:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content .et_pb_section:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
 body.aura-dark-theme.aura-system-page #main-content .et_pb_section:not(.no-dark-mode),
 body.aura-dark-theme.aura-system-page #et-boc .et-l--post .et_pb_section:not(.no-dark-mode),
 body.aura-dark-theme.aura-system-page #et-boc .et-l--body .et_pb_section:not(.no-dark-mode),
@@ -2792,14 +2794,14 @@ body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l--body .et_pb_section:no
     border-color: var(--aura-border, #2e3d56) !important;
 }
 
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_row:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_column:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_row:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_column:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_row:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_column:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_row:not(.no-dark-mode),
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_column:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_row:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_column:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_row:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_column:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_row:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_column:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_row:not(.no-dark-mode),
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_column:not(.no-dark-mode),
 body.aura-dark-theme.aura-system-page #et-boc .et-l--post .et_pb_row:not(.no-dark-mode),
 body.aura-dark-theme.aura-system-page #et-boc .et-l--post .et_pb_column:not(.no-dark-mode),
 body.aura-dark-theme.aura-system-page #et-boc .et-l--body .et_pb_row:not(.no-dark-mode),
@@ -2811,24 +2813,25 @@ body.aura-dark-theme.aura-has-theme-toggle #et-boc .et-l--body .et_pb_column:not
     background-color: transparent !important;
 }
 
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_text_inner,
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_text_inner,
-html[data-theme="dark"] body.aura-system-page #main-content .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-system-page #main-content .entry-title,
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_text_inner,
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_text_inner,
-html[data-theme="dark"] body.aura-has-theme-toggle #main-content .et_pb_module.et_pb_text,
-html[data-theme="dark"] body.aura-has-theme-toggle #main-content .entry-title,
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_module.et_pb_text,
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--post .et_pb_text_inner,
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_module.et_pb_text,
+html[data-aura-theme="dark"] body.aura-system-page #et-boc .et-l--body .et_pb_text_inner,
+html[data-aura-theme="dark"] body.aura-system-page #main-content .et_pb_module.et_pb_text,
+html[data-aura-theme="dark"] body.aura-system-page #main-content .entry-title,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_module.et_pb_text,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--post .et_pb_text_inner,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_module.et_pb_text,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #et-boc .et-l--body .et_pb_text_inner,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content .et_pb_module.et_pb_text,
+html[data-aura-theme="dark"] body.aura-has-theme-toggle #main-content .entry-title,
 body.aura-dark-theme.aura-system-page #main-content .entry-title,
 body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
     color: var(--aura-text-primary, #f8fafc) !important;
 }
 
 /* ── MODO OSCURO: PAZ Y SALVO, CERTIFICADOS Y FORMULARIOS ─────── */
+[data-aura-theme="dark"] .aura-paz-salvo-check,
 [data-theme="dark"] .aura-paz-salvo-check,
 .aura-dark-theme .aura-paz-salvo-check {
     background: var(--aura-surface-card, #162032);
@@ -2837,11 +2840,15 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
     padding: 20px;
     color: var(--aura-text-primary, #f8fafc);
 }
+[data-aura-theme="dark"] .aura-paz-salvo-check h3,
 [data-theme="dark"] .aura-paz-salvo-check h3,
 .aura-dark-theme .aura-paz-salvo-check h3 {
     color: var(--aura-text-primary, #f8fafc);
 }
 
+[data-aura-theme="dark"] .aura-cert-verify-card,
+[data-aura-theme="dark"] .aura-cert-verify-search,
+[data-aura-theme="dark"] .aura-my-cert-card,
 [data-theme="dark"] .aura-cert-verify-card,
 [data-theme="dark"] .aura-cert-verify-search,
 [data-theme="dark"] .aura-my-cert-card,
@@ -2852,6 +2859,10 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
     border-color: var(--aura-border, #2e3d56) !important;
     color: var(--aura-text-primary, #f8fafc) !important;
 }
+[data-aura-theme="dark"] .aura-cert-verify-card h2,
+[data-aura-theme="dark"] .aura-cert-verify-search h2,
+[data-aura-theme="dark"] .aura-cert-verify-search h3,
+[data-aura-theme="dark"] .aura-my-cert-course,
 [data-theme="dark"] .aura-cert-verify-card h2,
 [data-theme="dark"] .aura-cert-verify-search h2,
 [data-theme="dark"] .aura-cert-verify-search h3,
@@ -2862,17 +2873,26 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
 .aura-dark-theme .aura-my-cert-course {
     color: var(--aura-text-primary, #f8fafc) !important;
 }
+[data-aura-theme="dark"] .aura-cert-verify-data,
+[data-aura-theme="dark"] .aura-cert-verify-row,
 [data-theme="dark"] .aura-cert-verify-data,
 [data-theme="dark"] .aura-cert-verify-row,
 .aura-dark-theme .aura-cert-verify-data,
 .aura-dark-theme .aura-cert-verify-row {
     border-color: var(--aura-border, #2e3d56) !important;
 }
+[data-aura-theme="dark"] .aura-cert-verify-label,
 [data-theme="dark"] .aura-cert-verify-label,
 .aura-dark-theme .aura-cert-verify-label {
     background: var(--aura-surface-alt, #1e293b) !important;
     color: var(--aura-text-muted, #94a3b8) !important;
 }
+[data-aura-theme="dark"] .aura-cert-verify-value,
+[data-aura-theme="dark"] .aura-cert-verify-search p,
+[data-aura-theme="dark"] .aura-my-certs-program,
+[data-aura-theme="dark"] .aura-my-cert-meta,
+[data-aura-theme="dark"] .aura-my-certs-empty,
+[data-aura-theme="dark"] .aura-cert-verify-footer,
 [data-theme="dark"] .aura-cert-verify-value,
 [data-theme="dark"] .aura-cert-verify-search p,
 [data-theme="dark"] .aura-my-certs-program,
@@ -2887,6 +2907,7 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
 .aura-dark-theme .aura-cert-verify-footer {
     color: var(--aura-text-secondary, #cbd5e1) !important;
 }
+[data-aura-theme="dark"] .aura-my-cert-actions .aura-btn-outline,
 [data-theme="dark"] .aura-my-cert-actions .aura-btn-outline,
 .aura-dark-theme .aura-my-cert-actions .aura-btn-outline {
     background: var(--aura-surface-alt, #1e293b) !important;
@@ -2894,6 +2915,8 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
     color: var(--aura-text-primary, #f8fafc) !important;
 }
 
+[data-aura-theme="dark"] .aura-form-portal,
+[data-aura-theme="dark"] .aura-form-wrap,
 [data-theme="dark"] .aura-form-portal,
 [data-theme="dark"] .aura-form-wrap,
 .aura-dark-theme .aura-form-portal,
@@ -2905,6 +2928,10 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
     --af-text-muted: var(--aura-text-muted, #94a3b8);
     color: var(--aura-text-primary, #f8fafc);
 }
+[data-aura-theme="dark"] .aura-portal-card,
+[data-aura-theme="dark"] .aura-form-portal__empty,
+[data-aura-theme="dark"] .aura-form-wrap .aura-form,
+[data-aura-theme="dark"] .aura-form-success,
 [data-theme="dark"] .aura-portal-card,
 [data-theme="dark"] .aura-form-portal__empty,
 [data-theme="dark"] .aura-form-wrap .aura-form,
@@ -2917,6 +2944,10 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
     border-color: var(--aura-border, #2e3d56) !important;
     color: var(--aura-text-primary, #f8fafc) !important;
 }
+[data-aura-theme="dark"] .aura-portal-card__title,
+[data-aura-theme="dark"] .aura-portal-section__title,
+[data-aura-theme="dark"] .aura-form-title,
+[data-aura-theme="dark"] .aura-form-wrap label,
 [data-theme="dark"] .aura-portal-card__title,
 [data-theme="dark"] .aura-portal-section__title,
 [data-theme="dark"] .aura-form-title,
@@ -2927,6 +2958,10 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
 .aura-dark-theme .aura-form-wrap label {
     color: var(--aura-text-primary, #f8fafc) !important;
 }
+[data-aura-theme="dark"] .aura-portal-card__desc,
+[data-aura-theme="dark"] .aura-portal-card__meta,
+[data-aura-theme="dark"] .aura-form-description,
+[data-aura-theme="dark"] .aura-form-company,
 [data-theme="dark"] .aura-portal-card__desc,
 [data-theme="dark"] .aura-portal-card__meta,
 [data-theme="dark"] .aura-form-description,
@@ -2937,6 +2972,11 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
 .aura-dark-theme .aura-form-company {
     color: var(--aura-text-secondary, #cbd5e1) !important;
 }
+[data-aura-theme="dark"] .aura-form-wrap input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+[data-aura-theme="dark"] .aura-form-wrap textarea,
+[data-aura-theme="dark"] .aura-form-wrap select,
+[data-aura-theme="dark"] .aura-cert-verify-search input,
+[data-aura-theme="dark"] .aura-paz-salvo-check input,
 [data-theme="dark"] .aura-form-wrap input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
 [data-theme="dark"] .aura-form-wrap textarea,
 [data-theme="dark"] .aura-form-wrap select,
@@ -2951,6 +2991,8 @@ body.aura-dark-theme.aura-has-theme-toggle #main-content .entry-title {
     border-color: var(--aura-border, #2e3d56) !important;
     color: var(--aura-text-primary, #f8fafc) !important;
 }
+[data-aura-theme="dark"] .aura-form-notice--closed,
+[data-aura-theme="dark"] .aura-form-notice--login,
 [data-theme="dark"] .aura-form-notice--closed,
 [data-theme="dark"] .aura-form-notice--login,
 .aura-dark-theme .aura-form-notice--closed,
