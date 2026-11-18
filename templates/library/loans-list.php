@@ -49,22 +49,28 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
 }
 ?>
 <div class="aura-app-wrapper aura-library-loans-list">
+    <div class="wrap aura-app-context">
 
     <?php
-    $actions_html = '';
+    $header_actions = [];
     if ( $can_create ) {
-        $actions_html .= '<button type="button" id="aura-lib-btn-new-loan" class="aura-btn aura-btn-primary"><span class="dashicons dashicons-plus-alt2"></span> ' . esc_html__( 'Nuevo Préstamo', 'aura-business-suite' ) . '</button>';
+        $header_actions[] = [
+            'label' => __( 'Nuevo Préstamo', 'aura-business-suite' ),
+            'url'   => '#',
+            'class' => 'btn btn-shimmer btn-indigo btn-lift',
+            'icon'  => 'dashicons-plus-alt2',
+            'attr'  => 'id="aura-lib-btn-new-loan"',
+        ];
     }
 
     Aura_UI::render_page_header( [
-        'title'       => __( 'Préstamos de Biblioteca', 'aura-business-suite' ),
-        'subtitle'    => __( 'Control y seguimiento de préstamos, vencimientos y devoluciones', 'aura-business-suite' ),
-        'icon'        => 'dashicons-book-alt',
-        'breadcrumbs' => [
-            [ 'label' => __( 'Biblioteca', 'aura-business-suite' ), 'url' => admin_url( 'admin.php?page=aura-library' ) ],
-            [ 'label' => __( 'Préstamos', 'aura-business-suite' ) ],
+        'title'    => __( 'Préstamos de Biblioteca', 'aura-business-suite' ),
+        'subtitle' => __( 'Control y seguimiento de préstamos, vencimientos y devoluciones', 'aura-business-suite' ),
+        'icon'     => 'dashicons-book-alt',
+        'badges'   => [
+            [ 'label' => sprintf( __( '%d activos', 'aura-business-suite' ), $loan_stats['active'] ), 'variant' => 'blue' ],
         ],
-        'actions_html'=> $actions_html,
+        'actions'  => $header_actions,
     ] );
 
     Aura_UI::render_stats_grid( [
@@ -73,7 +79,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
             'icon'     => 'dashicons-book-alt',
             'value'    => number_format_i18n( $loan_stats['total'] ),
             'label'    => __( 'Total Préstamos', 'aura-business-suite' ),
-            'variant'  => 'primary',
+            'variant'  => 'capital',
             'tooltip'  => __( 'Histórico total de préstamos registrados', 'aura-business-suite' ),
         ],
         [
@@ -81,7 +87,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
             'icon'     => 'dashicons-clock',
             'value'    => number_format_i18n( $loan_stats['active'] ),
             'label'    => __( 'Préstamos Activos', 'aura-business-suite' ),
-            'variant'  => 'info',
+            'variant'  => 'balance',
             'tooltip'  => __( 'Préstamos vigentes en posesión de lectores', 'aura-business-suite' ),
         ],
         [
@@ -89,7 +95,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
             'icon'     => 'dashicons-warning',
             'value'    => number_format_i18n( $loan_stats['overdue'] ),
             'label'    => __( 'Vencidos / Mora', 'aura-business-suite' ),
-            'variant'  => 'danger',
+            'variant'  => 'expense',
             'tooltip'  => __( 'Préstamos que superaron su fecha límite de entrega', 'aura-business-suite' ),
         ],
         [
@@ -97,48 +103,61 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
             'icon'     => 'dashicons-yes-alt',
             'value'    => number_format_i18n( $loan_stats['returned'] ),
             'label'    => __( 'Devueltos', 'aura-business-suite' ),
-            'variant'  => 'success',
+            'variant'  => 'income',
             'tooltip'  => __( 'Libros devueltos con éxito a la biblioteca', 'aura-business-suite' ),
         ],
     ] );
     ?>
 
-    <!-- Filtros -->
-    <div class="aura-glass-card aura-filters-card" style="margin-bottom: var(--aura-space-6, 24px);">
-        <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
-            <div style="flex:1; min-width:220px;">
-                <input type="search" id="aura-lib-loans-search"
-                       placeholder="<?php esc_attr_e( 'Buscar por libro, lector…', 'aura-business-suite' ); ?>"
-                       class="aura-input" style="width:100%;">
+    <!-- Filtros (Bootstrap 5.3 Input Groups) -->
+    <div class="aura-glass-card aura-filters-card aura-lib-loans-filters">
+        <div class="aura-lib-filters-grid">
+            <div class="aura-lib-filter-search">
+                <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">🔍</span>
+                    <input type="search" id="aura-lib-loans-search"
+                           placeholder="<?php esc_attr_e( 'Buscar por libro, lector…', 'aura-business-suite' ); ?>"
+                           class="form-control">
+                </div>
             </div>
 
-            <div style="min-width:160px;">
-                <select id="aura-lib-loans-filter-status" class="aura-select" style="width:100%;">
-                    <option value=""><?php esc_html_e( 'Todos los estados', 'aura-business-suite' ); ?></option>
-                    <option value="active"><?php    esc_html_e( 'Activo',    'aura-business-suite' ); ?></option>
-                    <option value="overdue"><?php   esc_html_e( 'Vencido',   'aura-business-suite' ); ?></option>
-                    <option value="extended"><?php  esc_html_e( 'Extendido', 'aura-business-suite' ); ?></option>
-                    <option value="returned"><?php  esc_html_e( 'Devuelto',  'aura-business-suite' ); ?></option>
-                    <option value="lost"><?php      esc_html_e( 'Perdido',   'aura-business-suite' ); ?></option>
-                    <option value="cancelled"><?php esc_html_e( 'Cancelado', 'aura-business-suite' ); ?></option>
-                </select>
+            <div class="aura-lib-filter-select">
+                <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">🟢</span>
+                    <select id="aura-lib-loans-filter-status" class="form-control" aria-label="<?php esc_attr_e( 'Estado', 'aura-business-suite' ); ?>">
+                        <option value=""><?php esc_html_e( 'Todos los estados', 'aura-business-suite' ); ?></option>
+                        <option value="active"><?php    esc_html_e( 'Activo',    'aura-business-suite' ); ?></option>
+                        <option value="overdue"><?php   esc_html_e( 'Vencido',   'aura-business-suite' ); ?></option>
+                        <option value="extended"><?php  esc_html_e( 'Extendido', 'aura-business-suite' ); ?></option>
+                        <option value="returned"><?php  esc_html_e( 'Devuelto',  'aura-business-suite' ); ?></option>
+                        <option value="lost"><?php      esc_html_e( 'Perdido',   'aura-business-suite' ); ?></option>
+                        <option value="cancelled"><?php esc_html_e( 'Cancelado', 'aura-business-suite' ); ?></option>
+                    </select>
+                </div>
             </div>
 
-            <div>
-                <input type="date" id="aura-lib-loans-filter-from" class="aura-input"
-                       title="<?php esc_attr_e( 'Desde (fecha préstamo)', 'aura-business-suite' ); ?>">
+            <div class="aura-lib-filter-date">
+                <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">📅</span>
+                    <input type="date" id="aura-lib-loans-filter-from" class="form-control"
+                           title="<?php esc_attr_e( 'Desde (fecha préstamo)', 'aura-business-suite' ); ?>">
+                </div>
             </div>
-            <div>
-                <input type="date" id="aura-lib-loans-filter-to" class="aura-input"
-                       title="<?php esc_attr_e( 'Hasta (fecha préstamo)', 'aura-business-suite' ); ?>">
+            <div class="aura-lib-filter-date">
+                <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">📅</span>
+                    <input type="date" id="aura-lib-loans-filter-to" class="form-control"
+                           title="<?php esc_attr_e( 'Hasta (fecha préstamo)', 'aura-business-suite' ); ?>">
+                </div>
             </div>
 
-            <div style="display:flex; gap:8px;">
-                <button id="aura-lib-loans-filter-apply" class="aura-btn aura-btn-secondary">
-                    <span class="dashicons dashicons-filter"></span> <?php esc_html_e( 'Filtrar', 'aura-business-suite' ); ?>
+            <div class="aura-lib-filter-actions">
+                <button type="button" id="aura-lib-loans-filter-apply" class="btn btn-shimmer btn-indigo btn-lift">
+                    <span class="dashicons dashicons-filter"></span>
+                    <span><?php esc_html_e( 'Filtrar', 'aura-business-suite' ); ?></span>
                 </button>
-                <button id="aura-lib-loans-filter-clear" class="aura-btn aura-btn-ghost">
-                    <?php esc_html_e( 'Limpiar', 'aura-business-suite' ); ?>
+                <button type="button" id="aura-lib-loans-filter-clear" class="btn btn-glass btn-lift">
+                    <span><?php esc_html_e( 'Limpiar', 'aura-business-suite' ); ?></span>
                 </button>
             </div>
         </div>
@@ -186,37 +205,48 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
 if ( class_exists( 'Aura_Contact_Selector' ) ) {
     Aura_Contact_Selector::enqueue_assets();
 }
+$loans_js_ver  = file_exists( AURA_PLUGIN_DIR . 'assets/js/library-loans.js' ) ? AURA_VERSION . '.' . filemtime( AURA_PLUGIN_DIR . 'assets/js/library-loans.js' ) : AURA_VERSION;
+$loans_css_ver = file_exists( AURA_PLUGIN_DIR . 'assets/css/library-loans.css' ) ? AURA_VERSION . '.' . filemtime( AURA_PLUGIN_DIR . 'assets/css/library-loans.css' ) : AURA_VERSION;
+
 wp_enqueue_script( 'aura-lib-loans',
     AURA_PLUGIN_URL . 'assets/js/library-loans.js',
-    [ 'jquery', 'jquery-ui-autocomplete' ],
-    AURA_VERSION, true );
+    [ 'jquery', 'jquery-ui-autocomplete', 'aura-ui-core' ],
+    $loans_js_ver, true );
 wp_enqueue_style( 'aura-lib-loans-css',
     AURA_PLUGIN_URL . 'assets/css/library-loans.css',
-    [], AURA_VERSION );
+    [ 'aura-design-system' ], $loans_css_ver );
 ?>
 
+        <div class="adp-footer">
+            <div>
+                Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Diego Giraldo</a></strong> &bull; Versión <?php echo esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0' ); ?> &bull; Aura Business Suite &copy; <?php echo date('Y'); ?>
+            </div>
+        </div>
+
+    </div><!-- .wrap.aura-app-context -->
 </div><!-- .aura-app-wrapper -->
 
 <!-- ╔══════════════════════════════════════════╗
      ║  Modal: Nuevo Préstamo (UX v2)           ║
      ╚══════════════════════════════════════════╝ -->
-<div id="aura-lib-loan-modal" class="aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-loan-modal-title">
-    <div class="aura-lib-modal-overlay"></div>
-    <div class="aura-lib-modal-content aura-lib-loan-modal-content">
+<div id="aura-lib-loan-modal" class="aura-modal-overlay aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-loan-modal-title" aria-hidden="true">
+    <div class="aura-modal-container aura-lib-modal-container aura-lib-loan-modal-content">
 
         <!-- Header con icono y degradado -->
-        <div class="aura-lib-loan-mhdr">
+        <div class="aura-modal-header aura-lib-loan-mhdr">
             <div class="aura-lib-loan-mhdr-icon">📚</div>
             <div class="aura-lib-loan-mhdr-text">
                 <h2 id="aura-lib-loan-modal-title"><?php esc_html_e( 'Nuevo Préstamo', 'aura-business-suite' ); ?></h2>
                 <span><?php esc_html_e( 'Completa los campos para registrar el préstamo', 'aura-business-suite' ); ?></span>
             </div>
-            <button type="button" class="aura-lib-modal-close aura-lib-loan-mhdr-close dashicons dashicons-no-alt"
-                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"></button>
+            <button type="button" class="aura-modal-close aura-lib-modal-close"
+                    data-modal-close="aura-lib-loan-modal"
+                    aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"
+                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
         </div>
 
         <!-- Cuerpo del formulario -->
-        <div class="aura-lib-modal-body aura-lib-loan-mbody">
+        <div class="aura-modal-body aura-lib-modal-body aura-lib-loan-mbody">
             <form id="aura-lib-loan-form" autocomplete="off" novalidate>
                 <?php wp_nonce_field( 'aura_library_nonce', 'aura_lib_loan_nonce' ); ?>
 
@@ -342,13 +372,13 @@ wp_enqueue_style( 'aura-lib-loans-css',
         </div><!-- .aura-lib-modal-body -->
 
         <!-- Footer pegajoso -->
-        <div class="aura-lib-loan-mfooter">
-            <button type="button" class="button aura-lib-modal-close">
+        <div class="aura-modal-footer aura-lib-loan-mfooter">
+            <button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-modal-close" data-modal-close="aura-lib-loan-modal">
                 <?php esc_html_e( 'Cancelar', 'aura-business-suite' ); ?>
             </button>
-            <button type="button" id="aura-lib-loan-save" class="button button-primary aura-lib-loan-save-btn">
+            <button type="button" id="aura-lib-loan-save" class="btn btn-shimmer btn-indigo btn-lift aura-lib-loan-save-btn">
                 <span class="aura-lib-btn-label">
-                    <span class="dashicons dashicons-book-alt" style="vertical-align:middle;margin-right:3px;font-size:16px;height:16px;width:16px;"></span>
+                    <span class="dashicons dashicons-book-alt"></span>
                     <?php esc_html_e( 'Registrar Préstamo', 'aura-business-suite' ); ?>
                 </span>
                 <span class="aura-lib-btn-loading" style="display:none;">
@@ -358,22 +388,23 @@ wp_enqueue_style( 'aura-lib-loans-css',
             </button>
         </div>
 
-    </div><!-- .aura-lib-modal-content -->
+    </div><!-- .aura-modal-container -->
 </div>
 
 <!-- ╔══════════════════════════════════╗
      ║  Modal: Registrar Devolución     ║
      ╚══════════════════════════════════╝ -->
-<div id="aura-lib-return-modal" class="aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-return-modal-title">
-    <div class="aura-lib-modal-overlay"></div>
-    <div class="aura-lib-modal-content">
-        <div class="aura-lib-modal-header">
+<div id="aura-lib-return-modal" class="aura-modal-overlay aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-return-modal-title" aria-hidden="true" data-async-modal="true">
+    <div class="aura-modal-container aura-lib-modal-container">
+        <div class="aura-modal-header">
             <h2 id="aura-lib-return-modal-title"><?php esc_html_e( 'Registrar Devolución', 'aura-business-suite' ); ?></h2>
-            <button type="button" class="aura-lib-modal-close dashicons dashicons-no-alt"
-                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"></button>
+            <button type="button" class="aura-modal-close aura-lib-modal-close"
+                    data-modal-close="aura-lib-return-modal"
+                    aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"
+                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
         </div>
-        <div class="aura-lib-modal-body">
-            <form id="aura-lib-return-form" autocomplete="off">
+        <form id="aura-lib-return-form" class="aura-modal-form-flex" autocomplete="off">
+            <div class="aura-modal-body aura-lib-modal-body">
                 <?php wp_nonce_field( 'aura_library_nonce', 'aura_lib_return_nonce' ); ?>
                 <input type="hidden" id="return_loan_id" name="loan_id">
 
@@ -382,12 +413,12 @@ wp_enqueue_style( 'aura-lib-loans-css',
 
                 <div class="aura-lib-form-row">
                     <label for="return_date"><?php esc_html_e( 'Fecha de devolución *', 'aura-business-suite' ); ?></label>
-                    <input type="date" id="return_date" name="return_date" class="regular-text" required>
+                    <input type="date" id="return_date" name="return_date" class="form-control regular-text" required>
                 </div>
 
                 <div class="aura-lib-form-row">
                     <label for="return_condition"><?php esc_html_e( 'Condición del libro', 'aura-business-suite' ); ?></label>
-                    <select id="return_condition" name="return_condition" class="regular-text">
+                    <select id="return_condition" name="return_condition" class="form-control regular-text">
                         <option value="good"><?php      esc_html_e( 'Buena',      'aura-business-suite' ); ?></option>
                         <option value="damaged"><?php   esc_html_e( 'Deteriorado','aura-business-suite' ); ?></option>
                         <option value="lost"><?php      esc_html_e( 'Perdido',    'aura-business-suite' ); ?></option>
@@ -396,7 +427,7 @@ wp_enqueue_style( 'aura-lib-loans-css',
 
                 <div class="aura-lib-form-row">
                     <label for="return_notes"><?php esc_html_e( 'Notas de devolución', 'aura-business-suite' ); ?></label>
-                    <textarea id="return_notes" name="return_notes" rows="2" class="large-text"></textarea>
+                    <textarea id="return_notes" name="return_notes" rows="2" class="form-control large-text"></textarea>
                 </div>
 
                 <?php if ( $fines_enabled ) : ?>
@@ -422,33 +453,33 @@ wp_enqueue_style( 'aura-lib-loans-css',
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>
-
-                <div class="aura-lib-modal-footer">
-                    <button type="submit" class="button button-primary" id="aura-lib-return-save">
-                        <?php esc_html_e( 'Confirmar Devolución', 'aura-business-suite' ); ?>
-                    </button>
-                    <button type="button" class="button aura-lib-modal-close">
-                        <?php esc_html_e( 'Cancelar', 'aura-business-suite' ); ?>
-                    </button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="aura-modal-footer aura-lib-modal-footer">
+                <button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-modal-close" data-modal-close="aura-lib-return-modal">
+                    <?php esc_html_e( 'Cancelar', 'aura-business-suite' ); ?>
+                </button>
+                <button type="submit" class="btn btn-shimmer btn-emerald btn-lift" id="aura-lib-return-save">
+                    <?php esc_html_e( 'Confirmar Devolución', 'aura-business-suite' ); ?>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- ╔══════════════════════════════════╗
      ║  Modal: Detalle del Préstamo     ║
      ╚══════════════════════════════════╝ -->
-<div id="aura-lib-loan-detail-modal" class="aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-loan-detail-title">
-    <div class="aura-lib-modal-overlay"></div>
-    <div class="aura-lib-modal-content aura-lib-modal-large">
-        <div class="aura-lib-modal-header">
+<div id="aura-lib-loan-detail-modal" class="aura-modal-overlay aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-loan-detail-title" aria-hidden="true" data-async-modal="true">
+    <div class="aura-modal-container aura-lib-modal-container aura-lib-modal-large">
+        <div class="aura-modal-header">
             <h2 id="aura-lib-loan-detail-title"><?php esc_html_e( 'Detalle del Préstamo', 'aura-business-suite' ); ?></h2>
-            <button type="button" class="aura-lib-modal-close dashicons dashicons-no-alt"
-                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"></button>
+            <button type="button" class="aura-modal-close aura-lib-modal-close"
+                    data-modal-close="aura-lib-loan-detail-modal"
+                    aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"
+                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
         </div>
-        <div class="aura-lib-modal-body" id="aura-lib-loan-detail-body">
-            <span class="spinner is-active" style="float:none;"></span>
+        <div class="aura-modal-body aura-lib-modal-body" id="aura-lib-loan-detail-body">
+            <p class="aura-lib-detail-empty"><?php esc_html_e( 'Cargando detalle…', 'aura-business-suite' ); ?></p>
         </div>
     </div>
 </div>
@@ -456,16 +487,17 @@ wp_enqueue_style( 'aura-lib-loans-css',
 <!-- ╔══════════════════════════════════════════╗
      ║  Modal: Editar Préstamo                  ║
      ╚══════════════════════════════════════════╝ -->
-<div id="aura-lib-edit-loan-modal" class="aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-edit-loan-title">
-    <div class="aura-lib-modal-overlay"></div>
-    <div class="aura-lib-modal-content">
-        <div class="aura-lib-modal-header">
+<div id="aura-lib-edit-loan-modal" class="aura-modal-overlay aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-edit-loan-title" aria-hidden="true" data-async-modal="true">
+    <div class="aura-modal-container aura-lib-modal-container">
+        <div class="aura-modal-header">
             <h2 id="aura-lib-edit-loan-title"><?php esc_html_e( 'Editar Préstamo', 'aura-business-suite' ); ?></h2>
-            <button type="button" class="aura-lib-modal-close dashicons dashicons-no-alt"
-                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"></button>
+            <button type="button" class="aura-modal-close aura-lib-modal-close"
+                    data-modal-close="aura-lib-edit-loan-modal"
+                    aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"
+                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
         </div>
-        <div class="aura-lib-modal-body">
-            <form id="aura-lib-edit-loan-form" autocomplete="off">
+        <form id="aura-lib-edit-loan-form" class="aura-modal-form-flex" autocomplete="off">
+            <div class="aura-modal-body aura-lib-modal-body">
                 <?php wp_nonce_field( 'aura_library_nonce', 'aura_lib_edit_loan_nonce' ); ?>
                 <input type="hidden" id="edit_loan_id" name="loan_id">
 
@@ -474,15 +506,15 @@ wp_enqueue_style( 'aura-lib-loans-css',
 
                 <div class="aura-lib-form-row">
                     <label for="edit_loan_date"><?php esc_html_e( 'Fecha de préstamo *', 'aura-business-suite' ); ?></label>
-                    <input type="date" id="edit_loan_date" name="loan_date" class="regular-text" required data-allow-future="1">
+                    <input type="date" id="edit_loan_date" name="loan_date" class="form-control regular-text" required data-allow-future="1">
                 </div>
                 <div class="aura-lib-form-row">
                     <label for="edit_due_date"><?php esc_html_e( 'Fecha límite de devolución *', 'aura-business-suite' ); ?></label>
-                    <input type="date" id="edit_due_date" name="due_date" class="regular-text" required data-allow-future="1">
+                    <input type="date" id="edit_due_date" name="due_date" class="form-control regular-text" required data-allow-future="1">
                 </div>
                 <div class="aura-lib-form-row">
                     <label for="edit_status"><?php esc_html_e( 'Estado', 'aura-business-suite' ); ?></label>
-                    <select id="edit_status" name="status" class="regular-text">
+                    <select id="edit_status" name="status" class="form-control regular-text">
                         <option value="active"><?php   esc_html_e( 'Activo',    'aura-business-suite' ); ?></option>
                         <option value="overdue"><?php  esc_html_e( 'Vencido',   'aura-business-suite' ); ?></option>
                         <option value="extended"><?php esc_html_e( 'Extendido', 'aura-business-suite' ); ?></option>
@@ -491,38 +523,38 @@ wp_enqueue_style( 'aura-lib-loans-css',
                 </div>
                 <div class="aura-lib-form-row">
                     <label for="edit_notes"><?php esc_html_e( 'Notas', 'aura-business-suite' ); ?></label>
-                    <textarea id="edit_notes" name="notes" rows="3" class="large-text"
+                    <textarea id="edit_notes" name="notes" rows="3" class="form-control large-text"
                               placeholder="<?php esc_attr_e( 'Observaciones sobre este préstamo…', 'aura-business-suite' ); ?>"></textarea>
                 </div>
 
                 <div id="aura-lib-edit-loan-error" class="aura-lib-loan-modal-error" style="display:none;"></div>
-
-                <div class="aura-lib-modal-footer">
-                    <button type="submit" class="button button-primary" id="aura-lib-edit-loan-save">
-                        <?php esc_html_e( 'Guardar Cambios', 'aura-business-suite' ); ?>
-                    </button>
-                    <button type="button" class="button aura-lib-modal-close">
-                        <?php esc_html_e( 'Cancelar', 'aura-business-suite' ); ?>
-                    </button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="aura-modal-footer aura-lib-modal-footer">
+                <button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-modal-close" data-modal-close="aura-lib-edit-loan-modal">
+                    <?php esc_html_e( 'Cancelar', 'aura-business-suite' ); ?>
+                </button>
+                <button type="submit" class="btn btn-shimmer btn-indigo btn-lift" id="aura-lib-edit-loan-save">
+                    <?php esc_html_e( 'Guardar Cambios', 'aura-business-suite' ); ?>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- ╔══════════════════════════════════════════╗
      ║  Modal: Extender Préstamo                ║
      ╚══════════════════════════════════════════╝ -->
-<div id="aura-lib-extend-modal" class="aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-extend-modal-title">
-    <div class="aura-lib-modal-overlay"></div>
-    <div class="aura-lib-modal-content">
-        <div class="aura-lib-modal-header">
+<div id="aura-lib-extend-modal" class="aura-modal-overlay aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-extend-modal-title" aria-hidden="true" data-async-modal="true">
+    <div class="aura-modal-container aura-lib-modal-container">
+        <div class="aura-modal-header">
             <h2 id="aura-lib-extend-modal-title"><?php esc_html_e( 'Extender Préstamo', 'aura-business-suite' ); ?></h2>
-            <button type="button" class="aura-lib-modal-close dashicons dashicons-no-alt"
-                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"></button>
+            <button type="button" class="aura-modal-close aura-lib-modal-close"
+                    data-modal-close="aura-lib-extend-modal"
+                    aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"
+                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
         </div>
-        <div class="aura-lib-modal-body">
-            <form id="aura-lib-extend-form" autocomplete="off">
+        <form id="aura-lib-extend-form" class="aura-modal-form-flex" autocomplete="off">
+            <div class="aura-modal-body aura-lib-modal-body">
                 <?php wp_nonce_field( 'aura_library_nonce', 'aura_lib_extend_nonce' ); ?>
                 <input type="hidden" id="extend_loan_id" name="loan_id">
 
@@ -531,34 +563,34 @@ wp_enqueue_style( 'aura-lib-loans-css',
 
                 <div class="aura-lib-form-row">
                     <label><?php esc_html_e( 'Días a extender', 'aura-business-suite' ); ?></label>
-                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                        <button type="button" class="button aura-lib-extend-preset" data-days="7">+7 <?php esc_html_e( 'días', 'aura-business-suite' ); ?></button>
-                        <button type="button" class="button aura-lib-extend-preset" data-days="14">+14 <?php esc_html_e( 'días', 'aura-business-suite' ); ?></button>
-                        <button type="button" class="button aura-lib-extend-preset" data-days="30">+30 <?php esc_html_e( 'días', 'aura-business-suite' ); ?></button>
+                    <div class="aura-lib-extend-presets">
+                        <button type="button" class="btn btn-glass btn-sm btn-lift aura-lib-extend-preset" data-days="7">+7 <?php esc_html_e( 'días', 'aura-business-suite' ); ?></button>
+                        <button type="button" class="btn btn-glass btn-sm btn-lift aura-lib-extend-preset" data-days="14">+14 <?php esc_html_e( 'días', 'aura-business-suite' ); ?></button>
+                        <button type="button" class="btn btn-glass btn-sm btn-lift aura-lib-extend-preset" data-days="30">+30 <?php esc_html_e( 'días', 'aura-business-suite' ); ?></button>
                     </div>
-                    <div style="display:flex;align-items:center;gap:6px;margin-top:8px;">
-                        <input type="number" id="extend_days" name="days" min="1" max="180" value="<?php echo esc_attr( $extension_days ); ?>" class="small-text" style="width:70px;">
-                        <span style="color:#555;"><?php esc_html_e( 'días personalizados', 'aura-business-suite' ); ?></span>
+                    <div class="input-group aura-lib-extend-days-group">
+                        <span class="input-group-text" aria-hidden="true">⏱️</span>
+                        <input type="number" id="extend_days" name="days" min="1" max="180" value="<?php echo esc_attr( $extension_days ); ?>" class="form-control">
+                        <span class="input-group-text"><?php esc_html_e( 'días personalizados', 'aura-business-suite' ); ?></span>
                     </div>
                 </div>
 
                 <div class="aura-lib-form-row">
                     <label><?php esc_html_e( 'Nueva fecha límite', 'aura-business-suite' ); ?></label>
-                    <strong id="extend-new-due" style="font-size:15px;color:#0073aa;">—</strong>
+                    <strong id="extend-new-due" class="aura-lib-extend-new-due">—</strong>
                 </div>
 
                 <div id="aura-lib-extend-error" class="aura-lib-loan-modal-error" style="display:none;"></div>
-
-                <div class="aura-lib-modal-footer">
-                    <button type="submit" class="button button-primary" id="aura-lib-extend-save">
-                        <?php esc_html_e( 'Confirmar Extensión', 'aura-business-suite' ); ?>
-                    </button>
-                    <button type="button" class="button aura-lib-modal-close">
-                        <?php esc_html_e( 'Cancelar', 'aura-business-suite' ); ?>
-                    </button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="aura-modal-footer aura-lib-modal-footer">
+                <button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-modal-close" data-modal-close="aura-lib-extend-modal">
+                    <?php esc_html_e( 'Cancelar', 'aura-business-suite' ); ?>
+                </button>
+                <button type="submit" class="btn btn-shimmer btn-indigo btn-lift" id="aura-lib-extend-save">
+                    <?php esc_html_e( 'Confirmar Extensión', 'aura-business-suite' ); ?>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

@@ -129,7 +129,7 @@
                     <td>${escHtml(r.book_title)}</td>
                     <td>${escHtml(r.borrower)}</td>
                     <td>${escHtml(r.due_date)}</td>
-                    <td><span style="color:#d63638;font-weight:700;">${escHtml(r.days_overdue)}</span></td>
+                    <td><span class="badge badge-red">${escHtml(r.days_overdue)}</span></td>
                     <td>${escHtml(r.fine_amount)}</td>
                 </tr>`;
             });

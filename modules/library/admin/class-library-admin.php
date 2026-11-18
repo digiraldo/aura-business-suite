@@ -209,15 +209,21 @@ class Aura_Library_Admin {
         }
 
         $version = defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0';
+        $css_dir = defined( 'AURA_PLUGIN_DIR' ) ? AURA_PLUGIN_DIR . 'assets/css/' : '';
+        $js_dir  = defined( 'AURA_PLUGIN_DIR' ) ? AURA_PLUGIN_DIR . 'assets/js/'  : '';
         $css_url = defined( 'AURA_PLUGIN_URL' ) ? AURA_PLUGIN_URL . 'assets/css/' : '';
         $js_url  = defined( 'AURA_PLUGIN_URL' ) ? AURA_PLUGIN_URL . 'assets/js/'  : '';
+
+        $asset_ver = static function ( string $path ) use ( $version ): string {
+            return ( $path && file_exists( $path ) ) ? $version . '.' . filemtime( $path ) : $version;
+        };
 
         // Admin styles globales del plugin
         wp_enqueue_style(
             'aura-admin-styles',
             $css_url . 'admin-styles.css',
             array(),
-            $version
+            $asset_ver( $css_dir . 'admin-styles.css' )
         );
 
         // dashicons (ya registrados por WP, pero se asegura)
@@ -227,8 +233,8 @@ class Aura_Library_Admin {
         wp_enqueue_style(
             'aura-library-dashboard',
             $css_url . 'library-dashboard.css',
-            array( 'aura-admin-styles' ),
-            $version
+            array( 'aura-admin-styles', 'aura-design-system' ),
+            $asset_ver( $css_dir . 'library-dashboard.css' )
         );
 
         // Admin scripts globales
@@ -236,7 +242,7 @@ class Aura_Library_Admin {
             'aura-admin-scripts',
             $js_url . 'admin-scripts.js',
             array( 'jquery' ),
-            $version,
+            $asset_ver( $js_dir . 'admin-scripts.js' ),
             true
         );
 
@@ -259,8 +265,8 @@ class Aura_Library_Admin {
             wp_enqueue_script(
                 'aura-library-dashboard',
                 $js_url . 'library-dashboard.js',
-                array( 'jquery', 'chartjs' ),
-                $version,
+                array( 'jquery', 'chartjs', 'aura-ui-core' ),
+                $asset_ver( $js_dir . 'library-dashboard.js' ),
                 true
             );
             wp_localize_script( 'aura-library-dashboard', 'auraLibDash', array(
@@ -281,8 +287,8 @@ class Aura_Library_Admin {
             wp_enqueue_script(
                 'aura-library-reports',
                 $js_url . 'library-reports.js',
-                array( 'jquery', 'chartjs' ),
-                $version,
+                array( 'jquery', 'chartjs', 'aura-ui-core' ),
+                $asset_ver( $js_dir . 'library-reports.js' ),
                 true
             );
             wp_localize_script( 'aura-library-reports', 'auraLibReports', array(

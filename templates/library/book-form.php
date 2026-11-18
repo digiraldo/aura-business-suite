@@ -87,20 +87,21 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
             </div>
         </div>
         <div class="aura-lib-isbn-toolbar-actions">
-            <div class="aura-lib-isbn-quick-input-wrap">
-                <input type="text" id="aura-lib-quick-isbn" class="aura-lib-quick-isbn-input"
+            <div class="input-group aura-lib-isbn-quick-input-wrap">
+                <span class="input-group-text" aria-hidden="true">🔢</span>
+                <input type="text" id="aura-lib-quick-isbn" class="form-control aura-lib-quick-isbn-input"
                        placeholder="<?php esc_attr_e( 'ISBN o Título y Autor…', 'aura-business-suite' ); ?>"
                        autocomplete="off">
-                <button type="button" id="aura-lib-btn-lookup-isbn" class="aura-lib-btn-lookup">
+                <button type="button" id="aura-lib-btn-lookup-isbn" class="btn btn-emerald btn-sm aura-lib-btn-lookup">
                     <span class="dashicons dashicons-search"></span>
                     <span><?php esc_html_e( 'Buscar', 'aura-business-suite' ); ?></span>
                 </button>
             </div>
-            <button type="button" id="aura-lib-btn-scan-barcode" class="aura-lib-btn-scan">
+            <button type="button" id="aura-lib-btn-scan-barcode" class="btn btn-emerald btn-sm btn-lift aura-lib-btn-scan">
                 <span class="dashicons dashicons-camera"></span>
                 <span><?php esc_html_e( 'Escanear código', 'aura-business-suite' ); ?></span>
             </button>
-            <button type="button" id="aura-lib-btn-remote-scan" class="aura-lib-btn-remote"
+            <button type="button" id="aura-lib-btn-remote-scan" class="btn btn-blue btn-sm btn-lift aura-lib-btn-remote"
                     title="<?php esc_attr_e( 'Conecta tu celular (Samsung Galaxy / iPhone) por QR para escanear desde el teléfono', 'aura-business-suite' ); ?>">
                 <span class="dashicons dashicons-smartphone"></span>
                 <span><?php esc_html_e( 'Cámara del celular (QR)', 'aura-business-suite' ); ?></span>
@@ -313,7 +314,7 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
             <span class="aura-lib-required-note">
                 <span class="required">*</span> <?php esc_html_e( 'Campo obligatorio', 'aura-business-suite' ); ?>
             </span>
-            <button type="button" class="button button-primary aura-lib-btn-next" data-from="1">
+            <button type="button" class="btn btn-shimmer btn-indigo btn-lift aura-lib-btn-next" data-from="1">
                 <?php esc_html_e( 'Siguiente', 'aura-business-suite' ); ?> →
             </button>
         </div>
@@ -420,10 +421,10 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
 
         <!-- Navegación paso 2 -->
         <div class="aura-lib-wizard-nav">
-            <button type="button" class="button aura-lib-btn-back" data-to="1">
+            <button type="button" class="btn btn-glass btn-lift aura-lib-btn-back" data-to="1">
                 ← <?php esc_html_e( 'Anterior', 'aura-business-suite' ); ?>
             </button>
-            <button type="button" class="button button-primary aura-lib-btn-next" data-from="2">
+            <button type="button" class="btn btn-shimmer btn-indigo btn-lift aura-lib-btn-next" data-from="2">
                 <?php esc_html_e( 'Siguiente', 'aura-business-suite' ); ?> →
             </button>
         </div>
@@ -479,12 +480,12 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
                     </div>
                 </div>
                 <div class="aura-lib-dz-actions">
-                    <button type="button" id="aura-lib-btn-select-cover" class="button">
+                    <button type="button" id="aura-lib-btn-select-cover" class="btn btn-glass btn-sm btn-lift">
                         <span class="dashicons dashicons-upload"></span>
                         <?php esc_html_e( 'Seleccionar imagen', 'aura-business-suite' ); ?>
                     </button>
-                    <button type="button" id="aura-lib-btn-remove-cover" class="button button-link-delete" style="display:none;">
-                        🗑 <?php esc_html_e( 'Quitar portada', 'aura-business-suite' ); ?>
+                    <button type="button" id="aura-lib-btn-remove-cover" class="btn btn-rose btn-sm btn-lift" style="display:none;">
+                        🗑️ <?php esc_html_e( 'Quitar portada', 'aura-business-suite' ); ?>
                     </button>
                 </div>
             </div>
@@ -492,12 +493,12 @@ Por favor, asegúrate de que el Número Dewey sea el correcto según la clasific
 
         <!-- Navegación paso 3 + guardar -->
         <div class="aura-lib-wizard-nav">
-            <button type="button" class="button aura-lib-btn-back" data-to="2">
+            <button type="button" class="btn btn-glass btn-lift aura-lib-btn-back" data-to="2">
                 ← <?php esc_html_e( 'Anterior', 'aura-business-suite' ); ?>
             </button>
             <div class="aura-lib-save-area">
                 <span class="aura-lib-save-msg" style="display:none;"></span>
-                <button type="submit" id="aura-lib-btn-save" class="button button-primary aura-lib-btn-save-main">
+                <button type="submit" id="aura-lib-btn-save" class="btn btn-shimmer btn-violet btn-lift aura-lib-btn-save-main">
                     <span class="aura-lib-btn-label">💾 <?php esc_html_e( 'Guardar libro', 'aura-business-suite' ); ?></span>
                     <span class="aura-lib-btn-loading" style="display:none;">
                         <span class="spinner is-active" style="float:none;margin:0;vertical-align:middle;"></span>

@@ -40,7 +40,7 @@ $can_loan   = current_user_can( 'aura_library_loan_create' ) || current_user_can
             $header_actions[] = [
                 'label' => __( 'Nuevo Libro', 'aura-suite' ),
                 'url'   => '#',
-                'class' => 'aura-btn aura-btn-primary',
+                'class' => 'btn btn-shimmer btn-indigo btn-lift',
                 'icon'  => 'dashicons-plus-alt',
                 'attr'  => 'id="aura-lib-btn-new-book"',
             ];
@@ -57,60 +57,87 @@ $can_loan   = current_user_can( 'aura_library_loan_create' ) || current_user_can
         ]);
         ?>
 
-        <!-- Filtros (Glass Card) -->
-        <div class="aura-glass-card" style="padding: 18px 20px; margin-bottom: 20px;">
-            <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-                <input type="search" id="aura-lib-search"
-                       placeholder="<?php esc_attr_e( 'Buscar por título, autor, ISBN…', 'aura-suite' ); ?>"
-                       style="flex: 1; min-width: 200px; height: 38px; border-radius: 6px; border: 1px solid #cbd5e1; padding: 0 12px;">
+        <!-- Filtros (Glass Card + Bootstrap 5.3 Input Groups) -->
+        <div class="aura-glass-card aura-filters-card aura-lib-filters-card">
+            <div class="aura-lib-filters-grid">
+                <div class="aura-lib-filter-search">
+                    <div class="input-group">
+                        <span class="input-group-text" aria-hidden="true">🔍</span>
+                        <input type="search" id="aura-lib-search" class="form-control"
+                               placeholder="<?php esc_attr_e( 'Buscar por título, autor, ISBN…', 'aura-suite' ); ?>">
+                    </div>
+                </div>
 
-                <select id="aura-lib-filter-dewey" style="height: 38px; min-width: 170px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                    <option value=""><?php esc_html_e( 'Todas las clases Dewey', 'aura-suite' ); ?></option>
-                    <option value="0"><?php esc_html_e( '000 — Informática y Generalidades', 'aura-suite' ); ?></option>
-                    <option value="1"><?php esc_html_e( '100 — Filosofía y Psicología', 'aura-suite' ); ?></option>
-                    <option value="2"><?php esc_html_e( '200 — Religión', 'aura-suite' ); ?></option>
-                    <option value="3"><?php esc_html_e( '300 — Ciencias Sociales', 'aura-suite' ); ?></option>
-                    <option value="4"><?php esc_html_e( '400 — Lengua y Lingüística', 'aura-suite' ); ?></option>
-                    <option value="5"><?php esc_html_e( '500 — Ciencias Puras', 'aura-suite' ); ?></option>
-                    <option value="6"><?php esc_html_e( '600 — Tecnología Aplicada', 'aura-suite' ); ?></option>
-                    <option value="7"><?php esc_html_e( '700 — Artes y Recreación', 'aura-suite' ); ?></option>
-                    <option value="8"><?php esc_html_e( '800 — Literatura', 'aura-suite' ); ?></option>
-                    <option value="9"><?php esc_html_e( '900 — Historia y Geografía', 'aura-suite' ); ?></option>
-                </select>
+                <div class="aura-lib-filter-select">
+                    <div class="input-group">
+                        <span class="input-group-text" aria-hidden="true">📚</span>
+                        <select id="aura-lib-filter-dewey" class="form-control" aria-label="<?php esc_attr_e( 'Clase Dewey', 'aura-suite' ); ?>">
+                            <option value=""><?php esc_html_e( 'Todas las clases Dewey', 'aura-suite' ); ?></option>
+                            <option value="0"><?php esc_html_e( '000 — Informática y Generalidades', 'aura-suite' ); ?></option>
+                            <option value="1"><?php esc_html_e( '100 — Filosofía y Psicología', 'aura-suite' ); ?></option>
+                            <option value="2"><?php esc_html_e( '200 — Religión', 'aura-suite' ); ?></option>
+                            <option value="3"><?php esc_html_e( '300 — Ciencias Sociales', 'aura-suite' ); ?></option>
+                            <option value="4"><?php esc_html_e( '400 — Lengua y Lingüística', 'aura-suite' ); ?></option>
+                            <option value="5"><?php esc_html_e( '500 — Ciencias Puras', 'aura-suite' ); ?></option>
+                            <option value="6"><?php esc_html_e( '600 — Tecnología Aplicada', 'aura-suite' ); ?></option>
+                            <option value="7"><?php esc_html_e( '700 — Artes y Recreación', 'aura-suite' ); ?></option>
+                            <option value="8"><?php esc_html_e( '800 — Literatura', 'aura-suite' ); ?></option>
+                            <option value="9"><?php esc_html_e( '900 — Historia y Geografía', 'aura-suite' ); ?></option>
+                        </select>
+                    </div>
+                </div>
 
                 <?php if ( ! empty( $categories ) ) : ?>
-                <select id="aura-lib-filter-category" style="height: 38px; min-width: 150px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                    <option value=""><?php esc_html_e( 'Todas las categorías', 'aura-suite' ); ?></option>
-                    <?php foreach ( $categories as $cat ) : ?>
-                    <option value="<?php echo esc_attr( $cat ); ?>"><?php echo esc_html( $cat ); ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <div class="aura-lib-filter-select">
+                    <div class="input-group">
+                        <span class="input-group-text" aria-hidden="true">🏷️</span>
+                        <select id="aura-lib-filter-category" class="form-control" aria-label="<?php esc_attr_e( 'Categoría', 'aura-suite' ); ?>">
+                            <option value=""><?php esc_html_e( 'Todas las categorías', 'aura-suite' ); ?></option>
+                            <?php foreach ( $categories as $cat ) : ?>
+                            <option value="<?php echo esc_attr( $cat ); ?>"><?php echo esc_html( $cat ); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
                 <?php endif; ?>
 
-                <select id="aura-lib-filter-status" style="height: 38px; min-width: 140px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                    <option value=""><?php esc_html_e( 'Todos los estados', 'aura-suite' ); ?></option>
-                    <option value="available"><?php      esc_html_e( 'Disponible',    'aura-suite' ); ?></option>
-                    <option value="unavailable"><?php    esc_html_e( 'Sin stock',     'aura-suite' ); ?></option>
-                    <option value="reference_only"><?php esc_html_e( 'Solo consulta', 'aura-suite' ); ?></option>
-                    <option value="lost"><?php           esc_html_e( 'Perdido',       'aura-suite' ); ?></option>
-                    <option value="withdrawn"><?php      esc_html_e( 'Retirado',      'aura-suite' ); ?></option>
-                </select>
+                <div class="aura-lib-filter-select">
+                    <div class="input-group">
+                        <span class="input-group-text" aria-hidden="true">🟢</span>
+                        <select id="aura-lib-filter-status" class="form-control" aria-label="<?php esc_attr_e( 'Estado', 'aura-suite' ); ?>">
+                            <option value=""><?php esc_html_e( 'Todos los estados', 'aura-suite' ); ?></option>
+                            <option value="available"><?php      esc_html_e( 'Disponible',    'aura-suite' ); ?></option>
+                            <option value="unavailable"><?php    esc_html_e( 'Sin stock',     'aura-suite' ); ?></option>
+                            <option value="reference_only"><?php esc_html_e( 'Solo consulta', 'aura-suite' ); ?></option>
+                            <option value="lost"><?php           esc_html_e( 'Perdido',       'aura-suite' ); ?></option>
+                            <option value="withdrawn"><?php      esc_html_e( 'Retirado',      'aura-suite' ); ?></option>
+                        </select>
+                    </div>
+                </div>
 
                 <?php if ( ! empty( $areas ) ) : ?>
-                <select id="aura-lib-filter-area" style="height: 38px; min-width: 140px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                    <option value="0"><?php esc_html_e( 'Todas las áreas', 'aura-suite' ); ?></option>
-                    <?php foreach ( $areas as $area ) : ?>
-                    <option value="<?php echo esc_attr( $area->id ); ?>"><?php echo esc_html( $area->name ); ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <div class="aura-lib-filter-select">
+                    <div class="input-group">
+                        <span class="input-group-text" aria-hidden="true">🏢</span>
+                        <select id="aura-lib-filter-area" class="form-control" aria-label="<?php esc_attr_e( 'Área', 'aura-suite' ); ?>">
+                            <option value="0"><?php esc_html_e( 'Todas las áreas', 'aura-suite' ); ?></option>
+                            <?php foreach ( $areas as $area ) : ?>
+                            <option value="<?php echo esc_attr( $area->id ); ?>"><?php echo esc_html( $area->name ); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
                 <?php endif; ?>
 
-                <button id="aura-lib-filter-apply" class="button aura-btn-primary" style="height: 38px;">
-                    <span class="dashicons dashicons-search" style="vertical-align: middle;"></span> <?php esc_html_e( 'Filtrar', 'aura-suite' ); ?>
-                </button>
-                <button id="aura-lib-filter-clear" class="button aura-btn-secondary" style="height: 38px;">
-                    <?php esc_html_e( 'Limpiar', 'aura-suite' ); ?>
-                </button>
+                <div class="aura-lib-filter-actions">
+                    <button type="button" id="aura-lib-filter-apply" class="btn btn-shimmer btn-indigo btn-lift">
+                        <span class="dashicons dashicons-search"></span>
+                        <span><?php esc_html_e( 'Filtrar', 'aura-suite' ); ?></span>
+                    </button>
+                    <button type="button" id="aura-lib-filter-clear" class="btn btn-glass btn-lift">
+                        <span><?php esc_html_e( 'Limpiar', 'aura-suite' ); ?></span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -134,12 +161,18 @@ $can_loan   = current_user_can( 'aura_library_loan_create' ) || current_user_can
             </table>
         </div>
 
+        <div class="adp-footer">
+            <div>
+                Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Diego Giraldo</a></strong> &bull; Versión <?php echo esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0' ); ?> &bull; Aura Business Suite &copy; <?php echo date('Y'); ?>
+            </div>
+        </div>
+
     </div><!-- .wrap.aura-app-context -->
 </div><!-- .aura-app-wrapper -->
 
 <?php
-$books_js_ver  = file_exists( AURA_PLUGIN_DIR . 'assets/js/library-books.js' ) ? (string) filemtime( AURA_PLUGIN_DIR . 'assets/js/library-books.js' ) : AURA_VERSION;
-$books_css_ver = file_exists( AURA_PLUGIN_DIR . 'assets/css/library-books.css' ) ? (string) filemtime( AURA_PLUGIN_DIR . 'assets/css/library-books.css' ) : AURA_VERSION;
+$books_js_ver  = file_exists( AURA_PLUGIN_DIR . 'assets/js/library-books.js' ) ? AURA_VERSION . '.' . filemtime( AURA_PLUGIN_DIR . 'assets/js/library-books.js' ) : AURA_VERSION;
+$books_css_ver = file_exists( AURA_PLUGIN_DIR . 'assets/css/library-books.css' ) ? AURA_VERSION . '.' . filemtime( AURA_PLUGIN_DIR . 'assets/css/library-books.css' ) : AURA_VERSION;
 
 wp_enqueue_script(
     'html5-qrcode',
@@ -169,31 +202,42 @@ wp_enqueue_media();
 ?>
 
 <!-- Modal: Nuevo / Editar Libro -->
-<div id="aura-lib-book-modal" class="aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-modal-title">
-    <div class="aura-lib-modal-overlay"></div>
-    <div class="aura-lib-modal-content aura-lib-modal-large">
-        <div class="aura-lib-modal-header">
-            <h2 id="aura-lib-modal-title"><?php esc_html_e( 'Nuevo Libro', 'aura-business-suite' ); ?></h2>
-            <button type="button" class="aura-lib-modal-close dashicons dashicons-no-alt"
-                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"></button>
+<div id="aura-lib-book-modal" class="aura-modal-overlay aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-modal-title" aria-hidden="true">
+    <div class="aura-modal-container aura-lib-modal-container aura-lib-modal-large">
+        <div class="aura-modal-header">
+            <div>
+                <h2 id="aura-lib-modal-title"><?php esc_html_e( 'Nuevo Libro', 'aura-business-suite' ); ?></h2>
+            </div>
+            <button type="button" class="aura-modal-close aura-lib-modal-close"
+                    data-modal-close="aura-lib-book-modal"
+                    aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"
+                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
         </div>
-        <div class="aura-lib-modal-body" id="aura-lib-modal-body">
+        <div class="aura-modal-body aura-lib-modal-body" id="aura-lib-modal-body">
             <?php include AURA_PLUGIN_DIR . 'templates/library/book-form.php'; ?>
         </div>
     </div>
 </div>
 
 <!-- Modal: Detalle del Libro -->
-<div id="aura-lib-detail-modal" class="aura-lib-modal" style="display:none;" role="dialog" aria-modal="true">
-    <div class="aura-lib-modal-overlay"></div>
-    <div class="aura-lib-modal-content aura-lib-modal-large">
-        <div class="aura-lib-modal-header">
-            <h2 id="aura-lib-detail-title"><?php esc_html_e( 'Detalle del Libro', 'aura-business-suite' ); ?></h2>
-            <button type="button" class="aura-lib-modal-close dashicons dashicons-no-alt"
-                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"></button>
+<div id="aura-lib-detail-modal" class="aura-modal-overlay aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-detail-title" aria-hidden="true" data-async-modal="true">
+    <div class="aura-modal-container aura-lib-modal-container aura-lib-modal-large">
+        <div class="aura-modal-header">
+            <div>
+                <h2 id="aura-lib-detail-title"><?php esc_html_e( 'Detalle del Libro', 'aura-business-suite' ); ?></h2>
+            </div>
+            <button type="button" class="aura-modal-close aura-lib-modal-close"
+                    data-modal-close="aura-lib-detail-modal"
+                    aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"
+                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
         </div>
-        <div class="aura-lib-modal-body" id="aura-lib-detail-body">
-            <span class="spinner is-active" style="float:none;"></span>
+        <div class="aura-modal-body aura-lib-modal-body" id="aura-lib-detail-body">
+            <p class="aura-lib-detail-empty"><?php esc_html_e( 'Cargando información del libro…', 'aura-business-suite' ); ?></p>
+        </div>
+        <div class="aura-modal-footer">
+            <button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-modal-close" data-modal-close="aura-lib-detail-modal">
+                <?php esc_html_e( 'Cerrar', 'aura-business-suite' ); ?>
+            </button>
         </div>
     </div>
 </div>
@@ -241,17 +285,20 @@ $js_data = wp_json_encode( [
 
 <?php if ( $can_loan ) : ?>
 <!-- Modal: Reservar Libro (Fase 4) — aparece cuando available_copies == 0 -->
-<div id="aura-lib-reserve-modal" class="aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-reserve-modal-title">
-    <div class="aura-lib-modal-overlay"></div>
-    <div class="aura-lib-modal-content" style="max-width:460px;">
-        <div class="aura-lib-modal-header">
-            <h2 id="aura-lib-reserve-modal-title"><?php esc_html_e( 'Reservar Libro', 'aura-business-suite' ); ?></h2>
-            <button type="button" class="aura-lib-modal-close dashicons dashicons-no-alt"
-                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"></button>
+<div id="aura-lib-reserve-modal" class="aura-modal-overlay aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-reserve-modal-title" aria-hidden="true">
+    <div class="aura-modal-container aura-lib-modal-container" style="max-width:480px;">
+        <div class="aura-modal-header">
+            <div>
+                <h2 id="aura-lib-reserve-modal-title"><?php esc_html_e( 'Reservar Libro', 'aura-business-suite' ); ?></h2>
+            </div>
+            <button type="button" class="aura-modal-close aura-lib-modal-close"
+                    data-modal-close="aura-lib-reserve-modal"
+                    aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>"
+                    title="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
         </div>
-        <div class="aura-lib-modal-body">
-            <form id="aura-lib-reserve-form">
-                <p>
+        <form id="aura-lib-reserve-form" class="aura-modal-form-flex">
+            <div class="aura-modal-body aura-lib-modal-body">
+                <p class="aura-lib-reserve-summary">
                     <?php esc_html_e( 'Libro:', 'aura-business-suite' ); ?>
                     <strong id="aura-lib-reserve-book-title"></strong>
                 </p>
@@ -259,7 +306,7 @@ $js_data = wp_json_encode( [
 
                 <div class="aura-lib-form-row">
                     <label for="aura-lib-reserve-notes"><?php esc_html_e( 'Notas (opcional)', 'aura-business-suite' ); ?></label>
-                    <textarea id="aura-lib-reserve-notes" rows="2" class="large-text"></textarea>
+                    <textarea id="aura-lib-reserve-notes" rows="3" class="form-control large-text"></textarea>
                 </div>
 
                 <p class="description">
@@ -272,17 +319,16 @@ $js_data = wp_json_encode( [
                     );
                     ?>
                 </p>
-
-                <div class="aura-lib-modal-footer">
-                    <button type="submit" class="button button-primary" id="aura-lib-reserve-save">
-                        <?php esc_html_e( 'Confirmar Reserva', 'aura-business-suite' ); ?>
-                    </button>
-                    <button type="button" class="button aura-lib-modal-close">
-                        <?php esc_html_e( 'Cancelar', 'aura-business-suite' ); ?>
-                    </button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="aura-modal-footer aura-lib-modal-footer">
+                <button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-modal-close" data-modal-close="aura-lib-reserve-modal">
+                    <?php esc_html_e( 'Cancelar', 'aura-business-suite' ); ?>
+                </button>
+                <button type="submit" class="btn btn-shimmer btn-indigo btn-lift" id="aura-lib-reserve-save">
+                    <?php esc_html_e( 'Confirmar Reserva', 'aura-business-suite' ); ?>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 <?php endif; ?>

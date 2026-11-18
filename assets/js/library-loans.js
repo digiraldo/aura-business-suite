@@ -109,9 +109,19 @@
             saveExtend();
         });
 
-        // Cerrar modales
-        $(document).on('click', '.aura-lib-modal-close, .aura-lib-modal-overlay', function () {
+        // Cerrar modales (protección 2 fases contra drag-selection en inputs)
+        var _loansBackdropDown = false;
+        $(document).on('mousedown', '.aura-lib-modal', function (e) {
+            _loansBackdropDown = (e.target === this);
+        });
+        $(document).on('click', '.aura-lib-modal-close', function () {
             closeAllModals();
+        });
+        $(document).on('click', '.aura-lib-modal', function (e) {
+            if (_loansBackdropDown && e.target === this) {
+                closeAllModals();
+            }
+            _loansBackdropDown = false;
         });
         $(document).on('keydown', function (e) {
             if (e.key === 'Escape') closeAllModals();
@@ -372,46 +382,46 @@
         $.each(items, function (i, loan) {
             var statusBadge = renderStatusBadge(loan.status);
             var dueBadge    = renderDueBadge(loan);
-            var extBadge    = '<span class="aura-lib-badge aura-lib-badge-gray">' +
+            var extBadge    = '<span class="badge badge-slate">' +
                 parseInt(loan.extended_count, 10) + ' / ' + cfg.max_extensions + '</span>';
             var fineCell    = '';
             if (cfg.fines_enabled && cfg.can_view_fines) {
                 var fineAmt = parseFloat(loan.fine_amount) || 0;
                 fineCell = fineAmt > 0
-                    ? '<span class="aura-lib-badge aura-lib-badge-orange">$' + fineAmt.toFixed(2) + '</span>'
+                    ? '<span class="badge badge-amber">$' + fineAmt.toFixed(2) + '</span>'
                     : '—';
             }
 
             var actions = '<div class="aura-row-actions">';
-            actions += '<button class="aura-btn-action-icon aura-lib-loans-btn-detail" data-id="' +
+            actions += '<button type="button" class="aura-btn-action-icon aura-lib-loans-btn-detail" data-id="' +
                 parseInt(loan.id, 10) + '" title="Ver detalle">' +
                 '<span class="dashicons dashicons-visibility"></span></button>';
             if (cfg.can_return && loan.can_return) {
-                actions += '<button class="aura-btn-action-icon aura-btn-action-success aura-lib-loans-btn-return" data-id="' +
+                actions += '<button type="button" class="aura-btn-action-icon aura-btn-action-success aura-lib-loans-btn-return" data-id="' +
                     parseInt(loan.id, 10) + '" title="Registrar devolución">' +
                     '<span class="dashicons dashicons-yes-alt"></span></button>';
             }
             if (cfg.can_extend && loan.can_extend) {
-                actions += '<button class="aura-btn-action-icon aura-btn-action-primary aura-lib-loans-btn-extend" data-id="' +
+                actions += '<button type="button" class="aura-btn-action-icon aura-btn-action-primary aura-lib-loans-btn-extend" data-id="' +
                     parseInt(loan.id, 10) + '" title="Extender préstamo">' +
                     '<span class="dashicons dashicons-clock"></span></button>';
             }
             if (cfg.can_edit && loan.can_edit) {
-                actions += '<button class="aura-btn-action-icon aura-lib-loans-btn-edit" data-id="' +
+                actions += '<button type="button" class="aura-btn-action-icon aura-lib-loans-btn-edit" data-id="' +
                     parseInt(loan.id, 10) + '" title="Editar préstamo">' +
                     '<span class="dashicons dashicons-edit"></span></button>';
             }
             if (cfg.can_delete && loan.can_cancel) {
-                actions += '<button class="aura-btn-action-icon aura-btn-action-danger aura-lib-loans-btn-cancel" data-id="' +
+                actions += '<button type="button" class="aura-btn-action-icon aura-btn-action-danger aura-lib-loans-btn-cancel" data-id="' +
                     parseInt(loan.id, 10) + '" title="Cancelar préstamo">' +
                     '<span class="dashicons dashicons-no"></span></button>';
             }
             actions += '</div>';
 
+            var fullCover = loan.cover_full_url || loan.cover_thumb_url;
             var coverHtml = loan.cover_thumb_url
-                ? '<div class="aura-img-preview">' +
-                  '<img src="' + escAttr(loan.cover_thumb_url) + '" class="aura-lib-cover-thumb aura-thumb" alt="' + escAttr(loan.book_title || '') + '">' +
-                  (loan.cover_full_url ? '<div class="aura-img-tooltip"><img src="' + escAttr(loan.cover_full_url) + '" alt=""></div>' : '') +
+                ? '<div class="aura-table-thumb-preview aura-lib-loan-thumb-preview" data-preview-title="' + escAttr(loan.book_title || '') + '">' +
+                  '<img src="' + escAttr(fullCover) + '" class="aura-lib-cover-thumb" alt="' + escAttr(loan.book_title || '') + '">' +
                   '</div>'
                 : '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm"></span>';
 
@@ -426,16 +436,16 @@
                 '</div></div>' +
                 '</td>';
             if (cfg.can_view_all) {
-                var borrowerHtml = '<div style="display:flex;align-items:center;gap:8px;">';
+                var borrowerHtml = '<div class="aura-lib-borrower-cell">';
                 if (loan.contact_avatar) {
-                    borrowerHtml += '<img src="' + escAttr(loan.contact_avatar) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.1);">';
+                    borrowerHtml += '<div class="avatar avatar-sm avatar-zoomable" data-preview-title="' + escAttr(loan.borrower_name || '') + '"><img src="' + escAttr(loan.contact_avatar) + '" alt="' + escAttr(loan.borrower_name || '') + '"></div>';
                 } else {
                     var bInitials = (loan.borrower_name || '?').charAt(0).toUpperCase();
-                    borrowerHtml += '<span style="width:28px;height:28px;border-radius:50%;background:rgba(99,102,241,0.2);color:#818cf8;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">' + escHtml(bInitials) + '</span>';
+                    borrowerHtml += '<span class="aura-lib-borrower-initials">' + escHtml(bInitials) + '</span>';
                 }
                 borrowerHtml += '<div><strong>' + escHtml(loan.borrower_name || '—') + '</strong>';
                 if (loan.contact_category) {
-                    borrowerHtml += '<br><small style="color:var(--aura-text-muted, #9ca3af);font-size:10px;text-transform:capitalize;">' + escHtml(loan.contact_category) + '</small>';
+                    borrowerHtml += '<br><small class="aura-lib-borrower-cat">' + escHtml(loan.contact_category) + '</small>';
                 }
                 borrowerHtml += '</div></div>';
                 rows += '<td>' + borrowerHtml + '</td>';
@@ -508,16 +518,16 @@
 
     function renderStatusBadge(status) {
         var classMap = {
-            'active'    : 'aura-lib-badge-green',
-            'overdue'   : 'aura-lib-badge-red',
-            'extended'  : 'aura-lib-badge-blue',
-            'returned'  : 'aura-lib-badge-gray',
-            'lost'      : 'aura-lib-badge-orange',
-            'cancelled' : 'aura-lib-badge-gray',
+            'active'    : 'badge-emerald',
+            'overdue'   : 'badge-red',
+            'extended'  : 'badge-blue',
+            'returned'  : 'badge-slate',
+            'lost'      : 'badge-amber',
+            'cancelled' : 'badge-slate',
         };
-        var cls   = classMap[status] || 'aura-lib-badge-gray';
+        var cls   = classMap[status] || 'badge-slate';
         var label = (cfg.txt.status_labels && cfg.txt.status_labels[status]) || status;
-        return '<span class="aura-lib-badge ' + cls + '">' + escHtml(label) + '</span>';
+        return '<span class="badge aura-lib-badge ' + cls + '">' + escHtml(label) + '</span>';
     }
 
     function renderDueBadge(loan) {
@@ -525,7 +535,7 @@
         var isOverdue = (loan.status === 'overdue') ||
             (['active', 'extended'].indexOf(loan.status) !== -1 && loan.due_date < todayStr());
         if (isOverdue) {
-            return '<span class="aura-lib-badge aura-lib-badge-red">' + escHtml(loan.due_date) + '</span>';
+            return '<span class="badge badge-red">' + escHtml(loan.due_date) + '</span>';
         }
         return escHtml(loan.due_date);
     }
@@ -544,15 +554,15 @@
 
         if (totalPages > 1) {
             html += '<div class="aura-lib-page-btns">';
-            html += '<button class="aura-lib-page-btn button" data-page="' + Math.max(1, currentPage - 1) + '"' +
+            html += '<button type="button" class="aura-lib-page-btn btn btn-glass btn-sm" data-page="' + Math.max(1, currentPage - 1) + '"' +
                     (currentPage <= 1 ? ' disabled' : '') + '>‹</button>';
             var start = Math.max(1, currentPage - 2);
             var end   = Math.min(totalPages, start + 4);
             for (var p = start; p <= end; p++) {
-                html += '<button class="aura-lib-page-btn button' + (p === currentPage ? ' button-primary' : '') +
+                html += '<button type="button" class="aura-lib-page-btn btn btn-sm ' + (p === currentPage ? 'btn-indigo' : 'btn-glass') +
                         '" data-page="' + p + '">' + p + '</button>';
             }
-            html += '<button class="aura-lib-page-btn button" data-page="' + Math.min(totalPages, currentPage + 1) + '"' +
+            html += '<button type="button" class="aura-lib-page-btn btn btn-glass btn-sm" data-page="' + Math.min(totalPages, currentPage + 1) + '"' +
                     (currentPage >= totalPages ? ' disabled' : '') + '>›</button>';
             html += '</div>';
         }
@@ -687,8 +697,8 @@
         $('#return_pay_fine').prop('checked', false);
         $('#return_to_finance').prop('checked', false);
         $('#aura-lib-fine-panel').hide();
-        $('#aura-lib-return-info').html('<span class="spinner is-active" style="float:none;"></span>');
-        showModal('#aura-lib-return-modal');
+        $('#aura-lib-return-info').empty();
+        showModal('#aura-lib-return-modal', { async: true });
 
         // Cargar detalle del préstamo para mostrar info
         $.post(cfg.ajaxurl, {
@@ -698,6 +708,9 @@
         }, function (res) {
             if (!res.success || !res.data) {
                 $('#aura-lib-return-info').html('<p class="notice notice-error">' + escHtml(cfg.txt.error) + '</p>');
+                if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                    AuraUI.hideModalSkeleton('aura-lib-return-modal');
+                }
                 return;
             }
             var loan = res.data.loan;
@@ -710,6 +723,14 @@
                 '</table>';
             $('#aura-lib-return-info').html(info);
             recalculateFine();
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-return-modal');
+            }
+        }).fail(function () {
+            $('#aura-lib-return-info').html('<p class="notice notice-error">' + escHtml(cfg.txt.error) + '</p>');
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-return-modal');
+            }
         });
     }
 
@@ -778,8 +799,8 @@
         $('#extend_days').val(cfg.extension_days || 7);
         $('#extend-new-due').text('—');
         $('#aura-lib-extend-error').hide();
-        $('#aura-lib-extend-info').html('<span class="spinner is-active" style="float:none;"></span>');
-        showModal('#aura-lib-extend-modal');
+        $('#aura-lib-extend-info').empty();
+        showModal('#aura-lib-extend-modal', { async: true });
 
         $.post(cfg.ajaxurl, {
             action : 'aura_library_loans_get_detail',
@@ -788,6 +809,9 @@
         }, function (res) {
             if (!res.success || !res.data) {
                 $('#aura-lib-extend-info').html('<p class="notice notice-error">' + escHtml(cfg.txt.error) + '</p>');
+                if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                    AuraUI.hideModalSkeleton('aura-lib-extend-modal');
+                }
                 return;
             }
             var loan = res.data.loan;
@@ -801,8 +825,14 @@
                 '</table>';
             $('#aura-lib-extend-info').html(info);
             updateExtendPreview();
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-extend-modal');
+            }
         }).fail(function () {
             $('#aura-lib-extend-info').html('<p class="notice notice-error">' + escHtml(cfg.txt.error) + '</p>');
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-extend-modal');
+            }
         });
     }
 
@@ -859,11 +889,11 @@
     // ──────────────────────────────────────────────────────────────
     function openEditModal(loanId) {
         $('#edit_loan_id').val(loanId);
-        $('#aura-lib-edit-loan-info').html('<span class="spinner is-active" style="float:none;"></span>');
+        $('#aura-lib-edit-loan-info').empty();
         $('#aura-lib-edit-loan-error').hide();
         $('#edit_loan_date, #edit_due_date, #edit_notes').val('');
 
-        showModal('#aura-lib-edit-loan-modal');
+        showModal('#aura-lib-edit-loan-modal', { async: true });
 
         $.post(cfg.ajaxurl, {
             action : 'aura_library_loans_get_detail',
@@ -872,6 +902,9 @@
         }, function (res) {
             if (!res.success || !res.data) {
                 $('#aura-lib-edit-loan-info').html('<p class="notice notice-error">' + escHtml(cfg.txt.error) + '</p>');
+                if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                    AuraUI.hideModalSkeleton('aura-lib-edit-loan-modal');
+                }
                 return;
             }
             var loan = res.data.loan;
@@ -884,8 +917,14 @@
             $('#edit_due_date').val(loan.due_date   || '');
             $('#edit_status').val(loan.status       || 'active');
             $('#edit_notes').val(loan.notes         || '');
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-edit-loan-modal');
+            }
         }).fail(function () {
             $('#aura-lib-edit-loan-info').html('<p class="notice notice-error">' + escHtml(cfg.txt.error) + '</p>');
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-edit-loan-modal');
+            }
         });
     }
 
@@ -960,8 +999,8 @@
     // MODAL: DETALLE
     // ──────────────────────────────────────────────────────────────
     function openDetailModal(loanId) {
-        $('#aura-lib-loan-detail-body').html('<span class="spinner is-active" style="float:none;"></span>');
-        showModal('#aura-lib-loan-detail-modal');
+        $('#aura-lib-loan-detail-body').empty();
+        showModal('#aura-lib-loan-detail-modal', { async: true });
 
         $.post(cfg.ajaxurl, {
             action : 'aura_library_loans_get_detail',
@@ -970,9 +1009,20 @@
         }, function (res) {
             if (!res.success || !res.data) {
                 $('#aura-lib-loan-detail-body').html('<p class="notice notice-error">' + escHtml(cfg.txt.error) + '</p>');
+                if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                    AuraUI.hideModalSkeleton('aura-lib-loan-detail-modal');
+                }
                 return;
             }
             renderDetail(res.data.loan);
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-loan-detail-modal');
+            }
+        }).fail(function () {
+            $('#aura-lib-loan-detail-body').html('<p class="notice notice-error">' + escHtml(cfg.txt.error) + '</p>');
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-loan-detail-modal');
+            }
         });
     }
 
@@ -981,11 +1031,11 @@
         var fineRow = '';
         if (cfg.fines_enabled && cfg.can_view_fines && parseFloat(loan.fine_current || 0) > 0) {
             fineRow = '<tr><th>Multa acumulada</th><td>' +
-                '<span class="aura-lib-badge aura-lib-badge-orange">$' +
+                '<span class="badge badge-amber">$' +
                 parseFloat(loan.fine_current).toFixed(2) + '</span></td></tr>';
         }
 
-        var html = '<table class="aura-lib-detail-table wp-list-table widefat">' +
+        var html = '<table class="aura-lib-detail-table aura-table">' +
             '<tr><th>Libro</th><td><strong>' + escHtml(loan.book_title) + '</strong>' +
                 (loan.dewey_number ? ' <code>' + escHtml(loan.dewey_number) + '</code>' : '') + '</td></tr>' +
             '<tr><th>Lector</th><td>' + escHtml(loan.borrower_name) + '</td></tr>' +
@@ -1003,39 +1053,51 @@
             '</table>';
 
         // Botones de acción en detalle
-        var btns = '<div class="aura-lib-modal-footer">';
+        var btns = '<div class="aura-modal-footer aura-lib-modal-footer aura-lib-detail-actions">';
         if (cfg.can_return && loan.can_return) {
-            btns += '<button type="button" class="button button-primary aura-lib-loans-btn-return" data-id="' +
-                parseInt(loan.id, 10) + '">Registrar devolución</button> ';
+            btns += '<button type="button" class="btn btn-shimmer btn-emerald btn-lift aura-lib-loans-btn-return" data-id="' +
+                parseInt(loan.id, 10) + '">Registrar devolución</button>';
         }
         if (cfg.can_extend && loan.can_extend) {
-            btns += '<button type="button" class="button aura-lib-loans-btn-extend" data-id="' +
-                parseInt(loan.id, 10) + '">Extender</button> ';
+            btns += '<button type="button" class="btn btn-glass btn-lift aura-lib-loans-btn-extend" data-id="' +
+                parseInt(loan.id, 10) + '">Extender</button>';
         }
         if (cfg.can_edit && loan.can_edit) {
-            btns += '<button type="button" class="button aura-lib-loans-btn-edit" data-id="' +
-                parseInt(loan.id, 10) + '">Editar</button> ';
+            btns += '<button type="button" class="btn btn-indigo btn-lift aura-lib-loans-btn-edit" data-id="' +
+                parseInt(loan.id, 10) + '">Editar</button>';
         }
         if (cfg.can_delete && loan.can_cancel) {
-            btns += '<button type="button" class="button aura-lib-loans-btn-cancel" data-id="' +
-                parseInt(loan.id, 10) + '" style="color:#d63638;">Cancelar préstamo</button> ';
+            btns += '<button type="button" class="btn btn-rose btn-lift aura-lib-loans-btn-cancel" data-id="' +
+                parseInt(loan.id, 10) + '">Cancelar préstamo</button>';
         }
-        btns += '<button type="button" class="button aura-lib-modal-close">Cerrar</button>';
+        btns += '<button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-modal-close" data-modal-close="aura-lib-loan-detail-modal">Cerrar</button>';
         btns += '</div>';
 
         $('#aura-lib-loan-detail-body').html(html + btns);
     }
 
     // ──────────────────────────────────────────────────────────────
-    // UTILIDADES: MODALES
+    // UTILIDADES: MODALES (AuraUI + Skeleton Loader)
     // ──────────────────────────────────────────────────────────────
-    function showModal(selector) {
-        $(selector).fadeIn(200);
+    function showModal(selector, options) {
+        var modalId = String(selector || '').replace(/^#/, '');
+        if (typeof AuraUI !== 'undefined' && typeof AuraUI.openModal === 'function') {
+            AuraUI.openModal(modalId, options || {});
+        } else {
+            $(selector).css('display', 'flex').addClass('active is-active');
+        }
         $('body').addClass('aura-lib-modal-open');
     }
 
     function closeAllModals() {
-        $('.aura-lib-modal').fadeOut(150);
+        $('.aura-lib-modal').each(function () {
+            var id = this.id;
+            if (id && typeof AuraUI !== 'undefined' && typeof AuraUI.closeModal === 'function') {
+                AuraUI.closeModal(id);
+            } else {
+                $(this).removeClass('active is-active').hide();
+            }
+        });
         $('body').removeClass('aura-lib-modal-open');
         currentLoan = null;
     }
@@ -1055,7 +1117,7 @@
     function showTableError(msg) {
         var cols = getColCount();
         $('#aura-lib-loans-tbody').html(
-            '<tr><td colspan="' + cols + '" style="text-align:center;padding:20px;color:#d63638;">' +
+            '<tr><td colspan="' + cols + '" class="aura-lib-table-error">' +
             escHtml(msg) + '</td></tr>'
         );
     }
@@ -1064,6 +1126,9 @@
     // UTILIDADES: NOTIFICACIONES
     // ──────────────────────────────────────────────────────────────
     function showNotice(type, msg) {
+        if (typeof AuraUI !== 'undefined' && typeof AuraUI.showToast === 'function') {
+            AuraUI.showToast(escHtml(msg), type || 'success');
+        }
         var $n = $('#aura-lib-loans-notice');
         $n.attr('class', 'notice notice-' + type + ' is-dismissible')
           .html('<p>' + escHtml(msg) + '</p>')

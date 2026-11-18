@@ -21,6 +21,32 @@
         $('#' + id).removeClass('is-active').hide();
     }
 
+    function isDarkMode() {
+        const root = document.documentElement;
+        const body = document.body;
+        return root.getAttribute('data-theme') === 'dark'
+            || root.getAttribute('data-wp-dark-mode-scheme') === 'dark'
+            || root.classList.contains('aura-dark-mode')
+            || root.classList.contains('wp-dark-mode-active')
+            || (body && (
+                body.getAttribute('data-theme') === 'dark'
+                || body.getAttribute('data-wp-dark-mode-scheme') === 'dark'
+                || body.classList.contains('aura-dark-mode')
+                || body.classList.contains('wp-dark-mode-active')
+                || body.classList.contains('dark-mode')
+            ));
+    }
+
+    function getChartPalette() {
+        const dark = isDarkMode();
+        return {
+            tickColor:  dark ? '#a8a8c8' : '#475569',
+            gridColor:  dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.08)',
+            legendColor: dark ? '#f0efff' : '#334155',
+            donutBorder: dark ? '#16152b' : '#ffffff',
+        };
+    }
+
     // ─── KPIs ───────────────────────────────────────────────────
 
     function loadKpis() {
@@ -32,12 +58,14 @@
             $('#kpi-active-loans').text(number(d.active_loans));
             $('#kpi-overdue').text(number(d.overdue_loans));
             $('#kpi-reservations').text(number(d.pending_reservations));
-            $('#kpi-fines').text(parseFloat(d.pending_fines).toFixed(2));
+            $('#kpi-fines').text('$' + parseFloat(d.pending_fines || 0).toFixed(2));
 
             // Resaltar si hay vencidos
-            const $card = $('#kpi-overdue').closest('.aura-lib-kpi-card');
-            if (parseInt(d.overdue_loans) > 0) {
+            const $card = $('#kpi-overdue').closest('.aura-stat-card, .aura-lib-kpi-card');
+            if (parseInt(d.overdue_loans, 10) > 0) {
                 $card.addClass('aura-lib-kpi-card--alert');
+            } else {
+                $card.removeClass('aura-lib-kpi-card--alert');
             }
         });
     }
@@ -54,6 +82,7 @@
             const { labels, data } = res.data;
             const ctx = document.getElementById('aura-lib-loans-chart');
             if (!ctx) return;
+            const pal = getChartPalette();
             if (loansChart) loansChart.destroy();
             loansChart = new Chart(ctx, {
                 type: 'bar',
@@ -62,17 +91,25 @@
                     datasets: [{
                         label: auraLibDash.i18n.loans || 'Préstamos',
                         data,
-                        backgroundColor: 'rgba(34,113,177,0.7)',
-                        borderColor: '#2271b1',
+                        backgroundColor: 'rgba(79, 70, 229, 0.72)',
+                        borderColor: '#4f46e5',
                         borderWidth: 1,
-                        borderRadius: 4,
+                        borderRadius: 6,
                     }],
                 },
                 options: {
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                        x: {
+                            ticks: { color: pal.tickColor },
+                            grid: { color: pal.gridColor },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, color: pal.tickColor },
+                            grid: { color: pal.gridColor },
+                        },
                     },
                 },
             });
@@ -91,17 +128,18 @@
             const { labels, data, colors } = res.data;
             const ctx = document.getElementById('aura-lib-status-chart');
             if (!ctx) return;
+            const pal = getChartPalette();
             if (statusChart) statusChart.destroy();
             statusChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels,
-                    datasets: [{ data, backgroundColor: colors, borderWidth: 2 }],
+                    datasets: [{ data, backgroundColor: colors, borderColor: pal.donutBorder, borderWidth: 2 }],
                 },
                 options: {
                     responsive: true,
                     plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                        legend: { position: 'bottom', labels: { boxWidth: 12, color: pal.legendColor, font: { size: 11 } } },
                     },
                     cutout: '60%',
                 },
@@ -121,6 +159,7 @@
             const { labels, data } = res.data;
             const ctx = document.getElementById('aura-lib-dewey-chart');
             if (!ctx) return;
+            const pal = getChartPalette();
             if (deweyChart) deweyChart.destroy();
             deweyChart = new Chart(ctx, {
                 type: 'bar',
@@ -128,20 +167,57 @@
                     labels,
                     datasets: [{
                         data,
-                        backgroundColor: 'rgba(0,163,42,0.65)',
-                        borderColor: '#00a32a',
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: '#10b981',
                         borderWidth: 1,
-                        borderRadius: 4,
+                        borderRadius: 6,
                     }],
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     plugins: { legend: { display: false } },
-                    scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1, color: pal.tickColor },
+                            grid: { color: pal.gridColor },
+                        },
+                        y: {
+                            ticks: { color: pal.tickColor },
+                            grid: { color: pal.gridColor },
+                        },
+                    },
                 },
             });
         });
+    }
+
+    function refreshChartTheme() {
+        const pal = getChartPalette();
+        if (loansChart && loansChart.options && loansChart.options.scales) {
+            loansChart.options.scales.x.ticks.color = pal.tickColor;
+            loansChart.options.scales.x.grid.color  = pal.gridColor;
+            loansChart.options.scales.y.ticks.color = pal.tickColor;
+            loansChart.options.scales.y.grid.color  = pal.gridColor;
+            loansChart.update('none');
+        }
+        if (statusChart && statusChart.options) {
+            if (statusChart.data && statusChart.data.datasets && statusChart.data.datasets[0]) {
+                statusChart.data.datasets[0].borderColor = pal.donutBorder;
+            }
+            if (statusChart.options.plugins && statusChart.options.plugins.legend && statusChart.options.plugins.legend.labels) {
+                statusChart.options.plugins.legend.labels.color = pal.legendColor;
+            }
+            statusChart.update('none');
+        }
+        if (deweyChart && deweyChart.options && deweyChart.options.scales) {
+            deweyChart.options.scales.x.ticks.color = pal.tickColor;
+            deweyChart.options.scales.x.grid.color  = pal.gridColor;
+            deweyChart.options.scales.y.ticks.color = pal.tickColor;
+            deweyChart.options.scales.y.grid.color  = pal.gridColor;
+            deweyChart.update('none');
+        }
     }
 
     // ─── Lista 1: Préstamos vencidos ────────────────────────────
@@ -164,7 +240,7 @@
                         <strong>${escHtml(item.book_title)}</strong>
                         <span>${escHtml(item.borrower)} — ${item.days_overdue} ${auraLibDash.i18n.days_late || 'días'}</span>
                     </div>
-                    <div class="aura-lib-quick-badge aura-lib-badge--red">${item.days_overdue}d</div>
+                    <span class="badge badge-red aura-lib-quick-badge">${item.days_overdue}d</span>
                 </li>`;
             });
             html += '</ul>';
@@ -185,9 +261,9 @@
                 return;
             }
             let html = '<ul class="aura-lib-quick-list">';
-            items.forEach(function (item, idx) {
+            items.forEach(function (item) {
                 const cover = item.cover
-                    ? `<img src="${item.cover}" alt="" class="aura-lib-thumb">`
+                    ? `<span class="aura-img-preview-trigger aura-lib-thumb-wrap" data-preview-title="${escHtml(item.title)}"><img src="${escHtml(item.cover)}" alt="${escHtml(item.title)}" class="aura-lib-thumb"></span>`
                     : '<span class="aura-lib-thumb aura-lib-thumb--placeholder dashicons dashicons-book-alt"></span>';
                 html += `<li class="aura-lib-quick-item">
                     ${cover}
@@ -195,7 +271,7 @@
                         <strong>${escHtml(item.title)}</strong>
                         <span>${escHtml(item.author || '')}</span>
                     </div>
-                    <div class="aura-lib-quick-badge">${item.loan_count}</div>
+                    <span class="badge badge-indigo aura-lib-quick-badge">${item.loan_count}</span>
                 </li>`;
             });
             html += '</ul>';
@@ -217,14 +293,14 @@
             }
             let html = '<ul class="aura-lib-quick-list">';
             items.forEach(function (item) {
-                const statusClass = item.status === 'notified' ? 'aura-lib-badge--green' : 'aura-lib-badge--yellow';
+                const badgeClass = item.status === 'notified' ? 'badge-emerald' : 'badge-amber';
                 html += `<li class="aura-lib-quick-item">
                     <span class="aura-lib-quick-icon dashicons dashicons-calendar"></span>
                     <div class="aura-lib-quick-info">
                         <strong>${escHtml(item.book_title)}</strong>
                         <span>${escHtml(item.user_name)} — ${escHtml(item.reserved_at)}</span>
                     </div>
-                    <div class="aura-lib-quick-badge ${statusClass}">${escHtml(item.status)}</div>
+                    <span class="badge ${badgeClass} aura-lib-quick-badge">${escHtml(item.status)}</span>
                 </li>`;
             });
             html += '</ul>';
@@ -258,6 +334,14 @@
         loadOverdueList();
         loadTopBooks();
         loadReservations();
+
+        if (window.MutationObserver) {
+            const themeObserver = new MutationObserver(refreshChartTheme);
+            themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-wp-dark-mode-scheme'] });
+            if (document.body) {
+                themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-wp-dark-mode-scheme'] });
+            }
+        }
     });
 
 })(jQuery);

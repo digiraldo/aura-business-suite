@@ -117,9 +117,19 @@
             saveReservation();
         });
 
-        // Cerrar modales
-        $(document).on('click', '.aura-lib-modal-close, .aura-lib-modal-overlay', function () {
+        // Cerrar modales (protección anti-cierre accidental al arrastrar selección + detener escáneres)
+        var _libBackdropDown = false;
+        $(document).on('mousedown', '.aura-lib-modal', function (e) {
+            _libBackdropDown = (e.target === this);
+        });
+        $(document).on('click', '.aura-lib-modal-close', function () {
             closeAllModals();
+        });
+        $(document).on('click', '.aura-lib-modal', function (e) {
+            if (_libBackdropDown && e.target === this) {
+                closeAllModals();
+            }
+            _libBackdropDown = false;
         });
         $(document).on('keydown', function (e) {
             if (e.key === 'Escape') closeAllModals();
@@ -344,39 +354,39 @@
 
         var rows = '';
         $.each(items, function (i, b) {
+            var fullImg = b.cover_full_url || b.cover_thumb_url;
             var coverHtml = b.cover_thumb_url
-                ? '<div class="aura-img-preview"><img src="' + escAttr(b.cover_thumb_url) + '" class="aura-lib-cover-thumb aura-thumb"' +
-                  ' alt="' + escAttr(b.title) + '">' +
-                  (b.cover_full_url ? '<div class="aura-img-tooltip"><img src="' + escAttr(b.cover_full_url) + '" alt=""></div>' : '') +
+                ? '<div class="aura-table-thumb-preview aura-lib-thumb-preview" data-preview-title="' + escAttr(b.title) + '">' +
+                  '<img src="' + escAttr(fullImg) + '" data-thumb="' + escAttr(b.cover_thumb_url) + '" class="aura-lib-cover-thumb" alt="' + escAttr(b.title) + '">' +
                   '</div>'
                 : '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm"></span>';
 
             var statusClass = {
-                'available'      : 'aura-lib-badge-green',
-                'unavailable'    : 'aura-lib-badge-red',
-                'reference_only' : 'aura-lib-badge-blue',
-                'lost'           : 'aura-lib-badge-orange',
-                'withdrawn'      : 'aura-lib-badge-gray',
-                'on_loan'        : 'aura-lib-badge-purple'
-            }[b.display_status] || 'aura-lib-badge-gray';
+                'available'      : 'badge-emerald',
+                'unavailable'    : 'badge-red',
+                'reference_only' : 'badge-blue',
+                'lost'           : 'badge-amber',
+                'withdrawn'      : 'badge-slate',
+                'on_loan'        : 'badge-violet'
+            }[b.display_status] || 'badge-slate';
 
-            var copiesColor = {
-                'badge-green'  : '#00a32a',
-                'badge-yellow' : '#996800',
-                'badge-red'    : '#d63638',
-            }[b.copies_badge] || '#555';
+            var copiesClass = {
+                'badge-green'  : 'aura-lib-copies-green',
+                'badge-yellow' : 'aura-lib-copies-amber',
+                'badge-red'    : 'aura-lib-copies-red',
+            }[b.copies_badge] || 'aura-lib-copies-muted';
 
             var actions = '<div class="aura-lib-actions">';
-            actions += '<button class="aura-lib-btn-action aura-lib-btn-detail" data-id="' + parseInt(b.id, 10) + '" title="' + escAttr(cfg.txt.loading) + '"><span class="dashicons dashicons-visibility"></span></button>';
+            actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-detail" data-id="' + parseInt(b.id, 10) + '" title="Ver detalle"><span class="dashicons dashicons-visibility"></span></button>';
             if (b.can_edit) {
-                actions += '<button class="aura-lib-btn-action aura-lib-btn-edit" data-id="' + parseInt(b.id, 10) + '" title="Editar"><span class="dashicons dashicons-edit"></span></button>';
+                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-edit" data-id="' + parseInt(b.id, 10) + '" title="Editar"><span class="dashicons dashicons-edit"></span></button>';
             }
             if (b.can_delete) {
-                actions += '<button class="aura-lib-btn-action aura-lib-btn-delete aura-lib-btn-danger" data-id="' + parseInt(b.id, 10) + '" title="Eliminar"><span class="dashicons dashicons-trash"></span></button>';
+                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-delete aura-lib-btn-danger" data-id="' + parseInt(b.id, 10) + '" title="Eliminar"><span class="dashicons dashicons-trash"></span></button>';
             }
             // F4.4 — Botón Reservar cuando no hay copias disponibles
             if (cfg.can_loan && parseInt(b.available_copies, 10) === 0 && b.status !== 'reference_only') {
-                actions += '<button class="aura-lib-btn-action aura-lib-btn-reserve" data-id="' + parseInt(b.id, 10) + '" data-title="' + escAttr(b.title) + '" title="Reservar"><span class="dashicons dashicons-calendar-alt"></span></button>';
+                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-reserve" data-id="' + parseInt(b.id, 10) + '" data-title="' + escAttr(b.title) + '" title="Reservar"><span class="dashicons dashicons-calendar-alt"></span></button>';
             }
             actions += '</div>';
 
@@ -384,10 +394,10 @@
             rows += '<tr data-id="' + parseInt(b.id, 10) + '">' +
                 '<td class="aura-lib-col-cover">' + coverHtml + '</td>' +
                 '<td class="aura-lib-col-title"><strong>' + escHtml(b.title) + '</strong>' +
-                    (b.subtitle ? '<br><small>' + escHtml(b.subtitle) + '</small>' : '') + '</td>' +
+                    (b.subtitle ? '<br><small class="aura-lib-sub-muted">' + escHtml(b.subtitle) + '</small>' : '') + '</td>' +
                 '<td>' + escHtml(b.author) + '</td>' +
-                '<td><span class="aura-lib-badge ' + statusClass + '">' + escHtml(b.display_status_label) + '</span></td>' +
-                '<td><span class="aura-lib-copies-cell" style="color:' + copiesColor + ';font-weight:600;" title="' +
+                '<td><span class="badge aura-lib-badge ' + statusClass + '">' + escHtml(b.display_status_label) + '</span></td>' +
+                '<td><span class="aura-lib-copies-cell ' + copiesClass + '" title="' +
                     escAttr(parseInt(b.available_copies, 10) + ' disponibles de ' + parseInt(b.total_copies, 10) + ' totales') + '">' +
                     parseInt(b.available_copies, 10) + ' / ' + parseInt(b.total_copies, 10) +
                     (parseInt(b.available_copies, 10) === 0 ? (function() { var lent = parseInt(b.total_copies, 10) - parseInt(b.available_copies, 10); return '<br><small style="font-weight:normal;font-size:10px;">' + escHtml(lent + (lent === 1 ? ' prestada' : ' prestadas')) + '</small>'; })() : '') +
@@ -395,7 +405,7 @@
                 '<td><code>' + escHtml(b.dewey_number || '—') + '</code></td>' +
                 '<td>' + escHtml(b.category || '—') + '</td>' +
                 '<td>' + escHtml(b.physical_location || '—') +
-                    (b.shelf_code ? '<br><small>' + escHtml(b.shelf_code) + '</small>' : '') + '</td>' +
+                    (b.shelf_code ? '<br><small class="aura-lib-sub-muted">' + escHtml(b.shelf_code) + '</small>' : '') + '</td>' +
                 '<td>' + actions + '</td>' +
             '</tr>';
         });
@@ -438,17 +448,17 @@
 
         if (tPages > 1) {
             html += '<div class="aura-lib-page-btns">';
-            html += '<button class="aura-lib-page-btn button" data-page="' + Math.max(1, currentPage - 1) + '"' +
+            html += '<button type="button" class="aura-lib-page-btn btn btn-glass btn-sm" data-page="' + Math.max(1, currentPage - 1) + '"' +
                     (currentPage <= 1 ? ' disabled' : '') + '>‹</button>';
 
             var start = Math.max(1, currentPage - 2);
             var end   = Math.min(tPages, start + 4);
             for (var p = start; p <= end; p++) {
-                html += '<button class="aura-lib-page-btn button' + (p === currentPage ? ' button-primary' : '') +
+                html += '<button type="button" class="aura-lib-page-btn btn btn-sm ' + (p === currentPage ? 'btn-indigo' : 'btn-glass') +
                         '" data-page="' + p + '">' + p + '</button>';
             }
 
-            html += '<button class="aura-lib-page-btn button" data-page="' + Math.min(tPages, currentPage + 1) + '"' +
+            html += '<button type="button" class="aura-lib-page-btn btn btn-glass btn-sm" data-page="' + Math.min(tPages, currentPage + 1) + '"' +
                     (currentPage >= tPages ? ' disabled' : '') + '>›</button>';
             html += '</div>';
         }
@@ -471,15 +481,25 @@
         $('#aura-lib-modal-title').text(title);
 
         if (bookId) {
+            showModal('#aura-lib-book-modal', { async: true });
             // Cargar datos del libro vía AJAX
             $.post(cfg.ajaxurl, {
                 action : 'aura_library_books_get_detail',
                 nonce  : cfg.nonce,
                 id     : bookId,
             }, function (res) {
-                if (!res.success) { alert(res.data ? res.data.message : cfg.txt.error); return; }
+                if (!res.success) {
+                    closeAllModals();
+                    showToast(res.data ? res.data.message : cfg.txt.error, 'error');
+                    return;
+                }
                 populateForm(res.data.book);
-                showModal('#aura-lib-book-modal');
+                if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                    AuraUI.hideModalSkeleton('aura-lib-book-modal');
+                }
+            }).fail(function () {
+                closeAllModals();
+                showToast(cfg.txt.error, 'error');
             });
         } else {
             showModal('#aura-lib-book-modal');
@@ -729,6 +749,10 @@
     // TOAST NOTIFICATION
     // ──────────────────────────────────────────────────────────────
     function showToast(msg, type) {
+        if (typeof AuraUI !== 'undefined' && typeof AuraUI.showToast === 'function') {
+            AuraUI.showToast(escHtml(msg), type || 'success');
+            return;
+        }
         var icon = type === 'success' ? '✅' : '❌';
         var $t = $('<div class="aura-lib-toast aura-lib-toast-' + type + '">' + icon + ' ' + escHtml(msg) + '</div>');
         $('body').append($t);
@@ -803,8 +827,8 @@
     // MODAL DETALLE
     // ──────────────────────────────────────────────────────────────
     function openDetailModal(id) {
-        $('#aura-lib-detail-body').html('<span class="spinner is-active" style="float:none;padding:20px;display:block;text-align:center;"></span>');
-        showModal('#aura-lib-detail-modal');
+        $('#aura-lib-detail-body').empty();
+        showModal('#aura-lib-detail-modal', { async: true });
 
         $.post(cfg.ajaxurl, {
             action : 'aura_library_books_get_detail',
@@ -813,12 +837,21 @@
         }, function (res) {
             if (!res.success) {
                 $('#aura-lib-detail-body').html('<p class="notice notice-error">' + escHtml(res.data ? res.data.message : cfg.txt.error) + '</p>');
+                if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                    AuraUI.hideModalSkeleton('aura-lib-detail-modal');
+                }
                 return;
             }
-            $('#aura-lib-detail-title').text(escHtml(res.data.book.title));
+            $('#aura-lib-detail-title').text(res.data.book.title || '');
             renderDetailBody(res.data);
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-detail-modal');
+            }
         }).fail(function () {
             $('#aura-lib-detail-body').html('<p>' + escHtml(cfg.txt.error) + '</p>');
+            if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
+                AuraUI.hideModalSkeleton('aura-lib-detail-modal');
+            }
         });
     }
 
@@ -827,17 +860,17 @@
         var loans   = data.loans || [];
 
         var coverHtml = b.cover_full_url
-            ? '<img src="' + escAttr(b.cover_full_url) + '" alt="" class="aura-lib-detail-cover">'
-            : '<span class="dashicons dashicons-format-image" style="font-size:60px;color:#ccc;display:block;text-align:center;"></span>';
+            ? '<div class="aura-img-preview-trigger aura-lib-detail-cover-trigger" data-preview-title="' + escAttr(b.title) + '"><img src="' + escAttr(b.cover_full_url) + '" alt="' + escAttr(b.title) + '" class="aura-lib-detail-cover"></div>'
+            : '<span class="dashicons dashicons-format-image aura-lib-detail-cover-placeholder"></span>';
 
         var statusClass = {
-            'available'      : 'aura-lib-badge-green',
-            'unavailable'    : 'aura-lib-badge-red',
-            'reference_only' : 'aura-lib-badge-blue',
-            'lost'           : 'aura-lib-badge-orange',
-            'withdrawn'      : 'aura-lib-badge-gray',
-            'on_loan'        : 'aura-lib-badge-purple'
-        }[b.display_status || b.status] || 'aura-lib-badge-gray';
+            'available'      : 'badge-emerald',
+            'unavailable'    : 'badge-red',
+            'reference_only' : 'badge-blue',
+            'lost'           : 'badge-amber',
+            'withdrawn'      : 'badge-slate',
+            'on_loan'        : 'badge-violet'
+        }[b.display_status || b.status] || 'badge-slate';
 
         var html = '<div class="aura-lib-detail-wrap">';
         html += '<div class="aura-lib-detail-cover-col">' + coverHtml + '</div>';
@@ -859,41 +892,41 @@
             html += '<tr><th>' + escHtml(f[0]) + '</th><td>' + escHtml(String(f[1] || '')) + '</td></tr>';
         });
         html += '</table>';
-        html += '<span class="aura-lib-badge ' + statusClass + '" style="margin-top:8px;display:inline-block;">' + escHtml(b.display_status_label || b.status_label) + '</span>';
+        html += '<span class="badge aura-lib-badge ' + statusClass + '" style="margin-top:8px;display:inline-flex;">' + escHtml(b.display_status_label || b.status_label) + '</span>';
 
         if (b.description) {
-            html += '<p style="margin-top:12px;color:#555;">' + escHtml(b.description) + '</p>';
+            html += '<p class="aura-lib-detail-desc">' + escHtml(b.description) + '</p>';
         }
 
         html += '</div></div>';
 
         // Historial de préstamos
-        html += '<h3 style="margin-top:24px;">Historial de préstamos</h3>';
+        html += '<h3 class="aura-lib-detail-history-title">Historial de préstamos</h3>';
         if (!loans.length) {
-            html += '<p style="color:#999;">Sin préstamos registrados.</p>';
+            html += '<p class="aura-lib-detail-empty">Sin préstamos registrados.</p>';
         } else {
-            html += '<table class="wp-list-table widefat striped" style="margin-top:8px;"><thead><tr>' +
+            html += '<div class="aura-dt-wrapper aura-table-responsive-wrap" style="margin-top:8px;"><table class="aura-table widefat"><thead><tr>' +
                 '<th>Lector</th><th>Préstamo</th><th>Vencimiento</th><th>Devolución</th><th>Estado</th>' +
                 '</tr></thead><tbody>';
             $.each(loans, function (i, l) {
                 var lStatusClass = {
-                    'active'   : 'aura-lib-badge-blue',
-                    'returned' : 'aura-lib-badge-green',
-                    'overdue'  : 'aura-lib-badge-red',
-                    'lost'     : 'aura-lib-badge-orange',
-                    'extended' : 'aura-lib-badge-yellow',
-                }[l.status] || 'aura-lib-badge-gray';
+                    'active'   : 'badge-blue',
+                    'returned' : 'badge-emerald',
+                    'overdue'  : 'badge-red',
+                    'lost'     : 'badge-amber',
+                    'extended' : 'badge-violet',
+                }[l.status] || 'badge-slate';
 
-                var dueClass = l.is_overdue ? 'style="color:#d63638;font-weight:600;"' : '';
+                var dueClass = l.is_overdue ? 'class="aura-lib-due-overdue"' : '';
                 html += '<tr>' +
                     '<td>' + escHtml(l.borrower) + '</td>' +
                     '<td>' + escHtml(l.loan_date) + '</td>' +
                     '<td ' + dueClass + '>' + escHtml(l.due_date) + '</td>' +
                     '<td>' + escHtml(l.return_date || '—') + '</td>' +
-                    '<td><span class="aura-lib-badge ' + lStatusClass + '">' + escHtml(l.status_label) + '</span></td>' +
+                    '<td><span class="badge aura-lib-badge ' + lStatusClass + '">' + escHtml(l.status_label) + '</span></td>' +
                 '</tr>';
             });
-            html += '</tbody></table>';
+            html += '</tbody></table></div>';
         }
 
         $('#aura-lib-detail-body').html(html);
@@ -982,16 +1015,28 @@
     }
 
     // ──────────────────────────────────────────────────────────────
-    // UTILIDADES MODALES
+    // UTILIDADES MODALES (AuraUI + Skeleton Loader)
     // ──────────────────────────────────────────────────────────────
-    function showModal(selector) {
-        $(selector).fadeIn(200);
+    function showModal(selector, options) {
+        var modalId = String(selector || '').replace(/^#/, '');
+        if (typeof AuraUI !== 'undefined' && typeof AuraUI.openModal === 'function') {
+            AuraUI.openModal(modalId, options || {});
+        } else {
+            $(selector).css('display', 'flex').addClass('active is-active');
+        }
         $('body').addClass('aura-lib-modal-open');
     }
     function closeAllModals() {
         stopBarcodeScanner();
         stopRemoteScan();
-        $('.aura-lib-modal').fadeOut(150);
+        $('.aura-lib-modal').each(function () {
+            var id = this.id;
+            if (id && typeof AuraUI !== 'undefined' && typeof AuraUI.closeModal === 'function') {
+                AuraUI.closeModal(id);
+            } else {
+                $(this).removeClass('active is-active').hide();
+            }
+        });
         $('body').removeClass('aura-lib-modal-open');
         $('.aura-lib-cover-tooltip').remove();
     }
@@ -1362,12 +1407,12 @@
     // ──────────────────────────────────────────────────────────────
     function showTableError(msg) {
         $('#aura-lib-books-table tbody').html(
-            '<tr><td colspan="9" style="color:#d63638;text-align:center;padding:20px;">' + escHtml(msg) + '</td></tr>'
+            '<tr><td colspan="9" class="aura-lib-table-error">' + escHtml(msg) + '</td></tr>'
         );
     }
     function showSaveMsg(msg, type) {
         var $el = $('.aura-lib-save-msg');
-        $el.text(msg).css('color', type === 'error' ? '#d63638' : '#00a32a').show();
+        $el.text(msg).toggleClass('is-error', type === 'error').toggleClass('is-success', type !== 'error').show();
     }
     function escHtml(str) {
         return $('<div>').text(String(str || '')).html();
@@ -1401,18 +1446,14 @@
             $btn.prop('disabled', false).text('Confirmar Reserva');
             if (res.success) {
                 closeAllModals();
-                // Mostrar mensaje de éxito debajo del heading
-                var $msg = $('<div class="notice notice-success is-dismissible"><p></p></div>');
-                $msg.find('p').text(res.data.message || 'Reserva creada correctamente.');
-                $('.wp-heading-inline').first().closest('.wrap').find('hr.wp-header-end').after($msg);
-                setTimeout(function () { $msg.fadeOut(); }, 5000);
+                showToast(res.data.message || 'Reserva creada correctamente.', 'success');
                 loadBooks();
             } else {
-                alert(res.data ? res.data.message : 'Error al crear la reserva.');
+                showToast(res.data ? res.data.message : 'Error al crear la reserva.', 'error');
             }
         }).fail(function () {
             $btn.prop('disabled', false).text('Confirmar Reserva');
-            alert('Error al procesar la solicitud.');
+            showToast('Error al procesar la solicitud.', 'error');
         });
     }
 
