@@ -1371,16 +1371,29 @@ body.admin-color-coffee {
     height: 14px;
 }
 
-/* ── 17d. SIDEBAR DE FILTROS COLAPSABLE ──────────────────────── */
-.aura-filters-card,
-#aura-filters-sidebar {
-    width: 340px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+/* ── 17d. TARJETAS HORIZONTALES Y SIDEBAR DE FILTROS COLAPSABLE ── */
+/* Tarjeta horizontal de filtros (ancho completo 100% sobre tablas y listados) */
+.aura-filters-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    background: var(--bg-surface, var(--aura-surface, #ffffff));
+    border: 1px solid var(--border, var(--aura-border, #e2e8f0));
     border-radius: var(--aura-radius-md, 10px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    color: var(--tx-primary, var(--aura-text, #0f172a));
+    transition: all 0.25s ease;
+}
+
+.aura-glass-card.aura-filters-card:not(aside) {
+    padding: 16px 20px;
+}
+
+/* Variante de panel lateral colapsable en layouts de 2 columnas */
+aside.aura-filters-card:not(.aura-reports-sidebar),
+#aura-filters-sidebar {
+    width: 340px;
     flex-shrink: 0;
-    transition: all 0.3s ease;
     max-height: calc(100vh - 140px);
     position: sticky;
     top: 32px;
@@ -1388,6 +1401,14 @@ body.admin-color-coffee {
     flex-direction: column;
     overflow: hidden;
     z-index: 10;
+}
+
+#aura-filters-sidebar {
+    background: var(--bg-surface, var(--aura-surface, #ffffff));
+    border: 1px solid var(--border, var(--aura-border, #e2e8f0));
+    border-radius: var(--aura-radius-md, 10px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
 }
 
 .aura-filters-card *,
@@ -1401,9 +1422,9 @@ body.admin-color-coffee {
 }
 
 .aura-filters-header {
-    background: #f8fafc;
+    background: var(--bg-alt, var(--aura-surface-alt, #f8fafc));
     padding: 14px 18px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border, var(--aura-border, #e2e8f0));
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1420,7 +1441,7 @@ body.admin-color-coffee {
     margin: 0;
     font-size: 14px;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--tx-primary, var(--aura-text, #1e293b));
 }
 
 .aura-active-count-chip {
