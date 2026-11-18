@@ -16,6 +16,7 @@
     var perPage     = 20;
     var totalPages  = 1;
     var _booksTable = null;
+    var _booksMap   = {};
 
     // ──────────────────────────────────────────────────────────────
     // INIT
@@ -308,6 +309,47 @@
             stopRemoteScan();
         });
 
+        // Expandir / Colapsar fila hija con información completa del libro (+ / -)
+        $(document).on('click', '#aura-lib-books-table .aura-lib-row-toggle', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var $btn = $(this);
+            var $tr  = $btn.closest('tr');
+            var id   = parseInt($btn.data('id'), 10);
+            var book = _booksMap[id];
+            if (!book) return;
+
+            var isExpanded = $btn.hasClass('is-active');
+            if (_booksTable && typeof _booksTable.row === 'function') {
+                var dtRow = _booksTable.row($tr);
+                if (dtRow.child.isShown()) {
+                    dtRow.child.hide();
+                    $tr.removeClass('shown is-expanded');
+                    $btn.removeClass('is-active').attr('aria-expanded', 'false')
+                        .html('<span class="dashicons dashicons-plus-alt2"></span>');
+                } else {
+                    dtRow.child(renderBookChildCard(book), 'aura-dt-child-row aura-child-row is-open').show();
+                    $tr.addClass('shown is-expanded');
+                    $btn.addClass('is-active').attr('aria-expanded', 'true')
+                        .html('<span class="dashicons dashicons-minus"></span>');
+                }
+            } else {
+                var $next = $tr.next('tr.aura-child-row');
+                if (isExpanded && $next.length) {
+                    $next.remove();
+                    $tr.removeClass('shown is-expanded');
+                    $btn.removeClass('is-active').attr('aria-expanded', 'false')
+                        .html('<span class="dashicons dashicons-plus-alt2"></span>');
+                } else {
+                    if ($next.length) $next.remove();
+                    $tr.after('<tr class="aura-child-row is-open"><td colspan="10">' + renderBookChildCard(book) + '</td></tr>');
+                    $tr.addClass('shown is-expanded');
+                    $btn.addClass('is-active').attr('aria-expanded', 'true')
+                        .html('<span class="dashicons dashicons-minus"></span>');
+                }
+            }
+        });
+
         // Indicador visual para campos manuales de Clasificación
         $(document).on('input change', '.aura-lib-manual-input', function () {
             syncManualFieldState($(this));
@@ -318,14 +360,19 @@
     // CARGA DE LIBROS (AJAX)
     // ──────────────────────────────────────────────────────────────
     function loadBooks() {
+        if (_booksTable) {
+            try { _booksTable.destroy(); } catch (e) {}
+            _booksTable = null;
+        }
         var tbody = $('#aura-lib-books-table tbody');
-        tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;">' +
+        tbody.html('<tr><td colspan="10" style="text-align:center;padding:24px;">' +
             '<span class="spinner is-active" style="float:none;"></span> ' +
             escHtml(cfg.txt.loading) + '</td></tr>');
 
         $.post(cfg.ajaxurl, {
             action    : 'aura_library_books_get_list',
             nonce     : cfg.nonce,
+            _t        : Date.now(),
             page      : currentPage,
             per_page  : perPage,
             search    : $('#aura-lib-search').val(),
@@ -341,25 +388,106 @@
         });
     }
 
+    function buildCoverHoverCardAttr(imgUrl, title, subtitle) {
+        if (!imgUrl) return '';
+        var html = '<div class="aura-floating-img-card aura-lib-floating-cover">' +
+            '<img src="' + escAttr(imgUrl) + '" alt="' + escAttr(title || '') + '" class="aura-lib-floating-cover-img">' +
+            '<span class="aura-floating-img-title">' + escHtml(title || '') + '</span>' +
+            (subtitle ? '<span class="aura-floating-img-sub">' + escHtml(subtitle) + '</span>' : '') +
+            '</div>';
+        return ' data-aura-tooltip="' + escAttr(encodeURIComponent(html)) + '"';
+    }
+
+    function buildBookRichTipAttr(b) {
+        var meta = '<div class="aura-tip-card">' +
+            '<div class="aura-tip-card-header"><strong>📖 ' + escHtml(b.title) + '</strong></div>' +
+            '<div class="aura-tip-card-body">' +
+            (b.subtitle ? '<div class="aura-tip-row"><span>Subtítulo:</span> <strong>' + escHtml(b.subtitle) + '</strong></div>' : '') +
+            '<div class="aura-tip-row"><span>Autor:</span> <strong>' + escHtml(b.author || '—') + '</strong></div>' +
+            (b.isbn ? '<div class="aura-tip-row"><span>ISBN:</span> <code>' + escHtml(b.isbn) + '</code></div>' : '') +
+            (b.publisher ? '<div class="aura-tip-row"><span>Editorial:</span> <span>' + escHtml(b.publisher) + (b.year_published ? ' (' + escHtml(b.year_published) + ')' : '') + '</span></div>' : '') +
+            '<div class="aura-tip-row"><span>Idioma:</span> <span>' + escHtml(b.language || 'Español') + '</span></div>' +
+            '</div></div>';
+        return ' data-aura-tooltip="' + escAttr(encodeURIComponent(meta)) + '"';
+    }
+
+    function renderBookChildCard(b) {
+        var availCount = parseInt(b.available_copies, 10) || 0;
+        var totalCount = parseInt(b.total_copies, 10) || 0;
+        var pct        = totalCount > 0 ? Math.round((availCount / totalCount) * 100) : 0;
+        var barClass   = availCount === 0 ? 'micro-progress-fill--rose' : (availCount === 1 ? 'micro-progress-fill--amber' : 'micro-progress-fill--emerald');
+        var fullImg    = b.cover_full_url || b.cover_thumb_url;
+
+        var kwHtml = '';
+        if (b.keywords) {
+            var kws = String(b.keywords).split(',').map(function (s) { return $.trim(s); }).filter(Boolean);
+            if (kws.length) {
+                kwHtml = '<div class="aura-child-tags">' +
+                    kws.map(function (k) { return '<span class="badge badge-indigo">' + escHtml(k) + '</span>'; }).join('') +
+                    '</div>';
+            }
+        }
+
+        var coverBox = fullImg
+            ? '<img src="' + escAttr(fullImg) + '" alt="' + escAttr(b.title) + '" class="aura-child-book-cover">'
+            : '<div class="aura-child-book-cover-empty"><span class="dashicons dashicons-book-alt"></span></div>';
+
+        return '<div class="aura-child-card aura-lib-child-card">' +
+            '<div class="aura-lib-child-layout">' +
+            '<div class="aura-lib-child-cover-col">' + coverBox + '</div>' +
+            '<div class="aura-lib-child-content">' +
+            '<div class="aura-child-hero-bar">' +
+            '<div>' +
+            '<h4 class="aura-child-hero-title">' + escHtml(b.title || '—') + '</h4>' +
+            (b.subtitle ? '<div class="aura-lib-sub-muted">' + escHtml(b.subtitle) + '</div>' : '') +
+            '<div class="aura-lib-child-author">✍️ ' + escHtml(b.author || '—') + '</div>' +
+            '</div>' +
+            '<div class="aura-lib-child-stock">' +
+            '<strong>' + availCount + ' / ' + totalCount + '</strong> <small>ejemplares disponibles</small>' +
+            '<div class="micro-progress-bar" style="width:140px;margin-top:4px;"><div class="micro-progress-fill ' + barClass + '" style="width:' + pct + '%;"></div></div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="aura-child-meta-grid">' +
+            '<div class="aura-child-meta-item"><span>Estado</span><strong>' + escHtml(b.display_status_label || b.status_label || '—') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>Dewey</span><strong><code>' + escHtml(b.dewey_number || '—') + '</code></strong></div>' +
+            '<div class="aura-child-meta-item"><span>ISBN</span><strong><code>' + escHtml(b.isbn || '—') + '</code></strong></div>' +
+            '<div class="aura-child-meta-item"><span>Categoría</span><strong>' + escHtml(b.category || '—') + (b.subcategory ? ' / ' + escHtml(b.subcategory) : '') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>Editorial / Año</span><strong>' + escHtml(b.publisher || '—') + (b.year_published ? ' (' + escHtml(b.year_published) + ')' : '') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>Edición / Páginas</span><strong>' + escHtml(b.edition || '—') + (b.pages ? ' · ' + escHtml(b.pages) + ' pp.' : '') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>Idioma</span><strong>' + escHtml(b.language || 'Español') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>Ubicación</span><strong>' + escHtml(b.physical_location || '—') + (b.shelf_code ? ' · Est. ' + escHtml(b.shelf_code) : '') + '</strong></div>' +
+            '</div>' +
+            (b.description ? '<div class="aura-child-synopsis"><strong>Sinopsis:</strong> ' + escHtml(b.description) + '</div>' : '') +
+            kwHtml +
+            '<div class="aura-child-footer-actions">' +
+            '<button type="button" class="btn btn-sm btn-indigo aura-lib-btn-detail" data-id="' + parseInt(b.id, 10) + '"><span class="dashicons dashicons-visibility"></span> Ver Ficha 360°</button>' +
+            (b.can_edit ? '<button type="button" class="btn btn-sm btn-glass aura-lib-btn-edit" data-id="' + parseInt(b.id, 10) + '"><span class="dashicons dashicons-edit"></span> Editar</button>' : '') +
+            '</div>' +
+            '</div></div></div>';
+    }
+
     function renderTable(data) {
         var items = data.items || [];
         totalPages = data.total_pages || 1;
+        _booksMap = {};
 
         var tbody = $('#aura-lib-books-table tbody');
         if (!items.length) {
-            tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;">' + escHtml(cfg.txt.no_results) + '</td></tr>');
+            tbody.html('<tr><td colspan="10" style="text-align:center;padding:24px;">' + escHtml(cfg.txt.no_results) + '</td></tr>');
             renderPagination(data);
             return;
         }
 
         var rows = '';
         $.each(items, function (i, b) {
+            _booksMap[parseInt(b.id, 10)] = b;
             var fullImg = b.cover_full_url || b.cover_thumb_url;
             var coverHtml = b.cover_thumb_url
-                ? '<div class="aura-table-thumb-preview aura-lib-thumb-preview" data-preview-title="' + escAttr(b.title) + '">' +
-                  '<img src="' + escAttr(fullImg) + '" data-thumb="' + escAttr(b.cover_thumb_url) + '" class="aura-lib-cover-thumb" alt="' + escAttr(b.title) + '">' +
+                ? '<div class="aura-table-thumb-preview aura-lib-thumb-preview aura-tooltip-trigger"' +
+                  buildCoverHoverCardAttr(fullImg, b.title, b.author || '') + '>' +
+                  '<img src="' + escAttr(b.cover_thumb_url) + '" class="aura-lib-cover-thumb" alt="' + escAttr(b.title) + '">' +
                   '</div>'
-                : '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm"></span>';
+                : '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm aura-tooltip-trigger" data-tooltip="Sin imagen de portada"></span>';
 
             var statusClass = {
                 'available'      : 'badge-emerald',
@@ -370,43 +498,63 @@
                 'on_loan'        : 'badge-violet'
             }[b.display_status] || 'badge-slate';
 
+            var statusTip = {
+                'available'      : 'Disponible para préstamo a lectores',
+                'unavailable'    : 'Sin ejemplares disponibles en este momento',
+                'reference_only' : 'Solo lectura en sala; no habilitado para préstamo externo',
+                'lost'           : 'Reportado como perdido en inventario',
+                'withdrawn'      : 'Retirado del catálogo activo',
+                'on_loan'        : 'Todos los ejemplares se encuentran prestados actualmente'
+            }[b.display_status] || b.display_status_label;
+
             var copiesClass = {
                 'badge-green'  : 'aura-lib-copies-green',
                 'badge-yellow' : 'aura-lib-copies-amber',
                 'badge-red'    : 'aura-lib-copies-red',
             }[b.copies_badge] || 'aura-lib-copies-muted';
 
+            var availCount = parseInt(b.available_copies, 10) || 0;
+            var totalCount = parseInt(b.total_copies, 10) || 0;
+            var lentCount  = Math.max(0, totalCount - availCount);
+            var copiesTip  = availCount + ' disponibles de ' + totalCount + ' totales' + (lentCount > 0 ? ' (' + lentCount + ' en préstamo)' : '');
+
             var actions = '<div class="aura-lib-actions">';
-            actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-detail" data-id="' + parseInt(b.id, 10) + '" title="Ver detalle"><span class="dashicons dashicons-visibility"></span></button>';
+            actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-detail aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Ver ficha completa del libro (360°)"><span class="dashicons dashicons-visibility"></span></button>';
             if (b.can_edit) {
-                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-edit" data-id="' + parseInt(b.id, 10) + '" title="Editar"><span class="dashicons dashicons-edit"></span></button>';
+                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-edit aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Editar datos y portada del libro"><span class="dashicons dashicons-edit"></span></button>';
             }
             if (b.can_delete) {
-                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-delete aura-lib-btn-danger" data-id="' + parseInt(b.id, 10) + '" title="Eliminar"><span class="dashicons dashicons-trash"></span></button>';
+                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-delete aura-lib-btn-danger aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Eliminar libro del catálogo"><span class="dashicons dashicons-trash"></span></button>';
             }
             // F4.4 — Botón Reservar cuando no hay copias disponibles
-            if (cfg.can_loan && parseInt(b.available_copies, 10) === 0 && b.status !== 'reference_only') {
-                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-reserve" data-id="' + parseInt(b.id, 10) + '" data-title="' + escAttr(b.title) + '" title="Reservar"><span class="dashicons dashicons-calendar-alt"></span></button>';
+            if (cfg.can_loan && availCount === 0 && b.status !== 'reference_only') {
+                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-reserve aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-title="' + escAttr(b.title) + '" data-tooltip="Reservar libro para lista de espera"><span class="dashicons dashicons-calendar-alt"></span></button>';
             }
             actions += '</div>';
 
-            // Orden: Portada(0), Título(1), Autor(2), Estado(3), Copias(4), Dewey(5), Categoría(6), Ubicación(7), Acciones(8)
-            rows += '<tr data-id="' + parseInt(b.id, 10) + '">' +
-                '<td class="aura-lib-col-cover">' + coverHtml + '</td>' +
-                '<td class="aura-lib-col-title"><strong>' + escHtml(b.title) + '</strong>' +
-                    (b.subtitle ? '<br><small class="aura-lib-sub-muted">' + escHtml(b.subtitle) + '</small>' : '') + '</td>' +
-                '<td>' + escHtml(b.author) + '</td>' +
-                '<td><span class="badge aura-lib-badge ' + statusClass + '">' + escHtml(b.display_status_label) + '</span></td>' +
-                '<td><span class="aura-lib-copies-cell ' + copiesClass + '" title="' +
-                    escAttr(parseInt(b.available_copies, 10) + ' disponibles de ' + parseInt(b.total_copies, 10) + ' totales') + '">' +
-                    parseInt(b.available_copies, 10) + ' / ' + parseInt(b.total_copies, 10) +
-                    (parseInt(b.available_copies, 10) === 0 ? (function() { var lent = parseInt(b.total_copies, 10) - parseInt(b.available_copies, 10); return '<br><small style="font-weight:normal;font-size:10px;">' + escHtml(lent + (lent === 1 ? ' prestada' : ' prestadas')) + '</small>'; })() : '') +
+            var locTip = (b.physical_location || 'Sin sala asignada') + (b.shelf_code ? ' · Estante ' + b.shelf_code : '');
+
+            // Orden: Expand(0), Portada(1), Título(2), Autor(3), Estado(4), Copias(5), Dewey(6), Categoría(7), Ubicación(8), Acciones(9)
+            rows += '<tr class="aura-parent-row table-row-hover-lift" data-id="' + parseInt(b.id, 10) + '">' +
+                '<td class="aura-lib-col-expand" data-label="Detalle">' +
+                    '<button type="button" class="aura-lib-row-toggle" data-id="' + parseInt(b.id, 10) + '" aria-expanded="false" data-tooltip="Desplegar información completa del libro"><span class="dashicons dashicons-plus-alt2"></span></button>' +
+                '</td>' +
+                '<td class="aura-lib-col-cover" data-label="Portada">' + coverHtml + '</td>' +
+                '<td class="aura-lib-col-title" data-label="Título"><div class="aura-tooltip-trigger"' + buildBookRichTipAttr(b) + '><strong>' + escHtml(b.title) + '</strong>' +
+                    (b.subtitle ? '<br><small class="aura-lib-sub-muted">' + escHtml(b.subtitle) + '</small>' : '') +
+                    '<div class="aura-lib-mobile-sub">' + escHtml(b.author || '—') + (b.dewey_number ? ' · Dewey ' + escHtml(b.dewey_number) : '') + '</div>' +
+                    '</div></td>' +
+                '<td class="aura-lib-col-secondary" data-label="Autor">' + escHtml(b.author) + '</td>' +
+                '<td class="aura-lib-col-status" data-label="Estado"><span class="badge aura-lib-badge ' + statusClass + ' aura-tooltip-trigger" data-tooltip="' + escAttr(statusTip) + '">' + escHtml(b.display_status_label) + '</span></td>' +
+                '<td class="aura-lib-col-secondary" data-label="Copias"><span class="aura-lib-copies-cell ' + copiesClass + ' aura-tooltip-trigger" data-tooltip="' + escAttr(copiesTip) + '">' +
+                    availCount + ' / ' + totalCount +
+                    (availCount === 0 && lentCount > 0 ? '<br><small style="font-weight:normal;font-size:10px;">' + escHtml(lentCount + (lentCount === 1 ? ' prestada' : ' prestadas')) + '</small>' : '') +
                     '</span></td>' +
-                '<td><code>' + escHtml(b.dewey_number || '—') + '</code></td>' +
-                '<td>' + escHtml(b.category || '—') + '</td>' +
-                '<td>' + escHtml(b.physical_location || '—') +
-                    (b.shelf_code ? '<br><small class="aura-lib-sub-muted">' + escHtml(b.shelf_code) + '</small>' : '') + '</td>' +
-                '<td>' + actions + '</td>' +
+                '<td class="aura-lib-col-secondary" data-label="Dewey"><code class="aura-tooltip-trigger" data-tooltip="' + escAttr(b.dewey_number ? 'Clasificación Dewey: ' + b.dewey_number : 'Sin código Dewey asignado') + '">' + escHtml(b.dewey_number || '—') + '</code></td>' +
+                '<td class="aura-lib-col-secondary" data-label="Categoría">' + escHtml(b.category || '—') + '</td>' +
+                '<td class="aura-lib-col-secondary" data-label="Ubicación"><span class="aura-tooltip-trigger" data-tooltip="' + escAttr(locTip) + '">' + escHtml(b.physical_location || '—') +
+                    (b.shelf_code ? '<br><small class="aura-lib-sub-muted">' + escHtml(b.shelf_code) + '</small>' : '') + '</span></td>' +
+                '<td class="aura-lib-col-actions" data-label="Acciones">' + actions + '</td>' +
             '</tr>';
         });
         tbody.html(rows);
@@ -422,19 +570,13 @@
             _booksTable = null;
         }
         _booksTable = $('#aura-lib-books-table').DataTable({
-            responsive  : true,
+            responsive  : false,
             paging      : false,
             searching   : false,
             info        : false,
             ordering    : false,
             autoWidth   : false,
             language    : { emptyTable: cfg.txt.no_results },
-            columnDefs  : [
-                // 0:Portada  1:Título  2:Autor  3:Estado  4:Copias  5:Dewey  6:Categoría  7:Ubicación  8:Acciones
-                { responsivePriority: 1,     targets: [1, 3, 8] },
-                { responsivePriority: 2,     targets: [0, 2, 4] },
-                { responsivePriority: 10000, targets: [5, 6, 7] },
-            ],
         });
     }
 
@@ -798,7 +940,8 @@
                 return;
             }
             showToast(cfg.txt.saved || 'Libro guardado correctamente.', 'success');
-            setTimeout(function () { closeAllModals(); loadBooks(); }, 800);
+            closeAllModals();
+            setTimeout(function () { window.location.reload(); }, 450);
         }).fail(function () {
             setSaveLoading(false);
             showToast(cfg.txt.error, 'error');
@@ -816,10 +959,14 @@
             nonce  : cfg.nonce,
             id     : id,
         }, function (res) {
-            if (!res.success) { alert(res.data ? res.data.message : cfg.txt.error); return; }
-            loadBooks();
+            if (!res.success) {
+                showToast(res.data ? res.data.message : cfg.txt.error, 'error');
+                return;
+            }
+            showToast(cfg.txt.deleted || 'Libro eliminado correctamente.', 'success');
+            setTimeout(function () { window.location.reload(); }, 450);
         }).fail(function () {
-            alert(cfg.txt.error);
+            showToast(cfg.txt.error, 'error');
         });
     }
 
@@ -828,11 +975,13 @@
     // ──────────────────────────────────────────────────────────────
     function openDetailModal(id) {
         $('#aura-lib-detail-body').empty();
+        $('#aura-lib-detail-edit-btn').hide().attr('data-id', 0);
         showModal('#aura-lib-detail-modal', { async: true });
 
         $.post(cfg.ajaxurl, {
             action : 'aura_library_books_get_detail',
             nonce  : cfg.nonce,
+            _t     : Date.now(),
             id     : id,
         }, function (res) {
             if (!res.success) {
@@ -843,6 +992,9 @@
                 return;
             }
             $('#aura-lib-detail-title').text(res.data.book.title || '');
+            if (cfg.can_edit) {
+                $('#aura-lib-detail-edit-btn').attr('data-id', res.data.book.id).show();
+            }
             renderDetailBody(res.data);
             if (typeof AuraUI !== 'undefined' && AuraUI.hideModalSkeleton) {
                 AuraUI.hideModalSkeleton('aura-lib-detail-modal');
@@ -855,13 +1007,28 @@
         });
     }
 
+    $(document).on('click', '#aura-lib-detail-edit-btn', function () {
+        var bookId = parseInt($(this).attr('data-id'), 10);
+        if (!bookId) return;
+        closeAllModals();
+        setTimeout(function () { openBookModal(bookId); }, 120);
+    });
+
     function renderDetailBody(data) {
         var b       = data.book;
         var loans   = data.loans || [];
+        var fullUrl = b.cover_full_url || b.cover_thumb_url;
 
-        var coverHtml = b.cover_full_url
-            ? '<div class="aura-img-preview-trigger aura-lib-detail-cover-trigger" data-preview-title="' + escAttr(b.title) + '"><img src="' + escAttr(b.cover_full_url) + '" alt="' + escAttr(b.title) + '" class="aura-lib-detail-cover"></div>'
-            : '<span class="dashicons dashicons-format-image aura-lib-detail-cover-placeholder"></span>';
+        var availCount = parseInt(b.available_copies, 10) || 0;
+        var totalCount = Math.max(1, parseInt(b.total_copies, 10) || 1);
+        var availPct   = Math.min(100, Math.round((availCount / totalCount) * 100));
+
+        var coverHtml = fullUrl
+            ? '<div class="aura-lib-detail-cover-card aura-tooltip-trigger"' + buildCoverHoverCardAttr(fullUrl, b.title, b.author || '') + '>' +
+              '<img src="' + escAttr(fullUrl) + '" alt="' + escAttr(b.title) + '" class="aura-lib-detail-cover">' +
+              '<span class="aura-lib-detail-cover-zoom-hint"><span class="dashicons dashicons-search"></span> Ampliar</span>' +
+              '</div>'
+            : '<div class="aura-lib-detail-cover-placeholder-box"><span class="dashicons dashicons-book-alt"></span><small>Sin portada</small></div>';
 
         var statusClass = {
             'available'      : 'badge-emerald',
@@ -872,40 +1039,69 @@
             'on_loan'        : 'badge-violet'
         }[b.display_status || b.status] || 'badge-slate';
 
-        var html = '<div class="aura-lib-detail-wrap">';
-        html += '<div class="aura-lib-detail-cover-col">' + coverHtml + '</div>';
-        html += '<div class="aura-lib-detail-info-col">';
-        html += '<table class="aura-lib-detail-table">';
+        var html = '<div class="aura-lib-detail-hero">';
+        html += '<div class="aura-lib-detail-cover-col">' + coverHtml +
+            '<div class="aura-lib-detail-avail-box">' +
+                '<div class="aura-lib-detail-avail-top">' +
+                    '<span class="badge aura-lib-badge ' + statusClass + '">' + escHtml(b.display_status_label || b.status_label) + '</span>' +
+                    '<strong>' + availCount + ' / ' + totalCount + '</strong>' +
+                '</div>' +
+                '<div class="micro-progress-bar"><span class="micro-progress-fill" style="width:' + availPct + '%;"></span></div>' +
+                '<span class="aura-lib-sub-muted">' + availCount + ' ejemplares disponibles</span>' +
+            '</div>' +
+        '</div>';
 
-        var fields = [
-            ['Autor', b.author],
-            ['Dewey', b.dewey_number || '—'],
-            ['ISBN', b.isbn || '—'],
-            ['Editorial', b.publisher || '—'],
-            ['Año', b.year_published || '—'],
-            ['Idioma', b.language],
-            ['Categoría', b.category || '—'],
-            ['Ubicación', (b.physical_location || '') + (b.shelf_code ? ' · ' + b.shelf_code : '') || '—'],
-            ['Ejemplares', b.available_copies + ' / ' + b.total_copies + ' disponibles'],
+        html += '<div class="aura-lib-detail-info-col">';
+        html += '<div class="aura-lib-detail-title-block">' +
+            '<h3>' + escHtml(b.title || '') + '</h3>' +
+            (b.subtitle ? '<p class="aura-lib-detail-subtitle">' + escHtml(b.subtitle) + '</p>' : '') +
+            '<div class="aura-lib-detail-author-chip"><span class="dashicons dashicons-admin-users"></span> ' + escHtml(b.author || 'Autor no especificado') + '</div>' +
+        '</div>';
+
+        var specs = [
+            { icon: '📚', label: 'Dewey',      val: b.dewey_number || '—' },
+            { icon: '🔢', label: 'ISBN',       val: b.isbn || '—', isCode: true },
+            { icon: '🏛️', label: 'Editorial',  val: b.publisher || '—' },
+            { icon: '📅', label: 'Año / Ed.',  val: (b.year_published || '—') + (b.edition ? ' · ' + b.edition : '') },
+            { icon: '🌐', label: 'Idioma',     val: b.language || 'Español' },
+            { icon: '📄', label: 'Páginas',    val: b.pages ? b.pages + ' págs.' : '—' },
+            { icon: '🏷️', label: 'Categoría',  val: (b.category || '—') + (b.subcategory ? ' / ' + b.subcategory : '') },
+            { icon: '📍', label: 'Ubicación',  val: (b.physical_location || '—') + (b.shelf_code ? ' · Estante ' + b.shelf_code : '') },
         ];
-        $.each(fields, function (i, f) {
-            html += '<tr><th>' + escHtml(f[0]) + '</th><td>' + escHtml(String(f[1] || '')) + '</td></tr>';
+
+        html += '<div class="aura-lib-detail-specs-grid">';
+        $.each(specs, function (i, sp) {
+            html += '<div class="aura-lib-detail-spec-item aura-tooltip-trigger" data-tooltip="' + escAttr(sp.label + ': ' + sp.val) + '">' +
+                '<span class="aura-lib-spec-label">' + sp.icon + ' ' + escHtml(sp.label) + '</span>' +
+                '<strong class="aura-lib-spec-val">' + (sp.isCode && sp.val !== '—' ? '<code>' + escHtml(sp.val) + '</code>' : escHtml(String(sp.val))) + '</strong>' +
+                '</div>';
         });
-        html += '</table>';
-        html += '<span class="badge aura-lib-badge ' + statusClass + '" style="margin-top:8px;display:inline-flex;">' + escHtml(b.display_status_label || b.status_label) + '</span>';
+        html += '</div>';
+
+        if (b.keywords) {
+            html += '<div class="aura-lib-detail-keywords">';
+            b.keywords.split(',').forEach(function (kw) {
+                var cleanKw = $.trim(kw);
+                if (cleanKw) {
+                    html += '<span class="badge badge-indigo">#' + escHtml(cleanKw) + '</span>';
+                }
+            });
+            html += '</div>';
+        }
 
         if (b.description) {
-            html += '<p class="aura-lib-detail-desc">' + escHtml(b.description) + '</p>';
+            html += '<div class="aura-lib-detail-synopsis"><h4>📝 Sinopsis</h4><p>' + escHtml(b.description) + '</p></div>';
         }
 
         html += '</div></div>';
 
         // Historial de préstamos
-        html += '<h3 class="aura-lib-detail-history-title">Historial de préstamos</h3>';
+        html += '<div class="aura-lib-detail-history-card">';
+        html += '<h3 class="aura-lib-detail-history-title"><span class="dashicons dashicons-backup"></span> Historial de préstamos (' + loans.length + ')</h3>';
         if (!loans.length) {
-            html += '<p class="aura-lib-detail-empty">Sin préstamos registrados.</p>';
+            html += '<p class="aura-lib-detail-empty">Sin préstamos registrados para este libro.</p>';
         } else {
-            html += '<div class="aura-dt-wrapper aura-table-responsive-wrap" style="margin-top:8px;"><table class="aura-table widefat"><thead><tr>' +
+            html += '<div class="aura-dt-wrapper aura-table-responsive-wrap" style="margin-top:10px;"><table class="aura-table aura-lib-responsive-table widefat"><thead><tr>' +
                 '<th>Lector</th><th>Préstamo</th><th>Vencimiento</th><th>Devolución</th><th>Estado</th>' +
                 '</tr></thead><tbody>';
             $.each(loans, function (i, l) {
@@ -917,17 +1113,18 @@
                     'extended' : 'badge-violet',
                 }[l.status] || 'badge-slate';
 
-                var dueClass = l.is_overdue ? 'class="aura-lib-due-overdue"' : '';
-                html += '<tr>' +
-                    '<td>' + escHtml(l.borrower) + '</td>' +
-                    '<td>' + escHtml(l.loan_date) + '</td>' +
-                    '<td ' + dueClass + '>' + escHtml(l.due_date) + '</td>' +
-                    '<td>' + escHtml(l.return_date || '—') + '</td>' +
-                    '<td><span class="badge aura-lib-badge ' + lStatusClass + '">' + escHtml(l.status_label) + '</span></td>' +
+                var dueClass = l.is_overdue ? 'aura-lib-due-overdue' : '';
+                html += '<tr class="table-row-hover-lift">' +
+                    '<td data-label="Lector"><strong>' + escHtml(l.borrower) + '</strong></td>' +
+                    '<td data-label="Préstamo">' + escHtml(l.loan_date) + '</td>' +
+                    '<td data-label="Vencimiento" class="' + dueClass + '">' + escHtml(l.due_date) + '</td>' +
+                    '<td data-label="Devolución">' + escHtml(l.return_date || '—') + '</td>' +
+                    '<td data-label="Estado"><span class="badge aura-lib-badge ' + lStatusClass + '">' + escHtml(l.status_label) + '</span></td>' +
                 '</tr>';
             });
             html += '</tbody></table></div>';
         }
+        html += '</div>';
 
         $('#aura-lib-detail-body').html(html);
     }
@@ -1407,7 +1604,7 @@
     // ──────────────────────────────────────────────────────────────
     function showTableError(msg) {
         $('#aura-lib-books-table tbody').html(
-            '<tr><td colspan="9" class="aura-lib-table-error">' + escHtml(msg) + '</td></tr>'
+            '<tr><td colspan="10" class="aura-lib-table-error">' + escHtml(msg) + '</td></tr>'
         );
     }
     function showSaveMsg(msg, type) {

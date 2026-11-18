@@ -16,6 +16,7 @@
     var perPage     = 20;
     var totalPages  = 1;
     var _loansTable = null;
+    var _loansMap   = {};
 
     // ──────────────────────────────────────────────────────────────
     // INIT
@@ -84,6 +85,47 @@
             cancelLoan(parseInt($(this).data('id'), 10));
         });
 
+        // Expandir / Colapsar fila hija con información completa del préstamo (+ / -)
+        $(document).on('click', '#aura-lib-loans-table .aura-lib-row-toggle', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var $btn = $(this);
+            var $tr  = $btn.closest('tr');
+            var id   = parseInt($btn.data('id'), 10);
+            var loan = _loansMap[id];
+            if (!loan) return;
+
+            var isExpanded = $btn.hasClass('is-active');
+            if (_loansTable && typeof _loansTable.row === 'function') {
+                var dtRow = _loansTable.row($tr);
+                if (dtRow.child.isShown()) {
+                    dtRow.child.hide();
+                    $tr.removeClass('shown is-expanded');
+                    $btn.removeClass('is-active').attr('aria-expanded', 'false')
+                        .html('<span class="dashicons dashicons-plus-alt2"></span>');
+                } else {
+                    dtRow.child(renderLoanChildCard(loan), 'aura-dt-child-row aura-child-row is-open').show();
+                    $tr.addClass('shown is-expanded');
+                    $btn.addClass('is-active').attr('aria-expanded', 'true')
+                        .html('<span class="dashicons dashicons-minus"></span>');
+                }
+            } else {
+                var $next = $tr.next('tr.aura-child-row');
+                if (isExpanded && $next.length) {
+                    $next.remove();
+                    $tr.removeClass('shown is-expanded');
+                    $btn.removeClass('is-active').attr('aria-expanded', 'false')
+                        .html('<span class="dashicons dashicons-plus-alt2"></span>');
+                } else {
+                    if ($next.length) $next.remove();
+                    $tr.after('<tr class="aura-child-row is-open"><td colspan="' + getColCount() + '">' + renderLoanChildCard(loan) + '</td></tr>');
+                    $tr.addClass('shown is-expanded');
+                    $btn.addClass('is-active').attr('aria-expanded', 'true')
+                        .html('<span class="dashicons dashicons-minus"></span>');
+                }
+            }
+        });
+
         // Guardar edición de préstamo
         $(document).on('submit', '#aura-lib-edit-loan-form', function (e) {
             e.preventDefault();
@@ -109,22 +151,35 @@
             saveExtend();
         });
 
-        // Cerrar modales (protección 2 fases contra drag-selection en inputs)
-        var _loansBackdropDown = false;
+        // Cerrar modales (protección 2 fases contra drag-selection + soporte modal apilado)
+        var _loansBackdropDown = null;
         $(document).on('mousedown', '.aura-lib-modal', function (e) {
-            _loansBackdropDown = (e.target === this);
+            _loansBackdropDown = (e.target === this) ? this : null;
         });
         $(document).on('click', '.aura-lib-modal-close', function () {
             closeAllModals();
         });
+        $(document).on('click', '.aura-lib-bp-close', function () {
+            closeBookPickerModal();
+        });
         $(document).on('click', '.aura-lib-modal', function (e) {
-            if (_loansBackdropDown && e.target === this) {
-                closeAllModals();
+            if (_loansBackdropDown === this && e.target === this) {
+                if (this.id === 'aura-lib-book-picker-modal') {
+                    closeBookPickerModal();
+                } else {
+                    closeAllModals();
+                }
             }
-            _loansBackdropDown = false;
+            _loansBackdropDown = null;
         });
         $(document).on('keydown', function (e) {
-            if (e.key === 'Escape') closeAllModals();
+            if (e.key === 'Escape') {
+                if ($('#aura-lib-book-picker-modal').is(':visible')) {
+                    closeBookPickerModal();
+                } else {
+                    closeAllModals();
+                }
+            }
         });
 
         // Guardar nuevo préstamo (click en botón en lugar de form submit)
@@ -169,17 +224,84 @@
             $('#loan-book-error').hide();
         });
 
-        // Limpiar lector seleccionado
+        // Limpiar lector / usuario seleccionado
         $(document).on('click', '#aura-lib-loan-clear-user', function () {
             $('#loan_user_id').val('');
-            $('#loan_user_input').val('').focus();
+            $('#loan_user_input').val('');
             $('#aura-lib-loan-user-card').hide();
+            $('#loan-reader-selector-wrap').show();
             $('#loan-user-search-row').show();
             $('#loan-user-error').hide();
+            if (window.AuraContactSelector) {
+                window.AuraContactSelector.clear('#loan-contact-selector');
+            }
+            if ($('#loan-contact-selector .aura-cs-search-input').length) {
+                $('#loan-contact-selector .aura-cs-search-input').focus();
+            } else {
+                $('#loan_user_input').focus();
+            }
+        });
+
+        // Botón: Abrir Explorador Visual del Catálogo de Libros
+        $(document).on('click', '#aura-lib-btn-open-book-picker', function () {
+            openBookPickerModal();
+        });
+        var _bpTimer = null;
+        $(document).on('input', '#aura-lib-bp-search', function () {
+            clearTimeout(_bpTimer);
+            _bpTimer = setTimeout(function () { bpPage = 1; loadBookPicker(); }, 280);
+        });
+        $(document).on('change', '#aura-lib-bp-dewey, #aura-lib-bp-avail-only', function () {
+            bpPage = 1;
+            loadBookPicker();
+        });
+        $(document).on('click', '#aura-lib-bp-pagination .aura-lib-page-btn', function () {
+            var p = parseInt($(this).data('page'), 10);
+            if (p >= 1) { bpPage = p; loadBookPicker(); }
+        });
+        $(document).on('click', '.aura-lib-bp-select-btn', function () {
+            var $card = $(this).closest('.aura-lib-bp-card');
+            var bookData = $card.data('book');
+            if (!bookData) return;
+            selectBookFromPicker(bookData);
+        });
+
+        // Botón: Abrir Modal Global de Todos los Usuarios (AuraThirdPartySelector)
+        $(document).on('click', '#aura-lib-btn-open-user-picker', function () {
+            if (!window.AuraThirdPartySelector || typeof window.AuraThirdPartySelector.openExplorer !== 'function') {
+                showNotice('error', 'El directorio de usuarios no está disponible en esta pantalla.');
+                return;
+            }
+            window.AuraThirdPartySelector.openExplorer({
+                defaultTab: 'employee',
+                allowUsers: true,
+                onSelect: function (item) {
+                    if (!item) return;
+                    var pickedUid = parseInt(item.wp_user_id || item.user_id || (item.is_wp_user ? item.id : 0), 10) || 0;
+                    if (!pickedUid) {
+                        showNotice('warning', 'Selecciona un usuario del sistema WordPress con cuenta activa.');
+                        return;
+                    }
+                    if (window.AuraContactSelector) {
+                        window.AuraContactSelector.clear('#loan-contact-selector');
+                    }
+                    $('#loan_user_id').val(pickedUid);
+                    $('#loan_user_input').val(item.name || '');
+                    showUserCard({
+                        name: item.name || item.commercial_name || '—',
+                        email: item.email || (item.login ? '@' + item.login : ''),
+                        avatar_url: item.avatar_url || item.logo_url || '',
+                        role_label: item.accounting_role_label || 'Usuario WP',
+                    });
+                    $('#loan-reader-selector-wrap').hide();
+                    $('#loan-user-error').hide();
+                }
+            });
         });
 
         // Eventos del Selector Universal de Contactos
         $(document).on('aura:contact-selected', '#loan-contact-selector', function () {
+            $('#aura-lib-loan-user-card').hide();
             $('#loan-user-error').hide();
         });
 
@@ -216,14 +338,15 @@
                                 var avail = parseInt(b.available_copies, 10) || 0;
                                 var total = parseInt(b.total_copies, 10) || 0;
                                 return {
-                                    label  : (b.title || '—') + (b.author ? ' — ' + b.author : ''),
-                                    value  : b.title || '',
-                                    id     : b.id,
-                                    title  : b.title || '',
-                                    author : b.author || '',
-                                    dewey  : b.dewey_number || '',
-                                    avail  : avail,
-                                    total  : total,
+                                    label     : (b.title || '—') + (b.author ? ' — ' + b.author : ''),
+                                    value     : b.title || '',
+                                    id        : b.id,
+                                    title     : b.title || '',
+                                    author    : b.author || '',
+                                    dewey     : b.dewey_number || '',
+                                    cover_url : b.cover_thumb_url || '',
+                                    avail     : avail,
+                                    total     : total,
                                 };
                             }));
                         } else {
@@ -309,17 +432,148 @@
         } else {
             $avail.text(avail + ' / ' + total + ' disp.').removeClass('avail-low avail-none').addClass('avail-ok');
         }
-        $('#loan-book-card-cover').html('<span class="dashicons dashicons-book" style="font-size:22px;color:#9ca3af;"></span>');
+        if (item.cover_url) {
+            $('#loan-book-card-cover').html('<img src="' + escAttr(item.cover_url) + '" alt="' + escAttr(item.title || '') + '" class="aura-lib-loan-card-thumb">');
+        } else {
+            $('#loan-book-card-cover').html('<span class="dashicons dashicons-book" style="font-size:22px;color:#9ca3af;"></span>');
+        }
         $('#aura-lib-loan-book-card').show();
     }
 
     // ── Mostrar tarjeta de lector seleccionado ─────────────────────
     function showUserCard(item) {
-        var initials = (item.name || '?').charAt(0).toUpperCase();
-        $('#loan-user-card-avatar').text(initials);
-        $('#loan-user-card-name').text(item.name || '—');
+        var name = item.name || '—';
+        var initials = name.charAt(0).toUpperCase();
+        if (item.avatar_url) {
+            $('#loan-user-card-avatar').html('<img src="' + escAttr(item.avatar_url) + '" alt="' + escAttr(name) + '">');
+        } else {
+            $('#loan-user-card-avatar').text(initials);
+        }
+        $('#loan-user-card-name').text(name);
         $('#loan-user-card-email').text(item.email || '');
+        if ($('#loan-user-card-badge').length) {
+            $('#loan-user-card-badge').text(item.role_label || 'Usuario WP');
+        }
         $('#aura-lib-loan-user-card').show();
+    }
+
+    // ── Explorador Visual de Libros (Modal Apilado) ────────────────
+    var bpPage = 1;
+    function openBookPickerModal() {
+        bpPage = 1;
+        $('#aura-lib-bp-search').val('');
+        $('#aura-lib-bp-dewey').val('');
+        $('#aura-lib-bp-avail-only').prop('checked', true);
+        showModal('#aura-lib-book-picker-modal');
+        $('#aura-lib-book-picker-modal').css('z-index', '1001500');
+        loadBookPicker();
+        setTimeout(function () { $('#aura-lib-bp-search').focus(); }, 100);
+    }
+
+    function closeBookPickerModal() {
+        if (typeof AuraUI !== 'undefined' && typeof AuraUI.closeModal === 'function') {
+            AuraUI.closeModal('aura-lib-book-picker-modal');
+        } else {
+            $('#aura-lib-book-picker-modal').removeClass('active is-active').hide();
+        }
+    }
+
+    function selectBookFromPicker(book) {
+        $('#loan_book_id').val(book.id);
+        $('#loan_book_input').val(book.title || '');
+        showBookCard({
+            id        : book.id,
+            title     : book.title || '',
+            author    : book.author || '',
+            dewey     : book.dewey_number || '',
+            cover_url : book.cover_thumb_url || '',
+            avail     : book.available_copies,
+            total     : book.total_copies,
+        });
+        $('#loan-book-search-row').hide();
+        $('#loan-book-error').hide();
+        closeBookPickerModal();
+    }
+
+    function loadBookPicker() {
+        var $grid = $('#aura-lib-bp-grid');
+        $grid.html('<div class="aura-lib-bp-loading"><span class="spinner is-active" style="float:none;"></span> Cargando catálogo…</div>');
+        $.post(cfg.ajaxurl, {
+            action         : 'aura_library_books_get_list',
+            nonce          : cfg.nonce,
+            page           : bpPage,
+            per_page       : 12,
+            search         : $('#aura-lib-bp-search').val() || '',
+            dewey_class    : $('#aura-lib-bp-dewey').val() || '',
+            available_only : $('#aura-lib-bp-avail-only').is(':checked') ? 1 : 0,
+            _t             : Date.now(),
+        }, function (res) {
+            if (!res.success || !res.data) {
+                $grid.html('<div class="aura-lib-bp-empty">' + escHtml(cfg.txt.error) + '</div>');
+                return;
+            }
+            var items = res.data.items || [];
+            var total = res.data.total || 0;
+            var totalBpPages = res.data.total_pages || 1;
+            $('#aura-lib-bp-count').text(total + ' libros encontrados');
+
+            if (!items.length) {
+                $grid.html('<div class="aura-lib-bp-empty">📚 No se encontraron libros con los filtros actuales.</div>');
+                $('#aura-lib-bp-pagination').empty();
+                return;
+            }
+
+            $grid.empty();
+            $.each(items, function (_, b) {
+                var avail = parseInt(b.available_copies, 10) || 0;
+                var totalCp = parseInt(b.total_copies, 10) || 0;
+                var canPick = avail > 0 && b.status !== 'reference_only' && b.status !== 'lost' && b.status !== 'withdrawn';
+                var fullCover = b.cover_full_url || b.cover_thumb_url;
+                var coverImg = fullCover
+                    ? '<img src="' + escAttr(b.cover_thumb_url || fullCover) + '" alt="' + escAttr(b.title || '') + '" class="aura-lib-bp-cover-img">'
+                    : '<div class="aura-lib-bp-cover-placeholder"><span class="dashicons dashicons-book-alt"></span></div>';
+
+                var availBadge = canPick
+                    ? '<span class="badge badge-emerald">' + avail + ' / ' + totalCp + ' disp.</span>'
+                    : '<span class="badge badge-rose">' + escHtml(b.status === 'reference_only' ? 'Solo consulta' : 'Sin stock') + '</span>';
+
+                var $card = $('<div class="aura-lib-bp-card' + (canPick ? '' : ' is-unavailable') + '">' +
+                    '<div class="aura-lib-bp-cover-wrap">' + coverImg + '</div>' +
+                    '<div class="aura-lib-bp-body">' +
+                    '<div class="aura-lib-bp-title" title="' + escAttr(b.title || '') + '">' + escHtml(b.title || '—') + '</div>' +
+                    '<div class="aura-lib-bp-author">' + escHtml(b.author || 'Autor desconocido') + '</div>' +
+                    '<div class="aura-lib-bp-meta">' +
+                    (b.dewey_number ? '<span class="aura-lib-dewey-code">' + escHtml(b.dewey_number) + '</span>' : '') +
+                    availBadge +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="aura-lib-bp-foot">' +
+                    '<button type="button" class="btn btn-sm ' + (canPick ? 'btn-indigo' : 'btn-glass') + ' aura-lib-bp-select-btn"' +
+                    (canPick ? '' : ' disabled') + ' data-tooltip="' + (canPick ? 'Seleccionar este libro para el préstamo' : 'Ejemplar no disponible para préstamo') + '">' +
+                    '<span class="dashicons dashicons-yes"></span> ' + (canPick ? 'Seleccionar' : 'No disponible') +
+                    '</button>' +
+                    '</div>' +
+                    '</div>');
+                $card.data('book', b);
+                $grid.append($card);
+            });
+
+            var pHtml = '';
+            if (totalBpPages > 1) {
+                pHtml += '<div class="aura-lib-page-btns">';
+                pHtml += '<button type="button" class="aura-lib-page-btn btn btn-glass btn-sm" data-page="' + Math.max(1, bpPage - 1) + '"' + (bpPage <= 1 ? ' disabled' : '') + '>‹</button>';
+                var st = Math.max(1, bpPage - 2);
+                var en = Math.min(totalBpPages, st + 4);
+                for (var p = st; p <= en; p++) {
+                    pHtml += '<button type="button" class="aura-lib-page-btn btn btn-sm ' + (p === bpPage ? 'btn-indigo' : 'btn-glass') + '" data-page="' + p + '">' + p + '</button>';
+                }
+                pHtml += '<button type="button" class="aura-lib-page-btn btn btn-glass btn-sm" data-page="' + Math.min(totalBpPages, bpPage + 1) + '"' + (bpPage >= totalBpPages ? ' disabled' : '') + '>›</button>';
+                pHtml += '</div>';
+            }
+            $('#aura-lib-bp-pagination').html(pHtml);
+        }).fail(function () {
+            $grid.html('<div class="aura-lib-bp-empty">' + escHtml(cfg.txt.error) + '</div>');
+        });
     }
 
     // ── Actualizar chip de duración ────────────────────────────────
@@ -343,6 +597,10 @@
     // CARGAR LISTADO DE PRÉSTAMOS
     // ──────────────────────────────────────────────────────────────
     function loadLoans() {
+        if (_loansTable) {
+            try { _loansTable.destroy(); } catch (e) {}
+            _loansTable = null;
+        }
         showTableLoading();
 
         $.post(cfg.ajaxurl, {
@@ -354,6 +612,7 @@
             status   : $('#aura-lib-loans-filter-status').val() || '',
             date_from: $('#aura-lib-loans-filter-from').val() || '',
             date_to  : $('#aura-lib-loans-filter-to').val() || '',
+            _t       : Date.now(),
         }, function (res) {
             if (!res.success) {
                 showTableError(res.data ? res.data.message : cfg.txt.error);
@@ -365,10 +624,51 @@
         });
     }
 
+    function renderLoanChildCard(loan) {
+        var fullCover = loan.cover_full_url || loan.cover_thumb_url;
+        var fineAmt = parseFloat(loan.fine_amount) || 0;
+        var coverBox = fullCover
+            ? '<img src="' + escAttr(fullCover) + '" alt="' + escAttr(loan.book_title || '') + '" class="aura-child-book-cover">'
+            : '<div class="aura-child-book-cover-empty"><span class="dashicons dashicons-book-alt"></span></div>';
+
+        var btns = '<button type="button" class="btn btn-sm btn-indigo aura-lib-loans-btn-detail" data-id="' + parseInt(loan.id, 10) + '"><span class="dashicons dashicons-visibility"></span> Ver detalle</button>';
+        if (cfg.can_return && loan.can_return) {
+            btns += '<button type="button" class="btn btn-sm btn-emerald aura-lib-loans-btn-return" data-id="' + parseInt(loan.id, 10) + '"><span class="dashicons dashicons-yes-alt"></span> Devolver</button>';
+        }
+        if (cfg.can_extend && loan.can_extend) {
+            btns += '<button type="button" class="btn btn-sm btn-glass aura-lib-loans-btn-extend" data-id="' + parseInt(loan.id, 10) + '"><span class="dashicons dashicons-clock"></span> Extender</button>';
+        }
+
+        return '<div class="aura-child-card aura-lib-child-card">' +
+            '<div class="aura-lib-child-layout">' +
+            '<div class="aura-lib-child-cover-col">' + coverBox + '</div>' +
+            '<div class="aura-lib-child-content">' +
+            '<div class="aura-child-hero-bar">' +
+            '<div>' +
+            '<h4 class="aura-child-hero-title">📖 ' + escHtml(loan.book_title || '—') + '</h4>' +
+            '<div class="aura-lib-child-author">👤 Lector: ' + escHtml(loan.borrower_name || '—') + (loan.contact_category ? ' (' + escHtml(loan.contact_category) + ')' : '') + '</div>' +
+            '</div>' +
+            '<div>' + renderStatusBadge(loan.status) + '</div>' +
+            '</div>' +
+            '<div class="aura-child-meta-grid">' +
+            '<div class="aura-child-meta-item"><span>Préstamo ID</span><strong>#' + parseInt(loan.id, 10) + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>Dewey</span><strong><code>' + escHtml(loan.dewey_number || '—') + '</code></strong></div>' +
+            '<div class="aura-child-meta-item"><span>Fecha Préstamo</span><strong>' + escHtml(loan.loan_date || '—') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>Devolución Prevista</span><strong>' + escHtml(loan.due_date || '—') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>Fecha Devolución Real</span><strong>' + escHtml(loan.return_date || 'Pendiente') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>Extensiones</span><strong>' + parseInt(loan.extended_count, 10) + ' / ' + cfg.max_extensions + '</strong></div>' +
+            (cfg.fines_enabled && cfg.can_view_fines ? '<div class="aura-child-meta-item"><span>Multa</span><strong>' + (fineAmt > 0 ? '$' + fineAmt.toFixed(2) : '$0.00') + '</strong></div>' : '') +
+            '</div>' +
+            (loan.notes ? '<div class="aura-child-synopsis"><strong>Observaciones:</strong> ' + escHtml(loan.notes) + '</div>' : '') +
+            '<div class="aura-child-footer-actions">' + btns + '</div>' +
+            '</div></div></div>';
+    }
+
     function renderTable(data) {
         var items  = data.items || [];
         totalPages = data.total_pages || 1;
         var tbody  = $('#aura-lib-loans-tbody');
+        _loansMap = {};
 
         if (!items.length) {
             var cols = getColCount();
@@ -380,63 +680,89 @@
 
         var rows = '';
         $.each(items, function (i, loan) {
-            var statusBadge = renderStatusBadge(loan.status);
-            var dueBadge    = renderDueBadge(loan);
-            var extBadge    = '<span class="badge badge-slate">' +
+            _loansMap[parseInt(loan.id, 10)] = loan;
+            var statusTip = loan.is_overdue
+                ? 'Préstamo vencido: requiere seguimiento o devolución'
+                : ('Estado actual: ' + (cfg.txt.status_labels[loan.status] || loan.status));
+            var statusBadge = '<span class="aura-tip-badge-wrap" data-tooltip="' + escAttr(statusTip) + '">' +
+                renderStatusBadge(loan.status) + '</span>';
+            var dueBadge    = '<span class="aura-tip-badge-wrap" data-tooltip="Fecha pactada de devolución: ' + escAttr(loan.due_date || '—') + '">' +
+                renderDueBadge(loan) + '</span>';
+            var extBadge    = '<span class="badge badge-slate" data-tooltip="Extensiones usadas: ' +
+                parseInt(loan.extended_count, 10) + ' de máximo ' + cfg.max_extensions + '">' +
                 parseInt(loan.extended_count, 10) + ' / ' + cfg.max_extensions + '</span>';
             var fineCell    = '';
             if (cfg.fines_enabled && cfg.can_view_fines) {
                 var fineAmt = parseFloat(loan.fine_amount) || 0;
                 fineCell = fineAmt > 0
-                    ? '<span class="badge badge-amber">$' + fineAmt.toFixed(2) + '</span>'
-                    : '—';
+                    ? '<span class="badge badge-amber" data-tooltip="Multa pendiente o aplicada al préstamo">$' + fineAmt.toFixed(2) + '</span>'
+                    : '<span class="aura-lib-sub-muted" data-tooltip="Sin multas registradas">—</span>';
             }
 
             var actions = '<div class="aura-row-actions">';
             actions += '<button type="button" class="aura-btn-action-icon aura-lib-loans-btn-detail" data-id="' +
-                parseInt(loan.id, 10) + '" title="Ver detalle">' +
+                parseInt(loan.id, 10) + '" data-tooltip="Ver ficha y detalle completo del préstamo">' +
                 '<span class="dashicons dashicons-visibility"></span></button>';
             if (cfg.can_return && loan.can_return) {
                 actions += '<button type="button" class="aura-btn-action-icon aura-btn-action-success aura-lib-loans-btn-return" data-id="' +
-                    parseInt(loan.id, 10) + '" title="Registrar devolución">' +
+                    parseInt(loan.id, 10) + '" data-tooltip="Registrar devolución del ejemplar">' +
                     '<span class="dashicons dashicons-yes-alt"></span></button>';
             }
             if (cfg.can_extend && loan.can_extend) {
                 actions += '<button type="button" class="aura-btn-action-icon aura-btn-action-primary aura-lib-loans-btn-extend" data-id="' +
-                    parseInt(loan.id, 10) + '" title="Extender préstamo">' +
+                    parseInt(loan.id, 10) + '" data-tooltip="Extender plazo de devolución">' +
                     '<span class="dashicons dashicons-clock"></span></button>';
             }
             if (cfg.can_edit && loan.can_edit) {
                 actions += '<button type="button" class="aura-btn-action-icon aura-lib-loans-btn-edit" data-id="' +
-                    parseInt(loan.id, 10) + '" title="Editar préstamo">' +
+                    parseInt(loan.id, 10) + '" data-tooltip="Editar fechas u observaciones">' +
                     '<span class="dashicons dashicons-edit"></span></button>';
             }
             if (cfg.can_delete && loan.can_cancel) {
                 actions += '<button type="button" class="aura-btn-action-icon aura-btn-action-danger aura-lib-loans-btn-cancel" data-id="' +
-                    parseInt(loan.id, 10) + '" title="Cancelar préstamo">' +
+                    parseInt(loan.id, 10) + '" data-tooltip="Cancelar préstamo y liberar copia">' +
                     '<span class="dashicons dashicons-no"></span></button>';
             }
             actions += '</div>';
 
             var fullCover = loan.cover_full_url || loan.cover_thumb_url;
-            var coverHtml = loan.cover_thumb_url
-                ? '<div class="aura-table-thumb-preview aura-lib-loan-thumb-preview" data-preview-title="' + escAttr(loan.book_title || '') + '">' +
-                  '<img src="' + escAttr(fullCover) + '" class="aura-lib-cover-thumb" alt="' + escAttr(loan.book_title || '') + '">' +
-                  '</div>'
-                : '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm"></span>';
+            var coverHtml;
+            if (loan.cover_thumb_url) {
+                var coverTipHtml = '<div class="aura-floating-img-card aura-lib-floating-cover">' +
+                    '<img src="' + escAttr(fullCover) + '" alt="' + escAttr(loan.book_title || '') + '" class="aura-lib-floating-cover-img">' +
+                    '<div class="aura-img-caption">' + escHtml(loan.book_title || '') + '</div>' +
+                    '</div>';
+                coverHtml = '<div class="aura-table-thumb-preview aura-lib-loan-thumb-preview" data-aura-tooltip="' + encodeURIComponent(coverTipHtml) + '">' +
+                    '<img src="' + escAttr(loan.cover_thumb_url) + '" class="aura-lib-cover-thumb" alt="' + escAttr(loan.book_title || '') + '">' +
+                    '</div>';
+            } else {
+                coverHtml = '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm" data-tooltip="Sin imagen de portada"></span>';
+            }
 
-            rows += '<tr data-id="' + parseInt(loan.id, 10) + '">';
-            rows += '<td><small>#' + parseInt(loan.id, 10) + '</small></td>';
-            rows += '<td class="aura-lib-col-book">' +
+            var bookTipHtml = '<div class="aura-tip-card">' +
+                '<div class="aura-tip-hdr">📖 ' + escHtml(loan.book_title || '—') + '</div>' +
+                '<div class="aura-tip-row"><span class="aura-tip-lbl">Préstamo:</span><span class="aura-tip-val">#' + parseInt(loan.id, 10) + '</span></div>' +
+                (loan.dewey_number ? '<div class="aura-tip-row"><span class="aura-tip-lbl">Dewey:</span><span class="aura-tip-val">' + escHtml(loan.dewey_number) + '</span></div>' : '') +
+                '<div class="aura-tip-row"><span class="aura-tip-lbl">Devolución:</span><span class="aura-tip-val">' + escHtml(loan.due_date || '—') + '</span></div>' +
+                '</div>';
+
+            rows += '<tr class="aura-parent-row" data-id="' + parseInt(loan.id, 10) + '">';
+            rows += '<td data-label="#" class="aura-lib-col-expand">' +
+                '<div class="aura-id-toggle-wrap">' +
+                '<button type="button" class="aura-lib-row-toggle" data-id="' + parseInt(loan.id, 10) + '" aria-expanded="false" data-tooltip="Desplegar información completa del préstamo"><span class="dashicons dashicons-plus-alt2"></span></button>' +
+                '<span class="aura-txn-id-pill">#' + parseInt(loan.id, 10) + '</span>' +
+                '</div></td>';
+            rows += '<td data-label="Libro" class="aura-lib-col-book">' +
                 '<div class="aura-lib-loan-book-cell">' +
                 '<div class="aura-lib-loan-book-cover">' + coverHtml + '</div>' +
-                '<div class="aura-lib-loan-book-info">' +
+                '<div class="aura-lib-loan-book-info" data-aura-tooltip="' + encodeURIComponent(bookTipHtml) + '">' +
                 '<strong>' + escHtml(loan.book_title || '—') + '</strong>' +
                 (loan.dewey_number ? '<br><code style="font-size:11px;">' + escHtml(loan.dewey_number) + '</code>' : '') +
+                '<div class="aura-lib-mobile-sub">👤 ' + escHtml(loan.borrower_name || '—') + ' · 📅 ' + escHtml(loan.due_date || '—') + '</div>' +
                 '</div></div>' +
                 '</td>';
             if (cfg.can_view_all) {
-                var borrowerHtml = '<div class="aura-lib-borrower-cell">';
+                var borrowerHtml = '<div class="aura-lib-borrower-cell" data-tooltip="Lector: ' + escAttr(loan.borrower_name || '—') + (loan.contact_category ? ' (' + escAttr(loan.contact_category) + ')' : '') + '">';
                 if (loan.contact_avatar) {
                     borrowerHtml += '<div class="avatar avatar-sm avatar-zoomable" data-preview-title="' + escAttr(loan.borrower_name || '') + '"><img src="' + escAttr(loan.contact_avatar) + '" alt="' + escAttr(loan.borrower_name || '') + '"></div>';
                 } else {
@@ -448,16 +774,16 @@
                     borrowerHtml += '<br><small class="aura-lib-borrower-cat">' + escHtml(loan.contact_category) + '</small>';
                 }
                 borrowerHtml += '</div></div>';
-                rows += '<td>' + borrowerHtml + '</td>';
+                rows += '<td data-label="Lector" class="aura-lib-col-secondary">' + borrowerHtml + '</td>';
             }
-            rows += '<td>' + escHtml(loan.loan_date || '—') + '</td>';
-            rows += '<td>' + dueBadge + '</td>';
-            rows += '<td>' + statusBadge + '</td>';
-            rows += '<td style="text-align:center;">' + extBadge + '</td>';
+            rows += '<td data-label="Fecha préstamo" class="aura-lib-col-secondary"><span data-tooltip="Entregado el ' + escAttr(loan.loan_date || '—') + '">' + escHtml(loan.loan_date || '—') + '</span></td>';
+            rows += '<td data-label="Devol. prevista" class="aura-lib-col-secondary">' + dueBadge + '</td>';
+            rows += '<td data-label="Estado" class="aura-lib-col-status">' + statusBadge + '</td>';
+            rows += '<td data-label="Extensiones" class="aura-lib-col-secondary" style="text-align:center;">' + extBadge + '</td>';
             if (cfg.fines_enabled && cfg.can_view_fines) {
-                rows += '<td style="text-align:right;">' + fineCell + '</td>';
+                rows += '<td data-label="Multa" class="aura-lib-col-secondary" style="text-align:right;">' + fineCell + '</td>';
             }
-            rows += '<td>' + actions + '</td>';
+            rows += '<td data-label="Acciones" class="aura-lib-col-actions">' + actions + '</td>';
             rows += '</tr>';
         });
 
@@ -471,48 +797,14 @@
             try { _loansTable.destroy(); } catch (e) {}
             _loansTable = null;
         }
-        // Las columnas varían según permisos del usuario:
-        // BASE (sin Lector, sin Multa): #(0) Libro(1) F.Prést(2) F.Dev(3) Estado(4) Ext(5) Acc(6)
-        // Con Lector:                  #(0) Libro(1) Lector(2) F.Prést(3) F.Dev(4) Estado(5) Ext(6) Acc(7)
-        // Con Lector + Multa:          #(0) Libro(1) Lector(2) F.Prést(3) F.Dev(4) Estado(5) Ext(6) Multa(7) Acc(8)
-        var totalCols = getColCount();
-        var lastCol   = totalCols - 1;
-        // Prioridades fijas por nombre lógico:
-        var colDefs = [];
-        // Siempre: # → baja prioridad, Libro → 1, Estado → 1, Acciones → 1
-        colDefs.push({ responsivePriority: 10000, targets: [0] });           // #
-        colDefs.push({ responsivePriority: 1,     targets: [1] });           // Libro
-        colDefs.push({ responsivePriority: 1,     targets: [lastCol] });     // Acciones
-        if (cfg.can_view_all && cfg.fines_enabled && cfg.can_view_fines) {
-            // 9 cols: 0=#  1=Libro  2=Lector  3=F.Prést  4=F.Dev  5=Estado  6=Ext  7=Multa  8=Acc
-            colDefs.push({ responsivePriority: 2,     targets: [2, 5] });    // Lector, Estado
-            colDefs.push({ responsivePriority: 3,     targets: [4] });       // F.Dev
-            colDefs.push({ responsivePriority: 10000, targets: [3, 6, 7] }); // F.Prést, Ext, Multa
-        } else if (cfg.can_view_all) {
-            // 8 cols: 0=#  1=Libro  2=Lector  3=F.Prést  4=F.Dev  5=Estado  6=Ext  7=Acc
-            colDefs.push({ responsivePriority: 2,     targets: [2, 5] });    // Lector, Estado
-            colDefs.push({ responsivePriority: 3,     targets: [4] });       // F.Dev
-            colDefs.push({ responsivePriority: 10000, targets: [3, 6] });    // F.Prést, Ext
-        } else if (cfg.fines_enabled && cfg.can_view_fines) {
-            // 8 cols: 0=#  1=Libro  2=F.Prést  3=F.Dev  4=Estado  5=Ext  6=Multa  7=Acc
-            colDefs.push({ responsivePriority: 2,     targets: [4] });       // Estado
-            colDefs.push({ responsivePriority: 3,     targets: [3] });       // F.Dev
-            colDefs.push({ responsivePriority: 10000, targets: [2, 5, 6] }); // F.Prést, Ext, Multa
-        } else {
-            // 7 cols: 0=#  1=Libro  2=F.Prést  3=F.Dev  4=Estado  5=Ext  6=Acc
-            colDefs.push({ responsivePriority: 2,     targets: [4] });       // Estado
-            colDefs.push({ responsivePriority: 3,     targets: [3] });       // F.Dev
-            colDefs.push({ responsivePriority: 10000, targets: [2, 5] });    // F.Prést, Ext
-        }
         _loansTable = $('#aura-lib-loans-table').DataTable({
-            responsive  : true,
+            responsive  : false,
             paging      : false,
             searching   : false,
             info        : false,
             ordering    : false,
             autoWidth   : false,
             language    : { emptyTable: cfg.txt.no_results },
-            columnDefs  : colDefs,
         });
     }
 
@@ -587,6 +879,7 @@
         $('#loan_user_id').val('');
         $('#loan_user_input').val('');
         $('#aura-lib-loan-user-card').hide();
+        $('#loan-reader-selector-wrap').show();
         $('#loan-user-search-row').show();
         $('#loan-user-error').hide();
         if (window.AuraContactSelector) {

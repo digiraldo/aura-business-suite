@@ -217,10 +217,10 @@ class Aura_Library_Loans {
             $row->status_label    = self::get_status_label( $row->status );
             $row->is_overdue      = ( $row->status === 'overdue' );
             $row->cover_thumb_url = $row->cover_image_id
-                ? wp_get_attachment_image_url( (int) $row->cover_image_id, 'thumbnail' )
+                ? ( wp_get_attachment_image_url( (int) $row->cover_image_id, 'medium' ) ?: wp_get_attachment_image_url( (int) $row->cover_image_id, 'full' ) )
                 : '';
             $row->cover_full_url = $row->cover_image_id
-                ? wp_get_attachment_image_url( (int) $row->cover_image_id, 'medium' )
+                ? ( wp_get_attachment_image_url( (int) $row->cover_image_id, 'large' ) ?: wp_get_attachment_image_url( (int) $row->cover_image_id, 'full' ) )
                 : '';
             $row->can_return  = current_user_can( 'aura_library_loan_return' ) || current_user_can( 'manage_options' );
             $row->can_extend  = ( current_user_can( 'aura_library_loan_extend' ) || current_user_can( 'manage_options' ) )
@@ -573,7 +573,9 @@ class Aura_Library_Loans {
         $loan->borrower_email = $borrower ? $borrower->user_email   : '—';
         $loan->status_label   = self::get_status_label( $loan->status );
         $loan->cover_thumb_url = $loan->cover_image_id
-            ? wp_get_attachment_image_url( (int) $loan->cover_image_id, 'thumbnail' ) : '';
+            ? ( wp_get_attachment_image_url( (int) $loan->cover_image_id, 'medium' ) ?: wp_get_attachment_image_url( (int) $loan->cover_image_id, 'full' ) ) : '';
+        $loan->cover_full_url  = $loan->cover_image_id
+            ? ( wp_get_attachment_image_url( (int) $loan->cover_image_id, 'large' ) ?: wp_get_attachment_image_url( (int) $loan->cover_image_id, 'full' ) ) : '';
         $loan->fine_current   = Aura_Library_Fines::calculate_fine( $loan->due_date, $loan->return_date ?: null );
 
         $registered = get_user_by( 'id', $loan->registered_by );

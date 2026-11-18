@@ -62,21 +62,22 @@ class Aura_Library_Books {
     public static function ajax_get_list(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
 
-        if ( ! current_user_can( 'aura_library_view_catalog' ) && ! current_user_can( 'manage_options' ) ) {
+        if ( ! current_user_can( 'aura_library_view_catalog' ) && ! current_user_can( 'aura_library_loan_create' ) && ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
         }
 
         global $wpdb;
         $table = $wpdb->prefix . 'aura_library_books';
 
-        $page     = max( 1, intval( $_POST['page']     ?? 1 ) );
-        $per_page = min( 100, max( 10, intval( $_POST['per_page'] ?? 20 ) ) );
-        $offset   = ( $page - 1 ) * $per_page;
-        $search   = sanitize_text_field( $_POST['search']   ?? '' );
-        $dewey    = sanitize_text_field( $_POST['dewey']    ?? '' );
-        $category = sanitize_text_field( $_POST['category'] ?? '' );
-        $status   = sanitize_text_field( $_POST['status']   ?? '' );
-        $area_id  = intval( $_POST['area_id'] ?? 0 );
+        $page           = max( 1, intval( $_POST['page']     ?? 1 ) );
+        $per_page       = min( 100, max( 10, intval( $_POST['per_page'] ?? 20 ) ) );
+        $offset         = ( $page - 1 ) * $per_page;
+        $search         = sanitize_text_field( $_POST['search']   ?? '' );
+        $dewey          = sanitize_text_field( $_POST['dewey']    ?? '' );
+        $category       = sanitize_text_field( $_POST['category'] ?? '' );
+        $status         = sanitize_text_field( $_POST['status']   ?? '' );
+        $area_id        = intval( $_POST['area_id'] ?? 0 );
+        $available_only = ! empty( $_POST['available_only'] );
         $sort_by  = in_array( $_POST['sort_by'] ?? '', [ 'title', 'author', 'dewey_number', 'available_copies', 'created_at' ] )
                     ? sanitize_text_field( $_POST['sort_by'] ) : 'title';
         $sort_dir = ( strtoupper( $_POST['sort_dir'] ?? 'ASC' ) === 'DESC' ) ? 'DESC' : 'ASC';
@@ -85,13 +86,13 @@ class Aura_Library_Books {
         $params = [];
 
         if ( $search ) {
-            $where[] = '(title LIKE %s OR author LIKE %s OR isbn LIKE %s OR keywords LIKE %s)';
+            $where[] = '(title LIKE %s OR author LIKE %s OR isbn LIKE %s OR keywords LIKE %s OR dewey_number LIKE %s)';
             $like    = '%' . $wpdb->esc_like( $search ) . '%';
-            array_push( $params, $like, $like, $like, $like );
+            array_push( $params, $like, $like, $like, $like, $like );
         }
 
         // Filtro Dewey por prefijo (ej "200" → libros 200-299)
-        if ( $dewey ) {
+        if ( $dewey !== '' ) {
             $dewey_prefix = preg_replace( '/[^0-9]/', '', $dewey );
             if ( $dewey_prefix !== '' ) {
                 $where[] = 'dewey_number LIKE %s';
@@ -108,6 +109,10 @@ class Aura_Library_Books {
         if ( $status && in_array( $status, $status_allowed ) ) {
             $where[] = 'status = %s';
             $params[] = $status;
+        }
+
+        if ( $available_only ) {
+            $where[] = "available_copies > 0 AND status != 'reference_only' AND status != 'lost' AND status != 'withdrawn'";
         }
 
         if ( $area_id > 0 ) {
@@ -139,10 +144,10 @@ class Aura_Library_Books {
                 $row->display_status_label = $row->status_label;
             }
             $row->cover_thumb_url = $row->cover_image_id
-                ? wp_get_attachment_image_url( $row->cover_image_id, 'thumbnail' )
+                ? ( wp_get_attachment_image_url( $row->cover_image_id, 'medium' ) ?: wp_get_attachment_image_url( $row->cover_image_id, 'full' ) )
                 : '';
             $row->cover_full_url  = $row->cover_image_id
-                ? wp_get_attachment_image_url( $row->cover_image_id, 'medium' )
+                ? ( wp_get_attachment_image_url( $row->cover_image_id, 'large' ) ?: wp_get_attachment_image_url( $row->cover_image_id, 'full' ) )
                 : '';
             $row->can_edit   = current_user_can( 'aura_library_edit' )   || current_user_can( 'manage_options' );
             $row->can_delete = current_user_can( 'aura_library_delete' ) || current_user_can( 'manage_options' );
@@ -355,18 +360,31 @@ class Aura_Library_Books {
 
         $book->status_label    = self::get_status_label( $book->status );
         $book->cover_full_url  = $book->cover_image_id
-            ? wp_get_attachment_image_url( $book->cover_image_id, 'large' ) : '';
+            ? ( wp_get_attachment_image_url( $book->cover_image_id, 'large' ) ?: wp_get_attachment_image_url( $book->cover_image_id, 'full' ) ) : '';
         $book->cover_thumb_url = $book->cover_image_id
-            ? wp_get_attachment_image_url( $book->cover_image_id, 'thumbnail' ) : '';
+            ? ( wp_get_attachment_image_url( $book->cover_image_id, 'medium' ) ?: wp_get_attachment_image_url( $book->cover_image_id, 'full' ) ) : '';
 
         // Historial de préstamos (últimos 20)
+        $t_contacts = $wpdb->prefix . 'aura_contacts';
         $loans = $wpdb->get_results( $wpdb->prepare(
-            "SELECT * FROM {$loans_table} WHERE book_id = %d ORDER BY created_at DESC LIMIT 20", $id
+            "SELECT l.*,
+                    COALESCE(
+                        NULLIF(TRIM(CONCAT(COALESCE(c.first_name,''), ' ', COALESCE(c.last_name,''))), ''),
+                        NULLIF(c.organization, ''),
+                        u.display_name,
+                        ''
+                    ) AS resolved_borrower
+             FROM {$loans_table} l
+             LEFT JOIN {$wpdb->users} u ON u.ID = l.borrower_user_id
+             LEFT JOIN {$t_contacts} c ON c.id = l.contact_id
+             WHERE l.book_id = %d
+             ORDER BY l.created_at DESC
+             LIMIT 20",
+            $id
         ) );
 
         foreach ( $loans as &$loan ) {
-            $user               = get_user_by( 'id', $loan->borrower_user_id );
-            $loan->borrower     = $user ? $user->display_name : '—';
+            $loan->borrower     = ! empty( $loan->resolved_borrower ) ? $loan->resolved_borrower : '—';
             $loan->status_label = self::get_loan_status_label( $loan->status );
             $loan->is_overdue   = ( $loan->status === 'active' || $loan->status === 'extended' )
                 && strtotime( $loan->due_date ) < time();
@@ -400,12 +418,19 @@ class Aura_Library_Books {
         $like  = '%' . $wpdb->esc_like( $q ) . '%';
 
         $rows = $wpdb->get_results( $wpdb->prepare(
-            "SELECT id, title, author, dewey_number, available_copies, total_copies
+            "SELECT id, title, author, isbn, dewey_number, available_copies, total_copies, cover_image_id
              FROM {$table}
              WHERE deleted_at IS NULL AND (title LIKE %s OR author LIKE %s OR dewey_number LIKE %s OR isbn LIKE %s)
              ORDER BY title ASC LIMIT 15",
             $like, $like, $like, $like
         ) );
+
+        foreach ( $rows as &$r ) {
+            $r->cover_thumb_url = ! empty( $r->cover_image_id )
+                ? ( wp_get_attachment_image_url( (int) $r->cover_image_id, 'medium' ) ?: wp_get_attachment_image_url( (int) $r->cover_image_id, 'full' ) )
+                : '';
+        }
+        unset( $r );
 
         wp_send_json_success( $rows );
     }

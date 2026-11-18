@@ -137,26 +137,26 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
             </div>
 
             <div class="aura-lib-filter-date">
-                <div class="input-group">
+                <div class="input-group" data-tooltip="<?php esc_attr_e( 'Filtrar préstamos realizados desde esta fecha', 'aura-business-suite' ); ?>">
                     <span class="input-group-text" aria-hidden="true">📅</span>
-                    <input type="date" id="aura-lib-loans-filter-from" class="form-control"
-                           title="<?php esc_attr_e( 'Desde (fecha préstamo)', 'aura-business-suite' ); ?>">
+                    <input type="date" id="aura-lib-loans-filter-from" class="form-control">
                 </div>
             </div>
             <div class="aura-lib-filter-date">
-                <div class="input-group">
+                <div class="input-group" data-tooltip="<?php esc_attr_e( 'Filtrar préstamos realizados hasta esta fecha', 'aura-business-suite' ); ?>">
                     <span class="input-group-text" aria-hidden="true">📅</span>
-                    <input type="date" id="aura-lib-loans-filter-to" class="form-control"
-                           title="<?php esc_attr_e( 'Hasta (fecha préstamo)', 'aura-business-suite' ); ?>">
+                    <input type="date" id="aura-lib-loans-filter-to" class="form-control">
                 </div>
             </div>
 
             <div class="aura-lib-filter-actions">
-                <button type="button" id="aura-lib-loans-filter-apply" class="btn btn-shimmer btn-indigo btn-lift">
+                <button type="button" id="aura-lib-loans-filter-apply" class="btn btn-shimmer btn-indigo btn-lift"
+                        data-tooltip="<?php esc_attr_e( 'Aplicar búsqueda y rango de fechas', 'aura-business-suite' ); ?>">
                     <span class="dashicons dashicons-filter"></span>
                     <span><?php esc_html_e( 'Filtrar', 'aura-business-suite' ); ?></span>
                 </button>
-                <button type="button" id="aura-lib-loans-filter-clear" class="btn btn-glass btn-lift">
+                <button type="button" id="aura-lib-loans-filter-clear" class="btn btn-glass btn-lift"
+                        data-tooltip="<?php esc_attr_e( 'Restablecer todos los filtros activos', 'aura-business-suite' ); ?>">
                     <span><?php esc_html_e( 'Limpiar', 'aura-business-suite' ); ?></span>
                 </button>
             </div>
@@ -166,24 +166,24 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
     <!-- Mensajes de estado -->
     <div id="aura-lib-loans-notice" class="notice" style="display:none;"></div>
 
-    <!-- Tabla DataTables en Contenedor Glass -->
-    <div class="aura-glass-card aura-dt-wrapper">
-        <table id="aura-lib-loans-table" class="aura-table display responsive nowrap" style="width:100%;">
+    <!-- Tabla DataTables en Contenedor Glass (Desktop Fluido + Mobile Cards) -->
+    <div class="aura-glass-card aura-dt-wrapper aura-table-responsive-wrap">
+        <table id="aura-lib-loans-table" class="aura-table display responsive aura-lib-responsive-table" style="width:100%;">
             <thead>
                 <tr>
-                    <th><?php esc_html_e( '#',                 'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Libro',             'aura-business-suite' ); ?></th>
+                    <th># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Identificador único del préstamo', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Libro', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Portada ampliable al pasar el cursor, título y código Dewey', 'aura-business-suite' ); ?>">?</span></th>
                     <?php if ( $can_view_all ) : ?>
-                    <th><?php esc_html_e( 'Lector',            'aura-business-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Lector', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Contacto o usuario del sistema responsable del préstamo', 'aura-business-suite' ); ?>">?</span></th>
                     <?php endif; ?>
-                    <th><?php esc_html_e( 'Fecha préstamo',    'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Devol. prevista',   'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Estado',            'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Extensiones',       'aura-business-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Fecha préstamo', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha en que se entregó el ejemplar al lector', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Devol. prevista', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha límite acordada para regresar el libro', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Estado', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Estado actual del préstamo (Activo, Vencido, Extendido o Devuelto)', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Extensiones', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Renovaciones utilizadas frente al máximo permitido', 'aura-business-suite' ); ?>">?</span></th>
                     <?php if ( $fines_enabled && $can_view_fines ) : ?>
-                    <th><?php esc_html_e( 'Multa',             'aura-business-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Multa', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Multa acumulada o cobrada por días de mora o daño', 'aura-business-suite' ); ?>">?</span></th>
                     <?php endif; ?>
-                    <th><?php esc_html_e( 'Acciones',          'aura-business-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Acciones', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Ver detalle, devolver, extender, editar o cancelar el préstamo', 'aura-business-suite' ); ?>">?</span></th>
                 </tr>
             </thead>
             <tbody id="aura-lib-loans-tbody">
@@ -205,12 +205,39 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_loans'" ) === $table_loans ) {
 if ( class_exists( 'Aura_Contact_Selector' ) ) {
     Aura_Contact_Selector::enqueue_assets();
 }
+if ( file_exists( AURA_PLUGIN_DIR . 'assets/js/third-party-selector.js' ) ) {
+    $tp_ver = @filemtime( AURA_PLUGIN_DIR . 'assets/js/third-party-selector.js' ) ?: AURA_VERSION;
+    if ( ! wp_script_is( 'aura-third-party-selector', 'registered' ) ) {
+        wp_register_script(
+            'aura-third-party-selector',
+            AURA_PLUGIN_URL . 'assets/js/third-party-selector.js',
+            [ 'jquery', 'jquery-ui-autocomplete' ],
+            (string) $tp_ver,
+            true
+        );
+    }
+    wp_enqueue_script( 'aura-third-party-selector' );
+    if ( ! wp_scripts()->get_data( 'aura-third-party-selector', 'data' ) ) {
+        wp_localize_script( 'aura-third-party-selector', 'auraCounterpartiesData', [
+            'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+            'nonce'   => wp_create_nonce( 'aura_search_counterparties_nonce' ),
+        ] );
+    }
+}
 $loans_js_ver  = file_exists( AURA_PLUGIN_DIR . 'assets/js/library-loans.js' ) ? AURA_VERSION . '.' . filemtime( AURA_PLUGIN_DIR . 'assets/js/library-loans.js' ) : AURA_VERSION;
 $loans_css_ver = file_exists( AURA_PLUGIN_DIR . 'assets/css/library-loans.css' ) ? AURA_VERSION . '.' . filemtime( AURA_PLUGIN_DIR . 'assets/css/library-loans.css' ) : AURA_VERSION;
 
+$loans_js_deps = [ 'jquery', 'jquery-ui-autocomplete', 'aura-ui-core' ];
+if ( wp_script_is( 'datatables-responsive-js', 'registered' ) ) {
+    $loans_js_deps[] = 'datatables-responsive-js';
+}
+if ( wp_script_is( 'aura-third-party-selector', 'registered' ) ) {
+    $loans_js_deps[] = 'aura-third-party-selector';
+}
+
 wp_enqueue_script( 'aura-lib-loans',
     AURA_PLUGIN_URL . 'assets/js/library-loans.js',
-    [ 'jquery', 'jquery-ui-autocomplete', 'aura-ui-core' ],
+    $loans_js_deps,
     $loans_js_ver, true );
 wp_enqueue_style( 'aura-lib-loans-css',
     AURA_PLUGIN_URL . 'assets/css/library-loans.css',
@@ -258,13 +285,21 @@ wp_enqueue_style( 'aura-lib-loans-css',
                         <span class="aura-lib-lstep-req"><?php esc_html_e( '* requerido', 'aura-business-suite' ); ?></span>
                     </div>
 
-                    <!-- Buscador de libro -->
-                    <div class="aura-lib-lsearch-wrap" id="loan-book-search-row">
-                        <span class="dashicons dashicons-search aura-lib-lsearch-icon"></span>
-                        <input type="text" id="loan_book_input" name="loan_book_input"
-                               class="aura-lib-lsearch-input"
-                               placeholder="<?php esc_attr_e( 'Buscar por título, autor o ISBN…', 'aura-business-suite' ); ?>"
-                               autocomplete="off">
+                    <!-- Buscador de libro + Modal Explorador -->
+                    <div class="aura-lib-picker-input-row" id="loan-book-search-row">
+                        <div class="aura-lib-lsearch-wrap">
+                            <span class="dashicons dashicons-search aura-lib-lsearch-icon"></span>
+                            <input type="text" id="loan_book_input" name="loan_book_input"
+                                   class="aura-lib-lsearch-input"
+                                   placeholder="<?php esc_attr_e( 'Buscar por título, autor o ISBN…', 'aura-business-suite' ); ?>"
+                                   autocomplete="off">
+                        </div>
+                        <button type="button" id="aura-lib-btn-open-book-picker"
+                                class="btn btn-glass btn-lift aura-lib-picker-trigger-btn"
+                                data-tooltip="<?php esc_attr_e( 'Abrir explorador visual de todo el catálogo con filtros y portadas', 'aura-business-suite' ); ?>">
+                            <span class="dashicons dashicons-book-alt"></span>
+                            <span><?php esc_html_e( 'Explorar Catálogo', 'aura-business-suite' ); ?></span>
+                        </button>
                     </div>
 
                     <!-- Tarjeta del libro seleccionado -->
@@ -292,37 +327,61 @@ wp_enqueue_style( 'aura-lib-loans-css',
                 <!-- ══ PASO 2: LECTOR ════════════════════════════════ -->
                 <?php if ( $can_view_all ) : ?>
                 <div class="aura-lib-lstep">
-                    <div class="aura-lib-lstep-hdr">
-                        <span class="aura-lib-lstep-num">2</span>
-                        <strong><?php esc_html_e( 'Lector o Contacto', 'aura-business-suite' ); ?></strong>
-                        <span class="aura-lib-lstep-req"><?php esc_html_e( '* requerido', 'aura-business-suite' ); ?></span>
+                    <div class="aura-lib-lstep-hdr aura-lib-lstep-hdr-between">
+                        <div class="aura-lib-lstep-title-wrap">
+                            <span class="aura-lib-lstep-num">2</span>
+                            <strong><?php esc_html_e( 'Lector o Contacto', 'aura-business-suite' ); ?></strong>
+                            <span class="aura-lib-lstep-req"><?php esc_html_e( '* requerido', 'aura-business-suite' ); ?></span>
+                        </div>
+                        <button type="button" id="aura-lib-btn-open-user-picker"
+                                class="btn btn-glass btn-sm btn-lift aura-lib-picker-trigger-btn"
+                                data-tooltip="<?php esc_attr_e( 'Abrir el directorio completo de todos los usuarios del sistema', 'aura-business-suite' ); ?>">
+                            <span class="dashicons dashicons-groups"></span>
+                            <span><?php esc_html_e( 'Explorar Todos los Usuarios', 'aura-business-suite' ); ?></span>
+                        </button>
                     </div>
 
-                    <?php if ( class_exists( 'Aura_Contact_Selector' ) ) : ?>
-                        <?php
-                        Aura_Contact_Selector::render( [
-                            'id'          => 'loan-contact-selector',
-                            'name'        => 'contact_id',
-                            'placeholder' => __( 'Buscar por nombre, email, teléfono u organización…', 'aura-business-suite' ),
-                            'required'    => true,
-                            'sync_fields' => [
-                                'user_id' => '#loan_user_id',
-                            ],
-                        ] );
-                        ?>
-                    <?php else : ?>
-                    <!-- Buscador de lector (fallback) -->
-                    <div class="aura-lib-lsearch-wrap" id="loan-user-search-row">
-                        <span class="dashicons dashicons-admin-users aura-lib-lsearch-icon"></span>
-                        <input type="text" id="loan_user_input" name="loan_user_input"
-                               class="aura-lib-lsearch-input"
-                               placeholder="<?php esc_attr_e( 'Buscar por nombre o correo del lector…', 'aura-business-suite' ); ?>"
-                               autocomplete="off">
+                    <div id="loan-reader-selector-wrap">
+                        <?php if ( class_exists( 'Aura_Contact_Selector' ) ) : ?>
+                            <?php
+                            Aura_Contact_Selector::render( [
+                                'id'          => 'loan-contact-selector',
+                                'name'        => 'contact_id',
+                                'placeholder' => __( 'Buscar contacto o usar "Explorar Todos los Usuarios"…', 'aura-business-suite' ),
+                                'required'    => true,
+                                'sync_fields' => [
+                                    'user_id' => '#loan_user_id',
+                                ],
+                            ] );
+                            ?>
+                        <?php else : ?>
+                        <!-- Buscador de lector (fallback) -->
+                        <div class="aura-lib-lsearch-wrap" id="loan-user-search-row">
+                            <span class="dashicons dashicons-admin-users aura-lib-lsearch-icon"></span>
+                            <input type="text" id="loan_user_input" name="loan_user_input"
+                                   class="aura-lib-lsearch-input"
+                                   placeholder="<?php esc_attr_e( 'Buscar por nombre o correo del lector…', 'aura-business-suite' ); ?>"
+                                   autocomplete="off">
+                        </div>
+                        <?php endif; ?>
                     </div>
-                    <?php endif; ?>
+
+                    <!-- Tarjeta de usuario del sistema seleccionado desde el Explorador Global -->
+                    <div id="aura-lib-loan-user-card" class="aura-lib-loan-selected-card" style="display:none;">
+                        <div class="aura-lib-loan-user-avatar-box" id="loan-user-card-avatar"></div>
+                        <div class="aura-lib-loan-card-info">
+                            <strong id="loan-user-card-name" class="aura-lib-loan-card-title"></strong>
+                            <span id="loan-user-card-email" class="aura-lib-loan-card-sub"></span>
+                        </div>
+                        <span class="badge badge-indigo" id="loan-user-card-badge"><?php esc_html_e( 'Usuario WP', 'aura-business-suite' ); ?></span>
+                        <button type="button" id="aura-lib-loan-clear-user" class="aura-lib-loan-clear-btn"
+                                data-tooltip="<?php esc_attr_e( 'Cambiar lector seleccionado', 'aura-business-suite' ); ?>">
+                            <span class="dashicons dashicons-no"></span>
+                        </button>
+                    </div>
 
                     <span id="loan-user-error" class="aura-lib-loan-field-error" style="display:none;">
-                        ⚠ <?php esc_html_e( 'Selecciona un lector o contacto de la libreta.', 'aura-business-suite' ); ?>
+                        ⚠ <?php esc_html_e( 'Selecciona un lector, contacto o usuario del sistema.', 'aura-business-suite' ); ?>
                     </span>
                     <input type="hidden" id="loan_user_id" name="borrower_user_id">
                 </div>
@@ -591,6 +650,62 @@ wp_enqueue_style( 'aura-lib-loans-css',
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- ══ Modal Apilado: Explorador Visual del Catálogo de Libros ═══════════════ -->
+<div id="aura-lib-book-picker-modal" class="aura-modal-overlay aura-lib-modal aura-lib-stacked-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="aura-lib-bp-modal-title" aria-hidden="true">
+    <div class="aura-modal-container aura-lib-modal-container aura-lib-modal-wide aura-lib-bp-modal-container">
+        <div class="aura-modal-header aura-lib-loan-mhdr">
+            <div class="aura-lib-loan-mhdr-icon">📖</div>
+            <div class="aura-lib-loan-mhdr-text">
+                <h2 id="aura-lib-bp-modal-title"><?php esc_html_e( 'Explorador del Catálogo de Libros', 'aura-business-suite' ); ?></h2>
+                <span><?php esc_html_e( 'Busca, filtra por clasificación Dewey y selecciona el ejemplar en 1 clic', 'aura-business-suite' ); ?></span>
+            </div>
+            <button type="button" class="aura-modal-close aura-lib-bp-close"
+                    data-tooltip="<?php esc_attr_e( 'Cerrar explorador de libros', 'aura-business-suite' ); ?>"
+                    aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
+        </div>
+
+        <div class="aura-modal-body aura-lib-modal-body">
+            <div class="aura-lib-bp-toolbar">
+                <div class="aura-lib-bp-search-box input-group">
+                    <span class="input-group-text" aria-hidden="true">🔍</span>
+                    <input type="search" id="aura-lib-bp-search" class="form-control"
+                           placeholder="<?php esc_attr_e( 'Buscar por título, autor, ISBN o Dewey…', 'aura-business-suite' ); ?>"
+                           autocomplete="off">
+                </div>
+                <div class="aura-lib-bp-dewey-box">
+                    <select id="aura-lib-bp-dewey" class="form-control" aria-label="<?php esc_attr_e( 'Clase Dewey', 'aura-business-suite' ); ?>">
+                        <option value=""><?php esc_html_e( 'Todas las clases Dewey', 'aura-business-suite' ); ?></option>
+                        <option value="0"><?php esc_html_e( '000 — Informática / Gral.', 'aura-business-suite' ); ?></option>
+                        <option value="1"><?php esc_html_e( '100 — Filosofía / Psic.', 'aura-business-suite' ); ?></option>
+                        <option value="2"><?php esc_html_e( '200 — Religión', 'aura-business-suite' ); ?></option>
+                        <option value="3"><?php esc_html_e( '300 — Ciencias Sociales', 'aura-business-suite' ); ?></option>
+                        <option value="4"><?php esc_html_e( '400 — Lenguas', 'aura-business-suite' ); ?></option>
+                        <option value="5"><?php esc_html_e( '500 — Ciencias Puras', 'aura-business-suite' ); ?></option>
+                        <option value="6"><?php esc_html_e( '600 — Tecnología', 'aura-business-suite' ); ?></option>
+                        <option value="7"><?php esc_html_e( '700 — Artes', 'aura-business-suite' ); ?></option>
+                        <option value="8"><?php esc_html_e( '800 — Literatura', 'aura-business-suite' ); ?></option>
+                        <option value="9"><?php esc_html_e( '900 — Historia / Geo.', 'aura-business-suite' ); ?></option>
+                    </select>
+                </div>
+                <label class="aura-lib-bp-avail-toggle" data-tooltip="<?php esc_attr_e( 'Mostrar únicamente libros con ejemplares disponibles para préstamo', 'aura-business-suite' ); ?>">
+                    <input type="checkbox" id="aura-lib-bp-avail-only" checked>
+                    <span><?php esc_html_e( 'Solo disponibles', 'aura-business-suite' ); ?></span>
+                </label>
+            </div>
+
+            <div id="aura-lib-bp-grid" class="aura-lib-bp-grid"></div>
+            <div id="aura-lib-bp-pagination" class="aura-lib-pagination" style="margin-top:16px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;"></div>
+        </div>
+
+        <div class="aura-modal-footer aura-lib-modal-footer">
+            <span id="aura-lib-bp-count" class="aura-lib-sub-muted" style="margin-right:auto;"></span>
+            <button type="button" class="btn btn-glass btn-lift aura-lib-bp-close">
+                <?php esc_html_e( 'Cerrar', 'aura-business-suite' ); ?>
+            </button>
+        </div>
     </div>
 </div>
 

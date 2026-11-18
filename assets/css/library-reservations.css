@@ -138,3 +138,159 @@ body.aura-lib-modal-open {
     display: flex;
     gap: 6px;
 }
+
+/* ── Tabla Reservas: Desktop & Mobile Cards ── */
+.aura-table-responsive-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.aura-lib-responsive-table td.aura-lib-col-book {
+    white-space: normal;
+    min-width: 190px;
+}
+
+@media (max-width: 782px) {
+    .aura-lib-responsive-table thead {
+        display: none;
+    }
+    .aura-lib-responsive-table,
+    .aura-lib-responsive-table tbody {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .aura-lib-responsive-table tbody tr.aura-parent-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 12px 14px;
+        border: 1px solid var(--aura-border-light, #e2e8f0);
+        border-radius: 12px;
+        background: var(--aura-surface-card, #ffffff);
+    }
+    .aura-lib-responsive-table tbody tr.aura-parent-row.is-expanded {
+        margin-bottom: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-color: var(--aura-indigo-border, #a5b4fc);
+    }
+    .aura-lib-responsive-table tbody tr.aura-parent-row > td.aura-lib-col-secondary {
+        display: none !important;
+    }
+    .aura-lib-responsive-table tbody tr.aura-parent-row > td {
+        border-bottom: none !important;
+        padding: 2px 0 !important;
+        width: auto;
+        white-space: normal !important;
+    }
+    .aura-lib-responsive-table tbody tr.aura-parent-row > td.aura-lib-col-expand {
+        order: 1;
+        flex: 0 0 auto;
+    }
+    .aura-lib-responsive-table tbody tr.aura-parent-row > td.aura-lib-col-book {
+        order: 2;
+        flex: 1 1 180px;
+        min-width: 160px;
+        text-align: left !important;
+    }
+    .aura-lib-mobile-sub {
+        display: block;
+        margin-top: 2px;
+        font-size: 11.5px;
+        color: var(--aura-text-muted, #64748b);
+    }
+    .aura-lib-responsive-table tbody tr.aura-parent-row > td.aura-lib-col-status {
+        order: 3;
+        flex: 0 0 auto;
+    }
+    .aura-lib-responsive-table tbody tr.aura-parent-row > td.aura-lib-col-actions {
+        order: 4;
+        flex: 1 0 100%;
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 8px !important;
+        margin-top: 4px;
+        border-top: 1px dashed var(--aura-border-light, #e2e8f0) !important;
+    }
+    .aura-lib-responsive-table tbody tr.aura-dt-child-row,
+    .aura-lib-responsive-table tbody tr.aura-child-row {
+        display: none;
+        width: 100%;
+        margin-bottom: 12px;
+    }
+    .aura-lib-responsive-table tbody tr.aura-dt-child-row.is-open,
+    .aura-lib-responsive-table tbody tr.aura-child-row.is-open,
+    .aura-lib-responsive-table tbody tr.child {
+        display: block !important;
+    }
+    .aura-lib-responsive-table tbody tr.aura-dt-child-row > td,
+    .aura-lib-responsive-table tbody tr.aura-child-row > td {
+        display: block;
+        width: 100%;
+        padding: 0 !important;
+        border: none !important;
+    }
+    .aura-lib-row-toggle { width: 34px; height: 34px; }
+    .aura-dark-mode .aura-lib-responsive-table tbody tr.aura-parent-row {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    .aura-dark-mode .aura-lib-responsive-table tbody tr.aura-parent-row > td.aura-lib-col-actions {
+        border-top-color: #334155 !important;
+    }
+}
+
+/* ── Botón Expandir (+) & Fila Hija Expandible (Reservas) ──────── */
+.aura-id-toggle-wrap { display: inline-flex; align-items: center; gap: 6px; }
+.aura-txn-id-pill {
+    display: inline-block; padding: 2px 7px;
+    background: var(--aura-surface-alt, #f1f5f9);
+    color: var(--tx-primary, #1e293b);
+    border-radius: 6px; font-size: 11px; font-weight: 700;
+    border: 1px solid var(--aura-border-light, #e2e8f0);
+}
+.aura-lib-mobile-sub { display: none; }
+.aura-lib-row-toggle {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid var(--aura-border, #cbd5e1);
+    background: var(--aura-surface-card, #ffffff);
+    color: var(--aura-indigo, #4f46e5);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0; transition: all 0.18s ease;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    flex-shrink: 0;
+}
+.aura-lib-row-toggle .dashicons { font-size: 16px; width: 16px; height: 16px; line-height: 16px; }
+.aura-lib-row-toggle:hover,
+.aura-lib-row-toggle.is-active {
+    background: var(--aura-indigo, #4f46e5);
+    border-color: var(--aura-indigo, #4f46e5);
+    color: #ffffff;
+}
+.aura-lib-child-card {
+    padding: 16px 20px;
+    background: var(--aura-surface-alt, #f8fafc);
+    border-left: 4px solid var(--aura-indigo, #4f46e5);
+    text-align: left;
+}
+.aura-lib-child-card .aura-child-hero-bar {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; flex-wrap: wrap; padding-bottom: 10px; margin-bottom: 12px;
+    border-bottom: 1px solid var(--aura-border-light, #e2e8f0);
+}
+.aura-lib-child-card .aura-child-hero-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--tx-primary, var(--aura-text, #0f172a)); }
+.aura-child-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 8px 12px; margin-bottom: 12px; }
+.aura-child-meta-item { display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; border-radius: 8px; background: var(--aura-surface-card, #ffffff); border: 1px solid var(--aura-border-light, #e2e8f0); }
+.aura-child-meta-item span { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--aura-text-muted, #64748b); font-weight: 700; }
+.aura-child-meta-item strong { font-size: 12.5px; color: var(--tx-primary, var(--aura-text, #0f172a)); }
+.aura-child-footer-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 4px; }
+.aura-dark-mode .aura-txn-id-pill,
+.aura-dark-mode .aura-lib-row-toggle,
+.aura-dark-mode .aura-child-meta-item {
+    background: #1e293b; border-color: #334155; color: #e2e8f0;
+}
+.aura-dark-mode .aura-lib-child-card { background: #0f172a; }
+.aura-dark-mode .aura-lib-child-card .aura-child-hero-title { color: #f8fafc; }

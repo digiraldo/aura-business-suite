@@ -120,11 +120,13 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_res'" ) === $table_res ) {
             </div>
 
             <div class="aura-lib-filter-actions">
-                <button type="button" id="aura-lib-res-filter-apply" class="btn btn-shimmer btn-indigo btn-lift">
+                <button type="button" id="aura-lib-res-filter-apply" class="btn btn-shimmer btn-indigo btn-lift"
+                        data-tooltip="<?php esc_attr_e( 'Aplicar filtros de búsqueda y estado a la cola de reservas', 'aura-business-suite' ); ?>">
                     <span class="dashicons dashicons-filter"></span>
                     <span><?php esc_html_e( 'Filtrar', 'aura-business-suite' ); ?></span>
                 </button>
-                <button type="button" id="aura-lib-res-filter-clear" class="btn btn-glass btn-lift">
+                <button type="button" id="aura-lib-res-filter-clear" class="btn btn-glass btn-lift"
+                        data-tooltip="<?php esc_attr_e( 'Restablecer búsqueda y filtros activos', 'aura-business-suite' ); ?>">
                     <span><?php esc_html_e( 'Limpiar', 'aura-business-suite' ); ?></span>
                 </button>
             </div>
@@ -136,17 +138,17 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_res'" ) === $table_res ) {
 
     <!-- Tabla -->
     <div class="aura-glass-card aura-dt-wrapper aura-table-responsive-wrap">
-        <table id="aura-lib-reservations-table" class="aura-table display responsive nowrap" style="width:100%;">
+        <table id="aura-lib-reservations-table" class="aura-table display responsive aura-lib-responsive-table" style="width:100%;">
             <thead>
                 <tr>
-                    <th><?php esc_html_e( '#',                'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Libro',            'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Lector',           'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Posición en cola', 'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Reservado el',     'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Expira',           'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Estado',           'aura-business-suite' ); ?></th>
-                    <th><?php esc_html_e( 'Acciones',         'aura-business-suite' ); ?></th>
+                    <th># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Identificador único de la reserva', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Libro', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Título reservado y código Dewey', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Lector', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Solicitante que realizó la reserva y correo de notificación', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Posición en cola', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Turno de prioridad para asignación al liberarse un ejemplar', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Reservado el', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha de registro de la reserva', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Expira', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha límite para retirar el libro tras ser notificado', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Estado', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Estado actual de la reserva (En espera, Notificado o Expirado)', 'aura-business-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Acciones', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Consultar detalle o cancelar reserva', 'aura-business-suite' ); ?>">?</span></th>
                 </tr>
             </thead>
             <tbody id="aura-lib-res-tbody">
@@ -176,9 +178,14 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_res'" ) === $table_res ) {
 $res_js_ver  = file_exists( AURA_PLUGIN_DIR . 'assets/js/library-reservations.js' ) ? AURA_VERSION . '.' . filemtime( AURA_PLUGIN_DIR . 'assets/js/library-reservations.js' ) : AURA_VERSION;
 $res_css_ver = file_exists( AURA_PLUGIN_DIR . 'assets/css/library-reservations.css' ) ? AURA_VERSION . '.' . filemtime( AURA_PLUGIN_DIR . 'assets/css/library-reservations.css' ) : AURA_VERSION;
 
+$res_js_deps = [ 'jquery', 'aura-ui-core' ];
+if ( wp_script_is( 'datatables-responsive-js', 'registered' ) ) {
+    $res_js_deps[] = 'datatables-responsive-js';
+}
+
 wp_enqueue_script( 'aura-lib-reservations',
     AURA_PLUGIN_URL . 'assets/js/library-reservations.js',
-    [ 'jquery', 'aura-ui-core' ],
+    $res_js_deps,
     $res_js_ver, true );
 wp_enqueue_style( 'aura-lib-reservations-css',
     AURA_PLUGIN_URL . 'assets/css/library-reservations.css',
