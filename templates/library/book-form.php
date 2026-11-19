@@ -45,7 +45,9 @@ $dewey_classes = [
         </button>
     </div>
     <textarea id="aura-lib-ai-prompt-text" style="position:absolute;left:-9999px;top:-9999px;" readonly
-              aria-hidden="true"><?php echo esc_textarea( 'Actúa como un bibliotecario experto. Proporcióname los datos del libro [INSERTAR NOMBRE DEL LIBRO Y AUTOR AQUÍ] para ingresarlos en un sistema de inventario. Necesito la información organizada exactamente de la siguiente manera:
+              aria-hidden="true"><?php echo esc_textarea( '[INSERTAR NOMBRE DEL LIBRO Y AUTOR AQUÍ]
+
+Actúa como un bibliotecario experto. Proporcióname los datos del libro escrito anteriormente, para ingresarlos en un sistema de inventario. Necesito la información organizada exactamente de la siguiente manera:
 
 Título:
 
@@ -75,7 +77,9 @@ Descripción / Resumen: (Un párrafo conciso pero completo)
 
 Palabras clave: (Al menos 5 términos separados por comas)
 
-Por favor, asegúrate de que el Número Dewey sea el correcto según la clasificación temática del libro.' ); ?></textarea>
+Por favor, asegúrate de que el Número Dewey sea el correcto según la clasificación temática del libro.
+
+Por favor busca la caratula del libro' ); ?></textarea>
 
     <!-- ══ BANNER: ESCÁNER / BÚSQUEDA POR ISBN ═════════════════════ -->
     <div class="aura-lib-isbn-toolbar">
