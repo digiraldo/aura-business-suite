@@ -132,6 +132,11 @@ class Aura_Library_Books {
         $rows        = $wpdb->get_results( $wpdb->prepare( $data_sql, ...$data_params ) );
 
         foreach ( $rows as &$row ) {
+            foreach ( [ 'title', 'subtitle', 'author', 'publisher', 'category', 'subcategory', 'description', 'keywords', 'physical_location', 'shelf_code' ] as $tf ) {
+                if ( isset( $row->$tf ) && is_string( $row->$tf ) ) {
+                    $row->$tf = wp_unslash( $row->$tf );
+                }
+            }
             $row->status_label    = self::get_status_label( $row->status );
             $row->copies_badge    = self::get_copies_badge_class( $row->available_copies, $row->total_copies );
 
@@ -181,18 +186,18 @@ class Aura_Library_Books {
             wp_send_json_error( [ 'message' => __( 'Sin permisos para editar libros.', 'aura-business-suite' ) ] );
         }
 
-        $title = sanitize_text_field( $_POST['title'] ?? '' );
+        $title = sanitize_text_field( wp_unslash( $_POST['title'] ?? '' ) );
         if ( empty( $title ) ) {
             wp_send_json_error( [ 'message' => __( 'El título del libro es obligatorio.', 'aura-business-suite' ) ] );
         }
 
-        $author = sanitize_text_field( $_POST['author'] ?? '' );
+        $author = sanitize_text_field( wp_unslash( $_POST['author'] ?? '' ) );
         if ( empty( $author ) ) {
             wp_send_json_error( [ 'message' => __( 'El autor es obligatorio.', 'aura-business-suite' ) ] );
         }
 
         // Validar ISBN si proporcionado
-        $isbn = sanitize_text_field( $_POST['isbn'] ?? '' );
+        $isbn = sanitize_text_field( wp_unslash( $_POST['isbn'] ?? '' ) );
         if ( $isbn && ! self::validate_isbn( $isbn ) ) {
             wp_send_json_error( [ 'message' => __( 'El ISBN proporcionado no es válido (use formato ISBN-10 o ISBN-13).', 'aura-business-suite' ) ] );
         }
@@ -219,24 +224,24 @@ class Aura_Library_Books {
         }
 
         $data = [
-            'dewey_number'      => sanitize_text_field( $_POST['dewey_number']      ?? '' ),
+            'dewey_number'      => sanitize_text_field( wp_unslash( $_POST['dewey_number']      ?? '' ) ),
             'title'             => $title,
-            'subtitle'          => sanitize_text_field( $_POST['subtitle']          ?? '' ) ?: null,
+            'subtitle'          => sanitize_text_field( wp_unslash( $_POST['subtitle']          ?? '' ) ) ?: null,
             'author'            => $author,
             'isbn'              => $isbn ?: null,
-            'publisher'         => sanitize_text_field( $_POST['publisher']         ?? '' ) ?: null,
+            'publisher'         => sanitize_text_field( wp_unslash( $_POST['publisher']         ?? '' ) ) ?: null,
             'year_published'    => $year,
-            'edition'           => sanitize_text_field( $_POST['edition']           ?? '' ) ?: null,
+            'edition'           => sanitize_text_field( wp_unslash( $_POST['edition']           ?? '' ) ) ?: null,
             'language'          => in_array( $_POST['language'] ?? '', $lang_allowed ) ? $_POST['language'] : 'Español',
             'pages'             => intval( $_POST['pages'] ?? 0 ) ?: null,
-            'category'          => sanitize_text_field( $_POST['category']          ?? '' ) ?: null,
-            'subcategory'       => sanitize_text_field( $_POST['subcategory']       ?? '' ) ?: null,
-            'physical_location' => sanitize_text_field( $_POST['physical_location'] ?? '' ) ?: null,
-            'shelf_code'        => sanitize_text_field( $_POST['shelf_code']        ?? '' ) ?: null,
+            'category'          => sanitize_text_field( wp_unslash( $_POST['category']          ?? '' ) ) ?: null,
+            'subcategory'       => sanitize_text_field( wp_unslash( $_POST['subcategory']       ?? '' ) ) ?: null,
+            'physical_location' => sanitize_text_field( wp_unslash( $_POST['physical_location'] ?? '' ) ) ?: null,
+            'shelf_code'        => sanitize_text_field( wp_unslash( $_POST['shelf_code']        ?? '' ) ) ?: null,
             'total_copies'      => $total_copies,
             'cover_image_id'    => $cover_image_id ?: null,
-            'description'       => sanitize_textarea_field( $_POST['description']  ?? '' ) ?: null,
-            'keywords'          => sanitize_text_field( $_POST['keywords']          ?? '' ) ?: null,
+            'description'       => sanitize_textarea_field( wp_unslash( $_POST['description']  ?? '' ) ) ?: null,
+            'keywords'          => sanitize_text_field( wp_unslash( $_POST['keywords']          ?? '' ) ) ?: null,
             'area_id'           => intval( $_POST['area_id'] ?? 0 ) ?: null,
             'status'            => in_array( $_POST['status'] ?? '', $status_allowed ) ? $_POST['status'] : 'available',
         ];

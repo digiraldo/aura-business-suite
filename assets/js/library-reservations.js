@@ -221,11 +221,12 @@
             actions += '</div>';
 
             var bookTipHtml = '<div class="aura-tip-card">' +
-                '<div class="aura-tip-hdr">📖 ' + escHtml(res.book_title || '—') + '</div>' +
-                (res.dewey_number ? '<div class="aura-tip-row"><span class="aura-tip-lbl">Dewey:</span><span class="aura-tip-val">' + escHtml(res.dewey_number) + '</span></div>' : '') +
-                '<div class="aura-tip-row"><span class="aura-tip-lbl">Lector:</span><span class="aura-tip-val">' + escHtml(res.user_name || '—') + '</span></div>' +
-                '<div class="aura-tip-row"><span class="aura-tip-lbl">Reserva:</span><span class="aura-tip-val">#' + parseInt(res.id, 10) + '</span></div>' +
-                '</div>';
+                '<div class="aura-tip-card-header"><div class="aura-tip-info"><div class="aura-tip-title">📖 ' + escHtml(res.book_title || '—') + '</div></div></div>' +
+                '<div class="aura-tip-card-body">' +
+                (res.dewey_number ? '<div class="aura-tip-row"><span>Dewey:</span><strong>' + escHtml(res.dewey_number) + '</strong></div>' : '') +
+                '<div class="aura-tip-row"><span>Lector:</span><strong>' + escHtml(res.user_name || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>Reserva:</span><strong>#' + parseInt(res.id, 10) + '</strong></div>' +
+                '</div></div>';
 
             rows += '<tr class="aura-parent-row" data-id="' + parseInt(res.id, 10) + '">';
             rows += '<td data-label="#" class="aura-lib-col-expand">' +

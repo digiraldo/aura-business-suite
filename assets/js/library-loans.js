@@ -740,11 +740,12 @@
             }
 
             var bookTipHtml = '<div class="aura-tip-card">' +
-                '<div class="aura-tip-hdr">📖 ' + escHtml(loan.book_title || '—') + '</div>' +
-                '<div class="aura-tip-row"><span class="aura-tip-lbl">Préstamo:</span><span class="aura-tip-val">#' + parseInt(loan.id, 10) + '</span></div>' +
-                (loan.dewey_number ? '<div class="aura-tip-row"><span class="aura-tip-lbl">Dewey:</span><span class="aura-tip-val">' + escHtml(loan.dewey_number) + '</span></div>' : '') +
-                '<div class="aura-tip-row"><span class="aura-tip-lbl">Devolución:</span><span class="aura-tip-val">' + escHtml(loan.due_date || '—') + '</span></div>' +
-                '</div>';
+                '<div class="aura-tip-card-header"><div class="aura-tip-info"><div class="aura-tip-title">📖 ' + escHtml(loan.book_title || '—') + '</div></div></div>' +
+                '<div class="aura-tip-card-body">' +
+                '<div class="aura-tip-row"><span>Préstamo:</span><strong>#' + parseInt(loan.id, 10) + '</strong></div>' +
+                (loan.dewey_number ? '<div class="aura-tip-row"><span>Dewey:</span><strong>' + escHtml(loan.dewey_number) + '</strong></div>' : '') +
+                '<div class="aura-tip-row"><span>Devolución:</span><strong>' + escHtml(loan.due_date || '—') + '</strong></div>' +
+                '</div></div>';
 
             rows += '<tr class="aura-parent-row" data-id="' + parseInt(loan.id, 10) + '">';
             rows += '<td data-label="#" class="aura-lib-col-expand">' +

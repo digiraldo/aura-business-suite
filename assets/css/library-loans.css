@@ -751,11 +751,11 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
     gap: 6px;
     padding: 8px 12px;
     border-radius: 8px;
-    border: 1px solid var(--aura-border-light, #e2e8f0);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
     background: var(--aura-surface-alt, #f8fafc);
     font-size: 12.5px;
     font-weight: 600;
-    color: var(--tx-primary, var(--aura-text, #0f172a));
+    color: var(--aura-text, #0f172a);
     cursor: pointer;
     user-select: none;
 }
@@ -778,9 +778,9 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
 .aura-lib-bp-card {
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--aura-border-light, #e2e8f0);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
     border-radius: 12px;
-    background: var(--aura-surface-card, #ffffff);
+    background: var(--aura-surface, #ffffff);
     overflow: hidden;
     transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
 }
@@ -799,7 +799,7 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-bottom: 1px solid var(--aura-border-light, #e2e8f0);
+    border-bottom: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
 }
 .aura-lib-bp-cover-img {
     max-width: 100%;
@@ -866,21 +866,37 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
     justify-content: center;
 }
 
-.aura-dark-mode .aura-lib-bp-avail-toggle {
-    background: #1e293b;
-    border-color: #334155;
-    color: #e2e8f0;
+[data-theme="dark"] .aura-lib-bp-avail-toggle,
+.wp-dark-mode-active .aura-lib-bp-avail-toggle,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-bp-avail-toggle,
+.aura-dark-mode .aura-lib-bp-avail-toggle,
+body.admin-color-midnight .aura-lib-bp-avail-toggle {
+    background: var(--aura-surface-alt, #1f1d38);
+    border-color: var(--aura-border, rgba(255, 255, 255, 0.1));
+    color: var(--aura-text, #f0efff);
 }
-.aura-dark-mode .aura-lib-bp-card {
-    background: #1e293b;
-    border-color: #334155;
+[data-theme="dark"] .aura-lib-bp-card,
+.wp-dark-mode-active .aura-lib-bp-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-bp-card,
+.aura-dark-mode .aura-lib-bp-card,
+body.admin-color-midnight .aura-lib-bp-card {
+    background: var(--aura-surface, #16152b);
+    border-color: var(--aura-border, rgba(255, 255, 255, 0.1));
 }
-.aura-dark-mode .aura-lib-bp-cover-wrap {
-    background: #0f172a;
-    border-bottom-color: #334155;
+[data-theme="dark"] .aura-lib-bp-cover-wrap,
+.wp-dark-mode-active .aura-lib-bp-cover-wrap,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-bp-cover-wrap,
+.aura-dark-mode .aura-lib-bp-cover-wrap,
+body.admin-color-midnight .aura-lib-bp-cover-wrap {
+    background: var(--aura-surface-alt, #1f1d38);
+    border-bottom-color: var(--aura-border, rgba(255, 255, 255, 0.1));
 }
-.aura-dark-mode .aura-lib-bp-title {
-    color: #f1f5f9;
+[data-theme="dark"] .aura-lib-bp-title,
+.wp-dark-mode-active .aura-lib-bp-title,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-bp-title,
+.aura-dark-mode .aura-lib-bp-title,
+body.admin-color-midnight .aura-lib-bp-title {
+    color: var(--aura-text, #f0efff);
 }
 
 /* ── Tabla Préstamos: Desktop & Mobile Cards ─────────────────────── */
@@ -889,9 +905,22 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
+.aura-lib-responsive-table thead th {
+    white-space: nowrap;
+}
 .aura-lib-responsive-table td.aura-lib-col-book {
     white-space: normal;
     min-width: 210px;
+}
+.aura-lib-responsive-table code,
+.aura-lib-child-card code {
+    background: var(--aura-indigo-bg, #eef2ff);
+    color: var(--aura-indigo-dark, #3730a3);
+    border: 1px solid var(--aura-indigo-border, #c7d2fe);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
 }
 
 @media (max-width: 782px) {
@@ -911,9 +940,9 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
         gap: 10px;
         margin-bottom: 10px;
         padding: 12px 14px;
-        border: 1px solid var(--aura-border-light, #e2e8f0);
+        border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
         border-radius: 12px;
-        background: var(--aura-surface-card, #ffffff);
+        background: var(--aura-surface, #ffffff);
     }
     .aura-lib-responsive-table tbody tr.aura-parent-row.is-expanded {
         margin-bottom: 0;
@@ -957,7 +986,7 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
         justify-content: flex-end;
         padding-top: 8px !important;
         margin-top: 4px;
-        border-top: 1px dashed var(--aura-border-light, #e2e8f0) !important;
+        border-top: 1px dashed var(--aura-border, rgba(148, 163, 184, 0.25)) !important;
     }
     .aura-lib-responsive-table tbody tr.aura-dt-child-row,
     .aura-lib-responsive-table tbody tr.aura-child-row {
@@ -979,13 +1008,6 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
     }
     .aura-lib-child-layout { flex-direction: column; align-items: center; }
     .aura-lib-row-toggle { width: 34px; height: 34px; }
-    .aura-dark-mode .aura-lib-responsive-table tbody tr.aura-parent-row {
-        background: #1e293b;
-        border-color: #334155;
-    }
-    .aura-dark-mode .aura-lib-responsive-table tbody tr.aura-parent-row > td.aura-lib-col-actions {
-        border-top-color: #334155 !important;
-    }
 }
 
 /* ── Botón Expandir (+) & Fila Hija Expandible (Préstamos) ─────── */
@@ -998,20 +1020,20 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
     display: inline-block;
     padding: 2px 7px;
     background: var(--aura-surface-alt, #f1f5f9);
-    color: var(--tx-primary, #1e293b);
+    color: var(--aura-text, #1e293b);
     border-radius: 6px;
     font-size: 11px;
     font-weight: 700;
-    border: 1px solid var(--aura-border-light, #e2e8f0);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
 }
 .aura-lib-mobile-sub { display: none; }
 .aura-lib-row-toggle {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    border: 1px solid var(--aura-border, #cbd5e1);
-    background: var(--aura-surface-card, #ffffff);
-    color: var(--aura-indigo, #4f46e5);
+    border: 1px solid var(--aura-indigo-border, #c7d2fe);
+    background: var(--aura-surface, #ffffff);
+    color: var(--aura-indigo-dark, #4f46e5);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1029,8 +1051,9 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
     color: #ffffff;
 }
 .aura-lib-child-card {
-    padding: 16px 20px;
+    padding: 18px 22px;
     background: var(--aura-surface-alt, #f8fafc);
+    color: var(--aura-text, #0f172a);
     border-left: 4px solid var(--aura-indigo, #4f46e5);
     text-align: left;
 }
@@ -1042,14 +1065,16 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
     object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 6px 16px rgba(15, 23, 42, 0.14);
-    background: var(--aura-surface-card, #ffffff);
-    padding: 3px;
+    background: var(--aura-surface, #ffffff);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
+    padding: 4px;
 }
 .aura-child-book-cover-empty {
     width: 90px;
     height: 128px;
     border-radius: 8px;
-    border: 1px dashed var(--aura-border, #cbd5e1);
+    border: 1px dashed var(--aura-border, rgba(148, 163, 184, 0.35));
+    background: var(--aura-surface, #ffffff);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1064,24 +1089,54 @@ html[data-wp-dark-mode-scheme="dark"] .aura-lib-loan-notes-toggle {
     flex-wrap: wrap;
     padding-bottom: 10px;
     margin-bottom: 12px;
-    border-bottom: 1px solid var(--aura-border-light, #e2e8f0);
+    border-bottom: 1px solid var(--aura-border, rgba(148, 163, 184, 0.22));
 }
-.aura-lib-child-content .aura-child-hero-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--tx-primary, var(--aura-text, #0f172a)); }
-.aura-lib-child-author { margin-top: 3px; font-size: 12.5px; color: var(--aura-text-muted, #475569); font-weight: 600; }
+.aura-lib-child-content .aura-child-hero-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--aura-text, #0f172a); }
+.aura-lib-child-author { margin-top: 3px; font-size: 12.5px; color: var(--aura-text-muted, #64748b); font-weight: 600; }
 .aura-child-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px 12px; margin-bottom: 12px; }
-.aura-child-meta-item { display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; border-radius: 8px; background: var(--aura-surface-card, #ffffff); border: 1px solid var(--aura-border-light, #e2e8f0); }
+.aura-child-meta-item { display: flex; flex-direction: column; gap: 3px; padding: 8px 12px; border-radius: 10px; background: var(--aura-surface, #ffffff); border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.22)); }
 .aura-child-meta-item span { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--aura-text-muted, #64748b); font-weight: 700; }
-.aura-child-meta-item strong { font-size: 12.5px; color: var(--tx-primary, var(--aura-text, #0f172a)); }
-.aura-child-synopsis { font-size: 12.5px; line-height: 1.5; padding: 10px 12px; border-radius: 8px; background: var(--aura-surface-card, #ffffff); border: 1px solid var(--aura-border-light, #e2e8f0); margin-bottom: 10px; }
+.aura-child-meta-item strong { font-size: 12.5px; color: var(--aura-text, #0f172a); }
+.aura-child-synopsis { font-size: 12.5px; line-height: 1.5; padding: 10px 12px; border-radius: 10px; background: var(--aura-surface, #ffffff); border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.22)); color: var(--aura-text, #1e293b); margin-bottom: 10px; }
 .aura-child-footer-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 4px; }
-.aura-dark-mode .aura-txn-id-pill,
+[data-theme="dark"] .aura-lib-row-toggle,
+.wp-dark-mode-active .aura-lib-row-toggle,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-row-toggle,
 .aura-dark-mode .aura-lib-row-toggle,
+body.admin-color-midnight .aura-lib-row-toggle {
+    background: rgba(79, 70, 229, 0.18);
+    border-color: rgba(129, 140, 248, 0.45);
+    color: #c7d2fe;
+}
+[data-theme="dark"] .aura-lib-child-card,
+.wp-dark-mode-active .aura-lib-child-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-child-card,
+.aura-dark-mode .aura-lib-child-card { background: var(--aura-surface, #16152b); color: var(--aura-text, #f0efff); }
+[data-theme="dark"] .aura-child-meta-item,
+[data-theme="dark"] .aura-child-synopsis,
+[data-theme="dark"] .aura-child-book-cover,
+[data-theme="dark"] .aura-child-book-cover-empty,
+.wp-dark-mode-active .aura-child-meta-item,
+.wp-dark-mode-active .aura-child-synopsis,
+.wp-dark-mode-active .aura-child-book-cover,
+.wp-dark-mode-active .aura-child-book-cover-empty,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-synopsis,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-book-cover,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-book-cover-empty,
 .aura-dark-mode .aura-child-meta-item,
 .aura-dark-mode .aura-child-synopsis,
-.aura-dark-mode .aura-child-book-cover {
-    background: #1e293b;
-    border-color: #334155;
-    color: #e2e8f0;
+.aura-dark-mode .aura-child-book-cover,
+.aura-dark-mode .aura-child-book-cover-empty {
+    background: var(--aura-surface-alt, #1f1d38);
+    border-color: var(--aura-border, rgba(255, 255, 255, 0.1));
+    color: var(--aura-text, #f0efff);
 }
-.aura-dark-mode .aura-lib-child-card { background: #0f172a; }
+[data-theme="dark"] .aura-child-meta-item strong,
+[data-theme="dark"] .aura-lib-child-content .aura-child-hero-title,
+.wp-dark-mode-active .aura-child-meta-item strong,
+.wp-dark-mode-active .aura-lib-child-content .aura-child-hero-title,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-child-content .aura-child-hero-title,
+.aura-dark-mode .aura-child-meta-item strong,
 .aura-dark-mode .aura-lib-child-content .aura-child-hero-title { color: #f8fafc; }

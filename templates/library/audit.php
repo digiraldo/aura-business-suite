@@ -267,7 +267,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
     padding: 4px 12px;
     border-radius: 999px;
     background: var(--aura-surface-alt, #f1f5f9);
-    border: 1px solid var(--aura-border-light, #e2e8f0);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
     color: var(--aura-text-muted, #475569);
 }
 .aura-lib-audit-filters {
@@ -325,7 +325,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
 .audit-diff {
     font-size: 11.5px;
     background: var(--aura-surface-alt, #f8fafc);
-    border: 1px solid var(--aura-border-light, rgba(148, 163, 184, 0.28));
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.28));
     border-radius: 8px;
     padding: 7px 10px;
     line-height: 1.45;
@@ -387,7 +387,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
     padding: 12px;
     border-radius: 10px;
     background: var(--aura-surface-alt, #f8fafc);
-    border: 1px solid var(--aura-border-light, #e2e8f0);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
     font-size: 12.5px;
 }
 .aura-audit-modal-table {
@@ -398,7 +398,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
 .aura-audit-modal-table th,
 .aura-audit-modal-table td {
     padding: 8px 10px;
-    border: 1px solid var(--aura-border-light, #e2e8f0);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
     vertical-align: top;
     word-break: break-word;
 }
@@ -410,28 +410,26 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
     color: var(--aura-text-muted, #64748b);
 }
 
-.aura-dark-mode .aura-lib-audit-count-pill {
-    background: #1e293b;
-    border-color: #334155;
-    color: #cbd5e1;
-}
-.aura-dark-mode .audit-diff,
-.aura-dark-mode .aura-audit-modal-meta,
-.aura-dark-mode .aura-audit-modal-table th {
-    background: #0f172a;
-    border-color: #334155;
-}
-.aura-dark-mode .aura-audit-modal-table td {
-    border-color: #334155;
+.aura-lib-responsive-table thead th { white-space: nowrap; }
+.aura-lib-responsive-table code,
+.aura-lib-child-card code,
+.aura-audit-modal-meta code {
+    background: var(--aura-indigo-bg, #eef2ff);
+    color: var(--aura-indigo-dark, #3730a3);
+    border: 1px solid var(--aura-indigo-border, #c7d2fe);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
 }
 
 /* Botón Expandir (+) & Child Rows (Desktop & Mobile) */
 .aura-id-toggle-wrap { display: inline-flex; align-items: center; gap: 8px; }
 .aura-lib-row-toggle {
     width: 28px; height: 28px; border-radius: 50%;
-    border: 1px solid var(--aura-border, #cbd5e1);
-    background: var(--aura-surface-card, #ffffff);
-    color: var(--aura-indigo, #4f46e5);
+    border: 1px solid var(--aura-indigo-border, #c7d2fe);
+    background: var(--aura-surface, #ffffff);
+    color: var(--aura-indigo-dark, #4f46e5);
     display: inline-flex; align-items: center; justify-content: center;
     cursor: pointer; padding: 0; transition: all 0.18s ease;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08); flex-shrink: 0;
@@ -445,10 +443,11 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
 }
 tr.aura-child-row { display: none; background: var(--aura-surface-alt, #f8fafc) !important; }
 tr.aura-child-row.is-open { display: table-row; }
-tr.aura-child-row > td { padding: 0 !important; border-bottom: 1px solid var(--aura-border-light, #e2e8f0); }
+tr.aura-child-row > td { padding: 0 !important; border-bottom: 1px solid var(--aura-border, rgba(148, 163, 184, 0.22)); }
 .aura-lib-child-card {
-    padding: 14px 18px;
+    padding: 16px 20px;
     background: var(--aura-surface-alt, #f8fafc);
+    color: var(--aura-text, #0f172a);
     border-left: 4px solid var(--aura-indigo, #4f46e5);
     text-align: left;
 }
@@ -459,15 +458,57 @@ tr.aura-child-row > td { padding: 0 !important; border-bottom: 1px solid var(--a
     margin-bottom: 10px;
 }
 .aura-child-meta-item {
-    display: flex; flex-direction: column; gap: 2px; padding: 6px 10px;
-    border-radius: 8px; background: var(--aura-surface-card, #ffffff);
-    border: 1px solid var(--aura-border-light, #e2e8f0);
+    display: flex; flex-direction: column; gap: 3px; padding: 8px 12px;
+    border-radius: 10px; background: var(--aura-surface, #ffffff);
+    border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.22));
 }
 .aura-child-meta-item span { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--aura-text-muted, #64748b); font-weight: 700; }
-.aura-child-meta-item strong { font-size: 12.5px; color: var(--tx-primary, var(--aura-text, #0f172a)); }
+.aura-child-meta-item strong { font-size: 12.5px; color: var(--aura-text, #0f172a); }
+
+[data-theme="dark"] .aura-lib-audit-count-pill,
+.wp-dark-mode-active .aura-lib-audit-count-pill,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-audit-count-pill,
+.aura-dark-mode .aura-lib-audit-count-pill {
+    background: var(--aura-surface-alt, #1f1d38);
+    border-color: var(--aura-border, rgba(255, 255, 255, 0.1));
+    color: var(--aura-text-muted, #cbd5e1);
+}
+[data-theme="dark"] .aura-lib-row-toggle,
+.wp-dark-mode-active .aura-lib-row-toggle,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-row-toggle,
 .aura-dark-mode .aura-lib-row-toggle,
-.aura-dark-mode .aura-child-meta-item { background: #1e293b; border-color: #334155; color: #e2e8f0; }
-.aura-dark-mode .aura-lib-child-card { background: #0f172a; }
+body.admin-color-midnight .aura-lib-row-toggle {
+    background: rgba(79, 70, 229, 0.18);
+    border-color: rgba(129, 140, 248, 0.45);
+    color: #c7d2fe;
+}
+[data-theme="dark"] .aura-lib-child-card,
+.wp-dark-mode-active .aura-lib-child-card,
+html[data-wp-dark-mode-scheme="dark"] .aura-lib-child-card,
+.aura-dark-mode .aura-lib-child-card { background: var(--aura-surface, #16152b); color: var(--aura-text, #f0efff); }
+[data-theme="dark"] .aura-child-meta-item,
+[data-theme="dark"] .audit-diff,
+[data-theme="dark"] .aura-audit-modal-meta,
+[data-theme="dark"] .aura-audit-modal-table th,
+.wp-dark-mode-active .aura-child-meta-item,
+.wp-dark-mode-active .audit-diff,
+.wp-dark-mode-active .aura-audit-modal-meta,
+.wp-dark-mode-active .aura-audit-modal-table th,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item,
+html[data-wp-dark-mode-scheme="dark"] .audit-diff,
+html[data-wp-dark-mode-scheme="dark"] .aura-audit-modal-meta,
+html[data-wp-dark-mode-scheme="dark"] .aura-audit-modal-table th,
+.aura-dark-mode .aura-child-meta-item,
+.aura-dark-mode .audit-diff,
+.aura-dark-mode .aura-audit-modal-meta,
+.aura-dark-mode .aura-audit-modal-table th {
+    background: var(--aura-surface-alt, #1f1d38);
+    border-color: var(--aura-border, rgba(255, 255, 255, 0.1));
+    color: var(--aura-text, #f0efff);
+}
+[data-theme="dark"] .aura-child-meta-item strong,
+.wp-dark-mode-active .aura-child-meta-item strong,
+html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
 .aura-dark-mode .aura-child-meta-item strong { color: #f8fafc; }
 
 /* Responsive Desktop & Móvil */
@@ -491,9 +532,9 @@ tr.aura-child-row > td { padding: 0 !important; border-bottom: 1px solid var(--a
         gap: 10px;
         margin-bottom: 10px;
         padding: 12px 14px;
-        border: 1px solid var(--aura-border-light, #e2e8f0);
+        border: 1px solid var(--aura-border, rgba(148, 163, 184, 0.25));
         border-radius: 12px;
-        background: var(--aura-surface-card, #ffffff);
+        background: var(--aura-surface, #ffffff);
     }
     .aura-lib-responsive-table tbody tr.aura-parent-row.is-expanded {
         margin-bottom: 0;
@@ -539,10 +580,6 @@ tr.aura-child-row > td { padding: 0 !important; border-bottom: 1px solid var(--a
     }
     .aura-lib-row-toggle { width: 34px; height: 34px; }
     .audit-diff-wrap { max-width: 100%; text-align: left; }
-    .aura-dark-mode .aura-lib-responsive-table tbody tr.aura-parent-row {
-        background: #1e293b;
-        border-color: #334155;
-    }
 }
 </style>
 
@@ -663,17 +700,17 @@ tr.aura-child-row > td { padding: 0 !important; border-bottom: 1px solid var(--a
     }
 
     function buildDiffTip(keys, oldData, newData){
-        var tip = '<div class="aura-tip-card"><div class="aura-tip-hdr">🔎 Resumen completo (' + keys.length + ' campos)</div>';
+        var tip = '<div class="aura-tip-card"><div class="aura-tip-card-header"><div class="aura-tip-info"><div class="aura-tip-title">🔎 Resumen completo (' + keys.length + ' campos)</div></div></div><div class="aura-tip-card-body">';
         keys.slice(0, 10).forEach(function(k){
             var vOld = oldData && oldData[k] !== undefined && oldData[k] !== null ? String(oldData[k]) : '';
             var vNew = newData && newData[k] !== undefined && newData[k] !== null ? String(newData[k]) : '';
             var valTxt = oldData ? (vOld + ' → ' + vNew) : vNew;
-            tip += '<div class="aura-tip-row"><span class="aura-tip-lbl">' + escHtml(k) + ':</span><span class="aura-tip-val">' + escHtml(valTxt) + '</span></div>';
+            tip += '<div class="aura-tip-row"><span>' + escHtml(k) + ':</span><strong>' + escHtml(valTxt) + '</strong></div>';
         });
         if (keys.length > 10) {
-            tip += '<div class="aura-tip-row"><span class="aura-tip-lbl">+ ' + (keys.length - 10) + ' campos más</span><span class="aura-tip-val">Haz clic para ver todo</span></div>';
+            tip += '<div class="aura-tip-row"><span>+ ' + (keys.length - 10) + ' campos más</span><strong>Haz clic para ver todo</strong></div>';
         }
-        tip += '</div>';
+        tip += '</div></div>';
         return encodeURIComponent(tip);
     }
 

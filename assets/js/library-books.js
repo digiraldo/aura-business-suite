@@ -415,15 +415,16 @@
         var availCount = parseInt(b.available_copies, 10) || 0;
         var totalCount = parseInt(b.total_copies, 10) || 0;
         var pct        = totalCount > 0 ? Math.round((availCount / totalCount) * 100) : 0;
-        var barClass   = availCount === 0 ? 'micro-progress-fill--rose' : (availCount === 1 ? 'micro-progress-fill--amber' : 'micro-progress-fill--emerald');
+        var barClass   = availCount === 0 ? 'micro-progress-fill--rose' : (availCount < totalCount && pct <= 35 ? 'micro-progress-fill--amber' : 'micro-progress-fill--emerald');
         var fullImg    = b.cover_full_url || b.cover_thumb_url;
+        var cleanDesc  = b.description ? String(b.description).replace(/\\(["'])/g, '$1') : '';
 
         var kwHtml = '';
         if (b.keywords) {
             var kws = String(b.keywords).split(',').map(function (s) { return $.trim(s); }).filter(Boolean);
             if (kws.length) {
                 kwHtml = '<div class="aura-child-tags">' +
-                    kws.map(function (k) { return '<span class="badge badge-indigo">' + escHtml(k) + '</span>'; }).join('') +
+                    kws.map(function (k) { return '<span class="badge badge-indigo aura-tooltip-trigger" data-tooltip="Palabra clave: ' + escAttr(k) + '">' + escHtml(k) + '</span>'; }).join('') +
                     '</div>';
             }
         }
@@ -442,9 +443,9 @@
             (b.subtitle ? '<div class="aura-lib-sub-muted">' + escHtml(b.subtitle) + '</div>' : '') +
             '<div class="aura-lib-child-author">✍️ ' + escHtml(b.author || '—') + '</div>' +
             '</div>' +
-            '<div class="aura-lib-child-stock">' +
-            '<strong>' + availCount + ' / ' + totalCount + '</strong> <small>ejemplares disponibles</small>' +
-            '<div class="micro-progress-bar" style="width:140px;margin-top:4px;"><div class="micro-progress-fill ' + barClass + '" style="width:' + pct + '%;"></div></div>' +
+            '<div class="aura-lib-child-stock aura-tooltip-trigger" data-tooltip="' + escAttr(availCount + ' de ' + totalCount + ' ejemplares disponibles (' + pct + '%)') + '">' +
+            '<div class="aura-lib-child-stock-text"><strong>' + availCount + ' / ' + totalCount + '</strong> <small>ejemplares disponibles</small></div>' +
+            '<div class="micro-progress-bar aura-lib-child-progress"><div class="micro-progress-fill ' + barClass + '" style="width:' + pct + '%;"></div></div>' +
             '</div>' +
             '</div>' +
             '<div class="aura-child-meta-grid">' +
@@ -457,11 +458,11 @@
             '<div class="aura-child-meta-item"><span>Idioma</span><strong>' + escHtml(b.language || 'Español') + '</strong></div>' +
             '<div class="aura-child-meta-item"><span>Ubicación</span><strong>' + escHtml(b.physical_location || '—') + (b.shelf_code ? ' · Est. ' + escHtml(b.shelf_code) : '') + '</strong></div>' +
             '</div>' +
-            (b.description ? '<div class="aura-child-synopsis"><strong>Sinopsis:</strong> ' + escHtml(b.description) + '</div>' : '') +
+            (cleanDesc ? '<div class="aura-child-synopsis"><strong>Sinopsis:</strong> ' + escHtml(cleanDesc) + '</div>' : '') +
             kwHtml +
             '<div class="aura-child-footer-actions">' +
-            '<button type="button" class="btn btn-sm btn-indigo aura-lib-btn-detail" data-id="' + parseInt(b.id, 10) + '"><span class="dashicons dashicons-visibility"></span> Ver Ficha 360°</button>' +
-            (b.can_edit ? '<button type="button" class="btn btn-sm btn-glass aura-lib-btn-edit" data-id="' + parseInt(b.id, 10) + '"><span class="dashicons dashicons-edit"></span> Editar</button>' : '') +
+            '<button type="button" class="btn btn-sm btn-indigo btn-lift aura-lib-btn-detail aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Abrir ficha técnica 360° e historial del libro"><span class="dashicons dashicons-visibility"></span> Ver Ficha 360°</button>' +
+            (b.can_edit ? '<button type="button" class="btn btn-sm btn-glass btn-lift aura-lib-btn-edit aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Editar título, ejemplares, clasificación o portada"><span class="dashicons dashicons-edit"></span> Editar</button>' : '') +
             '</div>' +
             '</div></div></div>';
     }

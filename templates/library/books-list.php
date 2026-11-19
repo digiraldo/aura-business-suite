@@ -152,40 +152,58 @@ $can_loan   = current_user_can( 'aura_library_loan_create' ) || current_user_can
                             <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Haz clic en + en cualquier libro para desplegar toda su información en la tabla.', 'aura-suite' ); ?>">+</span>
                         </th>
                         <th>
-                            <?php esc_html_e( 'Portada', 'aura-suite' ); ?>
-                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Pasa el cursor sobre la portada para verla en tamaño completo.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-th-flex">
+                                <span><?php esc_html_e( 'Portada', 'aura-suite' ); ?></span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Pasa el cursor sobre la portada para verla en tamaño completo.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            </span>
                         </th>
                         <th>
-                            <?php esc_html_e( 'Título', 'aura-suite' ); ?>
-                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Título principal, subtítulo y ficha rápida al pasar el cursor.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-th-flex">
+                                <span><?php esc_html_e( 'Título', 'aura-suite' ); ?></span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Título principal, subtítulo y ficha rápida al pasar el cursor.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            </span>
                         </th>
                         <th>
-                            <?php esc_html_e( 'Autor', 'aura-suite' ); ?>
-                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Autor(es) registrados en la ficha bibliográfica.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-th-flex">
+                                <span><?php esc_html_e( 'Autor', 'aura-suite' ); ?></span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Autor(es) registrados en la ficha bibliográfica.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            </span>
                         </th>
                         <th>
-                            <?php esc_html_e( 'Estado', 'aura-suite' ); ?>
-                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Disponibilidad actual del título para préstamos o consulta.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-th-flex">
+                                <span><?php esc_html_e( 'Estado', 'aura-suite' ); ?></span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Disponibilidad actual del título para préstamos o consulta.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            </span>
                         </th>
                         <th>
-                            <?php esc_html_e( 'Copias', 'aura-suite' ); ?>
-                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Ejemplares disponibles sobre el inventario físico total.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-th-flex">
+                                <span><?php esc_html_e( 'Copias', 'aura-suite' ); ?></span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Ejemplares disponibles sobre el inventario físico total.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            </span>
                         </th>
                         <th>
-                            <?php esc_html_e( 'Dewey', 'aura-suite' ); ?>
-                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Código de clasificación decimal Dewey asignado al libro.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-th-flex">
+                                <span><?php esc_html_e( 'Dewey', 'aura-suite' ); ?></span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Código de clasificación decimal Dewey asignado al libro.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            </span>
                         </th>
                         <th>
-                            <?php esc_html_e( 'Categoría', 'aura-suite' ); ?>
-                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Categoría y temática general del ejemplar.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-th-flex">
+                                <span><?php esc_html_e( 'Categoría', 'aura-suite' ); ?></span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Categoría y temática general del ejemplar.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            </span>
                         </th>
                         <th>
-                            <?php esc_html_e( 'Ubicación', 'aura-suite' ); ?>
-                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Sala física y código de estantería donde reposa.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-th-flex">
+                                <span><?php esc_html_e( 'Ubicación', 'aura-suite' ); ?></span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Sala física y código de estantería donde reposa.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            </span>
                         </th>
                         <th>
-                            <?php esc_html_e( 'Acciones', 'aura-suite' ); ?>
-                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Ver ficha 360°, editar ficha, eliminar o reservar ejemplar.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-th-flex">
+                                <span><?php esc_html_e( 'Acciones', 'aura-suite' ); ?></span>
+                                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Ver ficha 360°, editar ficha, eliminar o reservar ejemplar.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
+                            </span>
                         </th>
                     </tr>
                 </thead>
