@@ -1,459 +1,341 @@
-/**
- * Aura Business Suite — Inventory Loans CSS (FASE 5)
- * Checkout / Checkin de equipos
- */
+/* =========================================================================
+   Aura Business Suite — Inventory Loans CSS (Aura Design System)
+   Estilos tokenizados para Light/Dark Mode, Child Rows (+) y Explorador Visual
+   ========================================================================= */
 
-/* ── KPIs ──────────────────────────────────────────────────── */
-.aura-loan-kpis {
+/* ── Filtros Glassmorphic ──────────────────────────────────────────────── */
+.aura-loan-filters-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-    margin: 20px 0;
-}
-
-.aura-loan-kpi-card {
-    display: flex;
+    grid-template-columns: minmax(210px, 1.4fr) minmax(160px, 1fr) repeat(2, minmax(170px, 1fr)) auto;
+    gap: 10px;
     align-items: center;
-    gap: 14px;
-    background: #fff;
-    border: 1px solid #dcdcde;
-    border-radius: 6px;
-    padding: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.07);
 }
 
-.aura-loan-kpi-icon {
-    font-size: 30px;
-    width: 30px;
-    height: 30px;
-    flex-shrink: 0;
-    opacity: .8;
+@media (max-width: 1120px) {
+    .aura-loan-filters-grid {
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    }
 }
 
-.aura-loan-kpi-body {
+.aura-inv-filters-actions {
     display: flex;
-    flex-direction: column;
-}
-
-.aura-loan-kpi-value {
-    font-size: 26px;
-    font-weight: 700;
-    line-height: 1.1;
-    color: #1d2327;
-}
-
-.aura-loan-kpi-label {
-    font-size: 12px;
-    color: #646970;
-    margin-top: 2px;
-}
-
-/* KPI Color variants */
-.aura-loan-kpi-blue  { border-top: 4px solid #2271b1; }
-.aura-loan-kpi-blue  .aura-loan-kpi-icon { color: #2271b1; }
-.aura-loan-kpi-red   { border-top: 4px solid #d63638; }
-.aura-loan-kpi-red   .aura-loan-kpi-icon { color: #d63638; }
-.aura-loan-kpi-red   .aura-loan-kpi-value { color: #d63638; }
-.aura-loan-kpi-green { border-top: 4px solid #00a32a; }
-.aura-loan-kpi-green .aura-loan-kpi-icon { color: #00a32a; }
-.aura-loan-kpi-gray  { border-top: 4px solid #8c8f94; }
-.aura-loan-kpi-gray  .aura-loan-kpi-icon { color: #8c8f94; }
-
-/* ── Action button ─────────────────────────────────────────── */
-.aura-loan-btn-checkout {
-    margin-left: 8px !important;
-}
-
-/* ── Filters ───────────────────────────────────────────────── */
-.aura-loan-filters {
-    background: #fff;
-    border: 1px solid #dcdcde;
-    border-radius: 6px;
-    padding: 14px 16px;
-    margin: 0 0 16px;
-}
-
-.aura-loan-filter-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
     gap: 8px;
-}
-
-.aura-loan-filter {
-    height: 34px;
-    padding: 0 10px;
-    border: 1px solid #c3c4c7;
-    border-radius: 4px;
-    font-size: 13px;
-    background: #f9f9fb;
-}
-
-.aura-loan-filter:focus {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 2px rgba(34,113,177,.15);
-    outline: none;
-    background: #fff;
-}
-
-/* ── Table wrapper ─────────────────────────────────────────── */
-.aura-loan-table-wrap {
-    background: #fff;
-    border: 1px solid #dcdcde;
-    border-radius: 6px;
-    padding: 0;
-    overflow: hidden;
-}
-
-.aura-loan-loading {
-    padding: 20px;
-    color: #646970;
-    font-size: 13px;
-}
-
-.aura-loan-empty {
-    padding: 24px;
-    text-align: center;
-    color: #646970;
-    font-size: 13px;
-}
-
-.aura-loan-table {
-    margin: 0 !important;
-}
-
-.aura-loan-table th {
-    font-size: 12px;
-    font-weight: 600;
-    background: #f9f9fb;
-}
-
-.aura-loan-table td                   { vertical-align: middle; }
-.aura-loan-table .col-photo           { width: 58px;  text-align: center; }
-.aura-loan-table .col-equip           { width: 20%;   }
-.aura-loan-table .col-borrower        { width: 17%;   }
-.aura-loan-table .col-project         { width: 17%;   }
-.aura-loan-table .col-loan-date       { width: 10%;   text-align: center; }
-.aura-loan-table .col-return-date     { width: 12%;   text-align: center; }
-.aura-loan-table .col-status          { width: 9%;    text-align: center; }
-.aura-loan-table .col-actions         { width: 8%;    text-align: center; }
-
-/* ── Status badges ─────────────────────────────────────────── */
-.aura-loan-status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-}
-
-.aura-loan-status-active   { background: #e5f3fb; color: #0069a4; }
-.aura-loan-status-overdue  { background: #fcebec; color: #ae1e24; }
-.aura-loan-status-returned { background: #edfaef; color: #006505; }
-
-/* ── Overdue indicator ─────────────────────────────────────── */
-.aura-loan-overdue-days {
-    font-size: 11px;
-    color: #d63638;
-    font-weight: 600;
-    display: block;
-    margin-top: 2px;
-}
-
-/* ── Equipment name cell ───────────────────────────────────── */
-.aura-loan-equip-cell strong {
-    display: block;
-    color: #1d2327;
-    font-weight: 600;
-}
-
-.aura-loan-equip-cell small {
-    color: #646970;
-    font-size: 11px;
-}
-
-/* ── Borrower cell (avatar + name) ────────────────────────── */
-.aura-loan-borrower-cell {
-    display: flex;
     align-items: center;
-    gap: 8px;
+}
+
+/* ── Tabla Principal ───────────────────────────────────────────────────── */
+#js-loans-table {
+    width: 100% !important;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#js-loans-table th,
+#js-loans-table td {
+    vertical-align: middle;
+}
+
+#js-loans-table th .aura-th-flex {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     white-space: nowrap;
 }
 
+.aura-inv-col-photo {
+    text-align: center;
+    width: 68px;
+}
+
+.aura-inv-title-link {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--aura-text);
+    text-decoration: none;
+}
+
+.aura-inv-title-link:hover {
+    color: var(--aura-indigo-dark);
+    text-decoration: underline;
+}
+
+.aura-inv-cell-sub {
+    font-size: 11.5px;
+    color: var(--aura-text-muted);
+    margin-top: 2px;
+}
+
+.aura-inv-mobile-meta {
+    display: none;
+    font-size: 11px;
+    color: var(--aura-text-muted);
+    margin-top: 3px;
+}
+
+.aura-inv-muted {
+    color: var(--aura-text-muted);
+    opacity: .65;
+}
+
+.aura-inv-thumb-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 44px;
+    padding: 3px;
+    border-radius: 8px;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    cursor: zoom-in;
+}
+
+.aura-inv-thumb-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    border-radius: 5px;
+}
+
+.aura-inv-thumb-empty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 44px;
+    border-radius: 8px;
+    background: var(--aura-surface-alt);
+    border: 1px dashed var(--aura-border);
+    color: var(--aura-text-muted);
+}
+
+/* ── Prestatario (Avatar + Meta + WhatsApp) ────────────────────────────── */
+.aura-loan-borrower-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .aura-loan-borrower-avatar {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--aura-border);
+    cursor: zoom-in;
 }
 
 .aura-loan-borrower-initials {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    background: #2271b1;
+    background: var(--aura-indigo);
     color: #fff;
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: .5px;
     flex-shrink: 0;
     text-transform: uppercase;
+}
+
+.aura-loan-borrower-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    min-width: 0;
 }
 
 .aura-loan-borrower-name {
     font-size: 13px;
-    color: #1d2327;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 160px;
-}
-
-/* ── Modal: badge prioridad + hint ────────────────────────── */
-.aura-loan-badge-priority {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 7px;
-    background: #00a32a;
-    color: #fff;
-    font-size: 10px;
     font-weight: 600;
-    border-radius: 10px;
-    vertical-align: middle;
-    letter-spacing: .3px;
+    color: var(--aura-text);
+}
+
+.aura-loan-borrower-tag {
+    font-size: 11px;
+    color: var(--aura-text-muted);
+    width: 100%;
+}
+
+.aura-loan-wa-link {
+    display: inline-flex;
+    align-items: center;
+    color: #16a34a;
+    text-decoration: none;
+}
+
+.aura-loan-wa-link .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* ── Status Badges & Fechas ────────────────────────────────────────────── */
+.aura-loan-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-}
-
-.aura-loan-field-hint {
-    margin: 4px 0 0;
-    font-size: 11px;
-    color: #646970;
-    font-style: italic;
-}
-
-/* ── Action buttons in table ───────────────────────────────── */
-.aura-loan-action-wrap {
-    display: flex;
-    gap: 4px;
-    flex-wrap: nowrap;
-    justify-content: center;
-}
-
-.aura-loan-action-btn {
-    background: none;
-    border: 1px solid #c3c4c7;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 11px;
-    cursor: pointer;
-    color: #2271b1;
-    transition: background .12s, color .12s;
+    letter-spacing: .3px;
     white-space: nowrap;
 }
 
-.aura-loan-action-btn:hover {
-    background: #2271b1;
-    border-color: #2271b1;
-    color: #fff;
+.aura-loan-status-active   { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.aura-loan-status-overdue  { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.aura-loan-status-returned { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+
+.aura-loan-date-returned {
+    color: #16a34a;
+    font-weight: 600;
 }
 
-.aura-loan-action-btn.checkin {
-    color: #00a32a;
-    border-color: #00a32a;
+.aura-loan-overdue-days {
+    font-size: 11px;
+    color: #dc2626;
+    font-weight: 700;
+    display: block;
+    margin-top: 2px;
 }
 
-.aura-loan-action-btn.checkin:hover {
-    background: #00a32a;
-    color: #fff;
-}
-
-.aura-loan-action-btn.aura-loan-btn-danger {
-    color: #d63638;
-    border-color: #d63638;
-}
-
-.aura-loan-action-btn.aura-loan-btn-danger:hover {
-    background: #d63638;
-    color: #fff;
-}
-
-/* ── Pagination ────────────────────────────────────────────── */
-.aura-loan-pagination {
-    display: flex;
+.aura-loan-action-wrap {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 12px;
-    flex-wrap: wrap;
-    border-top: 1px solid #f0f0f1;
 }
 
-.aura-loan-pagination button {
-    background: #f0f0f1;
-    border: 1px solid #c3c4c7;
-    border-radius: 4px;
-    padding: 4px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background .12s;
+/* ── Child Row (+) Card ────────────────────────────────────────────────── */
+.aura-inv-child-layout {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 18px;
+    align-items: start;
 }
 
-.aura-loan-pagination button:hover:not(:disabled) {
-    background: #dcdcde;
-}
-
-.aura-loan-pagination button.active {
-    background: #2271b1;
-    border-color: #2271b1;
-    color: #fff;
-}
-
-.aura-loan-pagination button:disabled {
-    opacity: .5;
-    cursor: not-allowed;
-}
-
-.aura-loan-pg-info {
-    font-size: 12px;
-    color: #646970;
-    margin: 0 8px;
-}
-
-/* ── Modals ────────────────────────────────────────────────── */
-.aura-loan-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.55);
-    z-index: 99990;
-}
-
-.aura-loan-modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 99999;
-    width: 92%;
-    max-width: 580px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 8px 40px rgba(0,0,0,.25);
-    max-height: 90vh;
-    overflow: hidden;
-}
-
-.aura-loan-modal-inner {
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    height: 100%;
-}
-
-.aura-loan-modal form {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    flex: 1;
-}
-
-.aura-loan-modal-wide {
-    max-width: 800px;
-}
-
-.aura-loan-modal-header {
+.aura-inv-child-photo {
+    width: 150px;
+    min-height: 110px;
+    max-height: 180px;
+    padding: 6px;
+    border-radius: 10px;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
     display: flex;
     align-items: center;
+    justify-content: center;
+    cursor: zoom-in;
+}
+
+.aura-inv-child-photo img {
+    max-width: 100%;
+    max-height: 168px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.aura-inv-child-photo-empty {
+    cursor: default;
+    color: var(--aura-text-muted);
+}
+
+.aura-inv-child-top {
+    display: flex;
     justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid #dcdcde;
-    flex-shrink: 0;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--aura-border);
+    margin-bottom: 12px;
 }
 
-.aura-loan-modal-header h2 {
+.aura-inv-child-title {
     margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: #1d2327;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--aura-text);
 }
 
-.aura-loan-modal-close {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #646970;
-    padding: 4px;
-    line-height: 1;
-    border-radius: 4px;
-    transition: color .12s;
+.aura-inv-child-sub {
+    font-size: 12px;
+    color: var(--aura-text-muted);
+    margin-top: 2px;
 }
 
-.aura-loan-modal-close:hover {
-    color: #d63638;
-    background: #fcebec;
-}
-
-.aura-loan-modal-body {
-    padding: 20px;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.aura-loan-modal-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
+.aura-inv-child-specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
     gap: 8px;
-    padding: 14px 20px;
-    border-top: 1px solid #f0f0f1;
-    flex-shrink: 0;
+    margin-bottom: 12px;
 }
 
-/* ── Form fields ───────────────────────────────────────────── */
+.aura-inv-child-spec {
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.aura-inv-child-spec-lbl {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--aura-text-muted);
+}
+
+.aura-inv-child-spec-val {
+    font-size: 12.5px;
+    color: var(--aura-text);
+    font-weight: 600;
+}
+
+.aura-inv-child-desc {
+    background: var(--aura-surface-alt);
+    border-left: 3px solid var(--aura-indigo);
+    padding: 8px 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 12.5px;
+    color: var(--aura-text);
+    margin-bottom: 12px;
+}
+
+.aura-inv-child-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ── Modales & Campos ──────────────────────────────────────────────────── */
 .aura-loan-field-group {
     margin-bottom: 16px;
 }
 
 .aura-loan-label {
     display: block;
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
-    color: #1d2327;
-    margin-bottom: 5px;
+    color: var(--aura-text);
+    margin-bottom: 6px;
 }
 
 .aura-loan-required {
-    color: #d63638;
+    color: #dc2626;
     margin-left: 2px;
-}
-
-.aura-loan-input {
-    width: 100%;
-    padding: 7px 10px;
-    border: 1px solid #c3c4c7;
-    border-radius: 4px;
-    font-size: 13px;
-    box-sizing: border-box;
-    background: #f9f9fb;
-    transition: border-color .12s;
-}
-
-.aura-loan-input:focus {
-    border-color: #2271b1;
-    box-shadow: 0 0 0 2px rgba(34,113,177,.15);
-    outline: none;
-    background: #fff;
-}
-
-.aura-loan-textarea {
-    resize: vertical;
-    min-height: 70px;
 }
 
 .aura-loan-fields-2col {
@@ -462,155 +344,111 @@
     gap: 14px;
 }
 
-/* ── Radio groups ──────────────────────────────────────────── */
+.aura-loan-textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
 .aura-loan-radio-group {
     display: flex;
-    gap: 16px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
 .aura-loan-radio-label {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     cursor: pointer;
     font-size: 13px;
-    color: #1d2327;
+    color: var(--aura-text);
+    background: var(--aura-surface-alt);
     padding: 6px 12px;
-    border: 1px solid #c3c4c7;
-    border-radius: 4px;
-    transition: background .12s, border-color .12s;
-}
-
-.aura-loan-radio-label input {
-    cursor: pointer;
+    border: 1px solid var(--aura-border);
+    border-radius: 8px;
+    transition: all .15s ease;
 }
 
 .aura-loan-radio-label:has(input:checked) {
-    background: #e5f3fb;
-    border-color: #2271b1;
-    color: #2271b1;
+    background: var(--aura-indigo-bg);
+    border-color: var(--aura-indigo-border);
+    color: var(--aura-indigo-dark);
     font-weight: 600;
 }
 
 .aura-loan-radio-danger:has(input:checked) {
-    background: #fcebec;
-    border-color: #d63638;
-    color: #d63638;
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.45);
+    color: #dc2626;
 }
 
-/* ── Checkbox ──────────────────────────────────────────────── */
 .aura-loan-checkbox-label {
     display: flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
     font-size: 13px;
-    color: #1d2327;
+    font-weight: 600;
+    color: var(--aura-text);
 }
 
+.aura-inv-link-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--aura-indigo-bg);
+    color: var(--aura-indigo-dark);
+    border: 1px solid var(--aura-indigo-border);
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+}
 
-/* ── Equipment picker: mode tabs ────────────────────────────── */
+/* ── Selector de Equipo en Checkout + Modal Stacked Picker ─────────────── */
+.aura-loan-equip-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
 .aura-loan-equip-mode-tabs {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     margin-bottom: 8px;
 }
 
 .aura-loan-equip-tab {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 5px 12px;
-    border: 1px solid #c3c4c7;
-    border-radius: 4px;
-    background: #f6f7f7;
-    color: #50575e;
+    gap: 5px;
+    padding: 6px 12px;
+    border: 1px solid var(--aura-border);
+    border-radius: 8px;
+    background: var(--aura-surface-alt);
+    color: var(--aura-text-muted);
     font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background .1s, color .1s, border-color .1s;
+    transition: all .15s ease;
 }
 
 .aura-loan-equip-tab .dashicons {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
 }
 
+.aura-loan-equip-tab.active,
 .aura-loan-equip-tab:hover {
-    background: #e5f3fb;
-    border-color: #2271b1;
-    color: #135e96;
+    background: var(--aura-indigo-bg);
+    border-color: var(--aura-indigo-border);
+    color: var(--aura-indigo-dark);
 }
 
-.aura-loan-equip-tab.active {
-    background: #2271b1;
-    border-color: #2271b1;
-    color: #fff;
-    font-weight: 600;
-}
-
-/* ── Equipment list mode ─────────────────────────────────────── */
-.aura-loan-equip-list-loading {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 0;
-    font-size: 13px;
-    color: #646970;
-}
-
-.aura-loan-equip-list-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 8px;
-    max-height: 260px;
-    overflow-y: auto;
-    padding: 2px 0;
-}
-
-.aura-loan-equip-list-card {
-    border: 1px solid #c3c4c7;
-    border-radius: 5px;
-    padding: 9px 11px;
-    cursor: pointer;
-    background: #fff;
-    font-size: 13px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    transition: border-color .1s, background .1s, box-shadow .1s;
-}
-
-.aura-loan-equip-list-card:hover {
-    border-color: #2271b1;
-    background: #f0f7fd;
-    box-shadow: 0 0 0 2px rgba(34,113,177,.15);
-}
-
-.aura-loan-equip-list-card .equip-card-name {
-    font-weight: 600;
-    color: #1d2327;
-    line-height: 1.3;
-}
-
-.aura-loan-equip-list-card .equip-card-meta {
-    font-size: 11px;
-    color: #646970;
-}
-
-.aura-loan-equip-list-card .equip-card-cat {
-    display: inline-block;
-    margin-top: 3px;
-    font-size: 10px;
-    padding: 1px 6px;
-    background: #e5f3fb;
-    color: #135e96;
-    border-radius: 10px;
-    letter-spacing: .3px;
-}
-
-/* ── Equipment search autocomplete ────────────────────────── */
 .aura-loan-equip-search-wrap {
     position: relative;
 }
@@ -620,312 +458,390 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: #fff;
-    border: 1px solid #c3c4c7;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    max-height: 200px;
+    background: var(--aura-surface);
+    border: 1px solid var(--aura-border);
+    border-radius: 0 0 10px 10px;
+    max-height: 220px;
     overflow-y: auto;
     z-index: 999;
-    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .2);
 }
 
 .aura-loan-equip-result-item {
-    padding: 8px 12px;
+    padding: 9px 14px;
     cursor: pointer;
-    font-size: 13px;
-    border-bottom: 1px solid #f0f0f1;
+    border-bottom: 1px solid var(--aura-border);
     display: flex;
     flex-direction: column;
     gap: 2px;
-    transition: background .08s;
 }
 
-.aura-loan-equip-result-item:last-child {
-    border-bottom: none;
-}
-
-.aura-loan-equip-result-item:hover {
-    background: #f0f7fd;
-}
+.aura-loan-equip-result-item:last-child { border-bottom: none; }
+.aura-loan-equip-result-item:hover { background: var(--aura-surface-hover); }
 
 .aura-loan-equip-result-item .equip-res-name {
     font-weight: 600;
-    color: #1d2327;
+    font-size: 13px;
+    color: var(--aura-text);
 }
 
 .aura-loan-equip-result-item .equip-res-meta {
-    font-size: 11px;
-    color: #646970;
+    font-size: 11.5px;
+    color: var(--aura-text-muted);
+}
+
+.aura-loan-equip-empty {
+    padding: 12px;
+    font-size: 12.5px;
+    color: var(--aura-text-muted);
+    text-align: center;
+}
+
+.aura-loan-equip-list-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    font-size: 13px;
+    color: var(--aura-text-muted);
 }
 
 .aura-loan-selected-equip {
-    margin-top: 6px;
-    background: #e5f3fb;
-    border: 1px solid #2271b1;
-    border-radius: 4px;
-    padding: 8px 12px;
-    font-size: 13px;
+    margin-top: 8px;
+    background: var(--aura-indigo-bg);
+    border: 1px solid var(--aura-indigo-border);
+    border-radius: 10px;
+    padding: 10px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
+}
+
+.aura-loan-selected-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .aura-loan-selected-equip .selected-name {
-    font-weight: 600;
-    color: #0069a4;
+    font-weight: 700;
+    color: var(--aura-indigo-dark);
+    font-size: 13.5px;
+}
+
+.aura-loan-selected-equip .selected-meta {
+    color: var(--aura-text-muted);
+    font-size: 11.5px;
 }
 
 .aura-loan-selected-equip .selected-clear {
+    background: transparent;
+    border: none;
     cursor: pointer;
-    color: #d63638;
-    font-size: 16px;
-    line-height: 1;
+    color: #dc2626;
+    font-size: 18px;
+    padding: 2px;
 }
 
-/* ── Checkin summary card ──────────────────────────────────── */
+/* ── Modal Visual Picker de Equipos (Stacked) ──────────────────────────── */
+.aura-inv-ep-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.aura-inv-ep-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    max-height: 440px;
+    overflow-y: auto;
+    padding: 2px;
+}
+
+.aura-inv-ep-card {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    color: var(--aura-text);
+}
+
+.aura-inv-ep-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--aura-indigo);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.14);
+}
+
+.aura-inv-ep-thumb {
+    width: 100%;
+    height: 120px;
+    background: var(--aura-surface);
+    border: 1px solid var(--aura-border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 10px;
+    padding: 6px;
+}
+
+.aura-inv-ep-thumb img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.aura-inv-ep-thumb-empty {
+    color: var(--aura-text-muted);
+    opacity: .6;
+}
+
+.aura-inv-ep-thumb-empty .dashicons {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+}
+
+.aura-inv-ep-name {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--aura-text);
+    margin-bottom: 3px;
+}
+
+.aura-inv-ep-meta {
+    font-size: 11.5px;
+    color: var(--aura-text-muted);
+    margin-bottom: 8px;
+}
+
+.aura-inv-ep-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.aura-inv-ep-cat {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--aura-indigo-bg);
+    color: var(--aura-indigo-dark);
+    border: 1px solid var(--aura-indigo-border);
+}
+
+.aura-inv-ep-loc {
+    font-size: 10.5px;
+    color: var(--aura-text-muted);
+}
+
+.aura-inv-ep-count {
+    margin-right: auto;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--aura-text-muted);
+}
+
+.aura-inv-empty-picker {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--aura-text-muted);
+}
+
+/* ── Checkin / Edit / History Modals ───────────────────────────────────── */
 .aura-loan-checkin-summary {
-    background: #f9f9fb;
-    border: 1px solid #dcdcde;
-    border-radius: 5px;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    border-radius: 10px;
     padding: 12px 14px;
     margin-bottom: 16px;
-    font-size: 13px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6px 16px;
+    gap: 10px 16px;
 }
 
 .aura-loan-checkin-summary .sum-row {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
 }
 
 .aura-loan-checkin-summary .sum-label {
     font-size: 11px;
-    color: #646970;
+    text-transform: uppercase;
+    color: var(--aura-text-muted);
 }
 
 .aura-loan-checkin-summary .sum-value {
     font-weight: 600;
-    color: #1d2327;
-}
-
-/* Prestatario con avatar dentro del resumen de checkin */
-.aura-loan-checkin-summary .sum-value .aura-loan-borrower-cell {
-    margin-top: 2px;
-}
-.aura-loan-checkin-summary .sum-value .aura-loan-borrower-name {
-    font-weight: 600;
-    color: #1d2327;
-}
-
-/* Equipo con negrita mayor */
-.aura-loan-checkin-summary .sum-value-equip {
-    font-size: 14px;
+    color: var(--aura-text);
 }
 
 .aura-loan-checkin-summary .sum-overdue {
-    color: #d63638;
+    color: #dc2626;
 }
 
-/* ── Damaged warning ───────────────────────────────────────── */
 .aura-loan-damaged-warning {
     margin-top: 8px;
-    background: #fcebec;
-    border: 1px solid #f0b7b8;
-    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.14);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 8px;
     padding: 8px 12px;
-    font-size: 12px;
-    color: #8a1e1f;
+    font-size: 12.5px;
+    color: #dc2626;
 }
 
-/* ── Notices in modals ─────────────────────────────────────── */
 .aura-loan-notice {
     padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 13px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
     flex: 1;
 }
 
 .aura-loan-notice.success {
-    background: #edfaef;
-    border-left: 4px solid #00a32a;
-    color: #006505;
+    background: rgba(16, 185, 129, 0.14);
+    border-left: 4px solid #10b981;
+    color: #059669;
 }
 
 .aura-loan-notice.error {
-    background: #fcebec;
-    border-left: 4px solid #d63638;
-    color: #8a1e1f;
+    background: rgba(239, 68, 68, 0.14);
+    border-left: 4px solid #ef4444;
+    color: #dc2626;
 }
 
-/* ── History table ─────────────────────────────────────────── */
-.aura-loan-history-table {
-    width: 100%;
-    font-size: 12px;
+.aura-loan-edit-equip-banner {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--aura-text);
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 0 0 14px 0;
 }
 
-.aura-loan-history-table th {
-    background: #f9f9fb;
-    font-weight: 600;
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 2px solid #dcdcde;
-}
-
-.aura-loan-history-table td {
-    padding: 7px 10px;
-    border-bottom: 1px solid #f0f0f1;
-    vertical-align: middle;
-}
-
-/* Historia: wrapper con scroll horizontal */
-.aura-loan-history-table-wrap {
-    overflow-x: auto;
-    border-radius: 6px;
-    border: 1px solid #dcdcde;
-}
-
-/* Historia: header info (título + meta) */
 .aura-loan-history-header-info {
     display: flex;
     align-items: baseline;
     gap: 12px;
     flex-wrap: wrap;
-    min-width: 0;
-    flex: 1;
 }
 
 .aura-loan-history-meta {
     font-size: 12px;
-    color: #646970;
-    font-style: italic;
-    white-space: nowrap;
-}
-
-/* Historia: fila vencida */
-.aura-loan-history-row-overdue td {
-    background: #fff8f8;
-}
-
-/* Historia: fechas con ancho fijo */
-.aura-loan-history-date {
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-    font-size: 12px;
-}
-.aura-loan-history-date-overdue {
-    color: #d63638;
-    font-weight: 600;
-}
-
-/* Valor vacío / NA */
-.aura-loan-history-na {
-    color: #b5b5ba;
+    color: var(--aura-text-muted);
     font-style: italic;
 }
 
-/* Spinner de carga en modal historial */
-.aura-loan-history-loading {
-    color: #646970;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 16px 0;
+.aura-loan-history-table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--aura-border);
 }
-.aura-loan-history-loading .spinner {
-    float: none;
+
+.aura-loan-history-table {
+    width: 100%;
     margin: 0;
 }
 
-/* Estado vacío mejorado */
-.aura-loan-history-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 32px 16px;
-    gap: 8px;
-    color: #646970;
+.aura-loan-history-row-overdue td {
+    background: rgba(239, 68, 68, 0.08);
 }
+
+.aura-loan-history-date-overdue {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.aura-loan-history-na {
+    color: var(--aura-text-muted);
+    opacity: .65;
+}
+
+.aura-loan-history-empty {
+    text-align: center;
+    padding: 36px 16px;
+    color: var(--aura-text-muted);
+}
+
 .aura-loan-history-empty .dashicons {
     font-size: 36px;
     width: 36px;
     height: 36px;
-    color: #b5b5ba;
-}
-.aura-loan-history-empty p {
-    margin: 0;
-    font-size: 14px;
 }
 
-/* Error en historial */
-.aura-loan-history-error {
-    color: #d63638;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 12px 0;
+.aura-inv-text-danger { color: #dc2626; font-weight: 600; }
+
+/* ── Responsive Móvil (≤ 782px) ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .aura-loan-fields-2col,
+    .aura-loan-checkin-summary,
+    .aura-inv-child-layout {
+        grid-template-columns: 1fr;
+    }
+    .aura-inv-child-photo {
+        width: 100%;
+    }
+    .aura-inv-ep-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    #aura-inv-ep-category {
+        max-width: none !important;
+    }
 }
 
-/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 782px) {
+    #js-loans-table th.aura-inv-col-secondary,
+    #js-loans-table td.aura-inv-col-secondary {
+        display: none !important;
+    }
 
-
-@media screen and (max-width: 900px) {
-    .aura-loan-fields-2col { grid-template-columns: 1fr; gap: 0; }
-    .aura-loan-kpis { grid-template-columns: repeat(2, 1fr); }
-    .aura-loan-modal { max-width: 96vw; }
-    .aura-loan-checkin-summary { grid-template-columns: 1fr; }
+    #js-loans-table .aura-inv-mobile-meta {
+        display: block;
+    }
 }
 
-/* =============================================================
-   DataTables Responsive - Fix Icon Overlap 
-   Asegura que la flecha se vea claramente junto a la foto
-   ============================================================= */
-table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control, 
-table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control {
-    position: relative !important;
-    padding-left: 36px !important; /* Espacio para el icono */
-    cursor: pointer !important;
+/* ── Dark Mode Multi-Driver ────────────────────────────────────────────── */
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-loan-status-active {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.35);
 }
 
-table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control::before, 
-table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
-    content: "\f344" !important; /* dashicons-arrow-right-alt2 */
-    font-family: "dashicons" !important;
-    position: absolute !important;
-    left: 8px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 22px !important;
-    height: 22px !important;
-    background-color: #2271b1 !important; /* Azul WP */
-    color: #fff !important;
-    border-radius: 50% !important;
-    border: none !important;
-    box-sizing: border-box !important;
-    font-size: 16px !important;
-    z-index: 10 !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
-    margin: 0 !important;
-    text-indent: 0 !important;
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-loan-status-overdue {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.35);
 }
 
-table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > td.dtr-control::before, 
-table.dataTable.dtr-inline.collapsed > tbody > tr.dt-hasChild > th.dtr-control::before {
-    content: "\f343" !important; /* dashicons-arrow-down-alt2 */
-    background-color: #646970 !important; /* Gris WP */
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-loan-status-returned {
+    background: rgba(16, 185, 129, 0.18);
+    color: #6ee7b7;
+    border-color: rgba(16, 185, 129, 0.35);
 }
 
-/* ── Tooltip de imagen ampliada en thumbnails de tabla ──────── */
-.aura-inv-thumb-wrap {
-    position: relative;
-    display: inline-block;
-    cursor: zoom-in;
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-loan-date-returned {
+    color: #34d399;
 }
 
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-loan-overdue-days,
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-inv-text-danger {
+    color: #f87171;
+}

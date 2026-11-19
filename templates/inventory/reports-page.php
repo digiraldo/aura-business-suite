@@ -1,6 +1,8 @@
 <?php
 /**
- * Template — Reportes del Módulo de Inventario (FASE 7)
+ * Template — Reportes del Módulo de Inventario (FASE 7 + Design System)
+ *
+ * 4 pestañas de reporte + exportación CSV/Excel/PDF + tablas responsivas con Child Rows (+).
  *
  * @package AuraBusinessSuite
  * @subpackage Inventory
@@ -10,85 +12,112 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 $nonce      = wp_create_nonce( 'aura_inventory_nonce' );
 $categories = Aura_Inventory_Reports::get_categories();
 ?>
-<div class="wrap aura-inv-reports-wrap">
+<div class="aura-app-wrapper aura-inv-reports-page">
+    <div class="wrap aura-app-context">
 
-    <h1 class="wp-heading-inline">
-        <span class="dashicons dashicons-chart-bar" style="color:#2271b1;margin-right:6px;"></span>
-        <?php _e( 'Reportes de Inventario', 'aura-suite' ); ?>
-    </h1>
-    <hr class="wp-header-end">
+    <?php
+    Aura_UI::render_page_header( [
+        'title'       => __( 'Reportes de Inventario', 'aura-suite' ),
+        'subtitle'    => __( 'Análisis de costos por equipo, historial técnico, eficiencia de mantenimientos y vida útil', 'aura-suite' ),
+        'icon'        => 'dashicons-chart-bar',
+        'breadcrumbs' => [
+            [ 'label' => __( 'Inventario', 'aura-suite' ), 'url' => admin_url( 'admin.php?page=aura-inventory' ) ],
+            [ 'label' => __( 'Reportes', 'aura-suite' ) ],
+        ],
+        'badges'      => [
+            [ 'label' => sprintf( __( '%d categorías', 'aura-suite' ), count( $categories ) ), 'variant' => 'indigo' ],
+        ],
+    ] );
+    ?>
 
-    <div id="js-report-notice" class="aura-inv-notice" style="display:none;"></div>
+    <div id="js-report-notice" class="notice" style="display:none;"></div>
 
     <!-- ══════════════════════════════════════════════════════
-         PESTAÑAS
+         PESTAÑAS CANÓNICAS (.adp-tabs)
     ══════════════════════════════════════════════════════════ -->
-    <nav class="aura-inv-tabs" role="tablist" style="margin-top:16px;">
-        <button type="button" class="aura-inv-tab active" data-tab="costs">
+    <div class="adp-tabs aura-inv-tabs" role="tablist">
+        <button type="button" class="adp-tab aura-inv-tab active" data-tab="costs" role="tab"
+                data-tooltip="<?php esc_attr_e( 'Comparativa de costo de adquisición vs inversión en mantenimientos', 'aura-suite' ); ?>">
             <span class="dashicons dashicons-money-alt"></span>
-            <?php _e( 'Costos por Equipo', 'aura-suite' ); ?>
+            <span><?php esc_html_e( 'Costos por Equipo', 'aura-suite' ); ?></span>
         </button>
-        <button type="button" class="aura-inv-tab" data-tab="maintenance">
+        <button type="button" class="adp-tab aura-inv-tab" data-tab="maintenance" role="tab"
+                data-tooltip="<?php esc_attr_e( 'Detalle histórico de intervenciones preventivas y correctivas', 'aura-suite' ); ?>">
             <span class="dashicons dashicons-admin-tools"></span>
-            <?php _e( 'Historial Mantenimientos', 'aura-suite' ); ?>
+            <span><?php esc_html_e( 'Historial Mantenimientos', 'aura-suite' ); ?></span>
         </button>
-        <button type="button" class="aura-inv-tab" data-tab="efficiency">
+        <button type="button" class="adp-tab aura-inv-tab" data-tab="efficiency" role="tab"
+                data-tooltip="<?php esc_attr_e( 'Cumplimiento de meta preventiva (≥70%) y equipos críticos', 'aura-suite' ); ?>">
             <span class="dashicons dashicons-performance"></span>
-            <?php _e( 'Eficiencia', 'aura-suite' ); ?>
+            <span><?php esc_html_e( 'Eficiencia', 'aura-suite' ); ?></span>
         </button>
-        <button type="button" class="aura-inv-tab" data-tab="lifecycle">
+        <button type="button" class="adp-tab aura-inv-tab" data-tab="lifecycle" role="tab"
+                data-tooltip="<?php esc_attr_e( 'Antigüedad, depreciación estimada e indicador de reemplazo', 'aura-suite' ); ?>">
             <span class="dashicons dashicons-update"></span>
-            <?php _e( 'Depreciación y Vida Útil', 'aura-suite' ); ?>
+            <span><?php esc_html_e( 'Depreciación y Vida Útil', 'aura-suite' ); ?></span>
         </button>
-    </nav>
+    </div>
 
     <!-- ══════════════════════════════════════════════════════
          TAB 1: COSTOS POR EQUIPO
     ══════════════════════════════════════════════════════════ -->
-    <div class="aura-inv-tab-panel active is-active" data-panel="costs">
-        <div class="aura-inv-card">
-            <div class="aura-inv-report-filters">
-                <select id="rpt-costs-category" class="aura-inv-select-sm">
-                    <option value=""><?php _e( 'Todas las categorías', 'aura-suite' ); ?></option>
-                    <?php foreach ( $categories as $cat ) : ?>
-                    <option value="<?php echo esc_attr( $cat ); ?>"><?php echo esc_html( $cat ); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <button type="button" class="button button-primary js-run-report" data-report="costs">
-                    <span class="dashicons dashicons-search"></span> <?php _e( 'Generar reporte', 'aura-suite' ); ?>
+    <div class="aura-glass-card aura-inv-tab-panel active is-active" data-panel="costs">
+        <div class="aura-inv-report-toolbar">
+            <div class="aura-inv-report-toolbar-field">
+                <div class="input-group" data-tooltip="<?php esc_attr_e( 'Filtrar equipos por categoría específica', 'aura-suite' ); ?>">
+                    <span class="input-group-text" aria-hidden="true">🏷️</span>
+                    <select id="rpt-costs-category" class="form-control">
+                        <option value=""><?php esc_html_e( 'Todas las categorías', 'aura-suite' ); ?></option>
+                        <?php foreach ( $categories as $cat ) : ?>
+                        <option value="<?php echo esc_attr( $cat ); ?>"><?php echo esc_html( $cat ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-shimmer btn-indigo btn-lift js-run-report" data-report="costs"
+                    data-tooltip="<?php esc_attr_e( 'Calcular análisis de costos por equipo', 'aura-suite' ); ?>">
+                <span class="dashicons dashicons-search"></span>
+                <span><?php esc_html_e( 'Generar reporte', 'aura-suite' ); ?></span>
+            </button>
+            <div class="aura-inv-report-actions">
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-export-report" data-report="costs" style="display:none;"
+                        data-tooltip="<?php esc_attr_e( 'Descargar reporte en CSV', 'aura-suite' ); ?>">
+                    <span class="dashicons dashicons-download"></span> CSV
                 </button>
-                <button type="button" class="button button-secondary js-export-report" data-report="costs" style="display:none;">
-                    <span class="dashicons dashicons-download"></span> <?php _e( 'Exportar CSV', 'aura-suite' ); ?>
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-export-xlsx" data-report="costs" style="display:none;"
+                        data-tooltip="<?php esc_attr_e( 'Descargar libro Excel (.xlsx)', 'aura-suite' ); ?>">
+                    <span class="dashicons dashicons-media-spreadsheet"></span> Excel
                 </button>
-                <button type="button" class="button button-secondary js-export-xlsx" data-report="costs" style="display:none;">
-                    <span class="dashicons dashicons-media-spreadsheet"></span> <?php _e( 'Exportar Excel', 'aura-suite' ); ?>
-                </button>
-                <button type="button" class="button js-print-report" data-report="costs" style="display:none;">
-                    <span class="dashicons dashicons-printer"></span> <?php _e( 'Imprimir / PDF', 'aura-suite' ); ?>
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-print-report" data-report="costs" style="display:none;"
+                        data-tooltip="<?php esc_attr_e( 'Imprimir o guardar como PDF', 'aura-suite' ); ?>">
+                    <span class="dashicons dashicons-printer"></span> PDF
                 </button>
             </div>
+        </div>
 
-            <div id="rpt-costs-summary" class="aura-inv-kpi-row" style="display:none;"></div>
+        <div id="rpt-costs-summary" class="aura-inv-report-kpis" style="display:none;"></div>
 
-            <div id="rpt-costs-container" style="overflow-x:auto;margin-top:16px;">
-                <table class="wp-list-table widefat fixed striped" id="rpt-costs-table" style="display:none;">
-                    <thead>
-                        <tr>
-                            <th><?php _e( 'Equipo', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Categoría', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Costo adq.', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Total mantenimientos', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Total invertido', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( '% mant.', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Prom./mant.', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Último mant.', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Próximo mant.', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Indicador', 'aura-suite' ); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody id="rpt-costs-tbody"></tbody>
-                </table>
-                <p id="rpt-costs-empty" class="aura-inv-empty-msg" style="display:none;"><?php _e( 'No se encontraron equipos con los filtros aplicados.', 'aura-suite' ); ?></p>
+        <div id="rpt-costs-container" class="aura-dt-wrapper aura-table-responsive-wrap" style="margin-top:16px;">
+            <table class="aura-table display aura-inv-responsive-table" id="rpt-costs-table" style="display:none;width:100%;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e( 'Equipo', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Nombre del activo, código interno y botón + para detalle completo', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Categoría', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Categoría de inventario del activo', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Costo adq.', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Valor de compra original registrado', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Total mant.', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Suma histórica invertida en mantenimientos', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Total invertido', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Suma de costo de adquisición + mantenimientos', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( '% mant.', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Porcentaje que representa el mantenimiento frente al costo inicial', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Prom./mant.', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Costo promedio por cada intervención registrada', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Último mant.', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha del servicio técnico más reciente', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Próximo mant.', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha programada para el siguiente mantenimiento', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Indicador', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Semáforo de rentabilidad operativa (Ok, Revisar o Reemplazo)', 'aura-suite' ); ?>">?</span></th>
+                    </tr>
+                </thead>
+                <tbody id="rpt-costs-tbody"></tbody>
+            </table>
+            <div id="rpt-costs-empty" class="empty-card" style="display:none;">
+                <span class="empty-icon">📊</span>
+                <p><?php esc_html_e( 'No se encontraron equipos con los filtros aplicados.', 'aura-suite' ); ?></p>
             </div>
         </div>
     </div>
@@ -96,66 +125,83 @@ $categories = Aura_Inventory_Reports::get_categories();
     <!-- ══════════════════════════════════════════════════════
          TAB 2: HISTORIAL DE MANTENIMIENTOS
     ══════════════════════════════════════════════════════════ -->
-    <div class="aura-inv-tab-panel" data-panel="maintenance" style="display:none;">
-        <div class="aura-inv-card">
-            <div class="aura-inv-report-filters" style="flex-wrap:wrap;gap:8px;">
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:13px;"><?php _e( 'Desde', 'aura-suite' ); ?></label>
-                    <input type="date" id="rpt-maint-from" class="aura-inv-input-sm" value="<?php echo esc_attr( date( 'Y-01-01' ) ); ?>">
+    <div class="aura-glass-card aura-inv-tab-panel" data-panel="maintenance" style="display:none;">
+        <div class="aura-inv-report-toolbar">
+            <div class="aura-inv-report-toolbar-field">
+                <div class="input-group" data-tooltip="<?php esc_attr_e( 'Fecha de inicio del reporte', 'aura-suite' ); ?>">
+                    <span class="input-group-text" aria-hidden="true">📅</span>
+                    <input type="date" id="rpt-maint-from" class="form-control" value="<?php echo esc_attr( date( 'Y-01-01' ) ); ?>">
                 </div>
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:13px;"><?php _e( 'Hasta', 'aura-suite' ); ?></label>
-                    <input type="date" id="rpt-maint-to" class="aura-inv-input-sm" value="<?php echo esc_attr( date( 'Y-m-d' ) ); ?>">
+            </div>
+            <div class="aura-inv-report-toolbar-field">
+                <div class="input-group" data-tooltip="<?php esc_attr_e( 'Fecha final del reporte', 'aura-suite' ); ?>">
+                    <span class="input-group-text" aria-hidden="true">📅</span>
+                    <input type="date" id="rpt-maint-to" class="form-control" value="<?php echo esc_attr( date( 'Y-m-d' ) ); ?>">
                 </div>
-                <select id="rpt-maint-type" class="aura-inv-select-sm">
-                    <option value=""><?php _e( 'Todos los tipos', 'aura-suite' ); ?></option>
-                    <option value="preventive"><?php _e( 'Preventivo', 'aura-suite' ); ?></option>
-                    <option value="corrective"><?php _e( 'Correctivo', 'aura-suite' ); ?></option>
-                    <option value="oil_change"><?php _e( 'Cambio de aceite', 'aura-suite' ); ?></option>
-                    <option value="cleaning"><?php _e( 'Limpieza', 'aura-suite' ); ?></option>
-                    <option value="inspection"><?php _e( 'Inspección', 'aura-suite' ); ?></option>
-                    <option value="major_repair"><?php _e( 'Reparación mayor', 'aura-suite' ); ?></option>
-                </select>
-                <select id="rpt-maint-performed" class="aura-inv-select-sm">
-                    <option value=""><?php _e( 'Todos', 'aura-suite' ); ?></option>
-                    <option value="internal"><?php _e( 'Interno', 'aura-suite' ); ?></option>
-                    <option value="external"><?php _e( 'Externo', 'aura-suite' ); ?></option>
-                </select>
-                <button type="button" class="button button-primary js-run-report" data-report="maintenance">
-                    <span class="dashicons dashicons-search"></span> <?php _e( 'Generar', 'aura-suite' ); ?>
+            </div>
+            <div class="aura-inv-report-toolbar-field">
+                <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">🔧</span>
+                    <select id="rpt-maint-type" class="form-control">
+                        <option value=""><?php esc_html_e( 'Todos los tipos', 'aura-suite' ); ?></option>
+                        <option value="preventive"><?php esc_html_e( 'Preventivo', 'aura-suite' ); ?></option>
+                        <option value="corrective"><?php esc_html_e( 'Correctivo', 'aura-suite' ); ?></option>
+                        <option value="oil_change"><?php esc_html_e( 'Cambio de aceite', 'aura-suite' ); ?></option>
+                        <option value="cleaning"><?php esc_html_e( 'Limpieza', 'aura-suite' ); ?></option>
+                        <option value="inspection"><?php esc_html_e( 'Inspección', 'aura-suite' ); ?></option>
+                        <option value="major_repair"><?php esc_html_e( 'Reparación mayor', 'aura-suite' ); ?></option>
+                    </select>
+                </div>
+            </div>
+            <div class="aura-inv-report-toolbar-field">
+                <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">👷</span>
+                    <select id="rpt-maint-performed" class="form-control">
+                        <option value=""><?php esc_html_e( 'Todos', 'aura-suite' ); ?></option>
+                        <option value="internal"><?php esc_html_e( 'Interno', 'aura-suite' ); ?></option>
+                        <option value="external"><?php esc_html_e( 'Externo', 'aura-suite' ); ?></option>
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-shimmer btn-indigo btn-lift js-run-report" data-report="maintenance">
+                <span class="dashicons dashicons-search"></span> <?php esc_html_e( 'Generar', 'aura-suite' ); ?>
+            </button>
+            <div class="aura-inv-report-actions">
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-export-report" data-report="maintenance" style="display:none;">
+                    <span class="dashicons dashicons-download"></span> CSV
                 </button>
-                <button type="button" class="button button-secondary js-export-report" data-report="maintenance" style="display:none;">
-                    <span class="dashicons dashicons-download"></span> <?php _e( 'CSV', 'aura-suite' ); ?>
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-export-xlsx" data-report="maintenance" style="display:none;">
+                    <span class="dashicons dashicons-media-spreadsheet"></span> Excel
                 </button>
-                <button type="button" class="button button-secondary js-export-xlsx" data-report="maintenance" style="display:none;">
-                    <span class="dashicons dashicons-media-spreadsheet"></span> <?php _e( 'Excel', 'aura-suite' ); ?>
-                </button>
-                <button type="button" class="button js-print-report" data-report="maintenance" style="display:none;">
-                    <span class="dashicons dashicons-printer"></span> <?php _e( 'Imprimir', 'aura-suite' ); ?>
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-print-report" data-report="maintenance" style="display:none;">
+                    <span class="dashicons dashicons-printer"></span> Imprimir
                 </button>
             </div>
+        </div>
 
-            <div id="rpt-maint-summary" class="aura-inv-kpi-row" style="display:none;margin-top:12px;"></div>
+        <div id="rpt-maint-summary" class="aura-inv-report-kpis" style="display:none;"></div>
 
-            <div style="overflow-x:auto;margin-top:16px;">
-                <table class="wp-list-table widefat fixed striped" id="rpt-maint-table" style="display:none;">
-                    <thead>
-                        <tr>
-                            <th><?php _e( 'Fecha', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Equipo', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Tipo', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Descripción', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Repuestos', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Mano obra', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Total', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Ejecutor', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Factura', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Estado', 'aura-suite' ); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody id="rpt-maint-tbody"></tbody>
-                </table>
-                <p id="rpt-maint-empty" class="aura-inv-empty-msg" style="display:none;"><?php _e( 'No se encontraron mantenimientos con los filtros aplicados.', 'aura-suite' ); ?></p>
+        <div class="aura-dt-wrapper aura-table-responsive-wrap" style="margin-top:16px;">
+            <table class="aura-table display aura-inv-responsive-table" id="rpt-maint-table" style="display:none;width:100%;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e( 'Fecha', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha en que se ejecutó el mantenimiento', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Equipo', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Equipo intervenido', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Tipo', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Tipo de mantenimiento realizado', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Descripción', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Detalle técnico de trabajos ejecutados', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Repuestos', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Costo de materiales y refacciones', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Mano obra', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Costo de servicio técnico', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Total', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Importe total del mantenimiento', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Ejecutor', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Personal interno o taller proveedor externo', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Factura', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Número de factura o comprobante', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Estado', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Estado operativo posterior al mantenimiento', 'aura-suite' ); ?>">?</span></th>
+                    </tr>
+                </thead>
+                <tbody id="rpt-maint-tbody"></tbody>
+            </table>
+            <div id="rpt-maint-empty" class="empty-card" style="display:none;">
+                <span class="empty-icon">🔧</span>
+                <p><?php esc_html_e( 'No se encontraron mantenimientos con los filtros aplicados.', 'aura-suite' ); ?></p>
             </div>
         </div>
     </div>
@@ -163,134 +209,102 @@ $categories = Aura_Inventory_Reports::get_categories();
     <!-- ══════════════════════════════════════════════════════
          TAB 3: EFICIENCIA
     ══════════════════════════════════════════════════════════ -->
-    <div class="aura-inv-tab-panel" data-panel="efficiency" style="display:none;">
-        <div class="aura-inv-card">
-            <div class="aura-inv-report-filters" style="flex-wrap:wrap;gap:8px;">
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:13px;"><?php _e( 'Desde', 'aura-suite' ); ?></label>
-                    <input type="date" id="rpt-eff-from" class="aura-inv-input-sm" value="<?php echo esc_attr( date( 'Y-01-01' ) ); ?>">
+    <div class="aura-glass-card aura-inv-tab-panel" data-panel="efficiency" style="display:none;">
+        <div class="aura-inv-report-toolbar">
+            <div class="aura-inv-report-toolbar-field">
+                <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">📅</span>
+                    <input type="date" id="rpt-eff-from" class="form-control" value="<?php echo esc_attr( date( 'Y-01-01' ) ); ?>">
                 </div>
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:13px;"><?php _e( 'Hasta', 'aura-suite' ); ?></label>
-                    <input type="date" id="rpt-eff-to" class="aura-inv-input-sm" value="<?php echo esc_attr( date( 'Y-m-d' ) ); ?>">
+            </div>
+            <div class="aura-inv-report-toolbar-field">
+                <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">📅</span>
+                    <input type="date" id="rpt-eff-to" class="form-control" value="<?php echo esc_attr( date( 'Y-m-d' ) ); ?>">
                 </div>
-                <button type="button" class="button button-primary js-run-report" data-report="efficiency">
-                    <span class="dashicons dashicons-search"></span> <?php _e( 'Generar', 'aura-suite' ); ?>
+            </div>
+            <button type="button" class="btn btn-shimmer btn-indigo btn-lift js-run-report" data-report="efficiency">
+                <span class="dashicons dashicons-search"></span> <?php esc_html_e( 'Generar', 'aura-suite' ); ?>
+            </button>
+            <div class="aura-inv-report-actions">
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-export-xlsx" data-report="efficiency" style="display:none;">
+                    <span class="dashicons dashicons-media-spreadsheet"></span> Excel
                 </button>
-                <button type="button" class="button button-secondary js-export-xlsx" data-report="efficiency" style="display:none;">
-                    <span class="dashicons dashicons-media-spreadsheet"></span> <?php _e( 'Exportar Excel', 'aura-suite' ); ?>
-                </button>
-                <button type="button" class="button js-print-report" data-report="efficiency" style="display:none;">
-                    <span class="dashicons dashicons-printer"></span> <?php _e( 'Imprimir', 'aura-suite' ); ?>
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-print-report" data-report="efficiency" style="display:none;">
+                    <span class="dashicons dashicons-printer"></span> Imprimir
                 </button>
             </div>
-            <div id="rpt-eff-content" style="margin-top:16px;display:none;"></div>
         </div>
+        <div id="rpt-eff-content" style="margin-top:16px;display:none;"></div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════
          TAB 4: DEPRECIACIÓN Y VIDA ÚTIL
     ══════════════════════════════════════════════════════════ -->
-    <div class="aura-inv-tab-panel" data-panel="lifecycle" style="display:none;">
-        <div class="aura-inv-card">
-            <div class="aura-inv-report-filters">
-                <select id="rpt-lc-category" class="aura-inv-select-sm">
-                    <option value=""><?php _e( 'Todas las categorías', 'aura-suite' ); ?></option>
-                    <?php foreach ( $categories as $cat ) : ?>
-                    <option value="<?php echo esc_attr( $cat ); ?>"><?php echo esc_html( $cat ); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <button type="button" class="button button-primary js-run-report" data-report="lifecycle">
-                    <span class="dashicons dashicons-search"></span> <?php _e( 'Generar reporte', 'aura-suite' ); ?>
+    <div class="aura-glass-card aura-inv-tab-panel" data-panel="lifecycle" style="display:none;">
+        <div class="aura-inv-report-toolbar">
+            <div class="aura-inv-report-toolbar-field">
+                <div class="input-group">
+                    <span class="input-group-text" aria-hidden="true">🏷️</span>
+                    <select id="rpt-lc-category" class="form-control">
+                        <option value=""><?php esc_html_e( 'Todas las categorías', 'aura-suite' ); ?></option>
+                        <?php foreach ( $categories as $cat ) : ?>
+                        <option value="<?php echo esc_attr( $cat ); ?>"><?php echo esc_html( $cat ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-shimmer btn-indigo btn-lift js-run-report" data-report="lifecycle">
+                <span class="dashicons dashicons-search"></span> <?php esc_html_e( 'Generar reporte', 'aura-suite' ); ?>
+            </button>
+            <div class="aura-inv-report-actions">
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-export-report" data-report="lifecycle" style="display:none;">
+                    <span class="dashicons dashicons-download"></span> CSV
                 </button>
-                <button type="button" class="button button-secondary js-export-report" data-report="lifecycle" style="display:none;">
-                    <span class="dashicons dashicons-download"></span> <?php _e( 'Exportar CSV', 'aura-suite' ); ?>
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-export-xlsx" data-report="lifecycle" style="display:none;">
+                    <span class="dashicons dashicons-media-spreadsheet"></span> Excel
                 </button>
-                <button type="button" class="button button-secondary js-export-xlsx" data-report="lifecycle" style="display:none;">
-                    <span class="dashicons dashicons-media-spreadsheet"></span> <?php _e( 'Exportar Excel', 'aura-suite' ); ?>
-                </button>
-                <button type="button" class="button js-print-report" data-report="lifecycle" style="display:none;">
-                    <span class="dashicons dashicons-printer"></span> <?php _e( 'Imprimir / PDF', 'aura-suite' ); ?>
+                <button type="button" class="btn btn-glass btn-sm btn-lift js-print-report" data-report="lifecycle" style="display:none;">
+                    <span class="dashicons dashicons-printer"></span> PDF
                 </button>
             </div>
+        </div>
 
-            <div id="rpt-lc-summary" class="aura-inv-kpi-row" style="display:none;"></div>
+        <div id="rpt-lc-summary" class="aura-inv-report-kpis" style="display:none;"></div>
 
-            <div style="overflow-x:auto;margin-top:16px;">
-                <table class="wp-list-table widefat fixed striped" id="rpt-lc-table" style="display:none;">
-                    <thead>
-                        <tr>
-                            <th><?php _e( 'Equipo', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Categoría', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Adquisición', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Antigüedad', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Costo original', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Total mantenimientos', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Total invertido', 'aura-suite' ); ?></th>
-                            <th class="num"><?php _e( 'Valor estimado', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Estado', 'aura-suite' ); ?></th>
-                            <th><?php _e( 'Indicador', 'aura-suite' ); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody id="rpt-lc-tbody"></tbody>
-                </table>
-                <p id="rpt-lc-empty" class="aura-inv-empty-msg" style="display:none;"><?php _e( 'No se encontraron equipos con los filtros aplicados.', 'aura-suite' ); ?></p>
+        <div class="aura-dt-wrapper aura-table-responsive-wrap" style="margin-top:16px;">
+            <table class="aura-table display aura-inv-responsive-table" id="rpt-lc-table" style="display:none;width:100%;">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e( 'Equipo', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Nombre y código interno del activo', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Categoría', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Categoría del activo', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Adquisición', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha de compra o ingreso al inventario', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Antigüedad', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Tiempo transcurrido desde la adquisición', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Costo original', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Valor de adquisición inicial', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Total mant.', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Gasto acumulado en mantenimientos', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Total invertido', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Inversión total acumulada en el equipo', 'aura-suite' ); ?>">?</span></th>
+                        <th class="num"><?php esc_html_e( 'Valor estimado', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Valor residual estimado tras depreciación', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Estado', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Estado actual en el catálogo', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Indicador', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Recomendación de ciclo de vida', 'aura-suite' ); ?>">?</span></th>
+                    </tr>
+                </thead>
+                <tbody id="rpt-lc-tbody"></tbody>
+            </table>
+            <div id="rpt-lc-empty" class="empty-card" style="display:none;">
+                <span class="empty-icon">📈</span>
+                <p><?php esc_html_e( 'No se encontraron equipos con los filtros aplicados.', 'aura-suite' ); ?></p>
             </div>
         </div>
     </div>
 
-</div><!-- .wrap -->
+    <div class="adp-footer">
+        <div>
+            Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Diego Giraldo</a></strong> &bull; Versión <?php echo esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0' ); ?> &bull; Aura Business Suite &copy; <?php echo date('Y'); ?>
+        </div>
+    </div>
 
-<style>
-.aura-inv-report-filters {
-    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-    background:#f9f9f9; border:1px solid #e0e0e0; border-radius:6px; padding:12px 16px;
-}
-.aura-inv-select-sm { height:32px; font-size:13px; }
-.aura-inv-input-sm  { height:32px; font-size:13px; padding:0 8px; border:1px solid #8c8f94; border-radius:3px; }
-.aura-inv-kpi-row   {
-    display:flex; flex-wrap:wrap; gap:12px; margin-top:12px;
-}
-.aura-inv-kpi-card {
-    background:#fff; border:1px solid #ddd; border-radius:6px; padding:12px 18px;
-    min-width:140px; text-align:center;
-}
-.aura-inv-kpi-card .kpi-val { font-size:22px; font-weight:700; color:#2271b1; }
-.aura-inv-kpi-card .kpi-lbl { font-size:12px; color:#666; }
-.aura-inv-reports-wrap .num { text-align:right; }
-table.wp-list-table th.num { text-align:right; }
-.badge-ok      { background:#eafaf1; color:#1a7a3e; border:1px solid #27ae60; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; white-space:nowrap; }
-.badge-review  { background:#fff7e6; color:#a05800; border:1px solid #f0a500; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; white-space:nowrap; }
-.badge-replace { background:#fdf0ee; color:#9c2719; border:1px solid #e74c3c; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; white-space:nowrap; }
-.aura-rpt-eff-section { margin-bottom:24px; }
-.aura-rpt-eff-section h3 { margin:0 0 10px; font-size:14px; }
-.aura-inv-reports-wrap .aura-inv-empty-msg { text-align:center; padding:32px; color:#888; font-style:italic; }
-
-/* ── Impresión / PDF ────────────────────────────────────── */
-@media print {
-    /* Ocultar chrome de WordPress y controles de UI */
-    #adminmenuwrap, #adminmenuback, #wpadminbar, #screen-meta,
-    #screen-meta-links, .notice, .update-nag,
-    .aura-inv-tabs, .aura-inv-report-filters,
-    .button, #js-report-notice { display: none !important; }
-
-    /* Mostrar sólo el panel activo */
-    .aura-inv-tab-panel              { display: none !important; }
-    .aura-inv-tab-panel.is-active    { display: block !important; }
-
-    /* Ajustes de página */
-    #wpcontent, #wpbody, #wpbody-content { margin: 0 !important; padding: 0 !important; float: none !important; }
-    .wrap.aura-inv-reports-wrap { padding: 0; }
-
-    /* Tablas más compactas */
-    table.wp-list-table { font-size: 10px; border-collapse: collapse; }
-    table.wp-list-table th, table.wp-list-table td { padding: 4px 6px; border: 1px solid #ccc; }
-
-    /* KPIs en una fila */
-    .aura-inv-kpi-row { display: flex; flex-wrap: wrap; gap: 8px; }
-    .aura-inv-kpi-card { border: 1px solid #999; min-width: 100px; padding: 8px 12px; break-inside: avoid; }
-}
-</style>
+    </div><!-- .wrap.aura-app-context -->
+</div><!-- .aura-app-wrapper -->
 
 <script>
 /* global jQuery */
@@ -309,13 +323,34 @@ table.wp-list-table th.num { text-align:right; }
         $('[data-panel="' + $(this).data('tab') + '"]').show().addClass('is-active');
     });
 
+    // ── Toggle Child Rows (+ / -) ────────────────────────────
+    $(document).on('click', '.aura-inv-report-row-toggle', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $btn = $(this);
+        var cid  = $btn.data('target');
+        var $tr  = $btn.closest('tr.aura-parent-row');
+        var $ch  = $('#' + cid);
+        if ($ch.hasClass('is-open')) {
+            $ch.removeClass('is-open');
+            $tr.removeClass('is-expanded');
+            $btn.removeClass('is-active').attr('aria-expanded', 'false')
+                .html('<span class="dashicons dashicons-plus-alt2"></span>');
+        } else {
+            $ch.addClass('is-open');
+            $tr.addClass('is-expanded');
+            $btn.addClass('is-active').attr('aria-expanded', 'true')
+                .html('<span class="dashicons dashicons-minus"></span>');
+        }
+    });
+
     // ── Generar reporte ──────────────────────────────────────
     $(document).on('click', '.js-run-report', function () {
         var report = $(this).data('report');
         var $btn   = $(this).prop('disabled', true).text('Cargando...');
         hideNotice();
 
-        var data = { action: 'aura_inventory_report_' + (report === 'maintenance' ? 'maintenance_log' : report), nonce: nonce };
+        var data = { action: 'aura_inventory_report_' + (report === 'maintenance' ? 'maintenance_log' : report), nonce: nonce, _t: Date.now() };
 
         if (report === 'costs')     { data.category  = $('#rpt-costs-category').val(); }
         if (report === 'lifecycle') { data.category  = $('#rpt-lc-category').val(); }
@@ -367,7 +402,7 @@ table.wp-list-table th.num { text-align:right; }
         $.extend( data, getReportFilters( report ) );
         $.post(ajaxurl, data)
             .done(function (resp) {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-media-spreadsheet"></span> Exportar Excel');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-media-spreadsheet"></span> Excel');
                 if (resp.success) {
                     downloadBase64( resp.data.data, resp.data.filename, resp.data.mime );
                 } else {
@@ -375,7 +410,7 @@ table.wp-list-table th.num { text-align:right; }
                 }
             })
             .fail(function () {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-media-spreadsheet"></span> Exportar Excel');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-media-spreadsheet"></span> Excel');
                 showNotice('error', 'Error de red.');
             });
     });
@@ -385,7 +420,7 @@ table.wp-list-table th.num { text-align:right; }
         window.print();
     });
 
-    // ── Helpers de descarga y filtros ────────────────────────
+    // ── Helpers ──────────────────────────────────────────────
     function downloadBase64(b64, filename, mime) {
         var bytes = atob(b64);
         var arr   = new Uint8Array(bytes.length);
@@ -414,20 +449,31 @@ table.wp-list-table th.num { text-align:right; }
         return f;
     }
 
-    // ── Renderizadores ───────────────────────────────────────
     function fmt(n) { return parseFloat(n || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     function fmtDate(d) { if (!d) return '—'; var p = d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+    function toggleBtn(cid) {
+        return '<button type="button" class="aura-inv-row-toggle aura-inv-report-row-toggle" data-target="' + escHtml(cid) + '" aria-expanded="false" data-tooltip="Desplegar ficha completa del registro"><span class="dashicons dashicons-plus-alt2"></span></button>';
+    }
+    function tipCard(title, pairs) {
+        var rowsHtml = '';
+        $.each(pairs, function (_, p) {
+            rowsHtml += '<div class="aura-tip-row"><span>' + escHtml(p[0]) + '</span><strong>' + escHtml(p[1]) + '</strong></div>';
+        });
+        return '<div class="aura-tip-card">' +
+            '<div class="aura-tip-card-header"><div class="aura-tip-info"><div class="aura-tip-title">' + escHtml(title) + '</div></div></div>' +
+            '<div class="aura-tip-card-body">' + rowsHtml + '</div></div>';
+    }
     function indicator(ind) {
-        if (ind === 'replace') return '<span class="badge-replace">🔴 Recomplazo</span>';
-        if (ind === 'review')  return '<span class="badge-review">⚠️ Revisar</span>';
-        return '<span class="badge-ok">✅ Ok</span>';
+        if (ind === 'replace') return '<span class="badge badge-red" data-tooltip="Costo acumulado elevado o fin de vida útil: evaluar reemplazo">🔴 Reemplazo</span>';
+        if (ind === 'review')  return '<span class="badge badge-amber" data-tooltip="Revisar frecuencia e inversión de mantenimiento">⚠️ Revisar</span>';
+        return '<span class="badge badge-emerald" data-tooltip="Relación costo-beneficio óptima">✅ Ok</span>';
     }
 
     function renderReport(report, data) {
-        if (report === 'costs')      renderCosts(data.rows);
+        if (report === 'costs')       renderCosts(data.rows);
         if (report === 'maintenance') renderMaintenance(data.rows);
-        if (report === 'efficiency') renderEfficiency(data);
-        if (report === 'lifecycle')  renderLifecycle(data.rows);
+        if (report === 'efficiency')  renderEfficiency(data);
+        if (report === 'lifecycle')   renderLifecycle(data.rows);
     }
 
     function renderCosts(rows) {
@@ -435,37 +481,49 @@ table.wp-list-table th.num { text-align:right; }
         if (!rows || !rows.length) {
             $('#rpt-costs-table').hide(); $('#rpt-costs-empty').show();
             $('#rpt-costs-summary').hide();
-            $('.js-export-report[data-report="costs"]').hide();
-            $('.js-export-xlsx[data-report="costs"]').hide();
-            $('.js-print-report[data-report="costs"]').hide();
+            $('.js-export-report[data-report="costs"], .js-export-xlsx[data-report="costs"], .js-print-report[data-report="costs"]').hide();
             return;
         }
         var totalInv = 0, totalMaint = 0;
         $.each(rows, function (i, r) {
             totalInv   += r.total_invested;
             totalMaint += r.total_maintenance;
-            tbody.append('<tr>' +
-                '<td><strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? '<br><small>' + escHtml(r.internal_code) + '</small>' : '') + '</td>' +
-                '<td>' + escHtml(r.category || '—') + '</td>' +
-                '<td class="num">' + cur_symbol + ' ' + fmt(r.acquisition_cost) + '</td>' +
-                '<td class="num">' + cur_symbol + ' ' + fmt(r.total_maintenance) + '</td>' +
-                '<td class="num"><strong>' + cur_symbol + ' ' + fmt(r.total_invested) + '</strong></td>' +
-                '<td class="num">' + r.maintenance_pct + '%</td>' +
-                '<td class="num">' + cur_symbol + ' ' + fmt(r.average_maintenance) + '</td>' +
-                '<td>' + fmtDate(r.last_maintenance) + '</td>' +
-                '<td>' + fmtDate(r.next_maintenance) + '</td>' +
-                '<td>' + indicator(r.indicator) + '</td></tr>');
+            var cid = 'rpt-cost-ch-' + i;
+            var tip = tipCard(r.name, [
+                ['Categoría', r.category || '—'],
+                ['Adquisición', cur_symbol + ' ' + fmt(r.acquisition_cost)],
+                ['Total Mant.', cur_symbol + ' ' + fmt(r.total_maintenance)],
+                ['Total Invertido', cur_symbol + ' ' + fmt(r.total_invested)]
+            ]);
+            tbody.append('<tr class="aura-parent-row">' +
+                '<td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<div data-aura-tooltip="' + escHtml(tip) + '"><strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? '<br><code>' + escHtml(r.internal_code) + '</code>' : '') + '</div></div><div class="aura-inv-mobile-sub">' + escHtml(r.category || '—') + ' · Inv: ' + cur_symbol + ' ' + fmt(r.total_invested) + '</div></td>' +
+                '<td class="aura-inv-col-secondary">' + escHtml(r.category || '—') + '</td>' +
+                '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.acquisition_cost) + '</td>' +
+                '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.total_maintenance) + '</td>' +
+                '<td class="num aura-inv-col-secondary"><strong>' + cur_symbol + ' ' + fmt(r.total_invested) + '</strong></td>' +
+                '<td class="num aura-inv-col-secondary">' + r.maintenance_pct + '%</td>' +
+                '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.average_maintenance) + '</td>' +
+                '<td class="aura-inv-col-secondary">' + fmtDate(r.last_maintenance) + '</td>' +
+                '<td class="aura-inv-col-secondary">' + fmtDate(r.next_maintenance) + '</td>' +
+                '<td class="aura-inv-col-stat">' + indicator(r.indicator) + '</td></tr>' +
+                '<tr class="aura-child-row" id="' + cid + '"><td colspan="10"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
+                '<div class="aura-child-meta-item"><span>Equipo</span><strong>' + escHtml(r.name) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Categoría</span><strong>' + escHtml(r.category || '—') + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Costo Adquisición</span><strong>' + cur_symbol + ' ' + fmt(r.acquisition_cost) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Total Mantenimiento</span><strong>' + cur_symbol + ' ' + fmt(r.total_maintenance) + ' (' + r.maintenance_pct + '%)</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Total Invertido</span><strong>' + cur_symbol + ' ' + fmt(r.total_invested) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Prom. / Mant.</span><strong>' + cur_symbol + ' ' + fmt(r.average_maintenance) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Último / Próximo</span><strong>' + fmtDate(r.last_maintenance) + ' / ' + fmtDate(r.next_maintenance) + '</strong></div>' +
+                '</div></div></td></tr>');
         });
         $('#rpt-costs-summary').html(
-            kpi(rows.length, 'Equipos') +
-            kpi(cur_symbol + ' ' + fmt(totalMaint), 'Total mantenimientos') +
-            kpi(cur_symbol + ' ' + fmt(totalInv), 'Total invertido') +
-            kpi(rows.filter(function(r){return r.indicator==='replace';}).length, '🔴 Candidatos remplazo')
+            kpi(rows.length, 'Equipos', 'kpi-indigo') +
+            kpi(cur_symbol + ' ' + fmt(totalMaint), 'Total mantenimientos', 'kpi-amber') +
+            kpi(cur_symbol + ' ' + fmt(totalInv), 'Total invertido', 'kpi-emerald') +
+            kpi(rows.filter(function(r){return r.indicator==='replace';}).length, 'Candidatos reemplazo', 'kpi-red')
         ).show();
         $('#rpt-costs-table').show(); $('#rpt-costs-empty').hide();
-        $('.js-export-report[data-report="costs"]').show();
-        $('.js-export-xlsx[data-report="costs"]').show();
-        $('.js-print-report[data-report="costs"]').show();
+        $('.js-export-report[data-report="costs"], .js-export-xlsx[data-report="costs"], .js-print-report[data-report="costs"]').show();
     }
 
     function renderMaintenance(rows) {
@@ -473,75 +531,95 @@ table.wp-list-table th.num { text-align:right; }
         if (!rows || !rows.length) {
             $('#rpt-maint-table').hide(); $('#rpt-maint-empty').show();
             $('#rpt-maint-summary').hide();
-            $('.js-export-report[data-report="maintenance"]').hide();
-            $('.js-export-xlsx[data-report="maintenance"]').hide();
-            $('.js-print-report[data-report="maintenance"]').hide();
+            $('.js-export-report[data-report="maintenance"], .js-export-xlsx[data-report="maintenance"], .js-print-report[data-report="maintenance"]').hide();
             return;
         }
         var typeLabels = { preventive:'Preventivo', corrective:'Correctivo', oil_change:'Aceite', cleaning:'Limpieza', inspection:'Inspección', major_repair:'Rep. Mayor' };
         var totalCost = 0;
         $.each(rows, function (i, r) {
             totalCost += parseFloat(r.total_cost || 0);
-            tbody.append('<tr>' +
-                '<td>' + fmtDate(r.maintenance_date) + '</td>' +
-                '<td><strong>' + escHtml(r.equipment_name) + '</strong>' + (r.internal_code ? '<br><small>'+escHtml(r.internal_code)+'</small>' : '') + '</td>' +
-                '<td>' + (typeLabels[r.type] || r.type) + '</td>' +
-                '<td>' + escHtml(r.description || '—') + '</td>' +
-                '<td class="num">' + cur_symbol + ' ' + fmt(r.parts_cost) + '</td>' +
-                '<td class="num">' + cur_symbol + ' ' + fmt(r.labor_cost) + '</td>' +
-                '<td class="num"><strong>' + cur_symbol + ' ' + fmt(r.total_cost) + '</strong></td>' +
-                '<td>' + (r.performed_by === 'external' ? ('🔧 ' + escHtml(r.workshop_name || 'Externo')) : '👷 Interno') + '</td>' +
-                '<td>' + escHtml(r.invoice_number || '—') + '</td>' +
-                '<td>' + escHtml(r.post_status || '—') + '</td></tr>');
+            var cid = 'rpt-m-ch-' + i;
+            var tip = tipCard(r.equipment_name, [
+                ['Fecha', fmtDate(r.maintenance_date)],
+                ['Tipo', typeLabels[r.type] || r.type],
+                ['Total', cur_symbol + ' ' + fmt(r.total_cost)],
+                ['Ejecutor', r.performed_by === 'external' ? (r.workshop_name || 'Externo') : 'Interno']
+            ]);
+            tbody.append('<tr class="aura-parent-row">' +
+                '<td class="aura-inv-col-secondary">' + fmtDate(r.maintenance_date) + '</td>' +
+                '<td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<div data-aura-tooltip="' + escHtml(tip) + '"><strong>' + escHtml(r.equipment_name) + '</strong>' + (r.internal_code ? '<br><code>'+escHtml(r.internal_code)+'</code>' : '') + '</div></div><div class="aura-inv-mobile-sub">📅 ' + fmtDate(r.maintenance_date) + ' · ' + escHtml(typeLabels[r.type] || r.type) + '</div></td>' +
+                '<td class="aura-inv-col-secondary"><span class="badge badge-indigo">' + escHtml(typeLabels[r.type] || r.type) + '</span></td>' +
+                '<td class="aura-inv-col-secondary">' + escHtml(r.description || '—') + '</td>' +
+                '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.parts_cost) + '</td>' +
+                '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.labor_cost) + '</td>' +
+                '<td class="num aura-inv-col-stat"><strong>' + cur_symbol + ' ' + fmt(r.total_cost) + '</strong></td>' +
+                '<td class="aura-inv-col-secondary">' + (r.performed_by === 'external' ? ('🔧 ' + escHtml(r.workshop_name || 'Externo')) : '👷 Interno') + '</td>' +
+                '<td class="aura-inv-col-secondary">' + escHtml(r.invoice_number || '—') + '</td>' +
+                '<td class="aura-inv-col-secondary">' + escHtml(r.post_status || '—') + '</td></tr>' +
+                '<tr class="aura-child-row" id="' + cid + '"><td colspan="10"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
+                '<div class="aura-child-meta-item"><span>Fecha</span><strong>' + fmtDate(r.maintenance_date) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Tipo</span><strong>' + escHtml(typeLabels[r.type] || r.type) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Repuestos / Mano de Obra</span><strong>' + cur_symbol + ' ' + fmt(r.parts_cost) + ' + ' + cur_symbol + ' ' + fmt(r.labor_cost) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Total</span><strong>' + cur_symbol + ' ' + fmt(r.total_cost) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Ejecutor / Factura</span><strong>' + (r.performed_by === 'external' ? escHtml(r.workshop_name || 'Externo') : 'Interno') + (r.invoice_number ? ' · ' + escHtml(r.invoice_number) : '') + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Descripción</span><strong>' + escHtml(r.description || '—') + '</strong></div>' +
+                '</div></div></td></tr>');
         });
         $('#rpt-maint-summary').html(
-            kpi(rows.length, 'Registros') +
-            kpi(cur_symbol + ' ' + fmt(totalCost), 'Costo total')
+            kpi(rows.length, 'Registros', 'kpi-indigo') +
+            kpi(cur_symbol + ' ' + fmt(totalCost), 'Costo total', 'kpi-emerald')
         ).show();
         $('#rpt-maint-table').show(); $('#rpt-maint-empty').hide();
-        $('.js-export-report[data-report="maintenance"]').show();
-        $('.js-export-xlsx[data-report="maintenance"]').show();
-        $('.js-print-report[data-report="maintenance"]').show();
+        $('.js-export-report[data-report="maintenance"], .js-export-xlsx[data-report="maintenance"], .js-print-report[data-report="maintenance"]').show();
     }
 
     function renderEfficiency(data) {
         var t    = data.totals;
         var goal = data.goal_met;
-        var html = '<div class="aura-inv-kpi-row">' +
-            kpi(t.count, 'Total mantenimientos') +
-            kpi(t.prev_pct + '%', 'Preventivos', goal ? '#27ae60' : '#e74c3c') +
-            kpi(t.corr_pct + '%', 'Correctivos') +
-            kpi(cur_symbol + ' ' + fmt(t.total_cost), 'Costo total') +
-            kpi(data.overdue_count, '⚠️ Vencidos sin registrar', data.overdue_count > 0 ? '#e74c3c' : '#27ae60') +
+        var html = '<div class="aura-inv-report-kpis">' +
+            kpi(t.count, 'Total mantenimientos', 'kpi-indigo') +
+            kpi(t.prev_pct + '%', 'Preventivos', goal ? 'kpi-emerald' : 'kpi-red') +
+            kpi(t.corr_pct + '%', 'Correctivos', 'kpi-amber') +
+            kpi(cur_symbol + ' ' + fmt(t.total_cost), 'Costo total', 'kpi-blue') +
+            kpi(data.overdue_count, 'Vencidos sin registrar', data.overdue_count > 0 ? 'kpi-red' : 'kpi-emerald') +
         '</div>';
 
-        // Meta
-        html += '<p style="margin:12px 0 4px;"><strong>' + (goal ? '✅' : '❌') + ' Meta preventivos ≥70%:</strong> ' +
-            (goal ? 'Cumplida (' + t.prev_pct + '%)' : 'No cumplida (' + t.prev_pct + '% — meta: 70%)') + '</p>';
+        html += '<div class="alert-card ' + (goal ? 'alert-success' : 'alert-warning') + ' aura-inv-goal-banner">' +
+            '<strong>' + (goal ? '✅' : '❌') + ' Meta preventivos ≥70%:</strong> ' +
+            (goal ? 'Cumplida (' + t.prev_pct + '%)' : 'No cumplida (' + t.prev_pct + '% — meta: 70%)') + '</div>';
 
-        // Top correctivos
         if (data.top_corrective && data.top_corrective.length) {
-            html += '<div class="aura-rpt-eff-section" style="margin-top:16px;"><h3>🔴 Top 5 equipos con más mantenimientos correctivos</h3>';
-            html += '<table class="wp-list-table widefat fixed striped"><thead><tr><th>Equipo</th><th class="num">Cant.</th><th class="num">Costo</th></tr></thead><tbody>';
+            html += '<div class="aura-rpt-eff-section"><h3>🔴 Top 5 equipos con más mantenimientos correctivos</h3>';
+            html += '<div class="aura-dt-wrapper aura-table-responsive-wrap"><table class="aura-table display aura-inv-responsive-table" style="width:100%;"><thead><tr><th>Equipo</th><th class="num">Cant.</th><th class="num">Costo</th></tr></thead><tbody>';
             $.each(data.top_corrective, function (i, r) {
-                html += '<tr><td>' + escHtml(r.name) + (r.internal_code ? ' <small>('+escHtml(r.internal_code)+')</small>' : '') + '</td><td class="num">' + r.qty + '</td><td class="num">' + cur_symbol + ' ' + fmt(r.cost) + '</td></tr>';
+                var cid = 'rpt-eff-top-' + i;
+                html += '<tr class="aura-parent-row"><td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? ' <code>'+escHtml(r.internal_code)+'</code>' : '') + '</div></td><td class="num aura-inv-col-stat">' + r.qty + '</td><td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.cost) + '</td></tr>' +
+                    '<tr class="aura-child-row" id="' + cid + '"><td colspan="3"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
+                    '<div class="aura-child-meta-item"><span>Equipo</span><strong>' + escHtml(r.name) + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>Correctivos</span><strong>' + r.qty + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>Costo</span><strong>' + cur_symbol + ' ' + fmt(r.cost) + '</strong></div>' +
+                    '</div></div></td></tr>';
             });
-            html += '</tbody></table></div>';
+            html += '</tbody></table></div></div>';
         }
 
-        // Pendientes
         if (data.pending_list && data.pending_list.length) {
-            html += '<div class="aura-rpt-eff-section" style="margin-top:16px;"><h3>⏰ Equipos con mantenimiento vencido sin registrar</h3>';
-            html += '<table class="wp-list-table widefat fixed striped"><thead><tr><th>Equipo</th><th>Categoría</th><th>Fecha programada</th></tr></thead><tbody>';
+            html += '<div class="aura-rpt-eff-section"><h3>⏰ Equipos con mantenimiento vencido sin registrar</h3>';
+            html += '<div class="aura-dt-wrapper aura-table-responsive-wrap"><table class="aura-table display aura-inv-responsive-table" style="width:100%;"><thead><tr><th>Equipo</th><th>Categoría</th><th>Fecha programada</th></tr></thead><tbody>';
             $.each(data.pending_list, function (i, r) {
-                html += '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.category || '—') + '</td><td style="color:#e74c3c;">' + fmtDate(r.next_maintenance_date) + '</td></tr>';
+                var cid = 'rpt-eff-pen-' + i;
+                html += '<tr class="aura-parent-row"><td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<strong>' + escHtml(r.name) + '</strong></div></td><td class="aura-inv-col-secondary">' + escHtml(r.category || '—') + '</td><td class="aura-inv-col-stat"><span class="badge badge-red">' + fmtDate(r.next_maintenance_date) + '</span></td></tr>' +
+                    '<tr class="aura-child-row" id="' + cid + '"><td colspan="3"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
+                    '<div class="aura-child-meta-item"><span>Equipo</span><strong>' + escHtml(r.name) + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>Categoría</span><strong>' + escHtml(r.category || '—') + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>Fecha Programada</span><strong>' + fmtDate(r.next_maintenance_date) + '</strong></div>' +
+                    '</div></div></td></tr>';
             });
-            html += '</tbody></table></div>';
+            html += '</tbody></table></div></div>';
         }
 
         $('#rpt-eff-content').html(html).show();
-        $('.js-export-xlsx[data-report="efficiency"]').show();
-        $('.js-print-report[data-report="efficiency"]').show();
+        $('.js-export-xlsx[data-report="efficiency"], .js-print-report[data-report="efficiency"]').show();
     }
 
     function renderLifecycle(rows) {
@@ -549,45 +627,61 @@ table.wp-list-table th.num { text-align:right; }
         if (!rows || !rows.length) {
             $('#rpt-lc-table').hide(); $('#rpt-lc-empty').show();
             $('#rpt-lc-summary').hide();
-            $('.js-export-report[data-report="lifecycle"]').hide();
-            $('.js-export-xlsx[data-report="lifecycle"]').hide();
-            $('.js-print-report[data-report="lifecycle"]').hide();
+            $('.js-export-report[data-report="lifecycle"], .js-export-xlsx[data-report="lifecycle"], .js-print-report[data-report="lifecycle"]').hide();
             return;
         }
         var replacements = 0, reviews = 0;
         $.each(rows, function (i, r) {
             if (r.indicator === 'replace') replacements++;
             if (r.indicator === 'review')  reviews++;
-            tbody.append('<tr>' +
-                '<td><strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? '<br><small>'+escHtml(r.internal_code)+'</small>' : '') + '</td>' +
-                '<td>' + escHtml(r.category || '—') + '</td>' +
-                '<td>' + fmtDate(r.acquisition_date) + '</td>' +
-                '<td>' + escHtml(r.age) + '</td>' +
-                '<td class="num">' + cur_symbol + ' ' + fmt(r.original_cost) + '</td>' +
-                '<td class="num">' + cur_symbol + ' ' + fmt(r.total_maintenance) + '</td>' +
-                '<td class="num"><strong>' + cur_symbol + ' ' + fmt(r.total_invested) + '</strong></td>' +
-                '<td class="num">' + cur_symbol + ' ' + fmt(r.estimated_value) + '</td>' +
-                '<td>' + escHtml(r.status) + '</td>' +
-                '<td>' + indicator(r.indicator) + '</td></tr>');
+            var cid = 'rpt-lc-ch-' + i;
+            var tip = tipCard(r.name, [
+                ['Categoría', r.category || '—'],
+                ['Adquisición', fmtDate(r.acquisition_date)],
+                ['Antigüedad', r.age || '—'],
+                ['Valor Est.', cur_symbol + ' ' + fmt(r.estimated_value)]
+            ]);
+            tbody.append('<tr class="aura-parent-row">' +
+                '<td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<div data-aura-tooltip="' + escHtml(tip) + '"><strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? '<br><code>'+escHtml(r.internal_code)+'</code>' : '') + '</div></div><div class="aura-inv-mobile-sub">' + escHtml(r.age || '') + ' · Est: ' + cur_symbol + ' ' + fmt(r.estimated_value) + '</div></td>' +
+                '<td class="aura-inv-col-secondary">' + escHtml(r.category || '—') + '</td>' +
+                '<td class="aura-inv-col-secondary">' + fmtDate(r.acquisition_date) + '</td>' +
+                '<td class="aura-inv-col-secondary">' + escHtml(r.age) + '</td>' +
+                '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.original_cost) + '</td>' +
+                '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.total_maintenance) + '</td>' +
+                '<td class="num aura-inv-col-secondary"><strong>' + cur_symbol + ' ' + fmt(r.total_invested) + '</strong></td>' +
+                '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.estimated_value) + '</td>' +
+                '<td class="aura-inv-col-secondary">' + escHtml(r.status) + '</td>' +
+                '<td class="aura-inv-col-stat">' + indicator(r.indicator) + '</td></tr>' +
+                '<tr class="aura-child-row" id="' + cid + '"><td colspan="10"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
+                '<div class="aura-child-meta-item"><span>Categoría</span><strong>' + escHtml(r.category || '—') + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Adquisición / Antigüedad</span><strong>' + fmtDate(r.acquisition_date) + ' (' + escHtml(r.age) + ')</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Costo Original</span><strong>' + cur_symbol + ' ' + fmt(r.original_cost) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Mantenimiento Acumulado</span><strong>' + cur_symbol + ' ' + fmt(r.total_maintenance) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Valor Residual Est.</span><strong>' + cur_symbol + ' ' + fmt(r.estimated_value) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>Estado</span><strong>' + escHtml(r.status) + '</strong></div>' +
+                '</div></div></td></tr>');
         });
         $('#rpt-lc-summary').html(
-            kpi(rows.length, 'Equipos analizados') +
-            kpi(replacements, '🔴 Candidatos a reemplazo') +
-            kpi(reviews, '⚠️ Requieren revisión') +
-            kpi(rows.length - replacements - reviews, '✅ En buen estado')
+            kpi(rows.length, 'Equipos analizados', 'kpi-indigo') +
+            kpi(replacements, 'Candidatos a reemplazo', 'kpi-red') +
+            kpi(reviews, 'Requieren revisión', 'kpi-amber') +
+            kpi(rows.length - replacements - reviews, 'En buen estado', 'kpi-emerald')
         ).show();
         $('#rpt-lc-table').show(); $('#rpt-lc-empty').hide();
-        $('.js-export-report[data-report="lifecycle"]').show();
-        $('.js-export-xlsx[data-report="lifecycle"]').show();
-        $('.js-print-report[data-report="lifecycle"]').show();
+        $('.js-export-report[data-report="lifecycle"], .js-export-xlsx[data-report="lifecycle"], .js-print-report[data-report="lifecycle"]').show();
     }
 
-    function kpi(val, lbl, color) {
-        return '<div class="aura-inv-kpi-card"><div class="kpi-val" style="' + (color ? 'color:'+color : '') + '">' + val + '</div><div class="kpi-lbl">' + lbl + '</div></div>';
+    function kpi(val, lbl, cls) {
+        return '<div class="kpi-card ' + (cls || 'kpi-indigo') + ' card-lift aura-inv-report-kpi-card"><div class="kpi-value">' + val + '</div><div class="kpi-label">' + lbl + '</div></div>';
     }
 
     function escHtml(str) { return $('<div>').text(String(str || '')).html(); }
-    function showNotice(type, msg) { $('#js-report-notice').removeClass('success error').addClass(type).text(msg).show(); }
+    function showNotice(type, msg) {
+        if (typeof AuraUI !== 'undefined' && typeof AuraUI.showToast === 'function') {
+            AuraUI.showToast(msg, type === 'error' ? 'error' : 'success');
+        }
+        $('#js-report-notice').removeClass('notice-success notice-error').addClass(type === 'error' ? 'notice-error' : 'notice-success').text(msg).show();
+    }
     function hideNotice() { $('#js-report-notice').hide(); }
 
 }(jQuery));

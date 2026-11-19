@@ -52,7 +52,8 @@ $all_equipment_for_parent = $wpdb->get_results(
 
 // Helper para autorellenar campos en edición
 $v = function( string $field, $default = '' ) use ( $equipment ) {
-    return esc_attr( $equipment ? ( $equipment->$field ?? $default ) : $default );
+    $val = $equipment ? ( $equipment->$field ?? $default ) : $default;
+    return esc_attr( is_string( $val ) ? wp_unslash( $val ) : $val );
 };
 $checked = function( string $field ) use ( $equipment ) {
     return ( $equipment && $equipment->$field ) ? 'checked' : '';
@@ -60,14 +61,28 @@ $checked = function( string $field ) use ( $equipment ) {
 $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nuevo Equipo', 'aura-suite' );
 ?>
 
-<div class="wrap aura-inventory-equipment-form">
+<div class="aura-app-wrapper aura-inventory-equipment-form">
+    <div class="wrap aura-app-context">
 
-    <h1 class="wp-heading-inline">
-        <span class="dashicons dashicons-<?php echo $is_edit ? 'edit' : 'plus-alt'; ?>"
-              style="font-size:26px;height:26px;vertical-align:middle;margin-right:6px;color:#2271b1;"></span>
-        <?php echo esc_html( $page_title ); ?>
-    </h1>
-    <hr class="wp-header-end">
+    <?php
+    if ( class_exists( 'Aura_UI' ) ) {
+        Aura_UI::render_page_header( [
+            'title'    => $page_title,
+            'subtitle' => $is_edit
+                ? __( 'Actualiza especificaciones técnicas, mantenimiento programado, responsable y fotografía del equipo.', 'aura-suite' )
+                : __( 'Registra un nuevo activo o equipo en el catálogo, su configuración de mantenimiento y asignación.', 'aura-suite' ),
+            'icon'     => $is_edit ? 'dashicons-edit' : 'dashicons-plus-alt',
+            'actions'  => [
+                [
+                    'label' => __( 'Volver al Catálogo', 'aura-suite' ),
+                    'url'   => admin_url( 'admin.php?page=aura-inventory-equipment' ),
+                    'icon'  => 'dashicons-arrow-left-alt2',
+                    'class' => 'btn btn-glass btn-lift',
+                ],
+            ],
+        ] );
+    }
+    ?>
 
     <form id="aura-inv-equipment-form" method="post" enctype="multipart/form-data">
         <?php wp_nonce_field( 'aura_inventory_nonce', '_inv_nonce' ); ?>
@@ -79,34 +94,39 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
             <div class="aura-inv-form-main">
 
                 <!-- Sección 1: Información básica -->
-                <div class="postbox">
-                    <h2 class="hndle"><?php _e( 'Información básica', 'aura-suite' ); ?></h2>
-                    <div class="inside">
-                        <table class="form-table">
+                <div class="aura-glass-card aura-inv-form-card">
+                    <div class="aura-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-clipboard"></span>
+                            <?php _e( 'Información básica', 'aura-suite' ); ?>
+                        </h2>
+                    </div>
+                    <div class="aura-inv-card-body">
+                        <table class="form-table aura-inv-form-table">
                             <tr>
                                 <th><label for="inv_name"><?php _e( 'Nombre del equipo', 'aura-suite' ); ?> <span class="required">*</span></label></th>
-                                <td><input type="text" id="inv_name" name="name" value="<?php echo $v('name'); ?>" class="regular-text" required></td>
+                                <td><input type="text" id="inv_name" name="name" value="<?php echo $v('name'); ?>" class="form-control" required></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_brand"><?php _e( 'Marca', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_brand" name="brand" value="<?php echo $v('brand'); ?>" class="regular-text"></td>
+                                <td><input type="text" id="inv_brand" name="brand" value="<?php echo $v('brand'); ?>" class="form-control"></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_model"><?php _e( 'Modelo', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_model" name="model" value="<?php echo $v('model'); ?>" class="regular-text"></td>
+                                <td><input type="text" id="inv_model" name="model" value="<?php echo $v('model'); ?>" class="form-control"></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_serial"><?php _e( 'Número de serie', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_serial" name="serial_number" value="<?php echo $v('serial_number'); ?>" class="regular-text"></td>
+                                <td><input type="text" id="inv_serial" name="serial_number" value="<?php echo $v('serial_number'); ?>" class="form-control"></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_code"><?php _e( 'Código interno', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_code" name="internal_code" value="<?php echo $v('internal_code'); ?>" class="regular-text"></td>
+                                <td><input type="text" id="inv_code" name="internal_code" value="<?php echo $v('internal_code'); ?>" class="form-control"></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_category"><?php _e( 'Categoría', 'aura-suite' ); ?></label></th>
                                 <td>
-                                    <select id="inv_category" name="category" class="regular-text">
+                                    <select id="inv_category" name="category" class="form-select">
                                         <option value=""><?php _e( '— Seleccionar —', 'aura-suite' ); ?></option>
                                         <?php foreach ( $categories as $cat ) : ?>
                                         <option value="<?php echo esc_attr( $cat->slug ); ?>"
@@ -124,7 +144,7 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                             <tr>
                                 <th><label for="inv_status"><?php _e( 'Estado', 'aura-suite' ); ?></label></th>
                                 <td>
-                                    <select id="inv_status" name="status">
+                                    <select id="inv_status" name="status" class="form-select">
                                         <option value="available"   <?php selected( $v('status','available'), 'available'   ); ?>><?php _e( 'Disponible',   'aura-suite' ); ?></option>
                                         <option value="in_use"      <?php selected( $v('status','available'), 'in_use'      ); ?>><?php _e( 'En uso',        'aura-suite' ); ?></option>
                                         <option value="maintenance" <?php selected( $v('status','available'), 'maintenance' ); ?>><?php _e( 'Mantenimiento', 'aura-suite' ); ?></option>
@@ -135,46 +155,55 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                             </tr>
                             <tr>
                                 <th><label for="inv_location"><?php _e( 'Ubicación', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_location" name="location" value="<?php echo $v('location'); ?>" class="regular-text" placeholder="<?php esc_attr_e( 'Bodega, sala, vehículo…', 'aura-suite' ); ?>"></td>
+                                <td><input type="text" id="inv_location" name="location" value="<?php echo $v('location'); ?>" class="form-control" placeholder="<?php esc_attr_e( 'Bodega, sala, vehículo…', 'aura-suite' ); ?>"></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_description"><?php _e( 'Descripción', 'aura-suite' ); ?></label></th>
-                                <td><textarea id="inv_description" name="description" rows="3" class="large-text"><?php echo esc_textarea( $equipment->description ?? '' ); ?></textarea></td>
+                                <td><textarea id="inv_description" name="description" rows="3" class="form-control"><?php echo esc_textarea( wp_unslash( $equipment->description ?? '' ) ); ?></textarea></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_accessories"><?php _e( 'Accesorios incluidos', 'aura-suite' ); ?></label></th>
                                 <td>
-                                    <textarea id="inv_accessories" name="accessories" rows="4" class="large-text"
-                                        placeholder="<?php esc_attr_e( 'Ej:\nCargador rápido 20V\n2 Baterías 4Ah\nEstuche de transporte', 'aura-suite' ); ?>"><?php echo esc_textarea( $equipment->accessories ?? '' ); ?></textarea>
+                                    <textarea id="inv_accessories" name="accessories" rows="4" class="form-control"
+                                        placeholder="<?php esc_attr_e( 'Ej:\nCargador rápido 20V\n2 Baterías 4Ah\nEstuche de transporte', 'aura-suite' ); ?>"><?php echo esc_textarea( wp_unslash( $equipment->accessories ?? '' ) ); ?></textarea>
                                     <p class="description"><?php _e( 'Un accesorio por línea. Lista los accesorios de dotación que vienen con el equipo (informativos).', 'aura-suite' ); ?></p>
                                 </td>
                             </tr>
                         </table>
                     </div>
-                </div><!-- postbox: información básica -->
+                </div><!-- card: información básica -->
 
                 <!-- Sección 2: Adquisición y valor -->
-                <div class="postbox">
-                    <h2 class="hndle"><?php _e( 'Adquisición y valor', 'aura-suite' ); ?></h2>
-                    <div class="inside">
-                        <table class="form-table">
+                <div class="aura-glass-card aura-inv-form-card">
+                    <div class="aura-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-cart"></span>
+                            <?php _e( 'Adquisición y valor', 'aura-suite' ); ?>
+                        </h2>
+                    </div>
+                    <div class="aura-inv-card-body">
+                        <table class="form-table aura-inv-form-table">
                             <tr>
                                 <th><label for="inv_acquisition_date"><?php _e( 'Fecha de adquisición', 'aura-suite' ); ?></label></th>
-                                <td><input type="date" id="inv_acquisition_date" name="acquisition_date" value="<?php echo $v('acquisition_date'); ?>"></td>
+                                <td><input type="date" id="inv_acquisition_date" name="acquisition_date" value="<?php echo $v('acquisition_date'); ?>" class="form-control"></td>
                             </tr>
                             <?php $inv_currency_sym = function_exists( 'aura_get_base_currency' ) ? ( aura_get_base_currency()['symbol'] ?? '$' ) : get_option( 'aura_currency_symbol', '$' ); ?>
                             <tr>
                                 <th><label for="inv_cost"><?php _e( 'Costo de adquisición', 'aura-suite' ); ?></label></th>
                                 <td>
-                                    <input type="number" id="inv_cost" name="cost" value="<?php echo $v('cost','0'); ?>" step="0.01" min="0" class="small-text">
-                                    <span><?php echo esc_html( $inv_currency_sym ); ?></span>
+                                    <div class="input-group aura-inv-compact-group">
+                                        <span class="input-group-text"><?php echo esc_html( $inv_currency_sym ); ?></span>
+                                        <input type="number" id="inv_cost" name="cost" value="<?php echo $v('cost','0'); ?>" step="0.01" min="0" class="form-control">
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
                                 <th><label for="inv_estimated_value"><?php _e( 'Valor estimado actual', 'aura-suite' ); ?></label></th>
                                 <td>
-                                    <input type="number" id="inv_estimated_value" name="estimated_value" value="<?php echo $v('estimated_value','0'); ?>" step="0.01" min="0" class="small-text">
-                                    <span><?php echo esc_html( $inv_currency_sym ); ?></span>
+                                    <div class="input-group aura-inv-compact-group">
+                                        <span class="input-group-text"><?php echo esc_html( $inv_currency_sym ); ?></span>
+                                        <input type="number" id="inv_estimated_value" name="estimated_value" value="<?php echo $v('estimated_value','0'); ?>" step="0.01" min="0" class="form-control">
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
@@ -182,20 +211,20 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                                 <td>
                                     <?php $sup_tp_id = intval( $v( 'supplier_third_party_id', 0 ) ); ?>
                                     <input type="hidden" id="inv_supplier_third_party_id" name="supplier_third_party_id" value="<?php echo esc_attr( $sup_tp_id ?: '' ); ?>">
-                                    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                                        <input type="text" id="inv_supplier" name="supplier" value="<?php echo $v('supplier'); ?>"
-                                               class="regular-text" autocomplete="off"
+                                    <div class="input-group">
+                                        <input type="text" id="inv_supplier" name="supplier" value="<?php echo esc_attr( wp_unslash( $equipment ? ( $equipment->supplier ?? '' ) : '' ) ); ?>"
+                                               class="form-control" autocomplete="off"
                                                placeholder="<?php esc_attr_e( 'Buscar o escribir proveedor…', 'aura-suite' ); ?>">
-                                        <button type="button" id="aura-inv-btn-supplier-explorer" class="button">
-                                            <span class="dashicons dashicons-groups" style="vertical-align:text-bottom;font-size:16px;width:16px;height:16px;"></span>
+                                        <button type="button" id="aura-inv-btn-supplier-explorer" class="btn btn-glass" data-tooltip="<?php esc_attr_e( 'Explorar Directorio de Terceros', 'aura-suite' ); ?>">
+                                            <span class="dashicons dashicons-groups"></span>
                                             <?php _e( 'Explorar Terceros', 'aura-suite' ); ?>
                                         </button>
-                                        <button type="button" id="aura-inv-btn-supplier-clear" class="button"
+                                        <button type="button" id="aura-inv-btn-supplier-clear" class="btn btn-glass"
                                                 title="<?php esc_attr_e( 'Desvincular proveedor', 'aura-suite' ); ?>"
                                                 style="<?php echo $sup_tp_id ? '' : 'display:none;'; ?>">&times;</button>
                                     </div>
                                     <div id="aura-inv-supplier-badge" style="margin-top:6px;<?php echo $sup_tp_id ? '' : 'display:none;'; ?>">
-                                        <span class="aura-badge" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:2px 8px;border-radius:999px;font-size:11.5px;">
+                                        <span class="aura-inv-link-pill">
                                             🔗 <?php _e( 'Vinculado a Tercero del Directorio', 'aura-suite' ); ?>
                                         </span>
                                     </div>
@@ -203,21 +232,26 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                             </tr>
                             <tr>
                                 <th><label for="inv_warranty_date"><?php _e( 'Vencimiento de garantía', 'aura-suite' ); ?></label></th>
-                                <td><input type="date" id="inv_warranty_date" name="warranty_date" value="<?php echo $v('warranty_date'); ?>" data-allow-future="1"></td>
+                                <td><input type="date" id="inv_warranty_date" name="warranty_date" value="<?php echo $v('warranty_date'); ?>" data-allow-future="1" class="form-control"></td>
                             </tr>
                         </table>
                     </div>
-                </div><!-- postbox: adquisición -->
+                </div><!-- card: adquisición -->
 
                 <!-- Sección 3: Mantenimiento periódico -->
-                <div class="postbox">
-                    <h2 class="hndle"><?php _e( 'Mantenimiento periódico', 'aura-suite' ); ?></h2>
-                    <div class="inside">
-                        <table class="form-table">
+                <div class="aura-glass-card aura-inv-form-card">
+                    <div class="aura-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-admin-tools"></span>
+                            <?php _e( 'Mantenimiento periódico', 'aura-suite' ); ?>
+                        </h2>
+                    </div>
+                    <div class="aura-inv-card-body">
+                        <table class="form-table aura-inv-form-table">
                             <tr>
                                 <th><?php _e( '¿Requiere mantenimiento?', 'aura-suite' ); ?></th>
                                 <td>
-                                    <label>
+                                    <label class="aura-inv-check-label">
                                         <input type="checkbox" id="inv_requires_maintenance" name="requires_maintenance" value="1" <?php echo $checked('requires_maintenance'); ?>>
                                         <?php _e( 'Este equipo tiene mantenimiento periódico programado', 'aura-suite' ); ?>
                                     </label>
@@ -226,45 +260,51 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                         </table>
 
                         <div id="aura-inv-maintenance-fields" <?php echo ( $equipment && $equipment->requires_maintenance ) ? '' : 'style="display:none;"'; ?>>
-                            <table class="form-table">
+                            <table class="form-table aura-inv-form-table">
                                 <tr>
                                     <th><?php _e( 'Tipo de intervalo', 'aura-suite' ); ?></th>
-                                    <td>
-                                        <label><input type="radio" name="interval_type" value="time"  <?php checked( $v('interval_type','time'), 'time'  ); ?>> <?php _e( 'Por tiempo',        'aura-suite' ); ?></label>&nbsp;&nbsp;
-                                        <label><input type="radio" name="interval_type" value="hours" <?php checked( $v('interval_type','time'), 'hours' ); ?>> <?php _e( 'Por horas de uso', 'aura-suite' ); ?></label>&nbsp;&nbsp;
+                                    <td class="aura-inv-radio-row">
+                                        <label><input type="radio" name="interval_type" value="time"  <?php checked( $v('interval_type','time'), 'time'  ); ?>> <?php _e( 'Por tiempo',        'aura-suite' ); ?></label>
+                                        <label><input type="radio" name="interval_type" value="hours" <?php checked( $v('interval_type','time'), 'hours' ); ?>> <?php _e( 'Por horas de uso', 'aura-suite' ); ?></label>
                                         <label><input type="radio" name="interval_type" value="both"  <?php checked( $v('interval_type','time'), 'both'  ); ?>> <?php _e( 'Ambos',             'aura-suite' ); ?></label>
                                     </td>
                                 </tr>
                                 <tr id="inv_row_months">
                                     <th><label for="inv_interval_months"><?php _e( 'Cada (meses)', 'aura-suite' ); ?></label></th>
                                     <td>
-                                        <input type="number" id="inv_interval_months" name="interval_months" value="<?php echo $v('interval_months',''); ?>" min="1" max="120" class="small-text">
-                                        <?php _e( 'meses', 'aura-suite' ); ?>
+                                        <div class="input-group aura-inv-compact-group">
+                                            <input type="number" id="inv_interval_months" name="interval_months" value="<?php echo $v('interval_months',''); ?>" min="1" max="120" class="form-control">
+                                            <span class="input-group-text"><?php _e( 'meses', 'aura-suite' ); ?></span>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr id="inv_row_hours">
                                     <th><label for="inv_interval_hours"><?php _e( 'Cada (horas)', 'aura-suite' ); ?></label></th>
                                     <td>
-                                        <input type="number" id="inv_interval_hours" name="interval_hours" value="<?php echo $v('interval_hours',''); ?>" min="1" max="10000" class="small-text">
-                                        <?php _e( 'horas de uso', 'aura-suite' ); ?>
+                                        <div class="input-group aura-inv-compact-group">
+                                            <input type="number" id="inv_interval_hours" name="interval_hours" value="<?php echo $v('interval_hours',''); ?>" min="1" max="10000" class="form-control">
+                                            <span class="input-group-text"><?php _e( 'horas', 'aura-suite' ); ?></span>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <th><label for="inv_alert_days"><?php _e( 'Alerta con (días)', 'aura-suite' ); ?></label></th>
                                     <td>
-                                        <input type="number" id="inv_alert_days" name="alert_days_before" value="<?php echo $v('alert_days_before','7'); ?>" min="1" max="60" class="small-text">
-                                        <?php _e( 'días de anticipación', 'aura-suite' ); ?>
+                                        <div class="input-group aura-inv-compact-group">
+                                            <input type="number" id="inv_alert_days" name="alert_days_before" value="<?php echo $v('alert_days_before','7'); ?>" min="1" max="60" class="form-control">
+                                            <span class="input-group-text"><?php _e( 'días antes', 'aura-suite' ); ?></span>
+                                        </div>
                                     </td>
                                 </tr>
                             </table>
                         </div><!-- #aura-inv-maintenance-fields -->
 
                         <!-- Instrucciones de mantenimiento (siempre visible) -->
-                        <table class="form-table" style="margin-top:16px;border-top:1px solid #dcdcde;padding-top:8px;">
+                        <table class="form-table aura-inv-form-table aura-inv-maint-instr-sep">
                             <tr>
-                                <th style="width:200px;">
+                                <th>
                                     <label for="inv_maintenance_instructions">
-                                        <span class="dashicons dashicons-clipboard" style="vertical-align:middle;color:#2271b1;"></span>
+                                        <span class="dashicons dashicons-clipboard"></span>
                                         <?php _e( 'Instrucciones de mantenimiento', 'aura-suite' ); ?>
                                     </label>
                                 </th>
@@ -272,49 +312,62 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                                     <textarea id="inv_maintenance_instructions"
                                               name="maintenance_instructions"
                                               rows="5"
-                                              class="large-text"
-                                              placeholder="<?php esc_attr_e( "Describe qué debe hacerse en cada mantenimiento:\n- Cambio de aceite SAE 10W-30 (0.6 L)\n- Limpiar filtro de aire\n- Revisar y ajustar bujía\n- Inspeccionar correa de transmisión\n- Verificar nivel de combustible y fugas", 'aura-suite' ); ?>"><?php echo esc_textarea( $equipment->maintenance_instructions ?? '' ); ?></textarea>
+                                              class="form-control"
+                                              placeholder="<?php esc_attr_e( "Describe qué debe hacerse en cada mantenimiento:\n- Cambio de aceite SAE 10W-30 (0.6 L)\n- Limpiar filtro de aire\n- Revisar y ajustar bujía\n- Inspeccionar correa de transmisión\n- Verificar nivel de combustible y fugas", 'aura-suite' ); ?>"><?php echo esc_textarea( wp_unslash( $equipment->maintenance_instructions ?? '' ) ); ?></textarea>
                                     <p class="description">
-                                        <span class="dashicons dashicons-info" style="vertical-align:middle;color:#2271b1;font-size:14px;"></span>
+                                        <span class="dashicons dashicons-info"></span>
                                         <?php _e( 'Este texto será visible para el técnico al registrar un mantenimiento. Documenta el procedimiento específico, tipos de aceite, presiones, repuestos estándar, etc.', 'aura-suite' ); ?>
                                     </p>
                                 </td>
                             </tr>
                         </table>
                     </div>
-                </div><!-- postbox: mantenimiento -->
+                </div><!-- card: mantenimiento -->
 
                 <!-- Sección 4: Especificaciones técnicas -->
-                <div class="postbox">
-                    <h2 class="hndle"><?php _e( 'Especificaciones técnicas', 'aura-suite' ); ?> <small>(<?php _e('opcional', 'aura-suite'); ?>)</small></h2>
-                    <div class="inside">
-                        <table class="form-table">
+                <div class="aura-glass-card aura-inv-form-card">
+                    <div class="aura-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-dashboard"></span>
+                            <?php _e( 'Especificaciones técnicas', 'aura-suite' ); ?>
+                            <small>(<?php _e('opcional', 'aura-suite'); ?>)</small>
+                        </h2>
+                    </div>
+                    <div class="aura-inv-card-body">
+                        <table class="form-table aura-inv-form-table">
                             <tr>
                                 <th><label for="inv_oil_type"><?php _e( 'Tipo de aceite', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_oil_type" name="oil_type" value="<?php echo $v('oil_type'); ?>" class="regular-text" placeholder="SAE 10W-40"></td>
+                                <td><input type="text" id="inv_oil_type" name="oil_type" value="<?php echo $v('oil_type'); ?>" class="form-control" placeholder="SAE 10W-40"></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_oil_capacity"><?php _e( 'Capacidad de aceite (L)', 'aura-suite' ); ?></label></th>
-                                <td><input type="number" id="inv_oil_capacity" name="oil_capacity" value="<?php echo $v('oil_capacity'); ?>" step="0.1" min="0" class="small-text"></td>
+                                <td>
+                                    <div class="input-group aura-inv-compact-group">
+                                        <input type="number" id="inv_oil_capacity" name="oil_capacity" value="<?php echo $v('oil_capacity'); ?>" step="0.1" min="0" class="form-control">
+                                        <span class="input-group-text">L</span>
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
                                 <th><label for="inv_fuel_type"><?php _e( 'Tipo de combustible', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_fuel_type" name="fuel_type" value="<?php echo $v('fuel_type'); ?>" class="regular-text" placeholder="Gasolina, Diésel…"></td>
+                                <td><input type="text" id="inv_fuel_type" name="fuel_type" value="<?php echo $v('fuel_type'); ?>" class="form-control" placeholder="Gasolina, Diésel…"></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_voltage"><?php _e( 'Voltaje', 'aura-suite' ); ?></label></th>
                                 <td>
-                                    <input type="number" id="inv_voltage" name="voltage" value="<?php echo $v('voltage'); ?>" min="0" class="small-text">
-                                    <span>V</span>
+                                    <div class="input-group aura-inv-compact-group">
+                                        <input type="number" id="inv_voltage" name="voltage" value="<?php echo $v('voltage'); ?>" min="0" class="form-control">
+                                        <span class="input-group-text">V</span>
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
                                 <th><label for="inv_hydraulic_pressure"><?php _e( 'Presión hidráulica', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_hydraulic_pressure" name="hydraulic_pressure" value="<?php echo $v('hydraulic_pressure'); ?>" class="regular-text" placeholder="ej: 3000 PSI"></td>
+                                <td><input type="text" id="inv_hydraulic_pressure" name="hydraulic_pressure" value="<?php echo $v('hydraulic_pressure'); ?>" class="form-control" placeholder="ej: 3000 PSI"></td>
                             </tr>
                         </table>
                     </div>
-                </div><!-- postbox: especificaciones -->
+                </div><!-- card: especificaciones -->
 
             </div><!-- .aura-inv-form-main -->
 
@@ -322,36 +375,38 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
             <div class="aura-inv-form-sidebar">
 
                 <!-- Foto -->
-                <div class="postbox">
-                    <h2 class="hndle"><?php _e( 'Foto del equipo', 'aura-suite' ); ?></h2>
-                    <div class="inside aura-inv-photo-box">
+                <div class="aura-glass-card aura-inv-form-card">
+                    <div class="aura-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-format-image"></span>
+                            <?php _e( 'Foto del equipo', 'aura-suite' ); ?>
+                        </h2>
+                    </div>
+                    <div class="aura-inv-card-body aura-inv-photo-box">
                         <div id="aura-inv-photo-preview">
                             <?php
                             if ( $equipment && $equipment->photo ) :
-                                // Soporta tanto attachment_id numérico como URL legacy
-                                if ( is_numeric( $equipment->photo ) ) {
-                                    $preview_url = wp_get_attachment_image_url( (int) $equipment->photo, 'aura-equipment-full' )
-                                                ?: wp_get_attachment_url( (int) $equipment->photo );
-                                } else {
-                                    $preview_url = $equipment->photo;
-                                }
+                                $preview_urls = function_exists( 'aura_get_equipment_photo_urls' )
+                                    ? aura_get_equipment_photo_urls( $equipment->photo )
+                                    : [ 'full' => ( is_numeric( $equipment->photo ) ? wp_get_attachment_url( (int) $equipment->photo ) : $equipment->photo ) ];
+                                $preview_url = $preview_urls['full'] ?? '';
                                 if ( $preview_url ) : ?>
-                            <img src="<?php echo esc_url( $preview_url ); ?>" style="max-width:100%;border-radius:4px;">
+                            <img src="<?php echo esc_url( $preview_url ); ?>" alt="" style="max-width:100%;max-height:240px;width:auto;height:auto;object-fit:contain;margin:0 auto;border-radius:8px;">
                                 <?php endif;
                             else : ?>
-                            <span class="dashicons dashicons-format-image" style="font-size:60px;color:#c3c4c7;display:block;text-align:center;padding:20px 0;"></span>
+                            <span class="dashicons dashicons-format-image aura-inv-photo-placeholder"></span>
                             <?php endif; ?>
                         </div>
                         <input type="hidden" id="inv_photo" name="photo" value="<?php echo $v('photo'); ?>">
-                        <button type="button" id="aura-inv-select-photo" class="button" style="width:100%;margin-top:8px;">
+                        <button type="button" id="aura-inv-select-photo" class="btn btn-glass btn-lift" style="width:100%;margin-top:10px;justify-content:center;">
                             <span class="dashicons dashicons-upload"></span>
                             <?php _e( 'Seleccionar imagen', 'aura-suite' ); ?>
                         </button>
-                        <p style="margin:6px 0 0;font-size:11px;color:#646970;">
-                            <?php _e( 'Se recortará automáticamente a 4:3 (800×600 px).', 'aura-suite' ); ?>
+                        <p class="aura-inv-photo-hint">
+                            <?php _e( 'Puedes recortar o usar proporción libre para preservar el formato original del equipo.', 'aura-suite' ); ?>
                         </p>
                         <?php if ( $equipment && $equipment->photo ) : ?>
-                        <button type="button" id="aura-inv-remove-photo" class="button button-link-delete" style="width:100%;margin-top:4px;">
+                        <button type="button" id="aura-inv-remove-photo" class="btn btn-glass aura-btn-danger-outline" style="width:100%;margin-top:6px;justify-content:center;">
                             <?php _e( 'Quitar imagen', 'aura-suite' ); ?>
                         </button>
                         <?php endif; ?>
@@ -359,9 +414,14 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                 </div>
 
                 <!-- Asignación -->
-                <div class="postbox">
-                    <h2 class="hndle"><?php _e( 'Asignación', 'aura-suite' ); ?></h2>
-                    <div class="inside">
+                <div class="aura-glass-card aura-inv-form-card">
+                    <div class="aura-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-admin-users"></span>
+                            <?php _e( 'Asignación', 'aura-suite' ); ?>
+                        </h2>
+                    </div>
+                    <div class="aura-inv-card-body">
                         <?php
                         $resp_user_id = intval( $v( 'responsible_user_id', 0 ) );
                         $resp_tp_id   = intval( $v( 'responsible_third_party_id', 0 ) );
@@ -385,33 +445,32 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                             }
                         }
                         ?>
-                        <p>
-                            <label for="inv_responsible_display"><?php _e( 'Responsable', 'aura-suite' ); ?></label><br>
+                        <div class="aura-inv-sidebar-field">
+                            <label for="inv_responsible_display"><?php _e( 'Responsable', 'aura-suite' ); ?></label>
                             <input type="hidden" id="inv_responsible_user_id" name="responsible_user_id" value="<?php echo esc_attr( $resp_user_id ?: '' ); ?>">
                             <input type="hidden" id="inv_responsible_third_party_id" name="responsible_third_party_id" value="<?php echo esc_attr( $resp_tp_id ?: '' ); ?>">
-                            <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
-                                <input type="text" id="inv_responsible_display" class="widefat" autocomplete="off"
+                            <div class="input-group" style="margin-top:6px;">
+                                <input type="text" id="inv_responsible_display" class="form-control" autocomplete="off"
                                        value="<?php echo esc_attr( $resp_display ); ?>"
-                                       placeholder="<?php esc_attr_e( 'Buscar usuario WP o tercero…', 'aura-suite' ); ?>"
-                                       style="flex:1;min-width:0;">
-                                <button type="button" id="aura-inv-btn-responsible-clear" class="button"
+                                       placeholder="<?php esc_attr_e( 'Buscar usuario WP o tercero…', 'aura-suite' ); ?>">
+                                <button type="button" id="aura-inv-btn-responsible-clear" class="btn btn-glass"
                                         title="<?php esc_attr_e( 'Quitar responsable', 'aura-suite' ); ?>"
                                         style="<?php echo ( $resp_user_id || $resp_tp_id ) ? '' : 'display:none;'; ?>">&times;</button>
                             </div>
-                            <button type="button" id="aura-inv-btn-responsible-explorer" class="button" style="width:100%;margin-top:6px;">
-                                <span class="dashicons dashicons-admin-users" style="vertical-align:text-bottom;font-size:16px;width:16px;height:16px;"></span>
-                                <?php _e( 'Seleccionar Usuario WP o Tercero', 'aura-suite' ); ?>
+                            <button type="button" id="aura-inv-btn-responsible-explorer" class="btn btn-glass" style="width:100%;margin-top:8px;justify-content:center;">
+                                <span class="dashicons dashicons-admin-users"></span>
+                                <?php _e( 'Explorar Usuarios / Terceros', 'aura-suite' ); ?>
                             </button>
                             <div id="aura-inv-responsible-badge" style="margin-top:6px;<?php echo $resp_type_label ? '' : 'display:none;'; ?>">
-                                <span class="aura-badge" style="background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;padding:2px 8px;border-radius:999px;font-size:11.5px;">
+                                <span class="aura-inv-link-pill aura-inv-link-pill-purple">
                                     👤 <span id="aura-inv-responsible-badge-text"><?php echo esc_html( $resp_type_label ); ?></span>
                                 </span>
                             </div>
-                        </p>
+                        </div>
                         <?php if ( ! empty( $areas ) ) : ?>
-                        <p>
-                            <label for="inv_area"><?php _e( 'Área / Programa', 'aura-suite' ); ?></label><br>
-                            <select id="inv_area" name="area_id" style="width:100%;">
+                        <div class="aura-inv-sidebar-field" style="margin-top:14px;">
+                            <label for="inv_area"><?php _e( 'Área / Programa', 'aura-suite' ); ?></label>
+                            <select id="inv_area" name="area_id" class="form-select" style="margin-top:6px;">
                                 <option value=""><?php _e( '— Sin área —', 'aura-suite' ); ?></option>
                                 <?php foreach ( $areas as $area ) : ?>
                                 <option value="<?php echo esc_attr( $area->id ); ?>"
@@ -420,23 +479,28 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                                 </option>
                                 <?php endforeach; ?>
                             </select>
-                        </p>
+                        </div>
                         <?php endif; ?>
                     </div>
-                </div><!-- postbox: asignación -->
+                </div><!-- card: asignación -->
 
                 <!-- Equipo padre (componente de) -->
-                <div class="postbox">
-                    <h2 class="hndle"><?php _e( 'Componente de equipo', 'aura-suite' ); ?></h2>
-                    <div class="inside">
-                        <p>
-                            <label for="inv_parent_equipment"><?php _e( 'Equipo padre', 'aura-suite' ); ?></label><br>
-                            <select id="inv_parent_equipment" name="parent_equipment_id" style="width:100%;">
+                <div class="aura-glass-card aura-inv-form-card">
+                    <div class="aura-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-networking"></span>
+                            <?php _e( 'Componente de equipo', 'aura-suite' ); ?>
+                        </h2>
+                    </div>
+                    <div class="aura-inv-card-body">
+                        <div class="aura-inv-sidebar-field">
+                            <label for="inv_parent_equipment"><?php _e( 'Equipo padre', 'aura-suite' ); ?></label>
+                            <select id="inv_parent_equipment" name="parent_equipment_id" class="form-select" style="margin-top:6px;">
                                 <option value=""><?php _e( '— Equipo independiente —', 'aura-suite' ); ?></option>
                                 <?php foreach ( $all_equipment_for_parent as $peq ) :
-                                    $plabel = esc_html( $peq->name );
-                                    if ( $peq->brand )         $plabel .= ' · ' . esc_html( $peq->brand );
-                                    if ( $peq->internal_code ) $plabel .= ' (' . esc_html( $peq->internal_code ) . ')';
+                                    $plabel = esc_html( wp_unslash( $peq->name ) );
+                                    if ( $peq->brand )         $plabel .= ' · ' . esc_html( wp_unslash( $peq->brand ) );
+                                    if ( $peq->internal_code ) $plabel .= ' (' . esc_html( wp_unslash( $peq->internal_code ) ) . ')';
                                 ?>
                                 <option value="<?php echo esc_attr( $peq->id ); ?>"
                                     <?php selected( intval( $v('parent_equipment_id') ), intval( $peq->id ) ); ?>>
@@ -444,19 +508,19 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                                 </option>
                                 <?php endforeach; ?>
                             </select>
-                        </p>
-                        <p class="description" style="margin-top:4px;"><?php _e( 'Selecciona si este ítem es un componente reemplazable (batería, cargador, accesorio con vida útil propia) de otro equipo.', 'aura-suite' ); ?></p>
+                        </div>
+                        <p class="description" style="margin-top:6px;"><?php _e( 'Selecciona si este ítem es un componente reemplazable (batería, cargador, accesorio con vida útil propia) de otro equipo.', 'aura-suite' ); ?></p>
                     </div>
-                </div><!-- postbox: equipo padre -->
+                </div><!-- card: equipo padre -->
 
                 <!-- Acciones -->
-                <div class="postbox">
-                    <div class="inside" style="text-align:center;">
-                        <button type="submit" id="aura-inv-save-btn" class="button button-primary button-large" style="width:100%;margin-bottom:8px;">
+                <div class="aura-glass-card aura-inv-form-card aura-inv-form-actions-card">
+                    <div class="aura-inv-card-body" style="text-align:center;">
+                        <button type="submit" id="aura-inv-save-btn" class="btn btn-shimmer btn-indigo btn-lift" style="width:100%;margin-bottom:8px;justify-content:center;">
                             <span class="dashicons dashicons-yes"></span>
                             <?php echo $is_edit ? esc_html__( 'Actualizar equipo', 'aura-suite' ) : esc_html__( 'Registrar equipo', 'aura-suite' ); ?>
                         </button>
-                        <a href="<?php echo admin_url( 'admin.php?page=aura-inventory-equipment' ); ?>" class="button" style="width:100%;">
+                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-equipment' ) ); ?>" class="btn btn-glass" style="width:100%;justify-content:center;">
                             <?php _e( 'Cancelar', 'aura-suite' ); ?>
                         </a>
                         <div id="aura-inv-form-notice" style="margin-top:12px;"></div>
@@ -468,29 +532,47 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
         </div><!-- .aura-inv-form-layout -->
     </form>
 
-</div><!-- .aura-inventory-equipment-form -->
+    <?php if ( class_exists( 'Aura_UI' ) && method_exists( 'Aura_UI', 'render_footer' ) ) : ?>
+        <?php Aura_UI::render_footer(); ?>
+    <?php else : ?>
+        <div class="adp-footer">
+            <span>Aura Business Suite · <?php _e( 'Módulo de Inventario y Activos', 'aura-suite' ); ?></span>
+            <span>Aura Design System</span>
+        </div>
+    <?php endif; ?>
 
-<!-- ── Modal de recorte de imagen (Cropper.js) ─────────────────────────────── -->
-<div id="aura-crop-modal" style="display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:24px;border-radius:8px;max-width:680px;width:95vw;max-height:92vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,.35);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <h3 style="margin:0;font-size:16px;">
-                <span class="dashicons dashicons-crop" style="vertical-align:text-bottom;margin-right:4px;"></span>
-                <?php _e( 'Recortar imagen del equipo &mdash; ratio 4:3', 'aura-suite' ); ?>
+    </div><!-- .wrap.aura-app-context -->
+</div><!-- .aura-app-wrapper -->
+
+<!-- ── Modal de recorte de imagen (Cropper.js — Item 26) ───────────────────── -->
+<div id="aura-crop-modal" class="aura-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="aura-crop-modal-title" style="display:none;">
+    <div class="aura-modal-container" style="max-width:700px;">
+        <div class="aura-modal-header">
+            <h3 id="aura-crop-modal-title" class="aura-modal-title">
+                <span class="dashicons dashicons-crop"></span>
+                <?php _e( 'Ajustar imagen del equipo', 'aura-suite' ); ?>
             </h3>
-            <button type="button" id="aura-crop-close" class="button" style="min-width:0;padding:2px 8px;font-size:20px;line-height:1;">&times;</button>
+            <button type="button" id="aura-crop-close" class="aura-modal-close" aria-label="<?php esc_attr_e( 'Cerrar', 'aura-suite' ); ?>">&times;</button>
         </div>
-        <div id="aura-crop-container" style="max-height:380px;overflow:hidden;background:#f0f0f1;border-radius:4px;">
-            <img id="aura-crop-img" style="display:block;max-width:100%;" src="" alt="">
+        <div class="aura-modal-body">
+            <div class="aura-inv-crop-ratios" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                <button type="button" class="btn btn-glass aura-crop-ratio-btn is-active" data-ratio="NaN"><?php _e( 'Proporción original / libre', 'aura-suite' ); ?></button>
+                <button type="button" class="btn btn-glass aura-crop-ratio-btn" data-ratio="1.333333"><?php _e( 'Horizontal 4:3', 'aura-suite' ); ?></button>
+                <button type="button" class="btn btn-glass aura-crop-ratio-btn" data-ratio="1"><?php _e( 'Cuadrada 1:1', 'aura-suite' ); ?></button>
+            </div>
+            <div id="aura-crop-container" class="aura-inv-crop-box">
+                <img id="aura-crop-img" style="display:block;max-width:100%;" src="" alt="">
+            </div>
+            <p class="aura-inv-photo-hint" style="margin-top:10px;">
+                <?php _e( 'Arrastra o redimensiona el recuadro para encuadrar la fotografía sin perder su orientación, o usa la imagen original completa.', 'aura-suite' ); ?>
+            </p>
         </div>
-        <p style="margin:10px 0 4px;font-size:12px;color:#646970;">
-            <?php _e( 'Arrastra el recuadro para elegir el área. Al aplicar se guardará una imagen 800×600 px (JPEG 80%) y un thumbnail 220×165 px.', 'aura-suite' ); ?>
-        </p>
-        <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;">
-            <button type="button" id="aura-crop-cancel" class="button"><?php _e( 'Cancelar', 'aura-suite' ); ?></button>
-            <button type="button" id="aura-crop-apply" class="button button-primary">
-                <span class="dashicons dashicons-yes" style="vertical-align:text-bottom;"></span>
-                <?php _e( 'Aplicar recorte y usar imagen', 'aura-suite' ); ?>
+        <div class="aura-modal-footer">
+            <button type="button" id="aura-crop-cancel" class="btn btn-glass"><?php _e( 'Cancelar', 'aura-suite' ); ?></button>
+            <button type="button" id="aura-crop-use-original" class="btn btn-glass"><?php _e( 'Usar original sin recortar', 'aura-suite' ); ?></button>
+            <button type="button" id="aura-crop-apply" class="btn btn-shimmer btn-indigo btn-lift">
+                <span class="dashicons dashicons-yes"></span>
+                <?php _e( 'Aplicar y usar imagen', 'aura-suite' ); ?>
             </button>
         </div>
     </div>

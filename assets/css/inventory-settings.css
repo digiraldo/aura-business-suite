@@ -1,93 +1,55 @@
-/**
- * Aura Business Suite — Inventory Settings CSS
- * Página de configuración del módulo de inventario
- */
+/* =========================================================================
+   Aura Business Suite — Inventory Settings CSS (Aura Design System)
+   ========================================================================= */
 
-/* ── Layout principal ─────────────────────────────────────── */
 .aura-inv-settings-wrap {
-    max-width: 1100px;
+    width: 100%;
+    max-width: none;
 }
 
-/* ── Tabs ─────────────────────────────────────────────────── */
-.aura-inv-tabs {
-    display: flex;
-    gap: 2px;
-    border-bottom: 2px solid #c3c4c7;
-    margin: 20px 0 0;
-    padding: 0;
-}
-
-.aura-inv-tab {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 18px;
-    background: #f6f7f7;
-    border: 1px solid #c3c4c7;
-    border-bottom: none;
-    border-radius: 4px 4px 0 0;
+.aura-inv-muted-desc {
+    margin: 4px 0 0;
     font-size: 13px;
-    font-weight: 500;
-    color: #50575e;
-    cursor: pointer;
-    transition: background .1s, color .1s;
-    position: relative;
-    bottom: -2px;
+    color: var(--aura-text-muted);
 }
 
-.aura-inv-tab .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+.aura-inv-muted {
+    color: var(--aura-text-muted);
 }
 
-.aura-inv-tab:hover {
-    background: #fff;
-    color: #135e96;
-}
-
-.aura-inv-tab.active {
-    background: #fff;
-    border-bottom-color: #fff;
-    color: #2271b1;
-    font-weight: 600;
-    z-index: 1;
-}
-
-/* ── Panel content ─────────────────────────────────────────── */
 .aura-inv-tab-panel {
-    background: transparent;
-    padding: 24px 0;
+    padding: 18px 0 4px;
 }
 
-/* ── Notice / Mensaje ─────────────────────────────────────── */
+/* ── Notices ───────────────────────────────────────────────────────────── */
 .aura-inv-notice {
     padding: 10px 14px;
-    border-radius: 4px;
+    border-radius: 10px;
     font-size: 13px;
+    font-weight: 600;
     margin-bottom: 16px;
     border-left: 4px solid transparent;
 }
 
 .aura-inv-notice.success {
-    background: #edfaef;
-    border-left-color: #00a32a;
-    color: #008a20;
+    background: rgba(16, 185, 129, 0.14);
+    border-left-color: #10b981;
+    color: #059669;
 }
 
 .aura-inv-notice.error {
-    background: #fce8e8;
-    border-left-color: #d63638;
-    color: #b32d2e;
+    background: rgba(239, 68, 68, 0.14);
+    border-left-color: #ef4444;
+    color: #dc2626;
 }
 
 .aura-inv-notice.info {
-    background: #e5f3fb;
-    border-left-color: #2271b1;
-    color: #135e96;
+    background: var(--aura-indigo-bg);
+    border-left-color: var(--aura-indigo);
+    color: var(--aura-indigo-dark);
 }
 
-/* ── Section header con botón a la derecha ────────────────── */
+/* ── Section Header ────────────────────────────────────────────────────── */
 .aura-inv-section-header {
     display: flex;
     align-items: flex-start;
@@ -98,248 +60,150 @@
 }
 
 .aura-inv-section-header h2 {
-    margin: 0 0 4px;
+    margin: 0;
     font-size: 18px;
+    font-weight: 700;
+    color: var(--aura-text);
 }
 
-.aura-inv-btn-defaults {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
-.aura-inv-btn-defaults .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-}
-
-/* ── Card ─────────────────────────────────────────────────── */
 .aura-inv-card {
-    background: #fff;
-    border: 1px solid #c3c4c7;
-    border-radius: 6px;
     padding: 20px 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06);
 }
 
 .aura-inv-card-title {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 0 0 16px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #1d2327;
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--aura-text);
     padding-bottom: 10px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--aura-border);
 }
 
 .aura-inv-card-title .dashicons {
-    color: #2271b1;
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    color: var(--aura-indigo);
 }
 
-/* ── Tabla de categorías ─────────────────────────────────── */
+/* ── Tabla de Categorías ───────────────────────────────────────────────── */
 .aura-inv-cats-table {
     margin: 0 !important;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
-.aura-inv-cats-table th.col-name     { width: 30%; }
-.aura-inv-cats-table th.col-slug     { width: 18%; }
-.aura-inv-cats-table th.col-interval { width: 30%; }
-.aura-inv-cats-table th.col-count    { width: 10%; text-align: center; }
-.aura-inv-cats-table th.col-actions  { width: 12%; text-align: center; }
-.aura-inv-cats-table td.col-count    { text-align: center; }
-.aura-inv-cats-table td.col-actions  { text-align: center; }
+.aura-inv-cats-table th .aura-th-flex {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.aura-inv-cats-table td { vertical-align: middle; }
+.aura-inv-cats-table td.col-count,
+.aura-inv-cats-table th.col-count { text-align: center; }
+.aura-inv-cats-table td.col-actions,
+.aura-inv-cats-table th.col-actions { text-align: center; }
+
+.aura-inv-cat-name-lbl {
+    cursor: default;
+    color: var(--aura-text);
+    font-weight: 700;
+}
+
+.aura-inv-cell-sub {
+    font-size: 11.5px;
+    color: var(--aura-text-muted);
+    margin-top: 2px;
+}
 
 .aura-inv-cats-table code {
-    font-size: 11px;
-    background: #f0f0f1;
-    padding: 2px 5px;
-    border-radius: 3px;
-    color: #3c434a;
+    font-size: 11.5px;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    padding: 2px 7px;
+    border-radius: 6px;
+    color: var(--aura-text);
 }
 
-/* Badges: intervalo */
 .aura-inv-interval-badge {
-    display: inline-block;
-    padding: 3px 9px;
-    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
     font-size: 11px;
-    font-weight: 500;
-    letter-spacing: .3px;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
-.aura-inv-interval-time  { background: #e5f3fb; color: #135e96; }
-.aura-inv-interval-hours { background: #fef8e0; color: #996c00; }
-.aura-inv-interval-both  { background: #f0e8fd; color: #6b3fa0; }
-.aura-inv-interval-none  { background: #f0f0f1; color: #646970; }
+.aura-inv-interval-time  { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.aura-inv-interval-hours { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.aura-inv-interval-both  { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+.aura-inv-interval-none  { background: var(--aura-surface-alt); color: var(--aura-text-muted); border: 1px solid var(--aura-border); }
 
-/* Badges: contador de equipos */
 .aura-inv-count-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 24px;
-    padding: 2px 7px;
-    border-radius: 12px;
-    background: #f0f0f1;
+    min-width: 26px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
     font-size: 12px;
-    font-weight: 600;
-    color: #3c434a;
+    font-weight: 700;
+    color: var(--aura-text);
 }
 
-/* Botón eliminar */
-.aura-inv-btn-delete-cat {
-    color: #d63638 !important;
-    border-color: #d63638 !important;
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-}
-
-.aura-inv-btn-delete-cat .dashicons {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-}
-
-.aura-inv-btn-delete-cat:hover {
-    background: #fce8e8 !important;
-}
-
-/* Grupo de acciones (editar + eliminar) */
 .aura-inv-action-group {
     display: inline-flex;
-    gap: 4px;
+    gap: 6px;
     align-items: center;
     justify-content: center;
 }
 
-/* Botón editar categoría */
-.aura-inv-btn-edit-cat {
-    color: #2271b1 !important;
-    border-color: #2271b1 !important;
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-}
-.aura-inv-btn-edit-cat .dashicons {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-}
-.aura-inv-btn-edit-cat:hover {
-    background: #e8f0fb !important;
+/* ── Child Row (+) Card ────────────────────────────────────────────────── */
+.aura-inv-child-specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
-/* ── Modal editar categoría ────────────────────────────────── */
-.aura-inv-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, .55);
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-.aura-inv-modal-box {
-    background: #fff;
+.aura-inv-child-spec {
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
     border-radius: 8px;
-    box-shadow: 0 8px 40px rgba(0,0,0,.25);
-    width: 100%;
-    max-width: 560px;
+    padding: 8px 10px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    gap: 2px;
 }
-.aura-inv-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid #dcdcde;
-    background: #f9f9fb;
+
+.aura-inv-child-spec-lbl {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--aura-text-muted);
 }
-.aura-inv-modal-header h2 {
-    margin: 0;
-    font-size: 16px;
+
+.aura-inv-child-spec-val {
+    font-size: 12.5px;
+    color: var(--aura-text);
     font-weight: 600;
-    color: #1d2327;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-}
-.aura-inv-modal-header h2 .dashicons {
-    color: #2271b1;
-}
-.aura-inv-modal-close {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    color: #646970;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    transition: background .15s, color .15s;
-}
-.aura-inv-modal-close:hover {
-    background: #f0f0f1;
-    color: #d63638;
-}
-.aura-inv-modal-body {
-    padding: 20px;
-    overflow-y: auto;
-    max-height: 70vh;
-}
-.aura-inv-modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid #f0f0f1;
 }
 
-/* Campo group 2 columnas en modal */
-.aura-inv-field-group {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 14px;
-}
-.aura-inv-modal-body .aura-inv-field {
-    margin-bottom: 14px;
-}
-.aura-inv-modal-body .aura-inv-field:last-child {
-    margin-bottom: 0;
-}
-.aura-inv-modal-body .aura-inv-field label {
-    font-weight: 600;
-    font-size: 13px;
-    color: #1d2327;
-    margin-bottom: 4px;
-    display: block;
-}
-.aura-inv-modal-body .aura-inv-field input,
-.aura-inv-modal-body .aura-inv-field select,
-.aura-inv-modal-body .aura-inv-field textarea {
-    width: 100%;
-    box-sizing: border-box;
+.aura-inv-child-desc {
+    background: var(--aura-surface-alt);
+    border-left: 3px solid var(--aura-indigo);
+    padding: 8px 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 12.5px;
+    color: var(--aura-text);
 }
 
-/* Spinner animado en botón guardar */
-@keyframes aura-spin { to { transform: rotate(360deg); } }
-.aura-spin { display: inline-block; animation: aura-spin .6s linear infinite; }
-
-/* ── Formulario agregar categoría ─────────────────────────── */
+/* ── Formularios de Settings y Categoría ───────────────────────────────── */
 .aura-inv-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -356,66 +220,70 @@
     gap: 5px;
 }
 
+.aura-inv-field-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
 .aura-inv-label {
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
-    color: #1d2327;
+    color: var(--aura-text);
 }
 
-.aura-inv-label .required {
-    color: #d63638;
-}
+.aura-inv-label .required { color: #dc2626; }
+.aura-inv-compact-group { max-width: 240px; }
 
-/* Bloque de intervalo */
 .aura-inv-interval-block {
-    margin-top: 20px;
+    margin-top: 18px;
     padding: 14px 16px;
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    border-radius: 10px;
 }
 
 .aura-inv-interval-block h4 {
     margin: 0 0 4px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #1d2327;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--aura-text);
 }
 
-/* Form actions */
 .aura-inv-form-actions {
     margin-top: 20px;
-    padding-top: 14px;
-    border-top: 1px solid #f0f0f1;
+    padding-top: 16px;
+    border-top: 1px solid var(--aura-border);
     display: flex;
     gap: 10px;
     align-items: center;
 }
 
-.aura-inv-form-actions .button .dashicons {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-    margin-right: 3px;
-    vertical-align: middle;
-}
-
-/* ── Tabla de configuración ─────────────────────────────── */
 .aura-inv-settings-table th {
     width: 260px;
     font-weight: 600;
+    color: var(--aura-text);
 }
 
 .aura-inv-settings-table .description {
     font-size: 12px;
-    color: #646970;
-    margin-top: 4px;
+    color: var(--aura-text-muted);
+    margin-top: 5px;
 }
 
-/* ── Alert types info ────────────────────────────────────── */
+.aura-inv-check-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--aura-text);
+    cursor: pointer;
+}
+
+/* ── Alert Types Info ──────────────────────────────────────────────────── */
 .aura-inv-alert-types {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
     gap: 10px;
     margin-top: 6px;
 }
@@ -424,9 +292,10 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 10px 12px;
-    border-radius: 5px;
-    border: 1px solid transparent;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--aura-border);
+    background: var(--aura-surface-alt);
     font-size: 13px;
 }
 
@@ -438,45 +307,55 @@
     margin-top: 1px;
 }
 
-.aura-inv-alert-item strong {
-    display: block;
-    margin-bottom: 2px;
-}
+.aura-inv-alert-item strong { display: block; margin-bottom: 2px; color: var(--aura-text); }
+.aura-inv-alert-item p { margin: 0; font-size: 12px; color: var(--aura-text-muted); }
 
-.aura-inv-alert-item p {
-    margin: 0;
-    font-size: 12px;
-    color: #646970;
-}
+.aura-inv-alert-info .dashicons    { color: #3b82f6; }
+.aura-inv-alert-warning .dashicons { color: #f59e0b; }
+.aura-inv-alert-danger .dashicons  { color: #ef4444; }
 
-.aura-inv-alert-info    { background: #e5f3fb; border-color: #b8dcf3; }
-.aura-inv-alert-info    .dashicons { color: #2271b1; }
-.aura-inv-alert-warning { background: #fef8e0; border-color: #f5e6a3; }
-.aura-inv-alert-warning .dashicons { color: #996c00; }
-.aura-inv-alert-danger  { background: #fce8e8; border-color: #f3b8b8; }
-.aura-inv-alert-danger  .dashicons { color: #d63638; }
+.aura-inv-text-ok     { color: #16a34a; font-weight: 600; }
+.aura-inv-text-danger { color: #dc2626; font-weight: 600; }
 
-/* ── Spinner inline ──────────────────────────────────────── */
-.aura-inv-spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid #c3c4c7;
-    border-top-color: #2271b1;
-    border-radius: 50%;
-    animation: aura-inv-spin .6s linear infinite;
-    vertical-align: middle;
-    margin-right: 6px;
-}
+@keyframes aura-spin { to { transform: rotate(360deg); } }
+.aura-spin { display: inline-block; animation: aura-spin .7s linear infinite; }
 
-@keyframes aura-inv-spin {
-    to { transform: rotate(360deg); }
-}
-
-/* ── Responsive ─────────────────────────────────────────── */
+/* ── Responsive Móvil (≤ 782px) ─────────────────────────────────────────── */
 @media (max-width: 782px) {
-    .aura-inv-form-grid { grid-template-columns: 1fr; }
-    .aura-inv-alert-types { grid-template-columns: 1fr; }
-    .aura-inv-section-header { flex-direction: column; }
-    .aura-inv-tabs { flex-wrap: wrap; }
+    .aura-inv-form-grid,
+    .aura-inv-field-group,
+    .aura-inv-alert-types {
+        grid-template-columns: 1fr;
+    }
+
+    .aura-inv-settings-table th {
+        width: 100%;
+        padding-bottom: 4px;
+    }
+
+    .aura-inv-cats-table th.aura-inv-col-secondary,
+    .aura-inv-cats-table td.aura-inv-col-secondary {
+        display: none !important;
+    }
+}
+
+/* ── Dark Mode Multi-Driver ────────────────────────────────────────────── */
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-inv-interval-time {
+    background: rgba(59, 130, 246, 0.18); color: #93c5fd; border-color: rgba(59, 130, 246, 0.35);
+}
+
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-inv-interval-hours {
+    background: rgba(245, 158, 11, 0.18); color: #fcd34d; border-color: rgba(245, 158, 11, 0.35);
+}
+
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-inv-interval-both {
+    background: rgba(139, 92, 246, 0.2); color: #c4b5fd; border-color: rgba(139, 92, 246, 0.38);
+}
+
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-inv-text-ok {
+    color: #34d399;
+}
+
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-inv-text-danger {
+    color: #f87171;
 }

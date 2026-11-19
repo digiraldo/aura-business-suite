@@ -118,12 +118,19 @@ class Aura_Inventory_Equipment {
         // Parámetros
         $page     = max( 1, intval( $_POST['page']     ?? 1 ) );
         $per_page = min( 100, max( 10, intval( $_POST['per_page'] ?? 20 ) ) );
+        // Si DataTables pide todo client-side (per_page = 9999), permitir hasta 2000
+        if ( intval( $_POST['per_page'] ?? 20 ) > 100 ) {
+            $per_page = min( 2000, intval( $_POST['per_page'] ) );
+        }
         $offset   = ( $page - 1 ) * $per_page;
-        $search   = sanitize_text_field( $_POST['search']   ?? '' );
-        $category = sanitize_text_field( $_POST['category'] ?? '' );
-        $status   = sanitize_text_field( $_POST['status']   ?? '' );
+        $search   = sanitize_text_field( wp_unslash( $_POST['search']   ?? '' ) );
+        $category = sanitize_text_field( wp_unslash( $_POST['category'] ?? '' ) );
+        $status   = sanitize_text_field( wp_unslash( $_POST['status']   ?? '' ) );
         $area_id  = intval( $_POST['area_id'] ?? 0 );
-        $requires_maint = isset( $_POST['requires_maintenance'] ) ? intval( $_POST['requires_maintenance'] ) : -1;
+        $requires_maint = isset( $_POST['requires_maintenance'] )
+            ? intval( $_POST['requires_maintenance'] )
+            : ( isset( $_POST['maintenance_status'] ) && is_numeric( $_POST['maintenance_status'] ) ? intval( $_POST['maintenance_status'] ) : -1 );
+        $maint_filter_state = sanitize_text_field( wp_unslash( $_POST['maintenance_status'] ?? '' ) );
         $sort_by  = in_array( $_POST['sort_by'] ?? '', [ 'name', 'status', 'next_maintenance_date', 'created_at', 'cost' ] )
                     ? $_POST['sort_by'] : 'name';
         $sort_dir = ( strtoupper( $_POST['sort_dir'] ?? 'ASC' ) === 'DESC' ) ? 'DESC' : 'ASC';
@@ -168,19 +175,47 @@ class Aura_Inventory_Equipment {
         $data_params = array_merge( $params, [ $per_page, $offset ] );
         $rows = $wpdb->get_results( $wpdb->prepare( $data_sql, ...$data_params ) );
 
+        $areas_map = [];
+        $areas_raw = $wpdb->get_results( "SELECT id, name FROM {$wpdb->prefix}aura_areas" );
+        if ( $areas_raw ) {
+            foreach ( $areas_raw as $ar ) {
+                $areas_map[ (int) $ar->id ] = wp_unslash( $ar->name );
+            }
+        }
+
         // Enriquecer con datos de usuario responsable
+        $filtered_rows = [];
         foreach ( $rows as &$row ) {
+            foreach ( [ 'name', 'brand', 'model', 'serial_number', 'internal_code', 'category', 'description', 'location', 'supplier', 'accessories', 'maintenance_instructions' ] as $tf ) {
+                if ( isset( $row->$tf ) && is_string( $row->$tf ) ) {
+                    $row->$tf = wp_unslash( $row->$tf );
+                }
+            }
             $row->status_label            = self::get_status_label( $row->status );
             $row->maintenance_status      = self::get_maintenance_status( $row );
-            $row->responsible_name        = self::resolve_responsible_name( $row );
+            $row->responsible_name        = wp_unslash( self::resolve_responsible_name( $row ) );
+            $row->area_name               = ! empty( $row->area_id ) && isset( $areas_map[ (int) $row->area_id ] )
+                ? $areas_map[ (int) $row->area_id ]
+                : '';
             $row->can_edit   = current_user_can( 'aura_inventory_edit' ) || current_user_can( 'manage_options' );
             $row->can_delete = current_user_can( 'aura_inventory_delete' ) || current_user_can( 'manage_options' );
-            // URLs de imagen en ambos tamaños
+            // URLs de imagen en ambos tamaños (sin recorte en hover/ficha)
             $photo_urls           = aura_get_equipment_photo_urls( $row->photo ?? '' );
             $row->photo_full_url  = $photo_urls['full'];
             $row->photo_thumb_url = $photo_urls['thumb'];
+
+            if ( in_array( $maint_filter_state, [ 'overdue', 'urgent', 'warning', 'ok', 'none' ], true ) ) {
+                if ( $row->maintenance_status !== $maint_filter_state ) {
+                    continue;
+                }
+            }
+            $filtered_rows[] = $row;
         }
         unset( $row );
+        $rows = $filtered_rows;
+        if ( in_array( $maint_filter_state, [ 'overdue', 'urgent', 'warning', 'ok', 'none' ], true ) ) {
+            $total = count( $rows );
+        }
 
         wp_send_json_success( [
             'items'       => $rows,
@@ -210,12 +245,12 @@ class Aura_Inventory_Equipment {
         }
 
         // Validar campo obligatorio
-        $name = sanitize_text_field( $_POST['name'] ?? '' );
+        $name = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
         if ( empty( $name ) ) {
             wp_send_json_error( [ 'message' => __( 'El nombre del equipo es obligatorio.', 'aura-suite' ) ] );
         }
 
-        // Sanitizar todos los campos
+        // Sanitizar todos los campos (usando wp_unslash para evitar backslashes en comillas)
         $status_allowed = [ 'available', 'in_use', 'maintenance', 'repair', 'retired' ];
         $interval_allowed = [ 'time', 'hours', 'both', 'none' ];
 
@@ -229,18 +264,18 @@ class Aura_Inventory_Equipment {
 
         $data = [
             'name'                 => $name,
-            'brand'                => sanitize_text_field( $_POST['brand']         ?? '' ) ?: null,
-            'model'                => sanitize_text_field( $_POST['model']         ?? '' ) ?: null,
-            'serial_number'        => sanitize_text_field( $_POST['serial_number'] ?? '' ) ?: null,
-            'internal_code'        => sanitize_text_field( $_POST['internal_code'] ?? '' ) ?: null,
-            'category'             => sanitize_text_field( $_POST['category']      ?? '' ) ?: null,
-            'description'          => sanitize_textarea_field( $_POST['description'] ?? '' ) ?: null,
+            'brand'                => sanitize_text_field( wp_unslash( $_POST['brand']         ?? '' ) ) ?: null,
+            'model'                => sanitize_text_field( wp_unslash( $_POST['model']         ?? '' ) ) ?: null,
+            'serial_number'        => sanitize_text_field( wp_unslash( $_POST['serial_number'] ?? '' ) ) ?: null,
+            'internal_code'        => sanitize_text_field( wp_unslash( $_POST['internal_code'] ?? '' ) ) ?: null,
+            'category'             => sanitize_text_field( wp_unslash( $_POST['category']      ?? '' ) ) ?: null,
+            'description'          => sanitize_textarea_field( wp_unslash( $_POST['description'] ?? '' ) ) ?: null,
             'status'               => in_array( $_POST['status'] ?? '', $status_allowed ) ? $_POST['status'] : 'available',
-            'location'             => sanitize_text_field( $_POST['location']      ?? '' ) ?: null,
+            'location'             => sanitize_text_field( wp_unslash( $_POST['location']      ?? '' ) ) ?: null,
             'acquisition_date'     => self::sanitize_date( $_POST['acquisition_date'] ?? '' ),
             'cost'                 => floatval( $_POST['cost']             ?? 0 ),
             'estimated_value'      => floatval( $_POST['estimated_value']  ?? 0 ),
-            'supplier'                 => sanitize_text_field( $_POST['supplier'] ?? '' ) ?: null,
+            'supplier'                 => sanitize_text_field( wp_unslash( $_POST['supplier'] ?? '' ) ) ?: null,
             'supplier_third_party_id'  => intval( $_POST['supplier_third_party_id'] ?? 0 ) ?: null,
             'warranty_date'            => self::sanitize_date( $_POST['warranty_date'] ?? '' ),
             'requires_maintenance' => isset( $_POST['requires_maintenance'] ) ? 1 : 0,
@@ -248,18 +283,18 @@ class Aura_Inventory_Equipment {
             'interval_months'      => intval( $_POST['interval_months'] ?? 0 ) ?: null,
             'interval_hours'       => intval( $_POST['interval_hours']  ?? 0 ) ?: null,
             'alert_days_before'    => max( 1, intval( $_POST['alert_days_before'] ?? 7 ) ),
-            'oil_type'             => sanitize_text_field( $_POST['oil_type']           ?? '' ) ?: null,
+            'oil_type'             => sanitize_text_field( wp_unslash( $_POST['oil_type']           ?? '' ) ) ?: null,
             'oil_capacity'         => floatval( $_POST['oil_capacity'] ?? 0 ) ?: null,
-            'fuel_type'            => sanitize_text_field( $_POST['fuel_type']           ?? '' ) ?: null,
+            'fuel_type'            => sanitize_text_field( wp_unslash( $_POST['fuel_type']           ?? '' ) ) ?: null,
             'voltage'              => intval( $_POST['voltage']          ?? 0 ) ?: null,
-            'hydraulic_pressure'   => sanitize_text_field( $_POST['hydraulic_pressure'] ?? '' ) ?: null,
+            'hydraulic_pressure'   => sanitize_text_field( wp_unslash( $_POST['hydraulic_pressure'] ?? '' ) ) ?: null,
             'responsible_user_id'        => $resp_user_id,
             'responsible_third_party_id' => $resp_tp_id,
             'area_id'              => intval( $_POST['area_id']              ?? 0 ) ?: null,
-            'photo'                => sanitize_text_field( $_POST['photo']              ?? '' ) ?: null,
-            'accessories'             => sanitize_textarea_field( $_POST['accessories'] ?? '' ) ?: null,
+            'photo'                => sanitize_text_field( wp_unslash( $_POST['photo']              ?? '' ) ) ?: null,
+            'accessories'             => sanitize_textarea_field( wp_unslash( $_POST['accessories'] ?? '' ) ) ?: null,
             'parent_equipment_id'     => intval( $_POST['parent_equipment_id'] ?? 0 ) ?: null,
-            'maintenance_instructions'=> sanitize_textarea_field( $_POST['maintenance_instructions'] ?? '' ) ?: null,
+            'maintenance_instructions'=> sanitize_textarea_field( wp_unslash( $_POST['maintenance_instructions'] ?? '' ) ) ?: null,
         ];
 
         global $wpdb;
@@ -421,13 +456,27 @@ class Aura_Inventory_Equipment {
         unset( $l );
 
         // Enriquecer equipo
+        foreach ( [ 'name', 'brand', 'model', 'serial_number', 'internal_code', 'category', 'description', 'location', 'supplier', 'accessories', 'maintenance_instructions' ] as $tf ) {
+            if ( isset( $equipment->$tf ) && is_string( $equipment->$tf ) ) {
+                $equipment->$tf = wp_unslash( $equipment->$tf );
+            }
+        }
         $equipment->status_label       = self::get_status_label( $equipment->status );
         $equipment->maintenance_status = self::get_maintenance_status( $equipment );
-        $equipment->responsible_name   = self::resolve_responsible_name( $equipment );
-        // URLs de imagen en ambos tamaños
+        $equipment->responsible_name   = wp_unslash( self::resolve_responsible_name( $equipment ) );
+        // URLs de imagen en ambos tamaños (sin recorte forzado)
         $photo_urls                  = aura_get_equipment_photo_urls( $equipment->photo ?? '' );
         $equipment->photo_full_url   = $photo_urls['full'];
         $equipment->photo_thumb_url  = $photo_urls['thumb'];
+
+        foreach ( $maintenance_history as &$mh ) {
+            foreach ( [ 'description', 'replaced_parts', 'workshop_name' ] as $mf ) {
+                if ( isset( $mh->$mf ) && is_string( $mh->$mf ) ) {
+                    $mh->$mf = wp_unslash( $mh->$mf );
+                }
+            }
+        }
+        unset( $mh );
 
         // Resolver nombre del equipo padre (si aplica)
         $equipment->parent_equipment_name = null;
@@ -502,8 +551,8 @@ class Aura_Inventory_Equipment {
 
         global $wpdb;
         $table  = $wpdb->prefix . 'aura_inventory_equipment';
-        $term   = sanitize_text_field( $_POST['term']   ?? '' );
-        $status = sanitize_text_field( $_POST['status'] ?? '' ); // opcional: filtrar por status
+        $term   = sanitize_text_field( wp_unslash( $_POST['term']   ?? '' ) );
+        $status = sanitize_text_field( wp_unslash( $_POST['status'] ?? '' ) ); // opcional: filtrar por status
 
         $like   = '%' . $wpdb->esc_like( $term ) . '%';
         $params = [ $like, $like, $like ];
@@ -570,6 +619,12 @@ class Aura_Inventory_Equipment {
 
         if ( ! $equipment ) {
             wp_send_json_error( [ 'message' => __( 'Equipo no encontrado.', 'aura-suite' ) ] );
+        }
+
+        foreach ( [ 'name', 'brand', 'model', 'serial_number', 'internal_code', 'category', 'description', 'location', 'supplier', 'accessories', 'maintenance_instructions' ] as $tf ) {
+            if ( isset( $equipment->$tf ) && is_string( $equipment->$tf ) ) {
+                $equipment->$tf = wp_unslash( $equipment->$tf );
+            }
         }
 
         wp_send_json_success( [ 'equipment' => $equipment ] );

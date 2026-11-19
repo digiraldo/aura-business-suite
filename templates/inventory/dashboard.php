@@ -1,6 +1,6 @@
 <?php
 /**
- * Template: Dashboard de Inventario — FASE 4 completo
+ * Template: Dashboard de Inventario — Migrado al Design System (WOW VIP Gold + Dual Light/Dark)
  *
  * @package AuraBusinessSuite
  * @subpackage Inventory
@@ -8,17 +8,31 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-// KPIs cargados sincrónicamente para primer render sin AJAX
-$kpis     = Aura_Inventory_Dashboard::get_initial_kpis();
-$currency = $kpis['currency'];
-$can_maint = current_user_can('aura_inventory_maintenance_view') || current_user_can('manage_options');
+$kpis      = Aura_Inventory_Dashboard::get_initial_kpis();
+$currency  = $kpis['currency'];
+$can_maint = current_user_can( 'aura_inventory_maintenance_view' ) || current_user_can( 'manage_options' );
 ?>
 <div class="aura-app-wrapper aura-inventory-dashboard">
+    <div class="wrap aura-app-context">
 
     <?php
-    $actions_html = '<a href="' . esc_url( admin_url( 'admin.php?page=aura-inventory-new-equipment' ) ) . '" class="aura-btn aura-btn-primary"><span class="dashicons dashicons-plus-alt2"></span> ' . esc_html__( 'Nuevo Equipo', 'aura-business-suite' ) . '</a>';
+    $header_actions = [
+        [
+            'label' => __( 'Nuevo Equipo', 'aura-business-suite' ),
+            'url'   => admin_url( 'admin.php?page=aura-inventory-new-equipment' ),
+            'class' => 'btn btn-shimmer btn-indigo btn-lift',
+            'icon'  => 'dashicons-plus-alt2',
+            'attr'  => 'data-tooltip="' . esc_attr__( 'Registrar un nuevo activo o equipo en el inventario', 'aura-business-suite' ) . '"',
+        ],
+    ];
     if ( $can_maint ) {
-        $actions_html .= ' <a href="' . esc_url( admin_url( 'admin.php?page=aura-inventory-new-maintenance' ) ) . '" class="aura-btn aura-btn-secondary"><span class="dashicons dashicons-admin-tools"></span> ' . esc_html__( 'Registrar Mantenimiento', 'aura-business-suite' ) . '</a>';
+        $header_actions[] = [
+            'label' => __( 'Registrar Mantenimiento', 'aura-business-suite' ),
+            'url'   => admin_url( 'admin.php?page=aura-inventory-new-maintenance' ),
+            'class' => 'btn btn-glass btn-lift',
+            'icon'  => 'dashicons-admin-tools',
+            'attr'  => 'data-tooltip="' . esc_attr__( 'Registrar mantenimiento preventivo o correctivo', 'aura-business-suite' ) . '"',
+        ];
     }
 
     Aura_UI::render_page_header( [
@@ -30,46 +44,68 @@ $can_maint = current_user_can('aura_inventory_maintenance_view') || current_user
             [ 'label' => __( 'Inventario', 'aura-business-suite' ), 'url' => admin_url( 'admin.php?page=aura-inventory' ) ],
             [ 'label' => __( 'Dashboard', 'aura-business-suite' ) ],
         ],
-        'actions_html'=> $actions_html,
+        'badges'      => [
+            [
+                'label'   => sprintf( __( '%d equipos', 'aura-business-suite' ), (int) $kpis['total_equipment'] ),
+                'variant' => 'indigo',
+                'tooltip' => __( 'Activos físicos activos registrados', 'aura-business-suite' ),
+            ],
+        ],
+        'actions'     => $header_actions,
     ] );
+    ?>
 
-    if ( $kpis['overdue'] > 0 ) : ?>
-    <div class="notice notice-error is-dismissible" style="margin-bottom: var(--aura-space-4, 16px);">
-        <p>
-            <strong><?php esc_html_e( '⚠️ Mantenimientos vencidos:', 'aura-business-suite' ); ?></strong>
+    <div class="aura-inv-live-bar">
+        <span class="live-chip" data-tooltip="<?php esc_attr_e( 'Métricas, alertas de mantenimiento y préstamos sincronizados en tiempo real', 'aura-business-suite' ); ?>">
+            <span class="pulse-dot"></span>
+            <?php esc_html_e( 'Monitoreo Operativo Activo', 'aura-business-suite' ); ?>
+        </span>
+    </div>
+
+    <?php if ( $kpis['overdue'] > 0 ) : ?>
+    <div class="alert-card alert-danger aura-inv-dash-alert" role="alert">
+        <span class="dashicons dashicons-warning" aria-hidden="true"></span>
+        <div class="aura-inv-dash-alert-body">
+            <strong><?php esc_html_e( 'Mantenimientos vencidos:', 'aura-business-suite' ); ?></strong>
             <?php printf(
                 _n( 'Hay %d equipo con mantenimiento vencido.', 'Hay %d equipos con mantenimiento vencido.', $kpis['overdue'], 'aura-business-suite' ),
-                $kpis['overdue']
+                (int) $kpis['overdue']
             ); ?>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-equipment&maintenance_status=overdue' ) ); ?>">
-                <?php esc_html_e( 'Ver equipos →', 'aura-business-suite' ); ?>
-            </a>
-        </p>
+        </div>
+        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-equipment&maintenance_status=overdue' ) ); ?>"
+           class="btn btn-rose btn-sm btn-lift"
+           data-tooltip="<?php esc_attr_e( 'Abrir catálogo filtrado por mantenimientos vencidos', 'aura-business-suite' ); ?>">
+            <?php esc_html_e( 'Ver equipos →', 'aura-business-suite' ); ?>
+        </a>
     </div>
-    <?php endif;
+    <?php endif; ?>
 
-    if ( $kpis['overdue_loans'] > 0 ) : ?>
-    <div class="notice notice-warning is-dismissible" style="margin-bottom: var(--aura-space-4, 16px);">
-        <p>
-            <strong><?php esc_html_e( '📦 Préstamos vencidos:', 'aura-business-suite' ); ?></strong>
+    <?php if ( $kpis['overdue_loans'] > 0 ) : ?>
+    <div class="alert-card alert-warning aura-inv-dash-alert" role="alert">
+        <span class="dashicons dashicons-share" aria-hidden="true"></span>
+        <div class="aura-inv-dash-alert-body">
+            <strong><?php esc_html_e( 'Préstamos vencidos:', 'aura-business-suite' ); ?></strong>
             <?php printf(
                 _n( 'Hay %d equipo prestado sin devolver (vencido).', 'Hay %d equipos prestados sin devolver (vencidos).', $kpis['overdue_loans'], 'aura-business-suite' ),
-                $kpis['overdue_loans']
+                (int) $kpis['overdue_loans']
             ); ?>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-loans' ) ); ?>">
-                <?php esc_html_e( 'Ver préstamos →', 'aura-business-suite' ); ?>
-            </a>
-        </p>
+        </div>
+        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-loans' ) ); ?>"
+           class="btn btn-amber btn-sm btn-lift"
+           data-tooltip="<?php esc_attr_e( 'Ir al listado de préstamos vencidos', 'aura-business-suite' ); ?>">
+            <?php esc_html_e( 'Ver préstamos →', 'aura-business-suite' ); ?>
+        </a>
     </div>
-    <?php endif;
+    <?php endif; ?>
 
+    <?php
     Aura_UI::render_stats_grid( [
         [
             'id'       => 'kpi-total-equipment-val',
             'icon'     => 'dashicons-archive',
             'value'    => number_format_i18n( (int) $kpis['total_equipment'] ),
             'label'    => __( 'Equipos Registrados', 'aura-business-suite' ),
-            'variant'  => 'primary',
+            'variant'  => 'capital',
             'tooltip'  => __( 'Total de activos físicos en el catálogo', 'aura-business-suite' ),
         ],
         [
@@ -85,7 +121,7 @@ $can_maint = current_user_can('aura_inventory_maintenance_view') || current_user
             'icon'     => 'dashicons-warning',
             'value'    => number_format_i18n( (int) $kpis['overdue'] ),
             'label'    => __( 'Mantenimientos Vencidos', 'aura-business-suite' ),
-            'variant'  => $kpis['overdue'] > 0 ? 'danger' : 'success',
+            'variant'  => $kpis['overdue'] > 0 ? 'expense' : 'income',
             'tooltip'  => __( 'Equipos que debieron recibir mantenimiento', 'aura-business-suite' ),
         ],
         [
@@ -93,7 +129,7 @@ $can_maint = current_user_can('aura_inventory_maintenance_view') || current_user
             'icon'     => 'dashicons-clock',
             'value'    => number_format_i18n( (int) $kpis['upcoming7'] ),
             'label'    => __( 'Próximos 7 Días', 'aura-business-suite' ),
-            'variant'  => $kpis['upcoming7'] > 0 ? 'warning' : 'success',
+            'variant'  => $kpis['upcoming7'] > 0 ? 'pending' : 'income',
             'tooltip'  => __( 'Mantenimientos agendados para esta semana', 'aura-business-suite' ),
         ],
         [
@@ -101,7 +137,7 @@ $can_maint = current_user_can('aura_inventory_maintenance_view') || current_user
             'icon'     => 'dashicons-calendar',
             'value'    => number_format_i18n( (int) $kpis['upcoming15'] ),
             'label'    => __( 'Próximos 15 Días', 'aura-business-suite' ),
-            'variant'  => $kpis['upcoming15'] > 0 ? 'warning' : 'success',
+            'variant'  => $kpis['upcoming15'] > 0 ? 'pending' : 'income',
             'tooltip'  => __( 'Mantenimientos agendados para la quincena', 'aura-business-suite' ),
         ],
         [
@@ -109,7 +145,7 @@ $can_maint = current_user_can('aura_inventory_maintenance_view') || current_user
             'icon'     => 'dashicons-money-alt',
             'value'    => $currency . number_format( (float) $kpis['cost_month'], 2 ),
             'label'    => sprintf( __( 'Costo Mant. %s', 'aura-business-suite' ), date( 'M Y' ) ),
-            'variant'  => 'success',
+            'variant'  => 'income',
             'tooltip'  => __( 'Gasto total de mantenimiento en el mes en curso', 'aura-business-suite' ),
         ],
         [
@@ -125,7 +161,7 @@ $can_maint = current_user_can('aura_inventory_maintenance_view') || current_user
             'icon'     => 'dashicons-share',
             'value'    => number_format_i18n( (int) $kpis['active_loans'] ),
             'label'    => __( 'Préstamos Activos', 'aura-business-suite' ),
-            'variant'  => 'info',
+            'variant'  => 'balance',
             'tooltip'  => __( 'Equipos actualmente en poder de terceros o personal', 'aura-business-suite' ),
         ],
         [
@@ -133,32 +169,38 @@ $can_maint = current_user_can('aura_inventory_maintenance_view') || current_user
             'icon'     => 'dashicons-warning',
             'value'    => number_format_i18n( (int) $kpis['overdue_loans'] ),
             'label'    => __( 'Préstamos Vencidos', 'aura-business-suite' ),
-            'variant'  => $kpis['overdue_loans'] > 0 ? 'danger' : 'success',
+            'variant'  => $kpis['overdue_loans'] > 0 ? 'expense' : 'income',
             'tooltip'  => __( 'Equipos prestados fuera de la fecha límite acordada', 'aura-business-suite' ),
         ],
     ] );
     ?>
 
     <!-- ═══ FILA 2: Gráficas ══════════════════════════════════════════════ -->
-    <div class="aura-dash-charts-row" style="margin-top: var(--aura-space-6, 24px);">
+    <div class="aura-dash-charts-row">
 
         <!-- Widget 1: Estado del inventario (dona) -->
-        <div class="aura-glass-card aura-dash-chart-card">
-            <div class="aura-dash-chart-header" style="margin-bottom:16px;">
-                <h3 style="margin:0; font-size:15px; font-weight:600;"><?php esc_html_e( 'Estado del inventario', 'aura-business-suite' ); ?></h3>
+        <div class="aura-glass-card aura-dash-chart-card card-lift">
+            <div class="aura-dash-chart-header">
+                <h3>
+                    <?php esc_html_e( 'Estado del inventario', 'aura-business-suite' ); ?>
+                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Distribución porcentual por condición operativa actual de cada equipo', 'aura-business-suite' ); ?>">?</span>
+                </h3>
                 <div class="aura-dash-chart-spinner spinner"></div>
             </div>
             <div id="aura-dash-status-chart" class="aura-dash-apexchart"></div>
         </div>
 
         <!-- Widget 2: Costos por tipo de mantenimiento (barras) -->
-        <div class="aura-glass-card aura-dash-chart-card aura-dash-chart-wide">
-            <div class="aura-dash-chart-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-                <h3 style="margin:0; font-size:15px; font-weight:600;"><?php esc_html_e( 'Costos por tipo de mantenimiento', 'aura-business-suite' ); ?></h3>
-                <div class="aura-dash-period-tabs" style="display:flex; gap:4px;">
-                    <button class="aura-btn aura-btn-secondary aura-btn-sm aura-dash-period active" data-period="month"><?php esc_html_e( 'Este mes', 'aura-business-suite' ); ?></button>
-                    <button class="aura-btn aura-btn-ghost aura-btn-sm aura-dash-period" data-period="quarter"><?php esc_html_e( 'Trimestre', 'aura-business-suite' ); ?></button>
-                    <button class="aura-btn aura-btn-ghost aura-btn-sm aura-dash-period" data-period="year"><?php esc_html_e( 'Este año', 'aura-business-suite' ); ?></button>
+        <div class="aura-glass-card aura-dash-chart-card aura-dash-chart-wide card-lift">
+            <div class="aura-dash-chart-header">
+                <h3>
+                    <?php esc_html_e( 'Costos por tipo de mantenimiento', 'aura-business-suite' ); ?>
+                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Inversión agrupada por tipo de intervención según el período elegido', 'aura-business-suite' ); ?>">?</span>
+                </h3>
+                <div class="aura-dash-period-tabs" role="tablist">
+                    <button type="button" class="btn btn-sm btn-indigo active aura-dash-period" data-period="month" data-tooltip="<?php esc_attr_e( 'Mostrar costos del mes actual', 'aura-business-suite' ); ?>"><?php esc_html_e( 'Este mes', 'aura-business-suite' ); ?></button>
+                    <button type="button" class="btn btn-sm btn-glass aura-dash-period" data-period="quarter" data-tooltip="<?php esc_attr_e( 'Mostrar costos del trimestre', 'aura-business-suite' ); ?>"><?php esc_html_e( 'Trimestre', 'aura-business-suite' ); ?></button>
+                    <button type="button" class="btn btn-sm btn-glass aura-dash-period" data-period="year" data-tooltip="<?php esc_attr_e( 'Mostrar costos del año actual', 'aura-business-suite' ); ?>"><?php esc_html_e( 'Este año', 'aura-business-suite' ); ?></button>
                 </div>
                 <div class="aura-dash-chart-spinner spinner"></div>
             </div>
@@ -168,59 +210,83 @@ $can_maint = current_user_can('aura_inventory_maintenance_view') || current_user
     </div><!-- .aura-dash-charts-row -->
 
     <!-- ═══ FILA 3: Calendario próximos 30 días ═══════════════════════════ -->
-    <div class="aura-glass-card aura-dash-section-card" style="margin-top: var(--aura-space-6, 24px);">
-        <div class="aura-dash-section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-            <h3 style="margin:0; font-size:15px; font-weight:600;"><?php esc_html_e( 'Calendario de mantenimientos — próximos 30 días', 'aura-business-suite' ); ?></h3>
-            <div class="aura-dash-legend" style="display:flex; gap:12px; font-size:12px; align-items:center;">
-                <span class="aura-dash-legend-dot overdue"></span><?php esc_html_e( 'Vencido', 'aura-business-suite' ); ?>
-                <span class="aura-dash-legend-dot urgent"></span><?php esc_html_e( 'Urgente (≤3d)', 'aura-business-suite' ); ?>
-                <span class="aura-dash-legend-dot warning"></span><?php esc_html_e( 'Próximo (≤7d)', 'aura-business-suite' ); ?>
-                <span class="aura-dash-legend-dot ok"></span><?php esc_html_e( 'En los próximos 30d', 'aura-business-suite' ); ?>
+    <div class="aura-glass-card aura-dash-section-card card-lift">
+        <div class="aura-dash-section-header">
+            <h3>
+                <?php esc_html_e( 'Calendario de mantenimientos — próximos 30 días', 'aura-business-suite' ); ?>
+                <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Equipos con fecha programada próxima o vencida ordenados por urgencia', 'aura-business-suite' ); ?>">?</span>
+            </h3>
+            <div class="aura-dash-legend">
+                <span class="aura-dash-legend-item"><span class="aura-dash-legend-dot overdue"></span><?php esc_html_e( 'Vencido', 'aura-business-suite' ); ?></span>
+                <span class="aura-dash-legend-item"><span class="aura-dash-legend-dot urgent"></span><?php esc_html_e( 'Urgente (≤3d)', 'aura-business-suite' ); ?></span>
+                <span class="aura-dash-legend-item"><span class="aura-dash-legend-dot warning"></span><?php esc_html_e( 'Próximo (≤7d)', 'aura-business-suite' ); ?></span>
+                <span class="aura-dash-legend-item"><span class="aura-dash-legend-dot ok"></span><?php esc_html_e( 'En los próximos 30d', 'aura-business-suite' ); ?></span>
             </div>
             <div class="aura-dash-chart-spinner spinner" id="aura-dash-cal-spinner"></div>
         </div>
         <div id="aura-dash-calendar-list" class="aura-dash-calendar-list">
-            <span class="spinner is-active" style="float:none;display:block;margin:20px auto;"></span>
+            <div class="aura-dash-skel-stack">
+                <div class="skeleton skel-line w-80"></div>
+                <div class="skeleton skel-line w-60"></div>
+                <div class="skeleton skel-line w-70"></div>
+            </div>
         </div>
     </div>
 
     <!-- ═══ FILA 4: Equipos críticos ═════════════════════════════════════ -->
-    <div class="aura-glass-card aura-dash-section-card" style="margin-top: var(--aura-space-6, 24px);">
-        <div class="aura-dash-section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h3 style="margin:0; font-size:15px; font-weight:600; color:var(--aura-danger-600);"><span class="dashicons dashicons-warning" style="color:var(--aura-danger-500);"></span> <?php esc_html_e( 'Equipos que requieren atención', 'aura-business-suite' ); ?></h3>
+    <div class="aura-glass-card aura-dash-section-card card-lift">
+        <div class="aura-dash-section-header">
+            <h3 class="aura-dash-critical-heading">
+                <span class="dashicons dashicons-warning"></span>
+                <?php esc_html_e( 'Equipos que requieren atención', 'aura-business-suite' ); ?>
+                <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Resumen de equipos con mantenimiento vencido, en taller o préstamo vencido', 'aura-business-suite' ); ?>">?</span>
+            </h3>
             <div class="aura-dash-chart-spinner spinner" id="aura-dash-crit-spinner"></div>
         </div>
         <div id="aura-dash-critical" class="aura-dash-critical-wrap">
-            <span class="spinner is-active" style="float:none;display:block;margin:20px auto;"></span>
+            <div class="aura-dash-skel-stack">
+                <div class="skeleton skel-card"></div>
+                <div class="skeleton skel-card"></div>
+            </div>
         </div>
     </div>
 
     <!-- ═══ Accesos rápidos ═══════════════════════════════════════════════ -->
-    <div class="aura-glass-card aura-inv-quick-links" style="margin-top: var(--aura-space-6, 24px);">
-        <div class="aura-inv-quick-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-equipment' ) ); ?>" class="aura-btn aura-btn-secondary" style="justify-content:flex-start; padding:12px 16px;">
+    <div class="aura-glass-card aura-dash-section-card aura-inv-quick-links">
+        <div class="aura-dash-section-header">
+            <h3><?php esc_html_e( 'Accesos Rápidos de Inventario', 'aura-business-suite' ); ?></h3>
+        </div>
+        <div class="aura-inv-quick-grid">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-equipment' ) ); ?>" class="btn btn-glass btn-lift aura-inv-quick-btn" data-tooltip="<?php esc_attr_e( 'Explorar catálogo completo de activos y herramientas', 'aura-business-suite' ); ?>">
                 <span class="dashicons dashicons-archive"></span>
                 <span><?php esc_html_e( 'Ver Equipos', 'aura-business-suite' ); ?></span>
             </a>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-new-equipment' ) ); ?>" class="aura-btn aura-btn-secondary" style="justify-content:flex-start; padding:12px 16px;">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-new-equipment' ) ); ?>" class="btn btn-glass btn-lift aura-inv-quick-btn" data-tooltip="<?php esc_attr_e( 'Dar de alta un equipo nuevo', 'aura-business-suite' ); ?>">
                 <span class="dashicons dashicons-plus-alt"></span>
                 <span><?php esc_html_e( 'Registrar Equipo', 'aura-business-suite' ); ?></span>
             </a>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-maintenance' ) ); ?>" class="aura-btn aura-btn-secondary" style="justify-content:flex-start; padding:12px 16px;">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-maintenance' ) ); ?>" class="btn btn-glass btn-lift aura-inv-quick-btn" data-tooltip="<?php esc_attr_e( 'Consultar bitácora y programación de mantenimientos', 'aura-business-suite' ); ?>">
                 <span class="dashicons dashicons-admin-tools"></span>
                 <span><?php esc_html_e( 'Mantenimientos', 'aura-business-suite' ); ?></span>
             </a>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-loans' ) ); ?>" class="aura-btn aura-btn-secondary" style="justify-content:flex-start; padding:12px 16px;">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-loans' ) ); ?>" class="btn btn-glass btn-lift aura-inv-quick-btn" data-tooltip="<?php esc_attr_e( 'Administrar préstamos y devoluciones de equipos', 'aura-business-suite' ); ?>">
                 <span class="dashicons dashicons-share"></span>
                 <span><?php esc_html_e( 'Préstamos', 'aura-business-suite' ); ?></span>
             </a>
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-reports' ) ); ?>" class="aura-btn aura-btn-secondary" style="justify-content:flex-start; padding:12px 16px;">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-reports' ) ); ?>" class="btn btn-glass btn-lift aura-inv-quick-btn" data-tooltip="<?php esc_attr_e( 'Generar reportes de costos, eficiencia y vida útil', 'aura-business-suite' ); ?>">
                 <span class="dashicons dashicons-chart-bar"></span>
                 <span><?php esc_html_e( 'Reportes', 'aura-business-suite' ); ?></span>
             </a>
         </div>
     </div>
 
+    <div class="adp-footer">
+        <div>
+            Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Diego Giraldo</a></strong> &bull; Versión <?php echo esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0' ); ?> &bull; Aura Business Suite &copy; <?php echo date('Y'); ?>
+        </div>
+    </div>
+
+    </div><!-- .wrap.aura-app-context -->
 </div><!-- .aura-app-wrapper -->
 
 <?php

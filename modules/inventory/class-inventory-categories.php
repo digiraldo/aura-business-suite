@@ -119,9 +119,9 @@ class Aura_Inventory_Categories {
             wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
-        $name   = sanitize_text_field( trim( $_POST['name']   ?? '' ) );
-        $slug   = sanitize_title(      trim( $_POST['slug']   ?? $name ) );
-        $desc   = sanitize_textarea_field( $_POST['description'] ?? '' );
+        $name   = sanitize_text_field( trim( wp_unslash( $_POST['name']   ?? '' ) ) );
+        $slug   = sanitize_title(      trim( wp_unslash( $_POST['slug']   ?? $name ) ) );
+        $desc   = sanitize_textarea_field( wp_unslash( $_POST['description'] ?? '' ) );
         $itype  = in_array( $_POST['interval_type'] ?? '', [ 'time', 'hours', 'both', 'none' ] )
                   ? sanitize_key( $_POST['interval_type'] ) : 'none';
         $imon   = intval( $_POST['interval_months'] ?? 0 ) ?: null;
@@ -156,6 +156,7 @@ class Aura_Inventory_Categories {
             'term_id'        => $term_id,
             'name'           => $term->name,
             'slug'           => $term->slug,
+            'description'    => wp_unslash( $term->description ?? '' ),
             'count'          => $term->count,
             'interval_type'  => $itype,
             'interval_months'=> $imon,
@@ -175,9 +176,9 @@ class Aura_Inventory_Categories {
         }
 
         $term_id = intval( $_POST['term_id'] ?? 0 );
-        $name    = sanitize_text_field( trim( $_POST['name']   ?? '' ) );
-        $slug    = sanitize_title(      trim( $_POST['slug']   ?? $name ) );
-        $desc    = sanitize_textarea_field( $_POST['description'] ?? '' );
+        $name    = sanitize_text_field( trim( wp_unslash( $_POST['name']   ?? '' ) ) );
+        $slug    = sanitize_title(      trim( wp_unslash( $_POST['slug']   ?? $name ) ) );
+        $desc    = sanitize_textarea_field( wp_unslash( $_POST['description'] ?? '' ) );
         $itype   = in_array( $_POST['interval_type'] ?? '', [ 'time', 'hours', 'both', 'none' ] )
                    ? sanitize_key( $_POST['interval_type'] ) : 'none';
         $imon    = intval( $_POST['interval_months'] ?? 0 ) ?: null;
@@ -213,6 +214,7 @@ class Aura_Inventory_Categories {
             'term_id'         => $term_id,
             'name'            => $term->name,
             'slug'            => $term->slug,
+            'description'     => wp_unslash( $term->description ?? '' ),
             'interval_type'   => $itype,
             'interval_months' => $imon,
             'interval_hours'  => $ihrs,

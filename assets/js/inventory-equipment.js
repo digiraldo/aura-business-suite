@@ -1,28 +1,34 @@
 /**
- * Inventario — Equipment JS
- * Maneja: listado con filtros/paginación, modal de detalle,
- *         formulario AJAX, cambio de estado y confirmación de borrado.
+ * Inventario — Equipment JS (Design System Aura)
+ * Maneja: listado DataTables con filas expandibles (+), tooltips enriquecidos,
+ *         previsualización sin recorte, modal 360°, formulario AJAX y Cropper.
  *
- * Depende de: jQuery, auraInventoryEquipment (inyectado en equipment-list.php)
- *             auraInvFormData               (inyectado en equipment-form.php)
+ * Depende de: jQuery, DataTables, AuraUI, auraInventoryEquipment / auraInvFormData, wp
  */
 
-/* global jQuery, auraInventoryEquipment, auraInvFormData, wp */
+/* global jQuery, DataTable, auraInventoryEquipment, auraInvFormData, AuraUI, Cropper, wp */
 
 (function ($) {
     'use strict';
 
+    // Proteger contra doble ejecución accidental si el script se encolara más de una vez
+    if (window.__auraInvEquipmentBooted) {
+        return;
+    }
+    window.__auraInvEquipmentBooted = true;
+
     // ─────────────────────────────────────────────────────────────
-    // MÓDULO: LISTADO DE EQUIPOS — DataTables
+    // MÓDULO: LISTADO DE EQUIPOS — DataTables + Filas Expandibles (+)
     // ─────────────────────────────────────────────────────────────
 
     var EquipmentList = {
 
         cfg:   null,
-        table: null,   // instancia DataTables
+        table: null,
 
         init: function () {
             if (typeof auraInventoryEquipment === 'undefined') return;
+            if (!$('#aura-inv-equipment-table').length) return;
             this.cfg = auraInventoryEquipment;
             this.initDataTable();
             this.bindEvents();
@@ -30,56 +36,167 @@
 
         // ── Helpers de render ────────────────────────────────────
         _thumb: function (eq) {
-            return eq.photo_thumb_url
-                ? '<div class="aura-inv-thumb-wrap" data-full="' + escHtml(eq.photo_full_url || eq.photo_thumb_url) + '">' +
-                  '<img src="' + escHtml(eq.photo_thumb_url) + '" alt="" width="44" height="33"' +
-                  ' style="border-radius:3px;object-fit:cover;display:block;border:1px solid #dcdcde;">' +
-                  '</div>'
-                : '<span class="dashicons dashicons-format-image" style="color:#c3c4c7;font-size:24px;" title="Sin foto"></span>';
+            if (!eq.photo_thumb_url && !eq.photo_full_url) {
+                return '<div class="aura-inv-thumb-empty" data-tooltip="Sin fotografía registrada">' +
+                    '<span class="dashicons dashicons-format-image"></span>' +
+                    '</div>';
+            }
+            var fullUrl  = eq.photo_full_url || eq.photo_thumb_url;
+            var thumbUrl = eq.photo_thumb_url || eq.photo_full_url;
+            var label    = eq.name || 'Equipo';
+            var subMeta  = [eq.brand || '', eq.internal_code ? ('Cód: ' + eq.internal_code) : ''].filter(Boolean).join(' · ');
+
+            var tooltipCard = '<div class="aura-floating-img-card aura-inv-photo-card">' +
+                '<img src="' + escHtml(fullUrl) + '" alt="' + escHtml(label) + '" style="max-width:260px;max-height:260px;width:auto;height:auto;object-fit:contain;border-radius:8px;display:block;margin:0 auto;">' +
+                '<span class="aura-floating-img-title">' + escHtml(label) + '</span>' +
+                (subMeta ? '<span class="aura-floating-img-sub">' + escHtml(subMeta) + '</span>' : '') +
+                '</div>';
+
+            return '<div class="aura-inv-thumb-wrap aura-table-thumb-preview" ' +
+                'data-img-url="' + escHtml(fullUrl) + '" ' +
+                'data-preview-title="' + escHtml(label) + '" ' +
+                'data-aura-tooltip="' + escHtml(tooltipCard) + '">' +
+                '<img src="' + escHtml(thumbUrl) + '" alt="' + escHtml(label) + '" loading="lazy">' +
+                '</div>';
         },
 
         _maintBadge: function (eq) {
             var cfg = this.cfg;
-            if (eq.maintenance_status && eq.maintenance_status !== 'none') {
-                var badge = '<span class="aura-inv-maint-badge aura-inv-maint-' + eq.maintenance_status + '">' +
-                    (cfg.txt.maint_labels[eq.maintenance_status] || eq.maintenance_status) + '</span>';
-                if (eq.next_maintenance_date) badge += '<br><small>' + eq.next_maintenance_date + '</small>';
-                return badge;
+            var st  = eq.maintenance_status || 'none';
+            var html = '';
+            if (st && st !== 'none') {
+                var lbl = (cfg.txt && cfg.txt.maint_labels && cfg.txt.maint_labels[st]) ? cfg.txt.maint_labels[st] : st;
+                html += '<span class="aura-inv-maint-badge aura-inv-maint-' + escHtml(st) + '">' + escHtml(lbl) + '</span>';
+                if (eq.next_maintenance_date) {
+                    html += '<div class="aura-inv-cell-sub">' + escHtml(eq.next_maintenance_date) + '</div>';
+                }
+                return html;
             }
             if (eq.next_maintenance_date) {
-                return '<span class="aura-inv-maint-badge aura-inv-maint-ok">' + cfg.txt.maint_labels.ok + '</span>' +
-                       '<br><small>' + eq.next_maintenance_date + '</small>';
+                var okLbl = (cfg.txt && cfg.txt.maint_labels && cfg.txt.maint_labels.ok) ? cfg.txt.maint_labels.ok : 'Al día';
+                return '<span class="aura-inv-maint-badge aura-inv-maint-ok">' + escHtml(okLbl) + '</span>' +
+                    '<div class="aura-inv-cell-sub">' + escHtml(eq.next_maintenance_date) + '</div>';
             }
-            return '<span style="color:#c3c4c7;">—</span>';
+            return '<span class="aura-inv-muted">—</span>';
         },
 
         _statusCell: function (eq) {
             var cfg = this.cfg;
+            var labels = (cfg.txt && cfg.txt.status_labels) ? cfg.txt.status_labels : {};
             return eq.can_edit
-                ? '<select class="aura-inv-status-select" data-id="' + eq.id + '">' +
-                  renderStatusOptions(cfg.txt.status_labels, eq.status) + '</select>'
-                : '<span class="aura-inv-status-badge aura-inv-status-' + eq.status + '">' + eq.status_label + '</span>';
+                ? '<select class="aura-inv-status-select form-select form-select-sm aura-inv-status-' + escHtml(eq.status) + '" data-id="' + eq.id + '" data-tooltip="Cambiar estado operativo">' +
+                  renderStatusOptions(labels, eq.status) + '</select>'
+                : '<span class="aura-inv-status-badge aura-inv-status-' + escHtml(eq.status) + '">' + escHtml(eq.status_label || eq.status) + '</span>';
+        },
+
+        _buildEquipmentTooltip: function (eq) {
+            var cfg = this.cfg;
+            var stLbl = (cfg.txt && cfg.txt.status_labels && cfg.txt.status_labels[eq.status]) || eq.status_label || eq.status;
+            var card = '<div class="aura-tip-card">' +
+                '<div class="aura-tip-card-header"><div class="aura-tip-info">' +
+                '<div class="aura-tip-title">' + escHtml(eq.name) + '</div>' +
+                '</div></div>' +
+                '<div class="aura-tip-card-body">' +
+                '<div class="aura-tip-row"><span>Categoría</span><strong>' + escHtml(eq.category || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>Estado</span><strong>' + escHtml(stLbl) + '</strong></div>' +
+                '<div class="aura-tip-row"><span>Marca / Modelo</span><strong>' + escHtml([eq.brand, eq.model].filter(Boolean).join(' · ') || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>Cód. / Serie</span><strong>' + escHtml([eq.internal_code, eq.serial_number].filter(Boolean).join(' / ') || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>Ubicación</span><strong>' + escHtml(eq.location || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>Responsable</span><strong>' + escHtml(eq.responsible_name || '—') + '</strong></div>' +
+                '</div></div>';
+            return card;
         },
 
         _actions: function (eq) {
             var cfg = this.cfg;
             var h = '<div class="aura-row-actions aura-inv-row-actions">';
-            h += '<button type="button" class="aura-btn-action-icon aura-btn-view aura-inv-btn-detail" data-id="' + eq.id + '" data-tooltip="Ver detalle" title="Ver detalle">' +
+            h += '<button type="button" class="aura-btn-action-icon aura-btn-view aura-inv-btn-detail" data-id="' + eq.id + '" data-tooltip="Ver ficha 360°" aria-label="Ver ficha">' +
                  '<span class="dashicons dashicons-visibility"></span></button>';
             if (cfg.can_maint !== false) {
-                h += '<button type="button" class="aura-btn-action-icon aura-btn-maint aura-inv-btn-maint" data-id="' + eq.id + '" data-tooltip="' + (cfg.txt.register_maint || 'Registrar Mantenimiento') + '" title="' + (cfg.txt.register_maint || 'Registrar Mantenimiento') + '">' +
+                h += '<button type="button" class="aura-btn-action-icon aura-btn-maint aura-inv-btn-maint" data-id="' + eq.id + '" data-tooltip="' + escHtml((cfg.txt && cfg.txt.register_maint) || 'Registrar Mantenimiento') + '" aria-label="Registrar mantenimiento">' +
                      '<span class="dashicons dashicons-admin-tools"></span></button>';
             }
             if (eq.can_edit) {
-                h += '<button type="button" class="aura-btn-action-icon aura-btn-edit aura-inv-btn-edit" data-id="' + eq.id + '" data-tooltip="Editar" title="Editar">' +
+                h += '<button type="button" class="aura-btn-action-icon aura-btn-edit aura-inv-btn-edit" data-id="' + eq.id + '" data-tooltip="Editar equipo" aria-label="Editar">' +
                      '<span class="dashicons dashicons-edit"></span></button>';
             }
             if (eq.can_delete) {
                 h += '<button type="button" class="aura-btn-action-icon aura-btn-delete delete aura-inv-btn-delete" data-id="' + eq.id +
-                     '" data-name="' + escHtml(eq.name) + '" data-tooltip="Eliminar" title="Eliminar">' +
+                     '" data-name="' + escHtml(eq.name) + '" data-tooltip="Eliminar equipo" aria-label="Eliminar">' +
                      '<span class="dashicons dashicons-trash"></span></button>';
             }
             h += '</div>';
+            return h;
+        },
+
+        // ── Render Child Row Expandible (+) Desktop y Móvil ──────
+        renderEquipmentChildCard: function (eq) {
+            var cfg = this.cfg;
+            var stLbl = (cfg.txt && cfg.txt.status_labels && cfg.txt.status_labels[eq.status]) || eq.status_label || eq.status;
+            var photoHtml = '';
+            if (eq.photo_full_url || eq.photo_thumb_url) {
+                var pFull  = eq.photo_full_url || eq.photo_thumb_url;
+                var pThumb = eq.photo_thumb_url || eq.photo_full_url;
+                photoHtml = '<div class="aura-inv-child-photo aura-table-thumb-preview" data-img-url="' + escHtml(pFull) + '" data-preview-title="' + escHtml(eq.name) + '">' +
+                    '<img src="' + escHtml(pThumb) + '" alt="' + escHtml(eq.name) + '">' +
+                    '</div>';
+            } else {
+                photoHtml = '<div class="aura-inv-child-photo aura-inv-child-photo-empty"><span class="dashicons dashicons-format-image"></span></div>';
+            }
+
+            var costText = (parseFloat(eq.cost || 0) > 0) ? '$' + parseFloat(eq.cost).toLocaleString() : '—';
+            var estText  = (parseFloat(eq.estimated_value || 0) > 0) ? '$' + parseFloat(eq.estimated_value).toLocaleString() : '—';
+
+            var h = '<div class="aura-inv-child-card">';
+            h += '<div class="aura-inv-child-layout">';
+            h += photoHtml;
+            h += '<div class="aura-inv-child-main">';
+            h += '<div class="aura-inv-child-top">';
+            h += '<div><h4 class="aura-inv-child-title">' + escHtml(eq.name) + '</h4>';
+            var subtitle = [eq.brand, eq.model].filter(Boolean).join(' · ');
+            if (subtitle) {
+                h += '<div class="aura-inv-child-sub">' + escHtml(subtitle) + '</div>';
+            }
+            h += '</div>';
+            h += '<div class="aura-inv-child-badges">' +
+                 '<span class="aura-inv-status-badge aura-inv-status-' + escHtml(eq.status) + '">' + escHtml(stLbl) + '</span>' +
+                 '</div>';
+            h += '</div>'; // .aura-inv-child-top
+
+            h += '<div class="aura-inv-child-specs">';
+            h += childSpec('Categoría', eq.category || '—');
+            h += childSpec('Cód. Interno', eq.internal_code || '—');
+            h += childSpec('Núm. Serie', eq.serial_number || '—');
+            h += childSpec('Ubicación', eq.location || '—');
+            h += childSpec('Área', eq.area_name || '—');
+            h += childSpec('Responsable', eq.responsible_name || '—');
+            h += childSpec('Próx. Mantenimiento', eq.next_maintenance_date || 'No programado');
+            h += childSpec('Costo / Valor Est.', costText + ' / ' + estText);
+            h += '</div>';
+
+            if (eq.description) {
+                h += '<div class="aura-inv-child-desc"><strong>Descripción:</strong> ' + escHtml(eq.description) + '</div>';
+            }
+
+            h += '<div class="aura-inv-child-actions">';
+            h += '<button type="button" class="btn btn-indigo btn-sm aura-inv-btn-detail" data-id="' + eq.id + '">' +
+                 '<span class="dashicons dashicons-visibility"></span> Ver Ficha 360°</button>';
+            if (cfg.can_maint !== false) {
+                h += '<button type="button" class="btn btn-glass btn-sm aura-inv-btn-maint" data-id="' + eq.id + '">' +
+                     '<span class="dashicons dashicons-admin-tools"></span> Mantenimiento</button>';
+            }
+            if (eq.can_edit) {
+                h += '<button type="button" class="btn btn-glass btn-sm aura-inv-btn-edit" data-id="' + eq.id + '">' +
+                     '<span class="dashicons dashicons-edit"></span> Editar</button>';
+            }
+            if (eq.can_delete) {
+                h += '<button type="button" class="btn btn-glass btn-sm aura-btn-danger-outline aura-inv-btn-delete" data-id="' + eq.id + '" data-name="' + escHtml(eq.name) + '">' +
+                     '<span class="dashicons dashicons-trash"></span> Eliminar</button>';
+            }
+            h += '</div>'; // .aura-inv-child-actions
+            h += '</div>'; // .aura-inv-child-main
+            h += '</div>'; // .aura-inv-child-layout
+            h += '</div>'; // .aura-inv-child-card
             return h;
         },
 
@@ -88,30 +205,28 @@
             var self = this;
             var cfg  = this.cfg;
 
-            // Evitar re-inicialización si WP ya cargó el script antes
             if ($.fn.DataTable.isDataTable('#aura-inv-equipment-table')) {
                 this.table = $('#aura-inv-equipment-table').DataTable();
                 return;
             }
 
             this.table = new DataTable('#aura-inv-equipment-table', {
-                responsive: true,
+                responsive: false, // Manejamos filas expandibles (+) propias desktop & mobile
                 processing: true,
-                serverSide: false,           // DataTables maneja paginación client-side
+                serverSide: false,
                 pageLength: 20,
                 lengthMenu: [10, 20, 50, 100],
+                order: [[2, 'asc']],
                 language: {
-                    processing:  cfg.txt.loading || 'Cargando…',
-                    zeroRecords: cfg.txt.no_results || 'No se encontraron equipos.',
-                    info:        '_TOTAL_ equipos',
+                    processing:  (cfg.txt && cfg.txt.loading) || 'Cargando…',
+                    zeroRecords: (cfg.txt && cfg.txt.no_results) || 'No se encontraron equipos.',
+                    info:        '_TOTAL_ equipos registrados',
                     infoEmpty:   '0 equipos',
-                    infoFiltered: '(filtrado de _MAX_ total)',
+                    infoFiltered: '(filtrado de _MAX_ en total)',
                     search:      '',
-                    searchPlaceholder: cfg.txt.loading ? '' : 'Buscar…',
                     lengthMenu:  'Mostrar _MENU_ por página',
-                    paginate: { first:'«', last:'»', next:'›', previous:'‹' }
+                    paginate: { first: '«', last: '»', next: '›', previous: '‹' }
                 },
-                // Ocultar búsqueda y longitud propias de DataTables (usamos los filtros del plugin)
                 searching:  false,
                 dom: '<"aura-dt-top"li>rt<"aura-dt-bottom"p>',
 
@@ -123,7 +238,7 @@
                             action:             'aura_inventory_equipment_get_list',
                             nonce:              cfg.nonce,
                             page:               1,
-                            per_page:           9999,   // traer todo; paginación client-side
+                            per_page:           2000,
                             search:             $('#aura-inv-search').val(),
                             category:           $('#aura-inv-filter-category').val(),
                             status:             $('#aura-inv-filter-status').val(),
@@ -137,68 +252,93 @@
                     },
                 },
 
+                createdRow: function (row, eq) {
+                    $(row).attr('id', 'aura-inv-row-' + eq.id);
+                },
+
                 columns: [
                     {
-                        title: 'Foto',
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        className: 'aura-inv-col-toggle',
+                        width: '40px',
+                        render: function (data, type, eq) {
+                            if (type !== 'display') return '';
+                            return '<button type="button" class="aura-inv-row-toggle" data-id="' + eq.id + '" ' +
+                                'data-tooltip="Desplegar ficha completa del equipo" aria-expanded="false" aria-label="Expandir fila">+</button>';
+                        }
+                    },
+                    {
                         data: null,
                         orderable: false,
                         className: 'aura-inv-col-photo',
-                        width: '58px',
+                        width: '68px',
                         render: function (data, type, eq) {
                             if (type === 'display') return self._thumb(eq);
                             return eq.name || '';
                         },
                     },
                     {
-                        title: 'Equipo',
                         data: 'name',
+                        className: 'aura-inv-col-main',
                         render: function (data, type, eq) {
                             if (type !== 'display') return data || '';
-                            var h = '<strong>' + escHtml(eq.name) + '</strong>';
+                            var tip = self._buildEquipmentTooltip(eq);
+                            var h = '<a href="javascript:void(0)" class="aura-inv-title-link aura-inv-btn-detail" data-id="' + eq.id + '" ' +
+                                    'data-aura-tooltip="' + escHtml(tip) + '">' + escHtml(eq.name) + '</a>';
                             var sub = [
                                 eq.brand ? escHtml(eq.brand) : '',
                                 eq.internal_code ? 'Cód: ' + escHtml(eq.internal_code) : ''
                             ].filter(Boolean).join(' · ');
-                            if (sub) h += '<br><small style="color:#646970;">' + sub + '</small>';
+                            if (sub) h += '<div class="aura-inv-cell-sub">' + sub + '</div>';
+
+                            // Chips móviles compactos (visibles solo <= 782px cuando columnas secundarias se ocultan)
+                            var mobParts = [];
+                            if (eq.category) mobParts.push(escHtml(eq.category));
+                            if (eq.next_maintenance_date) mobParts.push('Mant: ' + escHtml(eq.next_maintenance_date));
+                            if (mobParts.length) {
+                                h += '<div class="aura-inv-mobile-meta">' + mobParts.join(' · ') + '</div>';
+                            }
                             return h;
                         },
                     },
                     {
-                        title: 'Mantenimiento',
                         data: 'next_maintenance_date',
+                        className: 'aura-inv-col-secondary column-maintenance',
                         render: function (data, type, eq) {
                             if (type !== 'display') return data || '';
                             return self._maintBadge(eq);
                         },
                     },
                     {
-                        title: 'Estado',
                         data: 'status',
+                        className: 'column-status',
                         render: function (data, type, eq) {
                             if (type !== 'display') return eq.status_label || data;
                             return self._statusCell(eq);
                         },
                     },
                     {
-                        title: 'Categoría',
                         data: 'category',
-                        render: function (data) { return escHtml(data || '—'); },
+                        className: 'aura-inv-col-secondary',
+                        render: function (data) { return data ? '<span class="aura-inv-cat-chip">' + escHtml(data) + '</span>' : '<span class="aura-inv-muted">—</span>'; },
                     },
                     {
-                        title: 'Ubicación',
                         data: 'location',
+                        className: 'aura-inv-col-secondary',
                         render: function (data) { return escHtml(data || '—'); },
                     },
                     {
-                        title: 'Responsable',
                         data: 'responsible_name',
+                        className: 'aura-inv-col-secondary',
                         render: function (data) { return escHtml(data || '—'); },
                     },
                     {
-                        title: 'Acciones',
                         data: null,
                         orderable: false,
                         searchable: false,
+                        className: 'column-actions',
                         render: function (data, type, eq) {
                             if (type !== 'display') return '';
                             return self._actions(eq);
@@ -208,7 +348,7 @@
             });
         },
 
-        // ── Filtros externos → recargar tabla ────────────────────
+        // ── Eventos ──────────────────────────────────────────────
         bindEvents: function () {
             var self = this;
 
@@ -222,10 +362,37 @@
                 self.table.ajax.reload();
             });
             $('#aura-inv-search').on('keydown', function (e) {
-                if (e.key === 'Enter') self.table.ajax.reload();
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    self.table.ajax.reload();
+                }
+            });
+            $('#aura-inv-filter-category, #aura-inv-filter-status, #aura-inv-filter-area, #aura-inv-filter-maintenance').on('change', function () {
+                self.table.ajax.reload();
             });
 
-            // Acciones delegadas en la tabla
+            // Toggle fila expandible (+)
+            $(document).on('click', '#aura-inv-equipment-table .aura-inv-row-toggle', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var $btn = $(this);
+                var $tr  = $btn.closest('tr');
+                var row  = self.table.row($tr);
+                var eq   = row.data();
+                if (!eq) return;
+
+                if (row.child.isShown()) {
+                    row.child.hide();
+                    $tr.removeClass('aura-row-expanded');
+                    $btn.removeClass('is-open').text('+').attr('aria-expanded', 'false');
+                } else {
+                    row.child(self.renderEquipmentChildCard(eq), 'aura-child-row').show();
+                    $tr.addClass('aura-row-expanded');
+                    $btn.addClass('is-open').text('−').attr('aria-expanded', 'true');
+                }
+            });
+
+            // Acciones delegadas en la tabla y child rows
             $(document).on('click', '.aura-inv-btn-detail', function () {
                 self.showDetail($(this).data('id'));
             });
@@ -240,30 +407,49 @@
                 self.deleteEquipment($(this).data('id'), $(this).data('name'));
             });
             $(document).on('change', '.aura-inv-status-select', function () {
-                self.updateStatus($(this).data('id'), $(this).val());
+                var $sel = $(this);
+                self.updateStatus($sel.data('id'), $sel.val(), $sel);
             });
 
-            // El evento para el detalle de mantenimiento ahora se maneja mediante un onclick inline
-            // que llama a window.auraToggleMaint(btn, rowId)
-
-
-            // Cerrar modales
-            $(document).on('click', '.aura-inv-modal-close, .aura-inv-modal-overlay', function () {
-                $('.aura-inv-modal').hide();
+            // Modales: botones cerrar & guardar guardia 2-fases contra arrastre de texto
+            $(document).on('click', '#aura-inv-detail-modal .aura-modal-close, #aura-inv-detail-modal .aura-inv-modal-dismiss', function () {
+                self.closeDetailModal();
             });
-            $(document).on('keydown', function (e) {
-                if (e.key === 'Escape') $('.aura-inv-modal').hide();
+            bindTwoPhaseBackdropGuard('#aura-inv-detail-modal', function () {
+                self.closeDetailModal();
+            });
+            $(document).on('keydown.auraInvModal', function (e) {
+                if (e.key === 'Escape' && $('#aura-inv-detail-modal').hasClass('active')) {
+                    self.closeDetailModal();
+                }
             });
         },
 
+        closeDetailModal: function () {
+            if (window.AuraUI && typeof window.AuraUI.closeModal === 'function') {
+                window.AuraUI.closeModal('aura-inv-detail-modal');
+            } else {
+                $('#aura-inv-detail-modal').removeClass('active is-active').hide();
+                $('body').css('overflow', '');
+            }
+        },
+
         showDetail: function (id) {
-
-            var cfg = this.cfg;
-            var $modal = $('#aura-inv-detail-modal');
+            var cfg    = this.cfg;
+            var modalEl = document.getElementById('aura-inv-detail-modal');
             var $body  = $('#aura-inv-detail-body');
+            var $editBtn = $('#aura-inv-detail-edit-btn');
 
-            $body.html('<span class="spinner is-active" style="display:block;margin:30px auto;float:none;"></span>');
-            $modal.show();
+            if ($editBtn.length && cfg.newEquipUrl) {
+                $editBtn.attr('href', cfg.newEquipUrl + '&id=' + id);
+            }
+
+            $body.html('');
+            if (window.AuraUI && typeof window.AuraUI.openModal === 'function') {
+                window.AuraUI.openModal('aura-inv-detail-modal', { skeleton: true });
+            } else {
+                $('#aura-inv-detail-modal').addClass('active is-active').css('display', 'flex');
+            }
 
             $.ajax({
                 url:    cfg.ajaxurl,
@@ -271,7 +457,8 @@
                 data:   { action: 'aura_inventory_equipment_get_detail', nonce: cfg.nonce, id: id },
                 success: function (res) {
                     if (!res.success) {
-                        $body.html('<p>' + (res.data.message || cfg.txt.error) + '</p>');
+                        $body.html('<div class="aura-inv-empty-state"><p>' + escHtml((res.data && res.data.message) || (cfg.txt && cfg.txt.error) || 'Error') + '</p></div>');
+                        if (window.AuraUI && modalEl) window.AuraUI.hideModalSkeleton(modalEl);
                         return;
                     }
                     var eq     = res.data.equipment;
@@ -281,115 +468,128 @@
 
                     $('#aura-inv-detail-title').text(eq.name + (eq.brand ? ' · ' + eq.brand : ''));
 
+                    var statusLbl = (cfg.txt && cfg.txt.status_labels && cfg.txt.status_labels[eq.status]) || eq.status_label || eq.status;
+                    var photoUrl  = eq.photo_full_url || eq.photo;
                     var html = '';
-                    // Prioridad: URL resolución completa; fallback a valor raw
-                    var photoUrl = eq.photo_full_url || eq.photo;
+
+                    // HERO 360° (imagen natural sin recorte + datos clave + botones rápidos)
+                    html += '<div class="aura-inv-detail-hero">';
+                    html += '<div class="aura-inv-detail-hero-photo">';
                     if (photoUrl) {
-                        html += '<div style="text-align:center;margin-bottom:16px;">'
-                             + '<img src="' + escHtml(photoUrl) + '" alt="' + escHtml(eq.name) + '"'
-                             + ' style="max-width:100%;max-height:260px;object-fit:contain;border-radius:6px;border:1px solid #dcdcde;">'
-                             + '</div>';
+                        html += '<img src="' + escHtml(photoUrl) + '" alt="' + escHtml(eq.name) + '" class="aura-table-thumb-preview" ' +
+                                'data-img-url="' + escHtml(photoUrl) + '" data-preview-title="' + escHtml(eq.name) + '">';
+                    } else {
+                        html += '<div class="aura-inv-detail-no-photo"><span class="dashicons dashicons-format-image"></span><small>Sin fotografía</small></div>';
                     }
-                    // Descripción general (ancho completo)
+                    html += '</div>';
+
+                    html += '<div class="aura-inv-detail-hero-info">';
+                    html += '<div class="aura-inv-detail-badges">' +
+                            '<span class="aura-inv-status-badge aura-inv-status-' + escHtml(eq.status) + '">' + escHtml(statusLbl) + '</span>' +
+                            (eq.category ? '<span class="aura-inv-cat-chip">' + escHtml(eq.category) + '</span>' : '') +
+                            (eq.internal_code ? '<span class="aura-inv-code-chip">Cód: ' + escHtml(eq.internal_code) + '</span>' : '') +
+                            '</div>';
+                    html += '<h3 class="aura-inv-detail-name">' + escHtml(eq.name) + '</h3>';
+                    if (eq.brand || eq.model) {
+                        html += '<p class="aura-inv-detail-brand">' + escHtml([eq.brand, eq.model].filter(Boolean).join(' · ')) + '</p>';
+                    }
                     if (eq.description) {
-                        html += '<div style="margin-bottom:16px;font-size:14px;color:#50575e;background:#f6f7f7;padding:12px;border-radius:6px;border-left:4px solid #ccd0d4;">';
-                        html += '<strong>Descripción:</strong><br>' + escHtml(eq.description).replace(/\n/g, '<br>');
+                        html += '<div class="aura-inv-detail-desc">' + escHtml(eq.description).replace(/\n/g, '<br>') + '</div>';
+                    }
+                    if (cfg.can_maint !== false) {
+                        html += '<div class="aura-inv-detail-quick-actions">';
+                        html += '<a href="' + cfg.newMaintUrl + '&equipment_id=' + eq.id + '" class="btn btn-indigo btn-sm">' +
+                                '<span class="dashicons dashicons-admin-tools"></span> ' + escHtml((cfg.txt && cfg.txt.register_maint) || 'Registrar Mantenimiento') + '</a>';
+                        if (cfg.maintListUrl) {
+                            html += '<a href="' + cfg.maintListUrl + '&equipment_id=' + eq.id + '" class="btn btn-glass btn-sm">' +
+                                    '<span class="dashicons dashicons-list-view"></span> ' + escHtml((cfg.txt && cfg.txt.view_maint_history) || 'Historial de Mantenimientos') + '</a>';
+                        }
                         html += '</div>';
                     }
+                    html += '</div>'; // .aura-inv-detail-hero-info
+                    html += '</div>'; // .aura-inv-detail-hero
 
-                    // Función auxiliar para secciones
-                    var startSection = function(title) {
-                        return '<div class="aura-inv-detail-section-title" style="margin-top:20px;border-bottom:1px solid #dcdcde;padding-bottom:4px;margin-bottom:12px;">' + title + '</div>' + '<div class="aura-inv-detail-grid">';
+                    var startSection = function (title, icon) {
+                        return '<div class="aura-inv-detail-section">' +
+                            '<div class="aura-inv-detail-section-title">' +
+                            (icon ? '<span class="dashicons dashicons-' + icon + '"></span> ' : '') + escHtml(title) + '</div>' +
+                            '<div class="aura-inv-detail-grid">';
                     };
 
                     // SECCIÓN I: INFORMACIÓN GENERAL
-                    html += startSection('Información General');
-                    html += detailRow('Marca', eq.brand || '—');
-                    html += detailRow('Modelo', eq.model || '—');
-                    html += detailRow('Código interno', eq.internal_code || '—');
-                    html += detailRow('Número de serie', eq.serial_number || '—');
-                    html += detailRow('Categoría', eq.category || '—');
-                    html += detailRow('Estado', '<span class="aura-inv-status-badge aura-inv-status-' + eq.status + '">' + (cfg.txt.status_labels[eq.status] || eq.status) + '</span>');
-                    html += detailRow('Ubicación', eq.location || '—');
-                    html += detailRow('Responsable', eq.responsible_name || '—');
+                    html += startSection('Información General', 'info');
+                    html += detailRow('Marca', escHtml(eq.brand || '—'));
+                    html += detailRow('Modelo', escHtml(eq.model || '—'));
+                    html += detailRow('Código interno', escHtml(eq.internal_code || '—'));
+                    html += detailRow('Número de serie', escHtml(eq.serial_number || '—'));
+                    html += detailRow('Categoría', escHtml(eq.category || '—'));
+                    html += detailRow('Ubicación', escHtml(eq.location || '—'));
+                    html += detailRow('Responsable', escHtml(eq.responsible_name || '—'));
                     if (eq.parent_equipment_id && eq.parent_equipment_name) {
-                        html += detailRow('Componente de', '<span style="font-weight:600;color:#2271b1;">↑ ' + escHtml(eq.parent_equipment_name) + '</span>');
+                        html += detailRow('Componente de', '<span class="aura-inv-parent-link">↑ ' + escHtml(eq.parent_equipment_name) + '</span>');
                     }
-                    html += '</div>';
+                    html += '</div></div>';
 
-                    // SECCIÓN II: ADQUISICIÓN Y FECHAS
-                    html += startSection('Adquisición');
-                    html += detailRow('Fecha adquisición', eq.acquisition_date || '—');
-                    html += detailRow('Proveedor', eq.supplier || '—');
-                    html += detailRow('Vencimiento garantía', eq.warranty_date || '—');
+                    // SECCIÓN II: ADQUISICIÓN Y VALOR
+                    html += startSection('Adquisición y Valor', 'cart');
+                    html += detailRow('Fecha adquisición', escHtml(eq.acquisition_date || '—'));
+                    html += detailRow('Proveedor', escHtml(eq.supplier || '—'));
+                    html += detailRow('Vencimiento garantía', escHtml(eq.warranty_date || '—'));
                     html += detailRow('Costo', eq.cost > 0 ? '$' + parseFloat(eq.cost).toLocaleString() : '—');
                     html += detailRow('Valor estimado', eq.estimated_value > 0 ? '$' + parseFloat(eq.estimated_value).toLocaleString() : '—');
-                    html += '</div>';
+                    html += '</div></div>';
 
-                    // SECCIÓN III: ESPECIFICACIONES TÉCNICAS (Sólo si existen)
+                    // SECCIÓN III: ESPECIFICACIONES TÉCNICAS
                     if (eq.oil_type || eq.oil_capacity || eq.fuel_type || eq.voltage || eq.hydraulic_pressure) {
-                        html += startSection('Especificaciones Técnicas');
-                        if (eq.oil_type || eq.oil_capacity) html += detailRow('Aceite', (eq.oil_capacity ? eq.oil_capacity + 'L ' : '') + (eq.oil_type || '—'));
-                        if (eq.fuel_type) html += detailRow('Combustible', eq.fuel_type);
-                        if (eq.voltage) html += detailRow('Voltaje', eq.voltage + 'V');
-                        if (eq.hydraulic_pressure) html += detailRow('Presión', eq.hydraulic_pressure);
-                        html += '</div>';
+                        html += startSection('Especificaciones Técnicas', 'dashboard');
+                        if (eq.oil_type || eq.oil_capacity) html += detailRow('Aceite', escHtml((eq.oil_capacity ? eq.oil_capacity + 'L ' : '') + (eq.oil_type || '—')));
+                        if (eq.fuel_type) html += detailRow('Combustible', escHtml(eq.fuel_type));
+                        if (eq.voltage) html += detailRow('Voltaje', escHtml(eq.voltage + 'V'));
+                        if (eq.hydraulic_pressure) html += detailRow('Presión', escHtml(eq.hydraulic_pressure));
+                        html += '</div></div>';
                     }
 
                     // SECCIÓN IV: MANTENIMIENTO
-                    html += startSection('Mantenimiento');
-                    var intervalStr = '—';
+                    html += startSection('Mantenimiento Programado', 'admin-tools');
+                    var intervalStr = 'No requiere';
                     if (eq.requires_maintenance == 1) {
                         var p = [];
                         if (eq.interval_months && (eq.interval_type === 'time' || eq.interval_type === 'both')) p.push('Cada ' + eq.interval_months + ' meses');
                         if (eq.interval_hours && (eq.interval_type === 'hours' || eq.interval_type === 'both')) p.push('Cada ' + eq.interval_hours + ' horas');
                         intervalStr = p.join(' o ') || 'Definido';
-                    } else {
-                        intervalStr = 'No requiere';
                     }
-                    html += detailRow('Frecuencia requerida', intervalStr);
-                    html += detailRow('Último mantenimiento', eq.last_maintenance_date || '—');
-                    html += detailRow('Próximo mantenimiento', eq.next_maintenance_date ? '<strong style="color:#d63638;">' + eq.next_maintenance_date + '</strong>' : '—');
+                    html += detailRow('Frecuencia requerida', escHtml(intervalStr));
+                    html += detailRow('Último mantenimiento', escHtml(eq.last_maintenance_date || '—'));
+                    html += detailRow('Próximo mantenimiento', eq.next_maintenance_date ? '<strong class="aura-inv-text-danger">' + escHtml(eq.next_maintenance_date) + '</strong>' : '—');
                     html += detailRow('Total invertido', eq.total_maintenance_cost > 0 ? '$' + parseFloat(eq.total_maintenance_cost).toLocaleString() : '—');
-                    html += '</div>';
+                    html += '</div></div>';
 
-                    // Acciones rápidas de mantenimiento para este equipo
-                    if (cfg.can_maint !== false) {
-                        html += '<div style="margin-top:14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:10px;">';
-                        html += '<a href="' + cfg.newMaintUrl + '&equipment_id=' + eq.id + '" class="button button-primary" style="display:inline-flex;align-items:center;gap:6px;">' +
-                                '<span class="dashicons dashicons-admin-tools" style="font-size:16px;width:16px;height:16px;line-height:16px;"></span> ' + (cfg.txt.register_maint || 'Registrar Mantenimiento') + '</a>';
-                        if (cfg.maintListUrl) {
-                            html += '<a href="' + cfg.maintListUrl + '&equipment_id=' + eq.id + '" class="button" style="display:inline-flex;align-items:center;gap:6px;">' +
-                                    '<span class="dashicons dashicons-list-view" style="font-size:16px;width:16px;height:16px;line-height:16px;"></span> ' + (cfg.txt.view_maint_history || 'Historial de Mantenimientos') + '</a>';
-                        }
-                        html += '</div>';
-                    }
-
-                    // Instrucciones de mantenimiento
                     if (eq.maintenance_instructions) {
-                        html += '<div style="margin-top:16px;background:#e5f5fa;border:1px solid #72aee6;border-radius:4px;padding:12px;">';
-                        html += '<strong style="color:#005a9e;display:block;margin-bottom:6px;"><span class="dashicons dashicons-clipboard" style="vertical-align:middle;margin-right:4px;"></span> Instrucciones de mantenimiento:</strong>';
-                        html += '<div style="font-size:13px;color:#1d2327;">' + escHtml(eq.maintenance_instructions).replace(/\n/g, '<br>') + '</div>';
+                        html += '<div class="aura-inv-maint-instr-callout">';
+                        html += '<div class="aura-inv-maint-instr-hdr"><span class="dashicons dashicons-clipboard"></span> Instrucciones de mantenimiento</div>';
+                        html += '<div class="aura-inv-maint-instr-body">' + escHtml(eq.maintenance_instructions).replace(/\n/g, '<br>') + '</div>';
                         html += '</div>';
                     }
 
-                    // Accesorios de dotación
+                    // Accesorios incluidos
                     if (eq.accessories) {
                         var accItems = eq.accessories.split('\n').filter(function (l) { return l.trim() !== ''; });
                         if (accItems.length > 0) {
-                            html += '<div class="aura-inv-detail-section-title">Accesorios incluidos</div>';
-                            html += '<ul style="margin:6px 0 12px 18px;padding:0;">';
+                            html += '<div class="aura-inv-detail-section">';
+                            html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-products"></span> Accesorios incluidos</div>';
+                            html += '<ul class="aura-inv-acc-list">';
                             accItems.forEach(function (item) {
-                                html += '<li style="list-style:disc;margin-bottom:3px;">' + escHtml(item.trim()) + '</li>';
+                                html += '<li>' + escHtml(item.trim()) + '</li>';
                             });
-                            html += '</ul>';
+                            html += '</ul></div>';
                         }
                     }
 
-                    // Componentes / accesorios con vida útil propia
+                    // Componentes vinculados
                     if (comps.length > 0) {
-                        html += '<div class="aura-inv-detail-section-title">Componentes vinculados (' + comps.length + ')</div>';
-                        html += '<table class="wp-list-table widefat striped" style="margin-top:8px;">';
+                        html += '<div class="aura-inv-detail-section">';
+                        html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-networking"></span> Componentes vinculados (' + comps.length + ')</div>';
+                        html += '<div class="aura-inv-subtable-wrap"><table class="aura-table aura-inv-detail-subtable">';
                         html += '<thead><tr><th>Nombre</th><th>Categoría</th><th>Cód. interno</th><th>Estado</th></tr></thead><tbody>';
                         comps.forEach(function (c) {
                             html += '<tr>' +
@@ -399,74 +599,78 @@
                                 '<td><span class="aura-inv-status-badge aura-inv-status-' + escHtml(c.status) + '">' + escHtml(c.status_label || c.status) + '</span></td>' +
                                 '</tr>';
                         });
-                        html += '</tbody></table>';
+                        html += '</tbody></table></div></div>';
                     }
 
                     // Últimos mantenimientos
                     if (mhist && mhist.length > 0) {
-                        html += '<div class="aura-inv-detail-section-title">Últimos mantenimientos (' + mhist.length + ')</div>';
-                        html += '<table class="wp-list-table widefat striped" style="margin-top:8px;">';
-                        html += '<thead><tr><th>Fecha</th><th>Tipo</th><th>Total</th><th>Ejecutor</th><th style="width:50px;text-align:center;">Detalle</th></tr></thead><tbody>';
+                        html += '<div class="aura-inv-detail-section">';
+                        html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-hammer"></span> Últimos mantenimientos (' + mhist.length + ')</div>';
+                        html += '<div class="aura-inv-subtable-wrap"><table class="aura-table aura-inv-detail-subtable">';
+                        html += '<thead><tr><th>Fecha</th><th>Tipo</th><th>Total</th><th>Ejecutor</th><th style="width:60px;text-align:center;">Detalle</th></tr></thead><tbody>';
                         mhist.forEach(function (m, index) {
-                            var descHTML = m.description ? escHtml(m.description).replace(/\n/g, '<br>') : '—';
+                            var descHTML  = m.description ? escHtml(m.description).replace(/\n/g, '<br>') : '—';
                             var partsHTML = m.replaced_parts ? escHtml(m.replaced_parts).replace(/\n/g, '<br>') : '';
-                            var rowId = 'maint-desc-' + m.id + '-' + index;
-                            
+                            var rowId     = 'maint-desc-' + m.id + '-' + index;
+
                             html += '<tr><td>' + escHtml(m.maintenance_date) + '</td><td>' + escHtml(m.type_label) +
                                 '</td><td>$' + parseFloat(m.total_cost).toLocaleString() +
                                 '</td><td>' + escHtml(m.performed_by === 'external'
                                     ? (m.workshop_name || 'Externo')
                                     : (m.technician_name || 'Interno')) + '</td>' +
                                 '<td style="text-align:center;">' +
-                                '<button type="button" class="button button-small" onclick="auraToggleMaint(this, \'' + rowId + '\')" title="Ver descripción del trabajo">' +
-                                '<span class="dashicons dashicons-text-page" style="margin-top:4px;"></span></button>' +
+                                '<button type="button" class="btn btn-glass btn-sm" onclick="auraToggleMaint(this, \'' + rowId + '\')" data-tooltip="Ver descripción del trabajo">' +
+                                '<span class="dashicons dashicons-text-page"></span></button>' +
                                 '</td></tr>';
 
                             html += '<tr id="' + rowId + '" class="aura-inv-maint-desc-row" style="display:none;">' +
-                                '<td colspan="5" style="padding:12px 16px;background:#f0f6fc;border-left:4px solid #2271b1;font-size:13px;border-bottom:1px solid #dcdcde;">' +
-                                '<strong style="color:#1d2327;">Descripción del trabajo:</strong><br>' +
-                                '<div style="color:#50575e;margin-top:4px;margin-bottom:' + (partsHTML ? '12px' : '0') + ';">' + descHTML + '</div>' +
-                                (partsHTML ? '<strong style="color:#1d2327;">Repuestos/Insumos usados:</strong><br><div style="color:#50575e;margin-top:4px;">' + partsHTML + '</div>' : '') +
-                                '</td></tr>';
+                                '<td colspan="5"><div class="aura-inv-maint-desc-box">' +
+                                '<strong>Descripción del trabajo:</strong><div class="aura-inv-maint-desc-text">' + descHTML + '</div>' +
+                                (partsHTML ? '<strong style="margin-top:10px;display:block;">Repuestos/Insumos usados:</strong><div class="aura-inv-maint-desc-text">' + partsHTML + '</div>' : '') +
+                                '</div></td></tr>';
                         });
-                        html += '</tbody></table>';
+                        html += '</tbody></table></div></div>';
                     }
 
                     // Últimos préstamos
                     if (lhist && lhist.length > 0) {
-                        html += '<div class="aura-inv-detail-section-title">Últimos préstamos</div>';
-                        html += '<table class="wp-list-table widefat striped" style="margin-top:8px;">';
+                        html += '<div class="aura-inv-detail-section">';
+                        html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-migrate"></span> Últimos préstamos</div>';
+                        html += '<div class="aura-inv-subtable-wrap"><table class="aura-table aura-inv-detail-subtable">';
                         html += '<thead><tr><th>Fecha salida</th><th>Tomado por</th><th>Devolución esperada</th><th>Devuelto</th></tr></thead><tbody>';
                         lhist.forEach(function (l) {
-                            var name = l.borrower_display || l.borrower_name || '—';
+                            var bname = l.borrower_display || l.borrower_name || '—';
                             var avatarHtml;
                             if (l.borrower_avatar) {
-                                avatarHtml = '<img src="' + escHtml(l.borrower_avatar) + '" width="28" height="28"' +
-                                    ' style="border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:7px;" alt="">';
+                                avatarHtml = '<img src="' + escHtml(l.borrower_avatar) + '" width="28" height="28" ' +
+                                    'class="aura-inv-mini-avatar avatar-zoomable" data-preview-title="' + escHtml(bname) + '" alt="' + escHtml(bname) + '">';
                             } else {
-                                var initials = name.split(' ').filter(Boolean).slice(0, 2)
+                                var initials = bname.split(' ').filter(Boolean).slice(0, 2)
                                     .map(function (w) { return (w[0] || '').toUpperCase(); }).join('');
-                                avatarHtml = '<span style="display:inline-flex;align-items:center;justify-content:center;' +
-                                    'width:28px;height:28px;border-radius:50%;background:#2271b1;color:#fff;' +
-                                    'font-size:11px;font-weight:700;vertical-align:middle;margin-right:7px;">' +
-                                    escHtml(initials || '?') + '</span>';
+                                avatarHtml = '<span class="aura-inv-mini-initials">' + escHtml(initials || '?') + '</span>';
                             }
                             html += '<tr>' +
                                 '<td>' + escHtml(l.loan_date) + '</td>' +
-                                '<td style="white-space:nowrap;">' + avatarHtml + escHtml(name) + '</td>' +
-                                '<td>' + escHtml(l.expected_return_date) + '</td>' +
+                                '<td class="aura-inv-borrower-td">' + avatarHtml + '<span>' + escHtml(bname) + '</span></td>' +
+                                '<td>' + escHtml(l.expected_return_date || '—') + '</td>' +
                                 '<td>' + (l.actual_return_date
-                                    ? escHtml(l.actual_return_date)
-                                    : '<span style="color:#d63638;font-weight:600;">Pendiente</span>') + '</td>' +
+                                    ? '<span class="aura-inv-text-ok">' + escHtml(l.actual_return_date) + '</span>'
+                                    : '<span class="aura-inv-text-danger">Pendiente</span>') + '</td>' +
                                 '</tr>';
                         });
-                        html += '</tbody></table>';
+                        html += '</tbody></table></div></div>';
                     }
 
                     $body.html(html);
+                    if (window.AuraUI && modalEl) {
+                        window.AuraUI.hideModalSkeleton(modalEl);
+                    }
                 },
                 error: function () {
-                    $body.html('<p>' + cfg.txt.error + '</p>');
+                    $body.html('<div class="aura-inv-empty-state"><p>' + escHtml((cfg.txt && cfg.txt.error) || 'Error al cargar detalle') + '</p></div>');
+                    if (window.AuraUI && modalEl) {
+                        window.AuraUI.hideModalSkeleton(modalEl);
+                    }
                 },
             });
         },
@@ -474,7 +678,8 @@
         deleteEquipment: function (id, name) {
             var cfg  = this.cfg;
             var self = this;
-            if (!window.confirm(cfg.txt.confirm_delete.replace('{name}', name))) return;
+            var msg  = (cfg.txt && cfg.txt.confirm_delete) ? cfg.txt.confirm_delete.replace('{name}', name) : ('¿Eliminar "' + name + '"?');
+            if (!window.confirm(msg)) return;
 
             $.ajax({
                 url:    cfg.ajaxurl,
@@ -482,32 +687,48 @@
                 data:   { action: 'aura_inventory_equipment_delete', nonce: cfg.nonce, id: id },
                 success: function (res) {
                     if (res.success) {
-                        $('#aura-inv-row-' + id).fadeOut(300, function () { $(this).remove(); });
-                        self.showNotice(cfg.txt.deleted, 'success');
+                        self.showNotice((cfg.txt && cfg.txt.deleted) || 'Equipo eliminado.', 'success');
+                        setTimeout(function () { window.location.reload(); }, 450);
                     } else {
-                        self.showNotice(res.data.message || cfg.txt.error, 'error');
+                        self.showNotice((res.data && res.data.message) || (cfg.txt && cfg.txt.error) || 'Error', 'error');
                     }
                 },
-                error: function () { self.showNotice(cfg.txt.error, 'error'); },
+                error: function () { self.showNotice((cfg.txt && cfg.txt.error) || 'Error de conexión.', 'error'); },
             });
         },
 
-        updateStatus: function (id, newStatus) {
-            var cfg = this.cfg;
+        updateStatus: function (id, newStatus, $sel) {
+            var cfg  = this.cfg;
+            var self = this;
+            if ($sel && $sel.length) {
+                $sel.removeClass('aura-inv-status-available aura-inv-status-in_use aura-inv-status-maintenance aura-inv-status-repair aura-inv-status-retired')
+                    .addClass('aura-inv-status-' + newStatus);
+            }
             $.ajax({
                 url:    cfg.ajaxurl,
                 method: 'POST',
                 data:   { action: 'aura_inventory_equipment_update_status', nonce: cfg.nonce, id: id, status: newStatus },
                 success: function (res) {
-                    if (!res.success) alert(res.data.message || cfg.txt.error);
+                    if (res.success) {
+                        self.showNotice((res.data && res.data.message) || 'Estado actualizado.', 'success');
+                    } else {
+                        self.showNotice((res.data && res.data.message) || (cfg.txt && cfg.txt.error) || 'Error', 'error');
+                    }
                 },
+                error: function () {
+                    self.showNotice((cfg.txt && cfg.txt.error) || 'Error de conexión.', 'error');
+                }
             });
         },
 
         showNotice: function (msg, type) {
-            var cls  = type === 'error' ? 'notice-error' : 'notice-success';
-            var $n   = $('<div class="notice ' + cls + ' is-dismissible" style="margin:12px 0;"><p>' + msg + '</p></div>');
-            $('.wp-header-end').after($n);
+            if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
+                window.AuraUI.showToast(msg, type === 'error' ? 'error' : 'success');
+                return;
+            }
+            var cls = type === 'error' ? 'notice-error' : 'notice-success';
+            var $n  = $('<div class="notice ' + cls + ' is-dismissible" style="margin:12px 0;"><p>' + escHtml(msg) + '</p></div>');
+            $('.aura-page-header, .wp-header-end').first().after($n);
             setTimeout(function () { $n.fadeOut(400, function () { $n.remove(); }); }, 4000);
         },
     };
@@ -521,6 +742,7 @@
         cropperInstance: null,
         pendingAttachmentId: null,
         pendingAttachmentUrl: null,
+        currentRatio: NaN,
 
         init: function () {
             if (typeof auraInvFormData === 'undefined') return;
@@ -614,23 +836,19 @@
             var self = this;
             var cfg  = this.cfg;
 
-            // Toggle campos de mantenimiento
             $('#inv_requires_maintenance').on('change', function () {
                 $('#aura-inv-maintenance-fields').toggle(this.checked);
             });
 
-            // Toggle filas meses/horas según tipo de intervalo
             $('input[name="interval_type"]').on('change', function () {
                 self.toggleIntervalRows($(this).val());
             }).filter(':checked').trigger('change');
 
-            // Hint de categoría
             $('#inv_category').on('change', function () {
                 var slug = $(this).val();
                 var hint = (cfg.categoryHints && cfg.categoryHints[slug]) ? cfg.categoryHints[slug].hint : '';
                 $('#inv_category_hint').text(hint);
 
-                // Autocompletar intervalo si hay datos
                 if (cfg.categoryHints && cfg.categoryHints[slug]) {
                     var cat = cfg.categoryHints[slug];
                     if (cat.interval_type && cat.interval_type !== 'none') {
@@ -643,7 +861,6 @@
                 }
             });
 
-            // Media uploader — abre WP media y luego muestra modal de recorte
             $('#aura-inv-select-photo').on('click', function (e) {
                 e.preventDefault();
                 var frame = wp.media({
@@ -659,19 +876,18 @@
                 frame.open();
             });
 
-            $('#aura-inv-remove-photo').on('click', function () {
+            $(document).on('click', '#aura-inv-remove-photo', function () {
                 $('#inv_photo').val('');
-                $('#aura-inv-photo-preview').html('<span class="dashicons dashicons-format-image" style="font-size:60px;color:#c3c4c7;display:block;text-align:center;padding:20px 0;"></span>');
+                $('#aura-inv-photo-preview').html('<span class="dashicons dashicons-format-image aura-inv-photo-placeholder"></span>');
             });
 
-            // Submit AJAX
             $('#aura-inv-equipment-form').on('submit', function (e) {
                 e.preventDefault();
                 self.submit();
             });
         },
 
-        // ── Crop modal ─────────────────────────────────────────
+        // ── Crop modal (Item 26 + ratio flexible) ─────────────────
         openCropModal: function (attachmentId, imageUrl) {
             var self = this;
             self.pendingAttachmentId  = attachmentId;
@@ -680,28 +896,30 @@
             var $modal = $('#aura-crop-modal');
             var $img   = $('#aura-crop-img');
 
-            // Destruir instancia anterior si existe
             if (self.cropperInstance) {
                 self.cropperInstance.destroy();
                 self.cropperInstance = null;
             }
 
             $img.attr('src', imageUrl);
-            $modal.css('display', 'flex');
+            if (window.AuraUI && typeof window.AuraUI.openModal === 'function') {
+                window.AuraUI.openModal('aura-crop-modal');
+            } else {
+                $modal.addClass('active is-active').css('display', 'flex');
+            }
 
-            // Esperar a que la imagen cargue antes de inicializar Cropper
             $img.off('load.cropper').on('load.cropper', function () {
+                if (typeof Cropper === 'undefined') return;
                 self.cropperInstance = new Cropper($img[0], {
-                    aspectRatio:   4 / 3,
+                    aspectRatio:   isNaN(self.currentRatio) ? NaN : self.currentRatio,
                     viewMode:      1,
                     dragMode:      'move',
-                    autoCropArea:  0.9,
+                    autoCropArea:  0.95,
                     responsive:    true,
                     checkCrossOrigin: false,
                 });
             });
-            // Si la imagen ya estaba cacheada, el evento load no dispara
-            if ($img[0].complete && $img[0].naturalWidth) {
+            if ($img[0] && $img[0].complete && $img[0].naturalWidth) {
                 $img.trigger('load.cropper');
             }
         },
@@ -710,7 +928,25 @@
             var self = this;
             var cfg  = this.cfg;
 
-            // Aplicar recorte
+            $(document).on('click', '.aura-crop-ratio-btn', function () {
+                $('.aura-crop-ratio-btn').removeClass('is-active');
+                $(this).addClass('is-active');
+                var raw = String($(this).data('ratio'));
+                self.currentRatio = (raw === 'NaN') ? NaN : parseFloat(raw);
+                if (self.cropperInstance) {
+                    self.cropperInstance.setAspectRatio(self.currentRatio);
+                }
+            });
+
+            $('#aura-crop-use-original').on('click', function () {
+                if (!self.pendingAttachmentId || !self.pendingAttachmentUrl) return;
+                $('#inv_photo').val(self.pendingAttachmentId);
+                $('#aura-inv-photo-preview').html(
+                    '<img src="' + escHtml(self.pendingAttachmentUrl) + '" style="max-width:100%;max-height:240px;width:auto;height:auto;object-fit:contain;margin:0 auto;border-radius:8px;">'
+                );
+                self.closeCropModal();
+            });
+
             $('#aura-crop-apply').on('click', function () {
                 if (!self.cropperInstance) return;
                 var $btn = $(this);
@@ -735,15 +971,15 @@
                         if (res.success) {
                             $('#inv_photo').val(res.data.attachment_id);
                             $('#aura-inv-photo-preview').html(
-                                '<img src="' + res.data.full_url + '" style="max-width:100%;border-radius:4px;">'
+                                '<img src="' + escHtml(res.data.full_url) + '" style="max-width:100%;max-height:240px;width:auto;height:auto;object-fit:contain;margin:0 auto;border-radius:8px;">'
                             );
                             self.closeCropModal();
                         } else {
-                            alert(res.data ? res.data.message : 'Error al procesar imagen.');
+                            EquipmentList.showNotice((res.data && res.data.message) || 'Error al procesar imagen.', 'error');
                         }
                     },
                     error: function () {
-                        alert('Error de conexión al procesar la imagen.');
+                        EquipmentList.showNotice('Error de conexión al procesar la imagen.', 'error');
                     },
                     complete: function () {
                         $btn.prop('disabled', false);
@@ -752,13 +988,16 @@
                 });
             });
 
-            // Cancelar / cerrar
             $('#aura-crop-cancel, #aura-crop-close').on('click', function () {
                 self.closeCropModal();
             });
-            // Cerrar con Escape
+            bindTwoPhaseBackdropGuard('#aura-crop-modal', function () {
+                self.closeCropModal();
+            });
             $(document).on('keydown.aura-crop', function (e) {
-                if (e.key === 'Escape') self.closeCropModal();
+                if (e.key === 'Escape' && ($('#aura-crop-modal').hasClass('active') || $('#aura-crop-modal').is(':visible'))) {
+                    self.closeCropModal();
+                }
             });
         },
 
@@ -767,7 +1006,12 @@
                 this.cropperInstance.destroy();
                 this.cropperInstance = null;
             }
-            $('#aura-crop-modal').hide();
+            if (window.AuraUI && typeof window.AuraUI.closeModal === 'function') {
+                window.AuraUI.closeModal('aura-crop-modal');
+            } else {
+                $('#aura-crop-modal').removeClass('active is-active').hide();
+                $('body').css('overflow', '');
+            }
             this.pendingAttachmentId  = null;
             this.pendingAttachmentUrl = null;
         },
@@ -778,9 +1022,9 @@
         },
 
         submit: function () {
-            var self = this;
-            var cfg  = this.cfg;
-            var $btn = $('#aura-inv-save-btn');
+            var self    = this;
+            var cfg     = this.cfg;
+            var $btn    = $('#aura-inv-save-btn');
             var $notice = $('#aura-inv-form-notice');
 
             var name = $.trim($('#inv_name').val());
@@ -805,43 +1049,47 @@
                 contentType: false,
                 success: function (res) {
                     $btn.prop('disabled', false);
+                    $btn.html('<span class="dashicons dashicons-yes"></span> ' + (cfg.isEdit ? 'Actualizar equipo' : 'Registrar equipo'));
                     if (res.success) {
                         self.showFormNotice(cfg.txt.saved, 'success');
-                        $btn.text(cfg.isEdit ? 'Actualizar equipo' : 'Registrar equipo');
-                        // Si es alta nueva, redirigir al listado tras 1.5s
+                        if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
+                            window.AuraUI.showToast(cfg.txt.saved, 'success');
+                        }
                         if (!cfg.isEdit) {
-                            setTimeout(function () { window.location.href = cfg.listUrl; }, 1500);
+                            setTimeout(function () { window.location.href = cfg.listUrl; }, 900);
+                        } else {
+                            setTimeout(function () { window.location.reload(); }, 900);
                         }
                     } else {
-                        self.showFormNotice(res.data.message || cfg.txt.error, 'error');
+                        self.showFormNotice((res.data && res.data.message) || cfg.txt.error, 'error');
                     }
                 },
                 error: function () {
-                    $btn.prop('disabled', false).text(cfg.isEdit ? 'Actualizar equipo' : 'Registrar equipo');
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> ' + (cfg.isEdit ? 'Actualizar equipo' : 'Registrar equipo'));
                     self.showFormNotice(cfg.txt.error, 'error');
                 },
             });
         },
 
         showFormNotice: function (msg, type) {
-            var cls = type === 'error' ? '#d63638' : '#00a32a';
-            $('#aura-inv-form-notice').html(
-                '<span style="color:' + cls + ';font-weight:600;">' + msg + '</span>'
-            );
+            var isErr = type === 'error';
+            var cls   = isErr ? 'aura-inv-form-alert-error' : 'aura-inv-form-alert-ok';
+            $('#aura-inv-form-notice').html('<div class="aura-inv-form-alert ' + cls + '">' + escHtml(msg) + '</div>');
         },
     };
 
     // ─────────────────────────────────────────────────────────────
-    // CONTROLADOR GLOBAL PARA ACORDEÓN DE MANTENIMIENTOS
+    // CONTROLADOR GLOBAL PARA ACORDEÓN DE MANTENIMIENTOS EN FICHA 360°
     // ─────────────────────────────────────────────────────────────
-    window.auraToggleMaint = function(btn, rowId) {
-        var $btn = $(btn);
-        var $row = $('#' + rowId);
+    window.auraToggleMaint = function (btn, rowId) {
+        var $btn  = $(btn);
+        var $row  = $('#' + rowId);
         var $icon = $btn.find('.dashicons');
 
-        // Cerrar otras filas (opcional)
         $('.aura-inv-maint-desc-row').not($row).hide();
-        $('.dashicons-arrow-up-alt2').removeClass('dashicons-arrow-up-alt2').addClass('dashicons-text-page');
+        $('.aura-inv-detail-subtable .dashicons-arrow-up-alt2')
+            .removeClass('dashicons-arrow-up-alt2')
+            .addClass('dashicons-text-page');
 
         if ($row.css('display') === 'none') {
             $row.css('display', 'table-row');
@@ -856,8 +1104,13 @@
     // HELPERS LOCALES
     // ─────────────────────────────────────────────────────────────
     function escHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     function detailRow(label, value) {
@@ -867,77 +1120,34 @@
             '</div>';
     }
 
+    function childSpec(label, value) {
+        return '<div class="aura-inv-child-spec">' +
+            '<span class="aura-inv-child-spec-lbl">' + escHtml(label) + '</span>' +
+            '<strong class="aura-inv-child-spec-val">' + escHtml(value) + '</strong>' +
+            '</div>';
+    }
+
     function renderStatusOptions(labels, current) {
         var html = '';
         Object.keys(labels).forEach(function (key) {
-            html += '<option value="' + key + '"' + (key === current ? ' selected' : '') + '>' + labels[key] + '</option>';
+            html += '<option value="' + escHtml(key) + '"' + (key === current ? ' selected' : '') + '>' + escHtml(labels[key]) + '</option>';
         });
         return html;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // TOOLTIP DE IMAGEN: div flotante que sigue al cursor
-    // ─────────────────────────────────────────────────────────────
-    (function () {
-        var tooltipW = 260, tooltipH = 195, gap = 14;
-
-        // Crear el div del tooltip una sola vez y anexarlo al body
-        var $tt = $(
-            '<div id="aura-inv-photo-tooltip" style="' +
-                'display:none;' +
-                'position:fixed;' +
-                'width:' + tooltipW + 'px;' +
-                'height:' + tooltipH + 'px;' +
-                'border-radius:8px;' +
-                'border:2px solid #fff;' +
-                'box-shadow:0 8px 24px rgba(0,0,0,.38);' +
-                'background-size:cover;' +
-                'background-position:center;' +
-                'pointer-events:none;' +
-                'z-index:99999;' +
-                'opacity:0;' +
-                'transition:opacity .14s ease, transform .14s ease;' +
-                'transform:scale(.92);' +
-            '"></div>'
-        ).appendTo('body');
-
-        function show(url, e) {
-            $tt.css('background-image', 'url("' + url + '")');
-            reposition(e);
-            $tt.show();
-            // Tiny delay so the browser paints the position before fading in
-            requestAnimationFrame(function () {
-                $tt.css({ opacity: 1, transform: 'scale(1)' });
-            });
-        }
-
-        function hide() {
-            $tt.css({ opacity: 0, transform: 'scale(.92)' });
-            setTimeout(function () { $tt.hide(); }, 160);
-        }
-
-        function reposition(e) {
-            var vw = window.innerWidth, vh = window.innerHeight;
-            var x = e.clientX + gap;
-            var y = e.clientY - tooltipH / 2;
-            if (x + tooltipW > vw - 8)  { x = e.clientX - tooltipW - gap; }
-            if (y + tooltipH > vh - 8)  { y = vh - tooltipH - 8; }
-            if (y < 8)                  { y = 8; }
-            $tt.css({ top: y + 'px', left: x + 'px' });
-        }
-
-        $(document)
-            .on('mouseenter', '.aura-inv-thumb-wrap', function (e) {
-                var url = $(this).attr('data-full');
-                if (url) { show(url, e); }
+    function bindTwoPhaseBackdropGuard(selector, onClose) {
+        var downOnBackdrop = false;
+        $(document).off('mousedown.guard_' + selector + ' click.guard_' + selector)
+            .on('mousedown.guard_' + selector, selector, function (e) {
+                downOnBackdrop = (e.target === e.currentTarget);
             })
-            .on('mousemove', '.aura-inv-thumb-wrap', function (e) {
-                reposition(e);
-            })
-            .on('mouseleave', '.aura-inv-thumb-wrap', function () {
-                hide();
+            .on('click.guard_' + selector, selector, function (e) {
+                if (downOnBackdrop && e.target === e.currentTarget) {
+                    onClose();
+                }
+                downOnBackdrop = false;
             });
-    }());
+    }
 
     // ─────────────────────────────────────────────────────────────
     // ARRANQUE

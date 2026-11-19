@@ -90,9 +90,10 @@ class Aura_Inventory_Loans {
         $t_equip = $wpdb->prefix . 'aura_inventory_equipment';
 
         $page        = max( 1, intval( $_POST['page']     ?? 1  ) );
-        $per_page    = min( 100, max( 10, intval( $_POST['per_page'] ?? 20 ) ) );
+        $raw_pp      = intval( $_POST['per_page'] ?? 20 );
+        $per_page    = $raw_pp > 100 ? min( 2000, $raw_pp ) : min( 100, max( 10, $raw_pp ) );
         $offset      = ( $page - 1 ) * $per_page;
-        $search      = sanitize_text_field( $_POST['search']      ?? '' );
+        $search      = sanitize_text_field( wp_unslash( $_POST['search']      ?? '' ) );
         $status_filter = sanitize_key( $_POST['loan_status'] ?? '' ); // active|overdue|returned
         $equipment_id  = intval( $_POST['equipment_id'] ?? 0 );
         $date_from   = self::sanitize_date( $_POST['date_from'] ?? '' );
@@ -143,11 +144,14 @@ class Aura_Inventory_Loans {
         $count_sql = "SELECT COUNT(*) {$base_sql}";
         $data_sql  = "SELECT
                         l.*,
-                        e.name       AS equipment_name,
-                        e.brand      AS equipment_brand,
-                        e.category   AS equipment_category,
-                        e.status     AS equipment_status,
-                        e.photo      AS equipment_photo_id,
+                        e.name          AS equipment_name,
+                        e.brand         AS equipment_brand,
+                        e.model         AS equipment_model,
+                        e.internal_code AS equipment_code,
+                        e.serial_number AS equipment_serial,
+                        e.category      AS equipment_category,
+                        e.status        AS equipment_status,
+                        e.photo         AS equipment_photo_id,
                         DATEDIFF( %s, l.expected_return_date ) AS days_overdue
                       {$base_sql}
                       ORDER BY {$sort_col} {$sort_dir}
@@ -166,6 +170,11 @@ class Aura_Inventory_Loans {
         $can_delete = current_user_can( 'aura_inventory_loan_delete' ) || current_user_can( 'manage_options' );
 
         foreach ( $rows as &$row ) {
+            foreach ( [ 'equipment_name', 'equipment_brand', 'equipment_model', 'borrowed_to_name', 'project', 'return_observations' ] as $tf ) {
+                if ( isset( $row->$tf ) && is_string( $row->$tf ) ) {
+                    $row->$tf = wp_unslash( $row->$tf );
+                }
+            }
             $user = get_userdata( $row->borrowed_by_user_id );
 
             // Si está vinculado a un contacto maestro de Aura
@@ -181,8 +190,8 @@ class Aura_Inventory_Loans {
             $free_name = trim( $row->borrowed_to_name ?? '' );
             if ( $contact ) {
                 $c_name = trim( $contact->first_name . ' ' . $contact->last_name ) ?: ( $contact->organization ?: '' );
-                $row->borrower_display = $free_name ?: $c_name;
-                $row->borrower_avatar  = $contact->avatar_url ?: ( $contact->email ? get_avatar_url( $contact->email, [ 'size' => 40, 'default' => 'mystery' ] ) : null );
+                $row->borrower_display = wp_unslash( $free_name ?: $c_name );
+                $row->borrower_avatar  = $contact->avatar_url ?: ( $contact->email ? get_avatar_url( $contact->email, [ 'size' => 80, 'default' => 'mystery' ] ) : null );
                 $row->contact_category = $contact->category;
                 $row->is_external      = empty( $row->borrowed_by_user_id );
             } elseif ( $free_name !== '' ) {
@@ -192,15 +201,16 @@ class Aura_Inventory_Loans {
             } else {
                 $row->borrower_display = $user ? $user->display_name : __( 'Usuario desconocido', 'aura-suite' );
                 $row->borrower_avatar  = $user
-                    ? get_avatar_url( $user->ID, [ 'size' => 40, 'default' => 'mystery' ] )
+                    ? get_avatar_url( $user->ID, [ 'size' => 80, 'default' => 'mystery' ] )
                     : null;
                 $row->is_external      = false;
             }
 
             $row->loan_status = self::get_loan_status( $row );
-            // URL miniatura de la foto del equipo
-            $photo_urls             = aura_get_equipment_photo_urls( $row->equipment_photo_id ?? '' );
+            // URLs miniatura y completa (sin recorte) de la foto del equipo
+            $photo_urls                 = aura_get_equipment_photo_urls( $row->equipment_photo_id ?? '' );
             $row->equipment_photo_thumb = $photo_urls['thumb'];
+            $row->equipment_photo_full  = $photo_urls['full'];
             $row->can_edit   = $can_edit;
             $row->can_delete = $can_delete;
         }
@@ -272,8 +282,8 @@ class Aura_Inventory_Loans {
 
         $contact_id    = intval( $_POST['contact_id'] ?? 0 );
         $borrowed_by   = intval( $_POST['borrowed_by_user_id'] ?? get_current_user_id() );
-        $borrowed_name = sanitize_text_field( $_POST['borrowed_to_name'] ?? '' );
-        $borrowed_phone = sanitize_text_field( $_POST['borrowed_to_phone'] ?? '' );
+        $borrowed_name = sanitize_text_field( wp_unslash( $_POST['borrowed_to_name'] ?? '' ) );
+        $borrowed_phone = sanitize_text_field( wp_unslash( $_POST['borrowed_to_phone'] ?? '' ) );
 
         // Si se envió un contacto maestro, resolver campos vacíos
         if ( $contact_id > 0 ) {
@@ -299,10 +309,10 @@ class Aura_Inventory_Loans {
         if ( $borrowed_phone !== '' && ! preg_match( '/^[\+0-9\s\-]{6,30}$/', $borrowed_phone ) ) {
             $borrowed_phone = '';
         }
-        $project       = sanitize_text_field( $_POST['project']           ?? '' );
+        $project       = sanitize_text_field( wp_unslash( $_POST['project']           ?? '' ) );
         $state_out     = in_array( $_POST['equipment_state_out'] ?? '', [ 'good', 'fair', 'poor' ] )
                              ? sanitize_key( $_POST['equipment_state_out'] ) : 'good';
-        $photo_out     = sanitize_text_field( $_POST['photo_out'] ?? '' );
+        $photo_out     = sanitize_text_field( wp_unslash( $_POST['photo_out'] ?? '' ) );
 
         // ── Insertar préstamo ───────────────────────────────────
         $inserted = $wpdb->insert(
@@ -401,9 +411,9 @@ class Aura_Inventory_Loans {
         $return_state  = in_array( $_POST['return_state'] ?? '', [ 'good', 'fair', 'damaged' ] )
                              ? sanitize_key( $_POST['return_state'] ) : 'good';
         $hours_used    = ( $_POST['hours_used'] ?? '' !== '' ) ? abs( floatval( $_POST['hours_used'] ) ) : null;
-        $return_photo  = sanitize_text_field( $_POST['return_photo']  ?? '' );
+        $return_photo  = sanitize_text_field( wp_unslash( $_POST['return_photo']  ?? '' ) );
         $req_maint     = ! empty( $_POST['requires_maintenance_after'] ) ? 1 : 0;
-        $observations  = sanitize_textarea_field( $_POST['return_observations'] ?? '' );
+        $observations  = sanitize_textarea_field( wp_unslash( $_POST['return_observations'] ?? '' ) );
 
         // ── Actualizar préstamo ─────────────────────────────────
         $wpdb->update(
@@ -568,26 +578,38 @@ class Aura_Inventory_Loans {
 
         global $wpdb;
         $t_equip = $wpdb->prefix . 'aura_inventory_equipment';
-        $search  = sanitize_text_field( $_POST['search'] ?? '' );
+        $search  = sanitize_text_field( wp_unslash( $_POST['search'] ?? '' ) );
 
         $where  = "deleted_at IS NULL AND status = 'available'";
         $params = [];
 
         if ( $search !== '' ) {
             $like    = '%' . $wpdb->esc_like( $search ) . '%';
-            $where  .= ' AND (name LIKE %s OR brand LIKE %s OR internal_code LIKE %s)';
-            $params  = [ $like, $like, $like ];
+            $where  .= ' AND (name LIKE %s OR brand LIKE %s OR internal_code LIKE %s OR category LIKE %s)';
+            $params  = [ $like, $like, $like, $like ];
         }
 
-        $sql = "SELECT id, name, brand, model, internal_code, category
+        $sql = "SELECT id, name, brand, model, internal_code, serial_number, category, location, photo
                 FROM {$t_equip}
                 WHERE {$where}
                 ORDER BY name ASC
-                LIMIT 50";
+                LIMIT 200";
 
         $rows = $params
             ? $wpdb->get_results( $wpdb->prepare( $sql, ...$params ) )
             : $wpdb->get_results( $sql );
+
+        foreach ( $rows as &$r ) {
+            foreach ( [ 'name', 'brand', 'model', 'internal_code', 'serial_number', 'category', 'location' ] as $tf ) {
+                if ( isset( $r->$tf ) && is_string( $r->$tf ) ) {
+                    $r->$tf = wp_unslash( $r->$tf );
+                }
+            }
+            $urls = aura_get_equipment_photo_urls( $r->photo ?? '' );
+            $r->photo_thumb_url = $urls['thumb'];
+            $r->photo_full_url  = $urls['full'];
+        }
+        unset( $r );
 
         wp_send_json_success( $rows );
     }
@@ -731,12 +753,12 @@ class Aura_Inventory_Loans {
             wp_send_json_error( [ 'message' => __( 'La fecha de devolución no puede ser anterior a la fecha de préstamo.', 'aura-suite' ) ] );
         }
 
-        $borrowed_name  = sanitize_text_field( $_POST['borrowed_to_name']  ?? '' );
-        $borrowed_phone = sanitize_text_field( $_POST['borrowed_to_phone'] ?? '' );
+        $borrowed_name  = sanitize_text_field( wp_unslash( $_POST['borrowed_to_name']  ?? '' ) );
+        $borrowed_phone = sanitize_text_field( wp_unslash( $_POST['borrowed_to_phone'] ?? '' ) );
         if ( $borrowed_phone !== '' && ! preg_match( '/^[\+0-9\s\-]{6,30}$/', $borrowed_phone ) ) {
             $borrowed_phone = '';
         }
-        $project = sanitize_text_field( $_POST['project'] ?? '' );
+        $project = sanitize_text_field( wp_unslash( $_POST['project'] ?? '' ) );
 
         $update_data = [
             'loan_date'            => $loan_date,

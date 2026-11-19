@@ -74,13 +74,14 @@ class Aura_Inventory_Maintenance {
 
         // ── Parámetros ─────────────────────────────────────────
         $page         = max( 1, intval( $_POST['page']      ?? 1  ) );
-        $per_page     = min( 100, max( 10, intval( $_POST['per_page'] ?? 20 ) ) );
+        $raw_pp       = intval( $_POST['per_page'] ?? 20 );
+        $per_page     = $raw_pp > 100 ? min( 2000, $raw_pp ) : min( 100, max( 10, $raw_pp ) );
         $offset       = ( $page - 1 ) * $per_page;
-        $search       = sanitize_text_field( $_POST['search']       ?? '' );
+        $search       = sanitize_text_field( wp_unslash( $_POST['search']       ?? '' ) );
         $equipment_id = intval( $_POST['equipment_id'] ?? 0 );
-        $type         = sanitize_text_field( $_POST['type']         ?? '' );
-        $performed_by = sanitize_text_field( $_POST['performed_by'] ?? '' );
-        $post_status  = sanitize_text_field( $_POST['post_status']  ?? '' );
+        $type         = sanitize_text_field( wp_unslash( $_POST['type']         ?? '' ) );
+        $performed_by = sanitize_text_field( wp_unslash( $_POST['performed_by'] ?? '' ) );
+        $post_status  = sanitize_text_field( wp_unslash( $_POST['post_status']  ?? '' ) );
         $date_from    = self::sanitize_date( $_POST['date_from'] ?? '' );
         $date_to      = self::sanitize_date( $_POST['date_to']   ?? '' );
         $sort_by      = in_array( $_POST['sort_by'] ?? '', [ 'maintenance_date', 'total_cost', 'type', 'equipment_name' ] )
@@ -182,17 +183,21 @@ class Aura_Inventory_Maintenance {
             $items[] = [
                 'id'               => (int)    $row->id,
                 'equipment_id'     => (int)    $row->equipment_id,
-                'equipment_name'   => $row->equipment_name ?? '',
-                'equipment_brand'  => $row->equipment_brand ?? '',
-                'equipment_code'   => $row->equipment_code ?? '',
+                'equipment_name'   => wp_unslash( $row->equipment_name ?? '' ),
+                'equipment_brand'  => wp_unslash( $row->equipment_brand ?? '' ),
+                'equipment_code'   => wp_unslash( $row->equipment_code ?? '' ),
                 'photo_thumb_url'  => $photo_urls['thumb'],
+                'photo_full_url'   => $photo_urls['full'],
                 'type'             => $row->type,
                 'type_label'       => self::get_type_label( $row->type ),
                 'maintenance_date' => $row->maintenance_date,
                 'equipment_hours'  => $row->equipment_hours !== null ? (float) $row->equipment_hours : null,
                 'performed_by'     => $row->performed_by,
-                'workshop_name'    => $row->workshop_name ?? '',
+                'workshop_name'    => wp_unslash( $row->workshop_name ?? '' ),
                 'tech_name'        => $tech_name,
+                'invoice_number'   => wp_unslash( $row->invoice_number ?? '' ),
+                'description'      => wp_unslash( $row->description ?? '' ),
+                'parts_replaced'   => wp_unslash( $row->parts_replaced ?? '' ),
                 'parts_cost'       => (float) $row->parts_cost,
                 'labor_cost'       => (float) $row->labor_cost,
                 'total_cost'       => (float) $row->total_cost,
@@ -280,19 +285,19 @@ class Aura_Inventory_Maintenance {
             'type'                => $type,
             'maintenance_date'    => $maint_date,
             'equipment_hours'     => is_numeric( $_POST['equipment_hours'] ?? '' ) ? floatval( $_POST['equipment_hours'] ) : null,
-            'description'         => sanitize_textarea_field( $_POST['description']          ?? '' ),
-            'parts_replaced'      => sanitize_textarea_field( $_POST['parts_replaced']       ?? '' ),
+            'description'         => sanitize_textarea_field( wp_unslash( $_POST['description']          ?? '' ) ),
+            'parts_replaced'      => sanitize_textarea_field( wp_unslash( $_POST['parts_replaced']       ?? '' ) ),
             'parts_cost'          => $parts_cost,
             'labor_cost'          => $labor_cost,
             'total_cost'          => $total_cost,
             'performed_by'        => $performed_by,
-            'workshop_name'       => sanitize_text_field( $_POST['workshop_name']      ?? '' ),
+            'workshop_name'       => sanitize_text_field( wp_unslash( $_POST['workshop_name']      ?? '' ) ),
             'internal_technician' => intval( $_POST['internal_technician'] ?? 0 ) ?: null,
-            'workshop_invoice'    => esc_url_raw(  $_POST['workshop_invoice']   ?? '' ),
-            'invoice_number'      => sanitize_text_field( $_POST['invoice_number']     ?? '' ),
+            'workshop_invoice'    => esc_url_raw(  wp_unslash( $_POST['workshop_invoice']   ?? '' ) ),
+            'invoice_number'      => sanitize_text_field( wp_unslash( $_POST['invoice_number']     ?? '' ) ),
             'post_status'         => $post_status,
             'next_action_date'    => self::sanitize_date( $_POST['next_action_date'] ?? '' ) ?: null,
-            'observations'        => sanitize_textarea_field( $_POST['observations']   ?? '' ),
+            'observations'        => sanitize_textarea_field( wp_unslash( $_POST['observations']   ?? '' ) ),
             'registered_by'       => get_current_user_id(),
         ];
 
@@ -512,6 +517,12 @@ class Aura_Inventory_Maintenance {
         if ( $row->registered_by ) {
             $u = get_userdata( (int) $row->registered_by );
             $reg_name = $u ? $u->display_name : '';
+        }
+
+        foreach ( [ 'equipment_name', 'equipment_brand', 'equipment_model', 'equipment_code', 'description', 'parts_replaced', 'workshop_name', 'invoice_number', 'observations' ] as $tf ) {
+            if ( isset( $row->$tf ) && is_string( $row->$tf ) ) {
+                $row->$tf = wp_unslash( $row->$tf );
+            }
         }
 
         wp_send_json_success( [

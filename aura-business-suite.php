@@ -2178,6 +2178,12 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
         }
 
 
+        // ── Helper inline para versionado por filemtime en Inventario ─────────
+        $inv_ver = function ($rel_path) {
+            $abs = AURA_PLUGIN_DIR . ltrim($rel_path, '/');
+            return AURA_VERSION . '.' . (file_exists($abs) ? filemtime($abs) : time());
+        };
+
         // ── Assets Inventario — Dashboard ────────────────────────────────────────
         if ($hook === 'toplevel_page_aura-inventory') {
             wp_enqueue_script(
@@ -2187,24 +2193,23 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
                 '3.46.0',
                 true
             );
-            // Reutilizar estilos base de equipos (KPI cards, badges, etc.)
             wp_enqueue_style(
                 'aura-inventory-equipment',
                 AURA_PLUGIN_URL . 'assets/css/inventory-equipment.css',
-                ['aura-admin-styles'],
-                AURA_VERSION
+                ['aura-design-system'],
+                $inv_ver('assets/css/inventory-equipment.css')
             );
             wp_enqueue_style(
                 'aura-inventory-dashboard',
                 AURA_PLUGIN_URL . 'assets/css/inventory-dashboard.css',
-                ['aura-admin-styles', 'aura-inventory-equipment'],
-                AURA_VERSION
+                ['aura-design-system', 'aura-inventory-equipment'],
+                $inv_ver('assets/css/inventory-dashboard.css')
             );
             wp_enqueue_script(
                 'aura-inventory-dashboard',
                 AURA_PLUGIN_URL . 'assets/js/inventory-dashboard.js',
-                ['jquery', 'apexcharts'],
-                AURA_VERSION,
+                ['jquery', 'apexcharts', 'aura-ui-core'],
+                $inv_ver('assets/js/inventory-dashboard.js'),
                 true
             );
         }
@@ -2238,17 +2243,39 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
                 '1.6.2',
                 true
             );
+            if (!wp_script_is('aura-third-party-selector', 'registered') && file_exists(AURA_PLUGIN_DIR . 'assets/js/third-party-selector.js')) {
+                wp_register_script(
+                    'aura-third-party-selector',
+                    AURA_PLUGIN_URL . 'assets/js/third-party-selector.js',
+                    ['jquery', 'jquery-ui-autocomplete'],
+                    $inv_ver('assets/js/third-party-selector.js'),
+                    true
+                );
+            }
+            if (wp_script_is('aura-third-party-selector', 'registered')) {
+                wp_enqueue_script('aura-third-party-selector');
+                if (!wp_scripts()->get_data('aura-third-party-selector', 'data')) {
+                    wp_localize_script('aura-third-party-selector', 'auraCounterpartiesData', [
+                        'ajaxUrl' => admin_url('admin-ajax.php'),
+                        'nonce'   => wp_create_nonce('aura_search_counterparties_nonce'),
+                    ]);
+                }
+            }
             wp_enqueue_style(
                 'aura-inventory-equipment',
                 AURA_PLUGIN_URL . 'assets/css/inventory-equipment.css',
-                ['aura-admin-styles'],
-                AURA_VERSION
+                ['aura-design-system'],
+                $inv_ver('assets/css/inventory-equipment.css')
             );
+            $eq_deps = ['jquery', 'jquery-ui-datepicker', 'cropperjs', 'aura-ui-core'];
+            if (wp_script_is('aura-third-party-selector', 'registered')) {
+                $eq_deps[] = 'aura-third-party-selector';
+            }
             wp_enqueue_script(
                 'aura-inventory-equipment',
                 AURA_PLUGIN_URL . 'assets/js/inventory-equipment.js',
-                ['jquery', 'jquery-ui-datepicker', 'cropperjs'],
-                AURA_VERSION,
+                $eq_deps,
+                $inv_ver('assets/js/inventory-equipment.js'),
                 true
             );
         }
@@ -2274,51 +2301,83 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
             wp_enqueue_style(
                 'aura-inventory-equipment',
                 AURA_PLUGIN_URL . 'assets/css/inventory-equipment.css',
-                ['aura-admin-styles'],
-                AURA_VERSION
+                ['aura-design-system'],
+                $inv_ver('assets/css/inventory-equipment.css')
             );
             wp_enqueue_style(
                 'aura-inventory-maintenance',
                 AURA_PLUGIN_URL . 'assets/css/inventory-maintenance.css',
-                ['aura-admin-styles', 'aura-inventory-equipment'],
-                AURA_VERSION
+                ['aura-design-system', 'aura-inventory-equipment'],
+                $inv_ver('assets/css/inventory-maintenance.css')
             );
             wp_enqueue_script(
                 'aura-inventory-equipment',
                 AURA_PLUGIN_URL . 'assets/js/inventory-equipment.js',
-                ['jquery', 'jquery-ui-datepicker'],
-                AURA_VERSION,
+                ['jquery', 'jquery-ui-datepicker', 'aura-ui-core'],
+                $inv_ver('assets/js/inventory-equipment.js'),
                 true
             );
             wp_enqueue_script(
                 'aura-inventory-maintenance',
                 AURA_PLUGIN_URL . 'assets/js/inventory-maintenance.js',
-                ['jquery', 'jquery-ui-datepicker', 'aura-inventory-equipment'],
-                AURA_VERSION,
+                ['jquery', 'jquery-ui-datepicker', 'aura-inventory-equipment', 'aura-ui-core'],
+                $inv_ver('assets/js/inventory-maintenance.js'),
                 true
             );
         }
 
         // ── Assets Inventario — Préstamos (FASE 5) ────────────────────
         if ($hook === 'inventario_page_aura-inventory-loans') {
+            if (!wp_script_is('aura-third-party-selector', 'registered') && file_exists(AURA_PLUGIN_DIR . 'assets/js/third-party-selector.js')) {
+                wp_register_script(
+                    'aura-third-party-selector',
+                    AURA_PLUGIN_URL . 'assets/js/third-party-selector.js',
+                    ['jquery', 'jquery-ui-autocomplete'],
+                    $inv_ver('assets/js/third-party-selector.js'),
+                    true
+                );
+            }
+            if (wp_script_is('aura-third-party-selector', 'registered')) {
+                wp_enqueue_script('aura-third-party-selector');
+                if (!wp_scripts()->get_data('aura-third-party-selector', 'data')) {
+                    wp_localize_script('aura-third-party-selector', 'auraCounterpartiesData', [
+                        'ajaxUrl' => admin_url('admin-ajax.php'),
+                        'nonce'   => wp_create_nonce('aura_search_counterparties_nonce'),
+                    ]);
+                }
+            }
             wp_enqueue_style(
                 'aura-inventory-equipment',
                 AURA_PLUGIN_URL . 'assets/css/inventory-equipment.css',
-                ['aura-admin-styles'],
-                AURA_VERSION
+                ['aura-design-system'],
+                $inv_ver('assets/css/inventory-equipment.css')
             );
             wp_enqueue_style(
                 'aura-inventory-loans',
                 AURA_PLUGIN_URL . 'assets/css/inventory-loans.css',
-                ['aura-admin-styles', 'aura-inventory-equipment'],
-                AURA_VERSION
+                ['aura-design-system', 'aura-inventory-equipment'],
+                $inv_ver('assets/css/inventory-loans.css')
             );
+            $loan_deps = ['jquery', 'aura-ui-core'];
+            if (wp_script_is('aura-third-party-selector', 'registered')) {
+                $loan_deps[] = 'aura-third-party-selector';
+            }
             wp_enqueue_script(
                 'aura-inventory-loans',
                 AURA_PLUGIN_URL . 'assets/js/inventory-loans.js',
-                ['jquery'],
-                AURA_VERSION,
+                $loan_deps,
+                $inv_ver('assets/js/inventory-loans.js'),
                 true
+            );
+        }
+
+        // ── Assets Inventario — Reportes ─────────────────────────────────────────
+        if ($hook === 'inventario_page_aura-inventory-reports') {
+            wp_enqueue_style(
+                'aura-inventory-dashboard',
+                AURA_PLUGIN_URL . 'assets/css/inventory-dashboard.css',
+                ['aura-design-system'],
+                $inv_ver('assets/css/inventory-dashboard.css')
             );
         }
 
@@ -2327,14 +2386,14 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
             wp_enqueue_style(
                 'aura-inventory-settings',
                 AURA_PLUGIN_URL . 'assets/css/inventory-settings.css',
-                ['aura-admin-styles'],
-                AURA_VERSION
+                ['aura-design-system'],
+                $inv_ver('assets/css/inventory-settings.css')
             );
             wp_enqueue_script(
                 'aura-inventory-settings',
                 AURA_PLUGIN_URL . 'assets/js/inventory-settings.js',
-                ['jquery'],
-                AURA_VERSION,
+                ['jquery', 'aura-ui-core'],
+                $inv_ver('assets/js/inventory-settings.js'),
                 true
             );
         }
@@ -3455,12 +3514,14 @@ function aura_get_equipment_photo_urls($photo)
         return ['full' => '', 'thumb' => ''];
     if (is_numeric($photo)) {
         $id = (int) $photo;
-        $full_src = wp_get_attachment_image_src($id, 'aura-equipment-full');
-        $thumb_src = wp_get_attachment_image_src($id, 'aura-equipment-thumb');
-        $fallback = wp_get_attachment_url($id) ?: '';
+        $large_src = wp_get_attachment_image_src($id, 'large');
+        $med_src   = wp_get_attachment_image_src($id, 'medium');
+        $fallback  = wp_get_attachment_url($id) ?: '';
+        $full_url  = $fallback ?: ($large_src ? $large_src[0] : '');
+        $thumb_url = $med_src ? $med_src[0] : ($large_src ? $large_src[0] : $fallback);
         return [
-            'full' => $full_src ? $full_src[0] : $fallback,
-            'thumb' => $thumb_src ? $thumb_src[0] : ($full_src ? $full_src[0] : $fallback),
+            'full'  => $full_url,
+            'thumb' => $thumb_url,
         ];
     }
     // URL legacy — se usa como es en ambos tamaños
