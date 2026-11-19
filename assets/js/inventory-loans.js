@@ -14,6 +14,7 @@
     var cfg;
     var loansTable = null;
     var equipListCache = null;
+    var contactListCache = null;
 
     // ─── INIT ──────────────────────────────────────────────────
     function init() {
@@ -25,6 +26,7 @@
         bindFilters();
         bindCheckoutModal();
         bindEquipPickerModal();
+        bindContactPickerModal();
         bindCheckinModal();
         bindEditLoanModal();
         bindGlobalModalGuards();
@@ -418,6 +420,7 @@
 
     function bindGlobalModalGuards() {
         bindTwoPhaseBackdropGuard('aura-inv-equip-picker-modal', function () { closeModalById('aura-inv-equip-picker-modal'); });
+        bindTwoPhaseBackdropGuard('aura-inv-contact-picker-modal', function () { closeModalById('aura-inv-contact-picker-modal'); });
         bindTwoPhaseBackdropGuard('js-modal-checkout', function () { closeModalById('js-modal-checkout'); });
         bindTwoPhaseBackdropGuard('js-modal-checkin', function () { closeModalById('js-modal-checkin'); });
         bindTwoPhaseBackdropGuard('js-modal-history', function () { closeModalById('js-modal-history'); });
@@ -436,6 +439,12 @@
             window.__auraLoansCaptureEscBound = true;
             window.addEventListener('keydown', function (e) {
                 if (e.key !== 'Escape') return;
+                if ($('#aura-inv-contact-picker-modal').is(':visible')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    closeModalById('aura-inv-contact-picker-modal');
+                    return;
+                }
                 if ($('#aura-inv-equip-picker-modal').is(':visible')) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
@@ -446,7 +455,7 @@
 
         $(document).on('keydown.auraLoansEsc', function (e) {
             if (e.key !== 'Escape') return;
-            if ($('#aura-tp-explorer-modal').is(':visible') || $('#aura-inv-equip-picker-modal').is(':visible')) {
+            if ($('#aura-tp-explorer-modal').is(':visible') || $('#aura-inv-equip-picker-modal').is(':visible') || $('#aura-inv-contact-picker-modal').is(':visible')) {
                 return;
             }
             ['js-modal-edit-loan', 'js-modal-history', 'js-modal-checkin', 'js-modal-checkout'].forEach(function (id) {
@@ -587,41 +596,114 @@
             }
         });
 
-        // Botón "Explorar Todos los Usuarios" (AuraThirdPartySelector)
-        $(document).on('click', '#aura-inv-btn-borrower-explorer', function () {
+        // Cambio exclusivo entre las 3 pestañas de Paso 2 (Usuario | Contacto Aura | Externo)
+        $(document).on('click', '.aura-loan-btab', function (e) {
+            if ($(e.target).closest('.aura-help-icon').length) return;
+            e.preventDefault();
+            switchBorrowerTab($(this).data('borrower-mode') || 'user');
+        });
+
+        // Helper para aplicar selección de usuario/tercero desde AuraThirdPartySelector
+        function applyThirdPartyOrUserBorrower(item) {
+            if (!item) return;
+            var name   = item.commercial_name || item.name || item.display_name || '';
+            var isUser = !!(item.is_wp_user || item.party_type === 'user' || item.user_id);
+
+            if (isUser) {
+                switchBorrowerTab('user');
+                var uid = String(item.user_id || item.id || '');
+                if (uid) {
+                    var $sel = $('#co-borrower-user');
+                    if (!$sel.find('option[value="' + uid + '"]').length) {
+                        $('<option>').val(uid).text(name).appendTo($sel);
+                    }
+                    $sel.val(uid).trigger('change');
+                    if (item.phone) $('#co-borrower-user-phone').val(item.phone);
+                    setBorrowerSummary('user', name, item.email || (item.login ? '@' + item.login : ''));
+                }
+            } else {
+                switchBorrowerTab('external');
+                $('#co-borrower-ext-name').val(name);
+                if (item.phone) $('#co-borrower-ext-phone').val(item.phone);
+                setBorrowerSummary('third_party', name, item.phone || item.email || '');
+            }
+        }
+
+        // Botones "Explorar Usuarios" (AuraThirdPartySelector -> pestaña Usuarios WP)
+        $(document).on('click', '.aura-inv-trigger-user-explorer', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
             if (typeof window.AuraThirdPartySelector === 'undefined') {
-                notifyToast('Explorador de usuarios no disponible en esta página.', 'error');
+                notifyToast('El modal de usuarios no está disponible en esta página.', 'error');
                 return;
             }
             window.AuraThirdPartySelector.openExplorer({
                 defaultTab: 'employee',
                 allowUsers: true,
-                onSelect: function (item) {
-                    var name   = item.commercial_name || item.name || '';
-                    var isUser = !!(item.is_wp_user || item.party_type === 'user' || item.user_id);
-                    if (isUser) {
-                        var uid = String(item.user_id || item.id || '');
-                        if (uid) {
-                            var $sel = $('#co-borrower-user');
-                            if (!$sel.find('option[value="' + uid + '"]').length) {
-                                $('<option>').val(uid).text(name).appendTo($sel);
-                            }
-                            $sel.val(uid);
-                            $('#co-borrower-name').val('');
-                            $('#co-borrower-phone').val(item.phone || '');
-                            $('#aura-inv-co-borrower-badge').html(
-                                '<span class="aura-inv-link-pill">👤 Usuario WP: ' + escHtml(name) + '</span>'
-                            ).show();
-                        }
-                    } else {
-                        $('#co-borrower-name').val(name);
-                        if (item.phone) $('#co-borrower-phone').val(item.phone);
-                        $('#aura-inv-co-borrower-badge').html(
-                            '<span class="aura-inv-link-pill">🔗 Externo / Empleado: ' + escHtml(name) + '</span>'
-                        ).show();
-                    }
-                }
+                onSelect: applyThirdPartyOrUserBorrower
             });
+        });
+
+        // Botones "Explorar Directorio de Terceros" (AuraThirdPartySelector -> Empresas / Personas / Todo)
+        $(document).on('click', '.aura-inv-trigger-tp-explorer', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof window.AuraThirdPartySelector === 'undefined') {
+                notifyToast('El explorador de terceros no está disponible en esta página.', 'error');
+                return;
+            }
+            window.AuraThirdPartySelector.openExplorer({
+                defaultTab: 'all',
+                allowUsers: true,
+                onSelect: applyThirdPartyOrUserBorrower
+            });
+        });
+
+        // Eventos del Contacto Aura (autocompletado)
+        $(document).on('aura:contact-selected', '#co-contact-selector', function (e, contact) {
+            if (contact) {
+                switchBorrowerTab('contact');
+                var sub = [contact.category_label || '', contact.phone || contact.email || ''].filter(Boolean).join(' · ');
+                setBorrowerSummary('contact', contact.name || 'Contacto', sub);
+            }
+        });
+        $(document).on('aura:contact-cleared', '#co-contact-selector', function () {
+            if ($('#co-borrower-mode').val() === 'contact') {
+                $('#co-borrower-name, #co-borrower-phone').val('');
+                $('#aura-inv-co-borrower-badge').hide().empty();
+            }
+        });
+
+        // Botón limpiar resumen de prestatario
+        $(document).on('click', '.aura-inv-clear-borrower-summary', function (e) {
+            e.preventDefault();
+            if (window.AuraContactSelector && typeof window.AuraContactSelector.clear === 'function') {
+                window.AuraContactSelector.clear('#co-contact-selector');
+            }
+            $('#co-borrower-name, #co-borrower-phone, #co-borrower-ext-name, #co-borrower-ext-phone, #co-borrower-user-phone').val('');
+            if (cfg.current_user_id) {
+                $('#co-borrower-user').val(String(cfg.current_user_id));
+            }
+            $('#aura-inv-co-borrower-badge').hide().empty();
+        });
+
+        // Chips de duración rápida (+3d, +7d, +15d, +30d)
+        $(document).on('click', '.aura-loan-dur-chip', function (e) {
+            e.preventDefault();
+            var days = parseInt($(this).data('days') || '0', 10);
+            if (!days) return;
+            $('.aura-loan-dur-chip').removeClass('is-active');
+            $(this).addClass('is-active');
+            var baseStr = $('#co-loan-date').val() || cfg.today;
+            var parts   = baseStr.split('-');
+            if (parts.length === 3) {
+                var d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                d.setDate(d.getDate() + days);
+                var yyyy = d.getFullYear();
+                var mm   = String(d.getMonth() + 1).padStart(2, '0');
+                var dd   = String(d.getDate()).padStart(2, '0');
+                $('#co-expected-return').val(yyyy + '-' + mm + '-' + dd);
+            }
         });
 
         $(document).on('submit', '#js-form-checkout', function (e) {
@@ -631,6 +713,210 @@
 
         $(document).on('change', '#co-loan-date', function () {
             $('#co-expected-return').attr('min', $(this).val());
+        });
+    }
+
+    function switchBorrowerTab(mode) {
+        if (['user', 'contact', 'external'].indexOf(mode) === -1) mode = 'user';
+        $('#co-borrower-mode').val(mode);
+        $('.aura-loan-btab').removeClass('active').attr('aria-selected', 'false');
+        $('.aura-loan-btab[data-borrower-mode="' + mode + '"]').addClass('active').attr('aria-selected', 'true');
+        $('.aura-loan-bpanel').hide();
+        $('#co-borrower-panel-' + mode).show();
+
+        // Actualizar o limpiar banner resumen según el modo activo para evitar confusión
+        if (mode === 'user') {
+            var uName = $.trim($('#co-borrower-user option:selected').text());
+            if ($('#aura-inv-co-borrower-badge .aura-inv-link-pill').text().indexOf('Contacto') !== -1 ||
+                $('#aura-inv-co-borrower-badge .aura-inv-link-pill').text().indexOf('Tercero') !== -1) {
+                $('#aura-inv-co-borrower-badge').hide().empty();
+            } else if (uName && $('#co-borrower-user').val() && String($('#co-borrower-user').val()) !== String(cfg.current_user_id || '')) {
+                setBorrowerSummary('user', uName, $('#co-borrower-user-phone').val() || '');
+            }
+        } else if (mode === 'contact') {
+            var cId = $('#co-contact-selector').val();
+            if (cId && $('#co-borrower-name').val()) {
+                setBorrowerSummary('contact', $('#co-borrower-name').val(), $('#co-borrower-phone').val() || '');
+            } else {
+                $('#aura-inv-co-borrower-badge').hide().empty();
+            }
+        } else if (mode === 'external') {
+            var extName = $.trim($('#co-borrower-ext-name').val());
+            if (extName) {
+                setBorrowerSummary('third_party', extName, $('#co-borrower-ext-phone').val() || '');
+            } else {
+                $('#aura-inv-co-borrower-badge').hide().empty();
+            }
+        }
+    }
+
+    function setBorrowerSummary(kind, title, subtitle) {
+        var icons = { user: '👤', contact: '📇', third_party: '🏢' };
+        var tags  = { user: 'Usuario del sistema', contact: 'Contacto Aura CRM', third_party: 'Tercero externo' };
+        var html  = '<div class="aura-loan-bsum-left">' +
+            '<span class="aura-loan-bsum-icon">' + (icons[kind] || '👤') + '</span>' +
+            '<div>' +
+            '<div class="aura-loan-bsum-name">' + escHtml(title) + ' <span class="aura-inv-link-pill">' + escHtml(tags[kind] || '') + '</span></div>' +
+            (subtitle ? '<div class="aura-loan-bsum-sub">' + escHtml(subtitle) + '</div>' : '') +
+            '</div></div>' +
+            '<button type="button" class="btn btn-glass btn-xs aura-inv-clear-borrower-summary" data-tooltip="Quitar prestatario seleccionado">&times;</button>';
+        $('#aura-inv-co-borrower-badge').html(html).css('display', 'flex');
+    }
+
+    // ─── EXPLORADOR DE CONTACTOS DE AURA (STACKED MODAL) ──────
+    function bindContactPickerModal() {
+        $(document).on('click', '.aura-inv-trigger-contact-explorer', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openContactPickerModal();
+        });
+        $('#aura-inv-cp-close, #aura-inv-cp-cancel').on('click', function (e) {
+            e.preventDefault();
+            closeModalById('aura-inv-contact-picker-modal');
+        });
+        var cpTimer;
+        $('#aura-inv-cp-search').on('input', function () {
+            clearTimeout(cpTimer);
+            var q = $.trim($(this).val());
+            if (!q && contactListCache) {
+                filterAndRenderContactRows();
+                return;
+            }
+            cpTimer = setTimeout(function () {
+                if (q.length >= 2) {
+                    fetchContactsForPicker(q);
+                } else {
+                    filterAndRenderContactRows();
+                }
+            }, 220);
+        });
+        $(document).on('click', '#aura-inv-cp-chips .aura-equip-chip', function (e) {
+            e.preventDefault();
+            $('#aura-inv-cp-chips .aura-equip-chip').removeClass('is-active');
+            $(this).addClass('is-active');
+            filterAndRenderContactRows();
+        });
+        $(document).on('click', '.aura-inv-cp-select-btn, .aura-inv-cp-row', function (e) {
+            e.preventDefault();
+            var $row = $(this).closest('.aura-inv-cp-row');
+            var c    = $row.data('contact');
+            if (!c) return;
+            switchBorrowerTab('contact');
+            if (window.AuraContactSelector && typeof window.AuraContactSelector.setContact === 'function') {
+                window.AuraContactSelector.setContact('#co-contact-selector', c);
+            } else {
+                $('#co-borrower-name').val(c.name || '');
+                $('#co-borrower-phone').val(c.phone || '');
+                var sub = [c.category_label || '', c.phone || c.email || ''].filter(Boolean).join(' · ');
+                setBorrowerSummary('contact', c.name || 'Contacto', sub);
+            }
+            closeModalById('aura-inv-contact-picker-modal');
+        });
+    }
+
+    function fetchContactsForPicker(query) {
+        var csCfg = window.auraContactSelectorCfg || {};
+        $.ajax({
+            url: csCfg.ajaxUrl || cfg.ajaxurl,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'aura_contacts_selector_search',
+                nonce: csCfg.nonce || cfg.nonce,
+                q: query || '',
+                category: 'all',
+                limit: 30
+            },
+            success: function (res) {
+                var items = (res && res.success && Array.isArray(res.data)) ? res.data : [];
+                if (!query) {
+                    contactListCache = items;
+                }
+                populateContactPickerCategories(items);
+                filterAndRenderContactRows(items);
+                hideModalSkeletonById('aura-inv-contact-picker-modal');
+                setTimeout(function () { $('#aura-inv-cp-search').focus(); }, 120);
+            },
+            error: function () {
+                $('#aura-inv-cp-tbody').html('<tr><td colspan="4" class="aura-inv-empty-picker">Error al cargar contactos.</td></tr>');
+                hideModalSkeletonById('aura-inv-contact-picker-modal');
+            }
+        });
+    }
+
+    function openContactPickerModal() {
+        $('#aura-inv-cp-search').val('');
+        $('#aura-inv-cp-tbody').empty();
+        $('#aura-inv-cp-chips').empty();
+        $('#aura-inv-cp-empty').hide();
+        $('#aura-inv-cp-count').text('Cargando contactos…');
+        openModalById('aura-inv-contact-picker-modal', true);
+
+        if (contactListCache) {
+            populateContactPickerCategories(contactListCache);
+            filterAndRenderContactRows(contactListCache);
+            hideModalSkeletonById('aura-inv-contact-picker-modal');
+            setTimeout(function () { $('#aura-inv-cp-search').focus(); }, 120);
+            return;
+        }
+        fetchContactsForPicker('');
+    }
+
+    function populateContactPickerCategories(items) {
+        var cats = {};
+        (items || []).forEach(function (it) {
+            var lbl = it.category_label || it.category || 'Otro';
+            cats[lbl] = (cats[lbl] || 0) + 1;
+        });
+        var $chips = $('#aura-inv-cp-chips').empty();
+        $chips.append('<button type="button" class="aura-equip-chip is-active" data-cat="">Todos (' + items.length + ')</button>');
+        Object.keys(cats).sort().forEach(function (c) {
+            $('<button type="button" class="aura-equip-chip">')
+                .attr('data-cat', c)
+                .text(c + ' (' + cats[c] + ')')
+                .appendTo($chips);
+        });
+    }
+
+    function filterAndRenderContactRows(overrideItems) {
+        var items = overrideItems || contactListCache || [];
+        var q     = $.trim($('#aura-inv-cp-search').val()).toLowerCase();
+        var cat   = $('#aura-inv-cp-chips .aura-equip-chip.is-active').attr('data-cat') || '';
+
+        var filtered = items.filter(function (c) {
+            var lbl = c.category_label || c.category || 'Otro';
+            if (cat && lbl !== cat) return false;
+            if (q) {
+                var hay = [c.name, c.email, c.phone, c.organization, c.job_title, lbl].filter(Boolean).join(' ').toLowerCase();
+                if (hay.indexOf(q) === -1) return false;
+            }
+            return true;
+        });
+
+        $('#aura-inv-cp-count').text(filtered.length + ' contactos encontrados');
+        var $tbody = $('#aura-inv-cp-tbody').empty();
+        $('#aura-inv-cp-empty').toggle(filtered.length === 0);
+
+        filtered.forEach(function (c) {
+            var initials = (c.name || '?').trim().split(/\s+/).slice(0, 2).map(function (w) { return (w[0] || '').toUpperCase(); }).join('');
+            var avatar = c.avatar
+                ? '<img src="' + escHtml(c.avatar) + '" width="32" height="32" class="aura-inv-mini-avatar" alt="">'
+                : '<span class="aura-inv-mini-initials">' + escHtml(initials || '?') + '</span>';
+            var subMeta = [c.organization, c.job_title].filter(Boolean).join(' · ');
+            var contactData = [c.phone, c.email].filter(Boolean).join(' · ');
+
+            var $tr = $('<tr class="aura-inv-cp-row aura-inv-ep-row">')
+                .data('contact', c)
+                .html(
+                    '<td><div style="display:flex;align-items:center;">' + avatar +
+                    '<div><div class="aura-inv-ep-name">' + escHtml(c.name || '—') + '</div>' +
+                    (subMeta ? '<div class="aura-inv-ep-meta">' + escHtml(subMeta) + '</div>' : '') +
+                    '</div></div></td>' +
+                    '<td class="aura-inv-col-secondary"><span class="aura-inv-ep-cat">' + escHtml(c.category_label || c.category || 'Contacto') + '</span></td>' +
+                    '<td class="aura-inv-col-secondary"><div class="aura-inv-ep-meta">' + escHtml(contactData || '—') + '</div></td>' +
+                    '<td style="text-align:right;"><button type="button" class="btn btn-indigo btn-sm aura-inv-cp-select-btn"><span class="dashicons dashicons-yes"></span> Seleccionar</button></td>'
+                );
+            $tbody.append($tr);
         });
     }
 
@@ -846,7 +1132,17 @@
         var $form = $('#js-form-checkout');
         if ($form.length) $form[0].reset();
         $('#co-loan-date').val(cfg.today);
-        $('#co-expected-return').val('').attr('min', cfg.today);
+        $('#co-expected-return').val(cfg.default_return || '').attr('min', cfg.today);
+        $('.aura-loan-dur-chip').removeClass('is-active');
+        $('.aura-loan-dur-chip.is-default').addClass('is-active');
+        if (window.AuraContactSelector && typeof window.AuraContactSelector.clear === 'function') {
+            window.AuraContactSelector.clear('#co-contact-selector');
+        }
+        $('#co-borrower-name, #co-borrower-phone, #co-borrower-ext-name, #co-borrower-ext-phone, #co-borrower-user-phone').val('');
+        if (cfg.current_user_id) {
+            $('#co-borrower-user').val(String(cfg.current_user_id));
+        }
+        switchBorrowerTab('user');
         $('#co-equipment-id').val('');
         $('#co-equip-selected').hide().empty();
         $('#aura-inv-co-borrower-badge').hide().empty();
@@ -888,14 +1184,46 @@
             return;
         }
 
+        var mode = $('#co-borrower-mode').val() || 'user';
+        var contactId    = 0;
+        var borrowedUser = cfg.current_user_id || $('#co-borrower-user').val() || 0;
+        var borrowedName = '';
+        var borrowedPhone = '';
+
+        if (mode === 'user') {
+            borrowedUser  = $('#co-borrower-user').val() || cfg.current_user_id || 0;
+            borrowedName  = '';
+            borrowedPhone = $('#co-borrower-user-phone').val() || '';
+        } else if (mode === 'contact') {
+            contactId     = $('#co-contact-selector').val() || 0;
+            borrowedUser  = $('#co-borrower-user').val() || cfg.current_user_id || 0;
+            borrowedName  = $('#co-borrower-name').val() || '';
+            borrowedPhone = $('#co-borrower-phone').val() || '';
+            if (!contactId && !$.trim(borrowedName)) {
+                showModalMsg($msg, 'error', 'Selecciona un Contacto de Aura CRM o cambia a otra pestaña.');
+                $btn.prop('disabled', false);
+                return;
+            }
+        } else {
+            borrowedUser  = cfg.current_user_id || 0;
+            borrowedName  = $.trim($('#co-borrower-ext-name').val() || '');
+            borrowedPhone = $('#co-borrower-ext-phone').val() || '';
+            if (!borrowedName) {
+                showModalMsg($msg, 'error', 'Escribe el nombre de la persona o elige desde Terceros.');
+                $('#co-borrower-ext-name').focus();
+                $btn.prop('disabled', false);
+                return;
+            }
+        }
+
         var data = {
             equipment_id:         equipId,
-            contact_id:           $('#co-contact-selector').val() || 0,
+            contact_id:           contactId,
             loan_date:            $('#co-loan-date').val(),
             expected_return_date: $('#co-expected-return').val(),
-            borrowed_by_user_id:  $('#co-borrower-user').val(),
-            borrowed_to_name:     $('#co-borrower-name').val(),
-            borrowed_to_phone:    $('#co-borrower-phone').val(),
+            borrowed_by_user_id:  borrowedUser,
+            borrowed_to_name:     borrowedName,
+            borrowed_to_phone:    borrowedPhone,
             project:              $('#co-project').val(),
             equipment_state_out:  $('input[name="equipment_state_out"]:checked').val() || 'good',
         };

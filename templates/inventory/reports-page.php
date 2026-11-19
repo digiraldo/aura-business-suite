@@ -33,30 +33,34 @@ $categories = Aura_Inventory_Reports::get_categories();
     <div id="js-report-notice" class="notice" style="display:none;"></div>
 
     <!-- ══════════════════════════════════════════════════════
-         PESTAÑAS CANÓNICAS (.adp-tabs)
+         BARRA DE NAVEGACIÓN AURA DESIGN SYSTEM (4 REPORTES)
     ══════════════════════════════════════════════════════════ -->
-    <div class="adp-tabs aura-inv-tabs" role="tablist">
-        <button type="button" class="adp-tab aura-inv-tab active" data-tab="costs" role="tab"
+    <nav class="aura-navbar aura-nav aura-glass-card tabs-bar aura-inv-reports-nav fade-up" id="aura-inv-reports-nav" role="tablist">
+        <button type="button" class="aura-navbar-item aura-tab-btn tab-btn aura-inv-tab active" data-tab="costs" role="tab"
                 data-tooltip="<?php esc_attr_e( 'Comparativa de costo de adquisición vs inversión en mantenimientos', 'aura-suite' ); ?>">
             <span class="dashicons dashicons-money-alt"></span>
             <span><?php esc_html_e( 'Costos por Equipo', 'aura-suite' ); ?></span>
+            <span class="aura-inv-nav-pill aura-inv-nav-pill-indigo"><?php esc_html_e( 'ROI', 'aura-suite' ); ?></span>
         </button>
-        <button type="button" class="adp-tab aura-inv-tab" data-tab="maintenance" role="tab"
+        <button type="button" class="aura-navbar-item aura-tab-btn tab-btn aura-inv-tab" data-tab="maintenance" role="tab"
                 data-tooltip="<?php esc_attr_e( 'Detalle histórico de intervenciones preventivas y correctivas', 'aura-suite' ); ?>">
             <span class="dashicons dashicons-admin-tools"></span>
             <span><?php esc_html_e( 'Historial Mantenimientos', 'aura-suite' ); ?></span>
+            <span class="aura-inv-nav-pill"><?php esc_html_e( 'Bitácora', 'aura-suite' ); ?></span>
         </button>
-        <button type="button" class="adp-tab aura-inv-tab" data-tab="efficiency" role="tab"
+        <button type="button" class="aura-navbar-item aura-tab-btn tab-btn aura-inv-tab" data-tab="efficiency" role="tab"
                 data-tooltip="<?php esc_attr_e( 'Cumplimiento de meta preventiva (≥70%) y equipos críticos', 'aura-suite' ); ?>">
             <span class="dashicons dashicons-performance"></span>
             <span><?php esc_html_e( 'Eficiencia', 'aura-suite' ); ?></span>
+            <span class="aura-inv-nav-pill aura-inv-nav-pill-ok"><?php esc_html_e( 'Meta ≥70%', 'aura-suite' ); ?></span>
         </button>
-        <button type="button" class="adp-tab aura-inv-tab" data-tab="lifecycle" role="tab"
+        <button type="button" class="aura-navbar-item aura-tab-btn tab-btn aura-inv-tab" data-tab="lifecycle" role="tab"
                 data-tooltip="<?php esc_attr_e( 'Antigüedad, depreciación estimada e indicador de reemplazo', 'aura-suite' ); ?>">
             <span class="dashicons dashicons-update"></span>
             <span><?php esc_html_e( 'Depreciación y Vida Útil', 'aura-suite' ); ?></span>
+            <span class="aura-inv-nav-pill"><?php esc_html_e( 'Ciclo', 'aura-suite' ); ?></span>
         </button>
-    </div>
+    </nav>
 
     <!-- ══════════════════════════════════════════════════════
          TAB 1: COSTOS POR EQUIPO

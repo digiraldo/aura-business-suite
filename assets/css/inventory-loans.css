@@ -804,6 +804,236 @@
     }
 }
 
+/* ── Modal Checkout 3-Pasos UX + Duración Rápida + Contact Picker ─────── */
+.aura-loan-checkout-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.aura-loan-step-card {
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.aura-loan-step-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.aura-loan-step-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--aura-text);
+}
+
+.aura-loan-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--aura-indigo);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.aura-loan-step-req {
+    font-size: 11px;
+    font-weight: 600;
+    color: #dc2626;
+}
+
+.aura-loan-quick-pickers,
+.aura-loan-inline-btns {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.aura-loan-sub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.btn-xs {
+    padding: 3px 8px !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    border-radius: 7px !important;
+}
+
+.btn-xs .dashicons {
+    font-size: 13px !important;
+    width: 13px !important;
+    height: 13px !important;
+}
+
+.aura-loan-borrower-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 12px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    background: var(--aura-indigo-bg);
+    border: 1px solid var(--aura-indigo-border);
+}
+
+.aura-loan-bsum-left {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.aura-loan-bsum-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.aura-loan-bsum-name {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--aura-text);
+}
+
+.aura-loan-bsum-sub {
+    font-size: 11.5px;
+    color: var(--aura-text-muted);
+    margin-top: 2px;
+}
+
+.aura-loan-duration-chips {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.aura-loan-dur-lbl {
+    font-size: 11.5px;
+    color: var(--aura-text-muted);
+    font-weight: 600;
+}
+
+.aura-loan-dur-chip {
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--aura-border);
+    background: var(--aura-surface);
+    color: var(--aura-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s ease;
+}
+
+.aura-loan-dur-chip:hover,
+.aura-loan-dur-chip.is-active {
+    background: var(--aura-indigo-bg);
+    border-color: var(--aura-indigo-border);
+    color: var(--aura-indigo-dark);
+}
+
+/* ── 3 Pestañas Exclusivas Prestatario (Paso 2) ────────────────────────── */
+.aura-loan-borrower-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.aura-loan-btab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--aura-border);
+    background: var(--aura-surface);
+    color: var(--aura-text-muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .16s ease;
+    text-align: center;
+}
+
+.aura-loan-btab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.aura-loan-btab:hover {
+    background: var(--aura-surface-hover);
+    color: var(--aura-text);
+}
+
+.aura-loan-btab.active {
+    background: var(--aura-indigo-bg);
+    border-color: var(--aura-indigo-border);
+    color: var(--aura-indigo-dark);
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.14);
+}
+
+.aura-loan-mode-hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 0 0 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: var(--aura-surface);
+    border: 1px dashed var(--aura-border);
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--aura-text-muted);
+}
+
+.aura-loan-mode-hint .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: var(--aura-indigo);
+    margin-top: 1px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+    .aura-loan-borrower-tabs {
+        grid-template-columns: 1fr;
+    }
+}
+
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-loan-btab.active {
+    color: #c7d2fe;
+}
+
 /* ── Dark Mode Multi-Driver ────────────────────────────────────────────── */
 :is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-loan-status-active {
     background: rgba(59, 130, 246, 0.18);

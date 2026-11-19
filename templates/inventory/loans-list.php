@@ -19,8 +19,11 @@ if ( ! $can_checkout && ! $can_checkin && ! current_user_can( 'aura_inventory_vi
     wp_die( __( 'No tienes permisos para acceder al módulo de préstamos.', 'aura-suite' ) );
 }
 
-$today = current_time( 'Y-m-d' );
-$nonce = wp_create_nonce( 'aura_inventory_nonce' );
+$today         = current_time( 'Y-m-d' );
+$inv_settings  = class_exists( 'Aura_Inventory_Categories' ) ? Aura_Inventory_Categories::get_settings() : [];
+$loan_max_days = max( 1, intval( $inv_settings['loan_max_days'] ?? 30 ) );
+$default_return = date( 'Y-m-d', strtotime( $today . ' +' . $loan_max_days . ' days' ) );
+$nonce         = wp_create_nonce( 'aura_inventory_nonce' );
 $kpis  = class_exists( 'Aura_Inventory_Loans' )
     ? Aura_Inventory_Loans::get_kpis()
     : [ 'active' => 0, 'overdue' => 0, 'returned_month' => 0, 'total' => 0 ];
@@ -227,10 +230,10 @@ $header_actions[] = [
 
 
 <!-- ══════════════════════════════════════════════════════════
-     MODAL — CHECKOUT (Nuevo Préstamo — Item 26)
+     MODAL — CHECKOUT (Nuevo Préstamo — Item 26 + 3 Pasos UX)
 ═══════════════════════════════════════════════════════════════ -->
 <div id="js-modal-checkout" class="aura-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="js-modal-checkout-title" style="display:none;">
-    <div class="aura-modal-container" style="max-width:680px;">
+    <div class="aura-modal-container" style="max-width:740px;">
         <div class="aura-modal-header">
             <h3 id="js-modal-checkout-title" class="aura-modal-title">
                 <span class="dashicons dashicons-share"></span>
@@ -240,14 +243,16 @@ $header_actions[] = [
         </div>
 
         <form id="js-form-checkout" novalidate style="display:flex;flex-direction:column;min-height:0;flex:1;">
-            <div class="aura-modal-body">
+            <div class="aura-modal-body aura-loan-checkout-body">
 
-                <!-- Selector de Equipo + Modal Catálogo Rápido -->
-                <div class="aura-loan-field-group">
-                    <div class="aura-loan-equip-picker-header">
-                        <label class="aura-loan-label required" style="margin-bottom:0;">
-                            <?php _e( 'Equipo disponible', 'aura-suite' ); ?> <span class="aura-loan-required">*</span>
-                        </label>
+                <!-- ══ PASO 1: EQUIPO A PRESTAR ════════════════════════════════════ -->
+                <div class="aura-loan-step-card">
+                    <div class="aura-loan-step-hdr">
+                        <div class="aura-loan-step-title">
+                            <span class="aura-loan-step-num">1</span>
+                            <strong><?php _e( 'Equipo disponible', 'aura-suite' ); ?></strong>
+                            <span class="aura-loan-step-req">* <?php _e( 'requerido', 'aura-suite' ); ?></span>
+                        </div>
                         <button type="button" id="aura-inv-btn-equip-picker" class="btn btn-indigo btn-sm"
                                 data-tooltip="<?php esc_attr_e( 'Abrir Catálogo Rápido con búsqueda en vivo y filtros por categoría', 'aura-suite' ); ?>">
                             <span class="dashicons dashicons-grid-view"></span>
@@ -272,7 +277,7 @@ $header_actions[] = [
                         <div class="input-group">
                             <span class="input-group-text"><span class="dashicons dashicons-search"></span></span>
                             <input type="text" id="co-equipment-search" class="form-control" autocomplete="off"
-                                   placeholder="<?php esc_attr_e( 'Escribe nombre, marca o código interno…', 'aura-suite' ); ?>">
+                                   placeholder="<?php esc_attr_e( 'Escribe nombre, marca o código interno (o usa Catálogo Rápido)…', 'aura-suite' ); ?>">
                         </div>
                         <div id="co-equip-results" class="aura-loan-equip-results" style="display:none;"></div>
                     </div>
@@ -292,108 +297,236 @@ $header_actions[] = [
                     <div id="co-equip-selected" class="aura-loan-selected-equip" style="display:none;"></div>
                 </div>
 
-                <!-- Fechas -->
-                <div class="aura-loan-fields-2col">
-                    <div class="aura-loan-field-group">
-                        <label for="co-loan-date" class="aura-loan-label required">
-                            <?php _e( 'Fecha de salida', 'aura-suite' ); ?> <span class="aura-loan-required">*</span>
-                        </label>
-                        <input type="date" id="co-loan-date" name="loan_date" class="form-control" value="<?php echo esc_attr( $today ); ?>" required>
-                    </div>
-                    <div class="aura-loan-field-group">
-                        <label for="co-expected-return" class="aura-loan-label required">
-                            <?php _e( 'Devolución esperada', 'aura-suite' ); ?> <span class="aura-loan-required">*</span>
-                        </label>
-                        <input type="date" id="co-expected-return" name="expected_return_date" class="form-control" min="<?php echo esc_attr( $today ); ?>" required>
-                    </div>
-                </div>
-
-                <!-- Contacto Maestro (Aura CRM) + Teléfono -->
-                <div class="aura-loan-field-group">
-                    <?php
-                    if ( class_exists( 'Aura_Contact_Selector' ) ) {
-                        echo Aura_Contact_Selector::render( [
-                            'id'          => 'co-contact-selector',
-                            'name'        => 'contact_id',
-                            'label'       => __( 'Vincular a Contacto de Aura', 'aura-suite' ),
-                            'placeholder' => __( 'Buscar contacto por nombre, teléfono o correo…', 'aura-suite' ),
-                            'sync_fields' => [
-                                'name'  => '#co-borrower-name',
-                                'phone' => '#co-borrower-phone',
-                            ],
-                            'hint'        => __( 'Opcional: autocompleta el prestatario y habilita alertas por WhatsApp.', 'aura-suite' ),
-                        ] );
-                    }
-                    ?>
-                </div>
-
-                <!-- Prestatario (Nombre libre / Teléfono + Usuario del Sistema / Explorador) -->
-                <div class="aura-loan-fields-2col">
-                    <div class="aura-loan-field-group">
-                        <label for="co-borrower-name" class="aura-loan-label">
-                            <?php _e( 'Prestatario externo / Contacto', 'aura-suite' ); ?>
-                        </label>
-                        <input type="text" id="co-borrower-name" name="borrowed_to_name" class="form-control"
-                               placeholder="<?php esc_attr_e( 'Nombre de quien recibe el equipo…', 'aura-suite' ); ?>">
-                        <input type="tel" id="co-borrower-phone" name="borrowed_to_phone" class="form-control"
-                               style="margin-top:6px;"
-                               placeholder="<?php esc_attr_e( 'WhatsApp / Teléfono (opcional)', 'aura-suite' ); ?>">
+                <!-- ══ PASO 2: ¿QUIÉN RECIBE EL EQUIPO? (3 PESTAÑAS EXCLUSIVAS) ════ -->
+                <div class="aura-loan-step-card">
+                    <div class="aura-loan-step-hdr">
+                        <div class="aura-loan-step-title">
+                            <span class="aura-loan-step-num">2</span>
+                            <strong><?php _e( '¿Quién recibe el equipo?', 'aura-suite' ); ?></strong>
+                            <span class="aura-help-icon" tabindex="0"
+                                  data-tooltip="<?php esc_attr_e( 'Elige una sola modalidad según quién recibe el activo: Usuario interno (con cuenta WP), Contacto guardado en Aura CRM, o Persona Externa / Tercero.', 'aura-suite' ); ?>">?</span>
+                        </div>
                     </div>
 
-                    <div class="aura-loan-field-group">
-                        <label for="co-borrower-user" class="aura-loan-label">
-                            <?php _e( 'Usuario del sistema / Empleado', 'aura-suite' ); ?>
-                        </label>
-                        <select id="co-borrower-user" name="borrowed_by_user_id" class="form-select">
-                            <option value="<?php echo get_current_user_id(); ?>">
-                                <?php echo esc_html( wp_get_current_user()->display_name ); ?> (<?php _e( 'yo', 'aura-suite' ); ?>)
-                            </option>
+                    <input type="hidden" id="co-borrower-mode" value="user">
+
+                    <!-- 3 Pestañas exclusivas con tooltips explicativos -->
+                    <div class="aura-loan-borrower-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Tipo de prestatario', 'aura-suite' ); ?>">
+                        <button type="button" class="aura-loan-btab active" data-borrower-mode="user" role="tab" aria-selected="true"
+                                data-tooltip="<?php esc_attr_e( 'Usa esta opción para empleados, técnicos o administradores con usuario en WordPress. Guarda su cuenta interna y muestra su foto/avatar.', 'aura-suite' ); ?>">
+                            <span class="dashicons dashicons-admin-users"></span>
+                            <span><?php _e( 'Usuario del sistema', 'aura-suite' ); ?></span>
+                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Personal interno con cuenta WordPress (guarda borrowed_by_user_id y muestra su avatar).', 'aura-suite' ); ?>">?</span>
+                        </button>
+                        <button type="button" class="aura-loan-btab" data-borrower-mode="contact" role="tab" aria-selected="false"
+                                data-tooltip="<?php esc_attr_e( 'Usa esta opción para estudiantes, docentes o personas registradas en Contactos de Aura CRM. Vincula su ficha, categoría y teléfono para WhatsApp.', 'aura-suite' ); ?>">
+                            <span class="dashicons dashicons-id-alt"></span>
+                            <span><?php _e( 'Contacto Aura', 'aura-suite' ); ?></span>
+                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Directorio Aura CRM: vincula el contact_id, autocompleta teléfono WhatsApp y muestra avatar/categoría.', 'aura-suite' ); ?>">?</span>
+                        </button>
+                        <button type="button" class="aura-loan-btab" data-borrower-mode="external" role="tab" aria-selected="false"
+                                data-tooltip="<?php esc_attr_e( 'Usa esta opción para contratistas, técnicos externos, visitantes o empresas (Terceros) sin cuenta ni ficha CRM.', 'aura-suite' ); ?>">
+                            <span class="dashicons dashicons-groups"></span>
+                            <span><?php _e( 'Externo / Manual', 'aura-suite' ); ?></span>
+                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Texto libre o Directorio de Terceros (empresas/contratistas) sin usuario WordPress ni CRM.', 'aura-suite' ); ?>">?</span>
+                        </button>
+                    </div>
+
+                    <!-- Resumen activo de persona seleccionada -->
+                    <div id="aura-inv-co-borrower-badge" class="aura-loan-borrower-summary" style="display:none;"></div>
+
+                    <!-- PANEL A: USUARIO DEL SISTEMA -->
+                    <div id="co-borrower-panel-user" class="aura-loan-bpanel">
+                        <p class="aura-loan-mode-hint">
+                            <span class="dashicons dashicons-info"></span>
+                            <?php _e( 'Asigna el equipo a un usuario WordPress del equipo interno; el préstamo mostrará su nombre y avatar del perfil.', 'aura-suite' ); ?>
+                        </p>
+                        <div class="aura-loan-fields-2col">
+                            <div class="aura-loan-field-group" style="margin-bottom:0;">
+                                <label for="co-borrower-user" class="aura-loan-label">
+                                    <?php _e( 'Seleccionar usuario', 'aura-suite' ); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Puedes elegirlo de la lista rápida o abrir el Modal de Usuarios con filtro por rol.', 'aura-suite' ); ?>">?</span>
+                                </label>
+                                <div class="input-group">
+                                    <select id="co-borrower-user" name="borrowed_by_user_id" class="form-select">
+                                        <option value="<?php echo get_current_user_id(); ?>">
+                                            <?php echo esc_html( wp_get_current_user()->display_name ); ?> (<?php _e( 'yo', 'aura-suite' ); ?>)
+                                        </option>
+                                        <?php
+                                        $users = Aura_Roles_Manager::get_aura_users( [ 'fields' => [ 'ID', 'display_name' ] ] );
+                                        foreach ( $users as $u ) {
+                                            if ( (int) $u->ID === get_current_user_id() ) continue;
+                                            echo '<option value="' . esc_attr( $u->ID ) . '">' . esc_html( $u->display_name ) . '</option>';
+                                        }
+                                        ?>
+                                    </select>
+                                    <button type="button" id="aura-inv-btn-borrower-explorer" class="btn btn-glass aura-inv-trigger-user-explorer"
+                                            data-tooltip="<?php esc_attr_e( 'Abrir modal de todos los usuarios del sistema con filtro por rol', 'aura-suite' ); ?>">
+                                        <span class="dashicons dashicons-admin-users"></span>
+                                        <?php _e( 'Explorar Usuarios', 'aura-suite' ); ?>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="aura-loan-field-group" style="margin-bottom:0;">
+                                <label for="co-borrower-user-phone" class="aura-loan-label">
+                                    <?php _e( 'WhatsApp de aviso (opcional)', 'aura-suite' ); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Si ingresas un teléfono, recibirá confirmación y recordatorios de entrega por WhatsApp.', 'aura-suite' ); ?>">?</span>
+                                </label>
+                                <input type="tel" id="co-borrower-user-phone" class="form-control"
+                                       placeholder="<?php esc_attr_e( 'Ej: +56 9 0000 0000 (opcional)', 'aura-suite' ); ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL B: CONTACTO AURA (CRM) -->
+                    <div id="co-borrower-panel-contact" class="aura-loan-bpanel" style="display:none;">
+                        <p class="aura-loan-mode-hint">
+                            <span class="dashicons dashicons-info"></span>
+                            <?php _e( 'Vincula el préstamo a una ficha de Contactos de Aura para heredar su categoría CRM, avatar y teléfono WhatsApp.', 'aura-suite' ); ?>
+                        </p>
+                        <div class="aura-loan-field-group" style="margin-bottom:10px;">
+                            <div class="aura-loan-sub-header">
+                                <label class="aura-loan-label" style="margin-bottom:0;">
+                                    <?php _e( 'Buscar o explorar Contacto de Aura', 'aura-suite' ); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Al elegir un contacto se guarda su ID relacional (contact_id) junto con su nombre y teléfono.', 'aura-suite' ); ?>">?</span>
+                                </label>
+                                <button type="button" id="aura-inv-btn-contact-explorer" class="btn btn-indigo btn-xs aura-inv-trigger-contact-explorer"
+                                        data-tooltip="<?php esc_attr_e( 'Abrir lista visual de Contactos Aura CRM con filtro por categoría', 'aura-suite' ); ?>">
+                                    <span class="dashicons dashicons-id-alt"></span>
+                                    <?php _e( 'Explorar Contactos Aura', 'aura-suite' ); ?>
+                                </button>
+                            </div>
                             <?php
-                            $users = Aura_Roles_Manager::get_aura_users( [ 'fields' => [ 'ID', 'display_name' ] ] );
-                            foreach ( $users as $u ) {
-                                if ( (int) $u->ID === get_current_user_id() ) continue;
-                                echo '<option value="' . esc_attr( $u->ID ) . '">' . esc_html( $u->display_name ) . '</option>';
+                            if ( class_exists( 'Aura_Contact_Selector' ) ) {
+                                echo Aura_Contact_Selector::render( [
+                                    'id'          => 'co-contact-selector',
+                                    'name'        => 'contact_id',
+                                    'label'       => '',
+                                    'placeholder' => __( 'Escribe nombre, teléfono o correo del contacto…', 'aura-suite' ),
+                                    'sync_fields' => [
+                                        'name'    => '#co-borrower-name',
+                                        'phone'   => '#co-borrower-phone',
+                                        'user_id' => '#co-borrower-user',
+                                    ],
+                                ] );
                             }
                             ?>
-                        </select>
-                        <button type="button" id="aura-inv-btn-borrower-explorer" class="btn btn-glass btn-sm"
-                                style="width:100%;margin-top:6px;justify-content:center;"
-                                data-tooltip="<?php esc_attr_e( 'Abrir buscador avanzado de todos los usuarios, empleados y contactos', 'aura-suite' ); ?>">
-                            <span class="dashicons dashicons-groups"></span>
-                            <?php _e( 'Explorar Todos los Usuarios', 'aura-suite' ); ?>
-                        </button>
-                        <div id="aura-inv-co-borrower-badge" style="margin-top:5px;display:none;"></div>
+                        </div>
+                        <div class="aura-loan-fields-2col" style="margin-bottom:0;">
+                            <div class="aura-loan-field-group" style="margin-bottom:0;">
+                                <label for="co-borrower-name" class="aura-loan-label">
+                                    <?php _e( 'Nombre sincronizado', 'aura-suite' ); ?>
+                                </label>
+                                <input type="text" id="co-borrower-name" class="form-control"
+                                       placeholder="<?php esc_attr_e( 'Se rellena al seleccionar el contacto…', 'aura-suite' ); ?>">
+                            </div>
+                            <div class="aura-loan-field-group" style="margin-bottom:0;">
+                                <label for="co-borrower-phone" class="aura-loan-label">
+                                    <?php _e( 'WhatsApp / Teléfono', 'aura-suite' ); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Teléfono usado para enviar alertas de salida y vencimiento por WhatsApp.', 'aura-suite' ); ?>">?</span>
+                                </label>
+                                <input type="tel" id="co-borrower-phone" class="form-control"
+                                       placeholder="<?php esc_attr_e( 'Se rellena automáticamente si el contacto tiene teléfono', 'aura-suite' ); ?>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL C: EXTERNO / MANUAL / TERCEROS -->
+                    <div id="co-borrower-panel-external" class="aura-loan-bpanel" style="display:none;">
+                        <p class="aura-loan-mode-hint">
+                            <span class="dashicons dashicons-info"></span>
+                            <?php _e( 'Ideal para contratistas, empresas de Terceros o personas externas puntuales que no están registradas en Contactos ni como usuarios.', 'aura-suite' ); ?>
+                        </p>
+                        <div class="aura-loan-sub-header">
+                            <label class="aura-loan-label" style="margin-bottom:0;">
+                                <?php _e( 'Datos de la persona o entidad externa', 'aura-suite' ); ?>
+                            </label>
+                            <button type="button" id="aura-inv-btn-tp-borrower-explorer" class="btn btn-glass btn-xs aura-inv-trigger-tp-explorer"
+                                    data-tooltip="<?php esc_attr_e( 'Buscar empresas, fundaciones o personas en el Directorio de Terceros', 'aura-suite' ); ?>">
+                                <span class="dashicons dashicons-groups"></span>
+                                <?php _e( 'Explorar Directorio de Terceros', 'aura-suite' ); ?>
+                            </button>
+                        </div>
+                        <div class="aura-loan-fields-2col" style="margin-bottom:0;">
+                            <div class="aura-loan-field-group" style="margin-bottom:0;">
+                                <label for="co-borrower-ext-name" class="aura-loan-label">
+                                    <?php _e( 'Nombre completo / Empresa', 'aura-suite' ); ?>
+                                </label>
+                                <input type="text" id="co-borrower-ext-name" class="form-control"
+                                       placeholder="<?php esc_attr_e( 'Ej: Juan Pérez · Productora Invitada…', 'aura-suite' ); ?>">
+                            </div>
+                            <div class="aura-loan-field-group" style="margin-bottom:0;">
+                                <label for="co-borrower-ext-phone" class="aura-loan-label">
+                                    <?php _e( 'WhatsApp / Teléfono (opcional)', 'aura-suite' ); ?>
+                                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Permite enviar notificación automática por WhatsApp de préstamo y vencimiento.', 'aura-suite' ); ?>">?</span>
+                                </label>
+                                <input type="tel" id="co-borrower-ext-phone" class="form-control"
+                                       placeholder="<?php esc_attr_e( 'Ej: +56 9 0000 0000', 'aura-suite' ); ?>">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Proyecto / Motivo -->
-                <div class="aura-loan-field-group">
-                    <label for="co-project" class="aura-loan-label">
-                        <?php _e( 'Proyecto / Motivo', 'aura-suite' ); ?>
-                    </label>
-                    <input type="text" id="co-project" name="project" class="form-control"
-                           placeholder="<?php esc_attr_e( 'Ej: Campamento, Mantenimiento sede norte, Evento…', 'aura-suite' ); ?>">
-                </div>
+                <!-- ══ PASO 3: FECHAS, MOTIVO Y ESTADO DE SALIDA ══════════════════ -->
+                <div class="aura-loan-step-card" style="margin-bottom:2px;">
+                    <div class="aura-loan-step-hdr">
+                        <div class="aura-loan-step-title">
+                            <span class="aura-loan-step-num">3</span>
+                            <strong><?php _e( 'Fechas, motivo y estado al salir', 'aura-suite' ); ?></strong>
+                        </div>
+                        <div class="aura-loan-duration-chips">
+                            <span class="aura-loan-dur-lbl"><?php _e( 'Plazo rápido:', 'aura-suite' ); ?></span>
+                            <button type="button" class="aura-loan-dur-chip" data-days="3">+3d</button>
+                            <button type="button" class="aura-loan-dur-chip" data-days="7">+7d</button>
+                            <button type="button" class="aura-loan-dur-chip" data-days="15">+15d</button>
+                            <button type="button" class="aura-loan-dur-chip is-default" data-days="<?php echo esc_attr( $loan_max_days ); ?>">+<?php echo esc_html( $loan_max_days ); ?>d</button>
+                        </div>
+                    </div>
 
-                <!-- Estado del equipo al salir -->
-                <div class="aura-loan-field-group" style="margin-bottom:4px;">
-                    <label class="aura-loan-label">
-                        <?php _e( 'Estado del equipo al salir', 'aura-suite' ); ?>
-                    </label>
-                    <div class="aura-loan-radio-group">
-                        <?php
-                        $states_out = [
-                            'good' => __( 'Bueno',      'aura-suite' ),
-                            'fair' => __( 'Regular',    'aura-suite' ),
-                            'poor' => __( 'Deficiente', 'aura-suite' ),
-                        ];
-                        foreach ( $states_out as $val => $label ) :
-                        ?>
-                        <label class="aura-loan-radio-label">
-                            <input type="radio" name="equipment_state_out" value="<?php echo esc_attr( $val ); ?>" <?php checked( $val, 'good' ); ?>>
-                            <?php echo esc_html( $label ); ?>
-                        </label>
-                        <?php endforeach; ?>
+                    <div class="aura-loan-fields-2col">
+                        <div class="aura-loan-field-group">
+                            <label for="co-loan-date" class="aura-loan-label required">
+                                <?php _e( 'Fecha de salida', 'aura-suite' ); ?> <span class="aura-loan-required">*</span>
+                            </label>
+                            <input type="date" id="co-loan-date" name="loan_date" class="form-control" value="<?php echo esc_attr( $today ); ?>" required>
+                        </div>
+                        <div class="aura-loan-field-group">
+                            <label for="co-expected-return" class="aura-loan-label required">
+                                <?php _e( 'Devolución esperada', 'aura-suite' ); ?> <span class="aura-loan-required">*</span>
+                            </label>
+                            <input type="date" id="co-expected-return" name="expected_return_date" class="form-control" value="<?php echo esc_attr( $default_return ); ?>" min="<?php echo esc_attr( $today ); ?>" required>
+                        </div>
+                    </div>
+
+                    <div class="aura-loan-fields-2col" style="margin-bottom:0;">
+                        <div class="aura-loan-field-group" style="margin-bottom:0;">
+                            <label for="co-project" class="aura-loan-label">
+                                <?php _e( 'Proyecto / Motivo', 'aura-suite' ); ?>
+                            </label>
+                            <input type="text" id="co-project" name="project" class="form-control"
+                                   placeholder="<?php esc_attr_e( 'Ej: Campamento, Mantenimiento sede norte, Evento…', 'aura-suite' ); ?>">
+                        </div>
+
+                        <div class="aura-loan-field-group" style="margin-bottom:0;">
+                            <label class="aura-loan-label">
+                                <?php _e( 'Estado del equipo al salir', 'aura-suite' ); ?>
+                            </label>
+                            <div class="aura-loan-radio-group">
+                                <?php
+                                $states_out = [
+                                    'good' => __( 'Bueno',      'aura-suite' ),
+                                    'fair' => __( 'Regular',    'aura-suite' ),
+                                    'poor' => __( 'Deficiente', 'aura-suite' ),
+                                ];
+                                foreach ( $states_out as $val => $label ) :
+                                ?>
+                                <label class="aura-loan-radio-label">
+                                    <input type="radio" name="equipment_state_out" value="<?php echo esc_attr( $val ); ?>" <?php checked( $val, 'good' ); ?>>
+                                    <?php echo esc_html( $label ); ?>
+                                </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -410,6 +543,56 @@ $header_actions[] = [
         </form>
     </div>
 </div><!-- #js-modal-checkout -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL STACKED — EXPLORADOR DE CONTACTOS DE AURA (CRM)
+═══════════════════════════════════════════════════════════════ -->
+<div id="aura-inv-contact-picker-modal" class="aura-modal-overlay" data-async-modal="true" role="dialog" aria-modal="true" aria-labelledby="aura-inv-cp-title" style="display:none;z-index:1001600 !important;">
+    <div class="aura-modal-container" style="max-width:860px;">
+        <div class="aura-modal-header">
+            <h3 id="aura-inv-cp-title" class="aura-modal-title">
+                <span class="dashicons dashicons-id-alt"></span>
+                <?php _e( 'Explorar Contactos de Aura CRM', 'aura-suite' ); ?>
+            </h3>
+            <button type="button" class="aura-modal-close" id="aura-inv-cp-close" aria-label="<?php esc_attr_e( 'Cerrar', 'aura-suite' ); ?>">&times;</button>
+        </div>
+        <div class="aura-modal-body">
+            <div style="margin-bottom:14px;">
+                <div class="aura-inv-ep-toolbar" style="margin-bottom:10px;">
+                    <div class="input-group" style="flex:1;">
+                        <span class="input-group-text"><span class="dashicons dashicons-search"></span></span>
+                        <input type="search" id="aura-inv-cp-search" class="form-control"
+                               placeholder="<?php esc_attr_e( 'Buscar contacto por nombre, teléfono, correo u organización…', 'aura-suite' ); ?>">
+                    </div>
+                </div>
+                <div id="aura-inv-cp-chips" class="aura-equip-picker-chips"></div>
+            </div>
+
+            <div class="aura-equip-picker-list-wrap">
+                <table class="aura-table aura-equip-picker-table">
+                    <thead>
+                        <tr>
+                            <th><?php _e( 'Contacto', 'aura-suite' ); ?></th>
+                            <th class="aura-inv-col-secondary"><?php _e( 'Categoría', 'aura-suite' ); ?></th>
+                            <th class="aura-inv-col-secondary"><?php _e( 'Teléfono / Correo', 'aura-suite' ); ?></th>
+                            <th style="width:120px;text-align:right;"><?php _e( 'Acción', 'aura-suite' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="aura-inv-cp-tbody"></tbody>
+                </table>
+                <div id="aura-inv-cp-empty" class="aura-inv-empty-picker" style="display:none;">
+                    <span class="dashicons dashicons-id-alt"></span>
+                    <p><?php _e( 'No se encontraron contactos que coincidan con tu búsqueda.', 'aura-suite' ); ?></p>
+                </div>
+            </div>
+        </div>
+        <div class="aura-modal-footer">
+            <span id="aura-inv-cp-count" class="aura-inv-ep-count"></span>
+            <button type="button" class="btn btn-glass" id="aura-inv-cp-cancel"><?php _e( 'Cerrar', 'aura-suite' ); ?></button>
+        </div>
+    </div>
+</div>
 
 
 <!-- ══════════════════════════════════════════════════════════
@@ -677,6 +860,9 @@ $_loans_js = wp_json_encode( [
     'can_loan_edit'   => $can_loan_edit,
     'can_loan_delete' => $can_loan_delete,
     'today'           => $today,
+    'default_return'  => $default_return,
+    'loan_max_days'   => $loan_max_days,
+    'current_user_id' => get_current_user_id(),
     'txt'             => [
         'active'              => __( 'Activo', 'aura-suite' ),
         'overdue'             => __( 'Vencido', 'aura-suite' ),
