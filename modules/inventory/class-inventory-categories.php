@@ -92,19 +92,24 @@ class Aura_Inventory_Categories {
      */
     public static function get_settings(): array {
         $defaults = [
-            'items_per_page'           => 20,
-            'alert_days_before'        => 7,
-            'show_retired'             => false,
-            'email_alerts'             => true,
-            'email_extra'              => '',
-            'loan_max_days'            => 30,
-            'currency_symbol'          => '$',
-            'currency_position'        => 'before',
-            'finance_category_id'      => 0,
+            'items_per_page'            => 20,
+            'alert_days_before'         => 7,
+            'show_retired'              => false,
+            'email_alerts'              => true,
+            'email_extra'               => '',
+            'loan_max_days'             => 30,
+            'code_prefix'               => 'CEM',
+            'code_digits'               => 3,
+            'currency_symbol'           => '$',
+            'currency_position'         => 'before',
+            'finance_category_id'       => 0,
             'auto_approve_transactions' => 'approved',
         ];
 
         $saved = get_option( self::OPTION_KEY, [] );
+        if ( ! is_array( $saved ) ) {
+            $saved = [];
+        }
         return wp_parse_args( $saved, $defaults );
     }
 
@@ -351,21 +356,37 @@ class Aura_Inventory_Categories {
             wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
-        $settings = [
-            'items_per_page'    => max( 5, min( 100, intval( $_POST['items_per_page']    ?? 20 ) ) ),
-            'alert_days_before' => max( 1, min( 60,  intval( $_POST['alert_days_before'] ?? 7  ) ) ),
-            'loan_max_days'     => max( 1, min( 365, intval( $_POST['loan_max_days']     ?? 30 ) ) ),
-            'show_retired'      => ! empty( $_POST['show_retired'] ),
-            'email_alerts'      => ! empty( $_POST['email_alerts'] ),
-            'email_extra'       => sanitize_textarea_field( $_POST['email_extra'] ?? '' ),
-            'currency_symbol'   => sanitize_text_field( $_POST['currency_symbol']   ?? '$' ),
-            'currency_position' => in_array( $_POST['currency_position'] ?? '', [ 'before', 'after' ] )
-                                   ? sanitize_key( $_POST['currency_position'] ) : 'before',
-        ];
+        $existing = self::get_settings();
+        $scope    = sanitize_key( $_POST['scope'] ?? 'all' );
+        $updated  = $existing;
 
-        update_option( self::OPTION_KEY, $settings );
+        if ( in_array( $scope, [ 'all', 'general' ], true ) || isset( $_POST['items_per_page'] ) ) {
+            $raw_prefix = strtoupper( sanitize_text_field( wp_unslash( $_POST['code_prefix'] ?? ( $existing['code_prefix'] ?? 'CEM' ) ) ) );
+            $clean_prefix = trim( preg_replace( '/[^A-Z0-9_-]/', '', $raw_prefix ), '-_' );
+            if ( $clean_prefix === '' ) {
+                $clean_prefix = 'CEM';
+            }
+            $clean_prefix = substr( $clean_prefix, 0, 12 );
 
-        wp_send_json_success( [ 'message' => __( 'Configuración guardada correctamente.', 'aura-suite' ) ] );
+            $updated['items_per_page']    = max( 5, min( 100, intval( $_POST['items_per_page']    ?? $existing['items_per_page'] ) ) );
+            $updated['alert_days_before'] = max( 1, min( 60,  intval( $_POST['alert_days_before'] ?? $existing['alert_days_before'] ) ) );
+            $updated['loan_max_days']     = max( 1, min( 365, intval( $_POST['loan_max_days']     ?? $existing['loan_max_days'] ) ) );
+            $updated['show_retired']      = ! empty( $_POST['show_retired'] );
+            $updated['code_prefix']       = $clean_prefix;
+            $updated['code_digits']       = max( 2, min( 5, intval( $_POST['code_digits'] ?? ( $existing['code_digits'] ?? 3 ) ) ) );
+        }
+
+        if ( in_array( $scope, [ 'all', 'notifications' ], true ) || isset( $_POST['email_alerts'] ) || isset( $_POST['email_extra'] ) ) {
+            $updated['email_alerts'] = ! empty( $_POST['email_alerts'] );
+            $updated['email_extra']  = sanitize_textarea_field( wp_unslash( $_POST['email_extra'] ?? '' ) );
+        }
+
+        update_option( self::OPTION_KEY, $updated );
+
+        wp_send_json_success( [
+            'message'  => __( 'Configuración guardada correctamente.', 'aura-suite' ),
+            'settings' => $updated,
+        ] );
     }
 
     // ─────────────────────────────────────────────────────────────

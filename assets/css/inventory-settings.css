@@ -21,6 +21,136 @@
     padding: 18px 0 4px;
 }
 
+/* ── Navbar de Configuración (Aura Design System) ──────────────────────── */
+.aura-inv-settings-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px !important;
+    margin-bottom: 6px;
+}
+
+.aura-inv-settings-nav .aura-navbar-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--aura-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .18s ease;
+    white-space: nowrap;
+}
+
+.aura-inv-settings-nav .aura-navbar-item .dashicons {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+}
+
+.aura-inv-settings-nav .aura-navbar-item:hover {
+    background: var(--aura-surface-hover);
+    color: var(--aura-text);
+}
+
+.aura-inv-settings-nav .aura-navbar-item.active {
+    background: var(--aura-indigo-bg);
+    border-color: var(--aura-indigo-border);
+    color: var(--aura-indigo-dark);
+    box-shadow: 0 2px 10px rgba(79, 70, 229, 0.14);
+}
+
+.aura-inv-nav-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    background: var(--aura-surface-alt);
+    color: var(--aura-text-muted);
+    border: 1px solid var(--aura-border);
+}
+
+.aura-inv-nav-pill-indigo {
+    background: rgba(79, 70, 229, 0.12);
+    color: var(--aura-indigo-dark);
+    border-color: var(--aura-indigo-border);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.aura-inv-nav-pill-ok {
+    background: rgba(16, 185, 129, 0.14);
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+
+.aura-inv-nav-pill-warn {
+    background: rgba(245, 158, 11, 0.16);
+    color: #b45309;
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.aura-inv-nav-pill-muted {
+    opacity: .78;
+}
+
+/* ── Códigos Internos y Moneda ISO 4217 en Configuración General ──────── */
+.aura-inv-code-cfg-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.aura-inv-code-preview-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin-top: 10px;
+    padding: 9px 13px;
+    border-radius: 9px;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    font-size: 12.5px;
+    color: var(--aura-text-muted);
+}
+
+.aura-inv-code-preview-box strong {
+    color: var(--aura-indigo-dark);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.aura-inv-currency-link-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    max-width: 620px;
+}
+
+.aura-inv-currency-main {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--aura-text);
+}
+
+.aura-inv-currency-sub {
+    font-size: 12px;
+    color: var(--aura-text-muted);
+    margin-top: 3px;
+}
+
 /* ── Notices ───────────────────────────────────────────────────────────── */
 .aura-inv-notice {
     padding: 10px 14px;

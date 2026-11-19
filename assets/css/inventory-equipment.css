@@ -115,8 +115,6 @@
     height: 44px;
     padding: 3px;
     border-radius: 8px;
-    background: var(--aura-surface-alt);
-    border: 1px solid var(--aura-border);
     cursor: zoom-in;
     transition: transform .15s ease, border-color .15s ease;
 }
@@ -782,6 +780,119 @@
         width: 100%;
         padding-bottom: 4px;
     }
+}
+
+/* ── Helper de Código Interno Secuencial ────────────────────────────────── */
+.aura-inv-code-helper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin-top: 8px;
+    padding: 7px 11px;
+    border-radius: 8px;
+    background: var(--aura-surface-alt);
+    border: 1px solid var(--aura-border);
+    font-size: 12px;
+    color: var(--aura-text-muted);
+}
+
+.aura-inv-code-helper-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.aura-inv-code-helper-item .dashicons {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: var(--aura-indigo);
+}
+
+.aura-inv-code-helper strong {
+    color: var(--aura-text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.aura-inv-code-next strong {
+    color: var(--aura-indigo-dark);
+}
+
+.aura-inv-code-cfg-link {
+    margin-left: auto;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--aura-indigo);
+    text-decoration: none;
+}
+
+.aura-inv-code-cfg-link:hover {
+    text-decoration: underline;
+}
+
+/* ── Superficie adaptable para PNGs con transparencia (Light & Dark Mode) ─ */
+.aura-app-context {
+    --aura-inv-png-bg-a: #f1f5f9;
+    --aura-inv-png-bg-b: #e2e8f0;
+    --aura-inv-png-border: #cbd5e1;
+}
+
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-app-context,
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) {
+    --aura-inv-png-bg-a: #334155;
+    --aura-inv-png-bg-b: #273549;
+    --aura-inv-png-border: #475569;
+}
+
+.aura-inv-photo-surface,
+.aura-inv-thumb-wrap,
+.aura-inv-child-photo,
+#aura-inv-photo-preview,
+.aura-inv-detail-hero-photo,
+.aura-inv-crop-box,
+.aura-maint-card-photo-box,
+.aura-equip-picker-thumb,
+.aura-inv-loan-thumb {
+    background-color: var(--aura-inv-png-bg-a);
+    background-image:
+        linear-gradient(45deg, var(--aura-inv-png-bg-b) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--aura-inv-png-bg-b) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--aura-inv-png-bg-b) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--aura-inv-png-bg-b) 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    border: 1px solid var(--aura-inv-png-border) !important;
+}
+
+/* Override del card flotante de hover ampliado (.aura-floating-img-card > img) */
+.aura-floating-img-card.aura-inv-photo-card {
+    background: var(--aura-surface);
+    border: 1px solid var(--aura-border);
+}
+
+.aura-floating-img-card.aura-inv-photo-card > img {
+    padding: 8px;
+    background-color: var(--aura-inv-png-bg-a, #f1f5f9) !important;
+    background-image:
+        linear-gradient(45deg, var(--aura-inv-png-bg-b, #e2e8f0) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--aura-inv-png-bg-b, #e2e8f0) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--aura-inv-png-bg-b, #e2e8f0) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--aura-inv-png-bg-b, #e2e8f0) 75%) !important;
+    background-size: 16px 16px !important;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0 !important;
+    border: 1px solid var(--aura-inv-png-border, #cbd5e1);
+    box-sizing: border-box;
+}
+
+:is([data-theme="dark"], .wp-dark-mode-active, html[data-wp-dark-mode-scheme="dark"], .aura-dark-mode, body.aura-dark-mode, body.admin-color-midnight) .aura-floating-img-card.aura-inv-photo-card > img {
+    background-color: #334155 !important;
+    background-image:
+        linear-gradient(45deg, #273549 25%, transparent 25%),
+        linear-gradient(-45deg, #273549 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #273549 75%),
+        linear-gradient(-45deg, transparent 75%, #273549 75%) !important;
+    border-color: #475569;
 }
 
 /* ── Dark Mode Multi-Driver ─────────────────────────────────────────────── */

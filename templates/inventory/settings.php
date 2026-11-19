@@ -27,11 +27,47 @@ $interval_labels = [
 ];
 
 $finance_cats_settings = [];
+$finance_cats_map      = [];
 if ( class_exists( 'Aura_Financial_Categories' ) ) {
     $finance_cats_settings = $wpdb->get_results(
         "SELECT id, name FROM {$wpdb->prefix}aura_finance_categories WHERE type = 'expense' AND is_active = 1 ORDER BY name ASC"
     ) ?: [];
+    foreach ( $finance_cats_settings as $fc_row ) {
+        $finance_cats_map[ (int) $fc_row->id ] = $fc_row->name;
+    }
 }
+
+$allowed_tabs = [ 'categories', 'general', 'notifications', 'gcal', 'finanzas' ];
+$req_tab      = sanitize_key( $_GET['tab'] ?? 'categories' );
+$active_tab   = in_array( $req_tab, $allowed_tabs, true ) ? $req_tab : 'categories';
+
+$code_prefix_cfg = strtoupper( (string) ( $settings['code_prefix'] ?? 'CEM' ) );
+$code_digits_cfg = max( 2, min( 5, intval( $settings['code_digits'] ?? 3 ) ) );
+$code_info       = method_exists( 'Aura_Inventory_Equipment', 'get_code_suggestions' )
+    ? Aura_Inventory_Equipment::get_code_suggestions( 0 )
+    : [ 'last_main_code' => '', 'next_main_code' => $code_prefix_cfg . '-' . str_pad( '1', $code_digits_cfg, '0', STR_PAD_LEFT ) ];
+
+// Moneda base global ISO 4217 (Ajustes → Finanzas)
+$global_currency_code = function_exists( 'aura_get_base_currency' )
+    ? aura_get_base_currency()
+    : get_option( 'aura_finance_base_currency', 'MXN' );
+$global_currency_sym  = function_exists( 'aura_get_currency_symbol' )
+    ? aura_get_currency_symbol()
+    : get_option( 'aura_currency_symbol', '$' );
+$global_currencies    = class_exists( 'Aura_Financial_Currency' ) ? Aura_Financial_Currency::get_currencies() : [];
+$global_currency_meta = $global_currencies[ $global_currency_code ] ?? null;
+$global_currency_lbl  = $global_currency_meta
+    ? sprintf( '%s %s — %s (%s)', $global_currency_meta['flag'] ?? '', $global_currency_code, $global_currency_meta['name'] ?? '', $global_currency_sym )
+    : sprintf( '%s (%s)', $global_currency_code, $global_currency_sym );
+$global_currency_sample = function_exists( 'aura_format_money' )
+    ? aura_format_money( 1234.50, $global_currency_code, false )
+    : ( $global_currency_sym . '1,234.50' );
+
+$gcal_enabled_nav = class_exists( 'Aura_Inventory_Google_Calendar' ) && Aura_Inventory_Google_Calendar::is_enabled();
+$fin_cat_id       = intval( $settings['finance_category_id'] ?? 0 );
+$fin_cat_label    = $fin_cat_id && isset( $finance_cats_map[ $fin_cat_id ] )
+    ? $finance_cats_map[ $fin_cat_id ]
+    : __( 'Sin vincular', 'aura-suite' );
 
 // Encolado seguro
 if ( ! wp_style_is( 'aura-inventory-settings', 'enqueued' ) && ! wp_style_is( 'aura-inv-settings', 'enqueued' ) ) {
@@ -82,36 +118,47 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
         }
         ?>
 
-        <!-- Pestañas de Navegación Aura Design System -->
-        <div class="adp-tabs aura-inv-tabs" role="tablist">
-            <button type="button" class="adp-tab aura-inv-tab active" data-tab="categories" role="tab">
+        <!-- Barra de Navegación Aura Design System -->
+        <nav class="aura-navbar aura-nav aura-glass-card tabs-bar aura-inv-settings-nav fade-up" id="aura-inv-settings-nav" role="tablist">
+            <button type="button" class="aura-navbar-item aura-tab-btn tab-btn aura-inv-tab <?php echo $active_tab === 'categories' ? 'active' : ''; ?>" data-tab="categories" role="tab">
                 <span class="dashicons dashicons-category"></span>
-                <?php _e( 'Categorías', 'aura-suite' ); ?>
+                <span><?php _e( 'Categorías', 'aura-suite' ); ?></span>
+                <span class="aura-inv-nav-pill" id="js-nav-pill-categories"><?php echo count( $categories ); ?></span>
             </button>
-            <button type="button" class="adp-tab aura-inv-tab" data-tab="general" role="tab">
+            <button type="button" class="aura-navbar-item aura-tab-btn tab-btn aura-inv-tab <?php echo $active_tab === 'general' ? 'active' : ''; ?>" data-tab="general" role="tab">
                 <span class="dashicons dashicons-admin-generic"></span>
-                <?php _e( 'Configuración General', 'aura-suite' ); ?>
+                <span><?php _e( 'Configuración General', 'aura-suite' ); ?></span>
+                <span class="aura-inv-nav-pill aura-inv-nav-pill-indigo" id="js-nav-pill-prefix"><?php echo esc_html( $code_prefix_cfg ); ?></span>
             </button>
-            <button type="button" class="adp-tab aura-inv-tab" data-tab="notifications" role="tab">
+            <button type="button" class="aura-navbar-item aura-tab-btn tab-btn aura-inv-tab <?php echo $active_tab === 'notifications' ? 'active' : ''; ?>" data-tab="notifications" role="tab">
                 <span class="dashicons dashicons-email-alt"></span>
-                <?php _e( 'Notificaciones', 'aura-suite' ); ?>
+                <span><?php _e( 'Notificaciones', 'aura-suite' ); ?></span>
+                <span class="aura-inv-nav-pill <?php echo ! empty( $settings['email_alerts'] ) ? 'aura-inv-nav-pill-ok' : 'aura-inv-nav-pill-muted'; ?>" id="js-nav-pill-notif">
+                    <?php echo ! empty( $settings['email_alerts'] ) ? esc_html__( 'Activas', 'aura-suite' ) : esc_html__( 'Pausadas', 'aura-suite' ); ?>
+                </span>
             </button>
-            <button type="button" class="adp-tab aura-inv-tab" data-tab="gcal" role="tab">
+            <button type="button" class="aura-navbar-item aura-tab-btn tab-btn aura-inv-tab <?php echo $active_tab === 'gcal' ? 'active' : ''; ?>" data-tab="gcal" role="tab">
                 <span class="dashicons dashicons-calendar-alt"></span>
-                <?php _e( 'Google Calendar', 'aura-suite' ); ?>
+                <span><?php _e( 'Google Calendar', 'aura-suite' ); ?></span>
+                <span class="aura-inv-nav-pill <?php echo $gcal_enabled_nav ? 'aura-inv-nav-pill-ok' : 'aura-inv-nav-pill-muted'; ?>">
+                    <?php echo $gcal_enabled_nav ? esc_html__( 'Activo', 'aura-suite' ) : esc_html__( 'Inactivo', 'aura-suite' ); ?>
+                </span>
             </button>
-            <button type="button" class="adp-tab aura-inv-tab" data-tab="finanzas" role="tab">
+            <button type="button" class="aura-navbar-item aura-tab-btn tab-btn aura-inv-tab <?php echo $active_tab === 'finanzas' ? 'active' : ''; ?>" data-tab="finanzas" role="tab">
                 <span class="dashicons dashicons-money-alt"></span>
-                <?php _e( 'Finanzas', 'aura-suite' ); ?>
+                <span><?php _e( 'Finanzas', 'aura-suite' ); ?></span>
+                <span class="aura-inv-nav-pill <?php echo $fin_cat_id > 0 ? 'aura-inv-nav-pill-ok' : 'aura-inv-nav-pill-warn'; ?>" id="js-nav-pill-finance">
+                    <?php echo esc_html( $fin_cat_label ); ?>
+                </span>
             </button>
-        </div>
+        </nav>
 
         <div id="js-inv-settings-notice" class="aura-inv-notice" style="display:none;margin-top:16px;"></div>
 
         <!-- ══════════════════════════════════════════════════════
              TAB 1: CATEGORÍAS
         ══════════════════════════════════════════════════════════ -->
-        <div class="aura-inv-tab-panel" data-panel="categories">
+        <div class="aura-inv-tab-panel" data-panel="categories" <?php echo $active_tab === 'categories' ? '' : 'style="display:none;"'; ?>>
 
             <div class="aura-inv-section-header">
                 <div>
@@ -331,18 +378,50 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
         <!-- ══════════════════════════════════════════════════════
              TAB 2: CONFIGURACIÓN GENERAL
         ══════════════════════════════════════════════════════════ -->
-        <div class="aura-inv-tab-panel" data-panel="general" style="display:none;">
+        <div class="aura-inv-tab-panel" data-panel="general" <?php echo $active_tab === 'general' ? '' : 'style="display:none;"'; ?>>
             <div class="aura-glass-card aura-inv-card">
                 <h3 class="aura-inv-card-title">
                     <span class="dashicons dashicons-admin-generic"></span>
-                    <?php _e( 'Configuración General', 'aura-suite' ); ?>
+                    <?php _e( 'Configuración General y Códigos Internos', 'aura-suite' ); ?>
                 </h3>
-                <p class="description"><?php _e( 'Parámetros de funcionamiento del módulo de inventario.', 'aura-suite' ); ?></p>
+                <p class="description"><?php _e( 'Define el prefijo institucional para numeración secuencial de equipos y los parámetros operativos del inventario.', 'aura-suite' ); ?></p>
 
                 <div id="js-general-msg" class="aura-inv-notice" style="display:none;"></div>
 
                 <form id="js-form-settings" novalidate>
                     <table class="form-table aura-inv-settings-table" role="presentation">
+                        <tr>
+                            <th scope="row"><label for="set-code-prefix"><?php _e( 'Iniciales / Prefijo de códigos internos', 'aura-suite' ); ?></label></th>
+                            <td>
+                                <div class="aura-inv-code-cfg-row">
+                                    <div class="input-group aura-inv-compact-group">
+                                        <span class="input-group-text"><span class="dashicons dashicons-tag"></span></span>
+                                        <input type="text" id="set-code-prefix" name="code_prefix" class="form-control"
+                                               maxlength="12" style="text-transform:uppercase;font-weight:700;"
+                                               value="<?php echo esc_attr( $code_prefix_cfg ); ?>" placeholder="CEM">
+                                    </div>
+                                    <div class="input-group aura-inv-compact-group">
+                                        <span class="input-group-text"><?php _e( 'Dígitos', 'aura-suite' ); ?></span>
+                                        <select id="set-code-digits" name="code_digits" class="form-select">
+                                            <?php for ( $d = 2; $d <= 5; $d++ ) : ?>
+                                                <option value="<?php echo $d; ?>" <?php selected( $code_digits_cfg, $d ); ?>>
+                                                    <?php printf( esc_html__( '%d dígitos (%s)', 'aura-suite' ), $d, str_pad( '1', $d, '0', STR_PAD_LEFT ) ); ?>
+                                                </option>
+                                            <?php endfor; ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="js-code-preview-box" class="aura-inv-code-preview-box">
+                                    <span><?php _e( 'Ejemplo padre:', 'aura-suite' ); ?> <strong id="js-code-preview-main"><?php echo esc_html( $code_prefix_cfg . '-' . str_pad( '9', $code_digits_cfg, '0', STR_PAD_LEFT ) ); ?></strong></span>
+                                    <span><?php _e( 'Ejemplo hijo:', 'aura-suite' ); ?> <strong id="js-code-preview-child"><?php echo esc_html( $code_prefix_cfg . '-' . str_pad( '9', $code_digits_cfg, '0', STR_PAD_LEFT ) . '-01' ); ?></strong></span>
+                                    <?php if ( ! empty( $code_info['last_main_code'] ) ) : ?>
+                                        <span><?php _e( 'Último en BD:', 'aura-suite' ); ?> <strong><?php echo esc_html( $code_info['last_main_code'] ); ?></strong></span>
+                                        <span><?php _e( 'Siguiente:', 'aura-suite' ); ?> <strong><?php echo esc_html( $code_info['next_main_code'] ?? '' ); ?></strong></span>
+                                    <?php endif; ?>
+                                </div>
+                                <p class="description"><?php _e( 'Al crear un equipo nuevo, el sistema recordará el último código con estas iniciales y sugerirá el siguiente (y si es componente hijo, agregará -01, -02…).', 'aura-suite' ); ?></p>
+                            </td>
+                        </tr>
                         <tr>
                             <th scope="row"><label for="set-items-per-page"><?php _e( 'Equipos por página', 'aura-suite' ); ?></label></th>
                             <td>
@@ -384,17 +463,20 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><label for="set-currency"><?php _e( 'Símbolo de moneda', 'aura-suite' ); ?></label></th>
+                            <th scope="row"><?php _e( 'Moneda y Formato (ISO 4217)', 'aura-suite' ); ?></th>
                             <td>
-                                <div class="input-group" style="max-width:340px;">
-                                    <input type="text" id="set-currency" name="currency_symbol" class="form-control" style="max-width:85px;"
-                                           maxlength="5" value="<?php echo esc_attr( $settings['currency_symbol'] ); ?>">
-                                    <select name="currency_position" id="set-currency-pos" class="form-select">
-                                        <option value="before" <?php selected( $settings['currency_position'], 'before' ); ?>><?php _e( 'Antes del valor ($100)', 'aura-suite' ); ?></option>
-                                        <option value="after" <?php selected( $settings['currency_position'], 'after' ); ?>><?php _e( 'Después del valor (100$)', 'aura-suite' ); ?></option>
-                                    </select>
+                                <div class="aura-inv-currency-link-card">
+                                    <div>
+                                        <div class="aura-inv-currency-main"><?php echo esc_html( $global_currency_lbl ); ?></div>
+                                        <div class="aura-inv-currency-sub">
+                                            <?php printf( esc_html__( 'Ejemplo de formato activo: %s (heredado de Ajustes Globales → Finanzas)', 'aura-suite' ), '<strong>' . esc_html( $global_currency_sample ) . '</strong>' ); ?>
+                                        </div>
+                                    </div>
+                                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-settings&tab=finance' ) ); ?>" class="btn btn-glass btn-sm">
+                                        <span class="dashicons dashicons-external"></span>
+                                        <?php _e( 'Configurar en Ajustes → Finanzas', 'aura-suite' ); ?>
+                                    </a>
                                 </div>
-                                <p class="description"><?php _e( 'Se usa en reportes, fichas y exportaciones del módulo.', 'aura-suite' ); ?></p>
                             </td>
                         </tr>
                     </table>
@@ -412,7 +494,7 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
         <!-- ══════════════════════════════════════════════════════
              TAB 3: NOTIFICACIONES
         ══════════════════════════════════════════════════════════ -->
-        <div class="aura-inv-tab-panel" data-panel="notifications" style="display:none;">
+        <div class="aura-inv-tab-panel" data-panel="notifications" <?php echo $active_tab === 'notifications' ? '' : 'style="display:none;"'; ?>>
             <div class="aura-glass-card aura-inv-card">
                 <h3 class="aura-inv-card-title">
                     <span class="dashicons dashicons-email-alt"></span>
@@ -519,7 +601,7 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
         <!-- ══════════════════════════════════════════════════════
              TAB 4: GOOGLE CALENDAR
         ══════════════════════════════════════════════════════════ -->
-        <div class="aura-inv-tab-panel" data-panel="gcal" style="display:none;">
+        <div class="aura-inv-tab-panel" data-panel="gcal" <?php echo $active_tab === 'gcal' ? '' : 'style="display:none;"'; ?>>
             <div class="aura-glass-card aura-inv-card">
                 <h3 class="aura-inv-card-title">
                     <span class="dashicons dashicons-calendar-alt"></span>
@@ -592,20 +674,26 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
         <!-- ══════════════════════════════════════════════════════
              TAB 5: FINANZAS
         ══════════════════════════════════════════════════════════ -->
-        <div class="aura-inv-tab-panel" data-panel="finanzas" style="display:none;">
+        <div class="aura-inv-tab-panel" data-panel="finanzas" <?php echo $active_tab === 'finanzas' ? '' : 'style="display:none;"'; ?>>
             <div class="aura-glass-card aura-inv-card">
                 <h3 class="aura-inv-card-title">
                     <span class="dashicons dashicons-money-alt"></span>
-                    <?php _e( 'Integración con Finanzas', 'aura-suite' ); ?>
+                    <?php _e( 'Integración Contable con Finanzas', 'aura-suite' ); ?>
                 </h3>
-                <p class="description"><?php _e( 'Configure cómo los registros de mantenimiento se registran automáticamente en Finanzas.', 'aura-suite' ); ?></p>
+                <p class="description"><?php _e( 'Conecta los gastos de mantenimiento preventivo/correctivo del inventario directamente con el libro de egresos de Finanzas.', 'aura-suite' ); ?></p>
 
                 <div id="js-finanzas-msg" class="aura-inv-notice" style="display:none;"></div>
 
                 <?php if ( empty( $finance_cats_settings ) ) : ?>
                 <div class="alert-card alert-warning" style="margin:0 0 18px;">
                     <span class="dashicons dashicons-warning"></span>
-                    <span><?php _e( 'No se encontraron categorías financieras de tipo gasto. Asegúrate de configurarlas en Finanzas.', 'aura-suite' ); ?></span>
+                    <div style="flex:1;">
+                        <strong><?php _e( 'No se encontraron categorías de gasto activas en Finanzas', 'aura-suite' ); ?></strong>
+                        <p style="margin:4px 0 0;font-size:12.5px;"><?php _e( 'Crea al menos una categoría de tipo "Gasto/Egreso" en el módulo de Finanzas (por ejemplo: "Mantenimiento de Equipos") para poder vincular gastos automáticamente.', 'aura-suite' ); ?></p>
+                    </div>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-financial-categories' ) ); ?>" class="btn btn-glass btn-sm">
+                        <?php _e( 'Ir a Categorías de Finanzas', 'aura-suite' ); ?>
+                    </a>
                 </div>
                 <?php endif; ?>
 
@@ -614,15 +702,22 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
                         <tr>
                             <th scope="row"><label for="set-finance-cat"><?php _e( 'Categoría de gasto por defecto', 'aura-suite' ); ?></label></th>
                             <td>
-                                <select id="set-finance-cat" name="finance_category_id" class="form-select" style="max-width:340px;">
-                                    <option value="0"><?php _e( '— Sin categoría por defecto —', 'aura-suite' ); ?></option>
-                                    <?php foreach ( $finance_cats_settings as $fc ) : ?>
-                                        <option value="<?php echo esc_attr( $fc->id ); ?>" <?php selected( $settings['finance_category_id'], $fc->id ); ?>>
-                                            <?php echo esc_html( $fc->name ); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <p class="description"><?php _e( 'Al crear un mantenimiento con costo, esta categoría se pre-seleccionará en el formulario.', 'aura-suite' ); ?></p>
+                                <div class="input-group" style="max-width:460px;">
+                                    <select id="set-finance-cat" name="finance_category_id" class="form-select">
+                                        <option value="0"><?php _e( '— Sin categoría por defecto —', 'aura-suite' ); ?></option>
+                                        <?php foreach ( $finance_cats_settings as $fc ) : ?>
+                                            <option value="<?php echo esc_attr( $fc->id ); ?>" <?php selected( $settings['finance_category_id'], $fc->id ); ?>>
+                                                <?php echo esc_html( $fc->name ); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-financial-categories' ) ); ?>" class="btn btn-glass" data-tooltip="<?php esc_attr_e( 'Administrar categorías de egresos en Finanzas', 'aura-suite' ); ?>">
+                                        <span class="dashicons dashicons-external"></span>
+                                    </a>
+                                </div>
+                                <p class="description">
+                                    <?php _e( 'Cuando elijas una categoría aquí, al registrar un mantenimiento nuevo con costo > 0 esta categoría vendrá pre-seleccionada y se activará automáticamente el envío a Finanzas. Si lo dejas vacío, deberás elegir la categoría manualmente en cada mantenimiento.', 'aura-suite' ); ?>
+                                </p>
                             </td>
                         </tr>
                         <tr>
@@ -632,7 +727,7 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
                                     <option value="approved" <?php selected( $settings['auto_approve_transactions'], 'approved' ); ?>><?php _e( 'Aprobada automáticamente', 'aura-suite' ); ?></option>
                                     <option value="pending" <?php selected( $settings['auto_approve_transactions'], 'pending' ); ?>><?php _e( 'Pendiente de aprobación', 'aura-suite' ); ?></option>
                                 </select>
-                                <p class="description"><?php _e( 'Si eliges "Pendiente", la transacción requerirá revisión en la cola de aprobaciones de Finanzas.', 'aura-suite' ); ?></p>
+                                <p class="description"><?php _e( 'Si eliges "Aprobada", impactará de inmediato el balance de egresos; si eliges "Pendiente", quedará en revisión en la cola de Finanzas.', 'aura-suite' ); ?></p>
                             </td>
                         </tr>
                     </table>
@@ -642,6 +737,10 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
                             <span class="dashicons dashicons-saved"></span>
                             <?php _e( 'Guardar configuración de finanzas', 'aura-suite' ); ?>
                         </button>
+                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-financial-transactions' ) ); ?>" class="btn btn-glass">
+                            <span class="dashicons dashicons-list-view"></span>
+                            <?php _e( 'Ver Egresos en Finanzas', 'aura-suite' ); ?>
+                        </a>
                     </div>
                 </form>
             </div>

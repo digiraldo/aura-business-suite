@@ -750,6 +750,81 @@
             this.bindEvents();
             this.bindCropModal();
             this.initThirdPartySelectors();
+            this.initCodeSuggestions();
+        },
+
+        initCodeSuggestions: function () {
+            var self = this;
+            var cfg  = this.cfg;
+            var $code = $('#inv_code');
+            var $btn  = $('#aura-inv-apply-suggested-code');
+            if (!$code.length) return;
+
+            $code.on('input', function () {
+                // Si el usuario escribe manualmente su propio código, no lo sobreescribimos al cambiar equipo padre
+                $(this).data('auto-filled', false).attr('data-auto-filled', '0');
+            });
+
+            $btn.on('click', function () {
+                var suggested = $(this).attr('data-suggested') || '';
+                if (!suggested) return;
+                $code.val(suggested).data('auto-filled', true).attr('data-auto-filled', '1').trigger('focus');
+                if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
+                    window.AuraUI.showToast('Código aplicado: ' + suggested, 'success');
+                }
+            });
+
+            $('#inv_parent_equipment').on('change', function () {
+                var parentId = parseInt($(this).val() || '0', 10) || 0;
+                self.refreshCodeSuggestion(parentId);
+            });
+
+            // Para alta nueva, también consultamos vía AJAX por si otro equipo se creó en otra pestaña
+            if (!cfg.isEdit) {
+                self.refreshCodeSuggestion(parseInt($('#inv_parent_equipment').val() || '0', 10) || 0);
+            }
+        },
+
+        refreshCodeSuggestion: function (parentId) {
+            var cfg  = this.cfg;
+            var $code = $('#inv_code');
+            $.ajax({
+                url: cfg.ajaxurl,
+                method: 'POST',
+                data: {
+                    action: 'aura_inventory_equipment_suggest_code',
+                    nonce: cfg.nonce,
+                    parent_equipment_id: parentId || 0
+                },
+                success: function (res) {
+                    if (!res || !res.success || !res.data) return;
+                    var d = res.data;
+                    var suggested = d.suggested_code || '';
+                    $('#aura-inv-apply-suggested-code').attr('data-suggested', suggested);
+                    $('#aura-inv-suggest-btn-label').text(suggested ? ('Usar ' + suggested) : 'Sugerir');
+                    $('#aura-inv-next-code-text').text(suggested || '—');
+
+                    if (d.is_child) {
+                        $('#aura-inv-last-code-text').html(
+                            d.last_child_code
+                                ? ('Último componente del padre: <strong>' + escHtml(d.last_child_code) + '</strong>')
+                                : ('Padre: <strong>' + escHtml(d.parent_code || '—') + '</strong> (primer componente)')
+                        );
+                    } else {
+                        $('#aura-inv-last-code-text').html(
+                            d.last_main_code
+                                ? ('Último código registrado: <strong>' + escHtml(d.last_main_code) + '</strong>')
+                                : 'Aún no hay códigos con este prefijo.'
+                        );
+                    }
+
+                    // Autocompletar si el campo está vacío o tenía un código auto-llenado previamente
+                    var isAuto = $code.attr('data-auto-filled') === '1' || $code.data('auto-filled') === true;
+                    if (!cfg.isEdit && suggested && ($.trim($code.val()) === '' || isAuto)) {
+                        $code.val(suggested).data('auto-filled', true).attr('data-auto-filled', '1');
+                    }
+                }
+            });
         },
 
         initThirdPartySelectors: function () {
@@ -819,6 +894,14 @@
 
             $('#aura-inv-btn-responsible-explorer').on('click', function () {
                 window.AuraThirdPartySelector.openExplorer({
+                    defaultTab: 'employee',
+                    allowUsers: true,
+                    onSelect: applyResponsibleItem
+                });
+            });
+
+            $('#aura-inv-btn-responsible-tp-explorer').on('click', function () {
+                window.AuraThirdPartySelector.openExplorer({
                     defaultTab: 'all',
                     allowUsers: true,
                     onSelect: applyResponsibleItem
@@ -879,6 +962,7 @@
             $(document).on('click', '#aura-inv-remove-photo', function () {
                 $('#inv_photo').val('');
                 $('#aura-inv-photo-preview').html('<span class="dashicons dashicons-format-image aura-inv-photo-placeholder"></span>');
+                $(this).hide();
             });
 
             $('#aura-inv-equipment-form').on('submit', function (e) {
@@ -944,6 +1028,7 @@
                 $('#aura-inv-photo-preview').html(
                     '<img src="' + escHtml(self.pendingAttachmentUrl) + '" style="max-width:100%;max-height:240px;width:auto;height:auto;object-fit:contain;margin:0 auto;border-radius:8px;">'
                 );
+                $('#aura-inv-remove-photo').show();
                 self.closeCropModal();
             });
 
@@ -973,6 +1058,7 @@
                             $('#aura-inv-photo-preview').html(
                                 '<img src="' + escHtml(res.data.full_url) + '" style="max-width:100%;max-height:240px;width:auto;height:auto;object-fit:contain;margin:0 auto;border-radius:8px;">'
                             );
+                            $('#aura-inv-remove-photo').show();
                             self.closeCropModal();
                         } else {
                             EquipmentList.showNotice((res.data && res.data.message) || 'Error al procesar imagen.', 'error');

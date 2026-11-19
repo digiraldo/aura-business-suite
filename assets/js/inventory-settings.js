@@ -58,6 +58,18 @@
         });
     }
 
+    function updateCodePreview() {
+        var $prefix = $('#set-code-prefix');
+        if (!$prefix.length) return;
+        var raw    = String($prefix.val() || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+        var clean  = raw.replace(/^[-_]+|[-_]+$/g, '') || 'CEM';
+        var digits = parseInt($('#set-code-digits').val() || '3', 10) || 3;
+        var padded = String(9);
+        while (padded.length < digits) { padded = '0' + padded; }
+        $('#js-code-preview-main').text(clean + '-' + padded);
+        $('#js-code-preview-child').text(clean + '-' + padded + '-01');
+    }
+
     // ─── Filas Expandibles (+) Categorías ────────────────────
     function bindCategoryChildRows() {
         $(document).on('click', '.aura-settings-cat-toggle', function (e) {
@@ -352,25 +364,32 @@
 
     // ─── Settings Forms ─────────────────────────────────────
     function bindSettingsForms() {
+        $(document).on('input', '#set-code-prefix', updateCodePreview);
+        $(document).on('change', '#set-code-digits', updateCodePreview);
+
         $(document).on('submit', '#js-form-settings', function (e) {
             e.preventDefault();
             var $btn = $('#js-btn-save-general').prop('disabled', true);
             hideNotice('#js-general-msg');
 
             var data = {
+                scope:             'general',
+                code_prefix:       $('#set-code-prefix').val(),
+                code_digits:       $('#set-code-digits').val(),
                 items_per_page:    $('#set-items-per-page').val(),
                 alert_days_before: $('#set-alert-days').val(),
                 loan_max_days:     $('#set-loan-max').val(),
                 show_retired:      $('#set-show-retired').is(':checked') ? 1 : 0,
-                currency_symbol:   $('#set-currency').val(),
-                currency_position: $('#set-currency-pos').val(),
-                email_alerts:      $('#set-email-alerts').is(':checked') ? 1 : 0,
-                email_extra:       $('#set-email-extra').val(),
             };
 
             doAjax('aura_inventory_settings_save_settings', data,
                 function (res) {
                     $btn.prop('disabled', false);
+                    if (res && res.settings && res.settings.code_prefix) {
+                        $('#set-code-prefix').val(res.settings.code_prefix);
+                        $('#js-nav-pill-prefix').text(res.settings.code_prefix);
+                        updateCodePreview();
+                    }
                     showNotice('#js-general-msg', 'success', res.message);
                 },
                 function (msg) {
@@ -385,20 +404,20 @@
             var $btn = $('#js-btn-save-notif').prop('disabled', true);
             hideNotice('#js-notif-msg');
 
+            var alertsOn = $('#set-email-alerts').is(':checked') ? 1 : 0;
             var data = {
-                items_per_page:    $('#set-items-per-page').val() || 20,
-                alert_days_before: $('#set-alert-days').val() || 7,
-                loan_max_days:     $('#set-loan-max').val() || 30,
-                show_retired:      $('#set-show-retired').is(':checked') ? 1 : 0,
-                currency_symbol:   $('#set-currency').val() || '$',
-                currency_position: $('#set-currency-pos').val() || 'before',
-                email_alerts:      $('#set-email-alerts').is(':checked') ? 1 : 0,
-                email_extra:       $('#set-email-extra').val(),
+                scope:        'notifications',
+                email_alerts: alertsOn,
+                email_extra:  $('#set-email-extra').val(),
             };
 
             doAjax('aura_inventory_settings_save_settings', data,
                 function (res) {
                     $btn.prop('disabled', false);
+                    $('#js-nav-pill-notif')
+                        .text(alertsOn ? 'Activas' : 'Pausadas')
+                        .toggleClass('aura-inv-nav-pill-ok', !!alertsOn)
+                        .toggleClass('aura-inv-nav-pill-muted', !alertsOn);
                     showNotice('#js-notif-msg', 'success', res.message);
                 },
                 function (msg) {
@@ -461,6 +480,12 @@
             doAjax('aura_inventory_settings_save_finance_settings', data,
                 function (res) {
                     $btn.prop('disabled', false);
+                    var catId = parseInt($('#set-finance-cat').val() || '0', 10);
+                    var catLbl = catId > 0 ? $.trim($('#set-finance-cat option:selected').text()) : 'Sin vincular';
+                    $('#js-nav-pill-finance')
+                        .text(catLbl)
+                        .toggleClass('aura-inv-nav-pill-ok', catId > 0)
+                        .toggleClass('aura-inv-nav-pill-warn', catId <= 0);
                     showNotice('#js-finanzas-msg', 'success', res.message);
                 },
                 function (msg) {

@@ -2215,12 +2215,14 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
         }
 
         // ── Assets Inventario — Equipos ───────────────────────────────────────────
-        if (
-            in_array($hook, [
-                'inventario_page_aura-inventory-equipment',
-                'inventario_page_aura-inventory-new-equipment',
-            ])
-        ) {
+        $is_equip_page = in_array($hook, [
+            'inventario_page_aura-inventory-equipment',
+            'inventario_page_aura-inventory-new-equipment',
+            'aura-inventory_page_aura-inventory-equipment',
+            'aura-inventory_page_aura-inventory-new-equipment',
+        ], true) || (isset($_GET['page']) && in_array($_GET['page'], ['aura-inventory-equipment', 'aura-inventory-new-equipment'], true));
+
+        if ($is_equip_page) {
             wp_enqueue_media();
             wp_enqueue_script('jquery-ui-datepicker');
             wp_enqueue_style(
@@ -2298,6 +2300,24 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
                 [],
                 '1.13.2'
             );
+            if (!wp_script_is('aura-third-party-selector', 'registered') && file_exists(AURA_PLUGIN_DIR . 'assets/js/third-party-selector.js')) {
+                wp_register_script(
+                    'aura-third-party-selector',
+                    AURA_PLUGIN_URL . 'assets/js/third-party-selector.js',
+                    ['jquery', 'jquery-ui-autocomplete'],
+                    $inv_ver('assets/js/third-party-selector.js'),
+                    true
+                );
+            }
+            if (wp_script_is('aura-third-party-selector', 'registered')) {
+                wp_enqueue_script('aura-third-party-selector');
+                if (!wp_scripts()->get_data('aura-third-party-selector', 'data')) {
+                    wp_localize_script('aura-third-party-selector', 'auraCounterpartiesData', [
+                        'ajaxUrl' => admin_url('admin-ajax.php'),
+                        'nonce'   => wp_create_nonce('aura_search_counterparties_nonce'),
+                    ]);
+                }
+            }
             wp_enqueue_style(
                 'aura-inventory-equipment',
                 AURA_PLUGIN_URL . 'assets/css/inventory-equipment.css',
@@ -2310,24 +2330,34 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
                 ['aura-design-system', 'aura-inventory-equipment'],
                 $inv_ver('assets/css/inventory-maintenance.css')
             );
+            $eq_maint_deps = ['jquery', 'jquery-ui-datepicker', 'aura-ui-core'];
+            if (wp_script_is('aura-third-party-selector', 'registered')) {
+                $eq_maint_deps[] = 'aura-third-party-selector';
+            }
             wp_enqueue_script(
                 'aura-inventory-equipment',
                 AURA_PLUGIN_URL . 'assets/js/inventory-equipment.js',
-                ['jquery', 'jquery-ui-datepicker', 'aura-ui-core'],
+                $eq_maint_deps,
                 $inv_ver('assets/js/inventory-equipment.js'),
                 true
             );
+            $maint_deps = ['jquery', 'jquery-ui-datepicker', 'aura-inventory-equipment', 'aura-ui-core'];
+            if (wp_script_is('aura-third-party-selector', 'registered')) {
+                $maint_deps[] = 'aura-third-party-selector';
+            }
             wp_enqueue_script(
                 'aura-inventory-maintenance',
                 AURA_PLUGIN_URL . 'assets/js/inventory-maintenance.js',
-                ['jquery', 'jquery-ui-datepicker', 'aura-inventory-equipment', 'aura-ui-core'],
+                $maint_deps,
                 $inv_ver('assets/js/inventory-maintenance.js'),
                 true
             );
         }
 
         // ── Assets Inventario — Préstamos (FASE 5) ────────────────────
-        if ($hook === 'inventario_page_aura-inventory-loans') {
+        $is_loans_page = ($hook === 'inventario_page_aura-inventory-loans' || $hook === 'aura-inventory_page_aura-inventory-loans')
+            || (isset($_GET['page']) && $_GET['page'] === 'aura-inventory-loans');
+        if ($is_loans_page) {
             if (!wp_script_is('aura-third-party-selector', 'registered') && file_exists(AURA_PLUGIN_DIR . 'assets/js/third-party-selector.js')) {
                 wp_register_script(
                     'aura-third-party-selector',

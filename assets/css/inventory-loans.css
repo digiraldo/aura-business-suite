@@ -544,107 +544,94 @@
     padding: 2px;
 }
 
-/* ── Modal Visual Picker de Equipos (Stacked) ──────────────────────────── */
+/* ── Modal Catálogo Rápido de Equipos (Stacked) & Explorador Usuarios ─── */
+#aura-tp-explorer-modal {
+    z-index: 1002000 !important;
+}
+
 .aura-inv-ep-toolbar {
     display: flex;
     gap: 10px;
-    margin-bottom: 16px;
-    align-items: center;
-}
-
-.aura-inv-ep-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 12px;
-    max-height: 440px;
-    overflow-y: auto;
-    padding: 2px;
-}
-
-.aura-inv-ep-card {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    background: var(--aura-surface-alt);
-    border: 1px solid var(--aura-border);
-    border-radius: 12px;
-    padding: 10px;
-    cursor: pointer;
-    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
-    color: var(--aura-text);
-}
-
-.aura-inv-ep-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--aura-indigo);
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.14);
-}
-
-.aura-inv-ep-thumb {
-    width: 100%;
-    height: 120px;
-    background: var(--aura-surface);
-    border: 1px solid var(--aura-border);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
     margin-bottom: 10px;
-    padding: 6px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.aura-inv-ep-thumb img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 6px;
+.aura-equip-picker-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
-.aura-inv-ep-thumb-empty {
+.aura-equip-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--aura-border);
+    background: var(--aura-surface-alt);
     color: var(--aura-text-muted);
-    opacity: .6;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s ease;
 }
 
-.aura-inv-ep-thumb-empty .dashicons {
-    font-size: 32px;
-    width: 32px;
-    height: 32px;
+.aura-equip-chip:hover,
+.aura-equip-chip.is-active {
+    background: var(--aura-indigo-bg);
+    border-color: var(--aura-indigo-border);
+    color: var(--aura-indigo-dark);
+}
+
+.aura-equip-picker-list-wrap {
+    max-height: 430px;
+    overflow-y: auto;
+    border: 1px solid var(--aura-border);
+    border-radius: 10px;
+    background: var(--aura-surface);
+}
+
+.aura-equip-picker-table {
+    width: 100%;
+    margin: 0;
+}
+
+.aura-inv-ep-row {
+    cursor: pointer;
+    transition: background .12s ease;
+}
+
+.aura-inv-ep-row:hover {
+    background: var(--aura-surface-hover);
 }
 
 .aura-inv-ep-name {
     font-weight: 700;
     font-size: 13.5px;
     color: var(--aura-text);
-    margin-bottom: 3px;
+    margin-bottom: 2px;
 }
 
 .aura-inv-ep-meta {
     font-size: 11.5px;
     color: var(--aura-text-muted);
-    margin-bottom: 8px;
-}
-
-.aura-inv-ep-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
 }
 
 .aura-inv-ep-cat {
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 600;
-    padding: 2px 8px;
+    padding: 2px 9px;
     border-radius: 999px;
     background: var(--aura-indigo-bg);
     color: var(--aura-indigo-dark);
     border: 1px solid var(--aura-indigo-border);
+    white-space: nowrap;
 }
 
 .aura-inv-ep-loc {
-    font-size: 10.5px;
+    font-size: 12px;
     color: var(--aura-text-muted);
 }
 
@@ -656,7 +643,6 @@
 }
 
 .aura-inv-empty-picker {
-    grid-column: 1 / -1;
     text-align: center;
     padding: 32px 16px;
     color: var(--aura-text-muted);

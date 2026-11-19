@@ -22,8 +22,8 @@ global $wpdb;
 $t_maint = $wpdb->prefix . 'aura_inventory_maintenance';
 $t_equip = $wpdb->prefix . 'aura_inventory_equipment';
 
-$currency = function_exists( 'aura_get_base_currency' )
-    ? ( aura_get_base_currency()['symbol'] ?? '$' )
+$currency = function_exists( 'aura_get_currency_symbol' )
+    ? aura_get_currency_symbol()
     : get_option( 'aura_currency_symbol', '$' );
 
 $preselect_equipment_id = intval( $_GET['equipment_id'] ?? 0 );

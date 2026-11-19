@@ -143,7 +143,7 @@ $is_internal = ! $maintenance || $maintenance->performed_by === 'internal';
 $cur_type    = $maintenance ? $maintenance->type : 'preventive';
 $cur_ps      = $maintenance ? $maintenance->post_status : 'operational';
 $page_title  = $is_edit ? __( 'Editar Mantenimiento', 'aura-suite' ) : __( 'Registrar Mantenimiento', 'aura-suite' );
-$currency_sym = function_exists( 'aura_get_base_currency' ) ? ( aura_get_base_currency()['symbol'] ?? '$' ) : get_option( 'aura_currency_symbol', '$' );
+$currency_sym = function_exists( 'aura_get_currency_symbol' ) ? aura_get_currency_symbol() : get_option( 'aura_currency_symbol', '$' );
 
 // Encolado seguro sin duplicar script/estilo global
 if ( ! wp_style_is( 'aura-inventory-maintenance', 'enqueued' ) && ! wp_style_is( 'aura-inv-maintenance', 'enqueued' ) ) {
@@ -493,14 +493,23 @@ if ( ! wp_script_is( 'aura-inventory-maintenance', 'enqueued' ) ) {
                                     <tr>
                                         <th><label for="maint_technician"><?php _e( 'Técnico responsable', 'aura-suite' ); ?></label></th>
                                         <td>
-                                            <select id="maint_technician" name="internal_technician" class="form-select" style="max-width:340px;">
-                                                <option value=""><?php _e( '— Sin asignar —', 'aura-suite' ); ?></option>
-                                                <?php foreach ( $users as $u ) : ?>
-                                                <option value="<?php echo esc_attr( $u->ID ); ?>" <?php selected( intval( $v('internal_technician') ), intval( $u->ID ) ); ?>>
-                                                    <?php echo esc_html( $u->display_name ); ?>
-                                                </option>
-                                                <?php endforeach; ?>
-                                            </select>
+                                            <div class="input-group" style="max-width:460px;">
+                                                <select id="maint_technician" name="internal_technician" class="form-select">
+                                                    <option value=""><?php _e( '— Sin asignar —', 'aura-suite' ); ?></option>
+                                                    <?php foreach ( $users as $u ) : ?>
+                                                    <option value="<?php echo esc_attr( $u->ID ); ?>" <?php selected( intval( $v('internal_technician') ), intval( $u->ID ) ); ?>>
+                                                        <?php echo esc_html( $u->display_name ); ?>
+                                                    </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                                <button type="button"
+                                                        id="aura-maint-btn-tech-explorer"
+                                                        class="btn btn-glass"
+                                                        data-tooltip="<?php esc_attr_e( 'Explorar todos los usuarios con filtro por rol', 'aura-suite' ); ?>">
+                                                    <span class="dashicons dashicons-admin-users"></span>
+                                                    <?php _e( 'Explorar Usuarios', 'aura-suite' ); ?>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </table>

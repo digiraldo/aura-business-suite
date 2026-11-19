@@ -585,6 +585,28 @@
                 self.loadEquipmentPhoto(equipId);
                 self.loadEquipmentInstructions(equipId);
             });
+
+            // Selector de Usuarios para Técnico Responsable
+            $('#aura-maint-btn-tech-explorer').on('click', function () {
+                if (typeof window.AuraThirdPartySelector === 'undefined') {
+                    self.showNotice('El explorador de usuarios no está disponible en esta página.', 'error');
+                    return;
+                }
+                window.AuraThirdPartySelector.openExplorer({
+                    defaultTab: 'employee',
+                    allowUsers: true,
+                    onSelect: function (item) {
+                        var userId = item.user_id || item.id || '';
+                        var name   = item.commercial_name || item.name || item.display_name || '';
+                        if (!userId) return;
+                        var $sel = $('#maint_technician');
+                        if (!$sel.find('option[value="' + userId + '"]').length) {
+                            $sel.append($('<option>', { value: userId, text: name }));
+                        }
+                        $sel.val(String(userId)).trigger('change');
+                    }
+                });
+            });
         },
 
         initEquipmentCatalogPicker: function () {

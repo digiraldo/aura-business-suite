@@ -58,7 +58,21 @@ $v = function( string $field, $default = '' ) use ( $equipment ) {
 $checked = function( string $field ) use ( $equipment ) {
     return ( $equipment && $equipment->$field ) ? 'checked' : '';
 };
-$page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nuevo Equipo', 'aura-suite' );
+
+$inv_settings = class_exists( 'Aura_Inventory_Categories' ) ? Aura_Inventory_Categories::get_settings() : [];
+$code_info    = method_exists( 'Aura_Inventory_Equipment', 'get_code_suggestions' )
+    ? Aura_Inventory_Equipment::get_code_suggestions( $equipment ? intval( $equipment->parent_equipment_id ?? 0 ) : 0 )
+    : [
+        'prefix'          => $inv_settings['code_prefix'] ?? 'CEM',
+        'digits'          => $inv_settings['code_digits'] ?? 3,
+        'last_main_code'  => '',
+        'last_child_code' => '',
+        'suggested_code'  => '',
+        'is_child'        => false,
+    ];
+$current_internal_code = $v( 'internal_code' );
+$initial_auto_code     = ( ! $is_edit && $current_internal_code === '' && ! empty( $code_info['suggested_code'] ) );
+$page_title            = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nuevo Equipo', 'aura-suite' );
 ?>
 
 <div class="aura-app-wrapper aura-inventory-equipment-form">
@@ -121,7 +135,50 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                             </tr>
                             <tr>
                                 <th><label for="inv_code"><?php _e( 'Código interno', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_code" name="internal_code" value="<?php echo $v('internal_code'); ?>" class="form-control"></td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="text"
+                                               id="inv_code"
+                                               name="internal_code"
+                                               value="<?php echo $initial_auto_code ? esc_attr( $code_info['suggested_code'] ) : $current_internal_code; ?>"
+                                               data-auto-filled="<?php echo $initial_auto_code ? '1' : '0'; ?>"
+                                               class="form-control"
+                                               placeholder="<?php echo esc_attr( $code_info['suggested_code'] ?: 'CEM-001' ); ?>">
+                                        <button type="button"
+                                                id="aura-inv-apply-suggested-code"
+                                                class="btn btn-glass"
+                                                data-suggested="<?php echo esc_attr( $code_info['suggested_code'] ?? '' ); ?>"
+                                                data-tooltip="<?php esc_attr_e( 'Aplicar siguiente código sugerido automáticamente', 'aura-suite' ); ?>">
+                                            <span class="dashicons dashicons-tag"></span>
+                                            <span id="aura-inv-suggest-btn-label"><?php echo esc_html( $code_info['suggested_code'] ? sprintf( __( 'Usar %s', 'aura-suite' ), $code_info['suggested_code'] ) : __( 'Sugerir', 'aura-suite' ) ); ?></span>
+                                        </button>
+                                    </div>
+                                    <div id="aura-inv-code-helper" class="aura-inv-code-helper">
+                                        <span class="aura-inv-code-helper-item">
+                                            <span class="dashicons dashicons-clock"></span>
+                                            <span id="aura-inv-last-code-text">
+                                                <?php
+                                                if ( ! empty( $code_info['is_child'] ) ) {
+                                                    echo ! empty( $code_info['last_child_code'] )
+                                                        ? sprintf( esc_html__( 'Último componente del padre: %s', 'aura-suite' ), '<strong>' . esc_html( $code_info['last_child_code'] ) . '</strong>' )
+                                                        : sprintf( esc_html__( 'Padre: %s (primer componente)', 'aura-suite' ), '<strong>' . esc_html( $code_info['parent_code'] ?: '—' ) . '</strong>' );
+                                                } else {
+                                                    echo ! empty( $code_info['last_main_code'] )
+                                                        ? sprintf( esc_html__( 'Último código registrado: %s', 'aura-suite' ), '<strong>' . esc_html( $code_info['last_main_code'] ) . '</strong>' )
+                                                        : esc_html__( 'Aún no hay códigos con este prefijo.', 'aura-suite' );
+                                                }
+                                                ?>
+                                            </span>
+                                        </span>
+                                        <span class="aura-inv-code-helper-item aura-inv-code-next">
+                                            <?php _e( 'Siguiente:', 'aura-suite' ); ?>
+                                            <strong id="aura-inv-next-code-text"><?php echo esc_html( $code_info['suggested_code'] ?: '—' ); ?></strong>
+                                        </span>
+                                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-inventory-settings&tab=general' ) ); ?>" class="aura-inv-code-cfg-link" data-tooltip="<?php esc_attr_e( 'Configurar prefijo e iniciales de la organización', 'aura-suite' ); ?>">
+                                            <?php printf( esc_html__( 'Prefijo: %s', 'aura-suite' ), esc_html( $code_info['prefix'] ?? 'CEM' ) ); ?> ⚙
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
                                 <th><label for="inv_category"><?php _e( 'Categoría', 'aura-suite' ); ?></label></th>
@@ -187,7 +244,7 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                                 <th><label for="inv_acquisition_date"><?php _e( 'Fecha de adquisición', 'aura-suite' ); ?></label></th>
                                 <td><input type="date" id="inv_acquisition_date" name="acquisition_date" value="<?php echo $v('acquisition_date'); ?>" class="form-control"></td>
                             </tr>
-                            <?php $inv_currency_sym = function_exists( 'aura_get_base_currency' ) ? ( aura_get_base_currency()['symbol'] ?? '$' ) : get_option( 'aura_currency_symbol', '$' ); ?>
+                            <?php $inv_currency_sym = function_exists( 'aura_get_currency_symbol' ) ? aura_get_currency_symbol() : get_option( 'aura_currency_symbol', '$' ); ?>
                             <tr>
                                 <th><label for="inv_cost"><?php _e( 'Costo de adquisición', 'aura-suite' ); ?></label></th>
                                 <td>
@@ -383,9 +440,10 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                         </h2>
                     </div>
                     <div class="aura-inv-card-body aura-inv-photo-box">
-                        <div id="aura-inv-photo-preview">
+                        <div id="aura-inv-photo-preview" class="aura-inv-photo-surface">
                             <?php
-                            if ( $equipment && $equipment->photo ) :
+                            $has_photo = ( $equipment && $equipment->photo );
+                            if ( $has_photo ) :
                                 $preview_urls = function_exists( 'aura_get_equipment_photo_urls' )
                                     ? aura_get_equipment_photo_urls( $equipment->photo )
                                     : [ 'full' => ( is_numeric( $equipment->photo ) ? wp_get_attachment_url( (int) $equipment->photo ) : $equipment->photo ) ];
@@ -403,13 +461,11 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                             <?php _e( 'Seleccionar imagen', 'aura-suite' ); ?>
                         </button>
                         <p class="aura-inv-photo-hint">
-                            <?php _e( 'Puedes recortar o usar proporción libre para preservar el formato original del equipo.', 'aura-suite' ); ?>
+                            <?php _e( 'Los PNG con transparencia muestran cuadrícula de contraste adaptable a modo claro y oscuro.', 'aura-suite' ); ?>
                         </p>
-                        <?php if ( $equipment && $equipment->photo ) : ?>
-                        <button type="button" id="aura-inv-remove-photo" class="btn btn-glass aura-btn-danger-outline" style="width:100%;margin-top:6px;justify-content:center;">
+                        <button type="button" id="aura-inv-remove-photo" class="btn btn-glass aura-btn-danger-outline" style="width:100%;margin-top:6px;justify-content:center;<?php echo $has_photo ? '' : 'display:none;'; ?>">
                             <?php _e( 'Quitar imagen', 'aura-suite' ); ?>
                         </button>
-                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -457,10 +513,16 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
                                         title="<?php esc_attr_e( 'Quitar responsable', 'aura-suite' ); ?>"
                                         style="<?php echo ( $resp_user_id || $resp_tp_id ) ? '' : 'display:none;'; ?>">&times;</button>
                             </div>
-                            <button type="button" id="aura-inv-btn-responsible-explorer" class="btn btn-glass" style="width:100%;margin-top:8px;justify-content:center;">
-                                <span class="dashicons dashicons-admin-users"></span>
-                                <?php _e( 'Explorar Usuarios / Terceros', 'aura-suite' ); ?>
-                            </button>
+                            <div style="display:flex;gap:6px;margin-top:8px;">
+                                <button type="button" id="aura-inv-btn-responsible-explorer" class="btn btn-glass" style="flex:1;justify-content:center;" data-tooltip="<?php esc_attr_e( 'Abrir selector de Usuarios del sistema', 'aura-suite' ); ?>">
+                                    <span class="dashicons dashicons-admin-users"></span>
+                                    <?php _e( 'Explorar Usuarios', 'aura-suite' ); ?>
+                                </button>
+                                <button type="button" id="aura-inv-btn-responsible-tp-explorer" class="btn btn-glass" style="justify-content:center;" data-tooltip="<?php esc_attr_e( 'Buscar tercero externo (contratista, técnico externo)', 'aura-suite' ); ?>">
+                                    <span class="dashicons dashicons-groups"></span>
+                                    <?php _e( 'Terceros', 'aura-suite' ); ?>
+                                </button>
+                            </div>
                             <div id="aura-inv-responsible-badge" style="margin-top:6px;<?php echo $resp_type_label ? '' : 'display:none;'; ?>">
                                 <span class="aura-inv-link-pill aura-inv-link-pill-purple">
                                     👤 <span id="aura-inv-responsible-badge-text"><?php echo esc_html( $resp_type_label ); ?></span>
@@ -580,11 +642,12 @@ $page_title = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'Registrar Nu
 
 <script>
 var auraInvFormData = <?php echo wp_json_encode( [
-    'ajaxurl'     => admin_url( 'admin-ajax.php' ),
-    'nonce'       => wp_create_nonce( 'aura_inventory_nonce' ),
-    'equipmentId' => $equipment_id,
-    'isEdit'      => $is_edit,
-    'listUrl'     => admin_url( 'admin.php?page=aura-inventory-equipment' ),
+    'ajaxurl'        => admin_url( 'admin-ajax.php' ),
+    'nonce'          => wp_create_nonce( 'aura_inventory_nonce' ),
+    'equipmentId'    => $equipment_id,
+    'isEdit'         => $is_edit,
+    'listUrl'        => admin_url( 'admin.php?page=aura-inventory-equipment' ),
+    'codeSuggestion' => $code_info,
     'txt' => [
         'saving'    => __( 'Guardando…',                      'aura-suite' ),
         'saved'     => __( 'Equipo guardado correctamente.',  'aura-suite' ),

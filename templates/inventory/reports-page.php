@@ -313,7 +313,7 @@ $categories = Aura_Inventory_Reports::get_categories();
 
     var nonce  = <?php echo json_encode( $nonce ); ?>;
     var ajaxurl = <?php echo json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
-    var cur_symbol = '<?php echo esc_js( get_option( 'aura_currency_symbol', '$' ) ); ?>';
+    var cur_symbol = '<?php echo esc_js( function_exists( 'aura_get_currency_symbol' ) ? aura_get_currency_symbol() : get_option( 'aura_currency_symbol', '$' ) ); ?>';
 
     // ── Pestañas ─────────────────────────────────────────────
     $(document).on('click', '.aura-inv-tab', function () {

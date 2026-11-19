@@ -160,7 +160,7 @@ class Aura_Inventory_Dashboard {
             'series'     => $series,
             'colors'     => $colors,
             'counts'     => $counts,
-            'currency'   => get_option( 'aura_currency_symbol', '$' ),
+            'currency'   => function_exists( 'aura_get_currency_symbol' ) ? aura_get_currency_symbol() : get_option( 'aura_currency_symbol', '$' ),
         ] );
     }
 
@@ -373,7 +373,7 @@ class Aura_Inventory_Dashboard {
             'cost_year'        => (float) $wpdb->get_var( $wpdb->prepare( "SELECT COALESCE(SUM(total_cost),0) FROM {$tm} WHERE maintenance_date >= %s", date( 'Y-01-01' ) ) ),
             'active_loans'     => (int)   $wpdb->get_var( "SELECT COUNT(*) FROM {$tl} WHERE actual_return_date IS NULL" ),
             'overdue_loans'    => (int)   $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$tl} WHERE actual_return_date IS NULL AND expected_return_date < %s", $today ) ),
-            'currency'         => get_option( 'aura_currency_symbol', '$' ),
+            'currency'         => function_exists( 'aura_get_currency_symbol' ) ? aura_get_currency_symbol() : get_option( 'aura_currency_symbol', '$' ),
         ];
     }
 }

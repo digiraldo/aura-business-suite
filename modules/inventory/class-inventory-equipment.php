@@ -30,6 +30,7 @@ class Aura_Inventory_Equipment {
             'update_status'=> 'ajax_update_status',
             'search'       => 'ajax_search',
             'get_form_data'=> 'ajax_get_form_data',
+            'suggest_code' => 'ajax_suggest_code',
             'crop_photo'   => 'ajax_crop_equipment_photo',
             'get_photo'    => 'ajax_get_equipment_photo',
         ];
@@ -871,6 +872,151 @@ class Aura_Inventory_Equipment {
             'full_url'      => $urls['full'],
             'thumb_url'     => $urls['thumb'],
         ] );
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SUGERENCIA INTELIGENTE DE CÓDIGO INTERNO SECUENCIAL
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * Calcula el último código interno registrado y sugiere el siguiente
+     * (tanto para equipo principal e.g. CEM-009 -> CEM-010 como para hijo e.g. CEM-009-01).
+     *
+     * @param int    $parent_id       ID del equipo padre si aplica.
+     * @param string $prefix_override Prefijo opcional (por defecto toma code_prefix de ajustes).
+     * @param int    $digits_override Dígitos opcionales (por defecto toma code_digits de ajustes).
+     * @return array
+     */
+    public static function get_code_suggestions( int $parent_id = 0, string $prefix_override = '', int $digits_override = 0 ): array {
+        global $wpdb;
+        $table    = $wpdb->prefix . 'aura_inventory_equipment';
+        $settings = class_exists( 'Aura_Inventory_Categories' ) ? Aura_Inventory_Categories::get_settings() : [];
+
+        $raw_prefix = $prefix_override !== '' ? $prefix_override : (string) ( $settings['code_prefix'] ?? 'CEM' );
+        $prefix     = trim( preg_replace( '/[^A-Z0-9_-]/', '', strtoupper( $raw_prefix ) ), '-_' );
+        if ( $prefix === '' ) {
+            $prefix = 'CEM';
+        }
+        $digits = $digits_override > 0 ? max( 2, min( 5, $digits_override ) ) : max( 2, min( 5, (int) ( $settings['code_digits'] ?? 3 ) ) );
+
+        $last_main_code   = '';
+        $last_main_num    = 0;
+        $total_with_prefix = 0;
+
+        $main_codes = $wpdb->get_col(
+            $wpdb->prepare(
+                "SELECT internal_code FROM `{$table}`
+                 WHERE deleted_at IS NULL
+                   AND (parent_equipment_id IS NULL OR parent_equipment_id = 0)
+                   AND internal_code LIKE %s
+                 ORDER BY id DESC",
+                $wpdb->esc_like( $prefix . '-' ) . '%'
+            )
+        );
+
+        $pattern_main = '/^' . preg_quote( $prefix, '/' ) . '-(\d+)$/i';
+        foreach ( (array) $main_codes as $code ) {
+            $code = trim( (string) $code );
+            if ( preg_match( $pattern_main, $code, $m ) ) {
+                $total_with_prefix++;
+                $num = (int) $m[1];
+                if ( $num > $last_main_num ) {
+                    $last_main_num  = $num;
+                    $last_main_code = strtoupper( $code );
+                }
+            }
+        }
+
+        // También obtener el último código absoluto ingresado (por referencia rápida aunque tenga otro prefijo)
+        $latest_overall_code = (string) $wpdb->get_var(
+            "SELECT internal_code FROM `{$table}`
+             WHERE deleted_at IS NULL AND (parent_equipment_id IS NULL OR parent_equipment_id = 0)
+             ORDER BY id DESC LIMIT 1"
+        );
+
+        $next_main_num  = $last_main_num + 1;
+        $next_main_code = $prefix . '-' . str_pad( (string) $next_main_num, $digits, '0', STR_PAD_LEFT );
+
+        $result = [
+            'prefix'              => $prefix,
+            'digits'              => $digits,
+            'last_main_code'      => $last_main_code ?: $latest_overall_code,
+            'last_prefix_code'    => $last_main_code,
+            'latest_overall_code' => $latest_overall_code,
+            'next_main_code'      => $next_main_code,
+            'total_with_prefix'   => $total_with_prefix,
+            'is_child'            => false,
+            'parent_id'           => $parent_id,
+            'parent_code'         => '',
+            'parent_name'         => '',
+            'last_child_code'     => '',
+            'next_child_code'     => '',
+            'suggested_code'      => $next_main_code,
+        ];
+
+        if ( $parent_id > 0 ) {
+            $parent_row = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT id, internal_code, name FROM `{$table}` WHERE id = %d AND deleted_at IS NULL",
+                    $parent_id
+                )
+            );
+            if ( $parent_row ) {
+                $p_code     = strtoupper( trim( (string) $parent_row->internal_code ) );
+                $child_rows = $wpdb->get_col(
+                    $wpdb->prepare(
+                        "SELECT internal_code FROM `{$table}` WHERE parent_equipment_id = %d AND deleted_at IS NULL ORDER BY id DESC",
+                        $parent_id
+                    )
+                );
+
+                $max_child_num   = 0;
+                $last_child_code = '';
+                $pattern_child   = '/^' . preg_quote( $p_code, '/' ) . '-(\d+)$/i';
+                foreach ( (array) $child_rows as $c_code ) {
+                    $c_code = trim( (string) $c_code );
+                    if ( preg_match( $pattern_child, $c_code, $cm ) ) {
+                        $c_num = (int) $cm[1];
+                        if ( $c_num > $max_child_num ) {
+                            $max_child_num   = $c_num;
+                            $last_child_code = strtoupper( $c_code );
+                        }
+                    }
+                }
+                if ( $max_child_num === 0 && ! empty( $child_rows ) ) {
+                    $max_child_num   = count( $child_rows );
+                    $last_child_code = strtoupper( (string) $child_rows[0] );
+                }
+
+                $next_child_code = $p_code . '-' . str_pad( (string) ( $max_child_num + 1 ), 2, '0', STR_PAD_LEFT );
+
+                $result['is_child']        = true;
+                $result['parent_code']     = $p_code;
+                $result['parent_name']     = (string) $parent_row->name;
+                $result['last_child_code'] = $last_child_code;
+                $result['next_child_code'] = $next_child_code;
+                $result['suggested_code']  = $next_child_code;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * AJAX: devuelve el último código registrado y el siguiente sugerido.
+     */
+    public static function ajax_suggest_code(): void {
+        check_ajax_referer( self::NONCE, 'nonce' );
+
+        if ( ! current_user_can( 'aura_inventory_edit' ) && ! current_user_can( 'aura_inventory_view_all' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
+        }
+
+        $parent_id = absint( $_POST['parent_equipment_id'] ?? $_GET['parent_equipment_id'] ?? 0 );
+        $prefix    = sanitize_text_field( wp_unslash( $_POST['prefix'] ?? $_GET['prefix'] ?? '' ) );
+        $digits    = absint( $_POST['digits'] ?? $_GET['digits'] ?? 0 );
+
+        wp_send_json_success( self::get_code_suggestions( $parent_id, $prefix, $digits ) );
     }
 
     // ─────────────────────────────────────────────────────────────

@@ -393,6 +393,10 @@
             window.AuraUI.closeModal(id);
         } else {
             $('#' + id).removeClass('active is-active').hide();
+        }
+        if ($('.aura-modal-overlay.active, .aura-modal-overlay.is-active').length) {
+            $('body').css('overflow', 'hidden');
+        } else {
             $('body').css('overflow', '');
         }
     }
@@ -419,18 +423,30 @@
         bindTwoPhaseBackdropGuard('js-modal-history', function () { closeModalById('js-modal-history'); });
         bindTwoPhaseBackdropGuard('js-modal-edit-loan', function () { closeModalById('js-modal-edit-loan'); });
 
-        $(document).on('click', '.aura-loan-modal-close', function () {
+        $(document).on('click', '.aura-loan-modal-close', function (e) {
+            e.preventDefault();
             var $modal = $(this).closest('.aura-modal-overlay');
             if ($modal.length && $modal.attr('id')) {
                 closeModalById($modal.attr('id'));
             }
         });
 
+        // Capture-phase Escape guard para evitar que aura-ui cierre el modal padre detrás de pickers apilados
+        if (!window.__auraLoansCaptureEscBound) {
+            window.__auraLoansCaptureEscBound = true;
+            window.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                if ($('#aura-inv-equip-picker-modal').is(':visible')) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    closeModalById('aura-inv-equip-picker-modal');
+                }
+            }, true);
+        }
+
         $(document).on('keydown.auraLoansEsc', function (e) {
             if (e.key !== 'Escape') return;
-            // Cerrar primero el modal apilado superior si está abierto
-            if ($('#aura-inv-equip-picker-modal').is(':visible')) {
-                closeModalById('aura-inv-equip-picker-modal');
+            if ($('#aura-tp-explorer-modal').is(':visible') || $('#aura-inv-equip-picker-modal').is(':visible')) {
                 return;
             }
             ['js-modal-edit-loan', 'js-modal-history', 'js-modal-checkin', 'js-modal-checkout'].forEach(function (id) {
@@ -539,7 +555,7 @@
         $(document).on('input', '#co-equipment-search', function () {
             clearTimeout(equipTimer);
             var q = $(this).val().trim();
-            if (q.length < 2) {
+            if (q.length < 1) {
                 $('#co-equip-results').hide().empty();
                 return;
             }
@@ -547,7 +563,7 @@
                 doAjax('aura_inventory_get_available_equipment', { search: q }, function (items) {
                     renderEquipResults(items);
                 });
-            }, 300);
+            }, 240);
         });
 
         $(document).on('click', '.aura-loan-equip-result-item', function () {
@@ -618,23 +634,40 @@
         });
     }
 
-    // ─── VISUAL EQUIPMENT PICKER MODAL (STACKED) ──────────────
+    // ─── CATÁLOGO RÁPIDO DE EQUIPOS DISPONIBLES (STACKED) ──────
     function bindEquipPickerModal() {
-        $(document).on('click', '#aura-inv-btn-equip-picker', function () {
+        $(document).on('click', '#aura-inv-btn-equip-picker', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
             openEquipPickerModal();
         });
-        $('#aura-inv-ep-close, #aura-inv-ep-cancel').on('click', function () {
+        $('#aura-inv-ep-close, #aura-inv-ep-cancel').on('click', function (e) {
+            e.preventDefault();
             closeModalById('aura-inv-equip-picker-modal');
         });
         $('#aura-inv-ep-search').on('input', function () {
-            filterAndRenderPickerCards();
+            filterAndRenderPickerRows();
         });
         $('#aura-inv-ep-category').on('change', function () {
-            filterAndRenderPickerCards();
+            var cat = $(this).val();
+            $('#aura-inv-ep-chips .aura-equip-chip').removeClass('is-active');
+            $('#aura-inv-ep-chips .aura-equip-chip[data-cat="' + cat.replace(/"/g, '\\"') + '"]').addClass('is-active');
+            filterAndRenderPickerRows();
         });
-        $(document).on('click', '.aura-inv-ep-card', function () {
-            var $c = $(this);
-            selectEquip($c.data('id'), $c.data('name'), $c.data('meta'));
+        $(document).on('click', '#aura-inv-ep-chips .aura-equip-chip', function (e) {
+            e.preventDefault();
+            var cat = $(this).data('cat') || '';
+            $('#aura-inv-ep-chips .aura-equip-chip').removeClass('is-active');
+            $(this).addClass('is-active');
+            $('#aura-inv-ep-category').val(cat);
+            filterAndRenderPickerRows();
+        });
+        $(document).on('click', '.aura-inv-ep-select-btn, .aura-inv-ep-row', function (e) {
+            if ($(e.target).closest('.aura-table-thumb-preview').length) return;
+            e.preventDefault();
+            var $row = $(this).closest('.aura-inv-ep-row');
+            if (!$row.length) return;
+            selectEquip($row.data('id'), $row.data('name'), $row.data('meta'));
             closeModalById('aura-inv-equip-picker-modal');
         });
     }
@@ -642,48 +675,56 @@
     function openEquipPickerModal() {
         $('#aura-inv-ep-search').val('');
         $('#aura-inv-ep-category').val('');
-        $('#aura-inv-ep-grid').empty();
-        $('#aura-inv-ep-count').text('');
-        openModalById('aura-inv-equip-picker-modal', true);
+        $('#aura-inv-ep-tbody').empty();
+        $('#aura-inv-ep-chips').empty();
+        $('#aura-inv-ep-empty').hide();
+        $('#aura-inv-ep-count').text('Cargando catálogo…');
+        openModalById('aura-inv-equip-picker-modal', false);
 
         if (equipListCache) {
             populatePickerCategories(equipListCache);
-            filterAndRenderPickerCards();
-            hideModalSkeletonById('aura-inv-equip-picker-modal');
-            setTimeout(function () { $('#aura-inv-ep-search').focus(); }, 180);
+            filterAndRenderPickerRows();
+            setTimeout(function () { $('#aura-inv-ep-search').focus(); }, 120);
             return;
         }
 
         doAjax('aura_inventory_get_available_equipment', { search: '' }, function (items) {
             equipListCache = items || [];
             populatePickerCategories(equipListCache);
-            filterAndRenderPickerCards();
-            hideModalSkeletonById('aura-inv-equip-picker-modal');
-            setTimeout(function () { $('#aura-inv-ep-search').focus(); }, 180);
+            filterAndRenderPickerRows();
+            setTimeout(function () { $('#aura-inv-ep-search').focus(); }, 120);
         }, function (err) {
-            $('#aura-inv-ep-grid').html('<p class="aura-inv-empty-picker">' + escHtml(err || 'Error al cargar equipos.') + '</p>');
-            hideModalSkeletonById('aura-inv-equip-picker-modal');
+            $('#aura-inv-ep-tbody').html('<tr><td colspan="5" class="aura-inv-empty-picker">' + escHtml(err || 'Error al cargar equipos.') + '</td></tr>');
         });
     }
 
     function populatePickerCategories(items) {
-        var cats = {};
+        var counts = {};
         items.forEach(function (it) {
-            if (it.category) cats[it.category] = true;
+            var c = it.category || 'Sin categoría';
+            counts[c] = (counts[c] || 0) + 1;
         });
-        var $sel = $('#aura-inv-ep-category').empty().append('<option value="">Todas las categorías</option>');
-        Object.keys(cats).sort().forEach(function (c) {
-            $('<option>').val(c).text(c).appendTo($sel);
+        var $sel = $('#aura-inv-ep-category').empty().append('<option value="">Todas las categorías (' + items.length + ')</option>');
+        var $chips = $('#aura-inv-ep-chips').empty();
+        $chips.append('<button type="button" class="aura-equip-chip is-active" data-cat="">Todos (' + items.length + ')</button>');
+
+        Object.keys(counts).sort().forEach(function (c) {
+            $('<option>').val(c).text(c + ' (' + counts[c] + ')').appendTo($sel);
+            $('<button type="button" class="aura-equip-chip">')
+                .attr('data-cat', c)
+                .text(c + ' (' + counts[c] + ')')
+                .appendTo($chips);
         });
     }
 
-    function filterAndRenderPickerCards() {
+    function filterAndRenderPickerRows() {
         var items = equipListCache || [];
         var q     = $.trim($('#aura-inv-ep-search').val()).toLowerCase();
         var cat   = $('#aura-inv-ep-category').val();
 
         var filtered = items.filter(function (it) {
-            if (cat && it.category !== cat) return false;
+            var itemCat = it.category || 'Sin categoría';
+            if (cat && itemCat !== cat) return false;
             if (q) {
                 var hay = [it.name, it.brand, it.model, it.internal_code, it.serial_number, it.category, it.location]
                     .filter(Boolean).join(' ').toLowerCase();
@@ -692,36 +733,50 @@
             return true;
         });
 
-        $('#aura-inv-ep-count').text(filtered.length + ' equipos disponibles');
-        var $grid = $('#aura-inv-ep-grid').empty();
+        $('#aura-inv-ep-count').text(filtered.length + ' de ' + items.length + ' equipos disponibles');
+        var $tbody = $('#aura-inv-ep-tbody').empty();
+        $('#aura-inv-ep-empty').toggle(filtered.length === 0);
 
-        if (!filtered.length) {
-            $grid.html('<div class="aura-inv-empty-picker"><span class="dashicons dashicons-search"></span><p>No hay equipos disponibles que coincidan con tu búsqueda.</p></div>');
-            return;
-        }
+        if (!filtered.length) return;
 
         filtered.forEach(function (it) {
-            var meta  = [it.brand, it.model, it.internal_code ? ('Cód: ' + it.internal_code) : ''].filter(Boolean).join(' · ');
-            var thumb = it.photo_thumb_url || it.photo_full_url;
-            var imgHtml = thumb
-                ? '<div class="aura-inv-ep-thumb"><img src="' + escHtml(thumb) + '" alt="' + escHtml(it.name) + '" loading="lazy"></div>'
-                : '<div class="aura-inv-ep-thumb aura-inv-ep-thumb-empty"><span class="dashicons dashicons-format-image"></span></div>';
+            var meta     = [it.brand, it.model, it.internal_code ? ('Cód: ' + it.internal_code) : ''].filter(Boolean).join(' · ');
+            var fullUrl  = it.photo_full_url || it.photo_thumb_url;
+            var thumbUrl = it.photo_thumb_url || it.photo_full_url;
+            var imgHtml;
 
-            var card = $('<button type="button" class="aura-inv-ep-card">')
+            if (thumbUrl) {
+                var hoverCard = '<div class="aura-floating-img-card aura-inv-photo-card">' +
+                    '<img src="' + escHtml(fullUrl) + '" alt="' + escHtml(it.name) + '" style="max-width:240px;max-height:240px;width:auto;height:auto;object-fit:contain;border-radius:8px;display:block;margin:0 auto;">' +
+                    '<span class="aura-floating-img-title">' + escHtml(it.name) + '</span>' +
+                    (meta ? '<span class="aura-floating-img-sub">' + escHtml(meta) + '</span>' : '') +
+                    '</div>';
+                imgHtml = '<div class="aura-inv-thumb-wrap aura-table-thumb-preview" ' +
+                    'data-img-url="' + escHtml(fullUrl) + '" ' +
+                    'data-preview-title="' + escHtml(it.name) + '" ' +
+                    'data-aura-tooltip="' + escHtml(hoverCard) + '">' +
+                    '<img src="' + escHtml(thumbUrl) + '" alt="' + escHtml(it.name) + '" loading="lazy">' +
+                    '</div>';
+            } else {
+                imgHtml = '<div class="aura-inv-thumb-empty"><span class="dashicons dashicons-format-image"></span></div>';
+            }
+
+            var $tr = $('<tr class="aura-inv-ep-row">')
                 .data('id', it.id)
                 .data('name', it.name)
                 .data('meta', meta)
                 .html(
-                    imgHtml +
-                    '<div class="aura-inv-ep-body">' +
-                    '<div class="aura-inv-ep-name">' + escHtml(it.name) + '</div>' +
-                    (meta ? '<div class="aura-inv-ep-meta">' + escHtml(meta) + '</div>' : '') +
-                    '<div class="aura-inv-ep-tags">' +
-                    (it.category ? '<span class="aura-inv-ep-cat">' + escHtml(it.category) + '</span>' : '') +
-                    (it.location ? '<span class="aura-inv-ep-loc">📍 ' + escHtml(it.location) + '</span>' : '') +
-                    '</div></div>'
+                    '<td style="text-align:center;">' + imgHtml + '</td>' +
+                    '<td>' +
+                        '<div class="aura-inv-ep-name">' + escHtml(it.name) + '</div>' +
+                        (meta ? '<div class="aura-inv-ep-meta">' + escHtml(meta) + '</div>' : '') +
+                        (it.serial_number ? '<div class="aura-inv-ep-meta">S/N: ' + escHtml(it.serial_number) + '</div>' : '') +
+                    '</td>' +
+                    '<td class="aura-inv-col-secondary">' + (it.category ? '<span class="aura-inv-ep-cat">' + escHtml(it.category) + '</span>' : '<span class="aura-inv-muted">—</span>') + '</td>' +
+                    '<td class="aura-inv-col-secondary">' + (it.location ? '<span class="aura-inv-ep-loc">📍 ' + escHtml(it.location) + '</span>' : '<span class="aura-inv-muted">—</span>') + '</td>' +
+                    '<td style="text-align:right;"><button type="button" class="btn btn-indigo btn-sm aura-inv-ep-select-btn"><span class="dashicons dashicons-yes"></span> Seleccionar</button></td>'
                 );
-            $grid.append(card);
+            $tbody.append($tr);
         });
     }
 
@@ -773,7 +828,11 @@
         $('#co-equip-list-select-wrap').css('display', 'flex');
     }
 
-    function openCheckoutModal() {
+    function openCheckoutModal(e) {
+        if (e && typeof e.preventDefault === 'function') {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         equipListCache = null;
         resetCheckoutForm();
         openModalById('js-modal-checkout', false);

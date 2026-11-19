@@ -50,7 +50,7 @@ $header_actions = [];
 if ( $can_checkout ) {
     $header_actions[] = [
         'label' => __( 'Nuevo Préstamo', 'aura-suite' ),
-        'url'   => 'javascript:void(0)',
+        'url'   => '#',
         'icon'  => 'dashicons-share',
         'class' => 'btn btn-shimmer btn-indigo btn-lift',
         'attr'  => 'id="js-open-checkout"',
@@ -229,7 +229,7 @@ $header_actions[] = [
 <!-- ══════════════════════════════════════════════════════════
      MODAL — CHECKOUT (Nuevo Préstamo — Item 26)
 ═══════════════════════════════════════════════════════════════ -->
-<div id="js-modal-checkout" class="aura-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="js-modal-checkout-title" style="display:none;">
+<div id="js-modal-checkout" class="aura-modal-overlay" data-skeleton-manual="true" role="dialog" aria-modal="true" aria-labelledby="js-modal-checkout-title" style="display:none;">
     <div class="aura-modal-container" style="max-width:680px;">
         <div class="aura-modal-header">
             <h3 id="js-modal-checkout-title" class="aura-modal-title">
@@ -242,16 +242,16 @@ $header_actions[] = [
         <form id="js-form-checkout" novalidate style="display:flex;flex-direction:column;min-height:0;flex:1;">
             <div class="aura-modal-body">
 
-                <!-- Selector de Equipo + Modal Explorador Visual -->
+                <!-- Selector de Equipo + Modal Catálogo Rápido -->
                 <div class="aura-loan-field-group">
                     <div class="aura-loan-equip-picker-header">
                         <label class="aura-loan-label required" style="margin-bottom:0;">
                             <?php _e( 'Equipo disponible', 'aura-suite' ); ?> <span class="aura-loan-required">*</span>
                         </label>
                         <button type="button" id="aura-inv-btn-equip-picker" class="btn btn-indigo btn-sm"
-                                data-tooltip="<?php esc_attr_e( 'Abrir catálogo visual con fotos y búsqueda de equipos disponibles', 'aura-suite' ); ?>">
+                                data-tooltip="<?php esc_attr_e( 'Abrir Catálogo Rápido con búsqueda en vivo y filtros por categoría', 'aura-suite' ); ?>">
                             <span class="dashicons dashicons-grid-view"></span>
-                            <?php _e( 'Explorar Catálogo de Equipos', 'aura-suite' ); ?>
+                            <?php _e( 'Catálogo Rápido de Equipos', 'aura-suite' ); ?>
                         </button>
                     </div>
 
@@ -413,29 +413,50 @@ $header_actions[] = [
 
 
 <!-- ══════════════════════════════════════════════════════════
-     MODAL STACKED — EXPLORADOR VISUAL DE EQUIPOS DISPONIBLES
+     MODAL STACKED — CATÁLOGO RÁPIDO DE EQUIPOS DISPONIBLES
 ═══════════════════════════════════════════════════════════════ -->
-<div id="aura-inv-equip-picker-modal" class="aura-modal-overlay" data-async-modal="true" role="dialog" aria-modal="true" aria-labelledby="aura-inv-ep-title" style="display:none;z-index:1001500 !important;">
-    <div class="aura-modal-container" style="max-width:860px;">
+<div id="aura-inv-equip-picker-modal" class="aura-modal-overlay" data-async-modal="true" data-skeleton-manual="true" role="dialog" aria-modal="true" aria-labelledby="aura-inv-ep-title" style="display:none;z-index:1001500 !important;">
+    <div class="aura-modal-container" style="max-width:920px;">
         <div class="aura-modal-header">
             <h3 id="aura-inv-ep-title" class="aura-modal-title">
-                <span class="dashicons dashicons-grid-view"></span>
-                <?php _e( 'Seleccionar Equipo Disponible', 'aura-suite' ); ?>
+                <span class="dashicons dashicons-search"></span>
+                <?php _e( 'Catálogo Rápido: Seleccionar Equipo para Préstamo', 'aura-suite' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" id="aura-inv-ep-close" aria-label="<?php esc_attr_e( 'Cerrar', 'aura-suite' ); ?>">&times;</button>
         </div>
         <div class="aura-modal-body">
-            <div class="aura-inv-ep-toolbar">
-                <div class="input-group">
-                    <span class="input-group-text"><span class="dashicons dashicons-search"></span></span>
-                    <input type="search" id="aura-inv-ep-search" class="form-control"
-                           placeholder="<?php esc_attr_e( 'Buscar equipo por nombre, marca, modelo o código…', 'aura-suite' ); ?>">
+            <div style="margin-bottom:14px;">
+                <div class="aura-inv-ep-toolbar" style="margin-bottom:10px;">
+                    <div class="input-group" style="flex:1;">
+                        <span class="input-group-text"><span class="dashicons dashicons-search"></span></span>
+                        <input type="search" id="aura-inv-ep-search" class="form-control"
+                               placeholder="<?php esc_attr_e( 'Buscar en tiempo real por nombre, marca, modelo, código interno, serie o ubicación…', 'aura-suite' ); ?>">
+                    </div>
+                    <select id="aura-inv-ep-category" class="form-select" style="max-width:230px;">
+                        <option value=""><?php _e( 'Todas las categorías', 'aura-suite' ); ?></option>
+                    </select>
                 </div>
-                <select id="aura-inv-ep-category" class="form-select" style="max-width:240px;">
-                    <option value=""><?php _e( 'Todas las categorías', 'aura-suite' ); ?></option>
-                </select>
+                <div id="aura-inv-ep-chips" class="aura-equip-picker-chips"></div>
             </div>
-            <div id="aura-inv-ep-grid" class="aura-inv-ep-grid"></div>
+
+            <div class="aura-equip-picker-list-wrap">
+                <table class="aura-table aura-equip-picker-table">
+                    <thead>
+                        <tr>
+                            <th style="width:62px;text-align:center;"><?php _e( 'Foto', 'aura-suite' ); ?></th>
+                            <th><?php _e( 'Equipo / Identificación', 'aura-suite' ); ?></th>
+                            <th class="aura-inv-col-secondary"><?php _e( 'Categoría', 'aura-suite' ); ?></th>
+                            <th class="aura-inv-col-secondary"><?php _e( 'Ubicación', 'aura-suite' ); ?></th>
+                            <th style="width:120px;text-align:right;"><?php _e( 'Acción', 'aura-suite' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody id="aura-inv-ep-tbody"></tbody>
+                </table>
+                <div id="aura-inv-ep-empty" class="aura-inv-empty-picker" style="display:none;">
+                    <span class="dashicons dashicons-search"></span>
+                    <p><?php _e( 'No hay equipos disponibles que coincidan con tu búsqueda.', 'aura-suite' ); ?></p>
+                </div>
+            </div>
         </div>
         <div class="aura-modal-footer">
             <span id="aura-inv-ep-count" class="aura-inv-ep-count"></span>
@@ -562,7 +583,7 @@ $header_actions[] = [
 <!-- ══════════════════════════════════════════════════════════
      MODAL — EDITAR PRÉSTAMO (Item 26)
 ═══════════════════════════════════════════════════════════════ -->
-<div id="js-modal-edit-loan" class="aura-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="js-modal-edit-loan-title" style="display:none;">
+<div id="js-modal-edit-loan" class="aura-modal-overlay" data-skeleton-manual="true" role="dialog" aria-modal="true" aria-labelledby="js-modal-edit-loan-title" style="display:none;">
     <div class="aura-modal-container" style="max-width:560px;">
         <div class="aura-modal-header">
             <h3 id="js-modal-edit-loan-title" class="aura-modal-title">
