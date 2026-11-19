@@ -60,7 +60,7 @@ $global_currency_lbl  = $global_currency_meta
     ? sprintf( '%s %s — %s (%s)', $global_currency_meta['flag'] ?? '', $global_currency_code, $global_currency_meta['name'] ?? '', $global_currency_sym )
     : sprintf( '%s (%s)', $global_currency_code, $global_currency_sym );
 $global_currency_sample = function_exists( 'aura_format_money' )
-    ? aura_format_money( 1234.50, $global_currency_code, false )
+    ? aura_format_money( 1234.50, $global_currency_code, [ 'show_code' => false ] )
     : ( $global_currency_sym . '1,234.50' );
 
 $gcal_enabled_nav = class_exists( 'Aura_Inventory_Google_Calendar' ) && Aura_Inventory_Google_Calendar::is_enabled();

@@ -679,12 +679,13 @@
         $('#aura-inv-ep-chips').empty();
         $('#aura-inv-ep-empty').hide();
         $('#aura-inv-ep-count').text('Cargando catálogo…');
-        openModalById('aura-inv-equip-picker-modal', false);
+        openModalById('aura-inv-equip-picker-modal', true);
 
         if (equipListCache) {
             populatePickerCategories(equipListCache);
             filterAndRenderPickerRows();
-            setTimeout(function () { $('#aura-inv-ep-search').focus(); }, 120);
+            hideModalSkeletonById('aura-inv-equip-picker-modal');
+            setTimeout(function () { $('#aura-inv-ep-search').focus(); }, 180);
             return;
         }
 
@@ -692,9 +693,11 @@
             equipListCache = items || [];
             populatePickerCategories(equipListCache);
             filterAndRenderPickerRows();
-            setTimeout(function () { $('#aura-inv-ep-search').focus(); }, 120);
+            hideModalSkeletonById('aura-inv-equip-picker-modal');
+            setTimeout(function () { $('#aura-inv-ep-search').focus(); }, 180);
         }, function (err) {
             $('#aura-inv-ep-tbody').html('<tr><td colspan="5" class="aura-inv-empty-picker">' + escHtml(err || 'Error al cargar equipos.') + '</td></tr>');
+            hideModalSkeletonById('aura-inv-equip-picker-modal');
         });
     }
 

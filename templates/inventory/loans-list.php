@@ -229,7 +229,7 @@ $header_actions[] = [
 <!-- ══════════════════════════════════════════════════════════
      MODAL — CHECKOUT (Nuevo Préstamo — Item 26)
 ═══════════════════════════════════════════════════════════════ -->
-<div id="js-modal-checkout" class="aura-modal-overlay" data-skeleton-manual="true" role="dialog" aria-modal="true" aria-labelledby="js-modal-checkout-title" style="display:none;">
+<div id="js-modal-checkout" class="aura-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="js-modal-checkout-title" style="display:none;">
     <div class="aura-modal-container" style="max-width:680px;">
         <div class="aura-modal-header">
             <h3 id="js-modal-checkout-title" class="aura-modal-title">
@@ -415,7 +415,7 @@ $header_actions[] = [
 <!-- ══════════════════════════════════════════════════════════
      MODAL STACKED — CATÁLOGO RÁPIDO DE EQUIPOS DISPONIBLES
 ═══════════════════════════════════════════════════════════════ -->
-<div id="aura-inv-equip-picker-modal" class="aura-modal-overlay" data-async-modal="true" data-skeleton-manual="true" role="dialog" aria-modal="true" aria-labelledby="aura-inv-ep-title" style="display:none;z-index:1001500 !important;">
+<div id="aura-inv-equip-picker-modal" class="aura-modal-overlay" data-async-modal="true" role="dialog" aria-modal="true" aria-labelledby="aura-inv-ep-title" style="display:none;z-index:1001500 !important;">
     <div class="aura-modal-container" style="max-width:920px;">
         <div class="aura-modal-header">
             <h3 id="aura-inv-ep-title" class="aura-modal-title">
@@ -583,7 +583,7 @@ $header_actions[] = [
 <!-- ══════════════════════════════════════════════════════════
      MODAL — EDITAR PRÉSTAMO (Item 26)
 ═══════════════════════════════════════════════════════════════ -->
-<div id="js-modal-edit-loan" class="aura-modal-overlay" data-skeleton-manual="true" role="dialog" aria-modal="true" aria-labelledby="js-modal-edit-loan-title" style="display:none;">
+<div id="js-modal-edit-loan" class="aura-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="js-modal-edit-loan-title" style="display:none;">
     <div class="aura-modal-container" style="max-width:560px;">
         <div class="aura-modal-header">
             <h3 id="js-modal-edit-loan-title" class="aura-modal-title">
