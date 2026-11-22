@@ -10,6 +10,9 @@
 
 (function($) {
     'use strict';
+
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
     
     /**
      * Variables globales
@@ -237,11 +240,11 @@
                 if (response.success) {
                     displaySearchResults(response.data.results);
                 } else {
-                    $('#search-results-dropdown').html('<div class="search-error">Error en la búsqueda</div>');
+                    $('#search-results-dropdown').html('<div class="search-error">' + __('Error en la búsqueda', 'aura-suite') + '</div>');
                 }
             },
             error: function() {
-                $('#search-results-dropdown').html('<div class="search-error">Error de conexión</div>');
+                $('#search-results-dropdown').html('<div class="search-error">' + __('Error de conexión', 'aura-suite') + '</div>');
             }
         });
     }
@@ -253,7 +256,7 @@
         let $dropdown = $('#search-results-dropdown');
         
         if (results.length === 0) {
-            $dropdown.html('<div class="search-no-results">No se encontraron resultados</div>').show();
+            $dropdown.html('<div class="search-no-results">' + __('No se encontraron resultados', 'aura-suite') + '</div>').show();
             return;
         }
         
@@ -324,7 +327,7 @@
             
             const transactionId = $(this).data('id');
             
-            if (!confirm('¿Estás seguro de eliminar esta transacción?')) {
+            if (!confirm(__('¿Estás seguro de eliminar esta transacción?', 'aura-suite'))) {
                 return;
             }
             
@@ -360,7 +363,7 @@
                 }
             },
             error: function() {
-                showNotice('error', 'Error de conexión');
+                showNotice('error', __('Error de conexión', 'aura-suite'));
             }
         });
     }
@@ -387,7 +390,7 @@
                 }
             },
             error: function() {
-                showNotice('error', 'Error de conexión');
+                showNotice('error', __('Error de conexión', 'aura-suite'));
             }
         });
     }
@@ -414,7 +417,7 @@
                 }
             },
             error: function() {
-                showNotice('error', 'Error de conexión');
+                showNotice('error', __('Error de conexión', 'aura-suite'));
             }
         });
     }
@@ -465,7 +468,7 @@
                 });
             }
             if (transactionIds.length === 0) {
-                alert('Selecciona al menos una transacción para editar en lote.');
+                alert(__('Selecciona al menos una transacción para editar en lote.', 'aura-suite'));
                 return;
             }
             pendingBulkTransactionIds = transactionIds;
@@ -503,7 +506,7 @@
             });
             
             if (transactionIds.length === 0) {
-                alert('Selecciona al menos una transacción');
+                alert(__('Selecciona al menos una transacción', 'aura-suite'));
                 return false;
             }
 
@@ -514,7 +517,7 @@
 
             if (action === 'change_category') {
                 pendingBulkTransactionIds = transactionIds;
-                $('#aura-bulk-cat-count').html(`Vas a reasignar la categoría de <strong>${transactionIds.length} transacción(es)</strong>.`);
+                $('#aura-bulk-cat-count').html(sprintf(__('Vas a reasignar la categoría de <strong>%d transacción(es)</strong>.', 'aura-suite'), transactionIds.length));
                 $('#aura-bulk-new-category').val('');
                 $('#aura-bulk-category-modal').css('display', 'flex').addClass('active');
                 return false;
@@ -673,7 +676,7 @@
         $('#aura-confirm-bulk-edit-btn').on('click', function(e) {
             e.preventDefault();
             if (pendingBulkTransactionIds.length === 0) {
-                alert('No hay transacciones seleccionadas.');
+                alert(__('No hay transacciones seleccionadas.', 'aura-suite'));
                 return;
             }
 
@@ -685,7 +688,7 @@
             const editTags = $('#aura-bulk-chk-tags').is(':checked');
 
             if (!editArea && !editPayment && !editRelated && !editCreator && !editCategory && !editTags) {
-                alert('Por favor marca al menos una casilla de los campos que deseas modificar.');
+                alert(__('Por favor marca al menos una casilla de los campos que deseas modificar.', 'aura-suite'));
                 return;
             }
 
@@ -739,7 +742,7 @@
 
             const $btn = $(this).prop('disabled', true);
             const origHtml = $btn.html();
-            $btn.html('<span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; vertical-align: middle;"></span> Guardando...');
+            $btn.html('<span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; vertical-align: middle;"></span> ' + __('Guardando...', 'aura-suite'));
 
             $.ajax({
                 url: auraTransactionsList.ajaxUrl,
@@ -749,17 +752,17 @@
                     $btn.prop('disabled', false).html(origHtml);
                     if (response.success) {
                         $('#aura-bulk-edit-modal').hide().removeClass('active');
-                        showNotice('success', response.data.message || 'Transacciones actualizadas correctamente.');
+                        showNotice('success', response.data.message || __('Transacciones actualizadas correctamente.', 'aura-suite'));
                         setTimeout(function() {
                             location.reload();
                         }, 600);
                     } else {
-                        showNotice('error', response.data.message || 'Error al actualizar transacciones.');
+                        showNotice('error', response.data.message || __('Error al actualizar transacciones.', 'aura-suite'));
                     }
                 },
                 error: function() {
                     $btn.prop('disabled', false).html(origHtml);
-                    showNotice('error', 'Error de conexión con el servidor.');
+                    showNotice('error', __('Error de conexión con el servidor.', 'aura-suite'));
                 }
             });
         });
@@ -775,13 +778,13 @@
             e.preventDefault();
             const newCatId = $('#aura-bulk-new-category').val();
             if (!newCatId) {
-                alert('Por favor selecciona una categoría.');
+                alert(__('Por favor selecciona una categoría.', 'aura-suite'));
                 return;
             }
 
             const $btn = $(this).prop('disabled', true);
             const origText = $btn.html();
-            $btn.html('<span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; vertical-align: middle;"></span> Aplicando...');
+            $btn.html('<span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; vertical-align: middle;"></span> ' + __('Aplicando...', 'aura-suite'));
 
             performBulkAction('change_category', pendingBulkTransactionIds, newCatId, function() {
                 $btn.prop('disabled', false).html(origText);
@@ -835,7 +838,7 @@
                 if (typeof callback === 'function') {
                     callback();
                 }
-                showNotice('error', 'Error de conexión');
+                showNotice('error', __('Error de conexión', 'aura-suite'));
             }
         });
     }
@@ -854,7 +857,7 @@
             const presetName = $('#preset-name-input').val().trim();
             
             if (!presetName) {
-                alert('Ingresa un nombre para el filtro');
+                alert(__('Ingresa un nombre para el filtro', 'aura-suite'));
                 return;
             }
             
@@ -928,7 +931,7 @@
                 }
             },
             error: function() {
-                showNotice('error', 'Error de conexión');
+                showNotice('error', __('Error de conexión', 'aura-suite'));
             }
         });
     }
@@ -954,7 +957,7 @@
                 }
             },
             error: function() {
-                showNotice('error', 'Error de conexión');
+                showNotice('error', __('Error de conexión', 'aura-suite'));
             }
         });
     }

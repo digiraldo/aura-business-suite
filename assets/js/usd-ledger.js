@@ -2,6 +2,9 @@
 jQuery( function ( $ ) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+    function escHtml(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
     // ── Helpers ──────────────────────────────────────────────────────
 
     function showFeedback( $el, msg, isSuccess ) {
@@ -67,7 +70,7 @@ jQuery( function ( $ ) {
     function loadHistory() {
         $( '#usd-history-body' ).html(
             '<tr><td colspan="8" class="aura-usd-loading">'
-            + '<span class="spinner is-active" style="float:none;margin:0 4px;"></span> Cargando...</td></tr>'
+            + '<span class="spinner is-active" style="float:none;margin:0 4px;"></span> ' + escHtml(__('Cargando...', 'aura-suite')) + '</td></tr>'
         );
         $.post( auraUSD.ajaxUrl, {
             action: 'aura_usd_get_history',
@@ -75,7 +78,7 @@ jQuery( function ( $ ) {
         }, function ( res ) {
             if ( ! res.success ) {
                 $( '#usd-history-body' ).html(
-                    '<tr><td colspan="8" style="color:red;">Error al cargar.</td></tr>'
+                    '<tr><td colspan="8" style="color:red;">' + escHtml(__('Error al cargar.', 'aura-suite')) + '</td></tr>'
                 );
                 return;
             }
@@ -84,7 +87,7 @@ jQuery( function ( $ ) {
             var cols = window.auraUSD.isAdmin ? 8 : 7;
             if ( ! res.data.rows || res.data.rows.length === 0 ) {
                 $( '#usd-history-body' ).html(
-                    '<tr><td colspan="' + cols + '" style="text-align:center;color:#888;">Sin movimientos registrados.</td></tr>'
+                    '<tr><td colspan="' + cols + '" style="text-align:center;color:#888;">' + escHtml(__('Sin movimientos registrados.', 'aura-suite')) + '</td></tr>'
                 );
                 return;
             }
@@ -95,7 +98,7 @@ jQuery( function ( $ ) {
                 if ( row.entry_type === 'conversion' && row.transaction_id ) {
                     txLink = '<a class="aura-usd-mxn-link" href="'
                            + auraUSD.adminUrl + 'admin.php?page=aura-financial-transactions'
-                           + '" target="_blank">Ver transacción MXN #' + row.transaction_id + '</a>';
+                           + '" target="_blank">' + escHtml(__('Ver transacción MXN #', 'aura-suite')) + row.transaction_id + '</a>';
                 }
 
                 var rateCell = row.exchange_rate
@@ -151,7 +154,7 @@ jQuery( function ( $ ) {
             notes:      $( '#deposit-notes' ).val()
         }, function ( res ) {
             $btn.prop( 'disabled', false ).html(
-                '<span class="dashicons dashicons-plus"></span> Registrar USD'
+                '<span class="dashicons dashicons-plus"></span> ' + escHtml(__('Registrar USD', 'aura-suite'))
             );
             if ( res.success ) {
                 showFeedback( $feedback, res.data.message, true );
@@ -187,7 +190,7 @@ jQuery( function ( $ ) {
             notes:           $( '#conv-notes' ).val()
         }, function ( res ) {
             $btn.prop( 'disabled', false ).html(
-                '<span class="dashicons dashicons-update"></span> Registrar Conversión'
+                '<span class="dashicons dashicons-update"></span> ' + escHtml(__('Registrar Conversión', 'aura-suite'))
             );
             if ( res.success ) {
                 showFeedback( $feedback, res.data.message, true );

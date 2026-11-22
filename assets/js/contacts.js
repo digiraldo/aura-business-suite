@@ -9,6 +9,14 @@
     'use strict';
 
     var cfg = window.auraContactsData || {};
+    var __ = (window.wp && window.wp.i18n && window.wp.i18n.__) ? window.wp.i18n.__ : function(s) { return s; };
+    var sprintf = (window.wp && window.wp.i18n && window.wp.i18n.sprintf) ? window.wp.i18n.sprintf : function(fmt) {
+        var args = Array.prototype.slice.call(arguments, 1), i = 0;
+        return String(fmt).replace(/%(?:(\d+)\$)?[sd]/g, function(m, pos) {
+            var idx = pos ? (parseInt(pos, 10) - 1) : i++;
+            return args[idx] !== undefined ? args[idx] : '';
+        });
+    };
 
     var state = {
         page: 1,
@@ -283,7 +291,7 @@
             success: function(res) {
                 state.isLoading = false;
                 if (!res.success) {
-                    $tbody.html('<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 24px;">' + (res.data && res.data.message ? res.data.message : 'Error al cargar contactos') + '</td></tr>');
+                    $tbody.html('<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 24px;">' + (res.data && res.data.message ? res.data.message : __('Error al cargar contactos', 'aura-suite')) + '</td></tr>');
                     if (typeof cb === 'function') cb(res);
                     return;
                 }
@@ -316,7 +324,7 @@
             },
             error: function() {
                 state.isLoading = false;
-                $tbody.html('<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 24px;">' + (cfg.i18n.connError || 'Error de conexión con el servidor') + '</td></tr>');
+                $tbody.html('<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 24px;">' + (cfg.i18n.connError || __('Error de conexión con el servidor', 'aura-suite')) + '</td></tr>');
                 if (typeof cb === 'function') {
                     cb(null);
                 }
@@ -328,7 +336,7 @@
     function renderTableRows(items) {
         var $tbody = $('#contacts-tbody');
         if (!items || items.length === 0) {
-            $tbody.html('<tr><td colspan="8" style="text-align: center; padding: 48px; color: #94a3b8;"><span style="font-size: 32px;">📇</span><p style="margin: 8px 0 0; font-weight: 600;">No se encontraron contactos</p><p style="margin: 4px 0 0; font-size: 0.8rem;">Prueba con otros términos de búsqueda o registra un nuevo contacto.</p></td></tr>');
+            $tbody.html('<tr><td colspan="8" style="text-align: center; padding: 48px; color: #94a3b8;"><span style="font-size: 32px;">📇</span><p style="margin: 8px 0 0; font-weight: 600;">' + __('No se encontraron contactos', 'aura-suite') + '</p><p style="margin: 4px 0 0; font-size: 0.8rem;">' + __('Prueba con otros términos de búsqueda o registra un nuevo contacto.', 'aura-suite') + '</p></td></tr>');
             return;
         }
 
@@ -369,33 +377,33 @@
             // Vinculaciones
             var linkBadges = '';
             if (item.third_party_id && parseInt(item.third_party_id, 10) > 0) {
-                linkBadges += '<span class="entity-link-badge entity-link-badge--tp" title="Vinculado a Tercero ID #' + item.third_party_id + '">🏢 Tercero</span>';
+                linkBadges += '<span class="entity-link-badge entity-link-badge--tp" title="' + escapeHtml(sprintf(__('Vinculado a Tercero ID #%s', 'aura-suite'), item.third_party_id)) + '">🏢 ' + __('Tercero', 'aura-suite') + '</span>';
             }
             if (item.wp_user_id && parseInt(item.wp_user_id, 10) > 0) {
-                linkBadges += '<span class="entity-link-badge entity-link-badge--wp" title="Vinculado a Usuario WP ID #' + item.wp_user_id + '">👤 Usuario WP</span>';
+                linkBadges += '<span class="entity-link-badge entity-link-badge--wp" title="' + escapeHtml(sprintf(__('Vinculado a Usuario WP ID #%s', 'aura-suite'), item.wp_user_id)) + '">👤 ' + __('Usuario WP', 'aura-suite') + '</span>';
             }
             if (!linkBadges) {
-                linkBadges = '<span style="color:#64748b;font-size:0.75rem;">Sin vincular</span>';
+                linkBadges = '<span style="color:#64748b;font-size:0.75rem;">' + __('Sin vincular', 'aura-suite') + '</span>';
             }
 
             // Acciones
             var actionsHtml = '<div style="display:flex; justify-content:flex-end; gap:6px;">';
-            actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.viewContactCard(' + item.id + ')" title="Ver Tarjeta de Contacto" style="color:#38bdf8; border-color: rgba(56, 189, 248, 0.35);"><span class="dashicons dashicons-visibility"></span></button>';
+            actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.viewContactCard(' + item.id + ')" title="' + escapeHtml(__('Ver Tarjeta de Contacto', 'aura-suite')) + '" style="color:#38bdf8; border-color: rgba(56, 189, 248, 0.35);"><span class="dashicons dashicons-visibility"></span></button>';
             if (cfg.canEdit) {
-                actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.editContact(' + item.id + ')" title="Editar contacto"><span class="dashicons dashicons-edit"></span></button>';
-                actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.openLinkEntityModal(' + item.id + ', \'' + fullName.replace(/'/g, "\\'") + '\')" title="Vincular a Tercero / Usuario"><span class="dashicons dashicons-admin-links"></span></button>';
+                actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.editContact(' + item.id + ')" title="' + escapeHtml(__('Editar contacto', 'aura-suite')) + '"><span class="dashicons dashicons-edit"></span></button>';
+                actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.openLinkEntityModal(' + item.id + ', \'' + fullName.replace(/'/g, "\\'") + '\')" title="' + escapeHtml(__('Vincular a Tercero / Usuario', 'aura-suite')) + '"><span class="dashicons dashicons-admin-links"></span></button>';
             }
             if (cfg.canSync && cfg.oauthConnected) {
-                actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.syncSingleContact(' + item.id + ')" title="Sincronizar con Google"><span class="dashicons dashicons-cloud"></span></button>';
+                actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.syncSingleContact(' + item.id + ')" title="' + escapeHtml(__('Sincronizar con Google', 'aura-suite')) + '"><span class="dashicons dashicons-cloud"></span></button>';
             }
             if (cfg.canDelete) {
-                actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.deleteContact(' + item.id + ')" title="Mover a papelera" style="color:#f87171;"><span class="dashicons dashicons-trash"></span></button>';
+                actionsHtml += '<button type="button" class="btn btn-glass btn-xs" onclick="window.AuraContactsApp.deleteContact(' + item.id + ')" title="' + escapeHtml(__('Mover a papelera', 'aura-suite')) + '" style="color:#f87171;"><span class="dashicons dashicons-trash"></span></button>';
             }
             actionsHtml += '</div>';
 
             html += '<tr data-contact-id="' + item.id + '">';
             html += '<td style="text-align: center;"><input type="checkbox" class="aura-checkbox contact-row-check" value="' + item.id + '"></td>';
-            html += '<td><div class="contact-avatar-wrap" onclick="window.AuraContactsApp.viewContactCard(' + item.id + ')" style="cursor: pointer;" title="Ver Tarjeta de Contacto">' + avatarHtml + '<div><div class="contact-name-main" style="color:#fff; transition: color 0.15s ease;">' + fullName + '</div>' + (item.tags ? '<div class="contact-name-sub">' + renderTags(item.tags) + '</div>' : '') + '</div></div></td>';
+            html += '<td><div class="contact-avatar-wrap" onclick="window.AuraContactsApp.viewContactCard(' + item.id + ')" style="cursor: pointer;" title="' + escapeHtml(__('Ver Tarjeta de Contacto', 'aura-suite')) + '">' + avatarHtml + '<div><div class="contact-name-main" style="color:#fff; transition: color 0.15s ease;">' + fullName + '</div>' + (item.tags ? '<div class="contact-name-sub">' + renderTags(item.tags) + '</div>' : '') + '</div></div></td>';
             html += '<td><span class="category-pill category-pill--' + catKey + '">' + catIcon + ' ' + escapeHtml(catLabel) + '</span></td>';
             html += '<td><div style="font-weight:600;font-size:0.84rem;">' + (emailVal ? '<a href="mailto:' + escapeHtml(emailVal) + '" style="color:#38bdf8;text-decoration:none;">' + escapeHtml(emailVal) + '</a>' : '<span style="color:#64748b;">—</span>') + '</div><div style="font-size:0.76rem;color:#94a3b8;margin-top:2px;">' + (phoneVal ? escapeHtml(phoneVal) : '') + '</div></td>';
             html += '<td><div>' + (item.organization ? escapeHtml(item.organization) : '<span style="color:#64748b;">—</span>') + '</div><div style="font-size:0.75rem;color:#94a3b8;">' + (item.job_title ? escapeHtml(item.job_title) : '') + '</div></td>';
@@ -416,13 +424,13 @@
     function renderSyncBadge(item) {
         var status = item.sync_status || 'not_synced';
         if (status === 'synced') {
-            return '<span class="sync-badge sync-badge--synced" title="Sincronizado con Google People API"><span class="dashicons dashicons-yes-alt" style="font-size:13px;width:13px;height:13px;"></span> Sincronizado</span>';
+            return '<span class="sync-badge sync-badge--synced" title="' + escapeHtml(__('Sincronizado con Google People API', 'aura-suite')) + '"><span class="dashicons dashicons-yes-alt" style="font-size:13px;width:13px;height:13px;"></span> ' + __('Sincronizado', 'aura-suite') + '</span>';
         } else if (status === 'pending') {
-            return '<span class="sync-badge sync-badge--pending" title="Cambios locales pendientes de subir a Google"><span class="dashicons dashicons-update" style="font-size:13px;width:13px;height:13px;"></span> Pendiente</span>';
+            return '<span class="sync-badge sync-badge--pending" title="' + escapeHtml(__('Cambios locales pendientes de subir a Google', 'aura-suite')) + '"><span class="dashicons dashicons-update" style="font-size:13px;width:13px;height:13px;"></span> ' + __('Pendiente', 'aura-suite') + '</span>';
         } else if (status === 'error') {
-            return '<span class="sync-badge sync-badge--error" title="' + escapeHtml(item.last_sync_error || 'Error de sincronización') + '"><span class="dashicons dashicons-warning" style="font-size:13px;width:13px;height:13px;"></span> Error</span>';
+            return '<span class="sync-badge sync-badge--error" title="' + escapeHtml(item.last_sync_error || __('Error de sincronización', 'aura-suite')) + '"><span class="dashicons dashicons-warning" style="font-size:13px;width:13px;height:13px;"></span> ' + __('Error', 'aura-suite') + '</span>';
         }
-        return '<span class="sync-badge sync-badge--not_synced"><span class="dashicons dashicons-minus" style="font-size:13px;width:13px;height:13px;"></span> No vinculado</span>';
+        return '<span class="sync-badge sync-badge--not_synced"><span class="dashicons dashicons-minus" style="font-size:13px;width:13px;height:13px;"></span> ' + __('No vinculado', 'aura-suite') + '</span>';
     }
 
     function renderTags(tags) {
@@ -464,7 +472,7 @@
 
         var start = total > 0 ? (state.page - 1) * state.perPage + 1 : 0;
         var end = Math.min(state.page * state.perPage, total);
-        $('#contacts-pagination-info').text('Mostrando ' + start + ' - ' + end + ' de ' + total + ' contactos');
+        $('#contacts-pagination-info').text(sprintf(__('Mostrando %1$d - %2$d de %3$d contactos', 'aura-suite'), start, end, total));
 
         var $controls = $('#contacts-pagination-controls').empty();
 
@@ -476,7 +484,7 @@
         var prevDisabled = (state.page <= 1);
         var $prev = $('<button type="button" class="btn btn-glass btn-xs' + (prevDisabled ? ' disabled' : '') + '" ' + 
             (prevDisabled ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : 'style="cursor:pointer;"') + 
-            ' title="Página anterior"><span class="dashicons dashicons-arrow-left-alt2"></span></button>');
+            ' title="' + escapeHtml(__('Página anterior', 'aura-suite')) + '"><span class="dashicons dashicons-arrow-left-alt2"></span></button>');
         
         $prev.on('click', function(e) {
             e.preventDefault();
@@ -548,7 +556,7 @@
         var nextDisabled = (state.page >= pages);
         var $next = $('<button type="button" class="btn btn-glass btn-xs' + (nextDisabled ? ' disabled' : '') + '" ' + 
             (nextDisabled ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : 'style="cursor:pointer;"') + 
-            ' title="Página siguiente"><span class="dashicons dashicons-arrow-right-alt2"></span></button>');
+            ' title="' + escapeHtml(__('Página siguiente', 'aura-suite')) + '"><span class="dashicons dashicons-arrow-right-alt2"></span></button>');
         
         $next.on('click', function(e) {
             e.preventDefault();
@@ -601,14 +609,14 @@
 
         if (type === 'company' || type === 'organization') {
             $iconBadge.html('<span class="dashicons dashicons-building"></span>');
-            $firstLabel.html((cfg.i18n.contactPerson || 'Representante / Contacto directo') + ' <span style="font-size:0.75rem;color:#94a3b8;font-weight:normal;">(Opcional)</span>');
-            $orgLabel.html((type === 'company' ? 'Razón Social / Empresa' : 'Nombre de la Organización / Institución') + ' <span style="color:#ef4444;">*</span>');
+            $firstLabel.html((cfg.i18n.contactPerson || __('Representante / Contacto directo', 'aura-suite')) + ' <span style="font-size:0.75rem;color:#94a3b8;font-weight:normal;">(' + __('Opcional', 'aura-suite') + ')</span>');
+            $orgLabel.html((type === 'company' ? __('Razón Social / Empresa', 'aura-suite') : __('Nombre de la Organización / Institución', 'aura-suite')) + ' <span style="color:#ef4444;">*</span>');
             $('#contact-first-name').prop('required', false);
             $('#contact-organization').prop('required', true);
         } else {
             $iconBadge.html('<span class="dashicons dashicons-id-alt"></span>');
-            $firstLabel.html((cfg.i18n.firstName || 'Nombre(s)') + ' <span style="color:#ef4444;">*</span>');
-            $orgLabel.html(cfg.i18n.organization || 'Organización / Empresa');
+            $firstLabel.html((cfg.i18n.firstName || __('Nombre(s)', 'aura-suite')) + ' <span style="color:#ef4444;">*</span>');
+            $orgLabel.html(cfg.i18n.organization || __('Organización / Empresa', 'aura-suite'));
             $('#contact-first-name').prop('required', true);
             $('#contact-organization').prop('required', false);
         }
@@ -693,7 +701,7 @@
         $('#btn-upload-contact-avatar').on('click', function(e) {
             e.preventDefault();
             if (typeof wp === 'undefined' || !wp.media) {
-                var manualUrl = prompt('Ingresa la URL de la foto o avatar del contacto:');
+                var manualUrl = prompt(__('Ingresa la URL de la foto o avatar del contacto:', 'aura-suite'));
                 if (manualUrl) {
                     $('#contact-avatar-url').val(manualUrl.trim());
                     updateAvatarPreview();
@@ -707,8 +715,8 @@
             }
 
             mediaFrame = wp.media({
-                title: 'Seleccionar Foto o Logotipo del Contacto',
-                button: { text: 'Usar como Avatar' },
+                title: __('Seleccionar Foto o Logotipo del Contacto', 'aura-suite'),
+                button: { text: __('Usar como Avatar', 'aura-suite') },
                 multiple: false,
                 library: { type: 'image' }
             });
@@ -750,7 +758,7 @@
 
         var systemTags = Array.isArray(cfg.availableTags) ? cfg.availableTags : [];
         if (!systemTags.length) {
-            $cloudContainer.html('<span style="font-size:0.75rem;color:#64748b;font-style:italic;">No hay etiquetas creadas aún. Escribe en el campo para crearlas.</span>');
+            $cloudContainer.html('<span style="font-size:0.75rem;color:#64748b;font-style:italic;">' + __('No hay etiquetas creadas aún. Escribe en el campo para crearlas.', 'aura-suite') + '</span>');
             return;
         }
 
@@ -808,8 +816,8 @@
     }
 
     function openCreateModal() {
-        $('#contact-modal-title').html('📇 ' + (cfg.i18n.newContact || 'Nuevo Contacto'));
-        $('#contact-modal-subtitle').text('Directorio institucional integrado con Google Contacts y el ecosistema Aura Suite.');
+        $('#contact-modal-title').html('📇 ' + (cfg.i18n.newContact || __('Nuevo Contacto', 'aura-suite')));
+        $('#contact-modal-subtitle').text(__('Directorio institucional integrado con Google Contacts y el ecosistema Aura Suite.', 'aura-suite'));
         $('#contact-form-id').val(0);
         
         var form = document.getElementById('contact-edit-form');
@@ -848,8 +856,8 @@
 
     function openEditModal(id) {
         // Abrir modal de inmediato (0ms lag) con Skeleton en ola continua
-        $('#contact-modal-title').html('✏️ Cargando contacto...');
-        $('#contact-modal-subtitle').text('Consultando información del directorio...');
+        $('#contact-modal-title').html('✏️ ' + __('Cargando contacto...', 'aura-suite'));
+        $('#contact-modal-subtitle').text(__('Consultando información del directorio...', 'aura-suite'));
         $('#modal-contact-form')
             .removeClass('is-hidden')
             .addClass('active')
@@ -865,7 +873,7 @@
                     AuraUI.hideModalSkeleton('modal-contact-form');
                 }
                 closeContactModal();
-                alert('No se pudo cargar la información del contacto.');
+                alert(__('No se pudo cargar la información del contacto.', 'aura-suite'));
                 return;
             }
             var c = (res.data && res.data.contact) ? res.data.contact : res.data;
@@ -874,14 +882,14 @@
                     AuraUI.hideModalSkeleton('modal-contact-form');
                 }
                 closeContactModal();
-                alert('No se pudo procesar la información del contacto.');
+                alert(__('No se pudo procesar la información del contacto.', 'aura-suite'));
                 return;
             }
             var contactTitle = (c.first_name || '') + ' ' + (c.last_name || '');
-            if (!contactTitle.trim()) contactTitle = c.organization || ('Contacto #' + c.id);
+            if (!contactTitle.trim()) contactTitle = c.organization || sprintf(__('Contacto #%s', 'aura-suite'), c.id);
 
-            $('#contact-modal-title').html('✏️ ' + 'Editar Contacto: ' + escapeHtml(contactTitle));
-            $('#contact-modal-subtitle').text('ID #' + c.id + ' • Sincronización: ' + (c.sync_status || 'pending').toUpperCase());
+            $('#contact-modal-title').html('✏️ ' + __('Editar Contacto:', 'aura-suite') + ' ' + escapeHtml(contactTitle));
+            $('#contact-modal-subtitle').text(sprintf(__('ID #%1$s • Sincronización: %2$s', 'aura-suite'), c.id, (c.sync_status || 'pending').toUpperCase()));
             
             $('#contact-form-id').val(c.id);
             $('#contact-first-name').val(c.first_name || '');
@@ -923,7 +931,7 @@
             // Tercero vinculado
             if (c.third_party_id && parseInt(c.third_party_id, 10) > 0) {
                 $('#contact-third-party-id').val(c.third_party_id);
-                $('#contact-third-party-name').text(c.third_party_name || ('Tercero #' + c.third_party_id));
+                $('#contact-third-party-name').text(c.third_party_name || sprintf(__('Tercero #%s', 'aura-suite'), c.third_party_id));
                 $('#contact-third-party-selected').show();
                 $('#contact-form-create-tp-wrap').hide();
             } else {
@@ -935,7 +943,7 @@
             // Usuario WordPress vinculado
             if (c.wp_user_id && parseInt(c.wp_user_id, 10) > 0) {
                 $('#contact-wp-user-id').val(c.wp_user_id);
-                $('#contact-wp-user-name').text(c.wp_user_name || ('Usuario WP #' + c.wp_user_id));
+                $('#contact-wp-user-name').text(c.wp_user_name || sprintf(__('Usuario WP #%s', 'aura-suite'), c.wp_user_id));
                 $('#contact-wp-user-selected').show();
             } else {
                 $('#contact-wp-user-id').val(0);
@@ -957,7 +965,7 @@
                 AuraUI.hideModalSkeleton('modal-contact-form');
             }
             closeContactModal();
-            alert('Error de conexión al cargar la información del contacto.');
+            alert(__('Error de conexión al cargar la información del contacto.', 'aura-suite'));
         });
     }
 
@@ -967,20 +975,20 @@
         var org = ($('#contact-organization').val() || '').trim();
 
         if (contactType === 'person' && !firstName && !org) {
-            alert('Por favor ingresa al menos el Nombre del contacto.');
+            alert(__('Por favor ingresa al menos el Nombre del contacto.', 'aura-suite'));
             $('#contact-first-name').focus();
             return;
         }
 
         if ((contactType === 'company' || contactType === 'organization') && !org && !firstName) {
-            alert('Por favor ingresa la Razón Social o Nombre de la Organización.');
+            alert(__('Por favor ingresa la Razón Social o Nombre de la Organización.', 'aura-suite'));
             $('#contact-organization').focus();
             return;
         }
 
         var $btn = $('#btn-save-contact');
         var originalHtml = $btn.html();
-        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Guardando...');
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Guardando...', 'aura-suite'));
 
         var formData = $('#contact-edit-form').serialize();
         formData += '&action=aura_contacts_save&nonce=' + encodeURIComponent(cfg.nonce);
@@ -996,14 +1004,14 @@
                     closeContactModal();
                     fetchContacts();
                     refreshStats();
-                    showToast(cfg.i18n.saveSuccess || 'Contacto guardado correctamente.');
+                    showToast(cfg.i18n.saveSuccess || __('Contacto guardado correctamente.', 'aura-suite'));
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : (cfg.i18n.saveError || 'Error al guardar'));
+                    alert(res.data && res.data.message ? res.data.message : (cfg.i18n.saveError || __('Error al guardar', 'aura-suite')));
                 }
             },
             error: function() {
                 $btn.prop('disabled', false).html(originalHtml);
-                alert(cfg.i18n.connError || 'Error de conexión');
+                alert(cfg.i18n.connError || __('Error de conexión', 'aura-suite'));
             }
         });
     }
@@ -1048,22 +1056,22 @@
     function openSyncModal() {
         $('#modal-sync-progress').fadeIn(180).css('display', 'flex');
         $('#btn-sync-modal-finish').hide();
-        $('#btn-sync-modal-cancel').show().prop('disabled', false).text('Detener');
+        $('#btn-sync-modal-cancel').show().prop('disabled', false).text(__('Detener', 'aura-suite'));
         $('#sync-modal-spinner').show().addClass('spin');
         $('#sync-modal-icon-wrap').css({ 'background': 'rgba(59, 130, 246, 0.2)', 'color': '#60a5fa' });
         $('#sync-modal-progress-bar').css({ 'width': '0%', 'background': 'linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)' });
         $('#sync-modal-percent-text').text('0%');
-        $('#sync-modal-status-text').text('Calculando contactos pendientes de sincronización...');
+        $('#sync-modal-status-text').text(__('Calculando contactos pendientes de sincronización...', 'aura-suite'));
         $('#sync-kpi-total').text('0');
         $('#sync-kpi-success').text('0');
         $('#sync-kpi-pulled').text('0');
         $('#sync-kpi-errors').text('0');
-        $('#sync-modal-log-console').html('<div style="color: #64748b;">Conectando con Google Contacts API...</div>');
+        $('#sync-modal-log-console').html('<div style="color: #64748b;">' + __('Conectando con Google Contacts API...', 'aura-suite') + '</div>');
     }
 
     function closeSyncModal() {
         if (syncProcess.isRunning && !syncProcess.isCancelled) {
-            if (!confirm('La sincronización se está ejecutando. ¿Deseas detenerla ahora?')) {
+            if (!confirm(__('La sincronización se está ejecutando. ¿Deseas detenerla ahora?', 'aura-suite'))) {
                 return;
             }
             syncProcess.isCancelled = true;
@@ -1078,8 +1086,8 @@
 
     function cancelSync() {
         syncProcess.isCancelled = true;
-        $('#btn-sync-modal-cancel').prop('disabled', true).text('Deteniendo...');
-        appendSyncLog('⚠️ Detención solicitada por el usuario. Los contactos ya subidos se conservan en Google.', 'warning');
+        $('#btn-sync-modal-cancel').prop('disabled', true).text(__('Deteniendo...', 'aura-suite'));
+        appendSyncLog(__('⚠️ Detención solicitada por el usuario. Los contactos ya subidos se conservan en Google.', 'aura-suite'), 'warning');
     }
 
     function appendSyncLog(msg, type) {
@@ -1110,26 +1118,26 @@
         syncProcess.errorsList = [];
 
         openSyncModal();
-        appendSyncLog('Iniciando sincronización por lotes (protegida contra límites de servidor)...', 'info');
+        appendSyncLog(__('Iniciando sincronización por lotes (protegida contra límites de servidor)...', 'aura-suite'), 'info');
 
         processNextSyncBatch();
     }
 
     function processNextSyncBatch() {
         if (syncProcess.isCancelled) {
-            finalizeSyncProcess(false, 'Sincronización detenida por el usuario.');
+            finalizeSyncProcess(false, __('Sincronización detenida por el usuario.', 'aura-suite'));
             return;
         }
 
         syncProcess.batchIndex++;
-        $('#sync-live-batch-tag').text('Lote ' + syncProcess.batchIndex);
+        $('#sync-live-batch-tag').text(sprintf(__('Lote %d', 'aura-suite'), syncProcess.batchIndex));
 
         if (syncProcess.phase === 'push') {
-            $('#sync-modal-phase-badge').removeClass('aura-badge--success aura-badge--warning').addClass('aura-badge--info').text('Fase 1: Subida (Push)');
-            $('#sync-modal-status-text').text('Subiendo contactos hacia Google (Lote ' + syncProcess.batchIndex + ')...');
+            $('#sync-modal-phase-badge').removeClass('aura-badge--success aura-badge--warning').addClass('aura-badge--info').text(__('Fase 1: Subida (Push)', 'aura-suite'));
+            $('#sync-modal-status-text').text(sprintf(__('Subiendo contactos hacia Google (Lote %d)...', 'aura-suite'), syncProcess.batchIndex));
         } else if (syncProcess.phase === 'pull') {
-            $('#sync-modal-phase-badge').removeClass('aura-badge--info aura-badge--warning').addClass('aura-badge--success').text('Fase 2: Descarga (Pull)');
-            $('#sync-modal-status-text').text('Recibiendo cambios desde Google Contacts...');
+            $('#sync-modal-phase-badge').removeClass('aura-badge--info aura-badge--warning').addClass('aura-badge--success').text(__('Fase 2: Descarga (Pull)', 'aura-suite'));
+            $('#sync-modal-status-text').text(__('Recibiendo cambios desde Google Contacts...', 'aura-suite'));
         }
 
         $.ajax({
@@ -1146,13 +1154,13 @@
             timeout: 65000
         }).done(function(res) {
             if (!res || !res.success) {
-                var errTxt = (res && res.data && res.data.message) ? res.data.message : 'Aviso al procesar lote en Google API.';
+                var errTxt = (res && res.data && res.data.message) ? res.data.message : __('Aviso al procesar lote en Google API.', 'aura-suite');
                 appendSyncLog('⚠️ ' + errTxt, 'error');
                 syncProcess.totalErrors += 1;
                 $('#sync-kpi-errors').text(syncProcess.totalErrors);
 
                 if (syncProcess.phase === 'push') {
-                    appendSyncLog('Pasando a fase de verificación y descarga (Pull)...', 'warning');
+                    appendSyncLog(__('Pasando a fase de verificación y descarga (Pull)...', 'aura-suite'), 'warning');
                     syncProcess.phase = 'pull';
                     setTimeout(processNextSyncBatch, 1000);
                 } else {
@@ -1180,7 +1188,7 @@
 
                 if (d.error_messages && d.error_messages.length) {
                     $.each(d.error_messages, function(i, msg) {
-                        appendSyncLog('Aviso: ' + msg, 'warning');
+                        appendSyncLog(sprintf(__('Aviso: %s', 'aura-suite'), msg), 'warning');
                         syncProcess.errorsList.push(msg);
                     });
                 }
@@ -1193,11 +1201,11 @@
                 $('#sync-modal-progress-bar').css('width', pct + '%');
                 $('#sync-modal-percent-text').text(pct + '%');
 
-                appendSyncLog('Lote ' + syncProcess.batchIndex + ': ' + (d.success_in_batch || 0) + ' subidos exitosamente. Pendientes: ' + remaining, 'success');
+                appendSyncLog(sprintf(__('Lote %1$d: %2$d subidos exitosamente. Pendientes: %3$d', 'aura-suite'), syncProcess.batchIndex, (d.success_in_batch || 0), remaining), 'success');
 
                 if (d.is_push_completed || remaining === 0 || d.next_phase === 'pull') {
                     syncProcess.phase = 'pull';
-                    appendSyncLog('Fase 1 (Push) concluida. Verificando cambios en Google (Pull)...', 'info');
+                    appendSyncLog(__('Fase 1 (Push) concluida. Verificando cambios en Google (Pull)...', 'aura-suite'), 'info');
                     setTimeout(processNextSyncBatch, 800);
                 } else {
                     // Pequeña pausa de 600ms entre lotes para no saturar cuota de Google
@@ -1214,23 +1222,23 @@
 
                 if (d.error_messages && d.error_messages.length) {
                     $.each(d.error_messages, function(i, msg) {
-                        appendSyncLog('Aviso Pull: ' + msg, 'warning');
+                        appendSyncLog(sprintf(__('Aviso Pull: %s', 'aura-suite'), msg), 'warning');
                     });
                 }
 
                 $('#sync-modal-progress-bar').css({ 'width': '100%', 'background': 'linear-gradient(90deg, #10b981 0%, #06b6d4 100%)' });
                 $('#sync-modal-percent-text').text('100%');
-                appendSyncLog('Fase 2 (Pull) completada: ' + (d.pulled_created || 0) + ' nuevos, ' + (d.pulled_updated || 0) + ' actualizados.', 'success');
+                appendSyncLog(sprintf(__('Fase 2 (Pull) completada: %1$d nuevos, %2$d actualizados.', 'aura-suite'), (d.pulled_created || 0), (d.pulled_updated || 0)), 'success');
 
-                finalizeSyncProcess(true, '¡Sincronización bidireccional completada con éxito!');
+                finalizeSyncProcess(true, __('¡Sincronización bidireccional completada con éxito!', 'aura-suite'));
             }
         }).fail(function(xhr, status, error) {
-            appendSyncLog('Aviso de red en Lote ' + syncProcess.batchIndex + ': ' + (xhr.statusText || error || 'Conexión lenta'), 'warning');
+            appendSyncLog(sprintf(__('Aviso de red en Lote %1$d: %2$s', 'aura-suite'), syncProcess.batchIndex, (xhr.statusText || error || __('Conexión lenta', 'aura-suite'))), 'warning');
             if (syncProcess.batchIndex < 35 && !syncProcess.isCancelled) {
-                appendSyncLog('Reintentando siguiente lote en 2 segundos...', 'info');
+                appendSyncLog(__('Reintentando siguiente lote en 2 segundos...', 'aura-suite'), 'info');
                 setTimeout(processNextSyncBatch, 2000);
             } else {
-                finalizeSyncProcess(false, 'Se completó la sincronización parcial de lotes.');
+                finalizeSyncProcess(false, __('Se completó la sincronización parcial de lotes.', 'aura-suite'));
             }
         });
     }
@@ -1243,16 +1251,16 @@
 
         if (isSuccess) {
             $('#sync-modal-icon-wrap').css({ 'background': 'rgba(16, 185, 129, 0.2)', 'color': '#10b981' });
-            $('#sync-modal-phase-badge').removeClass('aura-badge--info aura-badge--warning').addClass('aura-badge--success').text('Completado');
-            $('#sync-modal-status-text').text(finalMsg || '¡Sincronización finalizada con éxito!');
+            $('#sync-modal-phase-badge').removeClass('aura-badge--info aura-badge--warning').addClass('aura-badge--success').text(__('Completado', 'aura-suite'));
+            $('#sync-modal-status-text').text(finalMsg || __('¡Sincronización finalizada con éxito!', 'aura-suite'));
             $('#sync-modal-progress-bar').css({ 'width': '100%', 'background': 'linear-gradient(90deg, #10b981 0%, #059669 100%)' });
             $('#sync-modal-percent-text').text('100%');
-            appendSyncLog('🎉 Proceso de sincronización completado.', 'success');
-            showToast('¡Sincronización con Google Contacts completada exitosamente!');
+            appendSyncLog(__('🎉 Proceso de sincronización completado.', 'aura-suite'), 'success');
+            showToast(__('¡Sincronización con Google Contacts completada exitosamente!', 'aura-suite'));
         } else {
             $('#sync-modal-icon-wrap').css({ 'background': 'rgba(245, 158, 11, 0.2)', 'color': '#f59e0b' });
-            $('#sync-modal-phase-badge').removeClass('aura-badge--info aura-badge--success').addClass('aura-badge--warning').text('Finalizado');
-            $('#sync-modal-status-text').text(finalMsg || 'Sincronización procesada.');
+            $('#sync-modal-phase-badge').removeClass('aura-badge--info aura-badge--success').addClass('aura-badge--warning').text(__('Finalizado', 'aura-suite'));
+            $('#sync-modal-status-text').text(finalMsg || __('Sincronización procesada.', 'aura-suite'));
             appendSyncLog('ℹ️ ' + finalMsg, 'warning');
         }
 
@@ -1276,21 +1284,21 @@
         $('#btn-sync-wp-users').on('click', function() {
             var $btn = $(this);
             var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Sincronizando...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Sincronizando...', 'aura-suite'));
 
             $.post(cfg.ajaxUrl, { action: 'aura_contacts_sync_wp_users', nonce: cfg.nonce }, function(res) {
                 $btn.prop('disabled', false).html(orig);
                 if (res.success) {
-                    var msg = res.data && res.data.message ? res.data.message : 'Usuarios sincronizados exitosamente.';
+                    var msg = res.data && res.data.message ? res.data.message : __('Usuarios sincronizados exitosamente.', 'aura-suite');
                     showToast(msg);
                     fetchContacts();
                     refreshStats();
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al sincronizar usuarios de WordPress');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al sincronizar usuarios de WordPress', 'aura-suite'));
                 }
             }).fail(function() {
                 $btn.prop('disabled', false).html(orig);
-                alert('Error de conexión al sincronizar usuarios de WordPress');
+                alert(__('Error de conexión al sincronizar usuarios de WordPress', 'aura-suite'));
             });
         });
 
@@ -1298,21 +1306,21 @@
         $('#btn-sync-third-parties').on('click', function() {
             var $btn = $(this);
             var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Sincronizando...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Sincronizando...', 'aura-suite'));
 
             $.post(cfg.ajaxUrl, { action: 'aura_contacts_sync_third_parties', nonce: cfg.nonce }, function(res) {
                 $btn.prop('disabled', false).html(orig);
                 if (res.success) {
-                    var msg = res.data && res.data.message ? res.data.message : 'Terceros sincronizados exitosamente.';
+                    var msg = res.data && res.data.message ? res.data.message : __('Terceros sincronizados exitosamente.', 'aura-suite');
                     showToast(msg);
                     fetchContacts();
                     refreshStats();
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al sincronizar terceros');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al sincronizar terceros', 'aura-suite'));
                 }
             }).fail(function() {
                 $btn.prop('disabled', false).html(orig);
-                alert('Error de conexión al sincronizar terceros');
+                alert(__('Error de conexión al sincronizar terceros', 'aura-suite'));
             });
         });
 
@@ -1320,21 +1328,21 @@
         $('#btn-sync-students').on('click', function() {
             var $btn = $(this);
             var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Sincronizando...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Sincronizando...', 'aura-suite'));
 
             $.post(cfg.ajaxUrl, { action: 'aura_contacts_sync_students', nonce: cfg.nonce }, function(res) {
                 $btn.prop('disabled', false).html(orig);
                 if (res.success) {
-                    var msg = res.data && res.data.message ? res.data.message : 'Estudiantes sincronizados exitosamente.';
+                    var msg = res.data && res.data.message ? res.data.message : __('Estudiantes sincronizados exitosamente.', 'aura-suite');
                     showToast(msg);
                     fetchContacts();
                     refreshStats();
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al sincronizar estudiantes');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al sincronizar estudiantes', 'aura-suite'));
                 }
             }).fail(function() {
                 $btn.prop('disabled', false).html(orig);
-                alert('Error de conexión al sincronizar estudiantes');
+                alert(__('Error de conexión al sincronizar estudiantes', 'aura-suite'));
             });
         });
     }
@@ -1347,28 +1355,28 @@
         $.post(cfg.ajaxUrl, { action: 'aura_contacts_sync_single', nonce: cfg.nonce, contact_id: id }, function(res) {
             $btn.prop('disabled', false).find('.dashicons').removeClass('spin');
             if (res.success) {
-                showToast('Contacto sincronizado con Google exitosamente.');
+                showToast(__('Contacto sincronizado con Google exitosamente.', 'aura-suite'));
                 fetchContacts();
             } else {
-                alert(res.data && res.data.message ? res.data.message : 'Error al sincronizar contacto con Google');
+                alert(res.data && res.data.message ? res.data.message : __('Error al sincronizar contacto con Google', 'aura-suite'));
             }
         }).fail(function() {
             $btn.prop('disabled', false).find('.dashicons').removeClass('spin');
-            alert('Error de conexión');
+            alert(__('Error de conexión', 'aura-suite'));
         });
     }
 
     function deleteContactItem(id) {
-        if (!confirm(cfg.i18n.confirmDelete || '¿Estás seguro de mover este contacto a la papelera?')) {
+        if (!confirm(cfg.i18n.confirmDelete || __('¿Estás seguro de mover este contacto a la papelera?', 'aura-suite'))) {
             return;
         }
 
         $.post(cfg.ajaxUrl, { action: 'aura_contacts_delete', nonce: cfg.nonce, id: id, hard: 0 }, function(res) {
             if (res.success) {
-                showToast('Contacto movido a la papelera.');
+                showToast(__('Contacto movido a la papelera.', 'aura-suite'));
                 fetchContacts();
             } else {
-                alert(res.data && res.data.message ? res.data.message : 'Error al eliminar contacto');
+                alert(res.data && res.data.message ? res.data.message : __('Error al eliminar contacto', 'aura-suite'));
             }
         });
     }
@@ -1434,12 +1442,12 @@
             var text = $('#log-detail-message').text();
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text).then(function() {
-                    showToast('Diagnóstico copiado al portapapeles.');
+                    showToast(__('Diagnóstico copiado al portapapeles.', 'aura-suite'));
                 }).catch(function() {
-                    showToast('Error al copiar automáticamente. Por favor selecciónalo y cópialo manualmente.');
+                    showToast(__('Error al copiar automáticamente. Por favor selecciónalo y cópialo manualmente.', 'aura-suite'));
                 });
             } else {
-                showToast('Selecciona el texto y usa Ctrl+C para copiarlo.');
+                showToast(__('Selecciona el texto y usa Ctrl+C para copiarlo.', 'aura-suite'));
             }
         });
     }
@@ -1450,7 +1458,7 @@
         }
 
         var $tbody = $('#contacts-logs-tbody');
-        $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 28px; color:#cbd5e1;"><span class="dashicons dashicons-update spin"></span> Cargando registros de auditoría...</td></tr>');
+        $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 28px; color:#cbd5e1;"><span class="dashicons dashicons-update spin"></span> ' + __('Cargando registros de auditoría...', 'aura-suite') + '</td></tr>');
 
         logsState.isLoading = true;
 
@@ -1466,7 +1474,7 @@
             logsState.isLoading = false;
 
             if (!res.success) {
-                var errMsg = (res.data && res.data.message) ? res.data.message : 'Error al cargar logs';
+                var errMsg = (res.data && res.data.message) ? res.data.message : __('Error al cargar logs', 'aura-suite');
                 $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 30px; color:#f87171;">' + escapeHtml(errMsg) + '</td></tr>');
                 return;
             }
@@ -1483,14 +1491,14 @@
                 $('#logs-kpi-total').text(d.stats.total_all || 0);
                 $('#logs-kpi-success').text((d.stats.total_success || 0) + ' (' + (d.stats.success_rate || 100) + '%)');
                 $('#logs-kpi-errors').text(d.stats.total_errors || 0);
-                $('#logs-kpi-last-sync').text(d.stats.last_sync ? d.stats.last_sync : 'Sin registros');
+                $('#logs-kpi-last-sync').text(d.stats.last_sync ? d.stats.last_sync : __('Sin registros', 'aura-suite'));
             }
 
             // Renderizar Filas de la Tabla
             if (logs.length === 0) {
                 var emptyMsg = logsState.search || logsState.status || logsState.direction
-                    ? 'No se encontraron registros de auditoría que coincidan con los filtros aplicados.'
-                    : 'No hay eventos de sincronización registrados aún.';
+                    ? __('No se encontraron registros de auditoría que coincidan con los filtros aplicados.', 'aura-suite')
+                    : __('No hay eventos de sincronización registrados aún.', 'aura-suite');
                 $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 36px; color:#94a3b8;">' + escapeHtml(emptyMsg) + '</td></tr>');
                 $('#logs-pagination-container').hide();
                 return;
@@ -1502,24 +1510,24 @@
             logs.forEach(function(l, idx) {
                 var isPush = (l.direction === 'push');
                 var dirBadge = isPush
-                    ? '<span class="badge-sync-direction is-push"><span class="dashicons dashicons-arrow-up-alt"></span> Local ➔ Google</span>'
-                    : '<span class="badge-sync-direction is-pull"><span class="dashicons dashicons-arrow-down-alt"></span> Google ➔ Local</span>';
+                    ? '<span class="badge-sync-direction is-push"><span class="dashicons dashicons-arrow-up-alt"></span> ' + __('Local ➔ Google', 'aura-suite') + '</span>'
+                    : '<span class="badge-sync-direction is-pull"><span class="dashicons dashicons-arrow-down-alt"></span> ' + __('Google ➔ Local', 'aura-suite') + '</span>';
 
                 var isSuccess = (l.status === 'success');
                 var statusBadge = isSuccess
-                    ? '<span class="sync-badge sync-badge--synced" style="display:inline-flex;align-items:center;gap:3px;"><span class="dashicons dashicons-yes" style="font-size:14px;width:14px;height:14px;"></span> Éxito</span>'
-                    : '<span class="sync-badge sync-badge--error" style="display:inline-flex;align-items:center;gap:3px;"><span class="dashicons dashicons-no-alt" style="font-size:14px;width:14px;height:14px;"></span> Fallo</span>';
+                    ? '<span class="sync-badge sync-badge--synced" style="display:inline-flex;align-items:center;gap:3px;"><span class="dashicons dashicons-yes" style="font-size:14px;width:14px;height:14px;"></span> ' + __('Éxito', 'aura-suite') + '</span>'
+                    : '<span class="sync-badge sync-badge--error" style="display:inline-flex;align-items:center;gap:3px;"><span class="dashicons dashicons-no-alt" style="font-size:14px;width:14px;height:14px;"></span> ' + __('Fallo', 'aura-suite') + '</span>';
 
                 var actionLabel = escapeHtml(l.action || '');
-                if (l.action === 'create') actionLabel = '✨ Crear';
-                else if (l.action === 'update') actionLabel = '🔄 Actualizar';
-                else if (l.action === 'delete') actionLabel = '🗑️ Eliminar';
-                else if (l.action === 'skip') actionLabel = '⏭️ Omitir';
+                if (l.action === 'create') actionLabel = '✨ ' + __('Crear', 'aura-suite');
+                else if (l.action === 'update') actionLabel = '🔄 ' + __('Actualizar', 'aura-suite');
+                else if (l.action === 'delete') actionLabel = '🗑️ ' + __('Eliminar', 'aura-suite');
+                else if (l.action === 'skip') actionLabel = '⏭️ ' + __('Omitir', 'aura-suite');
 
                 // Ficha de contacto
                 var contactHtml = '—';
                 if (l.contact_id) {
-                    var cName = (l.first_name || l.last_name) ? (l.first_name + ' ' + (l.last_name || '')).trim() : 'Contacto #' + l.contact_id;
+                    var cName = (l.first_name || l.last_name) ? (l.first_name + ' ' + (l.last_name || '')).trim() : sprintf(__('Contacto #%s', 'aura-suite'), l.contact_id);
                     var cEmail = l.email_primary || '';
                     contactHtml = '<div style="display:flex;align-items:center;gap:8px;min-width:0;">';
                     if (l.avatar_url) {
@@ -1546,7 +1554,7 @@
                 html += '<td>' + statusBadge + '</td>';
                 html += '<td style="font-size:0.78rem;color:' + (isSuccess ? '#94a3b8' : '#f87171') + ';word-break:break-word;" title="' + escapeHtml(msgFull) + '">' + escapeHtml(msgShort) + '</td>';
                 html += '<td style="text-align:center;">';
-                html += '<button type="button" class="btn btn-glass btn-sm btn-view-log-detail" data-idx="' + idx + '" title="Ver diagnóstico detallado" style="padding:2px 6px;height:26px;border-radius:6px;">';
+                html += '<button type="button" class="btn btn-glass btn-sm btn-view-log-detail" data-idx="' + idx + '" title="' + escapeHtml(__('Ver diagnóstico detallado', 'aura-suite')) + '" style="padding:2px 6px;height:26px;border-radius:6px;">';
                 html += '<span class="dashicons dashicons-visibility" style="font-size:15px;width:15px;height:15px;margin-top:2px;"></span>';
                 html += '</button>';
                 html += '</td>';
@@ -1569,7 +1577,7 @@
 
         }).fail(function() {
             logsState.isLoading = false;
-            $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 30px; color:#f87171;">Error de comunicación con el servidor al cargar registros.</td></tr>');
+            $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 30px; color:#f87171;">' + __('Error de comunicación con el servidor al cargar registros.', 'aura-suite') + '</td></tr>');
         });
     }
 
@@ -1578,7 +1586,12 @@
         var end = Math.min(currentPage * perPage, totalItems);
 
         $('#logs-pagination-info').html(
-            'Mostrando <strong style="color:#fff;">' + start + '</strong> a <strong style="color:#fff;">' + end + '</strong> de <strong style="color:#38bdf8;">' + totalItems + '</strong> registros'
+            sprintf(
+                __('Mostrando %1$s a %2$s de %3$s registros', 'aura-suite'),
+                '<strong style="color:#fff;">' + start + '</strong>',
+                '<strong style="color:#fff;">' + end + '</strong>',
+                '<strong style="color:#38bdf8;">' + totalItems + '</strong>'
+            )
         );
 
         var $ctrls = $('#logs-pagination-controls');
@@ -1589,7 +1602,7 @@
         }
 
         // Botón Anterior
-        var $btnPrev = $('<button type="button" class="logs-page-btn" title="Página anterior"><span class="dashicons dashicons-arrow-left-alt2" style="font-size:14px;width:14px;height:14px;margin-top:2px;"></span></button>');
+        var $btnPrev = $('<button type="button" class="logs-page-btn" title="' + escapeHtml(__('Página anterior', 'aura-suite')) + '"><span class="dashicons dashicons-arrow-left-alt2" style="font-size:14px;width:14px;height:14px;margin-top:2px;"></span></button>');
         if (currentPage <= 1) {
             $btnPrev.prop('disabled', true);
         } else {
@@ -1634,7 +1647,7 @@
         }
 
         // Botón Siguiente
-        var $btnNext = $('<button type="button" class="logs-page-btn" title="Página siguiente"><span class="dashicons dashicons-arrow-right-alt2" style="font-size:14px;width:14px;height:14px;margin-top:2px;"></span></button>');
+        var $btnNext = $('<button type="button" class="logs-page-btn" title="' + escapeHtml(__('Página siguiente', 'aura-suite')) + '"><span class="dashicons dashicons-arrow-right-alt2" style="font-size:14px;width:14px;height:14px;margin-top:2px;"></span></button>');
         if (currentPage >= totalPages) {
             $btnNext.prop('disabled', true);
         } else {
@@ -1645,21 +1658,21 @@
 
     function openLogDetailModal(log) {
         var metaHtml = '';
-        metaHtml += '<div><span style="color:#94a3b8;">Log ID:</span> <strong style="color:#fff;">#' + (log.id || '—') + '</strong></div>';
-        metaHtml += '<div><span style="color:#94a3b8;">Fecha:</span> <strong style="color:#fff;">' + escapeHtml(log.created_at || '—') + '</strong></div>';
-        metaHtml += '<div><span style="color:#94a3b8;">Dirección:</span> <strong style="color:#38bdf8;">' + (log.direction === 'push' ? 'Local ➔ Google (Push)' : 'Google ➔ Local (Pull)') + '</strong></div>';
-        metaHtml += '<div><span style="color:#94a3b8;">Acción:</span> <strong style="color:#a78bfa;">' + escapeHtml(log.action || '—') + '</strong></div>';
-        metaHtml += '<div><span style="color:#94a3b8;">Estado:</span> <strong style="color:' + (log.status === 'success' ? '#34d399' : '#f87171') + ';">' + (log.status === 'success' ? 'Éxito' : 'Fallo / Error') + '</strong></div>';
-        metaHtml += '<div><span style="color:#94a3b8;">Contacto ID:</span> <strong style="color:#fff;">' + (log.contact_id ? '#' + log.contact_id : 'Sin contacto asociado') + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">' + __('Log ID:', 'aura-suite') + '</span> <strong style="color:#fff;">#' + (log.id || '—') + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">' + __('Fecha:', 'aura-suite') + '</span> <strong style="color:#fff;">' + escapeHtml(log.created_at || '—') + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">' + __('Dirección:', 'aura-suite') + '</span> <strong style="color:#38bdf8;">' + (log.direction === 'push' ? __('Local ➔ Google (Push)', 'aura-suite') : __('Google ➔ Local (Pull)', 'aura-suite')) + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">' + __('Acción:', 'aura-suite') + '</span> <strong style="color:#a78bfa;">' + escapeHtml(log.action || '—') + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">' + __('Estado:', 'aura-suite') + '</span> <strong style="color:' + (log.status === 'success' ? '#34d399' : '#f87171') + ';">' + (log.status === 'success' ? __('Éxito', 'aura-suite') : __('Fallo / Error', 'aura-suite')) + '</strong></div>';
+        metaHtml += '<div><span style="color:#94a3b8;">' + __('Contacto ID:', 'aura-suite') + '</span> <strong style="color:#fff;">' + (log.contact_id ? '#' + log.contact_id : __('Sin contacto asociado', 'aura-suite')) + '</strong></div>';
         if (log.first_name || log.last_name) {
-            metaHtml += '<div style="grid-column: 1 / -1;"><span style="color:#94a3b8;">Nombre Contacto:</span> <strong style="color:#fff;">' + escapeHtml((log.first_name || '') + ' ' + (log.last_name || '')) + '</strong>' + (log.email_primary ? ' &lt;' + escapeHtml(log.email_primary) + '&gt;' : '') + '</div>';
+            metaHtml += '<div style="grid-column: 1 / -1;"><span style="color:#94a3b8;">' + __('Nombre Contacto:', 'aura-suite') + '</span> <strong style="color:#fff;">' + escapeHtml((log.first_name || '') + ' ' + (log.last_name || '')) + '</strong>' + (log.email_primary ? ' &lt;' + escapeHtml(log.email_primary) + '&gt;' : '') + '</div>';
         }
         if (log.google_account) {
-            metaHtml += '<div style="grid-column: 1 / -1;"><span style="color:#94a3b8;">Cuenta Google:</span> <strong style="color:#fbbf24;">' + escapeHtml(log.google_account) + '</strong></div>';
+            metaHtml += '<div style="grid-column: 1 / -1;"><span style="color:#94a3b8;">' + __('Cuenta Google:', 'aura-suite') + '</span> <strong style="color:#fbbf24;">' + escapeHtml(log.google_account) + '</strong></div>';
         }
 
         $('#log-detail-meta').html(metaHtml);
-        $('#log-detail-message').text(log.message || log.error_message || 'Sin mensaje adicional.');
+        $('#log-detail-message').text(log.message || log.error_message || __('Sin mensaje adicional.', 'aura-suite'));
 
         $('#modal-log-detail').css('display', 'flex').hide().fadeIn(140);
     }
@@ -1678,7 +1691,7 @@
                 mode: selectedMode
             }, function(res) {
                 if (res.success) {
-                    showToast('Modo de autenticación cambiado a ' + (selectedMode === 'service_account' ? 'Google Workspace DWD' : 'OAuth 2.0'));
+                    showToast(sprintf(__('Modo de autenticación cambiado a %s', 'aura-suite'), (selectedMode === 'service_account' ? 'Google Workspace DWD' : 'OAuth 2.0')));
                 }
             });
         });
@@ -1688,7 +1701,7 @@
             e.preventDefault();
             var $btn = $('#btn-save-google-credentials');
             var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Guardando...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Guardando...', 'aura-suite'));
 
             var data = {
                 action: 'aura_contacts_save_google_settings',
@@ -1700,14 +1713,14 @@
             $.post(cfg.ajaxUrl, data, function(res) {
                 $btn.prop('disabled', false).html(orig);
                 if (res.success) {
-                    alert('Credenciales de Google OAuth guardadas exitosamente. La página se recargará para actualizar las URLs de autorización.');
+                    alert(__('Credenciales de Google OAuth guardadas exitosamente. La página se recargará para actualizar las URLs de autorización.', 'aura-suite'));
                     window.location.reload();
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al guardar credenciales');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al guardar credenciales', 'aura-suite'));
                 }
             }).fail(function() {
                 $btn.prop('disabled', false).html(orig);
-                alert('Error de conexión');
+                alert(__('Error de conexión', 'aura-suite'));
             });
         });
 
@@ -1716,7 +1729,7 @@
             e.preventDefault();
             var $btn = $('#btn-save-sa-credentials');
             var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Guardando...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Guardando...', 'aura-suite'));
 
             $.post(cfg.ajaxUrl, {
                 action: 'aura_contacts_save_sa_settings',
@@ -1726,14 +1739,14 @@
             }, function(res) {
                 $btn.prop('disabled', false).html(orig);
                 if (res.success) {
-                    alert('Credenciales de Service Account DWD guardadas exitosamente.');
+                    alert(__('Credenciales de Service Account DWD guardadas exitosamente.', 'aura-suite'));
                     window.location.reload();
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al guardar credenciales DWD');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al guardar credenciales DWD', 'aura-suite'));
                 }
             }).fail(function() {
                 $btn.prop('disabled', false).html(orig);
-                alert('Error de conexión');
+                alert(__('Error de conexión', 'aura-suite'));
             });
         });
 
@@ -1741,7 +1754,7 @@
         $('#btn-test-sa-connection').on('click', function() {
             var $btn = $(this);
             var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Probando conexión...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Probando conexión...', 'aura-suite'));
 
             $.post(cfg.ajaxUrl, {
                 action: 'aura_contacts_test_sa_connection',
@@ -1749,26 +1762,26 @@
             }, function(res) {
                 $btn.prop('disabled', false).html(orig);
                 if (res.success) {
-                    alert('✅ Conexión con Google People API exitosa:\n' + (res.data.message || 'Token DWD generado y People API accesible'));
+                    alert(__('✅ Conexión con Google People API exitosa:', 'aura-suite') + '\n' + (res.data.message || __('Token DWD generado y People API accesible', 'aura-suite')));
                 } else {
-                    alert('❌ Error al conectar con Google:\n' + (res.data && res.data.message ? res.data.message : 'No se pudo autorizar'));
+                    alert(__('❌ Error al conectar con Google:', 'aura-suite') + '\n' + (res.data && res.data.message ? res.data.message : __('No se pudo autorizar', 'aura-suite')));
                 }
             }).fail(function() {
                 $btn.prop('disabled', false).html(orig);
-                alert('Error de conexión al servidor');
+                alert(__('Error de conexión al servidor', 'aura-suite'));
             });
         });
 
         $('#btn-disconnect-google').on('click', function() {
-            if (!confirm(cfg.i18n.confirmDisconnect || '¿Estás seguro de desconectar la cuenta de Google?')) {
+            if (!confirm(cfg.i18n.confirmDisconnect || __('¿Estás seguro de desconectar la cuenta de Google?', 'aura-suite'))) {
                 return;
             }
             $.post(cfg.ajaxUrl, { action: 'aura_contacts_disconnect_google', nonce: cfg.nonce }, function(res) {
                 if (res.success) {
-                    alert('Cuenta de Google desconectada correctamente.');
+                    alert(__('Cuenta de Google desconectada correctamente.', 'aura-suite'));
                     window.location.reload();
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al desconectar');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al desconectar', 'aura-suite'));
                 }
             });
         });
@@ -1788,22 +1801,22 @@
         // Formatos de exportación y textos dinámicos
         var exportFormatLabels = {
             'csv_universal': {
-                text: 'Descargar Archivo CSV Universal',
+                text: __('Descargar Archivo CSV Universal', 'aura-suite'),
                 action: 'aura_contacts_export_csv',
                 icon: 'dashicons-media-spreadsheet'
             },
             'csv_google': {
-                text: 'Descargar CSV Oficial Google Contacts',
+                text: __('Descargar CSV Oficial Google Contacts', 'aura-suite'),
                 action: 'aura_contacts_export_google_csv',
                 icon: 'dashicons-google'
             },
             'vcf': {
-                text: 'Descargar vCard 3.0 (.vcf)',
+                text: __('Descargar vCard 3.0 (.vcf)', 'aura-suite'),
                 action: 'aura_contacts_export_vcf',
                 icon: 'dashicons-id'
             },
             'json': {
-                text: 'Descargar Respaldo JSON Completo',
+                text: __('Descargar Respaldo JSON Completo', 'aura-suite'),
                 action: 'aura_contacts_export_json',
                 icon: 'dashicons-backup'
             }
@@ -1854,7 +1867,7 @@
                 url += '&delimiter=' + encodeURIComponent(delimiter);
             }
 
-            showToast('Generando descarga de ' + conf.text + '...');
+            showToast(sprintf(__('Generando descarga de %s...', 'aura-suite'), conf.text));
             window.location.href = url;
         });
 
@@ -1864,7 +1877,7 @@
             var postUrl = cfg.postUrl || (cfg.ajaxUrl ? cfg.ajaxUrl.replace('admin-ajax.php', 'admin-post.php') : 'admin-post.php');
             var nonce = cfg.exportNonce || cfg.nonce || '';
             var url = postUrl + '?action=aura_contacts_download_template&nonce=' + encodeURIComponent(nonce);
-            showToast('Descargando plantilla CSV oficial de ejemplo...');
+            showToast(__('Descargando plantilla CSV oficial de ejemplo...', 'aura-suite'));
             window.location.href = url;
         });
 
@@ -1879,7 +1892,7 @@
                 return;
             }
 
-            var name = file.name || 'archivo';
+            var name = file.name || __('archivo', 'aura-suite');
             var size = file.size ? (file.size > 1048576 ? (file.size / 1048576).toFixed(2) + ' MB' : (file.size / 1024).toFixed(1) + ' KB') : '0 KB';
             var ext = name.split('.').pop().toLowerCase();
 
@@ -1890,7 +1903,7 @@
 
             $('#file-icon-badge').text(icon);
             $('#file-name-display').text(name);
-            $('#file-size-display').text(size + ' — Archivo listo para importar');
+            $('#file-size-display').text(size + ' — ' + __('Archivo listo para importar', 'aura-suite'));
 
             $('#dropzone-idle').hide();
             $('#dropzone-selected').css('display', 'flex').hide().fadeIn(180);
@@ -1938,7 +1951,7 @@
         $('#form-contacts-import').on('submit', function(e) {
             e.preventDefault();
             if (!fileInput || !fileInput.files.length) {
-                alert('Por favor arrastra o selecciona un archivo (.csv, .vcf o .json) para importar.');
+                alert(__('Por favor arrastra o selecciona un archivo (.csv, .vcf o .json) para importar.', 'aura-suite'));
                 return;
             }
 
@@ -1951,7 +1964,7 @@
 
             var $btn = $('#btn-submit-import');
             var origHtml = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Procesando importación...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Procesando importación...', 'aura-suite'));
 
             $.ajax({
                 url: cfg.ajaxUrl,
@@ -1988,17 +2001,17 @@
 
                         $('#import-results-card').slideDown(250);
 
-                        showToast('Importación completada: ' + (d.created || 0) + ' creados, ' + (d.updated || 0) + ' actualizados.');
+                        showToast(sprintf(__('Importación completada: %1$d creados, %2$d actualizados.', 'aura-suite'), (d.created || 0), (d.updated || 0)));
                         fetchContacts();
                         refreshStats();
                     } else {
-                        var msg = (res.data && res.data.message) ? res.data.message : 'Error al procesar el archivo de importación.';
+                        var msg = (res.data && res.data.message) ? res.data.message : __('Error al procesar el archivo de importación.', 'aura-suite');
                         alert(msg);
                     }
                 },
                 error: function(xhr) {
                     $btn.prop('disabled', false).html(origHtml);
-                    alert('Error en la comunicación con el servidor al procesar la importación.');
+                    alert(__('Error en la comunicación con el servidor al procesar la importación.', 'aura-suite'));
                 }
             });
         });
@@ -2010,17 +2023,17 @@
                 lines.push($(this).text());
             });
             if (!lines.length) {
-                showToast('No hay detalles para copiar.');
+                showToast(__('No hay detalles para copiar.', 'aura-suite'));
                 return;
             }
-            var textToCopy = '--- REGISTRO DE IMPORTACIÓN AURA SUITE ---\n' +
-                             'Resumen: ' + $('#res-message').text() + '\n' +
-                             'Detalles:\n' + lines.join('\n');
+            var textToCopy = '--- ' + __('REGISTRO DE IMPORTACIÓN AURA SUITE', 'aura-suite') + ' ---\n' +
+                             __('Resumen:', 'aura-suite') + ' ' + $('#res-message').text() + '\n' +
+                             __('Detalles:', 'aura-suite') + '\n' + lines.join('\n');
 
             navigator.clipboard.writeText(textToCopy).then(function() {
-                showToast('Detalle de importación copiado al portapapeles.');
+                showToast(__('Detalle de importación copiado al portapapeles.', 'aura-suite'));
             }).catch(function() {
-                showToast('No se pudo copiar automáticamente.');
+                showToast(__('No se pudo copiar automáticamente.', 'aura-suite'));
             });
         });
 
@@ -2049,19 +2062,19 @@
             var fullName = (c.first_name || '') + (c.last_name ? ' ' + c.last_name : '');
             var lines = [
                 '📇 ' + fullName.trim(),
-                c.job_title ? 'Cargo: ' + c.job_title : null,
-                c.organization ? 'Organización: ' + c.organization : null,
-                c.email_primary ? 'Email: ' + c.email_primary : (c.email ? 'Email: ' + c.email : null),
-                c.phone_primary ? 'Teléfono: ' + c.phone_primary : (c.phone ? 'Teléfono: ' + c.phone : null),
+                c.job_title ? __('Cargo:', 'aura-suite') + ' ' + c.job_title : null,
+                c.organization ? __('Organización:', 'aura-suite') + ' ' + c.organization : null,
+                c.email_primary ? __('Email:', 'aura-suite') + ' ' + c.email_primary : (c.email ? __('Email:', 'aura-suite') + ' ' + c.email : null),
+                c.phone_primary ? __('Teléfono:', 'aura-suite') + ' ' + c.phone_primary : (c.phone ? __('Teléfono:', 'aura-suite') + ' ' + c.phone : null),
                 c.whatsapp ? 'WhatsApp: ' + c.whatsapp : null,
-                c.address_street ? 'Dirección: ' + [c.address_street, c.address_city, c.address_state, c.address_country].filter(Boolean).join(', ') : null,
-                c.notes ? 'Notas: ' + c.notes : null
+                c.address_street ? __('Dirección:', 'aura-suite') + ' ' + [c.address_street, c.address_city, c.address_state, c.address_country].filter(Boolean).join(', ') : null,
+                c.notes ? __('Notas:', 'aura-suite') + ' ' + c.notes : null
             ].filter(Boolean);
 
             navigator.clipboard.writeText(lines.join('\n')).then(function() {
-                showToast('Ficha de contacto copiada al portapapeles.');
+                showToast(__('Ficha de contacto copiada al portapapeles.', 'aura-suite'));
             }).catch(function() {
-                showToast('No se pudo copiar automáticamente.');
+                showToast(__('No se pudo copiar automáticamente.', 'aura-suite'));
             });
         });
 
@@ -2118,7 +2131,7 @@
                         AuraUI.hideModalSkeleton('modal-contact-card');
                     }
                     closeContactCard();
-                    var msg = (res && res.data && res.data.message) ? res.data.message : 'No se pudo obtener la información del contacto.';
+                    var msg = (res && res.data && res.data.message) ? res.data.message : __('No se pudo obtener la información del contacto.', 'aura-suite');
                     if (typeof showToast === 'function') {
                         showToast(msg);
                     } else {
@@ -2132,7 +2145,7 @@
                 }
                 closeContactCard();
                 if (typeof showToast === 'function') {
-                    showToast('Error al conectar con el servidor.');
+                    showToast(__('Error al conectar con el servidor.', 'aura-suite'));
                 }
             });
         }
@@ -2142,7 +2155,7 @@
         currentCardContact = item;
 
         var fullName = (item.first_name || '') + (item.last_name ? ' ' + item.last_name : '');
-        fullName = fullName.trim() || item.organization || ('Contacto #' + item.id);
+        fullName = fullName.trim() || item.organization || sprintf(__('Contacto #%s', 'aura-suite'), item.id);
         var initials = ((item.first_name || '').charAt(0) + (item.last_name || '').charAt(0)).toUpperCase() || 'C';
 
         var catKey = item.category || 'other';
@@ -2167,15 +2180,15 @@
 
         // Títulos Principales
         $('#card-full-name').text(fullName);
-        $('#card-job-title').text(item.job_title || 'Sin cargo registrado');
-        $('#card-org-text').text(item.organization || 'Sin organización');
+        $('#card-job-title').text(item.job_title || __('Sin cargo registrado', 'aura-suite'));
+        $('#card-org-text').text(item.organization || __('Sin organización', 'aura-suite'));
 
         // Badges
         $('#card-category-badge').attr('class', 'category-pill category-pill--' + catKey).html(catIcon + ' ' + escapeHtml(catLabel));
         
-        var typeLabel = '👤 Persona';
-        if (item.contact_type === 'company') typeLabel = '🏢 Empresa';
-        else if (item.contact_type === 'organization') typeLabel = '🏛️ Organización';
+        var typeLabel = '👤 ' + __('Persona', 'aura-suite');
+        if (item.contact_type === 'company') typeLabel = '🏢 ' + __('Empresa', 'aura-suite');
+        else if (item.contact_type === 'organization') typeLabel = '🏛️ ' + __('Organización', 'aura-suite');
         $('#card-type-badge').text(typeLabel);
 
         $('#card-sync-badge').html(renderSyncBadge(item));
@@ -2224,7 +2237,7 @@
             $('#card-quick-map').attr('href', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(fullAddress)).css('opacity', '1').show();
             $('#card-address-block').show();
         } else {
-            $('#card-full-address').html('<span style="color:#64748b;font-style:italic;">Sin dirección física registrada</span>');
+            $('#card-full-address').html('<span style="color:#64748b;font-style:italic;">' + __('Sin dirección física registrada', 'aura-suite') + '</span>');
             $('#card-quick-map').attr('href', 'javascript:void(0)').css('opacity', '0.4');
         }
 
@@ -2245,25 +2258,25 @@
                         tHtml += '<span style="display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:0.75rem;font-weight:600;background:rgba(192,132,252,0.12);color:#c084fc;border:1px solid rgba(192,132,252,0.25);">🏷️ #' + escapeHtml(cleanTag) + '</span>';
                     }
                 });
-                tagsContainer.html(tHtml || '<span style="color:#64748b;font-size:0.8rem;">Sin etiquetas</span>');
+                tagsContainer.html(tHtml || '<span style="color:#64748b;font-size:0.8rem;">' + __('Sin etiquetas', 'aura-suite') + '</span>');
             } else {
-                tagsContainer.html('<span style="color:#64748b;font-size:0.8rem;">Sin etiquetas</span>');
+                tagsContainer.html('<span style="color:#64748b;font-size:0.8rem;">' + __('Sin etiquetas', 'aura-suite') + '</span>');
             }
         } else {
-            tagsContainer.html('<span style="color:#64748b;font-size:0.8rem;">Sin etiquetas</span>');
+            tagsContainer.html('<span style="color:#64748b;font-size:0.8rem;">' + __('Sin etiquetas', 'aura-suite') + '</span>');
         }
 
         // Vinculaciones
         if (item.third_party_id && parseInt(item.third_party_id, 10) > 0) {
-            $('#card-link-tp').html('🏢 Vinculado a Tercero ID <strong>#' + item.third_party_id + '</strong>').css('color', '#60a5fa');
+            $('#card-link-tp').html('🏢 ' + sprintf(__('Vinculado a Tercero ID %s', 'aura-suite'), '<strong>#' + item.third_party_id + '</strong>')).css('color', '#60a5fa');
         } else {
-            $('#card-link-tp').html('🏢 Sin Tercero vinculado').css('color', '#64748b');
+            $('#card-link-tp').html('🏢 ' + __('Sin Tercero vinculado', 'aura-suite')).css('color', '#64748b');
         }
 
         if (item.wp_user_id && parseInt(item.wp_user_id, 10) > 0) {
-            $('#card-link-wp').html('👤 Vinculado a Usuario WP ID <strong>#' + item.wp_user_id + '</strong>').css('color', '#c084fc');
+            $('#card-link-wp').html('👤 ' + sprintf(__('Vinculado a Usuario WP ID %s', 'aura-suite'), '<strong>#' + item.wp_user_id + '</strong>')).css('color', '#c084fc');
         } else {
-            $('#card-link-wp').html('👤 Sin Usuario WP vinculado').css('color', '#64748b');
+            $('#card-link-wp').html('👤 ' + __('Sin Usuario WP vinculado', 'aura-suite')).css('color', '#64748b');
         }
 
         // Notas
@@ -2271,7 +2284,7 @@
             $('#card-notes-text').text(item.notes).css('font-style', 'normal').css('color', '#e2e8f0');
             $('#card-notes-block').show();
         } else {
-            $('#card-notes-text').text('Sin notas registradas.').css('font-style', 'italic').css('color', '#64748b');
+            $('#card-notes-text').text(__('Sin notas registradas.', 'aura-suite')).css('font-style', 'italic').css('color', '#64748b');
         }
 
         // Metadatos
@@ -2308,8 +2321,8 @@
         $('#btn-scan-duplicates').on('click', function() {
             var $btn = $(this);
             var orig = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Escaneando...');
-            $('#duplicates-container').html('<div style="text-align:center;padding:50px 20px;"><span class="dashicons dashicons-update spin" style="font-size:32px;width:32px;height:32px;color:#38bdf8;"></span><p style="margin-top:12px;color:#94a3b8;">Analizando similitudes en la base de datos...</p></div>');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Escaneando...', 'aura-suite'));
+            $('#duplicates-container').html('<div style="text-align:center;padding:50px 20px;"><span class="dashicons dashicons-update spin" style="font-size:32px;width:32px;height:32px;color:#38bdf8;"></span><p style="margin-top:12px;color:#94a3b8;">' + __('Analizando similitudes en la base de datos...', 'aura-suite') + '</p></div>');
 
             $.post(cfg.ajaxUrl, {
                 action: 'aura_contacts_find_duplicates',
@@ -2317,7 +2330,7 @@
             }, function(res) {
                 $btn.prop('disabled', false).html(orig);
                 if (!res.success) {
-                    $('#duplicates-container').html('<div class="aura-notice-box is-error"><p>' + escapeHtml(res.data && res.data.message ? res.data.message : 'Error al escanear') + '</p></div>');
+                    $('#duplicates-container').html('<div class="aura-notice-box is-error"><p>' + escapeHtml(res.data && res.data.message ? res.data.message : __('Error al escanear', 'aura-suite')) + '</p></div>');
                     return;
                 }
 
@@ -2326,8 +2339,8 @@
                     $('#duplicates-container').html(
                         '<div style="text-align:center;padding:50px 20px;">' +
                         '<div style="font-size:42px;margin-bottom:12px;">🎉</div>' +
-                        '<h3 style="margin:0 0 8px;color:#34d399;font-size:1.15rem;">¡Directorio Impecable!</h3>' +
-                        '<p style="margin:0;color:#94a3b8;font-size:0.9rem;">No se encontraron registros duplicados por correo, teléfono ni nombres similares.</p>' +
+                        '<h3 style="margin:0 0 8px;color:#34d399;font-size:1.15rem;">' + __('¡Directorio Impecable!', 'aura-suite') + '</h3>' +
+                        '<p style="margin:0;color:#94a3b8;font-size:0.9rem;">' + __('No se encontraron registros duplicados por correo, teléfono ni nombres similares.', 'aura-suite') + '</p>' +
                         '</div>'
                     );
                     return;
@@ -2340,7 +2353,7 @@
                 if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
                     errDetail = ' (' + xhr.responseJSON.data.message + ')';
                 }
-                $('#duplicates-container').html('<div class="aura-notice-box is-error"><p>Error de conexión al escanear duplicados' + escapeHtml(errDetail) + '. Intenta nuevamente.</p></div>');
+                $('#duplicates-container').html('<div class="aura-notice-box is-error"><p>' + sprintf(__('Error de conexión al escanear duplicados%s. Intenta nuevamente.', 'aura-suite'), escapeHtml(errDetail)) + '</p></div>');
             });
         });
     }
@@ -2349,7 +2362,7 @@
         var html = '<div style="display:flex;flex-direction:column;gap:20px;">';
         clusters.forEach(function(cluster, idx) {
             var rawReasons = cluster.reasons || [
-                { type: cluster.type || 'email', label: cluster.type_label || 'Coincidencia', value: cluster.match_value || '' }
+                { type: cluster.type || 'email', label: cluster.type_label || __('Coincidencia', 'aura-suite'), value: cluster.match_value || '' }
             ];
             var reasonsHtml = rawReasons.map(function(r) {
                 var bg = r.type === 'email' ? 'background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);' :
@@ -2359,19 +2372,19 @@
                 return '<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;' + bg + '"><strong>' + escapeHtml(r.label || '') + ':</strong> ' + escapeHtml(r.value || '') + '</span>';
             }).join(' ');
 
-            var confBadge = '<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;background:rgba(99,102,241,0.18);color:#a5b4fc;border:1px solid rgba(99,102,241,0.35);font-weight:700;">🎯 ' + (cluster.confidence || 90) + '% Certeza</span>';
+            var confBadge = '<span style="font-size:0.75rem;padding:3px 8px;border-radius:6px;background:rgba(99,102,241,0.18);color:#a5b4fc;border:1px solid rgba(99,102,241,0.35);font-weight:700;">🎯 ' + sprintf(__('%d%% Certeza', 'aura-suite'), (cluster.confidence || 90)) + '</span>';
 
             html += '<div class="aura-glass-card cluster-card" style="padding:18px;border-radius:12px;background:rgba(255,255,255,0.03);" data-cluster="' + idx + '">';
             html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">';
             html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
-            html += '<span style="font-weight:700;color:#fff;font-size:0.95rem;">Grupo ' + (idx + 1) + ' (' + cluster.contacts.length + ' coincidencias)</span>';
+            html += '<span style="font-weight:700;color:#fff;font-size:0.95rem;">' + sprintf(__('Grupo %1$d (%2$d coincidencias)', 'aura-suite'), (idx + 1), cluster.contacts.length) + '</span>';
             html += confBadge;
             html += reasonsHtml;
             html += '</div>';
 
             html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">';
-            html += '<button type="button" class="btn btn-primary btn-sm btn-lift btn-open-merge-wizard" data-cluster="' + idx + '" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;box-shadow:0 0 14px rgba(139,92,246,0.4);"><span class="dashicons dashicons-randomize"></span> <span>Comparar y Fusionar Asistido</span></button>';
-            html += '<button type="button" class="btn btn-secondary btn-sm btn-lift btn-merge-cluster-quick" data-cluster="' + idx + '" title="Fusiona automáticamente en el contacto maestro marcado"><span class="dashicons dashicons-yes-alt"></span> <span>Fusión Rápida</span></button>';
+            html += '<button type="button" class="btn btn-primary btn-sm btn-lift btn-open-merge-wizard" data-cluster="' + idx + '" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);border:none;box-shadow:0 0 14px rgba(139,92,246,0.4);"><span class="dashicons dashicons-randomize"></span> <span>' + __('Comparar y Fusionar Asistido', 'aura-suite') + '</span></button>';
+            html += '<button type="button" class="btn btn-secondary btn-sm btn-lift btn-merge-cluster-quick" data-cluster="' + idx + '" title="' + escapeHtml(__('Fusiona automáticamente en el contacto maestro marcado', 'aura-suite')) + '"><span class="dashicons dashicons-yes-alt"></span> <span>' + __('Fusión Rápida', 'aura-suite') + '</span></button>';
             html += '</div>';
             html += '</div>';
 
@@ -2382,7 +2395,7 @@
 
                 html += '<div class="contact-card-selectable" style="display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);position:relative;">';
                 html += '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:2px;">';
-                html += '<input type="checkbox" class="cluster-chk-include" data-cluster="' + idx + '" value="' + c.id + '" checked title="Incluir en la fusión">';
+                html += '<input type="checkbox" class="cluster-chk-include" data-cluster="' + idx + '" value="' + c.id + '" checked title="' + escapeHtml(__('Incluir en la fusión', 'aura-suite')) + '">';
                 html += '</div>';
                 html += '<div style="flex:1;min-width:0;">';
                 html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
@@ -2402,19 +2415,19 @@
                         html += '<span style="color:#a78bfa;">🏷️ ' + escapeHtml(tgList.join(', ')) + '</span>';
                     }
                 }
-                if (c.third_party_id && parseInt(c.third_party_id) > 0) html += '<span style="color:#38bdf8;">🔗 Tercero vinculado</span>';
-                if (c.wp_user_id && parseInt(c.wp_user_id) > 0) html += '<span style="color:#34d399;">👤 Usuario WP vinculado</span>';
+                if (c.third_party_id && parseInt(c.third_party_id) > 0) html += '<span style="color:#38bdf8;">🔗 ' + __('Tercero vinculado', 'aura-suite') + '</span>';
+                if (c.wp_user_id && parseInt(c.wp_user_id) > 0) html += '<span style="color:#34d399;">👤 ' + __('Usuario WP vinculado', 'aura-suite') + '</span>';
                 html += '</div>';
 
                 // Selectores de Fusión Rápida (ID Maestro y Nombre que prevalece)
                 html += '<div style="display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;">';
-                html += '<label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.74rem;color:#c4b5fd;font-weight:600;" title="Conservar este ID como registro maestro definitivo en Base de Datos">';
+                html += '<label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.74rem;color:#c4b5fd;font-weight:600;" title="' + escapeHtml(__('Conservar este ID como registro maestro definitivo en Base de Datos', 'aura-suite')) + '">';
                 html += '<input type="radio" name="master_cluster_' + idx + '" value="' + c.id + '" ' + isChecked + ' style="accent-color:#8b5cf6;">';
-                html += '<span>👑 ID Maestro (BD)</span>';
+                html += '<span>👑 ' + __('ID Maestro (BD)', 'aura-suite') + '</span>';
                 html += '</label>';
-                html += '<label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.74rem;color:#38bdf8;font-weight:600;" title="Conservar este Nombre y Apellido para la ficha unificada">';
+                html += '<label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:0.74rem;color:#38bdf8;font-weight:600;" title="' + escapeHtml(__('Conservar este Nombre y Apellido para la ficha unificada', 'aura-suite')) + '">';
                 html += '<input type="radio" name="quick_name_cluster_' + idx + '" value="' + c.id + '" ' + isChecked + ' data-first="' + escapeHtml(c.first_name || '') + '" data-last="' + escapeHtml(c.last_name || '') + '" style="accent-color:#38bdf8;">';
-                html += '<span>👤 Nombre a Conservar</span>';
+                html += '<span>👤 ' + __('Nombre a Conservar', 'aura-suite') + '</span>';
                 html += '</label>';
                 html += '</div>';
 
@@ -2442,7 +2455,7 @@
             var cluster = clusters[clusterIdx];
             var primaryId = $('input[name="master_cluster_' + clusterIdx + '"]:checked').val();
             if (!primaryId) {
-                alert('Por favor selecciona el contacto maestro que prevalecerá.');
+                alert(__('Por favor selecciona el contacto maestro que prevalecerá.', 'aura-suite'));
                 return;
             }
 
@@ -2453,13 +2466,13 @@
             });
 
             if (checkedIds.indexOf(parseInt(primaryId)) === -1) {
-                alert('El contacto maestro seleccionado debe estar incluido en la lista de fusión.');
+                alert(__('El contacto maestro seleccionado debe estar incluido en la lista de fusión.', 'aura-suite'));
                 return;
             }
 
             var secondaryIds = checkedIds.filter(function(id) { return id !== parseInt(primaryId); });
             if (!secondaryIds.length) {
-                alert('Debes incluir al menos dos contactos para fusionar.');
+                alert(__('Debes incluir al menos dos contactos para fusionar.', 'aura-suite'));
                 return;
             }
 
@@ -2472,14 +2485,14 @@
                 var qLast  = (chosenNameRadio.data('last') || '').trim();
                 quickOverrides.first_name = qFirst;
                 quickOverrides.last_name  = qLast;
-                nameAlertLabel = ' con el nombre "' + (qFirst + (qLast ? ' ' + qLast : '')) + '"';
+                nameAlertLabel = ' ' + sprintf(__('con el nombre "%s"', 'aura-suite'), (qFirst + (qLast ? ' ' + qLast : '')));
             }
 
-            if (!confirm('¿Estás seguro de fusionar de forma rápida estos ' + secondaryIds.length + ' contacto(s) en la ficha maestra #' + primaryId + nameAlertLabel + '?\n\nLos teléfonos, emails, etiquetas, notas y relaciones se unificarán en el maestro y los registros redundantes se archivarán.')) {
+            if (!confirm(sprintf(__('¿Estás seguro de fusionar de forma rápida estos %1$d contacto(s) en la ficha maestra #%2$s%3$s?', 'aura-suite'), secondaryIds.length, primaryId, nameAlertLabel) + '\n\n' + __('Los teléfonos, emails, etiquetas, notas y relaciones se unificarán en el maestro y los registros redundantes se archivarán.', 'aura-suite'))) {
                 return;
             }
 
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Fusionando...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Fusionando...', 'aura-suite'));
             executeMerge(primaryId, secondaryIds, quickOverrides, clusterIdx, $btn, origHtml);
         });
     }
@@ -2487,7 +2500,7 @@
     // ── Wizard de Fusión Asistida y Selección Campo a Campo ──────────────────────
     window.closeMergeModal = function() {
         $('#modal-merge-contacts').fadeOut(150);
-        $('#btn-submit-merge-action').prop('disabled', false).html('<span class="dashicons dashicons-randomize"></span> <span>Confirmar y Fusionar Contactos</span>');
+        $('#btn-submit-merge-action').prop('disabled', false).html('<span class="dashicons dashicons-randomize"></span> <span>' + __('Confirmar y Fusionar Contactos', 'aura-suite') + '</span>');
     };
 
     function openMergeWizard(cluster, clusterIdx) {
@@ -2502,7 +2515,7 @@
         });
 
         if (activeContacts.length < 2) {
-            alert('Debes mantener al menos 2 contactos seleccionados en este grupo para realizar la fusión.');
+            alert(__('Debes mantener al menos 2 contactos seleccionados en este grupo para realizar la fusión.', 'aura-suite'));
             return;
         }
 
@@ -2513,12 +2526,12 @@
 
         // 1. Selector Superior: Registro Maestro (Destino del ID)
         mHtml += '<div class="merge-master-bar">';
-        mHtml += '<div class="merge-master-title"><span class="dashicons dashicons-star-filled" style="color:#fbbf24;font-size:14px;width:14px;height:14px;"></span> 1. Contacto Maestro Base (Prevalecerá su ID en BD):</div>';
+        mHtml += '<div class="merge-master-title"><span class="dashicons dashicons-star-filled" style="color:#fbbf24;font-size:14px;width:14px;height:14px;"></span> ' + __('1. Contacto Maestro Base (Prevalecerá su ID en BD):', 'aura-suite') + '</div>';
         mHtml += '<div class="merge-master-options">';
         activeContacts.forEach(function(c) {
             var isMaster = (parseInt(c.id) === preselectedMasterId);
             var fullName = (c.first_name || '') + (c.last_name ? ' ' + c.last_name : '');
-            var infoExtra = c.email_primary || c.phone_primary || (c.organization ? c.organization : 'Sin email/tel');
+            var infoExtra = c.email_primary || c.phone_primary || (c.organization ? c.organization : __('Sin email/tel', 'aura-suite'));
             mHtml += '<label class="merge-master-pill ' + (isMaster ? 'is-selected' : '') + '">';
             mHtml += '<input type="radio" name="wizard_target_id" value="' + c.id + '" ' + (isMaster ? 'checked' : '') + ' class="merge-option-radio" onchange="onWizardMasterChange(this);">';
             mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">';
@@ -2530,12 +2543,12 @@
 
         // 2. Banner Superior: Previsualización en Vivo de la Ficha Resultante
         mHtml += '<div class="merge-preview-card" id="merge-live-preview-box">';
-        mHtml += '<div class="merge-preview-header"><span class="dashicons dashicons-visibility" style="font-size:13px;width:13px;height:13px;"></span> Ficha Maestra Resultante (Previsualización en Vivo):</div>';
+        mHtml += '<div class="merge-preview-header"><span class="dashicons dashicons-visibility" style="font-size:13px;width:13px;height:13px;"></span> ' + __('Ficha Maestra Resultante (Previsualización en Vivo):', 'aura-suite') + '</div>';
         mHtml += '<div class="merge-preview-content">';
         mHtml += '<div id="prev-avatar-wrap" class="merge-preview-avatar">👤</div>';
         mHtml += '<div class="merge-preview-details">';
         mHtml += '<div class="merge-preview-name-row">';
-        mHtml += '<span class="merge-preview-name" id="prev-name">Cargando...</span>';
+        mHtml += '<span class="merge-preview-name" id="prev-name">' + __('Cargando...', 'aura-suite') + '</span>';
         mHtml += '<span class="merge-preview-org" id="prev-org-job"></span>';
         mHtml += '</div>';
         mHtml += '<div class="merge-preview-chips">';
@@ -2567,7 +2580,7 @@
         });
 
         mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">👤 Nombre y Apellidos</span><span style="font-size:0.71rem;color:#94a3b8;">Elige u edita abajo</span></div>';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">👤 ' + __('Nombre y Apellidos', 'aura-suite') + '</span><span style="font-size:0.71rem;color:#94a3b8;">' + __('Elige u edita abajo', 'aura-suite') + '</span></div>';
         mHtml += '<div class="merge-options-grid">';
         distinctNames.forEach(function(n, nIdx) {
             var isChk = (nIdx === 0);
@@ -2578,7 +2591,7 @@
         });
         mHtml += '<label class="merge-option-label" id="label-wizard-name-custom">';
         mHtml += '<input type="radio" name="wizard_field_name" value="custom" class="merge-option-radio" onchange="onWizardNameChange(this);">';
-        mHtml += '<div><strong style="color:#a78bfa;">✏️ Personalizar Nombre y Apellidos</strong></div>';
+        mHtml += '<div><strong style="color:#a78bfa;">✏️ ' + __('Personalizar Nombre y Apellidos', 'aura-suite') + '</strong></div>';
         mHtml += '</label>';
         mHtml += '</div>';
 
@@ -2587,8 +2600,8 @@
         var defaultLast = distinctNames[0] ? distinctNames[0].last : '';
         mHtml += '<div class="merge-custom-input-box" id="box-wizard-name-inputs">';
         mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
-        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">Nombre(s) Final *</label><input type="text" id="merge_inp_first_name" class="aura-input" value="' + escapeHtml(defaultFirst) + '" oninput="updateMergePreview();"></div>';
-        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">Apellidos Final</label><input type="text" id="merge_inp_last_name" class="aura-input" value="' + escapeHtml(defaultLast) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">' + __('Nombre(s) Final *', 'aura-suite') + '</label><input type="text" id="merge_inp_first_name" class="aura-input" value="' + escapeHtml(defaultFirst) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">' + __('Apellidos Final', 'aura-suite') + '</label><input type="text" id="merge_inp_last_name" class="aura-input" value="' + escapeHtml(defaultLast) + '" oninput="updateMergePreview();"></div>';
         mHtml += '</div></div>';
         mHtml += '</div>'; // Fin card nombre
 
@@ -2604,18 +2617,18 @@
         });
 
         mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏢 Organización y Cargo</span></div>';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏢 ' + __('Organización y Cargo', 'aura-suite') + '</span></div>';
         mHtml += '<div class="merge-options-grid">';
         distinctOrgs.forEach(function(o, oIdx) {
             var isChk = (oIdx === 0);
             mHtml += '<label class="merge-option-label ' + (isChk ? 'is-selected' : '') + '">';
             mHtml += '<input type="radio" name="wizard_field_org" value="' + oIdx + '" ' + (isChk ? 'checked' : '') + ' class="merge-option-radio" data-org="' + escapeHtml(o.org) + '" data-job="' + escapeHtml(o.job) + '" onchange="onWizardOrgChange(this);">';
-            mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><strong style="color:#fff;">' + (o.org ? escapeHtml(o.org) : 'Sin empresa') + '</strong>' + (o.job ? ' — <span style="color:#94a3b8;">' + escapeHtml(o.job) + '</span>' : '') + '<span style="font-size:0.71rem;color:#94a3b8;margin-left:5px;">(#' + o.sourceId + ')</span></div>';
+            mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><strong style="color:#fff;">' + (o.org ? escapeHtml(o.org) : __('Sin empresa', 'aura-suite')) + '</strong>' + (o.job ? ' — <span style="color:#94a3b8;">' + escapeHtml(o.job) + '</span>' : '') + '<span style="font-size:0.71rem;color:#94a3b8;margin-left:5px;">(#' + o.sourceId + ')</span></div>';
             mHtml += '</label>';
         });
         mHtml += '<label class="merge-option-label">';
         mHtml += '<input type="radio" name="wizard_field_org" value="custom" class="merge-option-radio" onchange="onWizardOrgChange(this);">';
-        mHtml += '<div><strong style="color:#a78bfa;">✏️ Personalizar Empresa y Cargo</strong></div>';
+        mHtml += '<div><strong style="color:#a78bfa;">✏️ ' + __('Personalizar Empresa y Cargo', 'aura-suite') + '</strong></div>';
         mHtml += '</label>';
         mHtml += '</div>';
 
@@ -2623,8 +2636,8 @@
         var defaultJob = distinctOrgs[0] ? distinctOrgs[0].job : '';
         mHtml += '<div class="merge-custom-input-box" id="box-wizard-org-inputs">';
         mHtml += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
-        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">Empresa / Entidad</label><input type="text" id="merge_inp_organization" class="aura-input" value="' + escapeHtml(defaultOrg) + '" oninput="updateMergePreview();"></div>';
-        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">Cargo / Ocupación</label><input type="text" id="merge_inp_job_title" class="aura-input" value="' + escapeHtml(defaultJob) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">' + __('Empresa / Entidad', 'aura-suite') + '</label><input type="text" id="merge_inp_organization" class="aura-input" value="' + escapeHtml(defaultOrg) + '" oninput="updateMergePreview();"></div>';
+        mHtml += '<div><label style="font-size:0.72rem;color:#cbd5e1;display:block;margin-bottom:2px;">' + __('Cargo / Ocupación', 'aura-suite') + '</label><input type="text" id="merge_inp_job_title" class="aura-input" value="' + escapeHtml(defaultJob) + '" oninput="updateMergePreview();"></div>';
         mHtml += '</div></div>';
         mHtml += '</div>'; // Fin card org
 
@@ -2637,7 +2650,7 @@
 
         if (allAvatars.length > 0) {
             mHtml += '<div class="merge-field-card">';
-            mHtml += '<div class="merge-field-header"><span class="merge-field-title">🖼️ Foto de Perfil / Avatar</span></div>';
+            mHtml += '<div class="merge-field-header"><span class="merge-field-title">🖼️ ' + __('Foto de Perfil / Avatar', 'aura-suite') + '</span></div>';
             mHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
             allAvatars.forEach(function(av, avIdx) {
                 var isChk = (avIdx === 0);
@@ -2665,10 +2678,10 @@
         });
 
         mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">✉️ Correos Electrónicos</span></div>';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">✉️ ' + __('Correos Electrónicos', 'aura-suite') + '</span></div>';
         if (allEmails.length > 0) {
             mHtml += '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;box-sizing:border-box;">';
-            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">Principal *</label>';
+            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">' + __('Principal *', 'aura-suite') + '</label>';
             allEmails.forEach(function(em, emIdx) {
                 var isChk = (emIdx === 0);
                 mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="' + escapeHtml(em) + '">';
@@ -2678,10 +2691,10 @@
             });
             mHtml += '</div>';
 
-            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">Secundario</label>';
-            mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="Ninguno">';
+            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">' + __('Secundario', 'aura-suite') + '</label>';
+            mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="' + escapeHtml(__('Ninguno', 'aura-suite')) + '">';
             mHtml += '<input type="radio" name="wizard_email_secondary" value="" ' + (allEmails.length <= 1 ? 'checked' : '') + ' class="merge-option-radio" onchange="updateMergePreview();">';
-            mHtml += '<span style="font-size:0.75rem;color:#94a3b8;white-space:nowrap;">(Ninguno)</span>';
+            mHtml += '<span style="font-size:0.75rem;color:#94a3b8;white-space:nowrap;">(' + __('Ninguno', 'aura-suite') + ')</span>';
             mHtml += '</label>';
             allEmails.forEach(function(em, emIdx) {
                 var isChk = (allEmails.length > 1 && emIdx === 1);
@@ -2693,7 +2706,7 @@
             mHtml += '</div>';
             mHtml += '</div>';
         } else {
-            mHtml += '<p style="color:#94a3b8;font-size:0.76rem;margin:0;">Sin correos registrados en los contactos seleccionados.</p>';
+            mHtml += '<p style="color:#94a3b8;font-size:0.76rem;margin:0;">' + __('Sin correos registrados en los contactos seleccionados.', 'aura-suite') + '</p>';
         }
         mHtml += '</div>'; // Fin card email
 
@@ -2707,10 +2720,10 @@
         });
 
         mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">📞 Teléfonos y WhatsApp</span></div>';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">📞 ' + __('Teléfonos y WhatsApp', 'aura-suite') + '</span></div>';
         if (allPhones.length > 0) {
             mHtml += '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;box-sizing:border-box;">';
-            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">Principal *</label>';
+            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">' + __('Principal *', 'aura-suite') + '</label>';
             allPhones.forEach(function(ph, pIdx) {
                 var isChk = (pIdx === 0);
                 mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="' + escapeHtml(ph) + '">';
@@ -2720,10 +2733,10 @@
             });
             mHtml += '</div>';
 
-            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">Secundario</label>';
-            mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="Ninguno">';
+            mHtml += '<div style="min-width:0;"><label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:3px;">' + __('Secundario', 'aura-suite') + '</label>';
+            mHtml += '<label class="merge-option-label" style="padding:4px 6px;margin-bottom:4px;" title="' + escapeHtml(__('Ninguno', 'aura-suite')) + '">';
             mHtml += '<input type="radio" name="wizard_phone_secondary" value="" ' + (allPhones.length <= 1 ? 'checked' : '') + ' class="merge-option-radio" onchange="updateMergePreview();">';
-            mHtml += '<span style="font-size:0.75rem;color:#94a3b8;white-space:nowrap;">(Ninguno)</span>';
+            mHtml += '<span style="font-size:0.75rem;color:#94a3b8;white-space:nowrap;">(' + __('Ninguno', 'aura-suite') + ')</span>';
             mHtml += '</label>';
             allPhones.forEach(function(ph, pIdx) {
                 var isChk = (allPhones.length > 1 && pIdx === 1);
@@ -2735,7 +2748,7 @@
             mHtml += '</div>';
             mHtml += '</div>';
         } else {
-            mHtml += '<p style="color:#94a3b8;font-size:0.76rem;margin:0;">Sin teléfonos registrados en este grupo.</p>';
+            mHtml += '<p style="color:#94a3b8;font-size:0.76rem;margin:0;">' + __('Sin teléfonos registrados en este grupo.', 'aura-suite') + '</p>';
         }
         mHtml += '</div>'; // Fin card telefonos
 
@@ -2769,11 +2782,11 @@
         var combinedTagsStr = allClusterTags.join(', ');
 
         mHtml += '<div class="merge-field-card">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏷️ Categoría y Etiquetas</span></div>';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">🏷️ ' + __('Categoría y Etiquetas', 'aura-suite') + '</span></div>';
         
         // Categoría chips
         mHtml += '<div style="margin-bottom:8px;">';
-        mHtml += '<label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:4px;">Categoría Principal</label>';
+        mHtml += '<label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:4px;">' + __('Categoría Principal', 'aura-suite') + '</label>';
         mHtml += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
         ['student', 'teacher', 'staff', 'supplier', 'donor', 'member', 'other'].forEach(function(catKey) {
             var label = cfg.categories[catKey] || catKey;
@@ -2786,11 +2799,11 @@
         mHtml += '</div></div>';
 
         // Etiquetas modos
-        mHtml += '<label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:4px;">Etiquetas de la Ficha</label>';
+        mHtml += '<label style="font-size:0.72rem;font-weight:700;color:#cbd5e1;display:block;margin-bottom:4px;">' + __('Etiquetas de la Ficha', 'aura-suite') + '</label>';
         mHtml += '<div class="merge-options-grid">';
         mHtml += '<label class="merge-option-label is-selected" style="padding:4px 6px;">';
         mHtml += '<input type="radio" name="wizard_tags_mode" value="combine" checked class="merge-option-radio" data-tags="' + escapeHtml(combinedTagsStr) + '" onchange="onWizardTagsChange(this);">';
-        mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><strong style="color:#fff;font-size:0.76rem;">✨ Combinar todas</strong>' + (allClusterTags.length > 0 ? ' <span style="font-size:0.72rem;color:#a78bfa;">(' + escapeHtml(combinedTagsStr) + ')</span>' : '') + '</div>';
+        mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><strong style="color:#fff;font-size:0.76rem;">✨ ' + __('Combinar todas', 'aura-suite') + '</strong>' + (allClusterTags.length > 0 ? ' <span style="font-size:0.72rem;color:#a78bfa;">(' + escapeHtml(combinedTagsStr) + ')</span>' : '') + '</div>';
         mHtml += '</label>';
 
         activeContacts.forEach(function(c) {
@@ -2799,19 +2812,19 @@
                 var cTagsStr = cTags.join(', ');
                 mHtml += '<label class="merge-option-label" style="padding:4px 6px;">';
                 mHtml += '<input type="radio" name="wizard_tags_mode" value="contact_' + c.id + '" class="merge-option-radio" data-tags="' + escapeHtml(cTagsStr) + '" onchange="onWizardTagsChange(this);">';
-                mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><span style="color:#cbd5e1;font-size:0.76rem;">Solo #' + c.id + '</span> <span style="font-size:0.72rem;color:#94a3b8;">(' + escapeHtml(cTagsStr) + ')</span></div>';
+                mHtml += '<div style="min-width:0;overflow:hidden;text-overflow:ellipsis;"><span style="color:#cbd5e1;font-size:0.76rem;">' + sprintf(__('Solo #%s', 'aura-suite'), c.id) + '</span> <span style="font-size:0.72rem;color:#94a3b8;">(' + escapeHtml(cTagsStr) + ')</span></div>';
                 mHtml += '</label>';
             }
         });
 
         mHtml += '<label class="merge-option-label" style="padding:4px 6px;">';
         mHtml += '<input type="radio" name="wizard_tags_mode" value="custom" class="merge-option-radio" onchange="onWizardTagsChange(this);">';
-        mHtml += '<div><strong style="color:#a78bfa;font-size:0.76rem;">✏️ Personalizar etiquetas</strong></div>';
+        mHtml += '<div><strong style="color:#a78bfa;font-size:0.76rem;">✏️ ' + __('Personalizar etiquetas', 'aura-suite') + '</strong></div>';
         mHtml += '</label>';
         mHtml += '</div>';
 
         mHtml += '<div class="merge-custom-input-box" id="box-wizard-tags-inputs" style="margin-top:6px;">';
-        mHtml += '<input type="text" id="merge_inp_tags" class="aura-input" value="' + escapeHtml(combinedTagsStr) + '" placeholder="Etiquetas separadas por comas..." oninput="updateMergePreview();">';
+        mHtml += '<input type="text" id="merge_inp_tags" class="aura-input" value="' + escapeHtml(combinedTagsStr) + '" placeholder="' + escapeHtml(__('Etiquetas separadas por comas...', 'aura-suite')) + '" oninput="updateMergePreview();">';
         mHtml += '</div>';
         mHtml += '</div>'; // Fin card categoria & tags
 
@@ -2821,8 +2834,8 @@
 
         // 4. Fila Final: Notas Consolidadas (Opcional)
         mHtml += '<div class="merge-field-card" style="margin-top:2px;">';
-        mHtml += '<div class="merge-field-header"><span class="merge-field-title">📝 Notas Consolidadas (Opcional)</span><span style="font-size:0.71rem;color:#38bdf8;">Historial previo se preserva automáticamente</span></div>';
-        mHtml += '<textarea id="merge_inp_custom_notes" class="aura-textarea" rows="2" placeholder="Nota adicional explicativa de la fusión..." oninput="updateMergePreview();" style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>';
+        mHtml += '<div class="merge-field-header"><span class="merge-field-title">📝 ' + __('Notas Consolidadas (Opcional)', 'aura-suite') + '</span><span style="font-size:0.71rem;color:#38bdf8;">' + __('Historial previo se preserva automáticamente', 'aura-suite') + '</span></div>';
+        mHtml += '<textarea id="merge_inp_custom_notes" class="aura-textarea" rows="2" placeholder="' + escapeHtml(__('Nota adicional explicativa de la fusión...', 'aura-suite')) + '" oninput="updateMergePreview();" style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>';
         mHtml += '</div>';
 
         $('#merge-modal-content').html(mHtml);
@@ -2835,7 +2848,7 @@
         updateMergePreview();
 
         // Reactivar botón de confirmación
-        $('#btn-submit-merge-action').prop('disabled', false).html('<span class="dashicons dashicons-randomize"></span> <span>Confirmar y Fusionar Contactos</span>');
+        $('#btn-submit-merge-action').prop('disabled', false).html('<span class="dashicons dashicons-randomize"></span> <span>' + __('Confirmar y Fusionar Contactos', 'aura-suite') + '</span>');
 
         // Mostrar modal con centrado inteligente
         $('#modal-merge-contacts').css('display', 'flex').hide().fadeIn(150);
@@ -2895,11 +2908,11 @@
         var fn = ($('#merge_inp_first_name').val() || '').trim();
         var ln = ($('#merge_inp_last_name').val() || '').trim();
         var full = fn + (ln ? ' ' + ln : '');
-        if (!full) full = 'Contacto Sin Nombre';
+        if (!full) full = __('Contacto Sin Nombre', 'aura-suite');
 
         var org = ($('#merge_inp_organization').val() || '').trim();
         var job = ($('#merge_inp_job_title').val() || '').trim();
-        var orgJobText = org ? org + (job ? ' (' + job + ')' : '') : (job ? job : 'Sin organización');
+        var orgJobText = org ? org + (job ? ' (' + job + ')' : '') : (job ? job : __('Sin organización', 'aura-suite'));
 
         var emPrimary = $('input[name="wizard_email_primary"]:checked').val() || '';
         var phPrimary = $('input[name="wizard_phone_primary"]:checked').val() || '';
@@ -2910,10 +2923,10 @@
 
         $('#prev-name').text(full);
         $('#prev-org-job').text(orgJobText);
-        $('#prev-email').text(emPrimary ? '✉️ ' + emPrimary : '✉️ Sin correo');
-        $('#prev-phone').text(phPrimary ? '📞 ' + phPrimary : '📞 Sin teléfono');
+        $('#prev-email').text(emPrimary ? '✉️ ' + emPrimary : '✉️ ' + __('Sin correo', 'aura-suite'));
+        $('#prev-phone').text(phPrimary ? '📞 ' + phPrimary : '📞 ' + __('Sin teléfono', 'aura-suite'));
         $('#prev-cat').text('🏷️ ' + catLabel);
-        $('#prev-tags').text(tagsVal ? '🏷️ ' + tagsVal : '🏷️ Sin etiquetas');
+        $('#prev-tags').text(tagsVal ? '🏷️ ' + tagsVal : '🏷️ ' + __('Sin etiquetas', 'aura-suite'));
 
         if (avatarUrl) {
             $('#prev-avatar-wrap').html('<img src="' + escapeHtml(avatarUrl) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">');
@@ -2931,13 +2944,13 @@
 
         var targetId = parseInt($('input[name="wizard_target_id"]:checked').val());
         if (!targetId) {
-            alert('Por favor selecciona el contacto maestro de destino.');
+            alert(__('Por favor selecciona el contacto maestro de destino.', 'aura-suite'));
             return;
         }
 
         var sourceIds = activeContacts.map(function(c) { return parseInt(c.id); }).filter(function(id) { return id !== targetId; });
         if (!sourceIds.length) {
-            alert('No hay contactos secundarios para fusionar.');
+            alert(__('No hay contactos secundarios para fusionar.', 'aura-suite'));
             return;
         }
 
@@ -2962,7 +2975,7 @@
         };
 
         var orig = $btn.html();
-        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Fusionando contactos...');
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Fusionando contactos...', 'aura-suite'));
 
         executeMerge(targetId, sourceIds, overrides, clusterIdx, $btn, orig);
     });
@@ -2974,7 +2987,7 @@
         if ($btn && $btn.length) {
             $btn.prop('disabled', true);
         }
-        $('#btn-submit-merge-action').prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Fusionando contactos...');
+        $('#btn-submit-merge-action').prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Fusionando contactos...', 'aura-suite'));
 
         $.post(cfg.ajaxUrl, {
             action: 'aura_contacts_merge',
@@ -2985,16 +2998,16 @@
         }, function(res) {
             if (res.success) {
                 closeMergeModal();
-                showToast('Fusión exitosa: Se unificaron ' + sourceIds.length + ' contacto(s) en la ficha #' + targetId);
+                showToast(sprintf(__('Fusión exitosa: Se unificaron %1$d contacto(s) en la ficha #%2$s', 'aura-suite'), sourceIds.length, targetId));
                 $('.cluster-card[data-cluster="' + clusterIdx + '"]').fadeOut(300, function() {
                     $(this).remove();
                     if (!$('.cluster-card').length) {
                         $('#duplicates-container').html(
                             '<div style="text-align:center;padding:50px 20px;">' +
                             '<div style="font-size:42px;margin-bottom:12px;">🎉</div>' +
-                            '<h3 style="margin:0 0 8px;color:#34d399;font-size:1.15rem;">¡Fusión Completada!</h3>' +
-                            '<p style="margin:0;color:#94a3b8;font-size:0.9rem;">Todos los grupos de duplicados han sido resueltos satisfactoriamente.</p>' +
-                            '<button type="button" class="btn btn-secondary btn-sm btn-lift" onclick="$(\'#btn-scan-duplicates\').trigger(\'click\');" style="margin-top:14px;"><span class="dashicons dashicons-search"></span> Re-escanear ahora</button>' +
+                            '<h3 style="margin:0 0 8px;color:#34d399;font-size:1.15rem;">' + __('¡Fusión Completada!', 'aura-suite') + '</h3>' +
+                            '<p style="margin:0;color:#94a3b8;font-size:0.9rem;">' + __('Todos los grupos de duplicados han sido resueltos satisfactoriamente.', 'aura-suite') + '</p>' +
+                            '<button type="button" class="btn btn-secondary btn-sm btn-lift" onclick="$(\'#btn-scan-duplicates\').trigger(\'click\');" style="margin-top:14px;"><span class="dashicons dashicons-search"></span> ' + __('Re-escanear ahora', 'aura-suite') + '</button>' +
                             '</div>'
                         );
                     }
@@ -3002,17 +3015,17 @@
                 fetchContacts();
                 refreshStats();
             } else {
-                alert(res.data && res.data.message ? res.data.message : 'Error al fusionar contactos.');
+                alert(res.data && res.data.message ? res.data.message : __('Error al fusionar contactos.', 'aura-suite'));
             }
         }).fail(function(xhr) {
-            var msg = 'Error de conexión durante el proceso de fusión.';
+            var msg = __('Error de conexión durante el proceso de fusión.', 'aura-suite');
             if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
                 msg += ' (' + xhr.responseJSON.data.message + ')';
             }
             alert(msg);
         }).always(function() {
             // Restaurar SIEMPRE tanto el botón del modal como el botón del cluster
-            $('#btn-submit-merge-action').prop('disabled', false).html('<span class="dashicons dashicons-randomize"></span> <span>Confirmar y Fusionar Contactos</span>');
+            $('#btn-submit-merge-action').prop('disabled', false).html('<span class="dashicons dashicons-randomize"></span> <span>' + __('Confirmar y Fusionar Contactos', 'aura-suite') + '</span>');
             if ($btn && $btn.length && origHtml) {
                 $btn.prop('disabled', false).html(origHtml);
             }
@@ -3022,7 +3035,7 @@
     // ── Modal de Vinculación de Entidades ────────────────────────────────────────
     window.openLinkEntityModal = function(contactId, contactName) {
         $('#link-target-contact-id').val(contactId);
-        $('#link-contact-name-banner').text('Vincular a: ' + contactName);
+        $('#link-contact-name-banner').text(sprintf(__('Vincular a: %s', 'aura-suite'), contactName));
         $('#link-modal-tp-search').val('');
         $('#link-modal-wp-search').val('');
         $('#link-modal-tp-results').hide().empty();
@@ -3042,11 +3055,11 @@
                 searchThirdParties(q, function(items) {
                     var $box = $('#link-modal-tp-results').empty();
                     if (!items || items.length === 0) {
-                        $box.append('<div class="autocomplete-item" style="color:#94a3b8;">No se encontraron terceros</div>').show();
+                        $box.append('<div class="autocomplete-item" style="color:#94a3b8;">' + __('No se encontraron terceros', 'aura-suite') + '</div>').show();
                         return;
                     }
                     items.forEach(function(tp) {
-                        var $item = $('<div class="autocomplete-item"><span><strong>' + escapeHtml(tp.name) + '</strong> (' + escapeHtml(tp.type_label || '') + ')</span><span style="font-size:0.75rem;color:#38bdf8;">Vincular</span></div>');
+                        var $item = $('<div class="autocomplete-item"><span><strong>' + escapeHtml(tp.name) + '</strong> (' + escapeHtml(tp.type_label || '') + ')</span><span style="font-size:0.75rem;color:#38bdf8;">' + __('Vincular', 'aura-suite') + '</span></div>');
                         $item.on('click', function() {
                             linkThirdParty(contactId, tp.id);
                         });
@@ -3070,11 +3083,11 @@
                 searchWpUsers(q, function(users) {
                     var $box = $('#link-modal-wp-results').empty();
                     if (!users || users.length === 0) {
-                        $box.append('<div class="autocomplete-item" style="color:#94a3b8;">No se encontraron usuarios</div>').show();
+                        $box.append('<div class="autocomplete-item" style="color:#94a3b8;">' + __('No se encontraron usuarios', 'aura-suite') + '</div>').show();
                         return;
                     }
                     users.forEach(function(u) {
-                        var $item = $('<div class="autocomplete-item"><span><strong>' + escapeHtml(u.name) + '</strong> (' + escapeHtml(u.email) + ')</span><span style="font-size:0.75rem;color:#c084fc;">Vincular</span></div>');
+                        var $item = $('<div class="autocomplete-item"><span><strong>' + escapeHtml(u.name) + '</strong> (' + escapeHtml(u.email) + ')</span><span style="font-size:0.75rem;color:#c084fc;">' + __('Vincular', 'aura-suite') + '</span></div>');
                         $item.on('click', function() {
                             linkWpUser(contactId, u.id);
                         });
@@ -3096,11 +3109,11 @@
     function linkThirdParty(contactId, thirdPartyId) {
         $.post(cfg.ajaxUrl, { action: 'aura_contacts_link_third_party', nonce: cfg.nonce, contact_id: contactId, third_party_id: thirdPartyId }, function(res) {
             if (res.success) {
-                showToast('Tercero vinculado exitosamente.');
+                showToast(__('Tercero vinculado exitosamente.', 'aura-suite'));
                 closeLinkModal();
                 fetchContacts();
             } else {
-                alert(res.data && res.data.message ? res.data.message : 'Error al vincular');
+                alert(res.data && res.data.message ? res.data.message : __('Error al vincular', 'aura-suite'));
             }
         });
     }
@@ -3108,11 +3121,11 @@
     function linkWpUser(contactId, wpUserId) {
         $.post(cfg.ajaxUrl, { action: 'aura_contacts_link_wp_user', nonce: cfg.nonce, contact_id: contactId, wp_user_id: wpUserId }, function(res) {
             if (res.success) {
-                showToast('Usuario WordPress vinculado exitosamente.');
+                showToast(__('Usuario WordPress vinculado exitosamente.', 'aura-suite'));
                 closeLinkModal();
                 fetchContacts();
             } else {
-                alert(res.data && res.data.message ? res.data.message : 'Error al vincular');
+                alert(res.data && res.data.message ? res.data.message : __('Error al vincular', 'aura-suite'));
             }
         });
     }
@@ -3121,13 +3134,13 @@
         contactId = contactId || $('#link-target-contact-id').val();
         if (!contactId || parseInt(contactId, 10) <= 0) return;
 
-        if (!confirm('¿Deseas registrar este contacto como un nuevo Tercero en el catálogo comercial y contable de Finanzas?')) {
+        if (!confirm(__('¿Deseas registrar este contacto como un nuevo Tercero en el catálogo comercial y contable de Finanzas?', 'aura-suite'))) {
             return;
         }
 
         var $btn = $('#btn-link-modal-create-tp');
         var origText = $btn.html();
-        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Creando...');
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Creando...', 'aura-suite'));
 
         $.post(cfg.ajaxUrl, {
             action: 'aura_contacts_create_third_party',
@@ -3136,33 +3149,33 @@
         }, function(res) {
             $btn.prop('disabled', false).html(origText);
             if (res.success) {
-                showToast(res.data && res.data.message ? res.data.message : '¡Tercero creado y vinculado con éxito!');
+                showToast(res.data && res.data.message ? res.data.message : __('¡Tercero creado y vinculado con éxito!', 'aura-suite'));
                 closeLinkModal();
                 fetchContacts();
                 refreshStats();
             } else {
-                alert(res.data && res.data.message ? res.data.message : 'Error al crear el Tercero.');
+                alert(res.data && res.data.message ? res.data.message : __('Error al crear el Tercero.', 'aura-suite'));
             }
         }).fail(function() {
             $btn.prop('disabled', false).html(origText);
-            alert('Error de conexión al intentar crear el Tercero.');
+            alert(__('Error de conexión al intentar crear el Tercero.', 'aura-suite'));
         });
     }
 
     function createThirdPartyFromForm() {
         var contactId = $('#contact-form-id').val();
         if (!contactId || parseInt(contactId, 10) <= 0) {
-            alert('Debes guardar el contacto primero antes de poder crearlo como Tercero.');
+            alert(__('Debes guardar el contacto primero antes de poder crearlo como Tercero.', 'aura-suite'));
             return;
         }
 
-        if (!confirm('¿Deseas crear y registrar este contacto en el catálogo comercial de Terceros de Finanzas?')) {
+        if (!confirm(__('¿Deseas crear y registrar este contacto en el catálogo comercial de Terceros de Finanzas?', 'aura-suite'))) {
             return;
         }
 
         var $btn = $('#btn-form-create-tp');
         var origText = $btn.html();
-        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Creando...');
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Creando...', 'aura-suite'));
 
         $.post(cfg.ajaxUrl, {
             action: 'aura_contacts_create_third_party',
@@ -3172,18 +3185,18 @@
             $btn.prop('disabled', false).html(origText);
             if (res.success && res.data) {
                 $('#contact-third-party-id').val(res.data.third_party_id);
-                $('#contact-third-party-name').text(res.data.third_party_name || ('Tercero #' + res.data.third_party_id));
+                $('#contact-third-party-name').text(res.data.third_party_name || sprintf(__('Tercero #%s', 'aura-suite'), res.data.third_party_id));
                 $('#contact-third-party-selected').show();
                 $('#contact-form-create-tp-wrap').hide();
-                showToast(res.data.message || '¡Tercero creado y vinculado con éxito!');
+                showToast(res.data.message || __('¡Tercero creado y vinculado con éxito!', 'aura-suite'));
                 fetchContacts();
                 refreshStats();
             } else {
-                alert(res.data && res.data.message ? res.data.message : 'Error al crear el Tercero.');
+                alert(res.data && res.data.message ? res.data.message : __('Error al crear el Tercero.', 'aura-suite'));
             }
         }).fail(function() {
             $btn.prop('disabled', false).html(origText);
-            alert('Error de conexión al intentar crear el Tercero.');
+            alert(__('Error de conexión al intentar crear el Tercero.', 'aura-suite'));
         });
     }
 
@@ -3261,7 +3274,7 @@
             $('.aura-contacts-navbar').slideUp(150);
             $('#contacts-bulk-bar').slideDown(150).css('display', 'flex');
             $('#contacts-bulk-badge-circle').text(count);
-            $('#contacts-bulk-bar-label').text(count + (count === 1 ? ' contacto seleccionado' : ' contactos seleccionados'));
+            $('#contacts-bulk-bar-label').text(count === 1 ? sprintf(__('%d contacto seleccionado', 'aura-suite'), count) : sprintf(__('%d contactos seleccionados', 'aura-suite'), count));
         } else {
             $('#btn-contacts-bulk-edit').hide();
             $('#btn-contacts-bulk-delete').hide();
@@ -3335,7 +3348,7 @@
             e.preventDefault();
             var ids = getSelectedContactIds();
             if (!ids.length) {
-                alert('No hay contactos seleccionados.');
+                alert(__('No hay contactos seleccionados.', 'aura-suite'));
                 return;
             }
 
@@ -3345,13 +3358,13 @@
             var applySync     = $('#bulk-chk-sync').is(':checked');
 
             if (!applyCategory && !applyTags && !applyStatus && !applySync) {
-                alert('Debes marcar al menos una casilla para aplicar cambios a los contactos seleccionados.');
+                alert(__('Debes marcar al menos una casilla para aplicar cambios a los contactos seleccionados.', 'aura-suite'));
                 return;
             }
 
             var $btn = $(this);
             var originalHtml = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Aplicando cambios...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + __('Aplicando cambios...', 'aura-suite'));
 
             $.ajax({
                 url: cfg.ajaxUrl,
@@ -3374,17 +3387,17 @@
                     $btn.prop('disabled', false).html(originalHtml);
                     if (res && res.success) {
                         closeBulkModal();
-                        showToast(res.data && res.data.message ? res.data.message : 'Edición masiva aplicada con éxito');
+                        showToast(res.data && res.data.message ? res.data.message : __('Edición masiva aplicada con éxito', 'aura-suite'));
                         $('.contact-row-check, #contacts-select-all').prop('checked', false);
                         updateBulkState();
                         fetchContacts();
                     } else {
-                        alert(res && res.data && res.data.message ? res.data.message : 'Error al guardar cambios masivos');
+                        alert(res && res.data && res.data.message ? res.data.message : __('Error al guardar cambios masivos', 'aura-suite'));
                     }
                 },
                 error: function(xhr) {
                     $btn.prop('disabled', false).html(originalHtml);
-                    var msg = 'Error de comunicación con el servidor al procesar la edición masiva';
+                    var msg = __('Error de comunicación con el servidor al procesar la edición masiva', 'aura-suite');
                     if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
                         msg = xhr.responseJSON.data.message;
                     } else if (xhr && xhr.responseText) {
@@ -3406,13 +3419,13 @@
             var ids = getSelectedContactIds();
             if (!ids.length) return;
 
-            if (!confirm('¿Deseas sincronizar los ' + ids.length + ' contactos seleccionados con Google Contacts ahora?')) {
+            if (!confirm(sprintf(__('¿Deseas sincronizar los %d contactos seleccionados con Google Contacts ahora?', 'aura-suite'), ids.length))) {
                 return;
             }
 
             var $btn = $(this);
             var originalHtml = $btn.html();
-            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Sincronizando (0/' + ids.length + ')...');
+            $btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> ' + sprintf(__('Sincronizando (0/%d)...', 'aura-suite'), ids.length));
 
             var successCount = 0;
             var errorCount = 0;
@@ -3420,14 +3433,14 @@
             function syncItem(index) {
                 if (index >= ids.length) {
                     $btn.prop('disabled', false).html(originalHtml);
-                    showToast('Sincronización masiva finalizada: ' + successCount + ' procesados' + (errorCount ? ', ' + errorCount + ' con error' : ''));
+                    showToast(sprintf(__('Sincronización masiva finalizada: %d procesados', 'aura-suite'), successCount) + (errorCount ? ', ' + sprintf(__('%d con error', 'aura-suite'), errorCount) : ''));
                     $('.contact-row-check, #contacts-select-all').prop('checked', false);
                     updateBulkState();
                     fetchContacts();
                     return;
                 }
 
-                $btn.html('<span class="dashicons dashicons-update spin"></span> Sincronizando (' + (index + 1) + '/' + ids.length + ')...');
+                $btn.html('<span class="dashicons dashicons-update spin"></span> ' + sprintf(__('Sincronizando (%1$d/%2$d)...', 'aura-suite'), (index + 1), ids.length));
 
                 $.ajax({
                     url: cfg.ajaxUrl,
@@ -3467,17 +3480,17 @@
     function bulkDeleteContacts(force) {
         var ids = getSelectedContactIds();
         if (!ids.length) {
-            alert('Por favor selecciona al menos un contacto en la tabla para eliminar.');
+            alert(__('Por favor selecciona al menos un contacto en la tabla para eliminar.', 'aura-suite'));
             return;
         }
 
         var confirmMsg = force
             ? (cfg.i18n && cfg.i18n.confirmBulkPermanent 
                 ? cfg.i18n.confirmBulkPermanent.replace('%d', ids.length) 
-                : '¿Estás seguro de eliminar permanentemente los ' + ids.length + ' contactos seleccionados? Esta acción no se puede deshacer.')
+                : sprintf(__('¿Estás seguro de eliminar permanentemente los %d contactos seleccionados? Esta acción no se puede deshacer.', 'aura-suite'), ids.length))
             : (cfg.i18n && cfg.i18n.confirmBulkDelete 
                 ? cfg.i18n.confirmBulkDelete.replace('%d', ids.length) 
-                : '¿Estás seguro de mover los ' + ids.length + ' contactos seleccionados a la papelera?');
+                : sprintf(__('¿Estás seguro de mover los %d contactos seleccionados a la papelera?', 'aura-suite'), ids.length));
 
         if (!confirm(confirmMsg)) {
             return;
@@ -3500,7 +3513,7 @@
                 $buttons.prop('disabled', false);
                 if (res && res.success) {
                     closeBulkModal();
-                    showToast(res.data && res.data.message ? res.data.message : 'Contactos eliminados correctamente.');
+                    showToast(res.data && res.data.message ? res.data.message : __('Contactos eliminados correctamente.', 'aura-suite'));
                     $('.contact-row-check, #contacts-select-all').prop('checked', false);
                     updateBulkState();
                     fetchContacts();
@@ -3508,12 +3521,12 @@
                         refreshStats();
                     }
                 } else {
-                    alert(res && res.data && res.data.message ? res.data.message : 'Error al eliminar los contactos seleccionados.');
+                    alert(res && res.data && res.data.message ? res.data.message : __('Error al eliminar los contactos seleccionados.', 'aura-suite'));
                 }
             },
             error: function(xhr) {
                 $buttons.prop('disabled', false);
-                var msg = 'Error de comunicación con el servidor al eliminar contactos.';
+                var msg = __('Error de comunicación con el servidor al eliminar contactos.', 'aura-suite');
                 if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
                     msg = xhr.responseJSON.data.message;
                 }
@@ -3528,7 +3541,7 @@
     function openBulkModal() {
         var ids = getSelectedContactIds();
         if (!ids.length) {
-            alert('Por favor selecciona al menos un contacto en la tabla para editar.');
+            alert(__('Por favor selecciona al menos un contacto en la tabla para editar.', 'aura-suite'));
             return;
         }
 

@@ -7,6 +7,9 @@
 (function ($) {
     'use strict';
 
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
+
     const cfg = auraSearchConfig;
 
     /* ============================================================
@@ -48,7 +51,7 @@
         const isSavedHidden = localStorage.getItem('aura_search_filters_hidden') === 'true';
         if (isSavedHidden) {
             $('#aura-search-layout').addClass('is-sidebar-hidden');
-            $('#btn-toggle-filters-text').text(cfg.i18n.showFilters || 'Mostrar Filtros');
+            $('#btn-toggle-filters-text').text(cfg.i18n.showFilters || __('Mostrar Filtros', 'aura-suite'));
             $('#btn-toggle-filters-top .dashicons').removeClass('dashicons-filter').addClass('dashicons-visibility');
         }
 
@@ -59,12 +62,12 @@
 
             if (isHidden) {
                 $layout.removeClass('is-sidebar-hidden');
-                $('#btn-toggle-filters-text').text(cfg.i18n.hideFilters || 'Ocultar Filtros');
+                $('#btn-toggle-filters-text').text(cfg.i18n.hideFilters || __('Ocultar Filtros', 'aura-suite'));
                 $('#btn-toggle-filters-top .dashicons').removeClass('dashicons-visibility').addClass('dashicons-filter');
                 localStorage.setItem('aura_search_filters_hidden', 'false');
             } else {
                 $layout.addClass('is-sidebar-hidden');
-                $('#btn-toggle-filters-text').text(cfg.i18n.showFilters || 'Mostrar Filtros');
+                $('#btn-toggle-filters-text').text(cfg.i18n.showFilters || __('Mostrar Filtros', 'aura-suite'));
                 $('#btn-toggle-filters-top .dashicons').removeClass('dashicons-filter').addClass('dashicons-visibility');
                 localStorage.setItem('aura_search_filters_hidden', 'true');
             }
@@ -181,7 +184,7 @@
                         <span class="dashicons dashicons-star-filled" style="font-size:13px;width:13px;height:13px;color:#f59e0b;"></span>
                         ${escHtml(s.name)}
                     </button>
-                    <button type="button" class="delete-search aura-btn-icon aura-btn-icon--danger" data-id="${s.id}" title="Eliminar preset" style="width:24px;height:24px;margin-left:6px;border-radius:4px;">
+                    <button type="button" class="delete-search aura-btn-icon aura-btn-icon--danger" data-id="${s.id}" title="${__('Eliminar preset', 'aura-suite')}" style="width:24px;height:24px;margin-left:6px;border-radius:4px;">
                         <span class="dashicons dashicons-trash" style="font-size:13px;width:13px;height:13px;"></span>
                     </button>
                 </li>`;
@@ -322,7 +325,7 @@
         /* Abrir modal guardar */
         $('#btn-save-search').on('click', function () {
             if (!Object.keys(currentFilters).length) {
-                alert('Realiza una búsqueda antes de guardarla.');
+                alert(__('Realiza una búsqueda antes de guardarla.', 'aura-suite'));
                 return;
             }
             $('#save-search-modal').css('display', 'flex').hide().fadeIn(200);
@@ -332,7 +335,7 @@
         /* Confirmar guardar */
         $('#confirm-save-search').on('click', function () {
             const name = $('#save-search-name').val().trim();
-            if (!name) { alert('Ingresa un nombre para el preset.'); return; }
+            if (!name) { alert(__('Ingresa un nombre para el preset.', 'aura-suite')); return; }
             doSaveSearch(name);
         });
 
@@ -568,7 +571,7 @@
                 loadSavedSearches();
                 showToast(cfg.i18n.saveSuccess, 'success');
             } else {
-                alert(res.data && res.data.message ? res.data.message : 'Error al guardar.');
+                alert(res.data && res.data.message ? res.data.message : __('Error al guardar.', 'aura-suite'));
             }
         });
     }
@@ -598,7 +601,7 @@
                 typeLabel = cfg.i18n.income;
                 typeBadge = `<span class="aura-badge aura-badge-green" style="font-weight:700;">🟢 ${cfg.i18n.income}</span>`;
             } else if (isCapital) {
-                typeLabel = cfg.i18n.capital || 'Gasto de Capital';
+                typeLabel = cfg.i18n.capital || __('Gasto de Capital', 'aura-suite');
                 typeBadge = `<span class="aura-badge aura-badge-blue" style="font-weight:700;">🔵 ${typeLabel}</span>`;
             }
 
@@ -610,8 +613,8 @@
             const statusLabel = cfg.i18n[row.status] || row.status;
             const statusBadge = `<span class="aura-badge ${statusClass}" style="font-size:11px;padding:2px 7px;">${statusLabel}</span>`;
 
-            const descText = row.description_hl || escHtml(row.description || 'Sin concepto');
-            const catName = row.category_name ? escHtml(row.category_name) : 'Sin Categoría';
+            const descText = row.description_hl || escHtml(row.description || __('Sin concepto', 'aura-suite'));
+            const catName = row.category_name ? escHtml(row.category_name) : __('Sin Categoría', 'aura-suite');
             const catColor = row.category_color ? escHtml(row.category_color) : '#64748b';
             
             let catIconHtml = '';
@@ -634,11 +637,11 @@
                     `<div class="aura-tip-avatar-large" style="background:#3b82f620;color:#2563eb;">#</div>` +
                     `<div class="aura-tip-info">` +
                     `<div class="aura-tip-title">#${escHtml(t)}</div>` +
-                    `<div class="aura-tip-subtitle">Taxonomía Contable</div>` +
+                    `<div class="aura-tip-subtitle">${__('Taxonomía Contable', 'aura-suite')}</div>` +
                     `</div>` +
                     `</div>` +
                     `<div class="aura-tip-card-body">` +
-                    `<div class="aura-tip-row"><span>Acción:</span><strong style="color:#2563eb;">Haz clic para filtrar la búsqueda por #${escHtml(t)}</strong></div>` +
+                    `<div class="aura-tip-row"><span>${__('Acción:', 'aura-suite')}</span><strong style="color:#2563eb;">${sprintf(__('Haz clic para filtrar la búsqueda por #%s', 'aura-suite'), escHtml(t))}</strong></div>` +
                     `</div>` +
                     `</div>`;
                 return `<button type="button" class="aura-tag-chip btn-filter-by-tag" data-tag="${escHtml(t)}" data-tooltip="${escAttr(tagTipHtml)}" style="font-size:11px;padding:2px 6px;">#${escHtml(t)}</button>`;
@@ -671,14 +674,14 @@
                     `<div class="aura-tip-card-header">` +
                     `<div class="aura-tip-avatar-large" style="background:${badgeBg};color:${badgeColor};"><span class="dashicons ${iconClass}" style="font-size:24px;"></span></div>` +
                     `<div class="aura-tip-info">` +
-                    `<div class="aura-tip-title">Comprobante ${isDrive ? 'Google Drive' : 'Adjunto'}</div>` +
-                    `<div class="aura-tip-subtitle">${isDrive ? 'Almacenamiento en Nube' : 'Archivo Local'}</div>` +
+                    `<div class="aura-tip-title">${isDrive ? __('Comprobante Google Drive', 'aura-suite') : __('Comprobante Adjunto', 'aura-suite')}</div>` +
+                    `<div class="aura-tip-subtitle">${isDrive ? __('Almacenamiento en Nube', 'aura-suite') : __('Archivo Local', 'aura-suite')}</div>` +
                     `</div>` +
                     `</div>` +
                     `<div class="aura-tip-card-body">` +
-                    `<div class="aura-tip-row"><span>Transacción:</span><strong>#${row.id}</strong></div>` +
-                    `<div class="aura-tip-row"><span>Tipo:</span><strong>${isPdf ? 'Documento PDF' : 'Imagen / Recibo'}</strong></div>` +
-                    `<div class="aura-tip-row"><span>Acción:</span><strong style="color:${badgeColor};">Haz clic para ver en pantalla completa</strong></div>` +
+                    `<div class="aura-tip-row"><span>${__('Transacción:', 'aura-suite')}</span><strong>#${row.id}</strong></div>` +
+                    `<div class="aura-tip-row"><span>${__('Tipo:', 'aura-suite')}</span><strong>${isPdf ? __('Documento PDF', 'aura-suite') : __('Imagen / Recibo', 'aura-suite')}</strong></div>` +
+                    `<div class="aura-tip-row"><span>${__('Acción:', 'aura-suite')}</span><strong style="color:${badgeColor};">${__('Haz clic para ver en pantalla completa', 'aura-suite')}</strong></div>` +
                     `</div>` +
                     `</div>`;
 
@@ -689,7 +692,7 @@
                     data-is-drive="${isDrive ? '1' : '0'}" 
                     data-is-pdf="${isPdf ? '1' : '0'}" 
                     data-is-img="${!isPdf ? '1' : '0'}" 
-                    data-title="Transacción #${row.id} - Comprobante" 
+                    data-title="${sprintf(__('Transacción #%s - Comprobante', 'aura-suite'), row.id)}" 
                     data-tooltip="${escAttr(receiptTipHtml)}" 
                     style="width:28px;height:28px;background:${badgeBg};color:${badgeColor};border:1px solid ${badgeBorder};border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
                     <span class="dashicons ${iconClass}"></span>
@@ -702,7 +705,7 @@
                 `<div class="aura-tip-card-header">` +
                 `<div class="aura-tip-avatar-large" style="background:${amountColor}20;color:${amountColor};">#${row.id}</div>` +
                 `<div class="aura-tip-info">` +
-                `<div class="aura-tip-title">Transacción #${row.id}</div>` +
+                `<div class="aura-tip-title">${sprintf(__('Transacción #%s', 'aura-suite'), row.id)}</div>` +
                 `<div class="aura-tip-subtitle">${escHtml(row.transaction_date || '')} · ${typeLabel}</div>` +
                 `<div class="aura-tip-badges">` +
                 `<span class="aura-tip-badge" style="background:${amountColor}25;color:${amountColor};">${typeLabel}</span>` +
@@ -711,10 +714,10 @@
                 `</div>` +
                 `</div>` +
                 `<div class="aura-tip-card-body">` +
-                `<div class="aura-tip-row"><span>Concepto:</span><strong>${escHtml(row.description || 'Sin concepto')}</strong></div>` +
-                `<div class="aura-tip-row"><span>Importe:</span><strong style="color:${amountColor}">${amountSign}${cfg.currency} ${formatNumber(amountVal)}</strong></div>` +
-                `<div class="aura-tip-row"><span>Categoría:</span><strong>${catName}</strong></div>` +
-                `<div class="aura-tip-row"><span>Acción:</span><strong style="color:#2563eb;">Haz clic en [+] para ver la ficha contable completa</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Concepto:', 'aura-suite')}</span><strong>${escHtml(row.description || __('Sin concepto', 'aura-suite'))}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Importe:', 'aura-suite')}</span><strong style="color:${amountColor}">${amountSign}${cfg.currency} ${formatNumber(amountVal)}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Categoría:', 'aura-suite')}</span><strong>${catName}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Acción:', 'aura-suite')}</span><strong style="color:#2563eb;">${__('Haz clic en [+] para ver la ficha contable completa', 'aura-suite')}</strong></div>` +
                 `</div>` +
                 `</div>`;
 
@@ -723,14 +726,14 @@
                 `<div class="aura-tip-card-header">` +
                 `<div class="aura-tip-avatar-large" style="background:#3b82f620;color:#2563eb;"><span class="dashicons dashicons-calendar-alt" style="font-size:24px;"></span></div>` +
                 `<div class="aura-tip-info">` +
-                `<div class="aura-tip-title">Fecha Contable</div>` +
+                `<div class="aura-tip-title">${__('Fecha Contable', 'aura-suite')}</div>` +
                 `<div class="aura-tip-subtitle">${escHtml(row.transaction_date || '')}</div>` +
                 `</div>` +
                 `</div>` +
                 `<div class="aura-tip-card-body">` +
-                `<div class="aura-tip-row"><span>Transacción:</span><strong>#${row.id}</strong></div>` +
-                `<div class="aura-tip-row"><span>Registrado por:</span><strong>${escHtml(row.created_by_name || 'Sistema')}</strong></div>` +
-                `${row.approved_at ? `<div class="aura-tip-row"><span>Aprobado en:</span><strong>${escHtml(row.approved_at)}</strong></div>` : ''}` +
+                `<div class="aura-tip-row"><span>${__('Transacción:', 'aura-suite')}</span><strong>#${row.id}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Registrado por:', 'aura-suite')}</span><strong>${escHtml(row.created_by_name || __('Sistema', 'aura-suite'))}</strong></div>` +
+                `${row.approved_at ? `<div class="aura-tip-row"><span>${__('Aprobado en:', 'aura-suite')}</span><strong>${escHtml(row.approved_at)}</strong></div>` : ''}` +
                 `</div>` +
                 `</div>`;
 
@@ -739,14 +742,14 @@
                 `<div class="aura-tip-card-header">` +
                 `<div class="aura-tip-avatar-large" style="background:#6366f120;color:#6366f1;"><span class="dashicons dashicons-media-text" style="font-size:24px;"></span></div>` +
                 `<div class="aura-tip-info">` +
-                `<div class="aura-tip-title">${escHtml(row.description || 'Detalle de Concepto')}</div>` +
-                `<div class="aura-tip-subtitle">${row.recipient_payer ? 'Beneficiario: ' + escHtml(row.recipient_payer) : 'Movimiento Contable'}</div>` +
+                `<div class="aura-tip-title">${escHtml(row.description || __('Detalle de Concepto', 'aura-suite'))}</div>` +
+                `<div class="aura-tip-subtitle">${row.recipient_payer ? __('Beneficiario:', 'aura-suite') + ' ' + escHtml(row.recipient_payer) : __('Movimiento Contable', 'aura-suite')}</div>` +
                 `</div>` +
                 `</div>` +
                 `<div class="aura-tip-card-body">` +
-                `<div class="aura-tip-row"><span>Folio/Ref:</span><strong>${escHtml(row.reference_number || 'N/A')}</strong></div>` +
-                `<div class="aura-tip-row"><span>Método:</span><strong>${formatPaymentMethod(row.payment_method)}</strong></div>` +
-                `${row.notes ? `<div class="aura-tip-row"><span>Observaciones:</span><strong>${escHtml(row.notes)}</strong></div>` : ''}` +
+                `<div class="aura-tip-row"><span>${__('Folio/Ref:', 'aura-suite')}</span><strong>${escHtml(row.reference_number || __('N/A', 'aura-suite'))}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Método:', 'aura-suite')}</span><strong>${formatPaymentMethod(row.payment_method)}</strong></div>` +
+                `${row.notes ? `<div class="aura-tip-row"><span>${__('Observaciones:', 'aura-suite')}</span><strong>${escHtml(row.notes)}</strong></div>` : ''}` +
                 `</div>` +
                 `</div>`;
 
@@ -756,12 +759,12 @@
                 `<div class="aura-tip-avatar-large" style="background:${catColor}20;color:${catColor};">${catIconHtml}</div>` +
                 `<div class="aura-tip-info">` +
                 `<div class="aura-tip-title">${catName}</div>` +
-                `<div class="aura-tip-subtitle">Clasificación Presupuestal</div>` +
+                `<div class="aura-tip-subtitle">${__('Clasificación Presupuestal', 'aura-suite')}</div>` +
                 `</div>` +
                 `</div>` +
                 `<div class="aura-tip-card-body">` +
-                `<div class="aura-tip-row"><span>Naturaleza:</span><strong>${typeLabel}</strong></div>` +
-                `<div class="aura-tip-row"><span>Transacción:</span><strong>#${row.id}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Naturaleza:', 'aura-suite')}</span><strong>${typeLabel}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Transacción:', 'aura-suite')}</span><strong>#${row.id}</strong></div>` +
                 `</div>` +
                 `</div>`;
 
@@ -771,13 +774,13 @@
                 `<div class="aura-tip-avatar-large" style="background:${amountColor}20;color:${amountColor};">${isIncome ? '🟢' : (isCapital ? '🔵' : '🔴')}</div>` +
                 `<div class="aura-tip-info">` +
                 `<div class="aura-tip-title">${typeLabel}</div>` +
-                `<div class="aura-tip-subtitle">Estado: ${statusLabel}</div>` +
+                `<div class="aura-tip-subtitle">${sprintf(__('Estado: %s', 'aura-suite'), statusLabel)}</div>` +
                 `</div>` +
                 `</div>` +
                 `<div class="aura-tip-card-body">` +
-                `<div class="aura-tip-row"><span>Flujo:</span><strong>${isIncome ? 'Entrada (+) de Fondos' : (isCapital ? 'Inversión de Capital' : 'Salida (-) de Fondos')}</strong></div>` +
-                `<div class="aura-tip-row"><span>Aprobación:</span><strong>${statusLabel}</strong></div>` +
-                `<div class="aura-tip-row"><span>Registrado por:</span><strong>${escHtml(row.created_by_name || 'Sistema')}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Flujo:', 'aura-suite')}</span><strong>${isIncome ? __('Entrada (+) de Fondos', 'aura-suite') : (isCapital ? __('Inversión de Capital', 'aura-suite') : __('Salida (-) de Fondos', 'aura-suite'))}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Aprobación:', 'aura-suite')}</span><strong>${statusLabel}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Registrado por:', 'aura-suite')}</span><strong>${escHtml(row.created_by_name || __('Sistema', 'aura-suite'))}</strong></div>` +
                 `</div>` +
                 `</div>`;
 
@@ -787,13 +790,13 @@
                 `<div class="aura-tip-avatar-large" style="background:${amountColor}20;color:${amountColor};"><span class="dashicons dashicons-money-alt" style="font-size:24px;"></span></div>` +
                 `<div class="aura-tip-info">` +
                 `<div class="aura-tip-title" style="color:${amountColor};">${amountSign}${cfg.currency} ${formatNumber(amountVal)}</div>` +
-                `<div class="aura-tip-subtitle">Importe Operativo Neto</div>` +
+                `<div class="aura-tip-subtitle">${__('Importe Operativo Neto', 'aura-suite')}</div>` +
                 `</div>` +
                 `</div>` +
                 `<div class="aura-tip-card-body">` +
-                `<div class="aura-tip-row"><span>Forma de Pago:</span><strong>${formatPaymentMethod(row.payment_method)}</strong></div>` +
-                `<div class="aura-tip-row"><span>Moneda:</span><strong>${cfg.currency}</strong></div>` +
-                `<div class="aura-tip-row"><span>Estado:</span><strong>${statusLabel}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Forma de Pago:', 'aura-suite')}</span><strong>${formatPaymentMethod(row.payment_method)}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Moneda:', 'aura-suite')}</span><strong>${cfg.currency}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Estado:', 'aura-suite')}</span><strong>${statusLabel}</strong></div>` +
                 `</div>` +
                 `</div>`;
 
@@ -841,8 +844,8 @@
                             <div class="aura-child-hero-left">
                                 <span class="aura-type-pill" style="background:${amountColor}15;color:${amountColor};font-weight:900;">#${row.id}</span>
                                 <div>
-                                    <h4 class="aura-child-hero-title">${escHtml(row.description || 'Detalle de Transacción')}</h4>
-                                    <div style="font-size:11.5px;color:#64748b;margin-top:2px;">Fecha: ${escHtml(row.transaction_date || '')} · Categoría: ${catName}</div>
+                                    <h4 class="aura-child-hero-title">${escHtml(row.description || __('Detalle de Transacción', 'aura-suite'))}</h4>
+                                    <div style="font-size:11.5px;color:#64748b;margin-top:2px;">${__('Fecha:', 'aura-suite')} ${escHtml(row.transaction_date || '')} · ${__('Categoría:', 'aura-suite')} ${catName}</div>
                                 </div>
                             </div>
                             <div class="aura-child-hero-right" style="display:flex;align-items:center;gap:8px;">
@@ -855,22 +858,22 @@
                         </div>
                         <div class="aura-child-sections-grid">
                             <div class="aura-child-section">
-                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-money-alt"></span>Forma de Pago y Bancos</h5>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Método de Pago:</span><span class="aura-child-meta-val">${formatPaymentMethod(row.payment_method)}</span></div>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Referencia / Folio:</span><span class="aura-child-meta-val">${escHtml(row.reference_number || '—')}</span></div>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Beneficiario/Pagador:</span><span class="aura-child-meta-val">${escHtml(row.recipient_payer || '—')}</span></div>
+                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-money-alt"></span>${__('Forma de Pago y Bancos', 'aura-suite')}</h5>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Método de Pago:', 'aura-suite')}</span><span class="aura-child-meta-val">${formatPaymentMethod(row.payment_method)}</span></div>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Referencia / Folio:', 'aura-suite')}</span><span class="aura-child-meta-val">${escHtml(row.reference_number || '—')}</span></div>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Beneficiario/Pagador:', 'aura-suite')}</span><span class="aura-child-meta-val">${escHtml(row.recipient_payer || '—')}</span></div>
                             </div>
                             <div class="aura-child-section">
-                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-admin-users"></span>Auditoría y Trazabilidad</h5>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Registrado por:</span><span class="aura-child-meta-val">${escHtml(row.created_by_name || 'Sistema')}</span></div>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Aprobado en:</span><span class="aura-child-meta-val">${escHtml(row.approved_at || '—')}</span></div>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Módulo Origen:</span><span class="aura-child-meta-val">${formatRelatedModule(row.related_module)}</span></div>
+                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-admin-users"></span>${__('Auditoría y Trazabilidad', 'aura-suite')}</h5>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Registrado por:', 'aura-suite')}</span><span class="aura-child-meta-val">${escHtml(row.created_by_name || __('Sistema', 'aura-suite'))}</span></div>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Aprobado en:', 'aura-suite')}</span><span class="aura-child-meta-val">${escHtml(row.approved_at || '—')}</span></div>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Módulo Origen:', 'aura-suite')}</span><span class="aura-child-meta-val">${formatRelatedModule(row.related_module)}</span></div>
                             </div>
                             <div class="aura-child-section">
-                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-tag"></span>Etiquetas y Notas</h5>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Etiquetas:</span><span class="aura-child-meta-val">${tagChips || 'Ninguna'}</span></div>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Notas Adicionales:</span><span class="aura-child-meta-val">${escHtml(row.notes || 'Sin observaciones')}</span></div>
-                                ${row.rejection_reason ? `<div class="aura-child-meta-item"><span class="aura-child-meta-label" style="color:#dc2626;">Motivo Rechazo:</span><span class="aura-child-meta-val" style="color:#dc2626;">${escHtml(row.rejection_reason)}</span></div>` : ''}
+                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-tag"></span>${__('Etiquetas y Notas', 'aura-suite')}</h5>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Etiquetas:', 'aura-suite')}</span><span class="aura-child-meta-val">${tagChips || __('Ninguna', 'aura-suite')}</span></div>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Notas Adicionales:', 'aura-suite')}</span><span class="aura-child-meta-val">${escHtml(row.notes || __('Sin observaciones', 'aura-suite'))}</span></div>
+                                ${row.rejection_reason ? `<div class="aura-child-meta-item"><span class="aura-child-meta-label" style="color:#dc2626;">${__('Motivo Rechazo:', 'aura-suite')}</span><span class="aura-child-meta-val" style="color:#dc2626;">${escHtml(row.rejection_reason)}</span></div>` : ''}
                             </div>
                             ${(function() {
                                 if (!row.receipt_file) return '';
@@ -888,14 +891,14 @@
                                     }
                                 }
                                 return `<div class="aura-child-section">
-                                    <h5 class="aura-child-section-title"><span class="dashicons ${isDrive ? 'dashicons-cloud' : 'dashicons-media-document'}"></span>Comprobante</h5>
+                                    <h5 class="aura-child-section-title"><span class="dashicons ${isDrive ? 'dashicons-cloud' : 'dashicons-media-document'}"></span>${__('Comprobante', 'aura-suite')}</h5>
                                     <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
-                                        ${!isPdf ? `<img src="${escAttr(thumbUrl)}" alt="Recibo" class="aura-open-receipt-viewer" data-receipt-url="${escAttr(row.receipt_file)}" data-preview-url="${escAttr(previewUrl)}" data-download-url="${escAttr(downloadUrl)}" data-is-drive="${isDrive ? '1' : '0'}" data-is-pdf="0" data-is-img="1" data-title="Transacción #${row.id} - Comprobante" style="width:40px;height:40px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid #cbd5e1;" title="Haz clic para ampliar">` : ''}
+                                        ${!isPdf ? `<img src="${escAttr(thumbUrl)}" alt="${__('Recibo', 'aura-suite')}" class="aura-open-receipt-viewer" data-receipt-url="${escAttr(row.receipt_file)}" data-preview-url="${escAttr(previewUrl)}" data-download-url="${escAttr(downloadUrl)}" data-is-drive="${isDrive ? '1' : '0'}" data-is-pdf="0" data-is-img="1" data-title="${sprintf(__('Transacción #%s - Comprobante', 'aura-suite'), row.id)}" style="width:40px;height:40px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid #cbd5e1;" title="${__('Haz clic para ampliar', 'aura-suite')}">` : ''}
                                         <div>
-                                            <button type="button" class="button button-small aura-open-receipt-viewer" data-receipt-url="${escAttr(row.receipt_file)}" data-preview-url="${escAttr(previewUrl)}" data-download-url="${escAttr(downloadUrl)}" data-is-drive="${isDrive ? '1' : '0'}" data-is-pdf="${isPdf ? '1' : '0'}" data-is-img="${!isPdf ? '1' : '0'}" data-title="Transacción #${row.id} - Comprobante">
-                                                <span class="dashicons dashicons-visibility"></span> Ver en Pantalla Completa
+                                            <button type="button" class="button button-small aura-open-receipt-viewer" data-receipt-url="${escAttr(row.receipt_file)}" data-preview-url="${escAttr(previewUrl)}" data-download-url="${escAttr(downloadUrl)}" data-is-drive="${isDrive ? '1' : '0'}" data-is-pdf="${isPdf ? '1' : '0'}" data-is-img="${!isPdf ? '1' : '0'}" data-title="${sprintf(__('Transacción #%s - Comprobante', 'aura-suite'), row.id)}">
+                                                <span class="dashicons dashicons-visibility"></span> ${__('Ver en Pantalla Completa', 'aura-suite')}
                                             </button>
-                                            <div style="font-size:11px;color:#64748b;margin-top:3px;">${isDrive ? 'Almacenado en Google Drive' : 'Almacenamiento Local'}</div>
+                                            <div style="font-size:11px;color:#64748b;margin-top:3px;">${isDrive ? __('Almacenado en Google Drive', 'aura-suite') : __('Almacenamiento Local', 'aura-suite')}</div>
                                         </div>
                                     </div>
                                 </div>`;
@@ -930,7 +933,7 @@
 
         let html = '';
         if (page > 1) {
-            html += `<button type="button" class="page-btn aura-btn aura-btn-secondary" data-page="${page - 1}" style="font-size:12px;padding:4px 10px;">&laquo; Anterior</button>`;
+            html += `<button type="button" class="page-btn aura-btn aura-btn-secondary" data-page="${page - 1}" style="font-size:12px;padding:4px 10px;">&laquo; ${__('Anterior', 'aura-suite')}</button>`;
         }
 
         const startP = Math.max(1, page - 2);
@@ -942,7 +945,7 @@
         }
 
         if (page < pages) {
-            html += `<button type="button" class="page-btn aura-btn aura-btn-secondary" data-page="${page + 1}" style="font-size:12px;padding:4px 10px;">Siguiente &raquo;</button>`;
+            html += `<button type="button" class="page-btn aura-btn aura-btn-secondary" data-page="${page + 1}" style="font-size:12px;padding:4px 10px;">${__('Siguiente', 'aura-suite')} &raquo;</button>`;
         }
 
         $pag.html(html).css('display', 'flex');
@@ -953,18 +956,18 @@
        ============================================================ */
     function exportResults() {
         if (!lastResults || !lastResults.length) {
-            alert('No hay resultados para exportar.');
+            alert(__('No hay resultados para exportar.', 'aura-suite'));
             return;
         }
 
         const rows = [];
-        const headers = ['ID', 'Fecha', 'Concepto', 'Notas', 'Categoría', 'Tipo', 'Monto', 'Moneda', 'Estado', 'Método', 'Beneficiario', 'Referencia', 'Etiquetas', 'Creado Por'];
+        const headers = [__('ID', 'aura-suite'), __('Fecha', 'aura-suite'), __('Concepto', 'aura-suite'), __('Notas', 'aura-suite'), __('Categoría', 'aura-suite'), __('Tipo', 'aura-suite'), __('Monto', 'aura-suite'), __('Moneda', 'aura-suite'), __('Estado', 'aura-suite'), __('Método', 'aura-suite'), __('Beneficiario', 'aura-suite'), __('Referencia', 'aura-suite'), __('Etiquetas', 'aura-suite'), __('Creado Por', 'aura-suite')];
         rows.push(headers.join(','));
 
         lastResults.forEach(function(r) {
             let tipoLabel = cfg.i18n.expense;
             if (r.transaction_type === 'income') tipoLabel = cfg.i18n.income;
-            if (r.transaction_type === 'capital') tipoLabel = cfg.i18n.capital || 'Gasto de Capital';
+            if (r.transaction_type === 'capital') tipoLabel = cfg.i18n.capital || __('Gasto de Capital', 'aura-suite');
 
             const rowData = [
                 r.id,
@@ -1053,50 +1056,50 @@
     }
 
     function formatPaymentMethod(m) {
-        if (!m) return 'Efectivo';
+        if (!m) return __('Efectivo', 'aura-suite');
         const raw = String(m).toLowerCase().trim();
         const map = {
-            'cash': 'Efectivo',
-            'efectivo': 'Efectivo',
-            'transfer': 'Transferencia Bancaria',
-            'bank_transfer': 'Transferencia Bancaria',
-            'transferencia': 'Transferencia Bancaria',
-            'card': 'Tarjeta (Débito / Crédito)',
-            'credit_card': 'Tarjeta de Crédito',
-            'debit_card': 'Tarjeta de Débito',
-            'tarjeta': 'Tarjeta (Débito / Crédito)',
-            'check': 'Cheque',
-            'cheque': 'Cheque',
-            'digital_wallet': 'Billetera Digital',
-            'wallet': 'Billetera Digital',
-            'crypto': 'Criptomoneda',
+            'cash': __('Efectivo', 'aura-suite'),
+            'efectivo': __('Efectivo', 'aura-suite'),
+            'transfer': __('Transferencia Bancaria', 'aura-suite'),
+            'bank_transfer': __('Transferencia Bancaria', 'aura-suite'),
+            'transferencia': __('Transferencia Bancaria', 'aura-suite'),
+            'card': __('Tarjeta (Débito / Crédito)', 'aura-suite'),
+            'credit_card': __('Tarjeta de Crédito', 'aura-suite'),
+            'debit_card': __('Tarjeta de Débito', 'aura-suite'),
+            'tarjeta': __('Tarjeta (Débito / Crédito)', 'aura-suite'),
+            'check': __('Cheque', 'aura-suite'),
+            'cheque': __('Cheque', 'aura-suite'),
+            'digital_wallet': __('Billetera Digital', 'aura-suite'),
+            'wallet': __('Billetera Digital', 'aura-suite'),
+            'crypto': __('Criptomoneda', 'aura-suite'),
             'stripe': 'Stripe',
             'paypal': 'PayPal',
-            'other': 'Otro / Varios',
-            'otro': 'Otro / Varios'
+            'other': __('Otro / Varios', 'aura-suite'),
+            'otro': __('Otro / Varios', 'aura-suite')
         };
         return map[raw] || escHtml(m);
     }
 
     function formatRelatedModule(mod) {
-        if (!mod) return 'Finanzas Directas';
+        if (!mod) return __('Finanzas Directas', 'aura-suite');
         const raw = String(mod).toLowerCase().trim();
         const map = {
-            'finance': 'Finanzas Directas',
-            'financial': 'Finanzas Directas',
-            'finanzas': 'Finanzas Directas',
-            'inventory': 'Inventario y Mantenimiento',
-            'inventario': 'Inventario y Mantenimiento',
-            'students': 'Estudiantes y Colegiaturas',
-            'estudiantes': 'Estudiantes y Colegiaturas',
-            'fleet': 'Vehículos y Flota',
-            'vehiculos': 'Vehículos y Flota',
-            'certificates': 'Certificados',
-            'certificados': 'Certificados',
-            'library': 'Biblioteca',
-            'biblioteca': 'Biblioteca',
-            'direct': 'Movimiento Manual Directo',
-            'manual': 'Registro Manual'
+            'finance': __('Finanzas Directas', 'aura-suite'),
+            'financial': __('Finanzas Directas', 'aura-suite'),
+            'finanzas': __('Finanzas Directas', 'aura-suite'),
+            'inventory': __('Inventario y Mantenimiento', 'aura-suite'),
+            'inventario': __('Inventario y Mantenimiento', 'aura-suite'),
+            'students': __('Estudiantes y Colegiaturas', 'aura-suite'),
+            'estudiantes': __('Estudiantes y Colegiaturas', 'aura-suite'),
+            'fleet': __('Vehículos y Flota', 'aura-suite'),
+            'vehiculos': __('Vehículos y Flota', 'aura-suite'),
+            'certificates': __('Certificados', 'aura-suite'),
+            'certificados': __('Certificados', 'aura-suite'),
+            'library': __('Biblioteca', 'aura-suite'),
+            'biblioteca': __('Biblioteca', 'aura-suite'),
+            'direct': __('Movimiento Manual Directo', 'aura-suite'),
+            'manual': __('Registro Manual', 'aura-suite')
         };
         return map[raw] || escHtml(mod);
     }

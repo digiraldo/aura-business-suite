@@ -675,11 +675,11 @@ $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 
                             $pe = $sem_emoji_resolver( $pcat->name, $pcat->icon );
                             $subs = $ch_cats[ $pid ] ?? [];
                             $sub_cnt = count( $subs );
-                            $optgroup_lbl = $pe . ' ' . $pcat->name . ( $sub_cnt > 0 ? " ({$sub_cnt} subcategorías)" : '' );
+                            $optgroup_lbl = $pe . ' ' . $pcat->name . ( $sub_cnt > 0 ? ' ' . sprintf( __( '(%d subcategorías)', 'aura-suite' ), $sub_cnt ) : '' );
                         ?>
                             <optgroup label="<?php echo esc_attr( $optgroup_lbl ); ?>">
                                 <option value="<?php echo esc_attr( $pcat->id ); ?>">
-                                    ⭐ <?php echo esc_html( "{$pe} {$pcat->name} (Todo el rubro consolidado)" ); ?>
+                                    ⭐ <?php echo esc_html( sprintf( __( '%1$s %2$s (Todo el rubro consolidado)', 'aura-suite' ), $pe, $pcat->name ) ); ?>
                                 </option>
                                 <?php foreach ( $subs as $scat ) :
                                     $se = $sem_emoji_resolver( $scat->name, $scat->icon );
@@ -992,7 +992,7 @@ $aura_active_main_tab = ( isset( $_GET['tab'] ) && $_GET['tab'] === 'areas' ) ? 
                         </div>
                         <div>
                             <strong id="aura-cat-modal-cat-name" style="font-size:15px;color:#0f172a;display:block;">—</strong>
-                            <span id="aura-cat-modal-subs-info" style="font-size:12px;color:#64748b;">0 subcategorías vinculadas</span>
+                            <span id="aura-cat-modal-subs-info" style="font-size:12px;color:#64748b;"><?php esc_html_e( '0 subcategorías vinculadas', 'aura-suite' ); ?></span>
                         </div>
                     </div>
                     <div style="text-align:right;">

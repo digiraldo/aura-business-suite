@@ -13,6 +13,17 @@
 ( function ( $ ) {
     'use strict';
 
+    function __( s, domain ) {
+        return ( window.wp && wp.i18n && typeof wp.i18n.__ === 'function' ) ? wp.i18n.__( s, domain || 'aura-suite' ) : s;
+    }
+    function sprintf( fmt ) {
+        if ( window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function' ) {
+            return wp.i18n.sprintf.apply( wp.i18n, arguments );
+        }
+        var args = Array.prototype.slice.call( arguments, 1 ), i = 0;
+        return String( fmt ).replace( /%[sd]/g, function () { return args[ i++ ]; } );
+    }
+
     // ================================================================
     // UTILIDADES COMPARTIDAS
     // ================================================================
@@ -28,13 +39,13 @@
                     if ( res.success ) {
                         if ( typeof success === 'function' ) { success( res.data ); }
                     } else {
-                        var msg = ( res.data && res.data.message ) ? res.data.message : ( auraStudents.i18n.error || 'Error.' );
+                        var msg = ( res.data && res.data.message ) ? res.data.message : ( auraStudents.i18n.error || __( 'Error.', 'aura-suite' ) );
                         Students.notify( msg, 'error' );
                         if ( typeof error === 'function' ) { error( res.data ); }
                     }
                 },
                 error: function () {
-                    Students.notify( auraStudents.i18n.error || 'Error de conexión.', 'error' );
+                    Students.notify( auraStudents.i18n.error || __( 'Error de conexión.', 'aura-suite' ), 'error' );
                     if ( typeof error === 'function' ) { error(); }
                 },
             } );
@@ -51,7 +62,7 @@
         },
 
         confirm: function ( msg ) {
-            return window.confirm( msg || auraStudents.i18n.confirm_del || '¿Confirmar?' );
+            return window.confirm( msg || auraStudents.i18n.confirm_del || __( '¿Confirmar?', 'aura-suite' ) );
         },
     };
 
@@ -173,7 +184,7 @@
             var $tbody = $( '#recent-activity-tbody' );
             var items  = data.activities || [];
             if ( items.length === 0 ) {
-                $tbody.html( '<tr><td colspan="3" style="text-align:center;color:#6b7280;padding:16px;">— Sin actividad reciente —</td></tr>' );
+                $tbody.html( '<tr><td colspan="3" style="text-align:center;color:#6b7280;padding:16px;">' + escHtml( __( '— Sin actividad reciente —', 'aura-suite' ) ) + '</td></tr>' );
                 return;
             }
             var rowColor = { applicant:'#fef9c3', payment:'#dcfce7', enrollment:'#dbeafe', overdue:'#fee2e2' };
@@ -214,17 +225,17 @@
             if ( $load.length ) { $load.hide(); }
             var courses = data.courses || [];
             if ( courses.length === 0 ) {
-                $tbody.html( '<tr><td colspan="8" style="text-align:center;padding:20px;color:#6b7280;">— Sin cursos —</td></tr>' );
+                $tbody.html( '<tr><td colspan="8" style="text-align:center;padding:20px;color:#6b7280;">' + escHtml( __( '— Sin cursos —', 'aura-suite' ) ) + '</td></tr>' );
                 $( '#courses-pagination' ).hide();
                 $( '#pagination-count' ).text( '0' );
                 return;
             }
-            var statusLabel = { active: '✅ Activo', draft: '📝 Borrador', finished: '🏁 Terminado', archived: '📦 Archivado' };
+            var statusLabel = { active: __( '✅ Activo', 'aura-suite' ), draft: __( '📝 Borrador', 'aura-suite' ), finished: __( '🏁 Terminado', 'aura-suite' ), archived: __( '📦 Archivado', 'aura-suite' ) };
             var html = '';
             courses.forEach( function ( c ) {
                 var subjectsBadge = c.subjects_count > 0
-                    ? ' <span class="aura-tag-badge" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:10px;background:#e0f2fe;color:#0369a1;margin-top:4px;" title="Materias asignadas en el Calendario Académico">📚 ' + c.subjects_count + ' ' + (c.subjects_count === 1 ? 'materia' : 'materias') + '</span>'
-                    : ' <span class="aura-tag-badge" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:10px;background:#f8fafc;color:#94a3b8;margin-top:4px;">📚 0 materias</span>';
+                    ? ' <span class="aura-tag-badge" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:10px;background:#e0f2fe;color:#0369a1;margin-top:4px;" title="' + escHtml( __( 'Materias asignadas en el Calendario Académico', 'aura-suite' ) ) + '">📚 ' + c.subjects_count + ' ' + (c.subjects_count === 1 ? escHtml( __( 'materia', 'aura-suite' ) ) : escHtml( __( 'materias', 'aura-suite' ) )) + '</span>'
+                    : ' <span class="aura-tag-badge" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:10px;background:#f8fafc;color:#94a3b8;margin-top:4px;">' + escHtml( __( '📚 0 materias', 'aura-suite' ) ) + '</span>';
                 var calProgId = c.cal_program_id || c.id;
 
                 html += '<tr>' +
@@ -238,9 +249,9 @@
                     '<td style="text-align:center;">' + escHtml( statusLabel[ c.status ] || c.status ) + '</td>' +
                     '<td style="text-align:center;">' + escHtml( String( c.enrolled_count || 0 ) ) + '</td>' +
                     '<td style="white-space:nowrap;">' +
-                        '<a href="admin.php?page=aura-calendar-programs&program_id=' + calProgId + '" class="button button-small" title="Ver materias y calendario de clases" style="text-decoration:none;">📅</a> ' +
-                        '<button class="button button-small btn-edit-course" data-id="' + escHtml( String( c.id ) ) + '" title="Editar Curso / Programa">✏️</button> ' +
-                        '<button class="button button-small btn-del-course" data-id="' + escHtml( String( c.id ) ) + '" style="color:#dc2626;" title="Archivar Curso">🗑</button>' +
+                        '<a href="admin.php?page=aura-calendar-programs&program_id=' + calProgId + '" class="button button-small" title="' + escHtml( __( 'Ver materias y calendario de clases', 'aura-suite' ) ) + '" style="text-decoration:none;">📅</a> ' +
+                        '<button class="button button-small btn-edit-course" data-id="' + escHtml( String( c.id ) ) + '" title="' + escHtml( __( 'Editar Curso / Programa', 'aura-suite' ) ) + '">✏️</button> ' +
+                        '<button class="button button-small btn-del-course" data-id="' + escHtml( String( c.id ) ) + '" style="color:#dc2626;" title="' + escHtml( __( 'Archivar Curso', 'aura-suite' ) ) + '">🗑</button>' +
                     '</td></tr>';
             } );
             $tbody.html( html );
@@ -261,19 +272,19 @@
         var done = 0;
         function check() { done++; if ( done === 3 ) { courseMeta._loaded = true; cb(); } }
         Students.ajax( 'aura_students_get_areas', {}, function ( d ) {
-            var opts = '<option value="">— Área —</option>';
+            var opts = '<option value="">' + escHtml( __( '— Área —', 'aura-suite' ) ) + '</option>';
             ( d.areas || [] ).forEach( function ( a ) { opts += '<option value="' + a.id + '">' + escHtml( a.name ) + '</option>'; } );
             courseMeta.areasHtml = opts;
             check();
         }, check );
         Students.ajax( 'aura_students_get_instructors', {}, function ( d ) {
-            var opts = '<option value="">— Instructor —</option>';
+            var opts = '<option value="">' + escHtml( __( '— Instructor —', 'aura-suite' ) ) + '</option>';
             ( d.instructors || [] ).forEach( function ( i ) { opts += '<option value="' + i.id + '">' + escHtml( i.name ) + '</option>'; } );
             courseMeta.instructorsHtml = opts;
             check();
         }, check );
         Students.ajax( 'aura_students_get_finance_cats', {}, function ( d ) {
-            var opts = '<option value="">— Sin categoría —</option>';
+            var opts = '<option value="">' + escHtml( __( '— Sin categoría —', 'aura-suite' ) ) + '</option>';
             ( d.categories || [] ).forEach( function ( c ) { opts += '<option value="' + c.id + '">' + escHtml( c.name ) + '</option>'; } );
             courseMeta.finCatsHtml = opts;
             check();
@@ -289,7 +300,7 @@
             $( '#course-instructor' ).html( courseMeta.instructorsHtml );
             $( '#course-finance-cat' ).html( courseMeta.finCatsHtml );
             if ( courseId ) {
-                $( '#modal-course-title' ).text( 'Editar Curso' );
+                $( '#modal-course-title' ).text( __( 'Editar Curso', 'aura-suite' ) );
                 Students.ajax( 'aura_students_get_course', { id: courseId }, function ( d ) {
                     var c = d.course || d;
                     $( '#course-id' ).val( c.id );
@@ -309,7 +320,7 @@
                     openStuModal( 'modal-course' );
                 } );
             } else {
-                $( '#modal-course-title' ).text( 'Nuevo Curso' );
+                $( '#modal-course-title' ).text( __( 'Nuevo Curso', 'aura-suite' ) );
                 openStuModal( 'modal-course' );
             }
         } );
@@ -322,13 +333,13 @@
         if ( id ) { formData.id = id; }
 
         if ( formData.start_date && formData.end_date && formData.end_date < formData.start_date ) {
-            Students.notify( 'La fecha de fin no puede ser anterior a la de inicio.', 'error' );
+            Students.notify( __( 'La fecha de fin no puede ser anterior a la de inicio.', 'aura-suite' ), 'error' );
             $( '#course-end' ).focus();
             return;
         }
 
         Students.ajax( 'aura_students_save_course', formData, function () {
-            Students.notify( auraStudents.i18n.saved || 'Guardado.' );
+            Students.notify( auraStudents.i18n.saved || __( 'Guardado.', 'aura-suite' ) );
             closeStuModal( 'modal-course' );
             loadCourses( id ? coursePage : 1 );
         } );
@@ -337,7 +348,7 @@
     function deleteCourse( courseId ) {
         if ( ! Students.confirm() ) { return; }
         Students.ajax( 'aura_students_delete_course', { id: courseId }, function () {
-            Students.notify( 'Curso eliminado.' );
+            Students.notify( __( 'Curso eliminado.', 'aura-suite' ) );
             loadCourses( 1 );
         } );
     }
@@ -368,7 +379,7 @@
             var endVal = $( this ).val();
             var startVal = $( '#course-start' ).val();
             if ( startVal && endVal && endVal < startVal ) {
-                Students.notify( 'La fecha de fin no puede ser anterior a la de inicio.', 'warning' );
+                Students.notify( __( 'La fecha de fin no puede ser anterior a la de inicio.', 'aura-suite' ), 'warning' );
                 $( this ).val( startVal );
             }
         } );
@@ -431,14 +442,14 @@
         Students.ajax( 'aura_students_list', Object.assign( { page: studentPage, per_page: 20 }, studentFilters ), function ( data ) {
             var students = data.students || [];
             if ( students.length === 0 ) {
-                $tbody.html( '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">— Sin estudiantes —</td></tr>' );
+                $tbody.html( '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">' + escHtml( __( '— Sin estudiantes —', 'aura-suite' ) ) + '</td></tr>' );
                 $( '#students-pagination' ).hide();
                 $( '#pagination-count' ).text( '0' );
                 return;
             }
             var statusLabel = {
-                applicant: '⏳ Postulante', active: '✅ Activo',
-                graduated: '🎓 Egresado', inactive: '⏸ Inactivo', suspended: '🚫 Suspendido',
+                applicant: __( '⏳ Postulante', 'aura-suite' ), active: __( '✅ Activo', 'aura-suite' ),
+                graduated: __( '🎓 Egresado', 'aura-suite' ), inactive: __( '⏸ Inactivo', 'aura-suite' ), suspended: __( '🚫 Suspendido', 'aura-suite' ),
             };
             var html = '';
             students.forEach( function ( s ) {
@@ -478,9 +489,9 @@
             if ( enrollments.length > 0 ) {
                 enrollHtml = '<table style="width:100%;margin-top:8px;font-size:.87em;border-collapse:collapse;">' +
                     '<thead><tr>' +
-                    '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">Curso</th>' +
-                    '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">Estado</th>' +
-                    '<th style="text-align:right;padding:4px 8px;border-bottom:1px solid #e5e7eb;">Pagado</th>' +
+                    '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">' + escHtml( __( 'Curso', 'aura-suite' ) ) + '</th>' +
+                    '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">' + escHtml( __( 'Estado', 'aura-suite' ) ) + '</th>' +
+                    '<th style="text-align:right;padding:4px 8px;border-bottom:1px solid #e5e7eb;">' + escHtml( __( 'Pagado', 'aura-suite' ) ) + '</th>' +
                     '</tr></thead><tbody>';
                 enrollments.forEach( function ( e ) {
                     enrollHtml += '<tr>' +
@@ -491,21 +502,21 @@
                 } );
                 enrollHtml += '</tbody></table>';
             } else {
-                enrollHtml = '<p style="color:#6b7280;margin:4px 0;">— Sin inscripciones activas —</p>';
+                enrollHtml = '<p style="color:#6b7280;margin:4px 0;">' + escHtml( __( '— Sin inscripciones activas —', 'aura-suite' ) ) + '</p>';
             }
             $body.html(
                 '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:.95em;">' +
-                '<p style="margin:0;"><strong>Nombre:</strong> ' + escHtml( ( s.first_name || '' ) + ' ' + ( s.last_name || '' ) ) + '</p>' +
-                '<p style="margin:0;"><strong>Código:</strong> ' + escHtml( s.student_code || '—' ) + '</p>' +
-                '<p style="margin:0;"><strong>Email:</strong> ' + escHtml( s.email || '—' ) + '</p>' +
-                '<p style="margin:0;"><strong>Teléfono:</strong> ' + escHtml( s.phone || '—' ) + '</p>' +
-                '<p style="margin:0;"><strong>Tipo:</strong> ' + escHtml( s.profile_type || 'student' ) + '</p>' +
-                '<p style="margin:0;"><strong>Estado:</strong> ' + escHtml( s.status || '—' ) + '</p>' +
-                '<p style="margin:0;"><strong>Ciudad:</strong> ' + escHtml( s.city || '—' ) + '</p>' +
-                '<p style="margin:0;"><strong>País:</strong> ' + escHtml( s.country || '—' ) + '</p>' +
+                '<p style="margin:0;"><strong>' + escHtml( __( 'Nombre:', 'aura-suite' ) ) + '</strong> ' + escHtml( ( s.first_name || '' ) + ' ' + ( s.last_name || '' ) ) + '</p>' +
+                '<p style="margin:0;"><strong>' + escHtml( __( 'Código:', 'aura-suite' ) ) + '</strong> ' + escHtml( s.student_code || '—' ) + '</p>' +
+                '<p style="margin:0;"><strong>' + escHtml( __( 'Email:', 'aura-suite' ) ) + '</strong> ' + escHtml( s.email || '—' ) + '</p>' +
+                '<p style="margin:0;"><strong>' + escHtml( __( 'Teléfono:', 'aura-suite' ) ) + '</strong> ' + escHtml( s.phone || '—' ) + '</p>' +
+                '<p style="margin:0;"><strong>' + escHtml( __( 'Tipo:', 'aura-suite' ) ) + '</strong> ' + escHtml( s.profile_type || 'student' ) + '</p>' +
+                '<p style="margin:0;"><strong>' + escHtml( __( 'Estado:', 'aura-suite' ) ) + '</strong> ' + escHtml( s.status || '—' ) + '</p>' +
+                '<p style="margin:0;"><strong>' + escHtml( __( 'Ciudad:', 'aura-suite' ) ) + '</strong> ' + escHtml( s.city || '—' ) + '</p>' +
+                '<p style="margin:0;"><strong>' + escHtml( __( 'País:', 'aura-suite' ) ) + '</strong> ' + escHtml( s.country || '—' ) + '</p>' +
                 '</div>' +
                 '<hr style="margin:12px 0;">' +
-                '<h4 style="margin:0 0 6px;">Inscripciones</h4>' +
+                '<h4 style="margin:0 0 6px;">' + escHtml( __( 'Inscripciones', 'aura-suite' ) ) + '</h4>' +
                 enrollHtml
             );
             $( '#btn-edit-from-detail' ).data( 'id', studentId );
@@ -514,8 +525,8 @@
             if ( auraStudents.library_active === '1' && s.wp_user_id ) {
                 var $libSection = $( '<div id="stu-library-section" style="margin-top:16px;">' +
                     '<hr style="margin:0 0 10px;">' +
-                    '<h4 style="margin:0 0 6px;">📚 ' + ( auraStudents.i18n.lib_loans || 'Préstamos Biblioteca' ) + '</h4>' +
-                    '<p style="color:#6b7280;font-size:.9em;">Cargando…</p>' +
+                    '<h4 style="margin:0 0 6px;">📚 ' + ( auraStudents.i18n.lib_loans || __( 'Préstamos Biblioteca', 'aura-suite' ) ) + '</h4>' +
+                    '<p style="color:#6b7280;font-size:.9em;">' + escHtml( __( 'Cargando…', 'aura-suite' ) ) + '</p>' +
                     '</div>' );
                 $body.append( $libSection );
 
@@ -529,20 +540,20 @@
                     var badges = '';
                     if ( d.has_overdue ) {
                         badges += '<span style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:4px;padding:2px 8px;font-size:.82em;margin-right:6px;">' +
-                            escHtml( auraStudents.i18n.lib_overdue || '⚠ Préstamos vencidos' ) + '</span>';
+                            escHtml( auraStudents.i18n.lib_overdue || __( '⚠ Préstamos vencidos', 'aura-suite' ) ) + '</span>';
                     }
                     if ( d.has_fines ) {
                         badges += '<span style="background:#fffbeb;color:#d97706;border:1px solid #fcd34d;border-radius:4px;padding:2px 8px;font-size:.82em;">' +
-                            escHtml( auraStudents.i18n.lib_fines || '💸 Multas pendientes' ) + '</span>';
+                            escHtml( auraStudents.i18n.lib_fines || __( '💸 Multas pendientes', 'aura-suite' ) ) + '</span>';
                     }
                     var loansHtml = '';
                     if ( d.loans && d.loans.length > 0 ) {
                         loansHtml = '<table style="width:100%;margin-top:8px;font-size:.87em;border-collapse:collapse;">' +
                             '<thead><tr>' +
-                            '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">Libro</th>' +
-                            '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">Dewey</th>' +
-                            '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">' + escHtml( auraStudents.i18n.lib_due || 'Vence:' ) + '</th>' +
-                            '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">Estado</th>' +
+                            '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">' + escHtml( __( 'Libro', 'aura-suite' ) ) + '</th>' +
+                            '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">' + escHtml( __( 'Dewey', 'aura-suite' ) ) + '</th>' +
+                            '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">' + escHtml( auraStudents.i18n.lib_due || __( 'Vence:', 'aura-suite' ) ) + '</th>' +
+                            '<th style="text-align:left;padding:4px 8px;border-bottom:1px solid #e5e7eb;">' + escHtml( __( 'Estado', 'aura-suite' ) ) + '</th>' +
                             '</tr></thead><tbody>';
                         d.loans.forEach( function( l ) {
                             var rowColor = l.status === 'overdue' ? '#fef2f2' : '';
@@ -555,11 +566,11 @@
                         } );
                         loansHtml += '</tbody></table>';
                     } else {
-                        loansHtml = '<p style="color:#6b7280;margin:4px 0;">— ' + escHtml( auraStudents.i18n.lib_no_loans || 'Sin préstamos activos.' ) + ' —</p>';
+                        loansHtml = '<p style="color:#6b7280;margin:4px 0;">— ' + escHtml( auraStudents.i18n.lib_no_loans || __( 'Sin préstamos activos.', 'aura-suite' ) ) + ' —</p>';
                     }
                     $libSection.html(
                         '<hr style="margin:0 0 10px;">' +
-                        '<h4 style="margin:0 0 6px;">📚 ' + escHtml( auraStudents.i18n.lib_loans || 'Préstamos Biblioteca' ) + '</h4>' +
+                        '<h4 style="margin:0 0 6px;">📚 ' + escHtml( auraStudents.i18n.lib_loans || __( 'Préstamos Biblioteca', 'aura-suite' ) ) + '</h4>' +
                         ( badges ? '<div style="margin-bottom:8px;">' + badges + '</div>' : '' ) +
                         loansHtml
                     );
@@ -583,11 +594,11 @@
                     '<input type="checkbox" name="programs[]" value="' + escHtml( String( p.id ) ) + '"> ' +
                     escHtml( p.name ) + '</label>';
             } );
-            $( '#programs-checkboxes' ).html( html || '<p style="color:#6b7280;">Sin programas disponibles.</p>' );
+            $( '#programs-checkboxes' ).html( html || '<p style="color:#6b7280;">' + escHtml( __( 'Sin programas disponibles.', 'aura-suite' ) ) + '</p>' );
         } );
 
         if ( studentId ) {
-            $( '#modal-form-title' ).text( 'Editar Estudiante' );
+            $( '#modal-form-title' ).text( __( 'Editar Estudiante', 'aura-suite' ) );
             Students.ajax( 'aura_students_get', { id: studentId }, function ( data ) {
                 var s = data.student || data;
                 $( '#student-id' ).val( s.id );
@@ -616,7 +627,7 @@
                 openStuModal( 'modal-student-form' );
             } );
         } else {
-            $( '#modal-form-title' ).text( 'Nuevo Estudiante' );
+            $( '#modal-form-title' ).text( __( 'Nuevo Estudiante', 'aura-suite' ) );
             openStuModal( 'modal-student-form' );
         }
     }
@@ -632,7 +643,7 @@
         var id = $( '#student-id' ).val();
         if ( id ) { formData.id = id; }
         Students.ajax( 'aura_students_save', formData, function () {
-            Students.notify( auraStudents.i18n.saved || 'Guardado.' );
+            Students.notify( auraStudents.i18n.saved || __( 'Guardado.', 'aura-suite' ) );
             closeStuModal( 'modal-student-form' );
             loadStudents( id ? studentPage : 1 );
         } );
@@ -641,7 +652,7 @@
     function deleteStudent( studentId ) {
         if ( ! Students.confirm() ) { return; }
         Students.ajax( 'aura_students_delete', { id: studentId }, function () {
-            Students.notify( 'Estudiante eliminado.' );
+            Students.notify( __( 'Estudiante eliminado.', 'aura-suite' ) );
             loadStudents( 1 );
         } );
     }
@@ -719,7 +730,7 @@
             $( '#badge-applicants' ).text( badge ).toggle( badge > 0 );
             var items = data.applicants || data.students || [];
             if ( items.length === 0 ) {
-                $tbody.html( '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">— Sin postulantes pendientes —</td></tr>' );
+                $tbody.html( '<tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7280;">' + escHtml( __( '— Sin postulantes pendientes —', 'aura-suite' ) ) + '</td></tr>' );
                 $( '#applicants-pagination' ).hide();
                 return;
             }
@@ -733,7 +744,7 @@
                     '<td>' + escHtml( a.created_at_human || a.created_at || '—' ) + '</td>' +
                     '<td style="max-width:180px;white-space:normal;font-size:.85em;">' + escHtml( ( a.motivation || '' ).substring( 0, 100 ) ) + '</td>' +
                     '<td style="white-space:nowrap;">' +
-                        '<button class="button button-primary button-small btn-open-approve" data-id="' + a.id + '" style="background:#8b5cf6;border-color:#7c3aed;">✅ Procesar</button> ' +
+                        '<button class="button button-primary button-small btn-open-approve" data-id="' + a.id + '" style="background:#8b5cf6;border-color:#7c3aed;">' + escHtml( __( '✅ Procesar', 'aura-suite' ) ) + '</button> ' +
                         '<button class="button button-small btn-open-reject" data-id="' + a.id + '" data-name="' + escHtml( a.first_name + ' ' + a.last_name ) + '" style="color:#dc2626;">❌</button>' +
                     '</td></tr>';
             } );
@@ -749,16 +760,16 @@
         Students.ajax( 'aura_students_list_enrollments', Object.assign( { page: enrollmentPage, per_page: 20 }, enrollmentFilters ), function ( data ) {
             var items = data.enrollments || [];
             if ( items.length === 0 ) {
-                $tbody.html( '<tr><td colspan="8" style="text-align:center;padding:20px;color:#6b7280;">— Sin inscripciones —</td></tr>' );
+                $tbody.html( '<tr><td colspan="8" style="text-align:center;padding:20px;color:#6b7280;">' + escHtml( __( '— Sin inscripciones —', 'aura-suite' ) ) + '</td></tr>' );
                 $( '#enrollments-pagination' ).hide();
                 return;
             }
             var statusBadge = {
-                active:    '<span style="color:#059669;">✅ Activo</span>',
-                pending:   '<span style="color:#d97706;">⏳ Pend.</span>',
-                graduated: '<span style="color:#8b5cf6;">🎓 Egresado</span>',
-                withdrawn: '<span style="color:#6b7280;">↩ Retirado</span>',
-                suspended: '<span style="color:#dc2626;">🚫 Susp.</span>',
+                active:    '<span style="color:#059669;">' + escHtml( __( '✅ Activo', 'aura-suite' ) ) + '</span>',
+                pending:   '<span style="color:#d97706;">' + escHtml( __( '⏳ Pend.', 'aura-suite' ) ) + '</span>',
+                graduated: '<span style="color:#8b5cf6;">' + escHtml( __( '🎓 Egresado', 'aura-suite' ) ) + '</span>',
+                withdrawn: '<span style="color:#6b7280;">' + escHtml( __( '↩ Retirado', 'aura-suite' ) ) + '</span>',
+                suspended: '<span style="color:#dc2626;">' + escHtml( __( '🚫 Susp.', 'aura-suite' ) ) + '</span>',
             };
             var html = '';
             items.forEach( function ( e ) {
@@ -810,14 +821,14 @@
             $( '#approve-student-motivation' ).text( s.motivation || '—' );
             $( '#approve-step-1-notice' ).hide();
             $( '#approve-step-2' ).hide();
-            $( '#btn-do-approve' ).prop( 'disabled', false ).text( '✅ Aprobar postulante' ).show();
+            $( '#btn-do-approve' ).prop( 'disabled', false ).text( __( '✅ Aprobar postulante', 'aura-suite' ) ).show();
             // Si ya es activo, ofrecer saltar al paso 2
             if ( s.status === 'active' ) {
                 $( '#btn-skip-approve-to-enroll' ).show();
             } else {
                 $( '#btn-skip-approve-to-enroll' ).hide();
             }
-            $( '#enroll-course' ).html( '<option value="">— Seleccionar área primero —</option>' );
+            $( '#enroll-course' ).html( '<option value="">' + escHtml( __( '— Seleccionar área primero —', 'aura-suite' ) ) + '</option>' );
             $( '#enroll-base-cost' ).val( '0' );
             $( '#enroll-scholarship-type' ).val( 'none' );
             $( '#enroll-scholarship-pct' ).val( '0' );
@@ -830,9 +841,9 @@
 
     function submitEnroll( studentId ) {
         var courseId = $( '#enroll-course' ).val();
-        if ( ! courseId ) { alert( 'Selecciona un curso.' ); return; }
+        if ( ! courseId ) { alert( __( 'Selecciona un curso.', 'aura-suite' ) ); return; }
         var $btn = $( '#btn-do-enroll' );
-        $btn.prop( 'disabled', true ).text( '⏳ Inscribiendo…' );
+        $btn.prop( 'disabled', true ).text( __( '⏳ Inscribiendo…', 'aura-suite' ) );
         Students.ajax( 'aura_students_enroll', {
             student_id:           studentId,
             course_id:            courseId,
@@ -845,13 +856,13 @@
             first_payment:        $( '#enroll-first-payment' ).val(),
             notes:                $( '#enroll-notes' ).val(),
         }, function () {
-            $btn.prop( 'disabled', false ).text( '📋 Inscribir estudiante' );
-            Students.notify( '✅ Inscripción creada correctamente.' );
+            $btn.prop( 'disabled', false ).text( __( '📋 Inscribir estudiante', 'aura-suite' ) );
+            Students.notify( __( '✅ Inscripción creada correctamente.', 'aura-suite' ) );
             closeOverlayModal( 'modal-approve' );
             loadApplicants( 1 );
             loadEnrollments( 1 );
         }, function () {
-            $btn.prop( 'disabled', false ).text( '📋 Inscribir estudiante' );
+            $btn.prop( 'disabled', false ).text( __( '📋 Inscribir estudiante', 'aura-suite' ) );
         } );
     }
 
@@ -896,15 +907,15 @@
         // Step 1: Aprobar
         $( document ).on( 'click', '#btn-do-approve', function () {
             var studentId = $( '#approve-student-id' ).val();
-            $( this ).prop( 'disabled', true ).text( '⏳ Procesando…' );
+            $( this ).prop( 'disabled', true ).text( __( '⏳ Procesando…', 'aura-suite' ) );
             Students.ajax( 'aura_students_approve', { student_id: studentId }, function () {
                 $( '#approve-step-1-notice' )
                     .show()
-                    .html( '<span style="color:#059669;">✅ Aprobado. Ahora inscribe al estudiante en un curso.</span>' );
+                    .html( '<span style="color:#059669;">' + escHtml( __( '✅ Aprobado. Ahora inscribe al estudiante en un curso.', 'aura-suite' ) ) + '</span>' );
                 $( '#btn-do-approve, #btn-skip-approve-to-enroll' ).hide();
                 $( '#approve-step-2' ).slideDown( 200 );
             }, function () {
-                $( '#btn-do-approve' ).prop( 'disabled', false ).text( '✅ Aprobar postulante' );
+                $( '#btn-do-approve' ).prop( 'disabled', false ).text( __( '✅ Aprobar postulante', 'aura-suite' ) );
             } );
         } );
 
@@ -917,13 +928,13 @@
         // Área → cargar cursos
         $( document ).on( 'change', '#enroll-area', function () {
             var areaId = $( this ).val();
-            $( '#enroll-course' ).html( '<option value="">Cargando…</option>' ).prop( 'disabled', true );
+            $( '#enroll-course' ).html( '<option value="">' + escHtml( __( 'Cargando…', 'aura-suite' ) ) + '</option>' ).prop( 'disabled', true );
             if ( ! areaId ) {
-                $( '#enroll-course' ).html( '<option value="">— Seleccionar área primero —</option>' ).prop( 'disabled', false );
+                $( '#enroll-course' ).html( '<option value="">' + escHtml( __( '— Seleccionar área primero —', 'aura-suite' ) ) + '</option>' ).prop( 'disabled', false );
                 return;
             }
             Students.ajax( 'aura_students_get_courses_by_area', { area_id: areaId }, function ( d ) {
-                var opts = '<option value="">— Seleccionar curso —</option>';
+                var opts = '<option value="">' + escHtml( __( '— Seleccionar curso —', 'aura-suite' ) ) + '</option>';
                 ( d.courses || [] ).forEach( function ( c ) {
                     opts += '<option value="' + c.id + '" data-cost="' + c.cost + '" data-currency="' + escHtml( c.currency || '' ) + '">' + escHtml( c.name ) + '</option>';
                 } );
@@ -984,12 +995,12 @@
             var reason    = $( '#reject-reason' ).val();
             $( this ).prop( 'disabled', true ).text( '⏳…' );
             Students.ajax( 'aura_students_reject', { student_id: studentId, reason: reason }, function () {
-                $( '#btn-do-reject' ).prop( 'disabled', false ).text( '❌ Confirmar rechazo' );
-                Students.notify( 'Postulación rechazada.' );
+                $( '#btn-do-reject' ).prop( 'disabled', false ).text( __( '❌ Confirmar rechazo', 'aura-suite' ) );
+                Students.notify( __( 'Postulación rechazada.', 'aura-suite' ) );
                 closeOverlayModal( 'modal-reject' );
                 loadApplicants( applicantPage );
             }, function () {
-                $( '#btn-do-reject' ).prop( 'disabled', false ).text( '❌ Confirmar rechazo' );
+                $( '#btn-do-reject' ).prop( 'disabled', false ).text( __( '❌ Confirmar rechazo', 'aura-suite' ) );
             } );
         } );
 
@@ -1013,9 +1024,9 @@
         // Graduar
         $( document ).on( 'click', '.btn-graduate', function () {
             var id = $( this ).data( 'id' );
-            if ( ! Students.confirm( '¿Confirmas graduar a este estudiante?' ) ) { return; }
+            if ( ! Students.confirm( __( '¿Confirmas graduar a este estudiante?', 'aura-suite' ) ) ) { return; }
             Students.ajax( 'aura_students_graduate', { enrollment_id: id }, function () {
-                Students.notify( '🎓 Estudiante graduado correctamente.' );
+                Students.notify( __( '🎓 Estudiante graduado correctamente.', 'aura-suite' ) );
                 loadEnrollments( enrollmentPage );
             } );
         } );
@@ -1031,15 +1042,15 @@
     function loadScholarships( page ) {
         becaPage = page || 1;
         var $tbody = $( '#becas-tbody' );
-        $tbody.html( '<tr><td colspan="11" class="aura-loading" style="text-align:center;padding:20px;"><span class="spinner is-active" style="float:none;"></span> Cargando…</td></tr>' );
+        $tbody.html( '<tr><td colspan="11" class="aura-loading" style="text-align:center;padding:20px;"><span class="spinner is-active" style="float:none;"></span> ' + escHtml( __( 'Cargando…', 'aura-suite' ) ) + '</td></tr>' );
         Students.ajax( 'aura_students_list_scholarships', Object.assign( { page: becaPage, per_page: 20 }, becaFilters ), function ( data ) {
             var items = data.items || data.enrollments || [];
             if ( items.length === 0 ) {
-                $tbody.html( '<tr><td colspan="11" style="text-align:center;padding:20px;color:#6b7280;">— Sin resultados —</td></tr>' );
+                $tbody.html( '<tr><td colspan="11" style="text-align:center;padding:20px;color:#6b7280;">' + escHtml( __( '— Sin resultados —', 'aura-suite' ) ) + '</td></tr>' );
                 $( '#becas-pagination' ).hide();
                 return;
             }
-            var schLabel = { none: '—', internal: 'Interna', external: 'Externa' };
+            var schLabel = { none: '—', internal: __( 'Interna', 'aura-suite' ), external: __( 'Externa', 'aura-suite' ) };
             var html = '';
             items.forEach( function ( e ) {
                 var baseCost   = parseFloat( e.base_cost || 0 );
@@ -1061,7 +1072,7 @@
                     '<td class="col-right text-green">$' + fmtMoney( totalPaid ) + '</td>' +
                     '<td class="col-right ' + ( balance > 0.009 ? 'text-red' : 'text-green' ) + '">$' + fmtMoney( balance ) + '</td>' +
                     '<td>' + escHtml( e.scholarship_sponsor || '—' ) + '</td>' +
-                    '<td class="col-center"><button class="button button-small btn-edit-scholarship" data-id="' + e.id + '">✏️ Beca</button></td>' +
+                    '<td class="col-center"><button class="button button-small btn-edit-scholarship" data-id="' + e.id + '">' + escHtml( __( '✏️ Beca', 'aura-suite' ) ) + '</button></td>' +
                     '</tr>';
             } );
             $tbody.html( html );
@@ -1097,7 +1108,7 @@
             $( '#sch-pct' ).val( e.scholarship_pct || 0 );
             $( '#sch-sponsor' ).val( e.scholarship_sponsor || '' );
             $( '#sch-notes' ).val( '' );
-            $( '#modal-sch-title' ).text( ( e.scholarship_type && e.scholarship_type !== 'none' ) ? 'Editar Beca' : 'Asignar Beca' );
+            $( '#modal-sch-title' ).text( ( e.scholarship_type && e.scholarship_type !== 'none' ) ? __( 'Editar Beca', 'aura-suite' ) : __( 'Asignar Beca', 'aura-suite' ) );
             $( '#row-sponsor' ).toggle( e.scholarship_type === 'external' );
             updateSchCalc();
             openAuraModal( 'modal-scholarship' );
@@ -1107,7 +1118,7 @@
     function saveScholarship() {
         var enrollmentId = $( '#sch-enrollment-id' ).val();
         var $btn = $( '#btn-save-scholarship' );
-        $btn.prop( 'disabled', true ).text( '⏳ Guardando…' );
+        $btn.prop( 'disabled', true ).text( __( '⏳ Guardando…', 'aura-suite' ) );
         Students.ajax( 'aura_students_assign_scholarship', {
             enrollment_id:       enrollmentId,
             scholarship_type:    $( '#sch-type' ).val(),
@@ -1115,12 +1126,12 @@
             scholarship_sponsor: $( '#sch-sponsor' ).val(),
             scholarship_notes:   $( '#sch-notes' ).val(),
         }, function () {
-            $btn.prop( 'disabled', false ).text( '💾 Guardar beca' );
-            Students.notify( '✅ Beca guardada correctamente.' );
+            $btn.prop( 'disabled', false ).text( __( '💾 Guardar beca', 'aura-suite' ) );
+            Students.notify( __( '✅ Beca guardada correctamente.', 'aura-suite' ) );
             closeAuraModal( 'modal-scholarship' );
             loadScholarships( becaPage );
         }, function () {
-            $btn.prop( 'disabled', false ).text( '💾 Guardar beca' );
+            $btn.prop( 'disabled', false ).text( __( '💾 Guardar beca', 'aura-suite' ) );
         } );
     }
 
@@ -1188,7 +1199,7 @@
 
     function buildReportTable( data ) {
         if ( ! data.rows || data.rows.length === 0 ) {
-            return '<p style="text-align:center;color:#6b7280;padding:20px;">— Sin datos para los filtros seleccionados —</p>';
+            return '<p style="text-align:center;color:#6b7280;padding:20px;">' + escHtml( __( '— Sin datos para los filtros seleccionados —', 'aura-suite' ) ) + '</p>';
         }
         var cols = Object.keys( data.rows[ 0 ] );
         var html = '<table class="wp-list-table widefat fixed striped" style="margin-top:12px;"><thead><tr>';
@@ -1222,17 +1233,17 @@
         };
         lastReportArgs = params;
         var $btn = $( '#btn-st-generate' );
-        $btn.prop( 'disabled', true ).text( '⏳ Generando…' );
+        $btn.prop( 'disabled', true ).text( __( '⏳ Generando…', 'aura-suite' ) );
 
         var $results = $( '#st-report-results' );
         if ( ! $results.length ) {
             $results = $( '<div id="st-report-results" style="margin-top:20px;"></div>' );
             $( '#aura-students-report-form' ).after( $results );
         }
-        $results.html( '<div style="text-align:center;padding:30px;"><span class="spinner is-active" style="float:none;margin:0 auto;display:block;"></span><p style="color:#6b7280;margin-top:8px;">Generando reporte…</p></div>' );
+        $results.html( '<div style="text-align:center;padding:30px;"><span class="spinner is-active" style="float:none;margin:0 auto;display:block;"></span><p style="color:#6b7280;margin-top:8px;">' + escHtml( __( 'Generando reporte…', 'aura-suite' ) ) + '</p></div>' );
 
         Students.ajax( 'aura_students_generate_report', params, function ( data ) {
-            $btn.prop( 'disabled', false ).text( '🔍 Generar Reporte' );
+            $btn.prop( 'disabled', false ).text( __( '🔍 Generar Reporte', 'aura-suite' ) );
             if ( data.html ) {
                 $results.html( data.html );
             } else {
@@ -1241,7 +1252,7 @@
             $( '#st-export-card' ).show();
             $( '#btn-st-pdf' ).toggle( NO_PDF_TYPES.indexOf( params.type ) === -1 );
         }, function () {
-            $btn.prop( 'disabled', false ).text( '🔍 Generar Reporte' );
+            $btn.prop( 'disabled', false ).text( __( '🔍 Generar Reporte', 'aura-suite' ) );
             $results.html( '' );
         } );
     }
@@ -1249,9 +1260,9 @@
     function exportReport( format ) {
         if ( ! lastReportArgs ) { return; }
         var action = format === 'excel' ? 'aura_students_export_excel' : 'aura_students_export_pdf';
-        var label  = format === 'excel' ? '📊 Excel' : '📄 PDF';
+        var label  = format === 'excel' ? __( '📊 Excel', 'aura-suite' ) : __( '📄 PDF', 'aura-suite' );
         var $btn   = format === 'excel' ? $( '#btn-st-excel' ) : $( '#btn-st-pdf' );
-        $btn.prop( 'disabled', true ).text( '⏳ Exportando…' );
+        $btn.prop( 'disabled', true ).text( __( '⏳ Exportando…', 'aura-suite' ) );
         Students.ajax( action, lastReportArgs, function ( data ) {
             $btn.prop( 'disabled', false ).text( label );
             if ( data.download_url ) {
@@ -1337,11 +1348,11 @@
             $spinner.hide();
             var $notice = $( '#st-settings-notice' );
             if ( $notice.length ) {
-                $( '#st-settings-notice-msg' ).text( '✅ Configuración guardada correctamente.' );
+                $( '#st-settings-notice-msg' ).text( __( '✅ Configuración guardada correctamente.', 'aura-suite' ) );
                 $notice.show();
                 setTimeout( function () { $notice.fadeOut(); }, 4000 );
             } else {
-                Students.notify( '✅ Configuración guardada correctamente.' );
+                Students.notify( __( '✅ Configuración guardada correctamente.', 'aura-suite' ) );
             }
         }, function () {
             $btn.prop( 'disabled', false );
@@ -1371,7 +1382,7 @@
         $( '#btn-st-auto-create-pages' ).on( 'click', function () {
             var $btn = $( this );
             var origHtml = $btn.html();
-            $btn.prop( 'disabled', true ).html( '<span class="dashicons dashicons-update" style="animation:auraSpin .7s linear infinite;font-size:16px;width:16px;height:16px;margin-top:2px;"></span> Creando páginas...' );
+            $btn.prop( 'disabled', true ).html( '<span class="dashicons dashicons-update" style="animation:auraSpin .7s linear infinite;font-size:16px;width:16px;height:16px;margin-top:2px;"></span> ' + escHtml( __( 'Creando páginas...', 'aura-suite' ) ) );
 
             Students.ajax( 'aura_students_create_portal_pages', {}, function ( res ) {
                 $btn.prop( 'disabled', false ).html( origHtml );
@@ -1407,11 +1418,11 @@
 
                 var $notice = $( '#st-settings-notice' );
                 if ( $notice.length ) {
-                    $( '#st-settings-notice-msg' ).text( '✨ ' + ( ( res && res.message ) ? res.message : 'Páginas creadas y vinculadas con éxito.' ) );
+                    $( '#st-settings-notice-msg' ).text( '✨ ' + ( ( res && res.message ) ? res.message : __( 'Páginas creadas y vinculadas con éxito.', 'aura-suite' ) ) );
                     $notice.removeClass( 'alert-danger' ).addClass( 'alert-success' ).show();
                     setTimeout( function () { $notice.fadeOut(); }, 5000 );
                 } else {
-                    Students.notify( '✨ Páginas creadas y vinculadas con éxito.' );
+                    Students.notify( __( '✨ Páginas creadas y vinculadas con éxito.', 'aura-suite' ) );
                 }
             }, function () {
                 $btn.prop( 'disabled', false ).html( origHtml );

@@ -159,7 +159,7 @@ if ( ! in_array( $req_import_type, [ 'transactions', 'accounts', 'categories', '
             <div class="aura-mapping-status-bar" id="aura-mapping-status-bar">
                 <div id="aura-mapping-status-text">
                     <span class="dashicons dashicons-info" style="vertical-align:middle;"></span>
-                    <span id="aura-mapping-count-summary">Calculando campos asignados...</span>
+                    <span id="aura-mapping-count-summary"><?php esc_html_e('Calculando campos asignados...', 'aura-suite'); ?></span>
                 </div>
             </div>
 

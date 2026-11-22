@@ -196,15 +196,19 @@ class Aura_Nav_Login_Menu {
             }
         }
 
+        $norm = class_exists( 'Aura_Third_Parties' ) && method_exists( 'Aura_Third_Parties', 'normalize_local_avatar_url' )
+            ? [ 'Aura_Third_Parties', 'normalize_local_avatar_url' ]
+            : 'set_url_scheme';
+
         $sla = get_user_meta( $user_id, 'simple_local_avatar', true );
         if ( is_array( $sla ) && ! empty( $sla['full'] ) && filter_var( $sla['full'], FILTER_VALIDATE_URL ) ) {
-            return (string) $sla['full'];
+            return (string) call_user_func( $norm, (string) $sla['full'] );
         }
 
         foreach ( [ 'aura_avatar_url', 'profile_photo' ] as $meta_key ) {
             $url = get_user_meta( $user_id, $meta_key, true );
             if ( is_string( $url ) && '' !== $url && filter_var( $url, FILTER_VALIDATE_URL ) ) {
-                return $url;
+                return (string) call_user_func( $norm, $url );
             }
         }
 
@@ -513,7 +517,7 @@ class Aura_Nav_Login_Menu {
         $menus    = function_exists( 'wp_get_nav_menus' ) ? wp_get_nav_menus() : [];
         $locs     = function_exists( 'get_registered_nav_menus' ) ? get_registered_nav_menus() : [];
         $cur_user = wp_get_current_user();
-        $cur_name = ( $cur_user instanceof WP_User && $cur_user->ID > 0 ) ? self::get_user_first_name( $cur_user ) : 'Usuario';
+        $cur_name = ( $cur_user instanceof WP_User && $cur_user->ID > 0 ) ? self::get_user_first_name( $cur_user ) : __( 'Usuario', 'aura-suite' );
         $cur_av   = ( $cur_user instanceof WP_User && $cur_user->ID > 0 ) ? self::get_user_avatar_url( $cur_user ) : '';
         ?>
         <div class="aura-panel-card" id="aura-nav-login-card" style="margin-top:20px;">
@@ -793,7 +797,7 @@ class Aura_Nav_Login_Menu {
                 var useGuestColor = $('#aura_nav_use_custom_color').is(':checked');
                 var guestCustom = $('#aura_nav_custom_color').val() || '#38bdf8';
                 var guestColor = useGuestColor ? guestCustom : menuAutoColor;
-                $('#aura_nav_color_hint').text(useGuestColor ? guestCustom : 'Auto (menú)');
+                $('#aura_nav_color_hint').text(useGuestColor ? guestCustom : '<?php echo esc_js( __( 'Auto (menú)', 'aura-suite' ) ); ?>');
 
                 var loggedMode = $('#aura_nav_logged_in_mode').val();
                 var shape = $('input[name="aura_nav_avatar_shape"]:checked').val() || 'circle';
@@ -802,12 +806,12 @@ class Aura_Nav_Login_Menu {
 
                 var useBorderColor = $('#aura_nav_use_custom_border_color').is(':checked');
                 var borderCustom = $('#aura_nav_border_color').val() || '#38bdf8';
-                $('#aura_nav_border_hint').text(useBorderColor ? borderCustom : 'Auto (menú)');
+                $('#aura_nav_border_hint').text(useBorderColor ? borderCustom : '<?php echo esc_js( __( 'Auto (menú)', 'aura-suite' ) ); ?>');
 
                 var useNameColor = $('#aura_nav_use_custom_name_color').is(':checked');
                 var nameCustom = $('#aura_nav_name_color').val() || '#38bdf8';
                 var loggedColor = useNameColor ? nameCustom : menuAutoColor;
-                $('#aura_nav_name_hint').text(useNameColor ? nameCustom : 'Auto (menú)');
+                $('#aura_nav_name_hint').text(useNameColor ? nameCustom : '<?php echo esc_js( __( 'Auto (menú)', 'aura-suite' ) ); ?>');
 
                 var borderColor = useBorderColor ? borderCustom : loggedColor;
                 var nameSize = parseInt($('#aura_nav_logged_name_size').val(), 10) || 0;
@@ -911,11 +915,11 @@ class Aura_Nav_Login_Menu {
                     if (r && r.success) {
                         $msg.text(r.data.message).css('color', '#059669');
                     } else {
-                        $msg.text((r && r.data && r.data.message) || 'Error').css('color', '#dc2626');
+                        $msg.text((r && r.data && r.data.message) || '<?php echo esc_js( __( 'Error', 'aura-suite' ) ); ?>').css('color', '#dc2626');
                     }
                 }).fail(function () {
                     $btn.prop('disabled', false);
-                    $msg.text('Error de conexión.').css('color', '#dc2626');
+                    $msg.text('<?php echo esc_js( __( 'Error de conexión.', 'aura-suite' ) ); ?>').css('color', '#dc2626');
                 });
             });
 

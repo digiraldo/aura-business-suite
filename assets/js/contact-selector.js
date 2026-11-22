@@ -8,6 +8,8 @@
 (function($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     var AuraContactSelector = {
 
         init: function($context) {
@@ -71,7 +73,7 @@
                     AuraContactSelector.fetchContacts(q, category, function(err, items) {
                         $spinner.hide();
                         if (err) {
-                            $resultsList.html('<li class="aura-cs-message">Error al buscar.</li>');
+                            $resultsList.html('<li class="aura-cs-message">' + $('<div>').text(__('Error al buscar.', 'aura-suite')).html() + '</li>');
                             $dropdown.show();
                             return;
                         }
@@ -162,7 +164,7 @@
                     if (res && res.success) {
                         callback(null, res.data);
                     } else {
-                        callback(new Error(res ? res.data.message : 'Error desconocido'));
+                        callback(new Error(res ? res.data.message : __('Error desconocido', 'aura-suite')));
                     }
                 },
                 error: function(xhr, status, error) {
@@ -174,7 +176,7 @@
         renderResults: function($list, items) {
             $list.empty();
             if (!items || !items.length) {
-                $list.html('<li class="aura-cs-no-results">No se encontraron contactos.</li>');
+                $list.html('<li class="aura-cs-no-results">' + $('<div>').text(__('No se encontraron contactos.', 'aura-suite')).html() + '</li>');
                 return;
             }
 

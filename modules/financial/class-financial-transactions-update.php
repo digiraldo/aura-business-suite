@@ -599,25 +599,25 @@ class Aura_Financial_Transactions_Update {
         $changes = array();
         
         $fields_to_check = array(
-            'category_id' => 'Categoría',
-            'expense_category_id' => 'Categoría del gasto',
-            'amount' => 'Monto',
-            'transaction_date' => 'Fecha',
-            'description' => 'Descripción',
-            'payment_method' => 'Método de Pago',
-            'source_account_id' => 'Cuenta Origen',
-            'destination_account_id' => 'Cuenta Destino',
-            'reference_number' => 'Número de Referencia',
-            'recipient_payer' => 'Destinatario/Pagador',
-            'third_party_id'  => 'Beneficiario / Proveedor / Tercero',
+            'category_id' => __( 'Categoría', 'aura-suite' ),
+            'expense_category_id' => __( 'Categoría del gasto', 'aura-suite' ),
+            'amount' => __( 'Monto', 'aura-suite' ),
+            'transaction_date' => __( 'Fecha', 'aura-suite' ),
+            'description' => __( 'Descripción', 'aura-suite' ),
+            'payment_method' => __( 'Método de Pago', 'aura-suite' ),
+            'source_account_id' => __( 'Cuenta Origen', 'aura-suite' ),
+            'destination_account_id' => __( 'Cuenta Destino', 'aura-suite' ),
+            'reference_number' => __( 'Número de Referencia', 'aura-suite' ),
+            'recipient_payer' => __( 'Destinatario/Pagador', 'aura-suite' ),
+            'third_party_id'  => __( 'Beneficiario / Proveedor / Tercero', 'aura-suite' ),
             // Fase 6, Item 6.1
-            'related_user_id'      => 'Usuario Vinculado',
-            'related_user_concept' => 'Concepto de Vinculación',
+            'related_user_id'      => __( 'Usuario Vinculado', 'aura-suite' ),
+            'related_user_concept' => __( 'Concepto de Vinculación', 'aura-suite' ),
             // Fase 8.2
-            'area_id' => 'Área / Programa',
-            'notes' => 'Notas',
-            'tags' => 'Etiquetas',
-            'receipt_file' => 'Comprobante'
+            'area_id' => __( 'Área / Programa', 'aura-suite' ),
+            'notes' => __( 'Notas', 'aura-suite' ),
+            'tags' => __( 'Etiquetas', 'aura-suite' ),
+            'receipt_file' => __( 'Comprobante', 'aura-suite' )
         );
         
         foreach ($fields_to_check as $field => $label) {

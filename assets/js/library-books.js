@@ -9,6 +9,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     if (typeof auraLibraryBooks === 'undefined') return;
 
     var cfg         = auraLibraryBooks;
@@ -62,16 +64,16 @@
                 navigator.clipboard.writeText(text).then(function () {
                     showCopied($btn);
                 }).catch(function () {
-                    window.prompt('Copia el texto con Ctrl+C y pégalo en tu IA:', text);
+                    window.prompt(__('Copia el texto con Ctrl+C y pégalo en tu IA:', 'aura-suite'), text);
                 });
             } else {
-                window.prompt('Copia el texto con Ctrl+C y pégalo en tu IA:', text);
+                window.prompt(__('Copia el texto con Ctrl+C y pégalo en tu IA:', 'aura-suite'), text);
             }
         });
 
         function showCopied($btn) {
             var origHtml = $btn.html();
-            $btn.addClass('copied').html('<span class="dashicons dashicons-yes"></span> ¡Copiado!');
+            $btn.addClass('copied').html('<span class="dashicons dashicons-yes"></span> ' + escHtml(__('¡Copiado!', 'aura-suite')));
             setTimeout(function () {
                 $btn.removeClass('copied').html(origHtml);
             }, 2500);
@@ -188,10 +190,10 @@
             var v      = $.trim($(this).val());
             var num    = parseFloat(v);
             var labels = {
-                0:'000 — Informática y Generalidades',1:'100 — Filosofía y Psicología',
-                2:'200 — Religión',3:'300 — Ciencias Sociales',4:'400 — Lengua y Lingüística',
-                5:'500 — Ciencias Puras',6:'600 — Tecnología Aplicada',7:'700 — Artes y Recreación',
-                8:'800 — Literatura',9:'900 — Historia y Geografía'
+                0: __('000 — Informática y Generalidades', 'aura-suite'), 1: __('100 — Filosofía y Psicología', 'aura-suite'),
+                2: __('200 — Religión', 'aura-suite'), 3: __('300 — Ciencias Sociales', 'aura-suite'), 4: __('400 — Lengua y Lingüística', 'aura-suite'),
+                5: __('500 — Ciencias Puras', 'aura-suite'), 6: __('600 — Tecnología Aplicada', 'aura-suite'), 7: __('700 — Artes y Recreación', 'aura-suite'),
+                8: __('800 — Literatura', 'aura-suite'), 9: __('900 — Historia y Geografía', 'aura-suite')
             };
             if (!isNaN(num) && num >= 0 && num < 1000) {
                 var cls = Math.floor(num / 100);
@@ -220,11 +222,11 @@
         // ── Status hint ──────────────────────────────────────────
         $(document).on('change', '#aura-lib-f-status', function () {
             var hints = {
-                available      : '✅ Los lectores podrán solicitarlo en préstamo.',
-                unavailable    : '🔴 No aparecerá disponible para nuevos préstamos.',
-                reference_only : '📖 Solo consulta en sala; no se puede prestar.',
-                lost           : '⚠️ Marcado como perdido; no disponible.',
-                withdrawn      : '🗄️ Retirado del catálogo activo.'
+                available      : '✅ ' + __('Los lectores podrán solicitarlo en préstamo.', 'aura-suite'),
+                unavailable    : '🔴 ' + __('No aparecerá disponible para nuevos préstamos.', 'aura-suite'),
+                reference_only : '📖 ' + __('Solo consulta en sala; no se puede prestar.', 'aura-suite'),
+                lost           : '⚠️ ' + __('Marcado como perdido; no disponible.', 'aura-suite'),
+                withdrawn      : '🗄️ ' + __('Retirado del catálogo activo.', 'aura-suite')
             };
             $('#aura-lib-status-hint').text(hints[$(this).val()] || '');
         });
@@ -402,11 +404,11 @@
         var meta = '<div class="aura-tip-card">' +
             '<div class="aura-tip-card-header"><strong>📖 ' + escHtml(b.title) + '</strong></div>' +
             '<div class="aura-tip-card-body">' +
-            (b.subtitle ? '<div class="aura-tip-row"><span>Subtítulo:</span> <strong>' + escHtml(b.subtitle) + '</strong></div>' : '') +
-            '<div class="aura-tip-row"><span>Autor:</span> <strong>' + escHtml(b.author || '—') + '</strong></div>' +
-            (b.isbn ? '<div class="aura-tip-row"><span>ISBN:</span> <code>' + escHtml(b.isbn) + '</code></div>' : '') +
-            (b.publisher ? '<div class="aura-tip-row"><span>Editorial:</span> <span>' + escHtml(b.publisher) + (b.year_published ? ' (' + escHtml(b.year_published) + ')' : '') + '</span></div>' : '') +
-            '<div class="aura-tip-row"><span>Idioma:</span> <span>' + escHtml(b.language || 'Español') + '</span></div>' +
+            (b.subtitle ? '<div class="aura-tip-row"><span>' + escHtml(__('Subtítulo:', 'aura-suite')) + '</span> <strong>' + escHtml(b.subtitle) + '</strong></div>' : '') +
+            '<div class="aura-tip-row"><span>' + escHtml(__('Autor:', 'aura-suite')) + '</span> <strong>' + escHtml(b.author || '—') + '</strong></div>' +
+            (b.isbn ? '<div class="aura-tip-row"><span>' + escHtml(__('ISBN:', 'aura-suite')) + '</span> <code>' + escHtml(b.isbn) + '</code></div>' : '') +
+            (b.publisher ? '<div class="aura-tip-row"><span>' + escHtml(__('Editorial:', 'aura-suite')) + '</span> <span>' + escHtml(b.publisher) + (b.year_published ? ' (' + escHtml(b.year_published) + ')' : '') + '</span></div>' : '') +
+            '<div class="aura-tip-row"><span>' + escHtml(__('Idioma:', 'aura-suite')) + '</span> <span>' + escHtml(b.language || __('Español', 'aura-suite')) + '</span></div>' +
             '</div></div>';
         return ' data-aura-tooltip="' + escAttr(encodeURIComponent(meta)) + '"';
     }
@@ -424,7 +426,7 @@
             var kws = String(b.keywords).split(',').map(function (s) { return $.trim(s); }).filter(Boolean);
             if (kws.length) {
                 kwHtml = '<div class="aura-child-tags">' +
-                    kws.map(function (k) { return '<span class="badge badge-indigo aura-tooltip-trigger" data-tooltip="Palabra clave: ' + escAttr(k) + '">' + escHtml(k) + '</span>'; }).join('') +
+                    kws.map(function (k) { return '<span class="badge badge-indigo aura-tooltip-trigger" data-tooltip="' + escAttr(__('Palabra clave:', 'aura-suite') + ' ' + k) + '">' + escHtml(k) + '</span>'; }).join('') +
                     '</div>';
             }
         }
@@ -443,26 +445,26 @@
             (b.subtitle ? '<div class="aura-lib-sub-muted">' + escHtml(b.subtitle) + '</div>' : '') +
             '<div class="aura-lib-child-author">✍️ ' + escHtml(b.author || '—') + '</div>' +
             '</div>' +
-            '<div class="aura-lib-child-stock aura-tooltip-trigger" data-tooltip="' + escAttr(availCount + ' de ' + totalCount + ' ejemplares disponibles (' + pct + '%)') + '">' +
-            '<div class="aura-lib-child-stock-text"><strong>' + availCount + ' / ' + totalCount + '</strong> <small>ejemplares disponibles</small></div>' +
+            '<div class="aura-lib-child-stock aura-tooltip-trigger" data-tooltip="' + escAttr(availCount + ' ' + __('de', 'aura-suite') + ' ' + totalCount + ' ' + __('ejemplares disponibles', 'aura-suite') + ' (' + pct + '%)') + '">' +
+            '<div class="aura-lib-child-stock-text"><strong>' + availCount + ' / ' + totalCount + '</strong> <small>' + escHtml(__('ejemplares disponibles', 'aura-suite')) + '</small></div>' +
             '<div class="micro-progress-bar aura-lib-child-progress"><div class="micro-progress-fill ' + barClass + '" style="width:' + pct + '%;"></div></div>' +
             '</div>' +
             '</div>' +
             '<div class="aura-child-meta-grid">' +
-            '<div class="aura-child-meta-item"><span>Estado</span><strong>' + escHtml(b.display_status_label || b.status_label || '—') + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Dewey</span><strong><code>' + escHtml(b.dewey_number || '—') + '</code></strong></div>' +
-            '<div class="aura-child-meta-item"><span>ISBN</span><strong><code>' + escHtml(b.isbn || '—') + '</code></strong></div>' +
-            '<div class="aura-child-meta-item"><span>Categoría</span><strong>' + escHtml(b.category || '—') + (b.subcategory ? ' / ' + escHtml(b.subcategory) : '') + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Editorial / Año</span><strong>' + escHtml(b.publisher || '—') + (b.year_published ? ' (' + escHtml(b.year_published) + ')' : '') + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Edición / Páginas</span><strong>' + escHtml(b.edition || '—') + (b.pages ? ' · ' + escHtml(b.pages) + ' pp.' : '') + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Idioma</span><strong>' + escHtml(b.language || 'Español') + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Ubicación</span><strong>' + escHtml(b.physical_location || '—') + (b.shelf_code ? ' · Est. ' + escHtml(b.shelf_code) : '') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Estado', 'aura-suite')) + '</span><strong>' + escHtml(b.display_status_label || b.status_label || '—') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Dewey', 'aura-suite')) + '</span><strong><code>' + escHtml(b.dewey_number || '—') + '</code></strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('ISBN', 'aura-suite')) + '</span><strong><code>' + escHtml(b.isbn || '—') + '</code></strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Categoría', 'aura-suite')) + '</span><strong>' + escHtml(b.category || '—') + (b.subcategory ? ' / ' + escHtml(b.subcategory) : '') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Editorial / Año', 'aura-suite')) + '</span><strong>' + escHtml(b.publisher || '—') + (b.year_published ? ' (' + escHtml(b.year_published) + ')' : '') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Edición / Páginas', 'aura-suite')) + '</span><strong>' + escHtml(b.edition || '—') + (b.pages ? ' · ' + escHtml(b.pages) + ' ' + escHtml(__('pp.', 'aura-suite')) : '') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Idioma', 'aura-suite')) + '</span><strong>' + escHtml(b.language || __('Español', 'aura-suite')) + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Ubicación', 'aura-suite')) + '</span><strong>' + escHtml(b.physical_location || '—') + (b.shelf_code ? ' · ' + escHtml(__('Est.', 'aura-suite')) + ' ' + escHtml(b.shelf_code) : '') + '</strong></div>' +
             '</div>' +
-            (cleanDesc ? '<div class="aura-child-synopsis"><strong>Sinopsis:</strong> ' + escHtml(cleanDesc) + '</div>' : '') +
+            (cleanDesc ? '<div class="aura-child-synopsis"><strong>' + escHtml(__('Sinopsis:', 'aura-suite')) + '</strong> ' + escHtml(cleanDesc) + '</div>' : '') +
             kwHtml +
             '<div class="aura-child-footer-actions">' +
-            '<button type="button" class="btn btn-sm btn-indigo btn-lift aura-lib-btn-detail aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Abrir ficha técnica 360° e historial del libro"><span class="dashicons dashicons-visibility"></span> Ver Ficha 360°</button>' +
-            (b.can_edit ? '<button type="button" class="btn btn-sm btn-glass btn-lift aura-lib-btn-edit aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Editar título, ejemplares, clasificación o portada"><span class="dashicons dashicons-edit"></span> Editar</button>' : '') +
+            '<button type="button" class="btn btn-sm btn-indigo btn-lift aura-lib-btn-detail aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="' + escAttr(__('Abrir ficha técnica 360° e historial del libro', 'aura-suite')) + '"><span class="dashicons dashicons-visibility"></span> ' + escHtml(__('Ver Ficha 360°', 'aura-suite')) + '</button>' +
+            (b.can_edit ? '<button type="button" class="btn btn-sm btn-glass btn-lift aura-lib-btn-edit aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="' + escAttr(__('Editar título, ejemplares, clasificación o portada', 'aura-suite')) + '"><span class="dashicons dashicons-edit"></span> ' + escHtml(__('Editar', 'aura-suite')) + '</button>' : '') +
             '</div>' +
             '</div></div></div>';
     }
@@ -488,7 +490,7 @@
                   buildCoverHoverCardAttr(fullImg, b.title, b.author || '') + '>' +
                   '<img src="' + escAttr(b.cover_thumb_url) + '" class="aura-lib-cover-thumb" alt="' + escAttr(b.title) + '">' +
                   '</div>'
-                : '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm aura-tooltip-trigger" data-tooltip="Sin imagen de portada"></span>';
+                : '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm aura-tooltip-trigger" data-tooltip="' + escAttr(__('Sin imagen de portada', 'aura-suite')) + '"></span>';
 
             var statusClass = {
                 'available'      : 'badge-emerald',
@@ -500,12 +502,12 @@
             }[b.display_status] || 'badge-slate';
 
             var statusTip = {
-                'available'      : 'Disponible para préstamo a lectores',
-                'unavailable'    : 'Sin ejemplares disponibles en este momento',
-                'reference_only' : 'Solo lectura en sala; no habilitado para préstamo externo',
-                'lost'           : 'Reportado como perdido en inventario',
-                'withdrawn'      : 'Retirado del catálogo activo',
-                'on_loan'        : 'Todos los ejemplares se encuentran prestados actualmente'
+                'available'      : __('Disponible para préstamo a lectores', 'aura-suite'),
+                'unavailable'    : __('Sin ejemplares disponibles en este momento', 'aura-suite'),
+                'reference_only' : __('Solo lectura en sala; no habilitado para préstamo externo', 'aura-suite'),
+                'lost'           : __('Reportado como perdido en inventario', 'aura-suite'),
+                'withdrawn'      : __('Retirado del catálogo activo', 'aura-suite'),
+                'on_loan'        : __('Todos los ejemplares se encuentran prestados actualmente', 'aura-suite')
             }[b.display_status] || b.display_status_label;
 
             var copiesClass = {
@@ -517,45 +519,45 @@
             var availCount = parseInt(b.available_copies, 10) || 0;
             var totalCount = parseInt(b.total_copies, 10) || 0;
             var lentCount  = Math.max(0, totalCount - availCount);
-            var copiesTip  = availCount + ' disponibles de ' + totalCount + ' totales' + (lentCount > 0 ? ' (' + lentCount + ' en préstamo)' : '');
+            var copiesTip  = availCount + ' ' + __('disponibles de', 'aura-suite') + ' ' + totalCount + ' ' + __('totales', 'aura-suite') + (lentCount > 0 ? ' (' + lentCount + ' ' + __('en préstamo', 'aura-suite') + ')' : '');
 
             var actions = '<div class="aura-lib-actions">';
-            actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-detail aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Ver ficha completa del libro (360°)"><span class="dashicons dashicons-visibility"></span></button>';
+            actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-detail aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="' + escAttr(__('Ver ficha completa del libro (360°)', 'aura-suite')) + '"><span class="dashicons dashicons-visibility"></span></button>';
             if (b.can_edit) {
-                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-edit aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Editar datos y portada del libro"><span class="dashicons dashicons-edit"></span></button>';
+                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-edit aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="' + escAttr(__('Editar datos y portada del libro', 'aura-suite')) + '"><span class="dashicons dashicons-edit"></span></button>';
             }
             if (b.can_delete) {
-                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-delete aura-lib-btn-danger aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="Eliminar libro del catálogo"><span class="dashicons dashicons-trash"></span></button>';
+                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-delete aura-lib-btn-danger aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-tooltip="' + escAttr(__('Eliminar libro del catálogo', 'aura-suite')) + '"><span class="dashicons dashicons-trash"></span></button>';
             }
             // F4.4 — Botón Reservar cuando no hay copias disponibles
             if (cfg.can_loan && availCount === 0 && b.status !== 'reference_only') {
-                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-reserve aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-title="' + escAttr(b.title) + '" data-tooltip="Reservar libro para lista de espera"><span class="dashicons dashicons-calendar-alt"></span></button>';
+                actions += '<button type="button" class="aura-lib-btn-action aura-lib-btn-reserve aura-tooltip-trigger" data-id="' + parseInt(b.id, 10) + '" data-title="' + escAttr(b.title) + '" data-tooltip="' + escAttr(__('Reservar libro para lista de espera', 'aura-suite')) + '"><span class="dashicons dashicons-calendar-alt"></span></button>';
             }
             actions += '</div>';
 
-            var locTip = (b.physical_location || 'Sin sala asignada') + (b.shelf_code ? ' · Estante ' + b.shelf_code : '');
+            var locTip = (b.physical_location || __('Sin sala asignada', 'aura-suite')) + (b.shelf_code ? ' · ' + __('Estante', 'aura-suite') + ' ' + b.shelf_code : '');
 
             // Orden: Expand(0), Portada(1), Título(2), Autor(3), Estado(4), Copias(5), Dewey(6), Categoría(7), Ubicación(8), Acciones(9)
             rows += '<tr class="aura-parent-row table-row-hover-lift" data-id="' + parseInt(b.id, 10) + '">' +
-                '<td class="aura-lib-col-expand" data-label="Detalle">' +
-                    '<button type="button" class="aura-lib-row-toggle" data-id="' + parseInt(b.id, 10) + '" aria-expanded="false" data-tooltip="Desplegar información completa del libro"><span class="dashicons dashicons-plus-alt2"></span></button>' +
+                '<td class="aura-lib-col-expand" data-label="' + escAttr(__('Detalle', 'aura-suite')) + '">' +
+                    '<button type="button" class="aura-lib-row-toggle" data-id="' + parseInt(b.id, 10) + '" aria-expanded="false" data-tooltip="' + escAttr(__('Desplegar información completa del libro', 'aura-suite')) + '"><span class="dashicons dashicons-plus-alt2"></span></button>' +
                 '</td>' +
-                '<td class="aura-lib-col-cover" data-label="Portada">' + coverHtml + '</td>' +
-                '<td class="aura-lib-col-title" data-label="Título"><div class="aura-tooltip-trigger"' + buildBookRichTipAttr(b) + '><strong>' + escHtml(b.title) + '</strong>' +
+                '<td class="aura-lib-col-cover" data-label="' + escAttr(__('Portada', 'aura-suite')) + '">' + coverHtml + '</td>' +
+                '<td class="aura-lib-col-title" data-label="' + escAttr(__('Título', 'aura-suite')) + '"><div class="aura-tooltip-trigger"' + buildBookRichTipAttr(b) + '><strong>' + escHtml(b.title) + '</strong>' +
                     (b.subtitle ? '<br><small class="aura-lib-sub-muted">' + escHtml(b.subtitle) + '</small>' : '') +
                     '<div class="aura-lib-mobile-sub">' + escHtml(b.author || '—') + (b.dewey_number ? ' · Dewey ' + escHtml(b.dewey_number) : '') + '</div>' +
                     '</div></td>' +
-                '<td class="aura-lib-col-secondary" data-label="Autor">' + escHtml(b.author) + '</td>' +
-                '<td class="aura-lib-col-status" data-label="Estado"><span class="badge aura-lib-badge ' + statusClass + ' aura-tooltip-trigger" data-tooltip="' + escAttr(statusTip) + '">' + escHtml(b.display_status_label) + '</span></td>' +
-                '<td class="aura-lib-col-secondary" data-label="Copias"><span class="aura-lib-copies-cell ' + copiesClass + ' aura-tooltip-trigger" data-tooltip="' + escAttr(copiesTip) + '">' +
+                '<td class="aura-lib-col-secondary" data-label="' + escAttr(__('Autor', 'aura-suite')) + '">' + escHtml(b.author) + '</td>' +
+                '<td class="aura-lib-col-status" data-label="' + escAttr(__('Estado', 'aura-suite')) + '"><span class="badge aura-lib-badge ' + statusClass + ' aura-tooltip-trigger" data-tooltip="' + escAttr(statusTip) + '">' + escHtml(b.display_status_label) + '</span></td>' +
+                '<td class="aura-lib-col-secondary" data-label="' + escAttr(__('Copias', 'aura-suite')) + '"><span class="aura-lib-copies-cell ' + copiesClass + ' aura-tooltip-trigger" data-tooltip="' + escAttr(copiesTip) + '">' +
                     availCount + ' / ' + totalCount +
-                    (availCount === 0 && lentCount > 0 ? '<br><small style="font-weight:normal;font-size:10px;">' + escHtml(lentCount + (lentCount === 1 ? ' prestada' : ' prestadas')) + '</small>' : '') +
+                    (availCount === 0 && lentCount > 0 ? '<br><small style="font-weight:normal;font-size:10px;">' + escHtml(lentCount + ' ' + (lentCount === 1 ? __('prestada', 'aura-suite') : __('prestadas', 'aura-suite'))) + '</small>' : '') +
                     '</span></td>' +
-                '<td class="aura-lib-col-secondary" data-label="Dewey"><code class="aura-tooltip-trigger" data-tooltip="' + escAttr(b.dewey_number ? 'Clasificación Dewey: ' + b.dewey_number : 'Sin código Dewey asignado') + '">' + escHtml(b.dewey_number || '—') + '</code></td>' +
-                '<td class="aura-lib-col-secondary" data-label="Categoría">' + escHtml(b.category || '—') + '</td>' +
-                '<td class="aura-lib-col-secondary" data-label="Ubicación"><span class="aura-tooltip-trigger" data-tooltip="' + escAttr(locTip) + '">' + escHtml(b.physical_location || '—') +
+                '<td class="aura-lib-col-secondary" data-label="' + escAttr(__('Dewey', 'aura-suite')) + '"><code class="aura-tooltip-trigger" data-tooltip="' + escAttr(b.dewey_number ? __('Clasificación Dewey:', 'aura-suite') + ' ' + b.dewey_number : __('Sin código Dewey asignado', 'aura-suite')) + '">' + escHtml(b.dewey_number || '—') + '</code></td>' +
+                '<td class="aura-lib-col-secondary" data-label="' + escAttr(__('Categoría', 'aura-suite')) + '">' + escHtml(b.category || '—') + '</td>' +
+                '<td class="aura-lib-col-secondary" data-label="' + escAttr(__('Ubicación', 'aura-suite')) + '"><span class="aura-tooltip-trigger" data-tooltip="' + escAttr(locTip) + '">' + escHtml(b.physical_location || '—') +
                     (b.shelf_code ? '<br><small class="aura-lib-sub-muted">' + escHtml(b.shelf_code) + '</small>' : '') + '</span></td>' +
-                '<td class="aura-lib-col-actions" data-label="Acciones">' + actions + '</td>' +
+                '<td class="aura-lib-col-actions" data-label="' + escAttr(__('Acciones', 'aura-suite')) + '">' + actions + '</td>' +
             '</tr>';
         });
         tbody.html(rows);
@@ -706,7 +708,7 @@
         stopRemoteScan();
         $('#aura-lib-cover-preview')
             .html('<span class="dashicons dashicons-format-image aura-lib-cover-placeholder"></span>' +
-                  '<div class="aura-lib-dz-hint"><strong>Arrastra una imagen aquí</strong><span>o</span></div>');
+                  '<div class="aura-lib-dz-hint"><strong>' + escHtml(__('Arrastra una imagen aquí', 'aura-suite')) + '</strong><span>' + escHtml(__('o', 'aura-suite')) + '</span></div>');
         $('#aura-lib-dropzone').removeClass('has-image dragover');
         $('#aura-lib-btn-remove-cover').hide();
         $('.aura-lib-isbn-error').hide();
@@ -860,7 +862,7 @@
     // ──────────────────────────────────────────────────────────────
     function handleDroppedFile(file) {
         if (!file.type.startsWith('image/')) {
-            showToast('El archivo debe ser una imagen.', 'error');
+            showToast(__('El archivo debe ser una imagen.', 'aura-suite'), 'error');
             return;
         }
         var reader = new FileReader();
@@ -869,7 +871,7 @@
         };
         reader.readAsDataURL(file);
         // Note: we can only preview local; to upload properly, we still need WP Media
-        showToast('Vista previa local. Usa "Seleccionar imagen" para cargar al servidor.', 'error');
+        showToast(__('Vista previa local. Usa "Seleccionar imagen" para cargar al servidor.', 'aura-suite'), 'error');
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -920,7 +922,7 @@
         if (isbn && !validateIsbn(isbn)) {
             $('.aura-lib-isbn-error').show();
             goToWizardStep(1);
-            showToast('ISBN inválido. Revisa el campo antes de guardar.', 'error');
+            showToast(__('ISBN inválido. Revisa el campo antes de guardar.', 'aura-suite'), 'error');
             return;
         }
         $('.aura-lib-isbn-error').hide();
@@ -940,7 +942,7 @@
                 showSaveMsg(msg, 'error');
                 return;
             }
-            showToast(cfg.txt.saved || 'Libro guardado correctamente.', 'success');
+            showToast(cfg.txt.saved || __('Libro guardado correctamente.', 'aura-suite'), 'success');
             closeAllModals();
             setTimeout(function () { window.location.reload(); }, 450);
         }).fail(function () {
@@ -964,7 +966,7 @@
                 showToast(res.data ? res.data.message : cfg.txt.error, 'error');
                 return;
             }
-            showToast(cfg.txt.deleted || 'Libro eliminado correctamente.', 'success');
+            showToast(cfg.txt.deleted || __('Libro eliminado correctamente.', 'aura-suite'), 'success');
             setTimeout(function () { window.location.reload(); }, 450);
         }).fail(function () {
             showToast(cfg.txt.error, 'error');
@@ -1027,9 +1029,9 @@
         var coverHtml = fullUrl
             ? '<div class="aura-lib-detail-cover-card aura-tooltip-trigger"' + buildCoverHoverCardAttr(fullUrl, b.title, b.author || '') + '>' +
               '<img src="' + escAttr(fullUrl) + '" alt="' + escAttr(b.title) + '" class="aura-lib-detail-cover">' +
-              '<span class="aura-lib-detail-cover-zoom-hint"><span class="dashicons dashicons-search"></span> Ampliar</span>' +
+              '<span class="aura-lib-detail-cover-zoom-hint"><span class="dashicons dashicons-search"></span> ' + escHtml(__('Ampliar', 'aura-suite')) + '</span>' +
               '</div>'
-            : '<div class="aura-lib-detail-cover-placeholder-box"><span class="dashicons dashicons-book-alt"></span><small>Sin portada</small></div>';
+            : '<div class="aura-lib-detail-cover-placeholder-box"><span class="dashicons dashicons-book-alt"></span><small>' + escHtml(__('Sin portada', 'aura-suite')) + '</small></div>';
 
         var statusClass = {
             'available'      : 'badge-emerald',
@@ -1048,7 +1050,7 @@
                     '<strong>' + availCount + ' / ' + totalCount + '</strong>' +
                 '</div>' +
                 '<div class="micro-progress-bar"><span class="micro-progress-fill" style="width:' + availPct + '%;"></span></div>' +
-                '<span class="aura-lib-sub-muted">' + availCount + ' ejemplares disponibles</span>' +
+                '<span class="aura-lib-sub-muted">' + availCount + ' ' + escHtml(__('ejemplares disponibles', 'aura-suite')) + '</span>' +
             '</div>' +
         '</div>';
 
@@ -1056,18 +1058,18 @@
         html += '<div class="aura-lib-detail-title-block">' +
             '<h3>' + escHtml(b.title || '') + '</h3>' +
             (b.subtitle ? '<p class="aura-lib-detail-subtitle">' + escHtml(b.subtitle) + '</p>' : '') +
-            '<div class="aura-lib-detail-author-chip"><span class="dashicons dashicons-admin-users"></span> ' + escHtml(b.author || 'Autor no especificado') + '</div>' +
+            '<div class="aura-lib-detail-author-chip"><span class="dashicons dashicons-admin-users"></span> ' + escHtml(b.author || __('Autor no especificado', 'aura-suite')) + '</div>' +
         '</div>';
 
         var specs = [
-            { icon: '📚', label: 'Dewey',      val: b.dewey_number || '—' },
-            { icon: '🔢', label: 'ISBN',       val: b.isbn || '—', isCode: true },
-            { icon: '🏛️', label: 'Editorial',  val: b.publisher || '—' },
-            { icon: '📅', label: 'Año / Ed.',  val: (b.year_published || '—') + (b.edition ? ' · ' + b.edition : '') },
-            { icon: '🌐', label: 'Idioma',     val: b.language || 'Español' },
-            { icon: '📄', label: 'Páginas',    val: b.pages ? b.pages + ' págs.' : '—' },
-            { icon: '🏷️', label: 'Categoría',  val: (b.category || '—') + (b.subcategory ? ' / ' + b.subcategory : '') },
-            { icon: '📍', label: 'Ubicación',  val: (b.physical_location || '—') + (b.shelf_code ? ' · Estante ' + b.shelf_code : '') },
+            { icon: '📚', label: __('Dewey', 'aura-suite'),      val: b.dewey_number || '—' },
+            { icon: '🔢', label: __('ISBN', 'aura-suite'),       val: b.isbn || '—', isCode: true },
+            { icon: '🏛️', label: __('Editorial', 'aura-suite'),  val: b.publisher || '—' },
+            { icon: '📅', label: __('Año / Ed.', 'aura-suite'),  val: (b.year_published || '—') + (b.edition ? ' · ' + b.edition : '') },
+            { icon: '🌐', label: __('Idioma', 'aura-suite'),     val: b.language || __('Español', 'aura-suite') },
+            { icon: '📄', label: __('Páginas', 'aura-suite'),    val: b.pages ? b.pages + ' ' + __('págs.', 'aura-suite') : '—' },
+            { icon: '🏷️', label: __('Categoría', 'aura-suite'),  val: (b.category || '—') + (b.subcategory ? ' / ' + b.subcategory : '') },
+            { icon: '📍', label: __('Ubicación', 'aura-suite'),  val: (b.physical_location || '—') + (b.shelf_code ? ' · ' + __('Estante', 'aura-suite') + ' ' + b.shelf_code : '') },
         ];
 
         html += '<div class="aura-lib-detail-specs-grid">';
@@ -1091,19 +1093,19 @@
         }
 
         if (b.description) {
-            html += '<div class="aura-lib-detail-synopsis"><h4>📝 Sinopsis</h4><p>' + escHtml(b.description) + '</p></div>';
+            html += '<div class="aura-lib-detail-synopsis"><h4>📝 ' + escHtml(__('Sinopsis', 'aura-suite')) + '</h4><p>' + escHtml(b.description) + '</p></div>';
         }
 
         html += '</div></div>';
 
         // Historial de préstamos
         html += '<div class="aura-lib-detail-history-card">';
-        html += '<h3 class="aura-lib-detail-history-title"><span class="dashicons dashicons-backup"></span> Historial de préstamos (' + loans.length + ')</h3>';
+        html += '<h3 class="aura-lib-detail-history-title"><span class="dashicons dashicons-backup"></span> ' + escHtml(__('Historial de préstamos', 'aura-suite')) + ' (' + loans.length + ')</h3>';
         if (!loans.length) {
-            html += '<p class="aura-lib-detail-empty">Sin préstamos registrados para este libro.</p>';
+            html += '<p class="aura-lib-detail-empty">' + escHtml(__('Sin préstamos registrados para este libro.', 'aura-suite')) + '</p>';
         } else {
             html += '<div class="aura-dt-wrapper aura-table-responsive-wrap" style="margin-top:10px;"><table class="aura-table aura-lib-responsive-table widefat"><thead><tr>' +
-                '<th>Lector</th><th>Préstamo</th><th>Vencimiento</th><th>Devolución</th><th>Estado</th>' +
+                '<th>' + escHtml(__('Lector', 'aura-suite')) + '</th><th>' + escHtml(__('Préstamo', 'aura-suite')) + '</th><th>' + escHtml(__('Vencimiento', 'aura-suite')) + '</th><th>' + escHtml(__('Devolución', 'aura-suite')) + '</th><th>' + escHtml(__('Estado', 'aura-suite')) + '</th>' +
                 '</tr></thead><tbody>';
             $.each(loans, function (i, l) {
                 var lStatusClass = {
@@ -1116,11 +1118,11 @@
 
                 var dueClass = l.is_overdue ? 'aura-lib-due-overdue' : '';
                 html += '<tr class="table-row-hover-lift">' +
-                    '<td data-label="Lector"><strong>' + escHtml(l.borrower) + '</strong></td>' +
-                    '<td data-label="Préstamo">' + escHtml(l.loan_date) + '</td>' +
-                    '<td data-label="Vencimiento" class="' + dueClass + '">' + escHtml(l.due_date) + '</td>' +
-                    '<td data-label="Devolución">' + escHtml(l.return_date || '—') + '</td>' +
-                    '<td data-label="Estado"><span class="badge aura-lib-badge ' + lStatusClass + '">' + escHtml(l.status_label) + '</span></td>' +
+                    '<td data-label="' + escAttr(__('Lector', 'aura-suite')) + '"><strong>' + escHtml(l.borrower) + '</strong></td>' +
+                    '<td data-label="' + escAttr(__('Préstamo', 'aura-suite')) + '">' + escHtml(l.loan_date) + '</td>' +
+                    '<td data-label="' + escAttr(__('Vencimiento', 'aura-suite')) + '" class="' + dueClass + '">' + escHtml(l.due_date) + '</td>' +
+                    '<td data-label="' + escAttr(__('Devolución', 'aura-suite')) + '">' + escHtml(l.return_date || '—') + '</td>' +
+                    '<td data-label="' + escAttr(__('Estado', 'aura-suite')) + '"><span class="badge aura-lib-badge ' + lStatusClass + '">' + escHtml(l.status_label) + '</span></td>' +
                 '</tr>';
             });
             html += '</tbody></table></div>';
@@ -1161,7 +1163,7 @@
         $('#aura-lib-f-cover-url').val('');
         $('#aura-lib-cover-preview')
             .html('<span class="dashicons dashicons-format-image aura-lib-cover-placeholder"></span>' +
-                  '<div class="aura-lib-dz-hint"><strong>Arrastra una imagen aquí</strong><span>o</span></div>');
+                  '<div class="aura-lib-dz-hint"><strong>' + escHtml(__('Arrastra una imagen aquí', 'aura-suite')) + '</strong><span>' + escHtml(__('o', 'aura-suite')) + '</span></div>');
         $('#aura-lib-dropzone').removeClass('has-image');
         $('#aura-lib-btn-remove-cover').hide();
     }
@@ -1251,7 +1253,7 @@
         var isIsbn = (clean.length === 10 || clean.length === 13) && validateIsbn(clean);
 
         if (!isIsbn && raw.length < 3) {
-            showToast('Ingresa un ISBN válido o al menos 3 letras del Título y Autor.', 'error');
+            showToast(__('Ingresa un ISBN válido o al menos 3 letras del Título y Autor.', 'aura-suite'), 'error');
             return;
         }
 
@@ -1269,7 +1271,7 @@
             $btnInline.prop('disabled', false).removeClass('loading');
 
             if (!res.success || !res.data) {
-                showToast((res.data && res.data.message) ? res.data.message : 'No se encontraron datos para esa búsqueda.', 'error');
+                showToast((res.data && res.data.message) ? res.data.message : __('No se encontraron datos para esa búsqueda.', 'aura-suite'), 'error');
                 return;
             }
 
@@ -1277,7 +1279,7 @@
         }).fail(function () {
             $btnMain.prop('disabled', false).removeClass('loading');
             $btnInline.prop('disabled', false).removeClass('loading');
-            showToast('Error de conexión al consultar las bases de datos de libros.', 'error');
+            showToast(__('Error de conexión al consultar las bases de datos de libros.', 'aura-suite'), 'error');
         });
     }
 
@@ -1309,9 +1311,9 @@
 
         var srcTxt = (d.sources && d.sources.length) ? ' (' + d.sources.join(' + ') + ')' : '';
         if (d.language && d.language !== 'Español') {
-            showToast('Cargado en ' + d.language + srcTxt + '. Si buscas la edición en español, escribe el Título y Autor arriba y pulsa Buscar.', 'success');
+            showToast(__('Cargado en', 'aura-suite') + ' ' + d.language + srcTxt + '. ' + __('Si buscas la edición en español, escribe el Título y Autor arriba y pulsa Buscar.', 'aura-suite'), 'success');
         } else {
-            showToast('Ficha, clasificación y portada cargadas' + srcTxt + '.', 'success');
+            showToast(__('Ficha, clasificación y portada cargadas', 'aura-suite') + srcTxt + '.', 'success');
         }
     }
 
@@ -1339,7 +1341,7 @@
             var $sel     = $('#aura-lib-camera-select').empty();
             if (devices && devices.length > 1) {
                 $.each(devices, function (idx, cam) {
-                    var label = cam.label || ('Cámara ' + (idx + 1));
+                    var label = cam.label || (__('Cámara', 'aura-suite') + ' ' + (idx + 1));
                     $sel.append('<option value="' + escAttr(cam.id) + '">' + escHtml(label) + '</option>');
                 });
                 $selWrap.show();
@@ -1373,7 +1375,7 @@
                 // Frame without barcode — silent
             }
         ).then(function () {
-            $status.text('Encuadra el código de barras ISBN dentro del recuadro.');
+            $status.text(__('Encuadra el código de barras ISBN dentro del recuadro.', 'aura-suite'));
             populateCameraSelect();
         }).catch(function (err) {
             if (allowDeviceFallback) {
@@ -1393,18 +1395,18 @@
                         return;
                     }
                     _scannerActive = false;
-                    $status.text('No se detectó ninguna cámara disponible.');
-                    showToast('No se pudo acceder a la cámara. Revisa los permisos del navegador.', 'error');
+                    $status.text(__('No se detectó ninguna cámara disponible.', 'aura-suite'));
+                    showToast(__('No se pudo acceder a la cámara. Revisa los permisos del navegador.', 'aura-suite'), 'error');
                 }).catch(function () {
                     _scannerActive = false;
-                    $status.text('No se pudo abrir la cámara: ' + (err && err.message ? err.message : err));
-                    showToast('No se pudo acceder a la cámara. Revisa los permisos del navegador.', 'error');
+                    $status.text(__('No se pudo abrir la cámara:', 'aura-suite') + ' ' + (err && err.message ? err.message : err));
+                    showToast(__('No se pudo acceder a la cámara. Revisa los permisos del navegador.', 'aura-suite'), 'error');
                 });
                 return;
             }
             _scannerActive = false;
-            $status.text('No se pudo abrir la cámara: ' + (err && err.message ? err.message : err));
-            showToast('No se pudo acceder a la cámara. Revisa los permisos o usa "Cámara del celular (QR)".', 'error');
+            $status.text(__('No se pudo abrir la cámara:', 'aura-suite') + ' ' + (err && err.message ? err.message : err));
+            showToast(__('No se pudo acceder a la cámara. Revisa los permisos o usa "Cámara del celular (QR)".', 'aura-suite'), 'error');
         });
     }
 
@@ -1418,8 +1420,8 @@
                 callback();
             })
             .fail(function () {
-                $('#aura-lib-scanner-status').text('No se pudo descargar el lector de cámara.');
-                showToast('No se pudo cargar el módulo de cámara. Verifica tu conexión.', 'error');
+                $('#aura-lib-scanner-status').text(__('No se pudo descargar el lector de cámara.', 'aura-suite'));
+                showToast(__('No se pudo cargar el módulo de cámara. Verifica tu conexión.', 'aura-suite'), 'error');
             });
     }
 
@@ -1436,18 +1438,18 @@
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             $panel.slideDown(180);
-            $status.text('El navegador bloqueó el acceso a la cámara (requiere HTTPS y permiso de cámara).');
-            showToast('Tu navegador o conexión (HTTP sin HTTPS) no permite abrir la cámara.', 'error');
+            $status.text(__('El navegador bloqueó el acceso a la cámara (requiere HTTPS y permiso de cámara).', 'aura-suite'));
+            showToast(__('Tu navegador o conexión (HTTP sin HTTPS) no permite abrir la cámara.', 'aura-suite'), 'error');
             return;
         }
 
         $panel.slideDown(180, function () {
             try { $panel[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
         });
-        $status.text('Iniciando cámara…');
+        $status.text(__('Iniciando cámara…', 'aura-suite'));
 
         if (typeof Html5Qrcode === 'undefined') {
-            $status.text('Cargando módulo de cámara…');
+            $status.text(__('Cargando módulo de cámara…', 'aura-suite'));
             loadHtml5QrcodeScript(function () {
                 launchScannerWithTarget({ facingMode: 'environment' }, true);
             });
@@ -1459,7 +1461,7 @@
 
     function switchScannerCamera(camId) {
         if (!_html5QrScanner || !_scannerActive) return;
-        $('#aura-lib-scanner-status').text('Cambiando de cámara…');
+        $('#aura-lib-scanner-status').text(__('Cambiando de cámara…', 'aura-suite'));
         _html5QrScanner.stop().then(function () {
             launchScannerWithTarget(camId, []);
         }).catch(function () {
@@ -1510,7 +1512,7 @@
             nonce  : cfg.nonce,
         }, function (res) {
             if (!res.success || !res.data) {
-                showToast('No se pudo crear la sesión de escaneo remoto.', 'error');
+                showToast(__('No se pudo crear la sesión de escaneo remoto.', 'aura-suite'), 'error');
                 stopRemoteScan();
                 return;
             }
@@ -1529,21 +1531,21 @@
                     colorLight: '#ffffff',
                 });
             } else {
-                $qrBox.html('<a href="' + escAttr(scanUrl) + '" target="_blank" class="button button-primary">Abrir enlace en celular</a>');
+                $qrBox.html('<a href="' + escAttr(scanUrl) + '" target="_blank" class="button button-primary">' + escHtml(__('Abrir enlace en celular', 'aura-suite')) + '</a>');
             }
 
             var httpsNote = res.data.is_https
                 ? ''
-                : '<br><small style="color:#b45309;">⚠️ Nota: En entornos locales HTTP el navegador móvil puede bloquear la cámara; en HTTPS funcionará directo.</small>';
+                : '<br><small style="color:#b45309;">⚠️ ' + escHtml(__('Nota: En entornos locales HTTP el navegador móvil puede bloquear la cámara; en HTTPS funcionará directo.', 'aura-suite')) + '</small>';
 
             $('#aura-lib-remote-qr-status').html(
-                '<span class="spinner is-active" style="float:none;margin:0 6px 0 0;"></span> Esperando escaneo desde tu celular…' + httpsNote
+                '<span class="spinner is-active" style="float:none;margin:0 6px 0 0;"></span> ' + escHtml(__('Esperando escaneo desde tu celular…', 'aura-suite')) + httpsNote
             );
 
             if (_remoteScanTimer) clearInterval(_remoteScanTimer);
             _remoteScanTimer = setInterval(pollRemoteScan, 1500);
         }).fail(function () {
-            showToast('Error al conectar con el servidor para generar el QR.', 'error');
+            showToast(__('Error al conectar con el servidor para generar el QR.', 'aura-suite'), 'error');
             stopRemoteScan();
         });
     }
@@ -1558,7 +1560,7 @@
             if (!res.success || !res.data) return;
             if (res.data.status === 'expired') {
                 stopRemoteScan();
-                showToast('La sesión QR expiró. Vuelve a abrirla si deseas escanear.', 'error');
+                showToast(__('La sesión QR expiró. Vuelve a abrirla si deseas escanear.', 'aura-suite'), 'error');
                 return;
             }
             if (res.data.status === 'scanned' && res.data.isbn) {
@@ -1644,14 +1646,14 @@
             $btn.prop('disabled', false).text('Confirmar Reserva');
             if (res.success) {
                 closeAllModals();
-                showToast(res.data.message || 'Reserva creada correctamente.', 'success');
+                showToast(res.data.message || __('Reserva creada correctamente.', 'aura-suite'), 'success');
                 loadBooks();
             } else {
-                showToast(res.data ? res.data.message : 'Error al crear la reserva.', 'error');
+                showToast(res.data ? res.data.message : __('Error al crear la reserva.', 'aura-suite'), 'error');
             }
         }).fail(function () {
             $btn.prop('disabled', false).text('Confirmar Reserva');
-            showToast('Error al procesar la solicitud.', 'error');
+            showToast(__('Error al procesar la solicitud.', 'aura-suite'), 'error');
         });
     }
 

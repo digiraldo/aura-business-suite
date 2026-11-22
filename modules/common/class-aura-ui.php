@@ -63,7 +63,7 @@ class Aura_UI {
             $primary_role = reset($user_roles) ?: 'subscriber';
             $user_role_label = (class_exists('Aura_Roles_Manager') && method_exists('Aura_Roles_Manager', 'get_role_label'))
                 ? Aura_Roles_Manager::get_role_label($primary_role)
-                : (ucfirst($primary_role) ?: 'Usuario');
+                : (ucfirst($primary_role) ?: __('Usuario', 'aura-suite'));
             ?>
             <header class="wow-vip-card aura-dashboard-vip-header fade-up">
                 <div class="aura-vip-header__top-row flex items-center justify-between flex-wrap gap-4 mb-4">
@@ -90,6 +90,11 @@ class Aura_UI {
                         </div>
                     </div>
                     <div class="flex items-center gap-3 flex-wrap">
+                        <?php
+                        if ( ! is_admin() && class_exists( 'Aura_I18n' ) ) {
+                            Aura_I18n::render_switcher( [ 'compact' => true ] );
+                        }
+                        ?>
                         <span class="live-chip aura-vip-live-chip">
                             <span class="pulse-dot" style="background-color:var(--aura-emerald);"></span> <?php _e('Sistema en línea', 'aura-suite'); ?>
                         </span>
@@ -157,8 +162,13 @@ class Aura_UI {
                         <?php endif; ?>
                     </div>
                 </div>
-                <?php if ( ! empty( $actions ) ) : ?>
+                <?php if ( ! empty( $actions ) || ( ! is_admin() && class_exists( 'Aura_I18n' ) ) ) : ?>
                     <div class="aura-hero-actions">
+                        <?php
+                        if ( ! is_admin() && class_exists( 'Aura_I18n' ) ) {
+                            Aura_I18n::render_switcher( [ 'compact' => true ] );
+                        }
+                        ?>
                         <?php foreach ( $actions as $action ) :
                             $btn_label = $action['label'] ?? '';
                             $btn_url   = $action['url'] ?? '#';
@@ -187,8 +197,13 @@ class Aura_UI {
                         <p><?php echo esc_html( $subtitle ); ?></p>
                     <?php endif; ?>
                 </div>
-                <?php if ( ! empty( $badges ) || ! empty( $actions ) ) : ?>
+                <?php if ( ! empty( $badges ) || ! empty( $actions ) || ( ! is_admin() && class_exists( 'Aura_I18n' ) ) ) : ?>
                     <div class="aura-page-header__badges">
+                        <?php
+                        if ( ! is_admin() && class_exists( 'Aura_I18n' ) ) {
+                            Aura_I18n::render_switcher( [ 'compact' => true ] );
+                        }
+                        ?>
                         <?php foreach ( $badges as $badge ) :
                             $b_label   = $badge['label'] ?? '';
                             $b_variant = $badge['variant'] ?? 'blue';

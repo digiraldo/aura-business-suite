@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                         <h4 class="aura-my-cert-course"><?php echo esc_html( $cert['course_name'] ); ?></h4>
                         <p class="aura-my-cert-meta">
                             <span><?php esc_html_e( 'Emitido:', 'aura-suite' ); ?> <?php echo esc_html( $cert['issued_at'] ); ?></span>
-                            <span> · Folio: <code><?php echo esc_html( $cert['folio'] ); ?></code></span>
+                            <span> · <?php esc_html_e( 'Folio:', 'aura-suite' ); ?> <code><?php echo esc_html( $cert['folio'] ); ?></code></span>
                         </p>
                     </div>
                     <div class="aura-my-cert-actions">
@@ -74,7 +74,7 @@ document.querySelectorAll('.aura-copy-verify-url').forEach(function(btn) {
         if (navigator.clipboard && url) {
             navigator.clipboard.writeText(url).then(function() {
                 btn.textContent = '✅';
-                setTimeout(function() { btn.textContent = '🔗 <?php esc_js( __( 'Compartir', 'aura-suite' ) ); ?>'; }, 2000);
+                setTimeout(function() { btn.textContent = '🔗 <?php echo esc_js( __( 'Compartir', 'aura-suite' ) ); ?>'; }, 2000);
             });
         }
     });

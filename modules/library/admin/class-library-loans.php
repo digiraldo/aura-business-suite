@@ -71,7 +71,7 @@ class Aura_Library_Loans {
             ! current_user_can( 'aura_library_view_loans_all' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $wp_user_id = absint( $_POST['wp_user_id'] ?? 0 );
@@ -109,7 +109,7 @@ class Aura_Library_Loans {
             || current_user_can( 'aura_library_view_loans_own' )
             || current_user_can( 'manage_options' );
         if ( ! $can ) {
-            wp_die( esc_html__( 'No tienes permisos para ver esta página.', 'aura-business-suite' ) );
+            wp_die( esc_html__( 'No tienes permisos para ver esta página.', 'aura-suite' ) );
         }
         include AURA_PLUGIN_DIR . 'templates/library/loans-list.php';
     }
@@ -124,7 +124,7 @@ class Aura_Library_Loans {
         $can_all = current_user_can( 'aura_library_view_loans_all' ) || current_user_can( 'manage_options' );
         $can_own = current_user_can( 'aura_library_view_loans_own' );
         if ( ! $can_all && ! $can_own ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -253,7 +253,7 @@ class Aura_Library_Loans {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_loan_create' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para registrar préstamos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para registrar préstamos.', 'aura-suite' ) ] );
         }
 
         $book_id    = intval( $_POST['book_id']            ?? 0 );
@@ -264,7 +264,7 @@ class Aura_Library_Loans {
         $notes      = sanitize_textarea_field( $_POST['notes']  ?? '' );
 
         if ( ! $book_id ) {
-            wp_send_json_error( [ 'message' => __( 'Debe seleccionar un libro.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Debe seleccionar un libro.', 'aura-suite' ) ] );
         }
 
         // Si se envió contact_id pero no user_id, buscar si el contacto tiene usuario WP
@@ -278,7 +278,7 @@ class Aura_Library_Loans {
         }
 
         if ( ! $user_id && ! $contact_id ) {
-            wp_send_json_error( [ 'message' => __( 'Debe seleccionar un lector o contacto de la libreta.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Debe seleccionar un lector o contacto de la libreta.', 'aura-suite' ) ] );
         }
         if ( ! $loan_date ) {
             $loan_date = gmdate( 'Y-m-d' );
@@ -290,7 +290,7 @@ class Aura_Library_Loans {
 
         // Validar que due_date >= loan_date
         if ( $due_date < $loan_date ) {
-            wp_send_json_error( [ 'message' => __( 'La fecha de devolución no puede ser anterior a la fecha de préstamo.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'La fecha de devolución no puede ser anterior a la fecha de préstamo.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -304,19 +304,19 @@ class Aura_Library_Loans {
         ) );
 
         if ( ! $book ) {
-            wp_send_json_error( [ 'message' => __( 'Libro no encontrado.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Libro no encontrado.', 'aura-suite' ) ] );
         }
         if ( $book->status === 'reference_only' ) {
-            wp_send_json_error( [ 'message' => __( 'Este libro es de solo consulta y no puede prestarse.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Este libro es de solo consulta y no puede prestarse.', 'aura-suite' ) ] );
         }
         if ( (int) $book->available_copies <= 0 ) {
-            wp_send_json_error( [ 'message' => __( 'No hay ejemplares disponibles de este libro. Considere reservarlo.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No hay ejemplares disponibles de este libro. Considere reservarlo.', 'aura-suite' ) ] );
         }
 
         // Verificar lector (usuario WP o contacto)
         if ( $user_id > 0 && ! get_user_by( 'id', $user_id ) ) {
             if ( ! $contact_id ) {
-                wp_send_json_error( [ 'message' => __( 'Usuario no encontrado.', 'aura-business-suite' ) ] );
+                wp_send_json_error( [ 'message' => __( 'Usuario no encontrado.', 'aura-suite' ) ] );
             }
             $user_id = 0;
         }
@@ -327,7 +327,7 @@ class Aura_Library_Loans {
         $decremented = Aura_Library_Books::decrement_available_copies( $book_id );
         if ( ! $decremented ) {
             $wpdb->query( 'ROLLBACK' );
-            wp_send_json_error( [ 'message' => __( 'No hay ejemplares disponibles (concurrencia).', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No hay ejemplares disponibles (concurrencia).', 'aura-suite' ) ] );
         }
 
         $result = $wpdb->insert( $t_loans, [
@@ -344,7 +344,7 @@ class Aura_Library_Loans {
 
         if ( $result === false ) {
             $wpdb->query( 'ROLLBACK' );
-            wp_send_json_error( [ 'message' => __( 'Error al registrar el préstamo.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Error al registrar el préstamo.', 'aura-suite' ) ] );
         }
 
         $loan_id = $wpdb->insert_id;
@@ -363,7 +363,7 @@ class Aura_Library_Loans {
 
         wp_send_json_success( [
             'id'      => $loan_id,
-            'message' => __( 'Préstamo registrado correctamente.', 'aura-business-suite' ),
+            'message' => __( 'Préstamo registrado correctamente.', 'aura-suite' ),
         ] );
     }
 
@@ -375,7 +375,7 @@ class Aura_Library_Loans {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_loan_return' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para registrar devoluciones.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para registrar devoluciones.', 'aura-suite' ) ] );
         }
 
         $loan_id     = intval( $_POST['loan_id']      ?? 0 );
@@ -384,7 +384,7 @@ class Aura_Library_Loans {
         $to_finance  = ! empty( $_POST['to_finance'] );
 
         if ( ! $loan_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de préstamo inválido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de préstamo inválido.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -400,7 +400,7 @@ class Aura_Library_Loans {
         ) );
 
         if ( ! $loan ) {
-            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado o ya devuelto.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado o ya devuelto.', 'aura-suite' ) ] );
         }
 
         // Calcular multa
@@ -453,7 +453,7 @@ class Aura_Library_Loans {
         );
 
         wp_send_json_success( [
-            'message' => __( 'Devolución registrada correctamente.', 'aura-business-suite' ),
+            'message' => __( 'Devolución registrada correctamente.', 'aura-suite' ),
             'fine'    => $fine,
         ] );
     }
@@ -466,12 +466,12 @@ class Aura_Library_Loans {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_loan_extend' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para extender préstamos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para extender préstamos.', 'aura-suite' ) ] );
         }
 
         $loan_id = intval( $_POST['loan_id'] ?? 0 );
         if ( ! $loan_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de préstamo inválido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de préstamo inválido.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -482,7 +482,7 @@ class Aura_Library_Loans {
         ) );
 
         if ( ! $loan ) {
-            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado o no se puede extender.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado o no se puede extender.', 'aura-suite' ) ] );
         }
 
         $max_extensions  = (int) get_option( 'aura_library_max_extensions', 2 );
@@ -493,7 +493,7 @@ class Aura_Library_Loans {
             wp_send_json_error( [
                 'message' => sprintf(
                     /* translators: %d: máximo de extensiones */
-                    __( 'Este préstamo ya alcanzó el máximo de %d extensiones permitidas.', 'aura-business-suite' ),
+                    __( 'Este préstamo ya alcanzó el máximo de %d extensiones permitidas.', 'aura-suite' ),
                     $max_extensions
                 ),
             ] );
@@ -518,7 +518,7 @@ class Aura_Library_Loans {
         );
 
         wp_send_json_success( [
-            'message'      => __( 'Préstamo extendido correctamente.', 'aura-business-suite' ),
+            'message'      => __( 'Préstamo extendido correctamente.', 'aura-suite' ),
             'new_due_date' => $new_due_date,
         ] );
     }
@@ -533,12 +533,12 @@ class Aura_Library_Loans {
         $can_all = current_user_can( 'aura_library_view_loans_all' ) || current_user_can( 'manage_options' );
         $can_own = current_user_can( 'aura_library_view_loans_own' );
         if ( ! $can_all && ! $can_own ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $loan_id = intval( $_POST['loan_id'] ?? 0 );
         if ( ! $loan_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -555,12 +555,12 @@ class Aura_Library_Loans {
         ) );
 
         if ( ! $loan ) {
-            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado.', 'aura-suite' ) ] );
         }
 
         // Restringir si es solo_own y no es el dueño
         if ( ! $can_all && (int) $loan->borrower_user_id !== get_current_user_id() ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para ver este préstamo.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para ver este préstamo.', 'aura-suite' ) ] );
         }
 
         $today  = gmdate( 'Y-m-d' );
@@ -603,7 +603,7 @@ class Aura_Library_Loans {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_loan_create' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $q = sanitize_text_field( $_POST['q'] ?? '' );
@@ -719,7 +719,7 @@ class Aura_Library_Loans {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_loan_edit' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para editar préstamos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para editar préstamos.', 'aura-suite' ) ] );
         }
 
         $loan_id   = intval( $_POST['loan_id']   ?? 0 );
@@ -729,7 +729,7 @@ class Aura_Library_Loans {
         $status    = sanitize_text_field( $_POST['status']    ?? '' );
 
         if ( ! $loan_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de préstamo inválido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de préstamo inválido.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -741,11 +741,11 @@ class Aura_Library_Loans {
         ) );
 
         if ( ! $loan ) {
-            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado.', 'aura-suite' ) ] );
         }
 
         if ( in_array( $loan->status, [ 'returned', 'cancelled' ], true ) ) {
-            wp_send_json_error( [ 'message' => __( 'No se puede editar un préstamo devuelto o cancelado.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se puede editar un préstamo devuelto o cancelado.', 'aura-suite' ) ] );
         }
 
         $update_data = [];
@@ -756,7 +756,7 @@ class Aura_Library_Loans {
         }
         if ( $due_date ) {
             if ( $due_date < $ref_loan ) {
-                wp_send_json_error( [ 'message' => __( 'La fecha de devolución no puede ser anterior a la fecha de préstamo.', 'aura-business-suite' ) ] );
+                wp_send_json_error( [ 'message' => __( 'La fecha de devolución no puede ser anterior a la fecha de préstamo.', 'aura-suite' ) ] );
             }
             $update_data['due_date'] = $due_date;
         }
@@ -770,7 +770,7 @@ class Aura_Library_Loans {
         }
 
         if ( empty( $update_data ) ) {
-            wp_send_json_error( [ 'message' => __( 'No hay cambios que guardar.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No hay cambios que guardar.', 'aura-suite' ) ] );
         }
 
         $old_data = [];
@@ -787,7 +787,7 @@ class Aura_Library_Loans {
         );
 
         wp_send_json_success( [
-            'message' => __( 'Préstamo actualizado correctamente.', 'aura-business-suite' ),
+            'message' => __( 'Préstamo actualizado correctamente.', 'aura-suite' ),
         ] );
     }
 
@@ -799,12 +799,12 @@ class Aura_Library_Loans {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_loan_delete' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para cancelar préstamos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para cancelar préstamos.', 'aura-suite' ) ] );
         }
 
         $loan_id = intval( $_POST['loan_id'] ?? 0 );
         if ( ! $loan_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de préstamo inválido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de préstamo inválido.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -816,11 +816,11 @@ class Aura_Library_Loans {
         ) );
 
         if ( ! $loan ) {
-            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Préstamo no encontrado.', 'aura-suite' ) ] );
         }
 
         if ( in_array( $loan->status, [ 'returned', 'cancelled' ], true ) ) {
-            wp_send_json_error( [ 'message' => __( 'Este préstamo ya fue devuelto o cancelado.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Este préstamo ya fue devuelto o cancelado.', 'aura-suite' ) ] );
         }
 
         // Restaurar copia disponible si el libro estaba prestado activamente
@@ -839,7 +839,7 @@ class Aura_Library_Loans {
         );
 
         wp_send_json_success( [
-            'message' => __( 'Préstamo cancelado correctamente.', 'aura-business-suite' ),
+            'message' => __( 'Préstamo cancelado correctamente.', 'aura-suite' ),
         ] );
     }
 
@@ -849,12 +849,12 @@ class Aura_Library_Loans {
 
     public static function get_status_label( string $status ): string {
         $labels = [
-            'active'    => __( 'Activo',    'aura-business-suite' ),
-            'returned'  => __( 'Devuelto',  'aura-business-suite' ),
-            'overdue'   => __( 'Vencido',   'aura-business-suite' ),
-            'lost'      => __( 'Perdido',   'aura-business-suite' ),
-            'extended'  => __( 'Extendido', 'aura-business-suite' ),
-            'cancelled' => __( 'Cancelado', 'aura-business-suite' ),
+            'active'    => __( 'Activo',    'aura-suite' ),
+            'returned'  => __( 'Devuelto',  'aura-suite' ),
+            'overdue'   => __( 'Vencido',   'aura-suite' ),
+            'lost'      => __( 'Perdido',   'aura-suite' ),
+            'extended'  => __( 'Extendido', 'aura-suite' ),
+            'cancelled' => __( 'Cancelado', 'aura-suite' ),
         ];
         return $labels[ $status ] ?? $status;
     }

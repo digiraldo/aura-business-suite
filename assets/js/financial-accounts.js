@@ -2,6 +2,10 @@
 jQuery(function ($) {
     'use strict';
 
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
+    function escAttr(str) { return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
     if (window.AuraUI && typeof window.AuraUI.initTabs === 'function') {
         window.AuraUI.initTabs();
     }
@@ -17,7 +21,7 @@ jQuery(function ($) {
     const $reimbursementsForm = $('#aura-reimbursements-form');
     const $reimbursementsPayForm = $('#aura-reimbursements-pay-form');
     const $reimbursementsTableBody = $('#aura-reimbursements-table tbody');
-    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const monthNames = [__('Ene', 'aura-suite'), __('Feb', 'aura-suite'), __('Mar', 'aura-suite'), __('Abr', 'aura-suite'), __('May', 'aura-suite'), __('Jun', 'aura-suite'), __('Jul', 'aura-suite'), __('Ago', 'aura-suite'), __('Sep', 'aura-suite'), __('Oct', 'aura-suite'), __('Nov', 'aura-suite'), __('Dic', 'aura-suite')];
     let pettyCashCanApprove = false;
     let budgetImportToken = '';
     let accountsTable = null;
@@ -40,11 +44,11 @@ jQuery(function ($) {
         const annualLimit = parseMoney($('#aura-budget-annual-limit').val());
 
         if (!year || year < 2000 || year > 2100) {
-            showFeedback('Define un año fiscal válido antes de continuar.', false);
+            showFeedback(__('Define un año fiscal válido antes de continuar.', 'aura-suite'), false);
             return false;
         }
         if (annualLimit <= 0) {
-            showFeedback('El tope anual debe ser mayor a 0 para continuar.', false);
+            showFeedback(__('El tope anual debe ser mayor a 0 para continuar.', 'aura-suite'), false);
             return false;
         }
         return true;
@@ -56,15 +60,15 @@ jQuery(function ($) {
         const delivered = parseMoney($('#aura-petty-delivered').val());
 
         if (!accountId) {
-            showFeedback('Selecciona una cuenta de caja chica antes de continuar.', false);
+            showFeedback(__('Selecciona una cuenta de caja chica antes de continuar.', 'aura-suite'), false);
             return false;
         }
         if (!responsibleId) {
-            showFeedback('Selecciona un responsable antes de continuar.', false);
+            showFeedback(__('Selecciona un responsable antes de continuar.', 'aura-suite'), false);
             return false;
         }
         if (delivered <= 0) {
-            showFeedback('El monto entregado debe ser mayor a 0.', false);
+            showFeedback(__('El monto entregado debe ser mayor a 0.', 'aura-suite'), false);
             return false;
         }
         return true;
@@ -76,14 +80,14 @@ jQuery(function ($) {
         const returned = parseMoney($('#aura-petty-returned').val());
         const settlementId = parseInt($('#aura-petty-id').val(), 10);
 
-        let hint = 'Regla: Entregado = Gastado + Devuelto antes de enviar a aprobación.';
+        let hint = __('Regla: Entregado = Gastado + Devuelto antes de enviar a aprobación.', 'aura-suite');
 
         if (!settlementId) {
-            hint += ' Primero registra la entrega para generar el ID de rendición.';
+            hint += ' ' + __('Primero registra la entrega para generar el ID de rendición.', 'aura-suite');
         } else if (Math.abs((spent + returned) - delivered) > 0.009) {
-            hint += ' Ajusta los valores para que coincidan antes de enviar.';
+            hint += ' ' + __('Ajusta los valores para que coincidan antes de enviar.', 'aura-suite');
         } else {
-            hint += ' Los montos están consistentes para enviar.';
+            hint += ' ' + __('Los montos están consistentes para enviar.', 'aura-suite');
         }
 
         $('#aura-petty-step3-hint').text(hint);
@@ -95,20 +99,20 @@ jQuery(function ($) {
 
     function typeLabel(type) {
         const map = {
-            bank_account: 'Cuenta Bancaria',
-            petty_cash: 'Caja Chica',
-            contributions_fund: 'Aportes',
-            usd_cash: 'Caja USD',
-            eur_cash: 'Caja EUR',
-            cad_cash: 'Caja CAD',
-            foreign_cash: 'Caja Extranjera',
-            custom: 'Otro'
+            bank_account: __('Cuenta Bancaria', 'aura-suite'),
+            petty_cash: __('Caja Chica', 'aura-suite'),
+            contributions_fund: __('Aportes', 'aura-suite'),
+            usd_cash: __('Caja USD', 'aura-suite'),
+            eur_cash: __('Caja EUR', 'aura-suite'),
+            cad_cash: __('Caja CAD', 'aura-suite'),
+            foreign_cash: __('Caja Extranjera', 'aura-suite'),
+            custom: __('Otro', 'aura-suite')
         };
         return map[type] || type;
     }
 
     function statusLabel(active) {
-        return parseInt(active, 10) === 1 ? 'Activa' : 'Inactiva';
+        return parseInt(active, 10) === 1 ? __('Activa', 'aura-suite') : __('Inactiva', 'aura-suite');
     }
 
     function formatNumber(value) {
@@ -158,7 +162,7 @@ jQuery(function ($) {
                 color = 'slate';
                 icon = 'dashicons-category';
         }
-        return '<span class="badge badge-' + color + ' aura-tooltip-trigger" data-tooltip="Clasificación: ' + escapeHtml(typeLabel(type)) + '" style="display:inline-flex;align-items:center;gap:4px;cursor:help;">' +
+        return '<span class="badge badge-' + color + ' aura-tooltip-trigger" data-tooltip="' + escAttr(sprintf(__('Clasificación: %s', 'aura-suite'), typeLabel(type))) + '" style="display:inline-flex;align-items:center;gap:4px;cursor:help;">' +
             '<span class="dashicons ' + icon + '" style="font-size:12px;width:12px;height:12px;line-height:12px;"></span>' +
             '<span>' + escapeHtml(typeLabel(type)) + '</span>' +
         '</span>';
@@ -167,23 +171,23 @@ jQuery(function ($) {
     function statusBadge(active) {
         const isActive = parseInt(active, 10) === 1;
         if (isActive) {
-            return '<span class="status-traffic-light aura-tooltip-trigger" data-tooltip="Cuenta activa y disponible para operaciones" style="display:inline-flex;align-items:center;gap:6px;cursor:help;">' +
+            return '<span class="status-traffic-light aura-tooltip-trigger" data-tooltip="' + escAttr(__('Cuenta activa y disponible para operaciones', 'aura-suite')) + '" style="display:inline-flex;align-items:center;gap:6px;cursor:help;">' +
                 '<span class="traffic-dot traffic-dot-success"></span>' +
-                '<span class="badge badge-emerald">Activa</span>' +
+                '<span class="badge badge-emerald">' + escapeHtml(__('Activa', 'aura-suite')) + '</span>' +
             '</span>';
         }
-        return '<span class="status-traffic-light aura-tooltip-trigger" data-tooltip="Cuenta deshabilitada para operaciones" style="display:inline-flex;align-items:center;gap:6px;cursor:help;">' +
+        return '<span class="status-traffic-light aura-tooltip-trigger" data-tooltip="' + escAttr(__('Cuenta deshabilitada para operaciones', 'aura-suite')) + '" style="display:inline-flex;align-items:center;gap:6px;cursor:help;">' +
             '<span class="traffic-dot traffic-dot-danger"></span>' +
-            '<span class="badge badge-rose">Inactiva</span>' +
+            '<span class="badge badge-rose">' + escapeHtml(__('Inactiva', 'aura-suite')) + '</span>' +
         '</span>';
     }
 
     function renderActionButtons(id) {
         return '<div class="aura-account-actions" style="display:inline-flex;gap:6px;align-items:center;">' +
-            '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-account-action is-edit aura-account-edit" data-id="' + id + '" data-tooltip="Editar detalles de la cuenta" aria-label="Editar">' +
+            '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-account-action is-edit aura-account-edit" data-id="' + id + '" data-tooltip="' + escAttr(__('Editar detalles de la cuenta', 'aura-suite')) + '" aria-label="' + escAttr(__('Editar', 'aura-suite')) + '">' +
                 '<span class="dashicons dashicons-edit"></span>' +
             '</button>' +
-            '<button type="button" class="btn btn-sm btn-danger btn-lift aura-account-action is-delete aura-account-delete" data-id="' + id + '" data-tooltip="Eliminar cuenta bancaria" aria-label="Eliminar">' +
+            '<button type="button" class="btn btn-sm btn-danger btn-lift aura-account-action is-delete aura-account-delete" data-id="' + id + '" data-tooltip="' + escAttr(__('Eliminar cuenta bancaria', 'aura-suite')) + '" aria-label="' + escAttr(__('Eliminar', 'aura-suite')) + '">' +
                 '<span class="dashicons dashicons-trash"></span>' +
             '</button>' +
         '</div>';
@@ -203,7 +207,7 @@ jQuery(function ($) {
         }
         $('#aura-account-id').val('0');
         $('#aura-account-active').prop('checked', true);
-        $('#aura-account-form-title').text('Nueva Cuenta');
+        $('#aura-account-form-title').text(__('Nueva Cuenta', 'aura-suite'));
     }
 
     function parseMoney(value) {
@@ -213,8 +217,8 @@ jQuery(function ($) {
 
     let currentAnnualSpent = 0; // Guardamos el valor actual de gasto anual
     const MONTH_NAMES_ES = [
-        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        __('Enero', 'aura-suite'), __('Febrero', 'aura-suite'), __('Marzo', 'aura-suite'), __('Abril', 'aura-suite'), __('Mayo', 'aura-suite'), __('Junio', 'aura-suite'),
+        __('Julio', 'aura-suite'), __('Agosto', 'aura-suite'), __('Septiembre', 'aura-suite'), __('Octubre', 'aura-suite'), __('Noviembre', 'aura-suite'), __('Diciembre', 'aura-suite')
     ];
 
     let currentBudgetData = null;
@@ -285,22 +289,22 @@ jQuery(function ($) {
             const remaining = limit - spent;
             const pct = limit > 0 ? (spent / limit) * 100 : (spent > 0 ? 100 : 0);
 
-            let statusBadge = '<span class="badge badge-slate">Sin asignar</span>';
+            let statusBadge = '<span class="badge badge-slate">' + escapeHtml(__('Sin asignar', 'aura-suite')) + '</span>';
             let fillModifier = 'micro-progress-fill--emerald';
 
             if (limit > 0) {
                 if (spent > limit) {
-                    statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-danger"></span><span class="badge badge-rose">Excedido</span></span>';
+                    statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-danger"></span><span class="badge badge-rose">' + escapeHtml(__('Excedido', 'aura-suite')) + '</span></span>';
                     fillModifier = 'micro-progress-fill--rose';
                 } else if (pct >= 85) {
-                    statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-warning"></span><span class="badge badge-amber">Cerca del límite</span></span>';
+                    statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-warning"></span><span class="badge badge-amber">' + escapeHtml(__('Cerca del límite', 'aura-suite')) + '</span></span>';
                     fillModifier = 'micro-progress-fill--amber';
                 } else {
-                    statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-success"></span><span class="badge badge-emerald">Normal</span></span>';
+                    statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-success"></span><span class="badge badge-emerald">' + escapeHtml(__('Normal', 'aura-suite')) + '</span></span>';
                     fillModifier = 'micro-progress-fill--emerald';
                 }
             } else if (spent > 0) {
-                statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-danger"></span><span class="badge badge-rose">Sin límite fijado</span></span>';
+                statusBadge = '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-danger"></span><span class="badge badge-rose">' + escapeHtml(__('Sin límite fijado', 'aura-suite')) + '</span></span>';
                 fillModifier = 'micro-progress-fill--rose';
             }
 
@@ -322,7 +326,7 @@ jQuery(function ($) {
                     </td>
                     <td>${statusBadge}</td>
                     <td>
-                        <button type="button" class="btn btn-sm btn-secondary btn-lift aura-budget-quick-edit-month" data-month="${i + 1}" data-tooltip="Modificar monto de ${monthName}" aria-label="Editar">
+                        <button type="button" class="btn btn-sm btn-secondary btn-lift aura-budget-quick-edit-month" data-month="${i + 1}" data-tooltip="${escAttr(sprintf(__('Modificar monto de %s', 'aura-suite'), monthName))}" aria-label="${escAttr(__('Editar', 'aura-suite'))}">
                             <span class="dashicons dashicons-edit"></span>
                         </button>
                     </td>
@@ -340,7 +344,7 @@ jQuery(function ($) {
         const currentActiveYear = parseInt($('#aura-global-budget-year').val(), 10) || new Date().getFullYear();
 
         if (!Array.isArray(years) || years.length === 0) {
-            $tbody.html('<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">No hay presupuestos anuales configurados todavía. Haz clic en "Nuevo Año" para crear uno.</td></tr>');
+            $tbody.html('<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">' + escapeHtml(__('No hay presupuestos anuales configurados todavía. Haz clic en "Nuevo Año" para crear uno.', 'aura-suite')) + '</td></tr>');
             return;
         }
 
@@ -351,30 +355,30 @@ jQuery(function ($) {
             const monthlyTotal = parseFloat(row.monthly_total || 0);
             const annualSpent = parseFloat(row.annual_spent || 0);
             const isSelected = yr === currentActiveYear;
-            const policyText = row.exceed_policy === 'block' ? 'Bloquear gastos' : 'Solo advertir';
+            const policyText = row.exceed_policy === 'block' ? __('Bloquear gastos', 'aura-suite') : __('Solo advertir', 'aura-suite');
 
             rowsHtml += `
                 <tr class="table-row-hover-lift" style="${isSelected ? 'background-color:rgba(59, 130, 246, 0.08);' : ''}">
                     <td>
                         <strong style="font-size:14px; color:var(--aura-text-heading,#0f172a);">${yr}</strong>
-                        ${isSelected ? ' <span class="badge badge-primary" style="font-size:10px; padding:2px 6px; margin-left:4px;">Activo</span>' : ''}
+                        ${isSelected ? ' <span class="badge badge-primary" style="font-size:10px; padding:2px 6px; margin-left:4px;">' + escapeHtml(__('Activo', 'aura-suite')) + '</span>' : ''}
                     </td>
                     <td style="font-weight:600; color:var(--aura-text-heading,#0f172a);">$${formatNumber(annualLimit)}</td>
                     <td style="color:var(--aura-text-muted,#475569);">$${formatNumber(monthlyTotal)}</td>
                     <td style="font-weight:600; color:var(--aura-text-heading,#0f172a);">$${formatNumber(annualSpent)}</td>
                     <td><span class="badge badge-slate">${policyText}</span></td>
                     <td>
-                        ${row.is_active == 1 ? '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-success"></span><span class="badge badge-emerald">Habilitado</span></span>' : '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-danger"></span><span class="badge badge-slate">Inactivo</span></span>'}
+                        ${row.is_active == 1 ? '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-success"></span><span class="badge badge-emerald">' + escapeHtml(__('Habilitado', 'aura-suite')) + '</span></span>' : '<span class="status-traffic-light"><span class="traffic-dot traffic-dot-danger"></span><span class="badge badge-slate">' + escapeHtml(__('Inactivo', 'aura-suite')) + '</span></span>'}
                     </td>
                     <td>
                         <div style="display:inline-flex; gap:6px; align-items:center;">
-                            <button type="button" class="btn btn-sm btn-primary btn-lift aura-budget-year-select-btn" data-year="${yr}" data-tooltip="Cargar y ver datos de ${yr}">
-                                <span class="dashicons dashicons-visibility"></span> <span>Cargar</span>
+                            <button type="button" class="btn btn-sm btn-primary btn-lift aura-budget-year-select-btn" data-year="${yr}" data-tooltip="${escAttr(sprintf(__('Cargar y ver datos de %d', 'aura-suite'), yr))}">
+                                <span class="dashicons dashicons-visibility"></span> <span>${escapeHtml(__('Cargar', 'aura-suite'))}</span>
                             </button>
-                            <button type="button" class="btn btn-sm btn-secondary btn-lift aura-budget-year-clone-btn" data-year="${yr}" data-tooltip="Clonar presupuesto de ${yr} a otro año" aria-label="Clonar">
+                            <button type="button" class="btn btn-sm btn-secondary btn-lift aura-budget-year-clone-btn" data-year="${yr}" data-tooltip="${escAttr(sprintf(__('Clonar presupuesto de %d a otro año', 'aura-suite'), yr))}" aria-label="${escAttr(__('Clonar', 'aura-suite'))}">
                                 <span class="dashicons dashicons-admin-page"></span>
                             </button>
-                            <button type="button" class="btn btn-sm btn-danger btn-lift aura-budget-year-delete-btn" data-year="${yr}" data-tooltip="Eliminar presupuesto del año ${yr}" aria-label="Eliminar">
+                            <button type="button" class="btn btn-sm btn-danger btn-lift aura-budget-year-delete-btn" data-year="${yr}" data-tooltip="${escAttr(sprintf(__('Eliminar presupuesto del año %d', 'aura-suite'), yr))}" aria-label="${escAttr(__('Eliminar', 'aura-suite'))}">
                                 <span class="dashicons dashicons-trash"></span>
                             </button>
                         </div>
@@ -478,7 +482,7 @@ jQuery(function ($) {
             monthly_limits: monthlyLimits
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback((res.data && res.data.message) || 'Presupuesto guardado correctamente.', true);
+                showFeedback((res.data && res.data.message) || __('Presupuesto guardado correctamente.', 'aura-suite'), true);
                 window.AuraUI.closeModal('aura-finance-budget-modal');
                 loadBudgetByYear(year);
                 loadReports(); // Actualiza pestaña de Reportes y Cierres en sincronía
@@ -488,12 +492,12 @@ jQuery(function ($) {
         }).fail(function () {
             showFeedback(auraFinancialAccounts.i18n.error, false);
         }).always(function () {
-            $('#aura-budget-save-btn').prop('disabled', false).text('Guardar presupuesto');
+            $('#aura-budget-save-btn').prop('disabled', false).text(__('Guardar presupuesto', 'aura-suite'));
         });
     }
 
     function deleteBudgetYear(year) {
-        if (!confirm('¿Estás seguro de que deseas eliminar el presupuesto configurado para el año ' + year + '?')) {
+        if (!confirm(sprintf(__('¿Estás seguro de que deseas eliminar el presupuesto configurado para el año %s?', 'aura-suite'), year))) {
             return;
         }
 
@@ -503,7 +507,7 @@ jQuery(function ($) {
             year: year
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback((res.data && res.data.message) || 'Presupuesto eliminado.', true);
+                showFeedback((res.data && res.data.message) || __('Presupuesto eliminado.', 'aura-suite'), true);
                 loadBudgetByYear(year);
                 loadReports();
                 return;
@@ -522,7 +526,7 @@ jQuery(function ($) {
             to_year: toYear
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback((res.data && res.data.message) || 'Presupuesto clonado con éxito.', true);
+                showFeedback((res.data && res.data.message) || __('Presupuesto clonado con éxito.', 'aura-suite'), true);
                 loadBudgetByYear(toYear);
                 loadReports();
                 return;
@@ -547,29 +551,29 @@ jQuery(function ($) {
                 return '<td>' + escapeHtml(cell) + '</td>';
             }).join('') + '</tr>';
         }).join('');
-        $tbody.html(bodyHtml || '<tr><td colspan="99">Sin datos para mostrar.</td></tr>');
+        $tbody.html(bodyHtml || '<tr><td colspan="99">' + escapeHtml(__('Sin datos para mostrar.', 'aura-suite')) + '</td></tr>');
     }
 
     function renderBudgetMapping(headers, autoMapping) {
         const fields = [
-            { key: 'year', label: 'Año fiscal *' },
-            { key: 'annual_limit', label: 'Tope anual *' },
-            { key: 'exceed_policy', label: 'Política exceso' },
-            { key: 'jan', label: 'Ene' },
+            { key: 'year', label: __('Año fiscal *', 'aura-suite') },
+            { key: 'annual_limit', label: __('Tope anual *', 'aura-suite') },
+            { key: 'exceed_policy', label: __('Política exceso', 'aura-suite') },
+            { key: 'jan', label: __('Ene', 'aura-suite') },
             { key: 'feb', label: 'Feb' },
             { key: 'mar', label: 'Mar' },
-            { key: 'apr', label: 'Abr' },
+            { key: 'apr', label: __('Abr', 'aura-suite') },
             { key: 'may', label: 'May' },
             { key: 'jun', label: 'Jun' },
             { key: 'jul', label: 'Jul' },
-            { key: 'aug', label: 'Ago' },
+            { key: 'aug', label: __('Ago', 'aura-suite') },
             { key: 'sep', label: 'Sep' },
             { key: 'oct', label: 'Oct' },
             { key: 'nov', label: 'Nov' },
-            { key: 'dec', label: 'Dic' }
+            { key: 'dec', label: __('Dic', 'aura-suite') }
         ];
 
-        const opts = ['<option value="">— Ignorar —</option>'];
+        const opts = ['<option value="">' + escapeHtml(__('— Ignorar —', 'aura-suite')) + '</option>'];
         (headers || []).forEach(function (h, i) {
             opts.push('<option value="' + i + '">' + escapeHtml(h) + '</option>');
         });
@@ -605,7 +609,7 @@ jQuery(function ($) {
         const file = input && input.files ? input.files[0] : null;
 
         if (!file) {
-            showFeedback('Selecciona un archivo .csv o .xlsx para importar.', false);
+            showFeedback(__('Selecciona un archivo .csv o .xlsx para importar.', 'aura-suite'), false);
             return;
         }
 
@@ -614,7 +618,7 @@ jQuery(function ($) {
         formData.append('nonce', auraFinancialAccounts.nonce);
         formData.append('budget_file', file);
 
-        $('#aura-budget-import-btn').prop('disabled', true).text(auraFinancialAccounts.i18n.importing || 'Importando...');
+        $('#aura-budget-import-btn').prop('disabled', true).text(auraFinancialAccounts.i18n.importing || __('Importando...', 'aura-suite'));
 
         $.ajax({
             url: auraFinancialAccounts.ajaxUrl,
@@ -624,7 +628,7 @@ jQuery(function ($) {
             contentType: false
         }).done(function (res) {
             if (res && res.success) {
-                const msg = (res.data && res.data.message) || '¡Presupuestos importados exitosamente!';
+                const msg = (res.data && res.data.message) || __('¡Presupuestos importados exitosamente!', 'aura-suite');
                 showFeedback(msg, true);
                 const currentYr = parseInt($('#aura-global-budget-year').val(), 10) || new Date().getFullYear();
                 loadBudgetByYear(currentYr);
@@ -640,7 +644,7 @@ jQuery(function ($) {
         }).fail(function () {
             uploadForPreview(file);
         }).always(function () {
-            $('#aura-budget-import-btn').prop('disabled', false).text('Analizar e Importar');
+            $('#aura-budget-import-btn').prop('disabled', false).text(__('Analizar e Importar', 'aura-suite'));
         });
     }
 
@@ -666,10 +670,10 @@ jQuery(function ($) {
                 renderBudgetPreview((res.data && res.data.headers) || [], (res.data && res.data.preview) || []);
                 renderBudgetMapping((res.data && res.data.headers) || [], (res.data && res.data.auto_mapping) || {});
 
-                const summary = 'Archivo: ' + escapeHtml((res.data && res.data.filename) || '') +
-                    ' | Filas detectadas: ' + ((res.data && res.data.total_rows) || 0);
+                const summary = escapeHtml(__('Archivo:', 'aura-suite')) + ' ' + escapeHtml((res.data && res.data.filename) || '') +
+                    ' | ' + escapeHtml(__('Filas detectadas:', 'aura-suite')) + ' ' + ((res.data && res.data.total_rows) || 0);
                 $('#aura-budget-import-summary').html(summary);
-                showFeedback('Revisa las columnas detectadas y haz clic en Confirmar importación.', true);
+                showFeedback(__('Revisa las columnas detectadas y haz clic en Confirmar importación.', 'aura-suite'), true);
                 return;
             }
 
@@ -681,11 +685,11 @@ jQuery(function ($) {
 
     function validateBudgetImport() {
         if (!budgetImportToken) {
-            showFeedback('Primero analiza un archivo para continuar.', false);
+            showFeedback(__('Primero analiza un archivo para continuar.', 'aura-suite'), false);
             return;
         }
 
-        $('#aura-budget-validate-btn').prop('disabled', true).text('Validando...');
+        $('#aura-budget-validate-btn').prop('disabled', true).text(__('Validando...', 'aura-suite'));
 
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_budget_validate_preview',
@@ -696,14 +700,14 @@ jQuery(function ($) {
             if (res && res.success) {
                 const data = res.data || {};
                 const errors = data.errors || [];
-                const html = '<p><strong>Total:</strong> ' + (data.total || 0) +
-                    ' | <strong>Válidas:</strong> ' + (data.valid || 0) +
-                    ' | <strong>Con error:</strong> ' + (data.invalid || 0) + '</p>' +
-                    (errors.length ? '<ul><li>' + errors.map(escapeHtml).join('</li><li>') + '</li></ul>' : '<p>Sin errores de validación.</p>');
+                const html = '<p><strong>' + escapeHtml(__('Total:', 'aura-suite')) + '</strong> ' + (data.total || 0) +
+                    ' | <strong>' + escapeHtml(__('Válidas:', 'aura-suite')) + '</strong> ' + (data.valid || 0) +
+                    ' | <strong>' + escapeHtml(__('Con error:', 'aura-suite')) + '</strong> ' + (data.invalid || 0) + '</p>' +
+                    (errors.length ? '<ul><li>' + errors.map(escapeHtml).join('</li><li>') + '</li></ul>' : '<p>' + escapeHtml(__('Sin errores de validación.', 'aura-suite')) + '</p>');
 
                 $('#aura-budget-import-validation').html(html).show();
                 $('#aura-budget-confirm-btn').prop('disabled', (data.valid || 0) === 0);
-                showFeedback('Validación completada.', true);
+                showFeedback(__('Validación completada.', 'aura-suite'), true);
                 return;
             }
 
@@ -711,17 +715,17 @@ jQuery(function ($) {
         }).fail(function () {
             showFeedback(auraFinancialAccounts.i18n.error, false);
         }).always(function () {
-            $('#aura-budget-validate-btn').prop('disabled', false).text('2) Validar datos');
+            $('#aura-budget-validate-btn').prop('disabled', false).text(__('2) Validar datos', 'aura-suite'));
         });
     }
 
     function executeBudgetImport() {
         if (!budgetImportToken) {
-            showFeedback('Token de importación inválido. Analiza el archivo nuevamente.', false);
+            showFeedback(__('Token de importación inválido. Analiza el archivo nuevamente.', 'aura-suite'), false);
             return;
         }
 
-        $('#aura-budget-confirm-btn').prop('disabled', true).text(auraFinancialAccounts.i18n.importing || 'Importando...');
+        $('#aura-budget-confirm-btn').prop('disabled', true).text(auraFinancialAccounts.i18n.importing || __('Importando...', 'aura-suite'));
 
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_budget_execute_import',
@@ -731,8 +735,8 @@ jQuery(function ($) {
         }).done(function (res) {
             if (res && res.success) {
                 const errors = (res.data && res.data.errors) || [];
-                const detail = errors.length ? (' Avisos: ' + errors.slice(0, 3).join(' | ')) : '';
-                showFeedback(((res.data && res.data.message) || auraFinancialAccounts.i18n.importDone || 'Importación completada.') + detail, true);
+                const detail = errors.length ? (' ' + __('Avisos:', 'aura-suite') + ' ' + errors.slice(0, 3).join(' | ')) : '';
+                showFeedback(((res.data && res.data.message) || auraFinancialAccounts.i18n.importDone || __('Importación completada.', 'aura-suite')) + detail, true);
                 const currentYr = parseInt($('#aura-global-budget-year').val(), 10) || new Date().getFullYear();
                 loadBudgetByYear(currentYr);
                 loadReports();
@@ -748,7 +752,7 @@ jQuery(function ($) {
         }).fail(function () {
             showFeedback(auraFinancialAccounts.i18n.error, false);
         }).always(function () {
-            $('#aura-budget-confirm-btn').prop('disabled', false).text('Confirmar importación');
+            $('#aura-budget-confirm-btn').prop('disabled', false).text(__('Confirmar importación', 'aura-suite'));
         });
     }
 
@@ -762,7 +766,7 @@ jQuery(function ($) {
         $('#aura-account-initial-balance').val(account.initial_balance || 0);
         $('#aura-account-current-balance').val(account.current_balance || 0);
         $('#aura-account-active').prop('checked', parseInt(account.is_active, 10) === 1);
-        $('#aura-account-form-title').text('Editar Cuenta');
+        $('#aura-account-form-title').text(__('Editar Cuenta', 'aura-suite'));
     }
 
     function updateAccountsKpis(accounts) {
@@ -804,11 +808,11 @@ jQuery(function ($) {
             responsive: true,
             pageLength: 25,
             language: {
-                emptyTable: 'No hay cuentas registradas',
-                info: 'Mostrando _START_ a _END_ de _TOTAL_ cuentas',
-                infoEmpty: 'Mostrando 0 a 0 de 0 cuentas',
-                lengthMenu: 'Mostrar _MENU_ cuentas',
-                paginate: { first: 'Primero', last: 'Último', next: 'Siguiente', previous: 'Anterior' }
+                emptyTable: __('No hay cuentas registradas', 'aura-suite'),
+                info: __('Mostrando _START_ a _END_ de _TOTAL_ cuentas', 'aura-suite'),
+                infoEmpty: __('Mostrando 0 a 0 de 0 cuentas', 'aura-suite'),
+                lengthMenu: __('Mostrar _MENU_ cuentas', 'aura-suite'),
+                paginate: { first: __('Primero', 'aura-suite'), last: __('Último', 'aura-suite'), next: __('Siguiente', 'aura-suite'), previous: __('Anterior', 'aura-suite') }
             },
             order: [[4, 'desc'], [0, 'asc']],
             columnDefs: [{ targets: [5], orderable: false }]
@@ -817,14 +821,14 @@ jQuery(function ($) {
 
     function renderAccountTip(a) {
         const typeLabels = {
-            'bank_account': 'Cuenta Bancaria',
-            'petty_cash': 'Caja Chica / Menor',
-            'contributions_fund': 'Fondo de Aportes',
-            'usd_cash': 'Efectivo USD',
-            'eur_cash': 'Efectivo EUR',
-            'cad_cash': 'Efectivo CAD',
-            'foreign_cash': 'Efectivo Divisas',
-            'custom': 'Personalizada'
+            'bank_account': __('Cuenta Bancaria', 'aura-suite'),
+            'petty_cash': __('Caja Chica / Menor', 'aura-suite'),
+            'contributions_fund': __('Fondo de Aportes', 'aura-suite'),
+            'usd_cash': __('Efectivo USD', 'aura-suite'),
+            'eur_cash': __('Efectivo EUR', 'aura-suite'),
+            'cad_cash': __('Efectivo CAD', 'aura-suite'),
+            'foreign_cash': __('Efectivo Divisas', 'aura-suite'),
+            'custom': __('Personalizada', 'aura-suite')
         };
         const typeIcons = {
             'bank_account': 'dashicons-building',
@@ -836,7 +840,7 @@ jQuery(function ($) {
             'foreign_cash': 'dashicons-translation',
             'custom': 'dashicons-admin-generic'
         };
-        const tLabel = typeLabels[a.account_type] || a.account_type || 'Cuenta';
+        const tLabel = typeLabels[a.account_type] || a.account_type || __('Cuenta', 'aura-suite');
         const tIcon = typeIcons[a.account_type] || 'dashicons-money-alt';
         const curr = String(a.currency || 'COP').toUpperCase();
         const initBal = parseFloat(a.initial_balance || 0);
@@ -852,7 +856,7 @@ jQuery(function ($) {
                 '<div class="aura-tip-card-title-box">' +
                     '<div class="aura-tip-card-name">' + escapeHtml(a.name) + '</div>' +
                     '<div class="aura-tip-card-badges">' +
-                        '<span class="badge ' + (isActive ? 'badge-emerald' : 'badge-rose') + '" style="font-size:10px;padding:1px 6px;">' + (isActive ? '● Activa' : '○ Inactiva') + '</span>' +
+                        '<span class="badge ' + (isActive ? 'badge-emerald' : 'badge-rose') + '" style="font-size:10px;padding:1px 6px;">' + escapeHtml(isActive ? __('● Activa', 'aura-suite') : __('○ Inactiva', 'aura-suite')) + '</span>' +
                         '<span class="badge badge-indigo" style="font-size:10px;padding:1px 6px;">' + escapeHtml(curr) + '</span>' +
                     '</div>' +
                 '</div>' +
@@ -860,28 +864,28 @@ jQuery(function ($) {
             '<div class="aura-tip-card-body">' +
                 '<div style="font-size:11.5px;color:#94a3b8;margin-bottom:2px;">' +
                     '<span class="dashicons dashicons-location-alt" style="font-size:12px;width:12px;height:12px;vertical-align:middle;margin-right:3px;"></span>' +
-                    escapeHtml(a.institution || 'Entidad financiera') + (a.account_number_masked ? ' • <code>' + escapeHtml(a.account_number_masked) + '</code>' : '') +
+                    escapeHtml(a.institution || __('Entidad financiera', 'aura-suite')) + (a.account_number_masked ? ' • <code>' + escapeHtml(a.account_number_masked) + '</code>' : '') +
                 '</div>' +
                 '<div class="aura-tip-stat-grid">' +
                     '<div class="aura-tip-stat-item">' +
-                        '<span class="aura-tip-stat-label">Tipo</span>' +
+                        '<span class="aura-tip-stat-label">' + escapeHtml(__('Tipo', 'aura-suite')) + '</span>' +
                         '<span class="aura-tip-stat-value" style="font-size:12px;color:#e2e8f0;">' + escapeHtml(tLabel) + '</span>' +
                     '</div>' +
                     '<div class="aura-tip-stat-item">' +
-                        '<span class="aura-tip-stat-label">Saldo Inicial</span>' +
+                        '<span class="aura-tip-stat-label">' + escapeHtml(__('Saldo Inicial', 'aura-suite')) + '</span>' +
                         '<span class="aura-tip-stat-value" style="font-size:12px;color:#94a3b8;">$' + escapeHtml(formatNumber(initBal)) + '</span>' +
                     '</div>' +
                     '<div class="aura-tip-stat-item span-2">' +
-                        '<span class="aura-tip-stat-label">Saldo Actual</span>' +
+                        '<span class="aura-tip-stat-label">' + escapeHtml(__('Saldo Actual', 'aura-suite')) + '</span>' +
                         '<span class="aura-tip-stat-value is-delivered" style="font-size:15px;color:#38bdf8;">$' + escapeHtml(formatNumber(curBal)) + ' ' + escapeHtml(curr) + '</span>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
             '<div class="aura-tip-card-footer">' +
                 '<span style="color:' + (diffBal >= 0 ? '#34d399' : '#f87171') + ';font-weight:700;">' +
-                    (diffBal >= 0 ? '▲ +$' : '▼ -$') + escapeHtml(formatNumber(Math.abs(diffBal))) + ' variación' +
+                    (diffBal >= 0 ? '▲ +$' : '▼ -$') + escapeHtml(formatNumber(Math.abs(diffBal))) + ' ' + escapeHtml(__('variación', 'aura-suite')) +
                 '</span>' +
-                '<span style="color:#94a3b8;font-size:10.5px;">Bancos &amp; Cuentas</span>' +
+                '<span style="color:#94a3b8;font-size:10.5px;">' + escapeHtml(__('Bancos & Cuentas', 'aura-suite')) + '</span>' +
             '</div>' +
         '</div>';
     }
@@ -898,7 +902,7 @@ jQuery(function ($) {
         }
 
         if (!accounts || !accounts.length) {
-            $tableBody.html('<tr><td colspan="6" style="text-align:center;padding:20px;">No hay cuentas registradas.</td></tr>');
+            $tableBody.html('<tr><td colspan="6" style="text-align:center;padding:20px;">' + escapeHtml(__('No hay cuentas registradas.', 'aura-suite')) + '</td></tr>');
             return;
         }
 
@@ -908,26 +912,26 @@ jQuery(function ($) {
 
             // Tooltip enriquecido para Tipo de Cuenta
             const typeTip = '<div class="aura-tip-card" style="min-width:210px;padding:10px 12px;">' +
-                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-tag" style="color:#38bdf8;"></span>Clasificación Contable</div>' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-tag" style="color:#38bdf8;"></span>' + escapeHtml(__('Clasificación Contable', 'aura-suite')) + '</div>' +
                 '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' + escapeHtml(typeLabel(a.account_type)) + '</div>' +
-                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Moneda: ' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">' + escapeHtml(sprintf(__('Moneda: %s', 'aura-suite'), String(a.currency || 'COP').toUpperCase())) + '</div>' +
             '</div>';
 
             // Tooltip enriquecido para Moneda
             const currTip = '<div class="aura-tip-card" style="min-width:200px;padding:10px 12px;">' +
-                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-money-alt" style="color:#34d399;"></span>Divisa de Registro</div>' +
-                '<div style="font-size:11.5px;color:#cbd5e1;">Código ISO: <strong style="color:#38bdf8;">' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</strong></div>' +
-                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Operativa en transferencias y conversiones</div>' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-money-alt" style="color:#34d399;"></span>' + escapeHtml(__('Divisa de Registro', 'aura-suite')) + '</div>' +
+                '<div style="font-size:11.5px;color:#cbd5e1;">' + escapeHtml(__('Código ISO:', 'aura-suite')) + ' <strong style="color:#38bdf8;">' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</strong></div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">' + escapeHtml(__('Operativa en transferencias y conversiones', 'aura-suite')) + '</div>' +
             '</div>';
 
             return '<tr class="table-row-hover-lift">' +
                 '<td><div class="aura-account-name aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCard) + '" style="cursor:pointer;">' +
                     '<strong>' + escapeHtml(a.name) + '</strong>' +
-                    '<small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.institution || 'Sin institución') + '</small>' +
+                    '<small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.institution || __('Sin institución', 'aura-suite')) + '</small>' +
                 '</div></td>' +
                 '<td><span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(typeTip) + '" style="cursor:help;">' + typeBadge(a.account_type) + '</span></td>' +
                 '<td><span class="badge badge-slate aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(currTip) + '" style="font-weight:700;cursor:help;">' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + '</span></td>' +
-                '<td><div class="aura-account-balance aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCard) + '" style="cursor:pointer;"><strong style="font-size:13px;color:var(--aura-text-heading,#0f172a);">' + escapeHtml(balance) + '</strong><small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.account_number_masked || 'Sin número visible') + '</small></div></td>' +
+                '<td><div class="aura-account-balance aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(tipCard) + '" style="cursor:pointer;"><strong style="font-size:13px;color:var(--aura-text-heading,#0f172a);">' + escapeHtml(balance) + '</strong><small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(a.account_number_masked || __('Sin número visible', 'aura-suite')) + '</small></div></td>' +
                 '<td>' + statusBadge(a.is_active) + '</td>' +
                 '<td>' + renderActionButtons(a.id) + '</td>' +
                 '</tr>';
@@ -946,7 +950,7 @@ jQuery(function ($) {
             if (currencies.indexOf(c) === -1) { currencies.push(c); }
         });
         currencies.sort();
-        const opts = ['<option value="">' + (auraFinancialAccounts.i18n.allCurrencies || 'Todas las monedas') + '</option>'];
+        const opts = ['<option value="">' + (auraFinancialAccounts.i18n.allCurrencies || __('Todas las monedas', 'aura-suite')) + '</option>'];
         currencies.forEach(function (c) {
             opts.push('<option value="' + c + '">' + c + '</option>');
         });
@@ -1048,7 +1052,7 @@ jQuery(function ($) {
                 showFeedback(auraFinancialAccounts.i18n.error, false);
             })
             .always(function () {
-                $('#aura-account-save-btn').prop('disabled', false).text('Guardar cuenta');
+                $('#aura-account-save-btn').prop('disabled', false).text(__('Guardar cuenta', 'aura-suite'));
             });
     }
 
@@ -1075,11 +1079,11 @@ jQuery(function ($) {
 
     function pettyStatusLabel(status) {
         const map = {
-            open: 'Abierta',
-            submitted: 'En revisión',
-            approved: 'Aprobada',
-            closed: 'Cerrada',
-            rejected: 'Rechazada'
+            open: __('Abierta', 'aura-suite'),
+            submitted: __('En revisión', 'aura-suite'),
+            approved: __('Aprobada', 'aura-suite'),
+            closed: __('Cerrada', 'aura-suite'),
+            rejected: __('Rechazada', 'aura-suite')
         };
         return map[status] || status;
     }
@@ -1159,20 +1163,20 @@ jQuery(function ($) {
         
         // Header de contexto
         html += '<div class="aura-petty-evidence-meta-bar">' +
-            '<div><span>Responsable:</span> <strong>' + escapeHtml(row.responsible_name || '—') + '</strong></div>' +
-            '<div><span>Cuenta:</span> <strong>' + escapeHtml(row.account_name || '—') + '</strong></div>' +
-            '<div><span>Entregado:</span> <strong>' + escapeHtml(formatNumber(row.delivered_amount || 0)) + '</strong></div>' +
-            '<div><span>Total Gastado:</span> <strong style="color:var(--aura-primary,#0284c7);">' + escapeHtml(formatNumber(row.spent_amount || 0)) + '</strong></div>' +
-            '<div><span>Devuelto:</span> <strong style="color:#059669;">' + escapeHtml(formatNumber(row.returned_amount || 0)) + '</strong></div>' +
+            '<div><span>' + escapeHtml(__('Responsable:', 'aura-suite')) + '</span> <strong>' + escapeHtml(row.responsible_name || '—') + '</strong></div>' +
+            '<div><span>' + escapeHtml(__('Cuenta:', 'aura-suite')) + '</span> <strong>' + escapeHtml(row.account_name || '—') + '</strong></div>' +
+            '<div><span>' + escapeHtml(__('Entregado:', 'aura-suite')) + '</span> <strong>' + escapeHtml(formatNumber(row.delivered_amount || 0)) + '</strong></div>' +
+            '<div><span>' + escapeHtml(__('Total Gastado:', 'aura-suite')) + '</span> <strong style="color:var(--aura-primary,#0284c7);">' + escapeHtml(formatNumber(row.spent_amount || 0)) + '</strong></div>' +
+            '<div><span>' + escapeHtml(__('Devuelto:', 'aura-suite')) + '</span> <strong style="color:#059669;">' + escapeHtml(formatNumber(row.returned_amount || 0)) + '</strong></div>' +
         '</div>';
 
         // Detalle de Gastos registrados
         if (row.expenses && row.expenses.length > 0) {
-            html += '<h4 class="aura-petty-evidence-subtitle"><span class="dashicons dashicons-list-view"></span> Detalle de Gastos Registrados</h4>';
+            html += '<h4 class="aura-petty-evidence-subtitle"><span class="dashicons dashicons-list-view"></span> ' + escapeHtml(__('Detalle de Gastos Registrados', 'aura-suite')) + '</h4>';
             html += '<div class="aura-dt-wrapper"><table class="aura-petty-evidence-table">' +
-                '<thead><tr><th>Monto</th><th>Categoría</th><th>Concepto / Justificación</th></tr></thead><tbody>';
+                '<thead><tr><th>' + escapeHtml(__('Monto', 'aura-suite')) + '</th><th>' + escapeHtml(__('Categoría', 'aura-suite')) + '</th><th>' + escapeHtml(__('Concepto / Justificación', 'aura-suite')) + '</th></tr></thead><tbody>';
             row.expenses.forEach(function (exp) {
-                const catName = exp.category_name || 'Sin categoría';
+                const catName = exp.category_name || __('Sin categoría', 'aura-suite');
                 // Filtrar URLs de conceptos de gastos
                 const rawConcept = exp.notes || exp.concept || exp.receipt_url || '—';
                 const concept = rawConcept.replace(/https?:\/\/[^\s,;]+/g, '').trim() || '—';
@@ -1180,7 +1184,7 @@ jQuery(function ($) {
                 const hasUrl = rawConcept.match(/https?:\/\/[^\s,;]+/);
                 const driveUrl = hasUrl ? hasUrl[0] : null;
                 const conceptCell = driveUrl
-                    ? escapeHtml(concept) + ' <a href="' + escapeHtml(driveUrl) + '" target="_blank" rel="noopener noreferrer" class="aura-drive-link-icon" title="Ver comprobante adjunto" style="margin-left:4px;color:#0284c7;text-decoration:none;font-size:14px;" onclick="event.stopPropagation()">📎</a>'
+                    ? escapeHtml(concept) + ' <a href="' + escapeHtml(driveUrl) + '" target="_blank" rel="noopener noreferrer" class="aura-drive-link-icon" title="' + escAttr(__('Ver comprobante adjunto', 'aura-suite')) + '" style="margin-left:4px;color:#0284c7;text-decoration:none;font-size:14px;" onclick="event.stopPropagation()">📎</a>'
                     : escapeHtml(concept);
                 html += '<tr>' +
                     '<td><strong>' + escapeHtml(formatNumber(exp.amount || 0)) + '</strong></td>' +
@@ -1204,18 +1208,18 @@ jQuery(function ($) {
                 evidence.attachments.unshift({
                     id: 0,
                     url: nUrl,
-                    name: 'Comprobante de Entrega / Anticipo Inicial'
+                    name: __('Comprobante de Entrega / Anticipo Inicial', 'aura-suite')
                 });
             }
         });
 
         // Comprobantes y Adjuntos
-        html += '<h4 class="aura-petty-evidence-subtitle" style="margin-top:16px;"><span class="dashicons dashicons-paperclip"></span> Comprobantes Digitales y Soportes</h4>';
+        html += '<h4 class="aura-petty-evidence-subtitle" style="margin-top:16px;"><span class="dashicons dashicons-paperclip"></span> ' + escapeHtml(__('Comprobantes Digitales y Soportes', 'aura-suite')) + '</h4>';
         if (evidence.attachments && evidence.attachments.length > 0) {
             html += '<div class="aura-petty-evidence-cards-grid">';
             evidence.attachments.forEach(function (f) {
                 const url = f && f.url ? String(f.url) : '#';
-                const name = f && f.name ? String(f.name) : 'Comprobante';
+                const name = f && f.name ? String(f.name) : __('Comprobante', 'aura-suite');
                 const isDrive = (url.indexOf('drive.google.com') !== -1) || (f && f.is_drive);
                 const isLocalImg = !isDrive && (name.match(/\.(jpg|jpeg|png|webp|gif)$/i));
                 const isPdf = name.toLowerCase().endsWith('.pdf') || (f && f.type === 'application/pdf');
@@ -1239,24 +1243,24 @@ jQuery(function ($) {
                         '<div class="aura-petty-evidence-card-source">' +
                             (isDrive
                                 ? '<span class="aura-pill aura-pill--blue"><span class="dashicons dashicons-cloud-saved" style="font-size:12px;width:12px;height:12px;line-height:12px;"></span> Google Drive</span>'
-                                : '<span class="aura-pill aura-pill--muted"><span class="dashicons dashicons-portfolio" style="font-size:12px;width:12px;height:12px;line-height:12px;"></span> Local / Adjunto</span>') +
+                                : '<span class="aura-pill aura-pill--muted"><span class="dashicons dashicons-portfolio" style="font-size:12px;width:12px;height:12px;line-height:12px;"></span> ' + escapeHtml(__('Local / Adjunto', 'aura-suite')) + '</span>') +
                         '</div>' +
                     '</div>' +
                     '<div class="aura-petty-evidence-card-actions">' +
-                        '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" class="button button-small button-primary" title="Ver comprobante" style="display:inline-flex;align-items:center;gap:4px;">' +
-                            '<span class="dashicons dashicons-visibility" style="font-size:13px;width:13px;height:13px;line-height:13px;"></span> Ver' +
+                        '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" class="button button-small button-primary" title="' + escAttr(__('Ver comprobante', 'aura-suite')) + '" style="display:inline-flex;align-items:center;gap:4px;">' +
+                            '<span class="dashicons dashicons-visibility" style="font-size:13px;width:13px;height:13px;line-height:13px;"></span> ' + escapeHtml(__('Ver', 'aura-suite')) +
                         '</a>' +
                     '</div>' +
                 '</div>';
             });
             html += '</div>';
         } else {
-            html += '<p class="description" style="padding:8px 0;">No se adjuntaron archivos comprobantes en esta rendición.</p>';
+            html += '<p class="description" style="padding:8px 0;">' + escapeHtml(__('No se adjuntaron archivos comprobantes en esta rendición.', 'aura-suite')) + '</p>';
         }
 
         // Observaciones adicionales limpias
         if (cleanNotesText && cleanNotesText !== '') {
-            html += '<h4 class="aura-petty-evidence-subtitle" style="margin-top:14px;"><span class="dashicons dashicons-edit"></span> Observaciones y Propósito del Fondo</h4>';
+            html += '<h4 class="aura-petty-evidence-subtitle" style="margin-top:14px;"><span class="dashicons dashicons-edit"></span> ' + escapeHtml(__('Observaciones y Propósito del Fondo', 'aura-suite')) + '</h4>';
             html += '<div class="aura-petty-evidence-notes-box" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;color:#334155;line-height:1.5;">' + escapeHtml(cleanNotesText) + '</div>';
         }
 
@@ -1418,28 +1422,28 @@ jQuery(function ($) {
             $('#aura-petty-returned').val(0);
             $cardBalance.removeClass('is-return is-exact').addClass('is-excedent');
             $icon.attr('class', 'aura-petty-kpi-icon dashicons dashicons-warning');
-            $badge.text('Reembolso');
-            $title.text('Excedente a Reembolsar');
+            $badge.text(__('Reembolso', 'aura-suite'));
+            $title.text(__('Excedente a Reembolsar', 'aura-suite'));
             $val.text(formatNumber(excedent));
-            $desc.text('El gasto superó el fondo entregado. Se generará un saldo a favor del responsable.');
+            $desc.text(__('El gasto superó el fondo entregado. Se generará un saldo a favor del responsable.', 'aura-suite'));
         } else if (Math.abs(balance) <= 0.009) {
             // Cuadrado exacto
             $('#aura-petty-returned').val('0.00');
             $cardBalance.removeClass('is-return is-excedent').addClass('is-exact');
             $icon.attr('class', 'aura-petty-kpi-icon dashicons dashicons-yes-alt');
-            $badge.text('Cuadrado 100%');
-            $title.text('Fondo Cuadrado Exacto');
+            $badge.text(__('Cuadrado 100%', 'aura-suite'));
+            $title.text(__('Fondo Cuadrado Exacto', 'aura-suite'));
             $val.text(formatNumber(0));
-            $desc.text('El gasto coincide exactamente con lo entregado. Rendición balanceada.');
+            $desc.text(__('El gasto coincide exactamente con lo entregado. Rendición balanceada.', 'aura-suite'));
         } else {
             // Reintegro / Sobrante a devolver a caja
             $('#aura-petty-returned').val(balance.toFixed(2));
             $cardBalance.removeClass('is-exact is-excedent').addClass('is-return');
             $icon.attr('class', 'aura-petty-kpi-icon dashicons dashicons-money-alt');
-            $badge.text('Reintegro');
-            $title.text('Efectivo por Devolver a Caja');
+            $badge.text(__('Reintegro', 'aura-suite'));
+            $title.text(__('Efectivo por Devolver a Caja', 'aura-suite'));
             $val.text(formatNumber(balance));
-            $desc.text('Monto en efectivo que el responsable debe reintegrar al fondo de caja.');
+            $desc.text(__('Monto en efectivo que el responsable debe reintegrar al fondo de caja.', 'aura-suite'));
         }
 
         // Habilitar o deshabilitar botón de envío si hay al menos 1 gasto con monto > 0
@@ -1540,7 +1544,7 @@ jQuery(function ($) {
 
         if (isProgram) {
             if ($label.length) {
-                $label.html('<strong>Fecha estimada fin de programa</strong>');
+                $label.html('<strong>' + escapeHtml(__('Fecha estimada fin de programa', 'aura-suite')) + '</strong>');
             }
             if ($shortcuts.length) {
                 $shortcuts.html(
@@ -1551,7 +1555,7 @@ jQuery(function ($) {
                 );
             }
             if ($help.length) {
-                $help.text('Presupuesto de mediano/largo plazo (ej. 6 meses). Se rinde de forma continua sin alarmas de vencimiento de corto plazo.');
+                $help.text(__('Presupuesto de mediano/largo plazo (ej. 6 meses). Se rinde de forma continua sin alarmas de vencimiento de corto plazo.', 'aura-suite'));
             }
             const curVal = $('#aura-petty-due-date').val();
             const fiveDaysVal = toLocalDateInput(parseInt(auraFinancialAccounts.defaultDueDays, 10) || 5);
@@ -1560,7 +1564,7 @@ jQuery(function ($) {
             }
         } else {
             if ($label.length) {
-                $label.html('<strong>Fecha límite rendición</strong>');
+                $label.html('<strong>' + escapeHtml(__('Fecha límite rendición', 'aura-suite')) + '</strong>');
             }
             if ($shortcuts.length) {
                 $shortcuts.html(
@@ -1571,7 +1575,7 @@ jQuery(function ($) {
                 );
             }
             if ($help.length) {
-                $help.text('Plazo límite para compra y devolución (SLA normal: 3 a 5 días).');
+                $help.text(__('Plazo límite para compra y devolución (SLA normal: 3 a 5 días).', 'aura-suite'));
             }
             const curVal = $('#aura-petty-due-date').val();
             const sixMonthsVal = toLocalDateInput(180);
@@ -1658,7 +1662,7 @@ jQuery(function ($) {
 
         const $selOrigin = $('#aura-petty-origin-account');
         if ($selOrigin.length) {
-            const originOpts = ['<option value="">Sin desembolso bancario directo (Efectivo manual)</option>'];
+            const originOpts = ['<option value="">' + escapeHtml(__('Sin desembolso bancario directo (Efectivo manual)', 'aura-suite')) + '</option>'];
             const allAccs = (allAccountsList && allAccountsList.length) ? allAccountsList : (window.auraAccountsCache || accounts || []);
             allAccs.forEach(function (a) {
                 if (a.account_type !== 'petty_cash') {
@@ -1775,8 +1779,8 @@ jQuery(function ($) {
     function renderPettyResponsibleTip(r) {
         const isThirdParty = (r.counterparty_id && parseInt(r.counterparty_id, 10) > 0);
         const roleBadge = isThirdParty 
-            ? '<span class="aura-tip-badge aura-tip-badge--company" style="background:rgba(2,132,199,0.25);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;">👤 Tercero (Diligencia Externa)</span>' 
-            : '<span class="aura-tip-badge aura-tip-badge--role" style="background:rgba(148,163,184,0.25);color:#cbd5e1;border:1px solid rgba(148,163,184,0.4);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;">🏢 Personal Interno (Área)</span>';
+            ? '<span class="aura-tip-badge aura-tip-badge--company" style="background:rgba(2,132,199,0.25);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;">' + escapeHtml(__('👤 Tercero (Diligencia Externa)', 'aura-suite')) + '</span>' 
+            : '<span class="aura-tip-badge aura-tip-badge--role" style="background:rgba(148,163,184,0.25);color:#cbd5e1;border:1px solid rgba(148,163,184,0.4);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;">' + escapeHtml(__('🏢 Personal Interno (Área)', 'aura-suite')) + '</span>';
         const balance = parseFloat(r.delivered_amount || 0) - parseFloat(r.spent_amount || 0) - parseFloat(r.returned_amount || 0);
 
         const avatarContent = (r.responsible_avatar_url && String(r.responsible_avatar_url).trim() !== '')
@@ -1789,21 +1793,21 @@ jQuery(function ($) {
                     avatarContent +
                 '</div>' +
                 '<div class="aura-tip-card-title-box">' +
-                    '<div class="aura-tip-card-name">' + escapeHtml(r.responsible_name || 'Sin responsable') + '</div>' +
+                    '<div class="aura-tip-card-name">' + escapeHtml(r.responsible_name || __('Sin responsable', 'aura-suite')) + '</div>' +
                     '<div class="aura-tip-card-badges">' + roleBadge + '</div>' +
                 '</div>' +
             '</div>' +
             '<div class="aura-tip-card-body">' +
                 '<div class="aura-tip-stat-grid">' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Entregado</span><span class="aura-tip-stat-value is-delivered">$' + escapeHtml(formatNumber(r.delivered_amount || 0)) + '</span></div>' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Comprobado</span><span class="aura-tip-stat-value is-spent">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</span></div>' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Devuelto</span><span class="aura-tip-stat-value is-returned">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</span></div>' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Saldo Pendiente</span><span class="aura-tip-stat-value is-balance">$' + escapeHtml(formatNumber(balance)) + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Entregado', 'aura-suite')) + '</span><span class="aura-tip-stat-value is-delivered">$' + escapeHtml(formatNumber(r.delivered_amount || 0)) + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Comprobado', 'aura-suite')) + '</span><span class="aura-tip-stat-value is-spent">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Devuelto', 'aura-suite')) + '</span><span class="aura-tip-stat-value is-returned">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Saldo Pendiente', 'aura-suite')) + '</span><span class="aura-tip-stat-value is-balance">$' + escapeHtml(formatNumber(balance)) + '</span></div>' +
                 '</div>' +
-                (r.notes ? '<div style="margin-top:6px;font-size:11.5px;line-height:1.4;color:#cbd5e1;"><strong style="color:#94a3b8;display:block;margin-bottom:2px;">📝 Propósito / Diligencia:</strong>' + escapeHtml(r.notes) + '</div>' : '') +
+                (r.notes ? '<div style="margin-top:6px;font-size:11.5px;line-height:1.4;color:#cbd5e1;"><strong style="color:#94a3b8;display:block;margin-bottom:2px;">' + escapeHtml(__('📝 Propósito / Diligencia:', 'aura-suite')) + '</strong>' + escapeHtml(r.notes) + '</div>' : '') +
             '</div>' +
             '<div class="aura-tip-card-footer">' +
-                '<span>Caja: ' + escapeHtml(r.account_name || 'Caja Chica') + '</span>' +
+                '<span>' + escapeHtml(sprintf(__('Caja: %s', 'aura-suite'), r.account_name || __('Caja Chica', 'aura-suite'))) + '</span>' +
                 '<span>ID #' + r.id + '</span>' +
             '</div>' +
         '</div>';
@@ -1812,7 +1816,7 @@ jQuery(function ($) {
     function renderPettyDueTip(r) {
         const isProgram = (r.delivery_type === 'program_budget');
         const isOverdue = parseInt(r.is_overdue, 10) === 1 && r.status !== 'approved' && r.status !== 'closed';
-        const dueDate = (r.due_date || '').slice(0, 10) || 'Sin fecha fija';
+        const dueDate = (r.due_date || '').slice(0, 10) || __('Sin fecha fija', 'aura-suite');
         const createdDate = (r.created_at || '').slice(0, 10) || '—';
 
         if (isProgram) {
@@ -1822,27 +1826,27 @@ jQuery(function ($) {
                         (isOverdue ? '⚠️' : '📦') +
                     '</div>' +
                     '<div class="aura-tip-card-title-box">' +
-                        '<div class="aura-tip-card-name">' + (isOverdue ? 'Vigencia de Programa Expirada' : 'Presupuesto de Programa Activo') + '</div>' +
+                        '<div class="aura-tip-card-name">' + escapeHtml(isOverdue ? __('Vigencia de Programa Expirada', 'aura-suite') : __('Presupuesto de Programa Activo', 'aura-suite')) + '</div>' +
                         '<div class="aura-tip-card-badges">' +
                             '<span class="aura-tip-badge" style="background:' + (isOverdue ? 'rgba(239,68,68,0.2)' : 'rgba(37,99,235,0.2)') + ';color:' + (isOverdue ? '#fca5a5' : '#93c5fd') + ';font-size:10.5px;padding:2px 8px;border-radius:999px;">' +
-                                (isOverdue ? 'Período Finalizado' : 'En Ejecución Operativa') +
+                                escapeHtml(isOverdue ? __('Período Finalizado', 'aura-suite') : __('En Ejecución Operativa', 'aura-suite')) +
                             '</span>' +
                         '</div>' +
                     '</div>' +
                 '</div>' +
                 '<div class="aura-tip-card-body">' +
                     '<div class="aura-tip-stat-grid">' +
-                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Fecha Apertura</span><span class="aura-tip-stat-value">' + createdDate + '</span></div>' +
-                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Cierre Programa</span><span class="aura-tip-stat-value" style="color:' + (isOverdue ? '#fca5a5' : '#93c5fd') + ';">' + dueDate + '</span></div>' +
+                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Fecha Apertura', 'aura-suite')) + '</span><span class="aura-tip-stat-value">' + createdDate + '</span></div>' +
+                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Cierre Programa', 'aura-suite')) + '</span><span class="aura-tip-stat-value" style="color:' + (isOverdue ? '#fca5a5' : '#93c5fd') + ';">' + dueDate + '</span></div>' +
                     '</div>' +
                     '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' +
                         (isOverdue 
-                            ? 'El período previsto para este programa ya finalizó. Se recomienda proceder con el cierre y conciliación de la caja.' 
-                            : 'Fondo de programa a mediano/largo plazo (ej. 6 meses). Se rinde de forma continua contra el presupuesto asignado sin alarmas de vencimiento de corto plazo.') +
+                            ? escapeHtml(__('El período previsto para este programa ya finalizó. Se recomienda proceder con el cierre y conciliación de la caja.', 'aura-suite')) 
+                            : escapeHtml(__('Fondo de programa a mediano/largo plazo (ej. 6 meses). Se rinde de forma continua contra el presupuesto asignado sin alarmas de vencimiento de corto plazo.', 'aura-suite')) ) +
                     '</div>' +
                 '</div>' +
                 '<div class="aura-tip-card-footer">' +
-                    '<span>Responsable: ' + escapeHtml(r.responsible_name || '—') + '</span>' +
+                    '<span>' + escapeHtml(__('Responsable:', 'aura-suite')) + ' ' + escapeHtml(r.responsible_name || '—') + '</span>' +
                 '</div>' +
             '</div>';
         }
@@ -1853,27 +1857,27 @@ jQuery(function ($) {
                     (isOverdue ? '⚠️' : '⏱️') +
                 '</div>' +
                 '<div class="aura-tip-card-title-box">' +
-                    '<div class="aura-tip-card-name">' + (isOverdue ? 'Plazo Vencido de Rendición' : 'Plazo SLA en Vigencia') + '</div>' +
+                    '<div class="aura-tip-card-name">' + escapeHtml(isOverdue ? __('Plazo Vencido de Rendición', 'aura-suite') : __('Plazo SLA en Vigencia', 'aura-suite')) + '</div>' +
                     '<div class="aura-tip-card-badges">' +
                         '<span class="aura-tip-badge" style="background:' + (isOverdue ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)') + ';color:' + (isOverdue ? '#fca5a5' : '#6ee7b7') + ';font-size:10.5px;padding:2px 8px;border-radius:999px;">' +
-                            (isOverdue ? 'En Mora' : 'Al Día') +
+                            escapeHtml(isOverdue ? __('En Mora', 'aura-suite') : __('Al Día', 'aura-suite')) +
                         '</span>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
             '<div class="aura-tip-card-body">' +
                 '<div class="aura-tip-stat-grid">' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Fecha Entrega</span><span class="aura-tip-stat-value">' + createdDate + '</span></div>' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Fecha Límite</span><span class="aura-tip-stat-value" style="color:' + (isOverdue ? '#fca5a5' : '#6ee7b7') + ';">' + dueDate + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Fecha Entrega', 'aura-suite')) + '</span><span class="aura-tip-stat-value">' + createdDate + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Fecha Límite', 'aura-suite')) + '</span><span class="aura-tip-stat-value" style="color:' + (isOverdue ? '#fca5a5' : '#6ee7b7') + ';">' + dueDate + '</span></div>' +
                 '</div>' +
                 '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' +
                     (isOverdue 
-                        ? 'Este fondo de compra superó su fecha límite sin haber justificado los comprobantes o devuelto el cambio. Requiere contacto prioritario con el responsable.' 
-                        : 'El custodio se encuentra dentro de los plazos establecidos para presentar facturas de compra y reintegrar el sobrante.') +
+                        ? escapeHtml(__('Este fondo de compra superó su fecha límite sin haber justificado los comprobantes o devuelto el cambio. Requiere contacto prioritario con el responsable.', 'aura-suite')) 
+                        : escapeHtml(__('El custodio se encuentra dentro de los plazos establecidos para presentar facturas de compra y reintegrar el sobrante.', 'aura-suite'))) +
                 '</div>' +
             '</div>' +
             '<div class="aura-tip-card-footer">' +
-                '<span>Responsable: ' + escapeHtml(r.responsible_name || '—') + '</span>' +
+                '<span>' + escapeHtml(__('Responsable:', 'aura-suite')) + ' ' + escapeHtml(r.responsible_name || '—') + '</span>' +
             '</div>' +
         '</div>';
     }
@@ -1885,29 +1889,29 @@ jQuery(function ($) {
                     '🏦' +
                 '</div>' +
                 '<div class="aura-tip-card-title-box">' +
-                    '<div class="aura-tip-card-name">' + escapeHtml(r.account_name || 'Caja Chica') + '</div>' +
+                    '<div class="aura-tip-card-name">' + escapeHtml(r.account_name || __('Caja Chica', 'aura-suite')) + '</div>' +
                     '<div class="aura-tip-card-badges">' +
-                        '<span class="aura-tip-badge" style="background:rgba(2,132,199,0.25);color:#38bdf8;font-size:10.5px;padding:2px 8px;border-radius:999px;">Cuenta de Custodia</span>' +
+                        '<span class="aura-tip-badge" style="background:rgba(2,132,199,0.25);color:#38bdf8;font-size:10.5px;padding:2px 8px;border-radius:999px;">' + escapeHtml(__('Cuenta de Custodia', 'aura-suite')) + '</span>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
             '<div class="aura-tip-card-body">' +
                 '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' +
-                    'Caja operativa o cuenta puente donde radican los fondos físicos para compras menores y diligencias de esta entrega.' +
+                    escapeHtml(__('Caja operativa o cuenta puente donde radican los fondos físicos para compras menores y diligencias de esta entrega.', 'aura-suite')) +
                 '</div>' +
             '</div>' +
             '<div class="aura-tip-card-footer">' +
-                '<span>Asignado a: ' + escapeHtml(r.responsible_name || '—') + '</span>' +
+                '<span>' + escapeHtml(sprintf(__('Asignado a: %s', 'aura-suite'), r.responsible_name || '—')) + '</span>' +
             '</div>' +
         '</div>';
     }
 
     function renderPettyMoneyTip(r, metric) {
         const balance = parseFloat(r.delivered_amount || 0) - parseFloat(r.spent_amount || 0) - parseFloat(r.returned_amount || 0);
-        let title = 'Arqueo Contable de la Entrega';
-        if (metric === 'delivered') title = 'Fondo Inicial Otorgado';
-        if (metric === 'spent') title = 'Compras Justificadas con Facturas';
-        if (metric === 'returned') title = 'Efectivo Sobrante Reintegrado';
+        let title = __('Arqueo Contable de la Entrega', 'aura-suite');
+        if (metric === 'delivered') title = __('Fondo Inicial Otorgado', 'aura-suite');
+        if (metric === 'spent') title = __('Compras Justificadas con Facturas', 'aura-suite');
+        if (metric === 'returned') title = __('Efectivo Sobrante Reintegrado', 'aura-suite');
 
         return '<div class="aura-tip-card">' +
             '<div class="aura-tip-card-header">' +
@@ -1917,62 +1921,62 @@ jQuery(function ($) {
                 '<div class="aura-tip-card-title-box">' +
                     '<div class="aura-tip-card-name">' + title + '</div>' +
                     '<div class="aura-tip-card-badges">' +
-                        '<span class="aura-tip-badge" style="background:rgba(59,130,246,0.25);color:#93c5fd;font-size:10.5px;padding:2px 8px;border-radius:999px;">Liquidación Financiera</span>' +
+                        '<span class="aura-tip-badge" style="background:rgba(59,130,246,0.25);color:#93c5fd;font-size:10.5px;padding:2px 8px;border-radius:999px;">' + escapeHtml(__('Liquidación Financiera', 'aura-suite')) + '</span>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
             '<div class="aura-tip-card-body">' +
                 '<div class="aura-tip-stat-grid">' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">1. Entregado Base</span><span class="aura-tip-stat-value is-delivered">$' + escapeHtml(formatNumber(r.delivered_amount || 0)) + '</span></div>' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">2. Gastos Facturados</span><span class="aura-tip-stat-value is-spent">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</span></div>' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">3. Reintegro Efectivo</span><span class="aura-tip-stat-value is-returned">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</span></div>' +
-                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">4. Saldo por Liquidar</span><span class="aura-tip-stat-value is-balance">$' + escapeHtml(formatNumber(balance)) + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('1. Entregado Base', 'aura-suite')) + '</span><span class="aura-tip-stat-value is-delivered">$' + escapeHtml(formatNumber(r.delivered_amount || 0)) + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('2. Gastos Facturados', 'aura-suite')) + '</span><span class="aura-tip-stat-value is-spent">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('3. Reintegro Efectivo', 'aura-suite')) + '</span><span class="aura-tip-stat-value is-returned">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</span></div>' +
+                    '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('4. Saldo por Liquidar', 'aura-suite')) + '</span><span class="aura-tip-stat-value is-balance">$' + escapeHtml(formatNumber(balance)) + '</span></div>' +
                 '</div>' +
                 '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' +
                     (balance <= 0.01 && balance >= -0.01 
-                        ? '✅ Cuadre perfecto: La suma de gastos comprobados y efectivo devuelto coincide con el fondo entregado.' 
+                        ? escapeHtml(__('✅ Cuadre perfecto: La suma de gastos comprobados y efectivo devuelto coincide con el fondo entregado.', 'aura-suite')) 
                         : (balance > 0.01 
-                            ? '⚠️ Pendiente de rendir: El responsable aún debe presentar facturas o devolver $' + escapeHtml(formatNumber(balance)) + '.' 
-                            : 'ℹ️ Excedente: Los gastos superaron el monto entregado en $' + escapeHtml(formatNumber(Math.abs(balance))) + '.')) +
+                            ? escapeHtml(sprintf(__('⚠️ Pendiente de rendir: El responsable aún debe presentar facturas o devolver $%s.', 'aura-suite'), formatNumber(balance))) 
+                            : escapeHtml(sprintf(__('ℹ️ Excedente: Los gastos superaron el monto entregado en $%s.', 'aura-suite'), formatNumber(Math.abs(balance)))))) +
                 '</div>' +
             '</div>' +
             '<div class="aura-tip-card-footer">' +
-                '<span>Responsable: ' + escapeHtml(r.responsible_name || '—') + '</span>' +
-                '<span>Entrega #' + r.id + '</span>' +
+                '<span>' + escapeHtml(__('Responsable:', 'aura-suite')) + ' ' + escapeHtml(r.responsible_name || '—') + '</span>' +
+                '<span>' + escapeHtml(sprintf(__('Entrega #%d', 'aura-suite'), r.id)) + '</span>' +
             '</div>' +
         '</div>';
     }
 
     function renderPettyStatusTip(r) {
         const s = r.status;
-        let title = 'Fase Contable';
+        let title = __('Fase Contable', 'aura-suite');
         let desc = '';
         let icon = '🏷️';
         let color = '#38bdf8';
 
         if (s === 'open') {
-            title = 'Entrega Abierta (Fondo en Poder)';
-            desc = 'El dinero se encuentra en custodia del responsable para efectuar las compras asignadas. Aún no se ha enviado la liquidación formal.';
+            title = __('Entrega Abierta (Fondo en Poder)', 'aura-suite');
+            desc = __('El dinero se encuentra en custodia del responsable para efectuar las compras asignadas. Aún no se ha enviado la liquidación formal.', 'aura-suite');
             icon = '⏳';
             color = '#38bdf8';
         } else if (s === 'submitted') {
-            title = 'Rendida (Pendiente de Aprobación)';
-            desc = 'El custodio cargó las facturas y declaró el arqueo final. Finanzas o el supervisor deben revisar y validar los comprobantes.';
+            title = __('Rendida (Pendiente de Aprobación)', 'aura-suite');
+            desc = __('El custodio cargó las facturas y declaró el arqueo final. Finanzas o el supervisor deben revisar y validar los comprobantes.', 'aura-suite');
             icon = '📋';
             color = '#f59e0b';
         } else if (s === 'approved') {
-            title = 'Aprobada (Paz y Salvo Contable)';
-            desc = 'Los gastos han sido verificados y aprobados por Finanzas. El custodio queda en paz y salvo por este fondo entregado.';
+            title = __('Aprobada (Paz y Salvo Contable)', 'aura-suite');
+            desc = __('Los gastos han sido verificados y aprobados por Finanzas. El custodio queda en paz y salvo por este fondo entregado.', 'aura-suite');
             icon = '✅';
             color = '#10b981';
         } else if (s === 'closed') {
-            title = 'Cerrada Definitivamente';
-            desc = 'Operación concluida, conciliada y archivada en el libro mayor contable.';
+            title = __('Cerrada Definitivamente', 'aura-suite');
+            desc = __('Operación concluida, conciliada y archivada en el libro mayor contable.', 'aura-suite');
             icon = '🔒';
             color = '#94a3b8';
         } else if (s === 'rejected') {
-            title = 'Rendición Rechazada';
-            desc = 'Se encontraron discrepancias en los comprobantes o faltan facturas tributarias válidas. El custodio debe corregir los gastos.';
+            title = __('Rendición Rechazada', 'aura-suite');
+            desc = __('Se encontraron discrepancias en los comprobantes o faltan facturas tributarias válidas. El custodio debe corregir los gastos.', 'aura-suite');
             icon = '❌';
             color = '#ef4444';
         }
@@ -1985,7 +1989,7 @@ jQuery(function ($) {
                 '<div class="aura-tip-card-title-box">' +
                     '<div class="aura-tip-card-name" style="color:' + color + ';">' + title + '</div>' +
                     '<div class="aura-tip-card-badges">' +
-                        '<span class="aura-tip-badge" style="background:rgba(255,255,255,0.15);color:#ffffff;font-size:10.5px;padding:2px 8px;border-radius:999px;">Estado: ' + pettyStatusLabel(s) + '</span>' +
+                        '<span class="aura-tip-badge" style="background:rgba(255,255,255,0.15);color:#ffffff;font-size:10.5px;padding:2px 8px;border-radius:999px;">' + escapeHtml(sprintf(__('Estado: %s', 'aura-suite'), pettyStatusLabel(s))) + '</span>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
@@ -1993,7 +1997,7 @@ jQuery(function ($) {
                 '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' + desc + '</div>' +
             '</div>' +
             '<div class="aura-tip-card-footer">' +
-                '<span>Entrega #' + r.id + '</span>' +
+                '<span>' + escapeHtml(sprintf(__('Entrega #%d', 'aura-suite'), r.id)) + '</span>' +
             '</div>' +
         '</div>';
     }
@@ -2001,68 +2005,68 @@ jQuery(function ($) {
     function renderPettyChildCard(r, canSubmit, canApprove, canClose, evidenceCount, isThirdParty, respBadge, isOverdue, dueDateDisplay, isProgram) {
         const balance = parseFloat(r.delivered_amount || 0) - parseFloat(r.spent_amount || 0) - parseFloat(r.returned_amount || 0);
         const statusBadge = pettyStatusBadge(r.status);
-        const overdueBadge = isOverdue ? '<span class="aura-badge aura-badge-red" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;">⚠️ Vencida</span>' : '';
-        const evidenceBadge = evidenceCount > 0 ? '<span class="aura-badge" style="background:#e0f2fe;color:#0284c7;border:1px solid #bae6fd;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">' + evidenceCount + ' comprobante(s)</span>' : '';
+        const overdueBadge = isOverdue ? '<span class="aura-badge aura-badge-red" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;">' + escapeHtml(__('⚠️ Vencida', 'aura-suite')) + '</span>' : '';
+        const evidenceBadge = evidenceCount > 0 ? '<span class="aura-badge" style="background:#e0f2fe;color:#0284c7;border:1px solid #bae6fd;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">' + escapeHtml(evidenceCount === 1 ? __('1 comprobante', 'aura-suite') : sprintf(__('%d comprobantes', 'aura-suite'), evidenceCount)) + '</span>' : '';
 
         const typeHeroBadge = isProgram
-            ? '<span class="aura-pill aura-pill--program-lg" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-portfolio"></span> Presupuesto de Programa</span>'
-            : '<span class="aura-pill aura-pill--errand-lg" style="background:#f8fafc;color:#475569;border:1px solid #e2e8f0;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-cart"></span> Compra puntual / Diligencia</span>';
+            ? '<span class="aura-pill aura-pill--program-lg" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-portfolio"></span> ' + escapeHtml(__('Presupuesto de Programa', 'aura-suite')) + '</span>'
+            : '<span class="aura-pill aura-pill--errand-lg" style="background:#f8fafc;color:#475569;border:1px solid #e2e8f0;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-cart"></span> ' + escapeHtml(__('Compra puntual / Diligencia', 'aura-suite')) + '</span>';
 
         const hasDriveOrReceipt = /https?:\/\/[^\s,;]+/i.test(r.notes || '');
 
         // ── BOTONES DEL PANEL LATERAL IZQUIERDO ──
         const sidebarButtons = [];
         sidebarButtons.push(
-            '<button type="button" class="btn btn-sm btn-primary btn-shimmer btn-lift aura-child-side-btn aura-child-side-btn--primary aura-petty-pick" data-id="' + r.id + '" data-tooltip="Cargar facturas y rendir gastos">' +
+            '<button type="button" class="btn btn-sm btn-primary btn-shimmer btn-lift aura-child-side-btn aura-child-side-btn--primary aura-petty-pick" data-id="' + r.id + '" data-tooltip="' + escAttr(__('Cargar facturas y rendir gastos', 'aura-suite')) + '">' +
                 '<span class="dashicons dashicons-edit"></span>' +
-                '<span>Rendir Gastos</span>' +
+                '<span>' + escapeHtml(__('Rendir Gastos', 'aura-suite')) + '</span>' +
             '</button>'
         );
 
         if (evidenceCount > 0 || (r.evidence_json && String(r.evidence_json).trim() !== '') || hasDriveOrReceipt) {
             sidebarButtons.push(
-                '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-child-side-btn aura-child-side-btn--evidence aura-petty-view-evidence" data-id="' + r.id + '" data-tooltip="Ver comprobantes y respaldos adjuntos">' +
+                '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-child-side-btn aura-child-side-btn--evidence aura-petty-view-evidence" data-id="' + r.id + '" data-tooltip="' + escAttr(__('Ver comprobantes y respaldos adjuntos', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-visibility"></span>' +
-                    '<span>Comprobantes (' + Math.max(1, evidenceCount) + ')</span>' +
+                    '<span>' + escapeHtml(sprintf(__('Comprobantes (%d)', 'aura-suite'), Math.max(1, evidenceCount))) + '</span>' +
                 '</button>'
             );
         }
 
         if (canSubmit) {
             sidebarButtons.push(
-                '<button type="button" class="btn btn-sm btn-emerald btn-lift aura-child-side-btn aura-child-side-btn--submit aura-petty-action" data-id="' + r.id + '" data-status="submitted" data-tooltip="Enviar rendición para revisión">' +
+                '<button type="button" class="btn btn-sm btn-emerald btn-lift aura-child-side-btn aura-child-side-btn--submit aura-petty-action" data-id="' + r.id + '" data-status="submitted" data-tooltip="' + escAttr(__('Enviar rendición para revisión', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-yes-alt"></span>' +
-                    '<span>Enviar a Revisión</span>' +
+                    '<span>' + escapeHtml(__('Enviar a Revisión', 'aura-suite')) + '</span>' +
                 '</button>'
             );
             sidebarButtons.push(
-                '<button type="button" class="btn btn-sm btn-danger btn-lift aura-child-side-btn aura-child-side-btn--delete aura-petty-delete" data-id="' + r.id + '" data-tooltip="Eliminar este registro">' +
+                '<button type="button" class="btn btn-sm btn-danger btn-lift aura-child-side-btn aura-child-side-btn--delete aura-petty-delete" data-id="' + r.id + '" data-tooltip="' + escAttr(__('Eliminar este registro', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-trash"></span>' +
-                    '<span>Eliminar Entrega</span>' +
+                    '<span>' + escapeHtml(__('Eliminar Entrega', 'aura-suite')) + '</span>' +
                 '</button>'
             );
         }
 
         if (canApprove) {
             sidebarButtons.push(
-                '<button type="button" class="btn btn-sm btn-emerald btn-shimmer btn-lift aura-child-side-btn aura-child-side-btn--approve aura-petty-action" data-id="' + r.id + '" data-status="approved" data-tooltip="Aprobar rendición (paz y salvo)">' +
+                '<button type="button" class="btn btn-sm btn-emerald btn-shimmer btn-lift aura-child-side-btn aura-child-side-btn--approve aura-petty-action" data-id="' + r.id + '" data-status="approved" data-tooltip="' + escAttr(__('Aprobar rendición (paz y salvo)', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-yes"></span>' +
-                    '<span>Aprobar Rendición</span>' +
+                    '<span>' + escapeHtml(__('Aprobar Rendición', 'aura-suite')) + '</span>' +
                 '</button>'
             );
             sidebarButtons.push(
-                '<button type="button" class="btn btn-sm btn-rose btn-lift aura-child-side-btn aura-child-side-btn--reject aura-petty-action" data-id="' + r.id + '" data-status="rejected" data-tooltip="Rechazar rendición">' +
+                '<button type="button" class="btn btn-sm btn-rose btn-lift aura-child-side-btn aura-child-side-btn--reject aura-petty-action" data-id="' + r.id + '" data-status="rejected" data-tooltip="' + escAttr(__('Rechazar rendición', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-no"></span>' +
-                    '<span>Rechazar</span>' +
+                    '<span>' + escapeHtml(__('Rechazar', 'aura-suite')) + '</span>' +
                 '</button>'
             );
         }
 
         if (canClose) {
             sidebarButtons.push(
-                '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-child-side-btn aura-child-side-btn--close aura-petty-action" data-id="' + r.id + '" data-status="closed" data-tooltip="Cerrar definitivamente la caja">' +
+                '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-child-side-btn aura-child-side-btn--close aura-petty-action" data-id="' + r.id + '" data-status="closed" data-tooltip="' + escAttr(__('Cerrar definitivamente la caja', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-lock"></span>' +
-                    '<span>Cerrar Definitivamente</span>' +
+                    '<span>' + escapeHtml(__('Cerrar Definitivamente', 'aura-suite')) + '</span>' +
                 '</button>'
             );
         }
@@ -2072,9 +2076,9 @@ jQuery(function ($) {
         if (spentAmtChild > delivAmtChild) {
             const excedentVal = spentAmtChild - delivAmtChild;
             sidebarButtons.push(
-                '<button type="button" class="btn btn-sm btn-indigo btn-shimmer btn-lift aura-child-side-btn aura-petty-pay-excedent" data-id="' + r.id + '" data-tooltip="Pagar o reembolsar excedente comprobado al custodio">' +
+                '<button type="button" class="btn btn-sm btn-indigo btn-shimmer btn-lift aura-child-side-btn aura-petty-pay-excedent" data-id="' + r.id + '" data-tooltip="' + escAttr(__('Pagar o reembolsar excedente comprobado al custodio', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-money-alt"></span>' +
-                    '<span>Liquidar Excedente ($' + formatNumber(excedentVal) + ')</span>' +
+                    '<span>' + escapeHtml(sprintf(__('Liquidar Excedente ($%s)', 'aura-suite'), formatNumber(excedentVal))) + '</span>' +
                 '</button>'
             );
         }
@@ -2084,7 +2088,7 @@ jQuery(function ($) {
             '<div class="aura-child-actions-sidebar">' +
                 '<div class="aura-child-sidebar-header">' +
                     '<span class="dashicons dashicons-admin-generic"></span>' +
-                    '<span>Acciones Rápidas</span>' +
+                    '<span>' + escapeHtml(__('Acciones Rápidas', 'aura-suite')) + '</span>' +
                 '</div>' +
                 '<div class="aura-child-sidebar-buttons">' +
                     sidebarButtons.join('') +
@@ -2100,10 +2104,10 @@ jQuery(function ($) {
                         '</div>' +
                         '<div class="aura-child-hero-titles">' +
                             '<div class="aura-child-hero-title" style="font-weight:700;font-size:15px;color:#0f172a;">' +
-                                'Entrega #' + r.id + ': ' + escapeHtml(r.responsible_name || 'Responsable') +
+                                sprintf(escapeHtml(__('Entrega #%1$d: %2$s', 'aura-suite')), r.id, escapeHtml(r.responsible_name || __('Responsable', 'aura-suite'))) +
                             '</div>' +
                             '<div class="aura-child-hero-subtitle" style="font-size:12.5px;color:#64748b;">' +
-                                'Caja Asignada: <strong>' + escapeHtml(r.account_name || 'Caja Chica') + '</strong>' +
+                                escapeHtml(__('Caja Asignada:', 'aura-suite')) + ' <strong>' + escapeHtml(r.account_name || __('Caja Chica', 'aura-suite')) + '</strong>' +
                             '</div>' +
                         '</div>' +
                     '</div>' +
@@ -2114,7 +2118,7 @@ jQuery(function ($) {
                         overdueBadge +
                         evidenceBadge +
                         '<div class="aura-child-amount-card" style="margin-left:auto;padding:6px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;text-align:right;">' +
-                            '<span style="display:block;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;">Entregado</span>' +
+                            '<span style="display:block;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;">' + escapeHtml(__('Entregado', 'aura-suite')) + '</span>' +
                             '<strong style="font-size:16px;color:#0f172a;">$' + escapeHtml(formatNumber(r.delivered_amount || 0)) + '</strong>' +
                         '</div>' +
                     '</div>' +
@@ -2123,32 +2127,32 @@ jQuery(function ($) {
                 '<div class="aura-child-sections-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px;">' +
                     '<div class="aura-child-subcard" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;">' +
                         '<div class="aura-child-subcard-header" style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
-                            '<span class="dashicons dashicons-calendar-alt" style="font-size:15px;color:#0284c7;"></span> Cronograma y Plazos' +
+                            '<span class="dashicons dashicons-calendar-alt" style="font-size:15px;color:#0284c7;"></span> ' + escapeHtml(__('Cronograma y Plazos', 'aura-suite')) +
                         '</div>' +
                         '<div class="aura-child-subcard-body" style="font-size:12.5px;line-height:1.6;">' +
-                            '<div><span style="color:#64748b;">Modalidad:</span> <strong>' + (isProgram ? 'Presupuesto Programa (Largo Plazo)' : 'Compra puntual / Diligencia') + '</strong></div>' +
-                            '<div><span style="color:#64748b;">Fecha entrega:</span> <strong>' + escapeHtml(r.created_at || '—') + '</strong></div>' +
-                            '<div><span style="color:#64748b;">Fecha límite:</span> ' + dueDateDisplay + '</div>' +
+                            '<div><span style="color:#64748b;">' + escapeHtml(__('Modalidad:', 'aura-suite')) + '</span> <strong>' + escapeHtml(isProgram ? __('Presupuesto Programa (Largo Plazo)', 'aura-suite') : __('Compra puntual / Diligencia', 'aura-suite')) + '</strong></div>' +
+                            '<div><span style="color:#64748b;">' + escapeHtml(__('Fecha entrega:', 'aura-suite')) + '</span> <strong>' + escapeHtml(r.created_at || '—') + '</strong></div>' +
+                            '<div><span style="color:#64748b;">' + escapeHtml(__('Fecha límite:', 'aura-suite')) + '</span> ' + dueDateDisplay + '</div>' +
                         '</div>' +
                     '</div>' +
 
                     '<div class="aura-child-subcard" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;">' +
                         '<div class="aura-child-subcard-header" style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
-                            '<span class="dashicons dashicons-money-alt" style="font-size:15px;color:#10b981;"></span> Liquidación Contable' +
+                            '<span class="dashicons dashicons-money-alt" style="font-size:15px;color:#10b981;"></span> ' + escapeHtml(__('Liquidación Contable', 'aura-suite')) +
                         '</div>' +
                         '<div class="aura-child-subcard-body" style="font-size:12.5px;line-height:1.6;">' +
-                            '<div><span style="color:#64748b;">Gastado comprobado:</span> <strong style="color:#4f46e5;">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</strong></div>' +
-                            '<div><span style="color:#64748b;">Efectivo reintegrado:</span> <strong style="color:#059669;">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</strong></div>' +
-                            '<div><span style="color:#64748b;">Saldo pendiente:</span> <strong style="color:' + (balance > 0.01 ? '#dc2626' : '#059669') + '">$' + escapeHtml(formatNumber(balance)) + '</strong></div>' +
+                            '<div><span style="color:#64748b;">' + escapeHtml(__('Gastado comprobado:', 'aura-suite')) + '</span> <strong style="color:#4f46e5;">$' + escapeHtml(formatNumber(r.spent_amount || 0)) + '</strong></div>' +
+                            '<div><span style="color:#64748b;">' + escapeHtml(__('Efectivo reintegrado:', 'aura-suite')) + '</span> <strong style="color:#059669;">$' + escapeHtml(formatNumber(r.returned_amount || 0)) + '</strong></div>' +
+                            '<div><span style="color:#64748b;">' + escapeHtml(__('Saldo pendiente:', 'aura-suite')) + '</span> <strong style="color:' + (balance > 0.01 ? '#dc2626' : '#059669') + '">$' + escapeHtml(formatNumber(balance)) + '</strong></div>' +
                         '</div>' +
                     '</div>' +
 
                     '<div class="aura-child-subcard aura-child-subcard-full" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;grid-column:1 / -1;">' +
                         '<div class="aura-child-subcard-header" style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
-                            '<span class="dashicons dashicons-clipboard" style="font-size:15px;color:#f59e0b;"></span> Propósito y Observaciones' +
+                            '<span class="dashicons dashicons-clipboard" style="font-size:15px;color:#f59e0b;"></span> ' + escapeHtml(__('Propósito y Observaciones', 'aura-suite')) +
                         '</div>' +
                         '<div class="aura-child-subcard-body" style="font-size:13px;color:#334155;line-height:1.5;">' +
-                            (r.notes ? escapeHtml(r.notes).replace(/\n/g, '<br>') : '<em style="color:#94a3b8;">Sin notas u observaciones registradas.</em>') +
+                            (r.notes ? escapeHtml(r.notes).replace(/\n/g, '<br>') : '<em style="color:#94a3b8;">' + escapeHtml(__('Sin notas u observaciones registradas.', 'aura-suite')) + '</em>') +
                         '</div>' +
                     '</div>' +
                 '</div>' +
@@ -2161,15 +2165,15 @@ jQuery(function ($) {
         const urlMatches = fullNotes.match(/https?:\/\/[^\s,;]+/gi) || [];
         let cleanText = fullNotes.replace(/https?:\/\/[^\s,;]+/gi, '').replace(/Comprobante\s*(Entrega|Egreso|Transferencia)?\s*:?/gi, '').trim();
         if (!cleanText) {
-            cleanText = fullNotes.trim() || 'Sin notas u observaciones registradas.';
+            cleanText = fullNotes.trim() || __('Sin notas u observaciones registradas.', 'aura-suite');
         }
 
         let linksHtml = '';
         if (urlMatches.length > 0) {
             linksHtml = '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.1);">' +
-                '<strong style="font-size:11px;color:#38bdf8;display:block;margin-bottom:4px;">📎 Enlaces / Soportes adjuntos:</strong>' +
+                '<strong style="font-size:11px;color:#38bdf8;display:block;margin-bottom:4px;">' + escapeHtml(__('📎 Enlaces / Soportes adjuntos:', 'aura-suite')) + '</strong>' +
                 urlMatches.map(function(url, idx) {
-                    return '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;text-decoration:underline;display:block;font-size:11.5px;word-break:break-all;margin-bottom:2px;">🔗 Soporte #' + (idx + 1) + '</a>';
+                    return '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;text-decoration:underline;display:block;font-size:11.5px;word-break:break-all;margin-bottom:2px;">' + escapeHtml(sprintf(__('🔗 Soporte #%d', 'aura-suite'), idx + 1)) + '</a>';
                 }).join('') +
             '</div>';
         }
@@ -2180,9 +2184,9 @@ jQuery(function ($) {
                     '📋' +
                 '</div>' +
                 '<div class="aura-tip-card-title-box">' +
-                    '<div class="aura-tip-card-name">Propósito y Diligencia</div>' +
+                    '<div class="aura-tip-card-name">' + escapeHtml(__('Propósito y Diligencia', 'aura-suite')) + '</div>' +
                     '<div class="aura-tip-card-badges">' +
-                        '<span class="aura-tip-badge" style="background:rgba(245,158,11,0.25);color:#fde68a;font-size:10.5px;padding:2px 8px;border-radius:999px;">Justificación de Gasto</span>' +
+                        '<span class="aura-tip-badge" style="background:rgba(245,158,11,0.25);color:#fde68a;font-size:10.5px;padding:2px 8px;border-radius:999px;">' + escapeHtml(__('Justificación de Gasto', 'aura-suite')) + '</span>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
@@ -2191,7 +2195,7 @@ jQuery(function ($) {
                 linksHtml +
             '</div>' +
             '<div class="aura-tip-card-footer">' +
-                '<span>Responsable: ' + escapeHtml(r.responsible_name || '—') + '</span>' +
+                '<span>' + escapeHtml(__('Responsable:', 'aura-suite')) + ' ' + escapeHtml(r.responsible_name || '—') + '</span>' +
             '</div>' +
         '</div>';
     }
@@ -2202,7 +2206,7 @@ jQuery(function ($) {
         }
 
         if (!rows || !rows.length) {
-            $pettyTableBody.html('<tr><td colspan="11" style="text-align:center;padding:34px 16px;color:#64748b;"><div style="font-size:28px;margin-bottom:8px;">📦</div><strong style="font-size:14px;display:block;color:#334155;">Sin registros de caja chica</strong><p style="margin:4px 0 0;font-size:12px;">No se encontraron entregas o rendiciones con los criterios actuales.</p></td></tr>');
+            $pettyTableBody.html('<tr><td colspan="11" style="text-align:center;padding:34px 16px;color:#64748b;"><div style="font-size:28px;margin-bottom:8px;">📦</div><strong style="font-size:14px;display:block;color:#334155;">' + escapeHtml(__('Sin registros de caja chica', 'aura-suite')) + '</strong><p style="margin:4px 0 0;font-size:12px;">' + escapeHtml(__('No se encontraron entregas o rendiciones con los criterios actuales.', 'aura-suite')) + '</p></td></tr>');
             return;
         }
 
@@ -2217,38 +2221,38 @@ jQuery(function ($) {
 
             // Botones de acción compactos para la fila principal
             const buttons = [
-                '<button type="button" class="btn btn-sm btn-primary btn-lift aura-btn-action-icon aura-petty-pick" data-id="' + r.id + '" data-tooltip="Cargar y rendir entrega #' + r.id + '" aria-label="Rendir"><span class="dashicons dashicons-edit"></span></button>'
+                '<button type="button" class="btn btn-sm btn-primary btn-lift aura-btn-action-icon aura-petty-pick" data-id="' + r.id + '" data-tooltip="' + escAttr(sprintf(__('Cargar y rendir entrega #%d', 'aura-suite'), r.id)) + '" aria-label="' + escAttr(__('Rendir', 'aura-suite')) + '"><span class="dashicons dashicons-edit"></span></button>'
             ];
             if (evidenceCount > 0 || (r.evidence_json && String(r.evidence_json).trim() !== '') || hasDriveOrReceipt) {
-                buttons.push('<button type="button" class="btn btn-sm btn-secondary btn-lift aura-btn-action-icon aura-btn-action-evidence aura-petty-view-evidence" data-id="' + r.id + '" data-tooltip="Ver comprobante(s) (' + Math.max(1, evidenceCount) + ')" aria-label="Comprobantes"><span class="dashicons dashicons-visibility"></span>' + (evidenceCount > 0 ? '<span class="aura-btn-badge-count">' + evidenceCount + '</span>' : '') + '</button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-secondary btn-lift aura-btn-action-icon aura-btn-action-evidence aura-petty-view-evidence" data-id="' + r.id + '" data-tooltip="' + escAttr(sprintf(__('Ver comprobantes (%d)', 'aura-suite'), Math.max(1, evidenceCount))) + '" aria-label="' + escAttr(__('Comprobantes', 'aura-suite')) + '"><span class="dashicons dashicons-visibility"></span>' + (evidenceCount > 0 ? '<span class="aura-btn-badge-count">' + evidenceCount + '</span>' : '') + '</button>');
             }
             if (canSubmit) {
-                buttons.push('<button type="button" class="btn btn-sm btn-emerald btn-lift aura-btn-action-icon aura-btn-action-submit aura-petty-action" data-id="' + r.id + '" data-status="submitted" data-tooltip="Enviar para aprobación" aria-label="Enviar"><span class="dashicons dashicons-yes-alt"></span></button>');
-                buttons.push('<button type="button" class="btn btn-sm btn-danger btn-lift aura-btn-action-icon aura-petty-delete" data-id="' + r.id + '" data-tooltip="Eliminar entrega #' + r.id + '" aria-label="Eliminar"><span class="dashicons dashicons-trash"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-emerald btn-lift aura-btn-action-icon aura-btn-action-submit aura-petty-action" data-id="' + r.id + '" data-status="submitted" data-tooltip="' + escAttr(__('Enviar para aprobación', 'aura-suite')) + '" aria-label="' + escAttr(__('Enviar', 'aura-suite')) + '"><span class="dashicons dashicons-yes-alt"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-danger btn-lift aura-btn-action-icon aura-petty-delete" data-id="' + r.id + '" data-tooltip="' + escAttr(sprintf(__('Eliminar entrega #%d', 'aura-suite'), r.id)) + '" aria-label="' + escAttr(__('Eliminar', 'aura-suite')) + '"><span class="dashicons dashicons-trash"></span></button>');
             }
             if (canApprove) {
-                buttons.push('<button type="button" class="btn btn-sm btn-emerald btn-shimmer btn-lift aura-btn-action-icon aura-btn-action-approve aura-petty-action" data-id="' + r.id + '" data-status="approved" data-tooltip="Aprobar rendición" aria-label="Aprobar"><span class="dashicons dashicons-yes"></span></button>');
-                buttons.push('<button type="button" class="btn btn-sm btn-rose btn-lift aura-btn-action-icon aura-btn-action-reject aura-petty-action" data-id="' + r.id + '" data-status="rejected" data-tooltip="Rechazar rendición" aria-label="Rechazar"><span class="dashicons dashicons-no"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-emerald btn-shimmer btn-lift aura-btn-action-icon aura-btn-action-approve aura-petty-action" data-id="' + r.id + '" data-status="approved" data-tooltip="' + escAttr(__('Aprobar rendición', 'aura-suite')) + '" aria-label="' + escAttr(__('Aprobar', 'aura-suite')) + '"><span class="dashicons dashicons-yes"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-rose btn-lift aura-btn-action-icon aura-btn-action-reject aura-petty-action" data-id="' + r.id + '" data-status="rejected" data-tooltip="' + escAttr(__('Rechazar rendición', 'aura-suite')) + '" aria-label="' + escAttr(__('Rechazar', 'aura-suite')) + '"><span class="dashicons dashicons-no"></span></button>');
             }
             if (canClose) {
-                buttons.push('<button type="button" class="btn btn-sm btn-secondary btn-lift aura-btn-action-icon aura-btn-action-close aura-petty-action" data-id="' + r.id + '" data-status="closed" data-tooltip="Cerrar definitivamente" aria-label="Cerrar"><span class="dashicons dashicons-lock"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-secondary btn-lift aura-btn-action-icon aura-btn-action-close aura-petty-action" data-id="' + r.id + '" data-status="closed" data-tooltip="' + escAttr(__('Cerrar definitivamente', 'aura-suite')) + '" aria-label="' + escAttr(__('Cerrar', 'aura-suite')) + '"><span class="dashicons dashicons-lock"></span></button>');
             }
 
             const spentAmtMain = parseFloat(r.spent_amount || 0);
             const delivAmtMain = parseFloat(r.delivered_amount || 0);
             if (spentAmtMain > delivAmtMain) {
                 const excedentRow = spentAmtMain - delivAmtMain;
-                buttons.push('<button type="button" class="btn btn-sm btn-indigo btn-lift aura-btn-action-icon aura-petty-pay-excedent" data-id="' + r.id + '" data-tooltip="Liquidar excedente de $' + formatNumber(excedentRow) + ' a favor del custodio" aria-label="Liquidar Excedente"><span class="dashicons dashicons-money-alt"></span></button>');
+                buttons.push('<button type="button" class="btn btn-sm btn-indigo btn-lift aura-btn-action-icon aura-petty-pay-excedent" data-id="' + r.id + '" data-tooltip="' + escAttr(sprintf(__('Liquidar excedente de $%s a favor del custodio', 'aura-suite'), formatNumber(excedentRow))) + '" aria-label="' + escAttr(__('Liquidar Excedente', 'aura-suite')) + '"><span class="dashicons dashicons-money-alt"></span></button>');
             }
 
             const isThirdParty = (r.counterparty_id && parseInt(r.counterparty_id, 10) > 0);
             const respBadge = isThirdParty 
-                ? '<span class="badge badge-indigo" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:600;">Tercero</span>' 
-                : '<span class="badge badge-slate" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:600;">Interno</span>';
+                ? '<span class="badge badge-indigo" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:600;">' + escapeHtml(__('Tercero', 'aura-suite')) + '</span>' 
+                : '<span class="badge badge-slate" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:600;">' + escapeHtml(__('Interno', 'aura-suite')) + '</span>';
 
             const typeBadge = isProgram
-                ? '<span class="badge badge-success" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:700;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;" title="Presupuesto de Programa (Largo plazo)"><span class="dashicons dashicons-portfolio" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Programa</span>'
-                : '<span class="badge badge-danger" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:700;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;" title="Compra puntual / Diligencia (Corto plazo)"><span class="dashicons dashicons-cart" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>Compra</span>';
+                ? '<span class="badge badge-success" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:700;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;" title="' + escAttr(__('Presupuesto de Programa (Largo plazo)', 'aura-suite')) + '"><span class="dashicons dashicons-portfolio" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(__('Programa', 'aura-suite')) + '</span>'
+                : '<span class="badge badge-danger" style="font-size:10px;padding:1px 6px;border-radius:5px;font-weight:700;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;" title="' + escAttr(__('Compra puntual / Diligencia (Corto plazo)', 'aura-suite')) + '"><span class="dashicons dashicons-cart" style="font-size:10px;width:10px;height:10px;line-height:10px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(__('Compra', 'aura-suite')) + '</span>';
 
             const isOverdue = parseInt(r.is_overdue, 10) === 1 && r.status !== 'approved' && r.status !== 'closed';
             const dueDateStr = (r.due_date || '').slice(0, 10) || '—';
@@ -2275,7 +2279,7 @@ jQuery(function ($) {
 
             // ── Avatar / Imagen de perfil con Aro Rojo (Compras) o Verde (Programas)
             const ringClass = isProgram ? 'aura-avatar-ring--program' : 'aura-avatar-ring--purchase';
-            const ringTitle = isProgram ? 'Presupuesto de Programa' : 'Compras / Diligencias';
+            const ringTitle = isProgram ? __('Presupuesto de Programa', 'aura-suite') : __('Compras / Diligencias', 'aura-suite');
             const respName = r.responsible_name || '?';
             let avatarHtml = '';
             if (r.responsible_avatar_url && String(r.responsible_avatar_url).trim() !== '') {
@@ -2298,7 +2302,7 @@ jQuery(function ($) {
 
             // ── Badge comprobantes enriquecido
             const evBadge = (evidenceCount > 0 || hasDriveOrReceipt)
-                ? '<span class="aura-petty-overdue-mark is-evidence" title="' + Math.max(1, evidenceCount) + ' comprobante(s)" style="margin-left:3px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:999px;padding:1px 5px;font-size:9.5px;font-weight:700;">' +
+                ? '<span class="aura-petty-overdue-mark is-evidence" title="' + escAttr(evidenceCount === 1 ? __('1 comprobante', 'aura-suite') : sprintf(__('%d comprobantes', 'aura-suite'), Math.max(1, evidenceCount))) + '" style="margin-left:3px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:999px;padding:1px 5px;font-size:9.5px;font-weight:700;">' +
                     '<span class="dashicons dashicons-paperclip" style="font-size:9px;width:9px;height:9px;line-height:9px;vertical-align:middle;margin-right:1px;"></span>' + Math.max(1, evidenceCount) +
                   '</span>'
                 : '';
@@ -2311,18 +2315,18 @@ jQuery(function ($) {
                 .trim();
             const shortSummary = cleanSummaryText
                 ? (cleanSummaryText.length > 28 ? escapeHtml(cleanSummaryText.substring(0, 26)) + '...' : escapeHtml(cleanSummaryText))
-                : (hasDriveOrReceipt ? 'Comprobante adjunto' : '<span style="color:#94a3b8;font-style:italic;">Sin propósito</span>');
+                : (hasDriveOrReceipt ? escapeHtml(__('Comprobante adjunto', 'aura-suite')) : '<span style="color:#94a3b8;font-style:italic;">' + escapeHtml(__('Sin propósito', 'aura-suite')) + '</span>');
 
             const purposeDisplay = '<span class="aura-tooltip-trigger" data-aura-tooltip="' + encodeURIComponent(renderPettyPurposeTip(r)) + '" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">' +
                 '<span class="dashicons dashicons-editor-quote" style="font-size:12px;width:12px;height:12px;color:#94a3b8;flex-shrink:0;"></span>' +
                 '<span style="font-size:12px;color:#334155;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + shortSummary + '</span>' +
-                (hasDriveOrReceipt ? '<span class="dashicons dashicons-paperclip" style="font-size:11px;width:11px;height:11px;color:#0284c7;flex-shrink:0;" title="Tiene comprobante adjunto"></span>' : '') +
+                (hasDriveOrReceipt ? '<span class="dashicons dashicons-paperclip" style="font-size:11px;width:11px;height:11px;color:#0284c7;flex-shrink:0;" title="' + escAttr(__('Tiene comprobante adjunto', 'aura-suite')) + '"></span>' : '') +
             '</span>';
 
             // Fila principal con clase .aura-parent-row y elevación .table-row-hover-lift
             html.push('<tr class="aura-parent-row table-row-hover-lift" data-id="' + r.id + '">' +
                 '<td class="column-toggle" style="text-align:center;white-space:nowrap;">' +
-                    '<button type="button" class="aura-row-toggle" data-id="' + r.id + '" aria-expanded="false" title="Expandir detalles de entrega #' + r.id + '">' +
+                    '<button type="button" class="aura-row-toggle" data-id="' + r.id + '" aria-expanded="false" title="' + escAttr(sprintf(__('Expandir detalles de entrega #%d', 'aura-suite'), r.id)) + '">' +
                         '<span class="dashicons dashicons-arrow-right-alt2"></span>' +
                     '</button>' +
                     '<span class="aura-txn-id-pill" style="font-weight:700;font-size:11px;color:#475569;margin-left:2px;">#' + r.id + '</span>' +
@@ -2436,9 +2440,9 @@ jQuery(function ($) {
             processData: false,
             contentType: false
         }).done(function (res) {
-            $btn.prop('disabled', false).html('<span class="dashicons dashicons-plus-alt2" style="vertical-align:middle;margin-right:2px;"></span> Registrar Entrega de Fondo');
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-plus-alt2" style="vertical-align:middle;margin-right:2px;"></span> ' + escapeHtml(__('Registrar Entrega de Fondo', 'aura-suite')));
             if (res && res.success) {
-                showFeedback((res.data && res.data.message) || 'Entrega registrada.', true);
+                showFeedback((res.data && res.data.message) || __('Entrega registrada.', 'aura-suite'), true);
                 resetPettyForm();
                 window.AuraUI.closeModal('aura-finance-petty-modal');
                 loadPettyCash();
@@ -2447,7 +2451,7 @@ jQuery(function ($) {
             }
             showFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
         }).fail(function () {
-            $btn.prop('disabled', false).html('<span class="dashicons dashicons-plus-alt2" style="vertical-align:middle;margin-right:2px;"></span> Registrar Entrega de Fondo');
+            $btn.prop('disabled', false).html('<span class="dashicons dashicons-plus-alt2" style="vertical-align:middle;margin-right:2px;"></span> ' + escapeHtml(__('Registrar Entrega de Fondo', 'aura-suite')));
             showFeedback(auraFinancialAccounts.i18n.error, false);
         });
     }
@@ -2522,7 +2526,7 @@ jQuery(function ($) {
         });
         
         if (!expenses.length) {
-            showFeedback('Debes registrar al menos un gasto con monto válido.', false);
+            showFeedback(__('Debes registrar al menos un gasto con monto válido.', 'aura-suite'), false);
             return;
         }
 
@@ -2532,7 +2536,7 @@ jQuery(function ($) {
         fd.append('notes', $('#aura-petty-settle-notes').val() || $('#aura-petty-notes').val() || '');
 
         if (pettySelectedEvidenceFiles && pettySelectedEvidenceFiles.length) {
-            $('#aura-petty-submit-btn').prop('disabled', true).text('Procesando comprobantes...');
+            $('#aura-petty-submit-btn').prop('disabled', true).text(__('Procesando comprobantes...', 'aura-suite'));
             
             const filePromises = pettySelectedEvidenceFiles.map(function(file) {
                 return compressImage(file);
@@ -2544,13 +2548,13 @@ jQuery(function ($) {
                     fd.append('evidence_files[]', file);
                 });
             } catch (e) {
-                showFeedback('Error procesando imágenes de comprobantes', false);
-                $('#aura-petty-submit-btn').prop('disabled', false).text('Enviar Rendición para Aprobación');
+                showFeedback(__('Error procesando imágenes de comprobantes', 'aura-suite'), false);
+                $('#aura-petty-submit-btn').prop('disabled', false).text(__('Enviar Rendición para Aprobación', 'aura-suite'));
                 return;
             }
         }
         
-        $('#aura-petty-submit-btn').prop('disabled', true).text('Enviando...');
+        $('#aura-petty-submit-btn').prop('disabled', true).text(__('Enviando...', 'aura-suite'));
 
         $.ajax({
             url: auraFinancialAccounts.ajaxUrl,
@@ -2560,22 +2564,22 @@ jQuery(function ($) {
             contentType: false
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback((res.data && res.data.message) || 'Rendición enviada.', true);
+                showFeedback((res.data && res.data.message) || __('Rendición enviada.', 'aura-suite'), true);
                 resetPettyForm();
                 window.AuraUI.closeModal('aura-finance-petty-modal');
                 loadPettyCash();
                 return;
             }
             showFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
-            $('#aura-petty-submit-btn').prop('disabled', false).text('Enviar Rendición');
+            $('#aura-petty-submit-btn').prop('disabled', false).text(__('Enviar Rendición', 'aura-suite'));
         }).fail(function () {
             showFeedback(auraFinancialAccounts.i18n.error, false);
-            $('#aura-petty-submit-btn').prop('disabled', false).text('Enviar Rendición');
+            $('#aura-petty-submit-btn').prop('disabled', false).text(__('Enviar Rendición', 'aura-suite'));
         });
     }
 
     function deletePettyCash(id) {
-        if (!confirm('¿Estás seguro de que deseas eliminar este registro de caja chica?')) {
+        if (!confirm(__('¿Estás seguro de que deseas eliminar este registro de caja chica?', 'aura-suite'))) {
             return;
         }
         $.post(auraFinancialAccounts.ajaxUrl, {
@@ -2584,7 +2588,7 @@ jQuery(function ($) {
             id: id
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback((res.data && res.data.message) || 'Registro eliminado.', true);
+                showFeedback((res.data && res.data.message) || __('Registro eliminado.', 'aura-suite'), true);
                 loadPettyCash();
                 return;
             }
@@ -2597,26 +2601,26 @@ jQuery(function ($) {
     function updatePettyStatus(id, status) {
         let note = '';
         if (status === 'rejected') {
-            const reason = window.prompt('Indica el motivo del rechazo de esta rendición (obligatorio):');
+            const reason = window.prompt(__('Indica el motivo del rechazo de esta rendición (obligatorio):', 'aura-suite'));
             if (reason === null) {
                 return; // Cancelado por el usuario
             }
             if (!reason.trim()) {
-                showFeedback('Debes ingresar un motivo para rechazar la rendición.', false);
+                showFeedback(__('Debes ingresar un motivo para rechazar la rendición.', 'aura-suite'), false);
                 return;
             }
             note = reason.trim();
         } else if (status === 'approved') {
-            const confirmMsg = '¿Deseas aprobar esta rendición y publicar automáticamente sus transacciones de egreso en el Libro Mayor?';
+            const confirmMsg = __('¿Deseas aprobar esta rendición y publicar automáticamente sus transacciones de egreso en el Libro Mayor?', 'aura-suite');
             if (!window.confirm(confirmMsg)) {
                 return;
             }
-            const optNote = window.prompt('Observación o nota de aprobación para auditoría (opcional):', '');
+            const optNote = window.prompt(__('Observación o nota de aprobación para auditoría (opcional):', 'aura-suite'), '');
             if (optNote !== null && optNote.trim() !== '') {
                 note = optNote.trim();
             }
         } else if (status === 'closed') {
-            if (!window.confirm('¿Deseas cerrar definitivamente esta entrega de caja chica?')) {
+            if (!window.confirm(__('¿Deseas cerrar definitivamente esta entrega de caja chica?', 'aura-suite'))) {
                 return;
             }
         }
@@ -2630,7 +2634,7 @@ jQuery(function ($) {
             reason: note
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback((res.data && res.data.message) || 'Estado actualizado.', true);
+                showFeedback((res.data && res.data.message) || __('Estado actualizado.', 'aura-suite'), true);
                 loadPettyCash();
                 return;
             }
@@ -2642,10 +2646,10 @@ jQuery(function ($) {
 
     function reimbursementStatusLabel(status) {
         const map = {
-            pending: 'Pendiente',
-            partial: 'Parcial',
-            paid: 'Pagado',
-            cancelled: 'Cancelado'
+            pending: __('Pendiente', 'aura-suite'),
+            partial: __('Parcial', 'aura-suite'),
+            paid: __('Pagado', 'aura-suite'),
+            cancelled: __('Cancelado', 'aura-suite')
         };
         return map[status] || status;
     }
@@ -2655,22 +2659,22 @@ jQuery(function ($) {
             case 'paid':
                 return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
                     '<span class="traffic-dot traffic-dot-success"></span>' +
-                    '<span class="badge badge-emerald">Pagado</span>' +
+                    '<span class="badge badge-emerald">' + escapeHtml(__('Pagado', 'aura-suite')) + '</span>' +
                 '</span>';
             case 'partial':
                 return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
                     '<span class="traffic-dot traffic-dot-warning"></span>' +
-                    '<span class="badge badge-amber">Parcial</span>' +
+                    '<span class="badge badge-amber">' + escapeHtml(__('Parcial', 'aura-suite')) + '</span>' +
                 '</span>';
             case 'pending':
                 return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
                     '<span class="traffic-dot traffic-dot-danger"></span>' +
-                    '<span class="badge badge-rose">Pendiente</span>' +
+                    '<span class="badge badge-rose">' + escapeHtml(__('Pendiente', 'aura-suite')) + '</span>' +
                 '</span>';
             case 'cancelled':
                 return '<span class="status-traffic-light" style="display:inline-flex;align-items:center;gap:6px;">' +
                     '<span class="traffic-dot traffic-dot-danger"></span>' +
-                    '<span class="badge badge-slate">Cancelado</span>' +
+                    '<span class="badge badge-slate">' + escapeHtml(__('Cancelado', 'aura-suite')) + '</span>' +
                 '</span>';
             default:
                 return '<span class="badge badge-slate">' + escapeHtml(reimbursementStatusLabel(status)) + '</span>';
@@ -2683,7 +2687,7 @@ jQuery(function ($) {
             return;
         }
 
-        const opts = ['<option value="">Selecciona cuenta...</option>'];
+        const opts = ['<option value="">' + escapeHtml(__('Selecciona cuenta...', 'aura-suite')) + '</option>'];
         (accounts || []).forEach(function (a) {
             opts.push('<option value="' + parseInt(a.id, 10) + '">' +
                 escapeHtml(a.name || '') + ' (' + escapeHtml(String(a.currency || 'COP').toUpperCase()) + ')</option>');
@@ -2697,11 +2701,11 @@ jQuery(function ($) {
             return;
         }
 
-        const opts = ['<option value="">Selecciona responsable o tercero...</option>'];
+        const opts = ['<option value="">' + escapeHtml(__('Selecciona responsable o tercero...', 'aura-suite')) + '</option>'];
 
         const appUsers = users || window.auraAppUsersCache || (typeof auraFinancialAccounts !== 'undefined' ? auraFinancialAccounts.appUsers : []) || [];
         if (appUsers && appUsers.length) {
-            opts.push('<optgroup label="Usuarios de WordPress (Aura)">');
+            opts.push('<optgroup label="' + escAttr(__('Usuarios de WordPress (Aura)', 'aura-suite')) + '">');
             appUsers.forEach(function (u) {
                 const uid = parseInt(u.id, 10);
                 if (!uid) return;
@@ -2756,17 +2760,17 @@ jQuery(function ($) {
         }
 
         if (!rows || !rows.length) {
-            $tbody.html('<tr><td colspan="8">Sin terceros ni empresas registradas.</td></tr>');
+            $tbody.html('<tr><td colspan="8">' + escapeHtml(__('Sin terceros ni empresas registradas.', 'aura-suite')) + '</td></tr>');
             return;
         }
 
         const typeLabels = {
-            company: 'Empresa / Negocio',
-            store: 'Tienda / Comercio',
-            organization_foundation: 'Fundación / ONG',
-            person: 'Persona Natural',
-            religious: 'Entidad Religiosa',
-            other: 'Otra Entidad'
+            company: __('Empresa / Negocio', 'aura-suite'),
+            store: __('Tienda / Comercio', 'aura-suite'),
+            organization_foundation: __('Fundación / ONG', 'aura-suite'),
+            person: __('Persona Natural', 'aura-suite'),
+            religious: __('Entidad Religiosa', 'aura-suite'),
+            other: __('Otra Entidad', 'aura-suite')
         };
         const typeIcons = {
             company: 'dashicons-building',
@@ -2782,8 +2786,8 @@ jQuery(function ($) {
             const active = parseInt(p.is_active, 10) === 1;
             const hasWpUser = parseInt(p.wp_user_id, 10) > 0;
             const wpLabel = hasWpUser
-                ? (p.wp_user_display || p.wp_user_login || ('Usuario #' + p.wp_user_id))
-                : 'No vinculado';
+                ? (p.wp_user_display || p.wp_user_login || sprintf(__('Usuario #%d', 'aura-suite'), p.wp_user_id))
+                : __('No vinculado', 'aura-suite');
 
             const ptype = p.party_type || 'company';
             const typeLabel = typeLabels[ptype] || typeLabels.company;
@@ -2813,12 +2817,12 @@ jQuery(function ($) {
             const contactHtml = contactParts.length ? contactParts.join('') : '-';
 
             const actions = [
-                '<button type="button" class="button button-small aura-third-party-edit" data-id="' + id + '">Editar</button>',
-                '<button type="button" class="button button-small aura-third-party-toggle" data-id="' + id + '" data-active="' + (active ? '1' : '0') + '">' + (active ? 'Desactivar' : 'Reactivar') + '</button>'
+                '<button type="button" class="button button-small aura-third-party-edit" data-id="' + id + '">' + escapeHtml(__('Editar', 'aura-suite')) + '</button>',
+                '<button type="button" class="button button-small aura-third-party-toggle" data-id="' + id + '" data-active="' + (active ? '1' : '0') + '">' + escapeHtml(active ? __('Desactivar', 'aura-suite') : __('Reactivar', 'aura-suite')) + '</button>'
             ];
 
             if (!hasWpUser) {
-                actions.push('<button type="button" class="button button-small button-primary aura-third-party-convert" data-id="' + id + '">Convertir a usuario WP</button>');
+                actions.push('<button type="button" class="button button-small button-primary aura-third-party-convert" data-id="' + id + '">' + escapeHtml(__('Convertir a usuario WP', 'aura-suite')) + '</button>');
             }
 
             return '<tr>' +
@@ -2827,7 +2831,7 @@ jQuery(function ($) {
                 '<td>' + typeBadge + '</td>' +
                 '<td>' + docHtml + '</td>' +
                 '<td>' + contactHtml + '</td>' +
-                '<td>' + (active ? '<span class="aura-pill aura-pill--ok">Activo</span>' : '<span class="aura-pill aura-pill--muted">Inactivo</span>') + '</td>' +
+                '<td>' + (active ? '<span class="aura-pill aura-pill--ok">' + escapeHtml(__('Activo', 'aura-suite')) + '</span>' : '<span class="aura-pill aura-pill--muted">' + escapeHtml(__('Inactivo', 'aura-suite')) + '</span>') + '</td>' +
                 '<td>' + escapeHtml(wpLabel) + '</td>' +
                 '<td><div class="aura-third-party-actions">' + actions.join('') + '</div></td>' +
                 '</tr>';
@@ -2868,7 +2872,7 @@ jQuery(function ($) {
         }
 
         if (!rows || !rows.length) {
-            $reimbursementsTableBody.html('<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--aura-text-muted,#64748b);">Sin reembolsos registrados.</td></tr>');
+            $reimbursementsTableBody.html('<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--aura-text-muted,#64748b);">' + escapeHtml(__('Sin reembolsos registrados.', 'aura-suite')) + '</td></tr>');
             return;
         }
 
@@ -2878,23 +2882,23 @@ jQuery(function ($) {
             const remaining = Math.max(0, owed - paid);
             const percentPaid = owed > 0 ? Math.min(100, Math.round((paid / owed) * 100)) : 100;
             const canPay = r.status === 'pending' || r.status === 'partial';
-            const originText = r.origin_transaction_id ? ('#' + r.origin_transaction_id) : 'Manual';
+            const originText = r.origin_transaction_id ? ('#' + r.origin_transaction_id) : __('Manual', 'aura-suite');
             const actions = [];
 
             if (canPay && remaining > 0) {
-                actions.push('<button type="button" class="btn btn-sm btn-primary btn-shimmer btn-lift aura-reimburse-pay-pick" data-id="' + r.id + '" data-remaining="' + remaining + '" data-tooltip="Registrar pago ($' + escapeHtml(formatNumber(remaining)) + ')" aria-label="Pagar">' +
-                    '<span class="dashicons dashicons-money-alt"></span> <span>Pagar</span>' +
+                actions.push('<button type="button" class="btn btn-sm btn-primary btn-shimmer btn-lift aura-reimburse-pay-pick" data-id="' + r.id + '" data-remaining="' + remaining + '" data-tooltip="' + escAttr(sprintf(__('Registrar pago ($%s)', 'aura-suite'), formatNumber(remaining))) + '" aria-label="' + escAttr(__('Pagar', 'aura-suite')) + '">' +
+                    '<span class="dashicons dashicons-money-alt"></span> <span>' + escapeHtml(__('Pagar', 'aura-suite')) + '</span>' +
                 '</button>');
             }
 
             if (paid === 0) {
-                actions.push('<button type="button" class="btn btn-sm btn-danger btn-lift aura-reimburse-delete" data-id="' + r.id + '" data-tooltip="Eliminar este reembolso" aria-label="Eliminar">' +
+                actions.push('<button type="button" class="btn btn-sm btn-danger btn-lift aura-reimburse-delete" data-id="' + r.id + '" data-tooltip="' + escAttr(__('Eliminar este reembolso', 'aura-suite')) + '" aria-label="' + escAttr(__('Eliminar', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-trash"></span>' +
                 '</button>');
             }
 
             // Avatar o Icono Predeterminado
-            const personName = r.person_name || ('Tercero #' + (r.counterparty_id || r.person_user_id || 'N/A'));
+            const personName = r.person_name || sprintf(__('Tercero #%s', 'aura-suite'), r.counterparty_id || r.person_user_id || 'N/A');
             let avatarMarkup = '';
             if (r.person_avatar && r.has_custom_avatar) {
                 avatarMarkup = '<div class="aura-reimburse-avatar-box avatar-hover-zoom aura-avatar-zoom" data-img-url="' + escapeHtml(r.person_avatar) + '" data-preview-title="' + escapeHtml(personName) + '">' +
@@ -2919,7 +2923,7 @@ jQuery(function ($) {
                     '<div class="aura-tip-card-title-box">' +
                         '<div class="aura-tip-card-name">' + escapeHtml(personName) + '</div>' +
                         '<div class="aura-tip-card-badges">' +
-                            '<span class="badge badge-indigo" style="font-size:10px;padding:1px 6px;">' + escapeHtml(r.person_type_label || (r.counterparty_id ? 'Tercero' : 'Usuario')) + '</span>' +
+                            '<span class="badge badge-indigo" style="font-size:10px;padding:1px 6px;">' + escapeHtml(r.person_type_label || (r.counterparty_id ? __('Tercero', 'aura-suite') : __('Usuario', 'aura-suite'))) + '</span>' +
                             (r.person_document ? '<span class="badge badge-slate" style="font-size:10px;padding:1px 6px;">Doc: ' + escapeHtml(r.person_document) + '</span>' : '') +
                         '</div>' +
                     '</div>' +
@@ -2928,23 +2932,23 @@ jQuery(function ($) {
                     (r.person_email ? '<div style="font-size:11.5px;color:#94a3b8;margin-bottom:4px;"><span class="dashicons dashicons-email" style="font-size:12px;width:12px;height:12px;vertical-align:middle;margin-right:3px;"></span>' + escapeHtml(r.person_email) + '</div>' : '') +
                     '<div class="aura-tip-stat-grid">' +
                         '<div class="aura-tip-stat-item">' +
-                            '<span class="aura-tip-stat-label">Adeudado</span>' +
+                            '<span class="aura-tip-stat-label">' + escapeHtml(__('Adeudado', 'aura-suite')) + '</span>' +
                             '<span class="aura-tip-stat-value" style="font-size:12.5px;color:#f8fafc;">$' + escapeHtml(formatNumber(owed)) + '</span>' +
                         '</div>' +
                         '<div class="aura-tip-stat-item">' +
-                            '<span class="aura-tip-stat-label">Pagado</span>' +
+                            '<span class="aura-tip-stat-label">' + escapeHtml(__('Pagado', 'aura-suite')) + '</span>' +
                             '<span class="aura-tip-stat-value is-returned" style="font-size:12.5px;color:#34d399;">$' + escapeHtml(formatNumber(paid)) + '</span>' +
                         '</div>' +
                         '<div class="aura-tip-stat-item span-2">' +
-                            '<span class="aura-tip-stat-label">Saldo Pendiente</span>' +
+                            '<span class="aura-tip-stat-label">' + escapeHtml(__('Saldo Pendiente', 'aura-suite')) + '</span>' +
                             '<span class="aura-tip-stat-value" style="font-size:14px;color:' + (remaining > 0 ? '#f87171' : '#34d399') + ';">$' + escapeHtml(formatNumber(remaining)) + '</span>' +
                         '</div>' +
                     '</div>' +
-                    (r.notes ? '<div style="font-size:11px;color:#cbd5e1;background:rgba(30,41,59,0.5);border:1px solid #334155;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.4;"><strong>Notas:</strong> ' + escapeHtml(r.notes) + '</div>' : '') +
+                    (r.notes ? '<div style="font-size:11px;color:#cbd5e1;background:rgba(30,41,59,0.5);border:1px solid #334155;border-radius:6px;padding:6px 8px;margin-top:6px;line-height:1.4;"><strong>' + escapeHtml(__('Notas:', 'aura-suite')) + '</strong> ' + escapeHtml(r.notes) + '</div>' : '') +
                 '</div>' +
                 '<div class="aura-tip-card-footer">' +
-                    '<span style="color:#94a3b8;">Reembolso #' + r.id + '</span>' +
-                    '<span style="color:#38bdf8;font-weight:700;">' + percentPaid + '% amortizado</span>' +
+                    '<span style="color:#94a3b8;">' + escapeHtml(sprintf(__('Reembolso #%d', 'aura-suite'), r.id)) + '</span>' +
+                    '<span style="color:#38bdf8;font-weight:700;">' + escapeHtml(sprintf(__('%d%% amortizado', 'aura-suite'), percentPaid)) + '</span>' +
                 '</div>' +
             '</div>';
 
@@ -2955,9 +2959,9 @@ jQuery(function ($) {
                         '<span class="dashicons dashicons-money-alt" style="font-size:20px;width:20px;height:20px;"></span>' +
                     '</div>' +
                     '<div class="aura-tip-card-title-box">' +
-                        '<div class="aura-tip-card-name">Balance Reembolso #' + r.id + '</div>' +
+                        '<div class="aura-tip-card-name">' + escapeHtml(sprintf(__('Balance Reembolso #%d', 'aura-suite'), r.id)) + '</div>' +
                         '<div class="aura-tip-card-badges">' +
-                            '<span class="badge ' + (remaining <= 0 ? 'badge-emerald' : (paid > 0 ? 'badge-amber' : 'badge-rose')) + '" style="font-size:10px;padding:1px 6px;">' + (remaining <= 0 ? '● Liquidado' : (paid > 0 ? '● Parcial' : '○ Pendiente')) + '</span>' +
+                            '<span class="badge ' + (remaining <= 0 ? 'badge-emerald' : (paid > 0 ? 'badge-amber' : 'badge-rose')) + '" style="font-size:10px;padding:1px 6px;">' + escapeHtml(remaining <= 0 ? __('● Liquidado', 'aura-suite') : (paid > 0 ? __('● Parcial', 'aura-suite') : __('○ Pendiente', 'aura-suite'))) + '</span>' +
                         '</div>' +
                     '</div>' +
                 '</div>' +
@@ -2966,21 +2970,21 @@ jQuery(function ($) {
                         '<div class="aura-tip-progress-bar" style="width:' + percentPaid + '%;"></div>' +
                     '</div>' +
                     '<div style="display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:6px;">' +
-                        '<span>Amortizado</span><strong>' + percentPaid + '%</strong>' +
+                        '<span>' + escapeHtml(__('Amortizado', 'aura-suite')) + '</span><strong>' + percentPaid + '%</strong>' +
                     '</div>' +
                     '<div class="aura-tip-stat-grid">' +
-                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Adeudado</span><span class="aura-tip-stat-value" style="font-size:12px;color:#f8fafc;">$' + escapeHtml(formatNumber(owed)) + '</span></div>' +
-                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">Pagado</span><span class="aura-tip-stat-value" style="font-size:12px;color:#34d399;">$' + escapeHtml(formatNumber(paid)) + '</span></div>' +
-                        '<div class="aura-tip-stat-item span-2"><span class="aura-tip-stat-label">Saldo Pendiente</span><span class="aura-tip-stat-value" style="font-size:14px;color:' + (remaining > 0 ? '#f87171' : '#34d399') + ';">$' + escapeHtml(formatNumber(remaining)) + '</span></div>' +
+                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Adeudado', 'aura-suite')) + '</span><span class="aura-tip-stat-value" style="font-size:12px;color:#f8fafc;">$' + escapeHtml(formatNumber(owed)) + '</span></div>' +
+                        '<div class="aura-tip-stat-item"><span class="aura-tip-stat-label">' + escapeHtml(__('Pagado', 'aura-suite')) + '</span><span class="aura-tip-stat-value" style="font-size:12px;color:#34d399;">$' + escapeHtml(formatNumber(paid)) + '</span></div>' +
+                        '<div class="aura-tip-stat-item span-2"><span class="aura-tip-stat-label">' + escapeHtml(__('Saldo Pendiente', 'aura-suite')) + '</span><span class="aura-tip-stat-value" style="font-size:14px;color:' + (remaining > 0 ? '#f87171' : '#34d399') + ';">$' + escapeHtml(formatNumber(remaining)) + '</span></div>' +
                     '</div>' +
                 '</div>' +
             '</div>';
 
             // Tarjeta Enriquecida de Origen
             const originTip = '<div class="aura-tip-card" style="min-width:240px;padding:10px 12px;">' +
-                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-tag" style="color:#f59e0b;"></span>Transacción de Origen</div>' +
-                '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' + (r.origin_description ? escapeHtml(r.origin_description) : 'Registro manual de adeudo') + '</div>' +
-                (r.origin_date ? '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Fecha: ' + escapeHtml(r.origin_date) + '</div>' : '') +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-tag" style="color:#f59e0b;"></span>' + escapeHtml(__('Transacción de Origen', 'aura-suite')) + '</div>' +
+                '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' + (r.origin_description ? escapeHtml(r.origin_description) : escapeHtml(__('Registro manual de adeudo', 'aura-suite'))) + '</div>' +
+                (r.origin_date ? '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">' + escapeHtml(sprintf(__('Fecha: %s', 'aura-suite'), r.origin_date)) + '</div>' : '') +
             '</div>';
 
             return '<tr class="table-row-hover-lift">' +
@@ -2990,7 +2994,7 @@ jQuery(function ($) {
                         avatarMarkup +
                         '<div class="aura-reimburse-person-info">' +
                             '<span class="aura-tooltip-trigger aura-reimburse-person-name" data-aura-tooltip="' + encodeURIComponent(personTip) + '" style="cursor:pointer;">' + escapeHtml(personName) + '</span>' +
-                            '<span class="aura-reimburse-person-sub">' + escapeHtml(r.person_type_label || (r.counterparty_id ? 'Tercero' : 'Usuario')) + (r.person_document ? ' • ' + escapeHtml(r.person_document) : '') + '</span>' +
+                            '<span class="aura-reimburse-person-sub">' + escapeHtml(r.person_type_label || (r.counterparty_id ? __('Tercero', 'aura-suite') : __('Usuario', 'aura-suite'))) + (r.person_document ? ' • ' + escapeHtml(r.person_document) : '') + '</span>' +
                         '</div>' +
                     '</div>' +
                 '</td>' +
@@ -3083,7 +3087,7 @@ jQuery(function ($) {
         }
 
         if (!counterpartyId && !personUserId) {
-            showFeedback('Selecciona un usuario o tercero válido para registrar la deuda.', false);
+            showFeedback(__('Selecciona un usuario o tercero válido para registrar la deuda.', 'aura-suite'), false);
             return;
         }
 
@@ -3098,7 +3102,7 @@ jQuery(function ($) {
             notes: $('#aura-reimburse-notes').val()
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback((res.data && res.data.message) || 'Reembolso creado.', true);
+                showFeedback((res.data && res.data.message) || __('Reembolso creado.', 'aura-suite'), true);
                 resetReimburseForms();
                 window.AuraUI.closeModal('aura-finance-reimburse-modal');
                 loadReimbursements();
@@ -3154,7 +3158,7 @@ jQuery(function ($) {
 
         if (fieldId === 'aura-third-party-name') {
             if (value.length < 3) {
-                setThirdPartyFieldError(fieldId, 'El nombre debe tener al menos 3 caracteres.');
+                setThirdPartyFieldError(fieldId, __('El nombre debe tener al menos 3 caracteres.', 'aura-suite'));
                 return false;
             }
             setThirdPartyFieldError(fieldId, '');
@@ -3163,7 +3167,7 @@ jQuery(function ($) {
 
         if (fieldId === 'aura-third-party-email') {
             if (value !== '' && !isValidEmail(value)) {
-                setThirdPartyFieldError(fieldId, 'Ingresa un correo válido.');
+                setThirdPartyFieldError(fieldId, __('Ingresa un correo válido.', 'aura-suite'));
                 return false;
             }
             setThirdPartyFieldError(fieldId, '');
@@ -3173,7 +3177,7 @@ jQuery(function ($) {
         if (fieldId === 'aura-third-party-phone') {
             const digits = value.replace(/\D/g, '');
             if (value !== '' && digits.length < 7) {
-                setThirdPartyFieldError(fieldId, 'El teléfono debe tener al menos 7 dígitos.');
+                setThirdPartyFieldError(fieldId, __('El teléfono debe tener al menos 7 dígitos.', 'aura-suite'));
                 return false;
             }
             setThirdPartyFieldError(fieldId, '');
@@ -3226,8 +3230,8 @@ jQuery(function ($) {
         $('#aura-third-party-logo-icon-placeholder').show().attr('class', 'dashicons dashicons-building');
         $('#aura-third-party-logo-remove-btn').hide();
 
-        $('#aura-third-party-modal-title').text('Nuevo Tercero / Empresa');
-        $('#aura-third-party-save-btn').text('Guardar');
+        $('#aura-third-party-modal-title').text(__('Nuevo Tercero / Empresa', 'aura-suite'));
+        $('#aura-third-party-save-btn').text(__('Guardar', 'aura-suite'));
 
         ['aura-third-party-name', 'aura-third-party-document', 'aura-third-party-phone', 'aura-third-party-email'].forEach(function (fieldId) {
             setThirdPartyFieldError(fieldId, '');
@@ -3247,8 +3251,8 @@ jQuery(function ($) {
 
         $('#aura-third-party-id').val(parseInt(row.id, 10) || 0);
         $('#aura-third-party-mode').val('edit');
-        $('#aura-third-party-modal-title').text('Editar Tercero / Empresa');
-        $('#aura-third-party-save-btn').text('Guardar cambios');
+        $('#aura-third-party-modal-title').text(__('Editar Tercero / Empresa', 'aura-suite'));
+        $('#aura-third-party-save-btn').text(__('Guardar cambios', 'aura-suite'));
 
         $('#aura-third-party-type').val(row.party_type || 'company');
         $('#aura-third-party-commercial-name').val(row.commercial_name || '');
@@ -3280,7 +3284,7 @@ jQuery(function ($) {
 
     function createThirdPartyFromModal() {
         if (!validateThirdPartyForm()) {
-            showThirdPartyFeedback('Corrige los campos marcados para continuar.', false);
+            showThirdPartyFeedback(__('Corrige los campos marcados para continuar.', 'aura-suite'), false);
             return;
         }
 
@@ -3308,7 +3312,7 @@ jQuery(function ($) {
             payload.id = thirdPartyId;
         }
 
-        $('#aura-third-party-save-btn').prop('disabled', true).text('Guardando...');
+        $('#aura-third-party-save-btn').prop('disabled', true).text(__('Guardando...', 'aura-suite'));
 
         $.post(auraFinancialAccounts.ajaxUrl, payload).done(function (res) {
             if (res && res.success) {
@@ -3323,12 +3327,12 @@ jQuery(function ($) {
                 fillThirdPartyOptions(window.auraThirdPartiesCache, data.id || (isEdit ? thirdPartyId : null));
                 renderThirdPartyManageTable(window.auraThirdPartiesManagementCache);
 
-                showThirdPartyFeedback((data.message) || (isEdit ? 'Tercero actualizado.' : 'Tercero registrado.'), true);
-                showThirdPartyManageFeedback((data.message) || (isEdit ? 'Tercero actualizado.' : 'Tercero registrado.'), true);
+                showThirdPartyFeedback((data.message) || (isEdit ? __('Tercero actualizado.', 'aura-suite') : __('Tercero registrado.', 'aura-suite')), true);
+                showThirdPartyManageFeedback((data.message) || (isEdit ? __('Tercero actualizado.', 'aura-suite') : __('Tercero registrado.', 'aura-suite')), true);
 
                 window.setTimeout(function () {
                     window.AuraUI.closeModal('aura-finance-third-party-modal');
-                    showFeedback((data.message) || (isEdit ? 'Tercero actualizado.' : 'Tercero registrado.'), true);
+                    showFeedback((data.message) || (isEdit ? __('Tercero actualizado.', 'aura-suite') : __('Tercero registrado.', 'aura-suite')), true);
                 }, 350);
                 return;
             }
@@ -3338,14 +3342,14 @@ jQuery(function ($) {
             showThirdPartyFeedback(auraFinancialAccounts.i18n.error, false);
         }).always(function () {
             const modeNow = String($('#aura-third-party-mode').val() || 'create');
-            $('#aura-third-party-save-btn').prop('disabled', false).text(modeNow === 'edit' ? 'Guardar cambios' : 'Guardar');
+            $('#aura-third-party-save-btn').prop('disabled', false).text(modeNow === 'edit' ? __('Guardar cambios', 'aura-suite') : __('Guardar', 'aura-suite'));
         });
     }
 
     function toggleThirdParty(id, currentlyActive) {
         const activate = !currentlyActive;
         const question = activate
-            ? '¿Reactivar este tercero?' : '¿Desactivar este tercero?';
+            ? __('¿Reactivar este tercero?', 'aura-suite') : __('¿Desactivar este tercero?', 'aura-suite');
 
         if (!window.confirm(question)) {
             return;
@@ -3367,7 +3371,7 @@ jQuery(function ($) {
                 window.auraThirdPartiesCache = activeOnly;
                 renderThirdPartyManageTable(window.auraThirdPartiesManagementCache);
                 fillThirdPartyOptions(window.auraThirdPartiesCache);
-                showThirdPartyManageFeedback((data.message) || 'Estado actualizado.', true);
+                showThirdPartyManageFeedback((data.message) || __('Estado actualizado.', 'aura-suite'), true);
                 return;
             }
             showThirdPartyManageFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
@@ -3377,7 +3381,7 @@ jQuery(function ($) {
     }
 
     function convertThirdPartyToWpUser(id) {
-        if (!window.confirm('¿Convertir este tercero en usuario WordPress con rol Suscriptor?')) {
+        if (!window.confirm(__('¿Convertir este tercero en usuario WordPress con rol Suscriptor?', 'aura-suite'))) {
             return;
         }
 
@@ -3398,7 +3402,7 @@ jQuery(function ($) {
                 window.auraThirdPartiesCache = activeOnly;
                 renderThirdPartyManageTable(window.auraThirdPartiesManagementCache);
                 fillThirdPartyOptions(window.auraThirdPartiesCache);
-                showThirdPartyManageFeedback((data.message) || 'Tercero convertido a usuario WP.', true);
+                showThirdPartyManageFeedback((data.message) || __('Tercero convertido a usuario WP.', 'aura-suite'), true);
                 return;
             }
             showThirdPartyManageFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
@@ -3412,7 +3416,7 @@ jQuery(function ($) {
         if (!$select.length) return;
 
         $select.empty();
-        $select.append('<option value="direct">➕ Registrar Pago Directo (Sin registrar deuda previa)</option>');
+        $select.append('<option value="direct">' + escapeHtml(__('➕ Registrar Pago Directo (Sin registrar deuda previa)', 'aura-suite')) + '</option>');
 
         const cache = window.auraReimbursementsCache || [];
         const pendingDebts = cache.filter(function (r) {
@@ -3425,8 +3429,8 @@ jQuery(function ($) {
             const owed = parseFloat(r.owed_amount || 0);
             const paid = parseFloat(r.paid_amount || 0);
             const remaining = Math.max(0, owed - paid);
-            const name = r.person_name || ('Responsable #' + (r.person_user_id || r.counterparty_id));
-            const optText = 'Deuda #' + r.id + ' - ' + name + ' (Pendiente: ' + formatNumber(remaining) + ')';
+            const name = r.person_name || sprintf(__('Responsable #%s', 'aura-suite'), r.person_user_id || r.counterparty_id);
+            const optText = sprintf(__('Deuda #%1$d - %2$s (Pendiente: %3$s)', 'aura-suite'), r.id, name, formatNumber(remaining));
             $select.append('<option value="' + r.id + '">' + optText + '</option>');
         });
 
@@ -3445,7 +3449,7 @@ jQuery(function ($) {
             $('#aura-reimburse-pay-summary').hide().addClass('is-hidden');
             $('#aura-reimburse-pay-direct-person-wrap').show().removeClass('is-hidden');
             if (!$('#aura-reimburse-pay-concept').val()) {
-                $('#aura-reimburse-pay-concept').val('Pago de reembolso directo');
+                $('#aura-reimburse-pay-concept').val(__('Pago de reembolso directo', 'aura-suite'));
             }
         } else {
             const id = parseInt(mode, 10);
@@ -3457,13 +3461,13 @@ jQuery(function ($) {
             const r = cache.find(function (item) { return parseInt(item.id, 10) === id; });
             if (r) {
                 const remaining = Math.max(0, parseFloat(r.owed_amount || 0) - parseFloat(r.paid_amount || 0));
-                $('#aura-reimburse-pay-sum-beneficiary').text(r.person_name || ('Responsable #' + (r.person_user_id || r.counterparty_id)));
+                $('#aura-reimburse-pay-sum-beneficiary').text(r.person_name || sprintf(__('Responsable #%s', 'aura-suite'), r.person_user_id || r.counterparty_id));
                 $('#aura-reimburse-pay-sum-owed').text(formatNumber(r.owed_amount || 0));
                 $('#aura-reimburse-pay-sum-remaining').text(formatNumber(remaining));
                 $('#aura-reimburse-pay-counterparty-id').val(r.counterparty_id || 0);
                 $('#aura-reimburse-pay-user-id').val(r.person_user_id || 0);
                 $('#aura-reimburse-pay-amount').val(remaining.toFixed(2));
-                $('#aura-reimburse-pay-concept').val('Pago Reembolso #' + r.id + ' - ' + (r.person_name || 'Gastos'));
+                $('#aura-reimburse-pay-concept').val(sprintf(__('Pago Reembolso #%1$d - %2$s', 'aura-suite'), r.id, r.person_name || __('Gastos', 'aura-suite')));
             }
         }
     }
@@ -3473,21 +3477,21 @@ jQuery(function ($) {
         const rawPersonVal = String($('#aura-reimburse-pay-person').val() || $('#aura-reimburse-pay-person-name').val() || '').trim();
 
         if (id <= 0 && !rawPersonVal) {
-            showFeedback('Por favor selecciona o escribe el Beneficiario (Tercero o Usuario WP) del pago.', false);
+            showFeedback(__('Por favor selecciona o escribe el Beneficiario (Tercero o Usuario WP) del pago.', 'aura-suite'), false);
             $('#aura-reimburse-pay-person-name').trigger('focus');
             return;
         }
 
         const paymentAmount = parseFloat($('#aura-reimburse-pay-amount').val()) || 0;
         if (paymentAmount <= 0) {
-            showFeedback('El monto a pagar debe ser mayor a cero.', false);
+            showFeedback(__('El monto a pagar debe ser mayor a cero.', 'aura-suite'), false);
             $('#aura-reimburse-pay-amount').trigger('focus');
             return;
         }
 
         const payingAccount = $('#aura-reimburse-pay-account').val();
         if (!payingAccount) {
-            showFeedback('Por favor selecciona una cuenta bancaria de pago.', false);
+            showFeedback(__('Por favor selecciona una cuenta bancaria de pago.', 'aura-suite'), false);
             $('#aura-reimburse-pay-account').trigger('focus');
             return;
         }
@@ -3496,7 +3500,7 @@ jQuery(function ($) {
         const catId = parseInt($('#aura-reimburse-pay-category').val(), 10) || 0;
 
         if (createTx && catId <= 0) {
-            showFeedback('Por favor selecciona una Categoría Contable para registrar el egreso en el Libro Mayor.', false);
+            showFeedback(__('Por favor selecciona una Categoría Contable para registrar el egreso en el Libro Mayor.', 'aura-suite'), false);
             $('#aura-reimburse-pay-category').trigger('focus');
             return;
         }
@@ -3562,7 +3566,7 @@ jQuery(function ($) {
             return;
         }
         if (!rows || !rows.length) {
-            $tbody.html('<tr><td colspan="' + emptyCols + '">Sin datos disponibles.</td></tr>');
+            $tbody.html('<tr><td colspan="' + emptyCols + '">' + escapeHtml(__('Sin datos disponibles.', 'aura-suite')) + '</td></tr>');
             return;
         }
         $tbody.html(rows.map(builder).join(''));
@@ -3577,11 +3581,11 @@ jQuery(function ($) {
         const audit = data.audit || {};
         const cashFlow = data.cash_flow_totals || {};
         const auditFindings = [
-            { label: 'Transacciones aprobadas con cuenta', value: audit.approved_with_account || 0, tone: 'neutral' },
-            { label: 'Aprobadas sin cuenta obligatoria', value: audit.missing_account_count || 0, tone: (audit.missing_account_count || 0) > 0 ? 'danger' : 'ok' },
-            { label: 'Aprobadas sin movimiento contable', value: audit.approved_without_movement || 0, tone: (audit.approved_without_movement || 0) > 0 ? 'danger' : 'ok' },
-            { label: 'Movimientos huérfanos', value: audit.orphan_movements || 0, tone: (audit.orphan_movements || 0) > 0 ? 'danger' : 'ok' },
-            { label: 'Cuentas en negativo', value: audit.negative_accounts || 0, tone: (audit.negative_accounts || 0) > 0 ? 'warn' : 'ok' }
+            { label: __('Transacciones aprobadas con cuenta', 'aura-suite'), value: audit.approved_with_account || 0, tone: 'neutral' },
+            { label: __('Aprobadas sin cuenta obligatoria', 'aura-suite'), value: audit.missing_account_count || 0, tone: (audit.missing_account_count || 0) > 0 ? 'danger' : 'ok' },
+            { label: __('Aprobadas sin movimiento contable', 'aura-suite'), value: audit.approved_without_movement || 0, tone: (audit.approved_without_movement || 0) > 0 ? 'danger' : 'ok' },
+            { label: __('Movimientos huérfanos', 'aura-suite'), value: audit.orphan_movements || 0, tone: (audit.orphan_movements || 0) > 0 ? 'danger' : 'ok' },
+            { label: __('Cuentas en negativo', 'aura-suite'), value: audit.negative_accounts || 0, tone: (audit.negative_accounts || 0) > 0 ? 'warn' : 'ok' }
         ];
 
         $('#aura-report-kpi-inflows').text(formatNumber(cashFlow.inflows || 0));
@@ -3617,16 +3621,16 @@ jQuery(function ($) {
         window.auraBudgetReportCache = budget; // Store for inline editing
         const isEditMode = $('#aura-inline-budget-save-btn').is(':visible');
 
-        let topeHtml = '<span><strong>Tope:</strong> ' + escapeHtml(formatNumber(budget.annual_limit || 0)) + '</span>';
+        let topeHtml = '<span><strong>' + escapeHtml(__('Tope:', 'aura-suite')) + '</strong> ' + escapeHtml(formatNumber(budget.annual_limit || 0)) + '</span>';
         if (isEditMode) {
-            topeHtml = '<span><strong>Tope:</strong> <input type="number" id="aura-inline-budget-annual" value="' + (budget.annual_limit || 0) + '" style="width:100px;"></span>';
+            topeHtml = '<span><strong>' + escapeHtml(__('Tope:', 'aura-suite')) + '</strong> <input type="number" id="aura-inline-budget-annual" value="' + (budget.annual_limit || 0) + '" style="width:100px;"></span>';
         }
 
         $('#aura-report-budget-summary').html(
             topeHtml +
-            '<span><strong>Ejecutado:</strong> ' + escapeHtml(formatNumber(budget.annual_spent || 0)) + '</span>' +
-            '<span><strong>Disponible:</strong> ' + escapeHtml(formatNumber(budget.annual_remaining || 0)) + '</span>' +
-            '<span><strong>Política:</strong> ' + escapeHtml((budget.policy || 'warn') === 'block' ? 'Bloquear' : 'Advertir') + '</span>'
+            '<span><strong>' + escapeHtml(__('Ejecutado:', 'aura-suite')) + '</strong> ' + escapeHtml(formatNumber(budget.annual_spent || 0)) + '</span>' +
+            '<span><strong>' + escapeHtml(__('Disponible:', 'aura-suite')) + '</strong> ' + escapeHtml(formatNumber(budget.annual_remaining || 0)) + '</span>' +
+            '<span><strong>' + escapeHtml(__('Política:', 'aura-suite')) + '</strong> ' + escapeHtml((budget.policy || 'warn') === 'block' ? __('Bloquear', 'aura-suite') : __('Advertir', 'aura-suite')) + '</span>'
         );
 
         renderSimpleRows($('#aura-report-budget-table tbody'), months, 5, function (row) {
@@ -3642,7 +3646,7 @@ jQuery(function ($) {
             const percentText = (Math.round(ratioSafe * 10) / 10).toFixed(1).replace('.0', '') + '%';
             const progressHint = limit > 0
                 ? (formatNumber(spent) + ' / ' + formatNumber(limit))
-                : 'Sin límite definido';
+                : __('Sin límite definido', 'aura-suite');
 
             let limitHtml = escapeHtml(formatNumber(row.limit || 0));
             if (isEditMode) {
@@ -3675,7 +3679,7 @@ jQuery(function ($) {
         }
 
         const year = parseInt($('#aura-report-year').val(), 10) || new Date().getFullYear();
-        $('#aura-report-refresh-btn').prop('disabled', true).text('Actualizando...');
+        $('#aura-report-refresh-btn').prop('disabled', true).text(__('Actualizando...', 'aura-suite'));
 
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_accounts_report',
@@ -3691,7 +3695,7 @@ jQuery(function ($) {
         }).fail(function () {
             showFeedback(auraFinancialAccounts.i18n.error, false);
         }).always(function () {
-            $('#aura-report-refresh-btn').prop('disabled', false).text('Actualizar reportes');
+            $('#aura-report-refresh-btn').prop('disabled', false).text(__('Actualizar reportes', 'aura-suite'));
         });
     }
 
@@ -3897,7 +3901,7 @@ jQuery(function ($) {
         e.preventDefault();
         const id = parseInt($('#aura-petty-id').val(), 10);
         if (!id) {
-            showFeedback('No hay una entrega cargada. Usa el ícono ✏️ de la tabla para cargar una.', false);
+            showFeedback(__('No hay una entrega cargada. Usa el ícono ✏️ de la tabla para cargar una.', 'aura-suite'), false);
             return;
         }
         submitPettyCash(id);
@@ -3944,8 +3948,8 @@ jQuery(function ($) {
         }
         if (typeof wp !== 'undefined' && wp.media) {
             thirdPartyMediaFrame = wp.media({
-                title: 'Seleccionar Logo o Imagen',
-                button: { text: 'Usar como Logo' },
+                title: __('Seleccionar Logo o Imagen', 'aura-suite'),
+                button: { text: __('Usar como Logo', 'aura-suite') },
                 multiple: false,
                 library: { type: 'image' }
             });
@@ -3977,10 +3981,10 @@ jQuery(function ($) {
         const iconClass = _iconMap[ptype] || 'dashicons-building';
         $('#aura-third-party-logo-icon-placeholder').attr('class', 'dashicons ' + iconClass);
         if (ptype === 'person') {
-            $('#aura-third-party-name-label').html('Nombre Completo *');
+            $('#aura-third-party-name-label').html(escapeHtml(__('Nombre Completo *', 'aura-suite')));
             $('#aura-third-party-tax-type').val('CC');
         } else {
-            $('#aura-third-party-name-label').html('Razón Social o Nombre Oficial *');
+            $('#aura-third-party-name-label').html(escapeHtml(__('Razón Social o Nombre Oficial *', 'aura-suite')));
             $('#aura-third-party-tax-type').val('NIT');
         }
     });
@@ -4086,8 +4090,8 @@ jQuery(function ($) {
         $('#aura-reimburse-pay-person').val(personIdPrefixed);
         $('#aura-reimburse-pay-person-name').val(row.responsible_name || '');
         $('#aura-reimburse-pay-amount').val(excedent.toFixed(2));
-        $('#aura-reimburse-pay-concept').val('Reembolso de excedente de Caja Chica #' + row.id + ' - ' + (row.responsible_name || ''));
-        $('#aura-reimburse-pay-notes').val('Liquidación de excedente en rendición de Caja Chica #' + row.id);
+        $('#aura-reimburse-pay-concept').val(sprintf(__('Reembolso de excedente de Caja Chica #%1$d - %2$s', 'aura-suite'), row.id, row.responsible_name || ''));
+        $('#aura-reimburse-pay-notes').val(sprintf(__('Liquidación de excedente en rendición de Caja Chica #%d', 'aura-suite'), row.id));
         $('#aura-reimburse-pay-create-tx').prop('checked', true);
         $('#aura-reimburse-pay-tx-fields').show();
 
@@ -4097,7 +4101,7 @@ jQuery(function ($) {
         $('#aura-reimburse-pay-debt-select').val('direct');
 
         window.AuraUI.openModal('aura-finance-reimburse-pay-modal');
-        showFeedback('Preparando liquidación del excedente ($' + formatNumber(excedent) + ') para ' + (row.responsible_name || 'el custodio') + '.', true);
+        showFeedback(sprintf(__('Preparando liquidación del excedente ($%1$s) para %2$s.', 'aura-suite'), formatNumber(excedent), row.responsible_name || __('el custodio', 'aura-suite')), true);
     });
 
     $(document).on('click', '.aura-petty-view-evidence', function () {
@@ -4163,7 +4167,7 @@ jQuery(function ($) {
             return;
         }
 
-        if (!window.confirm('¿Estás seguro de que deseas eliminar este reembolso? Esta acción no se puede deshacer.')) {
+        if (!window.confirm(__('¿Estás seguro de que deseas eliminar este reembolso? Esta acción no se puede deshacer.', 'aura-suite'))) {
             return;
         }
 
@@ -4217,14 +4221,14 @@ jQuery(function ($) {
 
     // --- Currency Exchange Multi-Currency Helpers ---
     const AURA_FOREIGN_CURRENCIES = {
-        USD: { name: 'Dólares', symbol: '$', code: 'USD', boxName: 'Caja USD' },
-        EUR: { name: 'Euros', symbol: '€', code: 'EUR', boxName: 'Caja EUR' },
-        CAD: { name: 'Dólares Canadienses', symbol: 'C$', code: 'CAD', boxName: 'Caja CAD' }
+        USD: { name: __('Dólares', 'aura-suite'), symbol: '$', code: 'USD', boxName: __('Caja USD', 'aura-suite') },
+        EUR: { name: __('Euros', 'aura-suite'), symbol: '€', code: 'EUR', boxName: __('Caja EUR', 'aura-suite') },
+        CAD: { name: __('Dólares Canadienses', 'aura-suite'), symbol: 'C$', code: 'CAD', boxName: __('Caja CAD', 'aura-suite') }
     };
 
     function getForeignCurrencyMeta(curr) {
         const c = String(curr || 'USD').toUpperCase();
-        return AURA_FOREIGN_CURRENCIES[c] || { name: c, symbol: '$', code: c, boxName: 'Caja ' + c };
+        return AURA_FOREIGN_CURRENCIES[c] || { name: c, symbol: '$', code: c, boxName: sprintf(__('Caja %s', 'aura-suite'), c) };
     }
 
     window.auraLastExchangeEdited = 'usd';
@@ -4247,12 +4251,12 @@ jQuery(function ($) {
         }
 
         // Actualizar textos dinámicos según divisa extranjera
-        $('#aura-exchange-dir-buy-title').text('Comprar ' + meta.name);
-        $('#aura-exchange-dir-buy-sub').text('Moneda Local ➔ ' + meta.boxName);
-        $('#aura-exchange-dir-sell-title').text('Vender ' + meta.name);
-        $('#aura-exchange-dir-sell-sub').text(meta.boxName + ' ➔ Moneda Local');
-        $('#aura-exchange-rate-label').text('Tasa de Cambio (1 ' + meta.code + ' = X Local)');
-        $('#aura-exchange-amount-usd-label').text('Monto en ' + meta.name + ' (' + meta.code + ')');
+        $('#aura-exchange-dir-buy-title').text(sprintf(__('Comprar %s', 'aura-suite'), meta.name));
+        $('#aura-exchange-dir-buy-sub').text(sprintf(__('Moneda Local ➔ %s', 'aura-suite'), meta.boxName));
+        $('#aura-exchange-dir-sell-title').text(sprintf(__('Vender %s', 'aura-suite'), meta.name));
+        $('#aura-exchange-dir-sell-sub').text(sprintf(__('%s ➔ Moneda Local', 'aura-suite'), meta.boxName));
+        $('#aura-exchange-rate-label').text(sprintf(__('Tasa de Cambio (1 %s = X Local)', 'aura-suite'), meta.code));
+        $('#aura-exchange-amount-usd-label').text(sprintf(__('Monto en %1$s (%2$s)', 'aura-suite'), meta.name, meta.code));
         $('#aura-exchange-foreign-symbol').text(meta.symbol);
         $('#aura-exchange-foreign-code').text(meta.code);
 
@@ -4260,17 +4264,17 @@ jQuery(function ($) {
         $target.empty();
 
         if (direction === 'local_to_usd') {
-            $('#aura-exchange-source-label').text('Cuenta Origen (Moneda Local / Banco / Caja)');
-            $('#aura-exchange-target-label').text('Cuenta Destino (' + meta.boxName + ' / Banco ' + meta.code + ')');
-            $('#aura-exchange-summary-badge').text('Compra de ' + meta.name + ' (Local ➔ ' + meta.code + ')');
-            $source.append('<option value="">Selecciona cuenta local de origen...</option>');
-            $target.append('<option value="">Selecciona cuenta/caja ' + meta.code + ' de destino...</option>');
+            $('#aura-exchange-source-label').text(__('Cuenta Origen (Moneda Local / Banco / Caja)', 'aura-suite'));
+            $('#aura-exchange-target-label').text(sprintf(__('Cuenta Destino (%1$s / Banco %2$s)', 'aura-suite'), meta.boxName, meta.code));
+            $('#aura-exchange-summary-badge').text(sprintf(__('Compra de %1$s (Local ➔ %2$s)', 'aura-suite'), meta.name, meta.code));
+            $source.append('<option value="">' + escapeHtml(__('Selecciona cuenta local de origen...', 'aura-suite')) + '</option>');
+            $target.append('<option value="">' + escapeHtml(sprintf(__('Selecciona cuenta/caja %s de destino...', 'aura-suite'), meta.code)) + '</option>');
         } else {
-            $('#aura-exchange-source-label').text('Cuenta Origen (' + meta.boxName + ' / Banco ' + meta.code + ')');
-            $('#aura-exchange-target-label').text('Cuenta Destino (Moneda Local / Banco / Caja)');
-            $('#aura-exchange-summary-badge').text('Venta de ' + meta.name + ' (' + meta.code + ' ➔ Local)');
-            $source.append('<option value="">Selecciona cuenta ' + meta.code + ' de origen...</option>');
-            $target.append('<option value="">Selecciona cuenta local de destino...</option>');
+            $('#aura-exchange-source-label').text(sprintf(__('Cuenta Origen (%1$s / Banco %2$s)', 'aura-suite'), meta.boxName, meta.code));
+            $('#aura-exchange-target-label').text(__('Cuenta Destino (Moneda Local / Banco / Caja)', 'aura-suite'));
+            $('#aura-exchange-summary-badge').text(sprintf(__('Venta de %1$s (%2$s ➔ Local)', 'aura-suite'), meta.name, meta.code));
+            $source.append('<option value="">' + escapeHtml(sprintf(__('Selecciona cuenta %s de origen...', 'aura-suite'), meta.code)) + '</option>');
+            $target.append('<option value="">' + escapeHtml(__('Selecciona cuenta local de destino...', 'aura-suite')) + '</option>');
         }
 
         list.forEach(function (a) {
@@ -4402,7 +4406,7 @@ jQuery(function ($) {
         }
 
         if (tgtAcc) {
-            $('#aura-exchange-target-balance-hint').html('Saldo actual: <strong>' + formatNumber(tgtAcc.current_balance || 0) + ' ' + escapeHtml(tgtAcc.currency) + '</strong>');
+            $('#aura-exchange-target-balance-hint').html(escapeHtml(__('Saldo actual:', 'aura-suite')) + ' <strong>' + formatNumber(tgtAcc.current_balance || 0) + ' ' + escapeHtml(tgtAcc.currency) + '</strong>');
         } else {
             $('#aura-exchange-target-balance-hint').text('');
         }
@@ -4419,25 +4423,25 @@ jQuery(function ($) {
                 const oldBal = parseFloat(srcAcc.current_balance || 0);
                 const newBal = oldBal - debitAmt;
                 $('#aura-exchange-impact-source-text').html('<span style="color:#ef4444;">- ' + formatNumber(debitAmt) + ' ' + escapeHtml(srcAcc.currency) + '</span>');
-                $('#aura-exchange-impact-source-sub').html(escapeHtml(srcAcc.name) + '<br>Saldo: ' + formatNumber(oldBal) + ' ➔ <strong>' + formatNumber(newBal) + ' ' + escapeHtml(srcAcc.currency) + '</strong>');
+                $('#aura-exchange-impact-source-sub').html(escapeHtml(srcAcc.name) + '<br>' + escapeHtml(__('Saldo:', 'aura-suite')) + ' ' + formatNumber(oldBal) + ' ➔ <strong>' + formatNumber(newBal) + ' ' + escapeHtml(srcAcc.currency) + '</strong>');
 
                 if (debitAmt > 0 && oldBal < debitAmt) {
                     hasInsufficientBalance = true;
-                    warningMsg = 'Saldo insuficiente en ' + escapeHtml(srcAcc.name) + '. Saldo disponible: ' + formatNumber(oldBal) + ' ' + escapeHtml(srcAcc.currency) + ', requerido: ' + formatNumber(debitAmt) + ' ' + escapeHtml(srcAcc.currency);
+                    warningMsg = sprintf(__('Saldo insuficiente en %1$s. Saldo disponible: %2$s %3$s, requerido: %4$s %5$s', 'aura-suite'), escapeHtml(srcAcc.name), formatNumber(oldBal), escapeHtml(srcAcc.currency), formatNumber(debitAmt), escapeHtml(srcAcc.currency));
                 }
             } else {
                 $('#aura-exchange-impact-source-text').text('—');
-                $('#aura-exchange-impact-source-sub').text('Selecciona cuenta local de origen');
+                $('#aura-exchange-impact-source-sub').text(__('Selecciona cuenta local de origen', 'aura-suite'));
             }
 
             if (tgtAcc) {
                 const oldBal = parseFloat(tgtAcc.current_balance || 0);
                 const newBal = oldBal + creditAmt;
                 $('#aura-exchange-impact-target-text').html('<span style="color:#10b981;">+ ' + meta.symbol + ' ' + formatNumber(creditAmt) + ' ' + meta.code + '</span>');
-                $('#aura-exchange-impact-target-sub').html(escapeHtml(tgtAcc.name) + '<br>Saldo: ' + formatNumber(oldBal) + ' ➔ <strong>' + formatNumber(newBal) + ' ' + meta.code + '</strong>');
+                $('#aura-exchange-impact-target-sub').html(escapeHtml(tgtAcc.name) + '<br>' + escapeHtml(__('Saldo:', 'aura-suite')) + ' ' + formatNumber(oldBal) + ' ➔ <strong>' + formatNumber(newBal) + ' ' + meta.code + '</strong>');
             } else {
                 $('#aura-exchange-impact-target-text').text('—');
-                $('#aura-exchange-impact-target-sub').text('Selecciona cuenta ' + meta.code + ' de destino');
+                $('#aura-exchange-impact-target-sub').text(sprintf(__('Selecciona cuenta %s de destino', 'aura-suite'), meta.code));
             }
         } else {
             // Se debita divisa extranjera en origen, se acredita moneda local en destino
@@ -4448,25 +4452,25 @@ jQuery(function ($) {
                 const oldBal = parseFloat(srcAcc.current_balance || 0);
                 const newBal = oldBal - debitAmt;
                 $('#aura-exchange-impact-source-text').html('<span style="color:#ef4444;">- ' + meta.symbol + ' ' + formatNumber(debitAmt) + ' ' + meta.code + '</span>');
-                $('#aura-exchange-impact-source-sub').html(escapeHtml(srcAcc.name) + '<br>Saldo: ' + formatNumber(oldBal) + ' ➔ <strong>' + formatNumber(newBal) + ' ' + meta.code + '</strong>');
+                $('#aura-exchange-impact-source-sub').html(escapeHtml(srcAcc.name) + '<br>' + escapeHtml(__('Saldo:', 'aura-suite')) + ' ' + formatNumber(oldBal) + ' ➔ <strong>' + formatNumber(newBal) + ' ' + meta.code + '</strong>');
 
                 if (debitAmt > 0 && oldBal < debitAmt) {
                     hasInsufficientBalance = true;
-                    warningMsg = 'Saldo insuficiente en ' + escapeHtml(srcAcc.name) + '. Saldo disponible: ' + meta.symbol + ' ' + formatNumber(oldBal) + ' ' + meta.code + ', requerido: ' + meta.symbol + ' ' + formatNumber(debitAmt) + ' ' + meta.code;
+                    warningMsg = sprintf(__('Saldo insuficiente en %1$s. Saldo disponible: %2$s %3$s %4$s, requerido: %5$s %6$s %7$s', 'aura-suite'), escapeHtml(srcAcc.name), meta.symbol, formatNumber(oldBal), meta.code, meta.symbol, formatNumber(debitAmt), meta.code);
                 }
             } else {
                 $('#aura-exchange-impact-source-text').text('—');
-                $('#aura-exchange-impact-source-sub').text('Selecciona cuenta ' + meta.code + ' de origen');
+                $('#aura-exchange-impact-source-sub').text(sprintf(__('Selecciona cuenta %s de origen', 'aura-suite'), meta.code));
             }
 
             if (tgtAcc) {
                 const oldBal = parseFloat(tgtAcc.current_balance || 0);
                 const newBal = oldBal + creditAmt;
                 $('#aura-exchange-impact-target-text').html('<span style="color:#10b981;">+ ' + formatNumber(creditAmt) + ' ' + escapeHtml(tgtAcc.currency) + '</span>');
-                $('#aura-exchange-impact-target-sub').html(escapeHtml(tgtAcc.name) + '<br>Saldo: ' + formatNumber(oldBal) + ' ➔ <strong>' + formatNumber(newBal) + ' ' + escapeHtml(tgtAcc.currency) + '</strong>');
+                $('#aura-exchange-impact-target-sub').html(escapeHtml(tgtAcc.name) + '<br>' + escapeHtml(__('Saldo:', 'aura-suite')) + ' ' + formatNumber(oldBal) + ' ➔ <strong>' + formatNumber(newBal) + ' ' + escapeHtml(tgtAcc.currency) + '</strong>');
             } else {
                 $('#aura-exchange-impact-target-text').text('—');
-                $('#aura-exchange-impact-target-sub').text('Selecciona cuenta local de destino');
+                $('#aura-exchange-impact-target-sub').text(__('Selecciona cuenta local de destino', 'aura-suite'));
             }
         }
 
@@ -4523,11 +4527,11 @@ jQuery(function ($) {
         const direction = $('input[name="exchange_direction"]:checked').val() || 'local_to_usd';
         
         if (!sourceId || !targetId || usd <= 0 || rate <= 0) {
-            showFeedback('Revisa los campos del cambio de divisa (cuentas de origen y destino, monto y tasa).', false);
+            showFeedback(__('Revisa los campos del cambio de divisa (cuentas de origen y destino, monto y tasa).', 'aura-suite'), false);
             return;
         }
 
-        $('#aura-exchange-save-btn').prop('disabled', true).text('Procesando operación...');
+        $('#aura-exchange-save-btn').prop('disabled', true).text(__('Procesando operación...', 'aura-suite'));
 
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_exchange_currency',
@@ -4540,7 +4544,7 @@ jQuery(function ($) {
             notes: $('#aura-exchange-notes').val()
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback(res.data.message || 'Cambio de divisa completado exitosamente.', true);
+                showFeedback(res.data.message || __('Cambio de divisa completado exitosamente.', 'aura-suite'), true);
                 window.AuraUI.closeModal('aura-finance-exchange-modal');
                 loadAccounts();
                 loadReports();
@@ -4551,14 +4555,14 @@ jQuery(function ($) {
         }).fail(function () {
             showFeedback(auraFinancialAccounts.i18n.error, false);
         }).always(function () {
-            $('#aura-exchange-save-btn').prop('disabled', false).text('Confirmar Cambio');
+            $('#aura-exchange-save-btn').prop('disabled', false).text(__('Confirmar Cambio', 'aura-suite'));
         });
     });
 
     // --- Exchange History & Audit Logic ---
     function loadExchangeHistory() {
         const $tbody = $('#aura-exchanges-tbody');
-        $tbody.html('<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>Cargando historial de cambios de divisa...</td></tr>');
+        $tbody.html('<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>' + escapeHtml(__('Cargando historial de cambios de divisa...', 'aura-suite')) + '</td></tr>');
 
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_exchange_history',
@@ -4574,10 +4578,10 @@ jQuery(function ($) {
                 window.auraExchangeHistoryCache = res.data.records || [];
                 applyExchangeFilters();
             } else {
-                $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">Error al cargar el historial de divisas.</td></tr>');
+                $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">' + escapeHtml(__('Error al cargar el historial de divisas.', 'aura-suite')) + '</td></tr>');
             }
         }).fail(function () {
-            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">Error de comunicación con el servidor.</td></tr>');
+            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">' + escapeHtml(__('Error de comunicación con el servidor.', 'aura-suite')) + '</td></tr>');
         });
     }
 
@@ -4588,7 +4592,7 @@ jQuery(function ($) {
         if (!records || !records.length) {
             $tbody.html('<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--aura-text-muted,#888);">' +
                 '<span class="dashicons dashicons-money-alt" style="font-size:32px;width:32px;height:32px;color:#94a3b8;display:block;margin:0 auto 8px;"></span>' +
-                'No hay operaciones de cambio de divisa que coincidan con la búsqueda.</td></tr>');
+                escapeHtml(__('No hay operaciones de cambio de divisa que coincidan con la búsqueda.', 'aura-suite')) + '</td></tr>');
             return;
         }
 
@@ -4601,7 +4605,7 @@ jQuery(function ($) {
             const isBuy = rec.direction === 'local_to_usd' || rec.direction.indexOf('to_' + foreignCurr.toLowerCase()) !== -1;
             const badgeClass = isBuy ? 'badge-emerald' : 'badge-indigo';
             const badgeIcon = isBuy ? 'dashicons-cart' : 'dashicons-money-alt';
-            const badgeLabel = isBuy ? ('Compra (Local ➔ ' + foreignCurr + ')') : ('Venta (' + foreignCurr + ' ➔ Local)');
+            const badgeLabel = isBuy ? sprintf(__('Compra (Local ➔ %s)', 'aura-suite'), foreignCurr) : sprintf(__('Venta (%s ➔ Local)', 'aura-suite'), foreignCurr);
             const isReverted = rec.status === 'reverted';
             
             const foreignAmt = parseFloat(rec.amount_foreign || rec.amount_usd || 0);
@@ -4616,42 +4620,42 @@ jQuery(function ($) {
             const rateHtml = '1 ' + foreignCurr + ' = ' + formatNumber(rec.exchange_rate) + ' ' + escapeHtml(isBuy ? rec.source_currency : rec.target_currency);
 
             // Estado Badge con Semáforo Canónico
-            let statusBadgeHtml = '<span class="status-traffic-light" data-tooltip="Operación contable confirmada y conciliada">' +
+            let statusBadgeHtml = '<span class="status-traffic-light" data-tooltip="' + escAttr(__('Operación contable confirmada y conciliada', 'aura-suite')) + '">' +
                 '<span class="traffic-dot traffic-dot-success"></span>' +
-                '<span class="badge badge-emerald"><span class="dashicons dashicons-yes-alt" style="font-size:12px;width:12px;height:12px;margin-right:3px;vertical-align:middle;"></span>Completada</span>' +
+                '<span class="badge badge-emerald"><span class="dashicons dashicons-yes-alt" style="font-size:12px;width:12px;height:12px;margin-right:3px;vertical-align:middle;"></span>' + escapeHtml(__('Completada', 'aura-suite')) + '</span>' +
             '</span>';
             if (isReverted) {
-                const revertTooltip = 'Revertida por ' + (rec.reverted_by_name || 'Auditor') + (rec.reverted_at ? ' el ' + rec.reverted_at : '') + (rec.revert_reason ? ': ' + rec.revert_reason : '');
+                const revertTooltip = sprintf(__('Revertida por %1$s%2$s%3$s', 'aura-suite'), rec.reverted_by_name || __('Auditor', 'aura-suite'), rec.reverted_at ? sprintf(__(' el %s', 'aura-suite'), rec.reverted_at) : '', rec.revert_reason ? ': ' + rec.revert_reason : '');
                 statusBadgeHtml = '<span class="status-traffic-light" data-tooltip="' + escapeHtml(revertTooltip) + '">' +
                     '<span class="traffic-dot traffic-dot-danger"></span>' +
-                    '<span class="badge badge-rose"><span class="dashicons dashicons-undo" style="font-size:12px;width:12px;height:12px;margin-right:3px;vertical-align:middle;"></span>Revertida</span>' +
+                    '<span class="badge badge-rose"><span class="dashicons dashicons-undo" style="font-size:12px;width:12px;height:12px;margin-right:3px;vertical-align:middle;"></span>' + escapeHtml(__('Revertida', 'aura-suite')) + '</span>' +
                 '</span>';
             }
 
             // Acciones con botones WOW del Design System
             let actionsHtml = '<div style="display:inline-flex;gap:6px;justify-content:flex-end;align-items:center;">';
             // 1. Ver Detalle (siempre disponible)
-            actionsHtml += '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-exchange-action-view" data-id="' + rec.id + '" data-tooltip="Ver detalle y auditoría contable" aria-label="Ver detalle">' +
+            actionsHtml += '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-exchange-action-view" data-id="' + rec.id + '" data-tooltip="' + escAttr(__('Ver detalle y auditoría contable', 'aura-suite')) + '" aria-label="' + escAttr(__('Ver detalle', 'aura-suite')) + '">' +
                 '<span class="dashicons dashicons-visibility" style="vertical-align:middle;font-size:14px;width:14px;height:14px;"></span>' +
             '</button>';
 
             // 2. Editar Justificación o Datos
             if (canEdit && !isReverted) {
-                actionsHtml += '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-exchange-action-edit" data-id="' + rec.id + '" data-tooltip="Editar justificación o notas" aria-label="Editar">' +
+                actionsHtml += '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-exchange-action-edit" data-id="' + rec.id + '" data-tooltip="' + escAttr(__('Editar justificación o notas', 'aura-suite')) + '" aria-label="' + escAttr(__('Editar', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-edit" style="vertical-align:middle;font-size:14px;width:14px;height:14px;color:#0284c7;"></span>' +
                 '</button>';
             }
 
             // 3. Revertir Operación
             if (canDelete && !isReverted) {
-                actionsHtml += '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-exchange-action-revert" data-id="' + rec.id + '" data-tooltip="Anular y revertir saldos contables" aria-label="Revertir" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">' +
+                actionsHtml += '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-exchange-action-revert" data-id="' + rec.id + '" data-tooltip="' + escAttr(__('Anular y revertir saldos contables', 'aura-suite')) + '" aria-label="' + escAttr(__('Revertir', 'aura-suite')) + '" style="color:#ef4444;border-color:rgba(239,68,68,0.3);">' +
                     '<span class="dashicons dashicons-undo" style="vertical-align:middle;font-size:14px;width:14px;height:14px;"></span>' +
                 '</button>';
             }
 
             // 4. Eliminar Registro definitivo si ya está revertido
             if (canDelete && isReverted) {
-                actionsHtml += '<button type="button" class="btn btn-sm btn-danger btn-lift aura-exchange-action-delete" data-id="' + rec.id + '" data-tooltip="Eliminar definitivamente este registro" aria-label="Eliminar">' +
+                actionsHtml += '<button type="button" class="btn btn-sm btn-danger btn-lift aura-exchange-action-delete" data-id="' + rec.id + '" data-tooltip="' + escAttr(__('Eliminar definitivamente este registro', 'aura-suite')) + '" aria-label="' + escAttr(__('Eliminar', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-trash" style="vertical-align:middle;font-size:14px;width:14px;height:14px;"></span>' +
                 '</button>';
             }
@@ -4660,20 +4664,20 @@ jQuery(function ($) {
 
             const opTip = '<div class="aura-tip-card" style="min-width:240px;padding:10px 12px;">' +
                 '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons ' + badgeIcon + '" style="color:#38bdf8;"></span>' + escapeHtml(badgeLabel) + '</div>' +
-                '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">Conversión ejecutada entre <strong>' + escapeHtml(rec.source_name || 'Origen') + '</strong> y <strong>' + escapeHtml(rec.target_name || 'Destino') + '</strong></div>' +
-                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">ID Operación: #' + rec.id + ' • ' + escapeHtml(rec.created_at || '') + '</div>' +
+                '<div style="font-size:11.5px;color:#cbd5e1;line-height:1.4;">' + sprintf(escapeHtml(__('Conversión ejecutada entre %1$s y %2$s', 'aura-suite')), '<strong>' + escapeHtml(rec.source_name || __('Origen', 'aura-suite')) + '</strong>', '<strong>' + escapeHtml(rec.target_name || __('Destino', 'aura-suite')) + '</strong>') + '</div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">' + escapeHtml(sprintf(__('ID Operación: #%d', 'aura-suite'), rec.id)) + ' • ' + escapeHtml(rec.created_at || '') + '</div>' +
             '</div>';
 
             const rateTip = '<div class="aura-tip-card" style="min-width:220px;padding:10px 12px;">' +
-                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-chart-line" style="color:#34d399;"></span>Tasa de Conversión</div>' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-chart-line" style="color:#34d399;"></span>' + escapeHtml(__('Tasa de Conversión', 'aura-suite')) + '</div>' +
                 '<div style="font-size:13px;font-weight:800;color:#38bdf8;margin:2px 0;">' + rateHtml + '</div>' +
-                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Tasa pactada e inmutable de la operación</div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">' + escapeHtml(__('Tasa pactada e inmutable de la operación', 'aura-suite')) + '</div>' +
             '</div>';
 
             const userTip = '<div class="aura-tip-card" style="min-width:220px;padding:10px 12px;">' +
-                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-admin-users" style="color:#a855f7;"></span>Auditor Responsable</div>' +
+                '<div style="font-weight:700;font-size:12px;color:#ffffff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><span class="dashicons dashicons-admin-users" style="color:#a855f7;"></span>' + escapeHtml(__('Auditor Responsable', 'aura-suite')) + '</div>' +
                 '<div style="font-size:12px;font-weight:700;color:#e2e8f0;">' + escapeHtml(rec.user_name || 'Sistema') + '</div>' +
-                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">Registrado el: ' + escapeHtml(rec.created_at || '—') + '</div>' +
+                '<div style="font-size:10.5px;color:#94a3b8;margin-top:4px;border-top:1px solid #334155;padding-top:4px;">' + escapeHtml(sprintf(__('Registrado el: %s', 'aura-suite'), rec.created_at || '—')) + '</div>' +
             '</div>';
 
             const rowClass = 'table-row-hover-lift' + (isReverted ? ' aura-row-reverted' : '');
@@ -4774,7 +4778,7 @@ jQuery(function ($) {
         const cached = list.find(r => parseInt(r.id, 10) === id);
 
         const $content = $('#aura-exchange-detail-content');
-        $content.html('<div style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>Cargando detalle...</div>');
+        $content.html('<div style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>' + escapeHtml(__('Cargando detalle...', 'aura-suite')) + '</div>');
         window.AuraUI.openModal('aura-finance-exchange-detail-modal');
 
         $.post(auraFinancialAccounts.ajaxUrl, {
@@ -4784,14 +4788,14 @@ jQuery(function ($) {
         }).done(function (res) {
             const data = (res && res.success && res.data && res.data.exchange) ? res.data.exchange : cached;
             if (!data) {
-                $content.html('<div style="text-align:center;padding:20px;color:#dc2626;">No se encontró la información de esta operación.</div>');
+                $content.html('<div style="text-align:center;padding:20px;color:#dc2626;">' + escapeHtml(__('No se encontró la información de esta operación.', 'aura-suite')) + '</div>');
                 return;
             }
 
             const foreignCurr = String(data.foreign_currency || 'USD').toUpperCase();
             const foreignMeta = getForeignCurrencyMeta(foreignCurr);
             const isBuy = data.direction === 'local_to_usd' || data.direction.indexOf('to_' + foreignCurr.toLowerCase()) !== -1;
-            const opTitle = isBuy ? ('Compra de ' + foreignMeta.name + ' (Moneda Local ➔ ' + foreignCurr + ')') : ('Venta de ' + foreignMeta.name + ' (' + foreignCurr + ' ➔ Moneda Local)');
+            const opTitle = isBuy ? sprintf(__('Compra de %1$s (Moneda Local ➔ %2$s)', 'aura-suite'), foreignMeta.name, foreignCurr) : sprintf(__('Venta de %1$s (%2$s ➔ Moneda Local)', 'aura-suite'), foreignMeta.name, foreignCurr);
             const isReverted = data.status === 'reverted';
             const foreignAmt = parseFloat(data.amount_foreign || data.amount_usd || 0);
 
@@ -4803,18 +4807,18 @@ jQuery(function ($) {
                 '</div>' +
                 '<div>' +
                     (isReverted 
-                        ? '<span class="aura-badge aura-badge-red" style="font-size:12px;padding:3px 10px;border-radius:6px;font-weight:700;">Revertida</span>'
-                        : '<span class="aura-badge aura-badge-green" style="font-size:12px;padding:3px 10px;border-radius:6px;font-weight:700;">Completada</span>') +
+                        ? '<span class="aura-badge aura-badge-red" style="font-size:12px;padding:3px 10px;border-radius:6px;font-weight:700;">' + escapeHtml(__('Revertida', 'aura-suite')) + '</span>'
+                        : '<span class="aura-badge aura-badge-green" style="font-size:12px;padding:3px 10px;border-radius:6px;font-weight:700;">' + escapeHtml(__('Completada', 'aura-suite')) + '</span>') +
                 '</div>' +
             '</div>';
 
             if (isReverted) {
                 html += '<div style="margin-bottom:16px;padding:12px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:8px;">' +
-                    '<strong style="color:#dc2626;display:block;margin-bottom:4px;">⚠️ Operación Anulada / Revertida</strong>' +
+                    '<strong style="color:#dc2626;display:block;margin-bottom:4px;">' + escapeHtml(__('⚠️ Operación Anulada / Revertida', 'aura-suite')) + '</strong>' +
                     '<div style="font-size:12.5px;color:var(--aura-text-main,#334155);line-height:1.5;">' +
-                        '<strong>Fecha de reversión:</strong> ' + escapeHtml(data.reverted_at || '—') + '<br>' +
-                        '<strong>Revertida por:</strong> ' + escapeHtml(data.reverted_by_name || 'Auditor') + '<br>' +
-                        '<strong>Motivo de anulación:</strong> ' + escapeHtml(data.revert_reason || 'Sin justificación') +
+                        '<strong>' + escapeHtml(__('Fecha de reversión:', 'aura-suite')) + '</strong> ' + escapeHtml(data.reverted_at || '—') + '<br>' +
+                        '<strong>' + escapeHtml(__('Revertida por:', 'aura-suite')) + '</strong> ' + escapeHtml(data.reverted_by_name || __('Auditor', 'aura-suite')) + '<br>' +
+                        '<strong>' + escapeHtml(__('Motivo de anulación:', 'aura-suite')) + '</strong> ' + escapeHtml(data.revert_reason || __('Sin justificación', 'aura-suite')) +
                     '</div>' +
                 '</div>';
             }
@@ -4829,45 +4833,45 @@ jQuery(function ($) {
 
             html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">' +
                 '<div class="aura-exchange-detail-card" style="border-radius:8px;padding:12px;">' +
-                    '<small style="text-transform:uppercase;letter-spacing:0.5px;font-size:10.5px;color:var(--aura-text-muted,#64748b);font-weight:700;display:block;margin-bottom:4px;">Cuenta Origen (Salida de fondos)</small>' +
-                    '<strong style="font-size:14px;color:var(--aura-text-heading,#0f172a);display:block;">' + escapeHtml(data.source_name || 'Cuenta Origen') + '</strong>' +
+                    '<small style="text-transform:uppercase;letter-spacing:0.5px;font-size:10.5px;color:var(--aura-text-muted,#64748b);font-weight:700;display:block;margin-bottom:4px;">' + escapeHtml(__('Cuenta Origen (Salida de fondos)', 'aura-suite')) + '</small>' +
+                    '<strong style="font-size:14px;color:var(--aura-text-heading,#0f172a);display:block;">' + escapeHtml(data.source_name || __('Cuenta Origen', 'aura-suite')) + '</strong>' +
                     '<div style="margin-top:6px;font-size:12.5px;color:#dc2626;font-weight:700;">' + sourceDebitHtml + '</div>' +
                     '<div style="margin-top:4px;font-size:11.5px;color:var(--aura-text-muted,#64748b);">' +
-                        'Saldo previo: ' + formatNumber(data.source_old_balance) + '<br>' +
-                        'Saldo tras cambio: <strong>' + formatNumber(data.source_new_balance) + ' ' + escapeHtml(data.source_currency) + '</strong>' +
+                        escapeHtml(__('Saldo previo:', 'aura-suite')) + ' ' + formatNumber(data.source_old_balance) + '<br>' +
+                        escapeHtml(__('Saldo tras cambio:', 'aura-suite')) + ' <strong>' + formatNumber(data.source_new_balance) + ' ' + escapeHtml(data.source_currency) + '</strong>' +
                     '</div>' +
                 '</div>' +
                 '<div class="aura-exchange-detail-card" style="border-radius:8px;padding:12px;">' +
-                    '<small style="text-transform:uppercase;letter-spacing:0.5px;font-size:10.5px;color:var(--aura-text-muted,#64748b);font-weight:700;display:block;margin-bottom:4px;">Cuenta Destino (Entrada de fondos)</small>' +
-                    '<strong style="font-size:14px;color:var(--aura-text-heading,#0f172a);display:block;">' + escapeHtml(data.target_name || 'Cuenta Destino') + '</strong>' +
+                    '<small style="text-transform:uppercase;letter-spacing:0.5px;font-size:10.5px;color:var(--aura-text-muted,#64748b);font-weight:700;display:block;margin-bottom:4px;">' + escapeHtml(__('Cuenta Destino (Entrada de fondos)', 'aura-suite')) + '</small>' +
+                    '<strong style="font-size:14px;color:var(--aura-text-heading,#0f172a);display:block;">' + escapeHtml(data.target_name || __('Cuenta Destino', 'aura-suite')) + '</strong>' +
                     '<div style="margin-top:6px;font-size:12.5px;color:#16a34a;font-weight:700;">' + targetCreditHtml + '</div>' +
                     '<div style="margin-top:4px;font-size:11.5px;color:var(--aura-text-muted,#64748b);">' +
-                        'Saldo previo: ' + formatNumber(data.target_old_balance) + '<br>' +
-                        'Saldo tras cambio: <strong>' + formatNumber(data.target_new_balance) + ' ' + escapeHtml(data.target_currency) + '</strong>' +
+                        escapeHtml(__('Saldo previo:', 'aura-suite')) + ' ' + formatNumber(data.target_old_balance) + '<br>' +
+                        escapeHtml(__('Saldo tras cambio:', 'aura-suite')) + ' <strong>' + formatNumber(data.target_new_balance) + ' ' + escapeHtml(data.target_currency) + '</strong>' +
                     '</div>' +
                 '</div>' +
             '</div>';
 
             html += '<div class="aura-exchange-detail-box" style="border-radius:8px;padding:12px;margin-bottom:16px;font-size:12.5px;line-height:1.6;">' +
-                '<div><strong>Tasa de Cambio Aplicada:</strong> 1 ' + foreignCurr + ' = ' + formatNumber(data.exchange_rate) + ' ' + escapeHtml(isBuy ? data.source_currency : data.target_currency) + '</div>' +
-                '<div><strong>Fecha y Hora de Registro:</strong> ' + escapeHtml(data.created_at || '—') + '</div>' +
-                '<div><strong>Auditor / Registrado por:</strong> ' + escapeHtml(data.user_name || 'Sistema') + '</div>' +
-                '<div><strong>ID de Operación:</strong> #' + data.id + '</div>' +
+                '<div><strong>' + escapeHtml(__('Tasa de Cambio Aplicada:', 'aura-suite')) + '</strong> 1 ' + foreignCurr + ' = ' + formatNumber(data.exchange_rate) + ' ' + escapeHtml(isBuy ? data.source_currency : data.target_currency) + '</div>' +
+                '<div><strong>' + escapeHtml(__('Fecha y Hora de Registro:', 'aura-suite')) + '</strong> ' + escapeHtml(data.created_at || '—') + '</div>' +
+                '<div><strong>' + escapeHtml(__('Auditor / Registrado por:', 'aura-suite')) + '</strong> ' + escapeHtml(data.user_name || __('Sistema', 'aura-suite')) + '</div>' +
+                '<div><strong>' + escapeHtml(__('ID de Operación:', 'aura-suite')) + '</strong> #' + data.id + '</div>' +
             '</div>';
 
             html += '<div>' +
-                '<strong style="display:block;font-size:12.5px;margin-bottom:4px;color:var(--aura-text-heading,#0f172a);">Notas, Justificación o Referencia:</strong>' +
+                '<strong style="display:block;font-size:12.5px;margin-bottom:4px;color:var(--aura-text-heading,#0f172a);">' + escapeHtml(__('Notas, Justificación o Referencia:', 'aura-suite')) + '</strong>' +
                 '<div class="aura-exchange-detail-notes-box" style="border-radius:6px;padding:10px 12px;font-size:12.5px;line-height:1.5;">' +
-                    escapeHtml(data.notes || 'Ninguna observación registrada.') +
+                    escapeHtml(data.notes || __('Ninguna observación registrada.', 'aura-suite')) +
                 '</div>' +
             '</div>';
 
             $content.html(html);
         }).fail(function () {
             if (cached) {
-                $content.html('<div style="padding:10px;font-size:13px;">Mostrando datos locales de caché: ID #' + cached.id + '</div>');
+                $content.html('<div style="padding:10px;font-size:13px;">' + escapeHtml(sprintf(__('Mostrando datos locales de caché: ID #%d', 'aura-suite'), cached.id)) + '</div>');
             } else {
-                $content.html('<div style="text-align:center;padding:20px;color:#dc2626;">Error al cargar los datos desde el servidor.</div>');
+                $content.html('<div style="text-align:center;padding:20px;color:#dc2626;">' + escapeHtml(__('Error al cargar los datos desde el servidor.', 'aura-suite')) + '</div>');
             }
         });
     });
@@ -4933,7 +4937,7 @@ jQuery(function ($) {
         const rec = list.find(r => parseInt(r.id, 10) === id);
 
         if (!rec) {
-            showFeedback('Operación no encontrada.', false);
+            showFeedback(__('Operación no encontrada.', 'aura-suite'), false);
             return;
         }
 
@@ -4944,8 +4948,8 @@ jQuery(function ($) {
 
         $('#aura-exchange-edit-id').val(id);
         $('#aura-exchange-edit-direction').val(rec.direction);
-        $('#aura-exchange-edit-direction-badge').text(isBuy ? ('Compra de ' + foreignMeta.name + ' (Local ➔ ' + foreignCurr + ')') : ('Venta de ' + foreignMeta.name + ' (' + foreignCurr + ' ➔ Local)'));
-        $('#aura-exchange-edit-amount-foreign-label').text('Monto ' + foreignMeta.name + ' (' + foreignMeta.symbol + ')');
+        $('#aura-exchange-edit-direction-badge').text(isBuy ? sprintf(__('Compra de %1$s (Local ➔ %2$s)', 'aura-suite'), foreignMeta.name, foreignCurr) : sprintf(__('Venta de %1$s (%2$s ➔ Local)', 'aura-suite'), foreignMeta.name, foreignCurr));
+        $('#aura-exchange-edit-amount-foreign-label').text(sprintf(__('Monto %1$s (%2$s)', 'aura-suite'), foreignMeta.name, foreignMeta.symbol));
 
         populateExchangeEditAccounts(rec.direction, rec.source_id, rec.target_id, foreignCurr);
 
@@ -4956,7 +4960,7 @@ jQuery(function ($) {
 
         if (isReverted) {
             $('#aura-exchange-edit-source, #aura-exchange-edit-target, #aura-exchange-edit-rate, #aura-exchange-edit-amount-usd').prop('disabled', true);
-            $('#aura-exchange-edit-direction-badge').html('<span style="color:#dc2626;">Operación Anulada / Revertida</span> (Solo puedes actualizar la justificación)');
+            $('#aura-exchange-edit-direction-badge').html('<span style="color:#dc2626;">' + escapeHtml(__('Operación Anulada / Revertida', 'aura-suite')) + '</span> ' + escapeHtml(__('(Solo puedes actualizar la justificación)', 'aura-suite')));
         } else {
             $('#aura-exchange-edit-source, #aura-exchange-edit-target, #aura-exchange-edit-rate, #aura-exchange-edit-amount-usd').prop('disabled', false);
         }
@@ -4974,7 +4978,7 @@ jQuery(function ($) {
         const local = parseFloat($('#aura-exchange-edit-amount-local').val()) || 0;
         const notes = $('#aura-exchange-edit-notes').val();
 
-        $('#aura-exchange-edit-save-btn').prop('disabled', true).text('Guardando...');
+        $('#aura-exchange-edit-save-btn').prop('disabled', true).text(__('Guardando...', 'aura-suite'));
 
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_exchange_update',
@@ -4988,7 +4992,7 @@ jQuery(function ($) {
             notes: notes
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback(res.data.message || 'Operación actualizada exitosamente.', true);
+                showFeedback(res.data.message || __('Operación actualizada exitosamente.', 'aura-suite'), true);
                 window.AuraUI.closeModal('aura-finance-exchange-edit-modal');
                 loadAccounts();
                 loadReports();
@@ -4999,7 +5003,7 @@ jQuery(function ($) {
         }).fail(function () {
             showFeedback(auraFinancialAccounts.i18n.error, false);
         }).always(function () {
-            $('#aura-exchange-edit-save-btn').prop('disabled', false).text('Guardar y Rebalancear');
+            $('#aura-exchange-edit-save-btn').prop('disabled', false).text(__('Guardar y Rebalancear', 'aura-suite'));
         });
     });
 
@@ -5010,7 +5014,7 @@ jQuery(function ($) {
         const rec = list.find(r => parseInt(r.id, 10) === id);
 
         if (!rec) {
-            showFeedback('Operación no encontrada.', false);
+            showFeedback(__('Operación no encontrada.', 'aura-suite'), false);
             return;
         }
 
@@ -5025,9 +5029,9 @@ jQuery(function ($) {
         const debitAmt = isBuy ? (formatNumber(rec.amount_local) + ' ' + escapeHtml(rec.source_currency)) : (foreignMeta.symbol + ' ' + formatNumber(foreignAmt) + ' ' + foreignCurr);
         const creditAmt = isBuy ? (foreignMeta.symbol + ' ' + formatNumber(foreignAmt) + ' ' + foreignCurr) : (formatNumber(rec.amount_local) + ' ' + escapeHtml(rec.target_currency));
 
-        let summaryHtml = '<strong>Operación a anular:</strong> Cambio #' + rec.id + '<br>' +
-            '• Se devolverán <strong>+' + debitAmt + '</strong> a <em>' + escapeHtml(rec.source_name) + '</em><br>' +
-            '• Se retirarán <strong>-' + creditAmt + '</strong> de <em>' + escapeHtml(rec.target_name) + '</em>';
+        let summaryHtml = '<strong>' + escapeHtml(__('Operación a anular:', 'aura-suite')) + '</strong> ' + escapeHtml(sprintf(__('Cambio #%d', 'aura-suite'), rec.id)) + '<br>' +
+            '• ' + sprintf(escapeHtml(__('Se devolverán %1$s a %2$s', 'aura-suite')), '<strong>+' + debitAmt + '</strong>', '<em>' + escapeHtml(rec.source_name) + '</em>') + '<br>' +
+            '• ' + sprintf(escapeHtml(__('Se retirarán %1$s de %2$s', 'aura-suite')), '<strong>-' + creditAmt + '</strong>', '<em>' + escapeHtml(rec.target_name) + '</em>');
 
         $('#aura-exchange-revert-summary').html(summaryHtml);
         window.AuraUI.openModal('aura-finance-exchange-revert-modal');
@@ -5039,11 +5043,11 @@ jQuery(function ($) {
         const reason = $('#aura-exchange-revert-reason').val();
 
         if (!reason || !reason.trim()) {
-            showFeedback('Debes ingresar un motivo de reversión.', false);
+            showFeedback(__('Debes ingresar un motivo de reversión.', 'aura-suite'), false);
             return;
         }
 
-        $('#aura-exchange-revert-save-btn').prop('disabled', true).text('Revirtiendo...');
+        $('#aura-exchange-revert-save-btn').prop('disabled', true).text(__('Revirtiendo...', 'aura-suite'));
 
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_exchange_revert',
@@ -5052,7 +5056,7 @@ jQuery(function ($) {
             revert_reason: reason
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback(res.data.message || 'Operación revertida exitosamente.', true);
+                showFeedback(res.data.message || __('Operación revertida exitosamente.', 'aura-suite'), true);
                 window.AuraUI.closeModal('aura-finance-exchange-revert-modal');
                 loadAccounts();
                 loadReports();
@@ -5063,14 +5067,14 @@ jQuery(function ($) {
         }).fail(function () {
             showFeedback(auraFinancialAccounts.i18n.error, false);
         }).always(function () {
-            $('#aura-exchange-revert-save-btn').prop('disabled', false).text('Confirmar Reversión');
+            $('#aura-exchange-revert-save-btn').prop('disabled', false).text(__('Confirmar Reversión', 'aura-suite'));
         });
     });
 
     // --- CRUD Event Handlers: Eliminar Registro ---
     $(document).on('click', '.aura-exchange-action-delete', function () {
         const id = parseInt($(this).data('id'), 10);
-        const msg = (auraFinancialAccounts.i18n && auraFinancialAccounts.i18n.exchangeDeleteConfirm) || '¿Eliminar permanentemente este registro del historial?';
+        const msg = (auraFinancialAccounts.i18n && auraFinancialAccounts.i18n.exchangeDeleteConfirm) || __('¿Eliminar permanentemente este registro del historial?', 'aura-suite');
 
         if (!window.confirm(msg)) {
             return;
@@ -5082,7 +5086,7 @@ jQuery(function ($) {
             id: id
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback(res.data.message || 'Registro eliminado.', true);
+                showFeedback(res.data.message || __('Registro eliminado.', 'aura-suite'), true);
                 loadExchangeHistory();
             } else {
                 showFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
@@ -5096,16 +5100,16 @@ jQuery(function ($) {
     $('#aura-exchanges-export-btn').on('click', function () {
         const list = window.auraExchangeHistoryCache || [];
         if (!list.length) {
-            showFeedback('No hay datos para exportar en este momento.', false);
+            showFeedback(__('No hay datos para exportar en este momento.', 'aura-suite'), false);
             return;
         }
 
-        const headers = ['Fecha / Hora', 'Operación', 'Cuenta Origen', 'Monto Salida', 'Moneda Origen', 'Tasa Cambio', 'Cuenta Destino', 'Monto Entrada', 'Moneda Destino', 'Estado', 'Auditor / Usuario', 'Notas / Justificación'];
+        const headers = [__('Fecha / Hora', 'aura-suite'), __('Operación', 'aura-suite'), __('Cuenta Origen', 'aura-suite'), __('Monto Salida', 'aura-suite'), __('Moneda Origen', 'aura-suite'), __('Tasa Cambio', 'aura-suite'), __('Cuenta Destino', 'aura-suite'), __('Monto Entrada', 'aura-suite'), __('Moneda Destino', 'aura-suite'), __('Estado', 'aura-suite'), __('Auditor / Usuario', 'aura-suite'), __('Notas / Justificación', 'aura-suite')];
         const csvRows = [headers.join(',')];
 
         list.forEach(function (rec) {
             const isToUsd = rec.direction === 'local_to_usd';
-            const opLabel = isToUsd ? 'Compra USD (Local a USD)' : 'Venta USD (USD a Local)';
+            const opLabel = isToUsd ? __('Compra USD (Local a USD)', 'aura-suite') : __('Venta USD (USD a Local)', 'aura-suite');
             const amtOut = isToUsd ? rec.amount_local : rec.amount_usd;
             const currOut = isToUsd ? rec.source_currency : 'USD';
             const amtIn = isToUsd ? rec.amount_usd : rec.amount_local;
@@ -5174,17 +5178,17 @@ jQuery(function ($) {
             months: months
         }).done(function(res) {
             if (res && res.success) {
-                showFeedback('Presupuesto actualizado.', true);
+                showFeedback(__('Presupuesto actualizado.', 'aura-suite'), true);
                 $('#aura-inline-budget-save-btn').hide();
                 $('#aura-inline-budget-edit-btn').show();
                 loadReports(); // reload to get new calculations
             } else {
                 showFeedback((res && res.data && res.data.message) || auraFinancialAccounts.i18n.error, false);
-                $btn.prop('disabled', false).text('Guardar Cambios');
+                $btn.prop('disabled', false).text(__('Guardar Cambios', 'aura-suite'));
             }
         }).fail(function() {
             showFeedback(auraFinancialAccounts.i18n.error, false);
-            $btn.prop('disabled', false).text('Guardar Cambios');
+            $btn.prop('disabled', false).text(__('Guardar Cambios', 'aura-suite'));
         });
     });
 
@@ -5205,7 +5209,7 @@ jQuery(function ($) {
 
             $('#aura-budget-even-tools').removeClass('aura-hidden').show();
             $('#aura-budget-manual-tools').addClass('aura-hidden').hide();
-            $('#aura-budget-monthly-hint').text('El sistema divide automáticamente el tope anual entre los 12 meses.');
+            $('#aura-budget-monthly-hint').text(__('El sistema divide automáticamente el tope anual entre los 12 meses.', 'aura-suite'));
 
             const annualLimit = parseMoney($('#aura-budget-annual-limit').val());
             if (annualLimit > 0) {
@@ -5224,7 +5228,7 @@ jQuery(function ($) {
 
             $('#aura-budget-manual-tools').removeClass('aura-hidden').show();
             $('#aura-budget-even-tools').addClass('aura-hidden').hide();
-            $('#aura-budget-monthly-hint').text('Modifica cada mes a tu gusto; la suma se sincroniza automáticamente con el total anual.');
+            $('#aura-budget-monthly-hint').text(__('Modifica cada mes a tu gusto; la suma se sincroniza automáticamente con el total anual.', 'aura-suite'));
         }
     }
 
@@ -5388,20 +5392,20 @@ jQuery(function ($) {
         e.preventDefault();
         const yr = $(this).data('year');
         loadBudgetByYear(yr);
-        showFeedback('Presupuesto de ' + yr + ' cargado en pantalla.', true);
+        showFeedback(sprintf(__('Presupuesto de %s cargado en pantalla.', 'aura-suite'), yr), true);
     });
 
     $(document).on('click', '.aura-budget-year-clone-btn', function(e) {
         e.preventDefault();
         const fromYear = $(this).data('year');
         const defaultToYear = fromYear + 1;
-        const toYearStr = prompt('Ingresa el año destino para clonar el presupuesto de ' + fromYear + ':', String(defaultToYear));
+        const toYearStr = prompt(sprintf(__('Ingresa el año destino para clonar el presupuesto de %s:', 'aura-suite'), fromYear), String(defaultToYear));
         if (toYearStr) {
             const toYear = parseInt(toYearStr, 10);
             if (toYear >= 2000 && toYear <= 2100 && toYear !== fromYear) {
                 copyBudgetYear(fromYear, toYear);
             } else {
-                showFeedback('Año destino no válido.', false);
+                showFeedback(__('Año destino no válido.', 'aura-suite'), false);
             }
         }
     });
@@ -5419,7 +5423,7 @@ jQuery(function ($) {
         e.preventDefault();
         const $btn = $(this);
         const originalHtml = $btn.html();
-        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update" style="animation:spin 1s linear infinite;vertical-align:middle;"></span> ' + (auraFinancialAccounts.i18n.saving || 'Exportando...'));
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update" style="animation:spin 1s linear infinite;vertical-align:middle;"></span> ' + (auraFinancialAccounts.i18n.saving || __('Exportando...', 'aura-suite')));
 
         $.ajax({
             url: auraFinancialAccounts.ajaxUrl,
@@ -5445,13 +5449,13 @@ jQuery(function ($) {
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                showFeedback('Cuentas bancarias exportadas correctamente.', true);
+                showFeedback(__('Cuentas bancarias exportadas correctamente.', 'aura-suite'), true);
             } else {
-                showFeedback((res.data && res.data.message) ? res.data.message : 'Error al exportar cuentas.', false);
+                showFeedback((res.data && res.data.message) ? res.data.message : __('Error al exportar cuentas.', 'aura-suite'), false);
             }
         }).fail(function() {
             $btn.prop('disabled', false).html(originalHtml);
-            showFeedback('Error de conexión al exportar.', false);
+            showFeedback(__('Error de conexión al exportar.', 'aura-suite'), false);
         });
     });
 
@@ -5590,15 +5594,15 @@ jQuery(function ($) {
         const currentSource = $('#aura-transfer-source').val();
         const currentTarget = $('#aura-transfer-target').val();
 
-        $('#aura-transfer-source').html(buildOptions('Seleccione cuenta origen (salida)...'));
-        $('#aura-transfer-target').html(buildOptions('Seleccione cuenta destino (entrada)...'));
+        $('#aura-transfer-source').html(buildOptions(__('Seleccione cuenta origen (salida)...', 'aura-suite')));
+        $('#aura-transfer-target').html(buildOptions(__('Seleccione cuenta destino (entrada)...', 'aura-suite')));
 
         if (currentSource) { $('#aura-transfer-source').val(currentSource); }
         if (currentTarget) { $('#aura-transfer-target').val(currentTarget); }
 
         // Filtros en la tabla
-        let filterSrcHtml = '<option value="">Todas las cuentas origen</option>';
-        let filterDstHtml = '<option value="">Todas las cuentas destino</option>';
+        let filterSrcHtml = '<option value="">' + escapeHtml(__('Todas las cuentas origen', 'aura-suite')) + '</option>';
+        let filterDstHtml = '<option value="">' + escapeHtml(__('Todas las cuentas destino', 'aura-suite')) + '</option>';
         accounts.forEach(function (acc) {
             filterSrcHtml += '<option value="' + acc.id + '">' + escapeHtml(acc.name) + '</option>';
             filterDstHtml += '<option value="' + acc.id + '">' + escapeHtml(acc.name) + '</option>';
@@ -5610,7 +5614,7 @@ jQuery(function ($) {
     function updateRateText(srcCurr, dstCurr, rate) {
         $('#aura-transfer-rate-text').html(
             '<span class="dashicons dashicons-randomize" style="color:#b45309;font-size:16px;vertical-align:text-bottom;"></span> ' +
-            '<span>Conversión multimoneda: <strong>1 ' + escapeHtml(srcCurr) + ' = ' + rate.toFixed(4) + ' ' + escapeHtml(dstCurr) + '</strong></span>'
+            '<span>' + sprintf(escapeHtml(__('Conversión multimoneda: %1$s', 'aura-suite')), '<strong>1 ' + escapeHtml(srcCurr) + ' = ' + rate.toFixed(4) + ' ' + escapeHtml(dstCurr) + '</strong>') + '</span>'
         );
     }
 
@@ -5652,7 +5656,7 @@ jQuery(function ($) {
                 });
                 $('#aura-transfer-rate-text').html(
                     '<span class="dashicons dashicons-yes-alt" style="color:#10b981;font-size:16px;vertical-align:text-bottom;"></span> ' +
-                    '<span>Misma moneda (<strong>' + escapeHtml(srcCurr) + '</strong>): montos sincronizados 1 a 1 automáticamente.</span>'
+                    '<span>' + sprintf(escapeHtml(__('Misma moneda (%1$s): montos sincronizados 1 a 1 automáticamente.', 'aura-suite')), '<strong>' + escapeHtml(srcCurr) + '</strong>') + '</span>'
                 );
                 $customRateBox.hide();
                 $('#aura-transfer-exchange-rate').val('1.0000');
@@ -5802,7 +5806,7 @@ jQuery(function ($) {
 
     function loadTransfersList() {
         const $tbody = $('#aura-transfers-tbody');
-        $tbody.html('<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>Cargando historial de traspasos...</td></tr>');
+        $tbody.html('<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>' + escapeHtml(__('Cargando historial de traspasos...', 'aura-suite')) + '</td></tr>');
 
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_transfers_list',
@@ -5814,9 +5818,9 @@ jQuery(function ($) {
                 applyTransferFilters();
                 return;
             }
-            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">Error al cargar traspasos.</td></tr>');
+            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">' + escapeHtml(__('Error al cargar traspasos.', 'aura-suite')) + '</td></tr>');
         }).fail(function () {
-            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">Error de comunicación con el servidor.</td></tr>');
+            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:20px;color:#dc2626;">' + escapeHtml(__('Error de comunicación con el servidor.', 'aura-suite')) + '</td></tr>');
         });
     }
 
@@ -5846,7 +5850,7 @@ jQuery(function ($) {
             $('#aura-kpi-transfer-last-folio').text(first.code || ('ID #' + first.id));
         } else {
             $('#aura-kpi-transfer-last-date').text('—');
-            $('#aura-kpi-transfer-last-folio').text('Sin movimientos');
+            $('#aura-kpi-transfer-last-folio').text(__('Sin movimientos', 'aura-suite'));
         }
     }
 
@@ -5883,22 +5887,22 @@ jQuery(function ($) {
         $tbody.empty();
 
         if (!transfers || transfers.length === 0) {
-            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);">No se encontraron traspasos con los filtros aplicados.</td></tr>');
+            $tbody.html('<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);">' + escapeHtml(__('No se encontraron traspasos con los filtros aplicados.', 'aura-suite')) + '</td></tr>');
             return;
         }
 
         transfers.forEach(function (t) {
             const isCompleted = t.status === 'completed';
             const statusBadgeHtml = isCompleted
-                ? '<span class="badge badge-emerald" style="display:inline-flex;align-items:center;gap:4px;"><span class="traffic-dot traffic-dot-success"></span> Completado</span>'
-                : '<span class="badge badge-rose" style="display:inline-flex;align-items:center;gap:4px;"><span class="traffic-dot traffic-dot-danger"></span> Anulado</span>';
+                ? '<span class="badge badge-emerald" style="display:inline-flex;align-items:center;gap:4px;"><span class="traffic-dot traffic-dot-success"></span> ' + escapeHtml(__('Completado', 'aura-suite')) + '</span>'
+                : '<span class="badge badge-rose" style="display:inline-flex;align-items:center;gap:4px;"><span class="traffic-dot traffic-dot-danger"></span> ' + escapeHtml(__('Anulado', 'aura-suite')) + '</span>';
 
             const actionsHtml = '<div style="display:inline-flex;gap:6px;justify-content:flex-end;">' +
-                '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-transfer-action-view" data-id="' + t.id + '" title="Ver Detalle y Comprobante">' +
+                '<button type="button" class="btn btn-sm btn-secondary btn-lift aura-transfer-action-view" data-id="' + t.id + '" title="' + escAttr(__('Ver Detalle y Comprobante', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-visibility"></span>' +
                 '</button>' +
                 (isCompleted ? (
-                    '<button type="button" class="btn btn-sm btn-danger btn-lift aura-transfer-action-cancel" data-id="' + t.id + '" title="Anular Traspaso">' +
+                    '<button type="button" class="btn btn-sm btn-danger btn-lift aura-transfer-action-cancel" data-id="' + t.id + '" title="' + escAttr(__('Anular Traspaso', 'aura-suite')) + '">' +
                         '<span class="dashicons dashicons-undo"></span>' +
                     '</button>'
                 ) : '') +
@@ -5907,7 +5911,7 @@ jQuery(function ($) {
             const srcAmtFormatted = String(t.source_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.amount || 0);
             const dstAmtFormatted = String(t.destination_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.destination_amount || t.amount || 0);
 
-            const userName = t.user_name || t.creator_name || 'Sistema';
+            const userName = t.user_name || t.creator_name || __('Sistema', 'aura-suite');
             const userAvatarHtml = t.user_avatar
                 ? '<span style="display:inline-flex;align-items:center;gap:6px;" title="' + escapeHtml(userName) + '">' +
                     '<img src="' + escapeHtml(t.user_avatar) + '" alt="' + escapeHtml(userName) + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover;border:1px solid #cbd5e1;box-shadow:0 1px 2px rgba(0,0,0,0.06);">' +
@@ -5918,7 +5922,7 @@ jQuery(function ($) {
                     '<span style="font-weight:600;color:var(--aura-text-heading,#0f172a);font-size:12.5px;">' + escapeHtml(userName) + '</span>' +
                   '</span>';
 
-            const destName = t.dest_account_name || t.destination_account_name || ('Cuenta #' + t.destination_account_id);
+            const destName = t.dest_account_name || t.destination_account_name || sprintf(__('Cuenta #%d', 'aura-suite'), t.destination_account_id);
 
             const row = '<tr class="table-row-hover-lift">' +
                 '<td>' +
@@ -5926,7 +5930,7 @@ jQuery(function ($) {
                     '<small style="color:var(--aura-text-muted,#64748b);display:block;">' + escapeHtml(t.transfer_date || '') + '</small>' +
                 '</td>' +
                 '<td>' +
-                    '<strong style="color:#ef4444;"><span class="dashicons dashicons-arrow-up-alt" style="font-size:14px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(t.source_account_name || 'Cuenta #' + t.source_account_id) + '</strong>' +
+                    '<strong style="color:#ef4444;"><span class="dashicons dashicons-arrow-up-alt" style="font-size:14px;vertical-align:middle;margin-right:2px;"></span>' + escapeHtml(t.source_account_name || sprintf(__('Cuenta #%d', 'aura-suite'), t.source_account_id)) + '</strong>' +
                 '</td>' +
                 '<td><strong style="color:#ef4444;font-size:13px;">' + escapeHtml(srcAmtFormatted) + '</strong></td>' +
                 '<td>' +
@@ -5936,7 +5940,7 @@ jQuery(function ($) {
                 '<td>' + userAvatarHtml + '</td>' +
                 '<td>' +
                     (t.reference ? ('<code style="font-size:11px;background:rgba(0,0,0,0.04);padding:1px 4px;border-radius:4px;display:inline-block;margin-bottom:2px;">' + escapeHtml(t.reference) + '</code><br>') : '') +
-                    '<small style="color:var(--aura-text-muted,#64748b);">' + escapeHtml(t.notes || 'Sin notas') + '</small>' +
+                    '<small style="color:var(--aura-text-muted,#64748b);">' + escapeHtml(t.notes || __('Sin notas', 'aura-suite')) + '</small>' +
                 '</td>' +
                 '<td>' + statusBadgeHtml + '</td>' +
                 '<td style="text-align:right;">' + actionsHtml + '</td>' +
@@ -5961,19 +5965,19 @@ jQuery(function ($) {
         const amount = parseFloat($('#aura-transfer-amount').val()) || 0;
 
         if (!sourceId || !targetId) {
-            showFeedback('Debes seleccionar cuenta origen y cuenta destino.', false);
+            showFeedback(__('Debes seleccionar cuenta origen y cuenta destino.', 'aura-suite'), false);
             return;
         }
         if (String(sourceId) === String(targetId)) {
-            showFeedback('La cuenta origen y destino deben ser distintas.', false);
+            showFeedback(__('La cuenta origen y destino deben ser distintas.', 'aura-suite'), false);
             return;
         }
         if (amount <= 0) {
-            showFeedback('El monto a transferir debe ser mayor a 0.', false);
+            showFeedback(__('El monto a transferir debe ser mayor a 0.', 'aura-suite'), false);
             return;
         }
 
-        $submitBtn.prop('disabled', true).text('Ejecutando...');
+        $submitBtn.prop('disabled', true).text(__('Ejecutando...', 'aura-suite'));
 
         const formData = {
             action: 'aura_finance_transfers_save',
@@ -5992,19 +5996,19 @@ jQuery(function ($) {
         $.post(auraFinancialAccounts.ajaxUrl, formData)
             .done(function (res) {
                 if (res && res.success) {
-                    showFeedback((res.data && res.data.message) || 'Traspaso ejecutado correctamente.', true);
+                    showFeedback((res.data && res.data.message) || __('Traspaso ejecutado correctamente.', 'aura-suite'), true);
                     window.AuraUI.closeModal('aura-finance-transfer-modal');
                     loadAccounts();
                     loadTransfersList();
                     return;
                 }
-                showFeedback((res && res.data && res.data.message) || 'Error al ejecutar el traspaso.', false);
+                showFeedback((res && res.data && res.data.message) || __('Error al ejecutar el traspaso.', 'aura-suite'), false);
             })
             .fail(function () {
-                showFeedback('Error de comunicación con el servidor.', false);
+                showFeedback(__('Error de comunicación con el servidor.', 'aura-suite'), false);
             })
             .always(function () {
-                $submitBtn.prop('disabled', false).html('<span class="dashicons dashicons-saved" style="margin-right:4px;vertical-align:text-bottom;"></span>Ejecutar Traspaso');
+                $submitBtn.prop('disabled', false).html('<span class="dashicons dashicons-saved" style="margin-right:4px;vertical-align:text-bottom;"></span>' + escapeHtml(__('Ejecutar Traspaso', 'aura-suite')));
             });
     });
 
@@ -6015,8 +6019,8 @@ jQuery(function ($) {
         const $code = $('#aura-transfer-detail-code');
         const $cancelBtn = $('#aura-transfer-detail-cancel-btn');
 
-        $code.text('Cargando...');
-        $body.html('<div style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>Consultando trazabilidad...</div>');
+        $code.text(__('Cargando...', 'aura-suite'));
+        $body.html('<div style="text-align:center;padding:24px;color:var(--aura-text-muted,#888);"><span class="dashicons dashicons-update aura-spin" style="vertical-align:middle;margin-right:6px;"></span>' + escapeHtml(__('Consultando trazabilidad...', 'aura-suite')) + '</div>');
         $cancelBtn.hide();
 
         window.AuraUI.openModal('aura-finance-transfer-detail-modal');
@@ -6027,7 +6031,7 @@ jQuery(function ($) {
             id: id
         }).done(function (res) {
             if (!res || !res.success || !res.data || !res.data.transfer) {
-                $body.html('<div style="text-align:center;padding:20px;color:#dc2626;">No se encontró la información del traspaso.</div>');
+                $body.html('<div style="text-align:center;padding:20px;color:#dc2626;">' + escapeHtml(__('No se encontró la información del traspaso.', 'aura-suite')) + '</div>');
                 return;
             }
 
@@ -6041,9 +6045,9 @@ jQuery(function ($) {
 
             const srcAmt = String(t.source_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.amount || 0);
             const dstAmt = String(t.destination_currency || 'COP').toUpperCase() + ' $' + formatNumber(t.destination_amount || t.amount || 0);
-            const destName = t.dest_account_name || t.destination_account_name || ('Cuenta #' + t.destination_account_id);
+            const destName = t.dest_account_name || t.destination_account_name || sprintf(__('Cuenta #%d', 'aura-suite'), t.destination_account_id);
 
-            const detailUserName = t.user_name || t.creator_name || 'Sistema';
+            const detailUserName = t.user_name || t.creator_name || __('Sistema', 'aura-suite');
             const detailUserAvatarHtml = t.user_avatar
                 ? '<div style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;"><img src="' + escapeHtml(t.user_avatar) + '" alt="' + escapeHtml(detailUserName) + '" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid #cbd5e1;"> <strong>' + escapeHtml(detailUserName) + '</strong></div>'
                 : '<strong>' + escapeHtml(detailUserName) + '</strong>';
@@ -6052,7 +6056,7 @@ jQuery(function ($) {
                 '<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid #e2e8f0;">' +
                     '<div>' +
                         '<span class="badge ' + (isCompleted ? 'badge-emerald' : 'badge-rose') + '" style="font-size:12px;font-weight:700;">' +
-                            (isCompleted ? '● Traspaso Completado' : '✕ Traspaso Anulado') +
+                            escapeHtml(isCompleted ? __('● Traspaso Completado', 'aura-suite') : __('✕ Traspaso Anulado', 'aura-suite')) +
                         '</span>' +
                     '</div>' +
                     '<div style="font-size:13px;color:#64748b;">📅 ' + escapeHtml(t.transfer_date) + '</div>' +
@@ -6061,47 +6065,47 @@ jQuery(function ($) {
 
             html += '<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:18px;background:rgba(0,0,0,0.02);padding:14px;border-radius:10px;border:1px solid #e2e8f0;">' +
                 '<div style="text-align:center;">' +
-                    '<div style="font-size:11px;color:#ef4444;font-weight:700;text-transform:uppercase;">Origen (Salida)</div>' +
+                    '<div style="font-size:11px;color:#ef4444;font-weight:700;text-transform:uppercase;">' + escapeHtml(__('Origen (Salida)', 'aura-suite')) + '</div>' +
                     '<div style="font-weight:700;color:#0f172a;font-size:13.5px;margin:4px 0;">' + escapeHtml(t.source_account_name) + '</div>' +
                     '<div style="color:#ef4444;font-weight:800;font-size:15px;">-' + escapeHtml(srcAmt) + '</div>' +
-                    '<div style="font-size:11px;color:#64748b;margin-top:4px;">Saldo ant: $' + formatNumber(t.source_balance_before) + '<br>Nuevo: $' + formatNumber(t.source_balance_after) + '</div>' +
+                    '<div style="font-size:11px;color:#64748b;margin-top:4px;">' + escapeHtml(__('Saldo ant:', 'aura-suite')) + ' $' + formatNumber(t.source_balance_before) + '<br>' + escapeHtml(__('Nuevo:', 'aura-suite')) + ' $' + formatNumber(t.source_balance_after) + '</div>' +
                 '</div>' +
                 '<div style="text-align:center;color:#0d9488;font-size:24px;">➔</div>' +
                 '<div style="text-align:center;">' +
-                    '<div style="font-size:11px;color:#10b981;font-weight:700;text-transform:uppercase;">Destino (Entrada)</div>' +
+                    '<div style="font-size:11px;color:#10b981;font-weight:700;text-transform:uppercase;">' + escapeHtml(__('Destino (Entrada)', 'aura-suite')) + '</div>' +
                     '<div style="font-weight:700;color:#0f172a;font-size:13.5px;margin:4px 0;">' + escapeHtml(destName) + '</div>' +
                     '<div style="color:#10b981;font-weight:800;font-size:15px;">+' + escapeHtml(dstAmt) + '</div>' +
-                    '<div style="font-size:11px;color:#64748b;margin-top:4px;">Saldo ant: $' + formatNumber(t.destination_balance_before) + '<br>Nuevo: $' + formatNumber(t.destination_balance_after) + '</div>' +
+                    '<div style="font-size:11px;color:#64748b;margin-top:4px;">' + escapeHtml(__('Saldo ant:', 'aura-suite')) + ' $' + formatNumber(t.destination_balance_before) + '<br>' + escapeHtml(__('Nuevo:', 'aura-suite')) + ' $' + formatNumber(t.destination_balance_after) + '</div>' +
                 '</div>' +
             '</div>';
 
             if (parseFloat(t.exchange_rate) !== 1.0) {
                 html += '<div style="font-size:12px;color:#b45309;background:rgba(245,158,11,0.08);padding:8px 12px;border-radius:6px;margin-bottom:14px;">' +
-                    '💱 <strong>Conversión aplicada:</strong> Tasa ' + parseFloat(t.exchange_rate).toFixed(4) +
+                    '💱 <strong>' + escapeHtml(__('Conversión aplicada:', 'aura-suite')) + '</strong> ' + escapeHtml(sprintf(__('Tasa %s', 'aura-suite'), parseFloat(t.exchange_rate).toFixed(4))) +
                 '</div>';
             }
 
             html += '<div style="font-size:12.5px;line-height:1.6;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">' +
-                '<div><strong>Registrado por:</strong> ' + detailUserAvatarHtml + '</div>' +
-                '<div><strong>Referencia bancaria:</strong> ' + escapeHtml(t.reference || t.reference_number || 'Ninguna') + '</div>' +
+                '<div><strong>' + escapeHtml(__('Registrado por:', 'aura-suite')) + '</strong> ' + detailUserAvatarHtml + '</div>' +
+                '<div><strong>' + escapeHtml(__('Referencia bancaria:', 'aura-suite')) + '</strong> ' + escapeHtml(t.reference || t.reference_number || __('Ninguna', 'aura-suite')) + '</div>' +
             '</div>';
 
             if (t.notes) {
                 html += '<div style="font-size:12.5px;line-height:1.5;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:12px;">' +
-                    '<strong>Notas / Concepto:</strong> ' + escapeHtml(t.notes) +
+                    '<strong>' + escapeHtml(__('Notas / Concepto:', 'aura-suite')) + '</strong> ' + escapeHtml(t.notes) +
                 '</div>';
             }
 
             if (!isCompleted && t.cancel_reason) {
                 html += '<div style="font-size:12.5px;line-height:1.5;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#991b1b;padding:10px 12px;border-radius:6px;">' +
-                    '<strong>Motivo de anulación:</strong> ' + escapeHtml(t.cancel_reason) + '<br>' +
-                    '<small>Anulado el: ' + escapeHtml(t.cancelled_at) + '</small>' +
+                    '<strong>' + escapeHtml(__('Motivo de anulación:', 'aura-suite')) + '</strong> ' + escapeHtml(t.cancel_reason) + '<br>' +
+                    '<small>' + escapeHtml(sprintf(__('Anulado el: %s', 'aura-suite'), t.cancelled_at)) + '</small>' +
                 '</div>';
             }
 
             $body.html(html);
         }).fail(function () {
-            $body.html('<div style="text-align:center;padding:20px;color:#dc2626;">Error al cargar la información del traspaso.</div>');
+            $body.html('<div style="text-align:center;padding:20px;color:#dc2626;">' + escapeHtml(__('Error al cargar la información del traspaso.', 'aura-suite')) + '</div>');
         });
     });
 
@@ -6114,11 +6118,11 @@ jQuery(function ($) {
         $('#aura-transfer-cancel-id').val(id);
         $('#aura-transfer-cancel-reason').val('');
 
-        let summaryText = 'Se anulará el traspaso <strong>#' + id + '</strong>. Los fondos volverán a su estado anterior.';
+        let summaryText = sprintf(escapeHtml(__('Se anulará el traspaso %s. Los fondos volverán a su estado anterior.', 'aura-suite')), '<strong>#' + id + '</strong>');
         if (t) {
-            const destName = t.dest_account_name || t.destination_account_name || ('Cuenta #' + t.destination_account_id);
-            summaryText = 'Se anulará el folio <strong>' + escapeHtml(t.code || ('TRF-#' + t.id)) + '</strong> por valor de <strong>$' + formatNumber(t.amount) + '</strong>.<br>' +
-                'Se reembolsarán a <strong>' + escapeHtml(t.source_account_name) + '</strong> y se descontarán de <strong>' + escapeHtml(destName) + '</strong>.';
+            const destName = t.dest_account_name || t.destination_account_name || sprintf(__('Cuenta #%d', 'aura-suite'), t.destination_account_id);
+            summaryText = sprintf(escapeHtml(__('Se anulará el folio %1$s por valor de %2$s.', 'aura-suite')), '<strong>' + escapeHtml(t.code || ('TRF-#' + t.id)) + '</strong>', '<strong>$' + formatNumber(t.amount) + '</strong>') + '<br>' +
+                sprintf(escapeHtml(__('Se reembolsarán a %1$s y se descontarán de %2$s.', 'aura-suite')), '<strong>' + escapeHtml(t.source_account_name) + '</strong>', '<strong>' + escapeHtml(destName) + '</strong>');
         }
         $('#aura-transfer-cancel-summary').html(summaryText);
 
@@ -6134,11 +6138,11 @@ jQuery(function ($) {
         const reason = $('#aura-transfer-cancel-reason').val();
 
         if (!reason.trim()) {
-            showFeedback('Indica el motivo de la anulación.', false);
+            showFeedback(__('Indica el motivo de la anulación.', 'aura-suite'), false);
             return;
         }
 
-        $submitBtn.prop('disabled', true).text('Revirtiendo...');
+        $submitBtn.prop('disabled', true).text(__('Revirtiendo...', 'aura-suite'));
 
         $.post(auraFinancialAccounts.ajaxUrl, {
             action: 'aura_finance_transfers_cancel',
@@ -6147,17 +6151,17 @@ jQuery(function ($) {
             cancel_reason: reason
         }).done(function (res) {
             if (res && res.success) {
-                showFeedback((res.data && res.data.message) || 'Traspaso anulado y saldos revertidos con éxito.', true);
+                showFeedback((res.data && res.data.message) || __('Traspaso anulado y saldos revertidos con éxito.', 'aura-suite'), true);
                 window.AuraUI.closeModal('aura-finance-transfer-cancel-modal');
                 loadAccounts();
                 loadTransfersList();
                 return;
             }
-            showFeedback((res && res.data && res.data.message) || 'Error al anular el traspaso.', false);
+            showFeedback((res && res.data && res.data.message) || __('Error al anular el traspaso.', 'aura-suite'), false);
         }).fail(function () {
             showFeedback('Error de comunicación con el servidor.', false);
         }).always(function () {
-            $submitBtn.prop('disabled', false).text('Confirmar y Revertir Saldos');
+            $submitBtn.prop('disabled', false).text(__('Confirmar y Revertir Saldos', 'aura-suite'));
         });
     });
 
@@ -6165,11 +6169,11 @@ jQuery(function ($) {
     $('#aura-transfers-export-btn').on('click', function () {
         const list = window.auraTransfersCache || [];
         if (!list.length) {
-            alert('No hay traspasos para exportar.');
+            alert(__('No hay traspasos para exportar.', 'aura-suite'));
             return;
         }
 
-        let csv = 'Folio,Fecha,Cuenta Origen,Monto Salida,Moneda Origen,Cuenta Destino,Monto Entrada,Moneda Destino,Tasa,Usuario,Referencia,Notas,Estado\n';
+        let csv = [__('Folio', 'aura-suite'), __('Fecha', 'aura-suite'), __('Cuenta Origen', 'aura-suite'), __('Monto Salida', 'aura-suite'), __('Moneda Origen', 'aura-suite'), __('Cuenta Destino', 'aura-suite'), __('Monto Entrada', 'aura-suite'), __('Moneda Destino', 'aura-suite'), __('Tasa', 'aura-suite'), __('Usuario', 'aura-suite'), __('Referencia', 'aura-suite'), __('Notas', 'aura-suite'), __('Estado', 'aura-suite')].join(',') + '\n';
         list.forEach(function (t) {
             csv += [
                 '"' + (t.code || '') + '"',

@@ -16,6 +16,10 @@
 ( function ( $ ) {
     'use strict';
 
+    function __( s, domain ) {
+        return ( window.wp && wp.i18n && typeof wp.i18n.__ === 'function' ) ? wp.i18n.__( s, domain || 'aura-suite' ) : s;
+    }
+
     var CFG   = auraStudentsFrontend;
     var NONCE = CFG.nonce;
     var AJAX  = CFG.ajaxUrl;
@@ -42,22 +46,22 @@
 
     function statusBadge( status ) {
         var map = {
-            unpaid : '<span class="aura-status-badge status-gray">⬜ '   + ( STR.pay_unpaid  || 'Sin pagar'  ) + '</span>',
-            partial: '<span class="aura-status-badge status-orange">🔶 ' + ( STR.pay_partial || 'Parcial'    ) + '</span>',
-            paid   : '<span class="aura-status-badge status-green">✅ '  + ( STR.pay_paid    || 'Pagado'     ) + '</span>',
-            overdue: '<span class="aura-status-badge status-red">🔴 '    + ( STR.pay_overdue || 'Vencido'    ) + '</span>',
-            pending: '<span class="aura-status-badge status-blue">⏳ '   + ( STR.pay_pending || 'Pendiente'  ) + '</span>',
+            unpaid : '<span class="aura-status-badge status-gray">⬜ '   + ( STR.pay_unpaid  || __( 'Sin pagar', 'aura-suite' )  ) + '</span>',
+            partial: '<span class="aura-status-badge status-orange">🔶 ' + ( STR.pay_partial || __( 'Parcial', 'aura-suite' )    ) + '</span>',
+            paid   : '<span class="aura-status-badge status-green">✅ '  + ( STR.pay_paid    || __( 'Pagado', 'aura-suite' )     ) + '</span>',
+            overdue: '<span class="aura-status-badge status-red">🔴 '    + ( STR.pay_overdue || __( 'Vencido', 'aura-suite' )    ) + '</span>',
+            pending: '<span class="aura-status-badge status-blue">⏳ '   + ( STR.pay_pending || __( 'Pendiente', 'aura-suite' )  ) + '</span>',
         };
         return map[ status ] || escHtml( status );
     }
 
     function enrollmentStatusLabel( s ) {
         var map = {
-            active   : '<span class="aura-status-badge status-green">'  + ( STR.enrl_active    || 'Activo'     ) + '</span>',
-            completed: '<span class="aura-status-badge status-gold">'   + ( STR.enrl_completed || 'Completado' ) + '</span>',
-            pending  : '<span class="aura-status-badge status-blue">'   + ( STR.enrl_pending   || 'Pendiente'  ) + '</span>',
-            withdrawn: '<span class="aura-status-badge status-orange">' + ( STR.enrl_withdrawn || 'Retirado'   ) + '</span>',
-            suspended: '<span class="aura-status-badge status-red">'    + ( STR.enrl_suspended || 'Suspendido' ) + '</span>',
+            active   : '<span class="aura-status-badge status-green">'  + ( STR.enrl_active    || __( 'Activo', 'aura-suite' )     ) + '</span>',
+            completed: '<span class="aura-status-badge status-gold">'   + ( STR.enrl_completed || __( 'Completado', 'aura-suite' ) ) + '</span>',
+            pending  : '<span class="aura-status-badge status-blue">'   + ( STR.enrl_pending   || __( 'Pendiente', 'aura-suite' )  ) + '</span>',
+            withdrawn: '<span class="aura-status-badge status-orange">' + ( STR.enrl_withdrawn || __( 'Retirado', 'aura-suite' )   ) + '</span>',
+            suspended: '<span class="aura-status-badge status-red">'    + ( STR.enrl_suspended || __( 'Suspendido', 'aura-suite' ) ) + '</span>',
         };
         return map[ s ] || escHtml( s );
     }
@@ -70,7 +74,7 @@
         return '<div class="aura-progress-wrap">'
              + '<div class="aura-progress-bar ' + cls + '" style="width:' + pct + '%"></div>'
              + '</div>'
-             + '<small>' + pct + '% ' + ( STR.covered || 'cubierto' ) + '</small>';
+             + '<small>' + pct + '% ' + ( STR.covered || __( 'cubierto', 'aura-suite' ) ) + '</small>';
     }
 
     // ================================================================
@@ -94,7 +98,7 @@
             var $btn    = $( '#aura-login-btn' );
             var $notice = $( '#aura-login-notice' );
 
-            $btn.prop( 'disabled', true ).text( STR.checking || 'Verificando…' );
+            $btn.prop( 'disabled', true ).text( STR.checking || __( 'Verificando…', 'aura-suite' ) );
             $notice.hide().removeClass( 'aura-notice-error aura-notice-ok' );
 
             $.post( AJAX, {
@@ -109,13 +113,13 @@
                     $notice.addClass( 'aura-notice-ok' ).text( STR.login_ok ).show();
                     setTimeout( function () { window.location.href = res.data.redirect; }, 800 );
                 } else {
-                    $btn.prop( 'disabled', false ).text( STR.login_btn || 'Ingresar al portal' );
+                    $btn.prop( 'disabled', false ).text( STR.login_btn || __( 'Ingresar al portal', 'aura-suite' ) );
                     $notice.addClass( 'aura-notice-error' )
                            .text( ( res.data && res.data.message ) || STR.error )
                            .show();
                 }
             } ).fail( function () {
-                $btn.prop( 'disabled', false ).text( STR.login_btn || 'Ingresar al portal' );
+                $btn.prop( 'disabled', false ).text( STR.login_btn || __( 'Ingresar al portal', 'aura-suite' ) );
                 $notice.addClass( 'aura-notice-error' ).text( STR.error ).show();
             } );
         } );
@@ -170,28 +174,28 @@
                         var schInfo = '';
                         if ( parseInt( c.scholarship_pct, 10 ) > 0 ) {
                             var schType = c.scholarship_type === 'internal'
-                                ? ( STR.internal || 'interna' )
-                                : ( STR.external || 'externa' );
+                                ? ( STR.internal || __( 'interna', 'aura-suite' ) )
+                                : ( STR.external || __( 'externa', 'aura-suite' ) );
                             var sponsorText = c.scholarship_sponsor ? ' · ' + escHtml( c.scholarship_sponsor ) : '';
                             var discountVal = baseCost - netCost;
                             var discText = discountVal > 0.01 ? ' (-' + fmtMoney( discountVal ) + ')' : '';
                             schInfo = '<div style="margin-bottom:6px;"><span class="aura-badge-pct" style="display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:3px 8px;border-radius:6px;background:rgba(99,102,241,0.12);color:#4338ca;font-weight:600;">🎓 ' + c.scholarship_pct + '% '
-                                    + ( STR.scholarship || 'beca' ) + discText + ' (' + schType + sponsorText + ')</span></div>';
+                                    + ( STR.scholarship || __( 'beca', 'aura-suite' ) ) + discText + ' (' + schType + sponsorText + ')</span></div>';
                         }
 
                         var balHtml = balance > 0.009
-                            ? '<span class="text-red" style="font-weight:700;">' + ( STR.balance_lbl || 'Saldo pendiente:' ) + ' ' + fmtMoney( balance ) + '</span>'
-                            : '<span class="text-green" style="font-weight:700;color:#059669;">✅ ' + ( STR.up_to_date || 'Al día (Paz y Salvo)' ) + '</span>';
+                            ? '<span class="text-red" style="font-weight:700;">' + ( STR.balance_lbl || __( 'Saldo pendiente:', 'aura-suite' ) ) + ' ' + fmtMoney( balance ) + '</span>'
+                            : '<span class="text-green" style="font-weight:700;color:#059669;">✅ ' + ( STR.up_to_date || __( 'Al día (Paz y Salvo)', 'aura-suite' ) ) + '</span>';
 
                         html += '<div class="aura-course-payment" style="background:var(--aura-surface-alt, #f8fafc);border:1px solid var(--aura-border,#e2e8f0);border-radius:8px;padding:12px;margin-top:10px;">'
                              +  schInfo
                              +  '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:4px;color:var(--aura-text-secondary,#64748b);">'
-                             +  '<span>Costo del programa: <strong>' + fmtMoney( baseCost ) + '</strong></span>'
-                             +  '<span>Total a pagar: <strong class="aura-cost-net">' + fmtMoney( netCost ) + '</strong></span>'
+                             +  '<span>' + escHtml( __( 'Costo del programa:', 'aura-suite' ) ) + ' <strong>' + fmtMoney( baseCost ) + '</strong></span>'
+                             +  '<span>' + escHtml( __( 'Total a pagar:', 'aura-suite' ) ) + ' <strong class="aura-cost-net">' + fmtMoney( netCost ) + '</strong></span>'
                              +  '</div>'
                              +  progressBar( totPaid, netCost )
                              +  '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-top:6px;">'
-                             +  '<span style="color:var(--aura-text-secondary,#64748b);">Abonado: <strong>' + fmtMoney( totPaid ) + '</strong></span>'
+                             +  '<span style="color:var(--aura-text-secondary,#64748b);">' + escHtml( __( 'Abonado:', 'aura-suite' ) ) + ' <strong>' + fmtMoney( totPaid ) + '</strong></span>'
                              +  '<div class="aura-balance">' + balHtml + '</div>'
                              +  '</div>'
                              +  '</div>';
@@ -207,7 +211,7 @@
 
         } ).fail( function () {
             $( '#aura-courses-loading' ).hide();
-            $( '#aura-courses-empty' ).text( STR.err_courses || 'Error al cargar los cursos.' ).show();
+            $( '#aura-courses-empty' ).text( STR.err_courses || __( 'Error al cargar los cursos.', 'aura-suite' ) ).show();
         } );
     }
 
@@ -265,18 +269,18 @@
             }
 
             var methodLabels = {
-                cash    : STR.mth_cash     || 'Efectivo',
-                transfer: STR.mth_transfer || 'Transferencia',
-                card    : STR.mth_card     || 'Tarjeta',
-                check   : STR.mth_check    || 'Cheque',
-                other   : STR.mth_other    || 'Otro',
+                cash    : STR.mth_cash     || __( 'Efectivo', 'aura-suite' ),
+                transfer: STR.mth_transfer || __( 'Transferencia', 'aura-suite' ),
+                card    : STR.mth_card     || __( 'Tarjeta', 'aura-suite' ),
+                check   : STR.mth_check    || __( 'Cheque', 'aura-suite' ),
+                other   : STR.mth_other    || __( 'Otro', 'aura-suite' ),
             };
 
             var rows = '';
             d.payments.forEach( function ( p ) {
                 var receipt = p.receipt_url
                     ? '<a href="' + escHtml( p.receipt_url ) + '" target="_blank" class="aura-link">'
-                      + ( STR.receipt_view || 'Ver' ) + ' 📄</a>'
+                      + ( STR.receipt_view || __( 'Ver', 'aura-suite' ) ) + ' 📄</a>'
                     : '—';
 
                 rows += '<tr>'
@@ -296,7 +300,7 @@
 
         } ).fail( function () {
             $( '#aura-payments-loading' ).hide();
-            $( '#aura-payments-empty' ).text( STR.err_payments || 'Error al cargar los pagos.' ).show();
+            $( '#aura-payments-empty' ).text( STR.err_payments || __( 'Error al cargar los pagos.', 'aura-suite' ) ).show();
         } );
     }
 
@@ -327,17 +331,17 @@
                      +  '<div class="aura-cert-info">'
                      +  '<strong>' + escHtml( c.course_name ) + '</strong><br/>'
                      +  '<small>' + escHtml( c.area_name || '' ) + '</small><br/>'
-                     +  '<small>' + ( STR.cert_issued || 'Emitido:' ) + ' ' + escHtml( c.issued_date ) + '</small>'
+                     +  '<small>' + ( STR.cert_issued || __( 'Emitido:', 'aura-suite' ) ) + ' ' + escHtml( c.issued_date ) + '</small>'
                      +  '</div>'
                      +  '<div class="aura-cert-actions">';
 
                 if ( c.certificate_url ) {
                     html += '<a href="' + escHtml( c.certificate_url ) + '" target="_blank" class="aura-btn aura-btn-secondary aura-btn-sm">'
-                         +  '📄 ' + ( STR.cert_pdf || 'Descargar PDF' ) + '</a>';
+                         +  '📄 ' + ( STR.cert_pdf || __( 'Descargar PDF', 'aura-suite' ) ) + '</a>';
                 }
                 if ( c.qr_url ) {
                     html += '<a href="' + escHtml( c.qr_url ) + '" target="_blank" class="aura-btn aura-btn-ghost aura-btn-sm">'
-                         +  '🔲 ' + ( STR.cert_qr || 'Ver QR' ) + '</a>';
+                         +  '🔲 ' + ( STR.cert_qr || __( 'Ver QR', 'aura-suite' ) ) + '</a>';
                 }
 
                 html += '</div></div>';
@@ -348,7 +352,7 @@
 
         } ).fail( function () {
             $( '#aura-certs-loading' ).hide();
-            $( '#aura-certs-empty' ).text( STR.err_certs || 'Error al cargar los certificados.' ).show();
+            $( '#aura-certs-empty' ).text( STR.err_certs || __( 'Error al cargar los certificados.', 'aura-suite' ) ).show();
         } );
     }
 
@@ -368,7 +372,7 @@
             $( '#aura-forms-loading' ).hide();
 
             if ( ! res || ! res.success ) {
-                var msg = ( res && res.data && res.data.message ) || ( STR.error || 'Error al cargar formularios.' );
+                var msg = ( res && res.data && res.data.message ) || ( STR.error || __( 'Error al cargar formularios.', 'aura-suite' ) );
                 $( '#aura-forms-error' ).text( msg ).show();
                 $( '#aura-forms-container' ).data( 'loaded', true );
                 return;
@@ -378,7 +382,7 @@
 
         } ).fail( function () {
             $( '#aura-forms-loading' ).hide();
-            $( '#aura-forms-error' ).text( STR.error || 'Error al cargar formularios.' ).show();
+            $( '#aura-forms-error' ).text( STR.error || __( 'Error al cargar formularios.', 'aura-suite' ) ).show();
         } );
     }
 
@@ -424,7 +428,7 @@
             var $btn    = $( '#aura-enroll-btn' );
             var $notice = $( '#aura-enroll-notice' );
 
-            $btn.prop( 'disabled', true ).text( STR.submitting || 'Enviando…' );
+            $btn.prop( 'disabled', true ).text( STR.submitting || __( 'Enviando…', 'aura-suite' ) );
             $notice.hide().removeClass( 'aura-notice-ok aura-notice-error' );
 
             var formData = $( this ).serializeArray();
@@ -432,7 +436,7 @@
             formData.push( { name: 'nonce',  value: NONCE } );
 
             $.post( AJAX, formData, function ( res ) {
-                $btn.prop( 'disabled', false ).text( STR.submit_btn || 'Enviar solicitud' );
+                $btn.prop( 'disabled', false ).text( STR.submit_btn || __( 'Enviar solicitud', 'aura-suite' ) );
 
                 if ( res.success ) {
                     $( '#aura-enrollment-form' ).fadeOut( 300, function () {
@@ -445,7 +449,7 @@
                     $( 'html, body' ).animate( { scrollTop: $notice.offset().top - 80 }, 400 );
                 }
             } ).fail( function () {
-                $btn.prop( 'disabled', false ).text( STR.submit_btn || 'Enviar solicitud' );
+                $btn.prop( 'disabled', false ).text( STR.submit_btn || __( 'Enviar solicitud', 'aura-suite' ) );
                 $notice.addClass( 'aura-notice-error' ).text( STR.error ).show();
             } );
         } );
@@ -458,31 +462,31 @@
     function initPazSalvoCheck() {
         $( '#aura-ps-btn' ).on( 'click', function () {
             var email = $( '#aura-ps-email' ).val().trim();
-            if ( ! email ) { alert( STR.ps_enter_email || 'Ingresa tu correo.' ); return; }
+            if ( ! email ) { alert( STR.ps_enter_email || __( 'Ingresa tu correo.', 'aura-suite' ) ); return; }
 
-            $( this ).prop( 'disabled', true ).text( STR.ps_checking || 'Consultando…' );
+            $( this ).prop( 'disabled', true ).text( STR.ps_checking || __( 'Consultando…', 'aura-suite' ) );
 
             $.post( AJAX, {
                 action: 'aura_student_paz_salvo_public',
                 nonce : NONCE,
                 email : email,
             }, function ( res ) {
-                $( '#aura-ps-btn' ).prop( 'disabled', false ).text( STR.ps_check_btn || 'Consultar' );
+                $( '#aura-ps-btn' ).prop( 'disabled', false ).text( STR.ps_check_btn || __( 'Consultar', 'aura-suite' ) );
                 var html;
                 if ( res.success ) {
                     var d    = res.data;
                     var icon = d.is_clear ? '✅' : '❌';
                     var cls  = d.is_clear ? 'aura-ps-ok' : 'aura-ps-debt';
                     var msg  = d.is_clear
-                        ? ( STR.ps_ok   || 'Estás al día con tus pagos.' )
-                        : ( STR.ps_debt || 'Tienes pagos pendientes.'    );
+                        ? ( STR.ps_ok   || __( 'Estás al día con tus pagos.', 'aura-suite' ) )
+                        : ( STR.ps_debt || __( 'Tienes pagos pendientes.', 'aura-suite' )    );
                     html = '<div class="aura-ps-card ' + cls + '">' + icon + ' ' + msg + '</div>';
                 } else {
-                    html = '<div class="aura-ps-card aura-ps-not-found">' + ( STR.ps_not_found || 'Correo no encontrado.' ) + '</div>';
+                    html = '<div class="aura-ps-card aura-ps-not-found">' + ( STR.ps_not_found || __( 'Correo no encontrado.', 'aura-suite' ) ) + '</div>';
                 }
                 $( '#aura-ps-result' ).html( html ).show();
             } ).fail( function () {
-                $( '#aura-ps-btn' ).prop( 'disabled', false ).text( STR.ps_check_btn || 'Consultar' );
+                $( '#aura-ps-btn' ).prop( 'disabled', false ).text( STR.ps_check_btn || __( 'Consultar', 'aura-suite' ) );
             } );
         } );
     }

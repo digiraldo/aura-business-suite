@@ -13,6 +13,18 @@
        CONFIG
        ───────────────────────────────────────── */
 
+    var __ = (window.wp && window.wp.i18n && window.wp.i18n.__) ? window.wp.i18n.__ : function (s) { return s; };
+    var sprintf = (window.wp && window.wp.i18n && window.wp.i18n.sprintf) ? window.wp.i18n.sprintf : function () {
+        var args = Array.prototype.slice.call(arguments);
+        var fmt = args.shift() || '';
+        var i = 0;
+        return String(fmt).replace(/%(?:(\d+)\$)?([sd%])/g, function (m, pos, type) {
+            if (type === '%') return '%';
+            var idx = pos ? (parseInt(pos, 10) - 1) : i++;
+            return args[idx] !== undefined ? args[idx] : '';
+        });
+    };
+
     var CB      = window.auraCertBuilder || {};
     var AJAX    = CB.ajaxUrl  || ajaxurl;
     var NONCE   = CB.nonce    || '';
@@ -479,7 +491,7 @@
        ═════════════════════════════════════════ */
 
     function addTextbox(text, extra) {
-        var obj = new fabric.Textbox(text || 'Texto', $.extend({
+        var obj = new fabric.Textbox(text || __('Texto', 'aura-suite'), $.extend({
             left       : 50,
             top        : 50,
             width      : 300,
@@ -597,11 +609,11 @@
             ? CB.prebuiltDesigns
             : Object.values(CB.prebuiltDesigns || {});
         if (!designs.length) {
-            $list.html('<p style="font-size:.75rem;color:#888">Sin diseños predefinidos.</p>');
+            $list.html('<p style="font-size:.75rem;color:#888">' + __('Sin diseños predefinidos.', 'aura-suite') + '</p>');
             return;
         }
         designs.forEach(function (d, idx) {
-            var $btn = $('<button type="button" class="aura-cb-prebuilt-btn">').text(d.name || ('Diseño ' + (idx + 1)));
+            var $btn = $('<button type="button" class="aura-cb-prebuilt-btn">').text(d.name || sprintf(__('Diseño %d', 'aura-suite'), idx + 1));
             $btn.data('index', idx);
             $list.append($btn);
         });
@@ -614,7 +626,7 @@
             : Object.values(CB.prebuiltDesigns || {});
         var design = designs[idx];
         if (!design) return;
-        if (!confirm('Esto reemplazará el diseño actual. ¿Continuar?')) return;
+        if (!confirm(__('Esto reemplazará el diseño actual. ¿Continuar?', 'aura-suite'))) return;
 
         // Cambiar orientación del diseño si viene especificada
         if (design.orientation) {
@@ -648,7 +660,7 @@
         $wrap.empty();
         var signers = CB.signers || [];
         if (!signers.length) {
-            $wrap.html('<p style="font-size:.8rem;color:#888">Sin firmantes activos.</p>');
+            $wrap.html('<p style="font-size:.8rem;color:#888">' + __('Sin firmantes activos.', 'aura-suite') + '</p>');
             return;
         }
         signers.forEach(function (s) {
@@ -657,7 +669,7 @@
                 $item.append($('<img>').attr('src', s.signature_url));
             }
             $item.append($('<span>').text(s.name));
-            var $btn = $('<button type="button" class="button button-small">Agregar</button>');
+            var $btn = $('<button type="button" class="button button-small">').text(__('Agregar', 'aura-suite'));
             $btn.on('click', function () { addSignerImage(s); });
             $item.append($btn);
             $wrap.append($item);
@@ -763,8 +775,8 @@
         e.preventDefault();
         if (!window.wp || !wp.media) return;
         var frame = wp.media({
-            title   : 'Seleccionar imagen de fondo',
-            button  : { text: 'Usar esta imagen' },
+            title   : __('Seleccionar imagen de fondo', 'aura-suite'),
+            button  : { text: __('Usar esta imagen', 'aura-suite') },
             library : { type: 'image' },
             multiple: false
         });
@@ -791,12 +803,12 @@
     $(document).on('click', '.aura-cb-elem-btn[data-type="image"]', function (e) {
         e.stopImmediatePropagation(); // evitar que el handler genérico también se ejecute
         if (!window.wp || !wp.media) {
-            alert('wp.media no disponible.');
+            alert(__('wp.media no disponible.', 'aura-suite'));
             return;
         }
         var frame = wp.media({
-            title   : 'Insertar imagen',
-            button  : { text: 'Insertar' },
+            title   : __('Insertar imagen', 'aura-suite'),
+            button  : { text: __('Insertar', 'aura-suite') },
             library : { type: 'image' },
             multiple: false
         });
@@ -814,7 +826,7 @@
     $(document).on('click', '.aura-cb-elem-btn', function () {
         var type = $(this).data('type');
         switch (type) {
-            case 'textbox': addTextbox('Texto');    break;
+            case 'textbox': addTextbox(__('Texto', 'aura-suite'));    break;
             case 'rect':    addRect();              break;
             case 'circle':  addCircle();            break;
             case 'line':    addLine();              break;
@@ -843,7 +855,7 @@
         var w = window.open('', '_blank');
         if (w) {
             w.document.write(
-                '<html><head><title>Vista Previa</title></head>' +
+                '<html><head><title>' + __('Vista Previa', 'aura-suite') + '</title></head>' +
                 '<body style="margin:0;background:#555;display:flex;align-items:center;justify-content:center;min-height:100vh">' +
                 '<img src="' + dataUrl + '" style="max-width:95vw;max-height:95vh;box-shadow:0 4px 24px rgba(0,0,0,.5)"/>' +
                 '</body></html>'
@@ -859,13 +871,13 @@
     $(document).on('click', '#aura-cb-save', function () {
         var name = $('#aura-cb-tmpl-name').val().trim();
         if (!name) {
-            alert('El nombre de la plantilla es requerido.');
+            alert(__('El nombre de la plantilla es requerido.', 'aura-suite'));
             $('#aura-cb-tmpl-name').focus();
             return;
         }
 
         var $btn = $(this);
-        $btn.prop('disabled', true).text('Guardando…');
+        $btn.prop('disabled', true).text(__('Guardando…', 'aura-suite'));
 
         var orientation = $('#aura-cb-orientation').val() || 'landscape';
         var desc        = $('#aura-cb-tmpl-desc').val().trim();
@@ -894,8 +906,8 @@
             design_json : canvasJson
         }).done(function (res) {
             if (!res.success) {
-                alert(res.data || 'Error al guardar.');
-                $btn.prop('disabled', false).text('Guardar Plantilla');
+                alert(res.data || __('Error al guardar.', 'aura-suite'));
+                $btn.prop('disabled', false).text(__('Guardar Plantilla', 'aura-suite'));
                 return;
             }
             var savedId = parseInt(res.data.id, 10) || TMPL_ID;
@@ -912,8 +924,8 @@
                 }
             });
         }).fail(function () {
-            alert('Error de conexión.');
-            $btn.prop('disabled', false).text('Guardar Plantilla');
+            alert(__('Error de conexión.', 'aura-suite'));
+            $btn.prop('disabled', false).text(__('Guardar Plantilla', 'aura-suite'));
         });
     });
 

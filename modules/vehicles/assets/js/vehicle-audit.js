@@ -1,9 +1,9 @@
 /**
- * vehicle-audit.js â€” Fase 7: AuditorÃ­a
+ * vehicle-audit.js â?? Fase 7: AuditorÃ­a
  *
  * Gestiona la UI de la pÃ¡gina de auditorÃ­a con DataTables Responsive:
  *  - Filtros (operaciÃ³n, usuario, fechas, IP, bÃºsqueda libre)
- *  - Carga de registros vÃ­a REST â†’ DataTables client-side
+ *  - Carga de registros vÃ­a REST â?? DataTables client-side
  *  - Badges de operaciones con color por categorÃ­a
  *  - Modal de detalles con tabla + JSON formateado
  *  - ExportaciÃ³n CSV
@@ -20,7 +20,19 @@
 ( function ( $ ) {
     'use strict';
 
-    // â”€â”€ Refs DOM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    var __ = ( window.wp && window.wp.i18n && window.wp.i18n.__ ) ? window.wp.i18n.__ : function ( s ) { return s; };
+    var sprintf = ( window.wp && window.wp.i18n && window.wp.i18n.sprintf ) ? window.wp.i18n.sprintf : function () {
+        var args = Array.prototype.slice.call( arguments );
+        var fmt = args.shift() || '';
+        var i = 0;
+        return String( fmt ).replace( /%(?:(\d+)\$)?([sd%])/g, function ( m, pos, type ) {
+            if ( type === '%' ) return '%';
+            var idx = pos ? ( parseInt( pos, 10 ) - 1 ) : i++;
+            return args[ idx ] !== undefined ? args[ idx ] : '';
+        } );
+    };
+
+    // â??â?? Refs DOM â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
     var $app       = $( '#aura-veh-audit-app' );
     var nonce      = $( '#aura-aud-nonce' ).val();
     var restBase   = $( '#aura-aud-rest-base' ).val();
@@ -38,12 +50,12 @@
     var $detailJson  = $( '#aura-aud-detail-json' );
     var $cleanModal  = $( '#aura-aud-cleanup-modal' );
 
-    // â”€â”€ Estado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? Estado â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
     var _table      = null;
     var _rowsById   = {};   // cachÃ© de filas por id para el modal de detalles
     var lastFilters = {};
 
-    // â”€â”€ Color de badges por categorÃ­a de operaciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? Color de badges por categorÃ­a de operaciÃ³n â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
     var opColors = {
         // VehÃ­culos
         vehicle_created:            '#0073aa',
@@ -74,7 +86,7 @@
         audit_cleanup:    '#d63638',
     };
 
-    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? Helpers â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 
     function getBadge( operation ) {
         var label = opLabels[ operation ] || operation;
@@ -87,7 +99,7 @@
     }
 
     function formatDate( isoStr ) {
-        if ( ! isoStr ) { return 'â€”'; }
+        if ( ! isoStr ) { return 'â??'; }
         var d = new Date( isoStr );
         var pad = function ( n ) { return n < 10 ? '0' + n : n; };
         return pad( d.getDate() ) + '/' + pad( d.getMonth() + 1 ) + '/' + d.getFullYear()
@@ -110,7 +122,7 @@
         };
     }
 
-    // â”€â”€ DataTables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? DataTables â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 
     function initTable() {
         _table = $( '#aura-aud-table' ).DataTable( {
@@ -132,28 +144,28 @@
                     data:              'user_name',
                     responsivePriority: 3,
                     render:            function ( val ) {
-                        return '<span style="font-size:12px;">' + escHtml( val || '(sistema)' ) + '</span>';
+                        return '<span style="font-size:12px;">' + escHtml( val || __( '(sistema)', 'aura-suite' ) ) + '</span>';
                     }
                 },
                 {
                     data:              'entity_type',
                     responsivePriority: 10000,
                     render:            function ( val ) {
-                        return '<span style="font-size:12px;">' + escHtml( val || 'â€”' ) + '</span>';
+                        return '<span style="font-size:12px;">' + escHtml( val || 'â??' ) + '</span>';
                     }
                 },
                 {
                     data:              'entity_id',
                     responsivePriority: 10000,
                     render:            function ( val ) {
-                        return '<span style="font-size:12px;text-align:center;">' + escHtml( val || 'â€”' ) + '</span>';
+                        return '<span style="font-size:12px;text-align:center;">' + escHtml( val || 'â??' ) + '</span>';
                     }
                 },
                 {
                     data:              'ip_address',
                     responsivePriority: 10000,
                     render:            function ( val ) {
-                        return '<span style="font-size:11px;font-family:monospace;">' + escHtml( val || 'â€”' ) + '</span>';
+                        return '<span style="font-size:11px;font-family:monospace;">' + escHtml( val || 'â??' ) + '</span>';
                     }
                 },
                 {
@@ -164,7 +176,7 @@
                         if ( row.details && row.details !== 'null' ) {
                             return '<button type="button" class="button button-small aura-aud-detail-btn"'
                                  + ' data-id="' + escHtml( String( row.id ) ) + '"'
-                                 + ' title="Ver detalle">'
+                                 + ' title="' + escHtml( __( 'Ver detalle', 'aura-suite' ) ) + '">'
                                  + '<span class="dashicons dashicons-visibility" style="font-size:14px;width:14px;height:14px;"></span>'
                                  + '</button>';
                         }
@@ -178,22 +190,22 @@
             searching:  false,
             dom:        '<"aura-dt-top"li>rt<"aura-dt-bottom"p>',
             language: {
-                emptyTable:  'No se encontraron registros.',
-                info:        '_TOTAL_ registros',
-                infoEmpty:   '0 registros',
-                infoFiltered: '(filtrado de _MAX_ total)',
-                lengthMenu:  'Mostrar _MENU_ por pÃ¡gina',
-                paginate:    { first: 'Â«', last: 'Â»', previous: 'â€¹', next: 'â€º' }
+                emptyTable:  __( 'No se encontraron registros.', 'aura-suite' ),
+                info:        __( '_TOTAL_ registros', 'aura-suite' ),
+                infoEmpty:   __( '0 registros', 'aura-suite' ),
+                infoFiltered: __( '(filtrado de _MAX_ total)', 'aura-suite' ),
+                lengthMenu:  __( 'Mostrar _MENU_ por pÃ¡gina', 'aura-suite' ),
+                paginate:    { first: 'Â«', last: 'Â»', previous: 'â?¹', next: 'â?º' }
             },
             drawCallback: function () {
                 var total = _table ? _table.data().count() : 0;
-                $totalText.text( 'Total: ' + total + ' registros' );
+                $totalText.text( sprintf( __( 'Total: %d registros', 'aura-suite' ), total ) );
                 if ( total > 0 ) { $summary.show(); } else { $summary.hide(); }
             }
         } );
     }
 
-    // â”€â”€ Cargar auditorÃ­a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? Cargar auditorÃ­a â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 
     function loadAudit() {
         if ( ! _table ) { return; }
@@ -219,7 +231,7 @@
             error: function ( xhr ) {
                 var msg = xhr.responseJSON && xhr.responseJSON.message
                     ? xhr.responseJSON.message
-                    : 'Error al cargar el log.';
+                    : __( 'Error al cargar el log.', 'aura-suite' );
                 _table.clear().draw();
                 $app.find( '.aura-audit-filters' ).after(
                     '<div class="notice notice-error is-dismissible" style="margin:10px 0;"><p>' + escHtml( msg ) + '</p></div>'
@@ -231,7 +243,7 @@
         } );
     }
 
-    // â”€â”€ Modal de detalles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? Modal de detalles â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 
     function openDetailModal( row ) {
         if ( ! row ) { return; }
@@ -240,22 +252,22 @@
 
         var fixedRows = [
             [ 'ID',          row.id ],
-            [ 'Fecha/Hora',  formatDate( row.created_at ) ],
-            [ 'OperaciÃ³n',   opLabels[ row.operation ] || row.operation ],
-            [ 'Tipo entidad', row.entity_type || 'â€”' ],
-            [ 'ID entidad',  row.entity_id || 'â€”' ],
-            [ 'Usuario',     ( row.user_name || '(sistema)' ) + ( row.user_email ? ' <' + row.user_email + '>' : '' ) ],
-            [ 'IP',          row.ip_address || 'â€”' ],
+            [ __( 'Fecha/Hora', 'aura-suite' ),  formatDate( row.created_at ) ],
+            [ __( 'OperaciÃ³n', 'aura-suite' ),   opLabels[ row.operation ] || row.operation ],
+            [ __( 'Tipo entidad', 'aura-suite' ), row.entity_type || 'â??' ],
+            [ __( 'ID entidad', 'aura-suite' ),  row.entity_id || 'â??' ],
+            [ __( 'Usuario', 'aura-suite' ),     ( row.user_name || __( '(sistema)', 'aura-suite' ) ) + ( row.user_email ? ' <' + row.user_email + '>' : '' ) ],
+            [ 'IP',          row.ip_address || 'â??' ],
         ];
 
         var html = '';
         $.each( fixedRows, function ( i, pair ) {
             html += '<tr><th style="width:100px;vertical-align:top;">' + escHtml( pair[0] )
-                  + '</th><td>' + escHtml( pair[1] || 'â€”' ) + '</td></tr>';
+                  + '</th><td>' + escHtml( pair[1] || 'â??' ) + '</td></tr>';
         } );
 
         if ( row.details_parsed && Object.keys( row.details_parsed ).length > 0 ) {
-            html += '<tr><td colspan="2" style="background:#f6f7f7;padding:4px 8px;font-size:11px;color:#72777c;font-weight:600;">DETALLES</td></tr>';
+            html += '<tr><td colspan="2" style="background:#f6f7f7;padding:4px 8px;font-size:11px;color:#72777c;font-weight:600;">' + escHtml( __( 'DETALLES', 'aura-suite' ) ) + '</td></tr>';
             $.each( row.details_parsed, function ( key, val ) {
                 var displayVal = ( typeof val === 'object' ) ? JSON.stringify( val, null, 2 ) : val;
                 html += '<tr><th style="width:100px;vertical-align:top;">' + escHtml( key )
@@ -278,7 +290,7 @@
         $( '#aura-aud-detail-close' ).focus();
     }
 
-    // â”€â”€ Exportar CSV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? Exportar CSV â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 
     function doExportCsv() {
         var params = $.extend( {}, lastFilters );
@@ -286,12 +298,12 @@
         window.location.href = url;
     }
 
-    // â”€â”€ Limpieza de logs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? Limpieza de logs â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 
     function doCleanup() {
         var days = parseInt( $( '#aura-aud-cleanup-days' ).val(), 10 );
         if ( ! days || days < 7 ) {
-            alert( 'El valor mÃ­nimo es 7 dÃ­as.' );
+            alert( __( 'El valor mÃ­nimo es 7 dÃ­as.', 'aura-suite' ) );
             return;
         }
 
@@ -307,13 +319,13 @@
                 xhr.setRequestHeader( 'X-WP-Nonce', nonce );
             },
             success: function ( res ) {
-                alert( res.message || 'Limpieza completada.' );
+                alert( res.message || __( 'Limpieza completada.', 'aura-suite' ) );
                 loadAudit();
             },
             error: function ( xhr ) {
                 var msg = xhr.responseJSON && xhr.responseJSON.message
                     ? xhr.responseJSON.message
-                    : 'Error al limpiar los logs.';
+                    : __( 'Error al limpiar los logs.', 'aura-suite' );
                 alert( msg );
             },
             complete: function () {
@@ -322,7 +334,7 @@
         } );
     }
 
-    // â”€â”€ Listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? Listeners â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 
     $( '#aura-aud-search-btn' ).on( 'click', function () {
         lastFilters = collectFilters();
@@ -385,60 +397,7 @@
         }
     } );
 
-    // â”€â”€ InicializaciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-    initTable();
-
-    // Ocultar la paginaciÃ³n manual heredada (DataTables la reemplaza)
-    $( '#aura-aud-pagination' ).hide();
-
-    // Carga inicial automÃ¡tica (Ãºltimos 30 dÃ­as)
-    ( function () {
-        var now  = new Date();
-        var from = new Date( now.getTime() - 29 * 24 * 60 * 60 * 1000 );
-        var pad  = function ( n ) { return n < 10 ? '0' + n : n; };
-        var fmt  = function ( d ) { return d.getFullYear() + '-' + pad( d.getMonth() + 1 ) + '-' + pad( d.getDate() ); };
-
-        $( '#aura-aud-from' ).val( fmt( from ) );
-        $( '#aura-aud-to' ).val( fmt( now ) );
-
-        lastFilters = collectFilters();
-        loadAudit();
-    } )();
-
-} )( jQuery );
-
-        doCleanup();
-    } );
-
-    $( '#aura-aud-cleanup-cancel, #aura-aud-cleanup-close' ).on( 'click', function () {
-        $cleanModal.hide();
-    } );
-
-    // Delegado en la tabla DataTables (el tbody se regenera en cada draw)
-    $( '#aura-aud-table tbody' ).on( 'click', '.aura-aud-detail-btn', function () {
-        var id = $( this ).data( 'id' );
-        openDetailModal( _rowsById[ id ] );
-    } );
-
-    $( '#aura-aud-detail-close' ).on( 'click', function () {
-        $detailModal.hide();
-    } );
-
-    $( document ).on( 'keydown', function ( e ) {
-        if ( e.key === 'Escape' ) {
-            $detailModal.hide();
-            $cleanModal.hide();
-        }
-    } );
-
-    $( '.aura-modal-overlay' ).on( 'click', function ( e ) {
-        if ( $( e.target ).hasClass( 'aura-modal-overlay' ) ) {
-            $( this ).hide();
-        }
-    } );
-
-    // â”€â”€ InicializaciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â??â?? InicializaciÃ³n â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??â??
 
     initTable();
 

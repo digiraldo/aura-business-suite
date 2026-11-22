@@ -327,7 +327,7 @@ $pagination_total     = $pending_list->get_pagination_arg('total_items');
                                     <option value=""><?php _e('Todos los usuarios', 'aura-suite'); ?></option>
                                     <?php foreach ($creators as $creator): ?>
                                     <option value="<?php echo esc_attr($creator['ID']); ?>" <?php selected(isset($_GET['filter_creator']) && $_GET['filter_creator'] == $creator['ID']); ?>>
-                                        <?php echo esc_html($creator['display_name']); ?><?php echo ($creator['ID'] == $current_user_id) ? ' (Tú)' : ''; ?>
+                                        <?php echo esc_html($creator['display_name']); ?><?php echo ($creator['ID'] == $current_user_id) ? ' ' . esc_html__('(Tú)', 'aura-suite') : ''; ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -650,7 +650,7 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.approve-transaction', function(e) {
         e.preventDefault();
         currentTransactionId = $(this).data('id');
-        const desc = $(this).closest('tr').find('strong').first().text() || ('Transacción #' + currentTransactionId);
+        const desc = $(this).closest('tr').find('strong').first().text() || ('<?php echo esc_js(__('Transacción #', 'aura-suite')); ?>' + currentTransactionId);
         $('#approve-transaction-desc').text(desc);
         $('#approve-note').val('');
         $('#approve-modal').removeClass('aura-modal-hidden').fadeIn(200);
@@ -669,7 +669,7 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.reject-transaction', function(e) {
         e.preventDefault();
         currentTransactionId = $(this).data('id');
-        const desc = $(this).closest('tr').find('strong').first().text() || ('Transacción #' + currentTransactionId);
+        const desc = $(this).closest('tr').find('strong').first().text() || ('<?php echo esc_js(__('Transacción #', 'aura-suite')); ?>' + currentTransactionId);
         $('#reject-transaction-desc').text(desc);
         $('#reject-reason').val('');
         $('#reason-char-count').text('0');
@@ -760,7 +760,7 @@ jQuery(document).ready(function($) {
                 approval_note: note
             },
             beforeSend: function() {
-                $('#confirm-approve').prop('disabled', true).html('<span class="spinner is-active aura-inline-spinner"></span> Aprobando...');
+                $('#confirm-approve').prop('disabled', true).html('<span class="spinner is-active aura-inline-spinner"></span> <?php echo esc_js(__('Aprobando...', 'aura-suite')); ?>');
             },
             success: function(response) {
                 if (response.success) {
@@ -769,7 +769,7 @@ jQuery(document).ready(function($) {
                     setTimeout(function() { location.reload(); }, 1200);
                 } else {
                     showNotice('error', response.data.message);
-                    $('#confirm-approve').prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> Aprobar Transacción');
+                    $('#confirm-approve').prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> <?php echo esc_js(__('Aprobar Transacción', 'aura-suite')); ?>');
                 }
             },
             error: function() {
@@ -791,7 +791,7 @@ jQuery(document).ready(function($) {
                 rejection_reason: reason
             },
             beforeSend: function() {
-                $('#confirm-reject').prop('disabled', true).html('<span class="spinner is-active aura-inline-spinner"></span> Rechazando...');
+                $('#confirm-reject').prop('disabled', true).html('<span class="spinner is-active aura-inline-spinner"></span> <?php echo esc_js(__('Rechazando...', 'aura-suite')); ?>');
             },
             success: function(response) {
                 if (response.success) {
@@ -800,7 +800,7 @@ jQuery(document).ready(function($) {
                     setTimeout(function() { location.reload(); }, 1200);
                 } else {
                     showNotice('error', response.data.message);
-                    $('#confirm-reject').prop('disabled', false).html('<span class="dashicons dashicons-dismiss"></span> Rechazar Transacción');
+                    $('#confirm-reject').prop('disabled', false).html('<span class="dashicons dashicons-dismiss"></span> <?php echo esc_js(__('Rechazar Transacción', 'aura-suite')); ?>');
                 }
             },
             error: function() {
@@ -822,7 +822,7 @@ jQuery(document).ready(function($) {
                 approval_note: note
             },
             beforeSend: function() {
-                $('#confirm-bulk-approve').prop('disabled', true).html('<span class="spinner is-active aura-inline-spinner"></span> Aprobando...');
+                $('#confirm-bulk-approve').prop('disabled', true).html('<span class="spinner is-active aura-inline-spinner"></span> <?php echo esc_js(__('Aprobando...', 'aura-suite')); ?>');
             },
             success: function(response) {
                 if (response.success) {
@@ -831,7 +831,7 @@ jQuery(document).ready(function($) {
                     setTimeout(function() { location.reload(); }, 1200);
                 } else {
                     showNotice('error', response.data.message);
-                    $('#confirm-bulk-approve').prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> Aprobar Seleccionadas');
+                    $('#confirm-bulk-approve').prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> <?php echo esc_js(__('Aprobar Seleccionadas', 'aura-suite')); ?>');
                 }
             },
             error: function() {
@@ -853,7 +853,7 @@ jQuery(document).ready(function($) {
                 rejection_reason: reason
             },
             beforeSend: function() {
-                $('#confirm-bulk-reject').prop('disabled', true).html('<span class="spinner is-active aura-inline-spinner"></span> Rechazando...');
+                $('#confirm-bulk-reject').prop('disabled', true).html('<span class="spinner is-active aura-inline-spinner"></span> <?php echo esc_js(__('Rechazando...', 'aura-suite')); ?>');
             },
             success: function(response) {
                 if (response.success) {
@@ -862,7 +862,7 @@ jQuery(document).ready(function($) {
                     setTimeout(function() { location.reload(); }, 1200);
                 } else {
                     showNotice('error', response.data.message);
-                    $('#confirm-bulk-reject').prop('disabled', false).html('<span class="dashicons dashicons-dismiss"></span> Rechazar Seleccionadas');
+                    $('#confirm-bulk-reject').prop('disabled', false).html('<span class="dashicons dashicons-dismiss"></span> <?php echo esc_js(__('Rechazar Seleccionadas', 'aura-suite')); ?>');
                 }
             },
             error: function() {

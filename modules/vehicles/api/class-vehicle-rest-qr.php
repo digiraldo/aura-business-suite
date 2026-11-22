@@ -254,14 +254,14 @@ class Aura_Vehicle_Rest_Qr {
         }
 
         $type_labels = array(
-            'sedan'      => 'Sedán',
+            'sedan'      => __( 'Sedán', 'aura-suite' ),
             'suv'        => 'SUV',
             'pickup'     => 'Pickup',
             'van'        => 'Van',
             'bus'        => 'Bus',
-            'motorcycle' => 'Moto',
-            'truck'      => 'Camión',
-            'other'      => 'Otro',
+            'motorcycle' => __( 'Moto', 'aura-suite' ),
+            'truck'      => __( 'Camión', 'aura-suite' ),
+            'other'      => __( 'Otro', 'aura-suite' ),
         );
 
         return new WP_REST_Response( array(
@@ -306,7 +306,7 @@ class Aura_Vehicle_Rest_Qr {
         $action = sanitize_text_field( $req->get_param( 'action' ) );
 
         if ( ! in_array( $action, array( 'checkout', 'return' ), true ) ) {
-            return new WP_REST_Response( array( 'message' => 'Acción no válida.' ), 400 );
+            return new WP_REST_Response( array( 'message' => __( 'Acción no válida.', 'aura-suite' ) ), 400 );
         }
 
         // Obtener vehículo por token
@@ -318,12 +318,12 @@ class Aura_Vehicle_Rest_Qr {
         ) );
 
         if ( ! $vehicle ) {
-            return new WP_REST_Response( array( 'message' => 'QR inválido o vehículo no encontrado.' ), 404 );
+            return new WP_REST_Response( array( 'message' => __( 'QR inválido o vehículo no encontrado.', 'aura-suite' ) ), 404 );
         }
 
         $driver_name = sanitize_text_field( $req->get_param( 'driver_name' ) );
         if ( empty( $driver_name ) ) {
-            return new WP_REST_Response( array( 'message' => 'El nombre del conductor es obligatorio.' ), 400 );
+            return new WP_REST_Response( array( 'message' => __( 'El nombre del conductor es obligatorio.', 'aura-suite' ) ), 400 );
         }
 
         $now = current_time( 'mysql' );
@@ -331,7 +331,7 @@ class Aura_Vehicle_Rest_Qr {
         if ( 'checkout' === $action ) {
             // Verificar que el vehículo esté disponible
             if ( ! in_array( $vehicle->status, array( 'available' ), true ) ) {
-                return new WP_REST_Response( array( 'message' => 'El vehículo no está disponible para salida.' ), 409 );
+                return new WP_REST_Response( array( 'message' => __( 'El vehículo no está disponible para salida.', 'aura-suite' ) ), 409 );
             }
 
             // Verificar que no tenga salida activa
@@ -341,7 +341,7 @@ class Aura_Vehicle_Rest_Qr {
                 $vehicle->id
             ) );
             if ( $active ) {
-                return new WP_REST_Response( array( 'message' => 'Este vehículo ya tiene una salida activa.' ), 409 );
+                return new WP_REST_Response( array( 'message' => __( 'Este vehículo ya tiene una salida activa.', 'aura-suite' ) ), 409 );
             }
 
             $purpose = sanitize_text_field( $req->get_param( 'purpose' ) ?? '' );
@@ -373,7 +373,7 @@ class Aura_Vehicle_Rest_Qr {
             );
 
             if ( ! $inserted ) {
-                return new WP_REST_Response( array( 'message' => 'Error al registrar la salida.' ), 500 );
+                return new WP_REST_Response( array( 'message' => __( 'Error al registrar la salida.', 'aura-suite' ) ), 500 );
             }
 
             $trip_id = $wpdb->insert_id;
@@ -391,7 +391,7 @@ class Aura_Vehicle_Rest_Qr {
                 'success'  => true,
                 'action'   => 'checkout',
                 'trip_id'  => $trip_id,
-                'message'  => 'Salida registrada correctamente.',
+                'message'  => __( 'Salida registrada correctamente.', 'aura-suite' ),
             ), 201 );
 
         } else {
@@ -410,7 +410,7 @@ class Aura_Vehicle_Rest_Qr {
             }
 
             if ( ! $trip_id ) {
-                return new WP_REST_Response( array( 'message' => 'No se encontró salida activa para este vehículo.' ), 404 );
+                return new WP_REST_Response( array( 'message' => __( 'No se encontró salida activa para este vehículo.', 'aura-suite' ) ), 404 );
             }
 
             $wpdb->update(
@@ -439,7 +439,7 @@ class Aura_Vehicle_Rest_Qr {
                 'success'  => true,
                 'action'   => 'return',
                 'trip_id'  => $trip_id,
-                'message'  => 'Retorno registrado correctamente.',
+                'message'  => __( 'Retorno registrado correctamente.', 'aura-suite' ),
             ), 200 );
         }
     }
@@ -477,7 +477,7 @@ class Aura_Vehicle_Rest_Qr {
 
         // ── Verificar nonce ──────────────────────────────────────
         if ( ! check_ajax_referer( 'aura_qr_login', '_wpnonce', false ) ) {
-            wp_send_json_error( 'Sesión expirada. Recarga la página e intenta de nuevo.', 403 );
+            wp_send_json_error( __( 'Sesión expirada. Recarga la página e intenta de nuevo.', 'aura-suite' ), 403 );
             return;
         }
 
@@ -489,7 +489,7 @@ class Aura_Vehicle_Rest_Qr {
         $pwd  = wp_unslash( $_POST['pwd'] ?? '' );
 
         if ( empty( $log ) || empty( $pwd ) ) {
-            wp_send_json_error( 'Usuario y contraseña requeridos.' );
+            wp_send_json_error( __( 'Usuario y contraseña requeridos.', 'aura-suite' ) );
             return;
         }
 
@@ -512,7 +512,7 @@ class Aura_Vehicle_Rest_Qr {
             // en producción siempre se muestra el mensaje genérico.
             $msg = ( defined( 'WP_DEBUG' ) && WP_DEBUG )
                 ? '[DEBUG] ' . $user->get_error_message()
-                : 'Usuario o contraseña incorrectos.';
+                : __( 'Usuario o contraseña incorrectos.', 'aura-suite' );
             wp_send_json_error( $msg );
             return;
         }

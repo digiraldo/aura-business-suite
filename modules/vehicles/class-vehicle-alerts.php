@@ -221,7 +221,7 @@ class Aura_Vehicle_Alerts {
 
         return array(
             'id'            => (int) $vehicle->id,
-            'display_name'  => $display_name ?: 'Vehículo',
+            'display_name'  => $display_name ?: __( 'Vehículo', 'aura-suite' ),
             'plate'         => $vehicle->plate,
             'mileage'       => $current_km,
             'last_maint_km' => $last_maint_km,
@@ -346,13 +346,13 @@ class Aura_Vehicle_Alerts {
      * Crear notificación interna (user_meta) para un usuario.
      */
     private static function create_internal_notification( int $user_id, array $v ) {
-        $label   = 'critical' === $v['urgency'] ? '🔴 CRÍTICO' : '🟡 Advertencia';
+        $label   = 'critical' === $v['urgency'] ? '🔴 ' . __( 'CRÍTICO', 'aura-suite' ) : '🟡 ' . __( 'Advertencia', 'aura-suite' );
         $km_msg  = $v['km_remaining'] <= 0
-            ? 'ha <strong>superado</strong> el intervalo de mantenimiento en ' . number_format( abs( $v['km_remaining'] ) ) . ' km'
-            : 'tiene solo <strong>' . number_format( $v['km_remaining'] ) . ' km</strong> restantes para mantenimiento';
+            ? sprintf( __( 'ha <strong>superado</strong> el intervalo de mantenimiento en %s km', 'aura-suite' ), number_format( abs( $v['km_remaining'] ) ) )
+            : sprintf( __( 'tiene solo <strong>%s km</strong> restantes para mantenimiento', 'aura-suite' ), number_format( $v['km_remaining'] ) );
 
         $message = sprintf(
-            '%s — %s (%s) %s. Km actuales: %s | Próximo mant.: %s km.',
+            __( '%1$s — %2$s (%3$s) %4$s. Km actuales: %5$s | Próximo mant.: %6$s km.', 'aura-suite' ),
             $label,
             esc_html( $v['display_name'] ),
             esc_html( $v['plate'] ),
@@ -379,26 +379,26 @@ class Aura_Vehicle_Alerts {
 
         $site_name = function_exists( 'aura_get_org_name' ) ? aura_get_org_name() : get_bloginfo( 'name' );
         $color     = 'critical' === $v['urgency'] ? '#dc2626' : '#d97706';
-        $label     = 'critical' === $v['urgency'] ? '🔴 CRÍTICO' : '🟡 Atención';
+        $label     = 'critical' === $v['urgency'] ? '🔴 ' . __( 'CRÍTICO', 'aura-suite' ) : '🟡 ' . __( 'Atención', 'aura-suite' );
 
         $km_msg = $v['km_remaining'] <= 0
-            ? '<strong style="color:#dc2626;">Ha superado el intervalo de mantenimiento en ' . number_format( abs( $v['km_remaining'] ) ) . ' km</strong>'
-            : 'Quedan <strong>' . number_format( $v['km_remaining'] ) . ' km</strong> para el próximo mantenimiento programado.';
+            ? '<strong style="color:#dc2626;">' . sprintf( __( 'Ha superado el intervalo de mantenimiento en %s km', 'aura-suite' ), number_format( abs( $v['km_remaining'] ) ) ) . '</strong>'
+            : sprintf( __( 'Quedan <strong>%s km</strong> para el próximo mantenimiento programado.', 'aura-suite' ), number_format( $v['km_remaining'] ) );
 
         $subject = sprintf(
-            '[%s] %s — Mantenimiento requerido · %s',
+            __( '[%1$s] %2$s — Mantenimiento requerido · %3$s', 'aura-suite' ),
             $site_name,
             $label,
             $v['plate']
         );
 
         $rows = array(
-            'Vehículo'               => esc_html( $v['display_name'] ),
-            'Placa'                  => esc_html( $v['plate'] ),
-            'Km actuales'            => number_format( $v['mileage'] ) . ' km',
-            'Último mantenimiento'   => $v['last_maint_km'] ? number_format( $v['last_maint_km'] ) . ' km' : 'Sin registro',
-            'Próximo mantenimiento'  => number_format( $v['next_maint_km'] ) . ' km',
-            'Km restantes'           => number_format( $v['km_remaining'] ) . ' km',
+            __( 'Vehículo', 'aura-suite' )               => esc_html( $v['display_name'] ),
+            __( 'Placa', 'aura-suite' )                  => esc_html( $v['plate'] ),
+            __( 'Km actuales', 'aura-suite' )            => number_format( $v['mileage'] ) . ' km',
+            __( 'Último mantenimiento', 'aura-suite' )   => $v['last_maint_km'] ? number_format( $v['last_maint_km'] ) . ' km' : __( 'Sin registro', 'aura-suite' ),
+            __( 'Próximo mantenimiento', 'aura-suite' )  => number_format( $v['next_maint_km'] ) . ' km',
+            __( 'Km restantes', 'aura-suite' )           => number_format( $v['km_remaining'] ) . ' km',
         );
 
         $rows_html = '';
@@ -412,20 +412,20 @@ class Aura_Vehicle_Alerts {
         $body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,sans-serif;">'
             . '<div style="max-width:600px;margin:32px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">'
             . '<div style="background:' . $color . ';padding:20px 24px;">'
-            . '<h2 style="margin:0;color:#fff;font-size:18px;">' . esc_html( $site_name ) . ' — Alerta de Mantenimiento</h2>'
+            . '<h2 style="margin:0;color:#fff;font-size:18px;">' . esc_html( $site_name ) . ' — ' . esc_html__( 'Alerta de Mantenimiento', 'aura-suite' ) . '</h2>'
             . '</div>'
             . '<div style="padding:24px;">'
             . '<p style="font-size:15px;margin:0 0 16px;">' . $km_msg . '</p>'
             . '<table style="width:100%;border-collapse:collapse;border-radius:6px;overflow:hidden;border:1px solid #e5e7eb;">'
             . '<thead><tr style="background:#f9fafb;">'
-            . '<th style="padding:9px 14px;text-align:left;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;">Campo</th>'
-            . '<th style="padding:9px 14px;text-align:left;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;">Valor</th>'
+            . '<th style="padding:9px 14px;text-align:left;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;">' . esc_html__( 'Campo', 'aura-suite' ) . '</th>'
+            . '<th style="padding:9px 14px;text-align:left;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;">' . esc_html__( 'Valor', 'aura-suite' ) . '</th>'
             . '</tr></thead><tbody>' . $rows_html . '</tbody></table>'
             . '<p style="margin:20px 0 0;">'
-            . '<a href="' . esc_url( admin_url( 'admin.php?page=aura-vehicles' ) ) . '" style="display:inline-block;background:#1e3a5f;color:#fff;padding:10px 22px;border-radius:4px;text-decoration:none;font-size:14px;">Ver Flota en AURA</a>'
+            . '<a href="' . esc_url( admin_url( 'admin.php?page=aura-vehicles' ) ) . '" style="display:inline-block;background:#1e3a5f;color:#fff;padding:10px 22px;border-radius:4px;text-decoration:none;font-size:14px;">' . esc_html__( 'Ver Flota en AURA', 'aura-suite' ) . '</a>'
             . '</p>'
             . '<hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb;">'
-            . '<p style="font-size:12px;color:#9ca3af;margin:0;">Notificación automática generada el ' . current_time( 'd/m/Y \a \l\a\s H:i' ) . ' — Aura Business Suite</p>'
+            . '<p style="font-size:12px;color:#9ca3af;margin:0;">' . esc_html( sprintf( __( 'Notificación automática generada el %s — Aura Business Suite', 'aura-suite' ), current_time( 'd/m/Y H:i' ) ) ) . '</p>'
             . '</div></div>'
             . '</body></html>';
 

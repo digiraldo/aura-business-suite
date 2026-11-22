@@ -457,7 +457,7 @@ class Aura_Financial_User_Dashboard {
         echo "\xEF\xBB\xBF"; // BOM UTF-8
 
         $out = fopen( 'php://output', 'w' );
-        fputcsv( $out, [ 'Fecha', 'Descripción', 'Tipo', 'Concepto', 'Categoría', 'Referencia', 'Propósito / Observaciones', 'Monto', 'Estado' ], ';' );
+        fputcsv( $out, [ __( 'Fecha', 'aura-suite' ), __( 'Descripción', 'aura-suite' ), __( 'Tipo', 'aura-suite' ), __( 'Concepto', 'aura-suite' ), __( 'Categoría', 'aura-suite' ), __( 'Referencia', 'aura-suite' ), __( 'Propósito / Observaciones', 'aura-suite' ), __( 'Monto', 'aura-suite' ), __( 'Estado', 'aura-suite' ) ], ';' );
 
         foreach ( $movements as $mov ) {
             fputcsv( $out, [

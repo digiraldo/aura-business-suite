@@ -153,13 +153,13 @@ class Aura_Library_Cron {
         check_ajax_referer( 'aura_library_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_library_settings' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para ejecutar el cron.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para ejecutar el cron.', 'aura-suite' ) ] );
         }
 
         self::process_loan_alerts();
 
         wp_send_json_success( [
-            'message' => __( 'Alertas ejecutadas correctamente.', 'aura-business-suite' ),
+            'message' => __( 'Alertas ejecutadas correctamente.', 'aura-suite' ),
         ] );
     }
 }

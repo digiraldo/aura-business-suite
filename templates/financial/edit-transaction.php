@@ -334,7 +334,7 @@ $amount_formatted = number_format($amount_raw, 2, '.', '');
     <!-- Notificaciones -->
     <div id="aura-transaction-messages" class="aura-messages"></div>
 
-    <section class="aura-transaction-ux-head" aria-label="Estado del formulario">
+    <section class="aura-transaction-ux-head" aria-label="<?php esc_attr_e('Estado del formulario', 'aura-suite'); ?>">
         <div class="aura-transaction-ux-head__content">
             <h2><?php _e('Editar Transacción', 'aura-suite'); ?></h2>
             <p><?php _e('Ajusta los datos clave y revisa el impacto estimado y la vista previa en vivo antes de guardar los cambios.', 'aura-suite'); ?></p>
@@ -344,7 +344,7 @@ $amount_formatted = number_format($amount_raw, 2, '.', '');
                 <strong><?php _e('Progreso del formulario', 'aura-suite'); ?></strong>
                 <span id="aura-tx-progress-text">100%</span>
             </div>
-            <div class="aura-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="Progreso de diligenciamiento">
+            <div class="aura-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="<?php esc_attr_e('Progreso de diligenciamiento', 'aura-suite'); ?>">
                 <span id="aura-tx-progress-bar" class="aura-progress-fill" style="width:100%;"></span>
             </div>
         </div>
@@ -771,7 +771,7 @@ $amount_formatted = number_format($amount_raw, 2, '.', '');
                                     </div>
                                     <div class="entity-info">
                                         <span id="aura-tp-preview-text" class="entity-name"><?php echo esc_html($third_party_data ? ($third_party_data['commercial_name'] ?: $third_party_data['full_name']) : ''); ?></span>
-                                        <span id="aura-tp-preview-badge" class="aura-pill aura-pill--muted entity-badge"><?php echo esc_html($third_party_data ? ($third_party_data['accounting_role'] ?: 'Tercero') : ''); ?></span>
+                                        <span id="aura-tp-preview-badge" class="aura-pill aura-pill--muted entity-badge"><?php echo esc_html($third_party_data ? ($third_party_data['accounting_role'] ?: __('Tercero', 'aura-suite')) : ''); ?></span>
                                     </div>
                                     <a href="#" id="aura-tp-clear" class="entity-clear-btn" title="<?php _e('Desvincular tercero', 'aura-suite'); ?>">✕</a>
                                 </div>

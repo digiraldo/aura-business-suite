@@ -67,7 +67,7 @@ if ( $_frm_view_own ) {
     <!-- Notificaciones -->
     <div id="aura-transaction-messages" class="aura-messages"></div>
 
-    <section class="aura-transaction-ux-head" aria-label="Estado del formulario">
+    <section class="aura-transaction-ux-head" aria-label="<?php esc_attr_e('Estado del formulario', 'aura-suite'); ?>">
         <div class="aura-transaction-ux-head__content">
             <h2><?php _e('Registrar Nueva Transacción', 'aura-suite'); ?></h2>
             <p><?php _e('Completa los datos clave y revisa la vista previa antes de guardar.', 'aura-suite'); ?></p>
@@ -77,7 +77,7 @@ if ( $_frm_view_own ) {
                 <strong><?php _e('Progreso del formulario', 'aura-suite'); ?></strong>
                 <span id="aura-tx-progress-text">0%</span>
             </div>
-            <div class="aura-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progreso de diligenciamiento">
+            <div class="aura-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="<?php esc_attr_e('Progreso de diligenciamiento', 'aura-suite'); ?>">
                 <span id="aura-tx-progress-bar" class="aura-progress-fill" style="width:0%;"></span>
             </div>
         </div>
@@ -696,7 +696,7 @@ if ( $_frm_view_own ) {
                                     <div class="file-preview" style="display: none;">
                                         <div class="aura-receipt-card">
                                             <div class="aura-receipt-thumb-wrap">
-                                                <img src="" alt="Comprobante" class="preview-image" style="display: none;">
+                                                <img src="" alt="<?php esc_attr_e('Comprobante', 'aura-suite'); ?>" class="preview-image" style="display: none;">
                                                 <div class="preview-icon-wrap" style="display: none;">
                                                     <span class="dashicons dashicons-media-document"></span>
                                                 </div>

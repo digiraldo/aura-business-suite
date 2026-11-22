@@ -64,6 +64,13 @@ if (isset($_POST['aura_save_settings']) && wp_verify_nonce($_POST['aura_settings
     update_option('aura_notification_email',       sanitize_email($_POST['notification_email']));
     update_option('aura_notification_from_name',   sanitize_text_field($_POST['notification_from_name']));
 
+    if (isset($_POST['aura_default_locale']) && class_exists('Aura_I18n')) {
+        $posted_locale = sanitize_text_field(wp_unslash($_POST['aura_default_locale']));
+        $available_loc = Aura_I18n::get_available_locales();
+        $clean_locale  = ($posted_locale !== '' && isset($available_loc[$posted_locale])) ? $posted_locale : '';
+        update_option(Aura_I18n::OPTION_DEFAULT_LOCALE, $clean_locale);
+    }
+
     // ── Moneda Base y Formato Internacional (ISO 4217) ──────────────────────
     if (isset($_POST['aura_finance_base_currency'])) {
         $clean_base_curr = strtoupper(sanitize_text_field($_POST['aura_finance_base_currency']));
@@ -330,6 +337,10 @@ document.addEventListener('DOMContentLoaded', function () {
         <button type="button" class="aura-navbar-item aura-tab-btn tab-btn" data-tab="tab-pages" role="tab">
             <span class="dashicons dashicons-admin-page"></span>
             <span><?php esc_html_e('Páginas', 'aura-suite'); ?></span>
+        </button>
+        <button type="button" class="aura-navbar-item aura-tab-btn tab-btn" data-tab="tab-i18n" role="tab">
+            <span class="dashicons dashicons-translation"></span>
+            <span><?php esc_html_e('Idiomas (i18n)', 'aura-suite'); ?></span>
         </button>
     </nav>
 
@@ -1780,6 +1791,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
 
             <?php if ( class_exists( 'Aura_Page_Manager' ) ) { Aura_Page_Manager::render_panel(); } ?>
+            <?php if ( class_exists( 'Aura_I18n' ) ) { Aura_I18n::render_settings_panel(); } ?>
 
             <!-- ══════════════════════════════════════════════════════
                  TAB: PORTABILIDAD Y MIGRACIÓN (.ZIP)
@@ -1980,7 +1992,7 @@ jQuery(document).ready(function ($) {
                 ? '<div class="aura-info-box" style="font-size:13px;">✅ ' + r.data.message + '</div>'
                 : '<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;font-size:13px;">❌ ' + r.data.message + '</div>'
             );
-        }).fail(function () { $msg.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;">❌ Error en la comunicación con el servidor</div>'); })
+        }).fail(function () { $msg.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;">❌ <?php echo esc_js(__('Error en la comunicación con el servidor', 'aura-suite')); ?></div>'); })
           .always(function () { $btn.prop('disabled', false); });
     });
 
@@ -1998,7 +2010,7 @@ jQuery(document).ready(function ($) {
                 ? '<div class="aura-info-box" style="font-size:13px;">' + r.data.message + '</div>'
                 : '<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;font-size:13px;">❌ ' + r.data.message + '</div>'
             );
-        }).fail(function () { $msg.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;">❌ Error AJAX</div>'); })
+        }).fail(function () { $msg.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;">❌ <?php echo esc_js(__('Error AJAX', 'aura-suite')); ?></div>'); })
           .always(function () { $btn.prop('disabled', false); });
     });
 
@@ -2017,10 +2029,10 @@ jQuery(document).ready(function ($) {
             if (r.success) {
                 $msg.html('<div class="aura-info-box" style="font-size:13px;">✅ ' + r.data.message + '</div>');
             } else {
-                $msg.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;font-size:13px;">❌ ' + (r.data ? r.data.message : 'Error al probar conexión') + '</div>');
+                $msg.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;font-size:13px;">❌ ' + (r.data ? r.data.message : '<?php echo esc_js(__('Error al probar conexión', 'aura-suite')); ?>') + '</div>');
             }
         }).fail(function () {
-            $msg.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;">❌ Error de comunicación con el servidor</div>');
+            $msg.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;">❌ <?php echo esc_js(__('Error de comunicación con el servidor', 'aura-suite')); ?></div>');
         }).always(function () {
             $btn.prop('disabled', false);
         });
@@ -2057,7 +2069,7 @@ jQuery(document).ready(function ($) {
     // ── Simulador / Resumen en Vivo de la Regla de Aprobación ──────
     var auraCurrencySymbol = '<?php echo esc_js($currency_symbol); ?>';
     function formatAuraCurrency(val) {
-        return auraCurrencySymbol + (parseFloat(val) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return auraCurrencySymbol + (parseFloat(val) || 0).toLocaleString(document.documentElement.lang || 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     function syncPresetAndChipHighlight(mode, threshold) {
@@ -2351,7 +2363,7 @@ jQuery(document).ready(function ($) {
                 }
             },
             error: function (xhr, status, error) {
-                $result.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;font-size:13px;">Error: ' + error + '</div>');
+                $result.html('<div class="aura-info-box" style="background:rgba(239,68,68,.08);border-color:#ef4444;color:#dc2626;font-size:13px;"><?php echo esc_js(__('Error:', 'aura-suite')); ?> ' + error + '</div>');
             },
             complete: function () {
                 $button.prop('disabled', false)

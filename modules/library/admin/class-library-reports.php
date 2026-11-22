@@ -48,7 +48,7 @@ class Aura_Library_Reports {
     public static function ajax_kpis(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
         wp_send_json_success( self::get_kpis() );
     }
@@ -106,7 +106,7 @@ class Aura_Library_Reports {
     public static function ajax_loans_chart(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -138,7 +138,7 @@ class Aura_Library_Reports {
     public static function ajax_status_chart(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -149,12 +149,12 @@ class Aura_Library_Reports {
         );
 
         $label_map = [
-            'available'    => __( 'Disponible',  'aura-business-suite' ),
-            'loaned'       => __( 'Prestado',    'aura-business-suite' ),
-            'reserved'     => __( 'Reservado',   'aura-business-suite' ),
-            'maintenance'  => __( 'Mantenimiento','aura-business-suite' ),
-            'reference_only' => __( 'Solo Consulta','aura-business-suite' ),
-            'inactive'     => __( 'Inactivo',    'aura-business-suite' ),
+            'available'    => __( 'Disponible',  'aura-suite' ),
+            'loaned'       => __( 'Prestado',    'aura-suite' ),
+            'reserved'     => __( 'Reservado',   'aura-suite' ),
+            'maintenance'  => __( 'Mantenimiento','aura-suite' ),
+            'reference_only' => __( 'Solo Consulta','aura-suite' ),
+            'inactive'     => __( 'Inactivo',    'aura-suite' ),
         ];
         $color_map = [
             'available'      => '#22c55e',
@@ -182,7 +182,7 @@ class Aura_Library_Reports {
     public static function ajax_dewey_chart(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -202,16 +202,16 @@ class Aura_Library_Reports {
         );
 
         $dewey_names = [
-            '0' => __( '000 Informática', 'aura-business-suite' ),
-            '1' => __( '100 Filosofía',   'aura-business-suite' ),
-            '2' => __( '200 Religión',    'aura-business-suite' ),
-            '3' => __( '300 Sociales',    'aura-business-suite' ),
-            '4' => __( '400 Lengua',      'aura-business-suite' ),
-            '5' => __( '500 Ciencias',    'aura-business-suite' ),
-            '6' => __( '600 Tecnología',  'aura-business-suite' ),
-            '7' => __( '700 Artes',       'aura-business-suite' ),
-            '8' => __( '800 Literatura',  'aura-business-suite' ),
-            '9' => __( '900 Historia',    'aura-business-suite' ),
+            '0' => __( '000 Informática', 'aura-suite' ),
+            '1' => __( '100 Filosofía',   'aura-suite' ),
+            '2' => __( '200 Religión',    'aura-suite' ),
+            '3' => __( '300 Sociales',    'aura-suite' ),
+            '4' => __( '400 Lengua',      'aura-suite' ),
+            '5' => __( '500 Ciencias',    'aura-suite' ),
+            '6' => __( '600 Tecnología',  'aura-suite' ),
+            '7' => __( '700 Artes',       'aura-suite' ),
+            '8' => __( '800 Literatura',  'aura-suite' ),
+            '9' => __( '900 Historia',    'aura-suite' ),
         ];
 
         $labels = $data = [];
@@ -230,7 +230,7 @@ class Aura_Library_Reports {
     public static function ajax_overdue_list(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -271,7 +271,7 @@ class Aura_Library_Reports {
     public static function ajax_top_books(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -308,7 +308,7 @@ class Aura_Library_Reports {
     public static function ajax_recent_reservations(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -347,7 +347,7 @@ class Aura_Library_Reports {
     public static function ajax_report_activity(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $period = sanitize_text_field( $_POST['period'] ?? 'month' );
@@ -416,7 +416,7 @@ class Aura_Library_Reports {
     public static function ajax_report_dewey(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -444,7 +444,7 @@ class Aura_Library_Reports {
     public static function ajax_report_overdue(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -489,7 +489,7 @@ class Aura_Library_Reports {
     public static function ajax_report_inventory(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $inactive_months = (int) ( $_POST['inactive_months'] ?? 6 );
@@ -543,7 +543,7 @@ class Aura_Library_Reports {
     public static function ajax_export_csv(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'Sin permisos.', 'aura-business-suite' ) );
+            wp_die( esc_html__( 'Sin permisos.', 'aura-suite' ) );
         }
 
         $report_type = sanitize_key( $_POST['report_type'] ?? 'activity' );
@@ -578,7 +578,7 @@ class Aura_Library_Reports {
     public static function ajax_export_pdf(): void {
         check_ajax_referer( self::NONCE, 'nonce' );
         if ( ! current_user_can( 'aura_library_reports' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'Sin permisos.', 'aura-business-suite' ) );
+            wp_die( esc_html__( 'Sin permisos.', 'aura-suite' ) );
         }
 
         $report_type = sanitize_key( $_POST['report_type'] ?? 'activity' );
@@ -587,14 +587,14 @@ class Aura_Library_Reports {
         $data     = self::get_report_data_for_export( $report_type, $period );
         $filename = 'biblioteca-reporte-' . $report_type . '-' . gmdate( 'Y-m-d' ) . '.pdf';
         $org      = aura_get_org_name();
-        $title    = sprintf( __( 'Reporte de Biblioteca — %s', 'aura-business-suite' ), $org );
+        $title    = sprintf( __( 'Reporte de Biblioteca — %s', 'aura-suite' ), $org );
 
         // Verificar mPDF disponible
         $mpdf_autoload = AURA_PLUGIN_DIR . 'vendor/autoload.php';
         if ( ! file_exists( $mpdf_autoload ) || ! class_exists( '\Mpdf\Mpdf' ) ) {
             // Fallback: enviar error JSON
             header( 'Content-Type: application/json' );
-            echo wp_json_encode( [ 'error' => __( 'mPDF no está disponible. Usa la exportación CSV.', 'aura-business-suite' ) ] );
+            echo wp_json_encode( [ 'error' => __( 'mPDF no está disponible. Usa la exportación CSV.', 'aura-suite' ) ] );
             exit;
         }
 
@@ -640,10 +640,10 @@ class Aura_Library_Reports {
             case 'activity':
                 $d = self::get_activity_report( $period );
                 $headers = [
-                    __( 'Título', 'aura-business-suite' ),
-                    __( 'Autor', 'aura-business-suite' ),
-                    __( 'Dewey', 'aura-business-suite' ),
-                    __( 'Nº Préstamos', 'aura-business-suite' ),
+                    __( 'Título', 'aura-suite' ),
+                    __( 'Autor', 'aura-suite' ),
+                    __( 'Dewey', 'aura-suite' ),
+                    __( 'Nº Préstamos', 'aura-suite' ),
                 ];
                 $rows = array_map( fn( $b ) => [ $b->title, $b->author, $b->dewey_number ?? '', $b->loan_count ], $d['top_books'] );
                 return compact( 'headers', 'rows' );
@@ -659,7 +659,7 @@ class Aura_Library_Reports {
                      WHERE b.dewey_number IS NOT NULL
                      GROUP BY b.id ORDER BY dewey ASC, loans DESC"
                 );
-                $headers = [ __( 'Dewey', 'aura-business-suite' ), __( 'Título', 'aura-business-suite' ), __( 'Autor', 'aura-business-suite' ), __( 'Préstamos', 'aura-business-suite' ) ];
+                $headers = [ __( 'Dewey', 'aura-suite' ), __( 'Título', 'aura-suite' ), __( 'Autor', 'aura-suite' ), __( 'Préstamos', 'aura-suite' ) ];
                 $rows    = array_map( fn( $r ) => [ $r->dewey, $r->title, $r->author, $r->loans ], $rows_raw );
                 return compact( 'headers', 'rows' );
 
@@ -678,14 +678,14 @@ class Aura_Library_Reports {
                      WHERE l.status IN ('active','extended','overdue') AND l.due_date < '{$today}'
                      ORDER BY l.due_date ASC"
                 );
-                $headers = [ __( 'Libro', 'aura-business-suite' ), __( 'Lector', 'aura-business-suite' ), __( 'Fec. Venc.', 'aura-business-suite' ), __( 'Días Vencido', 'aura-business-suite' ), __( 'Multa', 'aura-business-suite' ) ];
+                $headers = [ __( 'Libro', 'aura-suite' ), __( 'Lector', 'aura-suite' ), __( 'Fec. Venc.', 'aura-suite' ), __( 'Días Vencido', 'aura-suite' ), __( 'Multa', 'aura-suite' ) ];
                 $rows    = array_map( fn( $r ) => [ $r->title, $r->borrower, $r->due_date, $r->days_overdue, number_format( (float) $r->fine_amount, 2 ) ], $rows_raw );
                 return compact( 'headers', 'rows' );
 
             case 'inventory':
             default:
                 $d = self::get_inventory_report( 6 );
-                $headers = [ __( 'Título', 'aura-business-suite' ), __( 'Autor', 'aura-business-suite' ), __( 'Dewey', 'aura-business-suite' ), __( 'Ejs. Total', 'aura-business-suite' ), __( 'Ejs. Disponibles', 'aura-business-suite' ) ];
+                $headers = [ __( 'Título', 'aura-suite' ), __( 'Autor', 'aura-suite' ), __( 'Dewey', 'aura-suite' ), __( 'Ejs. Total', 'aura-suite' ), __( 'Ejs. Disponibles', 'aura-suite' ) ];
                 $rows    = array_map( fn( $b ) => [ $b->title, $b->author, $b->dewey_number ?? '', $b->total_copies, $b->available_copies ], $d['inactive'] );
                 return compact( 'headers', 'rows' );
         }

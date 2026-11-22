@@ -115,15 +115,15 @@ $company_name = get_option( 'aura_company_name', get_bloginfo( 'name' ) );
             <div class="aura-cols-grid">
                 <?php
                 $cols_avail = [
-                    'id'              => 'ID',
-                    'fecha'           => 'Fecha',
-                    'tipo'            => 'Tipo',
-                    'categoria'       => 'Categoría',
-                    'cuenta_contable' => 'Cuenta Contable',
-                    'monto'           => 'Monto',
-                    'descripcion'     => 'Descripción',
-                    'estado'          => 'Estado',
-                    'metodo_pago'     => 'Método de Pago',
+                    'id'              => __( 'ID', 'aura-suite' ),
+                    'fecha'           => __( 'Fecha', 'aura-suite' ),
+                    'tipo'            => __( 'Tipo', 'aura-suite' ),
+                    'categoria'       => __( 'Categoría', 'aura-suite' ),
+                    'cuenta_contable' => __( 'Cuenta Contable', 'aura-suite' ),
+                    'monto'           => __( 'Monto', 'aura-suite' ),
+                    'descripcion'     => __( 'Descripción', 'aura-suite' ),
+                    'estado'          => __( 'Estado', 'aura-suite' ),
+                    'metodo_pago'     => __( 'Método de Pago', 'aura-suite' ),
                 ];
                 foreach ( $cols_avail as $col_key => $col_label ) :
                 ?>
@@ -182,7 +182,7 @@ $company_name = get_option( 'aura_company_name', get_bloginfo( 'name' ) );
                     <?php foreach ( $all_categories as $cat ) : ?>
                         <option value="<?php echo esc_attr( $cat->id ); ?>">
                             <?php echo esc_html( $cat->name ); ?>
-                            (<?php echo esc_html( $cat->type === 'income' ? 'Ingreso' : ( $cat->type === 'expense' ? 'Egreso' : 'Ambos' ) ); ?>)
+                            (<?php echo esc_html( $cat->type === 'income' ? __( 'Ingreso', 'aura-suite' ) : ( $cat->type === 'expense' ? __( 'Egreso', 'aura-suite' ) : __( 'Ambos', 'aura-suite' ) ) ); ?>)
                         </option>
                     <?php endforeach; ?>
                 </select>

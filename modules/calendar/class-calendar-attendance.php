@@ -162,12 +162,12 @@ class Aura_Calendar_Attendance {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_attendance' ) && ! current_user_can( 'aura_cal_take_attendance' ) && ! current_user_can( 'aura_take_attendance' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para ver o tomar asistencia.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para ver o tomar asistencia.', 'aura-suite' ) ] );
         }
 
         $event_id = intval( $_POST['event_id'] ?? 0 );
         if ( ! $event_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura-suite' ) ] );
         }
 
         $data = self::get_event_roster( $event_id );
@@ -178,21 +178,21 @@ class Aura_Calendar_Attendance {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_take_attendance' ) && ! current_user_can( 'aura_take_attendance' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para registrar asistencia.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para registrar asistencia.', 'aura-suite' ) ] );
         }
 
         $event_id = intval( $_POST['event_id'] ?? 0 );
         $records  = $_POST['records'] ?? [];
 
         if ( ! $event_id || ! is_array( $records ) ) {
-            wp_send_json_error( [ 'message' => __( 'Datos de asistencia inválidos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Datos de asistencia inválidos.', 'aura-suite' ) ] );
         }
 
         $ok = self::save_attendance( $event_id, $records );
         if ( $ok ) {
-            wp_send_json_success( [ 'message' => __( 'Asistencia guardada correctamente.', 'aura' ) ] );
+            wp_send_json_success( [ 'message' => __( 'Asistencia guardada correctamente.', 'aura-suite' ) ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'Error al guardar la asistencia.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Error al guardar la asistencia.', 'aura-suite' ) ] );
         }
     }
 }

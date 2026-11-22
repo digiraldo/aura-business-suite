@@ -254,10 +254,10 @@ class Aura_Forms_Analytics {
                 $counts = array_count_values( $values );
                 arsort( $counts );
                 $i18n = [
-                    'agree'    => 'De acuerdo',
-                    'disagree' => 'En desacuerdo',
-                    'accepted' => 'Aceptado',
-                    ''         => 'No aceptado',
+                    'agree'    => __( 'De acuerdo', 'aura-suite' ),
+                    'disagree' => __( 'En desacuerdo', 'aura-suite' ),
+                    'accepted' => __( 'Aceptado', 'aura-suite' ),
+                    ''         => __( 'No aceptado', 'aura-suite' ),
                 ];
                 $translated = [];
                 foreach ( $counts as $k => $v ) {

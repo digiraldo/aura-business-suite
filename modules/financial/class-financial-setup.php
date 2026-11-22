@@ -61,7 +61,7 @@ class Aura_Financial_Setup {
         if ($existing_count > 0 && !$force_reinstall) {
             return [
                 'success' => false,
-                'message' => __('Ya existen categorías en el sistema. Use la opción "Reinstalar" para sobrescribir.', 'aura'),
+                'message' => __('Ya existen categorías en el sistema. Use la opción "Reinstalar" para sobrescribir.', 'aura-suite'),
                 'stats' => [
                     'existing' => $existing_count,
                     'created' => 0,
@@ -523,7 +523,7 @@ class Aura_Financial_Setup {
         return [
             'success' => $error_count === 0,
             'message' => sprintf(
-                __('Se crearon %d categorías correctamente. Errores: %d', 'aura'),
+                __('Se crearon %d categorías correctamente. Errores: %d', 'aura-suite'),
                 $created_count,
                 $error_count
             ),
@@ -638,14 +638,14 @@ class Aura_Financial_Setup {
         if (json_last_error() !== JSON_ERROR_NONE) {
             return [
                 'success' => false,
-                'message' => __('Error al decodificar JSON: ', 'aura') . json_last_error_msg(),
+                'message' => __('Error al decodificar JSON: ', 'aura-suite') . json_last_error_msg(),
             ];
         }
         
         if (!isset($data['categories']) || !is_array($data['categories'])) {
             return [
                 'success' => false,
-                'message' => __('Formato de JSON inválido. Falta el array de categorías.', 'aura'),
+                'message' => __('Formato de JSON inválido. Falta el array de categorías.', 'aura-suite'),
             ];
         }
         
@@ -664,7 +664,7 @@ class Aura_Financial_Setup {
         return [
             'success' => true,
             'message' => sprintf(
-                __('Importación completada. Importadas: %d, Omitidas: %d', 'aura'),
+                __('Importación completada. Importadas: %d, Omitidas: %d', 'aura-suite'),
                 $imported,
                 $skipped
             ),

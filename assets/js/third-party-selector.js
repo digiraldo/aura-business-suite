@@ -12,6 +12,9 @@
 window.AuraThirdPartySelector = (function($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+    function escHtml(s) { return $('<span>').text(s == null ? '' : String(s)).html(); }
+
     const partyTypeIcons = {
         'company': 'dashicons-building',
         'store': 'dashicons-cart',
@@ -101,7 +104,7 @@ window.AuraThirdPartySelector = (function($) {
                         const isUser = item.type === 'wp_user' || item.is_wp_user;
                         const docText = item.document_id ? ' (' + (item.tax_id_type || 'NIT') + ': ' + item.document_id + ')' : (item.email ? ' (' + item.email + ')' : '');
                         if ($text.length) $text.text((item.commercial_name || item.name) + docText);
-                        if ($badge.length) $badge.text(item.accounting_role_label || item.party_type_label || (isUser ? 'Usuario' : 'Tercero'));
+                        if ($badge.length) $badge.text(item.accounting_role_label || item.party_type_label || (isUser ? __('Usuario', 'aura-suite') : __('Tercero', 'aura-suite')));
                         if ($avatar.length) {
                             if (item.avatar_url) {
                                 $avatar.html('<img src="' + item.avatar_url + '" width="28" height="28" style="object-fit:cover;border-radius:6px;width:100%;height:100%;">');
@@ -130,7 +133,7 @@ window.AuraThirdPartySelector = (function($) {
                 ul.addClass('aura-ac-dropdown-menu');
 
                 $.each(items, function(index, item) {
-                    const category = item.category || item.accounting_role_label || 'Terceros';
+                    const category = item.category || item.accounting_role_label || __('Terceros', 'aura-suite');
                     if (category !== currentCategory) {
                         const iconClass = item.icon || 'dashicons-category';
                         ul.append(
@@ -194,11 +197,11 @@ window.AuraThirdPartySelector = (function($) {
                             <span class="dashicons dashicons-groups" style="font-size:24px;width:24px;height:24px;"></span>
                         </div>
                         <div>
-                            <h3 id="aura-tp-modal-title" style="margin:0;font-size:1.2rem;font-weight:700;color:#0f172a;letter-spacing:-0.2px;">Catálogo de Terceros y Entidades Comerciales</h3>
-                            <p id="aura-tp-modal-subtitle" style="margin:2px 0 0;font-size:0.85rem;color:#64748b;">Explora entidades por tipo (Empresas, Tiendas, Fundaciones, Personas) y rol contable o registra uno nuevo.</p>
+                            <h3 id="aura-tp-modal-title" style="margin:0;font-size:1.2rem;font-weight:700;color:#0f172a;letter-spacing:-0.2px;">${escHtml(__('Catálogo de Terceros y Entidades Comerciales', 'aura-suite'))}</h3>
+                            <p id="aura-tp-modal-subtitle" style="margin:2px 0 0;font-size:0.85rem;color:#64748b;">${escHtml(__('Explora entidades por tipo (Empresas, Tiendas, Fundaciones, Personas) y rol contable o registra uno nuevo.', 'aura-suite'))}</p>
                         </div>
                     </div>
-                    <button type="button" class="aura-tp-modal-close-icon" style="background:none;border:none;font-size:24px;cursor:pointer;color:#64748b;line-height:1;padding:6px 10px;border-radius:8px;transition:background .15s;" title="Cerrar (Esc)">&times;</button>
+                    <button type="button" class="aura-tp-modal-close-icon" style="background:none;border:none;font-size:24px;cursor:pointer;color:#64748b;line-height:1;padding:6px 10px;border-radius:8px;transition:background .15s;" title="${escHtml(__('Cerrar (Esc)', 'aura-suite'))}">&times;</button>
                 </div>
 
                 <!-- Controls & Filters Bar -->
@@ -207,58 +210,58 @@ window.AuraThirdPartySelector = (function($) {
                     <!-- Search Input + Filter & Sort Controls -->
                     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
                         <div style="position:relative;flex:1;min-width:260px;">
-                            <input type="text" id="aura-tp-explorer-search" placeholder="Buscar por nombre, razón social, NIT / Documento, @login o correo..." style="width:100%;height:42px;padding:0 36px 0 38px;border-radius:10px;border:1px solid #cbd5e1;font-size:0.92rem;box-sizing:border-box;background:#f8fafc;transition:border-color .15s, box-shadow .15s;">
+                            <input type="text" id="aura-tp-explorer-search" placeholder="${escHtml(__('Buscar por nombre, razón social, NIT / Documento, @login o correo...', 'aura-suite'))}" style="width:100%;height:42px;padding:0 36px 0 38px;border-radius:10px;border:1px solid #cbd5e1;font-size:0.92rem;box-sizing:border-box;background:#f8fafc;transition:border-color .15s, box-shadow .15s;">
                             <span class="dashicons dashicons-search" style="position:absolute;left:11px;top:11px;color:#94a3b8;font-size:20px;"></span>
                             <button type="button" id="aura-tp-search-clear" style="position:absolute;right:8px;top:10px;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:16px;display:none;padding:2px 6px;">✕</button>
                         </div>
 
                         <!-- Filtro de Rol Contable Secundario -->
                         <div id="aura-tp-role-dropdown-wrap" style="display:flex;align-items:center;gap:6px;">
-                            <label for="aura-tp-filter-role" style="font-size:12px;font-weight:600;color:#64748b;margin:0;">Rol Contable:</label>
+                            <label for="aura-tp-filter-role" style="font-size:12px;font-weight:600;color:#64748b;margin:0;">${escHtml(__('Rol Contable:', 'aura-suite'))}</label>
                             <select id="aura-tp-filter-role" style="height:42px;border-radius:10px;border:1px solid #cbd5e1;font-size:12.5px;padding:0 24px 0 10px;background:#fff;color:#334155;cursor:pointer;">
-                                <option value="all">Todos los Roles</option>
-                                <option value="supplier">🏢 Proveedores / Comercios</option>
-                                <option value="customer">👤 Clientes</option>
-                                <option value="bank_creditor">🏦 Bancos / Acreedores</option>
-                                <option value="tax_authority">🏛️ Impuestos / DIAN</option>
-                                <option value="employee">👥 Empleados / Nómina</option>
-                                <option value="other">🏷️ Otros</option>
+                                <option value="all">${escHtml(__('Todos los Roles', 'aura-suite'))}</option>
+                                <option value="supplier">🏢 ${escHtml(__('Proveedores / Comercios', 'aura-suite'))}</option>
+                                <option value="customer">👤 ${escHtml(__('Clientes', 'aura-suite'))}</option>
+                                <option value="bank_creditor">🏦 ${escHtml(__('Bancos / Acreedores', 'aura-suite'))}</option>
+                                <option value="tax_authority">🏛️ ${escHtml(__('Impuestos / DIAN', 'aura-suite'))}</option>
+                                <option value="employee">👥 ${escHtml(__('Empleados / Nómina', 'aura-suite'))}</option>
+                                <option value="other">🏷️ ${escHtml(__('Otros', 'aura-suite'))}</option>
                             </select>
                         </div>
 
                         <!-- Ordenar -->
                         <div style="display:flex;align-items:center;gap:6px;">
-                            <label for="aura-tp-sort" style="font-size:12px;font-weight:600;color:#64748b;margin:0;">Ordenar:</label>
+                            <label for="aura-tp-sort" style="font-size:12px;font-weight:600;color:#64748b;margin:0;">${escHtml(__('Ordenar:', 'aura-suite'))}</label>
                             <select id="aura-tp-sort" style="height:42px;border-radius:10px;border:1px solid #cbd5e1;font-size:12.5px;padding:0 24px 0 10px;background:#fff;color:#334155;cursor:pointer;">
-                                <option value="name_asc">Nombre (A - Z)</option>
-                                <option value="name_desc">Nombre (Z - A)</option>
-                                <option value="type">Por Tipo de Entidad</option>
-                                <option value="role">Por Rol Contable</option>
+                                <option value="name_asc">${escHtml(__('Nombre (A - Z)', 'aura-suite'))}</option>
+                                <option value="name_desc">${escHtml(__('Nombre (Z - A)', 'aura-suite'))}</option>
+                                <option value="type">${escHtml(__('Por Tipo de Entidad', 'aura-suite'))}</option>
+                                <option value="role">${escHtml(__('Por Rol Contable', 'aura-suite'))}</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Tabs de Tipo / Naturaleza de Terceros -->
                     <div id="aura-tp-type-tabs" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;white-space:nowrap;">
-                        <button type="button" class="aura-type-tab-btn is-active" data-type="all">Todos <span class="badge" data-type-count="all">0</span></button>
-                        <button type="button" class="aura-type-tab-btn" data-type="company">🏢 Empresas <span class="badge" data-type-count="company">0</span></button>
-                        <button type="button" class="aura-type-tab-btn" data-type="store">🛗️ Tiendas <span class="badge" data-type-count="store">0</span></button>
-                        <button type="button" class="aura-type-tab-btn" data-type="organization_foundation">🎗️ Fundaciones <span class="badge" data-type-count="organization_foundation">0</span></button>
-                        <button type="button" class="aura-type-tab-btn" data-type="person">👤 Persona Natural <span class="badge" data-type-count="person">0</span></button>
-                        <button type="button" class="aura-type-tab-btn" data-type="religious">⛪ Religiosas <span class="badge" data-type-count="religious">0</span></button>
-                        <button type="button" class="aura-type-tab-btn" data-type="other">🏷️ Otras <span class="badge" data-type-count="other">0</span></button>
-                        <button type="button" class="aura-type-tab-btn" data-type="user">👥 Usuarios Sistema <span class="badge" data-type-count="user">0</span></button>
+                        <button type="button" class="aura-type-tab-btn is-active" data-type="all">${escHtml(__('Todos', 'aura-suite'))} <span class="badge" data-type-count="all">0</span></button>
+                        <button type="button" class="aura-type-tab-btn" data-type="company">🏢 ${escHtml(__('Empresas', 'aura-suite'))} <span class="badge" data-type-count="company">0</span></button>
+                        <button type="button" class="aura-type-tab-btn" data-type="store">🛗️ ${escHtml(__('Tiendas', 'aura-suite'))} <span class="badge" data-type-count="store">0</span></button>
+                        <button type="button" class="aura-type-tab-btn" data-type="organization_foundation">🎗️ ${escHtml(__('Fundaciones', 'aura-suite'))} <span class="badge" data-type-count="organization_foundation">0</span></button>
+                        <button type="button" class="aura-type-tab-btn" data-type="person">👤 ${escHtml(__('Persona Natural', 'aura-suite'))} <span class="badge" data-type-count="person">0</span></button>
+                        <button type="button" class="aura-type-tab-btn" data-type="religious">⛪ ${escHtml(__('Religiosas', 'aura-suite'))} <span class="badge" data-type-count="religious">0</span></button>
+                        <button type="button" class="aura-type-tab-btn" data-type="other">🏷️ ${escHtml(__('Otras', 'aura-suite'))} <span class="badge" data-type-count="other">0</span></button>
+                        <button type="button" class="aura-type-tab-btn" data-type="user">👥 ${escHtml(__('Usuarios Sistema', 'aura-suite'))} <span class="badge" data-type-count="user">0</span></button>
                     </div>
 
 
                     <!-- Pills de Roles WordPress (Modo Usuarios Sistema) -->
                     <div id="aura-user-role-filters" style="display:none;gap:6px;overflow-x:auto;padding-bottom:2px;white-space:nowrap;">
-                        <button type="button" class="aura-role-pill is-active" data-wp-role="all">Todos los Roles <span class="badge" data-wp-count="all">0</span></button>
+                        <button type="button" class="aura-role-pill is-active" data-wp-role="all">${escHtml(__('Todos los Roles', 'aura-suite'))} <span class="badge" data-wp-count="all">0</span></button>
                     </div>
 
                     <!-- Resumen de Resultados -->
                     <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#64748b;padding-top:2px;">
-                        <span id="aura-tp-results-count">Cargando catálogo...</span>
+                        <span id="aura-tp-results-count">${escHtml(__('Cargando catálogo...', 'aura-suite'))}</span>
                         <span id="aura-tp-active-filter-badge" style="font-size:11.5px;color:#2563eb;font-weight:600;"></span>
                     </div>
 
@@ -268,7 +271,7 @@ window.AuraThirdPartySelector = (function($) {
                 <div id="aura-tp-explorer-body" style="padding:16px 24px;overflow-y:auto;flex:1 1 auto;min-height:0;background:#f8fafc;">
                     <div id="aura-tp-explorer-loading" style="text-align:center;padding:50px 0;color:#64748b;">
                         <span class="spinner is-active" style="float:none;width:32px;height:32px;"></span>
-                        <p style="margin-top:12px;font-size:0.9rem;font-weight:500;">Cargando catálogo y entidades...</p>
+                        <p style="margin-top:12px;font-size:0.9rem;font-weight:500;">${escHtml(__('Cargando catálogo y entidades...', 'aura-suite'))}</p>
                     </div>
                     
                     <div id="aura-tp-explorer-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:14px;"></div>
@@ -278,9 +281,9 @@ window.AuraThirdPartySelector = (function($) {
                         <div style="width:54px;height:54px;border-radius:50%;background:#e2e8f0;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;">
                             <span class="dashicons dashicons-search" style="font-size:28px;width:28px;height:28px;color:#64748b;"></span>
                         </div>
-                        <h4 style="margin:0 0 4px;font-size:1rem;color:#1e293b;">No se encontraron resultados coincidentes</h4>
-                        <p id="aura-tp-empty-hint" style="margin:0 0 16px;font-size:0.85rem;color:#64748b;">Intenta cambiar el término de búsqueda o seleccionar otra categoría.</p>
-                        <button type="button" id="aura-tp-reset-filters-btn" class="button button-secondary" style="font-size:12px;">Restablecer Filtros</button>
+                        <h4 style="margin:0 0 4px;font-size:1rem;color:#1e293b;">${escHtml(__('No se encontraron resultados coincidentes', 'aura-suite'))}</h4>
+                        <p id="aura-tp-empty-hint" style="margin:0 0 16px;font-size:0.85rem;color:#64748b;">${escHtml(__('Intenta cambiar el término de búsqueda o seleccionar otra categoría.', 'aura-suite'))}</p>
+                        <button type="button" id="aura-tp-reset-filters-btn" class="button button-secondary" style="font-size:12px;">${escHtml(__('Restablecer Filtros', 'aura-suite'))}</button>
                     </div>
                 </div>
 
@@ -288,10 +291,10 @@ window.AuraThirdPartySelector = (function($) {
                 <div class="aura-tp-modal-footer" style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px;border-top:1px solid #e2e8f0;background:#fff;flex-shrink:0;flex:0 0 auto;">
                     <div id="aura-tp-footer-actions">
                         <a href="${adminUrl('admin.php?page=aura-third-parties')}" target="_blank" class="aura-tp-link-manage" style="font-size:12.5px;color:#2563eb;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
-                            <span class="dashicons dashicons-plus-alt" style="font-size:15px;width:15px;height:15px;"></span> Registrar Nuevo Tercero en el Directorio
+                            <span class="dashicons dashicons-plus-alt" style="font-size:15px;width:15px;height:15px;"></span> ${escHtml(__('Registrar Nuevo Tercero en el Directorio', 'aura-suite'))}
                         </a>
                     </div>
-                    <button type="button" class="button button-large aura-tp-modal-btn-cancel" style="height:36px;padding:0 20px;border-radius:8px;font-weight:600;min-width:100px;">Cerrar</button>
+                    <button type="button" class="button button-large aura-tp-modal-btn-cancel" style="height:36px;padding:0 20px;border-radius:8px;font-weight:600;min-width:100px;">${escHtml(__('Cerrar', 'aura-suite'))}</button>
                 </div>
 
             </div>
@@ -421,7 +424,7 @@ window.AuraThirdPartySelector = (function($) {
             const tpId = $(this).data('id');
             const userId = $(this).data('user-id') || 0;
             const role = $(this).data('role') || 'supplier';
-            const roleLabel = $(this).data('role-label') || 'Tercero';
+            const roleLabel = $(this).data('role-label') || __('Tercero', 'aura-suite');
             const name = $(this).data('name');
             const commercial = $(this).data('commercial') || '';
             const doc = $(this).data('doc') || '';
@@ -506,7 +509,7 @@ window.AuraThirdPartySelector = (function($) {
 
                         const docText = item.document_id ? ' (' + (item.tax_id_type || 'NIT') + ': ' + item.document_id + ')' : (item.email ? ' (' + item.email + ')' : '');
                         if ($text.length) $text.text((item.commercial_name || item.name) + docText);
-                        if ($badge.length) $badge.text(item.accounting_role_label || (isWpUser ? 'Usuario' : 'Tercero'));
+                        if ($badge.length) $badge.text(item.accounting_role_label || (isWpUser ? __('Usuario', 'aura-suite') : __('Tercero', 'aura-suite')));
                         if ($avatar.length) {
                             if (item.avatar_url) {
                                 $avatar.html('<img src="' + item.avatar_url + '" width="28" height="28" style="object-fit:cover;border-radius:6px;width:100%;height:100%;">');
@@ -568,7 +571,7 @@ window.AuraThirdPartySelector = (function($) {
         let totalUsers = 0;
         userRoles.forEach(function(r) { totalUsers += (r.count || 0); });
 
-        let pillsHtml = `<button type="button" class="aura-role-pill is-active" data-wp-role="all">Todos los Roles <span class="badge">${totalUsers}</span></button>`;
+        let pillsHtml = `<button type="button" class="aura-role-pill is-active" data-wp-role="all">${escHtml(__('Todos los Roles', 'aura-suite'))} <span class="badge">${totalUsers}</span></button>`;
         userRoles.forEach(function(r) {
             pillsHtml += `<button type="button" class="aura-role-pill" data-wp-role="${r.slug}">${r.label} <span class="badge">${r.count}</span></button>`;
         });
@@ -657,14 +660,14 @@ window.AuraThirdPartySelector = (function($) {
         // Actualizar contador
         const totalShown = filtered.length;
         const totalBase = allItems.length;
-        $('#aura-tp-results-count').text(`Mostrando ${totalShown} de ${totalBase} registros`);
+        $('#aura-tp-results-count').text(`${__('Mostrando', 'aura-suite')} ${totalShown} ${__('de', 'aura-suite')} ${totalBase} ${__('registros', 'aura-suite')}`);
 
         if (!filtered.length) {
             $('#aura-tp-explorer-empty').show();
             if (searchTerm) {
-                $('#aura-tp-empty-hint').text(`No hay coincidencias para "${$('#aura-tp-explorer-search').val()}".`);
+                $('#aura-tp-empty-hint').text(`${__('No hay coincidencias para', 'aura-suite')} "${$('#aura-tp-explorer-search').val()}".`);
             } else {
-                $('#aura-tp-empty-hint').text('No hay registros con los filtros seleccionados.');
+                $('#aura-tp-empty-hint').text(__('No hay registros con los filtros seleccionados.', 'aura-suite'));
             }
             return;
         }
@@ -680,7 +683,7 @@ window.AuraThirdPartySelector = (function($) {
                 avatarHtml = `<div style="width:42px;height:42px;border-radius:10px;background:#e2e8f0;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span class="dashicons ${icon}" style="font-size:22px;width:22px;height:22px;color:#475569;"></span></div>`;
             }
 
-            const docText = item.document_id ? (item.tax_id_type + ': ' + item.document_id) : (item.email || 'Sin documento');
+            const docText = item.document_id ? (item.tax_id_type + ': ' + item.document_id) : (item.email || __('Sin documento', 'aura-suite'));
             const badgeClass = item.badge_class || 'aura-pill--muted';
             const isUser = item.is_wp_user;
             const extraMeta = isUser 
@@ -720,7 +723,7 @@ window.AuraThirdPartySelector = (function($) {
                             data-tax="${item.tax_id_type || 'NIT'}"
                             data-logo="${item.logo_url || ''}"
                             style="font-size:11.5px;font-weight:600;height:28px;padding:0 12px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;flex-shrink:0;">
-                        <span class="dashicons dashicons-yes" style="font-size:13px;width:13px;height:13px;"></span> Seleccionar
+                        <span class="dashicons dashicons-yes" style="font-size:13px;width:13px;height:13px;"></span> ${escHtml(__('Seleccionar', 'aura-suite'))}
                     </button>
                 </div>
             </div>
@@ -739,27 +742,27 @@ window.AuraThirdPartySelector = (function($) {
 
         // Configuración contextual del modal
         if (isUserMode) {
-            $('#aura-tp-modal-title').text('Directorio de Usuarios del Sistema');
-            $('#aura-tp-modal-subtitle').text('Selecciona un usuario o colaborador registrado en el sistema Aura / WordPress.');
+            $('#aura-tp-modal-title').text(__('Directorio de Usuarios del Sistema', 'aura-suite'));
+            $('#aura-tp-modal-subtitle').text(__('Selecciona un usuario o colaborador registrado en el sistema Aura / WordPress.', 'aura-suite'));
             $('#aura-tp-modal-icon-box').html('<span class="dashicons dashicons-admin-users" style="font-size:24px;width:24px;height:24px;"></span>').css({'background':'#f5f3ff','color':'#7c3aed','borderColor':'#ddd6fe'});
             $('#aura-tp-type-tabs').hide();
             $('#aura-tp-role-dropdown-wrap').hide();
             $('#aura-user-role-filters').css('display', 'flex');
             $('#aura-tp-footer-actions').html(`
                 <a href="${adminUrl('users.php')}" target="_blank" style="font-size:12.5px;color:#7c3aed;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
-                    <span class="dashicons dashicons-admin-users" style="font-size:15px;width:15px;height:15px;"></span> Administrar Usuarios de WordPress
+                    <span class="dashicons dashicons-admin-users" style="font-size:15px;width:15px;height:15px;"></span> ${escHtml(__('Administrar Usuarios de WordPress', 'aura-suite'))}
                 </a>
             `);
         } else {
-            $('#aura-tp-modal-title').text('Catálogo de Terceros y Entidades Comerciales');
-            $('#aura-tp-modal-subtitle').text('Explora entidades por tipo (Empresas, Tiendas, Fundaciones, Personas) y rol contable (Proveedores, Clientes, Bancos, etc.) o registra uno nuevo.');
+            $('#aura-tp-modal-title').text(__('Catálogo de Terceros y Entidades Comerciales', 'aura-suite'));
+            $('#aura-tp-modal-subtitle').text(__('Explora entidades por tipo (Empresas, Tiendas, Fundaciones, Personas) y rol contable (Proveedores, Clientes, Bancos, etc.) o registra uno nuevo.', 'aura-suite'));
             $('#aura-tp-modal-icon-box').html('<span class="dashicons dashicons-groups" style="font-size:24px;width:24px;height:24px;"></span>').css({'background':'#eff6ff','color':'#2563eb','borderColor':'#bfdbfe'});
             $('#aura-tp-type-tabs').css('display', 'flex');
             $('#aura-tp-role-dropdown-wrap').show();
             $('#aura-user-role-filters').hide();
             $('#aura-tp-footer-actions').html(`
                 <a href="${adminUrl('admin.php?page=aura-third-parties')}" target="_blank" style="font-size:12.5px;color:#2563eb;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
-                    <span class="dashicons dashicons-plus-alt" style="font-size:15px;width:15px;height:15px;"></span> Registrar Nuevo Tercero en el Directorio
+                    <span class="dashicons dashicons-plus-alt" style="font-size:15px;width:15px;height:15px;"></span> ${escHtml(__('Registrar Nuevo Tercero en el Directorio', 'aura-suite'))}
                 </a>
             `);
         }

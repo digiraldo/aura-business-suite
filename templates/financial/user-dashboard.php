@@ -78,7 +78,7 @@ if ( ! is_wp_error( $summary ) ) {
 $balance           = $income - $expense;
 $base_url          = admin_url( 'admin.php?page=aura-my-finance' );
 $nonce_field       = wp_create_nonce( 'aura_user_dashboard_nonce' );
-$user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Usuario #{$viewing_user_id}";
+$user_display_name = $viewing_user_data ? $viewing_user_data->display_name : sprintf( __( 'Usuario #%d', 'aura-suite' ), $viewing_user_id );
 ?>
 
 <div class="wrap aura-user-dashboard-wrap" style="width:100% !important; max-width:100% !important; margin:16px 0 40px 0 !important; padding-right:20px !important; box-sizing:border-box !important;">
@@ -186,7 +186,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
     <?php if ( $can_view_others ) : 
         $is_consulting_other = ( $viewing_user_id !== $current_user_id );
         $user_avatar_url = $viewing_user_data ? get_avatar_url( $viewing_user_id, [ 'size' => 72 ] ) : '';
-        $user_roles = $viewing_user_data && ! empty( $viewing_user_data->roles ) ? array_map( 'ucfirst', (array) $viewing_user_data->roles ) : [ 'Usuario' ];
+        $user_roles = $viewing_user_data && ! empty( $viewing_user_data->roles ) ? array_map( 'ucfirst', (array) $viewing_user_data->roles ) : [ __( 'Usuario', 'aura-suite' ) ];
         $role_primary = reset( $user_roles );
     ?>
     <div class="aura-user-selector-bar" style="width:100% !important; max-width:100% !important; box-sizing:border-box !important; margin:0 0 22px 0 !important; padding:8px 16px !important; border-radius:12px !important; background:var(--bg-surface, #ffffff) !important; border:1px solid var(--border-color, #e2e8f0) !important; display:flex !important; align-items:center !important; justify-content:space-between !important; flex-wrap:wrap !important; gap:12px !important; box-shadow:0 2px 8px rgba(0,0,0,0.03) !important;">
@@ -207,7 +207,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                     <?php echo $is_consulting_other ? esc_html__( 'Consultando:', 'aura-suite' ) : esc_html__( 'Mi Perfil:', 'aura-suite' ); ?>
                 </span>
                 <strong style="font-size:13.5px; font-weight:800; color:var(--tx-primary, #0f172a);">
-                    <?php echo esc_html( $viewing_user_data ? $viewing_user_data->display_name : "Usuario #{$viewing_user_id}" ); ?>
+                    <?php echo esc_html( $viewing_user_data ? $viewing_user_data->display_name : sprintf( __( 'Usuario #%d', 'aura-suite' ), $viewing_user_id ) ); ?>
                 </strong>
                 <span class="badge badge-slate pill" style="font-size:10.5px; padding:2px 8px;">#<?php echo esc_html( $viewing_user_id ); ?></span>
                 <span class="badge badge-indigo pill" style="font-size:10.5px; padding:2px 8px;"><?php echo esc_html( $role_primary ); ?></span>
@@ -246,7 +246,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                     <option value=""><?php printf( esc_html__( '— Cambiar a otro usuario (%d registrados) —', 'aura-suite' ), count( $all_system_users ) ); ?></option>
                     <?php foreach ( $all_system_users as $u ) : 
                         $u_roles = (array) ( get_userdata( $u->ID )->roles ?? [] );
-                        $u_role_label = ! empty( $u_roles ) ? ucfirst( reset( $u_roles ) ) : 'Usuario';
+                        $u_role_label = ! empty( $u_roles ) ? ucfirst( reset( $u_roles ) ) : __( 'Usuario', 'aura-suite' );
                     ?>
                         <option value="<?php echo esc_attr( $u->ID ); ?>" <?php selected( $viewing_user_id, $u->ID ); ?>>
                             <?php echo esc_html( "{$u->display_name} • {$u->user_email} (#{$u->ID} - {$u_role_label})" ); ?>
@@ -536,11 +536,11 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '</div>'
                             . '</div>'
                             . '<div class="aura-tip-card-body">'
-                            . '<div class="aura-tip-row"><span>📅 Fecha:</span><strong>' . esc_html( $date_fmt ) . '</strong></div>'
-                            . '<div class="aura-tip-row"><span>💵 Monto:</span><strong>' . ( $is_income ? '+' : '-' ) . esc_html( $amount_fmt ) . '</strong></div>'
-                            . '<div class="aura-tip-row"><span>🏷️ Concepto:</span><strong>' . esc_html( $concept_label ) . '</strong></div>'
-                            . ( ! empty( $mov->category_name ) ? '<div class="aura-tip-row"><span>📁 Categoría:</span><strong>' . esc_html( $mov->category_name ) . '</strong></div>' : '' )
-                            . '<div class="aura-tip-row"><span>📌 Estado:</span><strong>' . esc_html( ucfirst( $mov->status ) ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>📅 ' . esc_html__( 'Fecha:', 'aura-suite' ) . '</span><strong>' . esc_html( $date_fmt ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>💵 ' . esc_html__( 'Monto:', 'aura-suite' ) . '</span><strong>' . ( $is_income ? '+' : '-' ) . esc_html( $amount_fmt ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>🏷️ ' . esc_html__( 'Concepto:', 'aura-suite' ) . '</span><strong>' . esc_html( $concept_label ) . '</strong></div>'
+                            . ( ! empty( $mov->category_name ) ? '<div class="aura-tip-row"><span>📁 ' . esc_html__( 'Categoría:', 'aura-suite' ) . '</span><strong>' . esc_html( $mov->category_name ) . '</strong></div>' : '' )
+                            . '<div class="aura-tip-row"><span>📌 ' . esc_html__( 'Estado:', 'aura-suite' ) . '</span><strong>' . esc_html( ucfirst( $mov->status ) ) . '</strong></div>'
                             . '</div>'
                             . '</div>';
 
@@ -555,8 +555,8 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '</div>'
                             . '</div>'
                             . '<div class="aura-tip-card-body">'
-                            . '<div class="aura-tip-row"><span>⚡ Flujo:</span><strong style="color:' . ( $is_income ? '#10b981' : '#ef4444' ) . ';">' . ( $is_income ? esc_html__( 'Ingreso / Saldo a favor (+)', 'aura-suite' ) : esc_html__( 'Egreso / Descuento (-)', 'aura-suite' ) ) . '</strong></div>'
-                            . '<div class="aura-tip-row"><span>💵 Monto Operación:</span><strong>' . esc_html( $amount_fmt ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>⚡ ' . esc_html__( 'Flujo:', 'aura-suite' ) . '</span><strong style="color:' . ( $is_income ? '#10b981' : '#ef4444' ) . ';">' . ( $is_income ? esc_html__( 'Ingreso / Saldo a favor (+)', 'aura-suite' ) : esc_html__( 'Egreso / Descuento (-)', 'aura-suite' ) ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>💵 ' . esc_html__( 'Monto Operación:', 'aura-suite' ) . '</span><strong>' . esc_html( $amount_fmt ) . '</strong></div>'
                             . '</div>'
                             . '</div>';
 
@@ -571,11 +571,11 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '</div>'
                             . '</div>'
                             . '<div class="aura-tip-card-body">'
-                            . '<div class="aura-tip-row"><span>📝 Descripción:</span><strong>' . esc_html( $mov->description ) . '</strong></div>'
-                            . '<div class="aura-tip-row"><span>🏷️ Concepto:</span><strong>' . esc_html( $concept_label ) . '</strong></div>'
-                            . ( ! empty( $mov->category_name ) ? '<div class="aura-tip-row"><span>📁 Categoría:</span><strong>' . esc_html( $mov->category_name ) . '</strong></div>' : '' )
-                            . ( ! empty( $mov->reference_number ) ? '<div class="aura-tip-row"><span>🔖 Referencia:</span><strong>' . esc_html( $mov->reference_number ) . '</strong></div>' : '' )
-                            . ( ! empty( $mov->notes ) ? '<div class="aura-tip-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><span>📌 Propósito / Notas:</span><div style="font-size:11.5px;color:#e2e8f0;background:rgba(255,255,255,0.06);padding:6px 8px;border-radius:6px;width:100%;white-space:normal;line-height:1.4;">' . esc_html( $mov->notes ) . '</div></div>' : '' )
+                            . '<div class="aura-tip-row"><span>📝 ' . esc_html__( 'Descripción:', 'aura-suite' ) . '</span><strong>' . esc_html( $mov->description ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>🏷️ ' . esc_html__( 'Concepto:', 'aura-suite' ) . '</span><strong>' . esc_html( $concept_label ) . '</strong></div>'
+                            . ( ! empty( $mov->category_name ) ? '<div class="aura-tip-row"><span>📁 ' . esc_html__( 'Categoría:', 'aura-suite' ) . '</span><strong>' . esc_html( $mov->category_name ) . '</strong></div>' : '' )
+                            . ( ! empty( $mov->reference_number ) ? '<div class="aura-tip-row"><span>🔖 ' . esc_html__( 'Referencia:', 'aura-suite' ) . '</span><strong>' . esc_html( $mov->reference_number ) . '</strong></div>' : '' )
+                            . ( ! empty( $mov->notes ) ? '<div class="aura-tip-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><span>📌 ' . esc_html__( 'Propósito / Notas:', 'aura-suite' ) . '</span><div style="font-size:11.5px;color:#e2e8f0;background:rgba(255,255,255,0.06);padding:6px 8px;border-radius:6px;width:100%;white-space:normal;line-height:1.4;">' . esc_html( $mov->notes ) . '</div></div>' : '' )
                             . '</div>'
                             . '</div>';
 
@@ -590,8 +590,8 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '</div>'
                             . '</div>'
                             . '<div class="aura-tip-card-body">'
-                            . '<div class="aura-tip-row"><span>📌 Concepto:</span><strong>' . esc_html( $concept_label ) . '</strong></div>'
-                            . '<div class="aura-tip-row"><span>📄 Transacción:</span><strong>#' . esc_html( $mov->id ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>📌 ' . esc_html__( 'Concepto:', 'aura-suite' ) . '</span><strong>' . esc_html( $concept_label ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>📄 ' . esc_html__( 'Transacción:', 'aura-suite' ) . '</span><strong>#' . esc_html( $mov->id ) . '</strong></div>'
                             . '</div>'
                             . '</div>';
 
@@ -606,8 +606,8 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '</div>'
                             . '</div>'
                             . '<div class="aura-tip-card-body">'
-                            . '<div class="aura-tip-row"><span>💵 Importe Neto:</span><strong style="color:' . ( $is_income ? '#10b981' : '#ef4444' ) . ';">' . ( $is_income ? '+' : '-' ) . esc_html( $amount_fmt ) . '</strong></div>'
-                            . '<div class="aura-tip-row"><span>📌 Estado:</span><strong>' . esc_html( ucfirst( $mov->status ) ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>💵 ' . esc_html__( 'Importe Neto:', 'aura-suite' ) . '</span><strong style="color:' . ( $is_income ? '#10b981' : '#ef4444' ) . ';">' . ( $is_income ? '+' : '-' ) . esc_html( $amount_fmt ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>📌 ' . esc_html__( 'Estado:', 'aura-suite' ) . '</span><strong>' . esc_html( ucfirst( $mov->status ) ) . '</strong></div>'
                             . '</div>'
                             . '</div>';
 
@@ -623,8 +623,8 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '</div>'
                             . '</div>'
                             . '<div class="aura-tip-card-body">'
-                            . '<div class="aura-tip-row"><span>🆔 Usuario ID:</span><strong>#' . ( $creator ? esc_html( $creator->ID ) : '0' ) . '</strong></div>'
-                            . '<div class="aura-tip-row"><span>📝 Usuario Login:</span><strong>' . ( $creator ? esc_html( $creator->user_login ) : 'system' ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>🆔 ' . esc_html__( 'Usuario ID:', 'aura-suite' ) . '</span><strong>#' . ( $creator ? esc_html( $creator->ID ) : '0' ) . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>📝 ' . esc_html__( 'Usuario Login:', 'aura-suite' ) . '</span><strong>' . ( $creator ? esc_html( $creator->user_login ) : 'system' ) . '</strong></div>'
                             . '</div>'
                             . '</div>';
 
@@ -639,7 +639,7 @@ $user_display_name = $viewing_user_data ? $viewing_user_data->display_name : "Us
                             . '</div>'
                             . '</div>'
                             . '<div class="aura-tip-card-body">'
-                            . '<div class="aura-tip-row"><span>📌 Condición:</span><strong>' . $st_info['desc'] . '</strong></div>'
+                            . '<div class="aura-tip-row"><span>📌 ' . esc_html__( 'Condición:', 'aura-suite' ) . '</span><strong>' . $st_info['desc'] . '</strong></div>'
                             . '</div>'
                             . '</div>';
                     ?>

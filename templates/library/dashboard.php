@@ -28,24 +28,24 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
     <?php
     Aura_UI::render_page_header( [
         'variant'  => 'wow-vip',
-        'title'    => __( 'Biblioteca — Dashboard', 'aura-business-suite' ),
-        'subtitle' => __( 'Visión general de acervo, préstamos en curso, moras y reservas', 'aura-business-suite' ),
+        'title'    => __( 'Biblioteca — Dashboard', 'aura-suite' ),
+        'subtitle' => __( 'Visión general de acervo, préstamos en curso, moras y reservas', 'aura-suite' ),
         'icon'     => 'dashicons-book',
         'actions'  => [
             [
-                'label' => __( 'Catálogo', 'aura-business-suite' ),
+                'label' => __( 'Catálogo', 'aura-suite' ),
                 'url'   => admin_url( 'admin.php?page=aura-library-books' ),
                 'class' => 'btn btn-glass btn-sm btn-lift',
                 'icon'  => 'dashicons-book-alt',
             ],
             [
-                'label' => __( 'Préstamos', 'aura-business-suite' ),
+                'label' => __( 'Préstamos', 'aura-suite' ),
                 'url'   => admin_url( 'admin.php?page=aura-library-loans' ),
                 'class' => 'btn btn-glass btn-sm btn-lift',
                 'icon'  => 'dashicons-id',
             ],
             [
-                'label' => __( 'Ver Reportes', 'aura-business-suite' ),
+                'label' => __( 'Ver Reportes', 'aura-suite' ),
                 'url'   => admin_url( 'admin.php?page=aura-library-reports' ),
                 'class' => 'btn btn-shimmer btn-indigo btn-sm btn-lift',
                 'icon'  => 'dashicons-chart-bar',
@@ -58,49 +58,49 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
             'id'       => 'kpi-total-books',
             'icon'     => 'dashicons-book-alt',
             'value'    => number_format_i18n( (int) $kpis['total_books'] ),
-            'label'    => __( 'Libros en Catálogo', 'aura-business-suite' ),
+            'label'    => __( 'Libros en Catálogo', 'aura-suite' ),
             'variant'  => 'capital',
-            'tooltip'  => __( 'Total de títulos registrados en biblioteca', 'aura-business-suite' ),
+            'tooltip'  => __( 'Total de títulos registrados en biblioteca', 'aura-suite' ),
         ],
         [
             'id'       => 'kpi-available',
             'icon'     => 'dashicons-yes-alt',
             'value'    => number_format_i18n( (int) $kpis['available_copies'] ),
-            'label'    => __( 'Ejemplares Disponibles', 'aura-business-suite' ),
+            'label'    => __( 'Ejemplares Disponibles', 'aura-suite' ),
             'variant'  => 'income',
-            'tooltip'  => __( 'Copias físicas disponibles para préstamo inmediato', 'aura-business-suite' ),
+            'tooltip'  => __( 'Copias físicas disponibles para préstamo inmediato', 'aura-suite' ),
         ],
         [
             'id'       => 'kpi-active-loans',
             'icon'     => 'dashicons-id',
             'value'    => number_format_i18n( (int) $kpis['active_loans'] ),
-            'label'    => __( 'Préstamos Activos', 'aura-business-suite' ),
+            'label'    => __( 'Préstamos Activos', 'aura-suite' ),
             'variant'  => 'balance',
-            'tooltip'  => __( 'Libros actualmente prestados a lectores', 'aura-business-suite' ),
+            'tooltip'  => __( 'Libros actualmente prestados a lectores', 'aura-suite' ),
         ],
         [
             'id'       => 'kpi-overdue',
             'icon'     => 'dashicons-warning',
             'value'    => number_format_i18n( (int) $kpis['overdue_loans'] ),
-            'label'    => __( 'Préstamos Vencidos', 'aura-business-suite' ),
+            'label'    => __( 'Préstamos Vencidos', 'aura-suite' ),
             'variant'  => 'expense',
-            'tooltip'  => __( 'Préstamos con fecha límite superada', 'aura-business-suite' ),
+            'tooltip'  => __( 'Préstamos con fecha límite superada', 'aura-suite' ),
         ],
         [
             'id'       => 'kpi-reservations',
             'icon'     => 'dashicons-calendar',
             'value'    => number_format_i18n( (int) $kpis['pending_reservations'] ),
-            'label'    => __( 'Reservas Pendientes', 'aura-business-suite' ),
+            'label'    => __( 'Reservas Pendientes', 'aura-suite' ),
             'variant'  => 'pending',
-            'tooltip'  => __( 'Lectores esperando disponibilidad de ejemplares', 'aura-business-suite' ),
+            'tooltip'  => __( 'Lectores esperando disponibilidad de ejemplares', 'aura-suite' ),
         ],
         [
             'id'       => 'kpi-fines',
             'icon'     => 'dashicons-money-alt',
             'value'    => '$' . number_format( (float) $kpis['pending_fines'], 2 ),
-            'label'    => __( 'Multas Pendientes', 'aura-business-suite' ),
+            'label'    => __( 'Multas Pendientes', 'aura-suite' ),
             'variant'  => 'expense',
-            'tooltip'  => __( 'Monto acumulado por penalizaciones de mora', 'aura-business-suite' ),
+            'tooltip'  => __( 'Monto acumulado por penalizaciones de mora', 'aura-suite' ),
         ],
     ], [ 'columns' => 6 ] );
     ?>
@@ -110,7 +110,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
 
         <div class="aura-glass-card card-lift aura-lib-chart-card aura-lib-chart-wide">
             <div class="aura-lib-chart-header">
-                <h3><span class="dashicons dashicons-chart-bar"></span> <?php esc_html_e( 'Préstamos por mes (últimos 6 meses)', 'aura-business-suite' ); ?></h3>
+                <h3><span class="dashicons dashicons-chart-bar"></span> <?php esc_html_e( 'Préstamos por mes (últimos 6 meses)', 'aura-suite' ); ?></h3>
                 <div class="aura-lib-chart-spinner spinner" id="aura-lib-loans-chart-spinner"></div>
             </div>
             <div class="aura-lib-chart-canvas-wrap">
@@ -120,7 +120,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
 
         <div class="aura-glass-card card-lift aura-lib-chart-card">
             <div class="aura-lib-chart-header">
-                <h3><span class="dashicons dashicons-chart-pie"></span> <?php esc_html_e( 'Estado del catálogo', 'aura-business-suite' ); ?></h3>
+                <h3><span class="dashicons dashicons-chart-pie"></span> <?php esc_html_e( 'Estado del catálogo', 'aura-suite' ); ?></h3>
                 <div class="aura-lib-chart-spinner spinner" id="aura-lib-status-chart-spinner"></div>
             </div>
             <div class="aura-lib-chart-canvas-wrap">
@@ -130,7 +130,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
 
         <div class="aura-glass-card card-lift aura-lib-chart-card">
             <div class="aura-lib-chart-header">
-                <h3><span class="dashicons dashicons-category"></span> <?php esc_html_e( 'Préstamos por clasificación Dewey', 'aura-business-suite' ); ?></h3>
+                <h3><span class="dashicons dashicons-category"></span> <?php esc_html_e( 'Préstamos por clasificación Dewey', 'aura-suite' ); ?></h3>
                 <div class="aura-lib-chart-spinner spinner" id="aura-lib-dewey-chart-spinner"></div>
             </div>
             <div class="aura-lib-chart-canvas-wrap">
@@ -149,7 +149,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
                 <h3 class="aura-lib-heading-danger">
                     <span class="pulse-dot aura-lib-dot-danger"></span>
                     <span class="dashicons dashicons-warning"></span>
-                    <?php esc_html_e( 'Préstamos vencidos', 'aura-business-suite' ); ?>
+                    <?php esc_html_e( 'Préstamos vencidos', 'aura-suite' ); ?>
                 </h3>
                 <div class="spinner is-active" id="aura-lib-overdue-spinner" style="float:none;margin:0;"></div>
             </div>
@@ -161,7 +161,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
                 </div>
             </div>
             <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-library-loans' ) ); ?>" class="aura-lib-list-footer-link">
-                <?php esc_html_e( 'Ver todos los préstamos →', 'aura-business-suite' ); ?>
+                <?php esc_html_e( 'Ver todos los préstamos →', 'aura-suite' ); ?>
             </a>
         </div>
 
@@ -170,7 +170,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
             <div class="aura-lib-list-header">
                 <h3 class="aura-lib-heading-amber">
                     <span class="dashicons dashicons-star-filled"></span>
-                    <?php esc_html_e( 'Libros más prestados', 'aura-business-suite' ); ?>
+                    <?php esc_html_e( 'Libros más prestados', 'aura-suite' ); ?>
                 </h3>
                 <div class="spinner is-active" id="aura-lib-top-books-spinner" style="float:none;margin:0;"></div>
             </div>
@@ -182,7 +182,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
                 </div>
             </div>
             <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-library-books' ) ); ?>" class="aura-lib-list-footer-link">
-                <?php esc_html_e( 'Ver catálogo →', 'aura-business-suite' ); ?>
+                <?php esc_html_e( 'Ver catálogo →', 'aura-suite' ); ?>
             </a>
         </div>
 
@@ -191,7 +191,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
             <div class="aura-lib-list-header">
                 <h3 class="aura-lib-heading-indigo">
                     <span class="dashicons dashicons-calendar"></span>
-                    <?php esc_html_e( 'Reservas pendientes', 'aura-business-suite' ); ?>
+                    <?php esc_html_e( 'Reservas pendientes', 'aura-suite' ); ?>
                 </h3>
                 <div class="spinner is-active" id="aura-lib-reservations-spinner" style="float:none;margin:0;"></div>
             </div>
@@ -203,7 +203,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
                 </div>
             </div>
             <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-library-reservations' ) ); ?>" class="aura-lib-list-footer-link">
-                <?php esc_html_e( 'Ver reservas →', 'aura-business-suite' ); ?>
+                <?php esc_html_e( 'Ver reservas →', 'aura-suite' ); ?>
             </a>
         </div>
 

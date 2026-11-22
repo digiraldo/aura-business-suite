@@ -674,7 +674,7 @@ class Aura_Financial_Export {
 
         // ---- Hoja 1: Transacciones ----
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Transacciones');
+        $sheet->setTitle(__('Transacciones', 'aura-suite'));
 
         // Estilo encabezado
         $header_style = [
@@ -755,7 +755,7 @@ class Aura_Financial_Export {
 
         // ---- Hoja 2: Resumen ----
         $summary = $spreadsheet->createSheet();
-        $summary->setTitle('Resumen');
+        $summary->setTitle(__('Resumen', 'aura-suite'));
 
         $income  = array_sum(array_filter(
             array_column($rows, 'amount'),
@@ -780,13 +780,13 @@ class Aura_Financial_Export {
         }
 
         $summary_data = [
-            ['Concepto', 'Valor'],
-            ['Empresa',   $opts['company_name']],
-            ['Generado',  date('d/m/Y H:i')],
-            ['Registros', count($rows)],
-            ['Total Ingresos',  $inc_total],
-            ['Total Egresos',   $exp_total],
-            ['Balance Net',     $inc_total - $exp_total],
+            [__('Concepto', 'aura-suite'), __('Valor', 'aura-suite')],
+            [__('Empresa', 'aura-suite'),   $opts['company_name']],
+            [__('Generado', 'aura-suite'),  date('d/m/Y H:i')],
+            [__('Registros', 'aura-suite'), count($rows)],
+            [__('Total Ingresos', 'aura-suite'),  $inc_total],
+            [__('Total Egresos', 'aura-suite'),   $exp_total],
+            [__('Balance Neto', 'aura-suite'),     $inc_total - $exp_total],
         ];
 
         foreach ($summary_data as $i => $s_row) {
@@ -822,6 +822,17 @@ class Aura_Financial_Export {
 
     private static function generate_pdf(array $rows, array $columns, array $opts): array {
         self::ensure_export_dir();
+
+        $page_lbl   = esc_html__('Página ', 'aura-suite');
+        $of_lbl     = esc_html__(' de ', 'aura-suite');
+        $preview_t  = esc_html__('Vista previa PDF.', 'aura-suite');
+        $preview_d  = wp_kses_post(__('Para guardar como PDF: haz clic en el botón o usa <kbd>Ctrl+P</kbd> → <em>Guardar como PDF</em>.', 'aura-suite'));
+        $print_btn  = esc_html__('🖨 Imprimir / Guardar PDF', 'aura-suite');
+        $doc_sub    = esc_html__('Exportación de Transacciones', 'aura-suite');
+        $gen_by     = sprintf(esc_html__('Generado por %s', 'aura-suite'), '<strong>' . $user_name . '</strong>');
+        $reg_lbl    = esc_html__('Registros:', 'aura-suite');
+        $cur_lbl    = esc_html__('Moneda:', 'aura-suite');
+        $gen_footer = sprintf(esc_html__('Generado por Aura Business Suite · %s', 'aura-suite'), $date_label);
 
         $all_labels = self::all_column_labels('pdf');
         $company    = esc_html($opts['company_name']);
@@ -867,11 +878,11 @@ class Aura_Financial_Export {
                     $total_amount += $val;
                     $tr .= '<td class="num">' . $cur . '&nbsp;' . number_format($val, 2) . '</td>';
                 } elseif ($col === 'transaction_type') {
-                    $lbl   = $val === 'income' ? 'Ingreso' : 'Egreso';
+                    $lbl   = $val === 'income' ? esc_html__('Ingreso', 'aura-suite') : esc_html__('Egreso', 'aura-suite');
                     $cls   = $val === 'income' ? 'type-income' : 'type-expense';
                     $tr   .= '<td><span class="badge ' . $cls . '">' . $lbl . '</span></td>';
                 } elseif ($col === 'status') {
-                    $lbl_map = ['pending' => 'Pendiente', 'approved' => 'Aprobado', 'rejected' => 'Rechazado'];
+                    $lbl_map = ['pending' => __('Pendiente', 'aura-suite'), 'approved' => __('Aprobado', 'aura-suite'), 'rejected' => __('Rechazado', 'aura-suite')];
                     $tr .= '<td>' . esc_html($lbl_map[$val] ?? ucfirst($val)) . '</td>';
                 } else {
                     $tr .= '<td>' . esc_html($val) . '</td>';
@@ -1028,7 +1039,7 @@ class Aura_Financial_Export {
     margin: 14mm 10mm 18mm;
 
     @bottom-center {
-      content: "Página " counter(page) " de " counter(pages);
+      content: "{$page_lbl}" counter(page) "{$of_lbl}" counter(pages);
       font-size: 8pt;
       color: #64748b;
     }
@@ -1059,10 +1070,10 @@ class Aura_Financial_Export {
 <!-- Barra de acción (solo visible en pantalla) -->
 <div class="action-bar">
   <div>
-    <strong>Vista previa PDF.</strong>
-    Para guardar como PDF: haz clic en el botón o usa <kbd>Ctrl+P</kbd> → <em>Guardar como PDF</em>.
+    <strong>{$preview_t}</strong>
+    {$preview_d}
   </div>
-  <button class="btn-print" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+  <button class="btn-print" onclick="window.print()">{$print_btn}</button>
 </div>
 
 <!-- Cabecera del documento -->
@@ -1071,19 +1082,19 @@ class Aura_Financial_Export {
     {$logo_html}
     <div>
       <div class="doc-header__title">{$company}</div>
-      <div class="doc-header__sub">Exportación de Transacciones</div>
+      <div class="doc-header__sub">{$doc_sub}</div>
     </div>
   </div>
   <div class="doc-header__right">
-    Generado por <strong>{$user_name}</strong><br>
+    {$gen_by}<br>
     {$date_label}
   </div>
 </div>
 
 <!-- Barra de resumen -->
 <div class="summary-bar">
-  <div><span>Registros:</span> <strong>{$count}</strong></div>
-  <div><span>Moneda:</span> <strong>{$cur}</strong></div>
+  <div><span>{$reg_lbl}</span> <strong>{$count}</strong></div>
+  <div><span>{$cur_lbl}</span> <strong>{$cur}</strong></div>
 </div>
 
 <!-- Tabla de datos -->
@@ -1094,7 +1105,7 @@ class Aura_Financial_Export {
 
 <!-- Pie -->
 <div class="doc-footer">
-  <span>Generado por Aura Business Suite · {$date_label}</span>
+  <span>{$gen_footer}</span>
   <span>{$company}</span>
 </div>
 

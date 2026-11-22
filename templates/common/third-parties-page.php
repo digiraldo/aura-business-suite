@@ -507,12 +507,12 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                                                         </div>
                                                         <div class="aura-tip-card-body">
                                                             <div class="aura-tip-row">
-                                                                <span>🆔 Código / ID:</span>
+                                                                <span>🆔 <?php esc_html_e('Código / ID:', 'aura-suite'); ?></span>
                                                                 <strong>#TP-<?php echo esc_html($tp['id']); ?></strong>
                                                             </div>
                                                             <?php if (!empty($tp['wp_user_id']) && !empty($tp['wp_user_login'])) : ?>
                                                                 <div class="aura-tip-row">
-                                                                    <span>👤 Usuario WP:</span>
+                                                                    <span>👤 <?php esc_html_e('Usuario WP:', 'aura-suite'); ?></span>
                                                                     <strong>@<?php echo esc_html($tp['wp_user_login'] ?? ''); ?></strong>
                                                                 </div>
                                                             <?php endif; ?>
@@ -524,25 +524,25 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                                                             <?php endif; ?>
                                                             <?php if (!empty($tp['phone'])) : ?>
                                                                 <div class="aura-tip-row">
-                                                                    <span>📞 Teléfono:</span>
+                                                                    <span>📞 <?php esc_html_e('Teléfono:', 'aura-suite'); ?></span>
                                                                     <strong><?php echo esc_html($tp['phone']); ?></strong>
                                                                 </div>
                                                             <?php endif; ?>
                                                             <?php if (!empty($tp['email'])) : ?>
                                                                 <div class="aura-tip-row">
-                                                                    <span>✉️ Correo:</span>
+                                                                    <span>✉️ <?php esc_html_e('Correo:', 'aura-suite'); ?></span>
                                                                     <strong><?php echo esc_html($tp['email']); ?></strong>
                                                                 </div>
                                                             <?php endif; ?>
                                                             <?php if (!empty($tp['address'])) : ?>
                                                                 <div class="aura-tip-row">
-                                                                    <span>📍 Dirección:</span>
+                                                                    <span>📍 <?php esc_html_e('Dirección:', 'aura-suite'); ?></span>
                                                                     <strong><?php echo esc_html($tp['address']); ?></strong>
                                                                 </div>
                                                             <?php endif; ?>
                                                             <?php if (!empty($tp['website'])) : ?>
                                                                 <div class="aura-tip-row">
-                                                                    <span>🌐 Sitio Web:</span>
+                                                                    <span>🌐 <?php esc_html_e('Sitio Web:', 'aura-suite'); ?></span>
                                                                     <strong><?php echo esc_html($tp['website']); ?></strong>
                                                                 </div>
                                                             <?php endif; ?>
@@ -573,11 +573,11 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                                                             </div>
                                                             <div class="aura-tip-card-body">
                                                                 <div class="aura-tip-row">
-                                                                    <span>🏷️ Rótulo Comercial:</span>
+                                                                    <span>🏷️ <?php esc_html_e('Rótulo Comercial:', 'aura-suite'); ?></span>
                                                                     <strong><?php echo esc_html($tp['commercial_name']); ?></strong>
                                                                 </div>
                                                                 <div class="aura-tip-row">
-                                                                    <span>🏢 Razón Social Formal:</span>
+                                                                    <span>🏢 <?php esc_html_e('Razón Social Formal:', 'aura-suite'); ?></span>
                                                                     <strong><?php echo esc_html($tp['full_name']); ?></strong>
                                                                 </div>
                                                             </div>
@@ -633,15 +633,15 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                                                             </div>
                                                             <div class="aura-tip-card-body">
                                                                 <div class="aura-tip-row">
-                                                                    <span>📄 Tipo de Documento:</span>
+                                                                    <span>📄 <?php esc_html_e('Tipo de Documento:', 'aura-suite'); ?></span>
                                                                     <strong><?php echo esc_html($tp['tax_id_type'] ?: 'NIT'); ?></strong>
                                                                 </div>
                                                                 <div class="aura-tip-row">
-                                                                    <span>🔢 Número Identificación:</span>
+                                                                    <span>🔢 <?php esc_html_e('Número Identificación:', 'aura-suite'); ?></span>
                                                                     <strong><?php echo esc_html($tp['document_id']); ?></strong>
                                                                 </div>
                                                                 <div class="aura-tip-row">
-                                                                    <span>🏛️ Titular Registrado:</span>
+                                                                    <span>🏛️ <?php esc_html_e('Titular Registrado:', 'aura-suite'); ?></span>
                                                                     <strong><?php echo esc_html($tp['full_name']); ?></strong>
                                                                 </div>
                                                             </div>
@@ -770,7 +770,13 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
             <!-- ── FOOTER GLOBAL CANÓNICO ─────────────────────────────────── -->
             <div class="adp-footer">
                 <p>
-                    Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>DiGiraldo</a></strong> &nbsp;|&nbsp; © 2026 AURA Business Suite
+                    <?php
+                    printf(
+                        __('Desarrollado con ❤️ por %s &nbsp;|&nbsp; © %s AURA Business Suite', 'aura-suite'),
+                        '<strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>DiGiraldo</a></strong>',
+                        date('Y')
+                    );
+                    ?>
                 </p>
             </div>
         </main>
@@ -889,14 +895,14 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                                 <span class="dashicons dashicons-text-page"></span>
                             </span>
                             <select id="aura_tp_tax_id_type" name="tax_id_type" class="aura-tp-select" aria-describedby="addon-tax-type">
-                                <option value="NIT">NIT — Núm. Identificación Tributaria</option>
-                                <option value="RUT">RUT — Registro Único Tributario</option>
-                                <option value="CIF">CIF — Código Identificación Fiscal</option>
-                                <option value="RFC">RFC — Reg. Federal Contribuyentes</option>
-                                <option value="CC">CC — Cédula de Ciudadanía</option>
-                                <option value="CE">CE — Cédula de Extranjería</option>
-                                <option value="Pasaporte">Pasaporte — Identificación Int.</option>
-                                <option value="Otro">Otro — Documento Alternativo</option>
+                                <option value="NIT"><?php esc_html_e('NIT — Núm. Identificación Tributaria', 'aura-suite'); ?></option>
+                                <option value="RUT"><?php esc_html_e('RUT — Registro Único Tributario', 'aura-suite'); ?></option>
+                                <option value="CIF"><?php esc_html_e('CIF — Código Identificación Fiscal', 'aura-suite'); ?></option>
+                                <option value="RFC"><?php esc_html_e('RFC — Reg. Federal Contribuyentes', 'aura-suite'); ?></option>
+                                <option value="CC"><?php esc_html_e('CC — Cédula de Ciudadanía', 'aura-suite'); ?></option>
+                                <option value="CE"><?php esc_html_e('CE — Cédula de Extranjería', 'aura-suite'); ?></option>
+                                <option value="Pasaporte"><?php esc_html_e('Pasaporte — Identificación Int.', 'aura-suite'); ?></option>
+                                <option value="Otro"><?php esc_html_e('Otro — Documento Alternativo', 'aura-suite'); ?></option>
                             </select>
                         </div>
                     </div>
@@ -1114,7 +1120,7 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                     </label>
                     <div class="aura-input-group">
                         <span class="aura-input-group-text"><span class="dashicons dashicons-email-alt"></span></span>
-                        <input type="email" id="aura_wp_user_email" name="email" class="aura-tp-input" required placeholder="correo@ejemplo.com">
+                        <input type="email" id="aura_wp_user_email" name="email" class="aura-tp-input" required placeholder="<?php esc_attr_e('correo@ejemplo.com', 'aura-suite'); ?>">
                     </div>
                 </div>
 
@@ -1126,7 +1132,7 @@ if (!in_array($initial_tab, array('', 'company', 'store', 'organization_foundati
                     </label>
                     <div class="aura-input-group">
                         <span class="aura-input-group-text"><span class="dashicons dashicons-admin-users"></span></span>
-                        <input type="text" id="aura_wp_user_login" name="user_login" class="aura-tp-input" placeholder="ej: nombre.apellido">
+                        <input type="text" id="aura_wp_user_login" name="user_login" class="aura-tp-input" placeholder="<?php esc_attr_e('ej: nombre.apellido', 'aura-suite'); ?>">
                     </div>
                 </div>
 
@@ -1198,7 +1204,7 @@ function exportAuraThirdPartiesCSV(btn) {
             btn.disabled = false;
             btn.innerHTML = originalText;
         }
-        alert('Error en la exportación: ' + err.message);
+        alert('<?php echo esc_js(__('Error en la exportación:', 'aura-suite')); ?> ' + err.message);
     });
 }
 </script>

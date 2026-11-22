@@ -18,6 +18,18 @@
 ( function ( $ ) {
     'use strict';
 
+    var __ = ( window.wp && window.wp.i18n && window.wp.i18n.__ ) ? window.wp.i18n.__ : function ( s ) { return s; };
+    var sprintf = ( window.wp && window.wp.i18n && window.wp.i18n.sprintf ) ? window.wp.i18n.sprintf : function () {
+        var args = Array.prototype.slice.call( arguments );
+        var fmt = args.shift() || '';
+        var i = 0;
+        return String( fmt ).replace( /%(?:(\d+)\$)?([sd%])/g, function ( m, pos, type ) {
+            if ( type === '%' ) return '%';
+            var idx = pos ? ( parseInt( pos, 10 ) - 1 ) : i++;
+            return args[ idx ] !== undefined ? args[ idx ] : '';
+        } );
+    };
+
     // ── Refs DOM ─────────────────────────────────────────────────────
     var $app       = $( '#aura-veh-reports-app' );
     var $typeBtns  = $app.find( '.aura-rep-type-btn' );
@@ -52,11 +64,11 @@
 
     // Labels de tipos
     var typeLabels = {
-        trips:        'Salidas',
-        maintenances: 'Mantenimientos',
-        costs:        'Costos',
-        vehicles:     'Flota',
-        mileage:      'Kilometraje'
+        trips:        __( 'Salidas', 'aura-suite' ),
+        maintenances: __( 'Mantenimientos', 'aura-suite' ),
+        costs:        __( 'Costos', 'aura-suite' ),
+        vehicles:     __( 'Flota', 'aura-suite' ),
+        mileage:      __( 'Kilometraje', 'aura-suite' )
     };
 
     // ── Helpers ──────────────────────────────────────────────────────
@@ -115,11 +127,11 @@
             data:      [],
             columns:   columns,
             language:  {
-                emptyTable:  'Sin registros para los filtros aplicados.',
-                info:        '_TOTAL_ registros',
-                infoEmpty:   '0 registros',
-                infoFiltered: '(filtrado de _MAX_ total)',
-                lengthMenu:  'Mostrar _MENU_ por página',
+                emptyTable:  __( 'Sin registros para los filtros aplicados.', 'aura-suite' ),
+                info:        __( '_TOTAL_ registros', 'aura-suite' ),
+                infoEmpty:   __( '0 registros', 'aura-suite' ),
+                infoFiltered: __( '(filtrado de _MAX_ total)', 'aura-suite' ),
+                lengthMenu:  __( 'Mostrar _MENU_ por página', 'aura-suite' ),
                 paginate:    { first: '«', last: '»', previous: '‹', next: '›' }
             },
             pageLength:  25,
@@ -180,7 +192,7 @@
                 var totals  = res.totals  || {};
 
                 $title.text( typeLabels[ currentType ] || currentType );
-                $rowCount.text( '(' + rows.length + ' registro' + ( rows.length !== 1 ? 's' : '' ) + ')' );
+                $rowCount.text( '(' + sprintf( __( '%d registro(s)', 'aura-suite' ), rows.length ) + ')' );
 
                 initDataTable( headers );
 
@@ -201,7 +213,7 @@
             error: function ( xhr ) {
                 var msg = xhr.responseJSON && xhr.responseJSON.message
                     ? xhr.responseJSON.message
-                    : 'Error al obtener los datos. Por favor intenta de nuevo.';
+                    : __( 'Error al obtener los datos. Por favor intenta de nuevo.', 'aura-suite' );
                 showNotice( msg, 'error' );
                 $preview.hide();
                 $totals.hide();

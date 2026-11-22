@@ -27,28 +27,28 @@ class Aura_Calendar_Events {
     public static function get_student_roles(): array {
         return [
             'activity_leader' => [
-                'label'       => __( 'Líder de Actividad', 'aura' ),
+                'label'       => __( 'Líder de Actividad', 'aura-suite' ),
                 'badge_color' => '#f59e0b',
                 'icon'        => '🎯',
-                'description' => __( 'Coordina la dinámica de grupo y la participación activa.', 'aura' ),
+                'description' => __( 'Coordina la dinámica de grupo y la participación activa.', 'aura-suite' ),
             ],
             'program_leader'  => [
-                'label'       => __( 'Líder de Programa', 'aura' ),
+                'label'       => __( 'Líder de Programa', 'aura-suite' ),
                 'badge_color' => '#6366f1',
                 'icon'        => '👑',
-                'description' => __( 'Representante estudiantil del cohorte o programa académico.', 'aura' ),
+                'description' => __( 'Representante estudiantil del cohorte o programa académico.', 'aura-suite' ),
             ],
             'presenter'       => [
-                'label'       => __( 'Expositor / Dar Clase', 'aura' ),
+                'label'       => __( 'Expositor / Dar Clase', 'aura-suite' ),
                 'badge_color' => '#10b981',
                 'icon'        => '🎙️',
-                'description' => __( 'A cargo de la exposición o ponencia principal de la sesión.', 'aura' ),
+                'description' => __( 'A cargo de la exposición o ponencia principal de la sesión.', 'aura-suite' ),
             ],
             'monitor'         => [
-                'label'       => __( 'Monitor / Moderador', 'aura' ),
+                'label'       => __( 'Monitor / Moderador', 'aura-suite' ),
                 'badge_color' => '#06b6d4',
                 'icon'        => '🛡️',
-                'description' => __( 'Asiste en control de tiempo, preguntas y apoyo al docente.', 'aura' ),
+                'description' => __( 'Asiste en control de tiempo, preguntas y apoyo al docente.', 'aura-suite' ),
             ],
         ];
     }
@@ -383,7 +383,7 @@ class Aura_Calendar_Events {
                     $av_url = site_url( substr( $av_url, 1 ) );
                 }
 
-                $inst_name  = $is_ext ? ( $ir->external_name ?: ( ( $tp_info && ! empty( $tp_info->commercial_name ) ) ? $tp_info->commercial_name : ( ( $tp_info && ! empty( $tp_info->full_name ) ) ? $tp_info->full_name : __( 'Instructor Externo', 'aura' ) ) ) ) : ( $ir->display_name ?: __( 'Profesor', 'aura' ) );
+                $inst_name  = $is_ext ? ( $ir->external_name ?: ( ( $tp_info && ! empty( $tp_info->commercial_name ) ) ? $tp_info->commercial_name : ( ( $tp_info && ! empty( $tp_info->full_name ) ) ? $tp_info->full_name : __( 'Instructor Externo', 'aura-suite' ) ) ) ) : ( $ir->display_name ?: __( 'Profesor', 'aura-suite' ) );
                 $inst_email = $is_ext ? ( $ir->external_email ?: ( ( $tp_info && ! empty( $tp_info->email ) ) ? $tp_info->email : '' ) ) : $ir->user_email;
 
                 $instructors_by_event[ $ir->event_id ][] = [
@@ -408,10 +408,10 @@ class Aura_Calendar_Events {
         // Mapear al formato esperado por FullCalendar
         $fc_events = [];
         $roles_map = [
-            'program_leader'  => __( 'Líder de Programa', 'aura' ),
-            'activity_leader' => __( 'Líder de Actividad', 'aura' ),
-            'presenter'       => __( 'Expositor / Dar Clase', 'aura' ),
-            'monitor'         => __( 'Monitor / Moderador', 'aura' ),
+            'program_leader'  => __( 'Líder de Programa', 'aura-suite' ),
+            'activity_leader' => __( 'Líder de Actividad', 'aura-suite' ),
+            'presenter'       => __( 'Expositor / Dar Clase', 'aura-suite' ),
+            'monitor'         => __( 'Monitor / Moderador', 'aura-suite' ),
         ];
 
         foreach ( $rows as $row ) {
@@ -800,7 +800,7 @@ class Aura_Calendar_Events {
                     $av_url = site_url( substr( $av_url, 1 ) );
                 }
 
-                $inst_name  = $is_ext ? ( $inst->external_name ?: ( ( $tp_info && ! empty( $tp_info->commercial_name ) ) ? $tp_info->commercial_name : ( ( $tp_info && ! empty( $tp_info->full_name ) ) ? $tp_info->full_name : __( 'Instructor Externo', 'aura' ) ) ) ) : ( $inst->display_name ?: __( 'Profesor', 'aura' ) );
+                $inst_name  = $is_ext ? ( $inst->external_name ?: ( ( $tp_info && ! empty( $tp_info->commercial_name ) ) ? $tp_info->commercial_name : ( ( $tp_info && ! empty( $tp_info->full_name ) ) ? $tp_info->full_name : __( 'Instructor Externo', 'aura-suite' ) ) ) ) : ( $inst->display_name ?: __( 'Profesor', 'aura-suite' ) );
                 $inst_email = $is_ext ? ( $inst->external_email ?: ( ( $tp_info && ! empty( $tp_info->email ) ) ? $tp_info->email : '' ) ) : $inst->user_email;
 
                 $inst->avatar         = $av_url;
@@ -921,10 +921,10 @@ class Aura_Calendar_Events {
             $raw_leaders = json_decode( $row->student_leaders, true );
             if ( is_array( $raw_leaders ) ) {
                 $roles_map = [
-                    'program_leader'  => __( 'Líder de Programa', 'aura' ),
-                    'activity_leader' => __( 'Líder de Actividad', 'aura' ),
-                    'presenter'       => __( 'Expositor / Dar Clase', 'aura' ),
-                    'monitor'         => __( 'Monitor / Moderador', 'aura' ),
+                    'program_leader'  => __( 'Líder de Programa', 'aura-suite' ),
+                    'activity_leader' => __( 'Líder de Actividad', 'aura-suite' ),
+                    'presenter'       => __( 'Expositor / Dar Clase', 'aura-suite' ),
+                    'monitor'         => __( 'Monitor / Moderador', 'aura-suite' ),
                 ];
                 foreach ( $raw_leaders as $sl ) {
                     $sid = intval( $sl['student_id'] ?? 0 );
@@ -974,11 +974,11 @@ class Aura_Calendar_Events {
         $is_recurring = ! empty( $data['is_recurring'] ) && $data['is_recurring'] === '1';
 
         if ( empty( $title ) ) {
-            return new WP_Error( 'missing_title', __( 'El título del evento es obligatorio.', 'aura' ) );
+            return new WP_Error( 'missing_title', __( 'El título del evento es obligatorio.', 'aura-suite' ) );
         }
 
         if ( ! $program_id ) {
-            return new WP_Error( 'missing_program', __( 'Debe seleccionar un programa.', 'aura' ) );
+            return new WP_Error( 'missing_program', __( 'Debe seleccionar un programa.', 'aura-suite' ) );
         }
 
         // Obtener instructores seleccionados (array de IDs)
@@ -1148,7 +1148,7 @@ class Aura_Calendar_Events {
         if ( $id === 0 && $is_recurring ) {
             $rec_days = isset( $data['recurring_days'] ) && is_array( $data['recurring_days'] ) ? array_map( 'intval', $data['recurring_days'] ) : [];
             if ( empty( $rec_days ) ) {
-                return new WP_Error( 'missing_recurrence_days', __( 'Debe seleccionar al menos un día de la semana para la recurrencia.', 'aura' ) );
+                return new WP_Error( 'missing_recurrence_days', __( 'Debe seleccionar al menos un día de la semana para la recurrencia.', 'aura-suite' ) );
             }
 
             $date_start = sanitize_text_field( $data['rec_date_start'] ?? '' );
@@ -1157,14 +1157,14 @@ class Aura_Calendar_Events {
             $time_end   = sanitize_text_field( $data['rec_time_end'] ?? '' );
 
             if ( empty( $date_start ) || empty( $date_end ) || empty( $time_start ) || empty( $time_end ) ) {
-                return new WP_Error( 'missing_recurrence_dates', __( 'Debe completar el rango de fechas y horas para la serie recurrente.', 'aura' ) );
+                return new WP_Error( 'missing_recurrence_dates', __( 'Debe completar el rango de fechas y horas para la serie recurrente.', 'aura-suite' ) );
             }
 
             $ts_current = strtotime( $date_start );
             $ts_end     = strtotime( $date_end );
 
             if ( $ts_end < $ts_current ) {
-                return new WP_Error( 'invalid_dates', __( 'La fecha fin no puede ser anterior a la fecha de inicio.', 'aura' ) );
+                return new WP_Error( 'invalid_dates', __( 'La fecha fin no puede ser anterior a la fecha de inicio.', 'aura-suite' ) );
             }
 
             // Generar identificador de grupo recurrente
@@ -1232,7 +1232,7 @@ class Aura_Calendar_Events {
             return [
                 'ids'     => $created_event_ids,
                 'count'   => count( $created_event_ids ),
-                'message' => sprintf( __( 'Se crearon con éxito %d eventos en la serie recurrente.', 'aura' ), count( $created_event_ids ) ),
+                'message' => sprintf( __( 'Se crearon con éxito %d eventos en la serie recurrente.', 'aura-suite' ), count( $created_event_ids ) ),
             ];
         }
 
@@ -1249,11 +1249,11 @@ class Aura_Calendar_Events {
         }
 
         if ( empty( $start_dt ) || empty( $end_dt ) ) {
-            return new WP_Error( 'missing_dates', __( 'Debe indicar fecha/hora de inicio y fin.', 'aura' ) );
+            return new WP_Error( 'missing_dates', __( 'Debe indicar fecha/hora de inicio y fin.', 'aura-suite' ) );
         }
 
         if ( strtotime( $end_dt ) < strtotime( $start_dt ) ) {
-            return new WP_Error( 'invalid_dates', __( 'La fecha y hora de fin debe ser posterior a la de inicio.', 'aura' ) );
+            return new WP_Error( 'invalid_dates', __( 'La fecha y hora de fin debe ser posterior a la de inicio.', 'aura-suite' ) );
         }
 
         $fields = [
@@ -1293,7 +1293,7 @@ class Aura_Calendar_Events {
             return [
                 'ids'     => [ $event_id ],
                 'count'   => 1,
-                'message' => __( 'Evento actualizado con éxito.', 'aura' ),
+                'message' => __( 'Evento actualizado con éxito.', 'aura-suite' ),
             ];
         } else {
             // Crear evento individual nuevo
@@ -1318,7 +1318,7 @@ class Aura_Calendar_Events {
             return [
                 'ids'     => [ $event_id ],
                 'count'   => 1,
-                'message' => __( 'Evento creado con éxito.', 'aura' ),
+                'message' => __( 'Evento creado con éxito.', 'aura-suite' ),
             ];
         }
     }
@@ -1458,7 +1458,7 @@ class Aura_Calendar_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $filters = [
@@ -1480,17 +1480,17 @@ class Aura_Calendar_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $event = self::get( $id );
         if ( ! $event ) {
-            wp_send_json_error( [ 'message' => __( 'Evento no encontrado.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Evento no encontrado.', 'aura-suite' ) ] );
         }
 
         wp_send_json_success( [ 'event' => $event ] );
@@ -1500,7 +1500,7 @@ class Aura_Calendar_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para crear o editar eventos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para crear o editar eventos.', 'aura-suite' ) ] );
         }
 
         $res = self::save( $_POST );
@@ -1519,7 +1519,7 @@ class Aura_Calendar_Events {
                 }
             }
             if ( $total_sent > 0 ) {
-                $res['message'] .= ' ' . sprintf( __( 'Se enviaron %d invitaciones por correo electrónico.', 'aura' ), $total_sent );
+                $res['message'] .= ' ' . sprintf( __( 'Se enviaron %d invitaciones por correo electrónico.', 'aura-suite' ), $total_sent );
             }
         }
 
@@ -1530,21 +1530,21 @@ class Aura_Calendar_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_delete_events' ) && ! current_user_can( 'aura_delete_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para eliminar eventos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para eliminar eventos.', 'aura-suite' ) ] );
         }
 
         $id            = intval( $_POST['id'] ?? 0 );
         $delete_series = ! empty( $_POST['delete_series'] ) && $_POST['delete_series'] === '1';
 
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $ok = self::delete( $id, $delete_series );
         if ( $ok ) {
-            wp_send_json_success( [ 'message' => __( 'Evento retirado con éxito.', 'aura' ) ] );
+            wp_send_json_success( [ 'message' => __( 'Evento retirado con éxito.', 'aura-suite' ) ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'No se pudo retirar el evento.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se pudo retirar el evento.', 'aura-suite' ) ] );
         }
     }
 
@@ -1552,7 +1552,7 @@ class Aura_Calendar_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_edit_calendar_events' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para reprogramar eventos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para reprogramar eventos.', 'aura-suite' ) ] );
         }
 
         $id       = intval( $_POST['id'] ?? 0 );
@@ -1560,7 +1560,7 @@ class Aura_Calendar_Events {
         $end_dt   = sanitize_text_field( $_POST['end'] ?? '' );
 
         if ( ! $id || empty( $start_dt ) || empty( $end_dt ) ) {
-            wp_send_json_error( [ 'message' => __( 'Parámetros inválidos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Parámetros inválidos.', 'aura-suite' ) ] );
         }
 
         $ok = self::update_dates( $id, $start_dt, $end_dt );
@@ -1577,7 +1577,7 @@ class Aura_Calendar_Events {
                 : $start_date_label;
 
             wp_send_json_success( [
-                'message'          => __( 'Horario actualizado.', 'aura' ),
+                'message'          => __( 'Horario actualizado.', 'aura-suite' ),
                 'start_time_label' => self::format_local_datetime( $start_dt, $time_fmt ),
                 'end_time_label'   => self::format_local_datetime( $end_dt, $time_fmt ),
                 'start_date_label' => $start_date_label,
@@ -1586,7 +1586,7 @@ class Aura_Calendar_Events {
                 'is_multi_day'     => $is_multi,
             ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'No se pudo actualizar el horario.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se pudo actualizar el horario.', 'aura-suite' ) ] );
         }
     }
 
@@ -1606,7 +1606,7 @@ class Aura_Calendar_Events {
 
         $event = self::get( $id );
         if ( ! $event ) {
-            return new WP_Error( 'not_found', __( 'Evento original no encontrado.', 'aura' ) );
+            return new WP_Error( 'not_found', __( 'Evento original no encontrado.', 'aura-suite' ) );
         }
 
         $orig_start = $event->start_datetime;
@@ -1630,7 +1630,7 @@ class Aura_Calendar_Events {
         } else {
             $start_clean = $orig_start;
             $end_clean   = $orig_end;
-            $title       = ( $title_prefix !== null ? $title_prefix : __( '(Copia) ', 'aura' ) ) . $event->title;
+            $title       = ( $title_prefix !== null ? $title_prefix : __( '(Copia) ', 'aura-suite' ) ) . $event->title;
         }
 
         $student_leaders_json = ! empty( $event->student_leaders ) ? $event->student_leaders : null;
@@ -1660,7 +1660,7 @@ class Aura_Calendar_Events {
         );
 
         if ( ! $inserted ) {
-            return new WP_Error( 'db_error', __( 'Error al duplicar el registro en la base de datos.', 'aura' ) );
+            return new WP_Error( 'db_error', __( 'Error al duplicar el registro en la base de datos.', 'aura-suite' ) );
         }
 
         $new_id = (int) $wpdb->insert_id;
@@ -1716,13 +1716,13 @@ class Aura_Calendar_Events {
 
         $base_event = self::get( $id );
         if ( ! $base_event ) {
-            return new WP_Error( 'not_found', __( 'Evento base no encontrado.', 'aura' ) );
+            return new WP_Error( 'not_found', __( 'Evento base no encontrado.', 'aura-suite' ) );
         }
 
         $ts_start = strtotime( $date_start );
         $ts_end   = strtotime( $date_end );
         if ( ! $ts_start || ! $ts_end || $ts_end < $ts_start ) {
-            return new WP_Error( 'invalid_dates', __( 'Rango de fechas inválido para la serie.', 'aura' ) );
+            return new WP_Error( 'invalid_dates', __( 'Rango de fechas inválido para la serie.', 'aura-suite' ) );
         }
 
         $orig_start_ts = strtotime( $base_event->start_datetime );
@@ -1834,7 +1834,7 @@ class Aura_Calendar_Events {
             'count'               => count( $created_ids ),
             'created_ids'         => $created_ids,
             'recurrence_group_id' => $recurrence_group_id,
-            'message'             => sprintf( __( 'Se generaron %d repeticiones para la serie.', 'aura' ), count( $created_ids ) ),
+            'message'             => sprintf( __( 'Se generaron %d repeticiones para la serie.', 'aura-suite' ), count( $created_ids ) ),
         ];
     }
 
@@ -1842,7 +1842,7 @@ class Aura_Calendar_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para duplicar eventos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para duplicar eventos.', 'aura-suite' ) ] );
         }
 
         $id        = intval( $_POST['id'] ?? 0 );
@@ -1851,7 +1851,7 @@ class Aura_Calendar_Events {
         $title_pfx = isset( $_POST['title_prefix'] ) ? sanitize_text_field( $_POST['title_prefix'] ) : null;
 
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura-suite' ) ] );
         }
 
         $res = self::duplicate( $id, $new_start, $new_end, $title_pfx );
@@ -1861,7 +1861,7 @@ class Aura_Calendar_Events {
 
         $duplicated_event = self::get( $res );
         wp_send_json_success( [
-            'message'  => __( 'Evento duplicado exitosamente.', 'aura' ),
+            'message'  => __( 'Evento duplicado exitosamente.', 'aura-suite' ),
             'event_id' => $res,
             'event'    => $duplicated_event,
         ] );
@@ -1871,7 +1871,7 @@ class Aura_Calendar_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para crear series recurrentes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para crear series recurrentes.', 'aura-suite' ) ] );
         }
 
         $id          = intval( $_POST['id'] ?? 0 );
@@ -1880,7 +1880,7 @@ class Aura_Calendar_Events {
         $date_end    = sanitize_text_field( $_POST['date_end'] ?? '' );
 
         if ( ! $id || empty( $date_start ) || empty( $date_end ) ) {
-            wp_send_json_error( [ 'message' => __( 'Faltan parámetros requeridos para replicar la serie.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Faltan parámetros requeridos para replicar la serie.', 'aura-suite' ) ] );
         }
 
         $res = self::replicate_series( $id, $repeat_type, $date_start, $date_end );

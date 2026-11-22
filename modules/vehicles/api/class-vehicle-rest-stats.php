@@ -437,7 +437,7 @@ class Aura_Vehicle_Rest_Stats {
                 break;
 
             default:
-                return new WP_REST_Response( array( 'code' => 'invalid_type', 'message' => 'Tipo de gráfica no válido.' ), 400 );
+                return new WP_REST_Response( array( 'code' => 'invalid_type', 'message' => __( 'Tipo de gráfica no válido.', 'aura-suite' ) ), 400 );
         }
 
         return rest_ensure_response(

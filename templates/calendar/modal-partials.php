@@ -29,7 +29,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
     <div class="aura-modal-container" style="max-width: 680px;">
         <div class="aura-modal-header">
             <h3 id="modal-event-title" class="adp-card-title" style="margin: 0; font-size: 18px;">
-                ➕ <?php esc_html_e( 'Crear Evento', 'aura' ); ?>
+                ➕ <?php esc_html_e( 'Crear Evento', 'aura-suite' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" data-close-modal="#modal-event-editor">&times;</button>
         </div>
@@ -43,11 +43,11 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <!-- Título del Evento -->
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Título o Nombre del Evento', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                            <?php esc_html_e( 'Título o Nombre del Evento', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                         </label>
                         <div class="input-group">
                             <span class="input-prefix">🏷️</span>
-                            <input type="text" name="title" id="evt-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Taller de Liderazgo — Módulo 1', 'aura' ); ?>" style="width: 100%; border-radius: 8px; padding-left: 38px;">
+                            <input type="text" name="title" id="evt-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Taller de Liderazgo — Módulo 1', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px; padding-left: 38px;">
                         </div>
                     </div>
 
@@ -55,10 +55,10 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                🎓 <?php esc_html_e( 'Programa Académico', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                                🎓 <?php esc_html_e( 'Programa Académico', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                             </label>
                             <select name="program_id" id="evt-program-id" required class="form-control" style="width: 100%; border-radius: 8px; padding: 10px 12px;">
-                                <option value=""><?php esc_html_e( 'Seleccionar programa...', 'aura' ); ?></option>
+                                <option value=""><?php esc_html_e( 'Seleccionar programa...', 'aura-suite' ); ?></option>
                                 <?php foreach ( $programs as $p ) : ?>
                                     <option value="<?php echo esc_attr( $p->id ); ?>" data-color="<?php echo esc_attr( $p->color ); ?>">
                                         <?php echo esc_html( $p->name ); ?>
@@ -69,10 +69,10 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                📚 <?php esc_html_e( 'Materia / Asignatura', 'aura' ); ?>
+                                📚 <?php esc_html_e( 'Materia / Asignatura', 'aura-suite' ); ?>
                             </label>
                             <select name="subject_id" id="evt-subject-id" class="form-control" style="width: 100%; border-radius: 8px; padding: 10px 12px;">
-                                <option value=""><?php esc_html_e( 'General / Sin materia específica', 'aura' ); ?></option>
+                                <option value=""><?php esc_html_e( 'General / Sin materia específica', 'aura-suite' ); ?></option>
                             </select>
                         </div>
                     </div>
@@ -81,27 +81,27 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                📌 <?php esc_html_e( 'Tipo de Evento', 'aura' ); ?>
+                                📌 <?php esc_html_e( 'Tipo de Evento', 'aura-suite' ); ?>
                             </label>
                             <select name="event_type" id="evt-type" class="form-control" style="width: 100%; border-radius: 8px; padding: 10px 12px;">
-                                <option value="class">📖 <?php esc_html_e( 'Clase Regular', 'aura' ); ?></option>
-                                <option value="exam">📝 <?php esc_html_e( 'Examen / Evaluación', 'aura' ); ?></option>
-                                <option value="workshop">🔬 <?php esc_html_e( 'Taller / Práctica', 'aura' ); ?></option>
-                                <option value="activity">🎯 <?php esc_html_e( 'Actividad / Devocional / Deporte', 'aura' ); ?></option>
-                                <option value="break">☕ <?php esc_html_e( 'Receso / Almuerzo', 'aura' ); ?></option>
-                                <option value="other">📍 <?php esc_html_e( 'Otro', 'aura' ); ?></option>
+                                <option value="class">📖 <?php esc_html_e( 'Clase Regular', 'aura-suite' ); ?></option>
+                                <option value="exam">📝 <?php esc_html_e( 'Examen / Evaluación', 'aura-suite' ); ?></option>
+                                <option value="workshop">🔬 <?php esc_html_e( 'Taller / Práctica', 'aura-suite' ); ?></option>
+                                <option value="activity">🎯 <?php esc_html_e( 'Actividad / Devocional / Deporte', 'aura-suite' ); ?></option>
+                                <option value="break">☕ <?php esc_html_e( 'Receso / Almuerzo', 'aura-suite' ); ?></option>
+                                <option value="other">📍 <?php esc_html_e( 'Otro', 'aura-suite' ); ?></option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                🔄 <?php esc_html_e( 'Estado', 'aura' ); ?>
+                                🔄 <?php esc_html_e( 'Estado', 'aura-suite' ); ?>
                             </label>
                             <select name="status" id="evt-status" class="form-control" style="width: 100%; border-radius: 8px; padding: 10px 12px;">
-                                <option value="scheduled"><?php esc_html_e( 'Programado', 'aura' ); ?></option>
-                                <option value="completed"><?php esc_html_e( 'Completado', 'aura' ); ?></option>
-                                <option value="cancelled"><?php esc_html_e( 'Cancelado', 'aura' ); ?></option>
-                                <option value="postponed"><?php esc_html_e( 'Pospuesto', 'aura' ); ?></option>
+                                <option value="scheduled"><?php esc_html_e( 'Programado', 'aura-suite' ); ?></option>
+                                <option value="completed"><?php esc_html_e( 'Completado', 'aura-suite' ); ?></option>
+                                <option value="cancelled"><?php esc_html_e( 'Cancelado', 'aura-suite' ); ?></option>
+                                <option value="postponed"><?php esc_html_e( 'Pospuesto', 'aura-suite' ); ?></option>
                             </select>
                         </div>
                     </div>
@@ -109,9 +109,9 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <!-- Profesores Asignados -->
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
-                            <span>👨‍🏫 <?php esc_html_e( 'Profesor(es) o Instructor(es) a Cargo', 'aura' ); ?></span>
+                            <span>👨‍🏫 <?php esc_html_e( 'Profesor(es) o Instructor(es) a Cargo', 'aura-suite' ); ?></span>
                             <span style="font-size: 11px; font-weight: normal; color: #d97706; display: inline-flex; align-items: center; gap: 3px;">
-                                ⭐ <?php esc_html_e( 'Clic en la estrella para definir al Titular / Principal', 'aura' ); ?>
+                                ⭐ <?php esc_html_e( 'Clic en la estrella para definir al Titular / Principal', 'aura-suite' ); ?>
                             </span>
                         </label>
                         <input type="hidden" name="primary_teacher_id" id="evt-primary-teacher-id" value="0">
@@ -124,17 +124,17 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <div class="form-group" style="background: rgba(16, 185, 129, 0.04); border: 1px dashed rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 12px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin: 0; display: flex; align-items: center; gap: 6px;">
-                                <span>🏢 <?php esc_html_e( 'Instructores Terceros / Externos', 'aura' ); ?></span>
+                                <span>🏢 <?php esc_html_e( 'Instructores Terceros / Externos', 'aura-suite' ); ?></span>
                             </label>
                             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-third-parties' ) ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost" style="font-size: 11px; padding: 3px 6px; color: var(--aura-text-muted, #64748b);" title="<?php esc_attr_e( 'Abrir Directorio de Terceros en nueva pestaña', 'aura' ); ?>">
-                                    ↗ <?php esc_html_e( 'Directorio', 'aura' ); ?>
+                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-third-parties' ) ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost" style="font-size: 11px; padding: 3px 6px; color: var(--aura-text-muted, #64748b);" title="<?php esc_attr_e( 'Abrir Directorio de Terceros en nueva pestaña', 'aura-suite' ); ?>">
+                                    ↗ <?php esc_html_e( 'Directorio', 'aura-suite' ); ?>
                                 </a>
                                 <button type="button" id="btn-open-tp-catalog-explorer" class="btn btn-xs btn-primary" style="font-size: 11.5px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 5px; background: #0284c7; border-color: #0284c7; color: #fff; font-weight: 600; border-radius: 6px; box-shadow: 0 1px 3px rgba(2,132,199,0.3);">
-                                    🏛️ <?php esc_html_e( 'Catálogo de Terceros', 'aura' ); ?>
+                                    🏛️ <?php esc_html_e( 'Catálogo de Terceros', 'aura-suite' ); ?>
                                 </button>
                                 <button type="button" id="btn-toggle-add-external-inst" class="btn btn-xs btn-outline" style="font-size: 11.5px; padding: 3px 8px; border-radius: 6px;">
-                                    ➕ <?php esc_html_e( 'Agregar Manual', 'aura' ); ?>
+                                    ➕ <?php esc_html_e( 'Agregar Manual', 'aura-suite' ); ?>
                                 </button>
                             </div>
                         </div>
@@ -146,47 +146,47 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                             <input type="hidden" id="ext-inst-avatar-url" value="">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre Completo / Razón Social', 'aura' ); ?> <span style="color:#ef4444;">*</span></label>
-                                    <input type="text" id="ext-inst-name" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Escribe para autocompletar o registrar...', 'aura' ); ?>">
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre Completo / Razón Social', 'aura-suite' ); ?> <span style="color:#ef4444;">*</span></label>
+                                    <input type="text" id="ext-inst-name" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Escribe para autocompletar o registrar...', 'aura-suite' ); ?>">
                                 </div>
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Correo Electrónico', 'aura' ); ?></label>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Correo Electrónico', 'aura-suite' ); ?></label>
                                     <input type="email" id="ext-inst-email" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="contacto@empresa.com">
                                 </div>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Organización / Institución', 'aura' ); ?></label>
-                                    <input type="text" id="ext-inst-org" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Empresa / Institución', 'aura' ); ?>">
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Organización / Institución', 'aura-suite' ); ?></label>
+                                    <input type="text" id="ext-inst-org" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Empresa / Institución', 'aura-suite' ); ?>">
                                 </div>
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Teléfono', 'aura' ); ?></label>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Teléfono', 'aura-suite' ); ?></label>
                                     <input type="text" id="ext-inst-phone" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="+502 ...">
                                 </div>
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Rol en la Clase', 'aura' ); ?></label>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Rol en la Clase', 'aura-suite' ); ?></label>
                                     <select id="ext-inst-role" class="form-control" style="font-size: 12px; padding: 5px 8px;">
-                                        <option value="guest"><?php esc_html_e( 'Invitado / Ponente', 'aura' ); ?></option>
-                                        <option value="lead"><?php esc_html_e( 'Titular Externo', 'aura' ); ?></option>
-                                        <option value="assistant"><?php esc_html_e( 'Co-instructor', 'aura' ); ?></option>
+                                        <option value="guest"><?php esc_html_e( 'Invitado / Ponente', 'aura-suite' ); ?></option>
+                                        <option value="lead"><?php esc_html_e( 'Titular Externo', 'aura-suite' ); ?></option>
+                                        <option value="assistant"><?php esc_html_e( 'Co-instructor', 'aura-suite' ); ?></option>
                                     </select>
                                 </div>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px solid #f1f5f9;">
                                 <div id="ext-inst-linked-badge" style="display: none; align-items: center; gap: 4px; font-size: 11px; color: #0284c7; font-weight: 600;">
                                     <span class="dashicons dashicons-admin-links" style="font-size: 14px; width: 14px; height: 14px;"></span>
-                                    <span><?php esc_html_e( 'Vinculado a Entidad del Catálogo', 'aura' ); ?></span>
+                                    <span><?php esc_html_e( 'Vinculado a Entidad del Catálogo', 'aura-suite' ); ?></span>
                                 </div>
                                 <div style="display: flex; justify-content: flex-end; gap: 6px; margin-left: auto;">
-                                    <button type="button" id="btn-cancel-add-external" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura' ); ?></button>
-                                    <button type="button" id="btn-save-external-inst" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir a la Clase', 'aura' ); ?></button>
+                                    <button type="button" id="btn-cancel-add-external" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura-suite' ); ?></button>
+                                    <button type="button" id="btn-save-external-inst" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir a la Clase', 'aura-suite' ); ?></button>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Lista de terceros asignados con chips -->
                         <div id="evt-external-instructors-list" style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; align-items: center;">
-                            <span id="evt-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;"><?php esc_html_e( 'Sin instructores externos asignados.', 'aura' ); ?></span>
+                            <span id="evt-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;"><?php esc_html_e( 'Sin instructores externos asignados.', 'aura-suite' ); ?></span>
                         </div>
                         <input type="hidden" name="external_instructors_json" id="evt-external-instructors-json" value="[]">
                     </div>
@@ -194,23 +194,23 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <!-- Estudiantes Líderes / Responsables de la Actividad -->
                     <div class="form-group" style="background: rgba(93,95,239,0.04); border: 1px solid rgba(93,95,239,0.15); border-radius: 8px; padding: 12px;">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
-                            <span>🌟 <?php esc_html_e( 'Asignar Estudiantes a Actividad (Liderazgo / Roles)', 'aura' ); ?></span>
-                            <span style="font-size: 11px; font-weight: normal; color: var(--aura-text-muted);"><?php esc_html_e( 'Líderes de programa, expositores, monitores', 'aura' ); ?></span>
+                            <span>🌟 <?php esc_html_e( 'Asignar Estudiantes a Actividad (Liderazgo / Roles)', 'aura-suite' ); ?></span>
+                            <span style="font-size: 11px; font-weight: normal; color: var(--aura-text-muted);"><?php esc_html_e( 'Líderes de programa, expositores, monitores', 'aura-suite' ); ?></span>
                         </label>
                         
                         <!-- Mini selector para añadir estudiante con rol -->
                         <div style="display: grid; grid-template-columns: 1.4fr 1.2fr auto; gap: 8px; margin-bottom: 10px; align-items: center;">
                             <select id="select-add-leader-user" class="form-control" style="font-size: 12.5px; padding: 6px 10px; border-radius: 6px;">
-                                <option value=""><?php esc_html_e( 'Seleccionar estudiante...', 'aura' ); ?></option>
+                                <option value=""><?php esc_html_e( 'Seleccionar estudiante...', 'aura-suite' ); ?></option>
                             </select>
                             <select id="select-add-leader-role" class="form-control" style="font-size: 12.5px; padding: 6px 10px; border-radius: 6px;">
-                                <option value="activity_leader"><?php esc_html_e( '🎯 Líder de Actividad', 'aura' ); ?></option>
-                                <option value="program_leader"><?php esc_html_e( '👑 Líder de Programa', 'aura' ); ?></option>
-                                <option value="presenter"><?php esc_html_e( '🗣️ Expositor / Dar Clase', 'aura' ); ?></option>
-                                <option value="monitor"><?php esc_html_e( '🛡️ Monitor / Moderador', 'aura' ); ?></option>
+                                <option value="activity_leader"><?php esc_html_e( '🎯 Líder de Actividad', 'aura-suite' ); ?></option>
+                                <option value="program_leader"><?php esc_html_e( '👑 Líder de Programa', 'aura-suite' ); ?></option>
+                                <option value="presenter"><?php esc_html_e( '🗣️ Expositor / Dar Clase', 'aura-suite' ); ?></option>
+                                <option value="monitor"><?php esc_html_e( '🛡️ Monitor / Moderador', 'aura-suite' ); ?></option>
                             </select>
                             <button type="button" id="btn-add-leader-to-event" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px; white-space: nowrap;">
-                                ➕ <?php esc_html_e( 'Asignar', 'aura' ); ?>
+                                ➕ <?php esc_html_e( 'Asignar', 'aura-suite' ); ?>
                             </button>
                         </div>
                         
@@ -225,40 +225,40 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <div id="sec-recurrence-toggle" style="background: var(--aura-primary-alpha, rgba(99, 102, 241, 0.06)); border: 1px dashed var(--aura-primary, #6366f1); border-radius: 10px; padding: 14px;">
                         <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; user-select: none;">
                             <input type="checkbox" name="is_recurring" id="evt-is-recurring" value="1">
-                            🔁 <?php esc_html_e( 'Crear como serie recurrente (ej: Lunes a Viernes de 9 a 12)', 'aura' ); ?>
+                            🔁 <?php esc_html_e( 'Crear como serie recurrente (ej: Lunes a Viernes de 9 a 12)', 'aura-suite' ); ?>
                         </label>
 
                         <div id="box-recurrence-details" style="display: none; margin-top: 14px; flex-direction: column; gap: 12px;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
                                     <span style="font-size: 12px; font-weight: 600; color: var(--aura-text-secondary);">
-                                        <?php esc_html_e( 'Días de la semana:', 'aura' ); ?>
+                                        <?php esc_html_e( 'Días de la semana:', 'aura-suite' ); ?>
                                     </span>
                                     <div style="display: flex; gap: 4px; flex-wrap: wrap;">
                                         <button type="button" class="btn-rec-preset" data-preset="same-day" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--aura-border, #cbd5e1); background: var(--aura-surface, #f8fafc); cursor: pointer; font-weight: 600;">
-                                            📅 <?php esc_html_e( 'Mismo día', 'aura' ); ?>
+                                            📅 <?php esc_html_e( 'Mismo día', 'aura-suite' ); ?>
                                         </button>
                                         <button type="button" class="btn-rec-preset" data-preset="weekdays" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--aura-border, #cbd5e1); background: var(--aura-surface, #f8fafc); cursor: pointer; font-weight: 600;">
-                                            <?php esc_html_e( 'Lun - Vie', 'aura' ); ?>
+                                            <?php esc_html_e( 'Lun - Vie', 'aura-suite' ); ?>
                                         </button>
                                         <button type="button" class="btn-rec-preset" data-preset="all" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--aura-border, #cbd5e1); background: var(--aura-surface, #f8fafc); cursor: pointer; font-weight: 600;">
-                                            <?php esc_html_e( 'Todos', 'aura' ); ?>
+                                            <?php esc_html_e( 'Todos', 'aura-suite' ); ?>
                                         </button>
                                         <button type="button" class="btn-rec-preset" data-preset="weekend" style="font-size: 11px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--aura-border, #cbd5e1); background: var(--aura-surface, #f8fafc); cursor: pointer; font-weight: 600;">
-                                            <?php esc_html_e( 'Fin de semana', 'aura' ); ?>
+                                            <?php esc_html_e( 'Fin de semana', 'aura-suite' ); ?>
                                         </button>
                                     </div>
                                 </div>
                                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                                     <?php
                                     $dias = [
-                                        1 => __( 'Lun', 'aura' ),
-                                        2 => __( 'Mar', 'aura' ),
-                                        3 => __( 'Mié', 'aura' ),
-                                        4 => __( 'Jue', 'aura' ),
-                                        5 => __( 'Vie', 'aura' ),
-                                        6 => __( 'Sáb', 'aura' ),
-                                        7 => __( 'Dom', 'aura' ),
+                                        1 => __( 'Lun', 'aura-suite' ),
+                                        2 => __( 'Mar', 'aura-suite' ),
+                                        3 => __( 'Mié', 'aura-suite' ),
+                                        4 => __( 'Jue', 'aura-suite' ),
+                                        5 => __( 'Vie', 'aura-suite' ),
+                                        6 => __( 'Sáb', 'aura-suite' ),
+                                        7 => __( 'Dom', 'aura-suite' ),
                                     ];
                                     foreach ( $dias as $val => $dia_label ) :
                                     ?>
@@ -272,22 +272,22 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div>
-                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Hora Inicio', 'aura' ); ?></label>
+                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Hora Inicio', 'aura-suite' ); ?></label>
                                     <input type="time" name="rec_time_start" id="rec-time-start" value="09:00" class="form-control" style="width: 100%; border-radius: 8px;">
                                 </div>
                                 <div>
-                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Hora Fin', 'aura' ); ?></label>
+                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Hora Fin', 'aura-suite' ); ?></label>
                                     <input type="time" name="rec_time_end" id="rec-time-end" value="12:00" class="form-control" style="width: 100%; border-radius: 8px;">
                                 </div>
                             </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                                 <div>
-                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Desde (Fecha Inicio)', 'aura' ); ?></label>
+                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Desde (Fecha Inicio)', 'aura-suite' ); ?></label>
                                     <input type="date" name="rec_date_start" id="rec-date-start" class="form-control" style="width: 100%; border-radius: 8px;">
                                 </div>
                                 <div>
-                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Hasta (Fecha Fin)', 'aura' ); ?></label>
+                                    <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;"><?php esc_html_e( 'Hasta (Fecha Fin)', 'aura-suite' ); ?></label>
                                     <input type="date" name="rec_date_end" id="rec-date-end" class="form-control" style="width: 100%; border-radius: 8px;">
                                 </div>
                             </div>
@@ -298,13 +298,13 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <div id="box-single-datetime" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                🕐 <?php esc_html_e( 'Inicio (Fecha y Hora)', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                                🕐 <?php esc_html_e( 'Inicio (Fecha y Hora)', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                             </label>
                             <input type="datetime-local" name="start_datetime" id="evt-start-dt" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px;">
                         </div>
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                🕐 <?php esc_html_e( 'Fin (Fecha y Hora)', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                                🕐 <?php esc_html_e( 'Fin (Fecha y Hora)', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                             </label>
                             <input type="datetime-local" name="end_datetime" id="evt-end-dt" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px;">
                         </div>
@@ -314,27 +314,27 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                📍 <?php esc_html_e( 'Aula / Salón Físico', 'aura' ); ?>
+                                📍 <?php esc_html_e( 'Aula / Salón Físico', 'aura-suite' ); ?>
                             </label>
-                            <input type="text" name="location" id="evt-location" class="form-control" placeholder="<?php esc_attr_e( 'Ej: Aula Magna 2', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                            <input type="text" name="location" id="evt-location" class="form-control" placeholder="<?php esc_attr_e( 'Ej: Aula Magna 2', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;">
                         </div>
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                💻 <?php esc_html_e( 'URL de Videollamada (Zoom/Meet)', 'aura' ); ?>
+                                💻 <?php esc_html_e( 'URL de Videollamada (Zoom/Meet)', 'aura-suite' ); ?>
                             </label>
-                            <input type="url" name="online_url" id="evt-online-url" class="form-control" placeholder="<?php esc_attr_e( 'https://meet.google.com/...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                            <input type="url" name="online_url" id="evt-online-url" class="form-control" placeholder="<?php esc_attr_e( 'https://meet.google.com/...', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;">
                         </div>
                     </div>
 
                     <!-- Color Distintivo con Paleta Oficial -->
                     <div class="form-group" style="margin-bottom: 4px;">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            🎨 <?php esc_html_e( 'Color Distintivo del Evento', 'aura' ); ?>
+                            🎨 <?php esc_html_e( 'Color Distintivo del Evento', 'aura-suite' ); ?>
                         </label>
                         <div class="aura-color-picker-box">
                             <div class="aura-color-picker-row">
-                                <input type="color" name="color" id="evt-color" value="#5D5FEF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura' ); ?>">
-                                <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura' ); ?></span>
+                                <input type="color" name="color" id="evt-color" value="#5D5FEF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura-suite' ); ?>">
+                                <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura-suite' ); ?></span>
                             </div>
                             <?php echo Aura_Calendar_Admin::render_color_palette( 'evt-color', '#5D5FEF' ); ?>
                         </div>
@@ -343,9 +343,9 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <!-- Descripción y Temario -->
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            📝 <?php esc_html_e( 'Descripción y Temario', 'aura' ); ?>
+                            📝 <?php esc_html_e( 'Descripción y Temario', 'aura-suite' ); ?>
                         </label>
-                        <textarea name="description" id="evt-description" rows="4" class="form-control" placeholder="<?php esc_attr_e( "Detalles, temario y puntos clave:\n- Texto 1\n- Texto 2\n- Texto 3", 'aura' ); ?>" style="width: 100%; border-radius: 8px; font-family: inherit; line-height: 1.5; white-space: pre-wrap;"></textarea>
+                        <textarea name="description" id="evt-description" rows="4" class="form-control" placeholder="<?php esc_attr_e( "Detalles, temario y puntos clave:\n- Texto 1\n- Texto 2\n- Texto 3", 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px; font-family: inherit; line-height: 1.5; white-space: pre-wrap;"></textarea>
                     </div>
 
                     <!-- ── SECCIÓN DE EVENTOS RÁPIDOS Y GENÉRICOS (TOGGLE) ── -->
@@ -355,10 +355,10 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                                 <span style="font-size: 16px;">⚡</span>
                                 <div>
                                     <strong style="font-size: 13px; color: var(--aura-text-primary, #0f172a); display: block;">
-                                        <?php esc_html_e( 'Eventos Rápidos y Genéricos', 'aura' ); ?>
+                                        <?php esc_html_e( 'Eventos Rápidos y Genéricos', 'aura-suite' ); ?>
                                     </strong>
                                     <span style="font-size: 11.5px; color: var(--aura-text-muted, #64748b);">
-                                        <?php esc_html_e( 'Rellena título, tipo, color y auto-calcula duración de 30 min', 'aura' ); ?>
+                                        <?php esc_html_e( 'Rellena título, tipo, color y auto-calcula duración de 30 min', 'aura-suite' ); ?>
                                     </span>
                                 </div>
                             </div>
@@ -367,7 +367,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
                         <div id="container-quick-generic-events" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--aura-border, #e2e8f0);">
                             <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-muted, #64748b); margin-bottom: 8px;">
-                                <?php esc_html_e( 'Selecciona para autocompletar (100% editable):', 'aura' ); ?>
+                                <?php esc_html_e( 'Selecciona para autocompletar (100% editable):', 'aura-suite' ); ?>
                             </div>
                             <div id="quick-generic-chips-list" style="display: flex; flex-wrap: wrap; gap: 6px;">
                                 <!-- Inyectado dinámicamente desde calendar-admin.js -->
@@ -379,10 +379,10 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                     <div class="form-group" style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; padding: 10px 14px;">
                         <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; cursor: pointer; user-select: none; margin: 0;">
                             <input type="checkbox" name="send_calendar_invitations" id="evt-send-invitations" value="1" style="width: 16px; height: 16px;">
-                            <span>✉️ <?php esc_html_e( 'Enviar invitación de calendario por correo a los instructores al guardar', 'aura' ); ?></span>
+                            <span>✉️ <?php esc_html_e( 'Enviar invitación de calendario por correo a los instructores al guardar', 'aura-suite' ); ?></span>
                         </label>
                         <div style="font-size: 11.5px; color: var(--aura-text-muted, #64748b); margin-left: 24px; margin-top: 2px;">
-                            <?php esc_html_e( 'Incluye archivo adjunto .ics y enlaces directos para Google Calendar y Outlook.', 'aura' ); ?>
+                            <?php esc_html_e( 'Incluye archivo adjunto .ics y enlaces directos para Google Calendar y Outlook.', 'aura-suite' ); ?>
                         </div>
                     </div>
 
@@ -392,10 +392,10 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
             <!-- Footer del Modal (Fijo y Siempre Visible) -->
             <div class="aura-modal-footer">
                 <button type="button" class="btn btn-ghost" data-close-modal="#modal-event-editor">
-                    <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                    <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
                 </button>
                 <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-event">
-                    💾 <?php esc_html_e( 'Guardar Evento', 'aura' ); ?>
+                    💾 <?php esc_html_e( 'Guardar Evento', 'aura-suite' ); ?>
                 </button>
             </div>
         </form>
@@ -415,7 +415,7 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
         <div class="aura-modal-header">
             <div>
                 <h3 id="att-modal-title" class="adp-card-title" style="margin: 0; font-size: 18px;">
-                    📋 <?php esc_html_e( 'Control de Asistencia', 'aura' ); ?>
+                    📋 <?php esc_html_e( 'Control de Asistencia', 'aura-suite' ); ?>
                 </h3>
                 <span id="att-modal-subtitle" style="font-size: 13px; color: var(--aura-text-secondary);"></span>
             </div>
@@ -425,10 +425,10 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
         <div class="aura-modal-body">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                 <span style="font-size: 13px; font-weight: 600; color: var(--aura-text-secondary);">
-                    👥 <?php esc_html_e( 'Lista de Estudiantes', 'aura' ); ?>: <strong id="att-roster-count">0</strong>
+                    👥 <?php esc_html_e( 'Lista de Estudiantes', 'aura-suite' ); ?>: <strong id="att-roster-count">0</strong>
                 </span>
                 <button type="button" id="btn-att-mark-all-present" class="btn btn-ghost" style="font-size: 12px; padding: 6px 12px;">
-                    ✅ <?php esc_html_e( 'Marcar Todos Presentes', 'aura' ); ?>
+                    ✅ <?php esc_html_e( 'Marcar Todos Presentes', 'aura-suite' ); ?>
                 </button>
             </div>
 
@@ -436,9 +436,9 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
                 <table class="adp-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
                     <thead>
                         <tr style="background: var(--aura-surface-alt, #f8fafc); border-bottom: 1px solid var(--aura-border);">
-                            <th style="padding: 10px 14px; text-align: left;"><?php esc_html_e( 'Estudiante', 'aura' ); ?></th>
-                            <th style="padding: 10px 14px; text-align: center; width: 260px;"><?php esc_html_e( 'Estado', 'aura' ); ?></th>
-                            <th style="padding: 10px 14px; text-align: left;"><?php esc_html_e( 'Observaciones', 'aura' ); ?></th>
+                            <th style="padding: 10px 14px; text-align: left;"><?php esc_html_e( 'Estudiante', 'aura-suite' ); ?></th>
+                            <th style="padding: 10px 14px; text-align: center; width: 260px;"><?php esc_html_e( 'Estado', 'aura-suite' ); ?></th>
+                            <th style="padding: 10px 14px; text-align: left;"><?php esc_html_e( 'Observaciones', 'aura-suite' ); ?></th>
                         </tr>
                     </thead>
                     <tbody id="att-table-body">
@@ -450,10 +450,10 @@ if ( ! isset( $programs ) || ! is_array( $programs ) ) {
 
         <div class="aura-modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
             <button type="button" class="btn btn-ghost" data-close-modal="#modal-attendance">
-                <?php esc_html_e( 'Cerrar', 'aura' ); ?>
+                <?php esc_html_e( 'Cerrar', 'aura-suite' ); ?>
             </button>
             <button type="button" class="btn btn-emerald btn-shimmer btn-lift" id="btn-save-attendance">
-                💾 <?php esc_html_e( 'Guardar Asistencia', 'aura' ); ?>
+                💾 <?php esc_html_e( 'Guardar Asistencia', 'aura-suite' ); ?>
             </button>
         </div>
     </div>

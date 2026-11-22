@@ -275,11 +275,16 @@ class Aura_Students_Frontend {
         <div class="aura-paz-salvo-check">
             <div class="aura-paz-salvo-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
                 <h3 style="margin:0;"><?php esc_html_e( 'Verificar Estado de Paz y Salvo', 'aura-suite' ); ?></h3>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                 <?php
+                if ( class_exists( 'Aura_I18n' ) ) {
+                    Aura_I18n::render_switcher( [ 'compact' => true ] );
+                }
                 if ( class_exists( 'Aura_Page_Manager' ) ) {
                     echo Aura_Page_Manager::render_theme_toggle(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                 }
                 ?>
+                </div>
             </div>
             <div class="aura-ps-form">
                 <input type="email" id="aura-ps-email" placeholder="<?php esc_attr_e( 'Tu correo electrónico', 'aura-suite' ); ?>" class="aura-input aura-input-full" />

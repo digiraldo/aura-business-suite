@@ -358,7 +358,7 @@ $base_symbol = function_exists('aura_get_currency_symbol') ? aura_get_currency_s
                     <div class="kpi-card kpi-amber card-lift">
                         <div class="kpi-icon"><span class="dashicons dashicons-shield"></span></div>
                         <span class="kpi-label"><?php _e('Política Exceso', 'aura-suite'); ?></span>
-                        <div class="kpi-value"><strong id="aura-budget-kpi-policy">Advertir</strong></div>
+                        <div class="kpi-value"><strong id="aura-budget-kpi-policy"><?php esc_html_e('Advertir', 'aura-suite'); ?></strong></div>
                         <div class="kpi-change"><span class="pulse-dot"></span> <?php _e('Regla de Control', 'aura-suite'); ?></div>
                     </div>
                 </div>
@@ -1070,7 +1070,7 @@ $base_symbol = function_exists('aura_get_currency_symbol') ? aura_get_currency_s
                 </div>
                 <div style="text-align:right;">
                     <span style="font-size:11px; font-weight:600; color:var(--aura-text-muted, #64748b); text-transform:uppercase; display:block;"><?php _e('Estado / Diferencia', 'aura-suite'); ?></span>
-                    <strong id="aura-budget-modal-diff" style="font-size:14px; color:#10b981; display:block; margin-top:2px;">$0.00 (Cuadrado exacto)</strong>
+                    <strong id="aura-budget-modal-diff" style="font-size:14px; color:#10b981; display:block; margin-top:2px;"><?php esc_html_e('$0.00 (Cuadrado exacto)', 'aura-suite'); ?></strong>
                 </div>
             </div>
 
@@ -1436,7 +1436,7 @@ $base_symbol = function_exists('aura_get_currency_symbol') ? aura_get_currency_s
                             <div id="aura-petty-progress-bar" class="aura-petty-progress-fill" style="width: 0%;"></div>
                         </div>
                         <div class="aura-petty-kpi-sub">
-                            <span id="aura-petty-kpi-receipt-count">0 comprobantes</span>
+                            <span id="aura-petty-kpi-receipt-count"><?php esc_html_e('0 comprobantes', 'aura-suite'); ?></span>
                             (<span id="aura-petty-kpi-percent">0%</span> <?php _e('consumido', 'aura-suite'); ?>)
                         </div>
                     </div>
@@ -1680,7 +1680,7 @@ $base_symbol = function_exists('aura_get_currency_symbol') ? aura_get_currency_s
                             <span class="aura-help-tip" data-tooltip="<?php esc_attr_e('Indica cuántas unidades de moneda local equivalen a 1 unidad de la divisa extranjera.', 'aura-suite'); ?>" style="margin-left: 4px;">?</span>
                         </label>
                         <div class="aura-input-group">
-                            <span class="aura-input-group-addon">📈 Tasa</span>
+                            <span class="aura-input-group-addon">📈 <?php esc_html_e('Tasa', 'aura-suite'); ?></span>
                             <input type="number" id="aura-exchange-rate" class="aura-input" name="exchange_rate" min="0.0001" step="0.0001" required placeholder="18.00">
                         </div>
                     </div>
@@ -1708,7 +1708,7 @@ $base_symbol = function_exists('aura_get_currency_symbol') ? aura_get_currency_s
                         <div class="aura-input-group">
                             <span class="aura-input-group-addon" style="color: #3b82f6; font-weight: 700;">$</span>
                             <input type="number" id="aura-exchange-amount-local-input" class="aura-input" min="0.01" step="0.01" placeholder="3600.00">
-                            <span class="aura-input-group-addon" id="aura-exchange-local-addon-curr">Local</span>
+                            <span class="aura-input-group-addon" id="aura-exchange-local-addon-curr"><?php esc_html_e('Local', 'aura-suite'); ?></span>
                         </div>
                         <small style="font-size: 11px; color: var(--aura-text-muted, #94a3b8); margin-top: 3px; display: block;"><?php _e('Calcula automáticamente el USD', 'aura-suite'); ?></small>
                     </div>
@@ -2006,7 +2006,7 @@ $base_symbol = function_exists('aura_get_currency_symbol') ? aura_get_currency_s
                     </div>
                     <div class="aura-field">
                         <label for="aura-reimburse-origin" class="aura-label"><strong><?php _e('Transacción de Origen (opcional)', 'aura-suite'); ?></strong></label>
-                        <input type="text" id="aura-reimburse-origin" class="aura-input" placeholder="ID de transacción">
+                        <input type="text" id="aura-reimburse-origin" class="aura-input" placeholder="<?php esc_attr_e('ID de transacción', 'aura-suite'); ?>">
                     </div>
                     <div class="aura-field aura-field--span2">
                         <label for="aura-reimburse-notes" class="aura-label"><strong><?php _e('Notas / Concepto', 'aura-suite'); ?></strong></label>

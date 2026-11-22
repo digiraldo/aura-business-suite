@@ -64,7 +64,7 @@ $areas = $wpdb->get_results(
 
         <select id="aura-veh-filter-type">
             <option value=""><?php esc_html_e( 'Todos los tipos', 'aura-suite' ); ?></option>
-            <option value="sedan">Sedán</option>
+            <option value="sedan"><?php esc_html_e( 'Sedán', 'aura-suite' ); ?></option>
             <option value="suv">SUV</option>
             <option value="pickup">Pickup</option>
             <option value="van">Van</option>
@@ -166,16 +166,16 @@ $veh_cfg = wp_json_encode( array(
             'unavailable' => __( 'Fuera de servicio', 'aura-suite' ),
         ),
         'type' => array(
-            'sedan'      => 'Sedán',  'suv'        => 'SUV',    'pickup' => 'Pickup',
-            'van'        => 'Van',    'bus'        => 'Bus',    'motorcycle' => 'Moto',
-            'truck'      => 'Camión', 'other'      => 'Otro',
+            'sedan'      => __( 'Sedán', 'aura-suite' ),  'suv'        => 'SUV',    'pickup' => 'Pickup',
+            'van'        => 'Van',    'bus'        => 'Bus',    'motorcycle' => __( 'Moto', 'aura-suite' ),
+            'truck'      => __( 'Camión', 'aura-suite' ), 'other'      => __( 'Otro', 'aura-suite' ),
         ),
         'fuel' => array(
-            'gasoline' => 'Gasolina', 'diesel'  => 'Diesel',
-            'electric' => 'Eléctrico','hybrid'  => 'Híbrido', 'gas' => 'Gas',
+            'gasoline' => __( 'Gasolina', 'aura-suite' ), 'diesel'  => __( 'Diésel', 'aura-suite' ),
+            'electric' => __( 'Eléctrico', 'aura-suite' ),'hybrid'  => __( 'Híbrido', 'aura-suite' ), 'gas' => __( 'Gas', 'aura-suite' ),
         ),
         'transmission' => array(
-            'manual' => 'Manual', 'automatic' => 'Automático',
+            'manual' => __( 'Manual', 'aura-suite' ), 'automatic' => __( 'Automático', 'aura-suite' ),
         ),
     ),
 ), JSON_UNESCAPED_UNICODE );
@@ -305,7 +305,7 @@ $veh_cfg = wp_json_encode( array(
                     <div class="aura-veh-form-col">
                         <label for="veh-type"><?php esc_html_e( 'Tipo', 'aura-suite' ); ?></label>
                         <select id="veh-type" name="type">
-                            <option value="sedan">Sedán</option>
+                            <option value="sedan"><?php esc_html_e( 'Sedán', 'aura-suite' ); ?></option>
                             <option value="suv">SUV</option>
                             <option value="pickup">Pickup</option>
                             <option value="van">Van</option>

@@ -9,6 +9,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     if (typeof auraLibraryLoans === 'undefined') return;
 
     var cfg         = auraLibraryLoans;
@@ -269,7 +271,7 @@
         // Botón: Abrir Modal Global de Todos los Usuarios (AuraThirdPartySelector)
         $(document).on('click', '#aura-lib-btn-open-user-picker', function () {
             if (!window.AuraThirdPartySelector || typeof window.AuraThirdPartySelector.openExplorer !== 'function') {
-                showNotice('error', 'El directorio de usuarios no está disponible en esta pantalla.');
+                showNotice('error', __('El directorio de usuarios no está disponible en esta pantalla.', 'aura-suite'));
                 return;
             }
             window.AuraThirdPartySelector.openExplorer({
@@ -279,7 +281,7 @@
                     if (!item) return;
                     var pickedUid = parseInt(item.wp_user_id || item.user_id || (item.is_wp_user ? item.id : 0), 10) || 0;
                     if (!pickedUid) {
-                        showNotice('warning', 'Selecciona un usuario del sistema WordPress con cuenta activa.');
+                        showNotice('warning', __('Selecciona un usuario del sistema WordPress con cuenta activa.', 'aura-suite'));
                         return;
                     }
                     if (window.AuraContactSelector) {
@@ -291,7 +293,7 @@
                         name: item.name || item.commercial_name || '—',
                         email: item.email || (item.login ? '@' + item.login : ''),
                         avatar_url: item.avatar_url || item.logo_url || '',
-                        role_label: item.accounting_role_label || 'Usuario WP',
+                        role_label: item.accounting_role_label || __('Usuario WP', 'aura-suite'),
                     });
                     $('#loan-reader-selector-wrap').hide();
                     $('#loan-user-error').hide();
@@ -452,7 +454,7 @@
         $('#loan-user-card-name').text(name);
         $('#loan-user-card-email').text(item.email || '');
         if ($('#loan-user-card-badge').length) {
-            $('#loan-user-card-badge').text(item.role_label || 'Usuario WP');
+            $('#loan-user-card-badge').text(item.role_label || __('Usuario WP', 'aura-suite'));
         }
         $('#aura-lib-loan-user-card').show();
     }
@@ -497,7 +499,7 @@
 
     function loadBookPicker() {
         var $grid = $('#aura-lib-bp-grid');
-        $grid.html('<div class="aura-lib-bp-loading"><span class="spinner is-active" style="float:none;"></span> Cargando catálogo…</div>');
+        $grid.html('<div class="aura-lib-bp-loading"><span class="spinner is-active" style="float:none;"></span> ' + escHtml(__('Cargando catálogo…', 'aura-suite')) + '</div>');
         $.post(cfg.ajaxurl, {
             action         : 'aura_library_books_get_list',
             nonce          : cfg.nonce,
@@ -518,7 +520,7 @@
             $('#aura-lib-bp-count').text(total + ' libros encontrados');
 
             if (!items.length) {
-                $grid.html('<div class="aura-lib-bp-empty">📚 No se encontraron libros con los filtros actuales.</div>');
+                $grid.html('<div class="aura-lib-bp-empty">📚 ' + escHtml(__('No se encontraron libros con los filtros actuales.', 'aura-suite')) + '</div>');
                 $('#aura-lib-bp-pagination').empty();
                 return;
             }
@@ -534,14 +536,14 @@
                     : '<div class="aura-lib-bp-cover-placeholder"><span class="dashicons dashicons-book-alt"></span></div>';
 
                 var availBadge = canPick
-                    ? '<span class="badge badge-emerald">' + avail + ' / ' + totalCp + ' disp.</span>'
-                    : '<span class="badge badge-rose">' + escHtml(b.status === 'reference_only' ? 'Solo consulta' : 'Sin stock') + '</span>';
+                    ? '<span class="badge badge-emerald">' + avail + ' / ' + totalCp + ' ' + escHtml(__('disp.', 'aura-suite')) + '</span>'
+                    : '<span class="badge badge-rose">' + escHtml(b.status === 'reference_only' ? __('Solo consulta', 'aura-suite') : __('Sin stock', 'aura-suite')) + '</span>';
 
                 var $card = $('<div class="aura-lib-bp-card' + (canPick ? '' : ' is-unavailable') + '">' +
                     '<div class="aura-lib-bp-cover-wrap">' + coverImg + '</div>' +
                     '<div class="aura-lib-bp-body">' +
                     '<div class="aura-lib-bp-title" title="' + escAttr(b.title || '') + '">' + escHtml(b.title || '—') + '</div>' +
-                    '<div class="aura-lib-bp-author">' + escHtml(b.author || 'Autor desconocido') + '</div>' +
+                    '<div class="aura-lib-bp-author">' + escHtml(b.author || __('Autor desconocido', 'aura-suite')) + '</div>' +
                     '<div class="aura-lib-bp-meta">' +
                     (b.dewey_number ? '<span class="aura-lib-dewey-code">' + escHtml(b.dewey_number) + '</span>' : '') +
                     availBadge +
@@ -549,8 +551,8 @@
                     '</div>' +
                     '<div class="aura-lib-bp-foot">' +
                     '<button type="button" class="btn btn-sm ' + (canPick ? 'btn-indigo' : 'btn-glass') + ' aura-lib-bp-select-btn"' +
-                    (canPick ? '' : ' disabled') + ' data-tooltip="' + (canPick ? 'Seleccionar este libro para el préstamo' : 'Ejemplar no disponible para préstamo') + '">' +
-                    '<span class="dashicons dashicons-yes"></span> ' + (canPick ? 'Seleccionar' : 'No disponible') +
+                    (canPick ? '' : ' disabled') + ' data-tooltip="' + escAttr(canPick ? __('Seleccionar este libro para el préstamo', 'aura-suite') : __('Ejemplar no disponible para préstamo', 'aura-suite')) + '">' +
+                    '<span class="dashicons dashicons-yes"></span> ' + escHtml(canPick ? __('Seleccionar', 'aura-suite') : __('No disponible', 'aura-suite')) +
                     '</button>' +
                     '</div>' +
                     '</div>');
@@ -585,11 +587,11 @@
         var days = dateDiff(from, to);
         $chip.removeClass('aura-lib-chip-warn aura-lib-chip-error');
         if (days > 0) {
-            $chip.text(days + (days === 1 ? ' día' : ' días')).show();
+            $chip.text(days + ' ' + (days === 1 ? __('día', 'aura-suite') : __('días', 'aura-suite'))).show();
         } else if (days === 0) {
-            $chip.text('Mismo día').addClass('aura-lib-chip-warn').show();
+            $chip.text(__('Mismo día', 'aura-suite')).addClass('aura-lib-chip-warn').show();
         } else {
-            $chip.text('Fecha inválida (' + days + 'd)').addClass('aura-lib-chip-error').show();
+            $chip.text(__('Fecha inválida', 'aura-suite') + ' (' + days + 'd)').addClass('aura-lib-chip-error').show();
         }
     }
 
@@ -631,12 +633,12 @@
             ? '<img src="' + escAttr(fullCover) + '" alt="' + escAttr(loan.book_title || '') + '" class="aura-child-book-cover">'
             : '<div class="aura-child-book-cover-empty"><span class="dashicons dashicons-book-alt"></span></div>';
 
-        var btns = '<button type="button" class="btn btn-sm btn-indigo aura-lib-loans-btn-detail" data-id="' + parseInt(loan.id, 10) + '"><span class="dashicons dashicons-visibility"></span> Ver detalle</button>';
+        var btns = '<button type="button" class="btn btn-sm btn-indigo aura-lib-loans-btn-detail" data-id="' + parseInt(loan.id, 10) + '"><span class="dashicons dashicons-visibility"></span> ' + escHtml(__('Ver detalle', 'aura-suite')) + '</button>';
         if (cfg.can_return && loan.can_return) {
-            btns += '<button type="button" class="btn btn-sm btn-emerald aura-lib-loans-btn-return" data-id="' + parseInt(loan.id, 10) + '"><span class="dashicons dashicons-yes-alt"></span> Devolver</button>';
+            btns += '<button type="button" class="btn btn-sm btn-emerald aura-lib-loans-btn-return" data-id="' + parseInt(loan.id, 10) + '"><span class="dashicons dashicons-yes-alt"></span> ' + escHtml(__('Devolver', 'aura-suite')) + '</button>';
         }
         if (cfg.can_extend && loan.can_extend) {
-            btns += '<button type="button" class="btn btn-sm btn-glass aura-lib-loans-btn-extend" data-id="' + parseInt(loan.id, 10) + '"><span class="dashicons dashicons-clock"></span> Extender</button>';
+            btns += '<button type="button" class="btn btn-sm btn-glass aura-lib-loans-btn-extend" data-id="' + parseInt(loan.id, 10) + '"><span class="dashicons dashicons-clock"></span> ' + escHtml(__('Extender', 'aura-suite')) + '</button>';
         }
 
         return '<div class="aura-child-card aura-lib-child-card">' +
@@ -646,20 +648,20 @@
             '<div class="aura-child-hero-bar">' +
             '<div>' +
             '<h4 class="aura-child-hero-title">📖 ' + escHtml(loan.book_title || '—') + '</h4>' +
-            '<div class="aura-lib-child-author">👤 Lector: ' + escHtml(loan.borrower_name || '—') + (loan.contact_category ? ' (' + escHtml(loan.contact_category) + ')' : '') + '</div>' +
+            '<div class="aura-lib-child-author">👤 ' + escHtml(__('Lector:', 'aura-suite')) + ' ' + escHtml(loan.borrower_name || '—') + (loan.contact_category ? ' (' + escHtml(loan.contact_category) + ')' : '') + '</div>' +
             '</div>' +
             '<div>' + renderStatusBadge(loan.status) + '</div>' +
             '</div>' +
             '<div class="aura-child-meta-grid">' +
-            '<div class="aura-child-meta-item"><span>Préstamo ID</span><strong>#' + parseInt(loan.id, 10) + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Dewey</span><strong><code>' + escHtml(loan.dewey_number || '—') + '</code></strong></div>' +
-            '<div class="aura-child-meta-item"><span>Fecha Préstamo</span><strong>' + escHtml(loan.loan_date || '—') + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Devolución Prevista</span><strong>' + escHtml(loan.due_date || '—') + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Fecha Devolución Real</span><strong>' + escHtml(loan.return_date || 'Pendiente') + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Extensiones</span><strong>' + parseInt(loan.extended_count, 10) + ' / ' + cfg.max_extensions + '</strong></div>' +
-            (cfg.fines_enabled && cfg.can_view_fines ? '<div class="aura-child-meta-item"><span>Multa</span><strong>' + (fineAmt > 0 ? '$' + fineAmt.toFixed(2) : '$0.00') + '</strong></div>' : '') +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Préstamo ID', 'aura-suite')) + '</span><strong>#' + parseInt(loan.id, 10) + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Dewey', 'aura-suite')) + '</span><strong><code>' + escHtml(loan.dewey_number || '—') + '</code></strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Fecha Préstamo', 'aura-suite')) + '</span><strong>' + escHtml(loan.loan_date || '—') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Devolución Prevista', 'aura-suite')) + '</span><strong>' + escHtml(loan.due_date || '—') + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Fecha Devolución Real', 'aura-suite')) + '</span><strong>' + escHtml(loan.return_date || __('Pendiente', 'aura-suite')) + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(__('Extensiones', 'aura-suite')) + '</span><strong>' + parseInt(loan.extended_count, 10) + ' / ' + cfg.max_extensions + '</strong></div>' +
+            (cfg.fines_enabled && cfg.can_view_fines ? '<div class="aura-child-meta-item"><span>' + escHtml(__('Multa', 'aura-suite')) + '</span><strong>' + (fineAmt > 0 ? '$' + fineAmt.toFixed(2) : '$0.00') + '</strong></div>' : '') +
             '</div>' +
-            (loan.notes ? '<div class="aura-child-synopsis"><strong>Observaciones:</strong> ' + escHtml(loan.notes) + '</div>' : '') +
+            (loan.notes ? '<div class="aura-child-synopsis"><strong>' + escHtml(__('Observaciones:', 'aura-suite')) + '</strong> ' + escHtml(loan.notes) + '</div>' : '') +
             '<div class="aura-child-footer-actions">' + btns + '</div>' +
             '</div></div></div>';
     }
@@ -682,45 +684,45 @@
         $.each(items, function (i, loan) {
             _loansMap[parseInt(loan.id, 10)] = loan;
             var statusTip = loan.is_overdue
-                ? 'Préstamo vencido: requiere seguimiento o devolución'
-                : ('Estado actual: ' + (cfg.txt.status_labels[loan.status] || loan.status));
+                ? __('Préstamo vencido: requiere seguimiento o devolución', 'aura-suite')
+                : (__('Estado actual:', 'aura-suite') + ' ' + (cfg.txt.status_labels[loan.status] || loan.status));
             var statusBadge = '<span class="aura-tip-badge-wrap" data-tooltip="' + escAttr(statusTip) + '">' +
                 renderStatusBadge(loan.status) + '</span>';
-            var dueBadge    = '<span class="aura-tip-badge-wrap" data-tooltip="Fecha pactada de devolución: ' + escAttr(loan.due_date || '—') + '">' +
+            var dueBadge    = '<span class="aura-tip-badge-wrap" data-tooltip="' + escAttr(__('Fecha pactada de devolución:', 'aura-suite') + ' ' + (loan.due_date || '—')) + '">' +
                 renderDueBadge(loan) + '</span>';
-            var extBadge    = '<span class="badge badge-slate" data-tooltip="Extensiones usadas: ' +
-                parseInt(loan.extended_count, 10) + ' de máximo ' + cfg.max_extensions + '">' +
+            var extBadge    = '<span class="badge badge-slate" data-tooltip="' + escAttr(__('Extensiones usadas:', 'aura-suite')) + ' ' +
+                parseInt(loan.extended_count, 10) + ' ' + escAttr(__('de máximo', 'aura-suite')) + ' ' + cfg.max_extensions + '">' +
                 parseInt(loan.extended_count, 10) + ' / ' + cfg.max_extensions + '</span>';
             var fineCell    = '';
             if (cfg.fines_enabled && cfg.can_view_fines) {
                 var fineAmt = parseFloat(loan.fine_amount) || 0;
                 fineCell = fineAmt > 0
-                    ? '<span class="badge badge-amber" data-tooltip="Multa pendiente o aplicada al préstamo">$' + fineAmt.toFixed(2) + '</span>'
-                    : '<span class="aura-lib-sub-muted" data-tooltip="Sin multas registradas">—</span>';
+                    ? '<span class="badge badge-amber" data-tooltip="' + escAttr(__('Multa pendiente o aplicada al préstamo', 'aura-suite')) + '">$' + fineAmt.toFixed(2) + '</span>'
+                    : '<span class="aura-lib-sub-muted" data-tooltip="' + escAttr(__('Sin multas registradas', 'aura-suite')) + '">—</span>';
             }
 
             var actions = '<div class="aura-row-actions">';
             actions += '<button type="button" class="aura-btn-action-icon aura-lib-loans-btn-detail" data-id="' +
-                parseInt(loan.id, 10) + '" data-tooltip="Ver ficha y detalle completo del préstamo">' +
+                parseInt(loan.id, 10) + '" data-tooltip="' + escAttr(__('Ver ficha y detalle completo del préstamo', 'aura-suite')) + '">' +
                 '<span class="dashicons dashicons-visibility"></span></button>';
             if (cfg.can_return && loan.can_return) {
                 actions += '<button type="button" class="aura-btn-action-icon aura-btn-action-success aura-lib-loans-btn-return" data-id="' +
-                    parseInt(loan.id, 10) + '" data-tooltip="Registrar devolución del ejemplar">' +
+                    parseInt(loan.id, 10) + '" data-tooltip="' + escAttr(__('Registrar devolución del ejemplar', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-yes-alt"></span></button>';
             }
             if (cfg.can_extend && loan.can_extend) {
                 actions += '<button type="button" class="aura-btn-action-icon aura-btn-action-primary aura-lib-loans-btn-extend" data-id="' +
-                    parseInt(loan.id, 10) + '" data-tooltip="Extender plazo de devolución">' +
+                    parseInt(loan.id, 10) + '" data-tooltip="' + escAttr(__('Extender plazo de devolución', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-clock"></span></button>';
             }
             if (cfg.can_edit && loan.can_edit) {
                 actions += '<button type="button" class="aura-btn-action-icon aura-lib-loans-btn-edit" data-id="' +
-                    parseInt(loan.id, 10) + '" data-tooltip="Editar fechas u observaciones">' +
+                    parseInt(loan.id, 10) + '" data-tooltip="' + escAttr(__('Editar fechas u observaciones', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-edit"></span></button>';
             }
             if (cfg.can_delete && loan.can_cancel) {
                 actions += '<button type="button" class="aura-btn-action-icon aura-btn-action-danger aura-lib-loans-btn-cancel" data-id="' +
-                    parseInt(loan.id, 10) + '" data-tooltip="Cancelar préstamo y liberar copia">' +
+                    parseInt(loan.id, 10) + '" data-tooltip="' + escAttr(__('Cancelar préstamo y liberar copia', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-no"></span></button>';
             }
             actions += '</div>';
@@ -736,24 +738,24 @@
                     '<img src="' + escAttr(loan.cover_thumb_url) + '" class="aura-lib-cover-thumb" alt="' + escAttr(loan.book_title || '') + '">' +
                     '</div>';
             } else {
-                coverHtml = '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm" data-tooltip="Sin imagen de portada"></span>';
+                coverHtml = '<span class="dashicons dashicons-format-image aura-lib-cover-placeholder-sm" data-tooltip="' + escAttr(__('Sin imagen de portada', 'aura-suite')) + '"></span>';
             }
 
             var bookTipHtml = '<div class="aura-tip-card">' +
                 '<div class="aura-tip-card-header"><div class="aura-tip-info"><div class="aura-tip-title">📖 ' + escHtml(loan.book_title || '—') + '</div></div></div>' +
                 '<div class="aura-tip-card-body">' +
-                '<div class="aura-tip-row"><span>Préstamo:</span><strong>#' + parseInt(loan.id, 10) + '</strong></div>' +
-                (loan.dewey_number ? '<div class="aura-tip-row"><span>Dewey:</span><strong>' + escHtml(loan.dewey_number) + '</strong></div>' : '') +
-                '<div class="aura-tip-row"><span>Devolución:</span><strong>' + escHtml(loan.due_date || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Préstamo:', 'aura-suite')) + '</span><strong>#' + parseInt(loan.id, 10) + '</strong></div>' +
+                (loan.dewey_number ? '<div class="aura-tip-row"><span>' + escHtml(__('Dewey:', 'aura-suite')) + '</span><strong>' + escHtml(loan.dewey_number) + '</strong></div>' : '') +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Devolución:', 'aura-suite')) + '</span><strong>' + escHtml(loan.due_date || '—') + '</strong></div>' +
                 '</div></div>';
 
             rows += '<tr class="aura-parent-row" data-id="' + parseInt(loan.id, 10) + '">';
             rows += '<td data-label="#" class="aura-lib-col-expand">' +
                 '<div class="aura-id-toggle-wrap">' +
-                '<button type="button" class="aura-lib-row-toggle" data-id="' + parseInt(loan.id, 10) + '" aria-expanded="false" data-tooltip="Desplegar información completa del préstamo"><span class="dashicons dashicons-plus-alt2"></span></button>' +
+                '<button type="button" class="aura-lib-row-toggle" data-id="' + parseInt(loan.id, 10) + '" aria-expanded="false" data-tooltip="' + escAttr(__('Desplegar información completa del préstamo', 'aura-suite')) + '"><span class="dashicons dashicons-plus-alt2"></span></button>' +
                 '<span class="aura-txn-id-pill">#' + parseInt(loan.id, 10) + '</span>' +
                 '</div></td>';
-            rows += '<td data-label="Libro" class="aura-lib-col-book">' +
+            rows += '<td data-label="' + escAttr(__('Libro', 'aura-suite')) + '" class="aura-lib-col-book">' +
                 '<div class="aura-lib-loan-book-cell">' +
                 '<div class="aura-lib-loan-book-cover">' + coverHtml + '</div>' +
                 '<div class="aura-lib-loan-book-info" data-aura-tooltip="' + encodeURIComponent(bookTipHtml) + '">' +
@@ -763,7 +765,7 @@
                 '</div></div>' +
                 '</td>';
             if (cfg.can_view_all) {
-                var borrowerHtml = '<div class="aura-lib-borrower-cell" data-tooltip="Lector: ' + escAttr(loan.borrower_name || '—') + (loan.contact_category ? ' (' + escAttr(loan.contact_category) + ')' : '') + '">';
+                var borrowerHtml = '<div class="aura-lib-borrower-cell" data-tooltip="' + escAttr(__('Lector:', 'aura-suite')) + ' ' + escAttr(loan.borrower_name || '—') + (loan.contact_category ? ' (' + escAttr(loan.contact_category) + ')' : '') + '">';
                 if (loan.contact_avatar) {
                     borrowerHtml += '<div class="avatar avatar-sm avatar-zoomable" data-preview-title="' + escAttr(loan.borrower_name || '') + '"><img src="' + escAttr(loan.contact_avatar) + '" alt="' + escAttr(loan.borrower_name || '') + '"></div>';
                 } else {
@@ -775,16 +777,16 @@
                     borrowerHtml += '<br><small class="aura-lib-borrower-cat">' + escHtml(loan.contact_category) + '</small>';
                 }
                 borrowerHtml += '</div></div>';
-                rows += '<td data-label="Lector" class="aura-lib-col-secondary">' + borrowerHtml + '</td>';
+                rows += '<td data-label="' + escAttr(__('Lector', 'aura-suite')) + '" class="aura-lib-col-secondary">' + borrowerHtml + '</td>';
             }
-            rows += '<td data-label="Fecha préstamo" class="aura-lib-col-secondary"><span data-tooltip="Entregado el ' + escAttr(loan.loan_date || '—') + '">' + escHtml(loan.loan_date || '—') + '</span></td>';
-            rows += '<td data-label="Devol. prevista" class="aura-lib-col-secondary">' + dueBadge + '</td>';
-            rows += '<td data-label="Estado" class="aura-lib-col-status">' + statusBadge + '</td>';
-            rows += '<td data-label="Extensiones" class="aura-lib-col-secondary" style="text-align:center;">' + extBadge + '</td>';
+            rows += '<td data-label="' + escAttr(__('Fecha préstamo', 'aura-suite')) + '" class="aura-lib-col-secondary"><span data-tooltip="' + escAttr(__('Entregado el', 'aura-suite') + ' ' + (loan.loan_date || '—')) + '">' + escHtml(loan.loan_date || '—') + '</span></td>';
+            rows += '<td data-label="' + escAttr(__('Devol. prevista', 'aura-suite')) + '" class="aura-lib-col-secondary">' + dueBadge + '</td>';
+            rows += '<td data-label="' + escAttr(__('Estado', 'aura-suite')) + '" class="aura-lib-col-status">' + statusBadge + '</td>';
+            rows += '<td data-label="' + escAttr(__('Extensiones', 'aura-suite')) + '" class="aura-lib-col-secondary" style="text-align:center;">' + extBadge + '</td>';
             if (cfg.fines_enabled && cfg.can_view_fines) {
-                rows += '<td data-label="Multa" class="aura-lib-col-secondary" style="text-align:right;">' + fineCell + '</td>';
+                rows += '<td data-label="' + escAttr(__('Multa', 'aura-suite')) + '" class="aura-lib-col-secondary" style="text-align:right;">' + fineCell + '</td>';
             }
-            rows += '<td data-label="Acciones" class="aura-lib-col-actions">' + actions + '</td>';
+            rows += '<td data-label="' + escAttr(__('Acciones', 'aura-suite')) + '" class="aura-lib-col-actions">' + actions + '</td>';
             rows += '</tr>';
         });
 
@@ -937,7 +939,7 @@
             return;
         }
         if (dateDiff(loanDate, dueDate) <= 0) {
-            $('#aura-lib-loan-modal-error').text('⚠ La fecha límite debe ser posterior a la fecha de préstamo.').show();
+            $('#aura-lib-loan-modal-error').text('⚠ ' + __('La fecha límite debe ser posterior a la fecha de préstamo.', 'aura-suite')).show();
             return;
         }
 
@@ -1010,10 +1012,10 @@
             var loan = res.data.loan;
             currentLoan = loan;
             var info = '<table class="aura-lib-detail-table">' +
-                '<tr><th>Libro</th><td>' + escHtml(loan.book_title) + '</td></tr>' +
-                '<tr><th>Lector</th><td>' + escHtml(loan.borrower_name) + '</td></tr>' +
-                '<tr><th>Fecha préstamo</th><td>' + escHtml(loan.loan_date) + '</td></tr>' +
-                '<tr><th>Devolución prevista</th><td>' + escHtml(loan.due_date) + '</td></tr>' +
+                '<tr><th>' + escHtml(__('Libro', 'aura-suite')) + '</th><td>' + escHtml(loan.book_title) + '</td></tr>' +
+                '<tr><th>' + escHtml(__('Lector', 'aura-suite')) + '</th><td>' + escHtml(loan.borrower_name) + '</td></tr>' +
+                '<tr><th>' + escHtml(__('Fecha préstamo', 'aura-suite')) + '</th><td>' + escHtml(loan.loan_date) + '</td></tr>' +
+                '<tr><th>' + escHtml(__('Devolución prevista', 'aura-suite')) + '</th><td>' + escHtml(loan.due_date) + '</td></tr>' +
                 '</table>';
             $('#aura-lib-return-info').html(info);
             recalculateFine();
@@ -1068,7 +1070,7 @@
         var $btn = $('#aura-lib-return-save').prop('disabled', true).text('Guardando…');
 
         $.post(cfg.ajaxurl, data, function (res) {
-            $btn.prop('disabled', false).text('Confirmar Devolución');
+            $btn.prop('disabled', false).text(__('Confirmar Devolución', 'aura-suite'));
             if (res.success) {
                 closeAllModals();
                 showNotice('success', cfg.txt.returned);
@@ -1077,7 +1079,7 @@
                 alert(res.data ? res.data.message : cfg.txt.error);
             }
         }).fail(function () {
-            $btn.prop('disabled', false).text('Confirmar Devolución');
+            $btn.prop('disabled', false).text(__('Confirmar Devolución', 'aura-suite'));
             alert(cfg.txt.error);
         });
     }
@@ -1112,10 +1114,10 @@
             _extendCurrentDue = loan.due_date || null;
             var extended = parseInt(loan.extended_count, 10) || 0;
             var info = '<table class="aura-lib-detail-table">' +
-                '<tr><th>Libro</th><td>' + escHtml(loan.book_title || '—') + '</td></tr>' +
-                '<tr><th>Lector</th><td>' + escHtml(loan.borrower_name || '—') + '</td></tr>' +
-                '<tr><th>Fecha límite actual</th><td><strong>' + escHtml(loan.due_date || '—') + '</strong></td></tr>' +
-                '<tr><th>Extensiones usadas</th><td>' + extended + ' / ' + cfg.max_extensions + '</td></tr>' +
+                '<tr><th>' + escHtml(__('Libro', 'aura-suite')) + '</th><td>' + escHtml(loan.book_title || '—') + '</td></tr>' +
+                '<tr><th>' + escHtml(__('Lector', 'aura-suite')) + '</th><td>' + escHtml(loan.borrower_name || '—') + '</td></tr>' +
+                '<tr><th>' + escHtml(__('Fecha límite actual', 'aura-suite')) + '</th><td><strong>' + escHtml(loan.due_date || '—') + '</strong></td></tr>' +
+                '<tr><th>' + escHtml(__('Extensiones usadas', 'aura-suite')) + '</th><td>' + extended + ' / ' + cfg.max_extensions + '</td></tr>' +
                 '</table>';
             $('#aura-lib-extend-info').html(info);
             updateExtendPreview();
@@ -1147,7 +1149,7 @@
         if (!loanId) return;
         var days = parseInt($('#extend_days').val(), 10);
         if (isNaN(days) || days < 1 || days > 180) {
-            $('#aura-lib-extend-error').text('⚠ Ingresa un número de días válido (1–180).').show();
+            $('#aura-lib-extend-error').text('⚠ ' + __('Ingresa un número de días válido (1–180).', 'aura-suite')).show();
             return;
         }
         $('#aura-lib-extend-error').hide();
@@ -1159,7 +1161,7 @@
             loan_id : loanId,
             days    : days,
         }, function (res) {
-            $btn.prop('disabled', false).text('Confirmar Extensión');
+            $btn.prop('disabled', false).text(__('Confirmar Extensión', 'aura-suite'));
             if (res.success) {
                 closeAllModals();
                 showNotice('success', cfg.txt.extended);
@@ -1168,7 +1170,7 @@
                 $('#aura-lib-extend-error').text('⚠ ' + (res.data ? res.data.message : cfg.txt.error)).show();
             }
         }).fail(function () {
-            $btn.prop('disabled', false).text('Confirmar Extensión');
+            $btn.prop('disabled', false).text(__('Confirmar Extensión', 'aura-suite'));
             $('#aura-lib-extend-error').text('⚠ ' + cfg.txt.error).show();
         });
     }
@@ -1203,8 +1205,8 @@
             }
             var loan = res.data.loan;
             var info = '<table class="aura-lib-detail-table">' +
-                '<tr><th>Libro</th><td>' + escHtml(loan.book_title || '—') + '</td></tr>' +
-                '<tr><th>Lector</th><td>' + escHtml(loan.borrower_name || '—') + '</td></tr>' +
+                '<tr><th>' + escHtml(__('Libro', 'aura-suite')) + '</th><td>' + escHtml(loan.book_title || '—') + '</td></tr>' +
+                '<tr><th>' + escHtml(__('Lector', 'aura-suite')) + '</th><td>' + escHtml(loan.borrower_name || '—') + '</td></tr>' +
                 '</table>';
             $('#aura-lib-edit-loan-info').html(info);
             $('#edit_loan_date').val(loan.loan_date || '');
@@ -1236,7 +1238,7 @@
             return;
         }
         if (dueDate < loanDate) {
-            $('#aura-lib-edit-loan-error').text('⚠ La fecha límite debe ser posterior a la fecha de préstamo.').show();
+            $('#aura-lib-edit-loan-error').text('⚠ ' + __('La fecha límite debe ser posterior a la fecha de préstamo.', 'aura-suite')).show();
             return;
         }
 
@@ -1254,7 +1256,7 @@
             $btn.prop('disabled', false).text('Guardar Cambios');
             if (res.success) {
                 closeAllModals();
-                showNotice('success', cfg.txt.updated || 'Préstamo actualizado.');
+                showNotice('success', cfg.txt.updated || __('Préstamo actualizado.', 'aura-suite'));
                 loadLoans();
             } else {
                 var msg = res.data ? res.data.message : cfg.txt.error;
@@ -1270,7 +1272,7 @@
     // CANCELAR PRÉSTAMO
     // ──────────────────────────────────────────────────────────────
     function cancelLoan(loanId) {
-        var msg = cfg.txt.confirm_cancel || '¿Cancelar este préstamo? Esta acción no se puede deshacer.';
+        var msg = cfg.txt.confirm_cancel || __('¿Cancelar este préstamo? Esta acción no se puede deshacer.', 'aura-suite');
         if (!confirm(msg)) return;
 
         $.post(cfg.ajaxurl, {
@@ -1279,7 +1281,7 @@
             loan_id : loanId,
         }, function (res) {
             if (res.success) {
-                showNotice('success', cfg.txt.cancelled || 'Préstamo cancelado.');
+                showNotice('success', cfg.txt.cancelled || __('Préstamo cancelado.', 'aura-suite'));
                 loadLoans();
             } else {
                 alert(res.data ? res.data.message : cfg.txt.error);
@@ -1324,24 +1326,24 @@
         var statusBadge = renderStatusBadge(loan.status);
         var fineRow = '';
         if (cfg.fines_enabled && cfg.can_view_fines && parseFloat(loan.fine_current || 0) > 0) {
-            fineRow = '<tr><th>Multa acumulada</th><td>' +
+            fineRow = '<tr><th>' + escHtml(__('Multa acumulada', 'aura-suite')) + '</th><td>' +
                 '<span class="badge badge-amber">$' +
                 parseFloat(loan.fine_current).toFixed(2) + '</span></td></tr>';
         }
 
         var html = '<table class="aura-lib-detail-table aura-table">' +
-            '<tr><th>Libro</th><td><strong>' + escHtml(loan.book_title) + '</strong>' +
+            '<tr><th>' + escHtml(__('Libro', 'aura-suite')) + '</th><td><strong>' + escHtml(loan.book_title) + '</strong>' +
                 (loan.dewey_number ? ' <code>' + escHtml(loan.dewey_number) + '</code>' : '') + '</td></tr>' +
-            '<tr><th>Lector</th><td>' + escHtml(loan.borrower_name) + '</td></tr>' +
-            '<tr><th>Fecha préstamo</th><td>' + escHtml(loan.loan_date) + '</td></tr>' +
-            '<tr><th>Devolución prevista</th><td>' + escHtml(loan.due_date) + '</td></tr>' +
-            (loan.return_date ? '<tr><th>Devuelto el</th><td>' + escHtml(loan.return_date) + '</td></tr>' : '') +
-            '<tr><th>Estado</th><td>' + statusBadge + '</td></tr>' +
-            '<tr><th>Extensiones</th><td>' + parseInt(loan.extended_count, 10) + ' de ' + cfg.max_extensions + '</td></tr>' +
+            '<tr><th>' + escHtml(__('Lector', 'aura-suite')) + '</th><td>' + escHtml(loan.borrower_name) + '</td></tr>' +
+            '<tr><th>' + escHtml(__('Fecha préstamo', 'aura-suite')) + '</th><td>' + escHtml(loan.loan_date) + '</td></tr>' +
+            '<tr><th>' + escHtml(__('Devolución prevista', 'aura-suite')) + '</th><td>' + escHtml(loan.due_date) + '</td></tr>' +
+            (loan.return_date ? '<tr><th>' + escHtml(__('Devuelto el', 'aura-suite')) + '</th><td>' + escHtml(loan.return_date) + '</td></tr>' : '') +
+            '<tr><th>' + escHtml(__('Estado', 'aura-suite')) + '</th><td>' + statusBadge + '</td></tr>' +
+            '<tr><th>' + escHtml(__('Extensiones', 'aura-suite')) + '</th><td>' + parseInt(loan.extended_count, 10) + ' ' + escHtml(__('de', 'aura-suite')) + ' ' + cfg.max_extensions + '</td></tr>' +
             fineRow +
-            (loan.notes ? '<tr><th>Notas</th><td>' + escHtml(loan.notes) + '</td></tr>' : '') +
-            (loan.return_notes ? '<tr><th>Notas devolución</th><td>' + escHtml(loan.return_notes) + '</td></tr>' : '') +
-            (loan.return_condition ? '<tr><th>Condición</th><td>' +
+            (loan.notes ? '<tr><th>' + escHtml(__('Notas', 'aura-suite')) + '</th><td>' + escHtml(loan.notes) + '</td></tr>' : '') +
+            (loan.return_notes ? '<tr><th>' + escHtml(__('Notas devolución', 'aura-suite')) + '</th><td>' + escHtml(loan.return_notes) + '</td></tr>' : '') +
+            (loan.return_condition ? '<tr><th>' + escHtml(__('Condición', 'aura-suite')) + '</th><td>' +
                 escHtml((cfg.txt.condition_labels && cfg.txt.condition_labels[loan.return_condition]) || loan.return_condition) +
                 '</td></tr>' : '') +
             '</table>';
@@ -1350,21 +1352,21 @@
         var btns = '<div class="aura-modal-footer aura-lib-modal-footer aura-lib-detail-actions">';
         if (cfg.can_return && loan.can_return) {
             btns += '<button type="button" class="btn btn-shimmer btn-emerald btn-lift aura-lib-loans-btn-return" data-id="' +
-                parseInt(loan.id, 10) + '">Registrar devolución</button>';
+                parseInt(loan.id, 10) + '">' + escHtml(__('Registrar devolución', 'aura-suite')) + '</button>';
         }
         if (cfg.can_extend && loan.can_extend) {
             btns += '<button type="button" class="btn btn-glass btn-lift aura-lib-loans-btn-extend" data-id="' +
-                parseInt(loan.id, 10) + '">Extender</button>';
+                parseInt(loan.id, 10) + '">' + escHtml(__('Extender', 'aura-suite')) + '</button>';
         }
         if (cfg.can_edit && loan.can_edit) {
             btns += '<button type="button" class="btn btn-indigo btn-lift aura-lib-loans-btn-edit" data-id="' +
-                parseInt(loan.id, 10) + '">Editar</button>';
+                parseInt(loan.id, 10) + '">' + escHtml(__('Editar', 'aura-suite')) + '</button>';
         }
         if (cfg.can_delete && loan.can_cancel) {
             btns += '<button type="button" class="btn btn-rose btn-lift aura-lib-loans-btn-cancel" data-id="' +
-                parseInt(loan.id, 10) + '">Cancelar préstamo</button>';
+                parseInt(loan.id, 10) + '">' + escHtml(__('Cancelar préstamo', 'aura-suite')) + '</button>';
         }
-        btns += '<button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-modal-close" data-modal-close="aura-lib-loan-detail-modal">Cerrar</button>';
+        btns += '<button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-modal-close" data-modal-close="aura-lib-loan-detail-modal">' + escHtml(__('Cerrar', 'aura-suite')) + '</button>';
         btns += '</div>';
 
         $('#aura-lib-loan-detail-body').html(html + btns);

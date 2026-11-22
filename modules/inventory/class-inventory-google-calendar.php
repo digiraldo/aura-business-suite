@@ -107,9 +107,9 @@ class Aura_Inventory_Google_Calendar {
 
         // ── Cuerpo del evento ──────────────────────────────────
         $event = [
-            'summary'     => '🔧 Mantenimiento: ' . $equip->name,
+            'summary'     => '🔧 ' . sprintf( __( 'Mantenimiento: %s', 'aura-suite' ), $equip->name ),
             'description' => sprintf(
-                "Equipo: %s\nFecha programada: %s\n\nRegistrado automáticamente por AURA Business Suite (%s).",
+                __( "Equipo: %s\nFecha programada: %s\n\nRegistrado automáticamente por AURA Business Suite (%s).", 'aura-suite' ),
                 $equip->name,
                 date_i18n( 'd/m/Y', strtotime( $equip->next_maintenance_date ) ),
                 aura_get_org_name()

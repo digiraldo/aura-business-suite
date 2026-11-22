@@ -122,7 +122,8 @@ $is_graduated         = ( $stu_status === 'graduated' || ! empty( $active_certs 
                 </span>
             </p>
         </div>
-        <div class="aura-portal-logout" style="display: flex; align-items: center; gap: 8px;">
+        <div class="aura-portal-logout" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <?php if ( class_exists( 'Aura_I18n' ) ) Aura_I18n::render_switcher( [ 'compact' => true ] ); ?>
             <button type="button" class="aura-theme-toggle" aria-label="<?php esc_attr_e( 'Cambiar tema', 'aura-suite' ); ?>">
                 <span class="dashicons dashicons-moon"></span>
                 <span class="aura-theme-toggle-label"><?php esc_html_e( 'Modo oscuro', 'aura-suite' ); ?></span>

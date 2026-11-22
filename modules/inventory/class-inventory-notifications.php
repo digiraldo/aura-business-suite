@@ -711,7 +711,7 @@ class Aura_Inventory_Notifications {
              . 'style="font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:640px;margin:0 auto;">'
              . '<div style="background:#1e3a5f;padding:20px 24px;text-align:center;">'
              . $logo_html
-             . '<h1 style="color:#fff;margin:0;font-size:18px;">' . $org . ' <span style="color:#7ecfff;">Inventario</span></h1>'
+             . '<h1 style="color:#fff;margin:0;font-size:18px;">' . $org . ' <span style="color:#7ecfff;">' . esc_html__( 'Inventario', 'aura-suite' ) . '</span></h1>'
              . '</div>'
              . '<div style="padding:24px;">';
     }

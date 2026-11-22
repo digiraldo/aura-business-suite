@@ -11,6 +11,9 @@ if (typeof jQuery !== 'undefined' && !jQuery.fn.select2) {
 }
 
 const AuraUI = {
+    _t: function(s) {
+        return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s;
+    },
     
     init: function() {
         this.initTabs();
@@ -218,11 +221,11 @@ const AuraUI = {
                 const imgUrl = container.getAttribute('data-img-url') || (el.getAttribute ? el.getAttribute('data-img-url') : '') || (imgEl ? imgEl.src : '');
                 const row = el.closest ? el.closest('tr') : null;
                 const rowName = row ? ($(row).find('.aura-tp-fullname').text() || $(row).find('strong').text()) : '';
-                const imgTitle = container.getAttribute('data-preview-title') || (el.getAttribute ? el.getAttribute('data-preview-title') : '') || container.getAttribute('data-img-title') || (el.getAttribute ? el.getAttribute('data-img-title') : '') || container.getAttribute('data-tooltip') || (imgEl ? imgEl.getAttribute('alt') : '') || rowName || 'Previsualización';
+                const imgTitle = container.getAttribute('data-preview-title') || (el.getAttribute ? el.getAttribute('data-preview-title') : '') || container.getAttribute('data-img-title') || (el.getAttribute ? el.getAttribute('data-img-title') : '') || container.getAttribute('data-tooltip') || (imgEl ? imgEl.getAttribute('alt') : '') || rowName || (window.wp && wp.i18n && typeof wp.i18n.__ === 'function' ? wp.i18n.__('Previsualización', 'aura-suite') : 'Previsualización');
 
                 if (imgUrl) {
                     const isAvatar = container.classList.contains('avatar-zoomable') || container.classList.contains('avatar-hover-zoom') || container.classList.contains('aura-avatar-zoom') || (el.classList && (el.classList.contains('avatar-zoomable') || el.classList.contains('avatar-hover-zoom') || el.classList.contains('aura-avatar-zoom')));
-                    const subLabel = isAvatar ? '<span class="aura-floating-img-sub">Foto de Perfil</span>' : '';
+                    const subLabel = isAvatar ? '<span class="aura-floating-img-sub">' + $('<span>').text(window.wp && wp.i18n && typeof wp.i18n.__ === 'function' ? wp.i18n.__('Foto de Perfil', 'aura-suite') : 'Foto de Perfil').html() + '</span>' : '';
                     htmlContent = '<div class="aura-floating-img-card">' +
                                   '<img src="' + imgUrl + '" alt="' + $('<span>').text(imgTitle).html() + '" style="' + (isAvatar ? 'border-radius:50% !important;width:140px !important;height:140px !important;object-fit:cover !important;' : '') + '">' +
                                   '<span class="aura-floating-img-title">' + $('<span>').text(imgTitle).html() + '</span>' +

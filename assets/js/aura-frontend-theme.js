@@ -8,6 +8,8 @@
 (function () {
     'use strict';
 
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+
     var STORAGE_KEY = 'aura_frontend_theme';
     var AURA_CONTAINER_SELECTOR = [
         '.aura-portal-wrap',
@@ -119,24 +121,24 @@
             var label = btn.querySelector('.aura-theme-toggle-label');
 
             if (isDark) {
-                btn.setAttribute('title', 'Cambiar a modo claro');
-                btn.setAttribute('aria-label', 'Cambiar a modo claro');
+                btn.setAttribute('title', __('Cambiar a modo claro', 'aura-suite'));
+                btn.setAttribute('aria-label', __('Cambiar a modo claro', 'aura-suite'));
                 if (icon) {
                     icon.className = 'dashicons dashicons-lightbulb';
                     icon.textContent = ''; // Vacío para evitar doble icono con el pseudo-elemento :before
                 }
                 if (label) {
-                    label.textContent = 'Modo claro';
+                    label.textContent = __('Modo claro', 'aura-suite');
                 }
             } else {
-                btn.setAttribute('title', 'Cambiar a modo oscuro');
-                btn.setAttribute('aria-label', 'Cambiar a modo oscuro');
+                btn.setAttribute('title', __('Cambiar a modo oscuro', 'aura-suite'));
+                btn.setAttribute('aria-label', __('Cambiar a modo oscuro', 'aura-suite'));
                 if (icon) {
                     icon.className = 'dashicons dashicons-moon';
                     icon.textContent = ''; // Vacío para evitar doble icono con el pseudo-elemento :before
                 }
                 if (label) {
-                    label.textContent = 'Modo oscuro';
+                    label.textContent = __('Modo oscuro', 'aura-suite');
                 }
             }
         });

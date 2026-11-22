@@ -192,7 +192,7 @@ $list_url    = admin_url( 'admin.php?page=aura-students-list' );
                                         <?php _e( 'URL de foto de perfil', 'aura-suite' ); ?>
                                     </label>
                                     <input type="url" id="sfp-photo-url" name="photo_url"
-                                           class="aura-form-control aura-sfp-input" maxlength="500" placeholder="https://ejemplo.com/foto.jpg">
+                                           class="aura-form-control aura-sfp-input" maxlength="500" placeholder="<?php echo esc_attr__( 'https://ejemplo.com/foto.jpg', 'aura-suite' ); ?>">
                                 </div>
                             </div>
 
@@ -419,7 +419,7 @@ $list_url    = admin_url( 'admin.php?page=aura-students-list' );
                 wpUsersMap[u.id] = u;
                 var label = u.display_name + ' (@' + u.login + ' - ' + u.email + ')';
                 if ( u.is_linked ){
-                    label += ' [Ya vinculado: #' + u.student_id + ' ' + u.student_name + ']';
+                    label += ' [<?php echo esc_js( __( 'Ya vinculado:', 'aura-suite' ) ); ?> #' + u.student_id + ' ' + u.student_name + ']';
                 }
                 var $opt = $('<option>').val(u.id).text(label);
                 if ( u.is_linked ){
@@ -610,7 +610,7 @@ $list_url    = admin_url( 'admin.php?page=aura-students-list' );
             if ( uid > 0 && user ){
                 $btn.prop('disabled', false);
                 $('#sfp-create-wp-user').prop('checked', false).prop('disabled', true);
-                $fb.html('<span style="color:#059669;font-weight:600;">✔ Usuario seleccionado: <strong>' + user.display_name + '</strong> (' + user.email + '). Rol: ' + user.roles + '</span>').show();
+                $fb.html('<span style="color:#059669;font-weight:600;">✔ <?php echo esc_js( __( 'Usuario seleccionado:', 'aura-suite' ) ); ?> <strong>' + user.display_name + '</strong> (' + user.email + '). <?php echo esc_js( __( 'Rol:', 'aura-suite' ) ); ?> ' + user.roles + '</span>').show();
             } else {
                 $btn.prop('disabled', true);
                 $('#sfp-create-wp-user').prop('disabled', false);

@@ -3770,10 +3770,11 @@ html[data-wp-dark-mode-scheme="dark"] .kpi-card.card-lift:hover {
 [data-theme="dark"] .badge-outline, .aura-dark-mode .badge-outline { border-color: rgba(139,92,246,.4); color: var(--aura-violet-light); }
 [data-theme="dark"] .badge-shimmer, .aura-dark-mode .badge-shimmer { background: linear-gradient(90deg,rgba(99,102,241,.2),rgba(139,92,246,.3),rgba(99,102,241,.2)); background-size: 200% 100%; color: var(--aura-indigo-light); }
 
-.avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
-.avatar-sm { width: 32px; height: 32px; font-size: 12px; }
-.avatar-xs { width: 26px; height: 26px; min-width: 26px; max-width: 26px; min-height: 26px; max-height: 26px; font-size: 11px; }
-.avatar-lg { width: 60px; height: 60px; font-size: 22px; }
+.avatar { --avatar-size: 44px; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+.avatar-sm { --avatar-size: 32px; width: 32px; height: 32px; font-size: 12px; }
+.avatar-md { --avatar-size: 44px; width: 44px; height: 44px; font-size: 15px; }
+.avatar-xs { --avatar-size: 26px; width: 26px; height: 26px; min-width: 26px; max-width: 26px; min-height: 26px; max-height: 26px; font-size: 11px; }
+.avatar-lg { --avatar-size: 60px; width: 60px; height: 60px; font-size: 22px; }
 .avatar-primary { background: linear-gradient(135deg,var(--aura-indigo),var(--aura-violet)); color: #fff; }
 .avatar-green   { background: linear-gradient(135deg,#059669,#10b981); color: #fff; }
 .avatar-amber   { background: linear-gradient(135deg,#d97706,#f59e0b); color: #fff; }

@@ -174,12 +174,12 @@ class Aura_Calendar_Export {
 
         if ( json_last_error() !== JSON_ERROR_NONE ) {
             return [ 'created_programs' => 0, 'created_subjects' => 0, 'skipped' => 0,
-                     'errors' => [ 'JSON inválido: ' . json_last_error_msg() ] ];
+                     'errors' => [ sprintf( __( 'JSON inválido: %s', 'aura-suite' ), json_last_error_msg() ) ] ];
         }
 
         if ( empty( $json['programs'] ) || ! is_array( $json['programs'] ) ) {
             return [ 'created_programs' => 0, 'created_subjects' => 0, 'skipped' => 0,
-                     'errors' => [ 'El archivo JSON no contiene programas válidos.' ] ];
+                     'errors' => [ __( 'El archivo JSON no contiene programas válidos.', 'aura-suite' ) ] ];
         }
 
         global $wpdb;
@@ -292,7 +292,7 @@ class Aura_Calendar_Export {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para exportar.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para exportar.', 'aura-suite' ) ] );
         }
 
         $format      = sanitize_key( $_POST['format'] ?? 'json' );
@@ -332,7 +332,7 @@ class Aura_Calendar_Export {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para importar.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para importar.', 'aura-suite' ) ] );
         }
 
         // Acepta tanto 'json_data' (texto plano desde FileReader) como 'file_content' (base64 legado)
@@ -340,7 +340,7 @@ class Aura_Calendar_Export {
         $skip_existing = ( $_POST['skip_existing'] ?? '1' ) !== '0';
 
         if ( empty( $raw_content ) ) {
-            wp_send_json_error( [ 'message' => __( 'No se recibió contenido del archivo.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se recibió contenido del archivo.', 'aura-suite' ) ] );
         }
 
         // Si parece base64, decodificar; si ya es JSON, usar directamente
@@ -356,14 +356,14 @@ class Aura_Calendar_Export {
 
         $message = sprintf(
             /* translators: %1$d programas, %2$d materias, %3$d omitidos */
-            __( 'Importación completada: %1$d programa(s) creado(s), %2$d materia(s) creada(s), %3$d omitido(s) por duplicado.', 'aura' ),
+            __( 'Importación completada: %1$d programa(s) creado(s), %2$d materia(s) creada(s), %3$d omitido(s) por duplicado.', 'aura-suite' ),
             $result['created_programs'],
             $result['created_subjects'],
             $result['skipped']
         );
 
         if ( ! empty( $result['errors'] ) ) {
-            $message .= ' ' . __( 'Errores:', 'aura' ) . ' ' . implode( '; ', array_slice( $result['errors'], 0, 5 ) );
+            $message .= ' ' . __( 'Errores:', 'aura-suite' ) . ' ' . implode( '; ', array_slice( $result['errors'], 0, 5 ) );
         }
 
         wp_send_json_success( [

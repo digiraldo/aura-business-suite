@@ -574,7 +574,7 @@ if (!empty($filter_account)) $active_filters_count++;
                 <span class="dashicons dashicons-download"></span>
                 <?php _e('Exportar Transacciones', 'aura-suite'); ?>
             </h2>
-            <button type="button" class="aura-export-modal-close" aria-label="Cerrar">✕</button>
+            <button type="button" class="aura-export-modal-close" aria-label="<?php esc_attr_e('Cerrar', 'aura-suite'); ?>">✕</button>
         </div>
 
         <form id="aura-export-form">
@@ -762,11 +762,11 @@ if (!empty($filter_account)) $active_filters_count++;
                     if ($all_cats) {
                         $parent_cats = array_filter($all_cats, function($c) { return empty($c->parent_id); });
                         foreach ($parent_cats as $p) {
-                            $type_lbl = $p->type === 'income' ? 'Ingreso' : ($p->type === 'expense' ? 'Egreso' : 'Ambos');
+                            $type_lbl = $p->type === 'income' ? __('Ingreso', 'aura-suite') : ($p->type === 'expense' ? __('Egreso', 'aura-suite') : __('Ambos', 'aura-suite'));
                             printf('<option value="%d">📁 %s (%s)</option>', (int)$p->id, esc_html($p->name), esc_html($type_lbl));
                             $sub_cats = array_filter($all_cats, function($c) use ($p) { return (int)$c->parent_id === (int)$p->id; });
                             foreach ($sub_cats as $sub) {
-                                $sub_type_lbl = $sub->type === 'income' ? 'Ingreso' : ($sub->type === 'expense' ? 'Egreso' : 'Ambos');
+                                $sub_type_lbl = $sub->type === 'income' ? __('Ingreso', 'aura-suite') : ($sub->type === 'expense' ? __('Egreso', 'aura-suite') : __('Ambos', 'aura-suite'));
                                 printf('<option value="%d">&nbsp;&nbsp;└─ 📄 %s (%s)</option>', (int)$sub->id, esc_html($sub->name), esc_html($sub_type_lbl));
                             }
                         }
@@ -1010,11 +1010,11 @@ if (!empty($filter_account)) $active_filters_count++;
                         if ($all_cats) {
                             $parent_cats = array_filter($all_cats, function($c) { return empty($c->parent_id); });
                             foreach ($parent_cats as $p) {
-                                $type_lbl = $p->type === 'income' ? 'Ingreso' : ($p->type === 'expense' ? 'Egreso' : 'Ambos');
+                                $type_lbl = $p->type === 'income' ? __('Ingreso', 'aura-suite') : ($p->type === 'expense' ? __('Egreso', 'aura-suite') : __('Ambos', 'aura-suite'));
                                 printf('<option value="%d">📁 %s (%s)</option>', (int)$p->id, esc_html($p->name), esc_html($type_lbl));
                                 $sub_cats = array_filter($all_cats, function($c) use ($p) { return (int)$c->parent_id === (int)$p->id; });
                                 foreach ($sub_cats as $sub) {
-                                    $sub_type_lbl = $sub->type === 'income' ? 'Ingreso' : ($sub->type === 'expense' ? 'Egreso' : 'Ambos');
+                                    $sub_type_lbl = $sub->type === 'income' ? __('Ingreso', 'aura-suite') : ($sub->type === 'expense' ? __('Egreso', 'aura-suite') : __('Ambos', 'aura-suite'));
                                     printf('<option value="%d">&nbsp;&nbsp;└─ 📄 %s (%s)</option>', (int)$sub->id, esc_html($sub->name), esc_html($sub_type_lbl));
                                 }
                             }

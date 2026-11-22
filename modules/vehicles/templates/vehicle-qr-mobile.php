@@ -24,11 +24,11 @@ $vehicle    = null;
 $error_msg  = '';
 
 if ( $response->is_error() || $response->get_status() !== 200 ) {
-    $error_msg = 'Código QR no válido o expirado.';
+    $error_msg = __( 'Código QR no válido o expirado.', 'aura-suite' );
 } else {
     $data = $response->get_data();
     if ( empty( $data['valid'] ) ) {
-        $error_msg = $data['message'] ?? 'Código QR no válido.';
+        $error_msg = $data['message'] ?? __( 'Código QR no válido.', 'aura-suite' );
     } else {
         $vehicle = $data['vehicle'];
         // Merge active_trip into vehicle array for easy template access
@@ -37,10 +37,10 @@ if ( $response->is_error() || $response->get_status() !== 200 ) {
 }
 
 $status_labels = array(
-    'available'   => 'Disponible',
-    'rented'      => 'En Uso',
-    'maintenance' => 'Mantenimiento',
-    'unavailable' => 'Fuera de Servicio',
+    'available'   => __( 'Disponible', 'aura-suite' ),
+    'rented'      => __( 'En Uso', 'aura-suite' ),
+    'maintenance' => __( 'Mantenimiento', 'aura-suite' ),
+    'unavailable' => __( 'Fuera de Servicio', 'aura-suite' ),
 );
 
 $status_colors = array(
@@ -77,7 +77,7 @@ $user_display_name = $logged_in ? esc_html( $current_user->display_name ) : '';
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" id="meta-theme-color" content="#0f172a">
-<title><?php echo $vehicle ? esc_html( $vehicle['plate'] . ' — ' . $vehicle['brand'] . ' ' . $vehicle['model'] ) : 'QR Vehículo'; ?> · <?php echo $site_name; ?></title>
+<title><?php echo $vehicle ? esc_html( $vehicle['plate'] . ' — ' . $vehicle['brand'] . ' ' . $vehicle['model'] ) : esc_html__( 'QR Vehículo', 'aura-suite' ); ?> · <?php echo $site_name; ?></title>
 <style>
 /* ── CSS Variables ───────────────────────────── */
 :root {
@@ -193,6 +193,29 @@ body {
 .theme-toggle:hover { transform: scale(1.05); background: var(--surface); }
 .theme-toggle .icon { font-size: 18px; transition: transform 0.4s; }
 .theme-toggle:hover .icon { transform: rotate(20deg); }
+.qr-header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.qr-lang-dropdown { position: relative; display: inline-flex; align-items: center; z-index: 60; }
+.qr-lang-dropdown .aura-flag-svg { display: inline-block; width: 18px; height: 13px; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0,0,0,0.2); flex-shrink: 0; }
+.qr-lang-trigger {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 50px;
+    padding: 8px 14px; display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer; font-size: 13px; font-weight: 700; color: var(--text);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: all 0.2s;
+}
+.qr-lang-trigger:hover { background: var(--surface); }
+.qr-lang-menu {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0; min-width: 185px;
+    background: var(--surface, #ffffff); border: 1px solid var(--border); border-radius: 14px;
+    padding: 6px; list-style: none; box-shadow: var(--shadow); z-index: 999;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+.qr-lang-dropdown.is-open .qr-lang-menu { display: block; }
+.qr-lang-option {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 9px;
+    text-decoration: none; color: var(--text); font-size: 13px; font-weight: 500;
+}
+.qr-lang-option:hover { background: var(--surface2); }
+.qr-lang-option.is-active { font-weight: 700; color: var(--accent, #3b82f6); background: var(--surface2); }
 
 /* ── Error card ──────────────────────────────── */
 .error-card {
@@ -758,11 +781,44 @@ body {
 
     <!-- Header -->
     <header class="qr-header">
-        <div class="qr-logo"><?php echo $site_name; ?> <span>·</span> Vehículos</div>
-        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar tema">
-            <span class="icon" id="theme-icon">☀️</span>
-            <span id="theme-label">Claro</span>
-        </button>
+        <div class="qr-logo"><?php echo $site_name; ?> <span>·</span> <?php esc_html_e( 'Vehículos', 'aura-suite' ); ?></div>
+        <div class="qr-header-actions">
+            <?php if ( class_exists( 'Aura_I18n' ) ) :
+                $qr_locales = Aura_I18n::get_available_locales();
+                $qr_active  = Aura_I18n::get_active_locale();
+                if ( count( $qr_locales ) > 1 ) :
+                    $qr_meta = $qr_locales[ $qr_active ] ?? reset( $qr_locales );
+                    ?>
+                    <div class="qr-lang-dropdown" id="qr-lang-dropdown">
+                        <button type="button" class="qr-lang-trigger" aria-haspopup="listbox" aria-expanded="false"
+                                onclick="var p=this.parentElement;p.classList.toggle('is-open');this.setAttribute('aria-expanded',p.classList.contains('is-open')?'true':'false');"
+                                aria-label="<?php esc_attr_e( 'Idioma de interfaz', 'aura-suite' ); ?>">
+                            <?php echo Aura_I18n::get_locale_flag_svg( $qr_active ); ?>
+                            <span><?php echo esc_html( $qr_meta['short'] ); ?></span>
+                            <span style="font-size:10px;opacity:.7;" aria-hidden="true">▾</span>
+                        </button>
+                        <ul class="qr-lang-menu" role="listbox">
+                            <?php foreach ( $qr_locales as $lcode => $lmeta ) :
+                                $is_cur = ( $qr_active === $lcode ); ?>
+                                <li>
+                                    <a href="<?php echo esc_url( Aura_I18n::get_switch_url( $lcode ) ); ?>"
+                                       class="qr-lang-option <?php echo $is_cur ? 'is-active' : ''; ?>"
+                                       role="option" aria-selected="<?php echo $is_cur ? 'true' : 'false'; ?>">
+                                        <?php echo Aura_I18n::get_locale_flag_svg( $lcode ); ?>
+                                        <span style="flex:1;"><?php echo esc_html( $lmeta['native'] ); ?></span>
+                                        <?php if ( $is_cur ) : ?><span aria-hidden="true">✓</span><?php endif; ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif;
+            endif; ?>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="<?php esc_attr_e( 'Cambiar tema', 'aura-suite' ); ?>">
+                <span class="icon" id="theme-icon">☀️</span>
+                <span id="theme-label"><?php esc_html_e( 'Claro', 'aura-suite' ); ?></span>
+            </button>
+        </div>
     </header>
 
     <?php if ( $error_msg ) : ?>
@@ -770,7 +826,7 @@ body {
         <!-- Error state -->
         <div class="error-card">
             <div class="error-icon">🚫</div>
-            <h2>Código inválido</h2>
+            <h2><?php esc_html_e( 'Código inválido', 'aura-suite' ); ?></h2>
             <p><?php echo esc_html( $error_msg ); ?></p>
         </div>
 
@@ -799,19 +855,19 @@ body {
 
             <div class="vehicle-meta">
                 <div class="meta-item">
-                    <div class="meta-label">Color</div>
+                    <div class="meta-label"><?php esc_html_e( 'Color', 'aura-suite' ); ?></div>
                     <div class="meta-value"><?php echo esc_html( $vehicle['color'] ?: '—' ); ?></div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-label">Tipo</div>
+                    <div class="meta-label"><?php esc_html_e( 'Tipo', 'aura-suite' ); ?></div>
                     <div class="meta-value"><?php echo esc_html( ucfirst( $vehicle['type'] ?? '—' ) ); ?></div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-label">Kilometraje</div>
+                    <div class="meta-label"><?php esc_html_e( 'Kilometraje', 'aura-suite' ); ?></div>
                     <div class="meta-value"><?php echo isset( $vehicle['mileage'] ) ? number_format( (int) $vehicle['mileage'] ) . ' km' : '—'; ?></div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-label">Estado</div>
+                    <div class="meta-label"><?php esc_html_e( 'Estado', 'aura-suite' ); ?></div>
                     <div class="meta-value" style="color: <?php echo esc_attr( $status_color ); ?>"><?php echo esc_html( $status_label ); ?></div>
                 </div>
             </div>
@@ -822,8 +878,8 @@ body {
         <div class="trip-indicator">
             <span class="trip-icon">🚀</span>
             <div class="trip-text">
-                <strong>Salida activa en curso</strong>
-                <span>Conductor: <?php echo esc_html( $vehicle['active_trip']['driver_name'] ?? 'Desconocido' ); ?></span>
+                <strong><?php esc_html_e( 'Salida activa en curso', 'aura-suite' ); ?></strong>
+                <span><?php esc_html_e( 'Conductor:', 'aura-suite' ); ?> <?php echo esc_html( $vehicle['active_trip']['driver_name'] ?? __( 'Desconocido', 'aura-suite' ) ); ?></span>
             </div>
         </div>
         <?php endif; ?>
@@ -838,27 +894,27 @@ body {
             <!-- Success overlay (shown after submit) -->
             <div class="success-overlay" id="success-overlay">
                 <div class="success-icon">✅</div>
-                <h2 id="success-title">¡Registro exitoso!</h2>
-                <p id="success-body">La operación fue registrada correctamente.</p>
+                <h2 id="success-title"><?php esc_html_e( '¡Registro exitoso!', 'aura-suite' ); ?></h2>
+                <p id="success-body"><?php esc_html_e( 'La operación fue registrada correctamente.', 'aura-suite' ); ?></p>
                 <div class="trip-id" id="success-trip-id"></div>
             </div>
 
             <!-- Form content -->
             <div id="form-content">
                 <div class="action-title" id="action-title">
-                    <?php echo $has_active_trip ? 'Registrar Retorno' : 'Registrar Salida'; ?>
+                    <?php echo $has_active_trip ? esc_html__( 'Registrar Retorno', 'aura-suite' ) : esc_html__( 'Registrar Salida', 'aura-suite' ); ?>
                 </div>
                 <div class="action-subtitle" id="action-subtitle">
                     <?php if ( $has_active_trip ) : ?>
-                        Confirma el retorno del vehículo a su ubicación de origen.
+                        <?php esc_html_e( 'Confirma el retorno del vehículo a su ubicación de origen.', 'aura-suite' ); ?>
                     <?php else : ?>
-                        Registra la salida de este vehículo. Proporciona tu nombre y el propósito del viaje.
+                        <?php esc_html_e( 'Registra la salida de este vehículo. Proporciona tu nombre y el propósito del viaje.', 'aura-suite' ); ?>
                     <?php endif; ?>
                 </div>
 
                 <?php if ( $vehicle['status'] === 'maintenance' || $vehicle['status'] === 'unavailable' ) : ?>
                     <div class="alert alert-error show">
-                        ⚠️ Este vehículo no está disponible para uso en este momento.
+                        ⚠️ <?php esc_html_e( 'Este vehículo no está disponible para uso en este momento.', 'aura-suite' ); ?>
                     </div>
                 <?php else : ?>
 
@@ -868,9 +924,9 @@ body {
                     <div class="driver-identity is-set" id="driver-identity">
                         <div class="driver-avatar" id="driver-avatar"><?php echo mb_strtoupper( mb_substr( $user_display_name, 0, 1 ) ); ?></div>
                         <div class="driver-identity-info">
-                            <div class="driver-identity-label">Identificado como</div>
+                            <div class="driver-identity-label"><?php esc_html_e( 'Identificado como', 'aura-suite' ); ?></div>
                             <div class="driver-identity-name" id="driver-shown-name"><?php echo $user_display_name; ?></div>
-                            <div class="driver-identity-sub">Usuario registrado</div>
+                            <div class="driver-identity-sub"><?php esc_html_e( 'Usuario registrado', 'aura-suite' ); ?></div>
                         </div>
                     </div>
                     <input type="hidden" id="driver-name" value="<?php echo $user_display_name; ?>">
@@ -879,28 +935,28 @@ body {
                     <div class="login-toggle-row" id="login-toggle-row">
                         <div class="login-divider-line"></div>
                         <button type="button" class="login-toggle-btn" id="login-toggle-btn" onclick="toggleLoginPanel()">
-                            🔒 <span id="login-toggle-label">¿Tienes cuenta? Inicia sesión</span>
+                            🔒 <span id="login-toggle-label"><?php esc_html_e( '¿Tienes cuenta? Inicia sesión', 'aura-suite' ); ?></span>
                         </button>
                         <div class="login-divider-line"></div>
                     </div>
 
                     <!-- Panel de login (oculto por defecto) -->
                     <div class="login-panel" id="login-panel">
-                        <div class="login-panel-title">🔐 Iniciar sesión con tu cuenta</div>
+                        <div class="login-panel-title">🔐 <?php esc_html_e( 'Iniciar sesión con tu cuenta', 'aura-suite' ); ?></div>
                         <input type="text"
                                id="login-user"
                                class="form-control"
-                               placeholder="Usuario o correo electrónico"
+                               placeholder="<?php esc_attr_e( 'Usuario o correo electrónico', 'aura-suite' ); ?>"
                                autocomplete="username"
                                autocapitalize="none"
                                spellcheck="false">
                         <input type="password"
                                id="login-pass"
                                class="form-control"
-                               placeholder="Contraseña"
+                               placeholder="<?php esc_attr_e( 'Contraseña', 'aura-suite' ); ?>"
                                autocomplete="current-password">
                         <button type="button" class="btn-login-submit" id="btn-login-submit" onclick="doWpLogin()">
-                            <span id="login-btn-text">→ Entrar</span>
+                            <span id="login-btn-text">→ <?php esc_html_e( 'Entrar', 'aura-suite' ); ?></span>
                         </button>
                         <div class="login-error" id="login-error"></div>
                     </div>
@@ -909,18 +965,18 @@ body {
                     <div class="driver-identity" id="driver-identity">
                         <div class="driver-avatar" id="driver-avatar">?</div>
                         <div class="driver-identity-info">
-                            <div class="driver-identity-label">Continuar como visitante</div>
-                            <div class="driver-identity-name" id="driver-shown-name">Escribe tu nombre abajo</div>
+                            <div class="driver-identity-label"><?php esc_html_e( 'Continuar como visitante', 'aura-suite' ); ?></div>
+                            <div class="driver-identity-name" id="driver-shown-name"><?php esc_html_e( 'Escribe tu nombre abajo', 'aura-suite' ); ?></div>
                         </div>
-                        <button type="button" class="btn-change-id" id="btn-change-id" onclick="showNameEdit()" style="display:none">✏️ Cambiar</button>
+                        <button type="button" class="btn-change-id" id="btn-change-id" onclick="showNameEdit()" style="display:none">✏️ <?php esc_html_e( 'Cambiar', 'aura-suite' ); ?></button>
                     </div>
                     <!-- Campo de nombre (visible cuando no hay nombre guardado o el usuario quiere cambiarlo) -->
                     <div class="form-group driver-name-edit" id="driver-name-wrap">
-                        <label class="form-label" for="driver-name">👤 Tu nombre completo</label>
+                        <label class="form-label" for="driver-name">👤 <?php esc_html_e( 'Tu nombre completo', 'aura-suite' ); ?></label>
                         <input type="text"
                                id="driver-name"
                                class="form-control"
-                               placeholder="Escribe tu nombre…"
+                               placeholder="<?php esc_attr_e( 'Escribe tu nombre…', 'aura-suite' ); ?>"
                                maxlength="120"
                                autocomplete="name"
                                oninput="syncDriverNamePreview()">
@@ -930,38 +986,38 @@ body {
                     <?php if ( ! $has_active_trip ) : ?>
                     <!-- Trip type selector -->
                     <div class="form-group">
-                        <label class="form-label">🏷️ Tipo de salida</label>
+                        <label class="form-label">🏷️ <?php esc_html_e( 'Tipo de salida', 'aura-suite' ); ?></label>
                         <div class="trip-type-grid" id="trip-type-grid">
                             <label class="trip-type-card type-rental">
                                 <input type="radio" name="trip-type" value="rental" checked>
                                 <span class="trip-type-label">
                                     <span class="trip-type-icon">💼</span>
-                                    <span class="trip-type-name">Renta</span>
-                                    <span class="trip-type-desc">Alquiler externo</span>
+                                    <span class="trip-type-name"><?php esc_html_e( 'Renta', 'aura-suite' ); ?></span>
+                                    <span class="trip-type-desc"><?php esc_html_e( 'Alquiler externo', 'aura-suite' ); ?></span>
                                 </span>
                             </label>
                             <label class="trip-type-card type-errand">
                                 <input type="radio" name="trip-type" value="errand">
                                 <span class="trip-type-label">
                                     <span class="trip-type-icon">📋</span>
-                                    <span class="trip-type-name">Encargo</span>
-                                    <span class="trip-type-desc">Diligencias / comisión</span>
+                                    <span class="trip-type-name"><?php esc_html_e( 'Encargo', 'aura-suite' ); ?></span>
+                                    <span class="trip-type-desc"><?php esc_html_e( 'Diligencias / comisión', 'aura-suite' ); ?></span>
                                 </span>
                             </label>
                             <label class="trip-type-card type-maint">
                                 <input type="radio" name="trip-type" value="maintenance">
                                 <span class="trip-type-label">
                                     <span class="trip-type-icon">🔧</span>
-                                    <span class="trip-type-name">Mantenimiento</span>
-                                    <span class="trip-type-desc">Preventivo / correctivo</span>
+                                    <span class="trip-type-name"><?php esc_html_e( 'Mantenimiento', 'aura-suite' ); ?></span>
+                                    <span class="trip-type-desc"><?php esc_html_e( 'Preventivo / correctivo', 'aura-suite' ); ?></span>
                                 </span>
                             </label>
                             <label class="trip-type-card type-other">
                                 <input type="radio" name="trip-type" value="other">
                                 <span class="trip-type-label">
                                     <span class="trip-type-icon">🚗</span>
-                                    <span class="trip-type-name">Otro</span>
-                                    <span class="trip-type-desc">Uso general</span>
+                                    <span class="trip-type-name"><?php esc_html_e( 'Otro', 'aura-suite' ); ?></span>
+                                    <span class="trip-type-desc"><?php esc_html_e( 'Uso general', 'aura-suite' ); ?></span>
                                 </span>
                             </label>
                         </div>
@@ -969,52 +1025,52 @@ body {
 
                     <!-- Purpose / destination -->
                     <div class="form-group">
-                        <label class="form-label" for="trip-purpose">🗺️ Destino / Propósito</label>
+                        <label class="form-label" for="trip-purpose">🗺️ <?php esc_html_e( 'Destino / Propósito', 'aura-suite' ); ?></label>
                         <input type="text"
                                id="trip-purpose"
                                class="form-control"
-                               placeholder="Ej. Visita a cliente, entrega, diligencia…"
+                               placeholder="<?php esc_attr_e( 'Ej. Visita a cliente, entrega, diligencia…', 'aura-suite' ); ?>"
                                maxlength="255">
                     </div>
 
                     <!-- Odometer (optional) -->
                     <div class="form-group">
-                        <label class="form-label" for="trip-mileage">🔢 Kilometraje inicial (opcional)</label>
+                        <label class="form-label" for="trip-mileage">🔢 <?php esc_html_e( 'Kilometraje inicial (opcional)', 'aura-suite' ); ?></label>
                         <input type="number"
                                id="trip-mileage"
                                class="form-control"
-                               placeholder="Km actuales del odómetro"
+                               placeholder="<?php esc_attr_e( 'Km actuales del odómetro', 'aura-suite' ); ?>"
                                min="0"
                                value="<?php echo esc_attr( $vehicle['mileage'] ?? '' ); ?>">
                     </div>
 
                     <button class="btn btn-success" id="btn-checkout" onclick="submitTrip('checkout')">
-                        <span>🚗</span> Registrar Salida
+                        <span>🚗</span> <?php esc_html_e( 'Registrar Salida', 'aura-suite' ); ?>
                     </button>
 
                     <?php else : ?>
                     <!-- Return mileage -->
                     <div class="form-group">
-                        <label class="form-label" for="return-mileage">🔢 Kilometraje al retornar (opcional)</label>
+                        <label class="form-label" for="return-mileage">🔢 <?php esc_html_e( 'Kilometraje al retornar (opcional)', 'aura-suite' ); ?></label>
                         <input type="number"
                                id="return-mileage"
                                class="form-control"
-                               placeholder="Km actuales del odómetro"
+                               placeholder="<?php esc_attr_e( 'Km actuales del odómetro', 'aura-suite' ); ?>"
                                min="<?php echo esc_attr( $vehicle['mileage'] ?? 0 ); ?>">
                     </div>
 
                     <!-- Notes -->
                     <div class="form-group">
-                        <label class="form-label" for="return-notes">📝 Observaciones (opcional)</label>
+                        <label class="form-label" for="return-notes">📝 <?php esc_html_e( 'Observaciones (opcional)', 'aura-suite' ); ?></label>
                         <input type="text"
                                id="return-notes"
                                class="form-control"
-                               placeholder="Novedades, incidentes, estado del vehículo…"
+                               placeholder="<?php esc_attr_e( 'Novedades, incidentes, estado del vehículo…', 'aura-suite' ); ?>"
                                maxlength="500">
                     </div>
 
                     <button class="btn btn-warning" id="btn-return" onclick="submitTrip('return')">
-                        <span>🏁</span> Registrar Retorno
+                        <span>🏁</span> <?php esc_html_e( 'Registrar Retorno', 'aura-suite' ); ?>
                     </button>
                     <?php endif; ?>
 
@@ -1053,11 +1109,11 @@ body {
         root.setAttribute('data-theme', theme);
         if (theme === 'light') {
             themeIcon.textContent  = '🌙';
-            themeLabel.textContent = 'Oscuro';
+            themeLabel.textContent = <?php echo wp_json_encode( __( 'Oscuro', 'aura-suite' ) ); ?>;
             metaTheme.content      = '#f0f4ff';
         } else {
             themeIcon.textContent  = '☀️';
-            themeLabel.textContent = 'Claro';
+            themeLabel.textContent = <?php echo wp_json_encode( __( 'Claro', 'aura-suite' ) ); ?>;
             metaTheme.content      = '#0f172a';
         }
     }
@@ -1095,7 +1151,7 @@ body {
         if (!name) {
             if (identity)  identity.classList.remove('is-set');
             if (avatar)    avatar.textContent = '?';
-            if (shownName) shownName.textContent = 'Escribe tu nombre abajo';
+            if (shownName) shownName.textContent = <?php echo wp_json_encode( __( 'Escribe tu nombre abajo', 'aura-suite' ) ); ?>;
             if (nameWrap)  nameWrap.style.display = '';
             if (changeBtn) changeBtn.style.display = 'none';
             return;
@@ -1115,7 +1171,7 @@ body {
         var avatar    = document.getElementById('driver-avatar');
         var shownName = document.getElementById('driver-shown-name');
         if (avatar)    avatar.textContent = name ? name.trim().charAt(0).toUpperCase() : '?';
-        if (shownName) shownName.textContent = name.trim() || 'Escribe tu nombre abajo';
+        if (shownName) shownName.textContent = name.trim() || <?php echo wp_json_encode( __( 'Escribe tu nombre abajo', 'aura-suite' ) ); ?>;
         var identity = document.getElementById('driver-identity');
         if (identity)  identity.classList.toggle('is-set', !!name.trim());
     };
@@ -1139,7 +1195,7 @@ body {
         var label     = document.getElementById('login-toggle-label');
         if (!panel) return;
         var isOpen = panel.classList.toggle('open');
-        if (label) label.textContent = isOpen ? 'Cerrar sesión' : '¿Tienes cuenta?';
+        if (label) label.textContent = isOpen ? <?php echo wp_json_encode( __( 'Cerrar sesión', 'aura-suite' ) ); ?> : <?php echo wp_json_encode( __( '¿Tienes cuenta?', 'aura-suite' ) ); ?>;
         if (isOpen) {
             var el = document.getElementById('login-user');
             if (el) el.focus();
@@ -1154,13 +1210,13 @@ body {
         var btn      = document.getElementById('btn-login-submit');
 
         if (!username.trim() || !password) {
-            if (errEl) { errEl.textContent = 'Ingresa usuario y contraseña.'; errEl.classList.add('show'); }
+            if (errEl) { errEl.textContent = <?php echo wp_json_encode( __( 'Ingresa usuario y contraseña.', 'aura-suite' ) ); ?>; errEl.classList.add('show'); }
             return;
         }
 
         if (errEl) errEl.classList.remove('show');
         if (btn)   btn.disabled = true;
-        if (btnText) btnText.textContent = 'Ingresando…';
+        if (btnText) btnText.textContent = <?php echo wp_json_encode( __( 'Ingresando…', 'aura-suite' ) ); ?>;
 
         var data = new URLSearchParams();
         data.append('action',      'aura_qr_login');
@@ -1183,22 +1239,22 @@ body {
         })
         .then(function (r) {
             if (r.json && r.json.success) {
-                if (btnText) btnText.textContent = '✅ ¡Listo! Cargando…';
+                if (btnText) btnText.textContent = '✅ ' + <?php echo wp_json_encode( __( '¡Listo! Cargando…', 'aura-suite' ) ); ?>;
                 window.location.href = REDIRECT_URL;
             } else {
                 var msg = (r.json && r.json.data)
                     ? r.json.data
-                    : (r.status === 403 ? 'Solicitud no autorizada.' : 'Usuario o contraseña incorrectos.');
+                    : (r.status === 403 ? <?php echo wp_json_encode( __( 'Solicitud no autorizada.', 'aura-suite' ) ); ?> : <?php echo wp_json_encode( __( 'Usuario o contraseña incorrectos.', 'aura-suite' ) ); ?>);
                 if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
                 if (btn)   btn.disabled = false;
-                if (btnText) btnText.textContent = '→ Entrar';
+                if (btnText) btnText.textContent = '→ ' + <?php echo wp_json_encode( __( 'Entrar', 'aura-suite' ) ); ?>;
             }
         })
         .catch(function (err) {
-            var msg = (err && err.message) ? err.message : 'Error de conexión.';
+            var msg = (err && err.message) ? err.message : <?php echo wp_json_encode( __( 'Error de conexión.', 'aura-suite' ) ); ?>;
             if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
             if (btn)   btn.disabled = false;
-            if (btnText) btnText.textContent = '→ Entrar';
+            if (btnText) btnText.textContent = '→ ' + <?php echo wp_json_encode( __( 'Entrar', 'aura-suite' ) ); ?>;
         });
     };
 
@@ -1217,7 +1273,7 @@ body {
         var $btn       = document.getElementById($btnId);
 
         if (!driverName.trim()) {
-            showMsg('error', 'Por favor ingresa tu nombre.');
+            showMsg('error', <?php echo wp_json_encode( __( 'Por favor ingresa tu nombre.', 'aura-suite' ) ); ?>);
             return;
         }
 
@@ -1259,13 +1315,13 @@ body {
                 }
                 showSuccessOverlay(action, r.data);
             } else {
-                var msg = (r.data && r.data.message) ? r.data.message : 'Error al registrar.';
+                var msg = (r.data && r.data.message) ? r.data.message : <?php echo wp_json_encode( __( 'Error al registrar.', 'aura-suite' ) ); ?>;
                 showMsg('error', msg);
                 setLoading($btn, false);
             }
         })
         .catch(function () {
-            showMsg('error', 'Error de conexión. Intenta de nuevo.');
+            showMsg('error', <?php echo wp_json_encode( __( 'Error de conexión. Intenta de nuevo.', 'aura-suite' ) ); ?>);
             setLoading($btn, false);
         });
     };
@@ -1274,7 +1330,7 @@ body {
         if (!btn) return;
         if (loading) {
             btn._origHtml = btn.innerHTML;
-            btn.innerHTML = '<div class="spinner"></div> Procesando…';
+            btn.innerHTML = '<div class="spinner"></div> ' + <?php echo wp_json_encode( esc_html__( 'Procesando…', 'aura-suite' ) ); ?>;
             btn.disabled  = true;
         } else {
             btn.innerHTML = btn._origHtml || btn.innerHTML;
@@ -1302,15 +1358,15 @@ body {
         if (!overlay) return;
 
         document.getElementById('success-title').textContent =
-            action === 'checkout' ? '¡Salida registrada!' : '¡Retorno registrado!';
+            action === 'checkout' ? <?php echo wp_json_encode( __( '¡Salida registrada!', 'aura-suite' ) ); ?> : <?php echo wp_json_encode( __( '¡Retorno registrado!', 'aura-suite' ) ); ?>;
 
         document.getElementById('success-body').textContent =
             action === 'checkout'
-                ? 'La salida del vehículo fue registrada correctamente. ¡Buen viaje!'
-                : 'El retorno fue registrado. Gracias por usar el sistema.';
+                ? <?php echo wp_json_encode( __( 'La salida del vehículo fue registrada correctamente. ¡Buen viaje!', 'aura-suite' ) ); ?>
+                : <?php echo wp_json_encode( __( 'El retorno fue registrado. Gracias por usar el sistema.', 'aura-suite' ) ); ?>;
 
         if (data && data.trip_id) {
-            document.getElementById('success-trip-id').textContent = 'ID de salida: #' + data.trip_id;
+            document.getElementById('success-trip-id').textContent = <?php echo wp_json_encode( __( 'ID de salida:', 'aura-suite' ) ); ?> + ' #' + data.trip_id;
         }
 
         if (fc) fc.style.display = 'none';

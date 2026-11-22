@@ -349,7 +349,8 @@ class Aura_Financial_User_Ledger {
                 $concepts_data[ $c_key ] = [
                     'concept_key'  => $c_key,
                     'concept_name' => $concepts_map[ $c_key ] ?? ucfirst( $c_key ),
-                    'type'         => $is_income ? 'Ingreso' : 'Egreso',
+                    'type'         => $is_income ? __( 'Ingreso', 'aura-suite' ) : __( 'Egreso', 'aura-suite' ),
+                    'type_key'     => $is_income ? 'income' : 'expense',
                     'total'        => 0.0,
                     'count'        => 0,
                 ];
@@ -448,9 +449,9 @@ class Aura_Financial_User_Ledger {
         $concepts = self::get_concepts_labels();
 
         $status_map = [
-            'approved' => 'Aprobado',
-            'pending'  => 'Pendiente',
-            'rejected' => 'Rechazado',
+            'approved' => __( 'Aprobado', 'aura-suite' ),
+            'pending'  => __( 'Pendiente', 'aura-suite' ),
+            'rejected' => __( 'Rechazado', 'aura-suite' ),
         ];
 
         $user_name_slug = sanitize_file_name( $user_obj ? ( $user_obj->user_login ?: $user_obj->display_name ) : 'usuario' );
@@ -464,20 +465,20 @@ class Aura_Financial_User_Ledger {
         $out = fopen( 'php://output', 'w' );
 
         fputcsv( $out, [
-            'Fecha',
-            'Descripción del Movimiento',
-            'Número de Referencia',
-            'Concepto Contable',
-            'Tipo de Movimiento',
-            'Ingreso Percibido (' . $currency . ')',
-            'Egreso o Aporte (' . $currency . ')',
-            'Balance Acumulado (' . $currency . ')',
-            'Estado de Aprobación',
+            __( 'Fecha', 'aura-suite' ),
+            __( 'Descripción del Movimiento', 'aura-suite' ),
+            __( 'Número de Referencia', 'aura-suite' ),
+            __( 'Concepto Contable', 'aura-suite' ),
+            __( 'Tipo de Movimiento', 'aura-suite' ),
+            sprintf( __( 'Ingreso Percibido (%s)', 'aura-suite' ), $currency ),
+            sprintf( __( 'Egreso o Aporte (%s)', 'aura-suite' ), $currency ),
+            sprintf( __( 'Balance Acumulado (%s)', 'aura-suite' ), $currency ),
+            __( 'Estado de Aprobación', 'aura-suite' ),
         ], ';' );
 
         foreach ( $all_rows as $row ) {
             $is_income        = $row->transaction_type === 'expense';
-            $tipo_movimiento  = $is_income ? 'Ingreso percibido' : 'Egreso / Aporte a la organización';
+            $tipo_movimiento  = $is_income ? __( 'Ingreso percibido', 'aura-suite' ) : __( 'Egreso / Aporte a la organización', 'aura-suite' );
             $income_col       = $is_income  ? number_format( (float) $row->amount, 2, '.', '' ) : '';
             $expense_col      = ! $is_income ? number_format( (float) $row->amount, 2, '.', '' ) : '';
             $balance_col      = number_format( (float) $row->running_balance, 2, '.', '' );
@@ -488,7 +489,7 @@ class Aura_Financial_User_Ledger {
                 $row->transaction_date,
                 $row->description,
                 $referencia,
-                $concepts[ $row->related_user_concept ] ?? ( ! empty( $row->related_user_concept ) ? $row->related_user_concept : 'General' ),
+                $concepts[ $row->related_user_concept ] ?? ( ! empty( $row->related_user_concept ) ? $row->related_user_concept : __( 'General', 'aura-suite' ) ),
                 $tipo_movimiento,
                 $income_col,
                 $expense_col,
@@ -534,9 +535,9 @@ class Aura_Financial_User_Ledger {
         $concepts = self::get_concepts_labels();
 
         $status_map = [
-            'approved' => 'Aprobado',
-            'pending'  => 'Pendiente',
-            'rejected' => 'Rechazado',
+            'approved' => __( 'Aprobado', 'aura-suite' ),
+            'pending'  => __( 'Pendiente', 'aura-suite' ),
+            'rejected' => __( 'Rechazado', 'aura-suite' ),
         ];
 
         $user_name_slug = sanitize_file_name( $user_obj ? ( $user_obj->user_login ?: $user_obj->display_name ) : 'usuario' );
@@ -553,24 +554,24 @@ class Aura_Financial_User_Ledger {
         if ( class_exists( '\PhpOffice\PhpSpreadsheet\Spreadsheet' ) ) {
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
-            $sheet->setTitle( 'Libro Mayor' );
+            $sheet->setTitle( __( 'Libro Mayor', 'aura-suite' ) );
 
             // Título Superior
-            $sheet->setCellValue( 'A1', 'LIBRO MAYOR PERSONAL - AURA BUSINESS SUITE' );
+            $sheet->setCellValue( 'A1', __( 'LIBRO MAYOR PERSONAL - AURA BUSINESS SUITE', 'aura-suite' ) );
             $sheet->mergeCells( 'A1:I1' );
             $sheet->getStyle( 'A1' )->getFont()->setBold( true )->setSize( 14 )->getColor()->setRGB( 'FFFFFF' );
             $sheet->getStyle( 'A1' )->getFill()->setFillType( \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID )->getStartColor()->setRGB( '0F172A' );
             $sheet->getStyle( 'A1' )->getAlignment()->setHorizontal( \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER );
 
             // Meta Info
-            $sheet->setCellValue( 'A2', 'Colaborador: ' . ( $user_obj ? $user_obj->display_name . ' (@' . $user_obj->user_login . ')' : 'N/A' ) . ' | Período: ' . ( $filters['date_from'] ?: 'Inicio' ) . ' al ' . ( $filters['date_to'] ?: 'Hoy' ) );
+            $sheet->setCellValue( 'A2', sprintf( __( 'Colaborador: %1$s | Período: %2$s al %3$s', 'aura-suite' ), $user_obj ? $user_obj->display_name . ' (@' . $user_obj->user_login . ')' : 'N/A', $filters['date_from'] ?: __( 'Inicio', 'aura-suite' ), $filters['date_to'] ?: __( 'Hoy', 'aura-suite' ) ) );
             $sheet->mergeCells( 'A2:I2' );
             $sheet->getStyle( 'A2' )->getFont()->setItalic( true )->setSize( 10 )->getColor()->setRGB( '64748B' );
 
             // Encabezados
             $headers = [
-                'Fecha', 'Descripción', 'Referencia', 'Concepto Contable', 'Tipo de Movimiento',
-                'Ingreso (' . $currency . ')', 'Egreso (' . $currency . ')', 'Balance (' . $currency . ')', 'Estado'
+                __( 'Fecha', 'aura-suite' ), __( 'Descripción', 'aura-suite' ), __( 'Referencia', 'aura-suite' ), __( 'Concepto Contable', 'aura-suite' ), __( 'Tipo de Movimiento', 'aura-suite' ),
+                sprintf( __( 'Ingreso (%s)', 'aura-suite' ), $currency ), sprintf( __( 'Egreso (%s)', 'aura-suite' ), $currency ), sprintf( __( 'Balance (%s)', 'aura-suite' ), $currency ), __( 'Estado', 'aura-suite' )
             ];
             $col_idx = 1;
             foreach ( $headers as $h ) {
@@ -598,8 +599,8 @@ class Aura_Financial_User_Ledger {
                 $sheet->setCellValue( 'A' . $row_idx, $r->transaction_date );
                 $sheet->setCellValue( 'B' . $row_idx, $r->description );
                 $sheet->setCellValue( 'C' . $row_idx, ! empty( $r->reference_number ) ? '#' . $r->reference_number : '—' );
-                $sheet->setCellValue( 'D' . $row_idx, $concepts[ $r->related_user_concept ] ?? ( $r->related_user_concept ?: 'General' ) );
-                $sheet->setCellValue( 'E' . $row_idx, $is_income ? 'Ingreso percibido' : 'Egreso / Aporte' );
+                $sheet->setCellValue( 'D' . $row_idx, $concepts[ $r->related_user_concept ] ?? ( $r->related_user_concept ?: __( 'General', 'aura-suite' ) ) );
+                $sheet->setCellValue( 'E' . $row_idx, $is_income ? __( 'Ingreso percibido', 'aura-suite' ) : __( 'Egreso / Aporte', 'aura-suite' ) );
                 
                 $sheet->setCellValue( 'F' . $row_idx, $inc_val ?: '' );
                 $sheet->setCellValue( 'G' . $row_idx, $exp_val ?: '' );
@@ -619,7 +620,7 @@ class Aura_Financial_User_Ledger {
             }
 
             // Fila de Totales
-            $sheet->setCellValue( 'A' . $row_idx, 'TOTALES DEL PERÍODO' );
+            $sheet->setCellValue( 'A' . $row_idx, __( 'TOTALES DEL PERÍODO', 'aura-suite' ) );
             $sheet->mergeCells( 'A' . $row_idx . ':E' . $row_idx );
             $sheet->setCellValue( 'F' . $row_idx, $tot_inc );
             $sheet->setCellValue( 'G' . $row_idx, $tot_exp );
@@ -687,36 +688,36 @@ class Aura_Financial_User_Ledger {
         $out = fopen( 'php://output', 'w' );
         $m = $stats['metrics'];
 
-        fputcsv( $out, [ 'REPORTE ESTADÍSTICO DE LIBRO MAYOR PERSONAL - AURA BUSINESS SUITE' ], ';' );
-        fputcsv( $out, [ 'Colaborador / Usuario:', ( $user_obj ? $user_obj->display_name . ' (@' . $user_obj->user_login . ')' : 'N/A' ) ], ';' );
-        fputcsv( $out, [ 'Correo Electrónico:', ( $user_obj ? $user_obj->user_email : 'N/A' ) ], ';' );
-        fputcsv( $out, [ 'Fecha de Generación:', date_i18n( 'd/m/Y H:i:s' ) ], ';' );
-        fputcsv( $out, [ 'Rango de Consulta:', ( ! empty( $filters['date_from'] ) ? $filters['date_from'] : 'Inicio' ) . ' hasta ' . ( ! empty( $filters['date_to'] ) ? $filters['date_to'] : 'Hoy' ) ], ';' );
+        fputcsv( $out, [ __( 'REPORTE ESTADÍSTICO DE LIBRO MAYOR PERSONAL - AURA BUSINESS SUITE', 'aura-suite' ) ], ';' );
+        fputcsv( $out, [ __( 'Colaborador / Usuario:', 'aura-suite' ), ( $user_obj ? $user_obj->display_name . ' (@' . $user_obj->user_login . ')' : 'N/A' ) ], ';' );
+        fputcsv( $out, [ __( 'Correo Electrónico:', 'aura-suite' ), ( $user_obj ? $user_obj->user_email : __( 'N/A', 'aura-suite' ) ) ], ';' );
+        fputcsv( $out, [ __( 'Fecha de Generación:', 'aura-suite' ), date_i18n( 'd/m/Y H:i:s' ) ], ';' );
+        fputcsv( $out, [ __( 'Rango de Consulta:', 'aura-suite' ), ( ! empty( $filters['date_from'] ) ? $filters['date_from'] : __( 'Inicio', 'aura-suite' ) ) . ' ' . __( 'hasta', 'aura-suite' ) . ' ' . ( ! empty( $filters['date_to'] ) ? $filters['date_to'] : __( 'Hoy', 'aura-suite' ) ) ], ';' );
         fputcsv( $out, [], ';' );
 
-        fputcsv( $out, [ 'INDICADOR FINANCIERO', 'VALOR' ], ';' );
-        fputcsv( $out, [ 'Total Ingresos Percibidos (' . $currency . ')', number_format( $m['total_income'], 2, '.', '' ) ], ';' );
-        fputcsv( $out, [ 'Total Egresos o Aportes (' . $currency . ')', number_format( $m['total_expense'], 2, '.', '' ) ], ';' );
-        fputcsv( $out, [ 'Balance Neto Corriente (' . $currency . ')', number_format( $m['net_balance'], 2, '.', '' ) ], ';' );
-        fputcsv( $out, [ 'Total de Operaciones Registradas', $m['total_count'] ], ';' );
-        fputcsv( $out, [ 'Monto Promedio por Operación (' . $currency . ')', number_format( $m['avg_transaction'], 2, '.', '' ) ], ';' );
-        fputcsv( $out, [ 'Mayor Ingreso Registrado (' . $currency . ')', number_format( $m['max_income'], 2, '.', '' ) ], ';' );
-        fputcsv( $out, [ 'Mayor Egreso Registrado (' . $currency . ')', number_format( $m['max_expense'], 2, '.', '' ) ], ';' );
-        fputcsv( $out, [ 'Tasa de Aprobación Contable (%)', $m['approval_rate'] . '%' ], ';' );
-        fputcsv( $out, [ 'Operaciones Aprobadas', $m['approved_count'] ], ';' );
-        fputcsv( $out, [ 'Operaciones Pendientes', $m['pending_count'] ], ';' );
-        fputcsv( $out, [ 'Operaciones Rechazadas', $m['rejected_count'] ], ';' );
+        fputcsv( $out, [ __( 'INDICADOR FINANCIERO', 'aura-suite' ), __( 'VALOR', 'aura-suite' ) ], ';' );
+        fputcsv( $out, [ sprintf( __( 'Total Ingresos Percibidos (%s)', 'aura-suite' ), $currency ), number_format( $m['total_income'], 2, '.', '' ) ], ';' );
+        fputcsv( $out, [ sprintf( __( 'Total Egresos o Aportes (%s)', 'aura-suite' ), $currency ), number_format( $m['total_expense'], 2, '.', '' ) ], ';' );
+        fputcsv( $out, [ sprintf( __( 'Balance Neto Corriente (%s)', 'aura-suite' ), $currency ), number_format( $m['net_balance'], 2, '.', '' ) ], ';' );
+        fputcsv( $out, [ __( 'Total de Operaciones Registradas', 'aura-suite' ), $m['total_count'] ], ';' );
+        fputcsv( $out, [ sprintf( __( 'Monto Promedio por Operación (%s)', 'aura-suite' ), $currency ), number_format( $m['avg_transaction'], 2, '.', '' ) ], ';' );
+        fputcsv( $out, [ sprintf( __( 'Mayor Ingreso Registrado (%s)', 'aura-suite' ), $currency ), number_format( $m['max_income'], 2, '.', '' ) ], ';' );
+        fputcsv( $out, [ sprintf( __( 'Mayor Egreso Registrado (%s)', 'aura-suite' ), $currency ), number_format( $m['max_expense'], 2, '.', '' ) ], ';' );
+        fputcsv( $out, [ __( 'Tasa de Aprobación Contable (%)', 'aura-suite' ), $m['approval_rate'] . '%' ], ';' );
+        fputcsv( $out, [ __( 'Operaciones Aprobadas', 'aura-suite' ), $m['approved_count'] ], ';' );
+        fputcsv( $out, [ __( 'Operaciones Pendientes', 'aura-suite' ), $m['pending_count'] ], ';' );
+        fputcsv( $out, [ __( 'Operaciones Rechazadas', 'aura-suite' ), $m['rejected_count'] ], ';' );
         fputcsv( $out, [], ';' );
 
-        fputcsv( $out, [ 'DESGLOSE POR CONCEPTO CONTABLE' ], ';' );
-        fputcsv( $out, [ 'Concepto Contable', 'Tipo de Operación', 'Monto Total (' . $currency . ')', 'Cantidad de Movimientos', 'Porcentaje del Total (%)' ], ';' );
+        fputcsv( $out, [ __( 'DESGLOSE POR CONCEPTO CONTABLE', 'aura-suite' ) ], ';' );
+        fputcsv( $out, [ __( 'Concepto Contable', 'aura-suite' ), __( 'Tipo de Operación', 'aura-suite' ), sprintf( __( 'Monto Total (%s)', 'aura-suite' ), $currency ), __( 'Cantidad de Movimientos', 'aura-suite' ), __( 'Porcentaje del Total (%)', 'aura-suite' ) ], ';' );
         foreach ( $stats['concepts'] as $c ) {
             fputcsv( $out, [ $c['concept_name'], $c['type'], number_format( $c['total'], 2, '.', '' ), $c['count'], $c['pct'] . '%' ], ';' );
         }
         fputcsv( $out, [], ';' );
 
-        fputcsv( $out, [ 'EVOLUCIÓN CRONOLÓGICA MENSUAL' ], ';' );
-        fputcsv( $out, [ 'Mes y Año', 'Ingresos Percibidos (' . $currency . ')', 'Egresos / Aportes (' . $currency . ')', 'Balance Neto Mensual (' . $currency . ')', 'Cantidad de Movimientos' ], ';' );
+        fputcsv( $out, [ __( 'EVOLUCIÓN CRONOLÓGICA MENSUAL', 'aura-suite' ) ], ';' );
+        fputcsv( $out, [ __( 'Mes y Año', 'aura-suite' ), sprintf( __( 'Ingresos Percibidos (%s)', 'aura-suite' ), $currency ), sprintf( __( 'Egresos / Aportes (%s)', 'aura-suite' ), $currency ), sprintf( __( 'Balance Neto Mensual (%s)', 'aura-suite' ), $currency ), __( 'Cantidad de Movimientos', 'aura-suite' ) ], ';' );
         foreach ( $stats['monthly'] as $mo ) {
             fputcsv( $out, [ $mo['label'], number_format( $mo['income'], 2, '.', '' ), number_format( $mo['expense'], 2, '.', '' ), number_format( $mo['net'], 2, '.', '' ), $mo['count'] ], ';' );
         }
@@ -769,47 +770,47 @@ class Aura_Financial_User_Ledger {
         if ( class_exists( '\PhpOffice\PhpSpreadsheet\Spreadsheet' ) ) {
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
-            $sheet->setTitle( 'Estadísticas Contables' );
+            $sheet->setTitle( __( 'Estadísticas Contables', 'aura-suite' ) );
 
-            $sheet->setCellValue( 'A1', 'ESTADÍSTICAS CONTABLES DE LIBRO MAYOR - AURA BUSINESS SUITE' );
+            $sheet->setCellValue( 'A1', __( 'ESTADÍSTICAS CONTABLES DE LIBRO MAYOR - AURA BUSINESS SUITE', 'aura-suite' ) );
             $sheet->mergeCells( 'A1:E1' );
             $sheet->getStyle( 'A1' )->getFont()->setBold( true )->setSize( 14 )->getColor()->setRGB( 'FFFFFF' );
             $sheet->getStyle( 'A1' )->getFill()->setFillType( \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID )->getStartColor()->setRGB( '0F172A' );
             $sheet->getStyle( 'A1' )->getAlignment()->setHorizontal( \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER );
 
-            $sheet->setCellValue( 'A2', 'Colaborador: ' . ( $user_obj ? $user_obj->display_name . ' (@' . $user_obj->user_login . ')' : 'N/A' ) . ' | Período: ' . ( $filters['date_from'] ?: 'Inicio' ) . ' al ' . ( $filters['date_to'] ?: 'Hoy' ) );
+            $sheet->setCellValue( 'A2', sprintf( __( 'Colaborador: %1$s | Período: %2$s al %3$s', 'aura-suite' ), $user_obj ? $user_obj->display_name . ' (@' . $user_obj->user_login . ')' : 'N/A', $filters['date_from'] ?: __( 'Inicio', 'aura-suite' ), $filters['date_to'] ?: __( 'Hoy', 'aura-suite' ) ) );
             $sheet->mergeCells( 'A2:E2' );
             $sheet->getStyle( 'A2' )->getFont()->setItalic( true )->setSize( 10 )->getColor()->setRGB( '64748B' );
 
             $m = $stats['metrics'];
-            $sheet->setCellValue( 'A4', 'INDICADOR CLAVE' );
-            $sheet->setCellValue( 'B4', 'VALOR' );
+            $sheet->setCellValue( 'A4', __( 'INDICADOR CLAVE', 'aura-suite' ) );
+            $sheet->setCellValue( 'B4', __( 'VALOR', 'aura-suite' ) );
             $sheet->getStyle( 'A4:B4' )->getFont()->setBold( true )->getColor()->setRGB( 'FFFFFF' );
             $sheet->getStyle( 'A4:B4' )->getFill()->setFillType( \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID )->getStartColor()->setRGB( '6366F1' );
 
-            $sheet->setCellValue( 'A5', 'Total Ingresos Percibidos' );
+            $sheet->setCellValue( 'A5', __( 'Total Ingresos Percibidos', 'aura-suite' ) );
             $sheet->setCellValue( 'B5', $m['total_income'] );
-            $sheet->setCellValue( 'A6', 'Total Egresos o Aportes' );
+            $sheet->setCellValue( 'A6', __( 'Total Egresos o Aportes', 'aura-suite' ) );
             $sheet->setCellValue( 'B6', $m['total_expense'] );
-            $sheet->setCellValue( 'A7', 'Balance Neto Corriente' );
+            $sheet->setCellValue( 'A7', __( 'Balance Neto Corriente', 'aura-suite' ) );
             $sheet->setCellValue( 'B7', $m['net_balance'] );
-            $sheet->setCellValue( 'A8', 'Promedio por Operación' );
+            $sheet->setCellValue( 'A8', __( 'Promedio por Operación', 'aura-suite' ) );
             $sheet->setCellValue( 'B8', $m['avg_transaction'] );
-            $sheet->setCellValue( 'A9', 'Tasa de Aprobación' );
+            $sheet->setCellValue( 'A9', __( 'Tasa de Aprobación', 'aura-suite' ) );
             $sheet->setCellValue( 'B9', $m['approval_rate'] . '%' );
             $sheet->getStyle( 'B5:B8' )->getNumberFormat()->setFormatCode( '#,##0.00' );
 
             // Conceptos
-            $sheet->setCellValue( 'A11', 'DESGLOSE POR CONCEPTO CONTABLE' );
+            $sheet->setCellValue( 'A11', __( 'DESGLOSE POR CONCEPTO CONTABLE', 'aura-suite' ) );
             $sheet->mergeCells( 'A11:E11' );
             $sheet->getStyle( 'A11' )->getFont()->setBold( true )->getColor()->setRGB( 'FFFFFF' );
             $sheet->getStyle( 'A11' )->getFill()->setFillType( \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID )->getStartColor()->setRGB( '2563EB' );
 
-            $sheet->setCellValue( 'A12', 'Concepto' );
-            $sheet->setCellValue( 'B12', 'Tipo' );
-            $sheet->setCellValue( 'C12', 'Monto Total (' . $currency . ')' );
-            $sheet->setCellValue( 'D12', 'Operaciones' );
-            $sheet->setCellValue( 'E12', '% del Total' );
+            $sheet->setCellValue( 'A12', __( 'Concepto', 'aura-suite' ) );
+            $sheet->setCellValue( 'B12', __( 'Tipo', 'aura-suite' ) );
+            $sheet->setCellValue( 'C12', sprintf( __( 'Monto Total (%s)', 'aura-suite' ), $currency ) );
+            $sheet->setCellValue( 'D12', __( 'Operaciones', 'aura-suite' ) );
+            $sheet->setCellValue( 'E12', __( '% del Total', 'aura-suite' ) );
             $sheet->getStyle( 'A12:E12' )->getFont()->setBold( true );
 
             $c_idx = 13;

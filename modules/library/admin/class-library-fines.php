@@ -108,7 +108,7 @@ class Aura_Library_Fines {
 
         $description = sprintf(
             /* translators: 1: ID del préstamo, 2: título del libro, 3: nombre del lector */
-            __( 'Multa por retraso — préstamo #%1$d — %2$s (%3$s)', 'aura-business-suite' ),
+            __( 'Multa por retraso — préstamo #%1$d — %2$s (%3$s)', 'aura-suite' ),
             $loan_id,
             $book_title,
             $borrower

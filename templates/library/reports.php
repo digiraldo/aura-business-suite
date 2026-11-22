@@ -35,22 +35,22 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
         ?>
 
         <!-- ── Pestañas ──────────────────────────────────────────── -->
-        <nav class="aura-glass-card aura-lib-tabs" id="aura-lib-report-tabs" aria-label="<?php esc_attr_e( 'Secciones de reportes', 'aura-business-suite' ); ?>">
+        <nav class="aura-glass-card aura-lib-tabs" id="aura-lib-report-tabs" aria-label="<?php esc_attr_e( 'Secciones de reportes', 'aura-suite' ); ?>">
             <a href="#tab-activity" class="nav-tab nav-tab-active" data-tab="activity">
                 <span class="dashicons dashicons-chart-line"></span>
-                <span><?php esc_html_e( 'Actividad General', 'aura-business-suite' ); ?></span>
+                <span><?php esc_html_e( 'Actividad General', 'aura-suite' ); ?></span>
             </a>
             <a href="#tab-dewey" class="nav-tab" data-tab="dewey">
                 <span class="dashicons dashicons-category"></span>
-                <span><?php esc_html_e( 'Clasificación Dewey', 'aura-business-suite' ); ?></span>
+                <span><?php esc_html_e( 'Clasificación Dewey', 'aura-suite' ); ?></span>
             </a>
             <a href="#tab-overdue" class="nav-tab" data-tab="overdue">
                 <span class="dashicons dashicons-warning"></span>
-                <span><?php esc_html_e( 'Morosidad', 'aura-business-suite' ); ?></span>
+                <span><?php esc_html_e( 'Morosidad', 'aura-suite' ); ?></span>
             </a>
             <a href="#tab-inventory" class="nav-tab" data-tab="inventory">
                 <span class="dashicons dashicons-archive"></span>
-                <span><?php esc_html_e( 'Inventario', 'aura-business-suite' ); ?></span>
+                <span><?php esc_html_e( 'Inventario', 'aura-suite' ); ?></span>
             </a>
         </nav>
 
@@ -61,16 +61,16 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
                 <div class="aura-lib-toolbar-field">
                     <div class="input-group">
                         <span class="input-group-text" aria-hidden="true">📅</span>
-                        <select id="activity-period" class="form-control" aria-label="<?php esc_attr_e( 'Período', 'aura-business-suite' ); ?>">
-                            <option value="week"><?php esc_html_e( 'Última semana', 'aura-business-suite' ); ?></option>
-                            <option value="month" selected><?php esc_html_e( 'Último mes', 'aura-business-suite' ); ?></option>
-                            <option value="year"><?php esc_html_e( 'Último año', 'aura-business-suite' ); ?></option>
+                        <select id="activity-period" class="form-control" aria-label="<?php esc_attr_e( 'Período', 'aura-suite' ); ?>">
+                            <option value="week"><?php esc_html_e( 'Última semana', 'aura-suite' ); ?></option>
+                            <option value="month" selected><?php esc_html_e( 'Último mes', 'aura-suite' ); ?></option>
+                            <option value="year"><?php esc_html_e( 'Último año', 'aura-suite' ); ?></option>
                         </select>
                     </div>
                 </div>
                 <button type="button" class="btn btn-shimmer btn-indigo btn-lift" id="activity-load">
                     <span class="dashicons dashicons-update"></span>
-                    <span><?php esc_html_e( 'Cargar', 'aura-business-suite' ); ?></span>
+                    <span><?php esc_html_e( 'Cargar', 'aura-suite' ); ?></span>
                 </button>
                 <span class="spinner" id="activity-spinner"></span>
                 <div class="aura-lib-export-btns">
@@ -88,41 +88,41 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
             <div id="activity-summary" class="aura-lib-summary-cards" style="display:none;">
                 <div class="kpi-card kpi-indigo card-lift aura-lib-summary-card">
                     <span id="activity-total" class="kpi-value aura-lib-summary-val">—</span>
-                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'Préstamos', 'aura-business-suite' ); ?></span>
+                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'Préstamos', 'aura-suite' ); ?></span>
                 </div>
                 <div class="kpi-card kpi-emerald card-lift aura-lib-summary-card">
                     <span id="activity-on-time" class="kpi-value aura-lib-summary-val aura-lib-val-emerald">—</span>
-                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'A tiempo', 'aura-business-suite' ); ?></span>
+                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'A tiempo', 'aura-suite' ); ?></span>
                 </div>
                 <div class="kpi-card kpi-red card-lift aura-lib-summary-card">
                     <span id="activity-late" class="kpi-value aura-lib-summary-val aura-lib-val-red">—</span>
-                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'Con retraso', 'aura-business-suite' ); ?></span>
+                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'Con retraso', 'aura-suite' ); ?></span>
                 </div>
             </div>
 
             <div class="aura-lib-two-cols" style="display:none;" id="activity-tables">
                 <div>
-                    <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Top 10 libros más prestados', 'aura-business-suite' ); ?></h3>
+                    <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Top 10 libros más prestados', 'aura-suite' ); ?></h3>
                     <div class="aura-dt-wrapper aura-table-responsive-wrap">
                         <table class="aura-table wp-list-table widefat fixed aura-lib-report-table aura-lib-responsive-table" id="activity-top-books">
                             <thead><tr>
-                                <th style="width:58px;"># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Posición en el ranking de popularidad', 'aura-business-suite' ); ?>">?</span></th>
-                                <th><?php esc_html_e( 'Título', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Título de la obra prestada', 'aura-business-suite' ); ?>">?</span></th>
-                                <th><?php esc_html_e( 'Autor', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Autor o autores del libro', 'aura-business-suite' ); ?>">?</span></th>
-                                <th style="width:120px;"><?php esc_html_e( 'Préstamos', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Cantidad de préstamos en el período seleccionado', 'aura-business-suite' ); ?>">?</span></th>
+                                <th style="width:58px;"># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Posición en el ranking de popularidad', 'aura-suite' ); ?>">?</span></th>
+                                <th><?php esc_html_e( 'Título', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Título de la obra prestada', 'aura-suite' ); ?>">?</span></th>
+                                <th><?php esc_html_e( 'Autor', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Autor o autores del libro', 'aura-suite' ); ?>">?</span></th>
+                                <th style="width:120px;"><?php esc_html_e( 'Préstamos', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Cantidad de préstamos en el período seleccionado', 'aura-suite' ); ?>">?</span></th>
                             </tr></thead>
                             <tbody id="activity-top-books-body"></tbody>
                         </table>
                     </div>
                 </div>
                 <div>
-                    <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Top 10 lectores más activos', 'aura-business-suite' ); ?></h3>
+                    <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Top 10 lectores más activos', 'aura-suite' ); ?></h3>
                     <div class="aura-dt-wrapper aura-table-responsive-wrap">
                         <table class="aura-table wp-list-table widefat fixed aura-lib-report-table aura-lib-responsive-table" id="activity-top-readers">
                             <thead><tr>
-                                <th style="width:58px;"># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Posición en el ranking de lectores', 'aura-business-suite' ); ?>">?</span></th>
-                                <th><?php esc_html_e( 'Lector', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Nombre del lector registrado', 'aura-business-suite' ); ?>">?</span></th>
-                                <th style="width:120px;"><?php esc_html_e( 'Préstamos', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Total de préstamos solicitados en el período', 'aura-business-suite' ); ?>">?</span></th>
+                                <th style="width:58px;"># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Posición en el ranking de lectores', 'aura-suite' ); ?>">?</span></th>
+                                <th><?php esc_html_e( 'Lector', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Nombre del lector registrado', 'aura-suite' ); ?>">?</span></th>
+                                <th style="width:120px;"><?php esc_html_e( 'Préstamos', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Total de préstamos solicitados en el período', 'aura-suite' ); ?>">?</span></th>
                             </tr></thead>
                             <tbody id="activity-top-readers-body"></tbody>
                         </table>
@@ -138,7 +138,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
             <div class="aura-lib-report-toolbar">
                 <button type="button" class="btn btn-shimmer btn-indigo btn-lift" id="dewey-load">
                     <span class="dashicons dashicons-update"></span>
-                    <span><?php esc_html_e( 'Cargar reporte', 'aura-business-suite' ); ?></span>
+                    <span><?php esc_html_e( 'Cargar reporte', 'aura-suite' ); ?></span>
                 </button>
                 <span class="spinner" id="dewey-spinner"></span>
                 <div class="aura-lib-export-btns">
@@ -156,10 +156,10 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
             <div class="aura-dt-wrapper aura-table-responsive-wrap">
                 <table class="aura-table wp-list-table widefat fixed aura-lib-report-table aura-lib-responsive-table" id="dewey-table" style="display:none;">
                     <thead><tr>
-                        <th><?php esc_html_e( 'Dewey', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Clase principal del Sistema Decimal Dewey', 'aura-business-suite' ); ?>">?</span></th>
-                        <th><?php esc_html_e( 'Título', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Título de la obra clasificada en el área', 'aura-business-suite' ); ?>">?</span></th>
-                        <th><?php esc_html_e( 'Autor', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Autor del libro', 'aura-business-suite' ); ?>">?</span></th>
-                        <th style="width:120px;"><?php esc_html_e( 'Préstamos', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Total de préstamos acumulados por título', 'aura-business-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Dewey', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Clase principal del Sistema Decimal Dewey', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Título', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Título de la obra clasificada en el área', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Autor', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Autor del libro', 'aura-suite' ); ?>">?</span></th>
+                        <th style="width:120px;"><?php esc_html_e( 'Préstamos', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Total de préstamos acumulados por título', 'aura-suite' ); ?>">?</span></th>
                     </tr></thead>
                     <tbody id="dewey-body"></tbody>
                 </table>
@@ -173,7 +173,7 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
             <div class="aura-lib-report-toolbar">
                 <button type="button" class="btn btn-shimmer btn-indigo btn-lift" id="overdue-load">
                     <span class="dashicons dashicons-update"></span>
-                    <span><?php esc_html_e( 'Cargar reporte', 'aura-business-suite' ); ?></span>
+                    <span><?php esc_html_e( 'Cargar reporte', 'aura-suite' ); ?></span>
                 </button>
                 <span class="spinner" id="overdue-spinner"></span>
                 <div class="aura-lib-export-btns">
@@ -191,37 +191,37 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
             <div id="overdue-summary" class="aura-lib-summary-cards" style="display:none;">
                 <div class="kpi-card kpi-red card-lift aura-lib-summary-card">
                     <span id="overdue-count" class="kpi-value aura-lib-summary-val aura-lib-val-red">—</span>
-                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'Vencidos activos', 'aura-business-suite' ); ?></span>
+                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'Vencidos activos', 'aura-suite' ); ?></span>
                 </div>
                 <div class="kpi-card kpi-emerald card-lift aura-lib-summary-card">
                     <span id="overdue-collected" class="kpi-value aura-lib-summary-val aura-lib-val-emerald">—</span>
-                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'Total multas cobradas', 'aura-business-suite' ); ?></span>
+                    <span class="kpi-label aura-lib-summary-lbl"><?php esc_html_e( 'Total multas cobradas', 'aura-suite' ); ?></span>
                 </div>
             </div>
 
-            <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Préstamos vencidos actuales', 'aura-business-suite' ); ?></h3>
+            <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Préstamos vencidos actuales', 'aura-suite' ); ?></h3>
             <div class="aura-dt-wrapper aura-table-responsive-wrap">
                 <table class="aura-table wp-list-table widefat fixed aura-lib-report-table aura-lib-responsive-table" id="overdue-current-table" style="display:none;">
                     <thead><tr>
-                        <th style="width:58px;"># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Número de orden en el reporte de mora', 'aura-business-suite' ); ?>">?</span></th>
-                        <th><?php esc_html_e( 'Libro', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Libro actualmente vencido', 'aura-business-suite' ); ?>">?</span></th>
-                        <th><?php esc_html_e( 'Lector', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Lector responsable de la devolución pendiente', 'aura-business-suite' ); ?>">?</span></th>
-                        <th><?php esc_html_e( 'Fec. Venc.', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha límite vencida', 'aura-business-suite' ); ?>">?</span></th>
-                        <th style="width:105px;"><?php esc_html_e( 'Días', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Días transcurridos desde la fecha de vencimiento', 'aura-business-suite' ); ?>">?</span></th>
-                        <th style="width:120px;"><?php esc_html_e( 'Multa', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Multa estimada según los días de atraso', 'aura-business-suite' ); ?>">?</span></th>
+                        <th style="width:58px;"># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Número de orden en el reporte de mora', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Libro', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Libro actualmente vencido', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Lector', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Lector responsable de la devolución pendiente', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Fec. Venc.', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha límite vencida', 'aura-suite' ); ?>">?</span></th>
+                        <th style="width:105px;"><?php esc_html_e( 'Días', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Días transcurridos desde la fecha de vencimiento', 'aura-suite' ); ?>">?</span></th>
+                        <th style="width:120px;"><?php esc_html_e( 'Multa', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Multa estimada según los días de atraso', 'aura-suite' ); ?>">?</span></th>
                     </tr></thead>
                     <tbody id="overdue-current-body"></tbody>
                 </table>
             </div>
 
-            <h3 class="aura-lib-section-subtitle" style="margin-top:24px;"><?php esc_html_e( 'Historial de multas cobradas (últimas 50)', 'aura-business-suite' ); ?></h3>
+            <h3 class="aura-lib-section-subtitle" style="margin-top:24px;"><?php esc_html_e( 'Historial de multas cobradas (últimas 50)', 'aura-suite' ); ?></h3>
             <div class="aura-dt-wrapper aura-table-responsive-wrap">
                 <table class="aura-table wp-list-table widefat fixed aura-lib-report-table aura-lib-responsive-table" id="overdue-paid-table" style="display:none;">
                     <thead><tr>
-                        <th><?php esc_html_e( 'Libro', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Obra asociada a la multa recaudada', 'aura-business-suite' ); ?>">?</span></th>
-                        <th><?php esc_html_e( 'Lector', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Lector que realizó el pago', 'aura-business-suite' ); ?>">?</span></th>
-                        <th style="width:120px;"><?php esc_html_e( 'Monto', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Importe cobrado', 'aura-business-suite' ); ?>">?</span></th>
-                        <th><?php esc_html_e( 'Fecha Devolución', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha en que se liquidó la devolución y multa', 'aura-business-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Libro', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Obra asociada a la multa recaudada', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Lector', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Lector que realizó el pago', 'aura-suite' ); ?>">?</span></th>
+                        <th style="width:120px;"><?php esc_html_e( 'Monto', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Importe cobrado', 'aura-suite' ); ?>">?</span></th>
+                        <th><?php esc_html_e( 'Fecha Devolución', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha en que se liquidó la devolución y multa', 'aura-suite' ); ?>">?</span></th>
                     </tr></thead>
                     <tbody id="overdue-paid-body"></tbody>
                 </table>
@@ -236,16 +236,16 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
                 <div class="aura-lib-toolbar-field aura-lib-toolbar-field--wide">
                     <div class="input-group">
                         <span class="input-group-text" aria-hidden="true">⏱️</span>
-                        <select id="inventory-months" class="form-control" aria-label="<?php esc_attr_e( 'Meses sin préstamos', 'aura-business-suite' ); ?>">
-                            <option value="3"><?php esc_html_e( 'Inactivo 3 meses', 'aura-business-suite' ); ?></option>
-                            <option value="6" selected><?php esc_html_e( 'Inactivo 6 meses', 'aura-business-suite' ); ?></option>
-                            <option value="12"><?php esc_html_e( 'Inactivo 12 meses', 'aura-business-suite' ); ?></option>
+                        <select id="inventory-months" class="form-control" aria-label="<?php esc_attr_e( 'Meses sin préstamos', 'aura-suite' ); ?>">
+                            <option value="3"><?php esc_html_e( 'Inactivo 3 meses', 'aura-suite' ); ?></option>
+                            <option value="6" selected><?php esc_html_e( 'Inactivo 6 meses', 'aura-suite' ); ?></option>
+                            <option value="12"><?php esc_html_e( 'Inactivo 12 meses', 'aura-suite' ); ?></option>
                         </select>
                     </div>
                 </div>
                 <button type="button" class="btn btn-shimmer btn-indigo btn-lift" id="inventory-load">
                     <span class="dashicons dashicons-update"></span>
-                    <span><?php esc_html_e( 'Cargar', 'aura-business-suite' ); ?></span>
+                    <span><?php esc_html_e( 'Cargar', 'aura-suite' ); ?></span>
                 </button>
                 <span class="spinner" id="inventory-spinner"></span>
                 <div class="aura-lib-export-btns">
@@ -262,39 +262,39 @@ $nonce = wp_create_nonce( 'aura_library_nonce' );
 
             <div class="aura-lib-two-cols" id="inventory-tables" style="display:none;">
                 <div>
-                    <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Libros por estado', 'aura-business-suite' ); ?></h3>
+                    <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Libros por estado', 'aura-suite' ); ?></h3>
                     <div class="aura-dt-wrapper aura-table-responsive-wrap">
                         <table class="aura-table wp-list-table widefat fixed aura-lib-report-table aura-lib-responsive-table">
                             <thead><tr>
-                                <th><?php esc_html_e( 'Estado', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Disponibilidad operativa de los títulos', 'aura-business-suite' ); ?>">?</span></th>
-                                <th style="width:105px;"><?php esc_html_e( 'Títulos', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Número de obras distintas en este estado', 'aura-business-suite' ); ?>">?</span></th>
-                                <th style="width:115px;"><?php esc_html_e( 'Ejemplares', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Suma total de copias físicas', 'aura-business-suite' ); ?>">?</span></th>
+                                <th><?php esc_html_e( 'Estado', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Disponibilidad operativa de los títulos', 'aura-suite' ); ?>">?</span></th>
+                                <th style="width:105px;"><?php esc_html_e( 'Títulos', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Número de obras distintas en este estado', 'aura-suite' ); ?>">?</span></th>
+                                <th style="width:115px;"><?php esc_html_e( 'Ejemplares', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Suma total de copias físicas', 'aura-suite' ); ?>">?</span></th>
                             </tr></thead>
                             <tbody id="inventory-by-status-body"></tbody>
                         </table>
                     </div>
 
-                    <h3 class="aura-lib-section-subtitle" style="margin-top:20px;"><?php esc_html_e( 'Mayor rotación (top 10)', 'aura-business-suite' ); ?></h3>
+                    <h3 class="aura-lib-section-subtitle" style="margin-top:20px;"><?php esc_html_e( 'Mayor rotación (top 10)', 'aura-suite' ); ?></h3>
                     <div class="aura-dt-wrapper aura-table-responsive-wrap">
                         <table class="aura-table wp-list-table widefat fixed aura-lib-report-table aura-lib-responsive-table">
                             <thead><tr>
-                                <th style="width:58px;"># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Posición en el ranking histórico', 'aura-business-suite' ); ?>">?</span></th>
-                                <th><?php esc_html_e( 'Título', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Título con mayor demanda', 'aura-business-suite' ); ?>">?</span></th>
-                                <th><?php esc_html_e( 'Dewey', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Código Dewey del libro', 'aura-business-suite' ); ?>">?</span></th>
-                                <th style="width:115px;"><?php esc_html_e( 'Préstamos', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Préstamos históricos acumulados', 'aura-business-suite' ); ?>">?</span></th>
+                                <th style="width:58px;"># <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Posición en el ranking histórico', 'aura-suite' ); ?>">?</span></th>
+                                <th><?php esc_html_e( 'Título', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Título con mayor demanda', 'aura-suite' ); ?>">?</span></th>
+                                <th><?php esc_html_e( 'Dewey', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Código Dewey del libro', 'aura-suite' ); ?>">?</span></th>
+                                <th style="width:115px;"><?php esc_html_e( 'Préstamos', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Préstamos históricos acumulados', 'aura-suite' ); ?>">?</span></th>
                             </tr></thead>
                             <tbody id="inventory-top-rotation-body"></tbody>
                         </table>
                     </div>
                 </div>
                 <div>
-                    <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Stock inactivo', 'aura-business-suite' ); ?></h3>
+                    <h3 class="aura-lib-section-subtitle"><?php esc_html_e( 'Stock inactivo', 'aura-suite' ); ?></h3>
                     <div class="aura-dt-wrapper aura-table-responsive-wrap">
                         <table class="aura-table wp-list-table widefat fixed aura-lib-report-table aura-lib-responsive-table">
                             <thead><tr>
-                                <th><?php esc_html_e( 'Título', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Obra sin préstamos en el umbral de meses seleccionado', 'aura-business-suite' ); ?>">?</span></th>
-                                <th><?php esc_html_e( 'Autor', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Autor de la obra inactiva', 'aura-business-suite' ); ?>">?</span></th>
-                                <th style="width:85px;"><?php esc_html_e( 'Ejs.', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Número de copias en estantería sin movimiento', 'aura-business-suite' ); ?>">?</span></th>
+                                <th><?php esc_html_e( 'Título', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Obra sin préstamos en el umbral de meses seleccionado', 'aura-suite' ); ?>">?</span></th>
+                                <th><?php esc_html_e( 'Autor', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Autor de la obra inactiva', 'aura-suite' ); ?>">?</span></th>
+                                <th style="width:85px;"><?php esc_html_e( 'Ejs.', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Número de copias en estantería sin movimiento', 'aura-suite' ); ?>">?</span></th>
                             </tr></thead>
                             <tbody id="inventory-inactive-body"></tbody>
                         </table>

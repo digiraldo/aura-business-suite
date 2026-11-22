@@ -5,6 +5,9 @@
 jQuery(function ($) {
     'use strict';
 
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
+
     var state = {
         budgets    : [],
         editingId  : null,
@@ -87,15 +90,15 @@ jQuery(function ($) {
             else ok++;
         });
 
-        var txSubtext = total_txs + ' ' + (total_txs === 1 ? 'transacción del período' : 'transacciones del período');
+        var txSubtext = total_txs === 1 ? __('1 transacción del período', 'aura-suite') : sprintf(__('%d transacciones del período', 'aura-suite'), total_txs);
 
         var html = '<div class="aura-kpi-grid">'
-            + statCard(fmt(total_budget), auraBudgets.txt.total_budget || 'Total Presupuestado', '#2563eb', 'dashicons-chart-pie', 'Límite monetario total autorizado en todos los presupuestos activos.', 'Presupuesto general aprobado')
-            + statCard(fmt(total_exec),   auraBudgets.txt.total_executed || 'Total Ejecutado',     '#10b981', 'dashicons-money-alt', 'Gasto acumulado y computado en ' + total_txs + ' transacciones aprobadas del período actual.', txSubtext)
-            + statCard(fmt(total_avail),  auraBudgets.txt.available || 'Saldo Disponible',       '#0284c7', 'dashicons-vault', 'Saldo remanente total disponible para ejecutar sin exceder techos.', 'Remanente consolidado')
-            + statCard(String(budgets.length), auraBudgets.txt.total_budgets || 'Presupuestos',    '#6366f1', 'dashicons-portfolio', 'Cantidad total de techos presupuestarios configurados.', 'Techos de gasto vigentes')
-            + statCard(String(critical),  auraBudgets.txt.critical_count || 'En Alerta',          '#f59e0b', 'dashicons-flag', 'Presupuestos que han consumido entre el 70% y el 99% de su límite.', 'Consumo preventivo 70-99%')
-            + statCard(String(overrun),   auraBudgets.txt.overrun_count || 'Sobrepasados',       '#ef4444', 'dashicons-warning', 'Presupuestos cuyo gasto ha superado el 100% de su límite asignado.', 'Exceso crítico > 100%')
+            + statCard(fmt(total_budget), auraBudgets.txt.total_budget || __('Total Presupuestado', 'aura-suite'), '#2563eb', 'dashicons-chart-pie', __('Límite monetario total autorizado en todos los presupuestos activos.', 'aura-suite'), __('Presupuesto general aprobado', 'aura-suite'))
+            + statCard(fmt(total_exec),   auraBudgets.txt.total_executed || __('Total Ejecutado', 'aura-suite'),     '#10b981', 'dashicons-money-alt', sprintf(__('Gasto acumulado y computado en %d transacciones aprobadas del período actual.', 'aura-suite'), total_txs), txSubtext)
+            + statCard(fmt(total_avail),  auraBudgets.txt.available || __('Saldo Disponible', 'aura-suite'),       '#0284c7', 'dashicons-vault', __('Saldo remanente total disponible para ejecutar sin exceder techos.', 'aura-suite'), __('Remanente consolidado', 'aura-suite'))
+            + statCard(String(budgets.length), auraBudgets.txt.total_budgets || __('Presupuestos', 'aura-suite'),    '#6366f1', 'dashicons-portfolio', __('Cantidad total de techos presupuestarios configurados.', 'aura-suite'), __('Techos de gasto vigentes', 'aura-suite'))
+            + statCard(String(critical),  auraBudgets.txt.critical_count || __('En Alerta', 'aura-suite'),          '#f59e0b', 'dashicons-flag', __('Presupuestos que han consumido entre el 70% y el 99% de su límite.', 'aura-suite'), __('Consumo preventivo 70-99%', 'aura-suite'))
+            + statCard(String(overrun),   auraBudgets.txt.overrun_count || __('Sobrepasados', 'aura-suite'),       '#ef4444', 'dashicons-warning', __('Presupuestos cuyo gasto ha superado el 100% de su límite asignado.', 'aura-suite'), __('Exceso crítico > 100%', 'aura-suite'))
             + '</div>';
 
         $('#aura-budget-summary-bar').html(html);
@@ -197,8 +200,8 @@ jQuery(function ($) {
         if (!filtered.length) {
             var emptyHtml = '<div class="aura-empty-state" style="text-align:center;padding:48px 24px;border-radius:12px;margin:0;">'
                 + '<span class="dashicons dashicons-yes-alt" style="font-size:48px;width:48px;height:48px;color:#10b981;margin-bottom:12px;display:inline-block;"></span>'
-                + '<h3 style="margin:0 0 8px;font-size:18px;font-weight:700;">¡Todo al día!</h3>'
-                + '<p style="margin:0;font-size:14px;color:#64748b;">' + (auraBudgets.txt.no_active_budgets || 'No hay presupuestos registrados para los filtros seleccionados.') + '</p>'
+                + '<h3 style="margin:0 0 8px;font-size:18px;font-weight:700;">' + escHtml(__('¡Todo al día!', 'aura-suite')) + '</h3>'
+                + '<p style="margin:0;font-size:14px;color:#64748b;">' + (auraBudgets.txt.no_active_budgets || __('No hay presupuestos registrados para los filtros seleccionados.', 'aura-suite')) + '</p>'
                 + '</div>';
             $('#aura-budgets-list').html(emptyHtml).show();
             $('#aura-budgets-empty').hide();
@@ -220,14 +223,14 @@ jQuery(function ($) {
         var html = '<div class="aura-dt-wrapper">'
             + '<table class="widefat aura-budgets-table">'
             + '<thead><tr>'
-            + '<th style="min-width:210px;">' + (auraBudgets.txt.h_category || 'Categoría / Área') + ' <span class="aura-help-icon" data-tooltip="Departamento o programa responsable y rubro contable de referencia con subcategorías"><span class="dashicons dashicons-editor-help"></span></span></th>'
-            + '<th>' + (auraBudgets.txt.h_period || 'Período & Vigencia') + ' <span class="aura-help-icon" data-tooltip="Ciclo temporal y fechas exactas de vigencia del presupuesto"><span class="dashicons dashicons-editor-help"></span></span></th>'
-            + '<th>' + (auraBudgets.txt.h_budget || 'Presupuesto') + ' <span class="aura-help-icon" data-tooltip="Límite máximo monetario asignado y autorizado"><span class="dashicons dashicons-editor-help"></span></span></th>'
-            + '<th>' + (auraBudgets.txt.h_executed || 'Ejecutado') + ' <span class="aura-help-icon" data-tooltip="Gasto acumulado en transacciones aprobadas durante el ciclo"><span class="dashicons dashicons-editor-help"></span></span></th>'
-            + '<th>' + (auraBudgets.txt.h_available || 'Disponible / Exceso') + ' <span class="aura-help-icon" data-tooltip="Saldo remanente disponible o déficit excedido"><span class="dashicons dashicons-editor-help"></span></span></th>'
-            + '<th style="text-align:center;">' + (auraBudgets.txt.h_pct || '%') + ' <span class="aura-help-icon" data-tooltip="Porcentaje consumido del presupuesto asignado"><span class="dashicons dashicons-editor-help"></span></span></th>'
-            + '<th style="min-width:140px;">' + (auraBudgets.txt.h_progress || 'Progreso') + ' <span class="aura-help-icon" data-tooltip="Indicador visual del nivel de consumo presupuestario"><span class="dashicons dashicons-editor-help"></span></span></th>'
-            + '<th style="text-align:right;">' + (auraBudgets.txt.h_actions || 'Acciones') + '</th>'
+            + '<th style="min-width:210px;">' + (auraBudgets.txt.h_category || __('Categoría / Área', 'aura-suite')) + ' <span class="aura-help-icon" data-tooltip="' + escAttr(__('Departamento o programa responsable y rubro contable de referencia con subcategorías', 'aura-suite')) + '"><span class="dashicons dashicons-editor-help"></span></span></th>'
+            + '<th>' + (auraBudgets.txt.h_period || __('Período & Vigencia', 'aura-suite')) + ' <span class="aura-help-icon" data-tooltip="' + escAttr(__('Ciclo temporal y fechas exactas de vigencia del presupuesto', 'aura-suite')) + '"><span class="dashicons dashicons-editor-help"></span></span></th>'
+            + '<th>' + (auraBudgets.txt.h_budget || __('Presupuesto', 'aura-suite')) + ' <span class="aura-help-icon" data-tooltip="' + escAttr(__('Límite máximo monetario asignado y autorizado', 'aura-suite')) + '"><span class="dashicons dashicons-editor-help"></span></span></th>'
+            + '<th>' + (auraBudgets.txt.h_executed || __('Ejecutado', 'aura-suite')) + ' <span class="aura-help-icon" data-tooltip="' + escAttr(__('Gasto acumulado en transacciones aprobadas durante el ciclo', 'aura-suite')) + '"><span class="dashicons dashicons-editor-help"></span></span></th>'
+            + '<th>' + (auraBudgets.txt.h_available || __('Disponible / Exceso', 'aura-suite')) + ' <span class="aura-help-icon" data-tooltip="' + escAttr(__('Saldo remanente disponible o déficit excedido', 'aura-suite')) + '"><span class="dashicons dashicons-editor-help"></span></span></th>'
+            + '<th style="text-align:center;">' + (auraBudgets.txt.h_pct || '%') + ' <span class="aura-help-icon" data-tooltip="' + escAttr(__('Porcentaje consumido del presupuesto asignado', 'aura-suite')) + '"><span class="dashicons dashicons-editor-help"></span></span></th>'
+            + '<th style="min-width:140px;">' + (auraBudgets.txt.h_progress || __('Progreso', 'aura-suite')) + ' <span class="aura-help-icon" data-tooltip="' + escAttr(__('Indicador visual del nivel de consumo presupuestario', 'aura-suite')) + '"><span class="dashicons dashicons-editor-help"></span></span></th>'
+            + '<th style="text-align:right;">' + (auraBudgets.txt.h_actions || __('Acciones', 'aura-suite')) + '</th>'
             + '</tr></thead><tbody>';
 
         groupOrder.forEach(function (key) {
@@ -253,33 +256,33 @@ jQuery(function ($) {
                 areaLabel = '<span class="aura-area-title-wrap">'
                     + '<span class="aura-area-color-swatch" style="background:' + escHtml(aColor) + ';"></span>'
                     + '<strong>' + escHtml(g.area_name) + '</strong>'
-                    + ' <span class="aura-area-count-badge">' + g.items.length + ' ' + (g.items.length === 1 ? 'presupuesto' : 'presupuestos') + '</span>'
+                    + ' <span class="aura-area-count-badge">' + (g.items.length === 1 ? __('1 presupuesto', 'aura-suite') : sprintf(__('%d presupuestos', 'aura-suite'), g.items.length)) + '</span>'
                     + '</span>';
-                subtotalLabel = auraBudgets.txt.area_subtotal || 'Subtotal Área';
+                subtotalLabel = auraBudgets.txt.area_subtotal || __('Subtotal Área', 'aura-suite');
             } else {
                 areaLabel = '<span class="aura-area-title-wrap">'
                     + '<span class="aura-area-color-swatch" style="background:#6366f1;"></span>'
-                    + '<strong>' + (auraBudgets.txt.category_budgets_group || 'Presupuestos por Categoría (Sin Área asignada)') + '</strong>'
-                    + ' <span class="aura-area-count-badge" style="background:rgba(99,102,241,0.12);color:#4338ca;border:1px solid rgba(99,102,241,0.25);">' + g.items.length + ' ' + (g.items.length === 1 ? 'rubro' : 'rubros') + '</span>'
+                    + '<strong>' + (auraBudgets.txt.category_budgets_group || __('Presupuestos por Categoría (Sin Área asignada)', 'aura-suite')) + '</strong>'
+                    + ' <span class="aura-area-count-badge" style="background:rgba(99,102,241,0.12);color:#4338ca;border:1px solid rgba(99,102,241,0.25);">' + (g.items.length === 1 ? __('1 rubro', 'aura-suite') : sprintf(__('%d rubros', 'aura-suite'), g.items.length)) + '</span>'
                     + '</span>';
-                subtotalLabel = auraBudgets.txt.cat_subtotal || 'Subtotal Categorías';
+                subtotalLabel = auraBudgets.txt.cat_subtotal || __('Subtotal Categorías', 'aura-suite');
             }
 
             var areaActionBtn = '';
             if (g.area_id && parseInt(g.area_id) > 0) {
-                areaActionBtn = ' <button type="button" class="aura-btn aura-btn-secondary aura-btn-xs aura-add-area-budget" data-area-id="' + escAttr(g.area_id) + '" data-area-name="' + escAttr(g.area_name || '') + '" data-tooltip="Crear nuevo presupuesto específico para ' + escAttr(g.area_name || '') + '" style="margin-left:8px;padding:3px 9px;font-size:11.5px;font-weight:600;"><span class="dashicons dashicons-plus-alt2" style="font-size:13px;width:13px;height:13px;vertical-align:middle;margin-right:2px;"></span>' + (auraBudgets.txt.add_budget_to_area || '+ Presupuesto') + '</button>';
+                areaActionBtn = ' <button type="button" class="aura-btn aura-btn-secondary aura-btn-xs aura-add-area-budget" data-area-id="' + escAttr(g.area_id) + '" data-area-name="' + escAttr(g.area_name || '') + '" data-tooltip="' + escAttr(sprintf(__('Crear nuevo presupuesto específico para %s', 'aura-suite'), g.area_name || '')) + '" style="margin-left:8px;padding:3px 9px;font-size:11.5px;font-weight:600;"><span class="dashicons dashicons-plus-alt2" style="font-size:13px;width:13px;height:13px;vertical-align:middle;margin-right:2px;"></span>' + (auraBudgets.txt.add_budget_to_area || __('+ Presupuesto', 'aura-suite')) + '</button>';
             }
 
             // Fila cabecera del grupo (colapsable)
             html += '<tr class="aura-area-group-header" data-group-header="' + escHtml(key) + '">'
                 + '<td colspan="2" class="aura-area-header-cell">'
-                + '<button type="button" class="aura-group-toggle" data-group="' + escHtml(key) + '" aria-expanded="true" data-tooltip="Colapsar / Expandir presupuestos de esta área">'
+                + '<button type="button" class="aura-group-toggle" data-group="' + escHtml(key) + '" aria-expanded="true" data-tooltip="' + escAttr(__('Colapsar / Expandir presupuestos de esta área', 'aura-suite')) + '">'
                 + (auraBudgets.txt.collapse_area || '▲') + '</button>'
                 + areaLabel
                 + '</td>'
                 + '<td><strong class="aura-subtotal-val">' + fmt(subtotalBudget) + '</strong></td>'
                 + '<td><div class="aura-exec-cell-wrap"><span class="aura-subtotal-val">' + fmt(subtotalExecuted) + '</span>'
-                + '<span class="aura-tx-counter-pill aura-tx-counter-pill--subtotal" data-tooltip="Total de transacciones registradas en este período"><span class="dashicons dashicons-tickets-alt"></span> ' + subtotalTxCount + ' ' + (subtotalTxCount === 1 ? 'tx' : 'txs') + '</span></div></td>'
+                + '<span class="aura-tx-counter-pill aura-tx-counter-pill--subtotal" data-tooltip="' + escAttr(__('Total de transacciones registradas en este período', 'aura-suite')) + '"><span class="dashicons dashicons-tickets-alt"></span> ' + subtotalTxCount + ' ' + (subtotalTxCount === 1 ? 'tx' : 'txs') + '</span></div></td>'
                 + '<td>' + (subtotalOverrun > 0 ? '<span class="aura-overrun-badge">-' + fmt(subtotalOverrun) + '</span>' : '<span class="aura-avail-badge">' + fmt(subtotalAvailable) + '</span>') + '</td>'
                 + '<td style="text-align:center;"><strong style="color:' + subtotalBarColor + '">' + fmtPct(subtotalPct) + '</strong></td>'
                 + '<td><div class="aura-prog-bar"><div class="aura-prog-fill" style="width:' + Math.min(subtotalPct, 100) + '%;background:' + subtotalBarColor + '">' + (subtotalPct > 100 ? '<div class="aura-overrun-stripe"></div>' : '') + '</div></div></td>'
@@ -292,23 +295,23 @@ jQuery(function ($) {
                 var barColor  = pct > 100 ? '#ef4444' : (pct >= 90 ? '#f97316' : (pct >= 70 ? '#f59e0b' : '#10b981'));
                 var statusCls = 'aura-status-' + b.status;
                 var txCount   = parseInt(b.tx_count || 0);
-                var txTip     = txCount === 1 ? '1 transacción aprobada registrada en este período' : txCount + ' transacciones aprobadas registradas en este período';
+                var txTip     = txCount === 1 ? __('1 transacción aprobada registrada en este período', 'aura-suite') : sprintf(__('%d transacciones aprobadas registradas en este período', 'aura-suite'), txCount);
                 var txBadge   = '<span class="aura-tx-counter-pill ' + (txCount > 0 ? 'has-txs' : 'no-txs') + '" data-tooltip="' + escAttr(txTip) + '"><span class="dashicons dashicons-tickets-alt"></span> ' + txCount + ' ' + (txCount === 1 ? 'tx' : 'txs') + '</span>';
                 var hasSubs   = b.subcategories && b.subcategories.length > 0;
 
                 // Tooltip enriquecido de vigencia
                 var periodTip = '<div class="aura-tip-card">'
-                    + '<div class="aura-tip-header"><span class="dashicons dashicons-calendar-alt"></span> Vigencia del Período</div>'
-                    + '<div class="aura-tip-row"><span>Ciclo:</span> <strong>' + escHtml(periodLabel(b.period_type)) + '</strong></div>'
-                    + '<div class="aura-tip-row"><span>Fecha Inicio:</span> <strong>' + escHtml(fmtDate(b.start_date)) + '</strong></div>'
-                    + '<div class="aura-tip-row"><span>Fecha Fin:</span> <strong>' + escHtml(fmtDate(b.end_date)) + '</strong></div>'
-                    + '<div class="aura-tip-row"><span>Transacciones:</span> <strong>' + txCount + ' ' + (txCount === 1 ? 'transacción' : 'transacciones') + '</strong></div>'
-                    + '<div class="aura-tip-row"><span>Proyección al Cierre:</span> <strong>' + fmt(b.projection) + '</strong></div>'
+                    + '<div class="aura-tip-header"><span class="dashicons dashicons-calendar-alt"></span> ' + escHtml(__('Vigencia del Período', 'aura-suite')) + '</div>'
+                    + '<div class="aura-tip-row"><span>' + escHtml(__('Ciclo:', 'aura-suite')) + '</span> <strong>' + escHtml(periodLabel(b.period_type)) + '</strong></div>'
+                    + '<div class="aura-tip-row"><span>' + escHtml(__('Fecha Inicio:', 'aura-suite')) + '</span> <strong>' + escHtml(fmtDate(b.start_date)) + '</strong></div>'
+                    + '<div class="aura-tip-row"><span>' + escHtml(__('Fecha Fin:', 'aura-suite')) + '</span> <strong>' + escHtml(fmtDate(b.end_date)) + '</strong></div>'
+                    + '<div class="aura-tip-row"><span>' + escHtml(__('Transacciones:', 'aura-suite')) + '</span> <strong>' + (txCount === 1 ? __('1 transacción', 'aura-suite') : sprintf(__('%d transacciones', 'aura-suite'), txCount)) + '</strong></div>'
+                    + '<div class="aura-tip-row"><span>' + escHtml(__('Proyección al Cierre:', 'aura-suite')) + '</span> <strong>' + fmt(b.projection) + '</strong></div>'
                     + '</div>';
 
                 var catHtml = '';
                 var budgetTitle = b.title ? escHtml(b.title) : '';
-                var progBadge   = b.course_name ? ' <span class="aura-tag-badge aura-tag-primary" style="font-size:11px;padding:2px 7px;margin-left:4px;" title="Programa Académico vinculado">🎓 ' + escHtml(b.course_name) + '</span>' : '';
+                var progBadge   = b.course_name ? ' <span class="aura-tag-badge aura-tag-primary" style="font-size:11px;padding:2px 7px;margin-left:4px;" title="' + escAttr(__('Programa Académico vinculado', 'aura-suite')) + '">🎓 ' + escHtml(b.course_name) + '</span>' : '';
 
                 if (budgetTitle) {
                     catHtml += '<div class="aura-budget-title-row" style="margin-bottom:4px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;">'
@@ -326,23 +329,23 @@ jQuery(function ($) {
                         + '<span style="font-weight:600;color:#334155;">' + escHtml(b.category_name) + '</span>';
 
                     if (hasSubs) {
-                        catHtml += ' <button type="button" class="aura-subcat-toggle-btn" data-budget-id="' + b.id + '" aria-expanded="false" data-tooltip="Ver desglose de ' + b.subcategories.length + ' subcategorías vinculadas a este presupuesto">'
+                        catHtml += ' <button type="button" class="aura-subcat-toggle-btn" data-budget-id="' + b.id + '" aria-expanded="false" data-tooltip="' + escAttr(sprintf(__('Ver desglose de %d subcategorías vinculadas a este presupuesto', 'aura-suite'), b.subcategories.length)) + '">'
                             + '<span class="dashicons dashicons-arrow-right-alt2 aura-subcat-arrow"></span>'
-                            + '<span class="aura-subcat-badge">' + b.subcategories.length + ' subcat.</span>'
+                            + '<span class="aura-subcat-badge">' + escHtml(sprintf(__('%d subcat.', 'aura-suite'), b.subcategories.length)) + '</span>'
                             + '</button>';
                     }
                     catHtml += '</div>';
                 } else {
-                    catHtml = '<div class="aura-cat-cell-title"><span class="dashicons dashicons-portfolio aura-cat-icon" style="color:' + escHtml(b.area_color || '#607d8b') + '"></span><span>Techo Global de Área</span></div>';
+                    catHtml = '<div class="aura-cat-cell-title"><span class="dashicons dashicons-portfolio aura-cat-icon" style="color:' + escHtml(b.area_color || '#607d8b') + '"></span><span>' + escHtml(__('Techo Global de Área', 'aura-suite')) + '</span></div>';
                 }
 
                 var areaSubHtml = b.area_name
                     ? '<div class="aura-cat-cell-sub"><span class="aura-area-dot" style="background:' + escHtml(b.area_color || '#607d8b') + '"></span>' + escHtml(b.area_name) + '</div>'
-                    : '<div class="aura-cat-cell-sub"><span class="aura-tag-badge aura-tag-secondary" style="font-size:10px;padding:1px 6px;margin-top:2px;">🏷️ Presupuesto de Categoría (Sin Área)</span></div>';
+                    : '<div class="aura-cat-cell-sub"><span class="aura-tag-badge aura-tag-secondary" style="font-size:10px;padding:1px 6px;margin-top:2px;">🏷️ ' + escHtml(__('Presupuesto de Categoría (Sin Área)', 'aura-suite')) + '</span></div>';
 
                 var availCell = parseFloat(b.overrun) > 0
-                    ? '<span class="aura-overrun-badge" data-tooltip="⚠️ Presupuesto excedido en ' + fmt(b.overrun) + '">-' + fmt(b.overrun) + '</span>'
-                    : '<span class="aura-avail-badge" data-tooltip="Saldo remanente disponible">' + fmt(b.available) + '</span>';
+                    ? '<span class="aura-overrun-badge" data-tooltip="' + escAttr(sprintf(__('⚠️ Presupuesto excedido en %s', 'aura-suite'), fmt(b.overrun))) + '">-' + fmt(b.overrun) + '</span>'
+                    : '<span class="aura-avail-badge" data-tooltip="' + escAttr(__('Saldo remanente disponible', 'aura-suite')) + '">' + fmt(b.available) + '</span>';
 
                 html += '<tr class="' + statusCls + ' aura-group-row" data-group-member="' + escHtml(key) + '" data-id="' + b.id + '">'
                     + '<td>' + catHtml + areaSubHtml + '</td>'
@@ -353,9 +356,9 @@ jQuery(function ($) {
                     + '<td style="text-align:center;"><strong style="color:' + barColor + '">' + fmtPct(pct) + '</strong></td>'
                     + '<td><div class="aura-prog-bar"><div class="aura-prog-fill" style="width:' + Math.min(pct, 100) + '%;background:' + barColor + '">' + (pct > 100 ? '<div class="aura-overrun-stripe"></div>' : '') + '</div></div></td>'
                     + '<td class="aura-row-actions">'
-                    + '<button type="button" class="button button-small aura-btn-icon aura-detail-btn" data-id="' + b.id + '" data-tooltip="👁️ Ver análisis detallado, gráfico donut y transacciones"><span class="dashicons dashicons-visibility"></span></button> '
-                    + '<button type="button" class="button button-small aura-btn-icon aura-edit-btn" data-id="' + b.id + '" data-tooltip="✏️ Editar presupuesto, montos y alertas"><span class="dashicons dashicons-edit"></span></button> '
-                    + '<button type="button" class="button button-small aura-btn-icon aura-btn-icon--danger aura-delete-btn" data-id="' + b.id + '" data-tooltip="🗑️ Eliminar este presupuesto"><span class="dashicons dashicons-trash"></span></button>'
+                    + '<button type="button" class="button button-small aura-btn-icon aura-detail-btn" data-id="' + b.id + '" data-tooltip="' + escAttr(__('👁️ Ver análisis detallado, gráfico donut y transacciones', 'aura-suite')) + '"><span class="dashicons dashicons-visibility"></span></button> '
+                    + '<button type="button" class="button button-small aura-btn-icon aura-edit-btn" data-id="' + b.id + '" data-tooltip="' + escAttr(__('✏️ Editar presupuesto, montos y alertas', 'aura-suite')) + '"><span class="dashicons dashicons-edit"></span></button> '
+                    + '<button type="button" class="button button-small aura-btn-icon aura-btn-icon--danger aura-delete-btn" data-id="' + b.id + '" data-tooltip="' + escAttr(__('🗑️ Eliminar este presupuesto', 'aura-suite')) + '"><span class="dashicons dashicons-trash"></span></button>'
                     + '</td></tr>';
 
                 // Filas de subcategorías vinculadas (desplegables)
@@ -365,7 +368,7 @@ jQuery(function ($) {
                         var sPct      = parseFloat(sub.percentage || 0);
                         var sBarColor = sub.color || '#6366f1';
                         var sTx       = parseInt(sub.tx_count || 0);
-                        var sTxTip    = sTx === 1 ? '1 transacción aprobada en ' + sub.name : sTx + ' transacciones aprobadas en ' + sub.name;
+                        var sTxTip    = sTx === 1 ? sprintf(__('1 transacción aprobada en %s', 'aura-suite'), sub.name) : sprintf(__('%d transacciones aprobadas en %s', 'aura-suite'), sTx, sub.name);
                         var sTxBadge  = '<a href="admin.php?page=aura-financial-transactions&filter_category=' + sub.id + '" target="_blank" rel="noopener noreferrer" class="aura-tx-counter-pill ' + (sTx > 0 ? 'has-txs' : 'no-txs') + '" data-tooltip="' + escAttr(sTxTip) + '"><span class="dashicons dashicons-tickets-alt"></span> ' + sTx + ' ' + (sTx === 1 ? 'tx' : 'txs') + '</a>';
 
                         html += '<tr class="aura-subcat-row aura-group-row" data-group-member="' + escHtml(key) + '" data-parent-budget="' + b.id + '" style="display:none;">'
@@ -376,14 +379,14 @@ jQuery(function ($) {
                             + '    <span class="aura-subcat-name">' + escHtml(sub.name) + '</span>'
                             + '  </div>'
                             + '</td>'
-                            + '<td><span class="aura-subcat-period-tag"><span class="dashicons dashicons-tag"></span> Subrubro</span></td>'
-                            + '<td><span class="aura-subcat-parent-note" data-tooltip="Consolidado en el presupuesto del rubro principal">(Consolidado)</span></td>'
+                            + '<td><span class="aura-subcat-period-tag"><span class="dashicons dashicons-tag"></span> ' + escHtml(__('Subrubro', 'aura-suite')) + '</span></td>'
+                            + '<td><span class="aura-subcat-parent-note" data-tooltip="' + escAttr(__('Consolidado en el presupuesto del rubro principal', 'aura-suite')) + '">' + escHtml(__('(Consolidado)', 'aura-suite')) + '</span></td>'
                             + '<td><div class="aura-exec-cell-wrap"><span class="aura-cell-executed">' + fmt(sub.executed) + '</span>' + sTxBadge + '</div></td>'
                             + '<td><span style="color:#94a3b8;font-size:12px;">—</span></td>'
                             + '<td style="text-align:center;"><strong style="color:' + sBarColor + '">' + fmtPct(sPct) + '</strong></td>'
                             + '<td><div class="aura-prog-bar aura-prog-bar--sub"><div class="aura-prog-fill" style="width:' + Math.min(sPct, 100) + '%;background:' + sBarColor + '"></div></div></td>'
                             + '<td class="aura-row-actions">'
-                            + '  <a href="admin.php?page=aura-financial-transactions&filter_category=' + sub.id + '" target="_blank" class="button button-small aura-btn-icon" data-tooltip="Ver transacciones de ' + escAttr(sub.name) + '"><span class="dashicons dashicons-external"></span></a>'
+                            + '  <a href="admin.php?page=aura-financial-transactions&filter_category=' + sub.id + '" target="_blank" class="button button-small aura-btn-icon" data-tooltip="' + escAttr(sprintf(__('Ver transacciones de %s', 'aura-suite'), sub.name)) + '"><span class="dashicons dashicons-external"></span></a>'
                             + '</td>'
                             + '</tr>';
                     });
@@ -469,35 +472,35 @@ jQuery(function ($) {
         });
 
         if (!list.length) {
-            alert('No hay presupuestos para exportar con los filtros seleccionados.');
+            alert(__('No hay presupuestos para exportar con los filtros seleccionados.', 'aura-suite'));
             return;
         }
 
         var headers = [
-            'Área / Programa',
-            'Categoría de Referencia',
-            'Tipo de Período',
-            'Fecha Inicio',
-            'Fecha Fin',
-            'Presupuesto Asignado',
-            'Monto Ejecutado',
-            'N° Transacciones Período',
-            'Saldo Disponible',
-            'Monto Excedido',
-            '% Consumido',
-            'Proyección al Cierre',
-            'Estado'
+            __('Área / Programa', 'aura-suite'),
+            __('Categoría de Referencia', 'aura-suite'),
+            __('Tipo de Período', 'aura-suite'),
+            __('Fecha Inicio', 'aura-suite'),
+            __('Fecha Fin', 'aura-suite'),
+            __('Presupuesto Asignado', 'aura-suite'),
+            __('Monto Ejecutado', 'aura-suite'),
+            __('N° Transacciones Período', 'aura-suite'),
+            __('Saldo Disponible', 'aura-suite'),
+            __('Monto Excedido', 'aura-suite'),
+            __('% Consumido', 'aura-suite'),
+            __('Proyección al Cierre', 'aura-suite'),
+            __('Estado', 'aura-suite')
         ];
 
         var rows = [headers.join(';')];
 
         list.forEach(function (b) {
-            var catTitle = b.category_name ? b.category_name : 'Techo Global de Área';
+            var catTitle = b.category_name ? b.category_name : __('Techo Global de Área', 'aura-suite');
             var pLabel = periodLabel(b.period_type);
-            var statusLabel = b.status === 'overrun' ? 'Sobrepasado' : (b.status === 'critical' ? 'Crítico' : (b.status === 'warning' ? 'Advertencia' : 'En buen estado'));
+            var statusLabel = b.status === 'overrun' ? __('Sobrepasado', 'aura-suite') : (b.status === 'critical' ? __('Crítico', 'aura-suite') : (b.status === 'warning' ? __('Advertencia', 'aura-suite') : __('En buen estado', 'aura-suite')));
 
             var row = [
-                '"' + (b.area_name || 'General').replace(/"/g, '""') + '"',
+                '"' + (b.area_name || __('General', 'aura-suite')).replace(/"/g, '""') + '"',
                 '"' + catTitle.replace(/"/g, '""') + '"',
                 '"' + pLabel.replace(/"/g, '""') + '"',
                 '"' + (b.start_date || '') + '"',
@@ -524,7 +527,7 @@ jQuery(function ($) {
         link.click();
         document.body.removeChild(link);
 
-        showNotice(auraBudgets.txt.export_success || 'Reporte de presupuestos exportado correctamente en formato compatible con Excel.', 'success');
+        showNotice(auraBudgets.txt.export_success || __('Reporte de presupuestos exportado correctamente en formato compatible con Excel.', 'aura-suite'), 'success');
     }
 
     // ── Filtros y Búsqueda en Tiempo Real ──────────────────────────────
@@ -560,7 +563,7 @@ jQuery(function ($) {
         $('#budget_id').val(0);
         $('#budget_title').val('');
         $('#budget_course_id').val('');
-        $('#aura-budget-modal-title').text(id ? (auraBudgets.txt.edit_title || 'Editar Presupuesto') : (auraBudgets.txt.new_title || 'Nuevo Presupuesto'));
+        $('#aura-budget-modal-title').text(id ? (auraBudgets.txt.edit_title || __('Editar Presupuesto', 'aura-suite')) : (auraBudgets.txt.new_title || __('Nuevo Presupuesto', 'aura-suite')));
         $('#aura-budget-form-error').hide();
 
         // Defaults para fecha (mes actual)
@@ -808,8 +811,8 @@ jQuery(function ($) {
 
                 var modalTitleEmoji = d.budget.category_name ? getCategoryEmoji(d.budget.category_name, d.budget.category_icon) : '🏢';
                 var modalTitleText  = d.budget.category_name
-                    ? (modalTitleEmoji + ' ' + d.budget.category_name + (d.budget.area_name ? ' — Área ' + d.budget.area_name : ''))
-                    : (d.budget.area_name ? '🏢 ' + d.budget.area_name + ' (Techo Global del Área)' : (auraBudgets.txt.detail_title || 'Detalle del Presupuesto'));
+                    ? (modalTitleEmoji + ' ' + d.budget.category_name + (d.budget.area_name ? sprintf(__(' — Área %s', 'aura-suite'), d.budget.area_name) : ''))
+                    : (d.budget.area_name ? '🏢 ' + d.budget.area_name + ' ' + __('(Techo Global del Área)', 'aura-suite') : (auraBudgets.txt.detail_title || __('Detalle del Presupuesto', 'aura-suite')));
                 $('#aura-detail-title').text(modalTitleText);
             });
     }
@@ -823,7 +826,7 @@ jQuery(function ($) {
         var html = '<div class="aura-ds-grid">'
             + ds(auraBudgets.txt.budget_total,  fmt(b.budget_amount),  '#50575e')
             + ds(auraBudgets.txt.executed,       fmt(b.executed) + ' (' + fmtPct(pct) + ')', color)
-            + ds('Transacciones del Período',    '<span class="aura-ds-tx-val"><span class="dashicons dashicons-tickets-alt"></span> ' + txCount + ' ' + (txCount === 1 ? 'tx' : 'txs') + '</span>', '#8b5cf6')
+            + ds(escHtml(__('Transacciones del Período', 'aura-suite')), '<span class="aura-ds-tx-val"><span class="dashicons dashicons-tickets-alt"></span> ' + txCount + ' ' + (txCount === 1 ? 'tx' : 'txs') + '</span>', '#8b5cf6')
             + ds(auraBudgets.txt.available,      parseFloat(b.overrun) > 0 ? '<span style="color:#d63638">-' + fmt(b.overrun) + '</span>' : fmt(b.available), '#00a32a')
             + ds(auraBudgets.txt.projection,     fmt(b.projection) + ' (' + projPct + '%)', projPct > 100 ? '#d63638' : '#2271b1')
             + '</div>';
@@ -932,8 +935,8 @@ jQuery(function ($) {
                 + '</tr>';
         });
 
-        var txLabel = txs.length === 1 ? '1 transacción del período' : txs.length + ' transacciones del período';
-        html += '<tr class="aura-tx-total"><td colspan="3"><strong>' + (auraBudgets.txt.total || 'Total') + ' (' + txLabel + ')</strong></td><td colspan="2"><strong>' + fmt(total) + '</strong></td></tr>';
+        var txLabel = txs.length === 1 ? __('1 transacción del período', 'aura-suite') : sprintf(__('%d transacciones del período', 'aura-suite'), txs.length);
+        html += '<tr class="aura-tx-total"><td colspan="3"><strong>' + (auraBudgets.txt.total || __('Total', 'aura-suite')) + ' (' + escHtml(txLabel) + ')</strong></td><td colspan="2"><strong>' + fmt(total) + '</strong></td></tr>';
         $('#aura-detail-tx-body').html(html);
     }
 
@@ -988,7 +991,7 @@ jQuery(function ($) {
                     var pct       = parseFloat(b.percentage);
                     var barColor  = pct > 100 ? '#d63638' : (pct >= 90 ? '#f97316' : (pct >= 70 ? '#dba617' : '#00a32a'));
                     var areaColor = b.area_color || '#6b7280';
-                    var areaName  = b.area_name  || 'Sin área';
+                    var areaName  = b.area_name  || __('Sin área', 'aura-suite');
                     var catName   = b.category_name || '';
                     var areaLabel = '<span class="aura-area-dot" style="background:' + areaColor + '"></span>'
                                   + '<strong>' + escHtml(areaName) + '</strong>';
@@ -1123,12 +1126,12 @@ jQuery(function ($) {
 
         // Pie de tabla
         var totColor    = pctUsed > 100 ? '#d63638' : '#2271b1';
-        var txFootLabel = totalTxs + ' ' + (totalTxs === 1 ? 'transacción' : 'transacciones');
+        var txFootLabel = totalTxs === 1 ? __('1 transacción', 'aura-suite') : sprintf(__('%d transacciones', 'aura-suite'), totalTxs);
         var footHtml  = '<tr class="aura-tx-total">'
-            + '<td><strong>' + (auraBudgets.txt.total || 'Total') + '</strong></td>'
+            + '<td><strong>' + (auraBudgets.txt.total || __('Total', 'aura-suite')) + '</strong></td>'
             + '<td style="text-align:center;"><strong class="aura-cat-tx-total-badge"><span class="dashicons dashicons-tickets-alt"></span> ' + txFootLabel + '</strong></td>'
             + '<td><strong>' + fmt(total) + '</strong></td>'
-            + '<td><strong style="color:' + totColor + '">' + fmtPct(pctUsed) + '</strong> del presupuesto (' + fmt(budget) + ')</td>'
+            + '<td><strong style="color:' + totColor + '">' + fmtPct(pctUsed) + '</strong> ' + sprintf(escHtml(__('del presupuesto (%s)', 'aura-suite')), fmt(budget)) + '</td>'
             + '<td></td>'
             + '</tr>';
         $('#aura-cat-breakdown-foot').html(footHtml);
@@ -1138,8 +1141,8 @@ jQuery(function ($) {
         $alert.hide();
         if (cats.length && pctUsed >= 90) {
             var top = cats[0];
-            var msg = '⚠️ El presupuesto se concentra en <strong>' + escHtml(top.name) + '</strong>'
-                + ' que representa el <strong>' + parseFloat(top.pct).toFixed(1) + '%</strong> del total ejecutado.';
+            var msg = sprintf(__('⚠️ El presupuesto se concentra en %1$s que representa el %2$s del total ejecutado.', 'aura-suite'), '<strong>' + escHtml(top.name) + '</strong>', '<strong>' + parseFloat(top.pct).toFixed(1) + '%</strong>');
+                + '';
             $alert.html('<div style="background:#fff8e7;border:1px solid #dba617;border-radius:6px;padding:10px 14px;font-size:13px;color:#614200;">' + msg + '</div>').show();
         }
 
@@ -1394,9 +1397,9 @@ jQuery(function ($) {
                 self.treeExpanded = !isCollapsed;
                 var $toggleAll = $('#aura-cat-toggle-all-tree');
                 if (self.treeExpanded) {
-                    $toggleAll.html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>Colapsar Subcategorías</span>');
+                    $toggleAll.html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>' + escHtml(__('Colapsar Subcategorías', 'aura-suite')) + '</span>');
                 } else {
-                    $toggleAll.html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>Desplegar Subcategorías</span>');
+                    $toggleAll.html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>' + escHtml(__('Desplegar Subcategorías', 'aura-suite')) + '</span>');
                 }
             });
 
@@ -1429,7 +1432,7 @@ jQuery(function ($) {
             var b   = self.data.budget || {};
 
             $('#aura-print-fiscal-year').text(self.currentYear);
-            $('#aura-print-category-name').text(fam.name || 'Categoría');
+            $('#aura-print-category-name').text(fam.name || __('Categoría', 'aura-suite'));
 
             // Actualizar fecha y hora actual exacta
             try {
@@ -1443,22 +1446,22 @@ jQuery(function ($) {
             } catch (e) {}
 
             var statusLabels = {
-                ok: 'Consumo Saludable (< 70%)',
-                warning: 'Alerta Preventiva (70 - 89%)',
-                critical: 'Nivel Crítico (90 - 99%)',
-                overrun: '🚨 Sobrepasado (> 100%)',
-                nobudget: 'Sin Presupuesto Asignado'
+                ok: __('Consumo Saludable (< 70%)', 'aura-suite'),
+                warning: __('Alerta Preventiva (70 - 89%)', 'aura-suite'),
+                critical: __('Nivel Crítico (90 - 99%)', 'aura-suite'),
+                overrun: __('🚨 Sobrepasado (> 100%)', 'aura-suite'),
+                nobudget: __('Sin Presupuesto Asignado', 'aura-suite')
             };
-            var stText = (statusLabels[ex.status] || 'Sin Presupuesto');
+            var stText = (statusLabels[ex.status] || __('Sin Presupuesto', 'aura-suite'));
             if (b.has_budget) {
-                stText += ' — ' + fmtPct(ex.execution_pct) + ' ejecutado';
+                stText += ' — ' + sprintf(__('%s ejecutado', 'aura-suite'), fmtPct(ex.execution_pct));
             }
             $('#aura-print-status-label').text(stText);
 
             // Auto-expandir todas las subcategorías para que toda la información aparezca sin cortes en el reporte
             $('.aura-row-child').removeClass('is-hidden');
             $('.aura-tree-expander-btn').removeClass('collapsed');
-            $('#aura-cat-toggle-all-tree').html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>Colapsar Subcategorías</span>');
+            $('#aura-cat-toggle-all-tree').html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>' + escHtml(__('Colapsar Subcategorías', 'aura-suite')) + '</span>');
 
             // Si el usuario está en modo oscuro, renderizar temporalmente en modo claro para máxima legibilidad en papel
             if (self._wasDarkMode) {
@@ -1488,7 +1491,7 @@ jQuery(function ($) {
                 $('.aura-row-child').addClass('is-hidden');
                 $('.aura-tree-expander-btn').addClass('collapsed');
                 self.treeExpanded = false;
-                $('#aura-cat-toggle-all-tree').html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>Desplegar Subcategorías</span>');
+                $('#aura-cat-toggle-all-tree').html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>' + escHtml(__('Desplegar Subcategorías', 'aura-suite')) + '</span>');
             }
         },
 
@@ -1524,7 +1527,7 @@ jQuery(function ($) {
                 $('#aura-cat-budget-content').css('opacity', '1');
 
                 if (!res.success || !res.data) {
-                    showNotice(res.data && res.data.message ? res.data.message : 'Error al cargar estadísticas de la categoría.', 'error');
+                    showNotice(res.data && res.data.message ? res.data.message : __('Error al cargar estadísticas de la categoría.', 'aura-suite'), 'error');
                     return;
                 }
 
@@ -1548,7 +1551,7 @@ jQuery(function ($) {
             }).fail(function () {
                 $('#aura-cat-budget-loading').hide();
                 $('#aura-cat-budget-content').css('opacity', '1');
-                showNotice('Error de conexión con el servidor al cargar presupuestos.', 'error');
+                showNotice(__('Error de conexión con el servidor al cargar presupuestos.', 'aura-suite'), 'error');
             });
         },
 
@@ -1558,7 +1561,7 @@ jQuery(function ($) {
             $sel.empty();
 
             if (!categories || !categories.length) {
-                $sel.append('<option value="">No hay categorías de egreso registradas</option>');
+                $sel.append('<option value="">' + escHtml(__('No hay categorías de egreso registradas', 'aura-suite')) + '</option>');
                 return;
             }
 
@@ -1580,24 +1583,24 @@ jQuery(function ($) {
 
             // Grupo 1: Categorías con Presupuesto Asignado
             if (budgeted.length > 0) {
-                var $grpBudgeted = $('<optgroup label="🟢 💰 CATEGORÍAS CON PRESUPUESTO ASIGNADO (' + budgeted.length + ')"></optgroup>');
+                var $grpBudgeted = $('<optgroup label="' + escAttr(sprintf(__('🟢 💰 CATEGORÍAS CON PRESUPUESTO ASIGNADO (%d)', 'aura-suite'), budgeted.length)) + '"></optgroup>');
                 budgeted.forEach(function (c) {
                     var isSelected = (parseInt(c.id, 10) === parseInt(selectedId, 10)) ? ' selected' : '';
                     var bAmt = parseFloat(c.budget_amount || 0);
                     var pct = parseFloat(c.execution_pct || 0);
                     var icon = getCatEmoji(c);
-                    var subs = c.subcategories_count > 0 ? ' (' + c.subcategories_count + ' subcat.)' : '';
+                    var subs = c.subcategories_count > 0 ? ' (' + sprintf(__('%d subcat.', 'aura-suite'), c.subcategories_count) + ')' : '';
 
                     var statusBadge = '🟢';
                     if (pct >= 100) {
-                        statusBadge = '🚨 🔴 SOBREGIRO';
+                        statusBadge = __('🚨 🔴 SOBREGIRO', 'aura-suite');
                     } else if (pct >= 70) {
-                        statusBadge = '⚠️ 🟡 ALERTA';
+                        statusBadge = __('⚠️ 🟡 ALERTA', 'aura-suite');
                     } else {
-                        statusBadge = '✅ 🟢 SALUDABLE';
+                        statusBadge = __('✅ 🟢 SALUDABLE', 'aura-suite');
                     }
 
-                    var optText = statusBadge + ' | ' + icon + ' ' + c.name + subs + ' — Presupuesto: ' + fmt(bAmt) + ' (' + pct.toFixed(1) + '% consumido)';
+                    var optText = statusBadge + ' | ' + icon + ' ' + c.name + subs + ' — ' + sprintf(__('Presupuesto: %1$s (%2$s%% consumido)', 'aura-suite'), fmt(bAmt), pct.toFixed(1));
                     $grpBudgeted.append('<option value="' + c.id + '"' + isSelected + '>' + escHtml(optText) + '</option>');
                 });
                 $sel.append($grpBudgeted);
@@ -1605,15 +1608,15 @@ jQuery(function ($) {
 
             // Grupo 2: Categorías sin Presupuesto Asignado
             if (unbudgeted.length > 0) {
-                var $grpUnbudgeted = $('<optgroup label="⚪ 📋 CATEGORÍAS SIN PRESUPUESTO (' + unbudgeted.length + ')"></optgroup>');
+                var $grpUnbudgeted = $('<optgroup label="' + escAttr(sprintf(__('⚪ 📋 CATEGORÍAS SIN PRESUPUESTO (%d)', 'aura-suite'), unbudgeted.length)) + '"></optgroup>');
                 unbudgeted.forEach(function (c) {
                     var isSelected = (parseInt(c.id, 10) === parseInt(selectedId, 10)) ? ' selected' : '';
                     var spent = parseFloat(c.total_spent || 0);
                     var icon = getCatEmoji(c);
-                    var subs = c.subcategories_count > 0 ? ' (' + c.subcategories_count + ' subcat.)' : '';
-                    var spentInfo = spent > 0 ? ' (Gastado YTD: ' + fmt(spent) + ')' : ' (Sin movimientos)';
+                    var subs = c.subcategories_count > 0 ? ' (' + sprintf(__('%d subcat.', 'aura-suite'), c.subcategories_count) + ')' : '';
+                    var spentInfo = spent > 0 ? ' ' + sprintf(__('(Gastado YTD: %s)', 'aura-suite'), fmt(spent)) : ' ' + __('(Sin movimientos)', 'aura-suite');
 
-                    var optText = '⚪ ❌ SIN PRESUPUESTO | ' + icon + ' ' + c.name + subs + ' — ' + spentInfo;
+                    var optText = __('⚪ ❌ SIN PRESUPUESTO', 'aura-suite') + ' | ' + icon + ' ' + c.name + subs + ' — ' + spentInfo;
                     $grpUnbudgeted.append('<option value="' + c.id + '"' + isSelected + '>' + escHtml(optText) + '</option>');
                 });
                 $sel.append($grpUnbudgeted);
@@ -1635,23 +1638,23 @@ jQuery(function ($) {
 
             if (b.has_budget && budgetAmt > 0) {
                 $('#kpi-cat-budget-amount').text(fmt(budgetAmt));
-                $('#kpi-cat-budget-monthly').text(fmt(budgetMonthly) + ' / mes prom.');
+                $('#kpi-cat-budget-monthly').text(sprintf(__('%s / mes prom.', 'aura-suite'), fmt(budgetMonthly)));
                 if (b.calculation_mode === 'percentage') {
-                    $('#kpi-cat-budget-mode-badge').text(parseFloat(b.budget_percentage || 0).toFixed(1) + '% de la bolsa').show();
+                    $('#kpi-cat-budget-mode-badge').text(sprintf(__('%s%% de la bolsa', 'aura-suite'), parseFloat(b.budget_percentage || 0).toFixed(1))).show();
                 } else {
-                    $('#kpi-cat-budget-mode-badge').text('Monto Fijo').show();
+                    $('#kpi-cat-budget-mode-badge').text(__('Monto Fijo', 'aura-suite')).show();
                 }
             } else {
                 $('#kpi-cat-budget-amount').text('$0.00');
-                $('#kpi-cat-budget-monthly').text('Sin límite configurado');
-                $('#kpi-cat-budget-mode-badge').text('No Asignado');
+                $('#kpi-cat-budget-monthly').text(__('Sin límite configurado', 'aura-suite'));
+                $('#kpi-cat-budget-mode-badge').text(__('No Asignado', 'aura-suite'));
             }
 
             // 2. Gasto Real Ejecutado
             var spent = parseFloat(ex.total_spent || 0);
             var txCount = parseInt(ex.tx_count || 0, 10);
             $('#kpi-cat-spent-amount').text(fmt(spent));
-            $('#kpi-cat-spent-tx-count').text(txCount + ' ' + (txCount === 1 ? 'transacción aprobada' : 'transacciones aprobadas'));
+            $('#kpi-cat-spent-tx-count').text(txCount === 1 ? __('1 transacción aprobada', 'aura-suite') : sprintf(__('%d transacciones aprobadas', 'aura-suite'), txCount));
 
             // 3. Saldo Remanente / Margen Libre
             var remaining = parseFloat(ex.remaining || 0);
@@ -1661,16 +1664,16 @@ jQuery(function ($) {
             if (b.has_budget) {
                 if (overrun > 0) {
                     $('#kpi-cat-remaining-amount').html('<span style="color:#ef4444;">-' + fmt(overrun) + '</span>');
-                    $('#kpi-cat-remaining-label').text('⚠️ Sobregiro presupuestario');
+                    $('#kpi-cat-remaining-label').text(__('⚠️ Sobregiro presupuestario', 'aura-suite'));
                     $remCard.removeClass('kpi-indigo').addClass('kpi-amber');
                 } else {
                     $('#kpi-cat-remaining-amount').text(fmt(remaining));
-                    $('#kpi-cat-remaining-label').text('Margen libre disponible para ejecutar');
+                    $('#kpi-cat-remaining-label').text(__('Margen libre disponible para ejecutar', 'aura-suite'));
                     $remCard.removeClass('kpi-amber').addClass('kpi-indigo');
                 }
             } else {
                 $('#kpi-cat-remaining-amount').text('N/A');
-                $('#kpi-cat-remaining-label').text('Sin presupuesto que descontar');
+                $('#kpi-cat-remaining-label').text(__('Sin presupuesto que descontar', 'aura-suite'));
             }
 
             // 4. % de Ejecución y Semáforo
@@ -1687,22 +1690,22 @@ jQuery(function ($) {
             if (!b.has_budget) {
                 $('#kpi-cat-pct-value').text('—');
                 $fill.css('width', '0%');
-                $badge.addClass('status-badge--nobudget').text('Sin Presupuesto');
+                $badge.addClass('status-badge--nobudget').text(__('Sin Presupuesto', 'aura-suite'));
             } else {
                 $('#kpi-cat-pct-value').text(execPct.toFixed(1) + '%');
                 $fill.css('width', Math.min(100, execPct).toFixed(1) + '%');
 
                 if (status === 'overrun') {
                     $fill.addClass('fill-overrun');
-                    $badge.addClass('status-badge--overrun').text('Sobrepasado (>100%)');
+                    $badge.addClass('status-badge--overrun').text(__('Sobrepasado (>100%)', 'aura-suite'));
                 } else if (status === 'critical') {
                     $fill.addClass('fill-critical');
-                    $badge.addClass('status-badge--critical').text('Crítico (90-99%)');
+                    $badge.addClass('status-badge--critical').text(__('Crítico (90-99%)', 'aura-suite'));
                 } else if (status === 'warning') {
                     $fill.addClass('fill-warning');
-                    $badge.addClass('status-badge--warning').text('Preventivo (70-89%)');
+                    $badge.addClass('status-badge--warning').text(__('Preventivo (70-89%)', 'aura-suite'));
                 } else {
-                    $badge.addClass('status-badge--ok').text('Saludable (<70%)');
+                    $badge.addClass('status-badge--ok').text(__('Saludable (<70%)', 'aura-suite'));
                     if (famColor) {
                         $fill.css('background', famColor);
                     }
@@ -1713,19 +1716,19 @@ jQuery(function ($) {
             var proj = parseFloat(ex.projection_year_end || 0);
             $('#kpi-cat-projection-amount').text(fmt(proj));
             if (ex.is_year_closed) {
-                $('#kpi-cat-projection-title').text('Cierre Definitivo del Ejercicio');
-                $('#kpi-cat-projection-desc').text('Año fiscal finalizado');
+                $('#kpi-cat-projection-title').text(__('Cierre Definitivo del Ejercicio', 'aura-suite'));
+                $('#kpi-cat-projection-desc').text(__('Año fiscal finalizado', 'aura-suite'));
             } else {
-                $('#kpi-cat-projection-title').text('Proyección al Cierre de Año');
+                $('#kpi-cat-projection-title').text(__('Proyección al Cierre de Año', 'aura-suite'));
                 var diff = parseFloat(ex.diff_vs_projection || 0);
                 if (b.has_budget && budgetAmt > 0) {
                     if (diff < 0) {
-                        $('#kpi-cat-projection-desc').html('<span style="color:#ef4444;">Exceso proyectado de ' + fmt(Math.abs(diff)) + '</span>');
+                        $('#kpi-cat-projection-desc').html('<span style="color:#ef4444;">' + sprintf(escHtml(__('Exceso proyectado de %s', 'aura-suite')), fmt(Math.abs(diff))) + '</span>');
                     } else {
-                        $('#kpi-cat-projection-desc').html('<span style="color:#059669;">Superávit proyectado de ' + fmt(diff) + '</span>');
+                        $('#kpi-cat-projection-desc').html('<span style="color:#059669;">' + sprintf(escHtml(__('Superávit proyectado de %s', 'aura-suite')), fmt(diff)) + '</span>');
                     }
                 } else {
-                    $('#kpi-cat-projection-desc').text('Ritmo anualizado estimado');
+                    $('#kpi-cat-projection-desc').text(__('Ritmo anualizado estimado', 'aura-suite'));
                 }
             }
         },
@@ -1742,7 +1745,7 @@ jQuery(function ($) {
 
             if (!b.has_budget) {
                 $banner.addClass('status-nobudget').html(
-                    '<div><strong>ℹ️ Rubro sin presupuesto autorizado:</strong> Esta categoría no cuenta con un techo financiero definido para el ejercicio ' + stats.fiscal_year + '. Puedes asignarle un monto o porcentaje con el botón "Asignar / Editar Presupuesto".</div>'
+                    '<div>' + sprintf(escHtml(__('%1$s Esta categoría no cuenta con un techo financiero definido para el ejercicio %2$s. Puedes asignarle un monto o porcentaje con el botón "Asignar / Editar Presupuesto".', 'aura-suite')), '<strong>' + escHtml(__('ℹ️ Rubro sin presupuesto autorizado:', 'aura-suite')) + '</strong>', escHtml(stats.fiscal_year)) + '</div>'
                 ).show();
                 return;
             }
@@ -1751,16 +1754,16 @@ jQuery(function ($) {
             var html = '';
             if (status === 'overrun') {
                 $banner.addClass('status-overrun');
-                html = '<div><strong>🚨 Presupuesto Sobrepasado en ' + escHtml(fam.name || 'Categoría') + ':</strong> Se ha superado el límite autorizado de ' + fmt(budgetAmt) + ' por un monto de <strong>' + fmt(ex.overrun) + '</strong> (' + fmtPct(ex.execution_pct) + ' ejecutado). Se recomienda autorizar ampliación o congelar egresos.</div>';
+                html = '<div>' + sprintf(__('🚨 Presupuesto Sobrepasado en %1$s: Se ha superado el límite autorizado de %2$s por un monto de %3$s (%4$s ejecutado). Se recomienda autorizar ampliación o congelar egresos.', 'aura-suite'), escHtml(fam.name || __('Categoría', 'aura-suite')), fmt(budgetAmt), '<strong>' + fmt(ex.overrun) + '</strong>', fmtPct(ex.execution_pct)) + '</div>';
             } else if (status === 'critical') {
                 $banner.addClass('status-critical');
-                html = '<div><strong>⚠️ Nivel Crítico de Consumo:</strong> Se ha ejecutado el <strong>' + fmtPct(ex.execution_pct) + '</strong> del presupuesto. Queda un saldo remanente de tan solo <strong>' + fmt(ex.remaining) + '</strong> para el resto del ejercicio fiscal.</div>';
+                html = '<div>' + sprintf(__('⚠️ Nivel Crítico de Consumo: Se ha ejecutado el %1$s del presupuesto. Queda un saldo remanente de tan solo %2$s para el resto del ejercicio fiscal.', 'aura-suite'), '<strong>' + fmtPct(ex.execution_pct) + '</strong>', '<strong>' + fmt(ex.remaining) + '</strong>') + '</div>';
             } else if (status === 'warning') {
                 $banner.addClass('status-warning');
-                html = '<div><strong>⚡ Alerta Preventiva:</strong> Se ha alcanzado el <strong>' + fmtPct(ex.execution_pct) + '</strong> del techo presupuestario anual. Saldo restante: <strong>' + fmt(ex.remaining) + '</strong>.</div>';
+                html = '<div>' + sprintf(__('⚡ Alerta Preventiva: Se ha alcanzado el %1$s del techo presupuestario anual. Saldo restante: %2$s.', 'aura-suite'), '<strong>' + fmtPct(ex.execution_pct) + '</strong>', '<strong>' + fmt(ex.remaining) + '</strong>') + '</div>';
             } else {
                 $banner.addClass('status-ok');
-                html = '<div><strong>✅ Ejecución Presupuestaria Saludable:</strong> El gasto acumulado representa el <strong>' + fmtPct(ex.execution_pct) + '</strong> del presupuesto aprobado (' + fmt(budgetAmt) + '). Cuentas con <strong>' + fmt(ex.remaining) + '</strong> de saldo libre.</div>';
+                html = '<div>' + sprintf(__('✅ Ejecución Presupuestaria Saludable: El gasto acumulado representa el %1$s del presupuesto aprobado (%2$s). Cuentas con %3$s de saldo libre.', 'aura-suite'), '<strong>' + fmtPct(ex.execution_pct) + '</strong>', fmt(budgetAmt), '<strong>' + fmt(ex.remaining) + '</strong>') + '</div>';
             }
 
             $banner.html(html).show();
@@ -1790,17 +1793,17 @@ jQuery(function ($) {
 
             var series = [
                 {
-                    name: 'Gasto Real Acumulado',
+                    name: __('Gasto Real Acumulado', 'aura-suite'),
                     type: 'area',
                     data: cumSpent
                 },
                 {
-                    name: 'Presupuesto Meta Acumulado',
+                    name: __('Presupuesto Meta Acumulado', 'aura-suite'),
                     type: 'line',
                     data: cumBudget
                 },
                 {
-                    name: 'Gasto Mensual Efectivo',
+                    name: __('Gasto Mensual Efectivo', 'aura-suite'),
                     type: 'column',
                     data: realSpent
                 }
@@ -1944,7 +1947,7 @@ jQuery(function ($) {
             var directSpent = parseFloat(stats.execution ? stats.execution.direct_spent : 0);
             if (directSpent > 0) {
                 activeSubs.unshift({
-                    name: (fam.name || 'Categoría') + ' (Gasto Directo)',
+                    name: sprintf(__('%s (Gasto Directo)', 'aura-suite'), fam.name || __('Categoría', 'aura-suite')),
                     total_spent: directSpent,
                     color: fam.color || '#2563eb'
                 });
@@ -1953,7 +1956,7 @@ jQuery(function ($) {
             if (!activeSubs.length) {
                 $el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:240px;color:#94a3b8;text-align:center;">'
                     + '<span class="dashicons dashicons-chart-pie" style="font-size:42px;width:42px;height:42px;opacity:0.4;margin-bottom:8px;"></span>'
-                    + '<p style="margin:0;font-size:13.5px;">No hay transacciones registradas en este ejercicio para generar el desglose.</p>'
+                    + '<p style="margin:0;font-size:13.5px;">' + escHtml(__('No hay transacciones registradas en este ejercicio para generar el desglose.', 'aura-suite')) + '</p>'
                     + '</div>';
                 return;
             }
@@ -1988,7 +1991,7 @@ jQuery(function ($) {
                                 show: true,
                                 total: {
                                     show: true,
-                                    label: 'Total Gastado',
+                                    label: __('Total Gastado', 'aura-suite'),
                                     fontSize: '12px',
                                     fontWeight: 700,
                                     color: isDark ? '#f8fafc' : '#0f172a',
@@ -2044,8 +2047,8 @@ jQuery(function ($) {
             if ($breakdown.length) {
                 var breakdownHtml = '<div class="aura-donut-breakdown-list">';
                 breakdownHtml += '<div class="aura-breakdown-header">'
-                    + '<span>Subcategoría</span>'
-                    + '<span style="text-align:right;">Gasto Real (% Part.)</span>'
+                    + '<span>' + escHtml(__('Subcategoría', 'aura-suite')) + '</span>'
+                    + '<span style="text-align:right;">' + escHtml(__('Gasto Real (% Part.)', 'aura-suite')) + '</span>'
                     + '</div>';
                 activeSubs.forEach(function (s) {
                     var sPct = totalSpent > 0 ? ((s.total_spent / totalSpent) * 100) : 0;
@@ -2063,7 +2066,7 @@ jQuery(function ($) {
                 // Fila final de Total Consolidado
                 breakdownHtml += '<div class="aura-breakdown-row aura-breakdown-total" style="border-top:1.5px solid ' + (isDark ? '#475569' : '#0f172a') + ';margin-top:4px;padding-top:4px;">'
                     + '  <div class="aura-breakdown-name-wrap">'
-                    + '    <strong class="aura-breakdown-name" style="font-weight:900;font-size:12px;">TOTAL CONSOLIDADO</strong>'
+                    + '    <strong class="aura-breakdown-name" style="font-weight:900;font-size:12px;">' + escHtml(__('TOTAL CONSOLIDADO', 'aura-suite')) + '</strong>'
                     + '  </div>'
                     + '  <div class="aura-breakdown-amt-wrap">'
                     + '    <strong class="aura-breakdown-amt" style="font-size:12.5px;color:' + (isDark ? '#f8fafc' : '#000000') + ';">' + fmt(totalSpent) + '</strong>'
@@ -2082,8 +2085,8 @@ jQuery(function ($) {
             var ex   = stats.execution || {};
             var subs = stats.subcategories || [];
 
-            $('#aura-cat-table-family-name').text(fam.name || 'Categoría');
-            $('#aura-cat-table-subs-count').text(subs.length + ' ' + (subs.length === 1 ? 'subcategoría' : 'subcategorías'));
+            $('#aura-cat-table-family-name').text(fam.name || __('Categoría', 'aura-suite'));
+            $('#aura-cat-table-subs-count').text(subs.length === 1 ? __('1 subcategoría', 'aura-suite') : sprintf(__('%d subcategorías', 'aura-suite'), subs.length));
 
             var $tbody = $('#aura-cat-budget-table-body');
             var $tfoot = $('#aura-cat-budget-table-foot');
@@ -2101,17 +2104,17 @@ jQuery(function ($) {
             var parentRow = '<tr class="aura-row-parent" data-id="' + fam.id + '">'
                 + '<td>'
                 + '  <div class="aura-cat-parent-title">'
-                + '    <button type="button" class="aura-tree-expander-btn" title="Expandir o contraer subcategorías">'
+                + '    <button type="button" class="aura-tree-expander-btn" title="' + escAttr(__('Expandir o contraer subcategorías', 'aura-suite')) + '">'
                 + '      <span class="dashicons dashicons-arrow-down-alt2"></span>'
                 + '    </button>'
                 + '    <span class="aura-cat-color-circle" style="background:' + escHtml(fam.color || '#2563eb') + ';width:12px;height:12px;border-radius:50%;display:inline-block;"></span>'
                 + '    <span class="aura-cat-emoji" style="font-size:16px;line-height:1;margin-right:6px;">' + getCategoryEmoji(fam.name, fam.icon) + '</span>'
                 + '    <strong style="font-size:14.5px;color:#0f172a;">' + escHtml(fam.name) + '</strong>'
-                + '    <span class="aura-badge-mini" style="background:#e0e7ff;color:#3730a3;">Categoría Principal</span>'
+                + '    <span class="aura-badge-mini" style="background:#e0e7ff;color:#3730a3;">' + escHtml(__('Categoría Principal', 'aura-suite')) + '</span>'
                 + '  </div>'
                 + '</td>'
                 + '<td style="text-align:center;">'
-                + '  <a href="' + parentTxUrl + '" target="_blank" rel="noopener noreferrer" class="aura-tx-counter-pill has-txs" title="Ver transacciones consolidadas">'
+                + '  <a href="' + parentTxUrl + '" target="_blank" rel="noopener noreferrer" class="aura-tx-counter-pill has-txs" title="' + escAttr(__('Ver transacciones consolidadas', 'aura-suite')) + '">'
                 + '    <span class="dashicons dashicons-tickets-alt"></span> ' + parentTotalTxs + ' ' + (parentTotalTxs === 1 ? 'tx' : 'txs')
                 + '  </a>'
                 + '</td>'
@@ -2121,7 +2124,7 @@ jQuery(function ($) {
                 + (b.has_budget && budgetAmt > 0 ? '<strong>' + fmtPct(ex.execution_pct) + '</strong>' : '—')
                 + '</td>'
                 + '<td style="text-align:center;">'
-                + '  <button type="button" class="button button-small" onclick="AuraCategoryBudgets.openModal();" title="Editar presupuesto">'
+                + '  <button type="button" class="button button-small" onclick="AuraCategoryBudgets.openModal();" title="' + escAttr(__('Editar presupuesto', 'aura-suite')) + '">'
                 + '    <span class="dashicons dashicons-edit"></span>'
                 + '  </button>'
                 + '</td>'
@@ -2140,7 +2143,7 @@ jQuery(function ($) {
                     + '  <div class="aura-subcat-title">'
                     + '    <span class="aura-subcat-color-dot" style="background:#94a3b8;"></span>'
                     + '    <span class="aura-cat-emoji" style="font-size:14px;line-height:1;margin-right:4px;">📁</span>'
-                    + '    <em style="color:#64748b;">(Movimientos directos a la raíz)</em>'
+                    + '    <em style="color:#64748b;">' + escHtml(__('(Movimientos directos a la raíz)', 'aura-suite')) + '</em>'
                     + '  </div>'
                     + '</td>'
                     + '<td style="text-align:center;">'
@@ -2156,7 +2159,7 @@ jQuery(function ($) {
                     + '  </div>'
                     + '</td>'
                     + '<td style="text-align:center;">' + (budgetAmt > 0 ? directPctOfBudget.toFixed(1) + '%' : '—') + '</td>'
-                    + '<td style="text-align:center;"><a href="' + parentTxUrl + '" target="_blank" class="button button-small" title="Ver movimientos directos"><span class="dashicons dashicons-external"></span></a></td>'
+                    + '<td style="text-align:center;"><a href="' + parentTxUrl + '" target="_blank" class="button button-small" title="' + escAttr(__('Ver movimientos directos', 'aura-suite')) + '"><span class="dashicons dashicons-external"></span></a></td>'
                     + '</tr>';
 
                 $tbody.append(directRow);
@@ -2165,14 +2168,14 @@ jQuery(function ($) {
             // Filas Hijas: Subcategorías
             var $toggleTreeBtn = $('#aura-cat-toggle-all-tree');
             if (!subs.length && parentDirectTxs === 0) {
-                $tbody.append('<tr class="aura-row-child"><td colspan="6" style="text-align:center;color:#94a3b8;padding:24px;">No hay subcategorías ni transacciones registradas bajo este rubro.</td></tr>');
-                $toggleTreeBtn.prop('disabled', true).css('opacity', '0.6').html('<span class="dashicons dashicons-minus"></span> <span>Sin Subcategorías</span>');
+                $tbody.append('<tr class="aura-row-child"><td colspan="6" style="text-align:center;color:#94a3b8;padding:24px;">' + escHtml(__('No hay subcategorías ni transacciones registradas bajo este rubro.', 'aura-suite')) + '</td></tr>');
+                $toggleTreeBtn.prop('disabled', true).css('opacity', '0.6').html('<span class="dashicons dashicons-minus"></span> <span>' + escHtml(__('Sin Subcategorías', 'aura-suite')) + '</span>');
             } else {
                 $toggleTreeBtn.prop('disabled', false).css('opacity', '1');
                 if (self.treeExpanded) {
-                    $toggleTreeBtn.html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>Colapsar Subcategorías</span>');
+                    $toggleTreeBtn.html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>' + escHtml(__('Colapsar Subcategorías', 'aura-suite')) + '</span>');
                 } else {
-                    $toggleTreeBtn.html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>Desplegar Subcategorías</span>');
+                    $toggleTreeBtn.html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>' + escHtml(__('Desplegar Subcategorías', 'aura-suite')) + '</span>');
                 }
                 subs.forEach(function (s) {
                     var sTx = parseInt(s.tx_count || 0, 10);
@@ -2209,7 +2212,7 @@ jQuery(function ($) {
                             : '—')
                         + '</td>'
                         + '<td style="text-align:center;">'
-                        + '  <a href="' + sTxUrl + '" target="_blank" class="button button-small" title="Ver transacciones de ' + escAttr(s.name) + '">'
+                        + '  <a href="' + sTxUrl + '" target="_blank" class="button button-small" title="' + escAttr(sprintf(__('Ver transacciones de %s', 'aura-suite'), s.name)) + '">'
                         + '    <span class="dashicons dashicons-external"></span>'
                         + '  </a>'
                         + '</td>'
@@ -2221,8 +2224,8 @@ jQuery(function ($) {
 
             // Pie de Tabla
             var footRow = '<tr>'
-                + '<td><strong>TOTAL CONSOLIDADO (' + escHtml(fam.name || 'Categoría') + ')</strong></td>'
-                + '<td style="text-align:center;"><strong class="aura-cat-tx-total-badge"><span class="dashicons dashicons-tickets-alt"></span> ' + parentTotalTxs + ' transacciones</strong></td>'
+                + '<td><strong>' + escHtml(sprintf(__('TOTAL CONSOLIDADO (%s)', 'aura-suite'), fam.name || __('Categoría', 'aura-suite'))) + '</strong></td>'
+                + '<td style="text-align:center;"><strong class="aura-cat-tx-total-badge"><span class="dashicons dashicons-tickets-alt"></span> ' + escHtml(parentTotalTxs === 1 ? __('1 transacción', 'aura-suite') : sprintf(__('%d transacciones', 'aura-suite'), parentTotalTxs)) + '</strong></td>'
                 + '<td style="text-align:right;"><strong class="aura-cat-cell-spent" style="font-size:15px;color:#0f172a;font-weight:800;">' + fmt(parentTotalSpent) + '</strong></td>'
                 + '<td style="text-align:center;"><strong>100.0%</strong></td>'
                 + '<td style="text-align:center;"><strong>' + (b.has_budget && budgetAmt > 0 ? fmtPct(ex.execution_pct) : '—') + '</strong></td>'
@@ -2240,9 +2243,9 @@ jQuery(function ($) {
 
             var $btn = $('#aura-cat-toggle-all-tree');
             if (isExpanded) {
-                $btn.html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>Colapsar Subcategorías</span>');
+                $btn.html('<span class="dashicons dashicons-arrow-up-alt2"></span> <span>' + escHtml(__('Colapsar Subcategorías', 'aura-suite')) + '</span>');
             } else {
-                $btn.html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>Desplegar Subcategorías</span>');
+                $btn.html('<span class="dashicons dashicons-arrow-down-alt2"></span> <span>' + escHtml(__('Desplegar Subcategorías', 'aura-suite')) + '</span>');
             }
         },
 
@@ -2270,7 +2273,7 @@ jQuery(function ($) {
             $('#aura-modal-budget-amount').on('input', function () {
                 var amt = parseFloat($(this).val()) || 0;
                 var perMonth = amt > 0 ? (amt / 12) : 0;
-                $('#aura-modal-monthly-calc').text('Equivale a aprox. ' + fmt(perMonth) + ' al mes (distribuido parejo en 12 meses).');
+                $('#aura-modal-monthly-calc').text(sprintf(__('Equivale a aprox. %s al mes (distribuido parejo en 12 meses).', 'aura-suite'), fmt(perMonth)));
             });
 
             // Toggle desglose mensual
@@ -2316,23 +2319,23 @@ jQuery(function ($) {
             var b   = self.data ? self.data.budget : null;
 
             if (!fam) {
-                alert('Selecciona primero una categoría.');
+                alert(__('Selecciona primero una categoría.', 'aura-suite'));
                 return;
             }
 
             $('#aura-cat-modal-icon-badge').text(getCategoryEmoji(fam.name, fam.icon));
-            $('#aura-cat-modal-cat-name, #aura-modal-cat-name-display').text(fam.name || 'Categoría');
+            $('#aura-cat-modal-cat-name, #aura-modal-cat-name-display').text(fam.name || __('Categoría', 'aura-suite'));
             $('#aura-cat-modal-year-display, #aura-modal-fiscal-year-display').text(self.currentYear);
             $('#aura-modal-cat-id, #aura-modal-hidden-cat-id').val(fam.id);
             $('#aura-modal-cat-year, #aura-modal-hidden-fiscal-year').val(self.currentYear);
 
             var subCount = (fam.subcategories && Array.isArray(fam.subcategories)) ? fam.subcategories.length : 0;
-            $('#aura-cat-modal-subs-info').text(subCount + ' ' + (subCount === 1 ? 'subcategoría vinculada' : 'subcategorías vinculadas'));
+            $('#aura-cat-modal-subs-info').text(subCount === 1 ? __('1 subcategoría vinculada', 'aura-suite') : sprintf(__('%d subcategorías vinculadas', 'aura-suite'), subCount));
 
             // Prellenar campos
             if (b && b.has_budget) {
                 $('#aura-modal-budget-id, #aura-modal-hidden-budget-id').val(b.budget_id || b.id || 0);
-                $('#aura-cat-modal-title').html('<span class="dashicons dashicons-edit"></span> <span>Editar Presupuesto de Categoría</span>');
+                $('#aura-cat-modal-title').html('<span class="dashicons dashicons-edit"></span> <span>' + escHtml(__('Editar Presupuesto de Categoría', 'aura-suite')) + '</span>');
                 $('#aura-cat-modal-delete-btn').show();
 
                 var budgetAmt = parseFloat(b.budget_amount !== undefined ? b.budget_amount : (b.budget_annual || 0));
@@ -2368,12 +2371,12 @@ jQuery(function ($) {
                 }
             } else {
                 $('#aura-modal-budget-id, #aura-modal-hidden-budget-id').val(0);
-                $('#aura-cat-modal-title').html('<span class="dashicons dashicons-money-alt"></span> <span>Asignar Techo Presupuestario</span>');
+                $('#aura-cat-modal-title').html('<span class="dashicons dashicons-money-alt"></span> <span>' + escHtml(__('Asignar Techo Presupuestario', 'aura-suite')) + '</span>');
                 $('#aura-cat-modal-delete-btn').hide();
                 $('input[name="calculation_mode"][value="amount"], input[name="calc_mode"][value="amount"]').prop('checked', true).trigger('change');
                 $('#aura-modal-budget-amount').val('');
                 $('#aura-modal-budget-pct').val('');
-                $('#aura-modal-monthly-calc').text('Equivale a aprox. $0.00 al mes.');
+                $('#aura-modal-monthly-calc').text(__('Equivale a aprox. $0.00 al mes.', 'aura-suite'));
                 $('#aura-modal-alert-threshold').val(80);
                 $('#aura-modal-alert-exceed-chk').prop('checked', true);
                 $('.aura-modal-month-input').val('');
@@ -2428,16 +2431,16 @@ jQuery(function ($) {
             $.post(auraBudgets.ajaxurl, payload).done(function (res) {
                 $saveBtn.prop('disabled', false);
                 if (!res.success) {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al guardar el presupuesto.');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al guardar el presupuesto.', 'aura-suite'));
                     return;
                 }
                 self.closeModal();
-                showNotice(res.data.message || 'Presupuesto guardado correctamente.', 'success');
+                showNotice(res.data.message || __('Presupuesto guardado correctamente.', 'aura-suite'), 'success');
                 // Recargar estadísticas
                 self.loadStats(catId, year);
             }).fail(function () {
                 $saveBtn.prop('disabled', false);
-                alert('Error de conexión al guardar el presupuesto.');
+                alert(__('Error de conexión al guardar el presupuesto.', 'aura-suite'));
             });
         },
 
@@ -2445,9 +2448,9 @@ jQuery(function ($) {
         deleteBudget: function () {
             var self = this;
             var fam = self.data ? (self.data.category || self.data.family) : null;
-            var catName = fam ? fam.name : 'esta categoría';
+            var catName = fam ? fam.name : __('esta categoría', 'aura-suite');
 
-            if (!confirm('¿Estás seguro de eliminar el presupuesto asignado para ' + catName + ' en el año ' + self.currentYear + '?')) {
+            if (!confirm(sprintf(__('¿Estás seguro de eliminar el presupuesto asignado para %1$s en el año %2$s?', 'aura-suite'), catName, self.currentYear))) {
                 return;
             }
 
@@ -2463,15 +2466,15 @@ jQuery(function ($) {
             }).done(function (res) {
                 $delBtn.prop('disabled', false);
                 if (!res.success) {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al eliminar el presupuesto.');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al eliminar el presupuesto.', 'aura-suite'));
                     return;
                 }
                 self.closeModal();
-                showNotice(res.data.message || 'Presupuesto eliminado.', 'warning');
+                showNotice(res.data.message || __('Presupuesto eliminado.', 'aura-suite'), 'warning');
                 self.loadStats(catId, year);
             }).fail(function () {
                 $delBtn.prop('disabled', false);
-                alert('Error de conexión al eliminar el presupuesto.');
+                alert(__('Error de conexión al eliminar el presupuesto.', 'aura-suite'));
             });
         },
 
@@ -2479,7 +2482,7 @@ jQuery(function ($) {
         exportCSV: function () {
             var self = this;
             if (!self.data) {
-                alert('No hay datos para exportar.');
+                alert(__('No hay datos para exportar.', 'aura-suite'));
                 return;
             }
 
@@ -2490,24 +2493,24 @@ jQuery(function ($) {
             var budgetAmt = parseFloat(b.budget_amount !== undefined ? b.budget_amount : (b.budget_annual || 0));
 
             var rows = [];
-            rows.push(['REPORTE DE EJECUCIÓN PRESUPUESTARIA POR CATEGORÍA']);
-            rows.push(['Categoría Principal', fam.name]);
-            rows.push(['Ejercicio Fiscal', self.currentYear]);
-            rows.push(['Presupuesto Autorizado', b.has_budget ? budgetAmt : 0]);
-            rows.push(['Gasto Real Ejecutado', ex.total_spent]);
-            rows.push(['Saldo Remanente', ex.remaining]);
-            rows.push(['% Ejecución', ex.execution_pct + '%']);
-            rows.push(['Transacciones Totales', ex.tx_count]);
+            rows.push([__('REPORTE DE EJECUCIÓN PRESUPUESTARIA POR CATEGORÍA', 'aura-suite')]);
+            rows.push([__('Categoría Principal', 'aura-suite'), fam.name]);
+            rows.push([__('Ejercicio Fiscal', 'aura-suite'), self.currentYear]);
+            rows.push([__('Presupuesto Autorizado', 'aura-suite'), b.has_budget ? budgetAmt : 0]);
+            rows.push([__('Gasto Real Ejecutado', 'aura-suite'), ex.total_spent]);
+            rows.push([__('Saldo Remanente', 'aura-suite'), ex.remaining]);
+            rows.push([__('% Ejecución', 'aura-suite'), ex.execution_pct + '%']);
+            rows.push([__('Transacciones Totales', 'aura-suite'), ex.tx_count]);
             rows.push([]);
-            rows.push(['Rubro / Subcategoría', 'Transacciones', 'Gasto Real ($)', '% de la Categoría', '% del Presupuesto']);
+            rows.push([__('Rubro / Subcategoría', 'aura-suite'), __('Transacciones', 'aura-suite'), __('Gasto Real ($)', 'aura-suite'), __('% de la Categoría', 'aura-suite'), __('% del Presupuesto', 'aura-suite')]);
 
             // Fila de la categoría
-            rows.push([fam.name + ' (Total Consolidado)', ex.tx_count, ex.total_spent, '100%', ex.execution_pct + '%']);
+            rows.push([sprintf(__('%s (Total Consolidado)', 'aura-suite'), fam.name), ex.tx_count, ex.total_spent, '100%', ex.execution_pct + '%']);
 
             if (ex.direct_spent > 0) {
                 var dPct = ex.total_spent > 0 ? ((ex.direct_spent / ex.total_spent) * 100).toFixed(1) + '%' : '0%';
                 var dPctBud = budgetAmt > 0 ? ((ex.direct_spent / budgetAmt) * 100).toFixed(1) + '%' : '0%';
-                rows.push(['-- Imputado directo a la categoría', ex.direct_tx, ex.direct_spent, dPct, dPctBud]);
+                rows.push([__('-- Imputado directo a la categoría', 'aura-suite'), ex.direct_tx, ex.direct_spent, dPct, dPctBud]);
             }
 
             subs.forEach(function (s) {

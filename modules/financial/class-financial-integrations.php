@@ -179,7 +179,7 @@ class Aura_Financial_Integrations {
                 continue;
             }
             $seen_cats[] = $row->category_id;
-            $cat_name    = $row->category_name ?? 'Sin Categoría';
+            $cat_name    = $row->category_name ?? __( 'Sin Categoría', 'aura-suite' );
             $account     = ( ! empty( $mapping[ $row->category_id ] ) )
                 ? $mapping[ $row->category_id ]
                 : $cat_name;
@@ -196,12 +196,12 @@ class Aura_Financial_Integrations {
             $date    = date( 'm/d/Y', strtotime( $row->transaction_date ) );
             $account = ( ! empty( $mapping[ $row->category_id ] ) )
                 ? $mapping[ $row->category_id ]
-                : ( $row->category_name ?? 'Sin Categoría' );
+                : ( $row->category_name ?? __( 'Sin Categoría', 'aura-suite' ) );
             $amount = ( $row->transaction_type === 'income' )
                 ? abs( (float) $row->amount )
                 : -abs( (float) $row->amount );
             $memo   = str_replace( [ "\t", "\r", "\n" ], ' ', $row->description ?? '' );
-            $name   = str_replace( [ "\t", "\r", "\n" ], ' ', $row->description ?? 'Transacción' );
+            $name   = str_replace( [ "\t", "\r", "\n" ], ' ', $row->description ?? __( 'Transacción', 'aura-suite' ) );
 
             $lines[] = "TRNS\t{$date}\t{$account}\t{$name}\t{$amount}\t{$memo}\tN";
             $lines[] = "SPL\t{$date}\tAccounts Payable\t" . ( -$amount ) . "\t{$memo}";
@@ -301,23 +301,23 @@ class Aura_Financial_Integrations {
     private static function generate_xlsx_phpspreadsheet( array $rows, array $mapping, array $cols ): array {
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $spreadsheet->getProperties()
-                    ->setTitle( 'Exportación Contable' )
+                    ->setTitle( __( 'Exportación Contable', 'aura-suite' ) )
                     ->setSubject( 'Aura Business Suite' )
                     ->setCreator( 'Aura Business Suite' );
 
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle( 'Transacciones' );
+        $sheet->setTitle( __( 'Transacciones', 'aura-suite' ) );
 
         $col_labels = [
             'id'             => 'ID',
-            'fecha'          => 'Fecha',
-            'tipo'           => 'Tipo',
-            'categoria'      => 'Categoría',
-            'cuenta_contable'=> 'Cuenta Contable',
-            'monto'          => 'Monto',
-            'descripcion'    => 'Descripción',
-            'estado'         => 'Estado',
-            'metodo_pago'    => 'Método de Pago',
+            'fecha'          => __( 'Fecha', 'aura-suite' ),
+            'tipo'           => __( 'Tipo', 'aura-suite' ),
+            'categoria'      => __( 'Categoría', 'aura-suite' ),
+            'cuenta_contable'=> __( 'Cuenta Contable', 'aura-suite' ),
+            'monto'          => __( 'Monto', 'aura-suite' ),
+            'descripcion'    => __( 'Descripción', 'aura-suite' ),
+            'estado'         => __( 'Estado', 'aura-suite' ),
+            'metodo_pago'    => __( 'Método de Pago', 'aura-suite' ),
         ];
 
         // Encabezados con estilo
@@ -353,7 +353,7 @@ class Aura_Financial_Integrations {
                 $value = match ( $col ) {
                     'id'              => (int) $row->id,
                     'fecha'           => $row->transaction_date,
-                    'tipo'            => ( $row->transaction_type === 'income' ) ? 'Ingreso' : 'Egreso',
+                    'tipo'            => ( $row->transaction_type === 'income' ) ? __( 'Ingreso', 'aura-suite' ) : __( 'Egreso', 'aura-suite' ),
                     'categoria'       => $row->category_name ?? '',
                     'cuenta_contable' => $mapping[ $row->category_id ] ?? '',
                     'monto'           => (float) $row->amount,
@@ -408,14 +408,14 @@ class Aura_Financial_Integrations {
     private static function generate_xlsx_fallback_csv( array $rows, array $mapping, array $cols ): array {
         $col_labels = [
             'id'             => 'ID',
-            'fecha'          => 'Fecha',
-            'tipo'           => 'Tipo',
-            'categoria'      => 'Categoría',
-            'cuenta_contable'=> 'Cuenta Contable',
-            'monto'          => 'Monto',
-            'descripcion'    => 'Descripción',
-            'estado'         => 'Estado',
-            'metodo_pago'    => 'Método de Pago',
+            'fecha'          => __( 'Fecha', 'aura-suite' ),
+            'tipo'           => __( 'Tipo', 'aura-suite' ),
+            'categoria'      => __( 'Categoría', 'aura-suite' ),
+            'cuenta_contable'=> __( 'Cuenta Contable', 'aura-suite' ),
+            'monto'          => __( 'Monto', 'aura-suite' ),
+            'descripcion'    => __( 'Descripción', 'aura-suite' ),
+            'estado'         => __( 'Estado', 'aura-suite' ),
+            'metodo_pago'    => __( 'Método de Pago', 'aura-suite' ),
         ];
 
         $out = fopen( 'php://temp', 'r+' );
@@ -429,7 +429,7 @@ class Aura_Financial_Integrations {
                 $line[] = match ( $col ) {
                     'id'              => $row->id,
                     'fecha'           => $row->transaction_date,
-                    'tipo'            => ( $row->transaction_type === 'income' ) ? 'Ingreso' : 'Egreso',
+                    'tipo'            => ( $row->transaction_type === 'income' ) ? __( 'Ingreso', 'aura-suite' ) : __( 'Egreso', 'aura-suite' ),
                     'categoria'       => $row->category_name ?? '',
                     'cuenta_contable' => $mapping[ $row->category_id ] ?? '',
                     'monto'           => $row->amount,
@@ -528,11 +528,11 @@ class Aura_Financial_Integrations {
 
         if ( $software === 'quickbooks' ) {
             $html .= '<thead><tr>
-                        <th>Fecha</th>
-                        <th>Cuenta (IIF)</th>
-                        <th>Descripción</th>
-                        <th>Monto</th>
-                        <th>Tipo</th>
+                        <th>' . esc_html__( 'Fecha', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Cuenta (IIF)', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Descripción', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Monto', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Tipo', 'aura-suite' ) . '</th>
                       </tr></thead><tbody>';
 
             foreach ( $rows as $row ) {
@@ -541,8 +541,8 @@ class Aura_Financial_Integrations {
                     : ( $row->category_name ?? '—' );
                 $amount  = number_format( (float) $row->amount, 2 );
                 $badge   = ( $row->transaction_type === 'income' )
-                    ? '<span class="aura-badge aura-badge-green">Ingreso</span>'
-                    : '<span class="aura-badge aura-badge-red">Egreso</span>';
+                    ? '<span class="aura-badge aura-badge-green">' . esc_html__( 'Ingreso', 'aura-suite' ) . '</span>'
+                    : '<span class="aura-badge aura-badge-red">' . esc_html__( 'Egreso', 'aura-suite' ) . '</span>';
                 $html .= '<tr>
                     <td>' . esc_html( $row->transaction_date ) . '</td>
                     <td><code>' . esc_html( $account ) . '</code></td>
@@ -553,11 +553,11 @@ class Aura_Financial_Integrations {
             }
         } elseif ( in_array( $software, [ 'sap', 'contabilidad_mx' ], true ) ) {
             $html .= '<thead><tr>
-                        <th>Fecha</th>
-                        <th>Núm. Cuenta</th>
-                        <th>Descripción</th>
-                        <th>Debe</th>
-                        <th>Haber</th>
+                        <th>' . esc_html__( 'Fecha', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Núm. Cuenta', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Descripción', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Debe', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Haber', 'aura-suite' ) . '</th>
                       </tr></thead><tbody>';
 
             foreach ( $rows as $row ) {
@@ -577,17 +577,17 @@ class Aura_Financial_Integrations {
         } else {
             // Excel
             $html .= '<thead><tr>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Categoría</th>
-                        <th>Cuenta Contable</th>
-                        <th>Monto</th>
-                        <th>Estado</th>
+                        <th>' . esc_html__( 'Fecha', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Tipo', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Categoría', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Cuenta Contable', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Monto', 'aura-suite' ) . '</th>
+                        <th>' . esc_html__( 'Estado', 'aura-suite' ) . '</th>
                       </tr></thead><tbody>';
 
             foreach ( $rows as $row ) {
                 $account = ( ! empty( $mapping[ $row->category_id ] ) ) ? $mapping[ $row->category_id ] : '—';
-                $tipo    = ( $row->transaction_type === 'income' ) ? 'Ingreso' : 'Egreso';
+                $tipo    = ( $row->transaction_type === 'income' ) ? __( 'Ingreso', 'aura-suite' ) : __( 'Egreso', 'aura-suite' );
                 $html   .= '<tr>
                     <td>' . esc_html( $row->transaction_date ) . '</td>
                     <td>' . esc_html( $tipo ) . '</td>

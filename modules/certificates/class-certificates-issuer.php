@@ -1132,7 +1132,7 @@ class Aura_Certificates_Issuer {
     private static function canvas_json_to_html( string $json_string, array $vars_data, ?string $qr_path ): string {
         $canvas = json_decode( $json_string, true );
         if ( ! $canvas || json_last_error() !== JSON_ERROR_NONE ) {
-            return '<html><body><p>Error en el diseño de la plantilla.</p></body></html>';
+            return '<html><body><p>' . esc_html__( 'Error en el diseño de la plantilla.', 'aura-suite' ) . '</p></body></html>';
         }
 
         $canvas_w = (float) ( $canvas['canvasW'] ?? $canvas['width'] ?? 1122 );

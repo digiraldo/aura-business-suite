@@ -243,7 +243,7 @@ class Aura_Vehicle_Rest_Audit {
         // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fputs
         fputs( $output, "\xEF\xBB\xBF" );
 
-        fputcsv( $output, array( 'ID', 'Fecha/Hora', 'Operación', 'Tipo Entidad', 'ID Entidad', 'Usuario', 'IP', 'Detalles' ) );
+        fputcsv( $output, array( 'ID', __( 'Fecha/Hora', 'aura-suite' ), __( 'Operación', 'aura-suite' ), __( 'Tipo Entidad', 'aura-suite' ), __( 'ID Entidad', 'aura-suite' ), __( 'Usuario', 'aura-suite' ), 'IP', __( 'Detalles', 'aura-suite' ) ) );
 
         foreach ( $rows as $row ) {
             fputcsv( $output, array(
@@ -252,7 +252,7 @@ class Aura_Vehicle_Rest_Audit {
                 $row->operation,
                 $row->entity_type,
                 $row->entity_id,
-                $row->user_name ?? '(sistema)',
+                $row->user_name ?? __( '(sistema)', 'aura-suite' ),
                 $row->ip_address,
                 $row->details,
             ) );
@@ -297,7 +297,7 @@ class Aura_Vehicle_Rest_Audit {
 
         return rest_ensure_response( array(
             'deleted' => (int) $deleted,
-            'message' => sprintf( 'Se eliminaron %d registros anteriores a %s.', (int) $deleted, $cutoff ),
+            'message' => sprintf( __( 'Se eliminaron %1$d registros anteriores a %2$s.', 'aura-suite' ), (int) $deleted, $cutoff ),
         ) );
     }
 }

@@ -350,7 +350,13 @@ jQuery(function($){
             chartBars.render();
 
             // Dona: distribución por tipo de perfil
-            var profileLabels = { student:'Estudiante', volunteer:'Voluntario', teacher:'Instructor', participant:'Participante', intern:'Practicante' };
+            var profileLabels = {
+                student:     '<?php echo esc_js( __( 'Estudiante', 'aura-suite' ) ); ?>',
+                volunteer:   '<?php echo esc_js( __( 'Voluntario', 'aura-suite' ) ); ?>',
+                teacher:     '<?php echo esc_js( __( 'Instructor', 'aura-suite' ) ); ?>',
+                participant: '<?php echo esc_js( __( 'Participante', 'aura-suite' ) ); ?>',
+                intern:      '<?php echo esc_js( __( 'Practicante', 'aura-suite' ) ); ?>'
+            };
             var donutLabels = dist.map(function(d){ return profileLabels[d.type] || d.type; });
             var donutSeries = dist.map(function(d){ return d.total; });
 

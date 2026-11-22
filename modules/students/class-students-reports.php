@@ -173,7 +173,7 @@ class Aura_Students_Reports {
 
         $org = aura_get_org_name();
         $sheet->getHeaderFooter()->setOddFooter(
-            '&L&"Calibri"' . $org . ' · Aura Business Suite&R&"Calibri"Generado: ' . date( 'd/m/Y H:i' )
+            '&L&"Calibri"' . $org . ' · Aura Business Suite&R&"Calibri"' . __( 'Generado:', 'aura-suite' ) . ' ' . date( 'd/m/Y H:i' )
         );
 
         header( 'Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' );
@@ -245,7 +245,7 @@ class Aura_Students_Reports {
             'income_projection'  => self::flat_income_projection( $params ),
             'scholarships'       => self::flat_scholarships( $params ),
             'graduates'          => self::flat_graduates( $params ),
-            default              => [ [], [], 'reporte', 'Reporte' ],
+            default              => [ [], [], 'reporte', __( 'Reporte', 'aura-suite' ) ],
         };
     }
 
@@ -280,12 +280,12 @@ class Aura_Students_Reports {
   .total-row{font-weight:700;color:#374151;}
 </style></head><body>
 <div class="rep-title">' . esc_html( $title ) . '</div>
-<div class="rep-meta">' . esc_html( $org ) . ' · Generado el ' . date_i18n( get_option( 'date_format' ) . ' H:i' ) . '</div>
+<div class="rep-meta">' . esc_html( $org ) . ' · ' . esc_html__( 'Generado el', 'aura-suite' ) . ' ' . date_i18n( get_option( 'date_format' ) . ' H:i' ) . '</div>
 <table>
 <thead><tr>' . $th_html . '</tr></thead>
 <tbody>' . $tr_html . '</tbody>
 </table>
-<div class="footer">Total: ' . count( $rows ) . ' registros · Aura Business Suite</div>
+<div class="footer">' . sprintf( esc_html__( 'Total: %d registros · Aura Business Suite', 'aura-suite' ), count( $rows ) ) . '</div>
 </body></html>';
     }
 

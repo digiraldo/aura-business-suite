@@ -59,7 +59,7 @@ class Aura_Library_Settings {
             ! current_user_can( 'aura_library_settings' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         wp_send_json_success( self::get_all() );
@@ -76,7 +76,7 @@ class Aura_Library_Settings {
             ! current_user_can( 'aura_library_settings' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $saved   = [];
@@ -93,17 +93,17 @@ class Aura_Library_Settings {
             $value = self::cast( $raw, $type );
 
             if ( $value === null ) {
-                $errors[ $field ] = __( 'Valor no válido.', 'aura-business-suite' );
+                $errors[ $field ] = __( 'Valor no válido.', 'aura-suite' );
                 continue;
             }
 
             // Validaciones adicionales
             if ( $key === 'aura_library_cron_hour' && ( $value < 0 || $value > 23 ) ) {
-                $errors[ $field ] = __( 'La hora debe estar entre 0 y 23.', 'aura-business-suite' );
+                $errors[ $field ] = __( 'La hora debe estar entre 0 y 23.', 'aura-suite' );
                 continue;
             }
             if ( in_array( $key, [ 'aura_library_fine_per_day', 'aura_library_fine_max' ], true ) && $value < 0 ) {
-                $errors[ $field ] = __( 'El valor no puede ser negativo.', 'aura-business-suite' );
+                $errors[ $field ] = __( 'El valor no puede ser negativo.', 'aura-suite' );
                 continue;
             }
 
@@ -124,11 +124,11 @@ class Aura_Library_Settings {
         }
 
         if ( ! empty( $errors ) ) {
-            wp_send_json_error( [ 'message' => __( 'Algunos valores no son válidos.', 'aura-business-suite' ), 'errors' => $errors ] );
+            wp_send_json_error( [ 'message' => __( 'Algunos valores no son válidos.', 'aura-suite' ), 'errors' => $errors ] );
         }
 
         wp_send_json_success( [
-            'message' => __( 'Configuración guardada correctamente.', 'aura-business-suite' ),
+            'message' => __( 'Configuración guardada correctamente.', 'aura-suite' ),
             'saved'   => $saved,
         ] );
     }

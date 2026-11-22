@@ -479,7 +479,7 @@ $category_icons = array(
                                 <span class="dashicons dashicons-list-view"></span>
                             </div>
                             <div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Total Eventos</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;"><?php esc_html_e( 'Total Eventos', 'aura-suite' ); ?></div>
                                 <div style="font-size: 1.15rem; font-weight: 700; color: #fff;" id="logs-kpi-total">—</div>
                             </div>
                         </div>
@@ -489,7 +489,7 @@ $category_icons = array(
                                 <span class="dashicons dashicons-yes-alt"></span>
                             </div>
                             <div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Sincronizaciones Éxito</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;"><?php esc_html_e( 'Sincronizaciones Éxito', 'aura-suite' ); ?></div>
                                 <div style="font-size: 1.15rem; font-weight: 700; color: #34d399;" id="logs-kpi-success">—</div>
                             </div>
                         </div>
@@ -499,7 +499,7 @@ $category_icons = array(
                                 <span class="dashicons dashicons-warning"></span>
                             </div>
                             <div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Fallas / Errores</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;"><?php esc_html_e( 'Fallas / Errores', 'aura-suite' ); ?></div>
                                 <div style="font-size: 1.15rem; font-weight: 700; color: #f87171;" id="logs-kpi-errors">—</div>
                             </div>
                         </div>
@@ -509,7 +509,7 @@ $category_icons = array(
                                 <span class="dashicons dashicons-clock"></span>
                             </div>
                             <div style="min-width: 0;">
-                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Última Sync</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;"><?php esc_html_e( 'Última Sync', 'aura-suite' ); ?></div>
                                 <div style="font-size: 0.85rem; font-weight: 700; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="logs-kpi-last-sync">—</div>
                             </div>
                         </div>
@@ -790,7 +790,7 @@ $category_icons = array(
                                         </p>
                                     </div>
                                     <div style="display: flex; gap: 8px;">
-                                        <button type="button" class="btn btn-secondary btn-sm" id="btn-reconnect-google" onclick="if(confirm('¿Deseas re-autorizar los permisos en Google?')) window.location.href='<?php echo esc_url( $auth_url ); ?>';">
+                                        <button type="button" class="btn btn-secondary btn-sm" id="btn-reconnect-google" onclick="if(confirm(<?php echo esc_attr( wp_json_encode( __( '¿Deseas re-autorizar los permisos en Google?', 'aura-suite' ) ) ); ?>)) window.location.href='<?php echo esc_url( $auth_url ); ?>';">
                                             <span class="dashicons dashicons-update"></span>
                                             <span><?php esc_html_e( 'Renovar Autorización', 'aura-suite' ); ?></span>
                                         </button>
@@ -830,7 +830,7 @@ $category_icons = array(
                                 </label>
                                 <div style="display: flex; gap: 8px;">
                                     <input type="text" id="google_redirect_uri" class="aura-input" value="<?php echo esc_url( $redirect_uri ); ?>" readonly style="background: rgba(0,0,0,0.25); color: #cbd5e1; width: 100%;">
-                                    <button type="button" class="btn btn-glass btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('google_redirect_uri').value); alert('URI copiada al portapapeles');" title="<?php esc_attr_e( 'Copiar al portapapeles', 'aura-suite' ); ?>">
+                                    <button type="button" class="btn btn-glass btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('google_redirect_uri').value); alert(<?php echo esc_attr( wp_json_encode( __( 'URI copiada al portapapeles', 'aura-suite' ) ) ); ?>);" title="<?php esc_attr_e( 'Copiar al portapapeles', 'aura-suite' ); ?>">
                                         <span class="dashicons dashicons-admin-page"></span>
                                     </button>
                                 </div>
@@ -1000,10 +1000,10 @@ $category_icons = array(
                                         <input type="radio" name="export_format" value="csv_universal" checked style="margin-top: 3px; accent-color: #38bdf8;">
                                         <div>
                                             <div style="font-weight: 700; color: #fff; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
-                                                📊 CSV Universal
+                                                📊 <?php esc_html_e( 'CSV Universal', 'aura-suite' ); ?>
                                             </div>
                                             <p style="margin: 3px 0 0; font-size: 0.74rem; color: #cbd5e1; line-height: 1.3;">
-                                                Con BOM UTF-8. Ideal para Excel en Windows/Mac, Sheets y Calc.
+                                                <?php esc_html_e( 'Con BOM UTF-8. Ideal para Excel en Windows/Mac, Sheets y Calc.', 'aura-suite' ); ?>
                                             </p>
                                         </div>
                                     </label>
@@ -1016,7 +1016,7 @@ $category_icons = array(
                                                 🌐 Google Contacts
                                             </div>
                                             <p style="margin: 3px 0 0; font-size: 0.74rem; color: #cbd5e1; line-height: 1.3;">
-                                                Columnas nativas de Google para subir directo a contacts.google.com.
+                                                <?php esc_html_e( 'Columnas nativas de Google para subir directo a contacts.google.com.', 'aura-suite' ); ?>
                                             </p>
                                         </div>
                                     </label>
@@ -1029,7 +1029,7 @@ $category_icons = array(
                                                 📇 vCard 3.0 (.vcf)
                                             </div>
                                             <p style="margin: 3px 0 0; font-size: 0.74rem; color: #cbd5e1; line-height: 1.3;">
-                                                Para importar en iPhone (iOS), Android, MacOS Contactos y Outlook.
+                                                <?php esc_html_e( 'Para importar en iPhone (iOS), Android, MacOS Contactos y Outlook.', 'aura-suite' ); ?>
                                             </p>
                                         </div>
                                     </label>
@@ -1042,7 +1042,7 @@ $category_icons = array(
                                                 📦 JSON Backup
                                             </div>
                                             <p style="margin: 3px 0 0; font-size: 0.74rem; color: #cbd5e1; line-height: 1.3;">
-                                                Copia íntegra con metadatos y tags para restaurar en otro Aura Suite.
+                                                <?php esc_html_e( 'Copia íntegra con metadatos y tags para restaurar en otro Aura Suite.', 'aura-suite' ); ?>
                                             </p>
                                         </div>
                                     </label>
@@ -1092,10 +1092,10 @@ $category_icons = array(
                                     </span>
                                     <div style="display: flex; gap: 12px;">
                                         <label style="font-size: 0.8rem; color: #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                                            <input type="radio" name="export_delimiter" value="," checked style="accent-color: #38bdf8;"> Coma (<code>,</code> Estándar)
+                                            <input type="radio" name="export_delimiter" value="," checked style="accent-color: #38bdf8;"> <?php echo wp_kses_post( __( 'Coma (<code>,</code> Estándar)', 'aura-suite' ) ); ?>
                                         </label>
                                         <label style="font-size: 0.8rem; color: #cbd5e1; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                                            <input type="radio" name="export_delimiter" value=";" style="accent-color: #38bdf8;"> Punto y coma (<code>;</code> Excel ES)
+                                            <input type="radio" name="export_delimiter" value=";" style="accent-color: #38bdf8;"> <?php echo wp_kses_post( __( 'Punto y coma (<code>;</code> Excel ES)', 'aura-suite' ) ); ?>
                                         </label>
                                     </div>
                                 </div>
@@ -1235,23 +1235,23 @@ $category_icons = array(
                             <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; margin-bottom: 14px;">
                                 <div style="background: rgba(255,255,255,0.03); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
                                     <div id="res-total" style="font-weight: 800; font-size: 1.25rem; color: #fff;">0</div>
-                                    <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Total</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;"><?php esc_html_e( 'Total', 'aura-suite' ); ?></div>
                                 </div>
                                 <div style="background: rgba(16, 185, 129, 0.08); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
                                     <div id="res-created" style="font-weight: 800; font-size: 1.25rem; color: #34d399;">0</div>
-                                    <div style="font-size: 0.7rem; color: #34d399; text-transform: uppercase;">Creados</div>
+                                    <div style="font-size: 0.7rem; color: #34d399; text-transform: uppercase;"><?php esc_html_e( 'Creados', 'aura-suite' ); ?></div>
                                 </div>
                                 <div style="background: rgba(56, 189, 248, 0.08); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25);">
                                     <div id="res-updated" style="font-weight: 800; font-size: 1.25rem; color: #38bdf8;">0</div>
-                                    <div style="font-size: 0.7rem; color: #38bdf8; text-transform: uppercase;">Actualizados</div>
+                                    <div style="font-size: 0.7rem; color: #38bdf8; text-transform: uppercase;"><?php esc_html_e( 'Actualizados', 'aura-suite' ); ?></div>
                                 </div>
                                 <div style="background: rgba(245, 158, 11, 0.08); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.25);">
                                     <div id="res-skipped" style="font-weight: 800; font-size: 1.25rem; color: #f59e0b;">0</div>
-                                    <div style="font-size: 0.7rem; color: #f59e0b; text-transform: uppercase;">Omitidos</div>
+                                    <div style="font-size: 0.7rem; color: #f59e0b; text-transform: uppercase;"><?php esc_html_e( 'Omitidos', 'aura-suite' ); ?></div>
                                 </div>
                                 <div style="background: rgba(239, 68, 68, 0.08); padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.25);">
                                     <div id="res-errors" style="font-weight: 800; font-size: 1.25rem; color: #ef4444;">0</div>
-                                    <div style="font-size: 0.7rem; color: #ef4444; text-transform: uppercase;">Errores</div>
+                                    <div style="font-size: 0.7rem; color: #ef4444; text-transform: uppercase;"><?php esc_html_e( 'Errores', 'aura-suite' ); ?></div>
                                 </div>
                             </div>
 
@@ -1259,9 +1259,9 @@ $category_icons = array(
                             
                             <div id="res-details-wrapper" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 10px;">
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                                    <span style="font-size: 0.75rem; font-weight: 700; color: #f59e0b;">Observaciones y Registros:</span>
+                                    <span style="font-size: 0.75rem; font-weight: 700; color: #f59e0b;"><?php esc_html_e( 'Observaciones y Registros:', 'aura-suite' ); ?></span>
                                     <button type="button" class="btn btn-glass btn-sm" id="btn-copy-import-logs" style="font-size: 0.72rem; padding: 2px 8px;">
-                                        Copiar Detalle
+                                        <?php esc_html_e( 'Copiar Detalle', 'aura-suite' ); ?>
                                     </button>
                                 </div>
                                 <ul id="res-details-list" style="margin: 0; padding-left: 18px; font-size: 0.76rem; color: #94a3b8; max-height: 130px; overflow-y: auto;"></ul>
@@ -1286,7 +1286,7 @@ $category_icons = array(
                                 🌐 Google Contacts (Gmail & Workspace)
                             </div>
                             <p style="margin: 0; font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;">
-                                Selecciona <strong>Google Contacts CSV</strong> al exportar. Luego ingresa a <a href="https://contacts.google.com" target="_blank" style="color: #38bdf8; text-decoration: underline;">contacts.google.com</a>, pulsa <strong>Importar</strong> y selecciona el archivo. Se conservarán nombres, teléfonos, emails y grupos automáticamente.
+                                <?php echo wp_kses_post( __( 'Selecciona <strong>Google Contacts CSV</strong> al exportar. Luego ingresa a <a href="https://contacts.google.com" target="_blank" style="color: #38bdf8; text-decoration: underline;">contacts.google.com</a>, pulsa <strong>Importar</strong> y selecciona el archivo. Se conservarán nombres, teléfonos, emails y grupos automáticamente.', 'aura-suite' ) ); ?>
                             </p>
                         </div>
 
@@ -1295,7 +1295,7 @@ $category_icons = array(
                                 📱 Smartphones (iPhone iOS & Android)
                             </div>
                             <p style="margin: 0; font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;">
-                                Exporta como <strong>vCard 3.0 (.vcf)</strong>. Puedes enviarte el archivo por WhatsApp, AirDrop, Telegram o email y abrirlo en tu móvil para importar todos los contactos a la libreta del teléfono con un solo toque.
+                                <?php echo wp_kses_post( __( 'Exporta como <strong>vCard 3.0 (.vcf)</strong>. Puedes enviarte el archivo por WhatsApp, AirDrop, Telegram o email y abrirlo en tu móvil para importar todos los contactos a la libreta del teléfono con un solo toque.', 'aura-suite' ) ); ?>
                             </p>
                         </div>
 
@@ -1304,7 +1304,7 @@ $category_icons = array(
                                 📊 Microsoft Excel & LibreOffice Calc
                             </div>
                             <p style="margin: 0; font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;">
-                                Los archivos <strong>CSV Universal</strong> incorporan la marca de orden de bytes (BOM UTF-8). Si tu versión de Excel regional requiere punto y coma como separador de columnas, selecciónalo en los filtros antes de descargar.
+                                <?php echo wp_kses_post( __( 'Los archivos <strong>CSV Universal</strong> incorporan la marca de orden de bytes (BOM UTF-8). Si tu versión de Excel regional requiere punto y coma como separador de columnas, selecciónalo en los filtros antes de descargar.', 'aura-suite' ) ); ?>
                             </p>
                         </div>
 
@@ -1368,10 +1368,10 @@ $category_icons = array(
             <!-- Badges Superiores -->
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
                 <span id="card-category-badge" class="category-pill" style="font-size: 0.76rem; padding: 4px 10px; font-weight: 700;">
-                    🏷️ Categoría
+                    🏷️ <?php esc_html_e( 'Categoría', 'aura-suite' ); ?>
                 </span>
                 <span id="card-type-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; background: rgba(255,255,255,0.06); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1);">
-                    👤 Persona
+                    👤 <?php esc_html_e( 'Persona', 'aura-suite' ); ?>
                 </span>
                 <span id="card-sync-badge" style="margin-left: auto;">
                     <!-- Badge dinámico de Google Sync -->
@@ -1391,14 +1391,14 @@ $category_icons = array(
 
                 <div style="overflow: hidden; flex: 1;">
                     <h2 id="card-full-name" style="margin: 0; font-size: 1.35rem; font-weight: 800; color: #fff; letter-spacing: -0.01em; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        Nombre del Contacto
+                        <?php esc_html_e( 'Nombre del Contacto', 'aura-suite' ); ?>
                     </h2>
                     <div id="card-job-title" style="font-size: 0.88rem; color: #38bdf8; font-weight: 600; margin-top: 3px;">
-                        Cargo o Puesto
+                        <?php esc_html_e( 'Cargo o Puesto', 'aura-suite' ); ?>
                     </div>
                     <div id="card-organization" style="font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 5px; margin-top: 2px;">
                         <span class="dashicons dashicons-building" style="font-size: 15px; width: 15px; height: 15px;"></span>
-                        <span id="card-org-text">Organización</span>
+                        <span id="card-org-text"><?php esc_html_e( 'Organización', 'aura-suite' ); ?></span>
                     </div>
                 </div>
             </div>
@@ -1407,7 +1407,7 @@ $category_icons = array(
             <div style="display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap;">
                 <a id="card-quick-call" href="#" class="btn btn-sm" style="flex: 1; min-width: 90px; justify-content: center; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); text-decoration: none; font-size: 0.78rem; font-weight: 600; border-radius: 8px;">
                     <span class="dashicons dashicons-phone" style="font-size: 15px; width: 15px; height: 15px;"></span>
-                    <span>Llamar</span>
+                    <span><?php esc_html_e( 'Llamar', 'aura-suite' ); ?></span>
                 </a>
                 <a id="card-quick-wa" href="#" target="_blank" class="btn btn-sm" style="flex: 1; min-width: 105px; justify-content: center; background: rgba(37, 211, 102, 0.15); color: #25d366; border: 1px solid rgba(37, 211, 102, 0.35); text-decoration: none; font-size: 0.78rem; font-weight: 600; border-radius: 8px;">
                     <span class="dashicons dashicons-format-chat" style="font-size: 15px; width: 15px; height: 15px;"></span>
@@ -1419,9 +1419,9 @@ $category_icons = array(
                 </a>
                 <a id="card-quick-map" href="#" target="_blank" class="btn btn-sm" style="flex: 1; min-width: 90px; justify-content: center; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); text-decoration: none; font-size: 0.78rem; font-weight: 600; border-radius: 8px;">
                     <span class="dashicons dashicons-location" style="font-size: 15px; width: 15px; height: 15px;"></span>
-                    <span>Mapa</span>
+                    <span><?php esc_html_e( 'Mapa', 'aura-suite' ); ?></span>
                 </a>
-                <button type="button" id="card-quick-copy" class="btn btn-sm btn-glass" style="justify-content: center; font-size: 0.78rem; padding: 0 10px; border-radius: 8px;" title="Copiar ficha de contacto al portapapeles">
+                <button type="button" id="card-quick-copy" class="btn btn-sm btn-glass" style="justify-content: center; font-size: 0.78rem; padding: 0 10px; border-radius: 8px;" title="<?php esc_attr_e( 'Copiar ficha de contacto al portapapeles', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-admin-page" style="font-size: 15px; width: 15px; height: 15px;"></span>
                 </button>
             </div>
@@ -1434,23 +1434,23 @@ $category_icons = array(
             <div style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
                 <div style="font-size: 0.76rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                     <span class="dashicons dashicons-email-alt" style="font-size: 16px; width: 16px; height: 16px;"></span>
-                    <span>Canales de Contacto Directo</span>
+                    <span><?php esc_html_e( 'Canales de Contacto Directo', 'aura-suite' ); ?></span>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div>
-                        <div style="font-size: 0.72rem; color: #94a3b8;">Email Principal:</div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;"><?php esc_html_e( 'Email Principal:', 'aura-suite' ); ?></div>
                         <div id="card-email-primary" style="font-size: 0.85rem; font-weight: 600; color: #fff; word-break: break-all;">—</div>
                     </div>
                     <div>
-                        <div style="font-size: 0.72rem; color: #94a3b8;">Email Secundario:</div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;"><?php esc_html_e( 'Email Secundario:', 'aura-suite' ); ?></div>
                         <div id="card-email-secondary" style="font-size: 0.85rem; color: #cbd5e1; word-break: break-all;">—</div>
                     </div>
                     <div>
-                        <div style="font-size: 0.72rem; color: #94a3b8;">Teléfono Móvil / Principal:</div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;"><?php esc_html_e( 'Teléfono Móvil / Principal:', 'aura-suite' ); ?></div>
                         <div id="card-phone-primary" style="font-size: 0.85rem; font-weight: 600; color: #fff;">—</div>
                     </div>
                     <div>
-                        <div style="font-size: 0.72rem; color: #94a3b8;">Teléfono Secundario / Oficina:</div>
+                        <div style="font-size: 0.72rem; color: #94a3b8;"><?php esc_html_e( 'Teléfono Secundario / Oficina:', 'aura-suite' ); ?></div>
                         <div id="card-phone-secondary" style="font-size: 0.85rem; color: #cbd5e1;">—</div>
                     </div>
                 </div>
@@ -1460,7 +1460,7 @@ $category_icons = array(
             <div id="card-address-block" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
                 <div style="font-size: 0.76rem; font-weight: 700; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                     <span class="dashicons dashicons-location-alt" style="font-size: 16px; width: 16px; height: 16px;"></span>
-                    <span>Dirección y Ubicación Geográfica</span>
+                    <span><?php esc_html_e( 'Dirección y Ubicación Geográfica', 'aura-suite' ); ?></span>
                 </div>
                 <div id="card-full-address" style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;">
                     —
@@ -1471,10 +1471,10 @@ $category_icons = array(
             <div id="card-tags-block" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
                 <div style="font-size: 0.76rem; font-weight: 700; color: #c084fc; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                     <span class="dashicons dashicons-tag" style="font-size: 16px; width: 16px; height: 16px;"></span>
-                    <span>Etiquetas y Grupos de Clasificación</span>
+                    <span><?php esc_html_e( 'Etiquetas y Grupos de Clasificación', 'aura-suite' ); ?></span>
                 </div>
                 <div id="card-tags-container" style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    <span style="color:#64748b; font-size:0.8rem;">Sin etiquetas asignadas</span>
+                    <span style="color:#64748b; font-size:0.8rem;"><?php esc_html_e( 'Sin etiquetas asignadas', 'aura-suite' ); ?></span>
                 </div>
             </div>
 
@@ -1482,14 +1482,14 @@ $category_icons = array(
             <div style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
                 <div style="font-size: 0.76rem; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                     <span class="dashicons dashicons-admin-links" style="font-size: 16px; width: 16px; height: 16px;"></span>
-                    <span>Vinculaciones en Aura Suite</span>
+                    <span><?php esc_html_e( 'Vinculaciones en Aura Suite', 'aura-suite' ); ?></span>
                 </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <div id="card-link-tp" style="font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);">
-                        🏢 Sin Tercero vinculado
+                        🏢 <?php esc_html_e( 'Sin Tercero vinculado', 'aura-suite' ); ?>
                     </div>
                     <div id="card-link-wp" style="font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; background: rgba(168, 85, 247, 0.1); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.25);">
-                        👤 Sin Usuario WP vinculado
+                        👤 <?php esc_html_e( 'Sin Usuario WP vinculado', 'aura-suite' ); ?>
                     </div>
                 </div>
             </div>
@@ -1498,16 +1498,16 @@ $category_icons = array(
             <div id="card-notes-block" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px;">
                 <div style="font-size: 0.76rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
                     <span class="dashicons dashicons-edit-page" style="font-size: 16px; width: 16px; height: 16px;"></span>
-                    <span>Notas Internas y Observaciones</span>
+                    <span><?php esc_html_e( 'Notas Internas y Observaciones', 'aura-suite' ); ?></span>
                 </div>
                 <div id="card-notes-text" style="font-size: 0.83rem; color: #94a3b8; font-style: italic; line-height: 1.45; white-space: pre-line;">
-                    Sin notas registradas.
+                    <?php esc_html_e( 'Sin notas registradas.', 'aura-suite' ); ?>
                 </div>
             </div>
 
             <!-- Metadatos de Auditoría y Google ID -->
             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #64748b; padding-top: 4px; flex-wrap: wrap; gap: 8px;">
-                <div>ID Local: #<strong id="card-contact-id" style="color: #94a3b8;">—</strong> | Creado: <span id="card-created-at">—</span></div>
+                <div><?php esc_html_e( 'ID Local:', 'aura-suite' ); ?> #<strong id="card-contact-id" style="color: #94a3b8;">—</strong> | <?php esc_html_e( 'Creado:', 'aura-suite' ); ?> <span id="card-created-at">—</span></div>
                 <div id="card-google-resource" style="font-family: monospace; font-size: 0.7rem; color: #94a3b8;">
                     <!-- Google Resource ID -->
                 </div>
@@ -1520,11 +1520,11 @@ $category_icons = array(
             <div style="display: flex; gap: 10px;">
                 <button type="button" class="btn btn-primary btn-sm btn-lift" id="card-btn-edit" style="display: flex; align-items: center; gap: 6px;">
                     <span class="dashicons dashicons-edit"></span>
-                    <span>Editar Contacto</span>
+                    <span><?php esc_html_e( 'Editar Contacto', 'aura-suite' ); ?></span>
                 </button>
                 <button type="button" class="btn btn-glass btn-sm btn-lift" id="card-btn-sync" style="display: flex; align-items: center; gap: 6px; color: #38bdf8; border-color: rgba(56, 189, 248, 0.35);">
                     <span class="dashicons dashicons-cloud"></span>
-                    <span>Sincronizar con Google</span>
+                    <span><?php esc_html_e( 'Sincronizar con Google', 'aura-suite' ); ?></span>
                 </button>
             </div>
             <button type="button" class="btn btn-secondary btn-sm" onclick="window.AuraContactsApp.closeContactCard();">
@@ -1640,7 +1640,7 @@ $category_icons = array(
                             </label>
                             <div class="contact-input-icon-wrap">
                                 <span class="contact-input-icon dashicons dashicons-admin-users"></span>
-                                <input type="text" id="contact-first-name" name="first_name" class="aura-input" required placeholder="Ej: Carlos" autocomplete="off">
+                                <input type="text" id="contact-first-name" name="first_name" class="aura-input" required placeholder="<?php esc_attr_e( 'Ej: Carlos', 'aura-suite' ); ?>" autocomplete="off">
                             </div>
                         </div>
                         <div class="aura-form-group" id="contact-wrap-last-name">
@@ -1649,7 +1649,7 @@ $category_icons = array(
                             </label>
                             <div class="contact-input-icon-wrap">
                                 <span class="contact-input-icon dashicons dashicons-id"></span>
-                                <input type="text" id="contact-last-name" name="last_name" class="aura-input" placeholder="Ej: González" autocomplete="off">
+                                <input type="text" id="contact-last-name" name="last_name" class="aura-input" placeholder="<?php esc_attr_e( 'Ej: González', 'aura-suite' ); ?>" autocomplete="off">
                             </div>
                         </div>
                     </div>
@@ -1662,7 +1662,7 @@ $category_icons = array(
                             </label>
                             <div class="contact-input-icon-wrap">
                                 <span class="contact-input-icon dashicons dashicons-building"></span>
-                                <input type="text" id="contact-organization" name="organization" class="aura-input" placeholder="Ej: Centro Cultural Mateo" autocomplete="off">
+                                <input type="text" id="contact-organization" name="organization" class="aura-input" placeholder="<?php esc_attr_e( 'Ej: Centro Cultural Mateo', 'aura-suite' ); ?>" autocomplete="off">
                             </div>
                         </div>
                         <div class="aura-form-group">
@@ -1689,7 +1689,7 @@ $category_icons = array(
                         </label>
                         <div class="contact-input-icon-wrap">
                             <span class="contact-input-icon dashicons dashicons-businessman"></span>
-                            <input type="text" id="contact-job-title" name="job_title" class="aura-input" placeholder="Ej: Director Administrativo, Facilitador de Taller...">
+                            <input type="text" id="contact-job-title" name="job_title" class="aura-input" placeholder="<?php esc_attr_e( 'Ej: Director Administrativo, Facilitador de Taller...', 'aura-suite' ); ?>">
                         </div>
                     </div>
 
@@ -1706,7 +1706,7 @@ $category_icons = array(
                             </label>
                             <div class="contact-input-icon-wrap">
                                 <span class="contact-input-icon dashicons dashicons-email"></span>
-                                <input type="email" id="contact-email" name="email" class="aura-input" placeholder="ejemplo@correo.com">
+                                <input type="email" id="contact-email" name="email" class="aura-input" placeholder="<?php esc_attr_e( 'ejemplo@correo.com', 'aura-suite' ); ?>">
                             </div>
                         </div>
                         <div class="aura-form-group">
@@ -1715,7 +1715,7 @@ $category_icons = array(
                             </label>
                             <div class="contact-input-icon-wrap">
                                 <span class="contact-input-icon dashicons dashicons-email-alt"></span>
-                                <input type="email" id="contact-email-secondary" name="email_secondary" class="aura-input" placeholder="alternativo@correo.com">
+                                <input type="email" id="contact-email-secondary" name="email_secondary" class="aura-input" placeholder="<?php esc_attr_e( 'alternativo@correo.com', 'aura-suite' ); ?>">
                             </div>
                         </div>
                     </div>
@@ -1734,7 +1734,7 @@ $category_icons = array(
                         <div class="aura-form-group">
                             <label for="contact-whatsapp" class="aura-form-label" style="display: flex; align-items: center; justify-content: space-between;">
                                 <span><?php esc_html_e( 'WhatsApp Directo', 'aura-suite' ); ?></span>
-                                <span style="color: #22c55e; font-size: 0.75rem;">🟢 Mensajería</span>
+                                <span style="color: #22c55e; font-size: 0.75rem;">🟢 <?php esc_html_e( 'Mensajería', 'aura-suite' ); ?></span>
                             </label>
                             <div class="contact-input-icon-wrap">
                                 <span class="contact-input-icon dashicons dashicons-smartphone" style="color: #22c55e;"></span>
@@ -1750,7 +1750,7 @@ $category_icons = array(
                         </label>
                         <div class="contact-input-icon-wrap">
                             <span class="contact-input-icon dashicons dashicons-location"></span>
-                            <input type="text" id="contact-address" name="address" class="aura-input" placeholder="Av. Revolución 123, Depto 401">
+                            <input type="text" id="contact-address" name="address" class="aura-input" placeholder="<?php esc_attr_e( 'Av. Revolución 123, Depto 401', 'aura-suite' ); ?>">
                         </div>
                     </div>
 
@@ -1760,7 +1760,7 @@ $category_icons = array(
                             <label for="contact-address-city" class="aura-form-label"><?php esc_html_e( 'Ciudad', 'aura-suite' ); ?></label>
                             <div class="contact-input-icon-wrap">
                                 <span class="contact-input-icon dashicons dashicons-location-alt"></span>
-                                <input type="text" id="contact-address-city" name="address_city" class="aura-input" placeholder="Ciudad de México">
+                                <input type="text" id="contact-address-city" name="address_city" class="aura-input" placeholder="<?php esc_attr_e( 'Ciudad de México', 'aura-suite' ); ?>">
                             </div>
                         </div>
                         <div class="aura-form-group">
@@ -1791,7 +1791,7 @@ $category_icons = array(
                         </label>
                         <div class="contact-input-icon-wrap">
                             <span class="contact-input-icon dashicons dashicons-tag"></span>
-                            <input type="text" id="contact-tags" name="tags" class="aura-input" placeholder="diplomado-2026, facilitador-externo, benefactor, vip">
+                            <input type="text" id="contact-tags" name="tags" class="aura-input" placeholder="<?php esc_attr_e( 'diplomado-2026, facilitador-externo, benefactor, vip', 'aura-suite' ); ?>">
                         </div>
                         <div class="contact-tags-quick-selector" style="margin-top: 8px;">
                             <span style="font-size: 0.76rem; color: #94a3b8; display: block; margin-bottom: 5px;">
@@ -2229,7 +2229,7 @@ $category_icons = array(
                 <div>
                     <h3 style="margin: 0; font-size: 1.12rem; font-weight: 700; color: #f8fafc; display: flex; align-items: center; gap: 8px;">
                         <span><?php esc_html_e( 'Sincronización con Google', 'aura-suite' ); ?></span>
-                        <span class="aura-badge aura-badge--info" id="sync-modal-phase-badge" style="font-size: 0.72rem; padding: 2px 8px;">Fase 1: Push</span>
+                        <span class="aura-badge aura-badge--info" id="sync-modal-phase-badge" style="font-size: 0.72rem; padding: 2px 8px;"><?php esc_html_e( 'Fase 1: Push', 'aura-suite' ); ?></span>
                     </h3>
                     <p style="margin: 3px 0 0; font-size: 0.8rem; color: #94a3b8;" id="sync-modal-subtitle">
                         <?php esc_html_e( 'Procesando en lotes protegidos contra timeouts y cuotas.', 'aura-suite' ); ?>
@@ -2282,7 +2282,7 @@ $category_icons = array(
                     <label style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">
                         <?php esc_html_e( 'Registro en Vivo del Lote', 'aura-suite' ); ?>
                     </label>
-                    <span id="sync-live-batch-tag" style="font-size: 0.75rem; color: #38bdf8;">Lote 1</span>
+                    <span id="sync-live-batch-tag" style="font-size: 0.75rem; color: #38bdf8;"><?php esc_html_e( 'Lote 1', 'aura-suite' ); ?></span>
                 </div>
                 <div id="sync-modal-log-console" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 10px; padding: 10px 14px; font-family: 'Courier New', Courier, monospace; font-size: 0.76rem; color: #cbd5e1; max-height: 120px; overflow-y: auto; line-height: 1.45;">
                     <div style="color: #64748b;"><?php esc_html_e( 'Esperando respuesta del servidor...', 'aura-suite' ); ?></div>

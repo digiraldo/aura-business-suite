@@ -114,7 +114,7 @@ class Aura_Calendar_Google_Sync {
             return [
                 'success' => false,
                 'gcal_id' => null,
-                'message' => __( 'La integración con Google Calendar no está configurada o está inactiva.', 'aura' ),
+                'message' => __( 'La integración con Google Calendar no está configurada o está inactiva.', 'aura-suite' ),
             ];
         }
 
@@ -139,7 +139,7 @@ class Aura_Calendar_Google_Sync {
             return [
                 'success' => false,
                 'gcal_id' => null,
-                'message' => __( 'Evento no encontrado o fue eliminado.', 'aura' ),
+                'message' => __( 'Evento no encontrado o fue eliminado.', 'aura-suite' ),
             ];
         }
 
@@ -161,7 +161,7 @@ class Aura_Calendar_Google_Sync {
             return [
                 'success' => true,
                 'gcal_id' => null,
-                'message' => __( 'Evento cancelado; retirado de Google Calendar.', 'aura' ),
+                'message' => __( 'Evento cancelado; retirado de Google Calendar.', 'aura-suite' ),
             ];
         }
 
@@ -177,7 +177,7 @@ class Aura_Calendar_Google_Sync {
             return [
                 'success' => false,
                 'gcal_id' => null,
-                'message' => __( 'No se pudo resolver el ID del calendario de Google.', 'aura' ),
+                'message' => __( 'No se pudo resolver el ID del calendario de Google.', 'aura-suite' ),
             ];
         }
 
@@ -224,32 +224,32 @@ class Aura_Calendar_Google_Sync {
         }
 
         $type_labels = [
-            'class'    => __( 'Clase regular', 'aura' ),
-            'exam'     => __( 'Examen / Evaluación', 'aura' ),
-            'workshop' => __( 'Taller / Laboratorio', 'aura' ),
-            'activity' => __( 'Actividad extracurricular', 'aura' ),
-            'break'    => __( 'Receso / Descanso', 'aura' ),
-            'other'    => __( 'Otro', 'aura' ),
+            'class'    => __( 'Clase regular', 'aura-suite' ),
+            'exam'     => __( 'Examen / Evaluación', 'aura-suite' ),
+            'workshop' => __( 'Taller / Laboratorio', 'aura-suite' ),
+            'activity' => __( 'Actividad extracurricular', 'aura-suite' ),
+            'break'    => __( 'Receso / Descanso', 'aura-suite' ),
+            'other'    => __( 'Otro', 'aura-suite' ),
         ];
         $desc_lines[] = '📌 Tipo: ' . ( $type_labels[ $event->event_type ] ?? ucfirst( $event->event_type ) );
 
         if ( ! empty( $instructor_names ) ) {
-            $desc_lines[] = '👨‍🏫 Profesor(es): ' . implode( ', ', $instructor_names );
+            $desc_lines[] = __( '👨‍🏫 Profesor(es): ', 'aura-suite' ) . implode( ', ', $instructor_names );
         }
 
         if ( ! empty( $event->location ) ) {
-            $desc_lines[] = '📍 Ubicación: ' . $event->location;
+            $desc_lines[] = __( '📍 Ubicación: ', 'aura-suite' ) . $event->location;
         }
 
         if ( ! empty( $event->online_url ) ) {
-            $desc_lines[] = '💻 Sesión Online: ' . $event->online_url;
+            $desc_lines[] = __( '💻 Sesión Online: ', 'aura-suite' ) . $event->online_url;
         }
 
         if ( ! empty( $event->description ) ) {
-            $desc_lines[] = "\n📝 Detalle:\n" . wp_strip_all_tags( $event->description );
+            $desc_lines[] = "\n" . __( '📝 Detalle:', 'aura-suite' ) . "\n" . wp_strip_all_tags( $event->description );
         }
 
-        $desc_lines[] = "\n--\nSincronizado automáticamente por Aura Business Suite";
+        $desc_lines[] = "\n--\n" . __( 'Sincronizado automáticamente por Aura Business Suite', 'aura-suite' );
         $description = implode( "\n", $desc_lines );
 
         // Configuración de zona horaria y fechas
@@ -275,7 +275,7 @@ class Aura_Calendar_Google_Sync {
 
             $detailed_schedule = sprintf(
                 /* translators: 1: start datetime, 2: end datetime */
-                __( '⏰ Horario programado: %1$s a %2$s', 'aura' ),
+                __( '⏰ Horario programado: %1$s a %2$s', 'aura-suite' ),
                 $dt_start->format( 'd/m/Y H:i' ),
                 $dt_end->format( 'd/m/Y H:i' )
             );
@@ -350,7 +350,7 @@ class Aura_Calendar_Google_Sync {
                 'gcal_id' => $gcal_id,
                 'title'   => $event->title,
                 'dates'   => $event->start_datetime . ' a ' . $event->end_datetime,
-                'message' => __( 'Evento sincronizado con éxito en Google Calendar.', 'aura' ),
+                'message' => __( 'Evento sincronizado con éxito en Google Calendar.', 'aura-suite' ),
             ];
         }
 
@@ -372,8 +372,8 @@ class Aura_Calendar_Google_Sync {
             'title'   => $event->title,
             'dates'   => $event->start_datetime . ' a ' . $event->end_datetime,
             'message' => $error_detail
-                ? sprintf( __( 'Error de Google Calendar: %s', 'aura' ), $error_detail )
-                : __( 'Error en la respuesta de Google Calendar API.', 'aura' ),
+                ? sprintf( __( 'Error de Google Calendar: %s', 'aura-suite' ), $error_detail )
+                : __( 'Error en la respuesta de Google Calendar API.', 'aura-suite' ),
         ];
     }
 
@@ -439,7 +439,7 @@ class Aura_Calendar_Google_Sync {
                 'skipped'   => 0,
                 'items'     => [],
                 'synced_at' => current_time( 'mysql' ),
-                'error'     => __( 'Google Calendar no está habilitado.', 'aura' ),
+                'error'     => __( 'Google Calendar no está habilitado.', 'aura-suite' ),
             ];
         }
 
@@ -518,12 +518,12 @@ class Aura_Calendar_Google_Sync {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_sync_gcal' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         if ( ! self::is_enabled() ) {
             wp_send_json_error( [
-                'message' => __( 'Google Calendar no está activo en Ajustes Globales de Aura. Ve a Ajustes → Google Calendar y configura las credenciales.', 'aura' ),
+                'message' => __( 'Google Calendar no está activo en Ajustes Globales de Aura. Ve a Ajustes → Google Calendar y configura las credenciales.', 'aura-suite' ),
             ] );
         }
 
@@ -533,7 +533,7 @@ class Aura_Calendar_Google_Sync {
         if ( empty( $cal_id ) ) {
             wp_send_json_error( [
                 'message' => sprintf(
-                    __( 'No se pudo crear ni resolver el calendario "%s" en Google Calendar. Revisa los logs de PHP.', 'aura' ),
+                    __( 'No se pudo crear ni resolver el calendario "%s" en Google Calendar. Revisa los logs de PHP.', 'aura-suite' ),
                     $cal_name
                 ),
             ] );
@@ -541,7 +541,7 @@ class Aura_Calendar_Google_Sync {
 
         wp_send_json_success( [
             'message'     => sprintf(
-                __( '¡Conexión exitosa! Calendario activo: "%s" (ID: %s).', 'aura' ),
+                __( '¡Conexión exitosa! Calendario activo: "%s" (ID: %s).', 'aura-suite' ),
                 $cal_name,
                 $cal_id
             ),
@@ -557,7 +557,7 @@ class Aura_Calendar_Google_Sync {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_sync_gcal' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $program_id = ! empty( $_POST['program_id'] ) ? intval( $_POST['program_id'] ) : null;
@@ -569,7 +569,7 @@ class Aura_Calendar_Google_Sync {
 
         wp_send_json_success( [
             'message' => sprintf(
-                __( 'Sincronización completada. Total: %d, Sincronizados: %d, Errores: %d.', 'aura' ),
+                __( 'Sincronización completada. Total: %d, Sincronizados: %d, Errores: %d.', 'aura-suite' ),
                 $stats['total'],
                 $stats['synced'],
                 $stats['failed']
@@ -585,12 +585,12 @@ class Aura_Calendar_Google_Sync {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_sync_gcal' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $event_id = ! empty( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : 0;
         if ( ! $event_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura-suite' ) ] );
         }
 
         $res = self::sync_event( $event_id );
@@ -608,24 +608,24 @@ class Aura_Calendar_Google_Sync {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         try {
             if ( ! self::is_enabled() ) {
-                wp_send_json_error( [ 'message' => __( 'Google Calendar no está configurado globalmente.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'Google Calendar no está configurado globalmente.', 'aura-suite' ) ] );
             }
 
             $cal_id = self::get_calendar_id();
             if ( empty( $cal_id ) ) {
-                wp_send_json_error( [ 'message' => __( 'No se pudo obtener el ID del calendario en Google Calendar.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'No se pudo obtener el ID del calendario en Google Calendar.', 'aura-suite' ) ] );
             }
 
             $acl_items = Aura_Google_Calendar::list_acl_rules( $cal_id );
             $last_err  = Aura_Google_Calendar::get_last_error();
             if ( empty( $acl_items ) && ! empty( $last_err ) ) {
                 wp_send_json_error( [
-                    'message' => sprintf( __( 'Error en Google Calendar: %s', 'aura' ), $last_err ),
+                    'message' => sprintf( __( 'Error en Google Calendar: %s', 'aura-suite' ), $last_err ),
                 ] );
             }
             
@@ -664,7 +664,7 @@ class Aura_Calendar_Google_Sync {
                     if ( $contact ) {
                         $c_name = trim( $contact->first_name . ' ' . $contact->last_name );
                         if ( empty( $c_name ) ) {
-                            $c_name = $contact->organization ?: __( 'Contacto del Directorio', 'aura' );
+                            $c_name = $contact->organization ?: __( 'Contacto del Directorio', 'aura-suite' );
                         }
                         $contact_info = [
                             'id'           => (int) $contact->id,
@@ -687,7 +687,7 @@ class Aura_Calendar_Google_Sync {
                     'rule_id'            => $id,
                     'email'              => $email,
                     'role'               => $role,
-                    'role_label'         => ( $role === 'owner' ) ? __( 'Propietario', 'aura' ) : ( ( $role === 'writer' ) ? __( 'Editor (Lectura y Escritura)', 'aura' ) : __( 'Lector (Solo Lectura)', 'aura' ) ),
+                    'role_label'         => ( $role === 'owner' ) ? __( 'Propietario', 'aura-suite' ) : ( ( $role === 'writer' ) ? __( 'Editor (Lectura y Escritura)', 'aura-suite' ) : __( 'Lector (Solo Lectura)', 'aura-suite' ) ),
                     'is_owner'           => $is_owner,
                     'is_service_account' => $is_service_account,
                     'is_deletable'       => ( ! $is_owner && ! $is_service_account ),
@@ -702,7 +702,7 @@ class Aura_Calendar_Google_Sync {
             ] );
         } catch ( \Throwable $e ) {
             wp_send_json_error( [
-                'message' => sprintf( __( 'Error al consultar reglas de Google Calendar: %s', 'aura' ), $e->getMessage() ),
+                'message' => sprintf( __( 'Error al consultar reglas de Google Calendar: %s', 'aura-suite' ), $e->getMessage() ),
             ] );
         }
     }
@@ -714,7 +714,7 @@ class Aura_Calendar_Google_Sync {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         try {
@@ -722,7 +722,7 @@ class Aura_Calendar_Google_Sync {
             $table_contacts = $wpdb->prefix . 'aura_contacts';
 
             if ( $wpdb->get_var( "SHOW TABLES LIKE '{$table_contacts}'" ) !== $table_contacts ) {
-                wp_send_json_error( [ 'message' => __( 'La tabla de contactos de Aura no está disponible.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'La tabla de contactos de Aura no está disponible.', 'aura-suite' ) ] );
             }
 
             $query    = isset( $_POST['q'] ) ? sanitize_text_field( wp_unslash( $_POST['q'] ) ) : '';
@@ -794,34 +794,34 @@ class Aura_Calendar_Google_Sync {
             $contacts = [];
 
             $cat_labels = [
-                'teacher'  => __( '🎓 Docente / Profesor', 'aura' ),
-                'staff'    => __( '👥 Personal / Staff', 'aura' ),
-                'student'  => __( '📚 Estudiante', 'aura' ),
-                'supplier' => __( '🏢 Proveedor', 'aura' ),
-                'member'   => __( '⭐ Miembro', 'aura' ),
-                'client'   => __( '👤 Cliente', 'aura' ),
-                'customer' => __( '👤 Cliente', 'aura' ),
-                'other'    => __( '🏷️ Contacto', 'aura' ),
+                'teacher'  => __( '🎓 Docente / Profesor', 'aura-suite' ),
+                'staff'    => __( '👥 Personal / Staff', 'aura-suite' ),
+                'student'  => __( '📚 Estudiante', 'aura-suite' ),
+                'supplier' => __( '🏢 Proveedor', 'aura-suite' ),
+                'member'   => __( '⭐ Miembro', 'aura-suite' ),
+                'client'   => __( '👤 Cliente', 'aura-suite' ),
+                'customer' => __( '👤 Cliente', 'aura-suite' ),
+                'other'    => __( '🏷️ Contacto', 'aura-suite' ),
             ];
 
             foreach ( $results as $row ) {
                 $name = trim( $row->first_name . ' ' . $row->last_name );
                 if ( empty( $name ) ) {
-                    $name = $row->organization ?: __( 'Sin Nombre', 'aura' );
+                    $name = $row->organization ?: __( 'Sin Nombre', 'aura-suite' );
                 }
 
                 $emails = [];
                 if ( ! empty( $row->email_primary ) && is_email( trim( $row->email_primary ) ) ) {
                     $emails[] = [
                         'type'  => 'primary',
-                        'label' => __( 'Principal', 'aura' ),
+                        'label' => __( 'Principal', 'aura-suite' ),
                         'email' => trim( $row->email_primary ),
                     ];
                 }
                 if ( ! empty( $row->email_secondary ) && is_email( trim( $row->email_secondary ) ) ) {
                     $emails[] = [
                         'type'  => 'secondary',
-                        'label' => __( 'Secundario', 'aura' ),
+                        'label' => __( 'Secundario', 'aura-suite' ),
                         'email' => trim( $row->email_secondary ),
                     ];
                 }
@@ -867,7 +867,7 @@ class Aura_Calendar_Google_Sync {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         try {
@@ -877,7 +877,7 @@ class Aura_Calendar_Google_Sync {
             $notify     = ! empty( $_POST['send_notifications'] );
 
             if ( ! $contact_id || empty( $email ) || ! is_email( $email ) ) {
-                wp_send_json_error( [ 'message' => __( 'Datos de contacto o correo electrónico inválidos.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'Datos de contacto o correo electrónico inválidos.', 'aura-suite' ) ] );
             }
 
             // REGLA ESTRICTA: El correo debe pertenecer a un contacto existente en wp_aura_contacts
@@ -891,7 +891,7 @@ class Aura_Calendar_Google_Sync {
             ) );
 
             if ( ! $contact ) {
-                wp_send_json_error( [ 'message' => __( 'El contacto especificado no existe o está inactivo en el Directorio de Contactos.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'El contacto especificado no existe o está inactivo en el Directorio de Contactos.', 'aura-suite' ) ] );
             }
 
             $primary_match   = ( strtolower( trim( (string) $contact->email_primary ) ) === strtolower( $email ) );
@@ -899,13 +899,13 @@ class Aura_Calendar_Google_Sync {
 
             if ( ! $primary_match && ! $secondary_match ) {
                 wp_send_json_error( [
-                    'message' => __( 'El correo seleccionado no corresponde ni al email principal ni al secundario registrado en el contacto de Aura.', 'aura' ),
+                    'message' => __( 'El correo seleccionado no corresponde ni al email principal ni al secundario registrado en el contacto de Aura.', 'aura-suite' ),
                 ] );
             }
 
             $cal_id = self::get_calendar_id();
             if ( empty( $cal_id ) ) {
-                wp_send_json_error( [ 'message' => __( 'No se encontró un calendario de Google activo.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'No se encontró un calendario de Google activo.', 'aura-suite' ) ] );
             }
 
             $res = Aura_Google_Calendar::insert_acl_rule( $cal_id, $email, $role, $notify );
@@ -913,8 +913,8 @@ class Aura_Calendar_Google_Sync {
                 $err = Aura_Google_Calendar::get_last_error();
                 wp_send_json_error( [
                     'message' => sprintf(
-                        __( 'Error al conceder acceso en Google Calendar: %s', 'aura' ),
-                        $err ?: __( 'Error desconocido en la API de Google.', 'aura' )
+                        __( 'Error al conceder acceso en Google Calendar: %s', 'aura-suite' ),
+                        $err ?: __( 'Error desconocido en la API de Google.', 'aura-suite' )
                     ),
                 ] );
             }
@@ -926,10 +926,10 @@ class Aura_Calendar_Google_Sync {
 
             wp_send_json_success( [
                 'message' => sprintf(
-                    __( '¡Calendario compartido exitosamente con %s (%s) como %s!', 'aura' ),
+                    __( '¡Calendario compartido exitosamente con %s (%s) como %s!', 'aura-suite' ),
                     $contact_name,
                     $email,
-                    ( $role === 'writer' ) ? __( 'Editor', 'aura' ) : __( 'Lector', 'aura' )
+                    ( $role === 'writer' ) ? __( 'Editor', 'aura-suite' ) : __( 'Lector', 'aura-suite' )
                 ),
                 'rule' => $res,
             ] );
@@ -945,18 +945,18 @@ class Aura_Calendar_Google_Sync {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         try {
             $rule_id = isset( $_POST['rule_id'] ) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
             if ( empty( $rule_id ) ) {
-                wp_send_json_error( [ 'message' => __( 'ID de regla ACL no especificado.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'ID de regla ACL no especificado.', 'aura-suite' ) ] );
             }
 
             $cal_id = self::get_calendar_id();
             if ( empty( $cal_id ) ) {
-                wp_send_json_error( [ 'message' => __( 'No se encontró un calendario de Google activo.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'No se encontró un calendario de Google activo.', 'aura-suite' ) ] );
             }
 
             $success = Aura_Google_Calendar::delete_acl_rule( $cal_id, $rule_id );
@@ -964,14 +964,14 @@ class Aura_Calendar_Google_Sync {
                 $err = Aura_Google_Calendar::get_last_error();
                 wp_send_json_error( [
                     'message' => sprintf(
-                        __( 'No se pudo revocar el acceso en Google Calendar: %s', 'aura' ),
-                        $err ?: __( 'Error en la petición a Google.', 'aura' )
+                        __( 'No se pudo revocar el acceso en Google Calendar: %s', 'aura-suite' ),
+                        $err ?: __( 'Error en la petición a Google.', 'aura-suite' )
                     ),
                 ] );
             }
 
             wp_send_json_success( [
-                'message' => __( 'Acceso revocado de inmediato. El usuario ya no tiene acceso al calendario en Google.', 'aura' ),
+                'message' => __( 'Acceso revocado de inmediato. El usuario ya no tiene acceso al calendario en Google.', 'aura-suite' ),
                 'rule_id' => $rule_id,
             ] );
         } catch ( \Throwable $e ) {
@@ -986,7 +986,7 @@ class Aura_Calendar_Google_Sync {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         try {
@@ -994,16 +994,16 @@ class Aura_Calendar_Google_Sync {
             $role    = isset( $_POST['role'] ) ? sanitize_key( wp_unslash( $_POST['role'] ) ) : 'reader';
 
             if ( empty( $rule_id ) ) {
-                wp_send_json_error( [ 'message' => __( 'ID de regla ACL no especificado.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'ID de regla ACL no especificado.', 'aura-suite' ) ] );
             }
 
             if ( ! in_array( $role, [ 'reader', 'writer' ], true ) ) {
-                wp_send_json_error( [ 'message' => __( 'Nivel de permiso no válido.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'Nivel de permiso no válido.', 'aura-suite' ) ] );
             }
 
             $cal_id = self::get_calendar_id();
             if ( empty( $cal_id ) ) {
-                wp_send_json_error( [ 'message' => __( 'No se encontró un calendario de Google activo.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'No se encontró un calendario de Google activo.', 'aura-suite' ) ] );
             }
 
             $res = Aura_Google_Calendar::update_acl_rule( $cal_id, $rule_id, $role );
@@ -1011,15 +1011,15 @@ class Aura_Calendar_Google_Sync {
                 $err = Aura_Google_Calendar::get_last_error();
                 wp_send_json_error( [
                     'message' => sprintf(
-                        __( 'No se pudo actualizar el rol en Google Calendar: %s', 'aura' ),
-                        $err ?: __( 'Error en la petición a Google.', 'aura' )
+                        __( 'No se pudo actualizar el rol en Google Calendar: %s', 'aura-suite' ),
+                        $err ?: __( 'Error en la petición a Google.', 'aura-suite' )
                     ),
                 ] );
             }
 
-            $role_label = ( $role === 'writer' ) ? __( 'Editor (Lectura y Escritura)', 'aura' ) : __( 'Lector (Solo Lectura)', 'aura' );
+            $role_label = ( $role === 'writer' ) ? __( 'Editor (Lectura y Escritura)', 'aura-suite' ) : __( 'Lector (Solo Lectura)', 'aura-suite' );
             wp_send_json_success( [
-                'message'    => sprintf( __( 'Permiso de Google Calendar actualizado a %s.', 'aura' ), $role_label ),
+                'message'    => sprintf( __( 'Permiso de Google Calendar actualizado a %s.', 'aura-suite' ), $role_label ),
                 'rule_id'    => $rule_id,
                 'role'       => $role,
                 'role_label' => $role_label,

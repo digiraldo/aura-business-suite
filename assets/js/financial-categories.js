@@ -2,6 +2,9 @@
 jQuery(document).ready(function($) {
     'use strict';
 
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
+
     let rawCategories = [];
     let currentFilter = 'active';
     let collapsedParents = new Set();
@@ -51,11 +54,11 @@ jQuery(document).ready(function($) {
                     renderTree();
                     populateParentSelect();
                 } else {
-                    showToast(response.data?.message || 'Error al cargar categorías', true);
+                    showToast(response.data?.message || __('Error al cargar categorías', 'aura-suite'), true);
                 }
             },
             error: function(xhr, status, error) {
-                showToast('Error de conexión: ' + error, true);
+                showToast(__('Error de conexión:', 'aura-suite') + ' ' + error, true);
             }
         });
     }
@@ -131,9 +134,9 @@ jQuery(document).ready(function($) {
     // Construir Tarjeta Flotante Enriquecida para Categoría (.aura-tip-card)
     function buildCategoryTipCard(cat, isParent, subCount, directTxs, totalTxs, txUrl) {
         const isCapex = isCatCapex(cat);
-        const flowLabel = cat.type === 'income' ? '📈 Ingreso' : (cat.type === 'expense' ? '📉 Egreso' : (cat.type === 'capital' ? '🏗️ CapEx' : '🔄 Ambos Flujos'));
-        const natureLabel = isCapex ? '🏗️ CapEx (Gasto de Capital)' : '💼 OpEx (Gasto Operativo)';
-        const statusLabel = cat.is_active ? '✅ Activa' : '⏸️ Archivada';
+        const flowLabel = cat.type === 'income' ? __('📈 Ingreso', 'aura-suite') : (cat.type === 'expense' ? __('📉 Egreso', 'aura-suite') : (cat.type === 'capital' ? __('🏗️ CapEx', 'aura-suite') : __('🔄 Ambos Flujos', 'aura-suite')));
+        const natureLabel = isCapex ? __('🏗️ CapEx (Gasto de Capital)', 'aura-suite') : __('💼 OpEx (Gasto Operativo)', 'aura-suite');
+        const statusLabel = cat.is_active ? __('✅ Activa', 'aura-suite') : __('⏸️ Archivada', 'aura-suite');
         const desc = (cat.description || '').trim();
 
         return `
@@ -153,13 +156,13 @@ jQuery(document).ready(function($) {
                     </div>
                 </div>
                 <div class="aura-tip-card-body">
-                    ${desc ? `<div class="aura-tip-row"><span>📝 Descripción:</span> <strong>${escapeHtml(desc)}</strong></div>` : ''}
-                    <div class="aura-tip-row"><span>📂 Jerarquía:</span> <strong>${isParent ? 'Categoría Principal (Raíz)' : 'Subcategoría dependiente'}</strong></div>
-                    ${isParent ? `<div class="aura-tip-row"><span>🌿 Subcategorías:</span> <strong>${subCount} ramas registradas</strong></div>` : ''}
-                    <div class="aura-tip-row"><span>📊 Movimientos:</span> <strong>${totalTxs} transacciones asociadas</strong></div>
+                    ${desc ? `<div class="aura-tip-row"><span>${__('📝 Descripción:', 'aura-suite')}</span> <strong>${escapeHtml(desc)}</strong></div>` : ''}
+                    <div class="aura-tip-row"><span>${__('📂 Jerarquía:', 'aura-suite')}</span> <strong>${isParent ? __('Categoría Principal (Raíz)', 'aura-suite') : __('Subcategoría dependiente', 'aura-suite')}</strong></div>
+                    ${isParent ? `<div class="aura-tip-row"><span>${__('🌿 Subcategorías:', 'aura-suite')}</span> <strong>${sprintf(__('%d ramas registradas', 'aura-suite'), subCount)}</strong></div>` : ''}
+                    <div class="aura-tip-row"><span>${__('📊 Movimientos:', 'aura-suite')}</span> <strong>${sprintf(__('%d transacciones asociadas', 'aura-suite'), totalTxs)}</strong></div>
                 </div>
                 <div class="aura-tip-card-footer">
-                    <a href="${txUrl}" class="aura-tip-btn-link" target="_blank" rel="noopener noreferrer">📊 Ver Transacciones ↗</a>
+                    <a href="${txUrl}" class="aura-tip-btn-link" target="_blank" rel="noopener noreferrer">${__('📊 Ver Transacciones ↗', 'aura-suite')}</a>
                 </div>
             </div>
         `;
@@ -174,19 +177,19 @@ jQuery(document).ready(function($) {
                         📊
                     </div>
                     <div class="aura-tip-info">
-                        <div class="aura-tip-title">Registro Contable</div>
+                        <div class="aura-tip-title">${__('Registro Contable', 'aura-suite')}</div>
                         <div class="aura-tip-subtitle">${escapeHtml(catName)}</div>
                     </div>
                 </div>
                 <div class="aura-tip-card-body">
-                    <div class="aura-tip-row"><span>📌 Directas:</span> <strong>${directTxs} movimientos</strong></div>
-                    ${isParent && subTxs > 0 ? `<div class="aura-tip-row"><span>🌿 En Subcategorías:</span> <strong>${subTxs} movimientos</strong></div>` : ''}
+                    <div class="aura-tip-row"><span>${__('📌 Directas:', 'aura-suite')}</span> <strong>${sprintf(__('%d movimientos', 'aura-suite'), directTxs)}</strong></div>
+                    ${isParent && subTxs > 0 ? `<div class="aura-tip-row"><span>${__('🌿 En Subcategorías:', 'aura-suite')}</span> <strong>${sprintf(__('%d movimientos', 'aura-suite'), subTxs)}</strong></div>` : ''}
                     <div class="aura-tip-row" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px; margin-top: 2px;">
-                        <span>📊 Total Acumulado:</span> <strong>${totalTxs} transacciones</strong>
+                        <span>${__('📊 Total Acumulado:', 'aura-suite')}</span> <strong>${sprintf(__('%d transacciones', 'aura-suite'), totalTxs)}</strong>
                     </div>
                 </div>
                 <div class="aura-tip-card-footer">
-                    <a href="${txUrl}" class="aura-tip-btn-link" target="_blank" rel="noopener noreferrer">🔍 Explorar en Detalle ↗</a>
+                    <a href="${txUrl}" class="aura-tip-btn-link" target="_blank" rel="noopener noreferrer">${__('🔍 Explorar en Detalle ↗', 'aura-suite')}</a>
                 </div>
             </div>
         `;
@@ -238,11 +241,11 @@ jQuery(document).ready(function($) {
         }
 
         if (filtered.length === 0) {
-            let emptyMsg = 'No se encontraron categorías que coincidan.';
+            let emptyMsg = __('No se encontraron categorías que coincidan.', 'aura-suite');
             if (currentFilter === 'archived') {
-                emptyMsg = 'No tienes categorías desactivadas o archivadas.';
+                emptyMsg = __('No tienes categorías desactivadas o archivadas.', 'aura-suite');
             } else if (currentFilter === 'active') {
-                emptyMsg = 'No se encontraron categorías activas.';
+                emptyMsg = __('No se encontraron categorías activas.', 'aura-suite');
             }
             $('#categories-tree-container').html(`
                 <div style="text-align: center; padding: 40px; color: #64748b;">
@@ -270,9 +273,9 @@ jQuery(document).ready(function($) {
             const isParentActive = !!parent.is_active;
             const parentArchivedClass = isParentActive ? '' : 'aura-tree-item--archived';
             const badgeBg = parent.type === 'income' ? '#dcfce7; color: #15803d;' : (parent.type === 'expense' ? '#fee2e2; color: #b91c1c;' : (parent.type === 'capital' ? '#ffedd5; color: #c2410c;' : '#dbeafe; color: #1e40af;'));
-            const typeLabel = parent.type === 'income' ? 'Ingreso' : (parent.type === 'expense' ? 'Egreso' : (parent.type === 'capital' ? 'CapEx' : 'Ambos'));
-            const capexBadge = isCatCapex(parent) ? '<span style="background: #ffedd5; color: #c2410c; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-left: 4px;" data-tooltip="<strong>Naturaleza CapEx:</strong> Categoría clasificada como Gasto de Capital (inversiones de largo plazo).">🏗️ CapEx</span>' : '<span style="background: rgba(239, 68, 68, 0.1); color: #dc2626; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; margin-left: 4px;" data-tooltip="<strong>Naturaleza OpEx:</strong> Gasto Operativo habitual del negocio.">💼 OpEx</span>';
-            const statusBadge = isParentActive ? '' : '<span class="aura-status-badge aura-status-badge--archived" style="background:#fee2e2;color:#991b1b;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;" data-tooltip="Categoría archivada fuera de operación">⏸️ Archivada</span>';
+            const typeLabel = parent.type === 'income' ? __('Ingreso', 'aura-suite') : (parent.type === 'expense' ? __('Egreso', 'aura-suite') : (parent.type === 'capital' ? __('CapEx', 'aura-suite') : __('Ambos', 'aura-suite')));
+            const capexBadge = isCatCapex(parent) ? '<span style="background: #ffedd5; color: #c2410c; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; margin-left: 4px;" data-tooltip="' + escapeHtml(__('<strong>Naturaleza CapEx:</strong> Categoría clasificada como Gasto de Capital (inversiones de largo plazo).', 'aura-suite')) + '">' + __('🏗️ CapEx', 'aura-suite') + '</span>' : '<span style="background: rgba(239, 68, 68, 0.1); color: #dc2626; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; margin-left: 4px;" data-tooltip="' + escapeHtml(__('<strong>Naturaleza OpEx:</strong> Gasto Operativo habitual del negocio.', 'aura-suite')) + '">' + __('💼 OpEx', 'aura-suite') + '</span>';
+            const statusBadge = isParentActive ? '' : '<span class="aura-status-badge aura-status-badge--archived" style="background:#fee2e2;color:#991b1b;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;" data-tooltip="' + __('Categoría archivada fuera de operación', 'aura-suite') + '">' + __('⏸️ Archivada', 'aura-suite') + '</span>';
             const subCount = children.length;
 
             // Cálculos de transacciones
@@ -284,7 +287,7 @@ jQuery(document).ready(function($) {
 
             let txBadgeHtml = '';
             if (totalParentTxs === 0) {
-                txBadgeHtml = `<span class="aura-tx-badge-link aura-tx-badge-link--zero" data-tooltip="<strong>0 Transacciones:</strong> No hay movimientos financieros asociados. Seguro para editar, fusionar o eliminar sin afectar saldos."><span class="dashicons dashicons-yes" style="font-size:12px;width:12px;height:12px;line-height:1;"></span> 0 txs</span>`;
+                txBadgeHtml = `<span class="aura-tx-badge-link aura-tx-badge-link--zero" data-tooltip="${escapeHtml(__('<strong>0 Transacciones:</strong> No hay movimientos financieros asociados. Seguro para editar, fusionar o eliminar sin afectar saldos.', 'aura-suite'))}"><span class="dashicons dashicons-yes" style="font-size:12px;width:12px;height:12px;line-height:1;"></span> ${__('0 txs', 'aura-suite')}</span>`;
             } else {
                 const txCard = buildTxTipCard(parent.name, true, parentDirectTxs, childrenTxs, totalParentTxs, parentTxUrl);
                 txBadgeHtml = `<a href="${parentTxUrl}" target="_blank" rel="noopener noreferrer" class="aura-tx-badge-link" data-aura-tooltip="${encodeURIComponent(txCard)}">
@@ -296,8 +299,8 @@ jQuery(document).ready(function($) {
             }
 
             const statusToggleBtn = isParentActive
-                ? `<button type="button" class="button button-small btn-toggle-status" data-id="${parent.id}" data-active="1" data-tooltip="Desactivar y archivar esta categoría (se ocultará en registros futuros)" style="color: #64748b;"><span class="dashicons dashicons-controls-pause" style="margin-top: 2px;"></span></button>`
-                : `<button type="button" class="button button-small btn-toggle-status" data-id="${parent.id}" data-active="0" data-tooltip="Reactivar categoría para permitir nuevos movimientos contables" style="color: #059669; font-weight: 600;"><span class="dashicons dashicons-controls-play" style="margin-top: 2px;"></span> Activar</button>`;
+                ? `<button type="button" class="button button-small btn-toggle-status" data-id="${parent.id}" data-active="1" data-tooltip="${__('Desactivar y archivar esta categoría (se ocultará en registros futuros)', 'aura-suite')}" style="color: #64748b;"><span class="dashicons dashicons-controls-pause" style="margin-top: 2px;"></span></button>`
+                : `<button type="button" class="button button-small btn-toggle-status" data-id="${parent.id}" data-active="0" data-tooltip="${__('Reactivar categoría para permitir nuevos movimientos contables', 'aura-suite')}" style="color: #059669; font-weight: 600;"><span class="dashicons dashicons-controls-play" style="margin-top: 2px;"></span> ${__('Activar', 'aura-suite')}</button>`;
 
             const parentDesc = (parent.description || '').trim();
             const parentCardHtml = buildCategoryTipCard(parent, true, subCount, parentDirectTxs, totalParentTxs, parentTxUrl);
@@ -311,22 +314,22 @@ jQuery(document).ready(function($) {
                     
                     <div class="aura-tree-parent-header">
                         <div style="display: flex; align-items: center; gap: 10px; flex: 1; flex-wrap: wrap;">
-                            <span class="aura-drag-handle" title="Arrastrar para reordenar arriba/abajo o anidar">⠿</span>
+                            <span class="aura-drag-handle" title="${__('Arrastrar para reordenar arriba/abajo o anidar', 'aura-suite')}">⠿</span>
                             
                             ${subCount > 0 ? `
                                 <button type="button" class="aura-tree-expander ${isCollapsed ? 'is-collapsed' : ''}" 
                                         data-id="${parent.id}" 
                                         data-has-children="true"
-                                        data-tooltip="${isCollapsed ? 'Expandir subcategorías' : 'Colapsar subcategorías'}">
+                                        data-tooltip="${isCollapsed ? __('Expandir subcategorías', 'aura-suite') : __('Colapsar subcategorías', 'aura-suite')}">
                                     <span class="dashicons ${isCollapsed ? 'dashicons-arrow-right-alt2' : 'dashicons-arrow-down-alt2'}"></span>
                                 </button>
                             ` : `
-                                <span class="aura-tree-no-children" data-tooltip="Sin subcategorías">
+                                <span class="aura-tree-no-children" data-tooltip="${__('Sin subcategorías', 'aura-suite')}">
                                     <span class="dashicons dashicons-minus"></span>
                                 </span>
                             `}
                             
-                            <span class="aura-cat-color-circle" style="background: ${escapeHtml(parent.color || '#5D5FEF')};" data-tooltip="Color asignado: ${escapeHtml(parent.color || '#5D5FEF')}"></span>
+                            <span class="aura-cat-color-circle" style="background: ${escapeHtml(parent.color || '#5D5FEF')};" data-tooltip="${sprintf(__('Color asignado: %s', 'aura-suite'), escapeHtml(parent.color || '#5D5FEF'))}"></span>
                             ${renderCategoryIcon(parent.icon, parent.color || '#5D5FEF', 20)}
                             
                             <strong class="aura-cat-name-trigger" style="font-size: 1rem; color: #0f172a; cursor: pointer;" data-aura-tooltip="${encodeURIComponent(parentCardHtml)}">
@@ -337,27 +340,27 @@ jQuery(document).ready(function($) {
                             ${capexBadge}
                             ${statusBadge}
                             
-                            ${subCount > 0 ? `<span style="background: rgba(37,99,235,0.1); color: #2563eb; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;" data-tooltip="Esta categoría tiene ${subCount} subcategorías dependientes">${subCount} subcat.</span>` : ''}
+                            ${subCount > 0 ? `<span style="background: rgba(37,99,235,0.1); color: #2563eb; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;" data-tooltip="${sprintf(__('Esta categoría tiene %d subcategorías dependientes', 'aura-suite'), subCount)}">${sprintf(__('%d subcat.', 'aura-suite'), subCount)}</span>` : ''}
                             ${txBadgeHtml}
                         </div>
 
                         <div style="display: flex; gap: 6px; align-items: center;">
                             ${parent.type !== 'income' ? `
-                                <a href="admin.php?page=aura-financial-budgets&category_id=${parent.id}" class="button button-small" data-tooltip="Ver Estadísticas y Presupuesto de '${escapeHtml(parent.name)}'">
-                                    <span class="dashicons dashicons-chart-pie" style="margin-top: 2px; color: #10b981;"></span> Presupuesto
+                                <a href="admin.php?page=aura-financial-budgets&category_id=${parent.id}" class="button button-small" data-tooltip="${escapeHtml(sprintf(__("Ver Estadísticas y Presupuesto de '%s'", 'aura-suite'), parent.name))}">
+                                    <span class="dashicons dashicons-chart-pie" style="margin-top: 2px; color: #10b981;"></span> ${__('Presupuesto', 'aura-suite')}
                                 </a>
                             ` : ''}
-                            <button type="button" class="button button-small btn-add-sub" data-parent="${parent.id}" data-name="${escapeHtml(parent.name)}" data-tooltip="Agregar una nueva subcategoría dentro de '${escapeHtml(parent.name)}'">
-                                ➕ Subcategoría
+                            <button type="button" class="button button-small btn-add-sub" data-parent="${parent.id}" data-name="${escapeHtml(parent.name)}" data-tooltip="${escapeHtml(sprintf(__("Agregar una nueva subcategoría dentro de '%s'", 'aura-suite'), parent.name))}">
+                                ➕ ${__('Subcategoría', 'aura-suite')}
                             </button>
-                            <button type="button" class="button button-small btn-merge-cat" data-id="${parent.id}" data-name="${escapeHtml(parent.name)}" data-tooltip="Fusionar y reasignar transacciones hacia otra categoría">
+                            <button type="button" class="button button-small btn-merge-cat" data-id="${parent.id}" data-name="${escapeHtml(parent.name)}" data-tooltip="${__('Fusionar y reasignar transacciones hacia otra categoría', 'aura-suite')}">
                                 <span class="dashicons dashicons-randomize" style="margin-top: 2px; color: #2563eb;"></span>
                             </button>
                             ${statusToggleBtn}
-                            <button type="button" class="button button-small btn-edit-cat" data-id="${parent.id}" data-tooltip="Editar propiedades de la categoría">
+                            <button type="button" class="button button-small btn-edit-cat" data-id="${parent.id}" data-tooltip="${__('Editar propiedades de la categoría', 'aura-suite')}">
                                 <span class="dashicons dashicons-edit" style="margin-top: 2px;"></span>
                             </button>
-                            <button type="button" class="button button-small btn-delete-cat" data-id="${parent.id}" data-name="${escapeHtml(parent.name)}" data-tooltip="Eliminar categoría" style="color: #dc2626;">
+                            <button type="button" class="button button-small btn-delete-cat" data-id="${parent.id}" data-name="${escapeHtml(parent.name)}" data-tooltip="${__('Eliminar categoría', 'aura-suite')}" style="color: #dc2626;">
                                 <span class="dashicons dashicons-trash" style="margin-top: 2px;"></span>
                             </button>
                         </div>
@@ -374,15 +377,15 @@ jQuery(document).ready(function($) {
                     const isChildActive = !!child.is_active;
                     const childArchivedClass = isChildActive ? '' : 'aura-tree-child--archived';
                     const cBadgeBg = child.type === 'income' ? '#dcfce7; color: #15803d;' : (child.type === 'expense' ? '#fee2e2; color: #b91c1c;' : '#dbeafe; color: #1e40af;');
-                    const cTypeLabel = child.type === 'income' ? 'Ingreso' : (child.type === 'expense' ? 'Egreso' : 'Ambos');
-                    const cCapexBadge = child.is_capex ? '<span style="background: #ffedd5; color: #c2410c; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; margin-left: 4px;" data-tooltip="Gasto de Capital">CapEx</span>' : '';
-                    const childStatusBadge = isChildActive ? '' : '<span class="aura-status-badge aura-status-badge--archived" style="background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;" data-tooltip="Subcategoría archivada">⏸️ Archivada</span>';
+                    const cTypeLabel = child.type === 'income' ? __('Ingreso', 'aura-suite') : (child.type === 'expense' ? __('Egreso', 'aura-suite') : __('Ambos', 'aura-suite'));
+                    const cCapexBadge = child.is_capex ? '<span style="background: #ffedd5; color: #c2410c; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; margin-left: 4px;" data-tooltip="' + __('Gasto de Capital', 'aura-suite') + '">CapEx</span>' : '';
+                    const childStatusBadge = isChildActive ? '' : '<span class="aura-status-badge aura-status-badge--archived" style="background:#fee2e2;color:#991b1b;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;" data-tooltip="' + __('Subcategoría archivada', 'aura-suite') + '">' + __('⏸️ Archivada', 'aura-suite') + '</span>';
                     const childTxs = parseInt(child.transaction_count || 0, 10);
                     const childTxUrl = `admin.php?page=aura-financial-transactions&filter_category=${child.id}`;
 
                     let cTxBadgeHtml = '';
                     if (childTxs === 0) {
-                        cTxBadgeHtml = `<span class="aura-tx-badge-link aura-tx-badge-link--zero" data-tooltip="<strong>0 Transacciones:</strong> Subcategoría limpia sin movimientos."><span class="dashicons dashicons-yes" style="font-size:11px;width:11px;height:11px;line-height:1;"></span> 0 txs</span>`;
+                        cTxBadgeHtml = `<span class="aura-tx-badge-link aura-tx-badge-link--zero" data-tooltip="${escapeHtml(__('<strong>0 Transacciones:</strong> Subcategoría limpia sin movimientos.', 'aura-suite'))}"><span class="dashicons dashicons-yes" style="font-size:11px;width:11px;height:11px;line-height:1;"></span> ${__('0 txs', 'aura-suite')}</span>`;
                     } else {
                         const cTxCard = buildTxTipCard(child.name, false, childTxs, 0, childTxs, childTxUrl);
                         cTxBadgeHtml = `<a href="${childTxUrl}" target="_blank" rel="noopener noreferrer" class="aura-tx-badge-link" data-aura-tooltip="${encodeURIComponent(cTxCard)}">
@@ -394,8 +397,8 @@ jQuery(document).ready(function($) {
                     }
 
                     const childStatusToggleBtn = isChildActive
-                        ? `<button type="button" class="button button-small btn-toggle-status" data-id="${child.id}" data-active="1" data-tooltip="Desactivar y archivar esta subcategoría" style="color: #64748b;"><span class="dashicons dashicons-controls-pause" style="margin-top: 2px;"></span></button>`
-                        : `<button type="button" class="button button-small btn-toggle-status" data-id="${child.id}" data-active="0" data-tooltip="Reactivar subcategoría" style="color: #059669; font-weight: 600;"><span class="dashicons dashicons-controls-play" style="margin-top: 2px;"></span> Activar</button>`;
+                        ? `<button type="button" class="button button-small btn-toggle-status" data-id="${child.id}" data-active="1" data-tooltip="${__('Desactivar y archivar esta subcategoría', 'aura-suite')}" style="color: #64748b;"><span class="dashicons dashicons-controls-pause" style="margin-top: 2px;"></span></button>`
+                        : `<button type="button" class="button button-small btn-toggle-status" data-id="${child.id}" data-active="0" data-tooltip="${__('Reactivar subcategoría', 'aura-suite')}" style="color: #059669; font-weight: 600;"><span class="dashicons dashicons-controls-play" style="margin-top: 2px;"></span> ${__('Activar', 'aura-suite')}</button>`;
 
                     const childDesc = (child.description || '').trim();
                     const childCardHtml = buildCategoryTipCard(child, false, 0, childTxs, childTxs, childTxUrl);
@@ -409,9 +412,9 @@ jQuery(document).ready(function($) {
                              draggable="false">
                             
                             <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                                <span class="aura-drag-handle" title="Arrastrar para mover o anidar">⠿</span>
+                                <span class="aura-drag-handle" title="${__('Arrastrar para mover o anidar', 'aura-suite')}">⠿</span>
                                 <span class="aura-tree-connector">└──</span>
-                                <span class="aura-cat-color-circle aura-cat-color-circle--child" style="background: ${escapeHtml(child.color || '#5D5FEF')};" data-tooltip="Color: ${escapeHtml(child.color || '#5D5FEF')}"></span>
+                                <span class="aura-cat-color-circle aura-cat-color-circle--child" style="background: ${escapeHtml(child.color || '#5D5FEF')};" data-tooltip="${sprintf(__('Color: %s', 'aura-suite'), escapeHtml(child.color || '#5D5FEF'))}"></span>
                                 ${renderCategoryIcon(child.icon, child.color || '#5D5FEF', 16)}
                                 <span class="aura-cat-name-trigger" style="font-size: 0.92rem; font-weight: 600; color: #1e293b; cursor: pointer;" data-aura-tooltip="${encodeURIComponent(childCardHtml)}">
                                     ${escapeHtml(child.name)}
@@ -424,17 +427,17 @@ jQuery(document).ready(function($) {
                             </div>
 
                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                                <button type="button" class="btn-unparent-cat" data-id="${child.id}" data-name="${escapeHtml(child.name)}" data-tooltip="Convertir en Categoría Principal independiente (sacar de '${escapeHtml(parent.name)}')">
-                                    ⬅ Sacar a Principal
+                                <button type="button" class="btn-unparent-cat" data-id="${child.id}" data-name="${escapeHtml(child.name)}" data-tooltip="${escapeHtml(sprintf(__("Convertir en Categoría Principal independiente (sacar de '%s')", 'aura-suite'), parent.name))}">
+                                    ⬅ ${__('Sacar a Principal', 'aura-suite')}
                                 </button>
-                                <button type="button" class="button button-small btn-merge-cat" data-id="${child.id}" data-name="${escapeHtml(child.name)}" data-tooltip="Fusionar y reasignar transacciones">
+                                <button type="button" class="button button-small btn-merge-cat" data-id="${child.id}" data-name="${escapeHtml(child.name)}" data-tooltip="${__('Fusionar y reasignar transacciones', 'aura-suite')}">
                                     <span class="dashicons dashicons-randomize" style="margin-top: 2px; color: #2563eb;"></span>
                                 </button>
                                 ${childStatusToggleBtn}
-                                <button type="button" class="button button-small btn-edit-cat" data-id="${child.id}" data-tooltip="Editar subcategoría">
+                                <button type="button" class="button button-small btn-edit-cat" data-id="${child.id}" data-tooltip="${__('Editar subcategoría', 'aura-suite')}">
                                     <span class="dashicons dashicons-edit" style="margin-top: 2px;"></span>
                                 </button>
-                                <button type="button" class="button button-small btn-delete-cat" data-id="${child.id}" data-name="${escapeHtml(child.name)}" data-tooltip="Eliminar subcategoría" style="color: #dc2626;">
+                                <button type="button" class="button button-small btn-delete-cat" data-id="${child.id}" data-name="${escapeHtml(child.name)}" data-tooltip="${__('Eliminar subcategoría', 'aura-suite')}" style="color: #dc2626;">
                                     <span class="dashicons dashicons-trash" style="margin-top: 2px;"></span>
                                 </button>
                             </div>
@@ -482,8 +485,8 @@ jQuery(document).ready(function($) {
                     <div class="aura-tree-item aura-tree-parent-item ${orphanArchivedClass}" id="tree-item-${orphan.id}" data-id="${orphan.id}" data-is-parent="false" draggable="false">
                         <div class="aura-tree-parent-header">
                             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                <span class="aura-drag-handle" title="Arrastrar para colocar como principal o anidar">⠿</span>
-                                <span class="aura-tree-no-children" data-tooltip="Sin subcategorías">
+                                <span class="aura-drag-handle" title="${__('Arrastrar para colocar como principal o anidar', 'aura-suite')}">⠿</span>
+                                <span class="aura-tree-no-children" data-tooltip="${__('Sin subcategorías', 'aura-suite')}">
                                     <span class="dashicons dashicons-minus"></span>
                                 </span>
                                 <span class="aura-cat-color-circle aura-cat-color-circle--child" style="background: ${escapeHtml(orphan.color || '#5D5FEF')};" data-tooltip="Color: ${escapeHtml(orphan.color || '#5D5FEF')}"></span>
@@ -492,22 +495,22 @@ jQuery(document).ready(function($) {
                                     ${escapeHtml(orphan.name)}
                                     ${orphanDesc ? `<span style="font-size: 10px; opacity: 0.5; margin-left: 3px; font-weight: normal;">ℹ️</span>` : ''}
                                 </strong>
-                                <span style="background:#fef3c7;color:#92400e;font-size:10px;padding:2px 6px;border-radius:999px;" data-tooltip="Esta categoría quedó huérfana de padre">Sin Padre</span>
+                                <span style="background:#fef3c7;color:#92400e;font-size:10px;padding:2px 6px;border-radius:999px;" data-tooltip="${__('Esta categoría quedó huérfana de padre', 'aura-suite')}">${__('Sin Padre', 'aura-suite')}</span>
                                 ${orphanStatusBadge}
                                 ${orphanTxBadge}
                             </div>
                             <div style="display: flex; gap: 6px; align-items: center;">
-                                <button type="button" class="btn-unparent-cat" data-id="${orphan.id}" data-name="${escapeHtml(orphan.name)}" data-tooltip="Convertir formalmente en Categoría Principal">
-                                    ⬅ Sacar a Principal
+                                <button type="button" class="btn-unparent-cat" data-id="${orphan.id}" data-name="${escapeHtml(orphan.name)}" data-tooltip="${__('Convertir formalmente en Categoría Principal', 'aura-suite')}">
+                                    ⬅ ${__('Sacar a Principal', 'aura-suite')}
                                 </button>
-                                <button type="button" class="button button-small btn-merge-cat" data-id="${orphan.id}" data-name="${escapeHtml(orphan.name)}" data-tooltip="Fusionar / Reasignar">
+                                <button type="button" class="button button-small btn-merge-cat" data-id="${orphan.id}" data-name="${escapeHtml(orphan.name)}" data-tooltip="${__('Fusionar / Reasignar', 'aura-suite')}">
                                     <span class="dashicons dashicons-randomize" style="margin-top: 2px; color: #2563eb;"></span>
                                 </button>
                                 ${orphanStatusToggleBtn}
-                                <button type="button" class="button button-small btn-edit-cat" data-id="${orphan.id}" data-tooltip="Editar">
+                                <button type="button" class="button button-small btn-edit-cat" data-id="${orphan.id}" data-tooltip="${__('Editar', 'aura-suite')}">
                                     <span class="dashicons dashicons-edit" style="margin-top: 2px;"></span>
                                 </button>
-                                <button type="button" class="button button-small btn-delete-cat" data-id="${orphan.id}" data-tooltip="Eliminar" style="color:#dc2626;">
+                                <button type="button" class="button button-small btn-delete-cat" data-id="${orphan.id}" data-tooltip="${__('Eliminar', 'aura-suite')}" style="color:#dc2626;">
                                     <span class="dashicons dashicons-trash" style="margin-top: 2px;"></span>
                                 </button>
                             </div>
@@ -526,7 +529,7 @@ jQuery(document).ready(function($) {
 
     // Llenar selector de categoría padre en el modal
     function populateParentSelect(selectedParentId = 0, excludeId = 0) {
-        let html = '<option value="0">--- Ninguna (Categoría Padre / Raíz) ---</option>';
+        let html = '<option value="0">' + __('--- Ninguna (Categoría Padre / Raíz) ---', 'aura-suite') + '</option>';
         
         function renderOptions(parentId, depth) {
             const children = rawCategories
@@ -720,7 +723,7 @@ jQuery(document).ready(function($) {
             $rootTop.addClass('drag-over-zone');
             lastDropTarget = 'root_start';
             lastDropPos = 'root_start';
-            $hint.text('⭐ Convertir en Categoría Principal (al inicio)').addClass('show').css({ top: e.clientY - 38, left: e.clientX + 20 });
+            $hint.text(__('⭐ Convertir en Categoría Principal (al inicio)', 'aura-suite')).addClass('show').css({ top: e.clientY - 38, left: e.clientX + 20 });
             return;
         }
 
@@ -728,7 +731,7 @@ jQuery(document).ready(function($) {
             $rootBottom.addClass('drag-over-zone');
             lastDropTarget = 'root_end';
             lastDropPos = 'root_end';
-            $hint.text('⭐ Convertir en Categoría Principal (al final)').addClass('show').css({ top: e.clientY - 38, left: e.clientX + 20 });
+            $hint.text(__('⭐ Convertir en Categoría Principal (al final)', 'aura-suite')).addClass('show').css({ top: e.clientY - 38, left: e.clientX + 20 });
             return;
         }
 
@@ -747,9 +750,9 @@ jQuery(document).ready(function($) {
                 const targetName = targetCat ? targetCat.name : '';
 
                 let hintLabel = '';
-                if (pos === 'inside') hintLabel = `📂 Anidar dentro de "${targetName}"`;
-                else if (pos === 'before') hintLabel = `⬆ Insertar antes de "${targetName}"`;
-                else hintLabel = `⬇ Insertar después de "${targetName}"`;
+                if (pos === 'inside') hintLabel = sprintf(__('📂 Anidar dentro de "%s"', 'aura-suite'), targetName);
+                else if (pos === 'before') hintLabel = sprintf(__('⬆ Insertar antes de "%s"', 'aura-suite'), targetName);
+                else hintLabel = sprintf(__('⬇ Insertar después de "%s"', 'aura-suite'), targetName);
 
                 $hint.text(hintLabel).addClass('show').css({ top: e.clientY - 38, left: e.clientX + 20 });
                 return;
@@ -785,7 +788,7 @@ jQuery(document).ready(function($) {
                     else $closest.addClass('drop-after');
 
                     const targetCat = rawCategories.find(c => c.id == targetId);
-                    const label = insertPos === 'before' ? `⬆ Insertar antes de "${targetCat?.name || ''}"` : `⬇ Insertar después de "${targetCat?.name || ''}"`;
+                    const label = insertPos === 'before' ? sprintf(__('⬆ Insertar antes de "%s"', 'aura-suite'), targetCat?.name || '') : sprintf(__('⬇ Insertar después de "%s"', 'aura-suite'), targetCat?.name || '');
                     $hint.text(label).addClass('show').css({ top: e.clientY - 38, left: e.clientX + 20 });
                     return;
                 }
@@ -869,7 +872,7 @@ jQuery(document).ready(function($) {
 
         // Validar que no se anide en sus propios descendientes
         if (targetId && isDescendant(draggedId, targetId)) {
-            showToast('⚠️ No puedes anidar una categoría dentro de sus propias subcategorías', true);
+            showToast(__('⚠️ No puedes anidar una categoría dentro de sus propias subcategorías', 'aura-suite'), true);
             return;
         }
 
@@ -978,14 +981,14 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                    showToast('✓ Orden guardado exitosamente');
+                    showToast(__('✓ Orden guardado exitosamente', 'aura-suite'));
                 } else {
-                    showToast(response.data?.message || 'Error al guardar jerarquía', true);
+                    showToast(response.data?.message || __('Error al guardar jerarquía', 'aura-suite'), true);
                     loadCategories();
                 }
             },
             error: function(xhr, status, error) {
-                showToast('Error en el servidor: ' + error, true);
+                showToast(__('Error en el servidor:', 'aura-suite') + ' ' + error, true);
                 loadCategories();
             }
         });
@@ -1015,7 +1018,7 @@ jQuery(document).ready(function($) {
         if (!catId) return;
 
         applyReorderAndHierarchy(catId, null, 'root_end', true);
-        showToast(`✓ "${catName || 'Categoría'}" convertida en Categoría Principal`);
+        showToast(sprintf(__('✓ "%s" convertida en Categoría Principal', 'aura-suite'), catName || __('Categoría', 'aura-suite')));
     });
 
     $('#cat-search-input').on('input keyup search', function() {
@@ -1043,7 +1046,7 @@ jQuery(document).ready(function($) {
                 $btn.prop('disabled', false).html(originalHtml);
                 if (response.success) {
                     const newStatus = response.data.new_status;
-                    showToast(response.data?.message || (newStatus ? 'Categoría activada exitosamente' : 'Categoría archivada exitosamente'));
+                    showToast(response.data?.message || (newStatus ? __('Categoría activada exitosamente', 'aura-suite') : __('Categoría archivada exitosamente', 'aura-suite')));
                     const targetCat = rawCategories.find(c => c.id == id);
                     if (targetCat) {
                         targetCat.is_active = newStatus;
@@ -1051,12 +1054,12 @@ jQuery(document).ready(function($) {
                     updateCounts();
                     renderTree();
                 } else {
-                    showToast(response.data?.message || 'Error al cambiar estado', true);
+                    showToast(response.data?.message || __('Error al cambiar estado', 'aura-suite'), true);
                 }
             },
             error: function(xhr, status, error) {
                 $btn.prop('disabled', false).html(originalHtml);
-                showToast('Error de conexión: ' + error, true);
+                showToast(__('Error de conexión:', 'aura-suite') + ' ' + error, true);
             }
         });
     });
@@ -1077,13 +1080,13 @@ jQuery(document).ready(function($) {
             collapsedParents.delete(parentId);
             $container.removeClass('is-hidden');
             $(this).removeClass('is-collapsed')
-                   .attr('data-tooltip', 'Colapsar subcategorías')
+                   .attr('data-tooltip', __('Colapsar subcategorías', 'aura-suite'))
                    .html('<span class="dashicons dashicons-arrow-down-alt2"></span>');
         } else {
             collapsedParents.add(parentId);
             $container.addClass('is-hidden');
             $(this).addClass('is-collapsed')
-                   .attr('data-tooltip', 'Expandir subcategorías')
+                   .attr('data-tooltip', __('Expandir subcategorías', 'aura-suite'))
                    .html('<span class="dashicons dashicons-arrow-right-alt2"></span>');
         }
     });
@@ -1093,7 +1096,7 @@ jQuery(document).ready(function($) {
         $('.aura-tree-children-container').removeClass('is-hidden');
         $('.aura-tree-expander[data-has-children="true"]')
             .removeClass('is-collapsed')
-            .attr('data-tooltip', 'Colapsar subcategorías')
+            .attr('data-tooltip', __('Colapsar subcategorías', 'aura-suite'))
             .html('<span class="dashicons dashicons-arrow-down-alt2"></span>');
     });
 
@@ -1107,7 +1110,7 @@ jQuery(document).ready(function($) {
         $('.aura-tree-children-container').addClass('is-hidden');
         $('.aura-tree-expander[data-has-children="true"]')
             .addClass('is-collapsed')
-            .attr('data-tooltip', 'Expandir subcategorías')
+            .attr('data-tooltip', __('Expandir subcategorías', 'aura-suite'))
             .html('<span class="dashicons dashicons-arrow-right-alt2"></span>');
     });
 
@@ -1120,7 +1123,7 @@ jQuery(document).ready(function($) {
         $('#category-order').val(rawCategories.length);
         populateParentSelect(0, 0);
         updateModalIconPreview();
-        $('#aura-modal-title').text('Nueva Categoría');
+        $('#aura-modal-title').text(__('Nueva Categoría', 'aura-suite'));
         $('#aura-category-modal').addClass('active');
     });
 
@@ -1135,7 +1138,7 @@ jQuery(document).ready(function($) {
         $('#category-icon').val('📁');
         populateParentSelect(parentId, 0);
         updateModalIconPreview();
-        $('#aura-modal-title').text(`Nueva Subcategoría en "${parentName}"`);
+        $('#aura-modal-title').text(sprintf(__('Nueva Subcategoría en "%s"', 'aura-suite'), parentName));
         $('#aura-category-modal').addClass('active');
     });
 
@@ -1158,7 +1161,7 @@ jQuery(document).ready(function($) {
 
         populateParentSelect(cat.parent_id || 0, cat.id);
         updateModalIconPreview();
-        $('#aura-modal-title').text(`Editar Categoría "${cat.name}"`);
+        $('#aura-modal-title').text(sprintf(__('Editar Categoría "%s"', 'aura-suite'), cat.name));
         $('#aura-category-modal').addClass('active');
     });
 
@@ -1290,19 +1293,19 @@ jQuery(document).ready(function($) {
             data: data,
             success: function(response) {
                 $btn.prop('disabled', false);
-                $btnText.text('Guardar Categoría');
+                $btnText.text(__('Guardar Categoría', 'aura-suite'));
                 if (response.success) {
                     $('#aura-category-modal').removeClass('active');
-                    showToast(response.data?.message || 'Categoría guardada exitosamente');
+                    showToast(response.data?.message || __('Categoría guardada exitosamente', 'aura-suite'));
                     loadCategories();
                 } else {
-                    showToast(response.data?.message || 'Error al guardar', true);
+                    showToast(response.data?.message || __('Error al guardar', 'aura-suite'), true);
                 }
             },
             error: function(xhr, status, error) {
                 $btn.prop('disabled', false);
-                $btnText.text('Guardar Categoría');
-                showToast('Error en el servidor: ' + error, true);
+                $btnText.text(__('Guardar Categoría', 'aura-suite'));
+                showToast(__('Error en el servidor:', 'aura-suite') + ' ' + error, true);
             }
         });
     });
@@ -1327,40 +1330,40 @@ jQuery(document).ready(function($) {
             $('#aura-delete-confirm-msg').html(`
                 <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:14px;border-radius:10px;margin-bottom:12px;text-align:left;">
                     <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:1rem;margin-bottom:6px;">
-                        <span>⚠️</span> No se puede eliminar "${escapeHtml(name)}"
+                        <span>⚠️</span> ${sprintf(__('No se puede eliminar "%s"', 'aura-suite'), escapeHtml(name))}
                     </div>
                     <p style="margin:0 0 6px 0;font-size:0.9rem;">
-                        Esta categoría tiene <strong>${directTxs} transacción(es) registrada(s)</strong> en el sistema contable.
+                        ${sprintf(__('Esta categoría tiene <strong>%d transacción(es) registrada(s)</strong> en el sistema contable.', 'aura-suite'), directTxs)}
                     </p>
                     <p style="margin:0;font-size:0.85rem;color:#b91c1c;">
-                        💡 Para proteger el historial financiero y las estadísticas, las categorías con transacciones no pueden ser destruidas. Si ya no la utilizas, puedes <strong>desactivarla</strong> editándola.
+                        ${__('💡 Para proteger el historial financiero y las estadísticas, las categorías con transacciones no pueden ser destruidas. Si ya no la utilizas, puedes <strong>desactivarla</strong> editándola.', 'aura-suite')}
                     </p>
                 </div>
             `);
             $('#aura-confirm-delete-btn').hide();
         } else if (children.length > 0) {
             const warningSubTxs = childrenTxs > 0 
-                ? `<p style="margin:6px 0 0 0;font-size:0.85rem;color:#b45309;">⚠️ Sus subcategorías contienen un total de <strong>${childrenTxs} transacción(es)</strong>, las cuales quedarán intactas al promoverse a categorías raíz.</p>` 
+                ? `<p style="margin:6px 0 0 0;font-size:0.85rem;color:#b45309;">${sprintf(__('⚠️ Sus subcategorías contienen un total de <strong>%d transacción(es)</strong>, las cuales quedarán intactas al promoverse a categorías raíz.', 'aura-suite'), childrenTxs)}</p>` 
                 : '';
             $('#aura-delete-confirm-msg').html(`
-                <p style="font-size:0.95rem;margin-bottom:12px;">¿Estás seguro de eliminar la categoría principal <strong>"${escapeHtml(name)}"</strong>?</p>
+                <p style="font-size:0.95rem;margin-bottom:12px;">${sprintf(__('¿Estás seguro de eliminar la categoría principal <strong>"%s"</strong>?', 'aura-suite'), escapeHtml(name))}</p>
                 <div style="background:#fffbeb;border:1px solid #fef3c7;color:#92400e;padding:12px;border-radius:10px;font-size:0.9rem;text-align:left;">
-                    ℹ️ Esta categoría tiene <strong>${children.length} subcategoría(s)</strong> vinculada(s). Al eliminar la categoría padre, las subcategorías no se perderán, sino que pasarán a ser categorías principales (raíz).
+                    ${sprintf(__('ℹ️ Esta categoría tiene <strong>%d subcategoría(s)</strong> vinculada(s). Al eliminar la categoría padre, las subcategorías no se perderán, sino que pasarán a ser categorías principales (raíz).', 'aura-suite'), children.length)}
                     ${warningSubTxs}
                 </div>
             `);
-            $('#aura-confirm-delete-btn').show().text('Sí, eliminar');
+            $('#aura-confirm-delete-btn').show().text(__('Sí, eliminar', 'aura-suite'));
         } else {
             $('#aura-delete-confirm-msg').html(`
-                <p style="font-size:0.95rem;margin-bottom:12px;">¿Estás seguro de eliminar la categoría <strong>"${escapeHtml(name)}"</strong>?</p>
+                <p style="font-size:0.95rem;margin-bottom:12px;">${sprintf(__('¿Estás seguro de eliminar la categoría <strong>"%s"</strong>?', 'aura-suite'), escapeHtml(name))}</p>
                 <div style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:12px;border-radius:10px;font-size:0.9rem;text-align:left;">
                     <div style="font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-                        <span>✓</span> 0 Transacciones asociadas (Totalmente Seguro)
+                        <span>✓</span> ${__('0 Transacciones asociadas (Totalmente Seguro)', 'aura-suite')}
                     </div>
-                    Esta categoría no tiene ningún registro financiero vinculado. Puedes eliminarla sin afectar balances ni estadísticas.
+                    ${__('Esta categoría no tiene ningún registro financiero vinculado. Puedes eliminarla sin afectar balances ni estadísticas.', 'aura-suite')}
                 </div>
             `);
-            $('#aura-confirm-delete-btn').show().text('Sí, eliminar');
+            $('#aura-confirm-delete-btn').show().text(__('Sí, eliminar', 'aura-suite'));
         }
 
         $('#aura-confirm-delete-modal').addClass('active');
@@ -1370,7 +1373,7 @@ jQuery(document).ready(function($) {
         const id = $('#aura-delete-id').val();
         if (!id) return;
 
-        const $btn = $(this).prop('disabled', true).text('Eliminando...');
+        const $btn = $(this).prop('disabled', true).text(__('Eliminando...', 'aura-suite'));
         $.ajax({
             url: ajaxUrl,
             type: 'POST',
@@ -1380,18 +1383,18 @@ jQuery(document).ready(function($) {
                 nonce: nonce
             },
             success: function(response) {
-                $btn.prop('disabled', false).text('Eliminar');
+                $btn.prop('disabled', false).text(__('Eliminar', 'aura-suite'));
                 $('#aura-confirm-delete-modal').removeClass('active');
                 if (response.success) {
-                    showToast('Categoría eliminada exitosamente');
+                    showToast(__('Categoría eliminada exitosamente', 'aura-suite'));
                     loadCategories();
                 } else {
-                    showToast(response.data?.message || 'Error al eliminar', true);
+                    showToast(response.data?.message || __('Error al eliminar', 'aura-suite'), true);
                 }
             },
             error: function() {
-                $btn.prop('disabled', false).text('Eliminar');
-                showToast('Error de conexión', true);
+                $btn.prop('disabled', false).text(__('Eliminar', 'aura-suite'));
+                showToast(__('Error de conexión', 'aura-suite'), true);
             }
         });
     });
@@ -1408,7 +1411,7 @@ jQuery(document).ready(function($) {
     });
 
     $('#aura-delete-all-confirm').on('click', function() {
-        const $btn = $(this).prop('disabled', true).text('Eliminando...');
+        const $btn = $(this).prop('disabled', true).text(__('Eliminando...', 'aura-suite'));
         $.ajax({
             url: ajaxUrl,
             type: 'POST',
@@ -1418,18 +1421,18 @@ jQuery(document).ready(function($) {
                 scope: 'all'
             },
             success: function(response) {
-                $btn.prop('disabled', false).text('Sí, eliminar');
+                $btn.prop('disabled', false).text(__('Sí, eliminar', 'aura-suite'));
                 $('#aura-delete-all-modal').removeClass('active');
                 if (response.success) {
-                    showToast(response.data?.message || 'Categorías eliminadas');
+                    showToast(response.data?.message || __('Categorías eliminadas', 'aura-suite'));
                     loadCategories();
                 } else {
-                    showToast(response.data?.message || 'Error al eliminar', true);
+                    showToast(response.data?.message || __('Error al eliminar', 'aura-suite'), true);
                 }
             },
             error: function() {
-                $btn.prop('disabled', false).text('Sí, eliminar');
-                showToast('Error al conectar', true);
+                $btn.prop('disabled', false).text(__('Sí, eliminar', 'aura-suite'));
+                showToast(__('Error al conectar', 'aura-suite'), true);
             }
         });
     });
@@ -1445,15 +1448,15 @@ jQuery(document).ready(function($) {
         const $source = $('#aura-merge-source').empty();
         const $target = $('#aura-merge-target').empty();
 
-        $source.append('<option value="">-- Selecciona categoría origen --</option>');
-        $target.append('<option value="">-- Selecciona categoría destino --</option>');
+        $source.append('<option value="">' + __('-- Selecciona categoría origen --', 'aura-suite') + '</option>');
+        $target.append('<option value="">' + __('-- Selecciona categoría destino --', 'aura-suite') + '</option>');
 
         // Ordenar categorías: primero raíces, luego sus hijas
         const roots = rawCategories.filter(c => !c.parent_id);
         roots.sort((a, b) => a.name.localeCompare(b.name));
 
         roots.forEach(root => {
-            const rType = root.type === 'income' ? 'Ingreso' : (root.type === 'expense' ? 'Egreso' : 'Ambos');
+            const rType = root.type === 'income' ? __('Ingreso', 'aura-suite') : (root.type === 'expense' ? __('Egreso', 'aura-suite') : __('Ambos', 'aura-suite'));
             const rTxs = parseInt(root.transaction_count || 0, 10);
             const labelRoot = `📁 ${root.name} (${rType} · ${rTxs} txs)`;
 
@@ -1464,7 +1467,7 @@ jQuery(document).ready(function($) {
             children.sort((a, b) => a.name.localeCompare(b.name));
 
             children.forEach(child => {
-                const cType = child.type === 'income' ? 'Ingreso' : (child.type === 'expense' ? 'Egreso' : 'Ambos');
+                const cType = child.type === 'income' ? __('Ingreso', 'aura-suite') : (child.type === 'expense' ? __('Egreso', 'aura-suite') : __('Ambos', 'aura-suite'));
                 const cTxs = parseInt(child.transaction_count || 0, 10);
                 const labelChild = `　└─ 📄 ${child.name} (${cType} · ${cTxs} txs)`;
 
@@ -1478,7 +1481,7 @@ jQuery(document).ready(function($) {
         if (orphans.length > 0) {
             orphans.forEach(orp => {
                 const oTxs = parseInt(orp.transaction_count || 0, 10);
-                const labelOrp = `📄 ${orp.name} (Sin padre · ${oTxs} txs)`;
+                const labelOrp = `📄 ${orp.name} (${sprintf(__('Sin padre · %d txs', 'aura-suite'), oTxs)})`;
                 $source.append($('<option>').val(orp.id).text(labelOrp).prop('selected', orp.id === selectedSourceId));
                 $target.append($('<option>').val(orp.id).text(labelOrp).prop('selected', orp.id === selectedTargetId));
             });
@@ -1501,7 +1504,7 @@ jQuery(document).ready(function($) {
 
         if (sourceId && targetId && sourceId === targetId) {
             $card.hide();
-            $warning.html('⚠️ <strong>Atención:</strong> La categoría de origen y de destino no pueden ser la misma.').show();
+            $warning.html(__('⚠️ <strong>Atención:</strong> La categoría de origen y de destino no pueden ser la misma.', 'aura-suite')).show();
             return;
         }
 
@@ -1523,27 +1526,27 @@ jQuery(document).ready(function($) {
                     if (data.source) {
                         $('#merge-prev-source-name').text(data.source.name);
                         $('#merge-prev-source-tx').text(`${data.source.tx_count} txs`);
-                        $('#merge-prev-source-sub').text(`${data.source.subcat_count} hijas`);
+                        $('#merge-prev-source-sub').text(sprintf(__('%d hijas', 'aura-suite'), data.source.subcat_count));
                     }
 
                     // Llenar Destino
                     if (data.target) {
                         $('#merge-prev-target-name').text(data.target.name);
-                        $('#merge-prev-target-total').text(`${data.target.projected_total} txs totales proyectadas`);
+                        $('#merge-prev-target-total').text(sprintf(__('%d txs totales proyectadas', 'aura-suite'), data.target.projected_total));
 
                         if (data.target.is_circular) {
-                            $warning.html('⚠️ <strong>Conflicto de jerarquía:</strong> La categoría destino seleccionada es una subcategoría de la de origen. Desmarca la opción de mover subcategorías o selecciona un destino diferente.').show();
+                            $warning.html(__('⚠️ <strong>Conflicto de jerarquía:</strong> La categoría destino seleccionada es una subcategoría de la de origen. Desmarca la opción de mover subcategorías o selecciona un destino diferente.', 'aura-suite')).show();
                             $confirmBtn.prop('disabled', true);
                         } else {
                             $confirmBtn.prop('disabled', false);
                         }
                     } else {
-                        $('#merge-prev-target-name').text('Selecciona destino...');
+                        $('#merge-prev-target-name').text(__('Selecciona destino...', 'aura-suite'));
                         $('#merge-prev-target-total').text('—');
                     }
                 } else {
                     $card.hide();
-                    $warning.html(response.data?.message || 'Error al obtener vista previa').show();
+                    $warning.html(response.data?.message || __('Error al obtener vista previa', 'aura-suite')).show();
                 }
             },
             error: function() {
@@ -1582,18 +1585,18 @@ jQuery(document).ready(function($) {
         const targetId = parseInt($('#aura-merge-target').val(), 10) || 0;
 
         if (!sourceId || !targetId) {
-            alert('Por favor selecciona tanto la categoría de origen como la de destino.');
+            alert(__('Por favor selecciona tanto la categoría de origen como la de destino.', 'aura-suite'));
             return;
         }
 
         if (sourceId === targetId) {
-            alert('La categoría de origen y la de destino no pueden ser iguales.');
+            alert(__('La categoría de origen y la de destino no pueden ser iguales.', 'aura-suite'));
             return;
         }
 
         const confirmMsg = (typeof auraCategories !== 'undefined' && auraCategories.strings && auraCategories.strings.confirmMerge)
             ? auraCategories.strings.confirmMerge
-            : '¿Estás seguro de fusionar estas categorías? Las transacciones asociadas se reasignarán de inmediato.';
+            : __('¿Estás seguro de fusionar estas categorías? Las transacciones asociadas se reasignarán de inmediato.', 'aura-suite');
 
         if (!confirm(confirmMsg)) {
             return;
@@ -1601,7 +1604,7 @@ jQuery(document).ready(function($) {
 
         const $btn = $(this).prop('disabled', true);
         const originalBtnHtml = $btn.html();
-        $btn.html('<span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; vertical-align: middle;"></span> Fusionando...');
+        $btn.html('<span class="dashicons dashicons-update" style="animation: spin 1s linear infinite; vertical-align: middle;"></span> ' + __('Fusionando...', 'aura-suite'));
 
         const postAction = $('input[name="post_action"]:checked').val() || 'archive';
         const reassignChildren = $('#aura-merge-reassign-children').is(':checked');
@@ -1621,15 +1624,15 @@ jQuery(document).ready(function($) {
                 $btn.prop('disabled', false).html(originalBtnHtml);
                 if (response.success) {
                     $('#aura-merge-modal').removeClass('active');
-                    showToast(response.data?.message || 'Categorías fusionadas exitosamente');
+                    showToast(response.data?.message || __('Categorías fusionadas exitosamente', 'aura-suite'));
                     loadCategories();
                 } else {
-                    showToast(response.data?.message || 'Error al fusionar categorías', true);
+                    showToast(response.data?.message || __('Error al fusionar categorías', 'aura-suite'), true);
                 }
             },
             error: function(xhr, status, error) {
                 $btn.prop('disabled', false).html(originalBtnHtml);
-                showToast('Error de conexión al fusionar: ' + error, true);
+                showToast(__('Error de conexión al fusionar:', 'aura-suite') + ' ' + error, true);
             }
         });
     });

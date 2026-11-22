@@ -10,6 +10,8 @@
 (function ($) {
     'use strict';
 
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+
     /* ============================================================ */
     /* ESTADO GLOBAL                                                  */
     /* ============================================================ */
@@ -184,7 +186,7 @@
 
     function loadTrends() {
         const $container = $('#chart-trends');
-        $container.html('<div class="aura-loading">' + (auraAnalytics?.txt?.loading || 'Cargando…') + '</div>');
+        $container.html('<div class="aura-loading">' + (auraAnalytics?.txt?.loading || __('Cargando…', 'aura-suite')) + '</div>');
 
         State.startDate = $('#aura-filter-start').val() || State.startDate;
         State.endDate   = $('#aura-filter-end').val()   || State.endDate;
@@ -195,14 +197,14 @@
             granularity: State.trendsGran,
         }).done(function (res) {
             if (!res.success) {
-                $container.html('<p class="error">' + (res.data?.message || 'Error') + '</p>');
+                $container.html('<p class="error">' + (res.data?.message || __('Error', 'aura-suite')) + '</p>');
                 return;
             }
             renderTrends(res.data);
             renderAnnotationsList('trends', res.data.annotations);
             State.loaded['trends'] = true;
         }).fail(function () {
-            $container.html('<p class="error">' + (auraAnalytics?.txt?.error || 'Error al cargar datos.') + '</p>');
+            $container.html('<p class="error">' + (auraAnalytics?.txt?.error || __('Error al cargar datos.', 'aura-suite')) + '</p>');
         });
     }
 
@@ -214,7 +216,7 @@
 
         const projLabels = [];
         for (let i = 0; i < (data.projection?.length || 0); i++) {
-            projLabels.push((auraAnalytics?.txt?.projection || 'Proyección') + ' +' + (i + 1));
+            projLabels.push((auraAnalytics?.txt?.projection || __('Proyección', 'aura-suite')) + ' +' + (i + 1));
         }
 
         const allLabels  = [...(data.labels || []), ...projLabels];
@@ -236,10 +238,10 @@
                 animations:{ enabled: true },
             }, themeDefs.chart),
             series: [
-                { name: (auraAnalytics?.txt?.income || 'Ingresos'),     data: incPadded,  color: '#10b981' },
-                { name: (auraAnalytics?.txt?.expense || 'Egresos'),    data: expPadded,  color: '#ef4444' },
-                { name: (auraAnalytics?.txt?.balance || 'Balance'),    data: balPadded,  color: '#3b82f6' },
-                { name: (auraAnalytics?.txt?.projection || 'Proyección'), data: projPadded, color: '#8b5cf6', dashArray: 6 },
+                { name: (auraAnalytics?.txt?.income || __('Ingresos', 'aura-suite')),     data: incPadded,  color: '#10b981' },
+                { name: (auraAnalytics?.txt?.expense || __('Egresos', 'aura-suite')),    data: expPadded,  color: '#ef4444' },
+                { name: (auraAnalytics?.txt?.balance || __('Balance', 'aura-suite')),    data: balPadded,  color: '#3b82f6' },
+                { name: (auraAnalytics?.txt?.projection || __('Proyección', 'aura-suite')), data: projPadded, color: '#8b5cf6', dashArray: 6 },
             ],
             xaxis: { categories: allLabels },
             yaxis: {
@@ -273,7 +275,7 @@
             stroke:   { curve: 'smooth', width: [2.5, 2.5, 2.5, 1.5] },
             markers:  { size: 4 },
             annotations: parseAnnotationsForApex(data.annotations),
-            noData:   { text: (auraAnalytics?.txt?.no_data || 'Sin datos') },
+            noData:   { text: (auraAnalytics?.txt?.no_data || __('Sin datos', 'aura-suite')) },
         };
 
         setTimeout(function () {
@@ -291,7 +293,7 @@
 
     function loadCategories() {
         const $container = $('#chart-categories');
-        $container.html('<div class="aura-loading">' + (auraAnalytics?.txt?.loading || 'Cargando…') + '</div>');
+        $container.html('<div class="aura-loading">' + (auraAnalytics?.txt?.loading || __('Cargando…', 'aura-suite')) + '</div>');
 
         State.startDate = $('#aura-filter-start').val() || State.startDate;
         State.endDate   = $('#aura-filter-end').val()   || State.endDate;
@@ -304,20 +306,20 @@
             limit:      State.catLimit,
         }).done(function (res) {
             if (!res.success) {
-                $container.html('<p class="error">' + (res.data?.message || 'Error') + '</p>');
+                $container.html('<p class="error">' + (res.data?.message || __('Error', 'aura-suite')) + '</p>');
                 return;
             }
             renderCategories(res.data.categories || []);
             State.loaded['categories'] = true;
         }).fail(function() {
-            $container.html('<p class="error">' + (auraAnalytics?.txt?.error || 'Error al cargar datos.') + '</p>');
+            $container.html('<p class="error">' + (auraAnalytics?.txt?.error || __('Error al cargar datos.', 'aura-suite')) + '</p>');
         });
     }
 
     function renderCategories(cats) {
         const $el = document.getElementById('chart-categories');
         if (!$el || !cats.length) {
-            $($el).html('<p class="aura-no-data">' + (auraAnalytics?.txt?.no_data || 'Sin datos para el período seleccionado.') + '</p>');
+            $($el).html('<p class="aura-no-data">' + (auraAnalytics?.txt?.no_data || __('Sin datos para el período seleccionado.', 'aura-suite')) + '</p>');
             return;
         }
 
@@ -331,15 +333,15 @@
         let colors = [];
 
         if (State.catType === 'income') {
-            series = [{ name: (auraAnalytics?.txt?.income || 'Ingresos'), data: incomes }];
+            series = [{ name: (auraAnalytics?.txt?.income || __('Ingresos', 'aura-suite')), data: incomes }];
             colors = ['#10b981'];
         } else if (State.catType === 'expense') {
-            series = [{ name: (auraAnalytics?.txt?.expense || 'Egresos'), data: expenses }];
+            series = [{ name: (auraAnalytics?.txt?.expense || __('Egresos', 'aura-suite')), data: expenses }];
             colors = ['#ef4444'];
         } else {
             series = [
-                { name: (auraAnalytics?.txt?.income || 'Ingresos'),  data: incomes },
-                { name: (auraAnalytics?.txt?.expense || 'Egresos'), data: expenses },
+                { name: (auraAnalytics?.txt?.income || __('Ingresos', 'aura-suite')),  data: incomes },
+                { name: (auraAnalytics?.txt?.expense || __('Egresos', 'aura-suite')), data: expenses },
             ];
             colors = ['#10b981', '#ef4444'];
         }
@@ -388,7 +390,7 @@
                 intersect: false,
                 y: { formatter: val => formatCurrency(val) },
             },
-            noData: { text: (auraAnalytics?.txt?.no_data || 'Sin datos') },
+            noData: { text: (auraAnalytics?.txt?.no_data || __('Sin datos', 'aura-suite')) },
         };
 
         setTimeout(function () {
@@ -415,21 +417,21 @@
         const bEnd   = $('#cmp-b-end').val();
 
         const $chart = $('#chart-comparison');
-        $chart.html('<div class="aura-loading">' + (auraAnalytics?.txt?.loading || 'Cargando…') + '</div>');
+        $chart.html('<div class="aura-loading">' + (auraAnalytics?.txt?.loading || __('Cargando…', 'aura-suite')) + '</div>');
 
         ajaxPost('aura_analytics_comparison', {
             a_start: aStart, a_end: aEnd,
             b_start: bStart, b_end: bEnd,
         }).done(function (res) {
             if (!res.success) {
-                $chart.html('<p class="error">' + (res.data?.message || 'Error') + '</p>');
+                $chart.html('<p class="error">' + (res.data?.message || __('Error', 'aura-suite')) + '</p>');
                 return;
             }
             renderComparisonChart(res.data);
             renderComparisonTable(res.data.rows || res.data.categories || []);
             State.loaded['comparison'] = true;
         }).fail(function() {
-            $chart.html('<p class="error">' + (auraAnalytics?.txt?.error || 'Error al cargar datos.') + '</p>');
+            $chart.html('<p class="error">' + (auraAnalytics?.txt?.error || __('Error al cargar datos.', 'aura-suite')) + '</p>');
         });
     }
 
@@ -441,7 +443,7 @@
 
         const rows = data.rows || data.categories || [];
         if (!rows.length) {
-            $($el).html('<p class="aura-no-data">' + (auraAnalytics?.txt?.no_data || 'Sin datos para el período seleccionado.') + '</p>');
+            $($el).html('<p class="aura-no-data">' + (auraAnalytics?.txt?.no_data || __('Sin datos para el período seleccionado.', 'aura-suite')) + '</p>');
             return;
         }
 
@@ -467,8 +469,8 @@
                 },
             },
             series: [
-                { name: 'Período Base (A)', data: seriesA, color: '#3b82f6' },
-                { name: 'Período Comparativo (B)', data: seriesB, color: '#f59e0b' },
+                { name: __('Período Base (A)', 'aura-suite'), data: seriesA, color: '#3b82f6' },
+                { name: __('Período Comparativo (B)', 'aura-suite'), data: seriesB, color: '#f59e0b' },
             ],
             xaxis: {
                 categories,
@@ -479,7 +481,7 @@
                 intersect: false,
                 y: { formatter: val => formatCurrency(val) },
             },
-            noData: { text: (auraAnalytics?.txt?.no_data || 'Sin datos') },
+            noData: { text: (auraAnalytics?.txt?.no_data || __('Sin datos', 'aura-suite')) },
         };
 
         setTimeout(function () {
@@ -496,7 +498,7 @@
         $tbody.empty();
 
         if (!rows || !rows.length) {
-            $tbody.html('<tr><td colspan="5" class="aura-empty-row">' + (auraAnalytics?.txt?.no_data || 'Sin datos') + '</td></tr>');
+            $tbody.html('<tr><td colspan="5" class="aura-empty-row">' + (auraAnalytics?.txt?.no_data || __('Sin datos', 'aura-suite')) + '</td></tr>');
             return;
         }
 
@@ -546,8 +548,8 @@
 
         destroyChart('chart-heatmap');
 
-        const days = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-        const weeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4+'];
+        const days = [__('Lun', 'aura-suite'), __('Mar', 'aura-suite'), __('Mié', 'aura-suite'), __('Jue', 'aura-suite'), __('Vie', 'aura-suite'), __('Sáb', 'aura-suite'), __('Dom', 'aura-suite')];
+        const weeks = [__('Sem 1', 'aura-suite'), __('Sem 2', 'aura-suite'), __('Sem 3', 'aura-suite'), __('Sem 4+', 'aura-suite')];
 
         const series = days.map((dayName, d) => ({
             name: dayName,
@@ -576,9 +578,9 @@
             tooltip: {
                 shared: false,
                 intersect: false,
-                y: { formatter: val => val + ' transacciones' },
+                y: { formatter: val => val + ' ' + __('transacciones', 'aura-suite') },
             },
-            noData: { text: (auraAnalytics?.txt?.no_data || 'Sin datos') },
+            noData: { text: (auraAnalytics?.txt?.no_data || __('Sin datos', 'aura-suite')) },
         };
 
         setTimeout(function () {
@@ -597,7 +599,7 @@
         destroyChart('chart-scatter');
 
         if (!scatterData || !scatterData.length) {
-            $($el).html('<p class="aura-no-data">' + (auraAnalytics?.txt?.no_data || 'Sin datos') + '</p>');
+            $($el).html('<p class="aura-no-data">' + (auraAnalytics?.txt?.no_data || __('Sin datos', 'aura-suite')) + '</p>');
             return;
         }
 
@@ -618,11 +620,11 @@
             }, themeDefs.chart),
             series,
             xaxis: {
-                title: { text: 'Frecuencia (N° transacciones)' },
+                title: { text: __('Frecuencia (N° transacciones)', 'aura-suite') },
                 tickAmount: 5,
             },
             yaxis: {
-                title: { text: (auraAnalytics?.txt?.avg_amount || 'Monto promedio') },
+                title: { text: (auraAnalytics?.txt?.avg_amount || __('Monto promedio', 'aura-suite')) },
                 labels: { formatter: val => formatCurrency(val) },
             },
             tooltip: {
@@ -633,13 +635,13 @@
                     if (!item) return '';
                     return '<div class="aura-apex-tooltip">'
                         + '<strong>' + $('<div>').text(item.name).html() + '</strong>'
-                        + '<div class="tt-row"><span class="tt-name">Frecuencia:</span><span class="tt-val">' + item.count + '</span></div>'
-                        + '<div class="tt-row"><span class="tt-name">Promedio:</span><span class="tt-val">' + formatCurrency(item.avg_amount) + '</span></div>'
-                        + '<div class="tt-row"><span class="tt-name">Total:</span><span class="tt-val">' + formatCurrency(item.total) + '</span></div>'
+                        + '<div class="tt-row"><span class="tt-name">' + __('Frecuencia:', 'aura-suite') + '</span><span class="tt-val">' + item.count + '</span></div>'
+                        + '<div class="tt-row"><span class="tt-name">' + __('Promedio:', 'aura-suite') + '</span><span class="tt-val">' + formatCurrency(item.avg_amount) + '</span></div>'
+                        + '<div class="tt-row"><span class="tt-name">' + __('Total:', 'aura-suite') + '</span><span class="tt-val">' + formatCurrency(item.total) + '</span></div>'
                         + '</div>';
                 },
             },
-            noData: { text: (auraAnalytics?.txt?.no_data || 'Sin datos') },
+            noData: { text: (auraAnalytics?.txt?.no_data || __('Sin datos', 'aura-suite')) },
         };
 
         setTimeout(function () {
@@ -656,7 +658,7 @@
         $tbody.empty();
 
         if (!outliers || !outliers.length) {
-            $tbody.html('<tr><td colspan="5" class="aura-empty-row">' + (auraAnalytics?.txt?.no_outliers || 'No se detectaron transacciones atípicas.') + '</td></tr>');
+            $tbody.html('<tr><td colspan="5" class="aura-empty-row">' + (auraAnalytics?.txt?.no_outliers || __('No se detectaron transacciones atípicas.', 'aura-suite')) + '</td></tr>');
             return;
         }
 
@@ -668,7 +670,7 @@
                 '<td><strong>' + $('<div>').text(t.description).html() + '</strong></td>' +
                 '<td>' + (t.category_name || '—') + '</td>' +
                 '<td><span class="transaction-type ' + (isInc ? 'type-income' : 'type-expense') + '">'
-                    + (isInc ? (auraAnalytics?.txt?.income || 'Ingresos') : (auraAnalytics?.txt?.expense || 'Egresos')) + '</span></td>' +
+                    + (isInc ? (auraAnalytics?.txt?.income || __('Ingresos', 'aura-suite')) : (auraAnalytics?.txt?.expense || __('Egresos', 'aura-suite'))) + '</span></td>' +
                 '<td><strong class="' + (isInc ? 'amount-income' : 'amount-expense') + '">'
                     + formatCurrency(t.amount) + '</strong></td>' +
                 '</tr>'
@@ -685,25 +687,25 @@
         const month = parseInt($('#budget-month').val(), 10) || (new Date().getMonth() + 1);
 
         const $chart = $('#chart-budget');
-        $chart.html('<div class="aura-loading">' + (auraAnalytics?.txt?.loading || 'Cargando…') + '</div>');
+        $chart.html('<div class="aura-loading">' + (auraAnalytics?.txt?.loading || __('Cargando…', 'aura-suite')) + '</div>');
 
         ajaxPost('aura_analytics_budget', { year, month }).done(function (res) {
             if (!res.success) {
-                $chart.html('<p class="error">' + (res.data?.message || 'Error') + '</p>');
+                $chart.html('<p class="error">' + (res.data?.message || __('Error', 'aura-suite')) + '</p>');
                 return;
             }
             renderBudgetChart(res.data.items || []);
             renderBudgetTable(res.data.items || []);
             State.loaded['budget'] = true;
         }).fail(function() {
-            $chart.html('<p class="error">' + (auraAnalytics?.txt?.error || 'Error al cargar datos.') + '</p>');
+            $chart.html('<p class="error">' + (auraAnalytics?.txt?.error || __('Error al cargar datos.', 'aura-suite')) + '</p>');
         });
     }
 
     function renderBudgetChart(items) {
         const $el = document.getElementById('chart-budget');
         if (!$el || !items.length) {
-            $($el).html('<p class="aura-no-data">' + (auraAnalytics?.txt?.no_data || 'Sin datos para el período seleccionado.') + '</p>');
+            $($el).html('<p class="aura-no-data">' + (auraAnalytics?.txt?.no_data || __('Sin datos para el período seleccionado.', 'aura-suite')) + '</p>');
             return;
         }
 
@@ -731,8 +733,8 @@
                 },
             },
             series: [
-                { name: (auraAnalytics?.txt?.budget || 'Presupuesto Asignado'), data: budgets, color: '#94a3b8' },
-                { name: (auraAnalytics?.txt?.actual || 'Monto Ejecutado'), data: actuals, color: '#ef4444' },
+                { name: (auraAnalytics?.txt?.budget || __('Presupuesto Asignado', 'aura-suite')), data: budgets, color: '#94a3b8' },
+                { name: (auraAnalytics?.txt?.actual || __('Monto Ejecutado', 'aura-suite')), data: actuals, color: '#ef4444' },
             ],
             xaxis: {
                 categories,
@@ -743,7 +745,7 @@
                 intersect: false,
                 y: { formatter: val => formatCurrency(val) },
             },
-            noData: { text: (auraAnalytics?.txt?.no_data || 'Sin datos') },
+            noData: { text: (auraAnalytics?.txt?.no_data || __('Sin datos', 'aura-suite')) },
         };
 
         setTimeout(function () {
@@ -760,7 +762,7 @@
         $tbody.empty();
 
         if (!items || !items.length) {
-            $tbody.html('<tr><td colspan="6" class="aura-empty-row">' + (auraAnalytics?.txt?.no_data || 'Sin datos') + '</td></tr>');
+            $tbody.html('<tr><td colspan="6" class="aura-empty-row">' + (auraAnalytics?.txt?.no_data || __('Sin datos', 'aura-suite')) + '</td></tr>');
             return;
         }
 
@@ -768,8 +770,8 @@
             const pct     = item.pct !== null ? item.pct + '%' : '—';
             const rowCls  = item.over ? 'over-budget' : '';
             const status  = item.over
-                ? '<span style="color:#dc2626;font-weight:700;">⚠️ ' + (auraAnalytics?.txt?.over_budget || 'Excedido') + '</span>'
-                : (item.pct > 80 ? '<span style="color:#f59e0b;font-weight:700;">⚡ Alto</span>' : '<span style="color:#10b981;font-weight:700;">✓ Normal</span>');
+                ? '<span style="color:#dc2626;font-weight:700;">⚠️ ' + (auraAnalytics?.txt?.over_budget || __('Excedido', 'aura-suite')) + '</span>'
+                : (item.pct > 80 ? '<span style="color:#f59e0b;font-weight:700;">' + __('⚡ Alto', 'aura-suite') + '</span>' : '<span style="color:#10b981;font-weight:700;">' + __('✓ Normal', 'aura-suite') + '</span>');
 
             $tbody.append(
                 '<tr class="' + rowCls + '">' +
@@ -807,7 +809,7 @@
                     State.loaded[tab] = false;
                     loadTabData(tab);
                 } else {
-                    alert(res.data?.message || 'Error');
+                    alert(res.data?.message || __('Error', 'aura-suite'));
                 }
             });
     }
@@ -817,12 +819,12 @@
         $wrap.empty();
         if (!annotations || !annotations.length) return;
 
-        let html = '<div class="ann-list-header" style="font-weight:700;margin:10px 0 6px;color:#475569;">Anotaciones Registradas:</div><ul style="list-style:none;margin:0;padding:0;">';
+        let html = '<div class="ann-list-header" style="font-weight:700;margin:10px 0 6px;color:#475569;">' + __('Anotaciones Registradas:', 'aura-suite') + '</div><ul style="list-style:none;margin:0;padding:0;">';
         annotations.forEach(a => {
             html += '<li style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#fef3c7;border-left:3px solid #f59e0b;margin-bottom:4px;border-radius:4px;">'
                 + '<span class="ann-date" style="font-weight:700;color:#92400e;">' + a.annotation_date + ':</span>'
                 + '<span class="ann-note" style="flex:1;color:#1e293b;">' + $('<div>').text(a.note).html() + '</span>'
-                + '<button type="button" class="ann-delete-btn" data-id="' + a.id + '" title="Eliminar" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;">&times;</button>'
+                + '<button type="button" class="ann-delete-btn" data-id="' + a.id + '" title="' + __('Eliminar', 'aura-suite') + '" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;">&times;</button>'
                 + '</li>';
         });
         html += '</ul>';
@@ -1033,7 +1035,7 @@
 
         $(document).on('click', '.ann-delete-btn', function () {
             const annId = $(this).data('id');
-            if (!confirm('¿Deseas eliminar esta anotación?')) return;
+            if (!confirm(__('¿Deseas eliminar esta anotación?', 'aura-suite'))) return;
             ajaxPost('aura_analytics_annotation_delete', { annotation_id: annId })
                 .done(function (res) {
                     if (res.success) {

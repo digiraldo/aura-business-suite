@@ -32,37 +32,37 @@ $audit_users = $wpdb->get_results(
 
 // Operaciones agrupadas por categoría para el <optgroup>
 $operation_groups = array(
-    'Vehículos' => array(
-        'vehicle_created'          => 'Vehículo creado',
-        'vehicle_updated'          => 'Vehículo actualizado',
-        'vehicle_deleted'          => 'Vehículo eliminado',
-        'vehicle_area_assigned'    => 'Área asignada',
-        'vehicle_area_unassigned'  => 'Área desasignada',
-        'vehicle_marked_unavailable' => 'Marcado no disponible',
-        'vehicle_restored'         => 'Vehículo restaurado',
-        'vehicle_transferred'      => 'Vehículo transferido',
-        'vehicle_photo_uploaded'   => 'Foto cargada',
-        'vehicle_photo_deleted'    => 'Foto eliminada',
+    __( 'Vehículos', 'aura-suite' ) => array(
+        'vehicle_created'          => __( 'Vehículo creado', 'aura-suite' ),
+        'vehicle_updated'          => __( 'Vehículo actualizado', 'aura-suite' ),
+        'vehicle_deleted'          => __( 'Vehículo eliminado', 'aura-suite' ),
+        'vehicle_area_assigned'    => __( 'Área asignada', 'aura-suite' ),
+        'vehicle_area_unassigned'  => __( 'Área desasignada', 'aura-suite' ),
+        'vehicle_marked_unavailable' => __( 'Marcado no disponible', 'aura-suite' ),
+        'vehicle_restored'         => __( 'Vehículo restaurado', 'aura-suite' ),
+        'vehicle_transferred'      => __( 'Vehículo transferido', 'aura-suite' ),
+        'vehicle_photo_uploaded'   => __( 'Foto cargada', 'aura-suite' ),
+        'vehicle_photo_deleted'    => __( 'Foto eliminada', 'aura-suite' ),
     ),
-    'Salidas' => array(
-        'trip_create'  => 'Salida registrada',
-        'trip_checkin' => 'Check-in realizado',
-        'trip_cancel'  => 'Salida cancelada',
-        'trip_update'  => 'Salida actualizada',
-        'trip_delete'  => 'Salida eliminada',
+    __( 'Salidas', 'aura-suite' ) => array(
+        'trip_create'  => __( 'Salida registrada', 'aura-suite' ),
+        'trip_checkin' => __( 'Check-in realizado', 'aura-suite' ),
+        'trip_cancel'  => __( 'Salida cancelada', 'aura-suite' ),
+        'trip_update'  => __( 'Salida actualizada', 'aura-suite' ),
+        'trip_delete'  => __( 'Salida eliminada', 'aura-suite' ),
     ),
-    'Catálogos' => array(
-        'catalog_create' => 'Catálogo creado',
-        'catalog_update' => 'Catálogo actualizado',
-        'catalog_delete' => 'Catálogo eliminado',
-        'catalog_reorder' => 'Catálogos reordenados',
+    __( 'Catálogos', 'aura-suite' ) => array(
+        'catalog_create' => __( 'Catálogo creado', 'aura-suite' ),
+        'catalog_update' => __( 'Catálogo actualizado', 'aura-suite' ),
+        'catalog_delete' => __( 'Catálogo eliminado', 'aura-suite' ),
+        'catalog_reorder' => __( 'Catálogos reordenados', 'aura-suite' ),
     ),
-    'Reportes' => array(
-        'report_export' => 'Exportación de reporte',
+    __( 'Reportes', 'aura-suite' ) => array(
+        'report_export' => __( 'Exportación de reporte', 'aura-suite' ),
     ),
-    'Auditoría' => array(
-        'audit_export_csv' => 'Exportación log CSV',
-        'audit_cleanup'    => 'Limpieza de logs',
+    __( 'Auditoría', 'aura-suite' ) => array(
+        'audit_export_csv' => __( 'Exportación log CSV', 'aura-suite' ),
+        'audit_cleanup'    => __( 'Limpieza de logs', 'aura-suite' ),
     ),
 );
 

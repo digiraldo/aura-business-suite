@@ -10,6 +10,9 @@
 
 (function($) {
     'use strict';
+
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
     
     /**
      * Variables globales del modal
@@ -31,22 +34,22 @@
         const raw = String(paymentMethod).trim().toLowerCase();
         
         const map = {
-            'cash':           { label: 'Efectivo',               icon: 'dashicons-money-alt',  color: '#10b981' },
-            'efectivo':       { label: 'Efectivo',               icon: 'dashicons-money-alt',  color: '#10b981' },
-            'transfer':       { label: 'Transferencia',          icon: 'dashicons-bank',       color: '#3b82f6' },
-            'transferencia':  { label: 'Transferencia',          icon: 'dashicons-bank',       color: '#3b82f6' },
-            'bank_transfer':  { label: 'Transferencia Bancaria', icon: 'dashicons-bank',       color: '#3b82f6' },
-            'card':           { label: 'Tarjeta',                icon: 'dashicons-id-alt',     color: '#8b5cf6' },
-            'tarjeta':        { label: 'Tarjeta',                icon: 'dashicons-id-alt',     color: '#8b5cf6' },
-            'credit_card':    { label: 'Tarjeta de Crédito',     icon: 'dashicons-id-alt',     color: '#8b5cf6' },
-            'debit_card':     { label: 'Tarjeta de Débito',      icon: 'dashicons-id-alt',     color: '#8b5cf6' },
-            'check':          { label: 'Cheque',                 icon: 'dashicons-media-text', color: '#6366f1' },
-            'cheque':         { label: 'Cheque',                 icon: 'dashicons-media-text', color: '#6366f1' },
-            'digital_wallet': { label: 'Billetera Digital',      icon: 'dashicons-smartphone', color: '#ec4899' },
+            'cash':           { label: __('Efectivo', 'aura-suite'),               icon: 'dashicons-money-alt',  color: '#10b981' },
+            'efectivo':       { label: __('Efectivo', 'aura-suite'),               icon: 'dashicons-money-alt',  color: '#10b981' },
+            'transfer':       { label: __('Transferencia', 'aura-suite'),          icon: 'dashicons-bank',       color: '#3b82f6' },
+            'transferencia':  { label: __('Transferencia', 'aura-suite'),          icon: 'dashicons-bank',       color: '#3b82f6' },
+            'bank_transfer':  { label: __('Transferencia Bancaria', 'aura-suite'), icon: 'dashicons-bank',       color: '#3b82f6' },
+            'card':           { label: __('Tarjeta', 'aura-suite'),                icon: 'dashicons-id-alt',     color: '#8b5cf6' },
+            'tarjeta':        { label: __('Tarjeta', 'aura-suite'),                icon: 'dashicons-id-alt',     color: '#8b5cf6' },
+            'credit_card':    { label: __('Tarjeta de Crédito', 'aura-suite'),     icon: 'dashicons-id-alt',     color: '#8b5cf6' },
+            'debit_card':     { label: __('Tarjeta de Débito', 'aura-suite'),      icon: 'dashicons-id-alt',     color: '#8b5cf6' },
+            'check':          { label: __('Cheque', 'aura-suite'),                 icon: 'dashicons-media-text', color: '#6366f1' },
+            'cheque':         { label: __('Cheque', 'aura-suite'),                 icon: 'dashicons-media-text', color: '#6366f1' },
+            'digital_wallet': { label: __('Billetera Digital', 'aura-suite'),      icon: 'dashicons-smartphone', color: '#ec4899' },
             'nequi':          { label: 'Nequi',                  icon: 'dashicons-smartphone', color: '#ec4899' },
             'daviplata':      { label: 'DaviPlata',              icon: 'dashicons-smartphone', color: '#ec4899' },
-            'other':          { label: 'Otro',                   icon: 'dashicons-ellipsis',   color: '#64748b' },
-            'otro':           { label: 'Otro',                   icon: 'dashicons-ellipsis',   color: '#64748b' }
+            'other':          { label: __('Otro', 'aura-suite'),                   icon: 'dashicons-ellipsis',   color: '#64748b' },
+            'otro':           { label: __('Otro', 'aura-suite'),                   icon: 'dashicons-ellipsis',   color: '#64748b' }
         };
         
         return map[raw] || { 
@@ -141,7 +144,7 @@
                 } else {
                     const msg = (response && response.data && response.data.message)
                         ? response.data.message
-                        : ((typeof auraTransactionModal !== 'undefined' && auraTransactionModal.messages) ? auraTransactionModal.messages.error : 'Error al cargar detalles.');
+                        : ((typeof auraTransactionModal !== 'undefined' && auraTransactionModal.messages) ? auraTransactionModal.messages.error : __('Error al cargar detalles.', 'aura-suite'));
                     alert(msg);
                     closeTransactionModal();
                 }
@@ -150,7 +153,7 @@
                 console.error('Aura Modal AJAX Error:', status, error, xhr.responseText);
                 const msg = (typeof auraTransactionModal !== 'undefined' && auraTransactionModal.messages)
                     ? auraTransactionModal.messages.error
-                    : 'Error de conexión al cargar la transacción.';
+                    : __('Error de conexión al cargar la transacción.', 'aura-suite');
                 alert(msg);
                 closeTransactionModal();
             },
@@ -212,9 +215,9 @@
         
         const msgs = (typeof auraTransactionModal !== 'undefined' && auraTransactionModal.messages) ? auraTransactionModal.messages : {};
         const statusText = {
-            'pending': msgs.statusPending || 'Pendiente',
-            'approved': msgs.statusApproved || 'Aprobado',
-            'rejected': msgs.statusRejected || 'Rechazado'
+            'pending': msgs.statusPending || __('Pendiente', 'aura-suite'),
+            'approved': msgs.statusApproved || __('Aprobado', 'aura-suite'),
+            'rejected': msgs.statusRejected || __('Rechazado', 'aura-suite')
         }[data.status] || data.status;
         
         $('#modal-status-label')
@@ -236,7 +239,7 @@
         
         // Icono de tipo
         const typeIcon = data.transaction_type === 'income' ? '💰' : '💸';
-        const typeText = data.transaction_type === 'income' ? 'Ingreso' : 'Egreso';
+        const typeText = data.transaction_type === 'income' ? __('Ingreso', 'aura-suite') : __('Egreso', 'aura-suite');
         $('#modal-type-icon').html(typeIcon + ' ' + typeText);
         
         // Fecha
@@ -266,16 +269,16 @@
 
         if (isCapex) {
             capexTag = ' <span class="badge-capex" style="font-size:11px;padding:2px 7px;background:rgba(124,58,237,0.15);color:#c084fc;border:1px solid rgba(124,58,237,0.3);border-radius:10px;margin-left:6px;vertical-align:middle;font-weight:600;">🏛️ CapEx</span>';
-            natureLabel = '<span style="color:#c084fc;font-weight:700;">🏛️ CapEx (Gasto de Capital)</span>';
+            natureLabel = '<span style="color:#c084fc;font-weight:700;">' + __('🏛️ CapEx (Gasto de Capital)', 'aura-suite') + '</span>';
         } else if (txType === 'income') {
-            capexTag = ' <span class="badge-income" style="font-size:11px;padding:2px 7px;background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);border-radius:10px;margin-left:6px;vertical-align:middle;font-weight:600;">📈 Ingreso</span>';
-            natureLabel = '<span style="color:#34d399;font-weight:700;">📈 Ingreso Operativo</span>';
+            capexTag = ' <span class="badge-income" style="font-size:11px;padding:2px 7px;background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);border-radius:10px;margin-left:6px;vertical-align:middle;font-weight:600;">📈 ' + __('Ingreso', 'aura-suite') + '</span>';
+            natureLabel = '<span style="color:#34d399;font-weight:700;">' + __('📈 Ingreso Operativo', 'aura-suite') + '</span>';
         } else if (txType === 'transfer') {
-            capexTag = ' <span class="badge-transfer" style="font-size:11px;padding:2px 7px;background:rgba(37,99,235,0.15);color:#93c5fd;border:1px solid rgba(37,99,235,0.3);border-radius:10px;margin-left:6px;vertical-align:middle;font-weight:600;">⇄ Transferencia</span>';
-            natureLabel = '<span style="color:#93c5fd;font-weight:700;">⇄ Transferencia Interna</span>';
+            capexTag = ' <span class="badge-transfer" style="font-size:11px;padding:2px 7px;background:rgba(37,99,235,0.15);color:#93c5fd;border:1px solid rgba(37,99,235,0.3);border-radius:10px;margin-left:6px;vertical-align:middle;font-weight:600;">⇄ ' + __('Transferencia', 'aura-suite') + '</span>';
+            natureLabel = '<span style="color:#93c5fd;font-weight:700;">' + __('⇄ Transferencia Interna', 'aura-suite') + '</span>';
         } else {
             capexTag = ' <span class="badge-opex" style="font-size:11px;padding:2px 7px;background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);border-radius:10px;margin-left:6px;vertical-align:middle;font-weight:600;">💼 OpEx</span>';
-            natureLabel = '<span style="color:#f87171;font-weight:600;">💼 OpEx (Gasto Operativo)</span>';
+            natureLabel = '<span style="color:#f87171;font-weight:600;">' + __('💼 OpEx (Gasto Operativo)', 'aura-suite') + '</span>';
         }
 
         $('#modal-category').html(
@@ -290,7 +293,7 @@
         // Cuadro de Detalles de Categorización Contable
         let catDetailsHtml = '';
         if (natureLabel) {
-            catDetailsHtml += '<div class="aura-modal-cat-detail-row"><strong>Naturaleza Contable:</strong> <span>' + natureLabel + '</span></div>';
+            catDetailsHtml += '<div class="aura-modal-cat-detail-row"><strong>' + __('Naturaleza Contable:', 'aura-suite') + '</strong> <span>' + natureLabel + '</span></div>';
         }
         if (cat.parent_name) {
             let pIconHtml = '';
@@ -301,16 +304,16 @@
                     pIconHtml = '<span style="font-size:13px;margin-right:3px;">' + escapeHtml(cat.parent_icon) + '</span>';
                 }
             }
-            catDetailsHtml += '<div class="aura-modal-cat-detail-row"><strong style="color:var(--text-primary, #e2e8f0);"><span class="dashicons dashicons-networking" style="font-size:14px;vertical-align:middle;margin-right:4px;color:#818cf8;"></span>Categoría Superior / Padre:</strong> <span>' + pIconHtml + escapeHtml(cat.parent_name) + '</span></div>';
+            catDetailsHtml += '<div class="aura-modal-cat-detail-row"><strong style="color:var(--text-primary, #e2e8f0);"><span class="dashicons dashicons-networking" style="font-size:14px;vertical-align:middle;margin-right:4px;color:#818cf8;"></span>' + __('Categoría Superior / Padre:', 'aura-suite') + '</strong> <span>' + pIconHtml + escapeHtml(cat.parent_name) + '</span></div>';
         }
         if (cat.slug) {
-            catDetailsHtml += '<div class="aura-modal-cat-detail-row"><strong>Código / Slug:</strong> <code>' + escapeHtml(cat.slug) + '</code></div>';
+            catDetailsHtml += '<div class="aura-modal-cat-detail-row"><strong>' + __('Código / Slug:', 'aura-suite') + '</strong> <code>' + escapeHtml(cat.slug) + '</code></div>';
         }
         if (data.expense_category && data.expense_category.name && data.expense_category.name !== cat.name) {
-            catDetailsHtml += '<div class="aura-modal-cat-detail-row"><strong>Categoría de Gasto Específica:</strong> <span>' + escapeHtml(data.expense_category.name) + '</span></div>';
+            catDetailsHtml += '<div class="aura-modal-cat-detail-row"><strong>' + __('Categoría de Gasto Específica:', 'aura-suite') + '</strong> <span>' + escapeHtml(data.expense_category.name) + '</span></div>';
         }
         if (cat.description) {
-            catDetailsHtml += '<div class="aura-modal-cat-detail-row" style="grid-column:1/-1;border-top:1px dashed rgba(255,255,255,0.08);padding-top:6px;margin-top:2px;"><strong>Descripción Contable:</strong> <span style="font-style:italic;color:var(--text-secondary, #94a3b8);">' + escapeHtml(cat.description) + '</span></div>';
+            catDetailsHtml += '<div class="aura-modal-cat-detail-row" style="grid-column:1/-1;border-top:1px dashed rgba(255,255,255,0.08);padding-top:6px;margin-top:2px;"><strong>' + __('Descripción Contable:', 'aura-suite') + '</strong> <span style="font-style:italic;color:var(--text-secondary, #94a3b8);">' + escapeHtml(cat.description) + '</span></div>';
         }
 
         if (catDetailsHtml) {
@@ -322,7 +325,7 @@
 
         // Área / Programa con detalles
         const area = data.area || {};
-        if (area.name && area.name !== 'General (sin área)') {
+        if (area.name && area.name !== __('General (sin área)', 'aura-suite')) {
             let areaIconHtml = '<span class="dashicons dashicons-building" style="font-size:14px;vertical-align:middle;margin-right:4px;color:#60a5fa;"></span>';
             if (area.icon) {
                 if (area.icon.startsWith('dashicons-')) {
@@ -341,7 +344,7 @@
                 '</div>'
             );
         } else {
-            $('#modal-area').html('<em>General (sin área)</em>');
+            $('#modal-area').html('<em>' + __('General (sin área)', 'aura-suite') + '</em>');
         }
 
         // Cuentas origen y destino con banco/caja e institución
@@ -364,7 +367,7 @@
         }
 
         // Descripción
-        $('#modal-description').html(data.description ? escapeHtml(data.description) : '<em>Sin descripción</em>');
+        $('#modal-description').html(data.description ? escapeHtml(data.description) : '<em>' + __('Sin descripción', 'aura-suite') + '</em>');
         
         // Método de pago con icono
         const paymentInfo = getPaymentMethodInfo(data.payment_method);
@@ -435,17 +438,17 @@
                 : '<div class="avatar-icon-placeholder"><span class="dashicons dashicons-admin-users" style="font-size:24px;width:24px;height:24px;"></span></div>';
             
             const conceptMap = {
-                'payment_to_user':       'Pago a usuario',
-                'charge_to_user':        'Cobro a usuario',
-                'salary':                'Pago de salario / nómina',
-                'scholarship':           'Beca asignada',
-                'loan_payment':          'Pago de préstamo',
-                'refund':                'Reembolso',
-                'expense_reimbursement': 'Reembolso de gastos',
-                'unlinked':              'Desvinculado',
-                'none':                  'Ninguno'
+                'payment_to_user':       __('Pago a usuario', 'aura-suite'),
+                'charge_to_user':        __('Cobro a usuario', 'aura-suite'),
+                'salary':                __('Pago de salario / nómina', 'aura-suite'),
+                'scholarship':           __('Beca asignada', 'aura-suite'),
+                'loan_payment':          __('Pago de préstamo', 'aura-suite'),
+                'refund':                __('Reembolso', 'aura-suite'),
+                'expense_reimbursement': __('Reembolso de gastos', 'aura-suite'),
+                'unlinked':              __('Desvinculado', 'aura-suite'),
+                'none':                  __('Ninguno', 'aura-suite')
             };
-            const conceptText = data.related_user_concept_label || (data.related_user && data.related_user.concept_label) || conceptMap[data.related_user_concept] || data.related_user_concept || 'Usuario Vinculado';
+            const conceptText = data.related_user_concept_label || (data.related_user && data.related_user.concept_label) || conceptMap[data.related_user_concept] || data.related_user_concept || __('Usuario Vinculado', 'aura-suite');
             const conceptLabel = '<span class="user-date" style="color:#60a5fa;font-weight:600;">' + escapeHtml(conceptText) + '</span>';
 
             let userEmailLink = data.related_user.email ? ' &middot; <a href="mailto:' + escapeHtml(data.related_user.email) + '" style="color:#38bdf8;text-decoration:none;">' + escapeHtml(data.related_user.email) + '</a>' : '';
@@ -464,7 +467,7 @@
                 '</div>' +
                 '<div class="user-info">' +
                 '<strong>' + escapeHtml(data.recipient_payer) + '</strong>' +
-                '<span class="user-date">Tercero Externo</span>' +
+                '<span class="user-date">' + __('Tercero Externo', 'aura-suite') + '</span>' +
                 '</div>'
             );
         } else {
@@ -473,7 +476,7 @@
                 '<div class="avatar-icon-placeholder"><span class="dashicons dashicons-minus" style="font-size:24px;width:24px;height:24px;"></span></div>' +
                 '</div>' +
                 '<div class="user-info">' +
-                '<strong>Sin beneficiario asignado</strong>' +
+                '<strong>' + __('Sin beneficiario asignado', 'aura-suite') + '</strong>' +
                 '<span class="user-date">—</span>' +
                 '</div>'
             );
@@ -482,11 +485,11 @@
         // Módulo Vinculado
         if (data.related_module) {
             const moduleIcons = {
-                'inventory': '📦 Inventario',
-                'library':   '📚 Biblioteca',
-                'vehicles':  '🚗 Flota / Vehículos',
-                'students':  '🎓 Estudiantes / Matrículas',
-                'forms':     '📝 Formularios'
+                'inventory': __('📦 Inventario', 'aura-suite'),
+                'library':   __('📚 Biblioteca', 'aura-suite'),
+                'vehicles':  __('🚗 Flota / Vehículos', 'aura-suite'),
+                'students':  __('🎓 Estudiantes / Matrículas', 'aura-suite'),
+                'forms':     __('📝 Formularios', 'aura-suite')
             };
             const modLabel = moduleIcons[data.related_module] || ('📦 ' + data.related_module);
             let actionLabel = data.related_action ? (' &middot; <span style="font-weight:600;color:#f59e0b;">' + escapeHtml(data.related_action) + '</span>') : '';
@@ -509,7 +512,7 @@
             ).join('');
             $('#modal-tags').html(tagsHtml);
         } else {
-            $('#modal-tags').html('<em>Sin etiquetas</em>');
+            $('#modal-tags').html('<em>' + __('Sin etiquetas', 'aura-suite') + '</em>');
         }
         
         // Creador
@@ -533,7 +536,7 @@
             const creatorAvatar = (data.creator && data.creator.avatar)
                 ? '<img src="' + escapeHtml(data.creator.avatar) + '" alt="' + escapeHtml(data.creator.name) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.15);">'
                 : '<span class="dashicons dashicons-admin-users" style="font-size:18px;width:18px;height:18px;color:#94a3b8;"></span>';
-            const creatorName = (data.creator && data.creator.name) ? data.creator.name : 'Autor';
+            const creatorName = (data.creator && data.creator.name) ? data.creator.name : __('Autor', 'aura-suite');
 
             $('#modal-notes').html(
                 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;">' +
@@ -545,35 +548,35 @@
                 '<div style="white-space:pre-wrap;line-height:1.6;font-size:13px;">' + escapeHtml(data.notes) + '</div>'
             );
         } else {
-            $('#modal-notes').html('<em>Sin notas adicionales</em>');
+            $('#modal-notes').html('<em>' + __('Sin notas adicionales', 'aura-suite') + '</em>');
         }
         
         // Historial de cambios
         if (data.history && data.history.length > 0) {
             $('#history-section').show();
             const fieldLabels = {
-                'category_id':            'Categoría del presupuesto',
-                'expense_category_id':    'Categoría del gasto',
-                'amount':                 'Monto',
-                'transaction_date':       'Fecha',
-                'description':            'Descripción',
-                'source_account_id':      'Cuenta origen',
-                'destination_account_id': 'Cuenta destino',
-                'area_id':                'Área / Programa',
-                'payment_method':         'Método de pago',
-                'reference_number':       'Nº referencia',
-                'recipient_payer':        'Destinatario / Pagador',
-                'third_party_id':         'Beneficiario / Proveedor / Tercero',
-                'related_user_id':        'Usuario Vinculado',
-                'related_user_concept':   'Concepto de Vinculación',
-                'notes':                  'Notas',
-                'tags':                   'Etiquetas',
-                'receipt_file':           'Comprobante',
-                'status':                 'Estado',
-                'status_deletion':        'Envío a papelera / Eliminación',
-                'status_resubmitted':     'Re-enviada para aprobación',
-                'rejection_reason':       'Motivo de rechazo',
-                'category_merged':        'Fusión de categoría'
+                'category_id':            __('Categoría del presupuesto', 'aura-suite'),
+                'expense_category_id':    __('Categoría del gasto', 'aura-suite'),
+                'amount':                 __('Monto', 'aura-suite'),
+                'transaction_date':       __('Fecha', 'aura-suite'),
+                'description':            __('Descripción', 'aura-suite'),
+                'source_account_id':      __('Cuenta origen', 'aura-suite'),
+                'destination_account_id': __('Cuenta destino', 'aura-suite'),
+                'area_id':                __('Área / Programa', 'aura-suite'),
+                'payment_method':         __('Método de pago', 'aura-suite'),
+                'reference_number':       __('Nº referencia', 'aura-suite'),
+                'recipient_payer':        __('Destinatario / Pagador', 'aura-suite'),
+                'third_party_id':         __('Beneficiario / Proveedor / Tercero', 'aura-suite'),
+                'related_user_id':        __('Usuario Vinculado', 'aura-suite'),
+                'related_user_concept':   __('Concepto de Vinculación', 'aura-suite'),
+                'notes':                  __('Notas', 'aura-suite'),
+                'tags':                   __('Etiquetas', 'aura-suite'),
+                'receipt_file':           __('Comprobante', 'aura-suite'),
+                'status':                 __('Estado', 'aura-suite'),
+                'status_deletion':        __('Envío a papelera / Eliminación', 'aura-suite'),
+                'status_resubmitted':     __('Re-enviada para aprobación', 'aura-suite'),
+                'rejection_reason':       __('Motivo de rechazo', 'aura-suite'),
+                'category_merged':        __('Fusión de categoría', 'aura-suite')
             };
             let historyHtml = '<ul class="changes-list">';
             data.history.forEach(change => {
@@ -590,10 +593,10 @@
                 const oldLabel = change.old_value_label || change.old_value || '—';
                 const newLabel = change.new_value_label || change.new_value || '—';
                 historyHtml += '<div class="change-details">';
-                historyHtml += '<div class="old-value">Anterior: ' + escapeHtml(String(oldLabel)) + '</div>';
-                historyHtml += '<div class="new-value">Nuevo: ' + escapeHtml(String(newLabel)) + '</div>';
+                historyHtml += '<div class="old-value">' + __('Anterior:', 'aura-suite') + ' ' + escapeHtml(String(oldLabel)) + '</div>';
+                historyHtml += '<div class="new-value">' + __('Nuevo:', 'aura-suite') + ' ' + escapeHtml(String(newLabel)) + '</div>';
                 historyHtml += '</div>';
-                historyHtml += '<div class="change-user" style="display:flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;">' + changeAvatar + '<span>Por: <strong>' + escapeHtml(change.changed_by) + '</strong></span></div>';
+                historyHtml += '<div class="change-user" style="display:flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;">' + changeAvatar + '<span>' + __('Por:', 'aura-suite') + ' <strong>' + escapeHtml(change.changed_by) + '</strong></span></div>';
                 historyHtml += '</li>';
             });
             historyHtml += '</ul>';
@@ -629,7 +632,7 @@
                 is_drive: !!data.receipt_is_drive || String(data.receipt_preview_url || data.receipt_url).indexOf('drive.google.com') !== -1,
                 is_pdf: !!data.receipt_is_pdf,
                 is_img: !!data.receipt_is_img && !data.receipt_is_pdf,
-                filename: data.receipt_file ? data.receipt_file.split('/').pop() : 'Comprobante'
+                filename: data.receipt_file ? data.receipt_file.split('/').pop() : __('Comprobante', 'aura-suite')
             }];
 
             if (activeIndex < 0 || activeIndex >= receipts.length) {
@@ -654,7 +657,7 @@
                     const tabStyle = isSelected
                         ? 'background:#2563eb;color:#ffffff;border-color:#1d4ed8;font-weight:600;'
                         : 'background:#f8fafc;color:#475569;border-color:#cbd5e1;';
-                    const label = item.filename || ('Comprobante ' + (idx + 1));
+                    const label = item.filename || sprintf(__('Comprobante %d', 'aura-suite'), idx + 1);
                     multiTabsHtml += '<button type="button" class="button button-small aura-modal-switch-receipt" data-index="' + idx + '" style="' + tabStyle + 'border-radius:18px;display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:3px 12px;cursor:pointer;">' +
                         '<span class="dashicons ' + tabIcon + '" style="font-size:14px;width:14px;height:14px;"></span> ' +
                         $('<div>').text(label).html() +
@@ -670,11 +673,11 @@
                     '<span class="dashicons dashicons-cloud"></span>' +
                     '<div class="aura-receipt-drive-texts">' +
                     '<strong class="aura-receipt-drive-brand">Google Drive</strong>' +
-                    '<span class="aura-receipt-drive-note">— Archivo almacenado en la nube</span>' +
+                    '<span class="aura-receipt-drive-note">— ' + __('Archivo almacenado en la nube', 'aura-suite') + '</span>' +
                     '</div>' +
                     '</div>' +
                     '<a href="' + (current.url || previewUrl) + '" target="_blank" rel="noopener noreferrer" class="button button-small aura-receipt-drive-btn">' +
-                    '<span class="dashicons dashicons-external"></span> Abrir en Google Drive' +
+                    '<span class="dashicons dashicons-external"></span> ' + __('Abrir en Google Drive', 'aura-suite') +
                     '</a>' +
                     '</div>';
             }
@@ -686,11 +689,11 @@
                     '</div>';
             } else if (isImg) {
                 previewBodyHtml = '<div class="aura-receipt-preview-inner">' +
-                    '<div class="aura-receipt-preview-interactive" id="modal-receipt-img-trigger" title="Haz clic para ver en pantalla completa">' +
-                    '<img src="' + thumbUrl + '" alt="Comprobante" class="receipt-image">' +
+                    '<div class="aura-receipt-preview-interactive" id="modal-receipt-img-trigger" title="' + __('Haz clic para ver en pantalla completa', 'aura-suite') + '">' +
+                    '<img src="' + thumbUrl + '" alt="' + __('Comprobante', 'aura-suite') + '" class="receipt-image">' +
                     '<div class="aura-receipt-hover-overlay">' +
                     '<span class="dashicons dashicons-search"></span>' +
-                    '<span>Haz clic para ver en pantalla completa</span>' +
+                    '<span>' + __('Haz clic para ver en pantalla completa', 'aura-suite') + '</span>' +
                     '</div>' +
                     '</div>' +
                     '</div>';
@@ -698,9 +701,9 @@
                 previewBodyHtml = '<div class="aura-receipt-preview-inner">' +
                     '<div class="receipt-file-link" style="padding: 30px; text-align: center;">' +
                     '<span class="dashicons dashicons-media-document" style="font-size: 48px; height: 48px; width: 48px; color: #3b82f6;"></span>' +
-                    '<p style="margin-top: 15px;">Archivo adjunto: <strong>' + (current.filename || 'Comprobante') + '</strong></p>' +
+                    '<p style="margin-top: 15px;">' + __('Archivo adjunto:', 'aura-suite') + ' <strong>' + (current.filename || __('Comprobante', 'aura-suite')) + '</strong></p>' +
                     '<a href="' + downloadUrl + '" target="_blank" class="button button-primary button-large" style="margin-top: 10px;">' +
-                    '<span class="dashicons dashicons-download"></span> Descargar Documento</a>' +
+                    '<span class="dashicons dashicons-download"></span> ' + __('Descargar Documento', 'aura-suite') + '</a>' +
                     '</div>' +
                     '</div>';
             }
@@ -722,15 +725,15 @@
 
             // Ajustar texto del botón de ampliación
             if (receipts.length > 1) {
-                $('#view-receipt-fullscreen').html('<span class="dashicons dashicons-images-alt2"></span> Ver ' + receipts.length + ' Recibos');
+                $('#view-receipt-fullscreen').html('<span class="dashicons dashicons-images-alt2"></span> ' + sprintf(__('Ver %d Recibos', 'aura-suite'), receipts.length));
             } else {
-                $('#view-receipt-fullscreen').html('<span class="dashicons dashicons-fullscreen-alt"></span> Ampliar');
+                $('#view-receipt-fullscreen').html('<span class="dashicons dashicons-fullscreen-alt"></span> ' + __('Ampliar', 'aura-suite'));
             }
         } else {
             $('#receipt-actions').hide();
             const noReceiptHtml = '<div class="no-receipt" id="no-receipt-message" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;text-align:center;width:100%;margin:auto;">' +
                 '<span class="dashicons dashicons-media-default" style="font-size:48px;width:48px;height:48px;opacity:0.35;margin-bottom:12px;display:inline-block;color:#94a3b8;"></span>' +
-                '<p style="font-size:14px;color:#94a3b8;margin:0 0 14px;font-weight:500;">No hay comprobante adjunto para esta transacción</p>' +
+                '<p style="font-size:14px;color:#94a3b8;margin:0 0 14px;font-weight:500;">' + __('No hay comprobante adjunto para esta transacción', 'aura-suite') + '</p>' +
                 '</div>';
             $('#receipt-container').html(noReceiptHtml);
         }
@@ -748,7 +751,7 @@
             $('#audit-updated-at').text(formatDateTime(data.updated_at));
             $('#audit-updated-by').text(data.updated_by || '—');
         } else {
-            $('#audit-updated-at').html('<em>No editado</em>');
+            $('#audit-updated-at').html('<em>' + __('No editado', 'aura-suite') + '</em>');
             $('#audit-updated-by').html('<em>—</em>');
         }
         
@@ -756,7 +759,7 @@
             $('#audit-approved-by').text(data.approver.name);
             $('#audit-approved-at').text(formatDateTime(data.approved_at));
         } else {
-            $('#audit-approved-by').html('<em>Pendiente</em>');
+            $('#audit-approved-by').html('<em>' + __('Pendiente', 'aura-suite') + '</em>');
             $('#audit-approved-at').html('<em>—</em>');
         }
 
@@ -764,22 +767,22 @@
         if (data.import_batch_id) {
             $('#audit-import-batch').html('<code>' + escapeHtml(data.import_batch_id) + '</code>');
         } else {
-            $('#audit-import-batch').html('<em>Registro Directo</em>');
+            $('#audit-import-batch').html('<em>' + __('Registro Directo', 'aura-suite') + '</em>');
         }
 
         // Origen de Integración
         if (data.related_module) {
             const modIcons = {
-                'inventory': '📦 Módulo Inventario',
-                'library':   '📚 Módulo Biblioteca',
-                'vehicles':  '🚗 Módulo Vehículos',
-                'students':  '🎓 Módulo Estudiantes',
-                'forms':     '📝 Módulo Formularios'
+                'inventory': __('📦 Módulo Inventario', 'aura-suite'),
+                'library':   __('📚 Módulo Biblioteca', 'aura-suite'),
+                'vehicles':  __('🚗 Módulo Vehículos', 'aura-suite'),
+                'students':  __('🎓 Módulo Estudiantes', 'aura-suite'),
+                'forms':     __('📝 Módulo Formularios', 'aura-suite')
             };
             const modText = modIcons[data.related_module] || ('📦 ' + data.related_module);
             $('#audit-integration-origin').html('<strong>' + escapeHtml(modText) + '</strong>' + (data.related_action ? ' (' + escapeHtml(data.related_action) + ')' : ''));
         } else {
-            $('#audit-integration-origin').html('<em>Movimiento Manual</em>');
+            $('#audit-integration-origin').html('<em>' + __('Movimiento Manual', 'aura-suite') + '</em>');
         }
         
         // Registro de cambios detallado (soporta audit_log o history)
@@ -810,28 +813,28 @@
                 'category_merged':        'randomize'
             };
             const fieldLabels = {
-                'status':                 'Cambio de estado',
-                'amount':                 'Cambio de monto',
-                'transaction_date':       'Cambio de fecha',
-                'description':            'Cambio de descripción',
-                'category_id':            'Cambio de categoría presupuesto',
-                'expense_category_id':    'Cambio de categoría del gasto',
-                'source_account_id':      'Cambio de cuenta origen',
-                'destination_account_id': 'Cambio de cuenta destino',
-                'area_id':                'Cambio de área / programa',
-                'payment_method':         'Cambio de método de pago',
-                'reference_number':       'Cambio de referencia',
-                'recipient_payer':        'Cambio de destinatario / pagador',
-                'third_party_id':         'Cambio de tercero / beneficiario',
-                'related_user_id':        'Cambio de usuario vinculado',
-                'related_user_concept':   'Cambio de concepto de vinculación',
-                'notes':                  'Cambio de notas',
-                'tags':                   'Cambio de etiquetas',
-                'receipt_file':           'Cambio de comprobante',
-                'rejection_reason':       'Motivo de rechazo',
-                'status_resubmitted':     'Re-enviada para aprobación',
-                'status_deletion':        'Envío a papelera / Eliminación',
-                'category_merged':        'Fusión de categoría'
+                'status':                 __('Cambio de estado', 'aura-suite'),
+                'amount':                 __('Cambio de monto', 'aura-suite'),
+                'transaction_date':       __('Cambio de fecha', 'aura-suite'),
+                'description':            __('Cambio de descripción', 'aura-suite'),
+                'category_id':            __('Cambio de categoría presupuesto', 'aura-suite'),
+                'expense_category_id':    __('Cambio de categoría del gasto', 'aura-suite'),
+                'source_account_id':      __('Cambio de cuenta origen', 'aura-suite'),
+                'destination_account_id': __('Cambio de cuenta destino', 'aura-suite'),
+                'area_id':                __('Cambio de área / programa', 'aura-suite'),
+                'payment_method':         __('Cambio de método de pago', 'aura-suite'),
+                'reference_number':       __('Cambio de referencia', 'aura-suite'),
+                'recipient_payer':        __('Cambio de destinatario / pagador', 'aura-suite'),
+                'third_party_id':         __('Cambio de tercero / beneficiario', 'aura-suite'),
+                'related_user_id':        __('Cambio de usuario vinculado', 'aura-suite'),
+                'related_user_concept':   __('Cambio de concepto de vinculación', 'aura-suite'),
+                'notes':                  __('Cambio de notas', 'aura-suite'),
+                'tags':                   __('Cambio de etiquetas', 'aura-suite'),
+                'receipt_file':           __('Cambio de comprobante', 'aura-suite'),
+                'rejection_reason':       __('Motivo de rechazo', 'aura-suite'),
+                'status_resubmitted':     __('Re-enviada para aprobación', 'aura-suite'),
+                'status_deletion':        __('Envío a papelera / Eliminación', 'aura-suite'),
+                'category_merged':        __('Fusión de categoría', 'aura-suite')
             };
             let logHtml = '<div class="audit-timeline">';
             const logs = data.audit_log || data.history || [];
@@ -860,7 +863,7 @@
             logHtml += '</div>';
             $('#audit-changes-list').html(logHtml);
         } else {
-            $('#audit-changes-list').html('<p><em>No hay cambios registrados</em></p>');
+            $('#audit-changes-list').html('<p><em>' + __('No hay cambios registrados', 'aura-suite') + '</em></p>');
         }
     }
     
@@ -991,7 +994,7 @@
         
         // Eliminar
         $('#delete-transaction').on('click', function() {
-            if (confirm(auraTransactionModal.messages.confirmDelete || '¿Estás seguro de que deseas eliminar esta transacción?')) {
+            if (confirm(auraTransactionModal.messages.confirmDelete || __('¿Estás seguro de que deseas eliminar esta transacción?', 'aura-suite'))) {
                 deleteTransaction(currentTransactionId);
             }
         });
@@ -1002,7 +1005,7 @@
      */
     function approveTransaction(transactionId) {
         const $btn = $('#approve-transaction');
-        $btn.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 4px 0 0;"></span> Aprobando...');
+        $btn.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 4px 0 0;"></span> ' + __('Aprobando...', 'aura-suite'));
         
         $.ajax({
             url: auraTransactionModal.ajaxUrl,
@@ -1015,16 +1018,16 @@
             success: function(response) {
                 if (response.success) {
                     closeTransactionModal();
-                    showPageNotice('success', auraTransactionModal.messages.approveSuccess || 'Transacción aprobada.');
+                    showPageNotice('success', auraTransactionModal.messages.approveSuccess || __('Transacción aprobada.', 'aura-suite'));
                     setTimeout(function() { location.reload(); }, 1200);
                 } else {
                     alert(response.data.message || auraTransactionModal.messages.error);
-                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-yes-alt"></span> Aprobar');
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-yes-alt"></span> ' + __('Aprobar', 'aura-suite'));
                 }
             },
             error: function() {
                 alert(auraTransactionModal.messages.error);
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-yes-alt"></span> Aprobar');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-yes-alt"></span> ' + __('Aprobar', 'aura-suite'));
             }
         });
     }
@@ -1051,7 +1054,7 @@
      */
     function rejectTransaction(transactionId, reason) {
         const $btn = $('.confirm-rejection');
-        $btn.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 4px 0 0;"></span> Rechazando...');
+        $btn.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 4px 0 0;"></span> ' + __('Rechazando...', 'aura-suite'));
         
         $.ajax({
             url: auraTransactionModal.ajaxUrl,
@@ -1066,16 +1069,16 @@
                 if (response.success) {
                     closeRejectionModal();
                     closeTransactionModal();
-                    showPageNotice('warning', auraTransactionModal.messages.rejectSuccess || 'Transacción rechazada.');
+                    showPageNotice('warning', auraTransactionModal.messages.rejectSuccess || __('Transacción rechazada.', 'aura-suite'));
                     setTimeout(function() { location.reload(); }, 1200);
                 } else {
                     alert(response.data.message || auraTransactionModal.messages.error);
-                    $btn.prop('disabled', false).html('Confirmar Rechazo');
+                    $btn.prop('disabled', false).html(__('Confirmar Rechazo', 'aura-suite'));
                 }
             },
             error: function() {
                 alert(auraTransactionModal.messages.error);
-                $btn.prop('disabled', false).html('Confirmar Rechazo');
+                $btn.prop('disabled', false).html(__('Confirmar Rechazo', 'aura-suite'));
             }
         });
     }
@@ -1094,7 +1097,7 @@
      */
     function deleteTransaction(transactionId) {
         const $btn = $('#delete-transaction');
-        $btn.prop('disabled', true).text('Eliminando...');
+        $btn.prop('disabled', true).text(__('Eliminando...', 'aura-suite'));
 
         $.ajax({
             url: auraTransactionModal.ajaxUrl,
@@ -1107,16 +1110,16 @@
             success: function(response) {
                 if (response.success) {
                     closeTransactionModal();
-                    showPageNotice('success', response.data && response.data.message ? response.data.message : 'Transacción eliminada correctamente.');
+                    showPageNotice('success', response.data && response.data.message ? response.data.message : __('Transacción eliminada correctamente.', 'aura-suite'));
                     setTimeout(function() { location.reload(); }, 1000);
                 } else {
                     alert(response.data && response.data.message ? response.data.message : auraTransactionModal.messages.error);
-                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-trash"></span> Eliminar');
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-trash"></span> ' + __('Eliminar', 'aura-suite'));
                 }
             },
             error: function() {
                 alert(auraTransactionModal.messages.error);
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-trash"></span> Eliminar');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-trash"></span> ' + __('Eliminar', 'aura-suite'));
             }
         });
     }
@@ -1127,7 +1130,7 @@
     function initReceiptUploader() {
         // Implementar con WordPress Media Uploader en futuro
         $('#upload-receipt-btn').on('click', function() {
-            alert('Funcionalidad de upload en desarrollo');
+            alert(__('Funcionalidad de upload en desarrollo', 'aura-suite'));
         });
     }
     
@@ -1244,7 +1247,7 @@
                 const isDrive = !!it.receipt_is_drive || !!it.is_drive || (url && url.indexOf('drive.google.com') !== -1) || (previewUrl && previewUrl.indexOf('drive.google.com') !== -1);
                 const isPdf = !!it.receipt_is_pdf || !!it.is_pdf || (url && /\.pdf($|\?)/i.test(url)) || (previewUrl && /\.pdf($|\?)/i.test(previewUrl)) || /\.pdf($|\?)/i.test(it.receipt_file || it.filename || it.name || '');
                 const isImg = !!it.receipt_is_img || !!it.is_img || (!isPdf && url && /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(url));
-                const name = it.receipt_file || it.name || it.filename || (isDrive ? 'Google Drive' : 'Comprobante');
+                const name = it.receipt_file || it.name || it.filename || (isDrive ? 'Google Drive' : __('Comprobante', 'aura-suite'));
                 return {
                     receipt_url: url,
                     receipt_preview_url: previewUrl,
@@ -1258,7 +1261,7 @@
             }).filter(Boolean);
 
             this.currentIndex = startIndex || 0;
-            this.title = modalTitle || 'Comprobante';
+            this.title = modalTitle || __('Comprobante', 'aura-suite');
             
             $('#aura-receipt-viewer-modal').fadeIn(200);
             $('body').addClass('aura-receipt-modal-open');
@@ -1286,7 +1289,7 @@
             // Título
             let displayTitle = this.title;
             if (this.receipts.length > 1) {
-                displayTitle += ' (' + (this.currentIndex + 1) + ' de ' + this.receipts.length + ')';
+                displayTitle += ' (' + sprintf(__('%1$d de %2$d', 'aura-suite'), this.currentIndex + 1, this.receipts.length) + ')';
             }
             $('#aura-receipt-viewer-title').text(displayTitle);
 
@@ -1297,7 +1300,7 @@
                 $badge.attr('class', 'aura-receipt-meta-badge badge-drive').html('<span class="dashicons dashicons-cloud"></span> Google Drive');
                 $('#aura-rc-open-drive').attr('href', item.receipt_url || item.receipt_preview_url).show();
             } else {
-                $badge.attr('class', 'aura-receipt-meta-badge badge-local').html('<span class="dashicons dashicons-admin-home"></span> Local');
+                $badge.attr('class', 'aura-receipt-meta-badge badge-local').html('<span class="dashicons dashicons-admin-home"></span> ' + __('Local', 'aura-suite'));
                 $('#aura-rc-open-drive').hide();
             }
 
@@ -1320,7 +1323,7 @@
                     const thumbSrc = r.receipt_thumbnail_url || r.receipt_url;
                     thumbsHtml += '<div class="aura-rc-thumb-item ' + activeClass + '" data-index="' + idx + '">';
                     if (r.receipt_is_img) {
-                        thumbsHtml += '<img src="' + thumbSrc + '" alt="Recibo ' + (idx + 1) + '">';
+                        thumbsHtml += '<img src="' + thumbSrc + '" alt="' + sprintf(__('Recibo %d', 'aura-suite'), idx + 1) + '">';
                     } else {
                         thumbsHtml += '<span class="dashicons dashicons-media-document" style="font-size:24px;color:#94a3b8;"></span>';
                     }
@@ -1344,14 +1347,14 @@
                 $('#aura-receipt-zoom-tools').show();
                 const imgSrc = item.receipt_thumbnail_url || previewUrl;
                 const $imgWrap = $('<div class="aura-rc-image-wrap" id="aura-rc-image-wrap"></div>');
-                const $img = $('<img src="' + imgSrc + '" class="aura-rc-stage-img" alt="Comprobante">');
+                const $img = $('<img src="' + imgSrc + '" class="aura-rc-stage-img" alt="' + __('Comprobante', 'aura-suite') + '">');
                 
                 $('#aura-receipt-spinner').show();
                 $img.on('load', function () {
                     $('#aura-receipt-spinner').hide();
                 }).on('error', function () {
                     $('#aura-receipt-spinner').hide();
-                    $stage.html('<div style="color:#ef4444;text-align:center;padding:40px;"><span class="dashicons dashicons-warning" style="font-size:48px;"></span><p>No se pudo cargar la imagen del comprobante.</p><a href="' + (item.receipt_url || '#') + '" target="_blank" class="button button-primary">Abrir en enlace directo</a></div>');
+                    $stage.html('<div style="color:#ef4444;text-align:center;padding:40px;"><span class="dashicons dashicons-warning" style="font-size:48px;"></span><p>' + __('No se pudo cargar la imagen del comprobante.', 'aura-suite') + '</p><a href="' + (item.receipt_url || '#') + '" target="_blank" class="button button-primary">' + __('Abrir en enlace directo', 'aura-suite') + '</a></div>');
                 });
 
                 $imgWrap.append($img);
@@ -1453,8 +1456,8 @@
                 activeIdx = parseInt($activeTab.data('index'), 10) || 0;
             }
             var txTitle = currentTransactionData.movement_id 
-                ? ('Transacción ' + currentTransactionData.movement_id) 
-                : ('Transacción #' + (currentTransactionData.id || '') + ' - Comprobante');
+                ? (sprintf(__('Transacción %s', 'aura-suite'), currentTransactionData.movement_id)) 
+                : sprintf(__('Transacción #%s - Comprobante', 'aura-suite'), (currentTransactionData.id || ''));
             window.AuraReceiptViewer.open(list, activeIdx, txTitle);
         }
     });
@@ -1480,7 +1483,7 @@
             }
         }
 
-        var title = $btn.data('title') || 'Comprobante';
+        var title = $btn.data('title') || __('Comprobante', 'aura-suite');
 
         if (filesList && filesList.length > 0) {
             var formattedList = filesList.map(function (item) {
@@ -1491,7 +1494,7 @@
                 var isDrive = !!item.is_drive || (url && url.indexOf('drive.google.com') !== -1);
                 var isPdf = !!item.is_pdf || (url && /\.pdf($|\?)/i.test(url));
                 var isImg = !!item.is_img || (!isPdf && url && /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(url));
-                var name = item.name || item.filename || (isDrive ? 'Google Drive' : 'Comprobante');
+                var name = item.name || item.filename || (isDrive ? 'Google Drive' : __('Comprobante', 'aura-suite'));
                 return {
                     receipt_url: url,
                     receipt_preview_url: previewUrl,

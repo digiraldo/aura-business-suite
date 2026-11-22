@@ -6,6 +6,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     const cfg = auraAuditConfig;
     let currentPage = 1;
     let totalPages  = 1;
@@ -133,7 +135,7 @@
 
         if (log.old_value || log.new_value) {
             diffHtml = '<table class="audit-diff-table">';
-            diffHtml += '<tr><th>Campo</th><th>Antes</th><th>Después</th></tr>';
+            diffHtml += '<tr><th>' + escHtml(__('Campo', 'aura-suite')) + '</th><th>' + escHtml(__('Antes', 'aura-suite')) + '</th><th>' + escHtml(__('Después', 'aura-suite')) + '</th></tr>';
 
             const allKeys = new Set([
                 ...Object.keys(log.old_value || {}),
@@ -230,7 +232,7 @@
 
         /* Exportar CSV */
         $('#btn-export-audit').on('click', function () {
-            $(this).prop('disabled', true).text('Exportando…');
+            $(this).prop('disabled', true).text(__('Exportando…', 'aura-suite'));
             $.post(cfg.ajaxUrl, {
                 action: 'aura_audit_export_csv',
                 nonce:  cfg.nonce,
@@ -241,7 +243,7 @@
                 }
             }).always(function () {
                 $('#btn-export-audit').prop('disabled', false).html(
-                    '<span class="dashicons dashicons-download"></span> Exportar todos (CSV)'
+                    '<span class="dashicons dashicons-download"></span> ' + escHtml(__('Exportar todos (CSV)', 'aura-suite'))
                 );
             });
         });

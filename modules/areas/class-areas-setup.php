@@ -434,7 +434,7 @@ class Aura_Areas_Setup {
                 'name'        => 'Hadime Junior',
                 'slug'        => 'hadime-junior',
                 'type'        => 'program',
-                'description' => 'Programa Hadime dirigido a jóvenes.',
+                'description' => __( 'Programa Hadime dirigido a jóvenes.', 'aura-suite' ),
                 'color'       => '#ede522',   // Amarillo institucional
                 'icon'        => 'dashicons-groups',
                 'sort_order'  => 1,
@@ -443,7 +443,7 @@ class Aura_Areas_Setup {
                 'name'        => 'Hadime Más',
                 'slug'        => 'hadime-mas',
                 'type'        => 'program',
-                'description' => 'Programa Hadime de profundización.',
+                'description' => __( 'Programa Hadime de profundización.', 'aura-suite' ),
                 'color'       => '#004526',   // Verde institucional
                 'icon'        => 'dashicons-groups',
                 'sort_order'  => 2,
@@ -452,7 +452,7 @@ class Aura_Areas_Setup {
                 'name'        => 'Hadime Raíces',
                 'slug'        => 'hadime-raices',
                 'type'        => 'program',
-                'description' => 'Programa Hadime de fundamentos y raíces.',
+                'description' => __( 'Programa Hadime de fundamentos y raíces.', 'aura-suite' ),
                 'color'       => '#720427',   // Borgoña institucional
                 'icon'        => 'dashicons-admin-site',
                 'sort_order'  => 3,
@@ -461,7 +461,7 @@ class Aura_Areas_Setup {
                 'name'        => 'Hadime Líderes',
                 'slug'        => 'hadime-lideres',
                 'type'        => 'program',
-                'description' => 'Programa de formación de líderes.',
+                'description' => __( 'Programa de formación de líderes.', 'aura-suite' ),
                 'color'       => '#5B2C6F',   // Morado institucional
                 'icon'        => 'dashicons-businessman',
                 'sort_order'  => 4,
@@ -470,7 +470,7 @@ class Aura_Areas_Setup {
                 'name'        => 'Hadime Misioneros',
                 'slug'        => 'hadime-misioneros',
                 'type'        => 'program',
-                'description' => 'Programa de formación misionera.',
+                'description' => __( 'Programa de formación misionera.', 'aura-suite' ),
                 'color'       => '#102e54',   // Azul institucional
                 'icon'        => 'dashicons-location-alt',
                 'sort_order'  => 5,
@@ -479,7 +479,7 @@ class Aura_Areas_Setup {
                 'name'        => 'Hadime Voluntarios',
                 'slug'        => 'hadime-voluntarios',
                 'type'        => 'program',
-                'description' => 'Programa de voluntariado.',
+                'description' => __( 'Programa de voluntariado.', 'aura-suite' ),
                 'color'       => '#E67E22',   // Naranja institucional
                 'icon'        => 'dashicons-heart',
                 'sort_order'  => 6,
@@ -488,7 +488,7 @@ class Aura_Areas_Setup {
                 'name'        => 'Hadime Rentas',
                 'slug'        => 'hadime-rentas',
                 'type'        => 'program',
-                'description' => 'Gestión de rentas e ingresos institucionales.',
+                'description' => __( 'Gestión de rentas e ingresos institucionales.', 'aura-suite' ),
                 'color'       => '#4D5656',   // Gris Pizarra institucional
                 'icon'        => 'dashicons-money-alt',
                 'sort_order'  => 7,
@@ -497,7 +497,7 @@ class Aura_Areas_Setup {
                 'name'        => 'Hadime Nuevo Programa',
                 'slug'        => 'hadime-nuevo-programa',
                 'type'        => 'program',
-                'description' => 'Programa por definir.',
+                'description' => __( 'Programa por definir.', 'aura-suite' ),
                 'color'       => '#008080',   // Cerceta / Turquesa institucional
                 'icon'        => 'dashicons-plus-alt',
                 'sort_order'  => 8,
@@ -980,12 +980,12 @@ class Aura_Areas_Setup {
 
         // Sembrar tipos predeterminados
         $defaults = [
-            [ 'program',    'Programa',     '#e0e7ff', 0, 1 ],
-            [ 'activity',   'Actividad',    '#dcfce7', 1, 0 ],
-            [ 'department', 'Departamento', '#fef3c7', 2, 0 ],
-            [ 'team',       'Equipo',       '#fee2e2', 3, 0 ],
-            [ 'church',     'Iglesia',      '#f3e8ff', 4, 0 ],
-            [ 'ministry',   'Ministerio',   '#fff7ed', 5, 0 ],
+            [ 'program',    __( 'Programa', 'aura-suite' ),     '#e0e7ff', 0, 1 ],
+            [ 'activity',   __( 'Actividad', 'aura-suite' ),    '#dcfce7', 1, 0 ],
+            [ 'department', __( 'Departamento', 'aura-suite' ), '#fef3c7', 2, 0 ],
+            [ 'team',       __( 'Equipo', 'aura-suite' ),       '#fee2e2', 3, 0 ],
+            [ 'church',     __( 'Iglesia', 'aura-suite' ),      '#f3e8ff', 4, 0 ],
+            [ 'ministry',   __( 'Ministerio', 'aura-suite' ),   '#fff7ed', 5, 0 ],
         ];
 
         foreach ( $defaults as [ $slug, $name, $color, $sort, $is_def ] ) {

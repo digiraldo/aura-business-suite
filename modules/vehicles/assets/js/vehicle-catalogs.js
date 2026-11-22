@@ -11,14 +11,26 @@
 
     if ( typeof auraVehiclesConfig === 'undefined' ) { return; }
 
+    var __ = ( window.wp && window.wp.i18n && window.wp.i18n.__ ) ? window.wp.i18n.__ : function ( s ) { return s; };
+    var sprintf = ( window.wp && window.wp.i18n && window.wp.i18n.sprintf ) ? window.wp.i18n.sprintf : function () {
+        var args = Array.prototype.slice.call( arguments );
+        var fmt = args.shift() || '';
+        var i = 0;
+        return String( fmt ).replace( /%(?:(\d+)\$)?([sd%])/g, function ( m, pos, type ) {
+            if ( type === '%' ) return '%';
+            var idx = pos ? ( parseInt( pos, 10 ) - 1 ) : i++;
+            return args[ idx ] !== undefined ? args[ idx ] : '';
+        } );
+    };
+
     var API = AuraVehicles.api;
 
     var DEFAULT_COLOR = '#2271b1';
 
     var TYPE_META = {
-        destination : { singular: 'Destino',   plural: 'destinos',   icon: 'dashicons-location' },
-        purpose     : { singular: 'Propósito', plural: 'propósitos', icon: 'dashicons-clipboard' },
-        expense     : { singular: 'Gasto',     plural: 'gastos',     icon: 'dashicons-money-alt' },
+        destination : { singular: __( 'Destino', 'aura-suite' ),   plural: __( 'destinos', 'aura-suite' ),   icon: 'dashicons-location' },
+        purpose     : { singular: __( 'Propósito', 'aura-suite' ), plural: __( 'propósitos', 'aura-suite' ), icon: 'dashicons-clipboard' },
+        expense     : { singular: __( 'Gasto', 'aura-suite' ),     plural: __( 'gastos', 'aura-suite' ),     icon: 'dashicons-money-alt' },
     };
 
     var state = {
@@ -93,7 +105,7 @@
                 updateAllCountBadges();
                 renderCurrentTab();
             } )
-            .fail( function () { showNotice( 'error', 'Error al cargar los catálogos.' ); } )
+            .fail( function () { showNotice( 'error', __( 'Error al cargar los catálogos.', 'aura-suite' ) ); } )
             .always( function () { setLoading( false ); } );
     }
 
@@ -136,12 +148,11 @@
         $( '#aura-cat-count-' + type ).text( activeCount ).toggleClass( 'has-items', activeCount > 0 );
 
         if ( items.length === 0 ) {
-            var meta = TYPE_META[ type ] || { plural: 'ítems', singular: 'Ítem', icon: 'dashicons-plus-alt' };
+            var meta = TYPE_META[ type ] || { plural: __( 'ítems', 'aura-suite' ), singular: __( 'Ítem', 'aura-suite' ), icon: 'dashicons-plus-alt' };
             $grid.html(
                 '<div class="aura-cat-empty-state">' +
                 '<div class="aura-cat-empty-icon"><span class="dashicons ' + meta.icon + '"></span></div>' +
-                '<p>No hay <strong>' + escHtml( meta.plural ) + '</strong> aún. ' +
-                'Usa <strong>Nuevo ' + escHtml( meta.singular ) + '</strong> para crear el primero.</p>' +
+                '<p>' + sprintf( __( 'No hay <strong>%1$s</strong> aún. Usa <strong>Nuevo %2$s</strong> para crear el primero.', 'aura-suite' ), escHtml( meta.plural ), escHtml( meta.singular ) ) + '</p>' +
                 '</div>'
             );
             return;
@@ -156,18 +167,18 @@
                 : '<span class="aura-cat-card-icon-text" style="color:' + escAttr( color ) + '">' +
                       escHtml( item.name.charAt( 0 ).toUpperCase() ) + '</span>';
             var areaLabel = item.area_id
-                ? '<span class="aura-cat-area-badge">' + escHtml( item.area_name || ( 'Área #' + item.area_id ) ) + '</span>'
-                : '<span class="aura-cat-global-badge">🌐 Global</span>';
+                ? '<span class="aura-cat-area-badge">' + escHtml( item.area_name || sprintf( __( 'Área #%s', 'aura-suite' ), item.area_id ) ) + '</span>'
+                : '<span class="aura-cat-global-badge">🌐 ' + escHtml( __( 'Global', 'aura-suite' ) ) + '</span>';
             var statusBadge = item.active
-                ? '<span class="aura-cat-badge aura-cat-badge-active">● Activo</span>'
-                : '<span class="aura-cat-badge aura-cat-badge-inactive">○ Inactivo</span>';
-            var toggleTitle = item.active ? 'Desactivar' : 'Activar';
+                ? '<span class="aura-cat-badge aura-cat-badge-active">● ' + escHtml( __( 'Activo', 'aura-suite' ) ) + '</span>'
+                : '<span class="aura-cat-badge aura-cat-badge-inactive">○ ' + escHtml( __( 'Inactivo', 'aura-suite' ) ) + '</span>';
+            var toggleTitle = item.active ? __( 'Desactivar', 'aura-suite' ) : __( 'Activar', 'aura-suite' );
             var toggleIcon  = item.active ? 'dashicons-hidden' : 'dashicons-visibility';
 
             html +=
                 '<div class="aura-cat-card' + ( item.active ? '' : ' is-inactive' ) + '"' +
                 '     data-id="' + item.id + '" style="border-left-color:' + escAttr( color ) + '">' +
-                '  <div class="aura-cat-card-grip" title="Arrastrar para reordenar">' +
+                '  <div class="aura-cat-card-grip" title="' + escAttr( __( 'Arrastrar para reordenar', 'aura-suite' ) ) + '">' +
                 '    <span class="dashicons dashicons-menu"></span></div>' +
                 '  <div class="aura-cat-card-top">' +
                 '    <div class="aura-cat-card-icon-wrap" style="background:' + iconBg + '">' +
@@ -180,7 +191,7 @@
                 '  </div>' +
                 '  <div class="aura-cat-card-actions">' +
                 '    <button class="aura-cat-action-btn aura-cat-btn-edit" data-id="' + item.id + '">' +
-                '      <span class="dashicons dashicons-edit"></span> Editar</button>' +
+                '      <span class="dashicons dashicons-edit"></span> ' + escHtml( __( 'Editar', 'aura-suite' ) ) + '</button>' +
                 '    <button class="aura-cat-action-btn aura-cat-btn-toggle"' +
                 '            data-id="' + item.id + '" data-active="' + ( item.active ? 1 : 0 ) + '">' +
                 '      <span class="dashicons ' + toggleIcon + '"></span> ' + escHtml( toggleTitle ) + '</button>' +
@@ -230,7 +241,7 @@
 
     function persistReorder( ids ) {
         API( 'vehicles/catalogs/reorder', 'PATCH', { ids: ids } )
-            .fail( function () { showNotice( 'error', 'Error al guardar el nuevo orden.' ); } );
+            .fail( function () { showNotice( 'error', __( 'Error al guardar el nuevo orden.', 'aura-suite' ) ); } );
     }
 
     /* ════════════════════════════════════════════════════════════
@@ -242,13 +253,13 @@
         resetForm();
         $( '#aura-cat-field-type' ).val( type );
         var meta = TYPE_META[ type ] || { singular: type };
-        $( '#aura-cat-modal-title' ).text( id ? 'Editar ' + meta.singular : 'Nuevo ' + meta.singular );
+        $( '#aura-cat-modal-title' ).text( id ? sprintf( __( 'Editar %s', 'aura-suite' ), meta.singular ) : sprintf( __( 'Nuevo %s', 'aura-suite' ), meta.singular ) );
 
         if ( id ) {
             API( 'vehicles/catalogs/' + id, 'GET' )
                 .done( populateForm )
                 .fail( function () {
-                    showNotice( 'error', 'Error al cargar el ítem.' );
+                    showNotice( 'error', __( 'Error al cargar el ítem.', 'aura-suite' ) );
                     closeModal();
                 } );
         }
@@ -308,13 +319,13 @@
         };
 
         if ( ! data.name ) {
-            showNotice( 'error', 'El nombre es obligatorio.' );
+            showNotice( 'error', __( 'El nombre es obligatorio.', 'aura-suite' ) );
             $( '#aura-cat-name' ).focus();
             return;
         }
 
         var $btn   = $( '#aura-cat-form button[type="submit"]' );
-        $btn.prop( 'disabled', true ).text( 'Guardando…' );
+        $btn.prop( 'disabled', true ).text( __( 'Guardando…', 'aura-suite' ) );
 
         var isEdit   = !! state.editingId;
         var endpoint = isEdit ? 'vehicles/catalogs/' + state.editingId : 'vehicles/catalogs';
@@ -324,18 +335,18 @@
             .done( function () {
                 showNotice( 'success',
                     '<span class="dashicons dashicons-yes-alt" style="vertical-align:middle;margin-right:4px;"></span>' +
-                    ( isEdit ? 'Ítem actualizado.' : 'Ítem creado correctamente.' )
+                    ( isEdit ? __( 'Ítem actualizado.', 'aura-suite' ) : __( 'Ítem creado correctamente.', 'aura-suite' ) )
                 );
                 closeModal();
                 loadAll();
             } )
             .fail( function ( xhr ) {
                 var msg = ( xhr.responseJSON && xhr.responseJSON.message )
-                    ? xhr.responseJSON.message : 'Error al guardar.';
+                    ? xhr.responseJSON.message : __( 'Error al guardar.', 'aura-suite' );
                 showNotice( 'error', msg );
             } )
             .always( function () {
-                $btn.prop( 'disabled', false ).text( 'Guardar' );
+                $btn.prop( 'disabled', false ).text( __( 'Guardar', 'aura-suite' ) );
             } );
     }
 
@@ -346,21 +357,21 @@
     function toggleActive( id, newActive ) {
         API( 'vehicles/catalogs/' + id, 'PUT', { active: newActive ? 1 : 0 } )
             .done( loadAll )
-            .fail( function () { showNotice( 'error', 'Error al cambiar el estado.' ); } );
+            .fail( function () { showNotice( 'error', __( 'Error al cambiar el estado.', 'aura-suite' ) ); } );
     }
 
     function confirmDelete( id, name ) {
         if ( ! window.confirm(
-            '¿Eliminar "' + name + '"?\n\n' +
-            'Si tiene salidas registradas, se desactivará en lugar de eliminarse.'
+            sprintf( __( '¿Eliminar "%s"?', 'aura-suite' ), name ) + '\n\n' +
+            __( 'Si tiene salidas registradas, se desactivará en lugar de eliminarse.', 'aura-suite' )
         ) ) { return; }
 
         API( 'vehicles/catalogs/' + id, 'DELETE' )
             .done( function ( resp ) {
-                showNotice( 'success', ( resp && resp.message ) ? resp.message : 'Ítem eliminado.' );
+                showNotice( 'success', ( resp && resp.message ) ? resp.message : __( 'Ítem eliminado.', 'aura-suite' ) );
                 loadAll();
             } )
-            .fail( function () { showNotice( 'error', 'Error al eliminar el ítem.' ); } );
+            .fail( function () { showNotice( 'error', __( 'Error al eliminar el ítem.', 'aura-suite' ) ); } );
     }
 
     /* ════════════════════════════════════════════════════════════

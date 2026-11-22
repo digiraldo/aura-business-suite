@@ -5,6 +5,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     if (typeof auraIntegrationsConfig === 'undefined') return;
 
     const cfg = auraIntegrationsConfig;
@@ -60,7 +62,7 @@
                 state.customCols.push($(this).val());
             });
             if (!state.software) {
-                alert('Por favor selecciona un software destino.');
+                alert(__('Por favor selecciona un software destino.', 'aura-suite'));
                 return false;
             }
         }
@@ -126,7 +128,7 @@
             success: function (res) {
                 if (!res.success || !res.data || !res.data.length) {
                     $container.html('<p class="notice notice-warning">' +
-                        'No se encontraron categorías activas.</p>');
+                        escHtml(__('No se encontraron categorías activas.', 'aura-suite')) + '</p>');
                     return;
                 }
                 renderMappingTable(res.data);
@@ -141,9 +143,9 @@
         var $container = $('#auraMappingContainer');
         var html = '<table class="widefat aura-mapping-table">';
         html += '<thead><tr>' +
-                '<th>Categoría</th>' +
-                '<th>Tipo</th>' +
-                '<th>Número / Nombre de cuenta contable</th>' +
+                '<th>' + escHtml(__('Categoría', 'aura-suite')) + '</th>' +
+                '<th>' + escHtml(__('Tipo', 'aura-suite')) + '</th>' +
+                '<th>' + escHtml(__('Número / Nombre de cuenta contable', 'aura-suite')) + '</th>' +
                 '</tr></thead><tbody>';
 
         $.each(categories, function (i, cat) {
@@ -207,7 +209,7 @@
                 mapping: state.mapping,
             },
             success: function (res) {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Guardar mapeo para reutilizar');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + escHtml(__('Guardar mapeo para reutilizar', 'aura-suite')));
                 if (res.success) {
                     $status.text(cfg.i18n.saved).addClass('aura-status-ok');
                 } else {
@@ -216,7 +218,7 @@
                 setTimeout(function () { $status.text(''); }, 4000);
             },
             error: function () {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Guardar mapeo para reutilizar');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + escHtml(__('Guardar mapeo para reutilizar', 'aura-suite')));
                 $status.text(cfg.i18n.error).addClass('aura-status-error');
             }
         });
@@ -297,7 +299,7 @@
             },
             success: function (res) {
                 $progress.fadeOut();
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> Descargar archivo');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> ' + escHtml(__('Descargar archivo', 'aura-suite')));
 
                 if (!res.success) {
                     alert(res.data && res.data.message ? res.data.message : cfg.i18n.error);
@@ -311,12 +313,12 @@
                 $('#auraPreviewMeta').html(
                     '<span class="aura-badge aura-badge-blue">' +
                     (cfg.softwareLabels[state.software] || state.software) + '</span> ' +
-                    '<span class="aura-badge aura-badge-green">✓ ' + res.data.count + ' transacciones exportadas</span>'
+                    '<span class="aura-badge aura-badge-green">✓ ' + res.data.count + ' ' + escHtml(__('transacciones exportadas', 'aura-suite')) + '</span>'
                 );
             },
             error: function () {
                 $progress.fadeOut();
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> Descargar archivo');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-download"></span> ' + escHtml(__('Descargar archivo', 'aura-suite')));
                 alert(cfg.i18n.error);
             }
         });
@@ -341,7 +343,7 @@
                 URL.revokeObjectURL(url);
             }, 500);
         } catch (e) {
-            alert('Error al generar el archivo: ' + e.message);
+            alert(__('Error al generar el archivo:', 'aura-suite') + ' ' + e.message);
         }
     }
 

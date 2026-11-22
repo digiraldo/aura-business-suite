@@ -30,10 +30,10 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
         <div>
             <h2 class="adp-card-title" style="font-size: 20px; margin: 0;">
-                📝 <?php esc_html_e( 'Tareas, Trabajos y Entregas', 'aura' ); ?>
+                📝 <?php esc_html_e( 'Tareas, Trabajos y Entregas', 'aura-suite' ); ?>
             </h2>
             <p class="adp-card-desc" style="margin: 4px 0 0 0;">
-                <?php esc_html_e( 'Asigna lecturas, ensayos y proyectos evaluables para los estudiantes de cada programa.', 'aura' ); ?>
+                <?php esc_html_e( 'Asigna lecturas, ensayos y proyectos evaluables para los estudiantes de cada programa.', 'aura-suite' ); ?>
             </p>
         </div>
 
@@ -42,7 +42,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
         $can_delete_tasks = current_user_can( 'aura_cal_delete_tasks' ) || $can_manage_tasks;
         if ( $can_manage_tasks ) : ?>
             <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-task">
-                ➕ <?php esc_html_e( 'Nueva Tarea', 'aura' ); ?>
+                ➕ <?php esc_html_e( 'Nueva Tarea', 'aura-suite' ); ?>
             </button>
         <?php endif; ?>
     </div>
@@ -51,13 +51,13 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
     <?php if ( empty( $tasks ) ) : ?>
         <div class="adp-card" style="text-align: center; padding: 48px 24px; border-radius: 12px;">
             <div style="font-size: 40px; margin-bottom: 12px;">📝</div>
-            <h3 style="font-size: 18px; margin-bottom: 6px;"><?php esc_html_e( 'No hay tareas registradas', 'aura' ); ?></h3>
+            <h3 style="font-size: 18px; margin-bottom: 6px;"><?php esc_html_e( 'No hay tareas registradas', 'aura-suite' ); ?></h3>
             <p style="color: var(--aura-text-secondary); max-width: 460px; margin: 0 auto 20px;">
-                <?php esc_html_e( 'Crea una tarea o trabajo práctico para que los estudiantes puedan entregar sus respuestas desde el portal.', 'aura' ); ?>
+                <?php esc_html_e( 'Crea una tarea o trabajo práctico para que los estudiantes puedan entregar sus respuestas desde el portal.', 'aura-suite' ); ?>
             </p>
             <?php if ( current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_teach_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
                 <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-first-task">
-                    ➕ <?php esc_html_e( 'Crear Primera Tarea', 'aura' ); ?>
+                    ➕ <?php esc_html_e( 'Crear Primera Tarea', 'aura-suite' ); ?>
                 </button>
             <?php endif; ?>
         </div>
@@ -71,11 +71,11 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
                                 <?php echo esc_html( $t->program_code ?: $t->program_name ); ?>
                             </span>
                             <?php if ( $t->status === 'published' ) : ?>
-                                <span class="adp-badge badge-emerald has-dot"><span class="pulse-dot"></span> <?php esc_html_e( 'Publicada', 'aura' ); ?></span>
+                                <span class="adp-badge badge-emerald has-dot"><span class="pulse-dot"></span> <?php esc_html_e( 'Publicada', 'aura-suite' ); ?></span>
                             <?php elseif ( $t->status === 'closed' ) : ?>
-                                <span class="adp-badge badge-slate"><?php esc_html_e( 'Cerrada', 'aura' ); ?></span>
+                                <span class="adp-badge badge-slate"><?php esc_html_e( 'Cerrada', 'aura-suite' ); ?></span>
                             <?php else : ?>
-                                <span class="adp-badge badge-amber"><?php esc_html_e( 'Borrador', 'aura' ); ?></span>
+                                <span class="adp-badge badge-amber"><?php esc_html_e( 'Borrador', 'aura-suite' ); ?></span>
                             <?php endif; ?>
                         </div>
 
@@ -103,9 +103,9 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
 
                         <?php if ( ! empty( $t->submission_type ) && $t->submission_type === 'text_only' ) : ?>
                             <div style="font-size: 11px; color: #6366f1; font-weight: 600; margin-bottom: 8px;">
-                                ✍️ <?php esc_html_e( 'Entrega por escrito en plataforma', 'aura' ); ?>
+                                ✍️ <?php esc_html_e( 'Entrega por escrito en plataforma', 'aura-suite' ); ?>
                                 <?php if ( ! empty( $t->min_words ) ) : ?>
-                                    (mín. <?php echo intval( $t->min_words ); ?> palabras)
+                                    <?php printf( esc_html__( '(mín. %d palabras)', 'aura-suite' ), intval( $t->min_words ) ); ?>
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>
@@ -119,19 +119,19 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
 
                     <div style="border-top: 1px solid var(--aura-border); padding-top: 12px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-size: 12px; color: var(--aura-text-muted);">
-                            ⏰ <?php esc_html_e( 'Vence:', 'aura' ); ?> <strong><?php echo esc_html( date_i18n( 'j M H:i', strtotime( $t->due_datetime ) ) ); ?></strong>
+                            ⏰ <?php esc_html_e( 'Vence:', 'aura-suite' ); ?> <strong><?php echo esc_html( date_i18n( 'j M H:i', strtotime( $t->due_datetime ) ) ); ?></strong>
                         </div>
                         <div style="display: flex; gap: 6px; align-items: center;">
                             <button type="button" class="btn btn-ghost btn-view-submissions" data-task-id="<?php echo esc_attr( $t->id ); ?>" data-task-title="<?php echo esc_attr( $t->title ); ?>" style="font-size: 12px; padding: 5px 10px;">
-                                📥 <?php echo intval( $t->submissions_count ); ?> <?php esc_html_e( 'Entregas', 'aura' ); ?>
+                                📥 <?php echo intval( $t->submissions_count ); ?> <?php esc_html_e( 'Entregas', 'aura-suite' ); ?>
                             </button>
                             <?php if ( $can_manage_tasks ) : ?>
-                                <button type="button" class="btn btn-ghost btn-edit-task" data-task-id="<?php echo esc_attr( $t->id ); ?>" style="font-size: 12px; padding: 5px 9px;" title="<?php esc_attr_e( 'Editar Tarea', 'aura' ); ?>">
+                                <button type="button" class="btn btn-ghost btn-edit-task" data-task-id="<?php echo esc_attr( $t->id ); ?>" style="font-size: 12px; padding: 5px 9px;" title="<?php esc_attr_e( 'Editar Tarea', 'aura-suite' ); ?>">
                                     ✏️
                                 </button>
                             <?php endif; ?>
                             <?php if ( $can_delete_tasks ) : ?>
-                                <button type="button" class="btn btn-ghost btn-delete-task" data-task-id="<?php echo esc_attr( $t->id ); ?>" style="font-size: 12px; padding: 5px 9px; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="<?php esc_attr_e( 'Eliminar Tarea', 'aura' ); ?>">
+                                <button type="button" class="btn btn-ghost btn-delete-task" data-task-id="<?php echo esc_attr( $t->id ); ?>" style="font-size: 12px; padding: 5px 9px; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" title="<?php esc_attr_e( 'Eliminar Tarea', 'aura-suite' ); ?>">
                                     🗑️
                                 </button>
                             <?php endif; ?>
@@ -151,7 +151,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
     <div class="aura-modal-container" style="max-width: 620px;">
         <div class="aura-modal-header">
             <h3 id="modal-task-title" class="adp-card-title" style="margin: 0; font-size: 18px;">
-                📝 <?php esc_html_e( 'Nueva Tarea / Evaluación', 'aura' ); ?>
+                📝 <?php esc_html_e( 'Nueva Tarea / Evaluación', 'aura-suite' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" data-close-modal="#modal-task-editor">&times;</button>
         </div>
@@ -163,18 +163,18 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
                 <div style="display: flex; flex-direction: column; gap: 14px;">
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Título de la Tarea', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                            <?php esc_html_e( 'Título de la Tarea', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                         </label>
-                        <input type="text" name="title" id="tsk-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Ensayo sobre la Gracia y la Redención', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                        <input type="text" name="title" id="tsk-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Ensayo sobre la Gracia y la Redención', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;">
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                🎓 <?php esc_html_e( 'Programa', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                                🎓 <?php esc_html_e( 'Programa', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                             </label>
                             <select name="program_id" id="tsk-prog-id" required class="form-control" style="width: 100%; border-radius: 8px;">
-                                <option value=""><?php esc_html_e( 'Seleccionar...', 'aura' ); ?></option>
+                                <option value=""><?php esc_html_e( 'Seleccionar...', 'aura-suite' ); ?></option>
                                 <?php foreach ( $programs as $p ) : ?>
                                     <option value="<?php echo esc_attr( $p->id ); ?>"><?php echo esc_html( $p->name ); ?></option>
                                 <?php endforeach; ?>
@@ -183,10 +183,10 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                📚 <?php esc_html_e( 'Materia', 'aura' ); ?>
+                                📚 <?php esc_html_e( 'Materia', 'aura-suite' ); ?>
                             </label>
                             <select name="subject_id" id="tsk-subj-id" class="form-control" style="width: 100%; border-radius: 8px;">
-                                <option value=""><?php esc_html_e( 'General / Opcional', 'aura' ); ?></option>
+                                <option value=""><?php esc_html_e( 'General / Opcional', 'aura-suite' ); ?></option>
                             </select>
                         </div>
                     </div>
@@ -194,10 +194,10 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
                     <!-- Vincular con Libro de Biblioteca -->
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            📖 <?php esc_html_e( 'Libro Asociado de la Biblioteca (Opcional para Resumen / Control de Lectura)', 'aura' ); ?>
+                            📖 <?php esc_html_e( 'Libro Asociado de la Biblioteca (Opcional para Resumen / Control de Lectura)', 'aura-suite' ); ?>
                         </label>
                         <select name="book_id" id="tsk-book-id" class="form-control" style="width: 100%; border-radius: 8px;">
-                            <option value=""><?php esc_html_e( '-- Ninguno (Tarea Estándar) --', 'aura' ); ?></option>
+                            <option value=""><?php esc_html_e( '-- Ninguno (Tarea Estándar) --', 'aura-suite' ); ?></option>
                             <?php foreach ( $books as $bk ) : ?>
                                 <option value="<?php echo esc_attr( $bk->id ); ?>">
                                     <?php echo esc_html( $bk->title . ( $bk->author ? ' — ' . $bk->author : '' ) ); ?>
@@ -205,25 +205,25 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
                             <?php endforeach; ?>
                         </select>
                         <small style="color: var(--aura-text-muted); font-size: 11px; display: block; margin-top: 4px;">
-                            <?php esc_html_e( 'Si asocias un libro, los estudiantes verán la ficha del ejemplar y podrán redactar y enviar su resumen directamente en el portal.', 'aura' ); ?>
+                            <?php esc_html_e( 'Si asocias un libro, los estudiantes verán la ficha del ejemplar y podrán redactar y enviar su resumen directamente en el portal.', 'aura-suite' ); ?>
                         </small>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                ✍️ <?php esc_html_e( 'Modalidad de Entrega', 'aura' ); ?>
+                                ✍️ <?php esc_html_e( 'Modalidad de Entrega', 'aura-suite' ); ?>
                             </label>
                             <select name="submission_type" id="tsk-submission-type" class="form-control" style="width: 100%; border-radius: 8px;">
-                                <option value="text_or_file"><?php esc_html_e( 'Texto Escrito o Archivo (Flexible)', 'aura' ); ?></option>
-                                <option value="text_only"><?php esc_html_e( 'Solo Resumen Escrito en Plataforma', 'aura' ); ?></option>
-                                <option value="file_only"><?php esc_html_e( 'Solo Archivo Adjunto (PDF / Doc)', 'aura' ); ?></option>
+                                <option value="text_or_file"><?php esc_html_e( 'Texto Escrito o Archivo (Flexible)', 'aura-suite' ); ?></option>
+                                <option value="text_only"><?php esc_html_e( 'Solo Resumen Escrito en Plataforma', 'aura-suite' ); ?></option>
+                                <option value="file_only"><?php esc_html_e( 'Solo Archivo Adjunto (PDF / Doc)', 'aura-suite' ); ?></option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                📏 <?php esc_html_e( 'Palabras Mínimas (0 = Sin límite)', 'aura' ); ?>
+                                📏 <?php esc_html_e( 'Palabras Mínimas (0 = Sin límite)', 'aura-suite' ); ?>
                             </label>
                             <input type="number" name="min_words" id="tsk-min-words" value="0" min="0" step="10" class="form-control" placeholder="Ej: 300" style="width: 100%; border-radius: 8px;">
                         </div>
@@ -232,14 +232,14 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                ⏰ <?php esc_html_e( 'Fecha y Hora Límite', 'aura' ); ?>
+                                ⏰ <?php esc_html_e( 'Fecha y Hora Límite', 'aura-suite' ); ?>
                             </label>
                             <input type="datetime-local" name="due_datetime" id="tsk-due" class="form-control" style="width: 100%; border-radius: 8px;">
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Puntaje Máximo', 'aura' ); ?>
+                                <?php esc_html_e( 'Puntaje Máximo', 'aura-suite' ); ?>
                             </label>
                             <input type="number" step="0.1" name="max_score" id="tsk-max-score" value="100" class="form-control" style="width: 100%; border-radius: 8px;">
                         </div>
@@ -247,9 +247,9 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
 
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Instrucciones y Requisitos', 'aura' ); ?>
+                            <?php esc_html_e( 'Instrucciones y Requisitos', 'aura-suite' ); ?>
                         </label>
-                        <textarea name="description" id="tsk-desc" rows="3" class="form-control" placeholder="<?php esc_attr_e( 'Escribe detalladamente las instrucciones de la tarea...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
+                        <textarea name="description" id="tsk-desc" rows="3" class="form-control" placeholder="<?php esc_attr_e( 'Escribe detalladamente las instrucciones de la tarea...', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
                     </div>
                 </div>
             </div>
@@ -258,16 +258,16 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
                 <div>
                     <?php if ( $can_delete_tasks ) : ?>
                         <button type="button" class="btn btn-ghost" id="btn-delete-task-modal" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); display: none;">
-                            🗑️ <?php esc_html_e( 'Eliminar Tarea', 'aura' ); ?>
+                            🗑️ <?php esc_html_e( 'Eliminar Tarea', 'aura-suite' ); ?>
                         </button>
                     <?php endif; ?>
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button type="button" class="btn btn-ghost" data-close-modal="#modal-task-editor">
-                        <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                        <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
                     </button>
                     <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-task">
-                        💾 <?php esc_html_e( 'Guardar Tarea', 'aura' ); ?>
+                        💾 <?php esc_html_e( 'Guardar Tarea', 'aura-suite' ); ?>
                     </button>
                 </div>
             </div>
@@ -283,7 +283,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$library_table'" ) === $library_table ) 
         <div class="aura-modal-header">
             <div>
                 <h3 id="subs-modal-title" class="adp-card-title" style="margin: 0; font-size: 18px;">
-                    📥 <?php esc_html_e( 'Entregas Recibidas', 'aura' ); ?>
+                    📥 <?php esc_html_e( 'Entregas Recibidas', 'aura-suite' ); ?>
                 </h3>
             </div>
             <button type="button" class="aura-modal-close" data-close-modal="#modal-task-submissions">&times;</button>

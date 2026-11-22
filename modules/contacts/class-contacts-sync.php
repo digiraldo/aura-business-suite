@@ -880,7 +880,7 @@ class Aura_Contacts_Sync {
                 ) );
             }
         } catch ( \Throwable $e ) {
-            Aura_Contacts_Setup::log_sync( 0, $provider->get_account_email(), $phase, 'batch', 'error', 'Fallo crítico en lote: ' . $e->getMessage() );
+            Aura_Contacts_Setup::log_sync( 0, $provider->get_account_email(), $phase, 'batch', 'error', sprintf( __( 'Fallo crítico en lote: %s', 'aura-suite' ), $e->getMessage() ) );
             wp_send_json_error( array(
                 'message' => sprintf( __( 'Error en lote de sincronización: %s', 'aura-suite' ), $e->getMessage() ),
             ) );
@@ -995,7 +995,7 @@ class Aura_Contacts_Sync {
         $is_connected   = $provider->is_connected();
         $google_account = $provider->get_account_email();
         $auth_mode      = get_option( Aura_Google_Auth_Factory::OPTION_AUTH_MODE, 'oauth' );
-        $last_sync_time = get_option( self::OPTION_LAST_SYNC_TIME, 'Nunca' );
+        $last_sync_time = get_option( self::OPTION_LAST_SYNC_TIME, __( 'Nunca', 'aura-suite' ) );
         $timestamp_file = date( 'Y-m-d_H-i-s' );
 
         if ( 'csv' === $format ) {
@@ -1009,7 +1009,7 @@ class Aura_Contacts_Sync {
             // BOM UTF-8 para Excel
             fprintf( $out, chr( 0xEF ) . chr( 0xBB ) . chr( 0xBF ) );
 
-            fputcsv( $out, array( 'ID Log', 'Fecha / Hora', 'Dirección', 'Acción', 'Estado', 'ID Contacto', 'Nombre Contacto', 'Organización', 'Email', 'Cuenta Google', 'Mensaje / Error de API' ) );
+            fputcsv( $out, array( __( 'ID Log', 'aura-suite' ), __( 'Fecha / Hora', 'aura-suite' ), __( 'Dirección', 'aura-suite' ), __( 'Acción', 'aura-suite' ), __( 'Estado', 'aura-suite' ), __( 'ID Contacto', 'aura-suite' ), __( 'Nombre Contacto', 'aura-suite' ), __( 'Organización', 'aura-suite' ), __( 'Email', 'aura-suite' ), __( 'Cuenta Google', 'aura-suite' ), __( 'Mensaje / Error de API', 'aura-suite' ) ) );
 
             foreach ( $logs as $row ) {
                 $cname = trim( ( $row['first_name'] ?? '' ) . ' ' . ( $row['last_name'] ?? '' ) );

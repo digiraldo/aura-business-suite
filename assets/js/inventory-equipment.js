@@ -11,6 +11,17 @@
 (function ($) {
     'use strict';
 
+    function __( s, domain ) {
+        return ( window.wp && wp.i18n && typeof wp.i18n.__ === 'function' ) ? wp.i18n.__( s, domain || 'aura-suite' ) : s;
+    }
+    function sprintf( fmt ) {
+        if ( window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function' ) {
+            return wp.i18n.sprintf.apply( wp.i18n, arguments );
+        }
+        var args = Array.prototype.slice.call( arguments, 1 ), i = 0;
+        return String( fmt ).replace( /%[sd]/g, function () { return args[ i++ ]; } );
+    }
+
     // Proteger contra doble ejecución accidental si el script se encolara más de una vez
     if (window.__auraInvEquipmentBooted) {
         return;
@@ -37,14 +48,14 @@
         // ── Helpers de render ────────────────────────────────────
         _thumb: function (eq) {
             if (!eq.photo_thumb_url && !eq.photo_full_url) {
-                return '<div class="aura-inv-thumb-empty" data-tooltip="Sin fotografía registrada">' +
+                return '<div class="aura-inv-thumb-empty" data-tooltip="' + escHtml(__('Sin fotografía registrada', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-format-image"></span>' +
                     '</div>';
             }
             var fullUrl  = eq.photo_full_url || eq.photo_thumb_url;
             var thumbUrl = eq.photo_thumb_url || eq.photo_full_url;
-            var label    = eq.name || 'Equipo';
-            var subMeta  = [eq.brand || '', eq.internal_code ? ('Cód: ' + eq.internal_code) : ''].filter(Boolean).join(' · ');
+            var label    = eq.name || __('Equipo', 'aura-suite');
+            var subMeta  = [eq.brand || '', eq.internal_code ? sprintf(__('Cód: %s', 'aura-suite'), eq.internal_code) : ''].filter(Boolean).join(' · ');
 
             var tooltipCard = '<div class="aura-floating-img-card aura-inv-photo-card">' +
                 '<img src="' + escHtml(fullUrl) + '" alt="' + escHtml(label) + '" style="max-width:260px;max-height:260px;width:auto;height:auto;object-fit:contain;border-radius:8px;display:block;margin:0 auto;">' +
@@ -73,7 +84,7 @@
                 return html;
             }
             if (eq.next_maintenance_date) {
-                var okLbl = (cfg.txt && cfg.txt.maint_labels && cfg.txt.maint_labels.ok) ? cfg.txt.maint_labels.ok : 'Al día';
+                var okLbl = (cfg.txt && cfg.txt.maint_labels && cfg.txt.maint_labels.ok) ? cfg.txt.maint_labels.ok : __('Al día', 'aura-suite');
                 return '<span class="aura-inv-maint-badge aura-inv-maint-ok">' + escHtml(okLbl) + '</span>' +
                     '<div class="aura-inv-cell-sub">' + escHtml(eq.next_maintenance_date) + '</div>';
             }
@@ -84,7 +95,7 @@
             var cfg = this.cfg;
             var labels = (cfg.txt && cfg.txt.status_labels) ? cfg.txt.status_labels : {};
             return eq.can_edit
-                ? '<select class="aura-inv-status-select form-select form-select-sm aura-inv-status-' + escHtml(eq.status) + '" data-id="' + eq.id + '" data-tooltip="Cambiar estado operativo">' +
+                ? '<select class="aura-inv-status-select form-select form-select-sm aura-inv-status-' + escHtml(eq.status) + '" data-id="' + eq.id + '" data-tooltip="' + escHtml(__('Cambiar estado operativo', 'aura-suite')) + '">' +
                   renderStatusOptions(labels, eq.status) + '</select>'
                 : '<span class="aura-inv-status-badge aura-inv-status-' + escHtml(eq.status) + '">' + escHtml(eq.status_label || eq.status) + '</span>';
         },
@@ -97,12 +108,12 @@
                 '<div class="aura-tip-title">' + escHtml(eq.name) + '</div>' +
                 '</div></div>' +
                 '<div class="aura-tip-card-body">' +
-                '<div class="aura-tip-row"><span>Categoría</span><strong>' + escHtml(eq.category || '—') + '</strong></div>' +
-                '<div class="aura-tip-row"><span>Estado</span><strong>' + escHtml(stLbl) + '</strong></div>' +
-                '<div class="aura-tip-row"><span>Marca / Modelo</span><strong>' + escHtml([eq.brand, eq.model].filter(Boolean).join(' · ') || '—') + '</strong></div>' +
-                '<div class="aura-tip-row"><span>Cód. / Serie</span><strong>' + escHtml([eq.internal_code, eq.serial_number].filter(Boolean).join(' / ') || '—') + '</strong></div>' +
-                '<div class="aura-tip-row"><span>Ubicación</span><strong>' + escHtml(eq.location || '—') + '</strong></div>' +
-                '<div class="aura-tip-row"><span>Responsable</span><strong>' + escHtml(eq.responsible_name || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Categoría', 'aura-suite')) + '</span><strong>' + escHtml(eq.category || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Estado', 'aura-suite')) + '</span><strong>' + escHtml(stLbl) + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Marca / Modelo', 'aura-suite')) + '</span><strong>' + escHtml([eq.brand, eq.model].filter(Boolean).join(' · ') || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Cód. / Serie', 'aura-suite')) + '</span><strong>' + escHtml([eq.internal_code, eq.serial_number].filter(Boolean).join(' / ') || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Ubicación', 'aura-suite')) + '</span><strong>' + escHtml(eq.location || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Responsable', 'aura-suite')) + '</span><strong>' + escHtml(eq.responsible_name || '—') + '</strong></div>' +
                 '</div></div>';
             return card;
         },
@@ -110,19 +121,19 @@
         _actions: function (eq) {
             var cfg = this.cfg;
             var h = '<div class="aura-row-actions aura-inv-row-actions">';
-            h += '<button type="button" class="aura-btn-action-icon aura-btn-view aura-inv-btn-detail" data-id="' + eq.id + '" data-tooltip="Ver ficha 360°" aria-label="Ver ficha">' +
+            h += '<button type="button" class="aura-btn-action-icon aura-btn-view aura-inv-btn-detail" data-id="' + eq.id + '" data-tooltip="' + escHtml(__('Ver ficha 360°', 'aura-suite')) + '" aria-label="' + escHtml(__('Ver ficha', 'aura-suite')) + '">' +
                  '<span class="dashicons dashicons-visibility"></span></button>';
             if (cfg.can_maint !== false) {
-                h += '<button type="button" class="aura-btn-action-icon aura-btn-maint aura-inv-btn-maint" data-id="' + eq.id + '" data-tooltip="' + escHtml((cfg.txt && cfg.txt.register_maint) || 'Registrar Mantenimiento') + '" aria-label="Registrar mantenimiento">' +
+                h += '<button type="button" class="aura-btn-action-icon aura-btn-maint aura-inv-btn-maint" data-id="' + eq.id + '" data-tooltip="' + escHtml((cfg.txt && cfg.txt.register_maint) || __('Registrar Mantenimiento', 'aura-suite')) + '" aria-label="' + escHtml(__('Registrar mantenimiento', 'aura-suite')) + '">' +
                      '<span class="dashicons dashicons-admin-tools"></span></button>';
             }
             if (eq.can_edit) {
-                h += '<button type="button" class="aura-btn-action-icon aura-btn-edit aura-inv-btn-edit" data-id="' + eq.id + '" data-tooltip="Editar equipo" aria-label="Editar">' +
+                h += '<button type="button" class="aura-btn-action-icon aura-btn-edit aura-inv-btn-edit" data-id="' + eq.id + '" data-tooltip="' + escHtml(__('Editar equipo', 'aura-suite')) + '" aria-label="' + escHtml(__('Editar', 'aura-suite')) + '">' +
                      '<span class="dashicons dashicons-edit"></span></button>';
             }
             if (eq.can_delete) {
                 h += '<button type="button" class="aura-btn-action-icon aura-btn-delete delete aura-inv-btn-delete" data-id="' + eq.id +
-                     '" data-name="' + escHtml(eq.name) + '" data-tooltip="Eliminar equipo" aria-label="Eliminar">' +
+                     '" data-name="' + escHtml(eq.name) + '" data-tooltip="' + escHtml(__('Eliminar equipo', 'aura-suite')) + '" aria-label="' + escHtml(__('Eliminar', 'aura-suite')) + '">' +
                      '<span class="dashicons dashicons-trash"></span></button>';
             }
             h += '</div>';
@@ -164,34 +175,34 @@
             h += '</div>'; // .aura-inv-child-top
 
             h += '<div class="aura-inv-child-specs">';
-            h += childSpec('Categoría', eq.category || '—');
-            h += childSpec('Cód. Interno', eq.internal_code || '—');
-            h += childSpec('Núm. Serie', eq.serial_number || '—');
-            h += childSpec('Ubicación', eq.location || '—');
-            h += childSpec('Área', eq.area_name || '—');
-            h += childSpec('Responsable', eq.responsible_name || '—');
-            h += childSpec('Próx. Mantenimiento', eq.next_maintenance_date || 'No programado');
-            h += childSpec('Costo / Valor Est.', costText + ' / ' + estText);
+            h += childSpec(__('Categoría', 'aura-suite'), eq.category || '—');
+            h += childSpec(__('Cód. Interno', 'aura-suite'), eq.internal_code || '—');
+            h += childSpec(__('Núm. Serie', 'aura-suite'), eq.serial_number || '—');
+            h += childSpec(__('Ubicación', 'aura-suite'), eq.location || '—');
+            h += childSpec(__('Área', 'aura-suite'), eq.area_name || '—');
+            h += childSpec(__('Responsable', 'aura-suite'), eq.responsible_name || '—');
+            h += childSpec(__('Próx. Mantenimiento', 'aura-suite'), eq.next_maintenance_date || __('No programado', 'aura-suite'));
+            h += childSpec(__('Costo / Valor Est.', 'aura-suite'), costText + ' / ' + estText);
             h += '</div>';
 
             if (eq.description) {
-                h += '<div class="aura-inv-child-desc"><strong>Descripción:</strong> ' + escHtml(eq.description) + '</div>';
+                h += '<div class="aura-inv-child-desc"><strong>' + escHtml(__('Descripción:', 'aura-suite')) + '</strong> ' + escHtml(eq.description) + '</div>';
             }
 
             h += '<div class="aura-inv-child-actions">';
             h += '<button type="button" class="btn btn-indigo btn-sm aura-inv-btn-detail" data-id="' + eq.id + '">' +
-                 '<span class="dashicons dashicons-visibility"></span> Ver Ficha 360°</button>';
+                 '<span class="dashicons dashicons-visibility"></span> ' + escHtml(__('Ver Ficha 360°', 'aura-suite')) + '</button>';
             if (cfg.can_maint !== false) {
                 h += '<button type="button" class="btn btn-glass btn-sm aura-inv-btn-maint" data-id="' + eq.id + '">' +
-                     '<span class="dashicons dashicons-admin-tools"></span> Mantenimiento</button>';
+                     '<span class="dashicons dashicons-admin-tools"></span> ' + escHtml(__('Mantenimiento', 'aura-suite')) + '</button>';
             }
             if (eq.can_edit) {
                 h += '<button type="button" class="btn btn-glass btn-sm aura-inv-btn-edit" data-id="' + eq.id + '">' +
-                     '<span class="dashicons dashicons-edit"></span> Editar</button>';
+                     '<span class="dashicons dashicons-edit"></span> ' + escHtml(__('Editar', 'aura-suite')) + '</button>';
             }
             if (eq.can_delete) {
                 h += '<button type="button" class="btn btn-glass btn-sm aura-btn-danger-outline aura-inv-btn-delete" data-id="' + eq.id + '" data-name="' + escHtml(eq.name) + '">' +
-                     '<span class="dashicons dashicons-trash"></span> Eliminar</button>';
+                     '<span class="dashicons dashicons-trash"></span> ' + escHtml(__('Eliminar', 'aura-suite')) + '</button>';
             }
             h += '</div>'; // .aura-inv-child-actions
             h += '</div>'; // .aura-inv-child-main
@@ -218,13 +229,13 @@
                 lengthMenu: [10, 20, 50, 100],
                 order: [[2, 'asc']],
                 language: {
-                    processing:  (cfg.txt && cfg.txt.loading) || 'Cargando…',
-                    zeroRecords: (cfg.txt && cfg.txt.no_results) || 'No se encontraron equipos.',
-                    info:        '_TOTAL_ equipos registrados',
-                    infoEmpty:   '0 equipos',
-                    infoFiltered: '(filtrado de _MAX_ en total)',
+                    processing:  (cfg.txt && cfg.txt.loading) || __('Cargando…', 'aura-suite'),
+                    zeroRecords: (cfg.txt && cfg.txt.no_results) || __('No se encontraron equipos.', 'aura-suite'),
+                    info:        __('_TOTAL_ equipos registrados', 'aura-suite'),
+                    infoEmpty:   __('0 equipos', 'aura-suite'),
+                    infoFiltered: __('(filtrado de _MAX_ en total)', 'aura-suite'),
                     search:      '',
-                    lengthMenu:  'Mostrar _MENU_ por página',
+                    lengthMenu:  __('Mostrar _MENU_ por página', 'aura-suite'),
                     paginate: { first: '«', last: '»', next: '›', previous: '‹' }
                 },
                 searching:  false,
@@ -266,7 +277,7 @@
                         render: function (data, type, eq) {
                             if (type !== 'display') return '';
                             return '<button type="button" class="aura-inv-row-toggle" data-id="' + eq.id + '" ' +
-                                'data-tooltip="Desplegar ficha completa del equipo" aria-expanded="false" aria-label="Expandir fila">+</button>';
+                                'data-tooltip="' + escHtml(__('Desplegar ficha completa del equipo', 'aura-suite')) + '" aria-expanded="false" aria-label="' + escHtml(__('Expandir fila', 'aura-suite')) + '">+</button>';
                         }
                     },
                     {
@@ -289,14 +300,14 @@
                                     'data-aura-tooltip="' + escHtml(tip) + '">' + escHtml(eq.name) + '</a>';
                             var sub = [
                                 eq.brand ? escHtml(eq.brand) : '',
-                                eq.internal_code ? 'Cód: ' + escHtml(eq.internal_code) : ''
+                                eq.internal_code ? escHtml(sprintf(__('Cód: %s', 'aura-suite'), eq.internal_code)) : ''
                             ].filter(Boolean).join(' · ');
                             if (sub) h += '<div class="aura-inv-cell-sub">' + sub + '</div>';
 
                             // Chips móviles compactos (visibles solo <= 782px cuando columnas secundarias se ocultan)
                             var mobParts = [];
                             if (eq.category) mobParts.push(escHtml(eq.category));
-                            if (eq.next_maintenance_date) mobParts.push('Mant: ' + escHtml(eq.next_maintenance_date));
+                            if (eq.next_maintenance_date) mobParts.push(escHtml(sprintf(__('Mant: %s', 'aura-suite'), eq.next_maintenance_date)));
                             if (mobParts.length) {
                                 h += '<div class="aura-inv-mobile-meta">' + mobParts.join(' · ') + '</div>';
                             }
@@ -457,7 +468,7 @@
                 data:   { action: 'aura_inventory_equipment_get_detail', nonce: cfg.nonce, id: id },
                 success: function (res) {
                     if (!res.success) {
-                        $body.html('<div class="aura-inv-empty-state"><p>' + escHtml((res.data && res.data.message) || (cfg.txt && cfg.txt.error) || 'Error') + '</p></div>');
+                        $body.html('<div class="aura-inv-empty-state"><p>' + escHtml((res.data && res.data.message) || (cfg.txt && cfg.txt.error) || __('Error', 'aura-suite')) + '</p></div>');
                         if (window.AuraUI && modalEl) window.AuraUI.hideModalSkeleton(modalEl);
                         return;
                     }
@@ -479,7 +490,7 @@
                         html += '<img src="' + escHtml(photoUrl) + '" alt="' + escHtml(eq.name) + '" class="aura-table-thumb-preview" ' +
                                 'data-img-url="' + escHtml(photoUrl) + '" data-preview-title="' + escHtml(eq.name) + '">';
                     } else {
-                        html += '<div class="aura-inv-detail-no-photo"><span class="dashicons dashicons-format-image"></span><small>Sin fotografía</small></div>';
+                        html += '<div class="aura-inv-detail-no-photo"><span class="dashicons dashicons-format-image"></span><small>' + escHtml(__('Sin fotografía', 'aura-suite')) + '</small></div>';
                     }
                     html += '</div>';
 
@@ -487,7 +498,7 @@
                     html += '<div class="aura-inv-detail-badges">' +
                             '<span class="aura-inv-status-badge aura-inv-status-' + escHtml(eq.status) + '">' + escHtml(statusLbl) + '</span>' +
                             (eq.category ? '<span class="aura-inv-cat-chip">' + escHtml(eq.category) + '</span>' : '') +
-                            (eq.internal_code ? '<span class="aura-inv-code-chip">Cód: ' + escHtml(eq.internal_code) + '</span>' : '') +
+                            (eq.internal_code ? '<span class="aura-inv-code-chip">' + escHtml(sprintf(__('Cód: %s', 'aura-suite'), eq.internal_code)) + '</span>' : '') +
                             '</div>';
                     html += '<h3 class="aura-inv-detail-name">' + escHtml(eq.name) + '</h3>';
                     if (eq.brand || eq.model) {
@@ -499,10 +510,10 @@
                     if (cfg.can_maint !== false) {
                         html += '<div class="aura-inv-detail-quick-actions">';
                         html += '<a href="' + cfg.newMaintUrl + '&equipment_id=' + eq.id + '" class="btn btn-indigo btn-sm">' +
-                                '<span class="dashicons dashicons-admin-tools"></span> ' + escHtml((cfg.txt && cfg.txt.register_maint) || 'Registrar Mantenimiento') + '</a>';
+                                '<span class="dashicons dashicons-admin-tools"></span> ' + escHtml((cfg.txt && cfg.txt.register_maint) || __('Registrar Mantenimiento', 'aura-suite')) + '</a>';
                         if (cfg.maintListUrl) {
                             html += '<a href="' + cfg.maintListUrl + '&equipment_id=' + eq.id + '" class="btn btn-glass btn-sm">' +
-                                    '<span class="dashicons dashicons-list-view"></span> ' + escHtml((cfg.txt && cfg.txt.view_maint_history) || 'Historial de Mantenimientos') + '</a>';
+                                    '<span class="dashicons dashicons-list-view"></span> ' + escHtml((cfg.txt && cfg.txt.view_maint_history) || __('Historial de Mantenimientos', 'aura-suite')) + '</a>';
                         }
                         html += '</div>';
                     }
@@ -517,56 +528,56 @@
                     };
 
                     // SECCIÓN I: INFORMACIÓN GENERAL
-                    html += startSection('Información General', 'info');
-                    html += detailRow('Marca', escHtml(eq.brand || '—'));
-                    html += detailRow('Modelo', escHtml(eq.model || '—'));
-                    html += detailRow('Código interno', escHtml(eq.internal_code || '—'));
-                    html += detailRow('Número de serie', escHtml(eq.serial_number || '—'));
-                    html += detailRow('Categoría', escHtml(eq.category || '—'));
-                    html += detailRow('Ubicación', escHtml(eq.location || '—'));
-                    html += detailRow('Responsable', escHtml(eq.responsible_name || '—'));
+                    html += startSection(__('Información General', 'aura-suite'), 'info');
+                    html += detailRow(__('Marca', 'aura-suite'), escHtml(eq.brand || '—'));
+                    html += detailRow(__('Modelo', 'aura-suite'), escHtml(eq.model || '—'));
+                    html += detailRow(__('Código interno', 'aura-suite'), escHtml(eq.internal_code || '—'));
+                    html += detailRow(__('Número de serie', 'aura-suite'), escHtml(eq.serial_number || '—'));
+                    html += detailRow(__('Categoría', 'aura-suite'), escHtml(eq.category || '—'));
+                    html += detailRow(__('Ubicación', 'aura-suite'), escHtml(eq.location || '—'));
+                    html += detailRow(__('Responsable', 'aura-suite'), escHtml(eq.responsible_name || '—'));
                     if (eq.parent_equipment_id && eq.parent_equipment_name) {
-                        html += detailRow('Componente de', '<span class="aura-inv-parent-link">↑ ' + escHtml(eq.parent_equipment_name) + '</span>');
+                        html += detailRow(__('Componente de', 'aura-suite'), '<span class="aura-inv-parent-link">↑ ' + escHtml(eq.parent_equipment_name) + '</span>');
                     }
                     html += '</div></div>';
 
                     // SECCIÓN II: ADQUISICIÓN Y VALOR
-                    html += startSection('Adquisición y Valor', 'cart');
-                    html += detailRow('Fecha adquisición', escHtml(eq.acquisition_date || '—'));
-                    html += detailRow('Proveedor', escHtml(eq.supplier || '—'));
-                    html += detailRow('Vencimiento garantía', escHtml(eq.warranty_date || '—'));
-                    html += detailRow('Costo', eq.cost > 0 ? '$' + parseFloat(eq.cost).toLocaleString() : '—');
-                    html += detailRow('Valor estimado', eq.estimated_value > 0 ? '$' + parseFloat(eq.estimated_value).toLocaleString() : '—');
+                    html += startSection(__('Adquisición y Valor', 'aura-suite'), 'cart');
+                    html += detailRow(__('Fecha adquisición', 'aura-suite'), escHtml(eq.acquisition_date || '—'));
+                    html += detailRow(__('Proveedor', 'aura-suite'), escHtml(eq.supplier || '—'));
+                    html += detailRow(__('Vencimiento garantía', 'aura-suite'), escHtml(eq.warranty_date || '—'));
+                    html += detailRow(__('Costo', 'aura-suite'), eq.cost > 0 ? '$' + parseFloat(eq.cost).toLocaleString() : '—');
+                    html += detailRow(__('Valor estimado', 'aura-suite'), eq.estimated_value > 0 ? '$' + parseFloat(eq.estimated_value).toLocaleString() : '—');
                     html += '</div></div>';
 
                     // SECCIÓN III: ESPECIFICACIONES TÉCNICAS
                     if (eq.oil_type || eq.oil_capacity || eq.fuel_type || eq.voltage || eq.hydraulic_pressure) {
-                        html += startSection('Especificaciones Técnicas', 'dashboard');
-                        if (eq.oil_type || eq.oil_capacity) html += detailRow('Aceite', escHtml((eq.oil_capacity ? eq.oil_capacity + 'L ' : '') + (eq.oil_type || '—')));
-                        if (eq.fuel_type) html += detailRow('Combustible', escHtml(eq.fuel_type));
-                        if (eq.voltage) html += detailRow('Voltaje', escHtml(eq.voltage + 'V'));
-                        if (eq.hydraulic_pressure) html += detailRow('Presión', escHtml(eq.hydraulic_pressure));
+                        html += startSection(__('Especificaciones Técnicas', 'aura-suite'), 'dashboard');
+                        if (eq.oil_type || eq.oil_capacity) html += detailRow(__('Aceite', 'aura-suite'), escHtml((eq.oil_capacity ? eq.oil_capacity + 'L ' : '') + (eq.oil_type || '—')));
+                        if (eq.fuel_type) html += detailRow(__('Combustible', 'aura-suite'), escHtml(eq.fuel_type));
+                        if (eq.voltage) html += detailRow(__('Voltaje', 'aura-suite'), escHtml(eq.voltage + 'V'));
+                        if (eq.hydraulic_pressure) html += detailRow(__('Presión', 'aura-suite'), escHtml(eq.hydraulic_pressure));
                         html += '</div></div>';
                     }
 
                     // SECCIÓN IV: MANTENIMIENTO
-                    html += startSection('Mantenimiento Programado', 'admin-tools');
-                    var intervalStr = 'No requiere';
+                    html += startSection(__('Mantenimiento Programado', 'aura-suite'), 'admin-tools');
+                    var intervalStr = __('No requiere', 'aura-suite');
                     if (eq.requires_maintenance == 1) {
                         var p = [];
-                        if (eq.interval_months && (eq.interval_type === 'time' || eq.interval_type === 'both')) p.push('Cada ' + eq.interval_months + ' meses');
-                        if (eq.interval_hours && (eq.interval_type === 'hours' || eq.interval_type === 'both')) p.push('Cada ' + eq.interval_hours + ' horas');
-                        intervalStr = p.join(' o ') || 'Definido';
+                        if (eq.interval_months && (eq.interval_type === 'time' || eq.interval_type === 'both')) p.push(sprintf(__('Cada %s meses', 'aura-suite'), eq.interval_months));
+                        if (eq.interval_hours && (eq.interval_type === 'hours' || eq.interval_type === 'both')) p.push(sprintf(__('Cada %s horas', 'aura-suite'), eq.interval_hours));
+                        intervalStr = p.join(' ' + __('o', 'aura-suite') + ' ') || __('Definido', 'aura-suite');
                     }
-                    html += detailRow('Frecuencia requerida', escHtml(intervalStr));
-                    html += detailRow('Último mantenimiento', escHtml(eq.last_maintenance_date || '—'));
-                    html += detailRow('Próximo mantenimiento', eq.next_maintenance_date ? '<strong class="aura-inv-text-danger">' + escHtml(eq.next_maintenance_date) + '</strong>' : '—');
-                    html += detailRow('Total invertido', eq.total_maintenance_cost > 0 ? '$' + parseFloat(eq.total_maintenance_cost).toLocaleString() : '—');
+                    html += detailRow(__('Frecuencia requerida', 'aura-suite'), escHtml(intervalStr));
+                    html += detailRow(__('Último mantenimiento', 'aura-suite'), escHtml(eq.last_maintenance_date || '—'));
+                    html += detailRow(__('Próximo mantenimiento', 'aura-suite'), eq.next_maintenance_date ? '<strong class="aura-inv-text-danger">' + escHtml(eq.next_maintenance_date) + '</strong>' : '—');
+                    html += detailRow(__('Total invertido', 'aura-suite'), eq.total_maintenance_cost > 0 ? '$' + parseFloat(eq.total_maintenance_cost).toLocaleString() : '—');
                     html += '</div></div>';
 
                     if (eq.maintenance_instructions) {
                         html += '<div class="aura-inv-maint-instr-callout">';
-                        html += '<div class="aura-inv-maint-instr-hdr"><span class="dashicons dashicons-clipboard"></span> Instrucciones de mantenimiento</div>';
+                        html += '<div class="aura-inv-maint-instr-hdr"><span class="dashicons dashicons-clipboard"></span> ' + escHtml(__('Instrucciones de mantenimiento', 'aura-suite')) + '</div>';
                         html += '<div class="aura-inv-maint-instr-body">' + escHtml(eq.maintenance_instructions).replace(/\n/g, '<br>') + '</div>';
                         html += '</div>';
                     }
@@ -576,7 +587,7 @@
                         var accItems = eq.accessories.split('\n').filter(function (l) { return l.trim() !== ''; });
                         if (accItems.length > 0) {
                             html += '<div class="aura-inv-detail-section">';
-                            html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-products"></span> Accesorios incluidos</div>';
+                            html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-products"></span> ' + escHtml(__('Accesorios incluidos', 'aura-suite')) + '</div>';
                             html += '<ul class="aura-inv-acc-list">';
                             accItems.forEach(function (item) {
                                 html += '<li>' + escHtml(item.trim()) + '</li>';
@@ -588,9 +599,9 @@
                     // Componentes vinculados
                     if (comps.length > 0) {
                         html += '<div class="aura-inv-detail-section">';
-                        html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-networking"></span> Componentes vinculados (' + comps.length + ')</div>';
+                        html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-networking"></span> ' + escHtml(sprintf(__('Componentes vinculados (%s)', 'aura-suite'), comps.length)) + '</div>';
                         html += '<div class="aura-inv-subtable-wrap"><table class="aura-table aura-inv-detail-subtable">';
-                        html += '<thead><tr><th>Nombre</th><th>Categoría</th><th>Cód. interno</th><th>Estado</th></tr></thead><tbody>';
+                        html += '<thead><tr><th>' + escHtml(__('Nombre', 'aura-suite')) + '</th><th>' + escHtml(__('Categoría', 'aura-suite')) + '</th><th>' + escHtml(__('Cód. interno', 'aura-suite')) + '</th><th>' + escHtml(__('Estado', 'aura-suite')) + '</th></tr></thead><tbody>';
                         comps.forEach(function (c) {
                             html += '<tr>' +
                                 '<td><strong>' + escHtml(c.name) + '</strong>' + (c.brand ? ' <small>' + escHtml(c.brand) + '</small>' : '') + '</td>' +
@@ -605,9 +616,9 @@
                     // Últimos mantenimientos
                     if (mhist && mhist.length > 0) {
                         html += '<div class="aura-inv-detail-section">';
-                        html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-hammer"></span> Últimos mantenimientos (' + mhist.length + ')</div>';
+                        html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-hammer"></span> ' + escHtml(sprintf(__('Últimos mantenimientos (%s)', 'aura-suite'), mhist.length)) + '</div>';
                         html += '<div class="aura-inv-subtable-wrap"><table class="aura-table aura-inv-detail-subtable">';
-                        html += '<thead><tr><th>Fecha</th><th>Tipo</th><th>Total</th><th>Ejecutor</th><th style="width:60px;text-align:center;">Detalle</th></tr></thead><tbody>';
+                        html += '<thead><tr><th>' + escHtml(__('Fecha', 'aura-suite')) + '</th><th>' + escHtml(__('Tipo', 'aura-suite')) + '</th><th>' + escHtml(__('Total', 'aura-suite')) + '</th><th>' + escHtml(__('Ejecutor', 'aura-suite')) + '</th><th style="width:60px;text-align:center;">' + escHtml(__('Detalle', 'aura-suite')) + '</th></tr></thead><tbody>';
                         mhist.forEach(function (m, index) {
                             var descHTML  = m.description ? escHtml(m.description).replace(/\n/g, '<br>') : '—';
                             var partsHTML = m.replaced_parts ? escHtml(m.replaced_parts).replace(/\n/g, '<br>') : '';
@@ -616,17 +627,17 @@
                             html += '<tr><td>' + escHtml(m.maintenance_date) + '</td><td>' + escHtml(m.type_label) +
                                 '</td><td>$' + parseFloat(m.total_cost).toLocaleString() +
                                 '</td><td>' + escHtml(m.performed_by === 'external'
-                                    ? (m.workshop_name || 'Externo')
-                                    : (m.technician_name || 'Interno')) + '</td>' +
+                                    ? (m.workshop_name || __('Externo', 'aura-suite'))
+                                    : (m.technician_name || __('Interno', 'aura-suite'))) + '</td>' +
                                 '<td style="text-align:center;">' +
-                                '<button type="button" class="btn btn-glass btn-sm" onclick="auraToggleMaint(this, \'' + rowId + '\')" data-tooltip="Ver descripción del trabajo">' +
+                                '<button type="button" class="btn btn-glass btn-sm" onclick="auraToggleMaint(this, \'' + rowId + '\')" data-tooltip="' + escHtml(__('Ver descripción del trabajo', 'aura-suite')) + '">' +
                                 '<span class="dashicons dashicons-text-page"></span></button>' +
                                 '</td></tr>';
 
                             html += '<tr id="' + rowId + '" class="aura-inv-maint-desc-row" style="display:none;">' +
                                 '<td colspan="5"><div class="aura-inv-maint-desc-box">' +
-                                '<strong>Descripción del trabajo:</strong><div class="aura-inv-maint-desc-text">' + descHTML + '</div>' +
-                                (partsHTML ? '<strong style="margin-top:10px;display:block;">Repuestos/Insumos usados:</strong><div class="aura-inv-maint-desc-text">' + partsHTML + '</div>' : '') +
+                                '<strong>' + escHtml(__('Descripción del trabajo:', 'aura-suite')) + '</strong><div class="aura-inv-maint-desc-text">' + descHTML + '</div>' +
+                                (partsHTML ? '<strong style="margin-top:10px;display:block;">' + escHtml(__('Repuestos/Insumos usados:', 'aura-suite')) + '</strong><div class="aura-inv-maint-desc-text">' + partsHTML + '</div>' : '') +
                                 '</div></td></tr>';
                         });
                         html += '</tbody></table></div></div>';
@@ -635,9 +646,9 @@
                     // Últimos préstamos
                     if (lhist && lhist.length > 0) {
                         html += '<div class="aura-inv-detail-section">';
-                        html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-migrate"></span> Últimos préstamos</div>';
+                        html += '<div class="aura-inv-detail-section-title"><span class="dashicons dashicons-migrate"></span> ' + escHtml(__('Últimos préstamos', 'aura-suite')) + '</div>';
                         html += '<div class="aura-inv-subtable-wrap"><table class="aura-table aura-inv-detail-subtable">';
-                        html += '<thead><tr><th>Fecha salida</th><th>Tomado por</th><th>Devolución esperada</th><th>Devuelto</th></tr></thead><tbody>';
+                        html += '<thead><tr><th>' + escHtml(__('Fecha salida', 'aura-suite')) + '</th><th>' + escHtml(__('Tomado por', 'aura-suite')) + '</th><th>' + escHtml(__('Devolución esperada', 'aura-suite')) + '</th><th>' + escHtml(__('Devuelto', 'aura-suite')) + '</th></tr></thead><tbody>';
                         lhist.forEach(function (l) {
                             var bname = l.borrower_display || l.borrower_name || '—';
                             var avatarHtml;
@@ -655,7 +666,7 @@
                                 '<td>' + escHtml(l.expected_return_date || '—') + '</td>' +
                                 '<td>' + (l.actual_return_date
                                     ? '<span class="aura-inv-text-ok">' + escHtml(l.actual_return_date) + '</span>'
-                                    : '<span class="aura-inv-text-danger">Pendiente</span>') + '</td>' +
+                                    : '<span class="aura-inv-text-danger">' + escHtml(__('Pendiente', 'aura-suite')) + '</span>') + '</td>' +
                                 '</tr>';
                         });
                         html += '</tbody></table></div></div>';
@@ -667,7 +678,7 @@
                     }
                 },
                 error: function () {
-                    $body.html('<div class="aura-inv-empty-state"><p>' + escHtml((cfg.txt && cfg.txt.error) || 'Error al cargar detalle') + '</p></div>');
+                    $body.html('<div class="aura-inv-empty-state"><p>' + escHtml((cfg.txt && cfg.txt.error) || __('Error al cargar detalle', 'aura-suite')) + '</p></div>');
                     if (window.AuraUI && modalEl) {
                         window.AuraUI.hideModalSkeleton(modalEl);
                     }
@@ -678,7 +689,7 @@
         deleteEquipment: function (id, name) {
             var cfg  = this.cfg;
             var self = this;
-            var msg  = (cfg.txt && cfg.txt.confirm_delete) ? cfg.txt.confirm_delete.replace('{name}', name) : ('¿Eliminar "' + name + '"?');
+            var msg  = (cfg.txt && cfg.txt.confirm_delete) ? cfg.txt.confirm_delete.replace('{name}', name) : sprintf(__('¿Eliminar "%s"?', 'aura-suite'), name);
             if (!window.confirm(msg)) return;
 
             $.ajax({
@@ -687,13 +698,13 @@
                 data:   { action: 'aura_inventory_equipment_delete', nonce: cfg.nonce, id: id },
                 success: function (res) {
                     if (res.success) {
-                        self.showNotice((cfg.txt && cfg.txt.deleted) || 'Equipo eliminado.', 'success');
+                        self.showNotice((cfg.txt && cfg.txt.deleted) || __('Equipo eliminado.', 'aura-suite'), 'success');
                         setTimeout(function () { window.location.reload(); }, 450);
                     } else {
-                        self.showNotice((res.data && res.data.message) || (cfg.txt && cfg.txt.error) || 'Error', 'error');
+                        self.showNotice((res.data && res.data.message) || (cfg.txt && cfg.txt.error) || __('Error', 'aura-suite'), 'error');
                     }
                 },
-                error: function () { self.showNotice((cfg.txt && cfg.txt.error) || 'Error de conexión.', 'error'); },
+                error: function () { self.showNotice((cfg.txt && cfg.txt.error) || __('Error de conexión.', 'aura-suite'), 'error'); },
             });
         },
 
@@ -710,13 +721,13 @@
                 data:   { action: 'aura_inventory_equipment_update_status', nonce: cfg.nonce, id: id, status: newStatus },
                 success: function (res) {
                     if (res.success) {
-                        self.showNotice((res.data && res.data.message) || 'Estado actualizado.', 'success');
+                        self.showNotice((res.data && res.data.message) || __('Estado actualizado.', 'aura-suite'), 'success');
                     } else {
-                        self.showNotice((res.data && res.data.message) || (cfg.txt && cfg.txt.error) || 'Error', 'error');
+                        self.showNotice((res.data && res.data.message) || (cfg.txt && cfg.txt.error) || __('Error', 'aura-suite'), 'error');
                     }
                 },
                 error: function () {
-                    self.showNotice((cfg.txt && cfg.txt.error) || 'Error de conexión.', 'error');
+                    self.showNotice((cfg.txt && cfg.txt.error) || __('Error de conexión.', 'aura-suite'), 'error');
                 }
             });
         },
@@ -770,7 +781,7 @@
                 if (!suggested) return;
                 $code.val(suggested).data('auto-filled', true).attr('data-auto-filled', '1').trigger('focus');
                 if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
-                    window.AuraUI.showToast('Código aplicado: ' + suggested, 'success');
+                    window.AuraUI.showToast(sprintf(__('Código aplicado: %s', 'aura-suite'), suggested), 'success');
                 }
             });
 
@@ -801,20 +812,20 @@
                     var d = res.data;
                     var suggested = d.suggested_code || '';
                     $('#aura-inv-apply-suggested-code').attr('data-suggested', suggested);
-                    $('#aura-inv-suggest-btn-label').text(suggested ? ('Usar ' + suggested) : 'Sugerir');
+                    $('#aura-inv-suggest-btn-label').text(suggested ? sprintf(__('Usar %s', 'aura-suite'), suggested) : __('Sugerir', 'aura-suite'));
                     $('#aura-inv-next-code-text').text(suggested || '—');
 
                     if (d.is_child) {
                         $('#aura-inv-last-code-text').html(
                             d.last_child_code
-                                ? ('Último componente del padre: <strong>' + escHtml(d.last_child_code) + '</strong>')
-                                : ('Padre: <strong>' + escHtml(d.parent_code || '—') + '</strong> (primer componente)')
+                                ? sprintf(__('Último componente del padre: %s', 'aura-suite'), '<strong>' + escHtml(d.last_child_code) + '</strong>')
+                                : sprintf(__('Padre: %s (primer componente)', 'aura-suite'), '<strong>' + escHtml(d.parent_code || '—') + '</strong>')
                         );
                     } else {
                         $('#aura-inv-last-code-text').html(
                             d.last_main_code
-                                ? ('Último código registrado: <strong>' + escHtml(d.last_main_code) + '</strong>')
-                                : 'Aún no hay códigos con este prefijo.'
+                                ? sprintf(__('Último código registrado: %s', 'aura-suite'), '<strong>' + escHtml(d.last_main_code) + '</strong>')
+                                : escHtml(__('Aún no hay códigos con este prefijo.', 'aura-suite'))
                         );
                     }
 
@@ -848,11 +859,11 @@
                 if (isUser) {
                     $('#inv_responsible_user_id').val(item.user_id || item.id || '');
                     $('#inv_responsible_third_party_id').val('');
-                    $('#aura-inv-responsible-badge-text').text('Usuario WP');
+                    $('#aura-inv-responsible-badge-text').text(__('Usuario WP', 'aura-suite'));
                 } else {
                     $('#inv_responsible_third_party_id').val(item.third_party_id || item.id || '');
                     $('#inv_responsible_user_id').val('');
-                    $('#aura-inv-responsible-badge-text').text('Tercero');
+                    $('#aura-inv-responsible-badge-text').text(__('Tercero', 'aura-suite'));
                 }
                 $('#aura-inv-responsible-badge').show();
                 $('#aura-inv-btn-responsible-clear').show();
@@ -947,8 +958,8 @@
             $('#aura-inv-select-photo').on('click', function (e) {
                 e.preventDefault();
                 var frame = wp.media({
-                    title:    'Seleccionar foto del equipo',
-                    button:   { text: 'Usar esta imagen' },
+                    title:    __('Seleccionar foto del equipo', 'aura-suite'),
+                    button:   { text: __('Usar esta imagen', 'aura-suite') },
                     multiple: false,
                     library:  { type: 'image' }
                 });
@@ -1061,11 +1072,11 @@
                             $('#aura-inv-remove-photo').show();
                             self.closeCropModal();
                         } else {
-                            EquipmentList.showNotice((res.data && res.data.message) || 'Error al procesar imagen.', 'error');
+                            EquipmentList.showNotice((res.data && res.data.message) || __('Error al procesar imagen.', 'aura-suite'), 'error');
                         }
                     },
                     error: function () {
-                        EquipmentList.showNotice('Error de conexión al procesar la imagen.', 'error');
+                        EquipmentList.showNotice(__('Error de conexión al procesar la imagen.', 'aura-suite'), 'error');
                     },
                     complete: function () {
                         $btn.prop('disabled', false);
@@ -1135,7 +1146,7 @@
                 contentType: false,
                 success: function (res) {
                     $btn.prop('disabled', false);
-                    $btn.html('<span class="dashicons dashicons-yes"></span> ' + (cfg.isEdit ? 'Actualizar equipo' : 'Registrar equipo'));
+                    $btn.html('<span class="dashicons dashicons-yes"></span> ' + (cfg.isEdit ? __('Actualizar equipo', 'aura-suite') : __('Registrar equipo', 'aura-suite')));
                     if (res.success) {
                         self.showFormNotice(cfg.txt.saved, 'success');
                         if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
@@ -1151,7 +1162,7 @@
                     }
                 },
                 error: function () {
-                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> ' + (cfg.isEdit ? 'Actualizar equipo' : 'Registrar equipo'));
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> ' + (cfg.isEdit ? __('Actualizar equipo', 'aura-suite') : __('Registrar equipo', 'aura-suite')));
                     self.showFormNotice(cfg.txt.error, 'error');
                 },
             });

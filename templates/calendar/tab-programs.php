@@ -115,7 +115,7 @@ function aura_avatar_stack_item_external( array $ext, string $default_role = '' 
         $role_label .= ' (' . $ext['organization'] . ')';
     }
     if ( ! empty( $ext['third_party_id'] ) || $is_wp ) {
-        $role_label .= ' • ' . ( $is_wp ? __( 'Usuario WP / Tercero', 'aura' ) : __( 'Tercero Catálogo', 'aura' ) );
+        $role_label .= ' • ' . ( $is_wp ? __( 'Usuario WP / Tercero', 'aura-suite' ) : __( 'Tercero Catálogo', 'aura-suite' ) );
     }
 
     $border_color = $is_wp ? '#10b981' : '#0284c7';
@@ -192,7 +192,7 @@ $can_delete     = current_user_can( 'aura_cal_delete_programs' ) || $can_manage;
         </div>
         <div class="aura-tip-card-body">
             <div class="aura-tip-section-header">
-                <span class="aura-tip-section-label"><?php esc_html_e( 'Fechas y Sesiones Programadas', 'aura' ); ?></span>
+                <span class="aura-tip-section-label"><?php esc_html_e( 'Fechas y Sesiones Programadas', 'aura-suite' ); ?></span>
                 <span class="aura-tip-section-count" id="aura-subj-cal-tip-count"></span>
             </div>
             <div class="aura-tip-session-list" id="aura-subj-cal-tip-list">
@@ -202,7 +202,7 @@ $can_delete     = current_user_can( 'aura_cal_delete_programs' ) || $can_manage;
         <div class="aura-tip-card-footer">
             <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar' ) ); ?>" class="btn btn-sm btn-indigo btn-shimmer btn-lift" style="width:100%;justify-content:center;text-decoration:none;display:flex;align-items:center;gap:6px;">
                 <span class="dashicons dashicons-calendar-alt" style="font-size:15px;width:15px;height:15px;line-height:1;"></span>
-                <span><?php esc_html_e( 'Abrir en Calendario Principal', 'aura' ); ?></span> &rarr;
+                <span><?php esc_html_e( 'Abrir en Calendario Principal', 'aura-suite' ); ?></span> &rarr;
             </a>
         </div>
     </div>
@@ -225,7 +225,7 @@ $can_delete     = current_user_can( 'aura_cal_delete_programs' ) || $can_manage;
         </div>
         <div class="aura-tip-card-body">
             <div class="aura-tip-section-header">
-                <span class="aura-tip-section-label"><?php esc_html_e( 'Descripción y Objetivos Pedagógicos', 'aura' ); ?></span>
+                <span class="aura-tip-section-label"><?php esc_html_e( 'Descripción y Objetivos Pedagógicos', 'aura-suite' ); ?></span>
                 <span class="aura-tip-section-count" id="aura-subj-desc-tip-module"></span>
             </div>
             <div class="aura-subj-desc-box" id="aura-subj-desc-tip-text">
@@ -1165,10 +1165,10 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
         <div>
             <h2 class="adp-card-title" style="font-size: 20px; margin: 0;">
-                🎓 <?php esc_html_e( 'Programas y Cursos de Capacitación', 'aura' ); ?>
+                🎓 <?php esc_html_e( 'Programas y Cursos de Capacitación', 'aura-suite' ); ?>
             </h2>
             <p class="adp-card-desc" style="margin: 4px 0 0 0; font-size: 13px;">
-                <?php esc_html_e( 'Administra programas de formación, materias, profesores y material pedagógico.', 'aura' ); ?>
+                <?php esc_html_e( 'Administra programas de formación, materias, profesores y material pedagógico.', 'aura-suite' ); ?>
             </p>
         </div>
 
@@ -1176,27 +1176,27 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
             <?php if ( $can_manage ) : ?>
                 <!-- Botón Sincronizar -->
                 <button type="button" class="btn btn-ghost btn-lift" id="btn-sync-student-courses"
-                        title="<?php esc_attr_e( 'Importar cursos de Estudiantes como Programas del Calendario', 'aura' ); ?>">
-                    🔄 <?php esc_html_e( 'Sincronizar', 'aura' ); ?>
+                        title="<?php esc_attr_e( 'Importar cursos de Estudiantes como Programas del Calendario', 'aura-suite' ); ?>">
+                    🔄 <?php esc_html_e( 'Sincronizar', 'aura-suite' ); ?>
                 </button>
 
                 <!-- Botón Importar -->
                 <button type="button" class="btn btn-ghost btn-lift" id="btn-open-import-modal">
-                    📤 <?php esc_html_e( 'Importar JSON', 'aura' ); ?>
+                    📤 <?php esc_html_e( 'Importar JSON', 'aura-suite' ); ?>
                 </button>
 
                 <!-- Dropdown Exportar Todos -->
                 <div class="aura-export-dropdown" id="export-all-dropdown">
                     <button type="button" class="btn btn-ghost btn-lift" id="btn-export-all-toggle">
-                        📥 <?php esc_html_e( 'Exportar Todos', 'aura' ); ?> ▾
+                        📥 <?php esc_html_e( 'Exportar Todos', 'aura-suite' ); ?> ▾
                     </button>
                     <div class="aura-export-menu" id="export-all-menu">
                         <button class="aura-export-menu-item btn-export-all" data-format="json">
-                            📄 JSON <small style="opacity:.6;margin-left:auto;">Jerarquía completa</small>
+                            📄 JSON <small style="opacity:.6;margin-left:auto;"><?php esc_html_e( 'Jerarquía completa', 'aura-suite' ); ?></small>
                         </button>
                         <div class="aura-export-menu-sep"></div>
                         <button class="aura-export-menu-item btn-export-all" data-format="csv">
-                            📊 CSV <small style="opacity:.6;margin-left:auto;">Editable en Excel</small>
+                            📊 CSV <small style="opacity:.6;margin-left:auto;"><?php esc_html_e( 'Editable en Excel', 'aura-suite' ); ?></small>
                         </button>
                     </div>
                 </div>
@@ -1204,7 +1204,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
 
             <?php if ( $can_edit ) : ?>
                 <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-program">
-                    ➕ <?php esc_html_e( 'Nuevo Programa', 'aura' ); ?>
+                    ➕ <?php esc_html_e( 'Nuevo Programa', 'aura-suite' ); ?>
                 </button>
             <?php endif; ?>
         </div>
@@ -1217,14 +1217,14 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                   border-bottom:3px solid <?php echo $prog_view_filter === 'active' ? 'var(--aura-primary,#6366f1)' : 'transparent'; ?>;
                   color:<?php echo $prog_view_filter === 'active' ? 'var(--aura-primary,#6366f1)' : 'var(--aura-text-secondary,#64748b)'; ?>;
                   background:<?php echo $prog_view_filter === 'active' ? 'rgba(99,102,241,.07)' : 'transparent'; ?>">
-            ✅ <?php esc_html_e( 'Activos', 'aura' ); ?>
+            ✅ <?php esc_html_e( 'Activos', 'aura-suite' ); ?>
         </a>
         <a href="<?php echo esc_url( add_query_arg( 'prog_filter', 'archived', $prog_base_url ) ); ?>"
            style="text-decoration:none;padding:8px 16px;font-size:13px;font-weight:600;border-radius:8px 8px 0 0;
                   border-bottom:3px solid <?php echo $prog_view_filter === 'archived' ? '#f59e0b' : 'transparent'; ?>;
                   color:<?php echo $prog_view_filter === 'archived' ? '#d97706' : 'var(--aura-text-secondary,#64748b)'; ?>;
                   background:<?php echo $prog_view_filter === 'archived' ? 'rgba(245,158,11,.07)' : 'transparent'; ?>">
-            📦 <?php esc_html_e( 'Archivados', 'aura' ); ?>
+            📦 <?php esc_html_e( 'Archivados', 'aura-suite' ); ?>
             <?php if ( $archived_count > 0 ) : ?>
                 <span style="margin-left:5px;background:#f59e0b;color:#fff;border-radius:10px;font-size:11px;padding:1px 6px;font-weight:700;"><?php echo intval( $archived_count ); ?></span>
             <?php endif; ?>
@@ -1234,7 +1234,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                   border-bottom:3px solid <?php echo $prog_view_filter === 'all' ? '#64748b' : 'transparent'; ?>;
                   color:<?php echo $prog_view_filter === 'all' ? '#475569' : 'var(--aura-text-secondary,#64748b)'; ?>;
                   background:<?php echo $prog_view_filter === 'all' ? 'rgba(100,116,139,.07)' : 'transparent'; ?>">
-            📋 <?php esc_html_e( 'Todos', 'aura' ); ?>
+            📋 <?php esc_html_e( 'Todos', 'aura-suite' ); ?>
         </a>
     </div>
 
@@ -1243,16 +1243,16 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
         <div class="adp-card" style="text-align:center;padding:48px 24px;border-radius:14px;">
             <div style="font-size:48px;margin-bottom:14px;"><?php echo $prog_view_filter === 'archived' ? '📦' : '🎓'; ?></div>
             <h3 style="font-size:18px;margin-bottom:6px;">
-                <?php $prog_view_filter === 'archived' ? esc_html_e( 'No hay programas archivados', 'aura' ) : esc_html_e( 'No hay programas registrados', 'aura' ); ?>
+                <?php $prog_view_filter === 'archived' ? esc_html_e( 'No hay programas archivados', 'aura-suite' ) : esc_html_e( 'No hay programas registrados', 'aura-suite' ); ?>
             </h3>
             <p style="color:var(--aura-text-secondary);max-width:420px;margin:0 auto 20px;">
                 <?php $prog_view_filter === 'archived'
-                    ? esc_html_e( 'Los programas archivados aparecerán aquí para poder restaurarlos.', 'aura' )
-                    : esc_html_e( 'Crea tu primer programa de formación para empezar a estructurar materias y horarios.', 'aura' ); ?>
+                    ? esc_html_e( 'Los programas archivados aparecerán aquí para poder restaurarlos.', 'aura-suite' )
+                    : esc_html_e( 'Crea tu primer programa de formación para empezar a estructurar materias y horarios.', 'aura-suite' ); ?>
             </p>
             <?php if ( $prog_view_filter !== 'archived' && $can_edit ) : ?>
                 <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-create-first-program">
-                    ➕ <?php esc_html_e( 'Crear Primer Programa', 'aura' ); ?>
+                    ➕ <?php esc_html_e( 'Crear Primer Programa', 'aura-suite' ); ?>
                 </button>
             <?php endif; ?>
         </div>
@@ -1275,7 +1275,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                     <?php if ( $is_archived ) : ?>
                         <div style="margin-bottom:8px;">
                             <span class="adp-badge badge-amber" style="font-size:11px;">
-                                📦 <?php esc_html_e( 'Archivado', 'aura' ); ?>
+                                📦 <?php esc_html_e( 'Archivado', 'aura-suite' ); ?>
                                 <?php if ( ! empty( $p->deleted_at ) ) : ?>
                                     &mdash; <?php echo esc_html( date_i18n( 'j M Y', strtotime( $p->deleted_at ) ) ); ?>
                                 <?php endif; ?>
@@ -1288,9 +1288,9 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                             <span class="adp-badge badge-slate" style="font-weight:700;font-size:11px;letter-spacing:.5px;"><?php echo esc_html( $p->code ); ?></span>
                             <?php if ( $p->status === 'active' ) : ?>
-                                <span class="adp-badge badge-emerald has-dot"><span class="pulse-dot"></span> <?php esc_html_e( 'Activo', 'aura' ); ?></span>
+                                <span class="adp-badge badge-emerald has-dot"><span class="pulse-dot"></span> <?php esc_html_e( 'Activo', 'aura-suite' ); ?></span>
                             <?php elseif ( $p->status !== 'archived' ) : ?>
-                                <span class="adp-badge badge-amber"><?php esc_html_e( 'Borrador', 'aura' ); ?></span>
+                                <span class="adp-badge badge-amber"><?php esc_html_e( 'Borrador', 'aura-suite' ); ?></span>
                             <?php endif; ?>
                             <?php if ( ! empty( $p->area_name ) ) :
                                 $ac = ! empty( $p->area_color ) ? $p->area_color : '#6366f1'; ?>
@@ -1315,36 +1315,36 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                                     <button type="button" class="btn btn-ghost btn-restore-program"
                                             data-program-id="<?php echo esc_attr( $p->id ); ?>"
                                             style="font-size:12px;padding:5px 11px;color:#10b981;border-color:#10b981;">
-                                        ♻️ <?php esc_html_e( 'Restaurar', 'aura' ); ?>
+                                        ♻️ <?php esc_html_e( 'Restaurar', 'aura-suite' ); ?>
                                     </button>
                                     <?php if ( $can_delete ) : ?>
                                         <button type="button" class="btn btn-ghost btn-delete-program"
                                                 data-program-id="<?php echo esc_attr( $p->id ); ?>"
                                                 data-force="1"
-                                                title="<?php esc_attr_e( 'Eliminar permanentemente este programa archivado', 'aura' ); ?>"
+                                                title="<?php esc_attr_e( 'Eliminar permanentemente este programa archivado', 'aura-suite' ); ?>"
                                                 style="font-size:12px;padding:5px 11px;color:#ef4444;border-color:rgba(239,68,68,0.4);">
-                                            🗑️ <?php esc_html_e( 'Eliminar def.', 'aura' ); ?>
+                                            🗑️ <?php esc_html_e( 'Eliminar def.', 'aura-suite' ); ?>
                                         </button>
                                     <?php endif; ?>
                                 <?php else : ?>
                                     <button type="button" class="btn btn-ghost btn-edit-program"
                                             data-program-id="<?php echo esc_attr( $p->id ); ?>"
                                             style="font-size:12px;padding:5px 11px;">
-                                        ✏️ <?php esc_html_e( 'Editar', 'aura' ); ?>
+                                        ✏️ <?php esc_html_e( 'Editar', 'aura-suite' ); ?>
                                     </button>
                                     <button type="button" class="btn btn-indigo btn-lift btn-add-subject"
                                             data-program-id="<?php echo esc_attr( $p->id ); ?>"
                                             data-program-name="<?php echo esc_attr( $p->name ); ?>"
                                             style="font-size:12px;padding:5px 11px;">
-                                        ➕ <?php esc_html_e( 'Añadir Materia', 'aura' ); ?>
+                                        ➕ <?php esc_html_e( 'Añadir Materia', 'aura-suite' ); ?>
                                     </button>
                                     <?php if ( $can_delete ) : ?>
                                         <button type="button" class="btn btn-ghost btn-delete-program"
                                                 data-program-id="<?php echo esc_attr( $p->id ); ?>"
                                                 data-force="0"
-                                                title="<?php esc_attr_e( 'Archivar / Eliminar programa', 'aura' ); ?>"
+                                                title="<?php esc_attr_e( 'Archivar / Eliminar programa', 'aura-suite' ); ?>"
                                                 style="font-size:12px;padding:5px 11px;color:#ef4444;border-color:rgba(239,68,68,0.4);">
-                                            🗑️ <?php esc_html_e( 'Eliminar', 'aura' ); ?>
+                                            🗑️ <?php esc_html_e( 'Eliminar', 'aura-suite' ); ?>
                                         </button>
                                     <?php endif; ?>
                                 <?php endif; ?>
@@ -1371,7 +1371,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
 
                             <!-- Toggle colapsar materias -->
                             <button type="button" class="aura-prog-toggle-btn" data-prog-panel="panel-<?php echo esc_attr($p->id); ?>"
-                                    title="<?php esc_attr_e('Mostrar/Ocultar materias','aura'); ?>">▾</button>
+                                    title="<?php esc_attr_e('Mostrar/Ocultar materias','aura-suite'); ?>">▾</button>
                         </div>
                     </div>
 
@@ -1392,8 +1392,8 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                             <span>🗓️ <?php echo esc_html( date_i18n( 'j M Y', strtotime( $p->start_date ) ) . ' — ' . date_i18n( 'j M Y', strtotime( $p->end_date ) ) ); ?></span>
                         <?php endif; ?>
 
-                        <span>📚 <strong><?php echo intval( $p->subjects_count ); ?></strong> <?php esc_html_e( 'materias', 'aura' ); ?></span>
-                        <span>📅 <strong><?php echo intval( $p->events_count ); ?></strong> <?php esc_html_e( 'clases', 'aura' ); ?></span>
+                        <span>📚 <strong><?php echo intval( $p->subjects_count ); ?></strong> <?php esc_html_e( 'materias', 'aura-suite' ); ?></span>
+                        <span>📅 <strong><?php echo intval( $p->events_count ); ?></strong> <?php esc_html_e( 'clases', 'aura-suite' ); ?></span>
 
                         <!-- Avatares de coordinadores (Internos + Terceros / Entidades) -->
                         <?php
@@ -1405,7 +1405,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                         ?>
                             <span style="display:inline-flex;align-items:center;gap:6px;">
                                 <span style="font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">
-                                    <?php echo $coord_count > 1 ? esc_html__('Coords.','aura') : esc_html__('Coord.','aura'); ?>
+                                    <?php echo $coord_count > 1 ? esc_html__('Coords.','aura-suite') : esc_html__('Coord.','aura-suite'); ?>
                                 </span>
                                 <span class="aura-avatar-group">
                                     <?php
@@ -1413,14 +1413,14 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                                     if ( $has_internal_c ) {
                                         foreach ( $p->coordinator_ids as $c_id ) {
                                             if ( $shown >= $max_visible ) break;
-                                            echo aura_avatar_stack_item( (int) $c_id, __('Coordinador','aura') );
+                                            echo aura_avatar_stack_item( (int) $c_id, __('Coordinador','aura-suite') );
                                             $shown++;
                                         }
                                     }
                                     if ( $has_external_c && $shown < $max_visible ) {
                                         foreach ( $p->external_coordinators_list as $ext_c ) {
                                             if ( $shown >= $max_visible ) break;
-                                            echo aura_avatar_stack_item_external( $ext_c, __('Coordinador Externo','aura') );
+                                            echo aura_avatar_stack_item_external( $ext_c, __('Coordinador Externo','aura-suite') );
                                             $shown++;
                                         }
                                     }
@@ -1440,17 +1440,17 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
                         <h4 style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
                                    color:var(--aura-text-muted);margin:0;">
-                            📚 <?php printf( esc_html__( 'Materias del Programa (%d)', 'aura' ), $subj_count ); ?>
+                            📚 <?php printf( esc_html__( 'Materias del Programa (%d)', 'aura-suite' ), $subj_count ); ?>
                         </h4>
                     </div>
 
                     <?php if ( empty( $subjects ) ) : ?>
                         <div style="text-align:center;padding:20px;border:2px dashed var(--aura-border,#e2e8f0);border-radius:10px;color:var(--aura-text-muted);font-size:13px;">
-                            <?php esc_html_e( 'Aún no hay materias en este programa.', 'aura' ); ?>
+                            <?php esc_html_e( 'Aún no hay materias en este programa.', 'aura-suite' ); ?>
                             <?php if ( $can_edit && ! $is_archived ) : ?>
                                 <br><button type="button" class="btn btn-ghost btn-add-subject" style="margin-top:10px;font-size:12px;"
                                             data-program-id="<?php echo esc_attr($p->id); ?>" data-program-name="<?php echo esc_attr($p->name); ?>">
-                                    ➕ <?php esc_html_e( 'Añadir primera materia', 'aura' ); ?>
+                                    ➕ <?php esc_html_e( 'Añadir primera materia', 'aura-suite' ); ?>
                                 </button>
                             <?php endif; ?>
                         </div>
@@ -1481,7 +1481,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                                                   data-subj-hours="<?php echo intval( $s->total_hours ?? 0 ); ?>"
                                                   data-prog-name="<?php echo esc_attr( $p->name ); ?>"
                                                   data-events='<?php echo esc_attr( wp_json_encode( $s->scheduled_events ) ); ?>'
-                                                  aria-label="<?php echo esc_attr( sprintf( _n( '%d fecha programada', '%d fechas programadas', $ev_count, 'aura' ), $ev_count ) ); ?>">
+                                                  aria-label="<?php echo esc_attr( sprintf( _n( '%d fecha programada', '%d fechas programadas', $ev_count, 'aura-suite' ), $ev_count ) ); ?>">
                                                 <span class="aura-subj-cal-icon">📅</span>
                                                 <span class="aura-subj-cal-count"><?php echo $ev_count; ?></span>
                                             </span>
@@ -1500,7 +1500,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                                          data-prog-name="<?php echo esc_attr( $p->name ); ?>"
                                          data-area-logo="<?php echo esc_attr( $p->area_logo_url ?? '' ); ?>"
                                          data-area-name="<?php echo esc_attr( $p->area_name ?? '' ); ?>"
-                                         title="<?php esc_attr_e( 'Ver descripción de la materia', 'aura' ); ?>">
+                                         title="<?php esc_attr_e( 'Ver descripción de la materia', 'aura-suite' ); ?>">
                                         <?php echo esc_html( $s->name ); ?>
                                     </div>
 
@@ -1519,14 +1519,14 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                                                 if ( $has_internal_t ) {
                                                     foreach ( $s->teacher_ids as $t_id ) {
                                                         if ( $t_shown >= $max_teach ) break;
-                                                        echo aura_avatar_stack_item( (int) $t_id, __('Profesor','aura') );
+                                                        echo aura_avatar_stack_item( (int) $t_id, __('Profesor','aura-suite') );
                                                         $t_shown++;
                                                     }
                                                 }
                                                 if ( $has_external_t && $t_shown < $max_teach ) {
                                                     foreach ( $s->external_teachers_list as $ext_t ) {
                                                         if ( $t_shown >= $max_teach ) break;
-                                                        echo aura_avatar_stack_item_external( $ext_t, __('Docente Externo','aura') );
+                                                        echo aura_avatar_stack_item_external( $ext_t, __('Docente Externo','aura-suite') );
                                                         $t_shown++;
                                                     }
                                                 }
@@ -1545,12 +1545,12 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                                     <div class="aura-subject-card-footer">
                                         <div style="display:flex;gap:4px;flex-wrap:wrap;">
                                             <?php if ( $t_mat_count > 0 ) : ?>
-                                                <span style="font-size:10px;background:rgba(93,95,239,.1);color:var(--aura-primary,#5d5fef);padding:2px 6px;border-radius:6px;font-weight:600;" title="<?php esc_attr_e('Material Docente','aura'); ?>">
+                                                <span style="font-size:10px;background:rgba(93,95,239,.1);color:var(--aura-primary,#5d5fef);padding:2px 6px;border-radius:6px;font-weight:600;" title="<?php esc_attr_e('Material Docente','aura-suite'); ?>">
                                                     📁 <?php echo $t_mat_count; ?>
                                                 </span>
                                             <?php endif; ?>
                                             <?php if ( $st_mat_count > 0 ) : ?>
-                                                <span style="font-size:10px;background:rgba(16,185,129,.1);color:#10b981;padding:2px 6px;border-radius:6px;font-weight:600;" title="<?php esc_attr_e('Material Alumnos','aura'); ?>">
+                                                <span style="font-size:10px;background:rgba(16,185,129,.1);color:#10b981;padding:2px 6px;border-radius:6px;font-weight:600;" title="<?php esc_attr_e('Material Alumnos','aura-suite'); ?>">
                                                     📖 <?php echo $st_mat_count; ?>
                                                 </span>
                                             <?php endif; ?>
@@ -1559,14 +1559,14 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                                             <?php if ( $can_edit ) : ?>
                                                 <button type="button" class="aura-subj-action-btn btn-edit-subject"
                                                         data-subject-id="<?php echo esc_attr($s->id); ?>"
-                                                        title="<?php esc_attr_e('Editar materia','aura'); ?>"
-                                                        aria-label="<?php esc_attr_e('Editar materia','aura'); ?>">
+                                                        title="<?php esc_attr_e('Editar materia','aura-suite'); ?>"
+                                                        aria-label="<?php esc_attr_e('Editar materia','aura-suite'); ?>">
                                                     <span class="dashicons dashicons-edit"></span>
                                                 </button>
                                                 <button type="button" class="aura-subj-action-btn is-danger btn-delete-subject"
                                                         data-subject-id="<?php echo esc_attr($s->id); ?>"
-                                                        title="<?php esc_attr_e('Eliminar materia','aura'); ?>"
-                                                        aria-label="<?php esc_attr_e('Eliminar materia','aura'); ?>">
+                                                        title="<?php esc_attr_e('Eliminar materia','aura-suite'); ?>"
+                                                        aria-label="<?php esc_attr_e('Eliminar materia','aura-suite'); ?>">
                                                     <span class="dashicons dashicons-trash"></span>
                                                 </button>
                                             <?php endif; ?>
@@ -1592,7 +1592,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
     <div class="aura-modal-container" style="max-width: 580px;">
         <div class="aura-modal-header">
             <h3 id="modal-prog-title" class="adp-card-title" style="margin: 0; font-size: 18px;">
-                🎓 <?php esc_html_e( 'Nuevo Programa Académico', 'aura' ); ?>
+                🎓 <?php esc_html_e( 'Nuevo Programa Académico', 'aura-suite' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" data-close-modal="#modal-program-editor">&times;</button>
         </div>
@@ -1604,36 +1604,36 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                 <div style="display: flex; flex-direction: column; gap: 14px;">
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Nombre del Programa / Capacitación', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                            <?php esc_html_e( 'Nombre del Programa / Capacitación', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                         </label>
-                        <input type="text" name="name" id="prog-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Capacitación Ministerial Hadime 2025', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                        <input type="text" name="name" id="prog-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Capacitación Ministerial Hadime 2025', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;">
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Código Corto', 'aura' ); ?>
+                                <?php esc_html_e( 'Código Corto', 'aura-suite' ); ?>
                             </label>
-                            <input type="text" name="code" id="prog-code" class="form-control" placeholder="<?php esc_attr_e( 'HADIME25', 'aura' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
+                            <input type="text" name="code" id="prog-code" class="form-control" placeholder="<?php esc_attr_e( 'HADIME25', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
                         </div>
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Período Académico', 'aura' ); ?>
+                                <?php esc_html_e( 'Período Académico', 'aura-suite' ); ?>
                             </label>
-                            <input type="text" name="academic_period" id="prog-period" class="form-control" placeholder="<?php esc_attr_e( '2025-1 / Ene-Jun', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                            <input type="text" name="academic_period" id="prog-period" class="form-control" placeholder="<?php esc_attr_e( '2025-1 / Ene-Jun', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;">
                         </div>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Fecha Inicio', 'aura' ); ?>
+                                <?php esc_html_e( 'Fecha Inicio', 'aura-suite' ); ?>
                             </label>
                             <input type="date" name="start_date" id="prog-start-date" class="form-control" style="width: 100%; border-radius: 8px;">
                         </div>
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Fecha Fin', 'aura' ); ?>
+                                <?php esc_html_e( 'Fecha Fin', 'aura-suite' ); ?>
                             </label>
                             <input type="date" name="end_date" id="prog-end-date" class="form-control" style="width: 100%; border-radius: 8px;">
                         </div>
@@ -1641,12 +1641,12 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
 
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            🎨 <?php esc_html_e( 'Color del Programa', 'aura' ); ?>
+                            🎨 <?php esc_html_e( 'Color del Programa', 'aura-suite' ); ?>
                         </label>
                         <div class="aura-color-picker-box">
                             <div class="aura-color-picker-row">
-                                <input type="color" name="color" id="prog-color" value="#5D5FEF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura' ); ?>">
-                                <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura' ); ?></span>
+                                <input type="color" name="color" id="prog-color" value="#5D5FEF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura-suite' ); ?>">
+                                <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura-suite' ); ?></span>
                             </div>
                             <?php echo Aura_Calendar_Admin::render_color_palette( 'prog-color', '#5D5FEF' ); ?>
                         </div>
@@ -1654,10 +1654,10 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
 
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            🏢 <?php esc_html_e( 'Área Institucional (Opcional)', 'aura' ); ?>
+                            🏢 <?php esc_html_e( 'Área Institucional (Opcional)', 'aura-suite' ); ?>
                         </label>
                         <select name="area_id" id="prog-area-id" class="form-control" style="width: 100%; border-radius: 8px;">
-                            <option value=""><?php esc_html_e( '— Ninguna / Programa General —', 'aura' ); ?></option>
+                            <option value=""><?php esc_html_e( '— Ninguna / Programa General —', 'aura-suite' ); ?></option>
                             <?php foreach ( $all_areas as $area ) : ?>
                                 <option value="<?php echo esc_attr( $area->id ); ?>">
                                     <?php echo esc_html( $area->name . ( ! empty( $area->code ) ? ' (' . $area->code . ')' : '' ) ); ?>
@@ -1665,19 +1665,19 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                             <?php endforeach; ?>
                         </select>
                         <small style="font-size: 11.5px; color: var(--aura-text-muted); display: block; margin-top: 4px;">
-                            <?php esc_html_e( 'Vincular el programa a un área habilita permisos y presupuestos descentralizados para sus coordinadores y líderes de área.', 'aura' ); ?>
+                            <?php esc_html_e( 'Vincular el programa a un área habilita permisos y presupuestos descentralizados para sus coordinadores y líderes de área.', 'aura-suite' ); ?>
                         </small>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            👥 <?php esc_html_e( 'Coordinador(es) del Programa', 'aura' ); ?>
+                            👥 <?php esc_html_e( 'Coordinador(es) del Programa', 'aura-suite' ); ?>
                         </label>
                         <div id="prog-coordinators-container" class="aura-user-chips-container">
                             <!-- Inyectado dinámicamente con checkboxes desde JS -->
                         </div>
                         <small style="font-size: 11.5px; color: var(--aura-text-muted); display: block; margin-top: 4px;">
-                            <?php esc_html_e( 'Puedes seleccionar uno o varios coordinadores para este programa.', 'aura' ); ?>
+                            <?php esc_html_e( 'Puedes seleccionar uno o varios coordinadores para este programa.', 'aura-suite' ); ?>
                         </small>
                     </div>
 
@@ -1685,17 +1685,17 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                     <div class="form-group" style="background: rgba(14, 165, 233, 0.04); border: 1px dashed rgba(14, 165, 233, 0.35); border-radius: 8px; padding: 12px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin: 0; display: flex; align-items: center; gap: 6px;">
-                                <span>🏛️ <?php esc_html_e( 'Coordinadores Externos / Catálogo de Terceros', 'aura' ); ?></span>
+                                <span>🏛️ <?php esc_html_e( 'Coordinadores Externos / Catálogo de Terceros', 'aura-suite' ); ?></span>
                             </label>
                             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-third-parties' ) ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost" style="font-size: 11px; padding: 3px 6px; color: var(--aura-text-muted, #64748b);" title="<?php esc_attr_e( 'Abrir Directorio de Terceros en nueva pestaña', 'aura' ); ?>">
-                                    ↗ <?php esc_html_e( 'Directorio', 'aura' ); ?>
+                                <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-third-parties' ) ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost" style="font-size: 11px; padding: 3px 6px; color: var(--aura-text-muted, #64748b);" title="<?php esc_attr_e( 'Abrir Directorio de Terceros en nueva pestaña', 'aura-suite' ); ?>">
+                                    ↗ <?php esc_html_e( 'Directorio', 'aura-suite' ); ?>
                                 </a>
                                 <button type="button" id="btn-open-tp-catalog-prog" class="btn btn-xs btn-primary" style="font-size: 11.5px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 5px; background: #0284c7; border-color: #0284c7; color: #fff; font-weight: 600; border-radius: 6px; box-shadow: 0 1px 3px rgba(2,132,199,0.3);">
-                                    🏛️ <?php esc_html_e( 'Catálogo de Terceros', 'aura' ); ?>
+                                    🏛️ <?php esc_html_e( 'Catálogo de Terceros', 'aura-suite' ); ?>
                                 </button>
                                 <button type="button" id="btn-toggle-add-external-coord" class="btn btn-xs btn-outline" style="font-size: 11.5px; padding: 3px 8px; border-radius: 6px;">
-                                    ➕ <?php esc_html_e( 'Agregar Manual', 'aura' ); ?>
+                                    ➕ <?php esc_html_e( 'Agregar Manual', 'aura-suite' ); ?>
                                 </button>
                             </div>
                         </div>
@@ -1707,56 +1707,56 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                             <input type="hidden" id="ext-coord-avatar-url" value="">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre / Razón Social', 'aura' ); ?> <span style="color:#ef4444;">*</span></label>
-                                    <input type="text" id="ext-coord-name" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Escribe para autocompletar o registrar...', 'aura' ); ?>">
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre / Razón Social', 'aura-suite' ); ?> <span style="color:#ef4444;">*</span></label>
+                                    <input type="text" id="ext-coord-name" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Escribe para autocompletar o registrar...', 'aura-suite' ); ?>">
                                 </div>
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Correo Electrónico', 'aura' ); ?></label>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Correo Electrónico', 'aura-suite' ); ?></label>
                                     <input type="email" id="ext-coord-email" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="coordinador@institucion.org">
                                 </div>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Institución / Organización', 'aura' ); ?></label>
-                                    <input type="text" id="ext-coord-org" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Entidad u ONG...', 'aura' ); ?>">
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Institución / Organización', 'aura-suite' ); ?></label>
+                                    <input type="text" id="ext-coord-org" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Entidad u ONG...', 'aura-suite' ); ?>">
                                 </div>
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Teléfono', 'aura' ); ?></label>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Teléfono', 'aura-suite' ); ?></label>
                                     <input type="text" id="ext-coord-phone" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="+502 ...">
                                 </div>
                                 <div>
-                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Rol de Coordinación', 'aura' ); ?></label>
+                                    <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Rol de Coordinación', 'aura-suite' ); ?></label>
                                     <select id="ext-coord-role" class="form-control" style="font-size: 12px; padding: 5px 8px;">
-                                        <option value="Coordinador Externo"><?php esc_html_e( 'Coordinador Externo', 'aura' ); ?></option>
-                                        <option value="Director Académico"><?php esc_html_e( 'Director Académico', 'aura' ); ?></option>
-                                        <option value="Asesor / Enlace"><?php esc_html_e( 'Asesor / Enlace', 'aura' ); ?></option>
+                                        <option value="Coordinador Externo"><?php esc_html_e( 'Coordinador Externo', 'aura-suite' ); ?></option>
+                                        <option value="Director Académico"><?php esc_html_e( 'Director Académico', 'aura-suite' ); ?></option>
+                                        <option value="Asesor / Enlace"><?php esc_html_e( 'Asesor / Enlace', 'aura-suite' ); ?></option>
                                     </select>
                                 </div>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px solid #f1f5f9;">
                                 <div id="ext-coord-linked-badge" style="display: none; align-items: center; gap: 4px; font-size: 11px; color: #0284c7; font-weight: 600;">
                                     <span class="dashicons dashicons-admin-links" style="font-size: 14px; width: 14px; height: 14px;"></span>
-                                    <span><?php esc_html_e( 'Vinculado a Tercero del Catálogo', 'aura' ); ?></span>
+                                    <span><?php esc_html_e( 'Vinculado a Tercero del Catálogo', 'aura-suite' ); ?></span>
                                 </div>
                                 <div style="display: flex; justify-content: flex-end; gap: 6px; margin-left: auto;">
-                                    <button type="button" id="btn-cancel-add-external-coord" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura' ); ?></button>
-                                    <button type="button" id="btn-save-external-coord" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir al Programa', 'aura' ); ?></button>
+                                    <button type="button" id="btn-cancel-add-external-coord" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura-suite' ); ?></button>
+                                    <button type="button" id="btn-save-external-coord" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir al Programa', 'aura-suite' ); ?></button>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Lista de coordinadores externos asignados con chips -->
                         <div id="prog-external-coordinators-list" style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; align-items: center;">
-                            <span id="prog-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;"><?php esc_html_e( 'Sin coordinadores externos asignados.', 'aura' ); ?></span>
+                            <span id="prog-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;"><?php esc_html_e( 'Sin coordinadores externos asignados.', 'aura-suite' ); ?></span>
                         </div>
                         <input type="hidden" name="external_coordinators" id="prog-external-coordinators-json" value="[]">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Descripción u Objetivos', 'aura' ); ?>
+                            <?php esc_html_e( 'Descripción u Objetivos', 'aura-suite' ); ?>
                         </label>
-                        <textarea name="description" id="prog-desc" rows="2" class="form-control" placeholder="<?php esc_attr_e( 'Breve descripción del programa...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
+                        <textarea name="description" id="prog-desc" rows="2" class="form-control" placeholder="<?php esc_attr_e( 'Breve descripción del programa...', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
                     </div>
                 </div>
             </div>
@@ -1765,16 +1765,16 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                 <div>
                     <?php if ( $can_delete ) : ?>
                         <button type="button" class="btn btn-ghost" id="btn-delete-program-modal" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); display: none;">
-                            🗑️ <?php esc_html_e( 'Eliminar Programa', 'aura' ); ?>
+                            🗑️ <?php esc_html_e( 'Eliminar Programa', 'aura-suite' ); ?>
                         </button>
                     <?php endif; ?>
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button type="button" class="btn btn-ghost" data-close-modal="#modal-program-editor">
-                        <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                        <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
                     </button>
                     <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-program">
-                        💾 <?php esc_html_e( 'Guardar Programa', 'aura' ); ?>
+                        💾 <?php esc_html_e( 'Guardar Programa', 'aura-suite' ); ?>
                     </button>
                 </div>
             </div>
@@ -1789,7 +1789,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
     <div class="aura-modal-container" style="max-width: 660px;">
         <div class="aura-modal-header">
             <h3 id="modal-subj-title" class="adp-card-title" style="margin: 0; font-size: 18px;">
-                📚 <?php esc_html_e( 'Añadir Materia', 'aura' ); ?>
+                📚 <?php esc_html_e( 'Añadir Materia', 'aura-suite' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" data-close-modal="#modal-subject-editor">&times;</button>
         </div>
@@ -1797,13 +1797,13 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
         <!-- Sub-navegación de pestañas en modal de materia -->
         <div class="aura-modal-subtabs" style="display: flex; gap: 4px; border-bottom: 1px solid var(--aura-border, #e2e8f0); padding: 0 20px; background: var(--aura-surface-alt, #f8fafc);">
             <button type="button" class="aura-modal-subtab-btn active" data-subtab="subj-tab-general" style="padding: 10px 14px; font-size: 13px; font-weight: 600; border: none; background: transparent; border-bottom: 2px solid var(--aura-primary, #5d5fef); color: var(--aura-primary, #5d5fef); cursor: pointer;">
-                ℹ️ <?php esc_html_e( 'General', 'aura' ); ?>
+                ℹ️ <?php esc_html_e( 'General', 'aura-suite' ); ?>
             </button>
             <button type="button" class="aura-modal-subtab-btn" data-subtab="subj-tab-teacher-mat" style="padding: 10px 14px; font-size: 13px; font-weight: 600; border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--aura-text-secondary, #64748b); cursor: pointer;">
-                📁 <?php esc_html_e( 'Material Docente (Cátedra)', 'aura' ); ?>
+                📁 <?php esc_html_e( 'Material Docente (Cátedra)', 'aura-suite' ); ?>
             </button>
             <button type="button" class="aura-modal-subtab-btn" data-subtab="subj-tab-student-mat" style="padding: 10px 14px; font-size: 13px; font-weight: 600; border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--aura-text-secondary, #64748b); cursor: pointer;">
-                📖 <?php esc_html_e( 'Material para Alumnos', 'aura' ); ?>
+                📖 <?php esc_html_e( 'Material para Alumnos', 'aura-suite' ); ?>
             </button>
         </div>
 
@@ -1816,27 +1816,27 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                 <div id="subj-tab-general" class="aura-modal-subtab-pane">
                     <div style="display: flex; flex-direction: column; gap: 14px;">
                         <div>
-                            <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Programa:', 'aura' ); ?></span>
+                            <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Programa:', 'aura-suite' ); ?></span>
                             <strong id="subj-prog-name-display" style="display: block; font-size: 14px; color: var(--aura-primary);"></strong>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Nombre de la Materia', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                                <?php esc_html_e( 'Nombre de la Materia', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                             </label>
-                            <input type="text" name="name" id="subj-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Teología Sistemática I', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                            <input type="text" name="name" id="subj-name" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Teología Sistemática I', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;">
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                             <div class="form-group">
                                 <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                    <?php esc_html_e( 'Código de Materia', 'aura' ); ?>
+                                    <?php esc_html_e( 'Código de Materia', 'aura-suite' ); ?>
                                 </label>
-                                <input type="text" name="code" id="subj-code" class="form-control" placeholder="<?php esc_attr_e( 'TEO101', 'aura' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
+                                <input type="text" name="code" id="subj-code" class="form-control" placeholder="<?php esc_attr_e( 'TEO101', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px; text-transform: uppercase;">
                             </div>
                             <div class="form-group">
                                 <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                    <?php esc_html_e( 'Horas Académicas', 'aura' ); ?>
+                                    <?php esc_html_e( 'Horas Académicas', 'aura-suite' ); ?>
                                 </label>
                                 <input type="number" name="total_hours" id="subj-hours" value="30" min="0" class="form-control" style="width: 100%; border-radius: 8px;">
                             </div>
@@ -1845,14 +1845,14 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
                             <div class="form-group">
                                 <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                    📦 <?php esc_html_e( 'Módulo / Bloque Temático', 'aura' ); ?>
+                                    📦 <?php esc_html_e( 'Módulo / Bloque Temático', 'aura-suite' ); ?>
                                 </label>
-                                <input type="text" name="module_name" id="subj-module-name" class="form-control" placeholder="<?php esc_attr_e( 'Ej: Módulo 1, Módulo 2...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
-                                <small style="font-size: 11px; color: var(--aura-text-muted);"><?php esc_html_e( 'Agrupa materias en Módulo 1, Módulo 2, etc.', 'aura' ); ?></small>
+                                <input type="text" name="module_name" id="subj-module-name" class="form-control" placeholder="<?php esc_attr_e( 'Ej: Módulo 1, Módulo 2...', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;">
+                                <small style="font-size: 11px; color: var(--aura-text-muted);"><?php esc_html_e( 'Agrupa materias en Módulo 1, Módulo 2, etc.', 'aura-suite' ); ?></small>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                    🔢 <?php esc_html_e( 'N° Orden Módulo', 'aura' ); ?>
+                                    🔢 <?php esc_html_e( 'N° Orden Módulo', 'aura-suite' ); ?>
                                 </label>
                                 <input type="number" name="module_order" id="subj-module-order" value="1" min="1" class="form-control" style="width: 100%; border-radius: 8px;">
                             </div>
@@ -1860,19 +1860,19 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                📝 <?php esc_html_e( 'Descripción de la Materia', 'aura' ); ?>
+                                📝 <?php esc_html_e( 'Descripción de la Materia', 'aura-suite' ); ?>
                             </label>
-                            <textarea name="description" id="subj-description" rows="3" class="form-control" placeholder="<?php esc_attr_e( 'Breve descripción de los contenidos y objetivos pedagógicos de la materia...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
+                            <textarea name="description" id="subj-description" rows="3" class="form-control" placeholder="<?php esc_attr_e( 'Breve descripción de los contenidos y objetivos pedagógicos de la materia...', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                🎨 <?php esc_html_e( 'Color de la Materia', 'aura' ); ?>
+                                🎨 <?php esc_html_e( 'Color de la Materia', 'aura-suite' ); ?>
                             </label>
                             <div class="aura-color-picker-box">
                                 <div class="aura-color-picker-row">
-                                    <input type="color" name="color" id="subj-color" value="#3A86FF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura' ); ?>">
-                                    <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura' ); ?></span>
+                                    <input type="color" name="color" id="subj-color" value="#3A86FF" class="aura-color-custom-input" title="<?php esc_attr_e( 'Color personalizado', 'aura-suite' ); ?>">
+                                    <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Paleta de colores oficial:', 'aura-suite' ); ?></span>
                                 </div>
                                 <?php echo Aura_Calendar_Admin::render_color_palette( 'subj-color', '#3A86FF' ); ?>
                             </div>
@@ -1880,13 +1880,13 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                👨‍🏫 <?php esc_html_e( 'Profesor(es) Titular(es)', 'aura' ); ?>
+                                👨‍🏫 <?php esc_html_e( 'Profesor(es) Titular(es)', 'aura-suite' ); ?>
                             </label>
                             <div id="subj-teachers-container" class="aura-user-chips-container">
                                 <!-- Inyectado dinámicamente con checkboxes desde JS -->
                             </div>
                             <small style="font-size: 11.5px; color: var(--aura-text-muted); display: block; margin-top: 4px;">
-                                <?php esc_html_e( 'Puedes seleccionar uno o varios profesores titulares para esta materia.', 'aura' ); ?>
+                                <?php esc_html_e( 'Puedes seleccionar uno o varios profesores titulares para esta materia.', 'aura-suite' ); ?>
                             </small>
                         </div>
 
@@ -1894,17 +1894,17 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                         <div class="form-group" style="background: rgba(16, 185, 129, 0.04); border: 1px dashed rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 12px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
                                 <label class="form-label" style="font-weight: 600; font-size: 13px; margin: 0; display: flex; align-items: center; gap: 6px;">
-                                    <span>🏢 <?php esc_html_e( 'Docentes Externos / Catálogo de Terceros', 'aura' ); ?></span>
+                                    <span>🏢 <?php esc_html_e( 'Docentes Externos / Catálogo de Terceros', 'aura-suite' ); ?></span>
                                 </label>
                                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-third-parties' ) ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost" style="font-size: 11px; padding: 3px 6px; color: var(--aura-text-muted, #64748b);" title="<?php esc_attr_e( 'Abrir Directorio de Terceros en nueva pestaña', 'aura' ); ?>">
-                                        ↗ <?php esc_html_e( 'Directorio', 'aura' ); ?>
+                                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-third-parties' ) ); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-ghost" style="font-size: 11px; padding: 3px 6px; color: var(--aura-text-muted, #64748b);" title="<?php esc_attr_e( 'Abrir Directorio de Terceros en nueva pestaña', 'aura-suite' ); ?>">
+                                        ↗ <?php esc_html_e( 'Directorio', 'aura-suite' ); ?>
                                     </a>
                                     <button type="button" id="btn-open-tp-catalog-subj" class="btn btn-xs btn-primary" style="font-size: 11.5px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 5px; background: #0284c7; border-color: #0284c7; color: #fff; font-weight: 600; border-radius: 6px; box-shadow: 0 1px 3px rgba(2,132,199,0.3);">
-                                        🏛️ <?php esc_html_e( 'Catálogo de Terceros', 'aura' ); ?>
+                                        🏛️ <?php esc_html_e( 'Catálogo de Terceros', 'aura-suite' ); ?>
                                     </button>
                                     <button type="button" id="btn-toggle-add-external-teacher" class="btn btn-xs btn-outline" style="font-size: 11.5px; padding: 3px 8px; border-radius: 6px;">
-                                        ➕ <?php esc_html_e( 'Agregar Manual', 'aura' ); ?>
+                                        ➕ <?php esc_html_e( 'Agregar Manual', 'aura-suite' ); ?>
                                     </button>
                                 </div>
                             </div>
@@ -1916,47 +1916,47 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                                 <input type="hidden" id="ext-teacher-avatar-url" value="">
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                     <div>
-                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre / Razón Social', 'aura' ); ?> <span style="color:#ef4444;">*</span></label>
-                                        <input type="text" id="ext-teacher-name" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Escribe para autocompletar o registrar...', 'aura' ); ?>">
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Nombre / Razón Social', 'aura-suite' ); ?> <span style="color:#ef4444;">*</span></label>
+                                        <input type="text" id="ext-teacher-name" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Escribe para autocompletar o registrar...', 'aura-suite' ); ?>">
                                     </div>
                                     <div>
-                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Correo Electrónico', 'aura' ); ?></label>
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Correo Electrónico', 'aura-suite' ); ?></label>
                                         <input type="email" id="ext-teacher-email" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="docente@institucion.com">
                                     </div>
                                 </div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                                     <div>
-                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Organización / Institución', 'aura' ); ?></label>
-                                        <input type="text" id="ext-teacher-org" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Universidad / Empresa', 'aura' ); ?>">
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Organización / Institución', 'aura-suite' ); ?></label>
+                                        <input type="text" id="ext-teacher-org" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="<?php esc_attr_e( 'Universidad / Empresa', 'aura-suite' ); ?>">
                                     </div>
                                     <div>
-                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Teléfono', 'aura' ); ?></label>
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Teléfono', 'aura-suite' ); ?></label>
                                         <input type="text" id="ext-teacher-phone" class="form-control" style="font-size: 12px; padding: 5px 8px;" placeholder="+502 ...">
                                     </div>
                                     <div>
-                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Rol en la Materia', 'aura' ); ?></label>
+                                        <label style="font-size: 11px; font-weight: 600; display: block; margin-bottom: 2px;"><?php esc_html_e( 'Rol en la Materia', 'aura-suite' ); ?></label>
                                         <select id="ext-teacher-role" class="form-control" style="font-size: 12px; padding: 5px 8px;">
-                                            <option value="Docente Titular"><?php esc_html_e( 'Docente Titular Externo', 'aura' ); ?></option>
-                                            <option value="Profesor Invitado"><?php esc_html_e( 'Profesor Invitado / Especialista', 'aura' ); ?></option>
-                                            <option value="Auxiliar / Adjunto"><?php esc_html_e( 'Auxiliar / Adjunto Externo', 'aura' ); ?></option>
+                                            <option value="Docente Titular"><?php esc_html_e( 'Docente Titular Externo', 'aura-suite' ); ?></option>
+                                            <option value="Profesor Invitado"><?php esc_html_e( 'Profesor Invitado / Especialista', 'aura-suite' ); ?></option>
+                                            <option value="Auxiliar / Adjunto"><?php esc_html_e( 'Auxiliar / Adjunto Externo', 'aura-suite' ); ?></option>
                                         </select>
                                     </div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px solid #f1f5f9;">
                                     <div id="ext-teacher-linked-badge" style="display: none; align-items: center; gap: 4px; font-size: 11px; color: #0284c7; font-weight: 600;">
                                         <span class="dashicons dashicons-admin-links" style="font-size: 14px; width: 14px; height: 14px;"></span>
-                                        <span><?php esc_html_e( 'Vinculado a Tercero del Catálogo', 'aura' ); ?></span>
+                                        <span><?php esc_html_e( 'Vinculado a Tercero del Catálogo', 'aura-suite' ); ?></span>
                                     </div>
                                     <div style="display: flex; justify-content: flex-end; gap: 6px; margin-left: auto;">
-                                        <button type="button" id="btn-cancel-add-external-teacher" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura' ); ?></button>
-                                        <button type="button" id="btn-save-external-teacher" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir a la Materia', 'aura' ); ?></button>
+                                        <button type="button" id="btn-cancel-add-external-teacher" class="btn btn-xs btn-ghost" style="font-size: 11px;"><?php esc_html_e( 'Cancelar', 'aura-suite' ); ?></button>
+                                        <button type="button" id="btn-save-external-teacher" class="btn btn-xs btn-emerald" style="font-size: 11px; font-weight: 600;"><?php esc_html_e( 'Añadir a la Materia', 'aura-suite' ); ?></button>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Lista de docentes externos asignados con chips -->
                             <div id="subj-external-teachers-list" style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; align-items: center;">
-                                <span id="subj-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;"><?php esc_html_e( 'Sin docentes externos asignados.', 'aura' ); ?></span>
+                                <span id="subj-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;"><?php esc_html_e( 'Sin docentes externos asignados.', 'aura-suite' ); ?></span>
                             </div>
                             <input type="hidden" name="external_teachers" id="subj-external-teachers-json" value="[]">
                         </div>
@@ -1966,25 +1966,25 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                 <!-- ── TAB 2: MATERIAL DOCENTE (CÁTEDRA) ── -->
                 <div id="subj-tab-teacher-mat" class="aura-modal-subtab-pane" style="display: none;">
                     <div style="background: rgba(93,95,239,0.06); border: 1px solid rgba(93,95,239,0.2); border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 12.5px; color: var(--aura-text-secondary);">
-                        <strong style="color: var(--aura-primary); display: block; margin-bottom: 3px;">ℹ️ <?php esc_html_e( 'Material Pedagógico de Cátedra', 'aura' ); ?></strong>
-                        <?php esc_html_e( 'Este material es exclusivo para el instructor. Al reasignar esta materia a otro profesor en el futuro, el nuevo docente tendrá acceso a estos documentos, guías de clase y presentaciones para continuar la enseñanza sin perder información.', 'aura' ); ?>
+                        <strong style="color: var(--aura-primary); display: block; margin-bottom: 3px;">ℹ️ <?php esc_html_e( 'Material Pedagógico de Cátedra', 'aura-suite' ); ?></strong>
+                        <?php esc_html_e( 'Este material es exclusivo para el instructor. Al reasignar esta materia a otro profesor en el futuro, el nuevo docente tendrá acceso a estos documentos, guías de clase y presentaciones para continuar la enseñanza sin perder información.', 'aura-suite' ); ?>
                     </div>
 
                     <!-- Botones de Acción de Material -->
                     <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
                         <input type="file" id="upload-teacher-file-input" style="display: none;">
                         <button type="button" class="btn btn-outline btn-upload-material" data-type="teacher" style="font-size: 12px; padding: 6px 12px;">
-                            ☁️ <?php esc_html_e( 'Subir Archivo (Drive / Nube)', 'aura' ); ?>
+                            ☁️ <?php esc_html_e( 'Subir Archivo (Drive / Nube)', 'aura-suite' ); ?>
                         </button>
                         <button type="button" class="btn btn-ghost btn-add-drive-link" data-type="teacher" style="font-size: 12px; padding: 6px 12px;">
-                            🔗 <?php esc_html_e( 'Añadir Enlace Google Drive', 'aura' ); ?>
+                            🔗 <?php esc_html_e( 'Añadir Enlace Google Drive', 'aura-suite' ); ?>
                         </button>
                     </div>
 
                     <!-- Lista de Materiales Docente -->
                     <div id="subj-teacher-materials-list" class="aura-materials-list" style="display: flex; flex-direction: column; gap: 8px;">
                         <p class="aura-empty-hint" style="font-size: 12px; color: var(--aura-text-muted); font-style: italic;">
-                            <?php esc_html_e( 'No hay materiales de cátedra cargados aún.', 'aura' ); ?>
+                            <?php esc_html_e( 'No hay materiales de cátedra cargados aún.', 'aura-suite' ); ?>
                         </p>
                     </div>
                 </div>
@@ -1992,25 +1992,25 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
                 <!-- ── TAB 3: MATERIAL PARA ESTUDIANTES ── -->
                 <div id="subj-tab-student-mat" class="aura-modal-subtab-pane" style="display: none;">
                     <div style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 12.5px; color: var(--aura-text-secondary);">
-                        <strong style="color: #10b981; display: block; margin-bottom: 3px;">📖 <?php esc_html_e( 'Material de Estudio para Alumnos', 'aura' ); ?></strong>
-                        <?php esc_html_e( 'Lecturas requeridas, guías de estudio, cuestionarios y documentos que los estudiantes matriculados en esta materia podrán consultar y descargar directamente desde su portal.', 'aura' ); ?>
+                        <strong style="color: #10b981; display: block; margin-bottom: 3px;">📖 <?php esc_html_e( 'Material de Estudio para Alumnos', 'aura-suite' ); ?></strong>
+                        <?php esc_html_e( 'Lecturas requeridas, guías de estudio, cuestionarios y documentos que los estudiantes matriculados en esta materia podrán consultar y descargar directamente desde su portal.', 'aura-suite' ); ?>
                     </div>
 
                     <!-- Botones de Acción de Material Estudiantes -->
                     <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
                         <input type="file" id="upload-student-file-input" style="display: none;">
                         <button type="button" class="btn btn-outline btn-upload-material" data-type="student" style="font-size: 12px; padding: 6px 12px;">
-                            ☁️ <?php esc_html_e( 'Subir Archivo para Alumnos', 'aura' ); ?>
+                            ☁️ <?php esc_html_e( 'Subir Archivo para Alumnos', 'aura-suite' ); ?>
                         </button>
                         <button type="button" class="btn btn-ghost btn-add-drive-link" data-type="student" style="font-size: 12px; padding: 6px 12px;">
-                            🔗 <?php esc_html_e( 'Añadir Enlace Google Drive', 'aura' ); ?>
+                            🔗 <?php esc_html_e( 'Añadir Enlace Google Drive', 'aura-suite' ); ?>
                         </button>
                     </div>
 
                     <!-- Lista de Materiales Estudiantes -->
                     <div id="subj-student-materials-list" class="aura-materials-list" style="display: flex; flex-direction: column; gap: 8px;">
                         <p class="aura-empty-hint" style="font-size: 12px; color: var(--aura-text-muted); font-style: italic;">
-                            <?php esc_html_e( 'No hay materiales para alumnos cargados aún.', 'aura' ); ?>
+                            <?php esc_html_e( 'No hay materiales para alumnos cargados aún.', 'aura-suite' ); ?>
                         </p>
                     </div>
                 </div>
@@ -2019,10 +2019,10 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
 
             <div class="aura-modal-footer">
                 <button type="button" class="btn btn-ghost" data-close-modal="#modal-subject-editor">
-                    <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                    <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
                 </button>
                 <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-subject">
-                    💾 <?php esc_html_e( 'Guardar Materia', 'aura' ); ?>
+                    💾 <?php esc_html_e( 'Guardar Materia', 'aura-suite' ); ?>
                 </button>
             </div>
         </form>
@@ -2036,7 +2036,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
     <div class="aura-modal-container" style="max-width: 500px;">
         <div class="aura-modal-header">
             <h3 class="adp-card-title" style="margin: 0; font-size: 18px;">
-                📤 <?php esc_html_e( 'Importar Programas desde JSON', 'aura' ); ?>
+                📤 <?php esc_html_e( 'Importar Programas desde JSON', 'aura-suite' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" id="btn-cancel-import">&times;</button>
         </div>
@@ -2044,17 +2044,17 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
         <div class="aura-modal-body" style="padding: 20px 24px;">
             <!-- Info box -->
             <div style="background: rgba(99,102,241,.07); border: 1px solid rgba(99,102,241,.2); border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; font-size: 12.5px; color: var(--aura-text-secondary);">
-                <strong style="color: var(--aura-primary); display: block; margin-bottom: 4px;">ℹ️ <?php esc_html_e( '¿Cómo funciona la importación?', 'aura' ); ?></strong>
-                <?php esc_html_e( 'Sube un archivo .json exportado desde Aura. Se importarán los programas y sus materias. Los duplicados se pueden omitir automáticamente.', 'aura' ); ?>
+                <strong style="color: var(--aura-primary); display: block; margin-bottom: 4px;">ℹ️ <?php esc_html_e( '¿Cómo funciona la importación?', 'aura-suite' ); ?></strong>
+                <?php esc_html_e( 'Sube un archivo .json exportado desde Aura. Se importarán los programas y sus materias. Los duplicados se pueden omitir automáticamente.', 'aura-suite' ); ?>
             </div>
 
             <!-- Zona Drag & Drop -->
             <div id="import-dropzone" class="aura-import-dropzone" style="margin-bottom: 16px;">
                 <div style="font-size: 36px; margin-bottom: 10px;">📤</div>
-                <p style="font-size: 14px; font-weight: 600; margin: 0 0 4px;"><?php esc_html_e( 'Arrastra tu archivo JSON aquí', 'aura' ); ?></p>
-                <p style="font-size: 12px; color: var(--aura-text-muted); margin: 0 0 14px;"><?php esc_html_e( 'o haz clic para seleccionar', 'aura' ); ?></p>
+                <p style="font-size: 14px; font-weight: 600; margin: 0 0 4px;"><?php esc_html_e( 'Arrastra tu archivo JSON aquí', 'aura-suite' ); ?></p>
+                <p style="font-size: 12px; color: var(--aura-text-muted); margin: 0 0 14px;"><?php esc_html_e( 'o haz clic para seleccionar', 'aura-suite' ); ?></p>
                 <label for="import-file-input" class="btn btn-ghost" style="cursor: pointer; font-size: 13px;">
-                    📂 <?php esc_html_e( 'Seleccionar archivo', 'aura' ); ?>
+                    📂 <?php esc_html_e( 'Seleccionar archivo', 'aura-suite' ); ?>
                 </label>
                 <input type="file" id="import-file-input" accept=".json" style="display: none;">
             </div>
@@ -2062,7 +2062,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
             <!-- Opciones -->
             <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; margin-bottom: 16px;">
                 <input type="checkbox" id="import-skip-existing" checked style="width: 16px; height: 16px; accent-color: var(--aura-primary);">
-                <span><?php esc_html_e( 'Omitir programas que ya existen (recomendado)', 'aura' ); ?></span>
+                <span><?php esc_html_e( 'Omitir programas que ya existen (recomendado)', 'aura-suite' ); ?></span>
             </label>
 
             <!-- Área de resultado (oculta hasta que se importa) -->
@@ -2071,10 +2071,10 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
 
         <div class="aura-modal-footer">
             <button type="button" class="btn btn-ghost" id="btn-cancel-import-2">
-                <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
             </button>
             <button type="button" class="btn btn-indigo btn-shimmer btn-lift" id="btn-do-import" disabled>
-                📤 <?php esc_html_e( 'Importar', 'aura' ); ?>
+                📤 <?php esc_html_e( 'Importar', 'aura-suite' ); ?>
             </button>
         </div>
     </div>
@@ -2087,7 +2087,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
     <div class="aura-modal-container" style="max-width: 480px;">
         <div class="aura-modal-header">
             <h3 id="modal-add-link-title" class="adp-card-title" style="margin: 0; font-size: 17px;">
-                🔗 <?php esc_html_e( 'Añadir Enlace de Material', 'aura' ); ?>
+                🔗 <?php esc_html_e( 'Añadir Enlace de Material', 'aura-suite' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" data-close-modal="#modal-add-material-link">&times;</button>
         </div>
@@ -2096,23 +2096,23 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
             <div class="aura-modal-body" style="padding: 20px 24px;">
                 <div class="form-group" style="margin-bottom: 14px;">
                     <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                        🔗 <?php esc_html_e( 'Enlace Compartido (Google Drive, Dropbox, Web)', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                        🔗 <?php esc_html_e( 'Enlace Compartido (Google Drive, Dropbox, Web)', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                     </label>
                     <input type="url" id="add-link-url" required class="form-control" placeholder="https://drive.google.com/file/d/..." style="width: 100%; border-radius: 8px;">
                 </div>
                 <div class="form-group" style="margin-bottom: 8px;">
                     <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                        🏷️ <?php esc_html_e( 'Título descriptivo del documento', 'aura' ); ?>
+                        🏷️ <?php esc_html_e( 'Título descriptivo del documento', 'aura-suite' ); ?>
                     </label>
-                    <input type="text" id="add-link-title" class="form-control" placeholder="<?php esc_attr_e( 'Ej: Sílabo Oficial / Guía de Estudio', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                    <input type="text" id="add-link-title" class="form-control" placeholder="<?php esc_attr_e( 'Ej: Sílabo Oficial / Guía de Estudio', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;">
                 </div>
             </div>
             <div class="aura-modal-footer">
                 <button type="button" class="btn btn-ghost" data-close-modal="#modal-add-material-link">
-                    <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                    <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
                 </button>
                 <button type="submit" class="btn btn-indigo btn-shimmer btn-lift" id="btn-save-material-link">
-                    🔗 <?php esc_html_e( 'Añadir Enlace', 'aura' ); ?>
+                    🔗 <?php esc_html_e( 'Añadir Enlace', 'aura-suite' ); ?>
                 </button>
             </div>
         </form>
@@ -2142,7 +2142,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
         <!-- Body: Bloques de fecha tipográficos (Date Tiles) sin emojis repetidos -->
         <div class="aura-tip-card-body">
             <div class="aura-tip-section-header">
-                <span class="aura-tip-section-title"><?php esc_html_e( 'Fechas y Sesiones Programadas', 'aura' ); ?></span>
+                <span class="aura-tip-section-title"><?php esc_html_e( 'Fechas y Sesiones Programadas', 'aura-suite' ); ?></span>
                 <span id="aura-subj-cal-tip-count" class="badge badge-indigo badge-sm"></span>
             </div>
             <div class="aura-tip-sessions-list" id="aura-subj-cal-tip-list">
@@ -2153,7 +2153,7 @@ html.wp-dark-mode-active .aura-subj-action-btn.is-danger:hover {
         <!-- Footer: Botón de acción con estilo WOW del Design System -->
         <div class="aura-tip-card-footer">
             <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar&tab=calendar' ) ); ?>" class="btn btn-sm btn-indigo btn-shimmer btn-lift" style="width: 100%; justify-content: center; text-decoration: none;">
-                <?php esc_html_e( 'Ver Sesiones en el Calendario →', 'aura' ); ?>
+                <?php esc_html_e( 'Ver Sesiones en el Calendario →', 'aura-suite' ); ?>
             </a>
         </div>
     </div>

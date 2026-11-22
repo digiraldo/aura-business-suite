@@ -4,6 +4,8 @@
 
 (function($) {
     'use strict';
+
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
     
     $(document).ready(function() {
         
@@ -116,16 +118,16 @@
             
             // Datos de ejemplo - deberían venir del backend
             const comparisonData = {
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                labels: [__('Ene', 'aura-suite'), __('Feb', 'aura-suite'), __('Mar', 'aura-suite'), __('Abr', 'aura-suite'), __('May', 'aura-suite'), __('Jun', 'aura-suite')],
                 datasets: [{
-                    label: 'Mes Actual',
+                    label: __('Mes Actual', 'aura-suite'),
                     data: [450, 480, 520, 490, 510, 0],
                     borderColor: 'rgb(59, 130, 246)',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     tension: 0.4,
                     fill: true
                 }, {
-                    label: 'Mes Anterior',
+                    label: __('Mes Anterior', 'aura-suite'),
                     data: [420, 460, 500, 470, 490, 505],
                     borderColor: 'rgb(156, 163, 175)',
                     backgroundColor: 'rgba(156, 163, 175, 0.1)',
@@ -166,9 +168,9 @@
             
             // Datos de ejemplo - deberían venir del backend
             const exitsData = {
-                labels: ['Mantenimiento', 'Reparación', 'Renta', 'Uso Personal'],
+                labels: [__('Mantenimiento', 'aura-suite'), __('Reparación', 'aura-suite'), __('Renta', 'aura-suite'), __('Uso Personal', 'aura-suite')],
                 datasets: [{
-                    label: 'Cantidad de Salidas',
+                    label: __('Cantidad de Salidas', 'aura-suite'),
                     data: [12, 8, 15, 25],
                     backgroundColor: [
                         'rgba(245, 158, 11, 0.8)',
@@ -203,7 +205,7 @@
                                     const value = context.parsed || 0;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = ((value / total) * 100).toFixed(1);
-                                    return label + ': ' + value + ' salidas (' + percentage + '%)';
+                                    return label + ': ' + value + ' ' + __('salidas', 'aura-suite') + ' (' + percentage + '%)';
                                 }
                             }
                         }

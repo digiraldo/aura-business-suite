@@ -306,12 +306,12 @@ $areas = $wpdb->get_results(
                             <input type="color" id="form-primary-color" name="primary_color"
                                    value="<?php echo esc_attr( $form->primary_color ?? '#2563eb' ); ?>">
                             <span class="aura-color-swatches">
-                                <button type="button" class="aura-swatch" data-color="#2563eb" style="background:#2563eb;" title="Azul"></button>
-                                <button type="button" class="aura-swatch" data-color="#7c3aed" style="background:#7c3aed;" title="Violeta"></button>
-                                <button type="button" class="aura-swatch" data-color="#16a34a" style="background:#16a34a;" title="Verde"></button>
-                                <button type="button" class="aura-swatch" data-color="#dc2626" style="background:#dc2626;" title="Rojo"></button>
-                                <button type="button" class="aura-swatch" data-color="#d97706" style="background:#d97706;" title="Ámbar"></button>
-                                <button type="button" class="aura-swatch" data-color="#0e7490" style="background:#0e7490;" title="Cian"></button>
+                                <button type="button" class="aura-swatch" data-color="#2563eb" style="background:#2563eb;" title="<?php esc_attr_e( 'Azul', 'aura-suite' ); ?>"></button>
+                                <button type="button" class="aura-swatch" data-color="#7c3aed" style="background:#7c3aed;" title="<?php esc_attr_e( 'Violeta', 'aura-suite' ); ?>"></button>
+                                <button type="button" class="aura-swatch" data-color="#16a34a" style="background:#16a34a;" title="<?php esc_attr_e( 'Verde', 'aura-suite' ); ?>"></button>
+                                <button type="button" class="aura-swatch" data-color="#dc2626" style="background:#dc2626;" title="<?php esc_attr_e( 'Rojo', 'aura-suite' ); ?>"></button>
+                                <button type="button" class="aura-swatch" data-color="#d97706" style="background:#d97706;" title="<?php esc_attr_e( 'Ámbar', 'aura-suite' ); ?>"></button>
+                                <button type="button" class="aura-swatch" data-color="#0e7490" style="background:#0e7490;" title="<?php esc_attr_e( 'Cian', 'aura-suite' ); ?>"></button>
                             </span>
                         </div>
                     </div>

@@ -7,6 +7,9 @@
 
 (function($) {
     'use strict';
+
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
     
     // Variables globales
     let formChanged = false;
@@ -55,7 +58,7 @@
             // Si no hay área, ocultar el campo de presupuesto y cargar categorías genéricas.
             if (!areaId) {
                 toggleBudgetCategoryField(false);
-                $('#category_id').val('').html('<option value="">Seleccionar categoría...</option>');
+                $('#category_id').val('').html('<option value="">' + __('Seleccionar categoría...', 'aura-suite') + '</option>');
                 loadCategories(type);
                 updateContextNote();
                 return;
@@ -121,7 +124,7 @@
                         });
                         showBudgetBannerWarning(
                             auraTransactionData.messages.areaFilteredByCategory ||
-                            'Mostrando áreas con presupuesto para esta categoría.'
+                            __('Mostrando áreas con presupuesto para esta categoría.', 'aura-suite')
                         );
                     } else {
                         // No hay restricción para esta categoría — mostrar todas las áreas
@@ -331,8 +334,8 @@
             const trendSymbol = mode === 'down' ? '↓' : '↑';
             return ''
                 + '<strong>' + label + '</strong>'
-                + '<span>Saldo actual: <b>' + formatAccountMoney(current, currency) + '</b></span>'
-                + '<span class="aura-account-impact__estimate ' + trendClass + '">Estimado: <b>' + formatAccountMoney(estimated, currency) + '</b> ' + trendSymbol + '</span>';
+                + '<span>' + __('Saldo actual:', 'aura-suite') + ' <b>' + formatAccountMoney(current, currency) + '</b></span>'
+                + '<span class="aura-account-impact__estimate ' + trendClass + '">' + __('Estimado:', 'aura-suite') + ' <b>' + formatAccountMoney(estimated, currency) + '</b> ' + trendSymbol + '</span>';
         };
 
         $sourceImpact.hide().removeClass('has-impact').empty();
@@ -347,7 +350,7 @@
             const isSourceForeign = source.currency && source.currency.toUpperCase() !== baseCurrency;
             const effectiveImpact = (isSourceForeign && isConversionActive && foreignAmount > 0) ? foreignAmount : baseAmount;
             const estimated = source.balance - effectiveImpact;
-            const label = effectiveImpact > 0 ? 'Impacto estimado al guardar (' + (type === 'capital' ? 'capital' : 'egreso') + ')' : 'Selecciona un monto para estimar impacto';
+            const label = effectiveImpact > 0 ? sprintf(__('Impacto estimado al guardar (%s)', 'aura-suite'), type === 'capital' ? __('capital', 'aura-suite') : __('egreso', 'aura-suite')) : __('Selecciona un monto para estimar impacto', 'aura-suite');
             $sourceImpact
                 .html(buildImpactHtml(label, source.balance, estimated, source.currency, 'down'))
                 .addClass('has-impact')
@@ -358,7 +361,7 @@
             const isDestForeign = destination.currency && destination.currency.toUpperCase() !== baseCurrency;
             const effectiveImpact = (isDestForeign && isConversionActive && foreignAmount > 0) ? foreignAmount : baseAmount;
             const estimated = destination.balance + effectiveImpact;
-            const label = effectiveImpact > 0 ? 'Impacto estimado al guardar (ingreso)' : 'Selecciona un monto para estimar impacto';
+            const label = effectiveImpact > 0 ? __('Impacto estimado al guardar (ingreso)', 'aura-suite') : __('Selecciona un monto para estimar impacto', 'aura-suite');
             $destinationImpact
                 .html(buildImpactHtml(label, destination.balance, estimated, destination.currency, 'up'))
                 .addClass('has-impact')
@@ -387,10 +390,10 @@
             
             // Actualizar etiquetas visuales con la divisa correspondiente
             $('#aura-currency-badge').text(foreignCurr + ' ⇄ ' + baseCurrency);
-            $('#foreign-amount-label').text('Monto en Cuenta (' + foreignCurr + ')');
+            $('#foreign-amount-label').text(sprintf(__('Monto en Cuenta (%s)', 'aura-suite'), foreignCurr));
             $('.foreign-currency-symbol').text(foreignCurr + ' $');
             $('#rate-currency-code').text(foreignCurr);
-            $('#foreign-amount-subhint').text('Afecta el saldo bancario real (' + foreignCurr + ')');
+            $('#foreign-amount-subhint').text(sprintf(__('Afecta el saldo bancario real (%s)', 'aura-suite'), foreignCurr));
             
             // Variables ocultas
             $('#tx_currency').val(foreignCurr);
@@ -570,30 +573,30 @@
         const areaName = getSelectedAreaName();
         const hasBudgetField = $('#aura-budget-category-field').is(':visible');
 
-        let title = type === 'income' ? 'Ingreso' : (type === 'capital' ? 'Gasto de Capital' : 'Egreso');
+        let title = type === 'income' ? __('Ingreso', 'aura-suite') : (type === 'capital' ? __('Gasto de Capital', 'aura-suite') : __('Egreso', 'aura-suite'));
         let message = type === 'income'
-            ? 'Selecciona la cuenta destino para registrar el dinero que entra. Si el área tiene presupuesto activo, podrás asignar una categoría del presupuesto.'
+            ? __('Selecciona la cuenta destino para registrar el dinero que entra. Si el área tiene presupuesto activo, podrás asignar una categoría del presupuesto.', 'aura-suite')
             : (type === 'capital' 
-                ? 'Selecciona la cuenta origen de donde saldrá el dinero. Recuerda que este tipo de transacción no afectará los porcentajes del presupuesto operacional.' 
-                : 'Selecciona la cuenta origen para registrar el dinero que sale. Si la transacción corresponde a reembolso personal, el sistema permite usar un usuario vinculado.');
+                ? __('Selecciona la cuenta origen de donde saldrá el dinero. Recuerda que este tipo de transacción no afectará los porcentajes del presupuesto operacional.', 'aura-suite')
+                : __('Selecciona la cuenta origen para registrar el dinero que sale. Si la transacción corresponde a reembolso personal, el sistema permite usar un usuario vinculado.', 'aura-suite'));
 
         if (areaId && areaName) {
-            message += ' Área seleccionada: ' + areaName + '.';
+            message += ' ' + sprintf(__('Área seleccionada: %s.', 'aura-suite'), areaName);
         }
 
         if (type === 'expense' && !hasBudgetField) {
-            message += ' La categoría del presupuesto solo aparecerá cuando el área tenga presupuestos activos.';
+            message += ' ' + __('La categoría del presupuesto solo aparecerá cuando el área tenga presupuestos activos.', 'aura-suite');
         }
 
         const sourceName = $('#source_account_id option:selected').text().trim();
         const destinationName = $('#destination_account_id option:selected').text().trim();
 
         if ((type === 'expense' || type === 'capital') && $('#source_account_id').val() && sourceName) {
-            message += ' Cuenta origen seleccionada: ' + sourceName + '.';
+            message += ' ' + sprintf(__('Cuenta origen seleccionada: %s.', 'aura-suite'), sourceName);
         }
 
         if (type === 'income' && $('#destination_account_id').val() && destinationName) {
-            message += ' Cuenta destino seleccionada: ' + destinationName + '.';
+            message += ' ' + sprintf(__('Cuenta destino seleccionada: %s.', 'aura-suite'), destinationName);
         }
 
         $('#aura-transaction-context-note').html('<strong>' + title + '</strong>' + message);
@@ -605,14 +608,14 @@
 
         $('#source-account-help').text(
             isExpense
-                ? 'Obligatoria para egresos. Desde aquí saldrá el dinero.'
-                : 'No aplica para ingresos; el sistema usará la cuenta destino.'
+                ? __('Obligatoria para egresos. Desde aquí saldrá el dinero.', 'aura-suite')
+                : __('No aplica para ingresos; el sistema usará la cuenta destino.', 'aura-suite')
         );
 
         $('#destination-account-help').text(
             isIncome
-                ? 'Obligatoria para ingresos. Aquí entrará el dinero.'
-                : 'No aplica para egresos; el sistema usará la cuenta origen.'
+                ? __('Obligatoria para ingresos. Aquí entrará el dinero.', 'aura-suite')
+                : __('No aplica para egresos; el sistema usará la cuenta origen.', 'aura-suite')
         );
 
         $('#source_account_id').closest('.aura-account-field').toggleClass('is-hidden-by-type', isIncome);
@@ -624,7 +627,7 @@
      */
     function loadCategories(type) {
         const $select = $('#category_id');
-        $select.html('<option value="">Cargando...</option>').prop('disabled', true);
+        $select.html('<option value="">' + __('Cargando...', 'aura-suite') + '</option>').prop('disabled', true);
         
         $.ajax({
             url: auraTransactionData.ajaxUrl,
@@ -639,11 +642,11 @@
                     currentCategories = response.data.categories;
                     renderCategoriesSelect(response.data.categories);
                 } else {
-                    showMessage(response.data.message || 'Error al cargar categorías', 'error');
+                    showMessage(response.data.message || __('Error al cargar categorías', 'aura-suite'), 'error');
                 }
             },
             error: function() {
-                showMessage('Error de conexión al cargar categorías', 'error');
+                showMessage(__('Error de conexión al cargar categorías', 'aura-suite'), 'error');
             },
             complete: function() {
                 $select.prop('disabled', false);
@@ -659,7 +662,7 @@
         const $select = $('#expense_category_id');
         if (!$select.length) return;
 
-        $select.html('<option value="">Cargando...</option>').prop('disabled', true);
+        $select.html('<option value="">' + __('Cargando...', 'aura-suite') + '</option>').prop('disabled', true);
 
         $.ajax({
             url: auraTransactionData.ajaxUrl,
@@ -673,11 +676,11 @@
                 if (response.success) {
                     renderExpenseCategoriesSelect(response.data.categories);
                 } else {
-                    $select.html('<option value="">Error al cargar</option>');
+                    $select.html('<option value="">' + __('Error al cargar', 'aura-suite') + '</option>');
                 }
             },
             error: function() {
-                $select.html('<option value="">Error de conexión</option>');
+                $select.html('<option value="">' + __('Error de conexión', 'aura-suite') + '</option>');
             },
             complete: function() {
                 $select.prop('disabled', false);
@@ -693,7 +696,7 @@
         const $select = $('#expense_category_id');
 
         if (level === 0) {
-            $select.html('<option value="">Seleccionar categoría del gasto...</option>');
+            $select.html('<option value="">' + __('Seleccionar categoría del gasto...', 'aura-suite') + '</option>');
         }
 
         (categories || []).forEach(function(category) {
@@ -746,7 +749,7 @@
         const $select = $('#category_id');
         
         if (level === 0) {
-            $select.html('<option value="">Seleccionar categoría...</option>');
+            $select.html('<option value="">' + __('Seleccionar categoría...', 'aura-suite') + '</option>');
         }
         
         categories.forEach(function(category) {
@@ -796,7 +799,7 @@
      */
     function loadCategoriesForArea(areaId, type) {
         const $select = $('#category_id');
-        $select.html('<option value="">' + (auraTransactionData.messages.loadingCats || 'Cargando...') + '</option>').prop('disabled', true);
+        $select.html('<option value="">' + (auraTransactionData.messages.loadingCats || __('Cargando...', 'aura-suite')) + '</option>').prop('disabled', true);
         hideBudgetBanner();
 
         return $.post(auraTransactionData.ajaxUrl, {
@@ -843,7 +846,7 @@
                 renderAreaGlobalBudgetBanner(currentAreaBudget);
             } else if (!activeAreaHasBudgetCategories) {
                 // Mostrar advertencia si el área no tiene presupuestos
-                showBudgetBannerWarning(auraTransactionData.messages.noBudgetsForArea || 'Esta área no tiene presupuestos asignados para la fecha actual.');
+                showBudgetBannerWarning(auraTransactionData.messages.noBudgetsForArea || __('Esta área no tiene presupuestos asignados para la fecha actual.', 'aura-suite'));
                 $('#category_id').val('');
             }
         })
@@ -864,10 +867,10 @@
      */
     function renderCategoriesForArea(categories) {
         const $select = $('#category_id');
-        $select.html('<option value="">Seleccionar categoría...</option>');
+        $select.html('<option value="">' + __('Seleccionar categoría...', 'aura-suite') + '</option>');
 
         if (!categories || !categories.length) {
-            $select.append('<option value="" disabled>Sin categorías disponibles</option>');
+            $select.append('<option value="" disabled>' + __('Sin categorías disponibles', 'aura-suite') + '</option>');
             return;
         }
 
@@ -896,16 +899,16 @@
 
         const barColor = pct > 100 ? '#d63638' : (pct >= 90 ? '#f97316' : (pct >= 70 ? '#dba617' : '#00a32a'));
         const statusIcon = pct > 100 ? '🔴' : (pct >= 90 ? '🟠' : (pct >= 70 ? '🟡' : '💰'));
-        const areaName = getSelectedAreaName() || 'Área';
+        const areaName = getSelectedAreaName() || __('Área', 'aura-suite');
 
         let html = '<div style="background:#f0f6fc;border:1px solid #72aee6;border-radius:6px;padding:10px 14px;font-size:13px;line-height:1.5;">'
-            + statusIcon + ' <strong>Presupuesto activo de Área: ' + escHtml(areaName) + '</strong><br>'
+            + statusIcon + ' <strong>' + sprintf(__('Presupuesto activo de Área: %s', 'aura-suite'), escHtml(areaName)) + '</strong><br>'
             + '<span style="color:#50575e;">'
-            + '&nbsp;Asignado: <strong>$' + fmtNum(budget) + '</strong>'
-            + ' &nbsp;|&nbsp; Ejecutado: <strong style="color:' + barColor + '">$' + fmtNum(executed) + ' (' + pct.toFixed(1) + '%)</strong>'
+            + '&nbsp;' + __('Asignado:', 'aura-suite') + ' <strong>$' + fmtNum(budget) + '</strong>'
+            + ' &nbsp;|&nbsp; ' + __('Ejecutado:', 'aura-suite') + ' <strong style="color:' + barColor + '">$' + fmtNum(executed) + ' (' + pct.toFixed(1) + '%)</strong>'
             + ' &nbsp;|&nbsp; ' + (overrun > 0
-                ? 'Exceso: <strong style="color:#d63638">$' + fmtNum(overrun) + '</strong>'
-                : 'Disponible: <strong style="color:#00a32a">$' + fmtNum(avail) + '</strong>')
+                ? __('Exceso:', 'aura-suite') + ' <strong style="color:#d63638">$' + fmtNum(overrun) + '</strong>'
+                : __('Disponible:', 'aura-suite') + ' <strong style="color:#00a32a">$' + fmtNum(avail) + '</strong>')
             + '</span>'
             + '<div id="aura-overspend-warning" style="display:none;color:#d63638;margin-top:4px;font-weight:600;"></div>'
             + '</div>';
@@ -930,7 +933,7 @@
             const catName = $('#category_id option:selected').text().replace('💰 ', '').trim();
             const areaName = getSelectedAreaName() || $('#transaction_area_id option:selected').text().trim();
             showBudgetBannerWarning(
-                (auraTransactionData.messages.noBudgetForCat || 'No hay presupuesto activo para esta categoría en el área seleccionada.')
+                (auraTransactionData.messages.noBudgetForCat || __('No hay presupuesto activo para esta categoría en el área seleccionada.', 'aura-suite'))
                 + (catName && areaName ? ' (' + catName + ' en ' + areaName + ')' : '')
             );
             return;
@@ -949,13 +952,13 @@
         const areaName = getSelectedAreaName() || $('#transaction_area_id option:selected').text().trim();
 
         let html = '<div style="background:#f0f6fc;border:1px solid #72aee6;border-radius:6px;padding:10px 14px;font-size:13px;line-height:1.5;">'
-            + statusIcon + ' <strong>Presupuesto activo: ' + escHtml(areaName) + ' → ' + escHtml(catName) + '</strong><br>'
+            + statusIcon + ' <strong>' + sprintf(__('Presupuesto activo: %1$s → %2$s', 'aura-suite'), escHtml(areaName), escHtml(catName)) + '</strong><br>'
             + '<span style="color:#50575e;">'
-            + '&nbsp;Asignado: <strong>$' + fmtNum(budget) + '</strong>'
-            + ' &nbsp;|&nbsp; Ejecutado: <strong style="color:' + barColor + '">$' + fmtNum(executed) + ' (' + pct.toFixed(1) + '%)</strong>'
+            + '&nbsp;' + __('Asignado:', 'aura-suite') + ' <strong>$' + fmtNum(budget) + '</strong>'
+            + ' &nbsp;|&nbsp; ' + __('Ejecutado:', 'aura-suite') + ' <strong style="color:' + barColor + '">$' + fmtNum(executed) + ' (' + pct.toFixed(1) + '%)</strong>'
             + ' &nbsp;|&nbsp; ' + (overrun > 0
-                ? 'Exceso: <strong style="color:#d63638">$' + fmtNum(overrun) + '</strong>'
-                : 'Disponible: <strong style="color:#00a32a">$' + fmtNum(avail) + '</strong>')
+                ? __('Exceso:', 'aura-suite') + ' <strong style="color:#d63638">$' + fmtNum(overrun) + '</strong>'
+                : __('Disponible:', 'aura-suite') + ' <strong style="color:#00a32a">$' + fmtNum(avail) + '</strong>')
             + '</span>'
             + '<div id="aura-overspend-warning" style="display:none;color:#d63638;margin-top:4px;font-weight:600;"></div>'
             + '</div>';
@@ -991,7 +994,7 @@
         } else {
             $field.hide();
             // Limpiar selección y banner al ocultar
-            $('#category_id').val('').html('<option value="">Seleccionar categoría...</option>');
+            $('#category_id').val('').html('<option value="">' + __('Seleccionar categoría...', 'aura-suite') + '</option>');
             hideBudgetBanner();
         }
     }
@@ -1063,7 +1066,7 @@
         $('#description').on('input', function() {
             const length = $(this).val().length;
             const $counter = $('.char-counter');
-            $counter.text(length + ' / 10 caracteres mínimos');
+            $counter.text(length + ' / ' + __('10 caracteres mínimos', 'aura-suite'));
             
             if (length >= 10) {
                 $counter.addClass('valid');
@@ -1117,14 +1120,14 @@
         // Validar tipo
         const type = $('input[name="transaction_type"]:checked').val();
         if (!type) {
-            errors.push('Debe seleccionar un tipo de transacción');
+            errors.push(__('Debe seleccionar un tipo de transacción', 'aura-suite'));
             isValid = false;
         }
 
         // Validar categoría del gasto (obligatoria)
         const expenseCategoryId = parseInt($('#expense_category_id').val(), 10);
         if (!expenseCategoryId || expenseCategoryId <= 0) {
-            const msg = 'Debe seleccionar la categoría del gasto';
+            const msg = __('Debe seleccionar la categoría del gasto', 'aura-suite');
             errors.push(msg);
             setFieldError($('#expense_category_id'), msg);
             isValid = false;
@@ -1144,7 +1147,7 @@
         // Validar monto
         const amount = parseFloat($('#amount').val());
         if (!amount || amount <= 0) {
-            const msg = 'El monto debe ser mayor a 0';
+            const msg = __('El monto debe ser mayor a 0', 'aura-suite');
             errors.push(msg);
             setFieldError($('#amount'), msg);
             isValid = false;
@@ -1158,7 +1161,7 @@
             const exchangeRate = parseFloat($('#exchange_rate').val());
 
             if (!foreignAmount || foreignAmount <= 0) {
-                const msg = 'El monto en divisa de la cuenta debe ser mayor a 0';
+                const msg = __('El monto en divisa de la cuenta debe ser mayor a 0', 'aura-suite');
                 errors.push(msg);
                 setFieldError($('#foreign_amount'), msg);
                 isValid = false;
@@ -1167,7 +1170,7 @@
             }
 
             if (!exchangeRate || exchangeRate <= 0) {
-                const msg = 'El tipo de cambio debe ser mayor a 0';
+                const msg = __('El tipo de cambio debe ser mayor a 0', 'aura-suite');
                 errors.push(msg);
                 setFieldError($('#exchange_rate'), msg);
                 isValid = false;
@@ -1179,7 +1182,7 @@
         // Validar fecha
         const date = $('#transaction_date').val();
         if (!date) {
-            const msg = 'La fecha es requerida';
+            const msg = __('La fecha es requerida', 'aura-suite');
             errors.push(msg);
             setFieldError($('#transaction_date'), msg);
             isValid = false;
@@ -1190,7 +1193,7 @@
         // Validar descripción
         const description = $('#description').val() || '';
         if (description.length < 10) {
-            const msg = 'La descripción debe tener al menos 10 caracteres';
+            const msg = __('La descripción debe tener al menos 10 caracteres', 'aura-suite');
             errors.push(msg);
             setFieldError($('#description'), msg);
             isValid = false;
@@ -1273,7 +1276,7 @@
             success: function(response) {
                 try {
                     if (!response || typeof response !== 'object') {
-                        throw new Error('Respuesta inesperada del servidor.');
+                        throw new Error(__('Respuesta inesperada del servidor.', 'aura-suite'));
                     }
                     if (response.success) {
                         showMessage(response.data.message, 'success');
@@ -1281,18 +1284,18 @@
                         formChanged = false;
                         showSuccessActions(response.data);
                     } else {
-                        const msg = (response.data && response.data.message) ? response.data.message : 'Error al guardar la transacción.';
+                        const msg = (response.data && response.data.message) ? response.data.message : __('Error al guardar la transacción.', 'aura-suite');
                         showMessage(msg, 'error');
                         $button.prop('disabled', false).html(originalText);
                     }
                 } catch (e) {
-                    showMessage('Error inesperado al procesar la respuesta del servidor. Verifica la consola del navegador.', 'error');
+                    showMessage(__('Error inesperado al procesar la respuesta del servidor. Verifica la consola del navegador.', 'aura-suite'), 'error');
                     $button.prop('disabled', false).html(originalText);
                     if (window.console) console.error('AURA saveTransaction:', e, response);
                 }
             },
             error: function(xhr, status, error) {
-                showMessage('Error de conexión: ' + error, 'error');
+                showMessage(__('Error de conexión:', 'aura-suite') + ' ' + error, 'error');
                 $button.prop('disabled', false).html(originalText);
             }
         });
@@ -1310,11 +1313,11 @@
                 <p>
                     <a href="${data.redirect_url}" class="button button-primary">
                         <span class="dashicons dashicons-visibility"></span>
-                        Ver Transacciones
+                        ${__('Ver Transacciones', 'aura-suite')}
                     </a>
                     <button type="button" class="button" id="btn-create-another">
                         <span class="dashicons dashicons-plus"></span>
-                        Crear Otra
+                        ${__('Crear Otra', 'aura-suite')}
                     </button>
                 </p>
             </div>
@@ -1347,14 +1350,14 @@
             const fileExtension = file.name.split('.').pop().toLowerCase();
             
             if (!allowedTypes.includes(fileExtension)) {
-                showMessage('Tipo de archivo no permitido. Solo: ' + allowedTypes.join(', '), 'error');
+                showMessage(__('Tipo de archivo no permitido. Solo:', 'aura-suite') + ' ' + allowedTypes.join(', '), 'error');
                 $(this).val('');
                 return;
             }
             
             // Validar tamaño
             if (file.size > auraTransactionData.maxFileSize) {
-                showMessage('El archivo excede el tamaño máximo de 5MB', 'error');
+                showMessage(__('El archivo excede el tamaño máximo de 5MB', 'aura-suite'), 'error');
                 $(this).val('');
                 return;
             }
@@ -1639,8 +1642,8 @@
      * Mapa de métodos de pago legibles
      */
     const paymentMethodLabels = {
-        cash: 'Efectivo', transfer: 'Transferencia',
-        check: 'Cheque', card: 'Tarjeta', other: 'Otro'
+        cash: __('Efectivo', 'aura-suite'), transfer: __('Transferencia', 'aura-suite'),
+        check: __('Cheque', 'aura-suite'), card: __('Tarjeta', 'aura-suite'), other: __('Otro', 'aura-suite')
     };
 
     function updatePreview() {
@@ -1648,7 +1651,7 @@
         const amount      = $('#amount').val() || '0.00';
         const categoryId  = $('#category_id').val();
         const expCatId    = $('#expense_category_id').val();
-        const description = $('#description').val() || 'Sin descripción';
+        const description = $('#description').val() || __('Sin descripción', 'aura-suite');
         const date        = $('#transaction_date').val() || new Date().toLocaleDateString('es-ES');
         const tags        = $('#tags').val();
         const payment     = $('#payment_method').val();
@@ -1659,11 +1662,11 @@
         const $badge = $('.preview-badge .badge-type');
         $badge.removeClass('income expense capital').addClass(type);
         if (type === 'income') {
-            $badge.html('<span class="dashicons dashicons-arrow-up-alt"></span> Ingreso');
+            $badge.html('<span class="dashicons dashicons-arrow-up-alt"></span> ' + __('Ingreso', 'aura-suite'));
         } else if (type === 'capital') {
-            $badge.html('<span class="dashicons dashicons-building"></span> Gasto de Capital');
+            $badge.html('<span class="dashicons dashicons-building"></span> ' + __('Gasto de Capital', 'aura-suite'));
         } else {
-            $badge.html('<span class="dashicons dashicons-arrow-down-alt"></span> Egreso');
+            $badge.html('<span class="dashicons dashicons-arrow-down-alt"></span> ' + __('Egreso', 'aura-suite'));
         }
 
         // Monto
@@ -1678,7 +1681,7 @@
                 const fAmt = parseFloat($('#foreign_amount').val()) || 0;
                 const fCurr = $('#tx_currency').val() || 'USD';
                 const fRate = parseFloat($('#exchange_rate').val()) || 0;
-                $previewForeign.find('.foreign-amount-text').text(fAmt.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + fCurr + ' (T.C. ' + fRate.toFixed(4) + ')');
+                $previewForeign.find('.foreign-amount-text').text(fAmt.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + fCurr + ' (' + __('T.C.', 'aura-suite') + ' ' + fRate.toFixed(4) + ')');
                 $previewForeign.show();
             } else {
                 $previewForeign.hide();
@@ -1876,7 +1879,7 @@
         }
 
         const html = ''
-            + '<div class="aura-validation-summary__title">Revisa estos campos antes de guardar:</div>'
+            + '<div class="aura-validation-summary__title">' + __('Revisa estos campos antes de guardar:', 'aura-suite') + '</div>'
             + '<ul>' + listItems.join('') + '</ul>';
 
         $summary.html(html).removeClass('is-hidden').addClass('is-visible');
@@ -1907,12 +1910,12 @@
         // Botón guardar borrador manual
         $('#btn-save-draft').on('click', function() {
             saveDraft();
-            showMessage('Borrador guardado', 'info');
+            showMessage(__('Borrador guardado', 'aura-suite'), 'info');
         });
         
         // Botón limpiar borrador
         $('#btn-clear-draft').on('click', function() {
-            if (confirm('¿Limpiar el formulario? Los cambios no guardados se perderán.')) {
+            if (confirm(__('¿Limpiar el formulario? Los cambios no guardados se perderán.', 'aura-suite'))) {
                 clearDraft();
                 location.reload();
             }
@@ -1938,38 +1941,38 @@
         const conceptDescriptions = {
             'salary': {
                 icon: 'dashicons-id-alt',
-                title: '💼 Pago de Salario / Nómina',
-                desc: 'Registra el pago de sueldo al colaborador. Este egreso se reflejará en su Libro Mayor Personal (aura-user-ledger), computará en su widget de escritorio de WordPress y en el reporte contable de nómina.'
+                title: __('💼 Pago de Salario / Nómina', 'aura-suite'),
+                desc: __('Registra el pago de sueldo al colaborador. Este egreso se reflejará en su Libro Mayor Personal (aura-user-ledger), computará en su widget de escritorio de WordPress y en el reporte contable de nómina.', 'aura-suite')
             },
             'payment_to_user': {
                 icon: 'dashicons-admin-users',
-                title: '👤 Pago Realizado a un Usuario',
-                desc: 'Egreso destinado a un colaborador, proveedor persona natural o tercero registrado en el sistema por servicios, compras directas u honorarios.'
+                title: __('👤 Pago Realizado a un Usuario', 'aura-suite'),
+                desc: __('Egreso destinado a un colaborador, proveedor persona natural o tercero registrado en el sistema por servicios, compras directas u honorarios.', 'aura-suite')
             },
             'charge_to_user': {
                 icon: 'dashicons-money-alt',
-                title: '💳 Cobro Realizado a un Usuario',
-                desc: 'Ingreso recibido de un usuario por concepto de cuotas, mensualidades, matrículas o cobros por servicios internos.'
+                title: __('💳 Cobro Realizado a un Usuario', 'aura-suite'),
+                desc: __('Ingreso recibido de un usuario por concepto de cuotas, mensualidades, matrículas o cobros por servicios internos.', 'aura-suite')
             },
             'scholarship': {
                 icon: 'dashicons-welcome-learn-more',
-                title: '🎓 Beca o Subsidio Asignado',
-                desc: 'Egreso destinado al financiamiento educativo, auxilio o apoyo económico directo para un estudiante o beneficiario.'
+                title: __('🎓 Beca o Subsidio Asignado', 'aura-suite'),
+                desc: __('Egreso destinado al financiamiento educativo, auxilio o apoyo económico directo para un estudiante o beneficiario.', 'aura-suite')
             },
             'loan_payment': {
                 icon: 'dashicons-exchange',
-                title: '🤝 Pago / Abono de Préstamo',
-                desc: 'Movimiento contable asociado al otorgamiento, abono o liquidación total de un préstamo financiero con el usuario.'
+                title: __('🤝 Pago / Abono de Préstamo', 'aura-suite'),
+                desc: __('Movimiento contable asociado al otorgamiento, abono o liquidación total de un préstamo financiero con el usuario.', 'aura-suite')
             },
             'refund': {
                 icon: 'dashicons-undo',
-                title: '🔄 Reembolso / Devolución',
-                desc: 'Devolución de dinero por cancelaciones, anulaciones o saldos a favor del usuario en el sistema.'
+                title: __('🔄 Reembolso / Devolución', 'aura-suite'),
+                desc: __('Devolución de dinero por cancelaciones, anulaciones o saldos a favor del usuario en el sistema.', 'aura-suite')
             },
             'expense_reimbursement': {
                 icon: 'dashicons-media-document',
-                title: '🧾 Reembolso de Gastos Operativos',
-                desc: 'Restitución de dinero a un colaborador por gastos institucionales que pagó previamente de su propio bolsillo.'
+                title: __('🧾 Reembolso de Gastos Operativos', 'aura-suite'),
+                desc: __('Restitución de dinero a un colaborador por gastos institucionales que pagó previamente de su propio bolsillo.', 'aura-suite')
             }
         };
 
@@ -2111,7 +2114,7 @@
                     const docText = item.document_id ? ' (' + (item.tax_id_type || 'NIT') + ': ' + item.document_id + ')' : '';
                     $previewText.text((item.commercial_name || item.name) + docText);
                     const badgeClass = item.category_badge || 'aura-pill--muted';
-                    $previewBadge.attr('class', 'aura-pill ' + badgeClass).text(item.accounting_role_label || item.party_type_label || 'Tercero');
+                    $previewBadge.attr('class', 'aura-pill ' + badgeClass).text(item.accounting_role_label || item.party_type_label || __('Tercero', 'aura-suite'));
                     $preview.css('display', 'inline-flex');
                 } else if (item.type === 'wp_user') {
                     $hiddenTpId.val('');
@@ -2140,7 +2143,7 @@
                 ul.addClass('aura-ac-dropdown-menu');
 
                 $.each(items, function(index, item) {
-                    const category = item.category || item.accounting_role_label || 'Terceros';
+                    const category = item.category || item.accounting_role_label || __('Terceros', 'aura-suite');
                     if (category !== currentCategory) {
                         const iconClass = item.icon || 'dashicons-category';
                         ul.append(
@@ -2249,7 +2252,7 @@
             }
             
             // Preguntar si quiere restaurar
-            if (confirm('Se encontró un borrador guardado. ¿Deseas restaurarlo?')) {
+            if (confirm(__('Se encontró un borrador guardado. ¿Deseas restaurarlo?', 'aura-suite'))) {
                 // Restaurar valores
                 $('input[name="transaction_type"][value="' + draft.transaction_type + '"]').prop('checked', true).trigger('change');
                 $('#amount').val(draft.amount);
@@ -2317,7 +2320,7 @@
                     applySavedCategories();
                 }
                 
-                showMessage('Borrador restaurado', 'info');
+                showMessage(__('Borrador restaurado', 'aura-suite'), 'info');
             } else {
                 localStorage.removeItem('aura_transaction_draft');
             }
@@ -2381,7 +2384,7 @@
                 const $chip = $(
                     '<span class="aura-selected-tag-chip" data-tag="' + safeTag + '">' +
                     '<span class="chip-hash">#</span><span class="chip-text">' + safeTag + '</span>' +
-                    '<button type="button" class="btn-remove-tag" title="Eliminar etiqueta">×</button>' +
+                    '<button type="button" class="btn-remove-tag" title="' + __('Eliminar etiqueta', 'aura-suite') + '">×</button>' +
                     '</span>'
                 );
                 $chipsBox.append($chip);

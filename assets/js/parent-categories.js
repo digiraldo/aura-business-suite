@@ -5,6 +5,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     var nonce           = auraCategories.nonce;
     var ajaxUrl         = auraCategories.ajaxUrl;
     var pendingDeleteId = null;
@@ -16,7 +18,7 @@
     }
 
     function typeLabel(type) {
-        var map = { income: 'Ingreso', expense: 'Egreso', both: 'Ambos' };
+        var map = { income: __('Ingreso', 'aura-suite'), expense: __('Egreso', 'aura-suite'), both: __('Ambos', 'aura-suite') };
         var colors = { income: '#27ae60', expense: '#e74c3c', both: '#3498db' };
         var t = map[type] || type;
         var c = colors[type] || '#888';
@@ -25,8 +27,8 @@
 
     function statusBadge(active) {
         return active
-            ? '<span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">Activa</span>'
-            : '<span style="background:#f8d7da;color:#721c24;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">Inactiva</span>';
+            ? '<span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">' + escHtml(__('Activa', 'aura-suite')) + '</span>'
+            : '<span style="background:#f8d7da;color:#721c24;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">' + escHtml(__('Inactiva', 'aura-suite')) + '</span>';
     }
 
     function showNotice(msg, type) {
@@ -41,7 +43,7 @@
         var $tbody = $('#aura-parent-tree-tbody');
         var $noParents = $('#aura-no-parents-message');
         
-        $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 40px;"><span class="spinner is-active" style="float: none;"></span><p>Cargando categorías padre...</p></td></tr>');
+        $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 40px;"><span class="spinner is-active" style="float: none;"></span><p>' + escHtml(__('Cargando categorías padre...', 'aura-suite')) + '</p></td></tr>');
         $noParents.hide();
         $('#aura-parent-cat-table').show();
 
@@ -55,8 +57,8 @@
                 renderTable(_parentsData);
             },
             error: function () { 
-                showNotice('Error de comunicación con el servidor.', 'error'); 
-                $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 40px; color: #dc2626;">Error al cargar.</td></tr>');
+                showNotice(__('Error de comunicación con el servidor.', 'aura-suite'), 'error'); 
+                $tbody.html('<tr><td colspan="7" style="text-align: center; padding: 40px; color: #dc2626;">' + escHtml(__('Error al cargar.', 'aura-suite')) + '</td></tr>');
             }
         });
     }
@@ -81,7 +83,7 @@
             var hasChildren = subCount > 0;
 
             var toggleCell = hasChildren
-                ? '<button class="aura-tree-toggle button button-small" data-parent-id="' + p.id + '" title="Ver subcategorías" style="background:none;border:1px solid #c3c4c7;padding:2px 6px;"><span class="dashicons dashicons-arrow-right-alt2" style="vertical-align:middle;font-size:14px;"></span></button>'
+                ? '<button class="aura-tree-toggle button button-small" data-parent-id="' + p.id + '" title="' + escHtml(__('Ver subcategorías', 'aura-suite')) + '" style="background:none;border:1px solid #c3c4c7;padding:2px 6px;"><span class="dashicons dashicons-arrow-right-alt2" style="vertical-align:middle;font-size:14px;"></span></button>'
                 : '<span style="color:#ccc;font-size:11px;">-</span>';
 
             var rawIcon     = (p.icon || '📁').trim();
@@ -95,10 +97,10 @@
                 : '<span style="color:#ccc;font-size:12px;">0</span>';
                 
             var actionsCell = '<div style="display:inline-flex;gap:4px;">' +
-                '<button class="button button-small aura-edit-parent" data-id="' + p.id + '" title="Editar">' +
+                '<button class="button button-small aura-edit-parent" data-id="' + p.id + '" title="' + escHtml(__('Editar', 'aura-suite')) + '">' +
                     '<span class="dashicons dashicons-edit" style="vertical-align:middle;" aria-hidden="true"></span>' +
                 '</button>' +
-                '<button class="button button-small aura-delete-parent" data-id="' + p.id + '" data-name="' + escHtml(p.name) + '" data-subs="' + subCount + '" title="Eliminar" style="color:#dc3545;">' +
+                '<button class="button button-small aura-delete-parent" data-id="' + p.id + '" data-name="' + escHtml(p.name) + '" data-subs="' + subCount + '" title="' + escHtml(__('Eliminar', 'aura-suite')) + '" style="color:#dc3545;">' +
                     '<span class="dashicons dashicons-trash" style="vertical-align:middle;" aria-hidden="true"></span>' +
                 '</button>' +
                 '</div>';
@@ -158,7 +160,7 @@
     /* ── Abrir modal Crear ── */
     $(document).on('click', '#aura-add-parent-btn', function () {
         resetForm();
-        $('#aura-parent-modal-title').text('Nueva Categoría Padre');
+        $('#aura-parent-modal-title').text(__('Nueva Categoría Padre', 'aura-suite'));
         openModal('#aura-parent-modal');
     });
 
@@ -181,7 +183,7 @@
                 $('#parent-cat-icon').val(c.icon).trigger('input');
                 $('#parent-cat-desc').val(c.description);
                 $('#parent-cat-active').prop('checked', !!c.is_active);
-                $('#aura-parent-modal-title').text('Editar Categoría Padre');
+                $('#aura-parent-modal-title').text(__('Editar Categoría Padre', 'aura-suite'));
                 openModal('#aura-parent-modal');
             }
         });
@@ -189,7 +191,7 @@
 
     /* ── Guardar ── */
     $(document).on('click', '#aura-parent-save-btn', function () {
-        var $btn = $(this).prop('disabled', true).text('Guardando...');
+        var $btn = $(this).prop('disabled', true).text(__('Guardando...', 'aura-suite'));
         var active = $('#parent-cat-active').is(':checked') ? 'true' : 'false';
         var colorVal = '';
         if ($.fn.wpColorPicker && $('#parent-cat-color').wpColorPicker('color')) {
@@ -215,15 +217,15 @@
                 is_active: active,
             },
             success: function (resp) {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Guardar');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + escHtml(__('Guardar', 'aura-suite')));
                 if (!resp.success) { showNotice(resp.data.message, 'error'); return; }
                 closeModal('#aura-parent-modal');
                 showNotice(resp.data.message, 'success');
                 loadParents();
             },
             error: function () {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> Guardar');
-                showNotice('Error de comunicación.', 'error');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + escHtml(__('Guardar', 'aura-suite')));
+                showNotice(__('Error de comunicación.', 'aura-suite'), 'error');
             }
         });
     });
@@ -235,9 +237,9 @@
         var subs = parseInt($(this).data('subs'), 10);
         var msg;
         if (subs > 0) {
-            msg = 'La categoría "' + name + '" tiene ' + subs + ' subcategoría(s). No se puede eliminar hasta reasignarlas.';
+            msg = __('La categoría', 'aura-suite') + ' "' + name + '" ' + __('tiene', 'aura-suite') + ' ' + subs + ' ' + __('subcategoría(s). No se puede eliminar hasta reasignarlas.', 'aura-suite');
         } else {
-            msg = '¿Eliminar la categoría padre "' + name + '"? Esta acción no se puede deshacer.';
+            msg = __('¿Eliminar la categoría padre', 'aura-suite') + ' "' + name + '"? ' + __('Esta acción no se puede deshacer.', 'aura-suite');
         }
         $('#aura-parent-delete-msg').text(msg);
         $('#aura-parent-delete-confirm').prop('disabled', subs > 0);
@@ -262,7 +264,7 @@
             },
             error: function () {
                 $btn.prop('disabled', false);
-                showNotice('Error de comunicación.', 'error');
+                showNotice(__('Error de comunicación.', 'aura-suite'), 'error');
             }
         });
     });
@@ -293,7 +295,7 @@
         } else {
             // Expandir: crear fila si no existe
             if (!$next.length) {
-                var $childRow = $('<tr class="aura-tree-children-row" data-parent-id="' + parentId + '" style="display:none;"><td colspan="7" style="padding:0;"><div class="aura-tree-children-inner" style="padding:8px 12px 8px 48px;"><em style="color:#8c8f94;">Cargando...</em></div></td></tr>');
+                var $childRow = $('<tr class="aura-tree-children-row" data-parent-id="' + parentId + '" style="display:none;"><td colspan="7" style="padding:0;"><div class="aura-tree-children-inner" style="padding:8px 12px 8px 48px;"><em style="color:#8c8f94;">' + escHtml(__('Cargando...', 'aura-suite')) + '</em></div></td></tr>');
                 $row.after($childRow);
                 loadSubcategories(parentId, $childRow.find('.aura-tree-children-inner'));
             }
@@ -311,7 +313,7 @@
             data: { action: 'aura_get_subcategories', nonce: nonce, parent_id: parentId },
             success: function (resp) {
                 if (!resp.success || !resp.data.subcategories.length) {
-                    $container.html('<em style="color:#8c8f94;font-size:12px;">Sin subcategorías.</em>');
+                    $container.html('<em style="color:#8c8f94;font-size:12px;">' + escHtml(__('Sin subcategorías.', 'aura-suite')) + '</em>');
                     return;
                 }
                 var html = '<table style="width:100%;border-collapse:collapse;">';
@@ -319,12 +321,12 @@
                     var isLast = idx === resp.data.subcategories.length - 1;
                     var connector = isLast ? '└─' : '├─';
                     var typeColors = { income: '#16a34a', expense: '#dc2626', both: '#2563eb' };
-                    var typeLbls   = { income: 'Ingreso', expense: 'Egreso', both: 'Ambos' };
+                    var typeLbls   = { income: __('Ingreso', 'aura-suite'), expense: __('Egreso', 'aura-suite'), both: __('Ambos', 'aura-suite') };
                     var tColor = typeColors[sub.type] || '#888';
                     var tLabel = typeLbls[sub.type]  || sub.type;
                     var status = sub.is_active
-                        ? '<span style="background:#d1fae5;color:#065f46;padding:1px 8px;border-radius:999px;font-size:11px;">Activa</span>'
-                        : '<span style="background:#fee2e2;color:#991b1b;padding:1px 8px;border-radius:999px;font-size:11px;">Inactiva</span>';
+                        ? '<span style="background:#d1fae5;color:#065f46;padding:1px 8px;border-radius:999px;font-size:11px;">' + escHtml(__('Activa', 'aura-suite')) + '</span>'
+                        : '<span style="background:#fee2e2;color:#991b1b;padding:1px 8px;border-radius:999px;font-size:11px;">' + escHtml(__('Inactiva', 'aura-suite')) + '</span>';
                     var subIcon = (sub.icon || '📁').trim();
                     var subIconHtml = (subIcon.indexOf('dashicons-') === 0 || subIcon.indexOf('dashicons') !== -1)
                         ? '<span class="dashicons ' + escHtml(subIcon) + '" style="color:' + escHtml(sub.color || '#3b82f6') + ';font-size:14px;width:14px;height:14px;vertical-align:middle;"></span>'
@@ -344,7 +346,7 @@
                 $container.html(html);
             },
             error: function () {
-                $container.html('<span style="color:#dc2626;font-size:12px;">Error al cargar.</span>');
+                $container.html('<span style="color:#dc2626;font-size:12px;">' + escHtml(__('Error al cargar.', 'aura-suite')) + '</span>');
             }
         });
     }
@@ -370,24 +372,24 @@
     });
 
     $(document).on('click', '#aura-delete-all-parents-confirm', function () {
-        var $btn = $(this).prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 4px -4px;"></span> Eliminando...');
+        var $btn = $(this).prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 4px -4px;"></span> ' + escHtml(__('Eliminando...', 'aura-suite')));
         $.ajax({
             url: ajaxUrl,
             type: 'POST',
             data: { action: 'aura_delete_all_categories', nonce: nonce, scope: 'parents_only' },
             success: function (resp) {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-trash" style="vertical-align:middle;"></span> Sí, eliminar todas');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-trash" style="vertical-align:middle;"></span> ' + escHtml(__('Sí, eliminar todas', 'aura-suite')));
                 $('#aura-delete-all-parents-modal').fadeOut(200);
                 if (resp.success) {
                     showNotice(resp.data.message, 'success');
                     loadParents();
                 } else {
-                    showNotice(resp.data.message || 'Error al eliminar.', 'error');
+                    showNotice(resp.data.message || __('Error al eliminar.', 'aura-suite'), 'error');
                 }
             },
             error: function () {
                 $btn.prop('disabled', false);
-                showNotice('Error de comunicación.', 'error');
+                showNotice(__('Error de comunicación.', 'aura-suite'), 'error');
             }
         });
     });

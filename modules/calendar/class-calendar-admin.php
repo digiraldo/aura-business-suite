@@ -288,26 +288,30 @@ class Aura_Calendar_Admin {
             'date_format'         => get_option( 'date_format', 'd-m-Y' ),
             'time_format'         => get_option( 'time_format', 'H:i' ),
             'timezone'            => wp_timezone_string(),
+            'locale'              => strpos( determine_locale(), 'es' ) === 0 ? 'es' : 'en',
+            'date_locale'         => str_replace( '_', '-', determine_locale() ),
             'i18n'                => [
-                'confirm_delete'        => __( '¿Estás seguro de eliminar este elemento? Esta acción no se puede deshacer.', 'aura' ),
-                'confirm_delete_series' => __( '¿Deseas eliminar únicamente esta clase o TODAS las clases futuras de esta serie?', 'aura' ),
-                'syncing'               => __( 'Sincronizando con Google Calendar...', 'aura' ),
-                'saved'                 => __( 'Guardado con éxito.', 'aura' ),
-                'error'                 => __( 'Ocurrió un error inesperado.', 'aura' ),
-                'select_program'        => __( 'Selecciona un programa...', 'aura' ),
-                'select_subject'        => __( 'Selecciona una materia...', 'aura' ),
-                'today'                 => __( 'Hoy', 'aura' ),
-                'month'                 => __( 'Mes', 'aura' ),
-                'week'                  => __( 'Semana', 'aura' ),
-                'day'                   => __( 'Día', 'aura' ),
-                'list'                  => __( 'Agenda', 'aura' ),
-                'fullscreen'            => __( 'Pantalla Completa', 'aura' ),
-                'exit_fullscreen'       => __( 'Salir de Pantalla Completa', 'aura' ),
-                'live_updated'          => __( 'El calendario fue actualizado por otro colaborador.', 'aura' ),
-                'live_sync_active'      => __( 'Sincronización en vivo activa', 'aura' ),
-                'add_leader'            => __( 'Asignar Estudiante', 'aura' ),
-                'select_student'        => __( 'Seleccionar estudiante...', 'aura' ),
-                'select_role'           => __( 'Seleccionar responsabilidad...', 'aura' ),
+                'confirm_delete'        => __( '¿Estás seguro de eliminar este elemento? Esta acción no se puede deshacer.', 'aura-suite' ),
+                'confirm_delete_series' => __( '¿Deseas eliminar únicamente esta clase o TODAS las clases futuras de esta serie?', 'aura-suite' ),
+                'syncing'               => __( 'Sincronizando con Google Calendar...', 'aura-suite' ),
+                'saved'                 => __( 'Guardado con éxito.', 'aura-suite' ),
+                'error'                 => __( 'Ocurrió un error inesperado.', 'aura-suite' ),
+                'select_program'        => __( 'Selecciona un programa...', 'aura-suite' ),
+                'select_subject'        => __( 'Selecciona una materia...', 'aura-suite' ),
+                'today'                 => __( 'Hoy', 'aura-suite' ),
+                'month'                 => __( 'Mes', 'aura-suite' ),
+                'week'                  => __( 'Semana', 'aura-suite' ),
+                'day'                   => __( 'Día', 'aura-suite' ),
+                'list'                  => __( 'Agenda', 'aura-suite' ),
+                'fullscreen'            => __( 'Pantalla Completa', 'aura-suite' ),
+                'exit_fullscreen'       => __( 'Salir de Pantalla Completa', 'aura-suite' ),
+                'live_updated'          => __( 'El calendario fue actualizado por otro colaborador.', 'aura-suite' ),
+                'live_sync_active'      => __( 'Sincronización en vivo activa', 'aura-suite' ),
+                'add_leader'            => __( 'Asignar Estudiante', 'aura-suite' ),
+                'select_student'        => __( 'Seleccionar estudiante...', 'aura-suite' ),
+                'select_role'           => __( 'Seleccionar responsabilidad...', 'aura-suite' ),
+                'all_day'               => __( 'Todo el día', 'aura-suite' ),
+                'all_subjects'          => __( 'Materia: Todas', 'aura-suite' ),
             ],
         ] );
     }
@@ -359,7 +363,7 @@ class Aura_Calendar_Admin {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $cal_name  = sanitize_text_field( $_POST['cal_name'] ?? '' );
@@ -374,7 +378,7 @@ class Aura_Calendar_Admin {
         }
         update_option( self::OPTION_TEACHER_CODE_PREFIX, $teacher_code_prefix );
 
-        wp_send_json_success( [ 'message' => __( 'Ajustes guardados correctamente.', 'aura' ) ] );
+        wp_send_json_success( [ 'message' => __( 'Ajustes guardados correctamente.', 'aura-suite' ) ] );
     }
 
     /**
@@ -510,7 +514,7 @@ class Aura_Calendar_Admin {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         // Delegar en el gestor central (vincula si ya existe, crea solo si falta)
@@ -518,13 +522,13 @@ class Aura_Calendar_Admin {
         $page_id = (int) $res['id'];
 
         if ( ! $page_id ) {
-            wp_send_json_error( [ 'message' => __( 'Error al crear la página en WordPress.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Error al crear la página en WordPress.', 'aura-suite' ) ] );
         }
 
         wp_send_json_success( [
             'message'   => 'created' === $res['status']
-                ? __( '¡Página del Portal del Instructor creada con éxito!', 'aura' )
-                : __( 'Ya existe una página configurada para el Portal del Instructor.', 'aura' ),
+                ? __( '¡Página del Portal del Instructor creada con éxito!', 'aura-suite' )
+                : __( 'Ya existe una página configurada para el Portal del Instructor.', 'aura-suite' ),
             'page_id'   => $page_id,
             'permalink' => get_permalink( $page_id ),
         ] );
@@ -547,26 +551,26 @@ class Aura_Calendar_Admin {
 
         // Fallback canónico de los 20 colores
         return [
-            [ 'id' => 1,  'hex' => '#5D5FEF', 'name' => 'Azul Eléctrico (Principal)' ],
-            [ 'id' => 2,  'hex' => '#E05300', 'name' => 'Naranja Intenso' ],
-            [ 'id' => 3,  'hex' => '#00B67A', 'name' => 'Verde Esmeralda' ],
-            [ 'id' => 4,  'hex' => '#FF9F1C', 'name' => 'Amarillo Caléndula' ],
-            [ 'id' => 5,  'hex' => '#3A86FF', 'name' => 'Azul Brillante' ],
-            [ 'id' => 6,  'hex' => '#9B5DE5', 'name' => 'Violeta Vibrante' ],
-            [ 'id' => 7,  'hex' => '#06B6D4', 'name' => 'Turquesa Cyan' ],
-            [ 'id' => 8,  'hex' => '#F15BB5', 'name' => 'Rosa Neón/Fucsia' ],
-            [ 'id' => 9,  'hex' => '#00F5D4', 'name' => 'Aguamarina Eléctrico' ],
-            [ 'id' => 10, 'hex' => '#FF006E', 'name' => 'Magenta Vivo' ],
-            [ 'id' => 11, 'hex' => '#70E000', 'name' => 'Verde Lima Neón' ],
-            [ 'id' => 12, 'hex' => '#FFBE0B', 'name' => 'Amarillo Oro' ],
-            [ 'id' => 13, 'hex' => '#FB5607', 'name' => 'Naranja Rojizo' ],
-            [ 'id' => 14, 'hex' => '#8338EC', 'name' => 'Púrpura Profundo' ],
-            [ 'id' => 15, 'hex' => '#0077B6', 'name' => 'Azul Océano' ],
-            [ 'id' => 16, 'hex' => '#00F5D4', 'name' => 'Verde Menta Vivo' ],
-            [ 'id' => 17, 'hex' => '#FF70A6', 'name' => 'Salmón Encendido' ],
-            [ 'id' => 18, 'hex' => '#A2D2FF', 'name' => 'Azul Pastel Brillante' ],
-            [ 'id' => 19, 'hex' => '#D90429', 'name' => 'Rojo Carmín' ],
-            [ 'id' => 20, 'hex' => '#4CC9F0', 'name' => 'Azul Cielo Eléctrico' ],
+            [ 'id' => 1,  'hex' => '#5D5FEF', 'name' => __( 'Azul Eléctrico (Principal)', 'aura-suite' ) ],
+            [ 'id' => 2,  'hex' => '#E05300', 'name' => __( 'Naranja Intenso', 'aura-suite' ) ],
+            [ 'id' => 3,  'hex' => '#00B67A', 'name' => __( 'Verde Esmeralda', 'aura-suite' ) ],
+            [ 'id' => 4,  'hex' => '#FF9F1C', 'name' => __( 'Amarillo Caléndula', 'aura-suite' ) ],
+            [ 'id' => 5,  'hex' => '#3A86FF', 'name' => __( 'Azul Brillante', 'aura-suite' ) ],
+            [ 'id' => 6,  'hex' => '#9B5DE5', 'name' => __( 'Violeta Vibrante', 'aura-suite' ) ],
+            [ 'id' => 7,  'hex' => '#06B6D4', 'name' => __( 'Turquesa Cyan', 'aura-suite' ) ],
+            [ 'id' => 8,  'hex' => '#F15BB5', 'name' => __( 'Rosa Neón/Fucsia', 'aura-suite' ) ],
+            [ 'id' => 9,  'hex' => '#00F5D4', 'name' => __( 'Aguamarina Eléctrico', 'aura-suite' ) ],
+            [ 'id' => 10, 'hex' => '#FF006E', 'name' => __( 'Magenta Vivo', 'aura-suite' ) ],
+            [ 'id' => 11, 'hex' => '#70E000', 'name' => __( 'Verde Lima Neón', 'aura-suite' ) ],
+            [ 'id' => 12, 'hex' => '#FFBE0B', 'name' => __( 'Amarillo Oro', 'aura-suite' ) ],
+            [ 'id' => 13, 'hex' => '#FB5607', 'name' => __( 'Naranja Rojizo', 'aura-suite' ) ],
+            [ 'id' => 14, 'hex' => '#8338EC', 'name' => __( 'Púrpura Profundo', 'aura-suite' ) ],
+            [ 'id' => 15, 'hex' => '#0077B6', 'name' => __( 'Azul Océano', 'aura-suite' ) ],
+            [ 'id' => 16, 'hex' => '#00F5D4', 'name' => __( 'Verde Menta Vivo', 'aura-suite' ) ],
+            [ 'id' => 17, 'hex' => '#FF70A6', 'name' => __( 'Salmón Encendido', 'aura-suite' ) ],
+            [ 'id' => 18, 'hex' => '#A2D2FF', 'name' => __( 'Azul Pastel Brillante', 'aura-suite' ) ],
+            [ 'id' => 19, 'hex' => '#D90429', 'name' => __( 'Rojo Carmín', 'aura-suite' ) ],
+            [ 'id' => 20, 'hex' => '#4CC9F0', 'name' => __( 'Azul Cielo Eléctrico', 'aura-suite' ) ],
         ];
     }
 
@@ -581,7 +585,7 @@ class Aura_Calendar_Admin {
         $colors = self::get_palette_colors();
         $current_upper = strtoupper( trim( $current_color ) );
 
-        $html = '<div class="aura-color-palette" data-target-input="#' . esc_attr( $target_input_id ) . '" role="group" aria-label="' . esc_attr__( 'Paleta de colores predefinida', 'aura' ) . '">';
+        $html = '<div class="aura-color-palette" data-target-input="#' . esc_attr( $target_input_id ) . '" role="group" aria-label="' . esc_attr__( 'Paleta de colores predefinida', 'aura-suite' ) . '">';
         foreach ( $colors as $c ) {
             $hex_upper = strtoupper( trim( $c['hex'] ) );
             $is_active = ( $hex_upper === $current_upper );

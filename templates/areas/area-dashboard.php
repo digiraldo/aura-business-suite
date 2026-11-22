@@ -122,13 +122,13 @@ $_adb_nonce = wp_create_nonce( Aura_Areas_Admin::NONCE );
             </div>
             <?php endif; ?>
 
-            <button type="button" id="adb-refresh-btn" class="aura-btn aura-btn-secondary" data-tooltip="Recargar datos del dashboard">
+            <button type="button" id="adb-refresh-btn" class="aura-btn aura-btn-secondary" data-tooltip="<?php esc_attr_e( 'Recargar datos del dashboard', 'aura-suite' ); ?>">
                 <span class="dashicons dashicons-update"></span>
                 <span><?php esc_html_e( 'Actualizar', 'aura-suite' ); ?></span>
             </button>
 
             <?php if ( $_adb_can_manage ) : ?>
-            <a href="<?php echo admin_url( 'admin.php?page=aura-areas' ); ?>" class="aura-btn aura-btn-primary" data-tooltip="Volver al listado de áreas">
+            <a href="<?php echo admin_url( 'admin.php?page=aura-areas' ); ?>" class="aura-btn aura-btn-primary" data-tooltip="<?php esc_attr_e( 'Volver al listado de áreas', 'aura-suite' ); ?>">
                 <span class="dashicons dashicons-arrow-left-alt"></span>
                 <span><?php esc_html_e( 'Gestión de Áreas', 'aura-suite' ); ?></span>
             </a>
@@ -160,7 +160,7 @@ $_adb_nonce = wp_create_nonce( Aura_Areas_Admin::NONCE );
                     <div class="aura-card-title-group">
                         <span class="dashicons dashicons-chart-bar" style="color:#3b82f6;"></span>
                         <h3><?php esc_html_e( 'Gasto Ejecutado por Categoría', 'aura-suite' ); ?></h3>
-                        <span class="aura-help-icon" data-tooltip="Distribución acumulada de egresos aprobados asignados a esta área por categoría de gasto.">
+                        <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Distribución acumulada de egresos aprobados asignados a esta área por categoría de gasto.', 'aura-suite' ); ?>">
                             <span class="dashicons dashicons-editor-help"></span>
                         </span>
                     </div>
@@ -178,7 +178,7 @@ $_adb_nonce = wp_create_nonce( Aura_Areas_Admin::NONCE );
                     <div class="aura-card-title-group">
                         <span class="dashicons dashicons-warning" style="color:#ef4444;"></span>
                         <h3><?php esc_html_e( 'Alertas de Presupuesto', 'aura-suite' ); ?></h3>
-                        <span class="aura-help-icon" data-tooltip="Avisos automáticos de partidas presupuestarias que han alcanzado o superado el umbral de alerta.">
+                        <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Avisos automáticos de partidas presupuestarias que han alcanzado o superado el umbral de alerta.', 'aura-suite' ); ?>">
                             <span class="dashicons dashicons-editor-help"></span>
                         </span>
                     </div>
@@ -198,7 +198,7 @@ $_adb_nonce = wp_create_nonce( Aura_Areas_Admin::NONCE );
                     <span class="dashicons dashicons-list-view" style="color:#10b981;"></span>
                     <h3><?php esc_html_e( 'Últimas Transacciones Registradas', 'aura-suite' ); ?></h3>
                     <span id="adb-tx-count-badge" class="aura-badge aura-badge-blue" style="display:none;"></span>
-                    <span class="aura-help-icon" data-tooltip="Historial reciente de ingresos y egresos asociados a este centro de costos.">
+                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Historial reciente de ingresos y egresos asociados a este centro de costos.', 'aura-suite' ); ?>">
                         <span class="dashicons dashicons-editor-help"></span>
                     </span>
                 </div>
@@ -829,7 +829,7 @@ body[data-theme="dark"] .adb-bar-track {
         }, function(resp) {
             $('#adb-loading').hide();
             if (!resp.success) {
-                $('#adb-error-msg').text(resp.data ? resp.data.message : 'Error al cargar el dashboard');
+                $('#adb-error-msg').text(resp.data ? resp.data.message : '<?php echo esc_js( __( "Error al cargar el dashboard", "aura-suite" ) ); ?>');
                 $('#adb-error').show();
                 return;
             }
@@ -865,7 +865,7 @@ body[data-theme="dark"] .adb-bar-track {
                 label: '<?php echo esc_js( __( "Presupuesto Asignado", "aura-suite" ) ); ?>',
                 value: fmt(kpis.total_budget),
                 sub: '<?php echo esc_js( __( "Monto total autorizado", "aura-suite" ) ); ?>',
-                tooltip: 'Suma de todos los presupuestos asignados y vigentes para esta área.'
+                tooltip: '<?php echo esc_js( __( "Suma de todos los presupuestos asignados y vigentes para esta área.", "aura-suite" ) ); ?>'
             },
             {
                 icon: 'dashicons-arrow-down-alt',
@@ -873,7 +873,7 @@ body[data-theme="dark"] .adb-bar-track {
                 label: '<?php echo esc_js( __( "Egresos Ejecutados", "aura-suite" ) ); ?>',
                 value: fmt(kpis.total_executed),
                 sub: '<?php echo esc_js( __( "Gastos aprobados", "aura-suite" ) ); ?>',
-                tooltip: 'Total de egresos registrados y aprobados para esta área.'
+                tooltip: '<?php echo esc_js( __( "Total de egresos registrados y aprobados para esta área.", "aura-suite" ) ); ?>'
             },
             {
                 icon: 'dashicons-arrow-up-alt',
@@ -881,7 +881,7 @@ body[data-theme="dark"] .adb-bar-track {
                 label: '<?php echo esc_js( __( "Ingresos del Área", "aura-suite" ) ); ?>',
                 value: fmt(kpis.total_income),
                 sub: '<?php echo esc_js( __( "Entradas percibidas", "aura-suite" ) ); ?>',
-                tooltip: 'Total de ingresos y aportaciones aprobadas a nombre de esta área.'
+                tooltip: '<?php echo esc_js( __( "Total de ingresos y aportaciones aprobadas a nombre de esta área.", "aura-suite" ) ); ?>'
             },
             {
                 icon: pct > 100 ? 'dashicons-warning' : 'dashicons-yes-alt',
@@ -889,7 +889,7 @@ body[data-theme="dark"] .adb-bar-track {
                 label: pct > 100 ? '<?php echo esc_js( __( "Sobregiro", "aura-suite" ) ); ?>' : '<?php echo esc_js( __( "Disponible", "aura-suite" ) ); ?>',
                 value: pct > 100 ? fmt(kpis.overrun) : fmt(kpis.available),
                 sub: pct > 100 ? '<?php echo esc_js( __( "Excedido del tope", "aura-suite" ) ); ?>' : '<?php echo esc_js( __( "Remanente a ejercer", "aura-suite" ) ); ?>',
-                tooltip: pct > 100 ? 'Monto ejecutado por encima del presupuesto autorizado.' : 'Saldo disponible antes de alcanzar el límite presupuestario.'
+                tooltip: pct > 100 ? '<?php echo esc_js( __( "Monto ejecutado por encima del presupuesto autorizado.", "aura-suite" ) ); ?>' : '<?php echo esc_js( __( "Saldo disponible antes de alcanzar el límite presupuestario.", "aura-suite" ) ); ?>'
             },
             {
                 icon: 'dashicons-chart-pie',
@@ -897,7 +897,7 @@ body[data-theme="dark"] .adb-bar-track {
                 label: '<?php echo esc_js( __( "% Ejecución", "aura-suite" ) ); ?>',
                 value: pct + '%',
                 sub: '<?php echo esc_js( __( "Avance presupuestal", "aura-suite" ) ); ?>',
-                tooltip: 'Porcentaje consumido del presupuesto total asignado.'
+                tooltip: '<?php echo esc_js( __( "Porcentaje consumido del presupuesto total asignado.", "aura-suite" ) ); ?>'
             }
         ];
 

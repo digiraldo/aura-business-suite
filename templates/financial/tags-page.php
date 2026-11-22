@@ -309,10 +309,10 @@ $currency = get_option('aura_finance_currency', 'USD');
                     <!-- Selector por Página -->
                     <select id="tags-table-per-page" class="aura-select"
                         style="height: 38px; font-size: 13px; width: 110px;">
-                        <option value="10">10 / pág.</option>
-                        <option value="25" selected>25 / pág.</option>
-                        <option value="50">50 / pág.</option>
-                        <option value="100">100 / pág.</option>
+                        <option value="10"><?php echo esc_html(sprintf(__('%d / pág.', 'aura-suite'), 10)); ?></option>
+                        <option value="25" selected><?php echo esc_html(sprintf(__('%d / pág.', 'aura-suite'), 25)); ?></option>
+                        <option value="50"><?php echo esc_html(sprintf(__('%d / pág.', 'aura-suite'), 50)); ?></option>
+                        <option value="100"><?php echo esc_html(sprintf(__('%d / pág.', 'aura-suite'), 100)); ?></option>
                         <option value="all"><?php esc_html_e('Todas', 'aura-suite'); ?></option>
                     </select>
                 </div>

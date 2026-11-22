@@ -174,10 +174,10 @@ $can_whatsapp  = class_exists( 'Aura_Notifications' );
     var colCount   = canRemind ? 8 : 7;
 
     var statusConf = {
-        paid:    { label:'✅ Al día',   bg:'#dcfce7', color:'#166534' },
-        partial: { label:'🟡 Parcial',  bg:'#fef9c3', color:'#a16207' },
-        unpaid:  { label:'🔴 Sin pago', bg:'#fee2e2', color:'#991b1b' },
-        overdue: { label:'🚨 Vencido',  bg:'#fce7f3', color:'#9d174d' }
+        paid:    { label:'<?php echo esc_js( __( '✅ Al día', 'aura-suite' ) ); ?>',   bg:'#dcfce7', color:'#166534' },
+        partial: { label:'<?php echo esc_js( __( '🟡 Parcial', 'aura-suite' ) ); ?>',  bg:'#fef9c3', color:'#a16207' },
+        unpaid:  { label:'<?php echo esc_js( __( '🔴 Sin pago', 'aura-suite' ) ); ?>', bg:'#fee2e2', color:'#991b1b' },
+        overdue: { label:'<?php echo esc_js( __( '🚨 Vencido', 'aura-suite' ) ); ?>',  bg:'#fce7f3', color:'#9d174d' }
     };
 
     // ── Modales ──────────────────────────────────────────────────

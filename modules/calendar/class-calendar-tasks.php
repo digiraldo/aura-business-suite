@@ -246,11 +246,11 @@ class Aura_Calendar_Tasks {
         }
 
         if ( empty( $title ) ) {
-            return new WP_Error( 'missing_title', __( 'El título de la tarea es obligatorio.', 'aura' ) );
+            return new WP_Error( 'missing_title', __( 'El título de la tarea es obligatorio.', 'aura-suite' ) );
         }
 
         if ( ! $program_id ) {
-            return new WP_Error( 'missing_program', __( 'Debe asociar un programa.', 'aura' ) );
+            return new WP_Error( 'missing_program', __( 'Debe asociar un programa.', 'aura-suite' ) );
         }
 
         $due_dt = sanitize_text_field( $data['due_datetime'] ?? '' );
@@ -665,7 +665,7 @@ class Aura_Calendar_Tasks {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $tasks = self::get_tasks( [
@@ -682,17 +682,17 @@ class Aura_Calendar_Tasks {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $task = self::get_task( $id );
         if ( ! $task ) {
-            wp_send_json_error( [ 'message' => __( 'Tarea no encontrada.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Tarea no encontrada.', 'aura-suite' ) ] );
         }
 
         wp_send_json_success( [ 'task' => $task ] );
@@ -702,7 +702,7 @@ class Aura_Calendar_Tasks {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_tasks' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $res = self::save_task( $_POST );
@@ -711,7 +711,7 @@ class Aura_Calendar_Tasks {
         }
 
         wp_send_json_success( [
-            'message' => __( 'Tarea guardada correctamente.', 'aura' ),
+            'message' => __( 'Tarea guardada correctamente.', 'aura-suite' ),
             'task_id' => $res,
         ] );
     }
@@ -720,19 +720,19 @@ class Aura_Calendar_Tasks {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_delete_tasks' ) && ! current_user_can( 'aura_cal_manage_tasks' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $ok = self::delete_task( $id );
         if ( $ok ) {
-            wp_send_json_success( [ 'message' => __( 'Tarea eliminada.', 'aura' ) ] );
+            wp_send_json_success( [ 'message' => __( 'Tarea eliminada.', 'aura-suite' ) ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'Error al eliminar la tarea.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Error al eliminar la tarea.', 'aura-suite' ) ] );
         }
     }
 
@@ -740,12 +740,12 @@ class Aura_Calendar_Tasks {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_grade_tasks' ) && ! current_user_can( 'aura_cal_manage_tasks' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $task_id = intval( $_POST['task_id'] ?? 0 );
         if ( ! $task_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de tarea inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de tarea inválido.', 'aura-suite' ) ] );
         }
 
         $submissions = self::get_submissions( $task_id );
@@ -756,7 +756,7 @@ class Aura_Calendar_Tasks {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_grade_tasks' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para calificar.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para calificar.', 'aura-suite' ) ] );
         }
 
         $submission_id = intval( $_POST['submission_id'] ?? 0 );
@@ -764,14 +764,14 @@ class Aura_Calendar_Tasks {
         $feedback      = sanitize_textarea_field( $_POST['feedback'] ?? '' );
 
         if ( ! $submission_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de entrega inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de entrega inválido.', 'aura-suite' ) ] );
         }
 
         $ok = self::grade_submission( $submission_id, $score, $feedback );
         if ( $ok ) {
-            wp_send_json_success( [ 'message' => __( 'Entrega calificada exitosamente.', 'aura' ) ] );
+            wp_send_json_success( [ 'message' => __( 'Entrega calificada exitosamente.', 'aura-suite' ) ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'Error al calificar la entrega.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Error al calificar la entrega.', 'aura-suite' ) ] );
         }
     }
 
@@ -779,7 +779,7 @@ class Aura_Calendar_Tasks {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_submit_tasks' ) && ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para entregar tareas.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para entregar tareas.', 'aura-suite' ) ] );
         }
 
         // Identificar al estudiante por su user_id actual
@@ -792,17 +792,17 @@ class Aura_Calendar_Tasks {
         $student_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM {$table_stud} WHERE wp_user_id = %d", $user_id ) );
 
         if ( ! $student_id ) {
-            wp_send_json_error( [ 'message' => __( 'Perfil de estudiante no encontrado para este usuario.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Perfil de estudiante no encontrado para este usuario.', 'aura-suite' ) ] );
         }
 
         $task_id = intval( $_POST['task_id'] ?? 0 );
         if ( ! $task_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de tarea inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de tarea inválido.', 'aura-suite' ) ] );
         }
 
         $task = self::get_task( $task_id );
         if ( ! $task || $task->status === 'closed' ) {
-            wp_send_json_error( [ 'message' => __( 'La tarea no existe o ya está cerrada.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'La tarea no existe o ya está cerrada.', 'aura-suite' ) ] );
         }
 
         $submission_text = sanitize_textarea_field( $_POST['submission_text'] ?? '' );
@@ -813,11 +813,11 @@ class Aura_Calendar_Tasks {
         $min_words       = intval( $task->min_words ?? 0 );
 
         if ( $submission_type === 'text_only' && empty( trim( $submission_text ) ) ) {
-            wp_send_json_error( [ 'message' => __( 'Esta tarea exige la entrega de un resumen por escrito en la plataforma.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Esta tarea exige la entrega de un resumen por escrito en la plataforma.', 'aura-suite' ) ] );
         }
 
         if ( $submission_type === 'file_only' && empty( trim( $attachments ) ) ) {
-            wp_send_json_error( [ 'message' => __( 'Esta tarea exige adjuntar un archivo (PDF o documento).', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Esta tarea exige adjuntar un archivo (PDF o documento).', 'aura-suite' ) ] );
         }
 
         if ( $min_words > 0 ) {
@@ -826,7 +826,7 @@ class Aura_Calendar_Tasks {
             if ( $words_count < $min_words ) {
                 wp_send_json_error( [
                     'message' => sprintf(
-                        __( 'El resumen requiere un mínimo de %1$d palabras. Actualmente tu texto cuenta con %2$d palabras.', 'aura' ),
+                        __( 'El resumen requiere un mínimo de %1$d palabras. Actualmente tu texto cuenta con %2$d palabras.', 'aura-suite' ),
                         $min_words,
                         $words_count
                     ),
@@ -872,7 +872,7 @@ class Aura_Calendar_Tasks {
             );
         }
 
-        wp_send_json_success( [ 'message' => __( '¡Tarea entregada correctamente!', 'aura' ) ] );
+        wp_send_json_success( [ 'message' => __( '¡Tarea entregada correctamente!', 'aura-suite' ) ] );
     }
 
     /**
@@ -882,7 +882,7 @@ class Aura_Calendar_Tasks {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_tasks' ) && ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -945,7 +945,7 @@ class Aura_Calendar_Tasks {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_tasks' ) && ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_teach_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $program_id = intval( $_POST['program_id'] ?? 0 );

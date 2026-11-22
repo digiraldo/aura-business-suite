@@ -21,6 +21,14 @@
     var cfg    = auraFormsBuilder;           // datos localizados
     var formId = cfg.formId || 0;
     var sortableInstance = null;
+    var __ = ( window.wp && window.wp.i18n && window.wp.i18n.__ ) ? window.wp.i18n.__ : function ( s ) { return s; };
+    var sprintf = ( window.wp && window.wp.i18n && window.wp.i18n.sprintf ) ? window.wp.i18n.sprintf : function ( fmt ) {
+        var args = Array.prototype.slice.call( arguments, 1 ), i = 0;
+        return String( fmt ).replace( /%(?:(\d+)\$)?[sd]/g, function ( m, pos ) {
+            var idx = pos ? ( parseInt( pos, 10 ) - 1 ) : i++;
+            return args[ idx ] !== undefined ? args[ idx ] : '';
+        } );
+    };
 
     // ── Tipos sin campo requerido / sin label obligatorio ─────────────────
     var NO_REQUIRED_TYPES = [ 'section_title', 'paragraph', 'image', 'downloadable' ];
@@ -130,12 +138,12 @@
     function autoSaveFormThenAddField( pendingType ) {
         var title = $( '#form-title' ).val().trim();
         if ( ! title ) {
-            showNotice( 'Escribe primero el título del formulario y después agrega campos.', 'error' );
+            showNotice( __( 'Escribe primero el título del formulario y después agrega campos.', 'aura-suite' ), 'error' );
             $( '#form-title' ).focus();
             return;
         }
 
-        showNotice( cfg.i18n.loading || 'Guardando formulario…' );
+        showNotice( cfg.i18n.loading || __( 'Guardando formulario…', 'aura-suite' ) );
 
         var data = { action: 'aura_forms_save', nonce: cfg.nonce };
         $( '#aura-meta-panel input, #aura-meta-panel select, #aura-meta-panel textarea' ).each( function () {
@@ -256,7 +264,7 @@
 
             $.post( cfg.ajaxUrl, data )
                 .done( function ( res ) {
-                    $btn.prop( 'disabled', false ).text( 'Guardar formulario' );
+                    $btn.prop( 'disabled', false ).text( __( 'Guardar formulario', 'aura-suite' ) );
                     if ( res.success ) {
                         showNotice( res.data.message );
                         if ( res.data.form ) {
@@ -274,7 +282,7 @@
                     }
                 } )
                 .fail( function () {
-                    $btn.prop( 'disabled', false ).text( 'Guardar formulario' );
+                    $btn.prop( 'disabled', false ).text( __( 'Guardar formulario', 'aura-suite' ) );
                     showNotice( cfg.i18n.error, 'error' );
                 } );
         } );
@@ -289,7 +297,7 @@
         var label    = TYPE_LABELS[ fieldType ] || fieldType;
 
         $( '#aura-config-panel-title' ).text(
-            fieldId ? 'Editar: ' + label : 'Agregar: ' + label
+            fieldId ? sprintf( __( 'Editar: %s', 'aura-suite' ), label ) : sprintf( __( 'Agregar: %s', 'aura-suite' ), label )
         );
         $( '#config-field-id' ).val( fieldId );
         $( '#config-field-type' ).val( fieldType );
@@ -423,7 +431,7 @@
                 if ( ! title ) {
                     $btn.prop( 'disabled', false );
                     $( '#aura-field-config-overlay' ).fadeOut( 200 );
-                    showNotice( 'Escribe primero el t\u00edtulo del formulario.', 'error' );
+                    showNotice( __( 'Escribe primero el título del formulario.', 'aura-suite' ), 'error' );
                     $( '#form-title' ).focus();
                     return;
                 }
@@ -434,7 +442,7 @@
                     if ( ! name ) return;
                     metaData[ name ] = ( $el.attr( 'type' ) === 'checkbox' ) ? ( $el.is( ':checked' ) ? 1 : undefined ) : $el.val();
                 } );
-                showNotice( cfg.i18n.loading || 'Guardando formulario\u2026' );
+                showNotice( cfg.i18n.loading || __( 'Guardando formulario…', 'aura-suite' ) );
                 $.post( cfg.ajaxUrl, metaData )
                     .done( function ( res ) {
                         if ( res.success && res.data && res.data.form ) {
@@ -464,8 +472,8 @@
         var fieldId   = field.id;
         var $existing = $( '.aura-field-item[data-field-id="' + fieldId + '"]' );
         var metaText  = field.field_type;
-        if ( field.is_required == 1 ) metaText += ' · <em>Requerido</em>';
-        if ( field.mapping_key )      metaText += ' · Mapeo: <code>' + field.mapping_key + '</code>';
+        if ( field.is_required == 1 ) metaText += ' · <em>' + __( 'Requerido', 'aura-suite' ) + '</em>';
+        if ( field.mapping_key )      metaText += ' · ' + __( 'Mapeo:', 'aura-suite' ) + ' <code>' + field.mapping_key + '</code>';
 
         var $item = $(
             '<div class="aura-field-item" data-field-id="' + fieldId + '" data-type="' + field.field_type + '">' +
@@ -475,7 +483,7 @@
                     '<span class="aura-field-item-meta">' + metaText + '</span>' +
                 '</div>' +
                 '<div class="aura-field-item-actions">' +
-                    '<button type="button" class="button button-small aura-field-edit" data-field-id="' + fieldId + '">Editar</button>' +
+                    '<button type="button" class="button button-small aura-field-edit" data-field-id="' + fieldId + '">' + __( 'Editar', 'aura-suite' ) + '</button>' +
                     '<button type="button" class="button button-small aura-field-delete" data-field-id="' + fieldId + '"><span class="dashicons dashicons-trash"></span></button>' +
                 '</div>' +
             '</div>'
@@ -550,7 +558,7 @@
             var areaId = $( this ).val();
             var $select = $( '#form-course' );
             $select.prop( 'disabled', true ).empty().append(
-                '<option value="">' + ( cfg.i18n.loading || 'Cargando…' ) + '</option>'
+                '<option value="">' + ( cfg.i18n.loading || __( 'Cargando…', 'aura-suite' ) ) + '</option>'
             );
 
             $.get( cfg.ajaxUrl, {
@@ -559,7 +567,7 @@
                 nonce   : cfg.nonce,
             } )
             .done( function ( res ) {
-                $select.empty().append( '<option value="">— Sin curso fijo —</option>' );
+                $select.empty().append( '<option value="">' + __( '— Sin curso fijo —', 'aura-suite' ) + '</option>' );
                 if ( res.success && res.data.courses ) {
                     $.each( res.data.courses, function ( i, course ) {
                         $select.append( '<option value="' + course.id + '">' + course.name + '</option>' );
@@ -600,7 +608,7 @@
                 var title = $( '#form-title' ).val().trim();
                 if ( ! title ) {
                     $btn.prop( 'disabled', false );
-                    showNotice( 'Escribe primero el t\u00edtulo del formulario.', 'error' );
+                    showNotice( __( 'Escribe primero el título del formulario.', 'aura-suite' ), 'error' );
                     $( '#form-title' ).focus();
                     return;
                 }
@@ -611,7 +619,7 @@
                     if ( ! name ) return;
                     metaData[ name ] = ( $el.attr( 'type' ) === 'checkbox' ) ? ( $el.is( ':checked' ) ? 1 : undefined ) : $el.val();
                 } );
-                showNotice( cfg.i18n.loading || 'Guardando formulario\u2026' );
+                showNotice( cfg.i18n.loading || __( 'Guardando formulario…', 'aura-suite' ) );
                 $.post( cfg.ajaxUrl, metaData ).done( function ( res ) {
                     if ( res.success && res.data && res.data.form ) {
                         formId = parseInt( res.data.form.id, 10 );
@@ -633,7 +641,7 @@
     }
 
     function doInsertDefaults( $btn ) {
-        showNotice( 'Insertando campos predeterminados\u2026' );
+        showNotice( __( 'Insertando campos predeterminados…', 'aura-suite' ) );
         $.post( cfg.ajaxUrl, {
             action  : 'aura_forms_insert_enrollment_defaults',
             form_id : formId,
@@ -664,12 +672,12 @@
             e.preventDefault();
             var targetId = $( this ).data( 'target' );
             if ( typeof wp === 'undefined' || ! wp.media ) {
-                window.alert( 'La biblioteca de medios no está disponible.' );
+                window.alert( __( 'La biblioteca de medios no está disponible.', 'aura-suite' ) );
                 return;
             }
             var frame = wp.media( {
-                title    : 'Seleccionar archivo',
-                button   : { text: 'Usar este archivo' },
+                title    : __( 'Seleccionar archivo', 'aura-suite' ),
+                button   : { text: __( 'Usar este archivo', 'aura-suite' ) },
                 multiple : false,
             } );
             frame.on( 'select', function () {

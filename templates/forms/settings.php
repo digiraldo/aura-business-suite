@@ -158,8 +158,8 @@ $all_pages = get_pages( [ 'post_status' => 'publish', 'sort_column' => 'post_tit
                                   rows="6" class="large-text"><?php echo esc_textarea( $settings['assignment_email_body'] ); ?></textarea>
                         <p class="description">
                             <?php esc_html_e( 'Variables disponibles:', 'aura-suite' ); ?>
-                            <code>{nombre}</code>, <code>{formulario}</code>, <code>{url}</code> (URL del formulario específico),
-                            <code>{portal}</code> (URL del portal del estudiante), <code>{expira}</code>, <code>{sitio}</code>
+                            <code>{nombre}</code>, <code>{formulario}</code>, <code>{url}</code> (<?php esc_html_e( 'URL del formulario específico', 'aura-suite' ); ?>),
+                            <code>{portal}</code> (<?php esc_html_e( 'URL del portal del estudiante', 'aura-suite' ); ?>), <code>{expira}</code>, <code>{sitio}</code>
                         </p>
                     </td>
                 </tr>

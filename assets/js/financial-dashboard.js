@@ -8,6 +8,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     // ─── Referencias DOM y Estado ─────────────────────────────────────────────
     var $periodBtns, $startDate, $endDate, $compareChk,
         lineChart, donutChart,
@@ -171,7 +173,7 @@
         $select.val(String(detected));
 
         if ($det.length) {
-            $det.text('Año detectado: ' + detected);
+            $det.text(__('Año detectado:', 'aura-suite') + ' ' + detected);
         }
     }
 
@@ -239,8 +241,8 @@
                 rootDonutData = d.chart_donut;
                 currentDrilldownCategory = null;
                 $('#aura-drilldown-nav').hide();
-                $('#aura-donut-main-title').html('<span class="dashicons dashicons-chart-pie"></span> Gastos por Categoría');
-                $('#aura-drilldown-hint').html('<span class="dashicons dashicons-info"></span> Haz clic en un gasto para ver sus subcategorías');
+                $('#aura-donut-main-title').html('<span class="dashicons dashicons-chart-pie"></span> ' + escHtml(__('Gastos por Categoría', 'aura-suite')));
+                $('#aura-drilldown-hint').html('<span class="dashicons dashicons-info"></span> ' + escHtml(__('Haz clic en un gasto para ver sus subcategorías', 'aura-suite')));
                 updateDonutChart(d.chart_donut);
 
                 renderRecentTransactions(d.recent);
@@ -475,7 +477,7 @@
                 donutChart.data.datasets = [];
                 donutChart.update();
             }
-            $('#aura-donut-legend').html('<div class="aura-empty-state"><p>No hay gastos registrados en este período.</p></div>');
+            $('#aura-donut-legend').html('<div class="aura-empty-state"><p>' + escHtml(__('No hay gastos registrados en este período.', 'aura-suite')) + '</p></div>');
             return;
         }
 
@@ -522,9 +524,9 @@
 
             if (isClickable) {
                 if (subCount > 0) {
-                    $nameWrap.append('<span class="aura-subcat-badge" title="' + subCount + ' subcategorías registradas"><span class="dashicons dashicons-category"></span> ' + subCount + ' subcats</span>');
+                    $nameWrap.append('<span class="aura-subcat-badge" title="' + subCount + ' ' + escHtml(__('subcategorías registradas', 'aura-suite')) + '"><span class="dashicons dashicons-category"></span> ' + subCount + ' ' + escHtml(__('subcats', 'aura-suite')) + '</span>');
                 } else {
-                    $nameWrap.append('<span class="aura-subcat-badge aura-subcat-badge--none" title="Sin subcategorías directas">Directo</span>');
+                    $nameWrap.append('<span class="aura-subcat-badge aura-subcat-badge--none" title="' + escHtml(__('Sin subcategorías directas', 'aura-suite')) + '">' + escHtml(__('Directo', 'aura-suite')) + '</span>');
                 }
             }
 
@@ -533,7 +535,7 @@
             $item.append('<span class="aura-donut-legend__pct">' + pct + '%</span>');
 
             if (isClickable && data.cat_ids && data.cat_ids[i]) {
-                $item.attr('title', 'Haz clic para explorar ' + label);
+                $item.attr('title', __('Haz clic para explorar', 'aura-suite') + ' ' + label);
                 $item.on('click', function () {
                     drilldownCategory(data.cat_ids[i], label);
                 });
@@ -571,9 +573,9 @@
                 // Mostrar barra de navegación
                 $('#aura-drilldown-nav').fadeIn(200);
                 $('#aura-drilldown-current-name').text(catName);
-                $('#aura-donut-main-title').html('<span class="dashicons dashicons-category"></span> Desglose: ' + escHtml(catName));
+                $('#aura-donut-main-title').html('<span class="dashicons dashicons-category"></span> ' + escHtml(__('Desglose:', 'aura-suite')) + ' ' + escHtml(catName));
 
-                var drilldownLabels = d.labels && d.labels.length ? d.labels : ['Sin desglose'];
+                var drilldownLabels = d.labels && d.labels.length ? d.labels : [__('Sin desglose', 'aura-suite')];
                 var drilldownAmounts = d.amounts && d.amounts.length ? d.amounts : [d.total || 0];
 
                 // Asignar colores variados para las subcategorías (evitando gris uniforme)
@@ -603,7 +605,7 @@
         if (!rootDonutData) return;
         currentDrilldownCategory = null;
         $('#aura-drilldown-nav').fadeOut(200);
-        $('#aura-donut-main-title').html('<span class="dashicons dashicons-chart-pie"></span> Gastos por Categoría');
+        $('#aura-donut-main-title').html('<span class="dashicons dashicons-chart-pie"></span> ' + escHtml(__('Gastos por Categoría', 'aura-suite')));
         updateDonutChart(rootDonutData);
     }
 
@@ -613,26 +615,26 @@
         if (!$grid.length) return;
 
         if (!accounts || !accounts.length) {
-            $grid.html('<div class="aura-empty-state"><p>No hay cuentas bancarias configuradas.</p></div>');
+            $grid.html('<div class="aura-empty-state"><p>' + escHtml(__('No hay cuentas bancarias configuradas.', 'aura-suite')) + '</p></div>');
             return;
         }
 
         $grid.empty();
         accounts.forEach(function (acc) {
             var icon = 'dashicons-money-alt';
-            var typeLabel = 'Cuenta Bancaria';
+            var typeLabel = __('Cuenta Bancaria', 'aura-suite');
             if (acc.account_type === 'bank_account') {
                 icon = 'dashicons-bank';
-                typeLabel = 'Cuenta Bancaria';
+                typeLabel = __('Cuenta Bancaria', 'aura-suite');
             } else if (acc.account_type === 'usd_cash') {
                 icon = 'dashicons-vault';
-                typeLabel = 'Caja Moneda Extranjera';
+                typeLabel = __('Caja Moneda Extranjera', 'aura-suite');
             } else if (acc.account_type === 'petty_cash') {
                 icon = 'dashicons-money';
-                typeLabel = 'Caja Chica';
+                typeLabel = __('Caja Chica', 'aura-suite');
             } else if (acc.account_type === 'contributions_fund') {
                 icon = 'dashicons-heart';
-                typeLabel = 'Fondo de Aportes';
+                typeLabel = __('Fondo de Aportes', 'aura-suite');
             }
 
             var balClass = acc.balance < 0 ? 'is-negative' : (acc.balance > 0 ? 'is-positive' : 'is-zero');
@@ -650,12 +652,12 @@
                         '<span class="aura-currency-pill">' + escHtml(acc.currency) + '</span>' +
                     '</div>' +
                     '<div class="aura-account-card__balance">' +
-                        '<span class="aura-account-card__bal-label">Saldo Disponible</span>' +
+                        '<span class="aura-account-card__bal-label">' + escHtml(__('Saldo Disponible', 'aura-suite')) + '</span>' +
                         '<strong class="aura-account-card__amount">' + escHtml(acc.formatted) + '</strong>' +
                     '</div>' +
                     '<div class="aura-account-card__actions">' +
-                        '<span class="aura-account-card__tx-count"><span class="dashicons dashicons-list-view"></span> ' + (acc.tx_count || 0) + ' transacciones</span>' +
-                        '<a href="' + escHtml(auraDashboard.txListUrl || 'admin.php?page=aura-financial-transactions') + '&account_id=' + acc.id + '" class="aura-account-card__btn-link">Ver detalle →</a>' +
+                        '<span class="aura-account-card__tx-count"><span class="dashicons dashicons-list-view"></span> ' + (acc.tx_count || 0) + ' ' + escHtml(__('transacciones', 'aura-suite')) + '</span>' +
+                        '<a href="' + escHtml(auraDashboard.txListUrl || 'admin.php?page=aura-financial-transactions') + '&account_id=' + acc.id + '" class="aura-account-card__btn-link">' + escHtml(__('Ver detalle →', 'aura-suite')) + '</a>' +
                     '</div>' +
                 '</div>';
 
@@ -669,7 +671,7 @@
         if (!$wrap.length) return;
 
         if (!areas || !areas.length) {
-            $wrap.html('<div class="aura-empty-state"><p>No hay egresos registrados en este período.</p></div>');
+            $wrap.html('<div class="aura-empty-state"><p>' + escHtml(__('No hay egresos registrados en este período.', 'aura-suite')) + '</p></div>');
             return;
         }
 
@@ -685,7 +687,7 @@
                         '<span class="aura-area-item__name">' +
                             '<span class="dashicons ' + escHtml(icon) + '" style="color:' + color + '; margin-right:6px; font-size:17px; width:17px; height:17px;"></span>' +
                             '<strong>' + escHtml(ar.area_name) + '</strong>' +
-                            (ar.tx_count ? '<span class="aura-area-item__badge">' + ar.tx_count + ' movs</span>' : '') +
+                            (ar.tx_count ? '<span class="aura-area-item__badge">' + ar.tx_count + ' ' + escHtml(__('movs', 'aura-suite')) + '</span>' : '') +
                         '</span>' +
                         '<span class="aura-area-item__values">' +
                             '<strong class="aura-area-item__amount">' + escHtml(ar.formatted) + '</strong> ' +
@@ -773,17 +775,17 @@
         if (!payload || !payload.budget) {
             $('#bb-kpi-limit, #bb-kpi-spent, #bb-kpi-remaining, #bb-kpi-policy').text('—');
             if ($tbody.length) {
-                $tbody.html('<tr><td colspan="6">Sin datos de presupuesto disponibles.</td></tr>');
+                $tbody.html('<tr><td colspan="6">' + escHtml(__('Sin datos de presupuesto disponibles.', 'aura-suite')) + '</td></tr>');
             }
             return;
         }
 
         var budget = payload.budget || {};
         var months = Array.isArray(budget.months) ? budget.months : [];
-        var policyTxt = (budget.policy || 'warn') === 'block' ? 'Bloquear excedentes' : 'Advertir';
+        var policyTxt = (budget.policy || 'warn') === 'block' ? __('Bloquear excedentes', 'aura-suite') : __('Advertir', 'aura-suite');
 
         if ($year.length) {
-            var detText = payload.detected_year ? ('Año detectado: ' + payload.detected_year) : 'Año detectado: —';
+            var detText = payload.detected_year ? (__('Año detectado:', 'aura-suite') + ' ' + payload.detected_year) : (__('Año detectado:', 'aura-suite') + ' —');
             $year.text(detText);
         }
 
@@ -812,7 +814,7 @@
         if (!$tbody.length) return;
 
         if (!months.length) {
-            $tbody.html('<tr><td colspan="6">No hay distribución mensual configurada para este año.</td></tr>');
+            $tbody.html('<tr><td colspan="6">' + escHtml(__('No hay distribución mensual configurada para este año.', 'aura-suite')) + '</td></tr>');
             return;
         }
 
@@ -828,14 +830,14 @@
             var fill = Math.min(100, ratioSafe);
 
             var toneClass = 'is-green';
-            var statusBadge = '<span class="aura-budget-chip aura-budget-chip--success"><span class="dashicons dashicons-yes-alt"></span> En rango</span>';
+            var statusBadge = '<span class="aura-budget-chip aura-budget-chip--success"><span class="dashicons dashicons-yes-alt"></span> ' + escHtml(__('En rango', 'aura-suite')) + '</span>';
 
             if (remaining < 0) {
                 toneClass = 'is-red';
-                statusBadge = '<span class="aura-budget-chip aura-budget-chip--danger"><span class="dashicons dashicons-warning"></span> Sobregirado</span>';
+                statusBadge = '<span class="aura-budget-chip aura-budget-chip--danger"><span class="dashicons dashicons-warning"></span> ' + escHtml(__('Sobregirado', 'aura-suite')) + '</span>';
             } else if (ratioSafe >= 70) {
                 toneClass = 'is-orange';
-                statusBadge = '<span class="aura-budget-chip aura-budget-chip--warning"><span class="dashicons dashicons-clock"></span> Alerta (>70%)</span>';
+                statusBadge = '<span class="aura-budget-chip aura-budget-chip--warning"><span class="dashicons dashicons-clock"></span> ' + escHtml(__('Alerta (>70%)', 'aura-suite')) + '</span>';
             }
 
             var percentText = (Math.round(ratioSafe * 10) / 10).toFixed(1).replace('.0', '') + '%';
@@ -857,7 +859,7 @@
                     '</div>' +
                     '<div style="margin-top:4px;">' + statusBadge + '</div>' +
                 '</td>' +
-                '<td><a class="button button-small" href="' + escHtml(auraDashboard.txListUrl || 'admin.php?page=aura-financial-transactions') + '&filter_date_from=' + monthStart + '&filter_date_to=' + monthEnd + '&start_date=' + monthStart + '&end_date=' + monthEnd + '">Ver movimientos</a></td>' +
+                '<td><a class="button button-small" href="' + escHtml(auraDashboard.txListUrl || 'admin.php?page=aura-financial-transactions') + '&filter_date_from=' + monthStart + '&filter_date_to=' + monthEnd + '&start_date=' + monthStart + '&end_date=' + monthEnd + '">' + escHtml(__('Ver movimientos', 'aura-suite')) + '</a></td>' +
             '</tr>';
         }).join('');
 
@@ -865,7 +867,7 @@
     }
 
     function getMonthFullName(monthNum) {
-        var names = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        var names = [__('Enero', 'aura-suite'), __('Febrero', 'aura-suite'), __('Marzo', 'aura-suite'), __('Abril', 'aura-suite'), __('Mayo', 'aura-suite'), __('Junio', 'aura-suite'), __('Julio', 'aura-suite'), __('Agosto', 'aura-suite'), __('Septiembre', 'aura-suite'), __('Octubre', 'aura-suite'), __('Noviembre', 'aura-suite'), __('Diciembre', 'aura-suite')];
         var idx = Math.min(12, Math.max(1, monthNum)) - 1;
         return names[idx];
     }
@@ -897,7 +899,7 @@
                 $('body').append(
                     '<div id="aura-dashboard-refreshing" class="aura-dashboard-refreshing">' +
                         '<span class="aura-spinner"></span>' +
-                        (auraDashboard.i18n ? auraDashboard.i18n.refreshing : 'Actualizando datos…') +
+                        (auraDashboard.i18n ? auraDashboard.i18n.refreshing : __('Actualizando datos…', 'aura-suite')) +
                     '</div>'
                 );
             }

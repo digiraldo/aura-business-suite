@@ -122,7 +122,7 @@ class Aura_Financial_Reports {
         };
 
         if ( $data === null ) {
-            wp_send_json_error( 'Tipo de reporte no válido' );
+            wp_send_json_error( __( 'Tipo de reporte no válido', 'aura-suite' ) );
         }
 
         wp_send_json_success( [ 'type' => $type, 'params' => $params, 'data' => $data ] );
@@ -165,7 +165,7 @@ class Aura_Financial_Reports {
 
         $autoload = AURA_PLUGIN_DIR . 'vendor/autoload.php';
         if ( ! file_exists( $autoload ) ) {
-            wp_die( 'PhpSpreadsheet no disponible. Ejecuta: composer install en el plugin.' );
+            wp_die( esc_html__( 'PhpSpreadsheet no disponible. Ejecuta: composer install en el plugin.', 'aura-suite' ) );
         }
         require_once $autoload;
 
@@ -215,7 +215,7 @@ class Aura_Financial_Reports {
 
         // Fila de total al final si aplica
         $totals_row = $rowNum;
-        $sheet->getCell( 'A' . $totals_row )->setValue( 'Total de registros: ' . count( $rows ) );
+        $sheet->getCell( 'A' . $totals_row )->setValue( sprintf( __( 'Total de registros: %d', 'aura-suite' ), count( $rows ) ) );
         $sheet->getStyle( 'A' . $totals_row )->getFont()->setBold( true );
 
         // Auto-tamaño de columnas
@@ -228,7 +228,7 @@ class Aura_Financial_Reports {
 
         // Pie de página
         $sheet->getHeaderFooter()
-            ->setOddFooter( '&L&"Calibri"Aura Business Suite&R&"Calibri"Generado: ' . date( 'd/m/Y H:i' ) );
+            ->setOddFooter( '&L&"Calibri"Aura Business Suite&R&"Calibri"' . __( 'Generado:', 'aura-suite' ) . ' ' . date_i18n( 'd/m/Y H:i' ) );
 
         header( 'Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' );
         header( 'Content-Disposition: attachment; filename="' . $filename . '.xlsx"' );
@@ -310,7 +310,7 @@ class Aura_Financial_Reports {
             'budget_area_detail' => self::budget_area_detail_flat( $params ),
             'audit'              => self::audit_flat( $params ),
             'user_payments'      => self::user_payments_flat( $params ),
-            default              => [ [ 'Error' ], [ [ 'Tipo no válido' ] ], 'reporte', 'Error' ],
+            default              => [ [ __( 'Error', 'aura-suite' ) ], [ [ __( 'Tipo no válido', 'aura-suite' ) ] ], 'reporte', __( 'Error', 'aura-suite' ) ],
         };
     }
 
@@ -327,7 +327,7 @@ class Aura_Financial_Reports {
 
         $rows = $wpdb->get_results( $wpdb->prepare(
             "SELECT t.transaction_type,
-                    COALESCE(c.name, 'Sin categoría') AS category,
+                    COALESCE(c.name, '" . esc_sql( __( 'Sin categoría', 'aura-suite' ) ) . "') AS category,
                     COALESCE(c.color, '#6B7280') AS color,
                     SUM(t.amount) AS total
              FROM {$t} t
@@ -376,14 +376,14 @@ class Aura_Financial_Reports {
 
     private static function pl_flat( array $p ): array {
         $d       = self::get_pl_data( $p );
-        $headers = [ 'Tipo', 'Categoría', 'Monto (USD)' ];
+        $headers = [ __( 'Tipo', 'aura-suite' ), __( 'Categoría', 'aura-suite' ), __( 'Monto (USD)', 'aura-suite' ) ];
         $rows    = [];
-        foreach ( $d['income']   as $r ) $rows[] = [ 'Ingreso', $r->category, number_format( $r->total, 2, '.', ',' ) ];
-        foreach ( $d['expenses'] as $r ) $rows[] = [ 'Egreso',  $r->category, number_format( $r->total, 2, '.', ',' ) ];
-        $rows[] = [ 'TOTAL INGRESOS', '', number_format( $d['total_income'],  2, '.', ',' ) ];
-        $rows[] = [ 'TOTAL EGRESOS',  '', number_format( $d['total_expense'], 2, '.', ',' ) ];
-        $rows[] = [ 'BALANCE NETO',   '', number_format( $d['net_balance'],   2, '.', ',' ) ];
-        return [ $headers, $rows, 'estado-resultados-' . $p['start'] . '-' . $p['end'], 'Estado de Resultados' ];
+        foreach ( $d['income']   as $r ) $rows[] = [ __( 'Ingreso', 'aura-suite' ), $r->category, number_format( $r->total, 2, '.', ',' ) ];
+        foreach ( $d['expenses'] as $r ) $rows[] = [ __( 'Egreso', 'aura-suite' ),  $r->category, number_format( $r->total, 2, '.', ',' ) ];
+        $rows[] = [ __( 'TOTAL INGRESOS', 'aura-suite' ), '', number_format( $d['total_income'],  2, '.', ',' ) ];
+        $rows[] = [ __( 'TOTAL EGRESOS', 'aura-suite' ),  '', number_format( $d['total_expense'], 2, '.', ',' ) ];
+        $rows[] = [ __( 'BALANCE NETO', 'aura-suite' ),   '', number_format( $d['net_balance'],   2, '.', ',' ) ];
+        return [ $headers, $rows, 'estado-resultados-' . $p['start'] . '-' . $p['end'], __( 'Estado de Resultados', 'aura-suite' ) ];
     }
 
     // ─── B. Flujo de Efectivo ─────────────────────────────────────────────────
@@ -434,7 +434,7 @@ class Aura_Financial_Reports {
 
     private static function cashflow_flat( array $p ): array {
         $d       = self::get_cashflow_data( $p );
-        $headers = [ 'Método de Pago', 'Transacciones Entrada', 'Entradas (USD)', 'Transacciones Salida', 'Salidas (USD)', 'Neto (USD)' ];
+        $headers = [ __( 'Método de Pago', 'aura-suite' ), __( 'Transacciones Entrada', 'aura-suite' ), __( 'Entradas (USD)', 'aura-suite' ), __( 'Transacciones Salida', 'aura-suite' ), __( 'Salidas (USD)', 'aura-suite' ), __( 'Neto (USD)', 'aura-suite' ) ];
         $rows    = [];
         foreach ( $d['by_method'] as $method => $types ) {
             $in_count  = $types['income']['count']   ?? 0;
@@ -443,8 +443,8 @@ class Aura_Financial_Reports {
             $out       = $types['expense']['total']  ?? 0;
             $rows[] = [ $method, $in_count, number_format( $in, 2, '.', ',' ), $out_count, number_format( $out, 2, '.', ',' ), number_format( $in - $out, 2, '.', ',' ) ];
         }
-        $rows[] = [ 'TOTALES', '', number_format( $d['total_in'], 2, '.', ',' ), '', number_format( $d['total_out'], 2, '.', ',' ), number_format( $d['net'], 2, '.', ',' ) ];
-        return [ $headers, $rows, 'flujo-efectivo-' . $p['start'] . '-' . $p['end'], 'Flujo de Efectivo' ];
+        $rows[] = [ __( 'TOTALES', 'aura-suite' ), '', number_format( $d['total_in'], 2, '.', ',' ), '', number_format( $d['total_out'], 2, '.', ',' ), number_format( $d['net'], 2, '.', ',' ) ];
+        return [ $headers, $rows, 'flujo-efectivo-' . $p['start'] . '-' . $p['end'], __( 'Flujo de Efectivo', 'aura-suite' ) ];
     }
 
     // ─── C. Análisis por Categoría ────────────────────────────────────────────
@@ -662,20 +662,20 @@ class Aura_Financial_Reports {
 
     private static function categories_flat( array $p ): array {
         $d       = self::get_category_data( $p );
-        $headers = [ 'Nivel', 'Categoría Principal', 'Subcategoría / Concepto', 'Tipo', 'Monto (USD)', 'Transacciones', '% Sobre Padre', '% Sobre Total' ];
+        $headers = [ __( 'Nivel', 'aura-suite' ), __( 'Categoría Principal', 'aura-suite' ), __( 'Subcategoría / Concepto', 'aura-suite' ), __( 'Tipo', 'aura-suite' ), __( 'Monto (USD)', 'aura-suite' ), __( 'Transacciones', 'aura-suite' ), __( '% Sobre Padre', 'aura-suite' ), __( '% Sobre Total', 'aura-suite' ) ];
         $rows    = [];
 
         $type_formatter = function ( string $type ): string {
             return match ( $type ) {
-                'income'  => 'Ingreso',
-                'capital' => 'Gasto Capital (CapEx)',
-                default   => 'Egreso',
+                'income'  => __( 'Ingreso', 'aura-suite' ),
+                'capital' => __( 'Gasto Capital (CapEx)', 'aura-suite' ),
+                default   => __( 'Egreso', 'aura-suite' ),
             };
         };
 
         foreach ( $d['parents'] as $parent ) {
             $rows[] = [
-                'CATEGORÍA PRINCIPAL',
+                __( 'CATEGORÍA PRINCIPAL', 'aura-suite' ),
                 $parent['name'],
                 '—',
                 $type_formatter( (string) $parent['type'] ),
@@ -687,7 +687,7 @@ class Aura_Financial_Reports {
 
             foreach ( $parent['subcategories'] as $sub ) {
                 $rows[] = [
-                    '  └ Subcategoría',
+                    __( '  └ Subcategoría', 'aura-suite' ),
                     $parent['name'],
                     $sub['name'],
                     $type_formatter( (string) $sub['type'] ),
@@ -700,7 +700,7 @@ class Aura_Financial_Reports {
         }
 
         $rows[] = [
-            'TOTAL GENERAL',
+            __( 'TOTAL GENERAL', 'aura-suite' ),
             '',
             '',
             '',
@@ -710,7 +710,7 @@ class Aura_Financial_Reports {
             '100.0%',
         ];
 
-        return [ $headers, $rows, 'analisis-categorias-' . $p['start'] . '-' . $p['end'], 'Análisis Jerárquico por Categoría y Subcategorías' ];
+        return [ $headers, $rows, 'analisis-categorias-' . $p['start'] . '-' . $p['end'], __( 'Análisis Jerárquico por Categoría y Subcategorías', 'aura-suite' ) ];
     }
 
     // ─── D. Transacciones Pendientes ──────────────────────────────────────────
@@ -748,22 +748,22 @@ class Aura_Financial_Reports {
 
     private static function pending_flat(): array {
         $d       = self::get_pending_data();
-        $headers = [ 'Usuario', 'Tipo', 'Categoría', 'Monto (USD)', 'Descripción', 'Fecha', 'Días pendiente' ];
+        $headers = [ __( 'Usuario', 'aura-suite' ), __( 'Tipo', 'aura-suite' ), __( 'Categoría', 'aura-suite' ), __( 'Monto (USD)', 'aura-suite' ), __( 'Descripción', 'aura-suite' ), __( 'Fecha', 'aura-suite' ), __( 'Días pendiente', 'aura-suite' ) ];
         $rows    = [];
         foreach ( $d['by_user'] as $user => $txs ) {
             foreach ( $txs as $r ) {
                 $rows[] = [
                     $user,
-                    $r->transaction_type === 'income' ? 'Ingreso' : 'Egreso',
+                    $r->transaction_type === 'income' ? __( 'Ingreso', 'aura-suite' ) : __( 'Egreso', 'aura-suite' ),
                     $r->category_name,
                     number_format( $r->amount, 2, '.', ',' ),
                     $r->description,
                     $r->transaction_date,
-                    $r->age_days . ' días',
+                    sprintf( __( '%s días', 'aura-suite' ), $r->age_days ),
                 ];
             }
         }
-        return [ $headers, $rows, 'pendientes-' . date( 'Y-m-d' ), 'Transacciones Pendientes' ];
+        return [ $headers, $rows, 'pendientes-' . date( 'Y-m-d' ), __( 'Transacciones Pendientes', 'aura-suite' ) ];
     }
 
     // ─── E. Presupuesto vs Ejecutado ──────────────────────────────────────────
@@ -830,7 +830,7 @@ class Aura_Financial_Reports {
 
     private static function budget_flat( array $p ): array {
         $d       = self::get_budget_data( $p );
-        $headers = [ 'Área/Programa', 'Categoría', 'Presupuesto (USD)', 'Ejecutado (USD)', '% Ejecución', 'Restante (USD)', 'Proyectado (USD)', '¿Sobregiro?' ];
+        $headers = [ __( 'Área/Programa', 'aura-suite' ), __( 'Categoría', 'aura-suite' ), __( 'Presupuesto (USD)', 'aura-suite' ), __( 'Ejecutado (USD)', 'aura-suite' ), __( '% Ejecución', 'aura-suite' ), __( 'Restante (USD)', 'aura-suite' ), __( 'Proyectado (USD)', 'aura-suite' ), __( '¿Sobregiro?', 'aura-suite' ) ];
         $rows    = [];
         foreach ( $d['budgets'] as $r ) {
             $rows[] = [
@@ -841,10 +841,10 @@ class Aura_Financial_Reports {
                 $r->pct . '%',
                 number_format( $r->remaining,     2, '.', ',' ),
                 number_format( $r->projected,     2, '.', ',' ),
-                $r->overrun ? 'SÍ' : 'No',
+                $r->overrun ? __( 'SÍ', 'aura-suite' ) : __( 'No', 'aura-suite' ),
             ];
         }
-        return [ $headers, $rows, 'presupuesto-' . date( 'Y-m-d' ), 'Presupuesto vs Ejecutado' ];
+        return [ $headers, $rows, 'presupuesto-' . date( 'Y-m-d' ), __( 'Presupuesto vs Ejecutado', 'aura-suite' ) ];
     }
 
     // ─── E2. Detalle de transacciones por Área ────────────────────────────────
@@ -858,7 +858,7 @@ class Aura_Financial_Reports {
 
         $area_id = absint( $p['area_id'] ?? 0 );
         if ( ! $area_id ) {
-            return [ 'error' => 'Selecciona un área para generar este reporte.' ];
+            return [ 'error' => __( 'Selecciona un área para generar este reporte.', 'aura-suite' ) ];
         }
 
         // Datos del área
@@ -866,7 +866,7 @@ class Aura_Financial_Reports {
             "SELECT id, name, color, icon FROM {$a} WHERE id = %d", $area_id
         ) );
         if ( ! $area ) {
-            return [ 'error' => 'Área no encontrada.' ];
+            return [ 'error' => __( 'Área no encontrada.', 'aura-suite' ) ];
         }
 
         // Presupuestos activos del área
@@ -959,16 +959,16 @@ class Aura_Financial_Reports {
     private static function budget_area_detail_flat( array $p ): array {
         $d = self::get_budget_area_detail( $p );
         if ( isset( $d['error'] ) ) {
-            return [ [ 'Error' ], [ [ $d['error'] ] ], 'error', 'Error' ];
+            return [ [ __( 'Error', 'aura-suite' ) ], [ [ $d['error'] ] ], 'error', __( 'Error', 'aura-suite' ) ];
         }
-        $area_name = $d['area']->name ?? 'área';
-        $headers   = [ 'Categoría', 'Tipo', 'ID', 'Fecha', 'Monto (USD)', 'Descripción', 'Método de Pago', 'Referencia', 'Estado', 'Registrado por' ];
+        $area_name = $d['area']->name ?? __( 'área', 'aura-suite' );
+        $headers   = [ __( 'Categoría', 'aura-suite' ), __( 'Tipo', 'aura-suite' ), 'ID', __( 'Fecha', 'aura-suite' ), __( 'Monto (USD)', 'aura-suite' ), __( 'Descripción', 'aura-suite' ), __( 'Método de Pago', 'aura-suite' ), __( 'Referencia', 'aura-suite' ), __( 'Estado', 'aura-suite' ), __( 'Registrado por', 'aura-suite' ) ];
         $rows      = [];
         foreach ( $d['by_category'] as $cat ) {
             foreach ( $cat['transactions'] as $tx ) {
                 $rows[] = [
                     $cat['name'],
-                    $tx->transaction_type === 'income' ? 'Ingreso' : 'Egreso',
+                    $tx->transaction_type === 'income' ? __( 'Ingreso', 'aura-suite' ) : __( 'Egreso', 'aura-suite' ),
                     $tx->id,
                     $tx->transaction_date,
                     number_format( (float) $tx->amount, 2, '.', ',' ),
@@ -980,13 +980,13 @@ class Aura_Financial_Reports {
                 ];
             }
             $rows[] = [
-                '— SUBTOTAL: ' . $cat['name'], '', '', '',
+                sprintf( __( '— SUBTOTAL: %s', 'aura-suite' ), $cat['name'] ), '', '', '',
                 number_format( $cat['total_expense'] + $cat['total_income'], 2, '.', ',' ),
                 '', '', '', '', '',
             ];
         }
         $filename = 'detalle-area-' . sanitize_title( $area_name ) . '-' . date( 'Y-m-d' );
-        return [ $headers, $rows, $filename, 'Detalle por Área: ' . $area_name ];
+        return [ $headers, $rows, $filename, sprintf( __( 'Detalle por Área: %s', 'aura-suite' ), $area_name ) ];
     }
 
     // ─── F. Auditoría ─────────────────────────────────────────────────────────
@@ -1036,14 +1036,14 @@ class Aura_Financial_Reports {
 
     private static function audit_flat( array $p ): array {
         $d       = self::get_audit_data( $p );
-        $headers = [ 'ID', 'Tipo', 'Categoría', 'Monto (USD)', 'Estado', 'Método Pago',
-                     'Referencia', 'Descripción', 'Fecha Tx', 'Creado por', 'Aprobado por',
-                     'Creado el', 'Tiene comprobante', 'Eliminado' ];
+        $headers = [ 'ID', __( 'Tipo', 'aura-suite' ), __( 'Categoría', 'aura-suite' ), __( 'Monto (USD)', 'aura-suite' ), __( 'Estado', 'aura-suite' ), __( 'Método Pago', 'aura-suite' ),
+                     __( 'Referencia', 'aura-suite' ), __( 'Descripción', 'aura-suite' ), __( 'Fecha Tx', 'aura-suite' ), __( 'Creado por', 'aura-suite' ), __( 'Aprobado por', 'aura-suite' ),
+                     __( 'Creado el', 'aura-suite' ), __( 'Tiene comprobante', 'aura-suite' ), __( 'Eliminado', 'aura-suite' ) ];
         $rows = [];
         foreach ( $d['rows'] as $r ) {
             $rows[] = [
                 $r->id,
-                $r->transaction_type === 'income' ? 'Ingreso' : 'Egreso',
+                $r->transaction_type === 'income' ? __( 'Ingreso', 'aura-suite' ) : __( 'Egreso', 'aura-suite' ),
                 $r->category_name,
                 number_format( $r->amount, 2, '.', ',' ),
                 ucfirst( $r->status ),
@@ -1054,11 +1054,11 @@ class Aura_Financial_Reports {
                 $r->creator_name   ?? '-',
                 $r->approver_name  ?? '-',
                 $r->created_at,
-                $r->receipt_file   ? 'Sí' : 'No',
-                $r->deleted_at     ? 'Sí' : 'No',
+                $r->receipt_file   ? __( 'Sí', 'aura-suite' ) : __( 'No', 'aura-suite' ),
+                $r->deleted_at     ? __( 'Sí', 'aura-suite' ) : __( 'No', 'aura-suite' ),
             ];
         }
-        return [ $headers, $rows, 'auditoria-' . $p['start'] . '-' . $p['end'], 'Reporte de Auditoría' ];
+        return [ $headers, $rows, 'auditoria-' . $p['start'] . '-' . $p['end'], __( 'Reporte de Auditoría', 'aura-suite' ) ];
     }
 
     // ─── G. Sueldos / Pagos a Usuarios ──────────────────────────────────────────
@@ -1113,7 +1113,7 @@ class Aura_Financial_Reports {
 
         foreach ( $rows as &$r ) {
             $r->amount        = (float) $r->amount;
-            $r->concept_label = $concept_labels[ $r->related_user_concept ?? '' ] ?? ucfirst( $r->related_user_concept ?? 'Pago' );
+            $r->concept_label = $concept_labels[ $r->related_user_concept ?? '' ] ?? ucfirst( $r->related_user_concept ?: __( 'Pago', 'aura-suite' ) );
         }
         unset( $r );
 
@@ -1122,7 +1122,7 @@ class Aura_Financial_Reports {
             $uid = $r->related_user_email;
             if ( ! isset( $summary_map[ $uid ] ) ) {
                 $summary_map[ $uid ] = [
-                    'user_name'      => $r->related_user_name ?? 'Sin nombre',
+                    'user_name'      => $r->related_user_name ?? __( 'Sin nombre', 'aura-suite' ),
                     'user_email'     => $r->related_user_email ?? '-',
                     'total_paid'     => 0.0,
                     'total_received' => 0.0,
@@ -1152,13 +1152,13 @@ class Aura_Financial_Reports {
     private static function user_payments_flat( array $p ): array {
         $d       = self::get_user_payments_data( $p );
         $headers = [
-            'ID', 'Fecha', 'Usuario Relacionado', 'Email', 'Concepto',
-            'Tipo (Org)', 'Categoría', 'Monto (USD)', 'Estado',
-            'Método Pago', 'Referencia', 'Descripción', 'Registrado por',
+            'ID', __( 'Fecha', 'aura-suite' ), __( 'Usuario Relacionado', 'aura-suite' ), __( 'Email', 'aura-suite' ), __( 'Concepto', 'aura-suite' ),
+            __( 'Tipo (Org)', 'aura-suite' ), __( 'Categoría', 'aura-suite' ), __( 'Monto (USD)', 'aura-suite' ), __( 'Estado', 'aura-suite' ),
+            __( 'Método Pago', 'aura-suite' ), __( 'Referencia', 'aura-suite' ), __( 'Descripción', 'aura-suite' ), __( 'Registrado por', 'aura-suite' ),
         ];
         $rows = [];
         foreach ( $d['rows'] as $r ) {
-            $type_label = $r->transaction_type === 'expense' ? 'Pago a usuario' : 'Cobro a usuario';
+            $type_label = $r->transaction_type === 'expense' ? __( 'Pago a usuario', 'aura-suite' ) : __( 'Cobro a usuario', 'aura-suite' );
             $rows[] = [
                 $r->id,
                 $r->transaction_date,
@@ -1175,7 +1175,7 @@ class Aura_Financial_Reports {
                 $r->creator_name      ?? '-',
             ];
         }
-        return [ $headers, $rows, 'sueldos-pagos-' . $p['start'] . '-' . $p['end'], 'Sueldos / Pagos a Usuarios' ];
+        return [ $headers, $rows, 'sueldos-pagos-' . $p['start'] . '-' . $p['end'], __( 'Sueldos / Pagos a Usuarios', 'aura-suite' ) ];
     }
 
     // ─── Cron: Reportes Programados ───────────────────────────────────────────
@@ -1220,9 +1220,9 @@ class Aura_Financial_Reports {
             $to = is_array( $schedule['emails'] ) ? $schedule['emails'] : [ $schedule['emails'] ];
             wp_mail(
                 $to,
-                '[Aura Suite] Reporte Automático: ' . ( $schedule['name'] ?? $schedule['report_type'] ),
+                sprintf( __( '[Aura Suite] Reporte Automático: %s', 'aura-suite' ), $schedule['name'] ?? $schedule['report_type'] ),
                 sprintf(
-                    '<p>Estimado equipo,</p><p>Se adjunta el reporte <strong>%s</strong> generado automáticamente por <em>Aura Business Suite</em> para el período %s – %s.</p>',
+                    __( '<p>Estimado equipo,</p><p>Se adjunta el reporte <strong>%s</strong> generado automáticamente por <em>Aura Business Suite</em> para el período %s – %s.</p>', 'aura-suite' ),
                     esc_html( $schedule['name'] ?? $schedule['report_type'] ),
                     esc_html( $params['start'] ),
                     esc_html( $params['end'] )

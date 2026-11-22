@@ -573,7 +573,7 @@ $can_delete = current_user_can( 'aura_forms_delete' ) || current_user_can( 'mana
                 }
             } )
             .fail( function () {
-                alert( 'Error de red.' );
+                alert( <?php echo wp_json_encode( __( 'Error de red.', 'aura-suite' ) ); ?> );
                 $btn.prop( 'disabled', false );
             } );
     } );
@@ -623,7 +623,7 @@ $can_delete = current_user_can( 'aura_forms_delete' ) || current_user_can( 'mana
             $( '#aura-bulk-apply' ).prop( 'disabled', false );
         } )
         .fail( function () {
-            alert( 'Error de red.' );
+            alert( <?php echo wp_json_encode( __( 'Error de red.', 'aura-suite' ) ); ?> );
             $( '#aura-bulk-apply' ).prop( 'disabled', false );
         } );
     } );

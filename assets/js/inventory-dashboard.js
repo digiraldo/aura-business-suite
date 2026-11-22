@@ -6,6 +6,17 @@
 (function ($) {
     'use strict';
 
+    function __( s, domain ) {
+        return ( window.wp && wp.i18n && typeof wp.i18n.__ === 'function' ) ? wp.i18n.__( s, domain || 'aura-suite' ) : s;
+    }
+    function sprintf( fmt ) {
+        if ( window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function' ) {
+            return wp.i18n.sprintf.apply( wp.i18n, arguments );
+        }
+        var args = Array.prototype.slice.call( arguments, 1 ), i = 0;
+        return String( fmt ).replace( /%[sd]/g, function () { return args[ i++ ]; } );
+    }
+
     var InventoryDashboard = {
 
         cfg: null,
@@ -125,12 +136,12 @@
             self.doAjax('aura_inventory_dashboard_status_chart', {}, function (res) {
                 spinner.hide();
                 if (!res.success) {
-                    wrap.html('<p class="aura-dash-empty">' + (res.data || 'Error') + '</p>');
+                    wrap.html('<p class="aura-dash-empty">' + (res.data || __('Error', 'aura-suite')) + '</p>');
                     return;
                 }
                 var d = res.data;
                 if (!d.series || !d.series.length) {
-                    wrap.html('<p class="aura-dash-empty">' + (self.cfg.txt.no_data || 'Sin datos') + '</p>');
+                    wrap.html('<p class="aura-dash-empty">' + (self.cfg.txt.no_data || __('Sin datos', 'aura-suite')) + '</p>');
                     return;
                 }
 
@@ -156,7 +167,7 @@
                                     show: true,
                                     total: {
                                         show: true,
-                                        label: self.cfg.txt.total || 'Total',
+                                        label: self.cfg.txt.total || __('Total', 'aura-suite'),
                                         color: txtColor,
                                         fontSize: '14px',
                                         fontWeight: 600
@@ -166,7 +177,7 @@
                         }
                     },
                     tooltip: {
-                        y: { formatter: function (v) { return v + ' ' + (self.cfg.txt.units || 'equipos'); } }
+                        y: { formatter: function (v) { return v + ' ' + (self.cfg.txt.units || __('equipos', 'aura-suite')); } }
                     },
                     responsive: [{
                         breakpoint: 480,
@@ -189,12 +200,12 @@
             self.doAjax('aura_inventory_dashboard_cost_chart', { period: period }, function (res) {
                 spinner.hide();
                 if (!res.success) {
-                    wrap.html('<p class="aura-dash-empty">' + (res.data || 'Error') + '</p>');
+                    wrap.html('<p class="aura-dash-empty">' + (res.data || __('Error', 'aura-suite')) + '</p>');
                     return;
                 }
                 var d = res.data;
                 if (!d.categories || !d.categories.length) {
-                    wrap.html('<p class="aura-dash-empty">' + (self.cfg.txt.no_data || 'Sin datos') + '</p>');
+                    wrap.html('<p class="aura-dash-empty">' + (self.cfg.txt.no_data || __('Sin datos', 'aura-suite')) + '</p>');
                     return;
                 }
 
@@ -212,7 +223,7 @@
                     theme:  { mode: dark ? 'dark' : 'light' },
                     grid:   { borderColor: gridColor },
                     series: [{
-                        name: self.cfg.txt.cost_title || 'Costo total',
+                        name: self.cfg.txt.cost_title || __('Costo total', 'aura-suite'),
                         data: d.series
                     }],
                     xaxis:  {
@@ -241,7 +252,7 @@
                     tooltip: {
                         y: {
                             formatter: function (v, opts) {
-                                var cnt = d.counts && d.counts[opts.dataPointIndex] ? ' (' + d.counts[opts.dataPointIndex] + ' ' + (self.cfg.txt.events || 'registros') + ')' : '';
+                                var cnt = d.counts && d.counts[opts.dataPointIndex] ? ' (' + d.counts[opts.dataPointIndex] + ' ' + (self.cfg.txt.events || __('registros', 'aura-suite')) + ')' : '';
                                 return currency + ' ' + Number(v).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + cnt;
                             }
                         }
@@ -267,12 +278,12 @@
             self.doAjax('aura_inventory_dashboard_calendar', {}, function (res) {
                 $('#aura-dash-cal-spinner').hide();
                 if (!res.success) {
-                    wrap.html('<p class="aura-dash-empty">' + (res.data || 'Error') + '</p>');
+                    wrap.html('<p class="aura-dash-empty">' + (res.data || __('Error', 'aura-suite')) + '</p>');
                     return;
                 }
                 var items = res.data;
                 if (!items || !items.length) {
-                    wrap.html('<div class="empty-card"><span class="empty-icon">📅</span><p>' + (self.cfg.txt.cal_empty || 'Sin eventos próximos.') + '</p></div>');
+                    wrap.html('<div class="empty-card"><span class="empty-icon">📅</span><p>' + (self.cfg.txt.cal_empty || __('Sin eventos próximos.', 'aura-suite')) + '</p></div>');
                     return;
                 }
 
@@ -288,10 +299,10 @@
         renderCalendarItem: function (item) {
             var t = this.cfg.txt || {};
             var levelLabels = {
-                overdue: t.overdue || 'Vencido',
-                urgent:  t.urgent  || 'Urgente',
-                warning: t.warning || 'Próximo',
-                ok:      t.ok      || 'Planificado'
+                overdue: t.overdue || __('Vencido', 'aura-suite'),
+                urgent:  t.urgent  || __('Urgente', 'aura-suite'),
+                warning: t.warning || __('Próximo', 'aura-suite'),
+                ok:      t.ok      || __('Planificado', 'aura-suite')
             };
             var badgeMap = {
                 overdue: 'badge-red',
@@ -303,11 +314,11 @@
             var bClass = badgeMap[item.level] || 'badge-slate';
             var escapedName = $('<div>').text(item.name || '').html();
             var actionHtml = item.maint_url
-                ? '<a href="' + item.maint_url + '" class="btn btn-glass btn-sm btn-lift" data-tooltip="Ir a registrar mantenimiento">' + (t.register_maint || 'Registrar') + '</a>'
+                ? '<a href="' + item.maint_url + '" class="btn btn-glass btn-sm btn-lift" data-tooltip="' + __('Ir a registrar mantenimiento', 'aura-suite') + '">' + (t.register_maint || __('Registrar', 'aura-suite')) + '</a>'
                 : '';
 
             return '<li class="aura-dash-calendar-item ' + item.level + '">' +
-                '<span class="badge ' + bClass + '" data-tooltip="Prioridad: ' + label + '">' + label + '</span>' +
+                '<span class="badge ' + bClass + '" data-tooltip="' + sprintf(__('Prioridad: %s', 'aura-suite'), label) + '">' + label + '</span>' +
                 '<span class="aura-dash-cal-name" data-tooltip="' + escapedName + '">' + escapedName + '</span>' +
                 '<span class="aura-dash-cal-date">📅 ' + (item.next_maintenance_date || '—') + '</span>' +
                 actionHtml +
@@ -323,7 +334,7 @@
             self.doAjax('aura_inventory_dashboard_critical_list', {}, function (res) {
                 $('#aura-dash-crit-spinner').hide();
                 if (!res.success) {
-                    wrap.html('<p class="aura-dash-empty">' + (res.data || 'Error') + '</p>');
+                    wrap.html('<p class="aura-dash-empty">' + (res.data || __('Error', 'aura-suite')) + '</p>');
                     return;
                 }
                 var d     = res.data;
@@ -332,7 +343,7 @@
                             (!d.overdue_loans || !d.overdue_loans.length);
 
                 if (empty) {
-                    wrap.html('<div class="empty-card"><span class="empty-icon">✅</span><p>' + (self.cfg.txt.no_critical || 'Sin equipos críticos actualmente.') + '</p></div>');
+                    wrap.html('<div class="empty-card"><span class="empty-icon">✅</span><p>' + (self.cfg.txt.no_critical || __('Sin equipos críticos actualmente.', 'aura-suite')) + '</p></div>');
                     return;
                 }
 
@@ -357,9 +368,9 @@
             var self     = this;
             var t2 = this.cfg.txt || {};
             var titles   = {
-                overdue_maint: t2.crit_overdue || 'Mantenimiento vencido',
-                in_repair:     t2.crit_repair  || 'En reparación',
-                overdue_loans: t2.crit_loan    || 'Préstamo vencido'
+                overdue_maint: t2.crit_overdue || __('Mantenimiento vencido', 'aura-suite'),
+                in_repair:     t2.crit_repair  || __('En reparación', 'aura-suite'),
+                overdue_loans: t2.crit_loan    || __('Préstamo vencido', 'aura-suite')
             };
             var badgeCls = (type === 'overdue_loans') ? 'badge-amber' : 'badge-red';
             var title    = titles[type] || type;
@@ -379,7 +390,7 @@
                     sub = '<span class="aura-dash-sub">👤 ' + $('<div>').text(item.borrower).html() + '</span>';
                 }
                 html += '<li>' +
-                    '<a href="' + editUrl + '" data-tooltip="Ver o editar equipo: ' + escapedName + '">' + escapedName + '</a>' +
+                    '<a href="' + editUrl + '" data-tooltip="' + sprintf(__('Ver o editar equipo: %s', 'aura-suite'), escapedName) + '">' + escapedName + '</a>' +
                     sub +
                     '</li>';
             });

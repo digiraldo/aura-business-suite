@@ -455,7 +455,7 @@ $nonce      = wp_create_nonce( 'aura_students_nonce' );
     function fmt(n){ return '$' + parseFloat(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
 
     function badgeType(type) {
-        const labels = { none: '—', internal: '🏫 Interna', external: '🤝 Externa' };
+        const labels = { none: '—', internal: '<?php echo esc_js( __( '🏫 Interna', 'aura-suite' ) ); ?>', external: '<?php echo esc_js( __( '🤝 Externa', 'aura-suite' ) ); ?>' };
         const cls    = { none: 'neutral', internal: 'primary', external: 'info' };
         return `<span class="aura-badge aura-badge-${cls[type]||'neutral'}">${labels[type]||type}</span>`;
     }
@@ -466,7 +466,7 @@ $nonce      = wp_create_nonce( 'aura_students_nonce' );
     }
 
     function statusLabel(st) {
-        const m = { paid:'✅ Pagado', partial:'🔶 Parcial', unpaid:'⬜ Sin pagar', overdue:'🔴 Vencido' };
+        const m = { paid:'<?php echo esc_js( __( '✅ Pagado', 'aura-suite' ) ); ?>', partial:'<?php echo esc_js( __( '🔶 Parcial', 'aura-suite' ) ); ?>', unpaid:'<?php echo esc_js( __( '⬜ Sin pagar', 'aura-suite' ) ); ?>', overdue:'<?php echo esc_js( __( '🔴 Vencido', 'aura-suite' ) ); ?>' };
         return m[st] || st;
     }
 
@@ -476,7 +476,7 @@ $nonce      = wp_create_nonce( 'aura_students_nonce' );
         currentPage = page;
 
         const tbody = $('#becas-tbody');
-        tbody.html(`<tr><td colspan="${COLS}" style="text-align:center;padding:30px;"><span class="spinner is-active" style="float:none;margin:0 8px 0 0;"></span>Cargando…</td></tr>`);
+        tbody.html(`<tr><td colspan="${COLS}" style="text-align:center;padding:30px;"><span class="spinner is-active" style="float:none;margin:0 8px 0 0;"></span><?php echo esc_js( __( 'Cargando…', 'aura-suite' ) ); ?></td></tr>`);
         $('#becas-pagination').hide();
 
         $.post(AJAX_URL, {
@@ -490,13 +490,13 @@ $nonce      = wp_create_nonce( 'aura_students_nonce' );
             page     : page,
         }, function (res) {
             if (!res.success) {
-                tbody.html(`<tr><td colspan="${COLS}" style="text-align:center;padding:30px;color:#ef4444;">${res.data?.message||'Error'}</td></tr>`);
+                tbody.html(`<tr><td colspan="${COLS}" style="text-align:center;padding:30px;color:#ef4444;">${res.data?.message||'<?php echo esc_js( __( 'Error', 'aura-suite' ) ); ?>'}</td></tr>`);
                 return;
             }
             const { rows, total, total_pages } = res.data;
 
             if (!rows.length) {
-                tbody.html(`<tr><td colspan="${COLS}" style="text-align:center;padding:30px;color:var(--aura-text-muted,#6b7280);">Sin resultados.</td></tr>`);
+                tbody.html(`<tr><td colspan="${COLS}" style="text-align:center;padding:30px;color:var(--aura-text-muted,#6b7280);"><?php echo esc_js( __( 'Sin resultados.', 'aura-suite' ) ); ?></td></tr>`);
                 return;
             }
 
@@ -509,7 +509,7 @@ $nonce      = wp_create_nonce( 'aura_students_nonce' );
                     ? `<td class="col-center" style="text-align:center;">
                          <div class="aura-row-actions" style="justify-content:center;">
                              <button class="aura-btn-action-icon btn-edit-sch"
-                                     data-id="${r.enrollment_id}" title="Editar beca"><i class="dashicons dashicons-edit"></i></button>
+                                     data-id="${r.enrollment_id}" title="<?php echo esc_attr__( 'Editar beca', 'aura-suite' ); ?>"><i class="dashicons dashicons-edit"></i></button>
                          </div>
                        </td>`
                     : '';
@@ -594,14 +594,14 @@ $nonce      = wp_create_nonce( 'aura_students_nonce' );
                 enrollment_id: enrollmentId,
             }, function (res) {
                 if (!res.success) {
-                    alert(res.data?.message || 'Error al cargar la inscripción');
+                    alert(res.data?.message || '<?php echo esc_js( __( 'Error al cargar la inscripción', 'aura-suite' ) ); ?>');
                     return;
                 }
                 const d = res.data;
                 $('#modal-sch-title').text(
                     d.scholarship_type && d.scholarship_type !== 'none'
-                        ? 'Editar Beca'
-                        : 'Asignar Beca'
+                        ? '<?php echo esc_js( __( 'Editar Beca', 'aura-suite' ) ); ?>'
+                        : '<?php echo esc_js( __( 'Asignar Beca', 'aura-suite' ) ); ?>'
                 );
                 $('#sch-enrollment-id').val(d.id);
                 $('#sch-base-cost').val(d.base_cost);
@@ -678,7 +678,7 @@ $nonce      = wp_create_nonce( 'aura_students_nonce' );
 
         // Guardar beca
         $('#btn-save-scholarship').on('click', function () {
-            const btn = $(this).prop('disabled', true).text('Guardando…');
+            const btn = $(this).prop('disabled', true).text('<?php echo esc_js( __( 'Guardando…', 'aura-suite' ) ); ?>');
 
             $.post(AJAX_URL, {
                 action            : 'aura_students_assign_scholarship',
@@ -689,9 +689,9 @@ $nonce      = wp_create_nonce( 'aura_students_nonce' );
                 scholarship_sponsor: $('#sch-sponsor').val(),
                 scholarship_notes : $('#sch-notes').val(),
             }, function (res) {
-                btn.prop('disabled', false).html('💾 Guardar beca');
+                btn.prop('disabled', false).html('<?php echo esc_js( __( '💾 Guardar beca', 'aura-suite' ) ); ?>');
                 if (!res.success) {
-                    alert(res.data?.message || 'Error al guardar');
+                    alert(res.data?.message || '<?php echo esc_js( __( 'Error al guardar', 'aura-suite' ) ); ?>');
                     return;
                 }
                 $('#modal-scholarship').fadeOut(150);

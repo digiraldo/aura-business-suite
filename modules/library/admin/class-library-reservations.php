@@ -44,7 +44,7 @@ class Aura_Library_Reservations {
         $can = current_user_can( 'aura_library_view_loans_all' )
             || current_user_can( 'manage_options' );
         if ( ! $can ) {
-            wp_die( esc_html__( 'No tienes permisos para ver esta página.', 'aura-business-suite' ) );
+            wp_die( esc_html__( 'No tienes permisos para ver esta página.', 'aura-suite' ) );
         }
         include AURA_PLUGIN_DIR . 'templates/library/reservations-list.php';
     }
@@ -57,7 +57,7 @@ class Aura_Library_Reservations {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_view_loans_all' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ], 403 );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ], 403 );
         }
 
         global $wpdb;
@@ -149,7 +149,7 @@ class Aura_Library_Reservations {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_loan_create' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para reservar.', 'aura-business-suite' ) ], 403 );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para reservar.', 'aura-suite' ) ], 403 );
         }
 
         global $wpdb;
@@ -159,7 +159,7 @@ class Aura_Library_Reservations {
         $notes   = sanitize_textarea_field( $_POST['notes'] ?? '' );
 
         if ( ! $book_id ) {
-            wp_send_json_error( [ 'message' => __( 'Libro no válido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Libro no válido.', 'aura-suite' ) ] );
         }
 
         $t_books = $wpdb->prefix . 'aura_library_books';
@@ -172,11 +172,11 @@ class Aura_Library_Reservations {
         ) );
 
         if ( ! $book ) {
-            wp_send_json_error( [ 'message' => __( 'Libro no encontrado.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Libro no encontrado.', 'aura-suite' ) ] );
         }
 
         if ( $book->status === 'reference_only' ) {
-            wp_send_json_error( [ 'message' => __( 'Este libro es de solo consulta y no puede reservarse.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Este libro es de solo consulta y no puede reservarse.', 'aura-suite' ) ] );
         }
 
         // Verificar que no tenga ya una reserva activa para este libro
@@ -187,7 +187,7 @@ class Aura_Library_Reservations {
         ) );
 
         if ( $existing ) {
-            wp_send_json_error( [ 'message' => __( 'Ya tienes una reserva activa para este libro.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Ya tienes una reserva activa para este libro.', 'aura-suite' ) ] );
         }
 
         // Calcular fecha de expiración (días configurables, default 7)
@@ -206,7 +206,7 @@ class Aura_Library_Reservations {
         ], [ '%d', '%d', '%s', '%s', '%s', '%s' ] );
 
         if ( ! $inserted ) {
-            wp_send_json_error( [ 'message' => __( 'Error al crear la reserva.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Error al crear la reserva.', 'aura-suite' ) ] );
         }
 
         $reservation_id = (int) $wpdb->insert_id;
@@ -227,7 +227,7 @@ class Aura_Library_Reservations {
             'queue_position' => $queue_pos,
             'message'        => sprintf(
                 /* translators: %d queue position number */
-                __( 'Reserva creada. Estás en la posición %d de la cola.', 'aura-business-suite' ),
+                __( 'Reserva creada. Estás en la posición %d de la cola.', 'aura-suite' ),
                 $queue_pos
             ),
         ] );
@@ -245,7 +245,7 @@ class Aura_Library_Reservations {
 
         $reservation_id = absint( $_POST['reservation_id'] ?? 0 );
         if ( ! $reservation_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de reserva no válido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de reserva no válido.', 'aura-suite' ) ] );
         }
 
         $res = $wpdb->get_row( $wpdb->prepare(
@@ -254,18 +254,18 @@ class Aura_Library_Reservations {
         ) );
 
         if ( ! $res ) {
-            wp_send_json_error( [ 'message' => __( 'Reserva no encontrada.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Reserva no encontrada.', 'aura-suite' ) ] );
         }
 
         // Solo puede cancelar el propio usuario o un admin/bibliotecario
         $is_own   = (int) $res->user_id === get_current_user_id();
         $can_all  = current_user_can( 'aura_library_view_loans_all' ) || current_user_can( 'manage_options' );
         if ( ! $is_own && ! $can_all ) {
-            wp_send_json_error( [ 'message' => __( 'No puedes cancelar esta reserva.', 'aura-business-suite' ) ], 403 );
+            wp_send_json_error( [ 'message' => __( 'No puedes cancelar esta reserva.', 'aura-suite' ) ], 403 );
         }
 
         if ( ! in_array( $res->status, [ 'waiting', 'notified' ], true ) ) {
-            wp_send_json_error( [ 'message' => __( 'Esta reserva no puede cancelarse.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Esta reserva no puede cancelarse.', 'aura-suite' ) ] );
         }
 
         $wpdb->update( $t_res,
@@ -278,7 +278,7 @@ class Aura_Library_Reservations {
         self::log_audit( get_current_user_id(), 'cancel_reservation', 'reservation', $reservation_id,
             wp_json_encode( [ 'status' => $res->status ] ), wp_json_encode( [ 'status' => 'cancelled' ] ) );
 
-        wp_send_json_success( [ 'message' => __( 'Reserva cancelada.', 'aura-business-suite' ) ] );
+        wp_send_json_success( [ 'message' => __( 'Reserva cancelada.', 'aura-suite' ) ] );
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -294,7 +294,7 @@ class Aura_Library_Reservations {
 
         $id = absint( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID no válido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID no válido.', 'aura-suite' ) ] );
         }
 
         $res = $wpdb->get_row( $wpdb->prepare(
@@ -309,14 +309,14 @@ class Aura_Library_Reservations {
         ) );
 
         if ( ! $res ) {
-            wp_send_json_error( [ 'message' => __( 'Reserva no encontrada.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Reserva no encontrada.', 'aura-suite' ) ] );
         }
 
         // Verificar permiso
         $is_own  = (int) $res->user_id === get_current_user_id();
         $can_all = current_user_can( 'aura_library_view_loans_all' ) || current_user_can( 'manage_options' );
         if ( ! $is_own && ! $can_all ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ], 403 );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ], 403 );
         }
 
         // Posición en la cola
@@ -498,17 +498,17 @@ class Aura_Library_Reservations {
 
         $subject = sprintf(
             /* translators: 1: book title, 2: site name */
-            __( '[%2$s] El libro "%1$s" ya está disponible para ti', 'aura-business-suite' ),
+            __( '[%2$s] El libro "%1$s" ya está disponible para ti', 'aura-suite' ),
             $title,
             $site_name
         );
 
         $body = sprintf(
             /* translators: 1: user name, 2: book title, 3: expiry date */
-            __( 'Hola %1$s,\n\nEl libro "%2$s" que reservaste ya está disponible. Tienes hasta el %3$s para retirarlo, de lo contrario la reserva se cancelará automáticamente.\n\nGracias.', 'aura-business-suite' ),
+            __( 'Hola %1$s,\n\nEl libro "%2$s" que reservaste ya está disponible. Tienes hasta el %3$s para retirarlo, de lo contrario la reserva se cancelará automáticamente.\n\nGracias.', 'aura-suite' ),
             $reservation->display_name,
             $title,
-            $exp_str ?: __( 'próximamente', 'aura-business-suite' )
+            $exp_str ?: __( 'próximamente', 'aura-suite' )
         );
 
         // Usar el sistema de notificaciones global si está disponible

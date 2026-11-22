@@ -72,15 +72,15 @@ class Aura_Students_Notifications {
         $subject     = sprintf( __( '[%s] Nueva solicitud de %s', 'aura-suite' ), $site_name, $full_name );
 
         $body = self::email_html(
-            '🎓 Nueva Solicitud de Inscripción',
+            __( '🎓 Nueva Solicitud de Inscripción', 'aura-suite' ),
             sprintf(
-                '<p>Se ha recibido una nueva solicitud en el portal.</p>
-                <div class="data-row"><span class="data-label">Nombre:</span> %s</div>
-                <div class="data-row"><span class="data-label">Email:</span> %s</div>
-                <div class="data-row"><span class="data-label">Perfil:</span> %s</div>
-                <div class="data-row"><span class="data-label">Fecha:</span> %s</div>
+                '<p>' . __( 'Se ha recibido una nueva solicitud en el portal.', 'aura-suite' ) . '</p>
+                <div class="data-row"><span class="data-label">' . __( 'Nombre:', 'aura-suite' ) . '</span> %s</div>
+                <div class="data-row"><span class="data-label">' . __( 'Email:', 'aura-suite' ) . '</span> %s</div>
+                <div class="data-row"><span class="data-label">' . __( 'Perfil:', 'aura-suite' ) . '</span> %s</div>
+                <div class="data-row"><span class="data-label">' . __( 'Fecha:', 'aura-suite' ) . '</span> %s</div>
                 <p style="margin-top:20px;">
-                    <a href="%s" class="button">Revisar Solicitud</a>
+                    <a href="%s" class="button">' . __( 'Revisar Solicitud', 'aura-suite' ) . '</a>
                 </p>',
                 $full_name,
                 esc_html( $student->email ),
@@ -136,27 +136,27 @@ class Aura_Students_Notifications {
         $subject    = sprintf( __( '[%s] ¡Tu solicitud ha sido aprobada!', 'aura-suite' ), $site_name );
 
         $body = self::email_html(
-            '✅ Solicitud Aprobada',
+            __( '✅ Solicitud Aprobada', 'aura-suite' ),
             sprintf(
-                '<p>Hola <strong>%s</strong>,</p>
-                <p>¡Nos complace informarte que tu solicitud ha sido <span style="color:#10b981;font-weight:700;">aprobada</span>!</p>
-                <p>A continuación encontrarás tus datos de acceso al portal:</p>
+                '<p>' . __( 'Hola <strong>%s</strong>,', 'aura-suite' ) . '</p>
+                <p>' . __( '¡Nos complace informarte que tu solicitud ha sido <span style="color:#10b981;font-weight:700;">aprobada</span>!', 'aura-suite' ) . '</p>
+                <p>' . __( 'A continuación encontrarás tus datos de acceso al portal:', 'aura-suite' ) . '</p>
                 <div class="card" style="background:#f5f3ff;border-left:4px solid #8b5cf6;">
-                    <div class="data-row"><span class="data-label">Usuario / Email:</span> %s</div>
-                    <div class="data-row"><span class="data-label">Contraseña temporal:</span> <code style="background:#ede9fe;padding:2px 6px;border-radius:4px;">%s</code></div>
+                    <div class="data-row"><span class="data-label">' . __( 'Usuario / Email:', 'aura-suite' ) . '</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Contraseña temporal:', 'aura-suite' ) . '</span> <code style="background:#ede9fe;padding:2px 6px;border-radius:4px;">%s</code></div>
                 </div>
-                <p>Por seguridad, te recomendamos cambiar tu contraseña al ingresar por primera vez.</p>
+                <p>' . __( 'Por seguridad, te recomendamos cambiar tu contraseña al ingresar por primera vez.', 'aura-suite' ) . '</p>
                 %s
                 <p style="margin-top:20px;">
-                    <a href="%s" class="button">Acceder al Portal</a>
+                    <a href="%s" class="button">' . __( 'Acceder al Portal', 'aura-suite' ) . '</a>
                 </p>
                 <p style="margin-top:16px;font-size:13px;color:#6b7280;">
-                    Si tienes dudas, responde este correo o contáctanos directamente.
+                    ' . __( 'Si tienes dudas, responde este correo o contáctanos directamente.', 'aura-suite' ) . '
                 </p>',
                 $full_name,
                 esc_html( $student->email ),
                 esc_html( $password ),
-                $portal_url ? sprintf( '<p><strong>URL del portal:</strong> <a href="%s">%s</a></p>', esc_url( $portal_url ), esc_url( $portal_url ) ) : '',
+                $portal_url ? sprintf( '<p><strong>' . __( 'URL del portal:', 'aura-suite' ) . '</strong> <a href="%s">%s</a></p>', esc_url( $portal_url ), esc_url( $portal_url ) ) : '',
                 esc_url( $login_url ?: wp_login_url() )
             )
         );
@@ -192,20 +192,20 @@ class Aura_Students_Notifications {
         $reason_block = $reason
             ? sprintf(
                 '<div class="card" style="background:#fff5f5;border-left:4px solid #dc2626;">
-                    <p><strong>Motivo:</strong> %s</p>
+                    <p><strong>' . __( 'Motivo:', 'aura-suite' ) . '</strong> %s</p>
                  </div>',
                 esc_html( $reason )
             )
             : '';
 
         $body = self::email_html(
-            '📋 Resultado de tu Solicitud',
+            __( '📋 Resultado de tu Solicitud', 'aura-suite' ),
             sprintf(
-                '<p>Hola <strong>%s</strong>,</p>
-                <p>Gracias por tu interés en <strong>%s</strong>.</p>
-                <p>Lamentablemente, en esta ocasión tu solicitud <span style="color:#dc2626;font-weight:700;">no ha sido aprobada</span>.</p>
+                '<p>' . __( 'Hola <strong>%s</strong>,', 'aura-suite' ) . '</p>
+                <p>' . __( 'Gracias por tu interés en <strong>%s</strong>.', 'aura-suite' ) . '</p>
+                <p>' . __( 'Lamentablemente, en esta ocasión tu solicitud <span style="color:#dc2626;font-weight:700;">no ha sido aprobada</span>.', 'aura-suite' ) . '</p>
                 %s
-                <p>Si crees que hay un error o deseas más información, no dudes en contactarnos.</p>',
+                <p>' . __( 'Si crees que hay un error o deseas más información, no dudes en contactarnos.', 'aura-suite' ) . '</p>',
                 $full_name,
                 esc_html( $site_name ),
                 $reason_block
@@ -261,29 +261,29 @@ class Aura_Students_Notifications {
 
         $scholarship_block = $row->scholarship_pct > 0
             ? sprintf(
-                '<div class="data-row"><span class="data-label">Beca:</span> %d%% (%s)</div>',
+                '<div class="data-row"><span class="data-label">' . __( 'Beca:', 'aura-suite' ) . '</span> %d%% (%s)</div>',
                 $row->scholarship_pct,
                 esc_html( $row->scholarship_type === 'external' ? __( 'Externa', 'aura-suite' ) : __( 'Interna', 'aura-suite' ) )
             )
             : '';
 
         $body = self::email_html(
-            '🎓 Inscripción Confirmada',
+            __( '🎓 Inscripción Confirmada', 'aura-suite' ),
             sprintf(
-                '<p>Hola <strong>%s</strong>,</p>
-                <p>Tu inscripción ha sido <span style="color:#10b981;font-weight:700;">confirmada</span>. Aquí están los detalles:</p>
+                '<p>' . __( 'Hola <strong>%s</strong>,', 'aura-suite' ) . '</p>
+                <p>' . __( 'Tu inscripción ha sido <span style="color:#10b981;font-weight:700;">confirmada</span>. Aquí están los detalles:', 'aura-suite' ) . '</p>
                 <div class="card">
                     %s
-                    <div class="data-row"><span class="data-label">Curso:</span> %s</div>
-                    <div class="data-row"><span class="data-label">Inicio:</span> %s</div>
-                    <div class="data-row"><span class="data-label">Costo neto:</span> %s %s</div>
-                    <div class="data-row"><span class="data-label">Esquema:</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Curso:', 'aura-suite' ) . '</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Inicio:', 'aura-suite' ) . '</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Costo neto:', 'aura-suite' ) . '</span> %s %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Esquema:', 'aura-suite' ) . '</span> %s</div>
                     %s
                 </div>
                 %s
-                <p>¡Nos vemos pronto!</p>',
+                <p>' . __( '¡Nos vemos pronto!', 'aura-suite' ) . '</p>',
                 $full_name,
-                $row->area_name ? sprintf( '<div class="data-row"><span class="data-label">Área/Programa:</span> %s</div>', esc_html( $row->area_name ) ) : '',
+                $row->area_name ? sprintf( '<div class="data-row"><span class="data-label">' . __( 'Área/Programa:', 'aura-suite' ) . '</span> %s</div>', esc_html( $row->area_name ) ) : '',
                 esc_html( $row->course_name ),
                 $row->start_date ? esc_html( date_i18n( get_option( 'date_format' ), strtotime( $row->start_date ) ) ) : __( 'Por confirmar', 'aura-suite' ),
                 esc_html( number_format( (float) $row->net_cost, 2 ) ),
@@ -291,7 +291,7 @@ class Aura_Students_Notifications {
                 esc_html( $scheme_text ),
                 $scholarship_block,
                 $portal_url ? sprintf(
-                    '<p style="margin-top:20px;"><a href="%s" class="button">Ver mi Portal</a></p>',
+                    '<p style="margin-top:20px;"><a href="%s" class="button">' . __( 'Ver mi Portal', 'aura-suite' ) . '</a></p>',
                     esc_url( $portal_url )
                 ) : ''
             )
@@ -367,33 +367,33 @@ class Aura_Students_Notifications {
             : '<p style="color:#10b981;"><strong>✅ ' . __( '¡Pago completo! No tienes saldo pendiente.', 'aura-suite' ) . '</strong></p>';
 
         $receipt_block = $row->receipt_url
-            ? sprintf( '<div class="data-row"><span class="data-label">Comprobante:</span> <a href="%s">%s</a></div>',
+            ? sprintf( '<div class="data-row"><span class="data-label">' . __( 'Comprobante:', 'aura-suite' ) . '</span> <a href="%s">%s</a></div>',
                 esc_url( $row->receipt_url ), __( 'Descargar', 'aura-suite' ) )
             : '';
 
         $body = self::email_html(
-            '💰 Pago Recibido',
+            __( '💰 Pago Recibido', 'aura-suite' ),
             sprintf(
-                '<p>Hola <strong>%s</strong>,</p>
-                <p>Hemos registrado tu pago. Aquí está el resumen:</p>
+                '<p>' . __( 'Hola <strong>%s</strong>,', 'aura-suite' ) . '</p>
+                <p>' . __( 'Hemos registrado tu pago. Aquí está el resumen:', 'aura-suite' ) . '</p>
                 <div class="card">
-                    <div class="data-row"><span class="data-label">Curso:</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Curso:', 'aura-suite' ) . '</span> %s</div>
                     %s
-                    <div class="data-row"><span class="data-label">Fecha:</span> %s</div>
-                    <div class="data-row"><span class="data-label">Monto pagado:</span> <strong>%s %s</strong></div>
-                    <div class="data-row"><span class="data-label">Método:</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Fecha:', 'aura-suite' ) . '</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Monto pagado:', 'aura-suite' ) . '</span> <strong>%s %s</strong></div>
+                    <div class="data-row"><span class="data-label">' . __( 'Método:', 'aura-suite' ) . '</span> %s</div>
                     %s
                     %s
                 </div>
                 %s',
                 $full_name,
                 esc_html( $row->course_name ),
-                $row->installment_num ? sprintf( '<div class="data-row"><span class="data-label">Cuota #:</span> %d</div>', $row->installment_num ) : '',
+                $row->installment_num ? sprintf( '<div class="data-row"><span class="data-label">' . __( 'Cuota #:', 'aura-suite' ) . '</span> %d</div>', $row->installment_num ) : '',
                 esc_html( date_i18n( get_option( 'date_format' ), strtotime( $row->payment_date ) ) ),
                 esc_html( number_format( (float) $row->amount, 2 ) ),
                 esc_html( $currency ),
                 esc_html( $method_label ),
-                $row->reference_number ? sprintf( '<div class="data-row"><span class="data-label">Referencia:</span> %s</div>', esc_html( $row->reference_number ) ) : '',
+                $row->reference_number ? sprintf( '<div class="data-row"><span class="data-label">' . __( 'Referencia:', 'aura-suite' ) . '</span> %s</div>', esc_html( $row->reference_number ) ) : '',
                 $receipt_block,
                 $balance_block
             )
@@ -422,17 +422,17 @@ class Aura_Students_Notifications {
         $settings  = get_option( 'aura_students_settings', [] );
 
         $body = self::email_html(
-            '⏰ Recordatorio de Pago',
+            __( '⏰ Recordatorio de Pago', 'aura-suite' ),
             sprintf(
-                '<p>Hola <strong>%s</strong>,</p>
-                <p>Este es un recordatorio amistoso: tienes una cuota que vence próximamente.</p>
+                '<p>' . __( 'Hola <strong>%s</strong>,', 'aura-suite' ) . '</p>
+                <p>' . __( 'Este es un recordatorio amistoso: tienes una cuota que vence próximamente.', 'aura-suite' ) . '</p>
                 <div class="card" style="background:#fff7ed;border-left:4px solid #f59e0b;">
-                    <div class="data-row"><span class="data-label">Curso:</span> %s</div>
-                    <div class="data-row"><span class="data-label">Cuota #:</span> %d</div>
-                    <div class="data-row"><span class="data-label">Vencimiento:</span> <strong>%s</strong></div>
-                    <div class="data-row"><span class="data-label">Monto:</span> <strong>%s %s</strong></div>
+                    <div class="data-row"><span class="data-label">' . __( 'Curso:', 'aura-suite' ) . '</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Cuota #:', 'aura-suite' ) . '</span> %d</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Vencimiento:', 'aura-suite' ) . '</span> <strong>%s</strong></div>
+                    <div class="data-row"><span class="data-label">' . __( 'Monto:', 'aura-suite' ) . '</span> <strong>%s %s</strong></div>
                 </div>
-                <p>Para evitar recargos, realiza tu pago antes de la fecha indicada.</p>
+                <p>' . __( 'Para evitar recargos, realiza tu pago antes de la fecha indicada.', 'aura-suite' ) . '</p>
                 %s',
                 $full_name,
                 esc_html( $installment->course_name ),
@@ -441,7 +441,7 @@ class Aura_Students_Notifications {
                 esc_html( number_format( (float) $installment->expected_amount, 2 ) ),
                 esc_html( $currency ),
                 self::get_portal_url( $settings ) ? sprintf(
-                    '<p style="margin-top:16px;"><a href="%s" class="button">Ver mi Portal de Pagos</a></p>',
+                    '<p style="margin-top:16px;"><a href="%s" class="button">' . __( 'Ver mi Portal de Pagos', 'aura-suite' ) . '</a></p>',
                     esc_url( self::get_portal_url( $settings ) )
                 ) : ''
             )
@@ -484,17 +484,17 @@ class Aura_Students_Notifications {
         // Email al estudiante
         $subject_student = sprintf( __( '[%s] Cuota vencida sin pago', 'aura-suite' ), $site_name );
         $body_student    = self::email_html(
-            '🔴 Cuota Vencida',
+            __( '🔴 Cuota Vencida', 'aura-suite' ),
             sprintf(
-                '<p>Hola <strong>%s</strong>,</p>
-                <p>La siguiente cuota está <span style="color:#dc2626;font-weight:700;">vencida</span> y aún no hemos recibido tu pago:</p>
+                '<p>' . __( 'Hola <strong>%s</strong>,', 'aura-suite' ) . '</p>
+                <p>' . __( 'La siguiente cuota está <span style="color:#dc2626;font-weight:700;">vencida</span> y aún no hemos recibido tu pago:', 'aura-suite' ) . '</p>
                 <div class="card" style="background:#fff5f5;border-left:4px solid #dc2626;">
-                    <div class="data-row"><span class="data-label">Curso:</span> %s</div>
-                    <div class="data-row"><span class="data-label">Cuota #:</span> %d</div>
-                    <div class="data-row"><span class="data-label">Fecha de vencimiento:</span> %s</div>
-                    <div class="data-row"><span class="data-label">Monto pendiente:</span> <strong>%s %s</strong></div>
+                    <div class="data-row"><span class="data-label">' . __( 'Curso:', 'aura-suite' ) . '</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Cuota #:', 'aura-suite' ) . '</span> %d</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Fecha de vencimiento:', 'aura-suite' ) . '</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Monto pendiente:', 'aura-suite' ) . '</span> <strong>%s %s</strong></div>
                 </div>
-                <p>Por favor, contáctanos a la brevedad para regularizar tu situación.</p>',
+                <p>' . __( 'Por favor, contáctanos a la brevedad para regularizar tu situación.', 'aura-suite' ) . '</p>',
                 $full_name,
                 esc_html( $installment->course_name ),
                 $installment->installment_num,
@@ -520,18 +520,18 @@ class Aura_Students_Notifications {
             $installment->course_name
         );
         $body_admin = self::email_html(
-            '🔴 Cuota Vencida sin Pago',
+            __( '🔴 Cuota Vencida sin Pago', 'aura-suite' ),
             sprintf(
-                '<p>La siguiente cuota está vencida y requiere atención:</p>
+                '<p>' . __( 'La siguiente cuota está vencida y requiere atención:', 'aura-suite' ) . '</p>
                 <div class="card">
-                    <div class="data-row"><span class="data-label">Estudiante:</span> %s (%s)</div>
-                    <div class="data-row"><span class="data-label">Curso:</span> %s</div>
-                    <div class="data-row"><span class="data-label">Cuota #:</span> %d</div>
-                    <div class="data-row"><span class="data-label">Venció el:</span> %s</div>
-                    <div class="data-row"><span class="data-label">Monto:</span> %s %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Estudiante:', 'aura-suite' ) . '</span> %s (%s)</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Curso:', 'aura-suite' ) . '</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Cuota #:', 'aura-suite' ) . '</span> %d</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Venció el:', 'aura-suite' ) . '</span> %s</div>
+                    <div class="data-row"><span class="data-label">' . __( 'Monto:', 'aura-suite' ) . '</span> %s %s</div>
                 </div>
                 <p style="margin-top:16px;">
-                    <a href="%s" class="button">Gestionar Pagos</a>
+                    <a href="%s" class="button">' . __( 'Gestionar Pagos', 'aura-suite' ) . '</a>
                 </p>',
                 esc_html( $full_name ),
                 esc_html( $student->email ),
@@ -611,20 +611,20 @@ class Aura_Students_Notifications {
         $settings  = get_option( 'aura_students_settings', [] );
 
         $body = self::email_html(
-            '🏅 ¡Felicitaciones!',
+            __( '🏅 ¡Felicitaciones!', 'aura-suite' ),
             sprintf(
-                '<p>Hola <strong>%s</strong>,</p>
-                <p style="font-size:18px;">🎉 ¡Has completado exitosamente <strong>%s</strong>!</p>
+                '<p>' . __( 'Hola <strong>%s</strong>,', 'aura-suite' ) . '</p>
+                <p style="font-size:18px;">' . __( '🎉 ¡Has completado exitosamente <strong>%s</strong>!', 'aura-suite' ) . '</p>
                 %s
-                <p>Tu dedicación y esfuerzo son un ejemplo para toda la comunidad de <strong>%s</strong>.</p>
-                <p>Pronto recibirás información sobre tu certificado/diploma.</p>
+                <p>' . __( 'Tu dedicación y esfuerzo son un ejemplo para toda la comunidad de <strong>%s</strong>.', 'aura-suite' ) . '</p>
+                <p>' . __( 'Pronto recibirás información sobre tu certificado/diploma.', 'aura-suite' ) . '</p>
                 %s',
                 $full_name,
                 esc_html( $row->course_name ),
-                $row->area_name ? sprintf( '<p><strong>Programa:</strong> %s</p>', esc_html( $row->area_name ) ) : '',
+                $row->area_name ? sprintf( '<p><strong>' . __( 'Programa:', 'aura-suite' ) . '</strong> %s</p>', esc_html( $row->area_name ) ) : '',
                 esc_html( $site_name ),
                 self::get_portal_url( $settings ) ? sprintf(
-                    '<p style="margin-top:20px;"><a href="%s" class="button">Ver mis Certificados</a></p>',
+                    '<p style="margin-top:20px;"><a href="%s" class="button">' . __( 'Ver mis Certificados', 'aura-suite' ) . '</a></p>',
                     esc_url( self::get_portal_url( $settings ) )
                 ) : ''
             )
@@ -809,7 +809,7 @@ class Aura_Students_Notifications {
     ' . $body . '
   </div>
   <div class="footer">
-    <p>Email automático de <strong>' . esc_html( $site_name ) . '</strong> · Aura Business Suite</p>
+    <p>' . sprintf( __( 'Email automático de <strong>%s</strong> · Aura Business Suite', 'aura-suite' ), esc_html( $site_name ) ) . '</p>
     <p>&copy; ' . gmdate( 'Y' ) . ' ' . esc_html( $site_name ) . '</p>
   </div>
 </div>

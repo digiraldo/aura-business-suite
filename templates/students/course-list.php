@@ -465,7 +465,7 @@ $can_manage = current_user_can( 'aura_students_courses_manage' ) || current_user
 
         $.each(data.courses, function(i, c){
             var cost = c.currency + ' ' + parseFloat(c.base_cost).toFixed(2);
-            var duration = c.duration_weeks ? c.duration_weeks + ' sem.' : '—';
+            var duration = c.duration_weeks ? c.duration_weeks + ' <?php echo esc_js( __( 'sem.', 'aura-suite' ) ); ?>' : '—';
             var badgeMap = { active: 'success', inactive: 'neutral', archived: 'danger' };
             var badge = '<span class="aura-badge aura-badge-'+(badgeMap[c.status] || 'neutral')+'">'+(statusLabels[c.status] || c.status)+'</span>';
             var actions = '<div class="aura-row-actions">';
@@ -591,7 +591,7 @@ $can_manage = current_user_can( 'aura_students_courses_manage' ) || current_user
                     '</div>' +
                     makeDI('<?php _e( "Área", "aura-suite" ); ?>', c.area_name) +
                     makeDI('<?php _e( "Instructor", "aura-suite" ); ?>', c.instructor_name) +
-                    makeDI('<?php _e( "Duración", "aura-suite" ); ?>', c.duration_weeks ? c.duration_weeks+' semanas' : '—') +
+                    makeDI('<?php _e( "Duración", "aura-suite" ); ?>', c.duration_weeks ? c.duration_weeks+' <?php echo esc_js( __( 'semanas', 'aura-suite' ) ); ?>' : '—') +
                     makeDI('<?php _e( "Máx. estudiantes", "aura-suite" ); ?>', c.max_students === 0 ? '<?php _e( "Sin límite", "aura-suite" ); ?>' : c.max_students) +
                     makeDI('<?php _e( "Costo base", "aura-suite" ); ?>', c.currency+' '+parseFloat(c.base_cost).toFixed(2)) +
                     makeDI('<?php _e( "Estado", "aura-suite" ); ?>', statusLabels[c.status]) +

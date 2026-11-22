@@ -78,6 +78,8 @@ class Aura_Business_Suite
         }
 
         // Módulos comunes
+        require_once AURA_PLUGIN_DIR . 'modules/common/class-aura-i18n.php';
+        Aura_I18n::init();
         require_once AURA_PLUGIN_DIR . 'modules/common/class-aura-ui.php';
         require_once AURA_PLUGIN_DIR . 'modules/common/class-aura-list-table.php';
         require_once AURA_PLUGIN_DIR . 'modules/common/class-roles-manager.php';
@@ -362,10 +364,10 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
 
         $wp_admin_bar->add_node(array(
             'id'    => 'aura-purge-all-cache',
-            'title' => '<span class="ab-icon dashicons dashicons-update" style="top:2px;"></span><span class="ab-label">' . esc_html__('Purgar todo', 'aura-business-suite') . '</span>',
+            'title' => '<span class="ab-icon dashicons dashicons-update" style="top:2px;"></span><span class="ab-label">' . esc_html__('Purgar todo', 'aura-suite') . '</span>',
             'href'  => $purge_url,
             'meta'  => array(
-                'title' => __('Purgar toda la caché de LiteSpeed y WordPress', 'aura-business-suite'),
+                'title' => __('Purgar toda la caché de LiteSpeed y WordPress', 'aura-suite'),
             ),
         ));
     }
@@ -416,7 +418,7 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
     public function handle_purge_all_cache()
     {
         if (!is_user_logged_in()) {
-            wp_die(esc_html__('Debes iniciar sesión para realizar esta acción.', 'aura-business-suite'));
+            wp_die(esc_html__('Debes iniciar sesión para realizar esta acción.', 'aura-suite'));
         }
 
         check_admin_referer('aura_purge_all_cache');
@@ -450,7 +452,7 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
         }
         ?>
         <div class="notice notice-success is-dismissible">
-            <p>✅ <strong><?php esc_html_e('Caché purgada correctamente.', 'aura-business-suite'); ?></strong> <?php esc_html_e('Ya estás viendo los cambios más recientes del sistema.', 'aura-business-suite'); ?></p>
+            <p>✅ <strong><?php esc_html_e('Caché purgada correctamente.', 'aura-suite'); ?></strong> <?php esc_html_e('Ya estás viendo los cambios más recientes del sistema.', 'aura-suite'); ?></p>
         </div>
         <?php
     }
@@ -2098,10 +2100,11 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
             wp_enqueue_script(
                 'aura-admin-scripts',
                 AURA_PLUGIN_URL . 'assets/js/admin-scripts.js',
-                array('jquery', 'chartjs'),
+                array('jquery', 'chartjs', 'wp-i18n'),
                 file_exists(AURA_PLUGIN_DIR . 'assets/js/admin-scripts.js') ? filemtime(AURA_PLUGIN_DIR . 'assets/js/admin-scripts.js') : AURA_VERSION,
                 true
             );
+            wp_set_script_translations('aura-admin-scripts', 'aura-suite', AURA_PLUGIN_DIR . 'languages');
 
             // Scripts de gráficos
             wp_enqueue_script(
@@ -2458,10 +2461,11 @@ require_once AURA_PLUGIN_DIR . 'modules/common/class-page-manager.php';
             wp_enqueue_script(
                 'aura-permissions-page',
                 AURA_PLUGIN_URL . 'assets/js/permissions-page.js',
-                array('jquery', 'aura-ui-core', 'cropperjs'),
+                array('jquery', 'aura-ui-core', 'cropperjs', 'wp-i18n'),
                 $perms_js_ver,
                 true
             );
+            wp_set_script_translations('aura-permissions-page', 'aura-suite', AURA_PLUGIN_DIR . 'languages');
 
             $current_sel_user_id = !empty($_GET['user_id']) ? absint($_GET['user_id']) : 0;
             $current_sel_user_name = '';

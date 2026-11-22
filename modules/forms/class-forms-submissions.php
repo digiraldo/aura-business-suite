@@ -611,14 +611,14 @@ class Aura_Forms_Submissions {
                 $iso_date = $data_raw[ $uid . '_iso_date' ] ?? '';
                 $data_parsed[] = [
                     'uid'   => $uid . '_iso_date',
-                    'label' => $label . ' (fecha)',
+                    'label' => $label . ' (' . __( 'fecha', 'aura-suite' ) . ')',
                     'type'  => 'text',
                     'value' => $iso_date ?: '—',
                 ];
-                $age_display = ( $value !== '' && $value !== null ) ? sprintf( '%d años', (int) $value ) : '—';
+                $age_display = ( $value !== '' && $value !== null ) ? sprintf( __( '%d años', 'aura-suite' ), (int) $value ) : '—';
                 $data_parsed[] = [
                     'uid'   => $uid,
-                    'label' => $label . ' (edad)',
+                    'label' => $label . ' (' . __( 'edad', 'aura-suite' ) . ')',
                     'type'  => 'text',
                     'value' => $age_display,
                 ];

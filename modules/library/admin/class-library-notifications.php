@@ -33,17 +33,17 @@ class Aura_Library_Notifications {
         }
 
         $org   = aura_get_org_name();
-        $title = sprintf( __( 'Confirmación de préstamo — %s', 'aura-business-suite' ), $org );
+        $title = sprintf( __( 'Confirmación de préstamo — %s', 'aura-suite' ), $org );
 
         $body = sprintf(
-            '<p>' . __( 'Estimado/a %s,', 'aura-business-suite' ) . '</p>
-            <p>' . __( 'Tu préstamo del libro <strong>%s</strong> ha sido registrado.', 'aura-business-suite' ) . '</p>
+            '<p>' . __( 'Estimado/a %s,', 'aura-suite' ) . '</p>
+            <p>' . __( 'Tu préstamo del libro <strong>%s</strong> ha sido registrado.', 'aura-suite' ) . '</p>
             <ul>
-                <li>' . __( 'Fecha de préstamo: %s', 'aura-business-suite' ) . '</li>
-                <li>' . __( 'Fecha de devolución: %s', 'aura-business-suite' ) . '</li>
-                <li>' . __( 'Ubicación: %s', 'aura-business-suite' ) . '</li>
+                <li>' . __( 'Fecha de préstamo: %s', 'aura-suite' ) . '</li>
+                <li>' . __( 'Fecha de devolución: %s', 'aura-suite' ) . '</li>
+                <li>' . __( 'Ubicación: %s', 'aura-suite' ) . '</li>
             </ul>
-            <p>' . __( 'Por favor devuelve el libro antes de la fecha indicada.', 'aura-business-suite' ) . '</p>',
+            <p>' . __( 'Por favor devuelve el libro antes de la fecha indicada.', 'aura-suite' ) . '</p>',
             esc_html( $loan['borrower_name'] ),
             esc_html( $loan['book_title'] ),
             esc_html( $loan['loan_date'] ),
@@ -60,7 +60,7 @@ class Aura_Library_Notifications {
         if ( $loan['borrower_user_id'] ) {
             Aura_Notifications::create_notification(
                 $loan['borrower_user_id'],
-                sprintf( __( 'Préstamo registrado: %s — devolver antes del %s', 'aura-business-suite' ), $loan['book_title'], $loan['due_date'] ),
+                sprintf( __( 'Préstamo registrado: %s — devolver antes del %s', 'aura-suite' ), $loan['book_title'], $loan['due_date'] ),
                 'info',
                 'library'
             );
@@ -71,7 +71,7 @@ class Aura_Library_Notifications {
         $wa_phone  = self::get_user_phone( $loan['borrower_user_id'] ?? 0 );
         if ( $wa_phone ) {
             $wa_msg = sprintf(
-                __( "Hola %s, tu préstamo de *%s* ha sido registrado. Dévuelve antes del *%s*.\n_%s_", 'aura-business-suite' ),
+                __( "Hola %s, tu préstamo de *%s* ha sido registrado. Dévuelve antes del *%s*.\n_%s_", 'aura-suite' ),
                 $loan['borrower_name'],
                 $loan['book_title'],
                 $loan['due_date'],
@@ -83,14 +83,14 @@ class Aura_Library_Notifications {
         // Email al bibliotecario (email extra configurado)
         $extra_email = get_option( 'aura_library_email_extra', '' );
         if ( $extra_email ) {
-            $lib_subject = sprintf( __( 'Nuevo préstamo registrado — %s', 'aura-business-suite' ), $org );
+            $lib_subject = sprintf( __( 'Nuevo préstamo registrado — %s', 'aura-suite' ), $org );
             $lib_body = sprintf(
-                '<p><strong>' . __( 'Nuevo préstamo en Biblioteca', 'aura-business-suite' ) . '</strong></p>
+                '<p><strong>' . __( 'Nuevo préstamo en Biblioteca', 'aura-suite' ) . '</strong></p>
                 <ul>
-                    <li>' . __( 'Lector: %s', 'aura-business-suite' ) . '</li>
-                    <li>' . __( 'Libro: %s', 'aura-business-suite' ) . '</li>
-                    <li>' . __( 'Fecha de préstamo: %s', 'aura-business-suite' ) . '</li>
-                    <li>' . __( 'Fecha de devolución: %s', 'aura-business-suite' ) . '</li>
+                    <li>' . __( 'Lector: %s', 'aura-suite' ) . '</li>
+                    <li>' . __( 'Libro: %s', 'aura-suite' ) . '</li>
+                    <li>' . __( 'Fecha de préstamo: %s', 'aura-suite' ) . '</li>
+                    <li>' . __( 'Fecha de devolución: %s', 'aura-suite' ) . '</li>
                 </ul>',
                 esc_html( $loan['borrower_name'] ),
                 esc_html( $loan['book_title'] ),
@@ -124,26 +124,26 @@ class Aura_Library_Notifications {
         $org = aura_get_org_name();
 
         if ( $type === 'today' ) {
-            $subject = sprintf( __( 'Hoy vence tu préstamo — %s', 'aura-business-suite' ), $org );
-            $intro   = __( 'Hoy es la fecha límite para devolver el libro <strong>%s</strong>.', 'aura-business-suite' );
-            $wa_msg  = sprintf( __( "[%s] Recordatorio: Hoy vence el préstamo del libro «%s». Por favor devuélvelo hoy.", 'aura-business-suite' ), $org, $loan['book_title'] );
-            $notif   = sprintf( __( 'Hoy vence el préstamo: %s', 'aura-business-suite' ), $loan['book_title'] );
+            $subject = sprintf( __( 'Hoy vence tu préstamo — %s', 'aura-suite' ), $org );
+            $intro   = __( 'Hoy es la fecha límite para devolver el libro <strong>%s</strong>.', 'aura-suite' );
+            $wa_msg  = sprintf( __( "[%s] Recordatorio: Hoy vence el préstamo del libro «%s». Por favor devuélvelo hoy.", 'aura-suite' ), $org, $loan['book_title'] );
+            $notif   = sprintf( __( 'Hoy vence el préstamo: %s', 'aura-suite' ), $loan['book_title'] );
         } else {
             $days    = (int) get_option( 'aura_library_reminder_days', 3 );
-            $subject = sprintf( __( 'Tu préstamo vence en %d días — %s', 'aura-business-suite' ), $days, $org );
-            $intro   = sprintf( __( 'Tu préstamo del libro <strong>%%s</strong> vence en %d días (el %%s).', 'aura-business-suite' ), $days );
-            $wa_msg  = sprintf( __( "[%s] Recordatorio: El préstamo del libro «%s» vence el %s. No olvides devolverlo.", 'aura-business-suite' ), $org, $loan['book_title'], $loan['due_date'] );
-            $notif   = sprintf( __( 'Tu préstamo vence pronto: %s (%s)', 'aura-business-suite' ), $loan['book_title'], $loan['due_date'] );
+            $subject = sprintf( __( 'Tu préstamo vence en %d días — %s', 'aura-suite' ), $days, $org );
+            $intro   = sprintf( __( 'Tu préstamo del libro <strong>%%s</strong> vence en %d días (el %%s).', 'aura-suite' ), $days );
+            $wa_msg  = sprintf( __( "[%s] Recordatorio: El préstamo del libro «%s» vence el %s. No olvides devolverlo.", 'aura-suite' ), $org, $loan['book_title'], $loan['due_date'] );
+            $notif   = sprintf( __( 'Tu préstamo vence pronto: %s (%s)', 'aura-suite' ), $loan['book_title'], $loan['due_date'] );
         }
 
         $body = sprintf(
-            '<p>' . __( 'Estimado/a %s,', 'aura-business-suite' ) . '</p>
+            '<p>' . __( 'Estimado/a %s,', 'aura-suite' ) . '</p>
             <p>' . $intro . '</p>
             <ul>
-                <li>' . __( 'Libro: <strong>%s</strong>', 'aura-business-suite' ) . '</li>
-                <li>' . __( 'Fecha de devolución: <strong>%s</strong>', 'aura-business-suite' ) . '</li>
+                <li>' . __( 'Libro: <strong>%s</strong>', 'aura-suite' ) . '</li>
+                <li>' . __( 'Fecha de devolución: <strong>%s</strong>', 'aura-suite' ) . '</li>
             </ul>
-            <p>' . __( 'Si necesitas más tiempo, puedes solicitar una extensión.', 'aura-business-suite' ) . '</p>',
+            <p>' . __( 'Si necesitas más tiempo, puedes solicitar una extensión.', 'aura-suite' ) . '</p>',
             esc_html( $loan['borrower_name'] ),
             esc_html( $loan['book_title'] ),
             esc_html( $loan['book_title'] ),
@@ -187,16 +187,16 @@ class Aura_Library_Notifications {
             : 0.0;
 
         $org     = aura_get_org_name();
-        $subject = sprintf( __( 'Préstamo vencido — %s', 'aura-business-suite' ), $org );
+        $subject = sprintf( __( 'Préstamo vencido — %s', 'aura-suite' ), $org );
 
         $body = sprintf(
-            '<p>' . __( 'Estimado/a %s,', 'aura-business-suite' ) . '</p>
-            <p>' . __( 'El préstamo del libro <strong>%s</strong> lleva <strong>%d días</strong> vencido.', 'aura-business-suite' ) . '</p>
+            '<p>' . __( 'Estimado/a %s,', 'aura-suite' ) . '</p>
+            <p>' . __( 'El préstamo del libro <strong>%s</strong> lleva <strong>%d días</strong> vencido.', 'aura-suite' ) . '</p>
             <ul>
-                <li>' . __( 'Fecha de devolución: %s', 'aura-business-suite' ) . '</li>
-                <li>' . __( 'Multa acumulada: %s', 'aura-business-suite' ) . '</li>
+                <li>' . __( 'Fecha de devolución: %s', 'aura-suite' ) . '</li>
+                <li>' . __( 'Multa acumulada: %s', 'aura-suite' ) . '</li>
             </ul>
-            <p>' . __( 'Por favor devuelve el libro a la brevedad posible.', 'aura-business-suite' ) . '</p>',
+            <p>' . __( 'Por favor devuelve el libro a la brevedad posible.', 'aura-suite' ) . '</p>',
             esc_html( $loan['borrower_name'] ),
             esc_html( $loan['book_title'] ),
             (int) $loan['days_overdue'],
@@ -209,7 +209,7 @@ class Aura_Library_Notifications {
         }
 
         $wa_msg = sprintf(
-            __( "[%s] AVISO: El préstamo del libro «%s» lleva %d días vencido. Multa acumulada: %s. Por favor devuélvelo.", 'aura-business-suite' ),
+            __( "[%s] AVISO: El préstamo del libro «%s» lleva %d días vencido. Multa acumulada: %s. Por favor devuélvelo.", 'aura-suite' ),
             $org,
             $loan['book_title'],
             (int) $loan['days_overdue'],
@@ -222,7 +222,7 @@ class Aura_Library_Notifications {
         if ( $loan['borrower_user_id'] ) {
             Aura_Notifications::create_notification(
                 $loan['borrower_user_id'],
-                sprintf( __( 'Préstamo vencido: %s — Multa: %s', 'aura-business-suite' ), $loan['book_title'], number_format( $fine, 2 ) ),
+                sprintf( __( 'Préstamo vencido: %s — Multa: %s', 'aura-suite' ), $loan['book_title'], number_format( $fine, 2 ) ),
                 'error',
                 'library'
             );
@@ -231,15 +231,15 @@ class Aura_Library_Notifications {
         // Notificar al bibliotecario
         $extra_email = get_option( 'aura_library_email_extra', '' );
         if ( $extra_email ) {
-            $lib_subject = sprintf( __( 'Préstamo vencido sin devolver — %s', 'aura-business-suite' ), $org );
+            $lib_subject = sprintf( __( 'Préstamo vencido sin devolver — %s', 'aura-suite' ), $org );
             $lib_body = sprintf(
-                '<p><strong>' . __( 'Alerta de préstamo vencido', 'aura-business-suite' ) . '</strong></p>
+                '<p><strong>' . __( 'Alerta de préstamo vencido', 'aura-suite' ) . '</strong></p>
                 <ul>
-                    <li>' . __( 'Lector: %s', 'aura-business-suite' ) . '</li>
-                    <li>' . __( 'Libro: %s', 'aura-business-suite' ) . '</li>
-                    <li>' . __( 'Fecha de devolución: %s', 'aura-business-suite' ) . '</li>
-                    <li>' . __( 'Días vencido: %d', 'aura-business-suite' ) . '</li>
-                    <li>' . __( 'Multa acumulada: %s', 'aura-business-suite' ) . '</li>
+                    <li>' . __( 'Lector: %s', 'aura-suite' ) . '</li>
+                    <li>' . __( 'Libro: %s', 'aura-suite' ) . '</li>
+                    <li>' . __( 'Fecha de devolución: %s', 'aura-suite' ) . '</li>
+                    <li>' . __( 'Días vencido: %d', 'aura-suite' ) . '</li>
+                    <li>' . __( 'Multa acumulada: %s', 'aura-suite' ) . '</li>
                 </ul>',
                 esc_html( $loan['borrower_name'] ),
                 esc_html( $loan['book_title'] ),
@@ -272,20 +272,20 @@ class Aura_Library_Notifications {
         }
 
         $org     = aura_get_org_name();
-        $subject = sprintf( __( 'Devolución registrada — %s', 'aura-business-suite' ), $org );
+        $subject = sprintf( __( 'Devolución registrada — %s', 'aura-suite' ), $org );
 
         $fine_line = $fine > 0
-            ? '<li>' . sprintf( __( 'Multa aplicada: %s', 'aura-business-suite' ), number_format( $fine, 2 ) ) . '</li>'
-            : '<li>' . __( 'Sin multa aplicada.', 'aura-business-suite' ) . '</li>';
+            ? '<li>' . sprintf( __( 'Multa aplicada: %s', 'aura-suite' ), number_format( $fine, 2 ) ) . '</li>'
+            : '<li>' . __( 'Sin multa aplicada.', 'aura-suite' ) . '</li>';
 
         $body = sprintf(
-            '<p>' . __( 'Estimado/a %s,', 'aura-business-suite' ) . '</p>
-            <p>' . __( 'La devolución del libro <strong>%s</strong> ha sido registrada.', 'aura-business-suite' ) . '</p>
+            '<p>' . __( 'Estimado/a %s,', 'aura-suite' ) . '</p>
+            <p>' . __( 'La devolución del libro <strong>%s</strong> ha sido registrada.', 'aura-suite' ) . '</p>
             <ul>
-                <li>' . __( 'Devuelto el: %s', 'aura-business-suite' ) . '</li>
+                <li>' . __( 'Devuelto el: %s', 'aura-suite' ) . '</li>
                 %s
             </ul>
-            <p>' . __( '¡Gracias por devolver el libro a tiempo!', 'aura-business-suite' ) . '</p>',
+            <p>' . __( '¡Gracias por devolver el libro a tiempo!', 'aura-suite' ) . '</p>',
             esc_html( $loan['borrower_name'] ),
             esc_html( $loan['book_title'] ),
             esc_html( $loan['return_date'] ?? gmdate( 'Y-m-d' ) ),
@@ -299,7 +299,7 @@ class Aura_Library_Notifications {
         if ( $loan['borrower_user_id'] ) {
             Aura_Notifications::create_notification(
                 $loan['borrower_user_id'],
-                sprintf( __( 'Devolución registrada: %s', 'aura-business-suite' ), $loan['book_title'] ),
+                sprintf( __( 'Devolución registrada: %s', 'aura-suite' ), $loan['book_title'] ),
                 'success',
                 'library'
             );
@@ -311,11 +311,11 @@ class Aura_Library_Notifications {
         if ( $wa_phone ) {
             $wa_msg = $fine > 0
                 ? sprintf(
-                    __( "Hola %s, hemos recibido *%s* correctamente. Se aplicó una multa de *%s*.\n_%s_", 'aura-business-suite' ),
+                    __( "Hola %s, hemos recibido *%s* correctamente. Se aplicó una multa de *%s*.\n_%s_", 'aura-suite' ),
                     $loan['borrower_name'], $loan['book_title'], number_format( $fine, 2 ), $signature
                 )
                 : sprintf(
-                    __( "Hola %s, hemos recibido *%s* correctamente. ¡Gracias!\n_%s_", 'aura-business-suite' ),
+                    __( "Hola %s, hemos recibido *%s* correctamente. ¡Gracias!\n_%s_", 'aura-suite' ),
                     $loan['borrower_name'], $loan['book_title'], $signature
                 );
             self::send_whatsapp( $wa_phone, $wa_msg );
@@ -362,28 +362,28 @@ class Aura_Library_Notifications {
         $user_name    = $user->display_name;
         $user_email   = $user->user_email;
         $user_phone   = self::get_user_phone( (int) $res->user_id );
-        $book_title   = $res->book_title ?? __( 'libro reservado', 'aura-business-suite' );
+        $book_title   = $res->book_title ?? __( 'libro reservado', 'aura-suite' );
         $expires_date = $res->expires_at ? substr( $res->expires_at, 0, 10 ) : '';
 
-        $subject = sprintf( __( 'Tu reserva está disponible — %s', 'aura-business-suite' ), $org_name );
+        $subject = sprintf( __( 'Tu reserva está disponible — %s', 'aura-suite' ), $org_name );
         $body = sprintf(
-            '<p>' . __( 'Estimado/a %s,', 'aura-business-suite' ) . '</p>
-            <p>' . __( 'El libro <strong>%s</strong> que reservaste está disponible para recoger.', 'aura-business-suite' ) . '</p>
+            '<p>' . __( 'Estimado/a %s,', 'aura-suite' ) . '</p>
+            <p>' . __( 'El libro <strong>%s</strong> que reservaste está disponible para recoger.', 'aura-suite' ) . '</p>
             <ul>
-                <li>' . __( 'Ubicación: %s', 'aura-business-suite' ) . '</li>
+                <li>' . __( 'Ubicación: %s', 'aura-suite' ) . '</li>
                 %s
             </ul>
-            <p>' . __( 'Acércate a recogerlo antes de que la reserva expire.', 'aura-business-suite' ) . '</p>',
+            <p>' . __( 'Acércate a recogerlo antes de que la reserva expire.', 'aura-suite' ) . '</p>',
             esc_html( $user_name ),
             esc_html( $book_title ),
             esc_html( $res->location ?? '' ),
-            $expires_date ? '<li>' . sprintf( __( 'La reserva expira el: %s', 'aura-business-suite' ), esc_html( $expires_date ) ) . '</li>' : ''
+            $expires_date ? '<li>' . sprintf( __( 'La reserva expira el: %s', 'aura-suite' ), esc_html( $expires_date ) ) . '</li>' : ''
         );
 
         self::send_email( $user_email, $subject, $body );
 
         $wa_msg = sprintf(
-            __( "[%s] Tu reserva del libro «%s» está disponible. Recógelo a la brevedad.", 'aura-business-suite' ),
+            __( "[%s] Tu reserva del libro «%s» está disponible. Recógelo a la brevedad.", 'aura-suite' ),
             $org_name,
             $book_title
         );
@@ -393,7 +393,7 @@ class Aura_Library_Notifications {
 
         Aura_Notifications::create_notification(
             (int) $res->user_id,
-            sprintf( __( 'Tu reserva está disponible: %s', 'aura-business-suite' ), $book_title ),
+            sprintf( __( 'Tu reserva está disponible: %s', 'aura-suite' ), $book_title ),
             'info',
             'library'
         );
@@ -435,13 +435,13 @@ class Aura_Library_Notifications {
         }
 
         $org        = aura_get_org_name();
-        $book_title = $res->book_title ?? __( 'libro reservado', 'aura-business-suite' );
-        $subject    = sprintf( __( 'Tu reserva ha expirado — %s', 'aura-business-suite' ), $org );
+        $book_title = $res->book_title ?? __( 'libro reservado', 'aura-suite' );
+        $subject    = sprintf( __( 'Tu reserva ha expirado — %s', 'aura-suite' ), $org );
 
         $body = sprintf(
-            '<p>' . __( 'Estimado/a %s,', 'aura-business-suite' ) . '</p>
-            <p>' . __( 'Lamentablemente, tu reserva del libro <strong>%s</strong> ha expirado porque no fue recogida a tiempo.', 'aura-business-suite' ) . '</p>
-            <p>' . __( 'Si todavía necesitas el libro puedes realizar una nueva reserva.', 'aura-business-suite' ) . '</p>',
+            '<p>' . __( 'Estimado/a %s,', 'aura-suite' ) . '</p>
+            <p>' . __( 'Lamentablemente, tu reserva del libro <strong>%s</strong> ha expirado porque no fue recogida a tiempo.', 'aura-suite' ) . '</p>
+            <p>' . __( 'Si todavía necesitas el libro puedes realizar una nueva reserva.', 'aura-suite' ) . '</p>',
             esc_html( $user->display_name ),
             esc_html( $book_title )
         );
@@ -450,7 +450,7 @@ class Aura_Library_Notifications {
 
         Aura_Notifications::create_notification(
             (int) $res->user_id,
-            sprintf( __( 'Tu reserva expiró: %s', 'aura-business-suite' ), $book_title ),
+            sprintf( __( 'Tu reserva expiró: %s', 'aura-suite' ), $book_title ),
             'warning',
             'library'
         );
@@ -495,7 +495,7 @@ class Aura_Library_Notifications {
             'return_date'      => $row->return_date ?? null,
             'days_overdue'     => max( 0, (int) $row->days_overdue ),
             'borrower_user_id' => (int) $row->borrower_user_id,
-            'borrower_name'    => $user ? $user->display_name : __( 'Lector', 'aura-business-suite' ),
+            'borrower_name'    => $user ? $user->display_name : __( 'Lector', 'aura-suite' ),
             'borrower_email'   => $user ? $user->user_email : '',
             'borrower_phone'   => $user ? self::get_user_phone( (int) $row->borrower_user_id ) : '',
         ];

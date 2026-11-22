@@ -142,7 +142,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
             <?php if ( $req_user_id && $selected_user ) : ?>
 
             <!-- Botón Toggle Estadísticas -->
-            <button type="button" id="aura-toggle-stats-btn" class="aura-btn aura-btn-secondary" data-tooltip="Ver estadísticas avanzadas, gráficos y promedios contables">
+            <button type="button" id="aura-toggle-stats-btn" class="aura-btn aura-btn-secondary" data-tooltip="<?php esc_attr_e( 'Ver estadísticas avanzadas, gráficos y promedios contables', 'aura-suite' ); ?>">
                 <span class="dashicons dashicons-chart-pie"></span>
                 <span><?php esc_html_e( 'Estadísticas', 'aura-suite' ); ?></span>
             </button>
@@ -156,7 +156,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                 <input type="hidden" name="date_to"   value="<?php echo esc_attr( $req_date_to ); ?>">
                 <input type="hidden" name="concept"   value="<?php echo esc_attr( $req_concept ); ?>">
                 <input type="hidden" name="show_all"  value="<?php echo $req_show_all ? '1' : ''; ?>">
-                <button type="submit" class="aura-btn aura-btn-excel" data-tooltip="Descargar Libro Mayor en formato Microsoft Excel (.xlsx)">
+                <button type="submit" class="aura-btn aura-btn-excel" data-tooltip="<?php esc_attr_e( 'Descargar Libro Mayor en formato Microsoft Excel (.xlsx)', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-media-spreadsheet"></span>
                     <span><?php esc_html_e( 'Exportar Excel', 'aura-suite' ); ?></span>
                 </button>
@@ -171,14 +171,14 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                 <input type="hidden" name="date_to"   value="<?php echo esc_attr( $req_date_to ); ?>">
                 <input type="hidden" name="concept"   value="<?php echo esc_attr( $req_concept ); ?>">
                 <input type="hidden" name="show_all"  value="<?php echo $req_show_all ? '1' : ''; ?>">
-                <button type="submit" class="aura-btn aura-btn-primary" data-tooltip="Descargar Libro Mayor en archivo CSV delimitado">
+                <button type="submit" class="aura-btn aura-btn-primary" data-tooltip="<?php esc_attr_e( 'Descargar Libro Mayor en archivo CSV delimitado', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-download"></span>
                     <span><?php esc_html_e( 'Exportar CSV', 'aura-suite' ); ?></span>
                 </button>
             </form>
             <?php endif; ?>
 
-            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-financial-transactions' ) ); ?>" class="aura-btn aura-btn-secondary" data-tooltip="Ir al listado general de transacciones">
+            <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-financial-transactions' ) ); ?>" class="aura-btn aura-btn-secondary" data-tooltip="<?php esc_attr_e( 'Ir al listado general de transacciones', 'aura-suite' ); ?>">
                 <span class="dashicons dashicons-arrow-left-alt"></span>
                 <span><?php esc_html_e( 'Transacciones', 'aura-suite' ); ?></span>
             </a>
@@ -193,7 +193,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                     <label for="user_select_ledger" class="aura-input-label">
                         <span class="dashicons dashicons-admin-users"></span>
                         <span><?php esc_html_e( 'Seleccionar Usuario / Colaborador:', 'aura-suite' ); ?></span>
-                        <span class="aura-help-icon" data-tooltip="Elige el colaborador cuyo libro mayor y balance acumulado deseas auditar."><span class="dashicons dashicons-editor-help"></span></span>
+                        <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Elige el colaborador cuyo libro mayor y balance acumulado deseas auditar.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                     </label>
                     <div class="aura-select-wrap">
                         <select id="user_select_ledger" name="ledger_user_id" class="aura-custom-select">
@@ -264,7 +264,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
             <div class="aura-card-title-group">
                 <span class="dashicons dashicons-chart-pie" style="color: #6366f1;"></span>
                 <h3><?php printf( esc_html__( 'Estadísticas Contables: %s', 'aura-suite' ), esc_html( $selected_user->display_name ) ); ?></h3>
-                <span class="aura-help-icon" data-tooltip="Análisis cuantitativo de conceptos, promedios y comportamiento mensual del colaborador."><span class="dashicons dashicons-editor-help"></span></span>
+                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Análisis cuantitativo de conceptos, promedios y comportamiento mensual del colaborador.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
             </div>
 
             <!-- Botones de Exportación de Estadísticas -->
@@ -279,7 +279,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                     <input type="hidden" name="date_to"   value="<?php echo esc_attr( $req_date_to ); ?>">
                     <input type="hidden" name="concept"   value="<?php echo esc_attr( $req_concept ); ?>">
                     <input type="hidden" name="show_all"  value="<?php echo $req_show_all ? '1' : ''; ?>">
-                    <button type="submit" class="aura-btn aura-btn-excel" style="font-size:12px;padding:6px 12px;height:34px;" data-tooltip="Exportar informe estadístico en Excel (.xlsx)">
+                    <button type="submit" class="aura-btn aura-btn-excel" style="font-size:12px;padding:6px 12px;height:34px;" data-tooltip="<?php esc_attr_e( 'Exportar informe estadístico en Excel (.xlsx)', 'aura-suite' ); ?>">
                         <span class="dashicons dashicons-media-spreadsheet"></span>
                         <span><?php esc_html_e( 'Excel Estadísticas', 'aura-suite' ); ?></span>
                     </button>
@@ -294,7 +294,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                     <input type="hidden" name="date_to"   value="<?php echo esc_attr( $req_date_to ); ?>">
                     <input type="hidden" name="concept"   value="<?php echo esc_attr( $req_concept ); ?>">
                     <input type="hidden" name="show_all"  value="<?php echo $req_show_all ? '1' : ''; ?>">
-                    <button type="submit" class="aura-btn aura-btn-secondary" style="font-size:12px;padding:6px 12px;height:34px;" data-tooltip="Exportar informe estadístico en CSV">
+                    <button type="submit" class="aura-btn aura-btn-secondary" style="font-size:12px;padding:6px 12px;height:34px;" data-tooltip="<?php esc_attr_e( 'Exportar informe estadístico en CSV', 'aura-suite' ); ?>">
                         <span class="dashicons dashicons-download"></span>
                         <span><?php esc_html_e( 'CSV Estadísticas', 'aura-suite' ); ?></span>
                     </button>
@@ -352,7 +352,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                     <?php if ( ! empty( $stats['concepts'] ) ) : ?>
                     <div class="aura-concept-bars-list">
                         <?php foreach ( $stats['concepts'] as $c ) :
-                            $is_inc = ( $c['type'] === 'Ingreso' );
+                            $is_inc = ( ( $c['type_key'] ?? '' ) === 'income' || $c['type'] === __( 'Ingreso', 'aura-suite' ) );
                             $bar_color = $is_inc ? 'linear-gradient(90deg, #10b981, #059669)' : 'linear-gradient(90deg, #ef4444, #dc2626)';
                         ?>
                         <div class="aura-concept-bar-item">
@@ -360,7 +360,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                 <span class="concept-title">
                                     <span class="concept-dot" style="background:<?php echo $is_inc ? '#10b981' : '#ef4444'; ?>;"></span>
                                     <?php echo esc_html( $c['concept_name'] ); ?>
-                                    <small style="color:#64748b;font-weight:400;">(<?php echo (int) $c['count']; ?> mov.)</small>
+                                    <small style="color:#64748b;font-weight:400;">(<?php printf( esc_html__( '%d mov.', 'aura-suite' ), (int) $c['count'] ); ?>)</small>
                                 </span>
                                 <span class="concept-amount" style="color:<?php echo $is_inc ? '#059669' : '#dc2626'; ?>;">
                                     <?php echo ( $is_inc ? '+' : '-' ) . esc_html( $currency . number_format( $c['total'], 2, '.', ',' ) ); ?>
@@ -427,7 +427,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
             <div class="aura-card-title-group">
                 <span class="dashicons dashicons-filter" style="color: #3b82f6;"></span>
                 <h3><?php esc_html_e( 'Filtros y Período de Consulta', 'aura-suite' ); ?></h3>
-                <span class="aura-help-icon" data-tooltip="Filtra las transacciones por fechas, concepto contable o incluye movimientos pendientes."><span class="dashicons dashicons-editor-help"></span></span>
+                <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Filtra las transacciones por fechas, concepto contable o incluye movimientos pendientes.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
             </div>
         </div>
         <div class="aura-card-body">
@@ -441,7 +441,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                         <label for="lf_date_from" class="aura-input-label">
                             <span class="dashicons dashicons-calendar-alt"></span>
                             <span><?php esc_html_e( 'Fecha Desde', 'aura-suite' ); ?></span>
-                            <span class="aura-help-icon" data-tooltip="Fecha inicial del rango contable."><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Fecha inicial del rango contable.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                         </label>
                         <input type="date" id="lf_date_from" name="date_from" class="aura-input" value="<?php echo esc_attr( $req_date_from ); ?>">
                     </div>
@@ -451,7 +451,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                         <label for="lf_date_to" class="aura-input-label">
                             <span class="dashicons dashicons-calendar-alt"></span>
                             <span><?php esc_html_e( 'Fecha Hasta', 'aura-suite' ); ?></span>
-                            <span class="aura-help-icon" data-tooltip="Fecha final del rango contable."><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Fecha final del rango contable.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                         </label>
                         <input type="date" id="lf_date_to" name="date_to" class="aura-input" value="<?php echo esc_attr( $req_date_to ); ?>">
                     </div>
@@ -461,7 +461,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                         <label for="lf_concept" class="aura-input-label">
                             <span class="dashicons dashicons-tag"></span>
                             <span><?php esc_html_e( 'Concepto', 'aura-suite' ); ?></span>
-                            <span class="aura-help-icon" data-tooltip="Filtra por la naturaleza contable de la operación (nómina, préstamo, viáticos, etc.)."><span class="dashicons dashicons-editor-help"></span></span>
+                            <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Filtra por la naturaleza contable de la operación (nómina, préstamo, viáticos, etc.).', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                         </label>
                         <select id="lf_concept" name="concept" class="aura-input">
                             <option value=""><?php esc_html_e( '— Todos los Conceptos —', 'aura-suite' ); ?></option>
@@ -475,7 +475,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
 
                     <!-- Toggle Estado -->
                     <div class="aura-form-group aura-toggle-group">
-                        <label class="aura-toggle-switch" data-tooltip="Marcar para incluir transacciones en estado pendiente o rechazadas">
+                        <label class="aura-toggle-switch" data-tooltip="<?php esc_attr_e( 'Marcar para incluir transacciones en estado pendiente o rechazadas', 'aura-suite' ); ?>">
                             <input type="checkbox" name="show_all" value="1" <?php checked( $req_show_all ); ?>>
                             <span class="aura-toggle-slider"></span>
                             <span class="aura-toggle-text"><?php esc_html_e( 'Incluir no aprobadas', 'aura-suite' ); ?></span>
@@ -484,11 +484,11 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
 
                     <!-- Acciones de Filtro -->
                     <div class="aura-form-group aura-filter-buttons">
-                        <button type="submit" class="aura-btn aura-btn-primary" data-tooltip="Aplicar los filtros seleccionados">
+                        <button type="submit" class="aura-btn aura-btn-primary" data-tooltip="<?php esc_attr_e( 'Aplicar los filtros seleccionados', 'aura-suite' ); ?>">
                             <span class="dashicons dashicons-search"></span>
                             <span><?php esc_html_e( 'Filtrar', 'aura-suite' ); ?></span>
                         </button>
-                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-user-ledger&ledger_user_id=' . $req_user_id ) ); ?>" class="aura-btn aura-btn-secondary" data-tooltip="Restablecer filtros a valores por defecto">
+                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-user-ledger&ledger_user_id=' . $req_user_id ) ); ?>" class="aura-btn aura-btn-secondary" data-tooltip="<?php esc_attr_e( 'Restablecer filtros a valores por defecto', 'aura-suite' ); ?>">
                             <span class="dashicons dashicons-image-rotate"></span>
                             <span><?php esc_html_e( 'Limpiar', 'aura-suite' ); ?></span>
                         </a>
@@ -519,7 +519,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
             <div class="stat-info">
                 <div class="stat-label-wrap">
                     <span class="stat-label"><?php esc_html_e( 'Total Ingresos', 'aura-suite' ); ?></span>
-                    <span class="aura-help-icon" data-tooltip="Perspectiva del Usuario: Egresos de la organización pagados al usuario (sueldos, pagos de reembolsos, liquidaciones)."><span class="dashicons dashicons-editor-help"></span></span>
+                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Perspectiva del Usuario: Egresos de la organización pagados al usuario (sueldos, pagos de reembolsos, liquidaciones).', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                 </div>
                 <div class="stat-value" style="color: #059669;">
                     +<?php echo esc_html( $currency . number_format( $totals['income'], 2, '.', ',' ) ); ?>
@@ -536,7 +536,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
             <div class="stat-info">
                 <div class="stat-label-wrap">
                     <span class="stat-label"><?php esc_html_e( 'Total Egresos', 'aura-suite' ); ?></span>
-                    <span class="aura-help-icon" data-tooltip="Perspectiva del Usuario: Entradas a la organización aportadas por el usuario (reintegros de sobrantes, aportes)."><span class="dashicons dashicons-editor-help"></span></span>
+                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Perspectiva del Usuario: Entradas a la organización aportadas por el usuario (reintegros de sobrantes, aportes).', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                 </div>
                 <div class="stat-value" style="color: #dc2626;">
                     -<?php echo esc_html( $currency . number_format( $totals['expense'], 2, '.', ',' ) ); ?>
@@ -553,7 +553,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
             <div class="stat-info">
                 <div class="stat-label-wrap">
                     <span class="stat-label"><?php esc_html_e( 'Balance Neto', 'aura-suite' ); ?></span>
-                    <span class="aura-help-icon" data-tooltip="Diferencia neta (Ingresos - Egresos) acumulada en el período consultado."><span class="dashicons dashicons-editor-help"></span></span>
+                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Diferencia neta (Ingresos - Egresos) acumulada en el período consultado.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                 </div>
                 <div class="stat-value" style="color: <?php echo $totals['net'] >= 0 ? '#2563eb' : '#dc2626'; ?>;">
                     <?php echo ( $totals['net'] >= 0 ? '+' : '' ) . esc_html( $currency . number_format( abs( $totals['net'] ), 2, '.', ',' ) ); ?>
@@ -570,7 +570,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
             <div class="stat-info">
                 <div class="stat-label-wrap">
                     <span class="stat-label"><?php esc_html_e( 'Movimientos', 'aura-suite' ); ?></span>
-                    <span class="aura-help-icon" data-tooltip="Cantidad total de transacciones contables registradas para este usuario según los filtros."><span class="dashicons dashicons-editor-help"></span></span>
+                    <span class="aura-help-icon" data-tooltip="<?php esc_attr_e( 'Cantidad total de transacciones contables registradas para este usuario según los filtros.', 'aura-suite' ); ?>"><span class="dashicons dashicons-editor-help"></span></span>
                 </div>
                 <div class="stat-value" style="color: #4f46e5;">
                     <?php echo esc_html( number_format( $total_rows ) ); ?>
@@ -685,15 +685,15 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                 . '<div class="aura-tip-title">' . sprintf( esc_html__( 'Transacción #%d', 'aura-suite' ), $row->id ) . '</div>'
                                 . '<div class="aura-tip-subtitle">' . ( $is_income ? esc_html__( 'Ingreso Personal (Egreso Org)', 'aura-suite' ) : esc_html__( 'Egreso Personal (Aporte/Reintegro)', 'aura-suite' ) ) . '</div>'
                                 . '<div class="aura-tip-badges">'
-                                . '<span class="aura-tip-badge ' . ( $is_income ? 'aura-tip-badge--role' : 'aura-tip-badge--company' ) . '">' . ( $is_income ? '🟢 Ingreso (+)' : '🔴 Egreso (-)' ) . '</span>'
+                                . '<span class="aura-tip-badge ' . ( $is_income ? 'aura-tip-badge--role' : 'aura-tip-badge--company' ) . '">' . ( $is_income ? '🟢 ' . esc_html__( 'Ingreso (+)', 'aura-suite' ) : '🔴 ' . esc_html__( 'Egreso (-)', 'aura-suite' ) ) . '</span>'
                                 . '</div>'
                                 . '</div>'
                                 . '</div>'
                                 . '<div class="aura-tip-card-body">'
-                                . '<div class="aura-tip-row"><span>📅 Fecha:</span><strong>' . esc_html( $date_fmt ) . '</strong></div>'
-                                . '<div class="aura-tip-row"><span>💵 Importe:</span><strong>' . ( $is_income ? '+' : '-' ) . esc_html( $currency . number_format( $amount, 2, '.', ',' ) ) . '</strong></div>'
-                                . '<div class="aura-tip-row"><span>🏷️ Concepto:</span><strong>' . esc_html( $concept_lbl ) . '</strong></div>'
-                                . '<div class="aura-tip-row"><span>⚖️ Balance:</span><strong style="color:' . ( $balance >= 0 ? '#2563eb' : '#dc2626' ) . ';">' . ( $balance >= 0 ? '+' : '-' ) . esc_html( $currency . number_format( abs( $balance ), 2, '.', ',' ) ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>📅 ' . esc_html__( 'Fecha:', 'aura-suite' ) . '</span><strong>' . esc_html( $date_fmt ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>💵 ' . esc_html__( 'Importe:', 'aura-suite' ) . '</span><strong>' . ( $is_income ? '+' : '-' ) . esc_html( $currency . number_format( $amount, 2, '.', ',' ) ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>🏷️ ' . esc_html__( 'Concepto:', 'aura-suite' ) . '</span><strong>' . esc_html( $concept_lbl ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>⚖️ ' . esc_html__( 'Balance:', 'aura-suite' ) . '</span><strong style="color:' . ( $balance >= 0 ? '#2563eb' : '#dc2626' ) . ';">' . ( $balance >= 0 ? '+' : '-' ) . esc_html( $currency . number_format( abs( $balance ), 2, '.', ',' ) ) . '</strong></div>'
                                 . '</div>'
                                 . '</div>';
 
@@ -708,9 +708,9 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                 . '</div>'
                                 . '</div>'
                                 . '<div class="aura-tip-card-body">'
-                                . '<div class="aura-tip-row"><span>📝 Descripción:</span><strong>' . esc_html( $row->description ) . '</strong></div>'
-                                . ( ! empty( $row->reference_number ) ? '<div class="aura-tip-row"><span>🔖 Referencia:</span><strong>#' . esc_html( $row->reference_number ) . '</strong></div>' : '' )
-                                . '<div class="aura-tip-row"><span>🏷️ Concepto:</span><strong>' . esc_html( $concept_lbl ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>📝 ' . esc_html__( 'Descripción:', 'aura-suite' ) . '</span><strong>' . esc_html( $row->description ) . '</strong></div>'
+                                . ( ! empty( $row->reference_number ) ? '<div class="aura-tip-row"><span>🔖 ' . esc_html__( 'Referencia:', 'aura-suite' ) . '</span><strong>#' . esc_html( $row->reference_number ) . '</strong></div>' : '' )
+                                . '<div class="aura-tip-row"><span>🏷️ ' . esc_html__( 'Concepto:', 'aura-suite' ) . '</span><strong>' . esc_html( $concept_lbl ) . '</strong></div>'
                                 . '</div>'
                                 . '</div>';
 
@@ -725,8 +725,8 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                 . '</div>'
                                 . '</div>'
                                 . '<div class="aura-tip-card-body">'
-                                . '<div class="aura-tip-row"><span>🔑 Clave Interna:</span><strong>' . esc_html( $row->related_user_concept ?: 'general' ) . '</strong></div>'
-                                . '<div class="aura-tip-row"><span>📄 Transacción:</span><strong>#' . esc_html( $row->id ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>🔑 ' . esc_html__( 'Clave Interna:', 'aura-suite' ) . '</span><strong>' . esc_html( $row->related_user_concept ?: 'general' ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>📄 ' . esc_html__( 'Transacción:', 'aura-suite' ) . '</span><strong>#' . esc_html( $row->id ) . '</strong></div>'
                                 . '</div>'
                                 . '</div>';
 
@@ -739,8 +739,8 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                 . '</div>'
                                 . '</div>'
                                 . '<div class="aura-tip-card-body">'
-                                . '<div class="aura-tip-row"><span>⚡ Tipo Flujo:</span><strong style="color:#10b981;">' . esc_html__( 'Abono / Saldo a favor (+)', 'aura-suite' ) . '</strong></div>'
-                                . '<div class="aura-tip-row"><span>📌 Estado:</span><strong>' . esc_html( ucfirst( $row->status ) ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>⚡ ' . esc_html__( 'Tipo Flujo:', 'aura-suite' ) . '</span><strong style="color:#10b981;">' . esc_html__( 'Abono / Saldo a favor (+)', 'aura-suite' ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>📌 ' . esc_html__( 'Estado:', 'aura-suite' ) . '</span><strong>' . esc_html( ucfirst( $row->status ) ) . '</strong></div>'
                                 . '</div>'
                                 . '</div>';
 
@@ -753,8 +753,8 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                 . '</div>'
                                 . '</div>'
                                 . '<div class="aura-tip-card-body">'
-                                . '<div class="aura-tip-row"><span>⚡ Tipo Flujo:</span><strong style="color:#dc2626;">' . esc_html__( 'Deducción / Descuento (-)', 'aura-suite' ) . '</strong></div>'
-                                . '<div class="aura-tip-row"><span>📌 Estado:</span><strong>' . esc_html( ucfirst( $row->status ) ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>⚡ ' . esc_html__( 'Tipo Flujo:', 'aura-suite' ) . '</span><strong style="color:#dc2626;">' . esc_html__( 'Deducción / Descuento (-)', 'aura-suite' ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>📌 ' . esc_html__( 'Estado:', 'aura-suite' ) . '</span><strong>' . esc_html( ucfirst( $row->status ) ) . '</strong></div>'
                                 . '</div>'
                                 . '</div>';
 
@@ -769,8 +769,8 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                 . '</div>'
                                 . '</div>'
                                 . '<div class="aura-tip-card-body">'
-                                . '<div class="aura-tip-row"><span>⚖️ Situación:</span><strong style="color:' . ( $balance >= 0 ? '#2563eb' : '#dc2626' ) . ';">' . ( $balance >= 0 ? esc_html__( 'Crédito a favor colaborador', 'aura-suite' ) : esc_html__( 'Deuda con la organización', 'aura-suite' ) ) . '</strong></div>'
-                                . '<div class="aura-tip-row"><span>📅 Al corte de:</span><strong>' . esc_html( $date_fmt ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>⚖️ ' . esc_html__( 'Situación:', 'aura-suite' ) . '</span><strong style="color:' . ( $balance >= 0 ? '#2563eb' : '#dc2626' ) . ';">' . ( $balance >= 0 ? esc_html__( 'Crédito a favor colaborador', 'aura-suite' ) : esc_html__( 'Deuda con la organización', 'aura-suite' ) ) . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>📅 ' . esc_html__( 'Al corte de:', 'aura-suite' ) . '</span><strong>' . esc_html( $date_fmt ) . '</strong></div>'
                                 . '</div>'
                                 . '</div>';
 
@@ -785,7 +785,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                 . '</div>'
                                 . '</div>'
                                 . '<div class="aura-tip-card-body">'
-                                . '<div class="aura-tip-row"><span>📌 Condición:</span><strong>' . $st_info['desc'] . '</strong></div>'
+                                . '<div class="aura-tip-row"><span>📌 ' . esc_html__( 'Condición:', 'aura-suite' ) . '</span><strong>' . $st_info['desc'] . '</strong></div>'
                                 . '</div>'
                                 . '</div>';
                         ?>
@@ -797,7 +797,7 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                 </div>
                             </td>
                             <td class="col-date">
-                                <span class="aura-date-badge" data-tooltip="<?php echo esc_attr( "Fecha de registro: {$date_fmt}" ); ?>"><?php echo esc_html( $date_fmt ); ?></span>
+                                <span class="aura-date-badge" data-tooltip="<?php echo esc_attr( sprintf( __( 'Fecha de registro: %s', 'aura-suite' ), $date_fmt ) ); ?>"><?php echo esc_html( $date_fmt ); ?></span>
                             </td>
                             <td class="col-desc">
                                 <div class="aura-desc-text" data-tooltip="<?php echo esc_attr( $tip_desc_html ); ?>" style="cursor:help;"><?php echo esc_html( $row->description ); ?></div>
@@ -866,10 +866,10 @@ $export_nonce = wp_create_nonce( 'aura_transaction_nonce' );
                                         </div>
                                         <div style="text-align:right;">
                                             <span class="aura-amt-balance <?php echo $balance >= 0 ? 'is-positive' : 'is-negative'; ?>" style="font-size:16px;display:block;">
-                                                Balance: <?php echo esc_html( ( $balance >= 0 ? '+' : '-' ) . $currency . number_format( abs( $balance ), 2, '.', ',' ) ); ?>
+                                                <?php esc_html_e( 'Balance:', 'aura-suite' ); ?> <?php echo esc_html( ( $balance >= 0 ? '+' : '-' ) . $currency . number_format( abs( $balance ), 2, '.', ',' ) ); ?>
                                             </span>
                                             <small style="color:#64748b;font-weight:600;">
-                                                <?php echo $is_income ? '+' . esc_html( $currency . number_format( $amount, 2, '.', ',' ) ) . ' (Ingreso)' : '-' . esc_html( $currency . number_format( $amount, 2, '.', ',' ) ) . ' (Egreso)'; ?>
+                                                <?php echo $is_income ? '+' . esc_html( $currency . number_format( $amount, 2, '.', ',' ) ) . ' (' . esc_html__( 'Ingreso', 'aura-suite' ) . ')' : '-' . esc_html( $currency . number_format( $amount, 2, '.', ',' ) ) . ' (' . esc_html__( 'Egreso', 'aura-suite' ) . ')'; ?>
                                             </small>
                                         </div>
                                     </div>

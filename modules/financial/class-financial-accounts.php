@@ -724,7 +724,7 @@ class Aura_Financial_Accounts {
             error_log("[AURA] UPDATE Result: $update_result, Error: " . $wpdb->last_error);
 
             if ($update_result === false) {
-                wp_send_json_error(array('message' => __('Error al actualizar la cuenta: ' . $wpdb->last_error, 'aura-suite')));
+                wp_send_json_error(array('message' => sprintf(__('Error al actualizar la cuenta: %s', 'aura-suite'), $wpdb->last_error)));
             }
 
             wp_send_json_success(array('id' => $id, 'message' => __('Cuenta actualizada correctamente.', 'aura-suite')));

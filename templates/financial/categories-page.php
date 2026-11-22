@@ -95,13 +95,13 @@ if (!defined('ABSPATH')) {
                     document.body.removeChild(link);
                     URL.revokeObjectURL(link.href);
                 } else {
-                    alert(res.data?.message || 'Error al exportar categorías');
+                    alert(res.data?.message || '<?php echo esc_js(__('Error al exportar categorías', 'aura-suite')); ?>');
                 }
             })
             .catch(err => {
                 button.disabled = false;
                 button.innerHTML = originalText;
-                alert('Error de conexión al exportar.');
+                alert('<?php echo esc_js(__('Error de conexión al exportar.', 'aura-suite')); ?>');
             });
         }
         </script>
@@ -118,26 +118,26 @@ if (!defined('ABSPATH')) {
         <!-- BARRA DE FILTROS / PESTAÑAS (STICKY COMPACTA) -->
         <div class="aura-cat-filter-bar" id="aura-sticky-filter-bar">
             <div class="aura-cat-tabs" id="category-tabs">
-                <button type="button" class="button button-primary tab-filter active" data-filter="active" data-tooltip="<strong>Categorías Activas:</strong> Muestra sólo las categorías y subcategorías habilitadas para registrar transacciones operativas.">
+                <button type="button" class="button button-primary tab-filter active" data-filter="active" data-tooltip="<?php echo esc_attr(__('<strong>Categorías Activas:</strong> Muestra sólo las categorías y subcategorías habilitadas para registrar transacciones operativas.', 'aura-suite')); ?>">
                     <span class="aura-filter-dot dot-active"></span>
                     <?php esc_html_e('Activas', 'aura-suite'); ?> <span class="aura-filter-count" id="count-active">0</span>
                 </button>
-                <button type="button" class="button button-secondary tab-filter" data-filter="income" data-tooltip="<strong>Categorías de Ingresos:</strong> Agrupa todos los conceptos de captación de recursos, ventas, cobros y entradas de capital.">
+                <button type="button" class="button button-secondary tab-filter" data-filter="income" data-tooltip="<?php echo esc_attr(__('<strong>Categorías de Ingresos:</strong> Agrupa todos los conceptos de captación de recursos, ventas, cobros y entradas de capital.', 'aura-suite')); ?>">
                     📈 <?php esc_html_e('Ingresos', 'aura-suite'); ?> <span class="aura-filter-count" id="count-income">0</span>
                 </button>
-                <button type="button" class="button button-secondary tab-filter" data-filter="expense" data-tooltip="<strong>Gastos Operativos (OpEx):</strong> Egresos habituales del día a día necesarios para el funcionamiento de la empresa.">
+                <button type="button" class="button button-secondary tab-filter" data-filter="expense" data-tooltip="<?php echo esc_attr(__('<strong>Gastos Operativos (OpEx):</strong> Egresos habituales del día a día necesarios para el funcionamiento de la empresa.', 'aura-suite')); ?>">
                     📉 <?php esc_html_e('Egresos OpEx', 'aura-suite'); ?> <span class="aura-filter-count" id="count-expense">0</span>
                 </button>
-                <button type="button" class="button button-secondary tab-filter" data-filter="capital" data-tooltip="<strong>Gastos de Capital (CapEx):</strong> Inversiones estratégicas en adquisición, modernización o mejora de activos fijos e infraestructura.">
+                <button type="button" class="button button-secondary tab-filter" data-filter="capital" data-tooltip="<?php echo esc_attr(__('<strong>Gastos de Capital (CapEx):</strong> Inversiones estratégicas en adquisición, modernización o mejora de activos fijos e infraestructura.', 'aura-suite')); ?>">
                     🏗️ <?php esc_html_e('CapEx', 'aura-suite'); ?> <span class="aura-filter-count" id="count-capital">0</span>
                 </button>
-                <button type="button" class="button button-secondary tab-filter" data-filter="unused" data-tooltip="<strong>Categorías Sin Movimientos:</strong> Categorías y subcategorías con 0 transacciones asociadas. Es 100% seguro editarlas, fusionarlas o eliminarlas sin afectar el balance.">
+                <button type="button" class="button button-secondary tab-filter" data-filter="unused" data-tooltip="<?php echo esc_attr(__('<strong>Categorías Sin Movimientos:</strong> Categorías y subcategorías con 0 transacciones asociadas. Es 100% seguro editarlas, fusionarlas o eliminarlas sin afectar el balance.', 'aura-suite')); ?>">
                     🧹 <?php esc_html_e('Sin Uso', 'aura-suite'); ?> <span class="aura-filter-count" id="count-unused">0</span>
                 </button>
-                <button type="button" class="button button-secondary tab-filter tab-filter--archived" data-filter="archived" data-tooltip="<strong>Categorías Archivadas:</strong> Categorías desactivadas que han sido pausadas. No aparecen en formularios pero preservan su historial contable.">
+                <button type="button" class="button button-secondary tab-filter tab-filter--archived" data-filter="archived" data-tooltip="<?php echo esc_attr(__('<strong>Categorías Archivadas:</strong> Categorías desactivadas que han sido pausadas. No aparecen en formularios pero preservan su historial contable.', 'aura-suite')); ?>">
                     📦 <?php esc_html_e('Archivadas', 'aura-suite'); ?> <span class="aura-filter-count" id="count-archived">0</span>
                 </button>
-                <button type="button" class="button button-secondary tab-filter" data-filter="all" data-tooltip="<strong>Catálogo Completo:</strong> Muestra todas las categorías principales y subcategorías del sistema sin ningún filtro.">
+                <button type="button" class="button button-secondary tab-filter" data-filter="all" data-tooltip="<?php echo esc_attr(__('<strong>Catálogo Completo:</strong> Muestra todas las categorías principales y subcategorías del sistema sin ningún filtro.', 'aura-suite')); ?>">
                     🌐 <?php esc_html_e('Todas', 'aura-suite'); ?> <span class="aura-filter-count" id="count-all">0</span>
                 </button>
             </div>
@@ -150,10 +150,10 @@ if (!defined('ABSPATH')) {
                 <input type="text" id="cat-search-input" class="aura-input" placeholder="<?php esc_attr_e('Buscar por nombre o slug...', 'aura-suite'); ?>">
             </div>
             <div class="aura-cat-tree-actions">
-                <button type="button" id="btn-expand-all" class="button button-secondary aura-btn-icon-text" data-tooltip="Expandir todas las ramas y subcategorías del árbol">
+                <button type="button" id="btn-expand-all" class="button button-secondary aura-btn-icon-text" data-tooltip="<?php esc_attr_e('Expandir todas las ramas y subcategorías del árbol', 'aura-suite'); ?>">
                     <span>🔽</span> <?php esc_html_e('Expandir', 'aura-suite'); ?>
                 </button>
-                <button type="button" id="btn-collapse-all" class="button button-secondary aura-btn-icon-text" data-tooltip="Colapsar todas las categorías para una vista compacta de sólo padres">
+                <button type="button" id="btn-collapse-all" class="button button-secondary aura-btn-icon-text" data-tooltip="<?php esc_attr_e('Colapsar todas las categorías para una vista compacta de sólo padres', 'aura-suite'); ?>">
                     <span>🔼</span> <?php esc_html_e('Colapsar', 'aura-suite'); ?>
                 </button>
             </div>
@@ -233,7 +233,7 @@ if (!defined('ABSPATH')) {
                         </label>
                         <div class="aura-input-group">
                             <span class="aura-input-group-text"><span class="dashicons dashicons-admin-links"></span></span>
-                            <input type="text" id="category-slug" name="slug" class="aura-input" placeholder="se-genera-automaticamente">
+                            <input type="text" id="category-slug" name="slug" class="aura-input" placeholder="<?php esc_attr_e('se-genera-automaticamente', 'aura-suite'); ?>">
                         </div>
                     </div>
                     
@@ -267,7 +267,7 @@ if (!defined('ABSPATH')) {
                                 <div id="category-icon-preview" class="aura-icon-live-preview" title="<?php esc_attr_e('Vista previa del ícono', 'aura-suite'); ?>">
                                     📁
                                 </div>
-                                <input type="text" id="category-icon" name="icon" class="aura-input" value="📁" placeholder="📁, 💰, 💼, dashicons-money...">
+                                <input type="text" id="category-icon" name="icon" class="aura-input" value="📁" placeholder="<?php esc_attr_e('📁, 💰, 💼, dashicons-money...', 'aura-suite'); ?>">
                             </div>
                         </div>
                     </div>
@@ -289,20 +289,20 @@ if (!defined('ABSPATH')) {
 
                         <?php
                         $emoji_groups = [
-                            'Finanzas y Negocios' => [
-                                ['💰','Dinero'], ['💵','Efectivo'], ['💳','Tarjeta'], ['🏦','Banco'],
-                                ['🪙','Monedas'], ['📈','Ingresos'], ['📉','Gastos'], ['📊','Reportes'],
-                                ['🧾','Facturas'], ['💼','Negocio'], ['🏢','Corporativo'], ['🤝','Socios'], ['📑','Contratos'],
+                            __('Finanzas y Negocios', 'aura-suite') => [
+                                ['💰',__('Dinero', 'aura-suite')], ['💵',__('Efectivo', 'aura-suite')], ['💳',__('Tarjeta', 'aura-suite')], ['🏦',__('Banco', 'aura-suite')],
+                                ['🪙',__('Monedas', 'aura-suite')], ['📈',__('Ingresos', 'aura-suite')], ['📉',__('Gastos', 'aura-suite')], ['📊',__('Reportes', 'aura-suite')],
+                                ['🧾',__('Facturas', 'aura-suite')], ['💼',__('Negocio', 'aura-suite')], ['🏢',__('Corporativo', 'aura-suite')], ['🤝',__('Socios', 'aura-suite')], ['📑',__('Contratos', 'aura-suite')],
                             ],
-                            'Mantenimiento, Limpieza e Instalaciones' => [
-                                ['🏊','Piscina'], ['🛠️','Taller'], ['🔧','Herramientas'], ['🧼','Limpieza'],
-                                ['🧹','Aseo'], ['🧪','Químicos'], ['💧','Agua'], ['🍃','Jardín'],
-                                ['🌱','Plantas'], ['🏠','Inmueble'], ['💡','Iluminación'], ['🛡️','Seguridad'],
+                            __('Mantenimiento, Limpieza e Instalaciones', 'aura-suite') => [
+                                ['🏊',__('Piscina', 'aura-suite')], ['🛠️',__('Taller', 'aura-suite')], ['🔧',__('Herramientas', 'aura-suite')], ['🧼',__('Limpieza', 'aura-suite')],
+                                ['🧹',__('Aseo', 'aura-suite')], ['🧪',__('Químicos', 'aura-suite')], ['💧',__('Agua', 'aura-suite')], ['🍃',__('Jardín', 'aura-suite')],
+                                ['🌱',__('Plantas', 'aura-suite')], ['🏠',__('Inmueble', 'aura-suite')], ['💡',__('Iluminación', 'aura-suite')], ['🛡️',__('Seguridad', 'aura-suite')],
                             ],
-                            'Vehículos, Transporte y Seguros' => [
-                                ['🚗','Auto'], ['🚐','Van'], ['🚚','Camión'], ['⛽','Gasolina'],
-                                ['🛡️','Seguro'], ['📋','Trámites'], ['💥','Siniestros'], ['✈️','Viajes'],
-                                ['🍔','Restaurantes'], ['🍕','Alimentos'], ['☕','Refrigerios'], ['⭐','Prioritario'],
+                            __('Vehículos, Transporte y Seguros', 'aura-suite') => [
+                                ['🚗',__('Auto', 'aura-suite')], ['🚐',__('Van', 'aura-suite')], ['🚚',__('Camión', 'aura-suite')], ['⛽',__('Gasolina', 'aura-suite')],
+                                ['🛡️',__('Seguro', 'aura-suite')], ['📋',__('Trámites', 'aura-suite')], ['💥',__('Siniestros', 'aura-suite')], ['✈️',__('Viajes', 'aura-suite')],
+                                ['🍔',__('Restaurantes', 'aura-suite')], ['🍕',__('Alimentos', 'aura-suite')], ['☕',__('Refrigerios', 'aura-suite')], ['⭐',__('Prioritario', 'aura-suite')],
                             ],
                         ];
                         foreach ($emoji_groups as $group_label => $emojis): ?>
@@ -326,16 +326,16 @@ if (!defined('ABSPATH')) {
                             <div class="aura-combos-buttons-wrap">
                                 <?php
                                 $combos = [
-                                    ['🛠️🏊', 'Soporte\nPiscina'],
-                                    ['🧼🏊', 'Limpieza\nPiscina'],
-                                    ['🧪💧', 'Químicos\nAgua'],
-                                    ['🍃🧹', 'Jardín\nResiduos'],
-                                    ['🛡️🚗', 'Seguro\nAuto'],
-                                    ['📋🚗', 'Trámites\nAuto'],
-                                    ['💥🚗', 'Siniestros\nAuto'],
-                                    ['🔧🚗', 'Taller\nAuto'],
-                                    ['⛽🚗', 'Gasolina\nVehículo'],
-                                    ['💰📈', 'Ingresos\nOp.'],
+                                    ['🛠️🏊', __('Soporte\nPiscina', 'aura-suite')],
+                                    ['🧼🏊', __('Limpieza\nPiscina', 'aura-suite')],
+                                    ['🧪💧', __('Químicos\nAgua', 'aura-suite')],
+                                    ['🍃🧹', __('Jardín\nResiduos', 'aura-suite')],
+                                    ['🛡️🚗', __('Seguro\nAuto', 'aura-suite')],
+                                    ['📋🚗', __('Trámites\nAuto', 'aura-suite')],
+                                    ['💥🚗', __('Siniestros\nAuto', 'aura-suite')],
+                                    ['🔧🚗', __('Taller\nAuto', 'aura-suite')],
+                                    ['⛽🚗', __('Gasolina\nVehículo', 'aura-suite')],
+                                    ['💰📈', __('Ingresos\nOp.', 'aura-suite')],
                                 ];
                                 foreach ($combos as [$combo_icon, $combo_label]):
                                     $label_html = nl2br(esc_html($combo_label));
@@ -354,11 +354,11 @@ if (!defined('ABSPATH')) {
                             <div class="aura-emoji-buttons-wrap">
                                 <?php
                                 $dashicons = [
-                                    ['dashicons-category','Categoría'], ['dashicons-money-alt','Dinero'], ['dashicons-cart','Compras'],
-                                    ['dashicons-building','Edificio'], ['dashicons-car','Auto'], ['dashicons-hammer','Herramienta'],
-                                    ['dashicons-tag','Etiqueta'], ['dashicons-chart-pie','Gráfico'], ['dashicons-admin-users','Personal'],
-                                    ['dashicons-clipboard','Reportes'], ['dashicons-awards','Premios'], ['dashicons-store','Tienda'],
-                                    ['dashicons-tickets-alt','Tickets'], ['dashicons-products','Productos'], ['dashicons-coffee','Cafetería'],
+                                    ['dashicons-category',__('Categoría', 'aura-suite')], ['dashicons-money-alt',__('Dinero', 'aura-suite')], ['dashicons-cart',__('Compras', 'aura-suite')],
+                                    ['dashicons-building',__('Edificio', 'aura-suite')], ['dashicons-car',__('Auto', 'aura-suite')], ['dashicons-hammer',__('Herramienta', 'aura-suite')],
+                                    ['dashicons-tag',__('Etiqueta', 'aura-suite')], ['dashicons-chart-pie',__('Gráfico', 'aura-suite')], ['dashicons-admin-users',__('Personal', 'aura-suite')],
+                                    ['dashicons-clipboard',__('Reportes', 'aura-suite')], ['dashicons-awards',__('Premios', 'aura-suite')], ['dashicons-store',__('Tienda', 'aura-suite')],
+                                    ['dashicons-tickets-alt',__('Tickets', 'aura-suite')], ['dashicons-products',__('Productos', 'aura-suite')], ['dashicons-coffee',__('Cafetería', 'aura-suite')],
                                 ];
                                 foreach ($dashicons as [$dash_class, $dash_label]): ?>
                                 <button type="button" class="aura-dashicon-btn" data-icon="<?php echo esc_attr($dash_class); ?>" title="<?php echo esc_attr($dash_label); ?>">
@@ -591,8 +591,8 @@ if (!defined('ABSPATH')) {
                             <div class="aura-merge-box-label label-source"><?php esc_html_e('Origen', 'aura-suite'); ?></div>
                             <div id="merge-prev-source-name" class="aura-merge-box-title">—</div>
                             <div class="aura-merge-box-badges">
-                                <span id="merge-prev-source-tx" class="aura-badge badge-source-tx">0 txs</span>
-                                <span id="merge-prev-source-sub" class="aura-badge badge-source-sub">0 hijas</span>
+                                <span id="merge-prev-source-tx" class="aura-badge badge-source-tx"><?php esc_html_e('0 txs', 'aura-suite'); ?></span>
+                                <span id="merge-prev-source-sub" class="aura-badge badge-source-sub"><?php esc_html_e('0 hijas', 'aura-suite'); ?></span>
                             </div>
                         </div>
 
@@ -606,7 +606,7 @@ if (!defined('ABSPATH')) {
                             <div class="aura-merge-box-label label-target"><?php esc_html_e('Destino Resultante', 'aura-suite'); ?></div>
                             <div id="merge-prev-target-name" class="aura-merge-box-title">—</div>
                             <div class="aura-merge-box-badges">
-                                <span id="merge-prev-target-total" class="aura-badge badge-target-total">0 txs totales</span>
+                                <span id="merge-prev-target-total" class="aura-badge badge-target-total"><?php esc_html_e('0 txs totales', 'aura-suite'); ?></span>
                             </div>
                         </div>
                     </div>

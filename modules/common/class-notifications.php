@@ -301,7 +301,7 @@ class Aura_Notifications {
         $footer = '
                 </div>
                 <div class="footer">
-                    <p>Este es un email automático de Aura Business Suite</p>
+                    <p>' . esc_html__('Este es un email automático de Aura Business Suite', 'aura-suite') . '</p>
                     <p>&copy; ' . date('Y') . ' ' . $site_name . '</p>
                 </div>
             </div>
@@ -313,98 +313,98 @@ class Aura_Notifications {
         $templates = array(
             'approval-pending' => '
                 <div class="card">
-                    <h2>🔔 Nueva Transacción Pendiente de Aprobación</h2>
+                    <h2>' . esc_html__('🔔 Nueva Transacción Pendiente de Aprobación', 'aura-suite') . '</h2>
                     <div class="data-row">
-                        <span class="data-label">Transacción #:</span> ' . $data['transaction_id'] . '
+                        <span class="data-label">' . esc_html__('Transacción #:', 'aura-suite') . '</span> ' . $data['transaction_id'] . '
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Solicitante:</span> ' . $data['author_name'] . '
+                        <span class="data-label">' . esc_html__('Solicitante:', 'aura-suite') . '</span> ' . $data['author_name'] . '
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Monto:</span> $' . $data['amount'] . '
+                        <span class="data-label">' . esc_html__('Monto:', 'aura-suite') . '</span> $' . $data['amount'] . '
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Descripción:</span> ' . $data['description'] . '
+                        <span class="data-label">' . esc_html__('Descripción:', 'aura-suite') . '</span> ' . $data['description'] . '
                     </div>
                     <p style="margin-top: 20px;">
-                        <a href="' . $data['transaction_link'] . '" class="button">Ver y Aprobar Transacción</a>
+                        <a href="' . $data['transaction_link'] . '" class="button">' . esc_html__('Ver y Aprobar Transacción', 'aura-suite') . '</a>
                     </p>
                 </div>
             ',
             
             'approval-result' => '
                 <div class="card">
-                    <h2>📋 Resultado de Aprobación</h2>
+                    <h2>' . esc_html__('📋 Resultado de Aprobación', 'aura-suite') . '</h2>
                     <p style="font-size: 18px;">
-                        Tu transacción <strong>#' . $data['transaction_id'] . '</strong> ha sido 
+                        ' . sprintf(esc_html__('Tu transacción %s ha sido', 'aura-suite'), '<strong>#' . $data['transaction_id'] . '</strong>') . ' 
                         <span class="status-' . $data['status_class'] . '">' . $data['status'] . '</span>
                     </p>
                     <div class="data-row">
-                        <span class="data-label">Aprobado por:</span> ' . $data['approver_name'] . '
+                        <span class="data-label">' . esc_html__('Aprobado por:', 'aura-suite') . '</span> ' . $data['approver_name'] . '
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Monto:</span> $' . $data['amount'] . '
+                        <span class="data-label">' . esc_html__('Monto:', 'aura-suite') . '</span> $' . $data['amount'] . '
                     </div>
                     ' . (!empty($data['comment']) ? '
                     <div class="data-row">
-                        <span class="data-label">Comentario:</span><br>' . $data['comment'] . '
+                        <span class="data-label">' . esc_html__('Comentario:', 'aura-suite') . '</span><br>' . $data['comment'] . '
                     </div>
                     ' : '') . '
                     <p style="margin-top: 20px;">
-                        <a href="' . $data['transaction_link'] . '" class="button">Ver Transacción</a>
+                        <a href="' . $data['transaction_link'] . '" class="button">' . esc_html__('Ver Transacción', 'aura-suite') . '</a>
                     </p>
                 </div>
             ',
             
             'vehicle-maintenance' => '
                 <div class="card">
-                    <h2>🚗 Alerta de Mantenimiento de Vehículo</h2>
-                    <p class="status-' . $data['urgency_class'] . '">Un vehículo requiere mantenimiento pronto</p>
+                    <h2>' . esc_html__('🚗 Alerta de Mantenimiento de Vehículo', 'aura-suite') . '</h2>
+                    <p class="status-' . $data['urgency_class'] . '">' . esc_html__('Un vehículo requiere mantenimiento pronto', 'aura-suite') . '</p>
                     <div class="data-row">
-                        <span class="data-label">Vehículo:</span> ' . $data['vehicle_title'] . '
+                        <span class="data-label">' . esc_html__('Vehículo:', 'aura-suite') . '</span> ' . $data['vehicle_title'] . '
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Placa:</span> ' . $data['plate'] . '
+                        <span class="data-label">' . esc_html__('Placa:', 'aura-suite') . '</span> ' . $data['plate'] . '
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Kilometraje Actual:</span> ' . $data['current_km'] . ' km
+                        <span class="data-label">' . esc_html__('Kilometraje Actual:', 'aura-suite') . '</span> ' . $data['current_km'] . ' km
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Próximo Mantenimiento:</span> ' . $data['next_maintenance'] . ' km
+                        <span class="data-label">' . esc_html__('Próximo Mantenimiento:', 'aura-suite') . '</span> ' . $data['next_maintenance'] . ' km
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Kilómetros Restantes:</span> <strong>' . $data['km_remaining'] . ' km</strong>
+                        <span class="data-label">' . esc_html__('Kilómetros Restantes:', 'aura-suite') . '</span> <strong>' . $data['km_remaining'] . ' km</strong>
                     </div>
                     <p style="margin-top: 20px;">
-                        <a href="' . $data['vehicle_link'] . '" class="button">Ver Vehículo</a>
+                        <a href="' . $data['vehicle_link'] . '" class="button">' . esc_html__('Ver Vehículo', 'aura-suite') . '</a>
                     </p>
                 </div>
             ',
             
             'electricity-alert' => '
                 <div class="card">
-                    <h2>⚡ Alerta de Consumo Eléctrico</h2>
-                    <p class="status-critical">El consumo eléctrico ha superado el umbral configurado</p>
+                    <h2>' . esc_html__('⚡ Alerta de Consumo Eléctrico', 'aura-suite') . '</h2>
+                    <p class="status-critical">' . esc_html__('El consumo eléctrico ha superado el umbral configurado', 'aura-suite') . '</p>
                     <div class="data-row">
-                        <span class="data-label">Consumo Actual:</span> ' . $data['current_consumption'] . ' kWh
+                        <span class="data-label">' . esc_html__('Consumo Actual:', 'aura-suite') . '</span> ' . $data['current_consumption'] . ' kWh
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Umbral Configurado:</span> ' . $data['threshold'] . ' kWh
+                        <span class="data-label">' . esc_html__('Umbral Configurado:', 'aura-suite') . '</span> ' . $data['threshold'] . ' kWh
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Exceso:</span> <strong>' . $data['percentage_over'] . '%</strong>
+                        <span class="data-label">' . esc_html__('Exceso:', 'aura-suite') . '</span> <strong>' . $data['percentage_over'] . '%</strong>
                     </div>
                     <div class="data-row">
-                        <span class="data-label">Fecha:</span> ' . $data['date'] . '
+                        <span class="data-label">' . esc_html__('Fecha:', 'aura-suite') . '</span> ' . $data['date'] . '
                     </div>
                     <p style="margin-top: 20px;">
-                        <a href="' . $data['dashboard_link'] . '" class="button">Ver Dashboard de Electricidad</a>
+                        <a href="' . $data['dashboard_link'] . '" class="button">' . esc_html__('Ver Dashboard de Electricidad', 'aura-suite') . '</a>
                     </p>
                 </div>
             ',
         );
         
-        $body = isset($templates[$template]) ? $templates[$template] : '<p>Notificación de Aura Business Suite</p>';
+        $body = isset($templates[$template]) ? $templates[$template] : '<p>' . esc_html__('Notificación de Aura Business Suite', 'aura-suite') . '</p>';
         
         return $header . $body . $footer;
     }

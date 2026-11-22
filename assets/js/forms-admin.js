@@ -10,6 +10,7 @@
     'use strict';
 
     const { ajaxUrl, nonce, i18n } = auraFormsAdmin;
+    const __ = ( window.wp && window.wp.i18n && window.wp.i18n.__ ) ? window.wp.i18n.__ : function ( s ) { return s; };
 
     // ── Helpers ────────────────────────────────────────────────
 
@@ -32,7 +33,7 @@
         var $btn = $( this );
         var id   = $btn.data( 'id' );
 
-        if ( ! window.confirm( '¿Duplicar este formulario?' ) ) return;
+        if ( ! window.confirm( __( '¿Duplicar este formulario?', 'aura-suite' ) ) ) return;
 
         $btn.text( '…' ).prop( 'disabled', true );
 
@@ -45,12 +46,12 @@
                     }, 800 );
                 } else {
                     showNotice( ( res.data && res.data.message ) || i18n.error, 'error' );
-                    $btn.text( 'Duplicar' ).prop( 'disabled', false );
+                    $btn.text( __( 'Duplicar', 'aura-suite' ) ).prop( 'disabled', false );
                 }
             } )
             .fail( function () {
                 showNotice( i18n.error, 'error' );
-                $btn.text( 'Duplicar' ).prop( 'disabled', false );
+                $btn.text( __( 'Duplicar', 'aura-suite' ) ).prop( 'disabled', false );
             } );
     } );
 
@@ -73,12 +74,12 @@
                     showNotice( res.data.message );
                 } else {
                     showNotice( ( res.data && res.data.message ) || i18n.error, 'error' );
-                    $btn.text( 'Eliminar' ).prop( 'disabled', false );
+                    $btn.text( __( 'Eliminar', 'aura-suite' ) ).prop( 'disabled', false );
                 }
             } )
             .fail( function () {
                 showNotice( i18n.error, 'error' );
-                $btn.text( 'Eliminar' ).prop( 'disabled', false );
+                $btn.text( __( 'Eliminar', 'aura-suite' ) ).prop( 'disabled', false );
             } );
     } );
 
@@ -154,7 +155,7 @@
                 correctLevel: QRCode.CorrectLevel.M
             } );
         } else {
-            $( '#aura-qr-canvas' ).html( '<p class="aura-qr-no-lib">La biblioteca QR no est\u00e1 disponible. Verifica la conexi\u00f3n a internet.</p>' );
+            $( '#aura-qr-canvas' ).html( '<p class="aura-qr-no-lib">' + __( 'La biblioteca QR no está disponible. Verifica la conexión a internet.', 'aura-suite' ) + '</p>' );
         }
 
         $modal.fadeIn( 150 );

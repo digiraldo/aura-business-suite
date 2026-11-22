@@ -257,7 +257,7 @@ class Aura_Contact_Selector {
                 $phone     = $db_row->phone_primary ?: ( $db_row->whatsapp ?: ( $db_row->phone_secondary ?: '' ) );
                 $contact   = [
                     'id'             => (int) $db_row->id,
-                    'name'           => $full_name ?: ( $db_row->organization ?: __( 'Contacto #' . $contact_id, 'aura-suite' ) ),
+                    'name'           => $full_name ?: ( $db_row->organization ?: sprintf( __( 'Contacto #%d', 'aura-suite' ), $contact_id ) ),
                     'email'          => $email,
                     'phone'          => $phone,
                     'organization'   => $db_row->organization ?: '',
@@ -345,7 +345,7 @@ class Aura_Contact_Selector {
                 </div>
 
                 <?php if ( $opts['allow_clear'] ) : ?>
-                    <button type="button" class="aura-cs-btn-clear" title="<?php esc_attr_e( 'Quitar selección', 'aura-suite' ); ?>" aria-label="Limpiar contacto">
+                    <button type="button" class="aura-cs-btn-clear" title="<?php esc_attr_e( 'Quitar selección', 'aura-suite' ); ?>" aria-label="<?php esc_attr_e( 'Limpiar contacto', 'aura-suite' ); ?>">
                         <span class="dashicons dashicons-no-alt"></span>
                     </button>
                 <?php endif; ?>

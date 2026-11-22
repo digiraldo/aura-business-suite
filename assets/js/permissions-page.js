@@ -7,6 +7,26 @@
 jQuery(document).ready(function($) {
     'use strict';
 
+    const _wpI18n = window.wp && window.wp.i18n ? window.wp.i18n : null;
+    const __ = function(text, domain) {
+        return _wpI18n && typeof _wpI18n.__ === 'function' ? _wpI18n.__(text, domain || 'aura-suite') : text;
+    };
+    const sprintf = function() {
+        if (_wpI18n && typeof _wpI18n.sprintf === 'function') {
+            return _wpI18n.sprintf.apply(_wpI18n, arguments);
+        }
+        const args = Array.prototype.slice.call(arguments);
+        const fmt = String(args.shift() || '');
+        let idx = 0;
+        return fmt.replace(/%(?:(\d+)\$)?[sd]/g, function(m, pos) {
+            const pick = pos ? parseInt(pos, 10) - 1 : idx++;
+            return args[pick] !== undefined ? args[pick] : '';
+        });
+    };
+    const escHtml = function(value) {
+        return $('<div>').text(value || '').html();
+    };
+
     const data = window.auraPermissionsData || {};
     const i18n = data.i18n || {};
 
@@ -124,7 +144,7 @@ jQuery(document).ready(function($) {
                 const emptyRow = '<tr id="aura-no-active-matches"><td colspan="6">' +
                     '<div class="aura-empty-state">' +
                     '<span class="dashicons dashicons-search aura-empty-state-icon"></span>' +
-                    '<h4 class="aura-empty-state-title">' + (i18n.noActiveMatches || 'No se encontraron usuarios que coincidan') + '</h4>' +
+                    '<h4 class="aura-empty-state-title">' + (i18n.noActiveMatches || __( 'No se encontraron usuarios que coincidan', 'aura-suite' )) + '</h4>' +
                     '<p class="aura-empty-state-desc">"' + $('<div>').text(term).html() + '"</p>' +
                     '</div>' +
                     '</td></tr>';
@@ -163,7 +183,7 @@ jQuery(document).ready(function($) {
                 const emptyRow = '<tr id="aura-no-inactive-matches"><td colspan="5">' +
                     '<div class="aura-empty-state">' +
                     '<span class="dashicons dashicons-search aura-empty-state-icon"></span>' +
-                    '<h4 class="aura-empty-state-title">' + (i18n.noInactiveMatches || 'No se encontraron usuarios') + '</h4>' +
+                    '<h4 class="aura-empty-state-title">' + (i18n.noInactiveMatches || __( 'No se encontraron usuarios', 'aura-suite' )) + '</h4>' +
                     '<p class="aura-empty-state-desc">"' + $('<div>').text(term).html() + '"</p>' +
                     '</div>' +
                     '</td></tr>';
@@ -407,12 +427,12 @@ jQuery(document).ready(function($) {
         const $err = $('#aura-crear-usuario-error').hide().text('');
 
         if (!/^image\/(png|jpe?g|webp|gif)$/i.test(file.type)) {
-            $err.text('Formato de imagen inválido. Usa PNG, JPG, WebP o GIF.').show();
+            $err.text(__( 'Formato de imagen inválido. Usa PNG, JPG, WebP o GIF.', 'aura-suite' )).show();
             $(this).val('');
             return;
         }
         if (file.size > 5 * 1024 * 1024) {
-            $err.text('La imagen de perfil no debe superar los 5 MB.').show();
+            $err.text(__( 'La imagen de perfil no debe superar los 5 MB.', 'aura-suite' )).show();
             $(this).val('');
             return;
         }
@@ -541,7 +561,7 @@ jQuery(document).ready(function($) {
     $('#aura-modal-btn-action-select').on('click', function() {
         const selectedId = $('input[name="aura_selected_modal_user"]:checked').val();
         if (!selectedId) {
-            alert(i18n.selectUserAlert || 'Por favor seleccione un usuario de la lista.');
+            alert(i18n.selectUserAlert || __( 'Por favor seleccione un usuario de la lista.', 'aura-suite' ));
             return;
         }
         window.location.href = 'admin.php?page=aura-permissions&user_id=' + selectedId + '&activated=1';
@@ -573,24 +593,24 @@ jQuery(document).ready(function($) {
         const pwd       = $('#aura_cu_password').val();
 
         if (!first || !email || !pwd) {
-            $err.text(i18n.requiredFields || 'Nombre, email y contraseña son obligatorios.').show();
+            $err.text(i18n.requiredFields || __( 'Nombre, email y contraseña son obligatorios.', 'aura-suite' )).show();
             return;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            $err.text(i18n.invalidEmail || 'Por favor ingresa un correo electrónico válido.').show();
+            $err.text(i18n.invalidEmail || __( 'Por favor ingresa un correo electrónico válido.', 'aura-suite' )).show();
             $('#aura_cu_email').focus();
             return;
         }
 
         if (pwd.length < 8) {
-            $err.text(i18n.passwordLength || 'La contraseña debe tener al menos 8 caracteres.').show();
+            $err.text(i18n.passwordLength || __( 'La contraseña debe tener al menos 8 caracteres.', 'aura-suite' )).show();
             $('#aura_cu_password').focus();
             return;
         }
 
-        const $btn = $(this).prop('disabled', true).text(i18n.creating || 'Creando...');
+        const $btn = $(this).prop('disabled', true).text(i18n.creating || __( 'Creando...', 'aura-suite' ));
 
         const sendCreateRequest = function() {
             const formData = new FormData();
@@ -617,13 +637,13 @@ jQuery(document).ready(function($) {
                     if (res.success) {
                         window.location.href = res.data.redirect_url;
                     } else {
-                        const msg = (res.data && res.data.message) ? res.data.message : (i18n.connError || 'Error al procesar la solicitud.');
+                        const msg = (res.data && res.data.message) ? res.data.message : (i18n.connError || __( 'Error al procesar la solicitud.', 'aura-suite' ));
                         $err.text(msg).show();
-                        $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || 'Crear y asignar permisos'));
+                        $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || __( 'Crear y asignar permisos', 'aura-suite' )));
                     }
                 },
                 error: function(xhr) {
-                    let errorMsg = i18n.connError || 'Error de conexión. Inténtalo de nuevo.';
+                    let errorMsg = i18n.connError || __( 'Error de conexión. Inténtalo de nuevo.', 'aura-suite' );
                     if (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
                         errorMsg = xhr.responseJSON.data.message;
                     } else if (xhr.responseText) {
@@ -635,7 +655,7 @@ jQuery(document).ready(function($) {
                         } catch(e) {}
                     }
                     $err.text(errorMsg).show();
-                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || 'Crear y asignar permisos'));
+                    $btn.prop('disabled', false).html('<span class="dashicons dashicons-saved"></span> ' + (i18n.createAndAssign || __( 'Crear y asignar permisos', 'aura-suite' )));
                 }
             });
         };
@@ -727,9 +747,9 @@ jQuery(document).ready(function($) {
         });
 
         if (totalVisible > 0) {
-            $count.text(totalVisible + ' ' + (i18n.results || 'resultados')).show();
+            $count.text(totalVisible + ' ' + (i18n.results || __( 'resultados', 'aura-suite' ))).show();
         } else {
-            $count.text(i18n.noResults || 'Sin resultados').show();
+            $count.text(i18n.noResults || __( 'Sin resultados', 'aura-suite' )).show();
         }
     });
 
@@ -787,7 +807,7 @@ jQuery(document).ready(function($) {
 
     function updateStickyCount() {
         const total = $('input[name="capabilities[]"]').filter(':checked').length;
-        const label = total === 1 ? (i18n.permActive || 'permiso activo') : (i18n.permsActive || 'permisos activos');
+        const label = total === 1 ? (i18n.permActive || __( 'permiso activo', 'aura-suite' )) : (i18n.permsActive || __( 'permisos activos', 'aura-suite' ));
         $('#aura-perm-sticky-total').html('<strong>' + total + '</strong> ' + label);
     }
 
@@ -843,8 +863,8 @@ jQuery(document).ready(function($) {
         }
 
         const indicator = visibleCount === totalTemplates 
-            ? (i18n.showingTemplates || 'Mostrando %d perfiles estándar').replace('%d', visibleCount)
-            : (i18n.showingTemplatesOf || 'Mostrando %d de %d perfiles').replace('%d', visibleCount).replace('%d', totalTemplates);
+            ? sprintf(i18n.showingTemplates || __( 'Mostrando %d perfiles estándar', 'aura-suite' ), visibleCount)
+            : sprintf(i18n.showingTemplatesOf || __( 'Mostrando %d de %d perfiles', 'aura-suite' ), visibleCount, totalTemplates);
         $('#aura-templates-count-indicator').text(indicator);
     }
 
@@ -883,7 +903,7 @@ jQuery(document).ready(function($) {
         const templates = window.auraProfileTemplatesJson || {};
         const tpl = templates[templateId];
         if (!tpl) {
-            alert('Plantilla no encontrada: ' + templateId);
+            alert(sprintf(__( 'Plantilla no encontrada: %s', 'aura-suite' ), templateId));
             return;
         }
 
@@ -903,18 +923,18 @@ jQuery(document).ready(function($) {
             selectedUserId = parseInt(urlParams.get('user_id'), 10) || 0;
         }
 
-        const selectedUserName = data.selectedUserName || 'el usuario seleccionado';
+        const selectedUserName = data.selectedUserName || __( 'el usuario seleccionado', 'aura-suite' );
 
         // Si NO hay usuario seleccionado, orientar al usuario a seleccionar uno
         if (!selectedUserId) {
-            const msg = 'Debe seleccionar primero un usuario activo para poder aplicarle este perfil predefinido.\n\n¿Desea ir a la lista de usuarios activos ahora?';
+            const msg = __( 'Debe seleccionar primero un usuario activo para poder aplicarle este perfil predefinido.\n\n¿Desea ir a la lista de usuarios activos ahora?', 'aura-suite' );
             if (confirm(msg)) {
                 switchTab('active-users');
             }
             return;
         }
 
-        const confirmMsg = '¿Deseas aplicar la plantilla "' + tplName + '" (' + tplCount + ' permisos) a ' + selectedUserName + '?\n\nEsta acción asignará y guardará directamente los permisos específicos de este perfil en el sistema.';
+        const confirmMsg = sprintf(__( '¿Deseas aplicar la plantilla "%s" (%d permisos) a %s?\n\nEsta acción asignará y guardará directamente los permisos específicos de este perfil en el sistema.', 'aura-suite' ), tplName, tplCount, selectedUserName);
 
         if (!confirm(confirmMsg)) {
             return;
@@ -924,7 +944,7 @@ jQuery(document).ready(function($) {
         const $card = $('.aura-template-card[data-template-id="' + templateId + '"]');
         const $btn = $card.find('.aura-template-card__btn');
         const origBtnHtml = $btn.html();
-        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update" style="animation: spin 1s linear infinite;"></span> <span>Aplicando...</span>');
+        $btn.prop('disabled', true).html('<span class="dashicons dashicons-update" style="animation: spin 1s linear infinite;"></span> <span>' + escHtml(__( 'Aplicando...', 'aura-suite' )) + '</span>');
 
         // Llamada AJAX para guardar formalmente los capabilities en la base de datos
         $.ajax({
@@ -943,7 +963,7 @@ jQuery(document).ready(function($) {
                     applyTemplateToFormCheckboxes(tpl);
 
                     if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
-                        window.AuraUI.showToast(response.data.message || 'Plantilla aplicada exitosamente.', 'success');
+                        window.AuraUI.showToast(response.data.message || __( 'Plantilla aplicada exitosamente.', 'aura-suite' ), 'success');
                     }
 
                     const targetUrl = (response.data && response.data.redirect_url) 
@@ -954,11 +974,11 @@ jQuery(document).ready(function($) {
                         window.location.href = targetUrl;
                     }, 400);
                 } else {
-                    const errorMsg = (response && response.data && response.data.message) ? response.data.message : 'No se pudo aplicar la plantilla.';
+                    const errorMsg = (response && response.data && response.data.message) ? response.data.message : __( 'No se pudo aplicar la plantilla.', 'aura-suite' );
                     if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
                         window.AuraUI.showToast(errorMsg, 'error');
                     } else {
-                        alert('Error: ' + errorMsg);
+                        alert(sprintf(__( 'Error: %s', 'aura-suite' ), errorMsg));
                     }
                     $btn.prop('disabled', false).html(origBtnHtml);
                 }
@@ -969,9 +989,9 @@ jQuery(document).ready(function($) {
                 if ($('#aura-perm-caps-section').length) {
                     applyTemplateToFormCheckboxes(tpl);
                     switchTab('user-permissions');
-                    alert('Se seleccionaron los permisos de la plantilla en el formulario. Haga clic en "Guardar Permisos" para persistir los cambios.');
+                    alert(__( 'Se seleccionaron los permisos de la plantilla en el formulario. Haga clic en "Guardar Permisos" para persistir los cambios.', 'aura-suite' ));
                 } else {
-                    alert('Error de conexión al aplicar la plantilla. Verifique su conexión y vuelva a intentar.');
+                    alert(__( 'Error de conexión al aplicar la plantilla. Verifique su conexión y vuelva a intentar.', 'aura-suite' ));
                 }
                 $btn.prop('disabled', false).html(origBtnHtml);
             }
@@ -985,14 +1005,14 @@ jQuery(document).ready(function($) {
         e.preventDefault();
         const $btn = $(this);
         const userId = $btn.data('user-id');
-        const userName = $btn.data('user-name') || 'el usuario';
+        const userName = $btn.data('user-name') || __( 'el usuario', 'aura-suite' );
 
-        if (!confirm('¿Desea registrar o vincular a "' + userName + '" como Estudiante en Aura Suite?\n\nSe creará su expediente académico y se le asignará el rol de estudiante.')) {
+        if (!confirm(sprintf(__( '¿Desea registrar o vincular a "%s" como Estudiante en Aura Suite?\n\nSe creará su expediente académico y se le asignará el rol de estudiante.', 'aura-suite' ), userName))) {
             return;
         }
 
         const origHtml = $btn.html();
-        $btn.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 4px 0 0;visibility:visible;"></span> Sincronizando...');
+        $btn.prop('disabled', true).html('<span class="spinner is-active" style="float:none;margin:0 4px 0 0;visibility:visible;"></span> ' + escHtml(__( 'Sincronizando...', 'aura-suite' )));
 
         $.ajax({
             url: data.ajaxUrl || ajaxurl,
@@ -1006,15 +1026,15 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response && response.success) {
                     if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
-                        window.AuraUI.showToast(response.data.message || 'Usuario vinculado como estudiante con éxito.', 'success');
+                        window.AuraUI.showToast(response.data.message || __( 'Usuario vinculado como estudiante con éxito.', 'aura-suite' ), 'success');
                     } else {
-                        alert(response.data.message || 'Usuario vinculado como estudiante con éxito.');
+                        alert(response.data.message || __( 'Usuario vinculado como estudiante con éxito.', 'aura-suite' ));
                     }
                     setTimeout(function() {
                         window.location.reload();
                     }, 500);
                 } else {
-                    const errorMsg = (response && response.data && response.data.message) ? response.data.message : 'Error al vincular el usuario como estudiante.';
+                    const errorMsg = (response && response.data && response.data.message) ? response.data.message : __( 'Error al vincular el usuario como estudiante.', 'aura-suite' );
                     if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
                         window.AuraUI.showToast(errorMsg, 'error');
                     } else {
@@ -1025,7 +1045,7 @@ jQuery(document).ready(function($) {
             },
             error: function(xhr, status, error) {
                 console.error('Error al sincronizar estudiante:', error);
-                alert('Error de conexión al sincronizar con el módulo de estudiantes.');
+                alert(__( 'Error de conexión al sincronizar con el módulo de estudiantes.', 'aura-suite' ));
                 $btn.prop('disabled', false).html(origHtml);
             }
         });

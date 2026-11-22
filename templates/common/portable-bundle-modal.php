@@ -448,7 +448,7 @@ function executeAuraBundleExport(btn) {
         if (progressBox) progressBox.style.display = 'none';
 
         if (!res.success) {
-            alert(res.data && res.data.message ? res.data.message : 'Error al exportar el paquete');
+            alert(res.data && res.data.message ? res.data.message : '<?php echo esc_js(__('Error al exportar el paquete', 'aura-suite')); ?>');
             return;
         }
 
@@ -464,7 +464,7 @@ function executeAuraBundleExport(btn) {
         btn.disabled = false;
         btn.innerHTML = originalHtml;
         if (progressBox) progressBox.style.display = 'none';
-        alert('Error en la solicitud: ' + err.message);
+        alert('<?php echo esc_js(__('Error en la solicitud:', 'aura-suite')); ?> ' + err.message);
     });
 }
 
@@ -518,7 +518,7 @@ function inspectBundleFile(file) {
     .then(function(res){
         if (!res.success) {
             resetBundleImport();
-            alert(res.data && res.data.message ? res.data.message : 'Error al inspeccionar archivo');
+            alert(res.data && res.data.message ? res.data.message : '<?php echo esc_js(__('Error al inspeccionar archivo', 'aura-suite')); ?>');
             return;
         }
 
@@ -533,12 +533,12 @@ function inspectBundleFile(file) {
         document.getElementById('aura-count-users').innerText = res.data.users || 0;
         document.getElementById('aura-count-media').innerText = res.data.counts && res.data.counts.media_files ? res.data.counts.media_files : 0;
         if (res.data.source_site) {
-            document.getElementById('aura-bundle-origin').innerText = 'Origen: ' + res.data.source_site;
+            document.getElementById('aura-bundle-origin').innerText = '<?php echo esc_js(__('Origen:', 'aura-suite')); ?> ' + res.data.source_site;
         }
     })
     .catch(function(err){
         resetBundleImport();
-        alert('Error: ' + err.message);
+        alert('<?php echo esc_js(__('Error:', 'aura-suite')); ?> ' + err.message);
     });
 }
 
@@ -587,7 +587,7 @@ function executeAuraBundleImport(btn) {
         btn.innerHTML = originalHtml;
 
         if (!res.success) {
-            statusBox.innerHTML = '<div class="alert-card alert-danger" style="padding:14px;">❌ ' + (res.data && res.data.message ? res.data.message : 'Error durante la importación') + '</div>';
+            statusBox.innerHTML = '<div class="alert-card alert-danger" style="padding:14px;">❌ ' + (res.data && res.data.message ? res.data.message : '<?php echo esc_js(__('Error durante la importación', 'aura-suite')); ?>') + '</div>';
             return;
         }
 
@@ -596,13 +596,13 @@ function executeAuraBundleImport(btn) {
         summaryHtml += '<div style="font-weight:700; margin-bottom:10px; font-size:0.96rem;">✅ ' + res.data.message + '</div>';
         summaryHtml += '<ul style="margin:0; padding-left:18px; line-height:1.6; font-size:0.88rem;">';
         if (r.areas) {
-            summaryHtml += '<li><strong>Áreas:</strong> ' + r.areas.created + ' creadas, ' + r.areas.updated + ' actualizadas, ' + r.areas.images + ' imágenes vinculadas.</li>';
+            summaryHtml += '<li><strong><?php echo esc_js(__('Áreas:', 'aura-suite')); ?></strong> ' + r.areas.created + ' <?php echo esc_js(__('creadas', 'aura-suite')); ?>, ' + r.areas.updated + ' <?php echo esc_js(__('actualizadas', 'aura-suite')); ?>, ' + r.areas.images + ' <?php echo esc_js(__('imágenes vinculadas.', 'aura-suite')); ?></li>';
         }
         if (r.users) {
-            summaryHtml += '<li><strong>Usuarios:</strong> ' + r.users.created + ' creados, ' + r.users.updated + ' actualizados, ' + r.users.images + ' avatares vinculados.</li>';
+            summaryHtml += '<li><strong><?php echo esc_js(__('Usuarios:', 'aura-suite')); ?></strong> ' + r.users.created + ' <?php echo esc_js(__('creados', 'aura-suite')); ?>, ' + r.users.updated + ' <?php echo esc_js(__('actualizados', 'aura-suite')); ?>, ' + r.users.images + ' <?php echo esc_js(__('avatares vinculados.', 'aura-suite')); ?></li>';
         }
         if (r.third_parties) {
-            summaryHtml += '<li><strong>Terceros:</strong> ' + r.third_parties.created + ' creados, ' + r.third_parties.updated + ' actualizados, ' + r.third_parties.images + ' logotipos vinculados.</li>';
+            summaryHtml += '<li><strong><?php echo esc_js(__('Terceros:', 'aura-suite')); ?></strong> ' + r.third_parties.created + ' <?php echo esc_js(__('creados', 'aura-suite')); ?>, ' + r.third_parties.updated + ' <?php echo esc_js(__('actualizados', 'aura-suite')); ?>, ' + r.third_parties.images + ' <?php echo esc_js(__('logotipos vinculados.', 'aura-suite')); ?></li>';
         }
         summaryHtml += '</ul></div>';
 

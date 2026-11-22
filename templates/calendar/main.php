@@ -51,37 +51,37 @@ $programs      = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit
             <div>
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                     <span class="adp-badge badge-indigo has-dot">
-                        <span class="pulse-dot"></span> <?php esc_html_e( 'Módulo Académico', 'aura' ); ?>
+                        <span class="pulse-dot"></span> <?php esc_html_e( 'Módulo Académico', 'aura-suite' ); ?>
                     </span>
                     <?php if ( $gcal_is_ready ) : ?>
-                        <span class="adp-badge badge-emerald has-dot" title="<?php echo esc_attr( $cal_id ? 'ID: ' . $cal_id : 'Pendiente resolver' ); ?>">
-                            <span class="pulse-dot"></span> Google Calendar Conectado
+                        <span class="adp-badge badge-emerald has-dot" title="<?php echo esc_attr( $cal_id ? 'ID: ' . $cal_id : __( 'Pendiente resolver', 'aura-suite' ) ); ?>">
+                            <span class="pulse-dot"></span> <?php esc_html_e( 'Google Calendar Conectado', 'aura-suite' ); ?>
                         </span>
                     <?php else : ?>
                         <span class="adp-badge badge-amber has-dot">
-                            <span class="pulse-dot"></span> Google Calendar Inactivo
+                            <span class="pulse-dot"></span> <?php esc_html_e( 'Google Calendar Inactivo', 'aura-suite' ); ?>
                         </span>
                     <?php endif; ?>
                 </div>
                 <h1 class="adp-header-title" style="font-size: 26px; font-weight: 700; margin: 0; color: var(--aura-text-primary, #1e293b);">
-                    📅 <?php esc_html_e( 'Calendario y Horarios de Clases', 'aura' ); ?>
+                    📅 <?php esc_html_e( 'Calendario y Horarios de Clases', 'aura-suite' ); ?>
                 </h1>
                 <p class="adp-header-desc" style="font-size: 14px; color: var(--aura-text-secondary, #64748b); margin-top: 4px;">
-                    <?php esc_html_e( 'Gestión de horarios, programas, materias, asistencia, calificaciones y sincronización bidireccional con Google Calendar.', 'aura' ); ?>
+                    <?php esc_html_e( 'Gestión de horarios, programas, materias, asistencia, calificaciones y sincronización bidireccional con Google Calendar.', 'aura-suite' ); ?>
                 </p>
             </div>
 
             <!-- Acciones Rápidas del Header -->
             <div style="display: flex; gap: 10px; align-items: center;">
                 <?php if ( current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_cal_create_events' ) || current_user_can( 'aura_create_calendar_events' ) || current_user_can( 'manage_options' ) ) : ?>
-                    <button type="button" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" id="btn-top-create-event" title="<?php esc_attr_e( 'Crear nuevo evento en el calendario', 'aura' ); ?>">
-                        ➕ <?php esc_html_e( 'Crear Evento', 'aura' ); ?>
+                    <button type="button" class="btn btn-indigo btn-shimmer btn-lift btn-trigger-agendar" id="btn-top-create-event" title="<?php esc_attr_e( 'Crear nuevo evento en el calendario', 'aura-suite' ); ?>">
+                        ➕ <?php esc_html_e( 'Crear Evento', 'aura-suite' ); ?>
                     </button>
                 <?php endif; ?>
 
                 <?php if ( $gcal_is_ready && ( current_user_can( 'aura_cal_sync_gcal' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) ) : ?>
-                    <button type="button" class="btn btn-emerald btn-shimmer btn-lift" id="btn-top-sync-gcal" title="<?php esc_attr_e( 'Sincronizar eventos con Google Calendar', 'aura' ); ?>">
-                        🔄 <?php esc_html_e( 'Sincronizar GCal', 'aura' ); ?>
+                    <button type="button" class="btn btn-emerald btn-shimmer btn-lift" id="btn-top-sync-gcal" title="<?php esc_attr_e( 'Sincronizar eventos con Google Calendar', 'aura-suite' ); ?>">
+                        🔄 <?php esc_html_e( 'Sincronizar GCal', 'aura-suite' ); ?>
                     </button>
                 <?php endif; ?>
             </div>
@@ -91,30 +91,30 @@ $programs      = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit
         <nav class="adp-nav-tabs">
             <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar' ) ); ?>"
                class="adp-tab-btn <?php echo $tab === 'calendar' ? 'active' : ''; ?>">
-                🗓️ <?php esc_html_e( 'Calendario', 'aura' ); ?>
+                🗓️ <?php esc_html_e( 'Calendario', 'aura-suite' ); ?>
             </a>
             <?php if ( current_user_can( 'aura_cal_view_programs' ) || current_user_can( 'aura_cal_manage_programs' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar-programs' ) ); ?>"
                    class="adp-tab-btn <?php echo $tab === 'programs' ? 'active' : ''; ?>">
-                    🎓 <?php esc_html_e( 'Programas y Materias', 'aura' ); ?>
+                    🎓 <?php esc_html_e( 'Programas y Materias', 'aura-suite' ); ?>
                 </a>
             <?php endif; ?>
             <?php if ( current_user_can( 'aura_cal_view_grades' ) || current_user_can( 'aura_cal_manage_grades' ) || current_user_can( 'aura_record_grades' ) || current_user_can( 'manage_options' ) ) : ?>
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar-grades' ) ); ?>"
                    class="adp-tab-btn <?php echo $tab === 'grades' ? 'active' : ''; ?>">
-                    📊 <?php esc_html_e( 'Calificaciones', 'aura' ); ?>
+                    📊 <?php esc_html_e( 'Calificaciones', 'aura-suite' ); ?>
                 </a>
             <?php endif; ?>
             <?php if ( current_user_can( 'aura_cal_view_tasks' ) || current_user_can( 'aura_cal_manage_tasks' ) || current_user_can( 'aura_cal_grade_tasks' ) || current_user_can( 'aura_cal_submit_tasks' ) || current_user_can( 'manage_options' ) ) : ?>
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar-tasks' ) ); ?>"
                    class="adp-tab-btn <?php echo $tab === 'tasks' ? 'active' : ''; ?>">
-                    📝 <?php esc_html_e( 'Tareas y Evaluaciones', 'aura' ); ?>
+                    📝 <?php esc_html_e( 'Tareas y Evaluaciones', 'aura-suite' ); ?>
                 </a>
             <?php endif; ?>
             <?php if ( current_user_can( 'aura_cal_manage_settings' ) || current_user_can( 'aura_cal_manage_calendar' ) || current_user_can( 'aura_manage_calendar' ) || current_user_can( 'manage_options' ) ) : ?>
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=aura-calendar-settings' ) ); ?>"
                    class="adp-tab-btn <?php echo $tab === 'settings' ? 'active' : ''; ?>">
-                    ⚙️ <?php esc_html_e( 'Configuración', 'aura' ); ?>
+                    ⚙️ <?php esc_html_e( 'Configuración', 'aura-suite' ); ?>
                 </a>
             <?php endif; ?>
         </nav>
@@ -152,8 +152,8 @@ $programs      = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit
     <!-- ── FOOTER PROTOCOLO P.E.E. ── -->
     <footer class="adp-footer" style="margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--aura-border, #e2e8f0); text-align: center; font-size: 13px; color: var(--aura-text-muted, #94a3b8);">
         <p style="margin: 0;">
-            <?php printf( esc_html__( 'Aura Business Suite — Módulo de Calendario y Horarios Académicos v%s', 'aura' ), esc_html( AURA_VERSION ) ); ?>
-            &bull; <a href="https://github.com" target="_blank" style="color: var(--aura-primary); text-decoration: none;"><?php esc_html_e( 'Documentación y Soporte', 'aura' ); ?></a>
+            <?php printf( esc_html__( 'Aura Business Suite — Módulo de Calendario y Horarios Académicos v%s', 'aura-suite' ), esc_html( AURA_VERSION ) ); ?>
+            &bull; <a href="https://github.com" target="_blank" style="color: var(--aura-primary); text-decoration: none;"><?php esc_html_e( 'Documentación y Soporte', 'aura-suite' ); ?></a>
         </p>
     </footer>
 </div>

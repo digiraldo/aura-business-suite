@@ -6,6 +6,17 @@
 (function ($) {
     'use strict';
 
+    function __( s, domain ) {
+        return ( window.wp && wp.i18n && typeof wp.i18n.__ === 'function' ) ? wp.i18n.__( s, domain || 'aura-suite' ) : s;
+    }
+    function sprintf( fmt ) {
+        if ( window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function' ) {
+            return wp.i18n.sprintf.apply( wp.i18n, arguments );
+        }
+        var args = Array.prototype.slice.call( arguments, 1 ), i = 0;
+        return String( fmt ).replace( /%[sd]/g, function () { return args[ i++ ]; } );
+    }
+
     if (window.__auraInvMaintBooted) {
         return;
     }
@@ -35,13 +46,13 @@
             var full  = m.photo_full_url || m.photo_thumb_url;
             var thumb = m.photo_thumb_url || m.photo_full_url;
             if (!full) {
-                return '<div class="aura-inv-thumb-empty" data-tooltip="Sin fotografía"><span class="dashicons dashicons-format-image"></span></div>';
+                return '<div class="aura-inv-thumb-empty" data-tooltip="' + escHtml(__('Sin fotografía', 'aura-suite')) + '"><span class="dashicons dashicons-format-image"></span></div>';
             }
-            var label = m.equipment_name || 'Equipo';
+            var label = m.equipment_name || __('Equipo', 'aura-suite');
             var card  = '<div class="aura-floating-img-card aura-inv-photo-card">' +
                 '<img src="' + escHtml(full) + '" alt="' + escHtml(label) + '" style="max-width:260px;max-height:260px;width:auto;height:auto;object-fit:contain;border-radius:8px;display:block;margin:0 auto;">' +
                 '<span class="aura-floating-img-title">' + escHtml(label) + '</span>' +
-                (m.equipment_code ? '<span class="aura-floating-img-sub">Cód: ' + escHtml(m.equipment_code) + '</span>' : '') +
+                (m.equipment_code ? '<span class="aura-floating-img-sub">' + escHtml(sprintf(__('Cód: %s', 'aura-suite'), m.equipment_code)) + '</span>' : '') +
                 '</div>';
 
             return '<div class="aura-inv-thumb-wrap aura-table-thumb-preview" ' +
@@ -62,9 +73,9 @@
             var cfg = this.cfg;
             return m.performed_by === 'external'
                 ? '<span class="aura-maint-exec-badge external"><span class="dashicons dashicons-store"></span>' +
-                  escHtml(m.workshop_name || (cfg.txt && cfg.txt.performed_labels.external) || 'Externo') + '</span>'
+                  escHtml(m.workshop_name || (cfg.txt && cfg.txt.performed_labels.external) || __('Externo', 'aura-suite')) + '</span>'
                 : '<span class="aura-maint-exec-badge"><span class="dashicons dashicons-businessman"></span>' +
-                  escHtml(m.tech_name || (cfg.txt && cfg.txt.performed_labels.internal) || 'Interno') + '</span>';
+                  escHtml(m.tech_name || (cfg.txt && cfg.txt.performed_labels.internal) || __('Interno', 'aura-suite')) + '</span>';
         },
 
         _costCell: function (m) {
@@ -84,7 +95,7 @@
         _finBadge: function (m) {
             var cfg = this.cfg;
             return m.has_finance
-                ? '<span class="aura-maint-finance-ok" data-tooltip="Gasto registrado en Finanzas"><span class="dashicons dashicons-yes-alt"></span>' + escHtml((cfg.txt && cfg.txt.has_finance) || 'Vinculado') + '</span>'
+                ? '<span class="aura-maint-finance-ok" data-tooltip="' + escHtml(__('Gasto registrado en Finanzas', 'aura-suite')) + '"><span class="dashicons dashicons-yes-alt"></span>' + escHtml((cfg.txt && cfg.txt.has_finance) || __('Vinculado', 'aura-suite')) + '</span>'
                 : '<span class="aura-inv-muted">' + escHtml((cfg.txt && cfg.txt.no_finance) || '—') + '</span>';
         },
 
@@ -92,27 +103,27 @@
             var cfg = this.cfg;
             var currency = cfg.currency || '$';
             var typeLbl  = (cfg.txt && cfg.txt.type_labels && cfg.txt.type_labels[m.type]) || m.type;
-            var execLbl  = m.performed_by === 'external' ? (m.workshop_name || 'Taller externo') : (m.tech_name || 'Personal interno');
+            var execLbl  = m.performed_by === 'external' ? (m.workshop_name || __('Taller externo', 'aura-suite')) : (m.tech_name || __('Personal interno', 'aura-suite'));
             return '<div class="aura-tip-card">' +
                 '<div class="aura-tip-card-header"><div class="aura-tip-info">' +
-                '<div class="aura-tip-title">' + escHtml(m.equipment_name || 'Equipo') + '</div>' +
+                '<div class="aura-tip-title">' + escHtml(m.equipment_name || __('Equipo', 'aura-suite')) + '</div>' +
                 '</div></div>' +
                 '<div class="aura-tip-card-body">' +
-                '<div class="aura-tip-row"><span>Fecha</span><strong>' + escHtml(m.maintenance_date || '—') + '</strong></div>' +
-                '<div class="aura-tip-row"><span>Tipo</span><strong>' + escHtml(typeLbl) + '</strong></div>' +
-                '<div class="aura-tip-row"><span>Ejecutor</span><strong>' + escHtml(execLbl) + '</strong></div>' +
-                '<div class="aura-tip-row"><span>Costo total</span><strong>' + escHtml(currency) + parseFloat(m.total_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }) + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Fecha', 'aura-suite')) + '</span><strong>' + escHtml(m.maintenance_date || '—') + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Tipo', 'aura-suite')) + '</span><strong>' + escHtml(typeLbl) + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Ejecutor', 'aura-suite')) + '</span><strong>' + escHtml(execLbl) + '</strong></div>' +
+                '<div class="aura-tip-row"><span>' + escHtml(__('Costo total', 'aura-suite')) + '</span><strong>' + escHtml(currency) + parseFloat(m.total_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }) + '</strong></div>' +
                 '</div></div>';
         },
 
         _actions: function (m) {
             var h = '<div class="aura-row-actions">';
-            h += '<button type="button" class="aura-btn-action-icon aura-btn-view aura-maint-btn-detail" data-id="' + m.id + '" data-tooltip="Ver ficha completa del servicio"><span class="dashicons dashicons-visibility"></span></button>';
+            h += '<button type="button" class="aura-btn-action-icon aura-btn-view aura-maint-btn-detail" data-id="' + m.id + '" data-tooltip="' + escHtml(__('Ver ficha completa del servicio', 'aura-suite')) + '"><span class="dashicons dashicons-visibility"></span></button>';
             if (m.can_edit) {
-                h += '<button type="button" class="aura-btn-action-icon aura-btn-edit aura-maint-btn-edit" data-id="' + m.id + '" data-tooltip="Editar mantenimiento"><span class="dashicons dashicons-edit"></span></button>';
+                h += '<button type="button" class="aura-btn-action-icon aura-btn-edit aura-maint-btn-edit" data-id="' + m.id + '" data-tooltip="' + escHtml(__('Editar mantenimiento', 'aura-suite')) + '"><span class="dashicons dashicons-edit"></span></button>';
             }
             if (m.can_delete) {
-                h += '<button type="button" class="aura-btn-action-icon aura-btn-delete delete aura-maint-btn-delete" data-id="' + m.id + '" data-tooltip="Eliminar registro"><span class="dashicons dashicons-trash"></span></button>';
+                h += '<button type="button" class="aura-btn-action-icon aura-btn-delete delete aura-maint-btn-delete" data-id="' + m.id + '" data-tooltip="' + escHtml(__('Eliminar registro', 'aura-suite')) + '"><span class="dashicons dashicons-trash"></span></button>';
             }
             h += '</div>';
             return h;
@@ -129,7 +140,7 @@
 
             var typeLbl = (cfg.txt && cfg.txt.type_labels && cfg.txt.type_labels[m.type]) || m.type;
             var psLbl   = (cfg.txt && cfg.txt.post_status_labels && cfg.txt.post_status_labels[m.post_status]) || m.post_status;
-            var execLbl = m.performed_by === 'external' ? (m.workshop_name || 'Taller externo') : (m.tech_name || 'Personal interno');
+            var execLbl = m.performed_by === 'external' ? (m.workshop_name || __('Taller externo', 'aura-suite')) : (m.tech_name || __('Personal interno', 'aura-suite'));
 
             var h = '<div class="aura-inv-child-card">';
             h += '<div class="aura-inv-child-layout">';
@@ -137,35 +148,35 @@
             h += '<div class="aura-inv-child-main">';
             h += '<div class="aura-inv-child-top">';
             h += '<div><h4 class="aura-inv-child-title">' + escHtml(m.equipment_name) + '</h4>' +
-                 '<div class="aura-inv-child-sub">' + escHtml([m.equipment_brand, m.equipment_code ? ('Cód: ' + m.equipment_code) : '', 'Orden #' + m.id].filter(Boolean).join(' · ')) + '</div></div>';
+                 '<div class="aura-inv-child-sub">' + escHtml([m.equipment_brand, m.equipment_code ? sprintf(__('Cód: %s', 'aura-suite'), m.equipment_code) : '', sprintf(__('Orden #%s', 'aura-suite'), m.id)].filter(Boolean).join(' · ')) + '</div></div>';
             h += '<span class="aura-maint-ps-badge aura-maint-ps-' + escHtml(m.post_status) + '">' + escHtml(psLbl) + '</span>';
             h += '</div>';
 
             h += '<div class="aura-inv-child-specs">';
-            h += childSpec('Fecha ejecución', m.maintenance_date || '—');
-            h += childSpec('Tipo servicio', typeLbl);
-            h += childSpec('Ejecutor', execLbl);
-            h += childSpec('Horas registradas', m.equipment_hours !== null && m.equipment_hours !== undefined ? m.equipment_hours + ' h' : '—');
-            h += childSpec('Repuestos', currency + parseFloat(m.parts_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
-            h += childSpec('Mano de obra', currency + parseFloat(m.labor_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
-            h += childSpec('Total', currency + parseFloat(m.total_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
-            h += childSpec('Próx. acción / Factura', [m.next_action_date, m.invoice_number ? ('Fact: ' + m.invoice_number) : ''].filter(Boolean).join(' · ') || '—');
+            h += childSpec(__('Fecha ejecución', 'aura-suite'), m.maintenance_date || '—');
+            h += childSpec(__('Tipo servicio', 'aura-suite'), typeLbl);
+            h += childSpec(__('Ejecutor', 'aura-suite'), execLbl);
+            h += childSpec(__('Horas registradas', 'aura-suite'), m.equipment_hours !== null && m.equipment_hours !== undefined ? m.equipment_hours + ' h' : '—');
+            h += childSpec(__('Repuestos', 'aura-suite'), currency + parseFloat(m.parts_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
+            h += childSpec(__('Mano de obra', 'aura-suite'), currency + parseFloat(m.labor_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
+            h += childSpec(__('Total', 'aura-suite'), currency + parseFloat(m.total_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
+            h += childSpec(__('Próx. acción / Factura', 'aura-suite'), [m.next_action_date, m.invoice_number ? sprintf(__('Fact: %s', 'aura-suite'), m.invoice_number) : ''].filter(Boolean).join(' · ') || '—');
             h += '</div>';
 
             if (m.description) {
-                h += '<div class="aura-inv-child-desc"><strong>Trabajo realizado:</strong> ' + escHtml(m.description) + '</div>';
+                h += '<div class="aura-inv-child-desc"><strong>' + escHtml(__('Trabajo realizado:', 'aura-suite')) + '</strong> ' + escHtml(m.description) + '</div>';
             }
             if (m.parts_replaced) {
-                h += '<div class="aura-inv-child-desc"><strong>Piezas reemplazadas:</strong> ' + escHtml(m.parts_replaced) + '</div>';
+                h += '<div class="aura-inv-child-desc"><strong>' + escHtml(__('Piezas reemplazadas:', 'aura-suite')) + '</strong> ' + escHtml(m.parts_replaced) + '</div>';
             }
 
             h += '<div class="aura-inv-child-actions">';
-            h += '<button type="button" class="btn btn-indigo btn-sm aura-maint-btn-detail" data-id="' + m.id + '"><span class="dashicons dashicons-visibility"></span> Ver Ficha Completa</button>';
+            h += '<button type="button" class="btn btn-indigo btn-sm aura-maint-btn-detail" data-id="' + m.id + '"><span class="dashicons dashicons-visibility"></span> ' + escHtml(__('Ver Ficha Completa', 'aura-suite')) + '</button>';
             if (m.can_edit) {
-                h += '<button type="button" class="btn btn-glass btn-sm aura-maint-btn-edit" data-id="' + m.id + '"><span class="dashicons dashicons-edit"></span> Editar</button>';
+                h += '<button type="button" class="btn btn-glass btn-sm aura-maint-btn-edit" data-id="' + m.id + '"><span class="dashicons dashicons-edit"></span> ' + escHtml(__('Editar', 'aura-suite')) + '</button>';
             }
             if (m.can_delete) {
-                h += '<button type="button" class="btn btn-glass btn-sm aura-btn-danger-outline aura-maint-btn-delete" data-id="' + m.id + '"><span class="dashicons dashicons-trash"></span> Eliminar</button>';
+                h += '<button type="button" class="btn btn-glass btn-sm aura-btn-danger-outline aura-maint-btn-delete" data-id="' + m.id + '"><span class="dashicons dashicons-trash"></span> ' + escHtml(__('Eliminar', 'aura-suite')) + '</button>';
             }
             h += '</div>';
 
@@ -190,12 +201,12 @@
                 lengthMenu: [10, 20, 50, 100],
                 order: [[3, 'desc']],
                 language: {
-                    processing:  (cfg.txt && cfg.txt.loading) || 'Cargando…',
-                    zeroRecords: (cfg.txt && cfg.txt.no_results) || 'No se encontraron mantenimientos.',
-                    info:        '_TOTAL_ registros',
-                    infoEmpty:   '0 registros',
-                    infoFiltered: '(filtrado de _MAX_ total)',
-                    lengthMenu:  'Mostrar _MENU_ por página',
+                    processing:  (cfg.txt && cfg.txt.loading) || __('Cargando…', 'aura-suite'),
+                    zeroRecords: (cfg.txt && cfg.txt.no_results) || __('No se encontraron mantenimientos.', 'aura-suite'),
+                    info:        __('_TOTAL_ registros', 'aura-suite'),
+                    infoEmpty:   __('0 registros', 'aura-suite'),
+                    infoFiltered: __('(filtrado de _MAX_ total)', 'aura-suite'),
+                    lengthMenu:  __('Mostrar _MENU_ por página', 'aura-suite'),
                     paginate: { first: '«', last: '»', next: '›', previous: '‹' }
                 },
                 searching: false,
@@ -230,7 +241,7 @@
                         data: null, orderable: false, searchable: false,
                         className: 'aura-inv-col-toggle', width: '40px',
                         render: function () {
-                            return '<button type="button" class="aura-inv-row-toggle" data-tooltip="Desplegar reporte completo" aria-expanded="false" aria-label="Expandir">+</button>';
+                            return '<button type="button" class="aura-inv-row-toggle" data-tooltip="' + escHtml(__('Desplegar reporte completo', 'aura-suite')) + '" aria-expanded="false" aria-label="' + escHtml(__('Expandir', 'aura-suite')) + '">+</button>';
                         }
                     },
                     {
@@ -247,7 +258,7 @@
                             var tip = self._buildTooltip(m);
                             var h = '<a href="javascript:void(0)" class="aura-inv-title-link aura-maint-btn-detail" data-id="' + m.id + '" ' +
                                     'data-aura-tooltip="' + escHtml(tip) + '">' + escHtml(m.equipment_name) + '</a>';
-                            var sub = [m.equipment_brand ? escHtml(m.equipment_brand) : '', m.equipment_code ? 'Cód: ' + escHtml(m.equipment_code) : ''].filter(Boolean).join(' · ');
+                            var sub = [m.equipment_brand ? escHtml(m.equipment_brand) : '', m.equipment_code ? escHtml(sprintf(__('Cód: %s', 'aura-suite'), m.equipment_code)) : ''].filter(Boolean).join(' · ');
                             if (sub) h += '<div class="aura-inv-cell-sub">' + sub + '</div>';
 
                             var mob = [m.maintenance_date || '', (self.cfg.currency || '$') + parseFloat(m.total_cost || 0).toFixed(2)].filter(Boolean).join(' · ');
@@ -434,48 +445,48 @@
                             '<span class="aura-maint-ps-badge aura-maint-ps-' + escHtml(m.post_status) + '">' + escHtml(cfg.txt.post_status_labels[m.post_status] || m.post_status) + '</span>' +
                             '</div>';
                     html += '<h3 class="aura-maint-detail-name">' + escHtml(m.equipment_name || '—') + '</h3>';
-                    html += '<p class="aura-maint-detail-sub">' + escHtml([m.equipment_brand, m.equipment_model, m.equipment_code ? ('Cód: ' + m.equipment_code) : ''].filter(Boolean).join(' · ') || ('Fecha: ' + m.maintenance_date)) + '</p>';
+                    html += '<p class="aura-maint-detail-sub">' + escHtml([m.equipment_brand, m.equipment_model, m.equipment_code ? sprintf(__('Cód: %s', 'aura-suite'), m.equipment_code) : ''].filter(Boolean).join(' · ') || sprintf(__('Fecha: %s', 'aura-suite'), m.maintenance_date)) + '</p>';
                     html += '</div></div>';
 
                     html += '<div class="aura-maint-detail-grid">';
-                    html += dRow('Fecha ejecución', escHtml(m.maintenance_date));
-                    html += dRow('Horas del equipo', m.equipment_hours ? escHtml(m.equipment_hours + ' h') : '—');
-                    html += dRow('Próxima acción', escHtml(m.next_action_date || '—'));
+                    html += dRow(__('Fecha ejecución', 'aura-suite'), escHtml(m.maintenance_date));
+                    html += dRow(__('Horas del equipo', 'aura-suite'), m.equipment_hours ? escHtml(m.equipment_hours + ' h') : '—');
+                    html += dRow(__('Próxima acción', 'aura-suite'), escHtml(m.next_action_date || '—'));
 
-                    html += '<div class="aura-maint-detail-section">Ejecutor y Facturación</div>';
+                    html += '<div class="aura-maint-detail-section">' + escHtml(__('Ejecutor y Facturación', 'aura-suite')) + '</div>';
                     if (m.performed_by === 'external') {
-                        html += dRow('Taller / Empresa', escHtml(m.workshop_name || '—'));
-                        html += dRow('N° Factura', escHtml(m.invoice_number || '—'));
+                        html += dRow(__('Taller / Empresa', 'aura-suite'), escHtml(m.workshop_name || '—'));
+                        html += dRow(__('N° Factura', 'aura-suite'), escHtml(m.invoice_number || '—'));
                     } else {
-                        html += dRow('Técnico interno', escHtml(m.tech_name || '—'));
+                        html += dRow(__('Técnico interno', 'aura-suite'), escHtml(m.tech_name || '—'));
                     }
 
-                    html += '<div class="aura-maint-detail-section">Desglose de Costos</div>';
-                    html += dRow('Repuestos / insumos', escHtml(currency) + parseFloat(m.parts_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
-                    html += dRow('Mano de obra', escHtml(currency) + parseFloat(m.labor_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
-                    html += dRow('Costo Total', '<strong>' + escHtml(currency) + parseFloat(m.total_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }) + '</strong>');
+                    html += '<div class="aura-maint-detail-section">' + escHtml(__('Desglose de Costos', 'aura-suite')) + '</div>';
+                    html += dRow(__('Repuestos / insumos', 'aura-suite'), escHtml(currency) + parseFloat(m.parts_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
+                    html += dRow(__('Mano de obra', 'aura-suite'), escHtml(currency) + parseFloat(m.labor_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }));
+                    html += dRow(__('Costo Total', 'aura-suite'), '<strong>' + escHtml(currency) + parseFloat(m.total_cost || 0).toLocaleString('es', { minimumFractionDigits: 2 }) + '</strong>');
 
                     if (m.description) {
-                        html += '<div class="aura-maint-detail-section">Descripción del Trabajo</div>';
+                        html += '<div class="aura-maint-detail-section">' + escHtml(__('Descripción del Trabajo', 'aura-suite')) + '</div>';
                         html += '<div class="aura-maint-detail-row aura-maint-detail-text-row"><div class="aura-maint-detail-value">' + escHtml(m.description) + '</div></div>';
                     }
                     if (m.parts_replaced) {
-                        html += '<div class="aura-maint-detail-section">Piezas y Repuestos</div>';
+                        html += '<div class="aura-maint-detail-section">' + escHtml(__('Piezas y Repuestos', 'aura-suite')) + '</div>';
                         html += '<div class="aura-maint-detail-row aura-maint-detail-text-row"><div class="aura-maint-detail-value">' + escHtml(m.parts_replaced) + '</div></div>';
                     }
                     if (m.observations) {
-                        html += '<div class="aura-maint-detail-section">Observaciones</div>';
+                        html += '<div class="aura-maint-detail-section">' + escHtml(__('Observaciones', 'aura-suite')) + '</div>';
                         html += '<div class="aura-maint-detail-row aura-maint-detail-text-row"><div class="aura-maint-detail-value">' + escHtml(m.observations) + '</div></div>';
                     }
 
                     if (m.finance_transaction_id) {
-                        html += '<div class="aura-maint-detail-section">Integración Finanzas</div>';
-                        html += dRow('Transacción vinculada', '<span class="aura-maint-finance-ok"><span class="dashicons dashicons-yes-alt"></span> #' + m.finance_transaction_id + '</span>');
+                        html += '<div class="aura-maint-detail-section">' + escHtml(__('Integración Finanzas', 'aura-suite')) + '</div>';
+                        html += dRow(__('Transacción vinculada', 'aura-suite'), '<span class="aura-maint-finance-ok"><span class="dashicons dashicons-yes-alt"></span> #' + m.finance_transaction_id + '</span>');
                     }
 
-                    html += '<div class="aura-maint-detail-section">Auditoría</div>';
-                    html += dRow('Registrado por', escHtml(m.registered_by_name || '—'));
-                    html += dRow('Registrado el', escHtml(m.registered_at ? m.registered_at.substring(0, 10) : '—'));
+                    html += '<div class="aura-maint-detail-section">' + escHtml(__('Auditoría', 'aura-suite')) + '</div>';
+                    html += dRow(__('Registrado por', 'aura-suite'), escHtml(m.registered_by_name || '—'));
+                    html += dRow(__('Registrado el', 'aura-suite'), escHtml(m.registered_at ? m.registered_at.substring(0, 10) : '—'));
                     html += '</div>';
 
                     $body.html(html);
@@ -566,7 +577,7 @@
             $('#maint_select_invoice').on('click', function (e) {
                 e.preventDefault();
                 if (typeof wp === 'undefined' || !wp.media) return;
-                var frame = wp.media({ title: 'Seleccionar archivo', button: { text: 'Usar archivo' }, multiple: false });
+                var frame = wp.media({ title: __('Seleccionar archivo', 'aura-suite'), button: { text: __('Usar archivo', 'aura-suite') }, multiple: false });
                 frame.on('select', function () {
                     var att = frame.state().get('selection').first().toJSON();
                     $('#maint_workshop_invoice').val(att.url);
@@ -589,7 +600,7 @@
             // Selector de Usuarios para Técnico Responsable
             $('#aura-maint-btn-tech-explorer').on('click', function () {
                 if (typeof window.AuraThirdPartySelector === 'undefined') {
-                    self.showNotice('El explorador de usuarios no está disponible en esta página.', 'error');
+                    self.showNotice(__('El explorador de usuarios no está disponible en esta página.', 'aura-suite'), 'error');
                     return;
                 }
                 window.AuraThirdPartySelector.openExplorer({
@@ -677,14 +688,14 @@
                 var today = new Date().toISOString().substring(0, 10);
                 $('#maint_date').val(today);
                 var currentDesc = $('#maint_description').val().trim();
-                var note = '⚡ Mantenimiento preventivo adelantado por retorno de préstamo / inspección de piezas.';
+                var note = __('⚡ Mantenimiento preventivo adelantado por retorno de préstamo / inspección de piezas.', 'aura-suite');
                 if (!currentDesc) {
                     $('#maint_description').val(note);
                 } else if (currentDesc.indexOf(note) === -1) {
                     $('#maint_description').val(note + '\n\n' + currentDesc);
                 }
                 if (window.AuraUI && typeof window.AuraUI.showToast === 'function') {
-                    window.AuraUI.showToast('Campos pre-configurados para mantenimiento adelantado.', 'success');
+                    window.AuraUI.showToast(__('Campos pre-configurados para mantenimiento adelantado.', 'aura-suite'), 'success');
                 }
             });
         },
@@ -732,19 +743,19 @@
             var code     = $opt.data('code') || '';
             var status   = $opt.data('status') || 'available';
             var hours    = $opt.data('hours') || 0;
-            var oil      = $opt.data('oil') || 'No especificado';
-            var interval = $opt.data('interval') || 'Bajo demanda';
+            var oil      = $opt.data('oil') || __('No especificado', 'aura-suite');
+            var interval = $opt.data('interval') || __('Bajo demanda', 'aura-suite');
             var photo    = $opt.data('photo') || '';
 
             $('#maint-card-title').text(title);
-            $('#maint-card-code-badge').text(code ? ('Cód: ' + code) : 'Activo').show();
+            $('#maint-card-code-badge').text(code ? sprintf(__('Cód: %s', 'aura-suite'), code) : __('Activo', 'aura-suite')).show();
 
             var statusText = {
-                available: '✅ Disponible',
-                in_use: '🔵 En Uso / Prestado',
-                maintenance: '🟡 En Mantenimiento',
-                repair: '🔴 En Reparación',
-                retired: '⚪ De Baja'
+                available: __('✅ Disponible', 'aura-suite'),
+                in_use: __('🔵 En Uso / Prestado', 'aura-suite'),
+                maintenance: __('🟡 En Mantenimiento', 'aura-suite'),
+                repair: __('🔴 En Reparación', 'aura-suite'),
+                retired: __('⚪ De Baja', 'aura-suite')
             }[status] || status;
 
             $('#maint-card-status-badge')
@@ -847,22 +858,22 @@
                                     var psLabel   = (txt.ps_labels && txt.ps_labels[prev.post_status]) || prev.post_status;
 
                                     var html = '<table class="aura-maint-prev-tbl">';
-                                    html += '<tr><td>' + escHtml(txt.date_label || 'Fecha:') + '</td><td>' + escHtml(prev.maintenance_date || '—') + '</td></tr>';
-                                    html += '<tr><td>' + escHtml(txt.type_label || 'Tipo:') + '</td><td>' + escHtml(typeLabel) + '</td></tr>';
+                                    html += '<tr><td>' + escHtml(txt.date_label || __('Fecha:', 'aura-suite')) + '</td><td>' + escHtml(prev.maintenance_date || '—') + '</td></tr>';
+                                    html += '<tr><td>' + escHtml(txt.type_label || __('Tipo:', 'aura-suite')) + '</td><td>' + escHtml(typeLabel) + '</td></tr>';
                                     if (prev.description) {
-                                        html += '<tr><td>' + escHtml(txt.work_label || 'Trabajo:') + '</td><td>' + escHtml(prev.description).replace(/\n/g, '<br>') + '</td></tr>';
+                                        html += '<tr><td>' + escHtml(txt.work_label || __('Trabajo:', 'aura-suite')) + '</td><td>' + escHtml(prev.description).replace(/\n/g, '<br>') + '</td></tr>';
                                     }
                                     if (prev.performed_by === 'external' && prev.technician_name) {
-                                        html += '<tr><td>' + escHtml(txt.workshop_label || 'Taller:') + '</td><td>' + escHtml(prev.technician_name) + '</td></tr>';
+                                        html += '<tr><td>' + escHtml(txt.workshop_label || __('Taller:', 'aura-suite')) + '</td><td>' + escHtml(prev.technician_name) + '</td></tr>';
                                     }
-                                    html += '<tr><td>' + escHtml(txt.status_label || 'Estado:') + '</td><td>' + psIcon + ' ' + escHtml(psLabel) + '</td></tr>';
+                                    html += '<tr><td>' + escHtml(txt.status_label || __('Estado:', 'aura-suite')) + '</td><td>' + psIcon + ' ' + escHtml(psLabel) + '</td></tr>';
                                     html += '</table>';
 
                                     $prevContent.html(html);
                                     $prevBlock.show();
                                     showPanel = true;
                                 } else if (instructions) {
-                                    $prevContent.html('<em>' + escHtml(txt.no_prev_maint || 'Sin mantenimientos previos.') + '</em>');
+                                    $prevContent.html('<em>' + escHtml(txt.no_prev_maint || __('Sin mantenimientos previos.', 'aura-suite')) + '</em>');
                                     $prevBlock.show();
                                     showPanel = true;
                                 } else {
@@ -921,7 +932,7 @@
                         '&id=' + encodeURIComponent(cfg.maintId || 0),
                 success: function (res) {
                     $btn.prop('disabled', false);
-                    var btnLabel = cfg.isEdit ? 'Actualizar mantenimiento' : 'Registrar mantenimiento';
+                    var btnLabel = cfg.isEdit ? __('Actualizar mantenimiento', 'aura-suite') : __('Registrar mantenimiento', 'aura-suite');
                     $btn.html('<span class="dashicons dashicons-yes"></span> ' + btnLabel);
 
                     if (res.success) {
@@ -942,7 +953,7 @@
                 },
                 error: function () {
                     $btn.prop('disabled', false);
-                    var btnLabel = cfg.isEdit ? 'Actualizar mantenimiento' : 'Registrar mantenimiento';
+                    var btnLabel = cfg.isEdit ? __('Actualizar mantenimiento', 'aura-suite') : __('Registrar mantenimiento', 'aura-suite');
                     $btn.html('<span class="dashicons dashicons-yes"></span> ' + btnLabel);
                     self.showFormNotice(cfg.txt.error, 'error');
                 },

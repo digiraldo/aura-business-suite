@@ -138,6 +138,25 @@ class Aura_Calendar_Generic_Events {
     }
 
     /**
+     * Etiquetas traducibles para los eventos genéricos predeterminados del sistema.
+     */
+    private static function get_default_name_map(): array {
+        return [
+            'descanso'     => __( 'Descanso', 'aura-suite' ),
+            'introduccion' => __( 'Introducción', 'aura-suite' ),
+            'reflexion'    => __( 'Reflexión', 'aura-suite' ),
+            'deportes'     => __( 'Deportes', 'aura-suite' ),
+            'lectura'      => __( 'Lectura', 'aura-suite' ),
+            'trabajo'      => __( 'Trabajo', 'aura-suite' ),
+            'refrigerio'   => __( 'Refrigerio', 'aura-suite' ),
+            'desayuno'     => __( 'Desayuno', 'aura-suite' ),
+            'almuerzo'     => __( 'Almuerzo', 'aura-suite' ),
+            'comida'       => __( 'Comida', 'aura-suite' ),
+            'cena'         => __( 'Cena', 'aura-suite' ),
+        ];
+    }
+
+    /**
      * Obtener todos los eventos genéricos registrados
      *
      * @param bool $active_only Si solo se retornan los activos
@@ -149,6 +168,20 @@ class Aura_Calendar_Generic_Events {
             $events = self::get_default_events();
             update_option( self::OPTION_KEY, $events );
         }
+
+        $defaults_canonical = [];
+        foreach ( self::get_default_events() as $def ) {
+            $defaults_canonical[ (string) $def['id'] ] = (string) $def['name'];
+        }
+        $translated_map = self::get_default_name_map();
+
+        $events = array_map( function( $ev ) use ( $defaults_canonical, $translated_map ) {
+            $id = (string) ( $ev['id'] ?? '' );
+            if ( isset( $defaults_canonical[ $id ], $translated_map[ $id ] ) && (string) ( $ev['name'] ?? '' ) === $defaults_canonical[ $id ] ) {
+                $ev['name'] = $translated_map[ $id ];
+            }
+            return $ev;
+        }, $events );
 
         if ( $active_only ) {
             return array_values( array_filter( $events, function( $ev ) {
@@ -181,7 +214,7 @@ class Aura_Calendar_Generic_Events {
     public static function save_item( array $data ) {
         $name = sanitize_text_field( $data['name'] ?? '' );
         if ( empty( $name ) ) {
-            return new WP_Error( 'missing_name', __( 'El nombre del evento genérico es obligatorio.', 'aura' ) );
+            return new WP_Error( 'missing_name', __( 'El nombre del evento genérico es obligatorio.', 'aura-suite' ) );
         }
 
         $id       = ! empty( $data['id'] ) ? sanitize_key( $data['id'] ) : sanitize_title( $name );
@@ -272,7 +305,7 @@ class Aura_Calendar_Generic_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'No tienes permisos para modificar eventos genéricos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No tienes permisos para modificar eventos genéricos.', 'aura-suite' ) ] );
         }
 
         $res = self::save_item( $_POST );
@@ -281,7 +314,7 @@ class Aura_Calendar_Generic_Events {
         }
 
         wp_send_json_success( [
-            'message' => __( 'Evento genérico guardado correctamente.', 'aura' ),
+            'message' => __( 'Evento genérico guardado correctamente.', 'aura-suite' ),
             'item'    => $res,
             'events'  => self::get_all(),
         ] );
@@ -294,21 +327,21 @@ class Aura_Calendar_Generic_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'No tienes permisos para eliminar eventos genéricos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No tienes permisos para eliminar eventos genéricos.', 'aura-suite' ) ] );
         }
 
         $id = sanitize_key( $_POST['id'] ?? '' );
         if ( empty( $id ) ) {
-            wp_send_json_error( [ 'message' => __( 'ID de evento genérico no proporcionado.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de evento genérico no proporcionado.', 'aura-suite' ) ] );
         }
 
         $deleted = self::delete_item( $id );
         if ( ! $deleted ) {
-            wp_send_json_error( [ 'message' => __( 'No se encontró el evento genérico a eliminar.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se encontró el evento genérico a eliminar.', 'aura-suite' ) ] );
         }
 
         wp_send_json_success( [
-            'message' => __( 'Evento genérico eliminado.', 'aura' ),
+            'message' => __( 'Evento genérico eliminado.', 'aura-suite' ),
             'events'  => self::get_all(),
         ] );
     }
@@ -320,13 +353,13 @@ class Aura_Calendar_Generic_Events {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_settings' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'No tienes permisos para restablecer eventos genéricos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No tienes permisos para restablecer eventos genéricos.', 'aura-suite' ) ] );
         }
 
         self::reset_defaults();
 
         wp_send_json_success( [
-            'message' => __( 'Se han restablecido los 11 eventos genéricos predeterminados con éxito.', 'aura' ),
+            'message' => __( 'Se han restablecido los 11 eventos genéricos predeterminados con éxito.', 'aura-suite' ),
             'events'  => self::get_all(),
         ] );
     }

@@ -230,9 +230,9 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
                                 $tip_html = '<div class="aura-tip-card">'
                                     . '<div class="aura-tip-card-header"><div class="aura-tip-info"><div class="aura-tip-title">' . esc_html( $cat->name ) . '</div></div></div>'
                                     . '<div class="aura-tip-card-body">'
-                                    . '<div class="aura-tip-row"><span>Slug</span><strong>' . esc_html( $cat->slug ) . '</strong></div>'
-                                    . '<div class="aura-tip-row"><span>Programa</span><strong>' . esc_html( $interval_str ) . '</strong></div>'
-                                    . '<div class="aura-tip-row"><span>Equipos</span><strong>' . intval( $cat->count ) . '</strong></div>'
+                                    . '<div class="aura-tip-row"><span>' . esc_html__( 'Slug', 'aura-suite' ) . '</span><strong>' . esc_html( $cat->slug ) . '</strong></div>'
+                                    . '<div class="aura-tip-row"><span>' . esc_html__( 'Programa', 'aura-suite' ) . '</span><strong>' . esc_html( $interval_str ) . '</strong></div>'
+                                    . '<div class="aura-tip-row"><span>' . esc_html__( 'Equipos', 'aura-suite' ) . '</span><strong>' . intval( $cat->count ) . '</strong></div>'
                                     . '</div></div>';
                             ?>
                             <tr data-term-id="<?php echo esc_attr( $cat->term_id ); ?>"
@@ -525,7 +525,7 @@ if ( ! wp_script_is( 'aura-inventory-settings', 'enqueued' ) ) {
                             <th scope="row"><label for="set-email-extra"><?php _e( 'Correos adicionales', 'aura-suite' ); ?></label></th>
                             <td>
                                 <textarea id="set-email-extra" name="email_extra" class="form-control" rows="3"
-                                          placeholder="uno@ejemplo.com&#10;otro@ejemplo.com"><?php echo esc_textarea( $settings['email_extra'] ); ?></textarea>
+                                          placeholder="<?php echo esc_attr__( "uno@ejemplo.com\notro@ejemplo.com", 'aura-suite' ); ?>"><?php echo esc_textarea( $settings['email_extra'] ); ?></textarea>
                                 <p class="description"><?php _e( 'Un correo por línea. Se agregarán a todos los envíos de alerta del módulo.', 'aura-suite' ); ?></p>
                             </td>
                         </tr>

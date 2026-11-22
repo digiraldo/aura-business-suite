@@ -10,6 +10,18 @@
 (function ($) {
     'use strict';
 
+    var __ = (window.wp && window.wp.i18n && window.wp.i18n.__) ? window.wp.i18n.__ : function (s) { return s; };
+    var sprintf = (window.wp && window.wp.i18n && window.wp.i18n.sprintf) ? window.wp.i18n.sprintf : function () {
+        var args = Array.prototype.slice.call(arguments);
+        var fmt = args.shift() || '';
+        var i = 0;
+        return String(fmt).replace(/%(?:(\d+)\$)?([sd%])/g, function (m, pos, type) {
+            if (type === '%') return '%';
+            var idx = pos ? (parseInt(pos, 10) - 1) : i++;
+            return args[idx] !== undefined ? args[idx] : '';
+        });
+    };
+
     var cfg   = window.auraVehiclesConfig || {};
     var API   = (cfg.apiBase || '/wp-json/aura/v1/') + 'vehicles/';
 
@@ -21,10 +33,10 @@
 
     // Etiquetas de período
     var periodLabels = {
-        '7d':   'últimos 7 días',
-        '30d':  'últimos 30 días',
-        '90d':  'últimos 90 días',
-        'year': 'año actual',
+        '7d':   __('últimos 7 días', 'aura-suite'),
+        '30d':  __('últimos 30 días', 'aura-suite'),
+        '90d':  __('últimos 90 días', 'aura-suite'),
+        'year': __('año actual', 'aura-suite'),
     };
 
     // ── INIT ─────────────────────────────────────────────────────────
@@ -60,7 +72,7 @@
     function updatePeriodLabel() {
         var $label = $('#aura-dash-period-label');
         var label  = periodLabels[state.period] || state.period;
-        $label.text('Actividad — ' + label);
+        $label.text(sprintf(__('Actividad — %s', 'aura-suite'), label));
     }
 
     // ── CARGA PARALELA DE TODOS LOS DATOS ───────────────────────────
@@ -95,7 +107,7 @@
             renderCostVsIncome(costR[0].data);
             showLastUpdate();
         }).fail(function (jqXHR) {
-            var msg = 'Error al cargar los datos del dashboard.';
+            var msg = __('Error al cargar los datos del dashboard.', 'aura-suite');
             if (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.message) {
                 msg = jqXHR.responseJSON.message;
             }
@@ -158,7 +170,7 @@
             $(wrapper).html(
                 '<div class="aura-dash-chart-empty">' +
                 '<span class="dashicons dashicons-chart-bar"></span>' +
-                '<p>Sin datos para este período.</p>' +
+                '<p>' + __('Sin datos para este período.', 'aura-suite') + '</p>' +
                 '</div>'
             );
         }
@@ -224,7 +236,7 @@
             data: {
                 labels: data.labels,
                 datasets: [{
-                    label:           'KM recorridos',
+                    label:           __('KM recorridos', 'aura-suite'),
                     data:            data.values,
                     backgroundColor: '#2271b1',
                     borderRadius:    4,
@@ -282,7 +294,7 @@
             data: {
                 labels: data.labels,
                 datasets: [{
-                    label:           'Salidas',
+                    label:           __('Salidas', 'aura-suite'),
                     data:            data.values,
                     backgroundColor: bgColors,
                     borderRadius:    4,
@@ -328,7 +340,7 @@
             data: {
                 labels: data.labels,
                 datasets: [{
-                    label:           'Salidas',
+                    label:           __('Salidas', 'aura-suite'),
                     data:            data.values,
                     borderColor:     '#2271b1',
                     backgroundColor: 'rgba(34,113,177,.1)',
@@ -376,14 +388,14 @@
                 labels: data.labels,
                 datasets: [
                     {
-                        label:           'Ingresos',
+                        label:           __('Ingresos', 'aura-suite'),
                         data:            data.income,
                         backgroundColor: '#00ba88',
                         borderRadius:    4,
                         borderSkipped:   false,
                     },
                     {
-                        label:           'Costos',
+                        label:           __('Costos', 'aura-suite'),
                         data:            data.costs,
                         backgroundColor: '#f0b849',
                         borderRadius:    4,
@@ -438,7 +450,7 @@
         var hh  = String(now.getHours()).padStart(2, '0');
         var mm  = String(now.getMinutes()).padStart(2, '0');
         var ss  = String(now.getSeconds()).padStart(2, '0');
-        $('#aura-dash-last-update').text('Actualizado: ' + hh + ':' + mm + ':' + ss).show();
+        $('#aura-dash-last-update').text(sprintf(__('Actualizado: %s', 'aura-suite'), hh + ':' + mm + ':' + ss)).show();
     }
 
     function formatNumber(n) {

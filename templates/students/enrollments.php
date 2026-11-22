@@ -526,7 +526,13 @@ jQuery(function($){
             $('#applicants-tbody').html('<tr><td colspan="7" style="text-align:center;padding:20px;"><?php echo esc_js( __( 'No hay postulantes pendientes.', 'aura-suite' ) ); ?></td></tr>');
             return;
         }
-        var profileLabels = { student:'Estudiante', volunteer:'Voluntario', teacher:'Instructor', participant:'Participante', donor:'Donante' };
+        var profileLabels = {
+            student:     '<?php echo esc_js( __( 'Estudiante', 'aura-suite' ) ); ?>',
+            volunteer:   '<?php echo esc_js( __( 'Voluntario', 'aura-suite' ) ); ?>',
+            teacher:     '<?php echo esc_js( __( 'Instructor', 'aura-suite' ) ); ?>',
+            participant: '<?php echo esc_js( __( 'Participante', 'aura-suite' ) ); ?>',
+            donor:       '<?php echo esc_js( __( 'Donante', 'aura-suite' ) ); ?>'
+        };
         var html = '';
         $.each(rows, function(i, r){
             var fullName   = escHtml((r.first_name || '') + ' ' + (r.last_name || '')).trim();
@@ -748,7 +754,12 @@ jQuery(function($){
             return;
         }
         var paymentBadgeMap = { paid:'success', partial:'warning', unpaid:'danger', overdue:'danger' };
-        var paymentLabels = { paid:'✅ Pagado', partial:'🟡 Parcial', unpaid:'🔴 Sin pago', overdue:'🚨 Vencido' };
+        var paymentLabels = {
+            paid:    '<?php echo esc_js( __( '✅ Pagado', 'aura-suite' ) ); ?>',
+            partial: '<?php echo esc_js( __( '🟡 Parcial', 'aura-suite' ) ); ?>',
+            unpaid:  '<?php echo esc_js( __( '🔴 Sin pago', 'aura-suite' ) ); ?>',
+            overdue: '<?php echo esc_js( __( '🚨 Vencido', 'aura-suite' ) ); ?>'
+        };
         var html = '';
         $.each(rows, function(i, r){
             var fullName   = escHtml((r.first_name || '') + ' ' + (r.last_name || '')).trim();

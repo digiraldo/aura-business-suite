@@ -510,7 +510,7 @@ body.at-modal-open { overflow: hidden; }
             <div class="at-field">
                 <label for="aura-type-name">
                     <?php esc_html_e( 'Nombre', 'aura-suite' ); ?>
-                    <span class="required" title="Campo requerido">*</span>
+                    <span class="required" title="<?php esc_attr_e( 'Campo requerido', 'aura-suite' ); ?>">*</span>
                 </label>
                 <input type="text" id="aura-type-name" name="name" maxlength="100" required
                        placeholder="<?php esc_attr_e( 'Ej. Ministerio, Célula...', 'aura-suite' ); ?>"
@@ -627,11 +627,11 @@ body.at-modal-open { overflow: hidden; }
             dom:         '<"aura-dt-top"li>rt<"aura-dt-bottom"p>',
             pageLength:  20,
             language: {
-                info:         '_TOTAL_ tipos',
-                infoEmpty:    '0 tipos',
-                infoFiltered: '(filtrado de _MAX_ total)',
-                lengthMenu:   'Mostrar _MENU_ por página',
-                zeroRecords:  'No se encontraron tipos.',
+                info:         <?php echo wp_json_encode( __( '_TOTAL_ tipos', 'aura-suite' ) ); ?>,
+                infoEmpty:    <?php echo wp_json_encode( __( '0 tipos', 'aura-suite' ) ); ?>,
+                infoFiltered: <?php echo wp_json_encode( __( '(filtrado de _MAX_ total)', 'aura-suite' ) ); ?>,
+                lengthMenu:   <?php echo wp_json_encode( __( 'Mostrar _MENU_ por página', 'aura-suite' ) ); ?>,
+                zeroRecords:  <?php echo wp_json_encode( __( 'No se encontraron tipos.', 'aura-suite' ) ); ?>,
                 paginate:     { first: '«', last: '»', previous: '‹', next: '›' }
             },
             columns: [
@@ -706,7 +706,7 @@ body.at-modal-open { overflow: hidden; }
             if (res.success) {
                 dtInstance.clear().rows.add(res.data.data).draw();
             } else {
-                showNotice('error', (res.data && res.data.message) || 'Error al cargar tipos.');
+                showNotice('error', (res.data && res.data.message) || <?php echo wp_json_encode( __( 'Error al cargar tipos.', 'aura-suite' ) ); ?>);
             }
         });
     }
@@ -804,7 +804,7 @@ body.at-modal-open { overflow: hidden; }
         if (!confirm(CFG.i18n.confirmDelete)) { return; }
         $.post(CFG.ajaxUrl, { action: 'aura_areas_types_delete', nonce: CFG.nonce, id: id }, function(res) {
             if (res.success) { showNotice('success', res.data.message); loadTypes(); }
-            else { showNotice('error', (res.data && res.data.message) || 'Error al eliminar.'); }
+            else { showNotice('error', (res.data && res.data.message) || <?php echo wp_json_encode( __( 'Error al eliminar.', 'aura-suite' ) ); ?>); }
         });
     });
 

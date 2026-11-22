@@ -1,6 +1,23 @@
 (function ($) {
     'use strict';
 
+    var i18n = window.wp && window.wp.i18n ? window.wp.i18n : null;
+    var __ = function (text, domain) {
+        return i18n && typeof i18n.__ === 'function' ? i18n.__(text, domain || 'aura-suite') : text;
+    };
+    var sprintf = function () {
+        if (i18n && typeof i18n.sprintf === 'function') {
+            return i18n.sprintf.apply(i18n, arguments);
+        }
+        var args = Array.prototype.slice.call(arguments);
+        var fmt = String(args.shift() || '');
+        var idx = 0;
+        return fmt.replace(/%(?:(\d+)\$)?[sd]/g, function (m, pos) {
+            var pick = pos ? parseInt(pos, 10) - 1 : idx++;
+            return args[pick] !== undefined ? args[pick] : '';
+        });
+    };
+
     var cfg = window.auraAreasAdmin || {};
     var strings = cfg.strings || {};
     var areasTable = null;
@@ -9,6 +26,10 @@
     var cropAttachmentId = 0;
     var mediaFrame = null;
     var currentAreasList = [];
+
+    function escAttr(value) {
+        return String(value || '').replace(/"/g, '&quot;');
+    }
 
     function escHtml(value) {
         return $('<div>').text(value || '').html();
@@ -108,7 +129,7 @@
         }
 
         return '<div class="aura-logo-toggle-cell">'
-            + '<button type="button" class="aura-row-toggle js-row-toggle" aria-expanded="false" data-id="' + area.id + '" data-tooltip="Desplegar información completa del área">'
+            + '<button type="button" class="aura-row-toggle js-row-toggle" aria-expanded="false" data-id="' + area.id + '" data-tooltip="' + escHtml(__('Desplegar información completa del área', 'aura-suite')) + '">'
             + '<span class="dashicons dashicons-arrow-right-alt2"></span>'
             + '</button>'
             + logoHtml
@@ -117,7 +138,7 @@
 
     function renderAreaName(area) {
         var parent = area.parent_name
-            ? '<div class="aura-area-parent" data-tooltip="Depende de: ' + escHtml(area.parent_name) + '"><span class="dashicons dashicons-networking"></span> ' + escHtml(area.parent_name) + '</div>'
+            ? '<div class="aura-area-parent" data-tooltip="' + escHtml(sprintf(__('Depende de: %s', 'aura-suite'), area.parent_name)) + '"><span class="dashicons dashicons-networking"></span> ' + escHtml(area.parent_name) + '</div>'
             : '';
         var descText = (area.description || '').trim();
         var shortDesc = descText.length > 38 ? descText.substring(0, 38) + '…' : descText;
@@ -126,7 +147,7 @@
             : '';
 
         return '<div class="aura-area-name-cell">'
-            + '<span class="aura-color-badge" style="background:' + escHtml(area.color || '#2271b1') + ';" data-tooltip="Color identificador: ' + escHtml(area.color || '#2271b1') + '"></span>'
+            + '<span class="aura-color-badge" style="background:' + escHtml(area.color || '#2271b1') + ';" data-tooltip="' + escHtml(sprintf(__('Color identificador: %s', 'aura-suite'), area.color || '#2271b1')) + '"></span>'
             + '<div class="aura-area-name-info"><div class="aura-area-name" data-tooltip="' + escHtml(area.name) + '">' + escHtml(area.name) + '</div>' + parent + description + '</div>'
             + '</div>';
     }
@@ -139,15 +160,15 @@
             +   '</div>'
             +   '<div class="aura-tip-info">'
             +     '<div class="aura-tip-title">' + escHtml(user.display_name) + '</div>'
-            +     '<div class="aura-tip-subtitle">' + escHtml(user.email || 'Personal asignado') + '</div>'
+            +     '<div class="aura-tip-subtitle">' + escHtml(user.email || __('Personal asignado', 'aura-suite')) + '</div>'
             +     '<div class="aura-tip-badges">'
-            +       '<span class="aura-tip-badge aura-tip-badge--role">👤 Miembro de área</span>'
+            +       '<span class="aura-tip-badge aura-tip-badge--role">👤 ' + escHtml(__('Miembro de área', 'aura-suite')) + '</span>'
             +     '</div>'
             +   '</div>'
             + '</div>'
             + '<div class="aura-tip-card-body">'
-            +   '<div class="aura-tip-row"><span>🏢 Adscrito a:</span> <strong>' + escHtml(areaName) + '</strong></div>'
-            +   (user.email ? '<div class="aura-tip-row"><span>✉️ Correo electrónico:</span> <strong>' + escHtml(user.email) + '</strong></div>' : '')
+            +   '<div class="aura-tip-row"><span>🏢 ' + escHtml(__('Adscrito a:', 'aura-suite')) + '</span> <strong>' + escHtml(areaName) + '</strong></div>'
+            +   (user.email ? '<div class="aura-tip-row"><span>✉️ ' + escHtml(__('Correo electrónico:', 'aura-suite')) + '</span> <strong>' + escHtml(user.email) + '</strong></div>' : '')
             + '</div>'
             + '</div>';
     }
@@ -157,7 +178,7 @@
         var html = '<div class="aura-tip-card">'
             + '<div class="aura-tip-card-header">'
             +   '<div class="aura-tip-info">'
-            +     '<div class="aura-tip-title">Otros ' + extraCount + ' miembros asignados</div>'
+            +     '<div class="aura-tip-title">' + escHtml(sprintf(__('Otros %d miembros asignados', 'aura-suite'), extraCount)) + '</div>'
             +     '<div class="aura-tip-subtitle">' + escHtml(areaName) + '</div>'
             +   '</div>'
             + '</div>'
@@ -177,7 +198,7 @@
 
     function renderAssignedUsers(area) {
         if (!area.assigned_users || !area.assigned_users.length) {
-            return '<em style="color:#94a3b8; font-size:12px;">' + escHtml(strings.none || 'Sin asignar') + '</em>';
+            return '<em style="color:#94a3b8; font-size:12px;">' + escHtml(strings.none || __('Sin asignar', 'aura-suite')) + '</em>';
         }
 
         var html = '<div class="aura-users-stack">';
@@ -198,8 +219,8 @@
 
     function renderTypeTipCard(type) {
         var defaultBadge = type.is_default 
-            ? '<span class="aura-tip-badge" style="background:rgba(16,185,129,0.18);color:#10b981;border:1px solid rgba(16,185,129,0.35);">⭐ Predeterminado</span>'
-            : '<span class="aura-tip-badge" style="background:rgba(148,163,184,0.18);color:#94a3b8;border:1px solid rgba(148,163,184,0.35);">Clasificación regular</span>';
+            ? '<span class="aura-tip-badge" style="background:rgba(16,185,129,0.18);color:#10b981;border:1px solid rgba(16,185,129,0.35);">⭐ ' + escHtml( __( 'Predeterminado', 'aura-suite' ) ) + '</span>'
+            : '<span class="aura-tip-badge" style="background:rgba(148,163,184,0.18);color:#94a3b8;border:1px solid rgba(148,163,184,0.35);">' + escHtml( __( 'Clasificación regular', 'aura-suite' ) ) + '</span>';
 
         return '<div class="aura-tip-card">'
             + '<div class="aura-tip-card-header">'
@@ -213,25 +234,26 @@
             +   '</div>'
             + '</div>'
             + '<div class="aura-tip-card-body">'
-            +   '<div class="aura-tip-row"><span>🎨 Código de color:</span> <strong><code style="background:transparent;color:#38bdf8;">' + escHtml(type.color || '#2563eb') + '</code></strong></div>'
-            +   '<div class="aura-tip-row"><span>🏢 Áreas asociadas:</span> <strong>' + parseInt(type.areas_count || 0, 10) + ' área(s)</strong></div>'
-            +   (type.description ? '<div class="aura-tip-row" style="flex-direction:column;align-items:flex-start;gap:3px;"><span style="color:#94a3b8;">📝 Propósito del tipo:</span><p style="margin:2px 0 0;font-size:11px;color:#cbd5e1;line-height:1.4;">' + escHtml(type.description) + '</p></div>' : '')
+            +   '<div class="aura-tip-row"><span>' + escHtml( __( '🎨 Código de color:', 'aura-suite' ) ) + '</span> <strong><code style="background:transparent;color:#38bdf8;">' + escHtml(type.color || '#2563eb') + '</code></strong></div>'
+            +   '<div class="aura-tip-row"><span>' + escHtml( __( '🏢 Áreas asociadas:', 'aura-suite' ) ) + '</span> <strong>' + sprintf( escHtml( __( '%d área(s)', 'aura-suite' ) ), parseInt(type.areas_count || 0, 10) ) + '</strong></div>'
+            +   (type.description ? '<div class="aura-tip-row" style="flex-direction:column;align-items:flex-start;gap:3px;"><span style="color:#94a3b8;">' + escHtml( __( '📝 Propósito del tipo:', 'aura-suite' ) ) + '</span><p style="margin:2px 0 0;font-size:11px;color:#cbd5e1;line-height:1.4;">' + escHtml(type.description) + '</p></div>' : '')
             + '</div>'
             + '</div>';
     }
 
     function renderTypeAreasTipCard(type) {
         var count = parseInt(type.areas_count || 0, 10);
+        var titleText = count === 1 ? __( 'Área vinculada', 'aura-suite' ) : __( 'Áreas vinculadas', 'aura-suite' );
         return '<div class="aura-tip-card">'
             + '<div class="aura-tip-card-header">'
             +   '<div class="aura-tip-info">'
-            +     '<div class="aura-tip-title">🏢 ' + count + ' ' + (count === 1 ? 'Área vinculada' : 'Áreas vinculadas') + '</div>'
-            +     '<div class="aura-tip-subtitle">Tipo: ' + escHtml(type.name) + '</div>'
+            +     '<div class="aura-tip-title">🏢 ' + count + ' ' + escHtml(titleText) + '</div>'
+            +     '<div class="aura-tip-subtitle">' + sprintf( escHtml( __( 'Tipo: %s', 'aura-suite' ) ), escHtml(type.name) ) + '</div>'
             +   '</div>'
             + '</div>'
             + '<div class="aura-tip-card-body">'
-            +   '<div class="aura-tip-row" style="white-space:normal;"><span>Estado en catálogo:</span> <strong>' + (count > 0 ? 'En uso activo' : 'Sin áreas registradas') + '</strong></div>'
-            +   (count > 0 ? '<div class="aura-tip-row" style="font-size:10.5px;color:#94a3b8;">No es posible eliminar el tipo mientras mantenga áreas asociadas.</div>' : '')
+            +   '<div class="aura-tip-row" style="white-space:normal;"><span>' + escHtml( __( 'Estado en catálogo:', 'aura-suite' ) ) + '</span> <strong>' + escHtml(count > 0 ? __( 'En uso activo', 'aura-suite' ) : __( 'Sin áreas registradas', 'aura-suite' )) + '</strong></div>'
+            +   (count > 0 ? '<div class="aura-tip-row" style="font-size:10.5px;color:#94a3b8;">' + escHtml( __( 'No es posible eliminar el tipo mientras mantenga áreas asociadas.', 'aura-suite' ) ) + '</div>' : '')
             + '</div>'
             + '</div>';
     }
@@ -242,7 +264,7 @@
         var descText = (type.description || '').trim();
         var shortDesc = descText.length > 42 ? descText.substring(0, 42) + '…' : descText;
         var descHtml = descText
-            ? '<span class="aura-type-desc" data-tooltip="' + escHtml(descText) + '">' + escHtml(shortDesc) + '</span>'
+            ? '<span class="aura-type-desc" data-tooltip="' + escAttr(descText) + '">' + escHtml(shortDesc) + '</span>'
             : '<span style="color:#94a3b8;">&mdash;</span>';
 
         return [
@@ -250,10 +272,10 @@
             '<strong class="aura-type-title aura-has-tooltip" data-aura-tooltip="' + encodeURIComponent(tipCardHtml) + '" style="cursor:pointer;color:#0f172a;">' + escHtml(type.name) + '</strong>',
             '<code>' + escHtml(type.slug) + '</code>',
             descHtml,
-            type.is_default ? '<span class="aura-badge aura-badge-green" data-tooltip="Se selecciona por defecto al dar de alta una nueva área">⭐ Sí</span>' : '<span style="color:#94a3b8;">&mdash;</span>',
+            type.is_default ? '<span class="aura-badge aura-badge-green" data-tooltip="' + escAttr( __( 'Se selecciona por defecto al dar de alta una nueva área', 'aura-suite' ) ) + '">⭐ ' + escHtml( __( 'Sí', 'aura-suite' ) ) + '</span>' : '<span style="color:#94a3b8;">&mdash;</span>',
             '<span class="aura-badge aura-badge-blue aura-has-tooltip" data-aura-tooltip="' + encodeURIComponent(areasTipCardHtml) + '" style="cursor:help;font-weight:700;padding:4px 10px;">' + parseInt(type.areas_count || 0, 10) + '</span>',
-            '<button type="button" class="aura-action-btn js-type-edit" data-id="' + type.id + '" data-tooltip="Editar tipo: ' + escHtml(type.name) + '"><span class="dashicons dashicons-edit"></span></button>'
-            + '<button type="button" class="aura-action-btn danger js-type-delete" data-id="' + type.id + '" data-count="' + type.areas_count + '" data-tooltip="Eliminar tipo: ' + escHtml(type.name) + '"><span class="dashicons dashicons-trash"></span></button>'
+            '<button type="button" class="aura-action-btn js-type-edit" data-id="' + type.id + '" data-tooltip="' + escAttr( sprintf( __( 'Editar tipo: %s', 'aura-suite' ), type.name ) ) + '"><span class="dashicons dashicons-edit"></span></button>'
+            + '<button type="button" class="aura-action-btn danger js-type-delete" data-id="' + type.id + '" data-count="' + type.areas_count + '" data-tooltip="' + escAttr( sprintf( __( 'Eliminar tipo: %s', 'aura-suite' ), type.name ) ) + '"><span class="dashicons dashicons-trash"></span></button>'
         ];
     }
 
@@ -261,12 +283,12 @@
         var dashboardUrl = 'admin.php?page=aura-areas&view=dashboard&area_id=' + area.id;
         var budgetUrl = 'admin.php?page=aura-financial-budgets&area_id=' + area.id;
         var archiveAction = area.status === 'active'
-            ? '<button type="button" class="aura-btn aura-btn-secondary danger aura-btn-sm js-area-archive" data-id="' + area.id + '"><span class="dashicons dashicons-archive"></span> Archivar</button>'
-            : '<button type="button" class="aura-btn aura-btn-secondary success aura-btn-sm js-area-reactivate" data-id="' + area.id + '"><span class="dashicons dashicons-update"></span> Reactivar</button>';
+            ? '<button type="button" class="aura-btn aura-btn-secondary danger aura-btn-sm js-area-archive" data-id="' + area.id + '"><span class="dashicons dashicons-archive"></span> ' + escHtml( __( 'Archivar', 'aura-suite' ) ) + '</button>'
+            : '<button type="button" class="aura-btn aura-btn-secondary success aura-btn-sm js-area-reactivate" data-id="' + area.id + '"><span class="dashicons dashicons-update"></span> ' + escHtml( __( 'Reactivar', 'aura-suite' ) ) + '</button>';
 
         var budgetFormatted = (area.budget_assigned !== null && area.budget_assigned !== undefined && Number(area.budget_assigned) > 0)
             ? formatCurrency(area.budget_assigned)
-            : 'Sin presupuesto asignado';
+            : escHtml( __( 'Sin presupuesto asignado', 'aura-suite' ) );
 
         var usersHtml = '';
         if (area.assigned_users && area.assigned_users.length) {
@@ -280,7 +302,7 @@
             });
             usersHtml += '</div>';
         } else {
-            usersHtml = '<span class="aura-child-empty-text">Sin miembros ni responsables asignados</span>';
+            usersHtml = '<span class="aura-child-empty-text">' + escHtml( __( 'Sin miembros ni responsables asignados', 'aura-suite' ) ) + '</span>';
         }
 
         var logoImg = (area.logo_thumb_url || area.logo_url)
@@ -293,38 +315,38 @@
             +     logoImg
             +     '<div class="aura-child-hero-text">'
             +       '<div class="aura-child-hero-title">' + escHtml(area.name) + '</div>'
-            +       (area.parent_name ? '<div class="aura-child-hero-parent"><span class="dashicons dashicons-networking"></span> Pertenece a: <strong>' + escHtml(area.parent_name) + '</strong></div>' : '')
+            +       (area.parent_name ? '<div class="aura-child-hero-parent"><span class="dashicons dashicons-networking"></span> ' + escHtml( __( 'Pertenece a:', 'aura-suite' ) ) + ' <strong>' + escHtml(area.parent_name) + '</strong></div>' : '')
             +     '</div>'
             +   '</div>'
             +   '<div class="aura-child-hero-badges">'
-            +     '<span class="aura-type-badge" data-tooltip="Clasificación: ' + escHtml(area.type_label) + '">' + escHtml(area.type_label) + '</span>'
-            +     '<span class="aura-status-badge ' + (area.status === 'active' ? 'aura-status-active' : 'aura-status-archived') + '" data-tooltip="Estado: ' + escHtml(area.status === 'active' ? 'Activa' : 'Archivada') + '">' + escHtml(area.status === 'active' ? 'Activa' : 'Archivada') + '</span>'
+            +     '<span class="aura-type-badge" data-tooltip="' + escAttr( sprintf( __( 'Clasificación: %s', 'aura-suite' ), area.type_label ) ) + '">' + escHtml(area.type_label) + '</span>'
+            +     '<span class="aura-status-badge ' + (area.status === 'active' ? 'aura-status-active' : 'aura-status-archived') + '" data-tooltip="' + escAttr( sprintf( __( 'Estado: %s', 'aura-suite' ), area.status === 'active' ? __( 'Activa', 'aura-suite' ) : __( 'Archivada', 'aura-suite' ) ) ) + '">' + escHtml(area.status === 'active' ? __( 'Activa', 'aura-suite' ) : __( 'Archivada', 'aura-suite' )) + '</span>'
             +   '</div>'
             + '</div>'
             + '<div class="aura-child-sections-grid">'
             +   '<div class="aura-child-subcard">'
-            +     '<div class="aura-child-subcard-header"><span class="dashicons dashicons-info"></span> Información General</div>'
+            +     '<div class="aura-child-subcard-header"><span class="dashicons dashicons-info"></span> ' + escHtml( __( 'Información General', 'aura-suite' ) ) + '</div>'
             +     '<div class="aura-child-subcard-body">'
-            +       '<p class="aura-child-description">' + (area.description ? escHtml(area.description) : '<em>Sin descripción registrada.</em>') + '</p>'
-            +       '<div class="aura-child-meta-item"><span>Color:</span> <span class="aura-color-badge" style="background:' + escHtml(area.color || '#2271b1') + '; display:inline-block; vertical-align:middle; margin-left:6px;"></span> <code>' + escHtml(area.color || '#2271b1') + '</code></div>'
+            +       '<p class="aura-child-description">' + (area.description ? escHtml(area.description) : '<em>' + escHtml( __( 'Sin descripción registrada.', 'aura-suite' ) ) + '</em>') + '</p>'
+            +       '<div class="aura-child-meta-item"><span>' + escHtml( __( 'Color:', 'aura-suite' ) ) + '</span> <span class="aura-color-badge" style="background:' + escHtml(area.color || '#2271b1') + '; display:inline-block; vertical-align:middle; margin-left:6px;"></span> <code>' + escHtml(area.color || '#2271b1') + '</code></div>'
             +     '</div>'
             +   '</div>'
             +   '<div class="aura-child-subcard">'
-            +     '<div class="aura-child-subcard-header"><span class="dashicons dashicons-money-alt"></span> Presupuesto Asignado</div>'
+            +     '<div class="aura-child-subcard-header"><span class="dashicons dashicons-money-alt"></span> ' + escHtml( __( 'Presupuesto Asignado', 'aura-suite' ) ) + '</div>'
             +     '<div class="aura-child-subcard-body">'
             +       '<div class="aura-child-budget-val">' + budgetFormatted + '</div>'
-            +       (Number(area.budget_assigned) > 0 ? '<a href="' + budgetUrl + '" class="aura-child-inline-link"><span class="dashicons dashicons-external"></span> Administrar partidas presupuestarias</a>' : '')
+            +       (Number(area.budget_assigned) > 0 ? '<a href="' + budgetUrl + '" class="aura-child-inline-link"><span class="dashicons dashicons-external"></span> ' + escHtml( __( 'Administrar partidas presupuestarias', 'aura-suite' ) ) + '</a>' : '')
             +     '</div>'
             +   '</div>'
             +   '<div class="aura-child-subcard aura-child-subcard-full">'
-            +     '<div class="aura-child-subcard-header"><span class="dashicons dashicons-admin-users"></span> Personal Asignado (' + (area.assigned_users ? area.assigned_users.length : 0) + ')</div>'
+            +     '<div class="aura-child-subcard-header"><span class="dashicons dashicons-admin-users"></span> ' + escHtml( sprintf( __( 'Personal Asignado (%d)', 'aura-suite' ), area.assigned_users ? area.assigned_users.length : 0 ) ) + '</div>'
             +     '<div class="aura-child-subcard-body">' + usersHtml + '</div>'
             +   '</div>'
             + '</div>'
             + '<div class="aura-child-action-dock">'
-            +   '<button type="button" class="aura-btn aura-btn-secondary aura-btn-sm js-area-edit" data-id="' + area.id + '"><span class="dashicons dashicons-edit"></span> Editar</button>'
-            +   '<a href="' + dashboardUrl + '" class="aura-btn aura-btn-secondary aura-btn-sm"><span class="dashicons dashicons-chart-bar"></span> Dashboard</a>'
-            +   '<a href="' + budgetUrl + '" class="aura-btn aura-btn-secondary aura-btn-sm"><span class="dashicons dashicons-money-alt"></span> Presupuesto</a>'
+            +   '<button type="button" class="aura-btn aura-btn-secondary aura-btn-sm js-area-edit" data-id="' + area.id + '"><span class="dashicons dashicons-edit"></span> ' + escHtml( __( 'Editar', 'aura-suite' ) ) + '</button>'
+            +   '<a href="' + dashboardUrl + '" class="aura-btn aura-btn-secondary aura-btn-sm"><span class="dashicons dashicons-chart-bar"></span> ' + escHtml( __( 'Dashboard', 'aura-suite' ) ) + '</a>'
+            +   '<a href="' + budgetUrl + '" class="aura-btn aura-btn-secondary aura-btn-sm"><span class="dashicons dashicons-money-alt"></span> ' + escHtml( __( 'Presupuesto', 'aura-suite' ) ) + '</a>'
             +   archiveAction
             + '</div>'
             + '</div>';
@@ -334,11 +356,11 @@
         var dashboardUrl = 'admin.php?page=aura-areas&view=dashboard&area_id=' + area.id;
         var budgetUrl = 'admin.php?page=aura-financial-budgets&area_id=' + area.id;
         var archiveAction = area.status === 'active'
-            ? '<button type="button" class="aura-action-btn danger js-area-archive" data-id="' + area.id + '" data-tooltip="Archivar"><span class="dashicons dashicons-archive"></span></button>'
-            : '<button type="button" class="aura-action-btn success js-area-reactivate" data-id="' + area.id + '" data-tooltip="Reactivar"><span class="dashicons dashicons-update"></span></button>';
+            ? '<button type="button" class="aura-action-btn danger js-area-archive" data-id="' + area.id + '" data-tooltip="' + escAttr( __( 'Archivar', 'aura-suite' ) ) + '"><span class="dashicons dashicons-archive"></span></button>'
+            : '<button type="button" class="aura-action-btn success js-area-reactivate" data-id="' + area.id + '" data-tooltip="' + escAttr( __( 'Reactivar', 'aura-suite' ) ) + '"><span class="dashicons dashicons-update"></span></button>';
 
         var budgetDisplay = (area.budget_assigned !== null && area.budget_assigned !== undefined && Number(area.budget_assigned) > 0)
-            ? '<a href="' + budgetUrl + '" style="font-weight:700;color:#059669;text-decoration:none;" data-tooltip="Ver presupuesto de esta área">' + formatCurrency(area.budget_assigned) + '</a>'
+            ? '<a href="' + budgetUrl + '" style="font-weight:700;color:#059669;text-decoration:none;" data-tooltip="' + escAttr( __( 'Ver presupuesto de esta área', 'aura-suite' ) ) + '">' + formatCurrency(area.budget_assigned) + '</a>'
             : '<span style="color:#94a3b8;">&mdash;</span>';
 
         return [
@@ -347,24 +369,11 @@
             '<span class="aura-type-badge">' + escHtml(area.type_label) + '</span>',
             renderAssignedUsers(area),
             budgetDisplay,
-            '<span class="aura-status-badge ' + (area.status === 'active' ? 'aura-status-active' : 'aura-status-archived') + '">' + escHtml(area.status === 'active' ? 'Activa' : 'Archivada') + '</span>',
-            '<button type="button" class="aura-action-btn js-area-edit" data-id="' + area.id + '" data-tooltip="Editar"><span class="dashicons dashicons-edit"></span></button>'
-            + '<a href="' + dashboardUrl + '" class="aura-action-btn" data-tooltip="Dashboard"><span class="dashicons dashicons-chart-bar"></span></a>'
-            + '<a href="' + budgetUrl + '" class="aura-action-btn" data-tooltip="Presupuesto"><span class="dashicons dashicons-money-alt"></span></a>'
+            '<span class="aura-status-badge ' + (area.status === 'active' ? 'aura-status-active' : 'aura-status-archived') + '">' + escHtml(area.status === 'active' ? __( 'Activa', 'aura-suite' ) : __( 'Archivada', 'aura-suite' )) + '</span>',
+            '<button type="button" class="aura-action-btn js-area-edit" data-id="' + area.id + '" data-tooltip="' + escAttr( __( 'Editar', 'aura-suite' ) ) + '"><span class="dashicons dashicons-edit"></span></button>'
+            + '<a href="' + dashboardUrl + '" class="aura-action-btn" data-tooltip="' + escAttr( __( 'Dashboard', 'aura-suite' ) ) + '"><span class="dashicons dashicons-chart-bar"></span></a>'
+            + '<a href="' + budgetUrl + '" class="aura-action-btn" data-tooltip="' + escAttr( __( 'Presupuesto', 'aura-suite' ) ) + '"><span class="dashicons dashicons-money-alt"></span></a>'
             + archiveAction
-        ];
-    }
-
-    function typeRow(type) {
-        return [
-            '<span style="display:inline-block;width:22px;height:22px;border-radius:999px;background:' + escHtml(type.color) + ';border:1px solid rgba(0,0,0,.12);"></span>',
-            escHtml(type.name),
-            '<code>' + escHtml(type.slug) + '</code>',
-            type.description ? escHtml(type.description) : '—',
-            type.is_default ? '<span class="aura-badge aura-badge-green">Sí</span>' : '',
-            '<strong>' + parseInt(type.areas_count || 0, 10) + '</strong>',
-            '<button type="button" class="aura-action-btn js-type-edit" data-id="' + type.id + '" data-tooltip="Editar"><span class="dashicons dashicons-edit"></span></button>'
-            + '<button type="button" class="aura-action-btn danger js-type-delete" data-id="' + type.id + '" data-count="' + type.areas_count + '" data-tooltip="Eliminar"><span class="dashicons dashicons-trash"></span></button>'
         ];
     }
 
@@ -394,11 +403,11 @@
             pageLength: 20,
             lengthMenu: [[10, 20, 50, 100], [10, 20, 50, 100]],
             language: {
-                lengthMenu: 'Mostrar _MENU_ áreas',
-                info: 'Mostrando _START_ a _END_ de _TOTAL_ áreas',
+                lengthMenu: __( 'Mostrar _MENU_ áreas', 'aura-suite' ),
+                info: __( 'Mostrando _START_ a _END_ de _TOTAL_ áreas', 'aura-suite' ),
                 paginate: { previous: '‹', next: '›' },
-                zeroRecords: 'No se encontraron áreas.',
-                emptyTable: 'Sin áreas disponibles.'
+                zeroRecords: __( 'No se encontraron áreas.', 'aura-suite' ),
+                emptyTable: __( 'Sin áreas disponibles.', 'aura-suite' )
             },
             columnDefs: [
                 { responsivePriority: 1, targets: 1 },
@@ -428,12 +437,12 @@
             dom: '<"aura-dt-top"li>rt<"aura-dt-bottom"p>',
             pageLength: 20,
             language: {
-                info: 'Mostrando _START_ a _END_ de _TOTAL_ tipos',
-                infoEmpty: '0 tipos',
-                infoFiltered: '(filtrado de _MAX_)',
-                lengthMenu: 'Mostrar _MENU_ tipos',
-                zeroRecords: 'No se encontraron tipos de área.',
-                emptyTable: 'Sin tipos de área registrados.',
+                info: __( 'Mostrando _START_ a _END_ de _TOTAL_ tipos', 'aura-suite' ),
+                infoEmpty: __( '0 tipos', 'aura-suite' ),
+                infoFiltered: __( '(filtrado de _MAX_)', 'aura-suite' ),
+                lengthMenu: __( 'Mostrar _MENU_ tipos', 'aura-suite' ),
+                zeroRecords: __( 'No se encontraron tipos de área.', 'aura-suite' ),
+                emptyTable: __( 'Sin tipos de área registrados.', 'aura-suite' ),
                 paginate: { previous: '‹', next: '›' }
             },
             columnDefs: [
@@ -472,7 +481,7 @@
             }
 
             if ($filter.length) {
-                $filter.empty().append('<option value="">Todos los tipos</option>');
+                $filter.empty().append('<option value="">' + escHtml( __( 'Todos los tipos', 'aura-suite' ) ) + '</option>');
             }
 
             (response.data || []).forEach(function (type) {
@@ -577,7 +586,7 @@
         $preview.empty();
 
         if (url) {
-            $preview.html('<img src="' + escHtml(url) + '" alt="Logo" data-preview-img="' + escHtml(url) + '" data-preview-title="Vista previa del logo">');
+            $preview.html('<img src="' + escHtml(url) + '" alt="' + escAttr( __( 'Logo', 'aura-suite' ) ) + '" data-preview-img="' + escHtml(url) + '" data-preview-title="' + escAttr( __( 'Vista previa del logo', 'aura-suite' ) ) + '">');
             $('#aura-field-logo-id').val(attachmentId || 0);
             $('#aura-logo-remove-btn').removeClass('aura-is-hidden');
         } else {
@@ -594,8 +603,8 @@
         }
 
         mediaFrame = wp.media({
-            title: strings.selectImage || 'Seleccionar imagen',
-            button: { text: 'Usar esta imagen' },
+            title: strings.selectImage || __( 'Seleccionar imagen', 'aura-suite' ),
+            button: { text: __( 'Usar esta imagen', 'aura-suite' ) },
             library: { type: 'image' },
             multiple: false
         });
@@ -721,7 +730,7 @@
     function saveArea() {
         var name = ($('#aura-field-name').val() || '').trim();
         if (!name) {
-            $('#error-name').text(strings.nameRequired || 'Campo requerido').removeClass('aura-is-hidden');
+            $('#error-name').text(strings.nameRequired || __( 'Campo requerido', 'aura-suite' )).removeClass('aura-is-hidden');
             $('#aura-field-name').trigger('focus');
             return;
         }
@@ -807,7 +816,7 @@
 
         var name = ($('#aura-type-name').val() || '').trim();
         if (!name) {
-            showNotice('#aura-types-notice', strings.typeNameRequired || 'Campo requerido', false);
+            showNotice('#aura-types-notice', strings.typeNameRequired || __( 'Campo requerido', 'aura-suite' ), false);
             return;
         }
 
@@ -982,7 +991,7 @@
                 return;
             }
 
-            if (!window.confirm(strings.typeDelete || 'Confirmar')) {
+            if (!window.confirm(strings.typeDelete || __( '¿Está seguro de que desea eliminar este tipo de área?', 'aura-suite' ))) {
                 return;
             }
 

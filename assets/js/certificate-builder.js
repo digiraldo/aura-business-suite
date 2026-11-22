@@ -13,6 +13,18 @@
        CONFIG
        ───────────────────────────────────────── */
 
+    var __ = (window.wp && window.wp.i18n && window.wp.i18n.__) ? window.wp.i18n.__ : function (s) { return s; };
+    var sprintf = (window.wp && window.wp.i18n && window.wp.i18n.sprintf) ? window.wp.i18n.sprintf : function () {
+        var args = Array.prototype.slice.call(arguments);
+        var fmt = args.shift() || '';
+        var i = 0;
+        return String(fmt).replace(/%(?:(\d+)\$)?([sd%])/g, function (m, pos, type) {
+            if (type === '%') return '%';
+            var idx = pos ? (parseInt(pos, 10) - 1) : i++;
+            return args[idx] !== undefined ? args[idx] : '';
+        });
+    };
+
     var CB      = window.auraCertBuilder || {};
     var AJAX    = CB.ajaxUrl  || (typeof ajaxurl !== 'undefined' ? ajaxurl : '');
     var NONCE   = CB.nonce    || '';
@@ -100,11 +112,11 @@
     }
 
     function extractError(res, fallback) {
-        if (!res) return fallback || 'Ocurrió un error.';
+        if (!res) return fallback || __('Ocurrió un error.', 'aura-suite');
         if (typeof res.data === 'string' && res.data) return res.data;
         if (res.data && typeof res.data.message === 'string' && res.data.message) return res.data.message;
         if (typeof res.message === 'string' && res.message) return res.message;
-        return fallback || 'Ocurrió un error.';
+        return fallback || __('Ocurrió un error.', 'aura-suite');
     }
 
     function toHexColor(color, fallback) {
@@ -141,7 +153,7 @@
         var d = DIM[orientation] || DIM.landscape;
         $('#aura-cb-width-mm').val(d.w_mm);
         $('#aura-cb-height-mm').val(d.h_mm);
-        var label = orientation.indexOf('letter') === 0 ? 'Carta' : 'A4';
+        var label = orientation.indexOf('letter') === 0 ? __('Carta', 'aura-suite') : 'A4';
         $('#aura-cb-hud-dims').text(label + ' · ' + d.w_mm + ' × ' + d.h_mm + ' mm (' + d.w + '×' + d.h + 'px)');
     }
 
@@ -169,31 +181,31 @@
     }
 
     function getObjectLabel(obj, idx) {
-        if (!obj) return 'Elemento ' + (idx + 1);
-        if (isPhotoObject(obj)) return '👤 Foto Estudiante';
-        if (obj.auraElementType === 'qr' || obj.name === 'qr_placeholder') return 'Código QR';
+        if (!obj) return sprintf(__('Elemento %d', 'aura-suite'), idx + 1);
+        if (isPhotoObject(obj)) return '👤 ' + __('Foto Estudiante', 'aura-suite');
+        if (obj.auraElementType === 'qr' || obj.name === 'qr_placeholder') return __('Código QR', 'aura-suite');
         if (obj.auraElementType === 'signer_sig' || (obj.name && String(obj.name).indexOf('signer_slot_') === 0)) {
             var slotNum = obj.signerSlot || String(obj.name || '').replace('signer_slot_', '') || '1';
-            return '✍ Slot Firma #' + slotNum;
+            return '✍ ' + sprintf(__('Slot Firma #%s', 'aura-suite'), slotNum);
         }
         if (obj.auraElementType === 'svg_clipart' || obj.auraSvgMarkup) {
-            return '🎨 ' + (obj.auraClipartLabel || 'SVG Clipart');
+            return '🎨 ' + (obj.auraClipartLabel || __('SVG Clipart', 'aura-suite'));
         }
-        if (obj.name && String(obj.name).indexOf('signer_') === 0) return 'Firma (' + obj.name + ')';
+        if (obj.name && String(obj.name).indexOf('signer_') === 0) return sprintf(__('Firma (%s)', 'aura-suite'), obj.name);
         if (isTextObject(obj)) {
             var txt = (obj.text || '').replace(/\s+/g, ' ').trim();
-            return 'T: ' + (txt.length > 22 ? txt.substring(0, 22) + '…' : (txt || 'Texto'));
+            return 'T: ' + (txt.length > 22 ? txt.substring(0, 22) + '…' : (txt || __('Texto', 'aura-suite')));
         }
         var names = {
-            rect     : 'Rectángulo',
-            circle   : 'Círculo',
-            triangle : 'Triángulo',
-            polygon  : 'Estrella / Polígono',
-            line     : 'Línea',
-            image    : 'Imagen',
-            group    : 'Grupo / Bloque'
+            rect     : __('Rectángulo', 'aura-suite'),
+            circle   : __('Círculo', 'aura-suite'),
+            triangle : __('Triángulo', 'aura-suite'),
+            polygon  : __('Estrella / Polígono', 'aura-suite'),
+            line     : __('Línea', 'aura-suite'),
+            image    : __('Imagen', 'aura-suite'),
+            group    : __('Grupo / Bloque', 'aura-suite')
         };
-        return names[obj.type] || obj.type || ('Objeto #' + (idx + 1));
+        return names[obj.type] || obj.type || sprintf(__('Objeto #%d', 'aura-suite'), idx + 1);
     }
 
     function syncTransparentHitTest(obj) {
@@ -346,7 +358,7 @@
     function loadTemplate(id) {
         ajaxPost('aura_cert_get_template', { id: id }).done(function (res) {
             if (!res.success || !res.data) {
-                alert(extractError(res, 'No se pudo cargar la plantilla.'));
+                alert(extractError(res, __('No se pudo cargar la plantilla.', 'aura-suite')));
                 history.push(serializeCanvas());
                 fitToScreen();
                 return;
@@ -354,7 +366,7 @@
             var t = res.data;
             $('#aura-cb-tmpl-name').val(t.name || '');
             $('#aura-cb-tmpl-desc').val(t.description || '');
-            $('#aura-cb-topbar-title').text('Editar: ' + (t.name || ''));
+            $('#aura-cb-topbar-title').text(sprintf(__('Editar: %s', 'aura-suite'), t.name || ''));
 
             var ori = t.orientation || 'landscape';
             $('#aura-cb-orientation').val(ori);
@@ -658,7 +670,7 @@
         $('.aura-cb-layers-toolbar button').prop('disabled', !hasSel);
 
         if (!objs.length) {
-            $list.html('<p class="aura-cb-muted">Sin elementos en el lienzo.</p>');
+            $list.html('<p class="aura-cb-muted">' + escHtml(__('Sin elementos en el lienzo.', 'aura-suite')) + '</p>');
             return;
         }
 
@@ -676,14 +688,14 @@
                 .toggleClass('is-locked-layer', isLocked)
                 .attr('data-index', i)
                 .html(
-                    '<span class="aura-cb-layer-grip" title="Arrastrar para reordenar">⠿</span>' +
+                    '<span class="aura-cb-layer-grip" title="' + escHtml(__('Arrastrar para reordenar', 'aura-suite')) + '">⠿</span>' +
                     '<span class="aura-cb-layer-badge">' + escHtml(getLayerTypeBadge(obj)) + '</span>' +
                     '<span class="aura-cb-layer-name" title="' + escHtml(getObjectLabel(obj, i)) + '">' + escHtml(getObjectLabel(obj, i)) + '</span>' +
                     '<span class="aura-cb-layer-actions">' +
-                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-move-up" title="Subir capa (encima)"' + (canUp ? '' : ' disabled') + '>↑</button>' +
-                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-move-down" title="Bajar capa (detrás)"' + (canDown ? '' : ' disabled') + '>↓</button>' +
-                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-vis' + (isHidden ? ' is-off' : '') + '" title="' + (isHidden ? 'Mostrar capa' : 'Ocultar capa') + '">' + (isHidden ? ICON_EYE_CLOSED : ICON_EYE_OPEN) + '</button>' +
-                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-lock' + (isLocked ? ' is-on' : '') + '" title="' + (isLocked ? 'Desbloquear (eslabón activo)' : 'Bloquear posición (eslabón)') + '">' + ICON_CHAIN_LOCK + '</button>' +
+                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-move-up" title="' + escHtml(__('Subir capa (encima)', 'aura-suite')) + '"' + (canUp ? '' : ' disabled') + '>↑</button>' +
+                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-move-down" title="' + escHtml(__('Bajar capa (detrás)', 'aura-suite')) + '"' + (canDown ? '' : ' disabled') + '>↓</button>' +
+                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-vis' + (isHidden ? ' is-off' : '') + '" title="' + escHtml(isHidden ? __('Mostrar capa', 'aura-suite') : __('Ocultar capa', 'aura-suite')) + '">' + (isHidden ? ICON_EYE_CLOSED : ICON_EYE_OPEN) + '</button>' +
+                        '<button type="button" class="aura-cb-layer-act aura-cb-layer-lock' + (isLocked ? ' is-on' : '') + '" title="' + escHtml(isLocked ? __('Desbloquear (eslabón activo)', 'aura-suite') : __('Bloquear posición (eslabón)', 'aura-suite')) + '">' + ICON_CHAIN_LOCK + '</button>' +
                     '</span>'
                 );
             $list.append($row);
@@ -1352,7 +1364,7 @@
 
     function addTextbox(text, opts) {
         opts = opts || {};
-        var tb = new fabric.Textbox(text || 'Texto', {
+        var tb = new fabric.Textbox(text || __('Texto', 'aura-suite'), {
             left       : opts.left !== undefined ? opts.left : Math.round((docW - (opts.width || 280)) / 2),
             top        : opts.top  !== undefined ? opts.top  : Math.round(docH * 0.42),
             width      : opts.width || 280,
@@ -1568,12 +1580,12 @@
         $list.empty();
         var colors = extractSvgColors(obj);
         if (!colors.length) {
-            $list.html('<p class="aura-cb-muted">No se detectaron colores editables en este SVG.</p>');
+            $list.html('<p class="aura-cb-muted">' + escHtml(__('No se detectaron colores editables en este SVG.', 'aura-suite')) + '</p>');
             return;
         }
         colors.forEach(function (hex, i) {
             var $row = $('<div class="aura-cb-svg-color-row">');
-            var $lbl = $('<span>').text('Color ' + (i + 1));
+            var $lbl = $('<span>').text(sprintf(__('Color %d', 'aura-suite'), i + 1));
             var $hex = $('<code>').text(hex);
             var $inp = $('<input type="color" class="aura-cb-svg-color-input">')
                 .val(hex)
@@ -1587,12 +1599,12 @@
     function addSvgFromString(rawSvg, label, extraOpts) {
         var cleanSvg = normalizeSvgForColoring(rawSvg);
         if (!cleanSvg || typeof fabric === 'undefined') {
-            alert('No se pudo leer el contenido SVG.');
+            alert(__('No se pudo leer el contenido SVG.', 'aura-suite'));
             return;
         }
         fabric.loadSVGFromString(cleanSvg, function (objects, options) {
             if (!objects || !objects.length) {
-                alert('El SVG no contiene trazos vectoriales visibles.');
+                alert(__('El SVG no contiene trazos vectoriales visibles.', 'aura-suite'));
                 return;
             }
             var svgObj = fabric.util.groupSVGElements(objects, options);
@@ -1608,7 +1620,7 @@
                 top              : Math.round((docH - svgObj.getScaledHeight()) / 2),
                 name             : 'svg_clipart_' + Date.now(),
                 auraElementType  : 'svg_clipart',
-                auraClipartLabel : label || 'Clipart SVG',
+                auraClipartLabel : label || __('Clipart SVG', 'aura-suite'),
                 auraSvgMarkup    : cleanSvg,
                 auraSvgOriginal  : cleanSvg
             }, extraOpts || {}));
@@ -1657,7 +1669,7 @@
     function addOrgLogo() {
         var logoUrl = CB.orgLogoUrl || '';
         if (logoUrl) {
-            handleImageUrlInsert(logoUrl, 'Logo Organización', { maxW: 180, top: 48, name: 'org_logo' });
+            handleImageUrlInsert(logoUrl, __('Logo Organización', 'aura-suite'), { maxW: 180, top: 48, name: 'org_logo' });
         } else {
             addTextbox(CB.orgName || '{organizacion}', {
                 top: 56, width: 500, fontSize: 22, fontFamily: 'Cinzel', fontWeight: 'bold', fill: '#1e3a8a', charSpacing: 120
@@ -1943,7 +1955,7 @@
                     ctx.font = 'bold ' + Math.max(8, Math.round(minD * 0.085)) + 'px Montserrat, sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText('FOTO PERFIL', 0, iy + ih - bandH / 2);
+                    ctx.fillText(__('FOTO PERFIL', 'aura-suite'), 0, iy + ih - bandH / 2);
                 }
                 ctx.restore();
 
@@ -2233,7 +2245,7 @@
 
         var cats = Object.keys(groups);
         if (!cats.length) {
-            $list.html('<p class="aura-cb-muted">Sin variables coincidentes.</p>');
+            $list.html('<p class="aura-cb-muted">' + escHtml(__('Sin variables coincidentes.', 'aura-suite')) + '</p>');
             return;
         }
 
@@ -2276,15 +2288,15 @@
             : Object.values(CB.prebuiltDesigns || {});
 
         if (!designs.length) {
-            $list.html('<p class="aura-cb-muted">Sin diseños predefinidos.</p>');
+            $list.html('<p class="aura-cb-muted">' + escHtml(__('Sin diseños predefinidos.', 'aura-suite')) + '</p>');
             return;
         }
 
         var oriLabels = {
-            landscape        : 'A4 Horiz.',
-            portrait         : 'A4 Vert.',
-            letter_landscape : 'Carta Horiz.',
-            letter_portrait  : 'Carta Vert.'
+            landscape        : __('A4 Horiz.', 'aura-suite'),
+            portrait         : __('A4 Vert.', 'aura-suite'),
+            letter_landscape : __('Carta Horiz.', 'aura-suite'),
+            letter_portrait  : __('Carta Vert.', 'aura-suite')
         };
 
         var shown = 0;
@@ -2307,10 +2319,10 @@
             var accent = d.accent || '#7c3aed';
             var badges = '<span class="aura-cb-preset-tag">' + escHtml(oriLabels[d.orientation] || d.orientation) + '</span>';
             if (hasPhoto) {
-                badges += '<span class="aura-cb-preset-tag is-photo">👤 Con Foto</span>';
+                badges += '<span class="aura-cb-preset-tag is-photo">👤 ' + escHtml(__('Con Foto', 'aura-suite')) + '</span>';
             }
             if (sigCount > 0) {
-                badges += '<span class="aura-cb-preset-tag">✍ ' + sigCount + (sigCount === 1 ? ' Firma' : ' Firmas') + '</span>';
+                badges += '<span class="aura-cb-preset-tag">✍ ' + sigCount + ' ' + escHtml(sigCount === 1 ? __('Firma', 'aura-suite') : __('Firmas', 'aura-suite')) + '</span>';
             }
 
             var $card = $('<button type="button" class="aura-cb-prebuilt-btn">')
@@ -2329,7 +2341,7 @@
         });
 
         if (!shown) {
-            $list.html('<p class="aura-cb-muted">No hay plantillas en esta categoría.</p>');
+            $list.html('<p class="aura-cb-muted">' + escHtml(__('No hay plantillas en esta categoría.', 'aura-suite')) + '</p>');
         }
     }
 
@@ -2342,7 +2354,7 @@
     $(document).on('click', '.aura-cb-prebuilt-btn', function () {
         var d = $(this).data('design');
         if (!d || !d.json) return;
-        if (canvas.getObjects().length && !confirm('¿Reemplazar el diseño actual con "' + d.name + '"?')) return;
+        if (canvas.getObjects().length && !confirm(sprintf(__('¿Reemplazar el diseño actual con "%s"?', 'aura-suite'), d.name))) return;
 
         var presetOri  = d.orientation || 'landscape';
         var currentOri = $('#aura-cb-orientation').val() || 'landscape';
@@ -2387,15 +2399,15 @@
         var signers = (CB.signers || []).slice(0, 4);
         $('#aura-cb-signers-count').text(signers.length);
         if (!signers.length) {
-            $list.html('<p class="aura-cb-muted">No hay firmantes activos configurados. Puedes usar los botones "1–4 Firmas" arriba para añadir espacios dinámicos.</p>');
+            $list.html('<p class="aura-cb-muted">' + escHtml(__('No hay firmantes activos configurados. Puedes usar los botones "1–4 Firmas" arriba para añadir espacios dinámicos.', 'aura-suite')) + '</p>');
             return;
         }
         signers.forEach(function (s, idx) {
             var slot = idx + 1;
             var thumb = s.signature_url
                 ? '<img src="' + escHtml(s.signature_url) + '" alt="" class="aura-cb-signer-thumb">'
-                : '<span class="aura-cb-signer-nothumb">Sin imagen</span>';
-            var $btn = $('<button type="button" class="aura-cb-signer-btn" title="Insertar firma #' + slot + ' en el lienzo">')
+                : '<span class="aura-cb-signer-nothumb">' + escHtml(__('Sin imagen', 'aura-suite')) + '</span>';
+            var $btn = $('<button type="button" class="aura-cb-signer-btn" title="' + escHtml(sprintf(__('Insertar firma #%d en el lienzo', 'aura-suite'), slot)) + '">')
                 .html(
                     '<div class="aura-cb-signer-head"><span class="aura-cb-signer-slot-badge">#' + slot + '</span>' + thumb + '</div>' +
                     '<div class="aura-cb-signer-info"><strong>' + escHtml(s.name) + '</strong>' +
@@ -2419,12 +2431,12 @@
     $(document).on('click', '#aura-cb-bg-image-btn', function (e) {
         e.preventDefault();
         if (!window.wp || !wp.media) {
-            alert('La librería multimedia de WordPress no está disponible.');
+            alert(__('La librería multimedia de WordPress no está disponible.', 'aura-suite'));
             return;
         }
         var frame = wp.media({
-            title    : 'Seleccionar imagen de fondo',
-            button   : { text: 'Usar como fondo' },
+            title    : __('Seleccionar imagen de fondo', 'aura-suite'),
+            button   : { text: __('Usar como fondo', 'aura-suite') },
             library  : { type: 'image' },
             multiple : false
         });
@@ -2512,12 +2524,12 @@
         });
 
         if (!filtered.length) {
-            $grid.html('<p class="aura-cb-muted" style="grid-column:1/-1;">No se encontraron cliparts con ese filtro.</p>');
+            $grid.html('<p class="aura-cb-muted" style="grid-column:1/-1;">' + escHtml(__('No se encontraron cliparts con ese filtro.', 'aura-suite')) + '</p>');
             return;
         }
 
         filtered.forEach(function (it) {
-            var $card = $('<button type="button" class="aura-cb-clipart-card" title="Insertar ' + escHtml(it.name) + '">')
+            var $card = $('<button type="button" class="aura-cb-clipart-card" title="' + escHtml(sprintf(__('Insertar %s', 'aura-suite'), it.name)) + '">')
                 .html('<div class="aura-cb-clipart-thumb">' + it.svg + '</div><span>' + escHtml(it.name) + '</span>');
             $card.data('clipart', it);
             $grid.append($card);
@@ -2537,12 +2549,12 @@
         if (!file) return;
         var ext = (file.name.split('.').pop() || '').toLowerCase();
         if (['svg', 'png', 'jpg', 'jpeg', 'webp'].indexOf(ext) === -1) {
-            alert('Formato no permitido. Sube archivos SVG, PNG, JPG o WEBP.');
+            alert(__('Formato no permitido. Sube archivos SVG, PNG, JPG o WEBP.', 'aura-suite'));
             return;
         }
 
         var $st = $('#aura-cb-upload-status');
-        $st.text('Subiendo ' + file.name + '…').removeClass('is-err').show();
+        $st.text(sprintf(__('Subiendo %s…', 'aura-suite'), file.name)).removeClass('is-err').show();
 
         var fd = new FormData();
         fd.append('action', 'aura_cert_upload_media');
@@ -2557,7 +2569,7 @@
             contentType : false
         }).done(function (res) {
             if (res && res.success && res.data) {
-                $st.text('✓ Insertado: ' + file.name);
+                $st.text('✓ ' + sprintf(__('Insertado: %s', 'aura-suite'), file.name));
                 setTimeout(function () { $st.fadeOut(300); }, 2200);
                 if (res.data.is_svg && res.data.svg_markup) {
                     addSvgFromString(res.data.svg_markup, file.name);
@@ -2574,7 +2586,7 @@
                     };
                     reader.readAsText(file);
                 } else {
-                    $st.text(extractError(res, 'Error al subir archivo.')).addClass('is-err');
+                    $st.text(extractError(res, __('Error al subir archivo.', 'aura-suite'))).addClass('is-err');
                 }
             }
         }).fail(function () {
@@ -2586,7 +2598,7 @@
                 };
                 reader.readAsText(file);
             } else {
-                $st.text('Error de conexión al subir el archivo.').addClass('is-err');
+                $st.text(__('Error de conexión al subir el archivo.', 'aura-suite')).addClass('is-err');
             }
         });
     }
@@ -2612,18 +2624,18 @@
 
     function openWpMediaPicker() {
         if (!window.wp || !wp.media) {
-            alert('La librería multimedia de WordPress no está disponible.');
+            alert(__('La librería multimedia de WordPress no está disponible.', 'aura-suite'));
             return;
         }
         var frame = wp.media({
-            title    : 'Insertar imagen o SVG',
-            button   : { text: 'Insertar' },
+            title    : __('Insertar imagen o SVG', 'aura-suite'),
+            button   : { text: __('Insertar', 'aura-suite') },
             library  : { type: ['image', 'image/svg+xml'] },
             multiple : false
         });
         frame.on('select', function () {
             var att = frame.state().get('selection').first().toJSON();
-            handleImageUrlInsert(att, att.title || 'Imagen');
+            handleImageUrlInsert(att, att.title || __('Imagen', 'aura-suite'));
         });
         frame.open();
     }
@@ -2701,8 +2713,8 @@
     $(document).on('click', '.aura-cb-elem-btn', function () {
         var type = $(this).data('type');
         switch (type) {
-            case 'textbox':         addTextbox('Texto de certificado', { fontSize: 20, fontFamily: 'Lato' }); break;
-            case 'heading':         addTextbox('CERTIFICADO', { top: 90, width: 620, fontSize: 44, fontFamily: 'Cinzel', fontWeight: 'bold', fill: '#0f172a', charSpacing: 120 }); break;
+            case 'textbox':         addTextbox(__('Texto de certificado', 'aura-suite'), { fontSize: 20, fontFamily: 'Lato' }); break;
+            case 'heading':         addTextbox(__('CERTIFICADO', 'aura-suite'), { top: 90, width: 620, fontSize: 44, fontFamily: 'Cinzel', fontWeight: 'bold', fill: '#0f172a', charSpacing: 120 }); break;
             case 'logo':            addOrgLogo(); break;
             case 'rect':            addRect(); break;
             case 'frame':           addFrame(); break;
@@ -2815,8 +2827,8 @@
         var obj = canvas.getActiveObject();
         if (!obj || !window.wp || !wp.media) return;
         var frame = wp.media({
-            title    : 'Seleccionar foto de muestra / perfil',
-            button   : { text: 'Usar foto' },
+            title    : __('Seleccionar foto de muestra / perfil', 'aura-suite'),
+            button   : { text: __('Usar foto', 'aura-suite') },
             library  : { type: 'image' },
             multiple : false
         });
@@ -2890,14 +2902,14 @@
         applyZoom();
 
         if (!dataUrl) {
-            alert('No se pudo generar la vista previa (alguna imagen externa bloquea canvas CORS).');
+            alert(__('No se pudo generar la vista previa (alguna imagen externa bloquea canvas CORS).', 'aura-suite'));
             return;
         }
 
         var w = window.open('', '_blank');
         if (w) {
             w.document.write(
-                '<html><head><title>' + (withSample ? 'Vista Previa con Datos de Ejemplo' : 'Vista Previa de Plantilla') + '</title></head>' +
+                '<html><head><title>' + escHtml(withSample ? __('Vista Previa con Datos de Ejemplo', 'aura-suite') : __('Vista Previa de Plantilla', 'aura-suite')) + '</title></head>' +
                 '<body style="margin:0;background:#1e293b;display:flex;align-items:center;justify-content:center;min-height:100vh">' +
                 '<img src="' + dataUrl + '" style="max-width:95vw;max-height:95vh;box-shadow:0 12px 40px rgba(0,0,0,.6);background:#fff;"/>' +
                 '</body></html>'
@@ -2916,7 +2928,7 @@
     function saveTemplate(exitAfter) {
         var name = $('#aura-cb-tmpl-name').val().trim();
         if (!name) {
-            alert('El nombre de la plantilla es obligatorio.');
+            alert(__('El nombre de la plantilla es obligatorio.', 'aura-suite'));
             $('#aura-cb-tmpl-name').focus();
             return;
         }
@@ -2925,7 +2937,7 @@
         var $exitBtn = $('#aura-cb-save-exit');
         $btn.prop('disabled', true);
         $exitBtn.prop('disabled', true);
-        showSaveStatus('Guardando…', false);
+        showSaveStatus(__('Guardando…', 'aura-suite'), false);
 
         var orientation = $('#aura-cb-orientation').val() || 'landscape';
         var dim         = DIM[orientation] || DIM.landscape;
@@ -2958,7 +2970,7 @@
             design_json : canvasJson
         }).done(function (res) {
             if (!res.success || !res.data) {
-                var errMsg = extractError(res, 'Error al guardar plantilla.');
+                var errMsg = extractError(res, __('Error al guardar plantilla.', 'aura-suite'));
                 showSaveStatus(errMsg, true);
                 alert(errMsg);
                 $btn.prop('disabled', false);
@@ -2969,7 +2981,7 @@
             var savedId = parseInt(res.data.id, 10) || TMPL_ID;
             TMPL_ID = savedId;
             $('#aura-cb-template-id').val(savedId);
-            $('#aura-cb-topbar-title').text('Editar: ' + name);
+            $('#aura-cb-topbar-title').text(sprintf(__('Editar: %s', 'aura-suite'), name));
 
             if (window.history && window.history.replaceState && window.location.search.indexOf('id=new') !== -1) {
                 var newUrl = window.location.href.replace('id=new', 'id=' + savedId);
@@ -2979,7 +2991,7 @@
             var finishSave = function () {
                 $btn.prop('disabled', false);
                 $exitBtn.prop('disabled', false);
-                showSaveStatus('✓ Guardado', false);
+                showSaveStatus('✓ ' + __('Guardado', 'aura-suite'), false);
                 if (exitAfter) {
                     var listUrl = $('#aura-cb-templates-list-url').val() || CB.templatesUrl;
                     if (listUrl) {
@@ -2997,8 +3009,8 @@
                 finishSave();
             }
         }).fail(function () {
-            showSaveStatus('Error de conexión', true);
-            alert('Error de conexión al guardar.');
+            showSaveStatus(__('Error de conexión', 'aura-suite'), true);
+            alert(__('Error de conexión al guardar.', 'aura-suite'));
             $btn.prop('disabled', false);
             $exitBtn.prop('disabled', false);
         });
@@ -3015,7 +3027,7 @@
         if (!document.getElementById('aura-cert-canvas')) return;
         document.documentElement.classList.add('aura-cb-fullscreen-mode');
         if (typeof fabric === 'undefined') {
-            alert('Error: No se pudo cargar Fabric.js. Verifica tu conexión o recarga la página.');
+            alert(__('Error: No se pudo cargar Fabric.js. Verifica tu conexión o recarga la página.', 'aura-suite'));
             return;
         }
 

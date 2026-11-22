@@ -407,7 +407,7 @@ $page_title            = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'R
                             </tr>
                             <tr>
                                 <th><label for="inv_fuel_type"><?php _e( 'Tipo de combustible', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_fuel_type" name="fuel_type" value="<?php echo $v('fuel_type'); ?>" class="form-control" placeholder="Gasolina, Diésel…"></td>
+                                <td><input type="text" id="inv_fuel_type" name="fuel_type" value="<?php echo $v('fuel_type'); ?>" class="form-control" placeholder="<?php esc_attr_e( 'Gasolina, Diésel…', 'aura-suite' ); ?>"></td>
                             </tr>
                             <tr>
                                 <th><label for="inv_voltage"><?php _e( 'Voltaje', 'aura-suite' ); ?></label></th>
@@ -420,7 +420,7 @@ $page_title            = $is_edit ? __( 'Editar Equipo', 'aura-suite' ) : __( 'R
                             </tr>
                             <tr>
                                 <th><label for="inv_hydraulic_pressure"><?php _e( 'Presión hidráulica', 'aura-suite' ); ?></label></th>
-                                <td><input type="text" id="inv_hydraulic_pressure" name="hydraulic_pressure" value="<?php echo $v('hydraulic_pressure'); ?>" class="form-control" placeholder="ej: 3000 PSI"></td>
+                                <td><input type="text" id="inv_hydraulic_pressure" name="hydraulic_pressure" value="<?php echo $v('hydraulic_pressure'); ?>" class="form-control" placeholder="<?php esc_attr_e( 'ej: 3000 PSI', 'aura-suite' ); ?>"></td>
                             </tr>
                         </table>
                     </div>

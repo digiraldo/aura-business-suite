@@ -6,6 +6,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     const cfg = auraNotifConfig;
     let currentPage = 1;
 
@@ -55,7 +57,7 @@
 
         if (hasItems) {
             $list.append(`<li class="aura-notif-item-bulk-head">
-                <label><input type="checkbox" id="notif-select-all"> Seleccionar todo</label>
+                <label><input type="checkbox" id="notif-select-all"> ${escHtml(__('Seleccionar todo', 'aura-suite'))}</label>
             </li>`);
         }
 
@@ -68,7 +70,7 @@
 
             const $li = $(`<li class="aura-notif-item ${readCls}" data-id="${n.id}">
                 <div class="aura-notif-select-wrap">
-                    <input type="checkbox" class="notif-select" value="${n.id}" aria-label="Seleccionar notificación ${n.id}">
+                    <input type="checkbox" class="notif-select" value="${n.id}" aria-label="${escHtml(__('Seleccionar notificación', 'aura-suite'))} ${n.id}">
                 </div>
                 <span class="aura-notif-dot" style="background:${color};"></span>
                 <div class="aura-notif-body">

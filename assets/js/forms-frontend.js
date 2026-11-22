@@ -12,6 +12,8 @@
 (function ($) {
     'use strict';
 
+    var __ = (window.wp && window.wp.i18n && window.wp.i18n.__) ? window.wp.i18n.__ : function (s) { return s; };
+
     // ─────────────────────────────────────────────────────────────
     // OBJETO PRINCIPAL
     // ─────────────────────────────────────────────────────────────
@@ -67,7 +69,7 @@
 
                 if ( age >= 0 && age <= 130 ) {
                     $ageEl.text(age + ' ' + (window.auraFormsFrontend && auraFormsFrontend.i18n
-                        ? '' : 'años'));
+                        ? '' : __('años', 'aura-suite')));
                 } else {
                     $ageEl.text('');
                 }
@@ -141,9 +143,9 @@
                 var i18n  = window.auraFormsFrontend ? auraFormsFrontend.i18n : {};
 
                 if ( allowed.length && ! allowed.includes(ext) ) {
-                    err = i18n.fileExt || 'Tipo de archivo no permitido.';
+                    err = i18n.fileExt || __('Tipo de archivo no permitido.', 'aura-suite');
                 } else if ( sizeKb > maxKb ) {
-                    err = i18n.fileSize || 'El archivo supera el tamaño máximo permitido.';
+                    err = i18n.fileSize || __('El archivo supera el tamaño máximo permitido.', 'aura-suite');
                 }
 
                 $err.text(err);
@@ -172,7 +174,7 @@
 
                 // ── Deshabilitar botón y mostrar estado enviando ──
                 var origText = $btn.text();
-                $btn.prop('disabled', true).text(i18n.sending || 'Enviando…');
+                $btn.prop('disabled', true).text(i18n.sending || __('Enviando…', 'aura-suite'));
 
                 // ── Construir FormData (soporta archivos) ─────────
                 var formData = new FormData( $form[0] );
@@ -194,13 +196,13 @@
                         } else {
                             var msg = (response.data && response.data.message)
                                 ? response.data.message
-                                : (i18n.serverError || 'Error del servidor. Intenta nuevamente.');
+                                : (i18n.serverError || __('Error del servidor. Intenta nuevamente.', 'aura-suite'));
                             AuraFormsFrontend.showError($msgs, msg);
                             $btn.prop('disabled', false).text(origText);
                         }
                     },
                     error: function () {
-                        AuraFormsFrontend.showError($msgs, i18n.serverError || 'Error del servidor. Intenta nuevamente.');
+                        AuraFormsFrontend.showError($msgs, i18n.serverError || __('Error del servidor. Intenta nuevamente.', 'aura-suite'));
                         $btn.prop('disabled', false).text(origText);
                     }
                 });
@@ -220,17 +222,17 @@
                 if ( type === 'radio' ) return; // los radios se validan por grupo
                 if ( type === 'checkbox' ) {
                     if ( ! $el.is(':checked') ) {
-                        AuraFormsFrontend.markError($el, i18n.required || 'Este campo es obligatorio.');
+                        AuraFormsFrontend.markError($el, i18n.required || __('Este campo es obligatorio.', 'aura-suite'));
                         valid = false;
                     }
                     return;
                 }
 
                 if ( ! val || val.trim() === '' ) {
-                    AuraFormsFrontend.markError($el, i18n.required || 'Este campo es obligatorio.');
+                    AuraFormsFrontend.markError($el, i18n.required || __('Este campo es obligatorio.', 'aura-suite'));
                     valid = false;
                 } else if ( type === 'email' && ! AuraFormsFrontend.isValidEmail(val) ) {
-                    AuraFormsFrontend.markError($el, i18n.invalidEmail || 'Correo electrónico inválido.');
+                    AuraFormsFrontend.markError($el, i18n.invalidEmail || __('Correo electrónico inválido.', 'aura-suite'));
                     valid = false;
                 }
             });
@@ -241,7 +243,7 @@
                 var $checked = $form.find('input[name="' + name + '"]:checked');
                 if ( ! $checked.length ) {
                     var $group = $form.find('input[name="' + name + '"]').first().closest('fieldset');
-                    AuraFormsFrontend.markGroupError($group, i18n.required || 'Este campo es obligatorio.');
+                    AuraFormsFrontend.markGroupError($group, i18n.required || __('Este campo es obligatorio.', 'aura-suite'));
                     valid = false;
                 }
             });
@@ -256,7 +258,7 @@
             $.each(checkedGroups, function (grp, checked) {
                 if ( ! checked ) {
                     var $group = $form.find('[data-required-group="' + grp + '"]').first().closest('fieldset');
-                    AuraFormsFrontend.markGroupError($group, i18n.required || 'Este campo es obligatorio.');
+                    AuraFormsFrontend.markGroupError($group, i18n.required || __('Este campo es obligatorio.', 'aura-suite'));
                     valid = false;
                 }
             });
@@ -265,7 +267,7 @@
             $form.find('input[type="hidden"][data-required]').each(function () {
                 if ( ! $(this).val() ) {
                     var $wrap = $(this).closest('.aura-field-scale');
-                    AuraFormsFrontend.markGroupError($wrap, i18n.required || 'Este campo es obligatorio.');
+                    AuraFormsFrontend.markGroupError($wrap, i18n.required || __('Este campo es obligatorio.', 'aura-suite'));
                     valid = false;
                 }
             });
@@ -280,7 +282,7 @@
 
         // ── Manejar respuesta de éxito ────────────────────────────
         handleSuccess: function ($form, $msgs, data) {
-            var msg          = data.message || '¡Gracias! Tu respuesta ha sido enviada.';
+            var msg          = data.message || __('¡Gracias! Tu respuesta ha sido enviada.', 'aura-suite');
             var redirectUrl  = data.redirect_url || $form.data('redirect') || '';
 
             if ( redirectUrl ) {

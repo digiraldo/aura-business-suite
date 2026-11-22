@@ -5,6 +5,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     // ── Estado del wizard ──────────────────────────────────────────────
     var state = {
         step        : 1,
@@ -30,26 +32,26 @@
 
     var groupMeta = {
         required: {
-            title: '1. Campos Obligatorios (*)',
-            desc: 'Estos campos son indispensables para procesar las transacciones.',
+            title: __('1. Campos Obligatorios (*)', 'aura-suite'),
+            desc: __('Estos campos son indispensables para procesar las transacciones.', 'aura-suite'),
             icon: 'dashicons-star-filled',
             className: 'group-required'
         },
         users: {
-            title: '2. Usuarios y Aprobaciones (WordPress)',
-            desc: 'Asignación de autores, aprobadores y usuarios relacionados.',
+            title: __('2. Usuarios y Aprobaciones (WordPress)', 'aura-suite'),
+            desc: __('Asignación de autores, aprobadores y usuarios relacionados.', 'aura-suite'),
             icon: 'dashicons-admin-users',
             className: 'group-users'
         },
         payment: {
-            title: '3. Cuentas y Métodos de Pago',
-            desc: 'Cuentas bancarias de origen/destino, forma de pago y referencias.',
+            title: __('3. Cuentas y Métodos de Pago', 'aura-suite'),
+            desc: __('Cuentas bancarias de origen/destino, forma de pago y referencias.', 'aura-suite'),
             icon: 'dashicons-money-alt',
             className: 'group-payment'
         },
         details: {
-            title: '4. Información Adicional y Clasificación',
-            desc: 'Conceptos, descripciones, centro de costos/áreas y etiquetas.',
+            title: __('4. Información Adicional y Clasificación', 'aura-suite'),
+            desc: __('Conceptos, descripciones, centro de costos/áreas y etiquetas.', 'aura-suite'),
             icon: 'dashicons-tag',
             className: 'group-details'
         }
@@ -98,7 +100,7 @@
             gFields.forEach(function (field) {
                 var fieldIcon = field.icon || 'dashicons-admin-generic';
                 var reqBadgeClass = field.required ? 'req' : 'opt';
-                var reqBadgeText  = field.required ? 'Obligatorio' : 'Opcional';
+                var reqBadgeText  = field.required ? __('Obligatorio', 'aura-suite') : __('Opcional', 'aura-suite');
 
                 var cardHtml = [
                     '<div class="aura-mapping-card" id="card-' + escHtml(field.key) + '">',
@@ -115,10 +117,10 @@
                         '<div class="aura-mapping-arrow-col">→</div>',
                         '<div class="aura-field-select-col">',
                             '<select class="aura-col-select regular-text" data-field="' + escHtml(field.key) + '" data-required="' + (field.required ? '1' : '0') + '" id="map-' + escHtml(field.key) + '">',
-                                '<option value="">— No asignar (Ignorar columna) —</option>',
+                                '<option value="">' + escHtml(__('— No asignar (Ignorar columna) —', 'aura-suite')) + '</option>',
                             '</select>',
                             '<div class="aura-sample-preview" id="sample-' + escHtml(field.key) + '">',
-                                '<span class="dashicons dashicons-visibility"></span> <em>Muestra: (no asignada)</em>',
+                                '<span class="dashicons dashicons-visibility"></span> <em>' + escHtml(__('Muestra: (no asignada)', 'aura-suite')) + '</em>',
                             '</div>',
                         '</div>',
                         '<div class="aura-status-col" id="status-wrap-' + escHtml(field.key) + '">',
@@ -130,7 +132,7 @@
                 var $select = $card.find('.aura-col-select');
 
                 headers.forEach(function (h, idx) {
-                    $select.append($('<option></option>').val(idx).text('Columna: ' + h));
+                    $select.append($('<option></option>').val(idx).text(__('Columna:', 'aura-suite') + ' ' + h));
                 });
 
                 $list.append($card);
@@ -170,20 +172,20 @@
             if (state.previewRows && state.previewRows.length > 0 && state.previewRows[0][colIdx] !== undefined) {
                 sampleText = String(state.previewRows[0][colIdx]);
             }
-            if (!sampleText) sampleText = '(Vacío en fila 1)';
+            if (!sampleText) sampleText = __('(Vacío en fila 1)', 'aura-suite');
 
-            $sample.html('<span class="dashicons dashicons-visibility"></span> Muestra (fila 1): <strong>' + escHtml(sampleText) + '</strong>');
+            $sample.html('<span class="dashicons dashicons-visibility"></span> ' + escHtml(__('Muestra (fila 1):', 'aura-suite')) + ' <strong>' + escHtml(sampleText) + '</strong>');
             $card.addClass('is-mapped').removeClass('is-required-missing');
-            $status.html('<span class="aura-map-pill status-mapped"><span class="dashicons dashicons-yes"></span> ' + (isReq ? 'Mapeado' : 'Asignado') + '</span>');
+            $status.html('<span class="aura-map-pill status-mapped"><span class="dashicons dashicons-yes"></span> ' + escHtml(isReq ? __('Mapeado', 'aura-suite') : __('Asignado', 'aura-suite')) + '</span>');
         } else {
-            $sample.html('<span class="dashicons dashicons-visibility"></span> <em>Muestra: (no asignada)</em>');
+            $sample.html('<span class="dashicons dashicons-visibility"></span> <em>' + escHtml(__('Muestra: (no asignada)', 'aura-suite')) + '</em>');
             $card.removeClass('is-mapped');
             if (isReq) {
                 $card.addClass('is-required-missing');
-                $status.html('<span class="aura-map-pill status-missing"><span class="dashicons dashicons-warning"></span> Falta asignar</span>');
+                $status.html('<span class="aura-map-pill status-missing"><span class="dashicons dashicons-warning"></span> ' + escHtml(__('Falta asignar', 'aura-suite')) + '</span>');
             } else {
                 $card.removeClass('is-required-missing');
-                $status.html('<span class="aura-map-pill status-ignored">Ignorado</span>');
+                $status.html('<span class="aura-map-pill status-ignored">' + escHtml(__('Ignorado', 'aura-suite')) + '</span>');
             }
         }
     }
@@ -208,11 +210,11 @@
         var allReqMapped = (mappedReq >= totalReq);
         var textHtml = '';
         if (allReqMapped) {
-            textHtml = '<span style="color:#15803d;"><span class="dashicons dashicons-yes-alt" style="vertical-align:middle;"></span> <strong>¡Excelente!</strong> Todos los ' + totalReq + ' campos obligatorios están asignados (' + mappedOpt + ' opcionales).</span>';
+            textHtml = '<span style="color:#15803d;"><span class="dashicons dashicons-yes-alt" style="vertical-align:middle;"></span> <strong>' + escHtml(__('¡Excelente!', 'aura-suite')) + '</strong> ' + escHtml(__('Todos los', 'aura-suite')) + ' ' + totalReq + ' ' + escHtml(__('campos obligatorios están asignados', 'aura-suite')) + ' (' + mappedOpt + ' ' + escHtml(__('opcionales', 'aura-suite')) + ').</span>';
             $('#aura-mapping-status-bar').css({ 'background': '#f0fdf4', 'border-color': '#bbf7d0', 'color': '#166534' });
         } else {
             var missingCount = totalReq - mappedReq;
-            textHtml = '<span style="color:#b91c1c;"><span class="dashicons dashicons-warning" style="vertical-align:middle;"></span> <strong>Atención:</strong> Faltan ' + missingCount + ' campos obligatorios por asignar (' + mappedReq + ' de ' + totalReq + ' listos).</span>';
+            textHtml = '<span style="color:#b91c1c;"><span class="dashicons dashicons-warning" style="vertical-align:middle;"></span> <strong>' + escHtml(__('Atención:', 'aura-suite')) + '</strong> ' + escHtml(__('Faltan', 'aura-suite')) + ' ' + missingCount + ' ' + escHtml(__('campos obligatorios por asignar', 'aura-suite')) + ' (' + mappedReq + ' ' + escHtml(__('de', 'aura-suite')) + ' ' + totalReq + ' ' + escHtml(__('listos', 'aura-suite')) + ').</span>';
             $('#aura-mapping-status-bar').css({ 'background': '#fff1f2', 'border-color': '#fecdd3', 'color': '#9f1239' });
         }
         $('#aura-mapping-count-summary').html(textHtml);
@@ -467,10 +469,10 @@
             var catTbody = '';
             $.each(catAnalysis, function (i, cat) {
                 var badgeClass = cat.exists_in_db ? 'aura-badge-success' : 'aura-badge-warning';
-                var badgeText  = cat.exists_in_db ? (auraImport.txt.found_in_db || 'Existe en BD') : (auraImport.txt.not_in_db || 'No existe en BD');
+                var badgeText  = cat.exists_in_db ? (auraImport.txt.found_in_db || __('Existe en BD', 'aura-suite')) : (auraImport.txt.not_in_db || __('No existe en BD', 'aura-suite'));
                 
                 var selectHtml = '<select class="aura-category-map-select regular-text" data-raw-category="' + escHtml(cat.name) + '">';
-                selectHtml += '<option value="__create__"' + (!cat.exists_in_db ? ' selected' : '') + '>' + (auraImport.txt.create_auto || '+ Crear automáticamente en BD') + ' ("' + escHtml(cat.name) + '")</option>';
+                selectHtml += '<option value="__create__"' + (!cat.exists_in_db ? ' selected' : '') + '>' + (auraImport.txt.create_auto || __('+ Crear automáticamente en BD', 'aura-suite')) + ' ("' + escHtml(cat.name) + '")</option>';
                 
                 $.each(availCats, function (j, c) {
                     var isSelected = (cat.matched_id && cat.matched_id == c.id) ? ' selected' : '';
@@ -498,7 +500,7 @@
             var userTbody = '';
             $.each(userAnalysis, function (i, u) {
                 var selectHtml = '<select class="aura-user-map-select regular-text" data-raw-user="' + escHtml(u.name) + '" data-field-type="' + escHtml(u.field_type) + '">';
-                selectHtml += '<option value="">-- ' + (auraImport.txt.unmatched_user || 'Sin asignar') + ' --</option>';
+                selectHtml += '<option value="">-- ' + (auraImport.txt.unmatched_user || __('Sin asignar', 'aura-suite')) + ' --</option>';
                 
                 $.each(availUsers, function (j, usr) {
                     var isSelected = (u.matched_user_id && u.matched_user_id == usr.id) ? ' selected' : '';

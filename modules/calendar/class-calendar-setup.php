@@ -607,7 +607,7 @@ class Aura_Calendar_Setup {
         return [
             'success' => true,
             'version' => self::DB_VERSION,
-            'message' => sprintf( __( 'Base de datos del Calendario reparada y sincronizada a la versión %s con éxito.', 'aura' ), self::DB_VERSION ),
+            'message' => sprintf( __( 'Base de datos del Calendario reparada y sincronizada a la versión %s con éxito.', 'aura-suite' ), self::DB_VERSION ),
         ];
     }
 
@@ -618,7 +618,7 @@ class Aura_Calendar_Setup {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_manage_calendar' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $res = self::repair_all_calendar_tables();

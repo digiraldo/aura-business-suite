@@ -44,16 +44,16 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
     <?php
     $actions_html = '';
     if ( $can_create ) {
-        $actions_html .= '<button type="button" id="btn-nuevo-estudiante" class="aura-btn aura-btn-primary"><span class="dashicons dashicons-plus-alt2"></span> ' . esc_html__( 'Nuevo Estudiante', 'aura-business-suite' ) . '</button>';
+        $actions_html .= '<button type="button" id="btn-nuevo-estudiante" class="aura-btn aura-btn-primary"><span class="dashicons dashicons-plus-alt2"></span> ' . esc_html__( 'Nuevo Estudiante', 'aura-suite' ) . '</button>';
     }
 
     Aura_UI::render_page_header( [
-        'title'       => __( 'Directorio de Estudiantes', 'aura-business-suite' ),
-        'subtitle'    => __( 'Gestión de estudiantes, postulantes, perfiles académicos y seguimiento financiero', 'aura-business-suite' ),
+        'title'       => __( 'Directorio de Estudiantes', 'aura-suite' ),
+        'subtitle'    => __( 'Gestión de estudiantes, postulantes, perfiles académicos y seguimiento financiero', 'aura-suite' ),
         'icon'        => 'dashicons-groups',
         'breadcrumbs' => [
-            [ 'label' => __( 'Estudiantes', 'aura-business-suite' ), 'url' => admin_url( 'admin.php?page=aura-students' ) ],
-            [ 'label' => __( 'Listado', 'aura-business-suite' ) ],
+            [ 'label' => __( 'Estudiantes', 'aura-suite' ), 'url' => admin_url( 'admin.php?page=aura-students' ) ],
+            [ 'label' => __( 'Listado', 'aura-suite' ) ],
         ],
         'actions_html'=> $actions_html,
     ] );
@@ -63,33 +63,33 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
             'id'       => 'kpi-stu-total',
             'icon'     => 'dashicons-groups',
             'value'    => number_format_i18n( $stu_stats['total'] ),
-            'label'    => __( 'Total Registrados', 'aura-business-suite' ),
+            'label'    => __( 'Total Registrados', 'aura-suite' ),
             'variant'  => 'primary',
-            'tooltip'  => __( 'Total histórico de estudiantes en base de datos', 'aura-business-suite' ),
+            'tooltip'  => __( 'Total histórico de estudiantes en base de datos', 'aura-suite' ),
         ],
         [
             'id'       => 'kpi-stu-active',
             'icon'     => 'dashicons-yes-alt',
             'value'    => number_format_i18n( $stu_stats['active'] ),
-            'label'    => __( 'Estudiantes Activos', 'aura-business-suite' ),
+            'label'    => __( 'Estudiantes Activos', 'aura-suite' ),
             'variant'  => 'success',
-            'tooltip'  => __( 'Estudiantes con matrícula vigente', 'aura-business-suite' ),
+            'tooltip'  => __( 'Estudiantes con matrícula vigente', 'aura-suite' ),
         ],
         [
             'id'       => 'kpi-stu-applicant',
             'icon'     => 'dashicons-clock',
             'value'    => number_format_i18n( $stu_stats['applicant'] ),
-            'label'    => __( 'Postulantes', 'aura-business-suite' ),
+            'label'    => __( 'Postulantes', 'aura-suite' ),
             'variant'  => 'warning',
-            'tooltip'  => __( 'Aspirantes en proceso de revisión o admisión', 'aura-business-suite' ),
+            'tooltip'  => __( 'Aspirantes en proceso de revisión o admisión', 'aura-suite' ),
         ],
         [
             'id'       => 'kpi-stu-graduated',
             'icon'     => 'dashicons-awards',
             'value'    => number_format_i18n( $stu_stats['graduated'] ),
-            'label'    => __( 'Graduados / Egresados', 'aura-business-suite' ),
+            'label'    => __( 'Graduados / Egresados', 'aura-suite' ),
             'variant'  => 'info',
-            'tooltip'  => __( 'Estudiantes que completaron satisfactoriamente sus programas', 'aura-business-suite' ),
+            'tooltip'  => __( 'Estudiantes que completaron satisfactoriamente sus programas', 'aura-suite' ),
         ],
     ] );
     ?>
@@ -100,48 +100,48 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
             <div style="flex:1; min-width:220px;">
                 <input type="text"
                        id="filter-search"
-                       placeholder="<?php esc_attr_e( 'Buscar por nombre o correo…', 'aura-business-suite' ); ?>"
+                       placeholder="<?php esc_attr_e( 'Buscar por nombre o correo…', 'aura-suite' ); ?>"
                        class="aura-input"
                        style="width:100%;">
             </div>
 
             <div style="min-width:160px;">
                 <select id="filter-status" class="aura-select" style="width:100%;">
-                    <option value=""><?php esc_html_e( 'Todos los estados', 'aura-business-suite' ); ?></option>
-                    <option value="applicant"><?php esc_html_e( '⏳ Postulante', 'aura-business-suite' ); ?></option>
-                    <option value="approved"><?php  esc_html_e( '✅ Aprobado',   'aura-business-suite' ); ?></option>
-                    <option value="active"><?php    esc_html_e( '🟢 Activo',     'aura-business-suite' ); ?></option>
-                    <option value="graduated"><?php esc_html_e( '🏅 Graduado',  'aura-business-suite' ); ?></option>
-                    <option value="withdrawn"><?php esc_html_e( '↩ Retirado',  'aura-business-suite' ); ?></option>
-                    <option value="rejected"><?php  esc_html_e( '❌ Rechazado', 'aura-business-suite' ); ?></option>
+                    <option value=""><?php esc_html_e( 'Todos los estados', 'aura-suite' ); ?></option>
+                    <option value="applicant"><?php esc_html_e( '⏳ Postulante', 'aura-suite' ); ?></option>
+                    <option value="approved"><?php  esc_html_e( '✅ Aprobado',   'aura-suite' ); ?></option>
+                    <option value="active"><?php    esc_html_e( '🟢 Activo',     'aura-suite' ); ?></option>
+                    <option value="graduated"><?php esc_html_e( '🏅 Graduado',  'aura-suite' ); ?></option>
+                    <option value="withdrawn"><?php esc_html_e( '↩ Retirado',  'aura-suite' ); ?></option>
+                    <option value="rejected"><?php  esc_html_e( '❌ Rechazado', 'aura-suite' ); ?></option>
                 </select>
             </div>
 
             <div style="min-width:150px;">
                 <select id="filter-profile" class="aura-select" style="width:100%;">
-                    <option value=""><?php           esc_html_e( 'Todos los perfiles', 'aura-business-suite' ); ?></option>
-                    <option value="student"><?php     esc_html_e( 'Estudiante',  'aura-business-suite' ); ?></option>
-                    <option value="volunteer"><?php   esc_html_e( 'Voluntario', 'aura-business-suite' ); ?></option>
-                    <option value="teacher"><?php     esc_html_e( 'Docente',    'aura-business-suite' ); ?></option>
-                    <option value="participant"><?php esc_html_e( 'Participante','aura-business-suite' ); ?></option>
-                    <option value="intern"><?php      esc_html_e( 'Practicante', 'aura-business-suite' ); ?></option>
+                    <option value=""><?php           esc_html_e( 'Todos los perfiles', 'aura-suite' ); ?></option>
+                    <option value="student"><?php     esc_html_e( 'Estudiante',  'aura-suite' ); ?></option>
+                    <option value="volunteer"><?php   esc_html_e( 'Voluntario', 'aura-suite' ); ?></option>
+                    <option value="teacher"><?php     esc_html_e( 'Docente',    'aura-suite' ); ?></option>
+                    <option value="participant"><?php esc_html_e( 'Participante','aura-suite' ); ?></option>
+                    <option value="intern"><?php      esc_html_e( 'Practicante', 'aura-suite' ); ?></option>
                 </select>
             </div>
 
             <div style="min-width:150px;">
                 <select id="filter-area" class="aura-select" style="width:100%;">
-                    <option value=""><?php esc_html_e( 'Todas las áreas', 'aura-business-suite' ); ?></option>
+                    <option value=""><?php esc_html_e( 'Todas las áreas', 'aura-suite' ); ?></option>
                     <!-- Opciones cargadas vía JS -->
                 </select>
             </div>
 
             <div style="display:flex; gap:8px;">
                 <button type="button" id="btn-apply-filters" class="aura-btn aura-btn-secondary">
-                    <span class="dashicons dashicons-filter"></span> <?php esc_html_e( 'Filtrar', 'aura-business-suite' ); ?>
+                    <span class="dashicons dashicons-filter"></span> <?php esc_html_e( 'Filtrar', 'aura-suite' ); ?>
                 </button>
 
                 <button type="button" id="btn-clear-filters" class="aura-btn aura-btn-ghost">
-                    <?php esc_html_e( 'Limpiar', 'aura-business-suite' ); ?>
+                    <?php esc_html_e( 'Limpiar', 'aura-suite' ); ?>
                 </button>
             </div>
         </div>
@@ -152,21 +152,21 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
         <table class="aura-table display responsive nowrap" style="width:100%;">
             <thead>
                 <tr>
-                    <th style="width:42px;min-width:42px;"><?php esc_html_e( 'Foto', 'aura-business-suite' ); ?></th>
-                    <th style="min-width:160px;"><?php esc_html_e( 'Nombre', 'aura-business-suite' ); ?></th>
-                    <th style="min-width:160px;"><?php esc_html_e( 'Correo', 'aura-business-suite' ); ?></th>
-                    <th style="min-width:100px;"><?php esc_html_e( 'Perfil', 'aura-business-suite' ); ?></th>
-                    <th style="min-width:110px;"><?php esc_html_e( 'Estado', 'aura-business-suite' ); ?></th>
-                    <th style="min-width:70px;" class="num"><?php esc_html_e( 'Cursos', 'aura-business-suite' ); ?></th>
-                    <th style="min-width:100px;" class="num"><?php esc_html_e( 'Saldo pend.', 'aura-business-suite' ); ?></th>
-                    <th style="min-width:130px;"><?php esc_html_e( 'Acciones', 'aura-business-suite' ); ?></th>
+                    <th style="width:42px;min-width:42px;"><?php esc_html_e( 'Foto', 'aura-suite' ); ?></th>
+                    <th style="min-width:160px;"><?php esc_html_e( 'Nombre', 'aura-suite' ); ?></th>
+                    <th style="min-width:160px;"><?php esc_html_e( 'Correo', 'aura-suite' ); ?></th>
+                    <th style="min-width:100px;"><?php esc_html_e( 'Perfil', 'aura-suite' ); ?></th>
+                    <th style="min-width:110px;"><?php esc_html_e( 'Estado', 'aura-suite' ); ?></th>
+                    <th style="min-width:70px;" class="num"><?php esc_html_e( 'Cursos', 'aura-suite' ); ?></th>
+                    <th style="min-width:100px;" class="num"><?php esc_html_e( 'Saldo pend.', 'aura-suite' ); ?></th>
+                    <th style="min-width:130px;"><?php esc_html_e( 'Acciones', 'aura-suite' ); ?></th>
                 </tr>
             </thead>
             <tbody id="students-tbody">
                 <tr>
                     <td colspan="8" style="text-align:center;padding:20px;">
                         <span class="spinner is-active" style="float:none;margin-right:8px;"></span>
-                        <?php esc_html_e( 'Cargando estudiantes…', 'aura-business-suite' ); ?>
+                        <?php esc_html_e( 'Cargando estudiantes…', 'aura-suite' ); ?>
                     </td>
                 </tr>
             </tbody>
@@ -608,7 +608,7 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
                 wpUsersMap[u.id] = u;
                 var label = u.display_name + ' (@' + u.login + ' - ' + u.email + ')';
                 if ( u.is_linked ){
-                    label += ' [Ya vinculado: #' + u.student_id + ' ' + u.student_name + ']';
+                    label += ' [<?php echo esc_js( __( 'Ya vinculado:', 'aura-suite' ) ); ?> #' + u.student_id + ' ' + u.student_name + ']';
                 }
                 var $opt = $('<option>').val(u.id).text(label);
                 if ( u.is_linked ){
@@ -1146,9 +1146,9 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$t_stu'" ) === $t_stu ) {
                 $btn.prop('disabled', false);
                 $('#stu-create-wp-user').prop('checked', false).prop('disabled', true);
                 if ( user.is_linked && user.student_id !== currentStudentId ){
-                    $fb.html('<span style="color:#ef4444;font-weight:600;">⚠ Ya vinculado al estudiante #' + user.student_id + ' (' + user.student_name + ')</span>').show();
+                    $fb.html('<span style="color:#ef4444;font-weight:600;">⚠ <?php echo esc_js( __( 'Ya vinculado al estudiante', 'aura-suite' ) ); ?> #' + user.student_id + ' (' + user.student_name + ')</span>').show();
                 } else {
-                    $fb.html('<span style="color:#059669;font-weight:600;">✔ Usuario seleccionado: <strong>' + user.display_name + '</strong> (' + user.email + '). Rol: ' + user.roles + '</span>').show();
+                    $fb.html('<span style="color:#059669;font-weight:600;">✔ <?php echo esc_js( __( 'Usuario seleccionado:', 'aura-suite' ) ); ?> <strong>' + user.display_name + '</strong> (' + user.email + '). <?php echo esc_js( __( 'Rol:', 'aura-suite' ) ); ?> ' + user.roles + '</span>').show();
                 }
             } else {
                 $btn.prop('disabled', true);

@@ -410,11 +410,11 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             $tip_title         = $count_files > 1 
                 ? sprintf( __( '%d Comprobantes Adjuntos', 'aura-suite' ), $count_files )
                 : __( 'Respaldo Digital', 'aura-suite' );
-            $tip_sub           = esc_html( $first_file['name'] ) . ( $count_files > 1 ? ' (+' . ( $count_files - 1 ) . ' más)' : '' );
+            $tip_sub           = esc_html( $first_file['name'] ) . ( $count_files > 1 ? ' (' . sprintf( __( '+%d más', 'aura-suite' ), $count_files - 1 ) . ')' : '' );
             $badge_origin_tip  = $is_drive
                 ? '<span class="aura-tip-badge aura-tip-badge--company"><span class="dashicons dashicons-cloud" style="font-size:10px;width:10px;height:10px;line-height:10px;"></span> Google Drive</span>'
                 : '<span class="aura-tip-badge aura-tip-badge--store"><span class="dashicons dashicons-admin-home" style="font-size:10px;width:10px;height:10px;line-height:10px;"></span> Local</span>';
-            $badge_ext_tip     = $first_file['is_pdf'] ? 'PDF' : ( $first_file['is_img'] ? 'Imagen' : 'Documento' );
+            $badge_ext_tip     = $first_file['is_pdf'] ? 'PDF' : ( $first_file['is_img'] ? __( 'Imagen', 'aura-suite' ) : __( 'Documento', 'aura-suite' ) );
 
             $clip_tip_html = '<div class="aura-tip-card">'
                 . '<div class="aura-tip-card-header">'
@@ -475,7 +475,7 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
             $origin_badge_html = sprintf(
                 '<a href="%s" class="aura-txn-origin-badge aura-has-tooltip" data-tooltip="%s" style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:2px 6px;border-radius:6px;font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;gap:3px;text-decoration:none;margin-left:2px;">'
                 . '<span class="dashicons dashicons-archive" style="font-size:12px;width:12px;height:12px;line-height:12px;"></span>'
-                . '<span>Caja%s</span>'
+                . '<span>' . esc_html__( 'Caja', 'aura-suite' ) . '%s</span>'
                 . '</a>',
                 esc_url( admin_url( 'admin.php?page=aura-financial-accounts#petty-cash' ) ),
                 esc_attr( __( 'Transacción originada automáticamente por Rendición de Caja Chica aprobada.', 'aura-suite' ) ),
@@ -561,15 +561,15 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
                 } else {
                     $auto_label = __('Auto-aprobada por el sistema', 'aura-suite');
                 }
-                $tip_html .= '<div class="aura-tip-row"><span>⚡ Tipo de Aprobación:</span><strong>' . $auto_label . '</strong></div>';
+                $tip_html .= '<div class="aura-tip-row"><span>⚡ ' . esc_html__( 'Tipo de Aprobación:', 'aura-suite' ) . '</span><strong>' . $auto_label . '</strong></div>';
             } else {
                 $approver = get_userdata( $item->approved_by );
                 $approver_name = $approver ? $approver->display_name : __('N/D', 'aura-suite');
-                $tip_html .= '<div class="aura-tip-row"><span>👤 Aprobada por:</span><strong>' . esc_html( $approver_name ) . '</strong></div>';
+                $tip_html .= '<div class="aura-tip-row"><span>👤 ' . esc_html__( 'Aprobada por:', 'aura-suite' ) . '</span><strong>' . esc_html( $approver_name ) . '</strong></div>';
             }
             if ( ! empty($item->approved_at) ) {
                 $app_date = new DateTime($item->approved_at);
-                $tip_html .= '<div class="aura-tip-row"><span>🕒 Fecha Aprobación:</span><strong>' . esc_html($app_date->format('d/m/Y h:i A')) . '</strong></div>';
+                $tip_html .= '<div class="aura-tip-row"><span>🕒 ' . esc_html__( 'Fecha Aprobación:', 'aura-suite' ) . '</span><strong>' . esc_html($app_date->format('d/m/Y h:i A')) . '</strong></div>';
             }
         } elseif ( $item->status === 'pending' ) {
             $tip_html .= '<div class="aura-tip-row"><span>⏳ Estado:</span><strong>' . esc_html__('Esperando revisión por auditor/administrador', 'aura-suite') . '</strong></div>';
@@ -1021,10 +1021,10 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
                 $tip_html .= '<div class="aura-tip-row"><span>📄 ' . esc_html($doc_type) . ':</span><strong>' . esc_html($doc_id) . '</strong></div>';
             }
             if ( $email ) {
-                $tip_html .= '<div class="aura-tip-row"><span>✉️ Correo:</span><strong>' . esc_html($email) . '</strong></div>';
+                $tip_html .= '<div class="aura-tip-row"><span>✉️ ' . esc_html__( 'Correo:', 'aura-suite' ) . '</span><strong>' . esc_html($email) . '</strong></div>';
             }
             if ( $phone ) {
-                $tip_html .= '<div class="aura-tip-row"><span>📞 Teléfono:</span><strong>' . esc_html($phone) . '</strong></div>';
+                $tip_html .= '<div class="aura-tip-row"><span>📞 ' . esc_html__( 'Teléfono:', 'aura-suite' ) . '</span><strong>' . esc_html($phone) . '</strong></div>';
             }
             if ( ! empty($item->related_user_concept) ) {
                 $concepts = array(
@@ -2432,13 +2432,13 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
                         || ( ! empty( $item->category_type ) && $item->category_type === 'capital' );
 
                     if ( $is_capex ) {
-                        $nature_badge = '<span style="color:#7c3aed;font-weight:700;">🏛️ CapEx (Gasto de Capital)</span>';
+                        $nature_badge = '<span style="color:#7c3aed;font-weight:700;">' . esc_html__( '🏛️ CapEx (Gasto de Capital)', 'aura-suite' ) . '</span>';
                     } elseif ( $type === 'income' ) {
-                        $nature_badge = '<span style="color:#059669;font-weight:700;">📈 Ingreso Operativo</span>';
+                        $nature_badge = '<span style="color:#059669;font-weight:700;">' . esc_html__( '📈 Ingreso Operativo', 'aura-suite' ) . '</span>';
                     } elseif ( $type === 'transfer' ) {
-                        $nature_badge = '<span style="color:#2563eb;font-weight:700;">⇄ Transferencia Interna</span>';
+                        $nature_badge = '<span style="color:#2563eb;font-weight:700;">' . esc_html__( '⇄ Transferencia Interna', 'aura-suite' ) . '</span>';
                     } else {
-                        $nature_badge = '<span style="color:#dc2626;font-weight:600;">💼 OpEx (Gasto Operativo)</span>';
+                        $nature_badge = '<span style="color:#dc2626;font-weight:600;">' . esc_html__( '💼 OpEx (Gasto Operativo)', 'aura-suite' ) . '</span>';
                     }
                     $cat_extra_details[] = '<span><strong>' . __( 'Naturaleza:', 'aura-suite' ) . '</strong> ' . $nature_badge . '</span>';
                     if ( ! empty( $item->category_description ) ) {
@@ -2780,7 +2780,7 @@ class Aura_Financial_Transactions_List extends Aura_List_Table {
                                             <?php if ( $rf_is_img || $rf_is_drive ) : ?>
                                                 <img src="<?php echo esc_url( $rf['thumbnail_url'] ); ?>" alt="" class="aura-receipt-thumb-img">
                                                 <?php if ( $rf_is_drive ) : ?>
-                                                    <span class="aura-thumb-cloud-badge" title="Almacenado en Google Drive">☁️</span>
+                                                    <span class="aura-thumb-cloud-badge" title="<?php esc_attr_e( 'Almacenado en Google Drive', 'aura-suite' ); ?>">☁️</span>
                                                 <?php endif; ?>
                                             <?php elseif ( $rf_is_pdf ) : ?>
                                                 <div class="aura-thumb-fallback-icon fallback-pdf">

@@ -81,7 +81,7 @@ class Aura_Google_Auth_Service_Account implements Aura_Google_Auth_Provider {
         $body   = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( 200 !== $status || empty( $body['access_token'] ) ) {
-            $err_desc = $body['error_description'] ?? ( $body['error'] ?? 'Error desconocido de autorización JWT.' );
+            $err_desc = $body['error_description'] ?? ( $body['error'] ?? __( 'Error desconocido de autorización JWT.', 'aura-suite' ) );
             $msg      = sprintf( __( 'Google rechazó el token JWT de Cuenta de Servicio (%d): %s', 'aura-suite' ), $status, $err_desc );
             update_option( self::OPTION_LAST_ERROR, $msg );
             return new WP_Error( 'google_jwt_rejected', $msg );

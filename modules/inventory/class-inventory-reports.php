@@ -350,9 +350,9 @@ class Aura_Inventory_Reports {
             if ( $r->acquisition_date ) {
                 $acq     = new DateTime( $r->acquisition_date );
                 $diff    = $today->diff( $acq );
-                $age_str = $diff->y > 0
-                    ? sprintf( '%d año%s %d mes%s', $diff->y, $diff->y > 1 ? 's' : '', $diff->m, $diff->m > 1 ? 'es' : '' )
-                    : sprintf( '%d mes%s', $diff->m, $diff->m > 1 ? 'es' : '' );
+                $y_str   = sprintf( _n( '%d año', '%d años', $diff->y, 'aura-suite' ), $diff->y ); $m_str = sprintf( _n( '%d mes', '%d meses', $diff->m, 'aura-suite' ), $diff->m ); $age_str = $diff->y > 0 ? "{$y_str} {$m_str}" : $m_str; /* */
+                    // age formatted above
+                    // age formatted above 2
             }
 
             $total_invested = (float) $r->cost + (float) $r->total_maintenance_cost;
@@ -411,7 +411,7 @@ class Aura_Inventory_Reports {
                 $rows = self::fetch_lifecycle_data();
                 break;
             default:
-                wp_send_json_error( [ 'message' => 'Reporte no válido.' ] );
+                wp_send_json_error( [ 'message' => __( 'Reporte no válido.', 'aura-suite' ) ] );
                 return;
         }
 
@@ -443,7 +443,7 @@ class Aura_Inventory_Reports {
 
             $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $sheet       = $spreadsheet->getActiveSheet();
-            $sheet->setTitle( 'Reporte' );
+            $sheet->setTitle( __( 'Reporte', 'aura-suite' ) );
 
             // Fila de cabeceras con estilo
             $headers = array_keys( (array) $rows[0] );
@@ -481,7 +481,7 @@ class Aura_Inventory_Reports {
             ] );
 
         } else {
-            wp_send_json_error( [ 'message' => 'Formato no soportado.' ] );
+            wp_send_json_error( [ 'message' => __( 'Formato no soportado.', 'aura-suite' ) ] );
         }
     }
 
@@ -490,37 +490,37 @@ class Aura_Inventory_Reports {
     // ─────────────────────────────────────────────────────────────
 
     private static function build_efficiency_flat_rows( array $data ): array {
-        $rows = [];
-        $t    = $data['totals'] ?? [];
+        $rows = []; $t = $data['totals'] ?? []; $k_sec = __( 'Sección', 'aura-suite' ); $k_dsc = __( 'Descripción', 'aura-suite' ); $k_val = __( 'Valor', 'aura-suite' );
+        // vars initialized above
 
-        $rows[] = [ 'Sección' => 'RESUMEN',              'Descripción' => 'Total mantenimientos',   'Valor' => $t['count']     ?? 0 ];
-        $rows[] = [ 'Sección' => '',                     'Descripción' => '% Preventivos',          'Valor' => ( $t['prev_pct'] ?? 0 ) . '%' ];
-        $rows[] = [ 'Sección' => '',                     'Descripción' => '% Correctivos',          'Valor' => ( $t['corr_pct'] ?? 0 ) . '%' ];
-        $rows[] = [ 'Sección' => '',                     'Descripción' => 'Costo total',            'Valor' => number_format( (float) ( $t['total_cost'] ?? 0 ), 2 ) ];
-        $rows[] = [ 'Sección' => '',                     'Descripción' => 'Vencidos sin registrar', 'Valor' => $data['overdue_count'] ?? 0 ];
-        $rows[] = [ 'Sección' => '',                     'Descripción' => 'Meta ≥70% preventivos',  'Valor' => ! empty( $data['goal_met'] ) ? 'Cumplida' : 'No cumplida' ];
-        $rows[] = [ 'Sección' => '',                     'Descripción' => '',                       'Valor' => '' ];
+        $rows[] = [ $k_sec => __( 'RESUMEN', 'aura-suite' ), $k_dsc => __( 'Total mantenimientos', 'aura-suite' ), $k_val => $t['count'] ?? 0 ];
+        $rows[] = [ $k_sec => '', $k_dsc => __( '% Preventivos', 'aura-suite' ), $k_val => ( $t['prev_pct'] ?? 0 ) . '%' ];
+        $rows[] = [ $k_sec => '', $k_dsc => __( '% Correctivos', 'aura-suite' ), $k_val => ( $t['corr_pct'] ?? 0 ) . '%' ];
+        $rows[] = [ $k_sec => '', $k_dsc => __( 'Costo total', 'aura-suite' ), $k_val => number_format( (float) ( $t['total_cost'] ?? 0 ), 2 ) ];
+        $rows[] = [ $k_sec => '', $k_dsc => __( 'Vencidos sin registrar', 'aura-suite' ), $k_val => $data['overdue_count'] ?? 0 ];
+        $rows[] = [ $k_sec => '', $k_dsc => __( 'Meta ≥70% preventivos', 'aura-suite' ), $k_val => ! empty( $data['goal_met'] ) ? __( 'Cumplida', 'aura-suite' ) : __( 'No cumplida', 'aura-suite' ) ];
+        $rows[] = [ $k_sec => '', $k_dsc => '', $k_val => '' ];
 
-        $rows[] = [ 'Sección' => 'TOP 5 CORRECTIVOS',   'Descripción' => 'Equipo',                 'Valor' => 'Cant. | Costo' ];
+        $rows[] = [ $k_sec => __( 'TOP 5 CORRECTIVOS', 'aura-suite' ), $k_dsc => __( 'Equipo', 'aura-suite' ), $k_val => __( 'Cant. | Costo', 'aura-suite' ) ];
         foreach ( $data['top_corrective'] ?? [] as $r ) {
             $r      = (array) $r;
             $name   = $r['name']          ?? '';
             $code   = $r['internal_code'] ?? '';
             $rows[] = [
-                'Sección'     => '',
-                'Descripción' => $name . ( $code ? ' (' . $code . ')' : '' ),
-                'Valor'       => ( $r['qty'] ?? 0 ) . ' | ' . number_format( (float) ( $r['cost'] ?? 0 ), 2 ),
+                $k_sec     => '',
+                $k_dsc => $name . ( $code ? ' (' . $code . ')' : '' ),
+                $k_val       => ( $r['qty'] ?? 0 ) . ' | ' . number_format( (float) ( $r['cost'] ?? 0 ), 2 ),
             ];
         }
 
-        $rows[] = [ 'Sección' => '',                     'Descripción' => '',       'Valor' => '' ];
-        $rows[] = [ 'Sección' => 'MANTENIMIENTO VENCIDO','Descripción' => 'Equipo', 'Valor' => 'Fecha programada' ];
+        $rows[] = [ $k_sec => '', $k_dsc => '', $k_val => '' ];
+        $rows[] = [ $k_sec => __( 'MANTENIMIENTO VENCIDO', 'aura-suite' ), $k_dsc => __( 'Equipo', 'aura-suite' ), $k_val => __( 'Fecha programada', 'aura-suite' ) ];
         foreach ( $data['pending_list'] ?? [] as $r ) {
             $r      = (array) $r;
             $rows[] = [
-                'Sección'     => '',
-                'Descripción' => $r['name'] ?? '',
-                'Valor'       => $r['next_maintenance_date'] ?? '',
+                $k_sec     => '',
+                $k_dsc => $r['name'] ?? '',
+                $k_val       => $r['next_maintenance_date'] ?? '',
             ];
         }
 

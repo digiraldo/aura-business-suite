@@ -36,7 +36,7 @@ class Aura_Vehicle_Reports {
         $numeric = max( 0, min( 100, $numeric ) );
 
         if ( $numeric <= 0 ) {
-            return 'Vacío';
+            return __( 'Vacío', 'aura-suite' );
         }
         if ( $numeric <= 25 ) {
             return '1/4';
@@ -48,7 +48,7 @@ class Aura_Vehicle_Reports {
             return '3/4';
         }
 
-        return 'Lleno';
+        return __( 'Lleno', 'aura-suite' );
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -221,15 +221,15 @@ class Aura_Vehicle_Reports {
         $gastos_total = array_sum( array_column( $rows, 'gastos' ) );
 
         $type_labels = array(
-            'rental'      => 'Alquiler',
-            'errand'      => 'Encargo',
-            'maintenance' => 'Mantenimiento',
-            'other'       => 'Otro',
+            'rental'      => __( 'Alquiler', 'aura-suite' ),
+            'errand'      => __( 'Encargo', 'aura-suite' ),
+            'maintenance' => __( 'Mantenimiento', 'aura-suite' ),
+            'other'       => __( 'Otro', 'aura-suite' ),
         );
         $status_labels = array(
-            'active'    => 'Activa',
-            'returned'  => 'Retornada',
-            'cancelled' => 'Cancelada',
+            'active'    => __( 'Activa', 'aura-suite' ),
+            'returned'  => __( 'Retornada', 'aura-suite' ),
+            'cancelled' => __( 'Cancelada', 'aura-suite' ),
         );
 
         foreach ( $rows as $row ) {
@@ -240,7 +240,7 @@ class Aura_Vehicle_Reports {
         }
 
         return array(
-            'headers' => array( 'ID', 'Vehículo', 'Placa', 'Área', 'Tipo', 'Estado', 'Fecha Salida', 'Fecha Retorno', 'Combustible Salida', 'Combustible Retorno', 'KM', 'Monto ($)', 'Gastos ($)', 'Persona' ),
+            'headers' => array( 'ID', __( 'Vehículo', 'aura-suite' ), __( 'Placa', 'aura-suite' ), __( 'Área', 'aura-suite' ), __( 'Tipo', 'aura-suite' ), __( 'Estado', 'aura-suite' ), __( 'Fecha Salida', 'aura-suite' ), __( 'Fecha Retorno', 'aura-suite' ), __( 'Combustible Salida', 'aura-suite' ), __( 'Combustible Retorno', 'aura-suite' ), 'KM', __( 'Monto ($)', 'aura-suite' ), __( 'Gastos ($)', 'aura-suite' ), __( 'Persona', 'aura-suite' ) ),
             'rows'    => $rows,
             'totals'  => array(
                 'registros' => count( $rows ),
@@ -305,9 +305,9 @@ class Aura_Vehicle_Reports {
 
         $rows = $rows ?: array();
 
-        $priority_labels = array( 'low' => 'Baja', 'medium' => 'Media', 'high' => 'Alta', 'urgent' => 'Urgente' );
-        $subtype_labels  = array( 'preventive' => 'Preventivo', 'corrective' => 'Correctivo', 'inspection' => 'Inspección' );
-        $status_labels   = array( 'active' => 'En proceso', 'returned' => 'Finalizado', 'cancelled' => 'Cancelado' );
+        $priority_labels = array( 'low' => __( 'Baja', 'aura-suite' ), 'medium' => __( 'Media', 'aura-suite' ), 'high' => __( 'Alta', 'aura-suite' ), 'urgent' => __( 'Urgente', 'aura-suite' ) );
+        $subtype_labels  = array( 'preventive' => __( 'Preventivo', 'aura-suite' ), 'corrective' => __( 'Correctivo', 'aura-suite' ), 'inspection' => __( 'Inspección', 'aura-suite' ) );
+        $status_labels   = array( 'active' => __( 'En proceso', 'aura-suite' ), 'returned' => __( 'Finalizado', 'aura-suite' ), 'cancelled' => __( 'Cancelado', 'aura-suite' ) );
 
         foreach ( $rows as $row ) {
             $row->subtipo   = $subtype_labels[ $row->subtipo ]   ?? $row->subtipo ?? '—';
@@ -319,7 +319,7 @@ class Aura_Vehicle_Reports {
         $costo_real_total = array_sum( array_column( $rows, 'costo_real' ) );
 
         return array(
-            'headers' => array( 'ID', 'Vehículo', 'Placa', 'Subtipo', 'Prioridad', 'Proveedor', 'Fecha Inicio', 'Fecha Fin', 'Costo Est.', 'Costo Real', 'Estado', 'Descripción' ),
+            'headers' => array( 'ID', __( 'Vehículo', 'aura-suite' ), __( 'Placa', 'aura-suite' ), __( 'Subtipo', 'aura-suite' ), __( 'Prioridad', 'aura-suite' ), __( 'Proveedor', 'aura-suite' ), __( 'Fecha Inicio', 'aura-suite' ), __( 'Fecha Fin', 'aura-suite' ), __( 'Costo Est.', 'aura-suite' ), __( 'Costo Real', 'aura-suite' ), __( 'Estado', 'aura-suite' ), __( 'Descripción', 'aura-suite' ) ),
             'rows'    => $rows,
             'totals'  => array(
                 'registros'     => count( $rows ),
@@ -386,7 +386,7 @@ class Aura_Vehicle_Reports {
         $rows = $rows ?: array();
 
         return array(
-            'headers' => array( 'ID Veh.', 'Vehículo', 'Placa', 'Salidas', 'Ingresos ($)', 'Costo Mant. ($)', 'Gastos Viaje ($)', 'Total Costos ($)', 'Balance ($)' ),
+            'headers' => array( __( 'ID Veh.', 'aura-suite' ), __( 'Vehículo', 'aura-suite' ), __( 'Placa', 'aura-suite' ), __( 'Salidas', 'aura-suite' ), __( 'Ingresos ($)', 'aura-suite' ), __( 'Costo Mant. ($)', 'aura-suite' ), __( 'Gastos Viaje ($)', 'aura-suite' ), __( 'Total Costos ($)', 'aura-suite' ), __( 'Balance ($)', 'aura-suite' ) ),
             'rows'    => $rows,
             'totals'  => array(
                 'vehiculos'    => count( $rows ),
@@ -450,10 +450,10 @@ class Aura_Vehicle_Reports {
 
         $rows = $rows ?: array();
 
-        $status_labels   = array( 'available' => 'Disponible', 'rented' => 'En Uso', 'maintenance' => 'Mantenimiento', 'unavailable' => 'No Disponible' );
-        $type_labels     = array( 'sedan' => 'Sedán', 'suv' => 'SUV', 'pickup' => 'Pickup', 'van' => 'Minivan', 'bus' => 'Bus', 'motorcycle' => 'Moto', 'truck' => 'Camión', 'other' => 'Otro' );
-        $fuel_labels     = array( 'gasoline' => 'Gasolina', 'diesel' => 'Diésel', 'electric' => 'Eléctrico', 'hybrid' => 'Híbrido', 'gas' => 'Gas' );
-        $trans_labels    = array( 'manual' => 'Manual', 'automatic' => 'Automática' );
+        $status_labels   = array( 'available' => __( 'Disponible', 'aura-suite' ), 'rented' => __( 'En Uso', 'aura-suite' ), 'maintenance' => __( 'Mantenimiento', 'aura-suite' ), 'unavailable' => __( 'No Disponible', 'aura-suite' ) );
+        $type_labels     = array( 'sedan' => __( 'Sedán', 'aura-suite' ), 'suv' => 'SUV', 'pickup' => 'Pickup', 'van' => __( 'Minivan', 'aura-suite' ), 'bus' => 'Bus', 'motorcycle' => __( 'Moto', 'aura-suite' ), 'truck' => __( 'Camión', 'aura-suite' ), 'other' => __( 'Otro', 'aura-suite' ) );
+        $fuel_labels     = array( 'gasoline' => __( 'Gasolina', 'aura-suite' ), 'diesel' => __( 'Diésel', 'aura-suite' ), 'electric' => __( 'Eléctrico', 'aura-suite' ), 'hybrid' => __( 'Híbrido', 'aura-suite' ), 'gas' => __( 'Gas', 'aura-suite' ) );
+        $trans_labels    = array( 'manual' => __( 'Manual', 'aura-suite' ), 'automatic' => __( 'Automática', 'aura-suite' ) );
 
         foreach ( $rows as $row ) {
             $row->estado      = $status_labels[ $row->estado ]      ?? $row->estado;
@@ -467,7 +467,7 @@ class Aura_Vehicle_Reports {
             : 0;
 
         return array(
-            'headers' => array( 'ID', 'Placa', 'Vehículo', 'Año', 'Tipo', 'Estado', 'KM Acum.', 'Combustible', 'Transmisión', 'Áreas', 'Registrado' ),
+            'headers' => array( 'ID', __( 'Placa', 'aura-suite' ), __( 'Vehículo', 'aura-suite' ), __( 'Año', 'aura-suite' ), __( 'Tipo', 'aura-suite' ), __( 'Estado', 'aura-suite' ), __( 'KM Acum.', 'aura-suite' ), __( 'Combustible', 'aura-suite' ), __( 'Transmisión', 'aura-suite' ), __( 'Áreas', 'aura-suite' ), __( 'Registrado', 'aura-suite' ) ),
             'rows'    => $rows,
             'totals'  => array(
                 'total'       => count( $rows ),
@@ -532,7 +532,7 @@ class Aura_Vehicle_Reports {
         $rows = $rows ?: array();
 
         return array(
-            'headers' => array( 'ID Veh.', 'Vehículo', 'Placa', 'KM Acum.', 'Salidas', 'KM Período', 'KM Alquiler', 'KM Encargo', 'KM Mant.', 'KM Otro' ),
+            'headers' => array( __( 'ID Veh.', 'aura-suite' ), __( 'Vehículo', 'aura-suite' ), __( 'Placa', 'aura-suite' ), __( 'KM Acum.', 'aura-suite' ), __( 'Salidas', 'aura-suite' ), __( 'KM Período', 'aura-suite' ), __( 'KM Alquiler', 'aura-suite' ), __( 'KM Encargo', 'aura-suite' ), __( 'KM Mant.', 'aura-suite' ), __( 'KM Otro', 'aura-suite' ) ),
             'rows'    => $rows,
             'totals'  => array(
                 'vehiculos'  => count( $rows ),

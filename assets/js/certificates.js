@@ -5,6 +5,18 @@
 (function ($) {
     'use strict';
 
+    var __ = (window.wp && window.wp.i18n && window.wp.i18n.__) ? window.wp.i18n.__ : function (s) { return s; };
+    var sprintf = (window.wp && window.wp.i18n && window.wp.i18n.sprintf) ? window.wp.i18n.sprintf : function () {
+        var args = Array.prototype.slice.call(arguments);
+        var fmt = args.shift() || '';
+        var i = 0;
+        return String(fmt).replace(/%(?:(\d+)\$)?([sd%])/g, function (m, pos, type) {
+            if (type === '%') return '%';
+            var idx = pos ? (parseInt(pos, 10) - 1) : i++;
+            return args[idx] !== undefined ? args[idx] : '';
+        });
+    };
+
     var NONCE    = (window.auraCertificates && auraCertificates.nonce)   || '';
     var AJAX_URL = (window.auraCertificates && auraCertificates.ajaxUrl) || (typeof ajaxurl !== 'undefined' ? ajaxurl : '');
 
@@ -39,11 +51,11 @@
     }
 
     function extractError(res, fallback) {
-        if (!res) return fallback || 'Ocurrió un error.';
+        if (!res) return fallback || __('Ocurrió un error.', 'aura-suite');
         if (typeof res.data === 'string' && res.data) return res.data;
         if (res.data && typeof res.data.message === 'string' && res.data.message) return res.data.message;
         if (typeof res.message === 'string' && res.message) return res.message;
-        return fallback || 'Ocurrió un error. Intenta de nuevo.';
+        return fallback || __('Ocurrió un error. Intenta de nuevo.', 'aura-suite');
     }
 
     function parseCounterpartyIds(item) {
@@ -63,7 +75,7 @@
             label        : item.commercial_name || item.name || item.display_name || item.label || '',
             email        : item.email || item.user_email || '',
             document     : item.document_id || '',
-            badgeLabel   : item.accounting_role_label || item.party_type_label || (isWpUser ? 'Usuario WP' : 'Tercero')
+            badgeLabel   : item.accounting_role_label || item.party_type_label || (isWpUser ? __('Usuario WP', 'aura-suite') : __('Tercero', 'aura-suite'))
         };
     }
 
@@ -166,7 +178,7 @@
             this.$confirm.on('click', function () {
                 var reason = revokeModal.$reason.val().trim();
                 if (!reason) {
-                    alert('Por favor ingresa el motivo de revocación.');
+                    alert(__('Por favor ingresa el motivo de revocación.', 'aura-suite'));
                     revokeModal.$reason.focus();
                     return;
                 }
@@ -179,11 +191,11 @@
                     if (res.success) {
                         location.reload();
                     } else {
-                        alert(extractError(res, 'Error al revocar.'));
+                        alert(extractError(res, __('Error al revocar.', 'aura-suite')));
                         btnReset(revokeModal.$confirm);
                     }
                 }).fail(function () {
-                    alert('Error de conexión.');
+                    alert(__('Error de conexión.', 'aura-suite'));
                     btnReset(revokeModal.$confirm);
                 });
             });
@@ -206,11 +218,11 @@
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(url).then(function () {
                         var orig = $btn.text();
-                        $btn.text('✓ Copiado');
+                        $btn.text('✓ ' + __('Copiado', 'aura-suite'));
                         setTimeout(function () { $btn.text(orig); }, 2000);
                     });
                 } else {
-                    window.prompt('Copia este enlace de verificación:', url);
+                    window.prompt(__('Copia este enlace de verificación:', 'aura-suite'), url);
                 }
             });
 
@@ -222,13 +234,13 @@
                 ajaxPost('aura_cert_resend_email', { id: id }).done(function (res) {
                     btnReset($btn);
                     if (res.success) {
-                        alert((res.data && res.data.message) || 'Correo reenviado correctamente.');
+                        alert((res.data && res.data.message) || __('Correo reenviado correctamente.', 'aura-suite'));
                     } else {
-                        alert(extractError(res, 'No se pudo reenviar el correo.'));
+                        alert(extractError(res, __('No se pudo reenviar el correo.', 'aura-suite')));
                     }
                 }).fail(function () {
                     btnReset($btn);
-                    alert('Error de conexión.');
+                    alert(__('Error de conexión.', 'aura-suite'));
                 });
             });
         }
@@ -283,7 +295,7 @@
                 issuePage.searchTimer = setTimeout(function () {
                     ajaxPost('aura_cert_search_students', { term: term }).done(function (res) {
                         if (!res.success || !res.data || !Array.isArray(res.data.items) || !res.data.items.length) {
-                            $stuDrop.html('<div class="aura-search-empty">Sin resultados para "' + escHtml(term) + '".</div>').show();
+                            $stuDrop.html('<div class="aura-search-empty">' + sprintf(__('Sin resultados para "%s".', 'aura-suite'), escHtml(term)) + '</div>').show();
                             return;
                         }
                         var html = '';
@@ -291,7 +303,7 @@
                             var full = $.trim((it.first_name || '') + ' ' + (it.last_name || ''));
                             html += '<div class="aura-search-item" data-item=\'' + escHtml(JSON.stringify(it)) + '\'>' +
                                 '<div class="aura-search-item-title"><strong>' + escHtml(full) + '</strong> ' +
-                                (it.has_cert ? '<span class="aura-cert-badge aura-cert-badge--warning">Ya certificado</span>' : '') +
+                                (it.has_cert ? '<span class="aura-cert-badge aura-cert-badge--warning">' + escHtml(__('Ya certificado', 'aura-suite')) + '</span>' : '') +
                                 '</div>' +
                                 '<div class="aura-search-item-sub">' +
                                 escHtml(it.email || '') +
@@ -352,7 +364,7 @@
                 var chip = '<span class="aura-cert-badge aura-cert-badge--' + (parsed.type === 'wp_user' ? 'wpuser' : 'thirdparty') + '">' +
                     escHtml(parsed.badgeLabel) + '</span> <strong>' + escHtml(parsed.label) + '</strong>' +
                     (parsed.email ? ' <span>(' + escHtml(parsed.email) + ')</span>' : '') +
-                    (parsed.document ? ' <span>• Doc: ' + escHtml(parsed.document) + '</span>' : '');
+                    (parsed.document ? ' <span>• ' + escHtml(__('Doc:', 'aura-suite')) + ' ' + escHtml(parsed.document) + '</span>' : '');
                 $('#aura-issue-counterparty-preview').html(chip).show();
 
                 $('#aura-issue-recipient-name').val(parsed.label);
@@ -375,7 +387,7 @@
             $('#aura-issue-counterparty-explore').on('click', function (e) {
                 e.preventDefault();
                 if (!window.AuraThirdPartySelector) {
-                    alert('El selector de Usuarios y Terceros no está disponible en esta página.');
+                    alert(__('El selector de Usuarios y Terceros no está disponible en esta página.', 'aura-suite'));
                     return;
                 }
                 window.AuraThirdPartySelector.openExplorer({
@@ -404,20 +416,20 @@
                 var courseName    = $('#aura-issue-course-name').val().trim();
 
                 if (mode === 'student' && !parseInt($('#aura-issue-student-id').val(), 10) && !recipientName) {
-                    alert('Selecciona un estudiante o ingresa el nombre del destinatario.');
+                    alert(__('Selecciona un estudiante o ingresa el nombre del destinatario.', 'aura-suite'));
                     return;
                 }
                 if (mode === 'counterparty' && !parseInt($('#aura-issue-wp-user-id').val(), 10) && !parseInt($('#aura-issue-third-party-id').val(), 10) && !recipientName) {
-                    alert('Selecciona un Usuario WP o Tercero.');
+                    alert(__('Selecciona un Usuario WP o Tercero.', 'aura-suite'));
                     return;
                 }
                 if (!recipientName) {
-                    alert('El nombre en el certificado es obligatorio.');
+                    alert(__('El nombre en el certificado es obligatorio.', 'aura-suite'));
                     $('#aura-issue-recipient-name').focus();
                     return;
                 }
                 if (!courseName) {
-                    alert('El curso o motivo del certificado es obligatorio.');
+                    alert(__('El curso o motivo del certificado es obligatorio.', 'aura-suite'));
                     $('#aura-issue-course-name').focus();
                     return;
                 }
@@ -453,21 +465,21 @@
                         var d = res.data;
                         var pdfUrl = AJAX_URL + '?action=aura_cert_download&folio=' + encodeURIComponent(d.folio);
                         var html = '<div class="notice notice-success inline" style="padding:14px 16px;margin:0;">' +
-                            '<p style="margin:0 0 8px;"><strong>✅ ' + escHtml(d.message || 'Certificado emitido correctamente.') + '</strong> ' +
-                            'Folio: <code>' + escHtml(d.folio) + '</code></p>' +
+                            '<p style="margin:0 0 8px;"><strong>✅ ' + escHtml(d.message || __('Certificado emitido correctamente.', 'aura-suite')) + '</strong> ' +
+                            escHtml(__('Folio:', 'aura-suite')) + ' <code>' + escHtml(d.folio) + '</code></p>' +
                             '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-                            (d.view_url ? '<a href="' + escHtml(d.view_url) + '" class="button button-primary">Ver Certificado</a>' : '') +
-                            '<a href="' + escHtml(pdfUrl) + '" class="button" target="_blank">⬇ Descargar PDF</a>' +
-                            '<button type="button" class="button aura-issue-another-btn">Emitir otro</button>' +
+                            (d.view_url ? '<a href="' + escHtml(d.view_url) + '" class="button button-primary">' + escHtml(__('Ver Certificado', 'aura-suite')) + '</a>' : '') +
+                            '<a href="' + escHtml(pdfUrl) + '" class="button" target="_blank">⬇ ' + escHtml(__('Descargar PDF', 'aura-suite')) + '</a>' +
+                            '<button type="button" class="button aura-issue-another-btn">' + escHtml(__('Emitir otro', 'aura-suite')) + '</button>' +
                             '</div></div>';
                         $('#aura-issue-result').html(html).slideDown(150);
                         $('html, body').animate({ scrollTop: 0 }, 250);
                     } else {
-                        alert(extractError(res, 'Error al emitir el certificado.'));
+                        alert(extractError(res, __('Error al emitir el certificado.', 'aura-suite')));
                     }
                 }).fail(function () {
                     btnReset($btn);
-                    alert('Error de conexión.');
+                    alert(__('Error de conexión.', 'aura-suite'));
                 });
             });
 
@@ -493,13 +505,13 @@
             $(document).on('click', '.aura-cert-set-default-btn', function () {
                 var $btn = $(this);
                 var id   = $btn.data('id');
-                if (!confirm('¿Establecer esta plantilla como predeterminada?')) return;
+                if (!confirm(__('¿Establecer esta plantilla como predeterminada?', 'aura-suite'))) return;
                 btnLoading($btn);
                 ajaxPost('aura_cert_set_default', { id: id }).done(function (res) {
                     if (res.success) {
                         location.reload();
                     } else {
-                        alert(extractError(res, 'Error al actualizar.'));
+                        alert(extractError(res, __('Error al actualizar.', 'aura-suite')));
                         btnReset($btn);
                     }
                 });
@@ -514,7 +526,7 @@
                     if (res.success) {
                         location.reload();
                     } else {
-                        alert(extractError(res, 'Error al cambiar estado.'));
+                        alert(extractError(res, __('Error al cambiar estado.', 'aura-suite')));
                         btnReset($btn);
                     }
                 });
@@ -523,7 +535,7 @@
             $(document).on('click', '.aura-cert-delete-template-btn', function () {
                 var $btn = $(this);
                 var id   = $btn.data('id');
-                if (!confirm('¿Eliminar esta plantilla? Esta acción no se puede deshacer.')) return;
+                if (!confirm(__('¿Eliminar esta plantilla? Esta acción no se puede deshacer.', 'aura-suite'))) return;
                 btnLoading($btn);
                 ajaxPost('aura_cert_delete_template', { id: id }).done(function (res) {
                     if (res.success) {
@@ -531,7 +543,7 @@
                             $(this).remove();
                         });
                     } else {
-                        alert(extractError(res, 'Error al eliminar.'));
+                        alert(extractError(res, __('Error al eliminar.', 'aura-suite')));
                         btnReset($btn);
                     }
                 });
@@ -604,12 +616,12 @@
             $(document).on('click', '#aura-signer-upload-btn', function (e) {
                 e.preventDefault();
                 if (typeof wp === 'undefined' || !wp.media) {
-                    alert('El selector multimedia de WordPress no está cargado.');
+                    alert(__('El selector multimedia de WordPress no está cargado.', 'aura-suite'));
                     return;
                 }
                 var frame = wp.media({
-                    title    : 'Seleccionar imagen de firma',
-                    button   : { text: 'Usar esta imagen' },
+                    title    : __('Seleccionar imagen de firma', 'aura-suite'),
+                    button   : { text: __('Usar esta imagen', 'aura-suite') },
                     library  : { type: 'image' },
                     multiple : false
                 });
@@ -627,7 +639,7 @@
                 e.preventDefault();
                 var name = $('#aura-signer-name').val().trim();
                 if (!name) {
-                    alert('El nombre del firmante es obligatorio.');
+                    alert(__('El nombre del firmante es obligatorio.', 'aura-suite'));
                     $('#aura-signer-name').focus();
                     return;
                 }
@@ -646,11 +658,11 @@
                     if (res.success) {
                         location.reload();
                     } else {
-                        alert(extractError(res, 'Error al guardar firmante.'));
+                        alert(extractError(res, __('Error al guardar firmante.', 'aura-suite')));
                         btnReset($btn);
                     }
                 }).fail(function () {
-                    alert('Error de conexión.');
+                    alert(__('Error de conexión.', 'aura-suite'));
                     btnReset($btn);
                 });
             });
@@ -661,7 +673,7 @@
                 var id    = parseInt($btn.data('id'), 10) || 0;
                 signersPage.editingId = id;
                 $('#aura-signer-id').val(id);
-                $('#aura-signer-form-title').text('Editar Firmante');
+                $('#aura-signer-form-title').text(__('Editar Firmante', 'aura-suite'));
                 $('#aura-signer-name').val($btn.attr('data-name') || '');
                 $('#aura-signer-title').val($btn.attr('data-title') || '');
                 $('#aura-signer-active').prop('checked', String($btn.attr('data-active')) === '1');
@@ -674,7 +686,7 @@
                 if (sigUrl) {
                     $('#aura-signer-sig-preview').html('<img src="' + escHtml(sigUrl) + '" style="max-height:56px;max-width:150px;object-fit:contain;">');
                 } else {
-                    $('#aura-signer-sig-preview').html('<span style="color:#aaa;">Sin imagen</span>');
+                    $('#aura-signer-sig-preview').html('<span style="color:#aaa;">' + escHtml(__('Sin imagen', 'aura-suite')) + '</span>');
                 }
 
                 var wpUid = parseInt($btn.attr('data-wp-user-id'), 10) || 0;
@@ -702,8 +714,8 @@
             function performDeleteSigner(id, label, $btn) {
                 if (!id) return;
                 var msg = label
-                    ? '¿Eliminar al firmante "' + label + '"? Esta acción no se puede deshacer.'
-                    : '¿Eliminar este firmante? Esta acción no se puede deshacer.';
+                    ? sprintf(__('¿Eliminar al firmante "%s"? Esta acción no se puede deshacer.', 'aura-suite'), label)
+                    : __('¿Eliminar este firmante? Esta acción no se puede deshacer.', 'aura-suite');
                 if (!confirm(msg)) return;
                 btnLoading($btn);
                 ajaxPost('aura_cert_delete_signer', { id: id }).done(function (res) {
@@ -720,12 +732,12 @@
                             location.reload();
                         }
                     } else {
-                        alert(extractError(res, 'Error al eliminar el firmante.'));
+                        alert(extractError(res, __('Error al eliminar el firmante.', 'aura-suite')));
                         btnReset($btn);
                     }
                 }).fail(function (xhr) {
                     var errRes = xhr && xhr.responseJSON ? xhr.responseJSON : null;
-                    alert(extractError(errRes, 'Error de conexión al eliminar firmante.'));
+                    alert(extractError(errRes, __('Error de conexión al eliminar firmante.', 'aura-suite')));
                     btnReset($btn);
                 });
             }
@@ -757,7 +769,7 @@
                     if (res.success) {
                         location.reload();
                     } else {
-                        alert(extractError(res, 'Error al actualizar estado.'));
+                        alert(extractError(res, __('Error al actualizar estado.', 'aura-suite')));
                     }
                 });
             });
@@ -781,13 +793,13 @@
             this.editingId = 0;
             this.$form[0].reset();
             $('#aura-signer-id').val('0');
-            $('#aura-signer-form-title').text('Agregar Firmante');
+            $('#aura-signer-form-title').text(__('Agregar Firmante', 'aura-suite'));
             $('#aura-signer-attachment-id').val('0');
             $('#aura-signer-signature-url').val('');
             $('#aura-signer-wp-user-id').val('0');
             $('#aura-signer-third-party-id').val('0');
             $('#aura-signer-counterparty-preview, #aura-signer-counterparty-clear, #aura-signer-cancel-btn, #aura-signer-delete-editing-btn').hide();
-            $('#aura-signer-sig-preview').html('<span style="color:#aaa;">Sin imagen</span>');
+            $('#aura-signer-sig-preview').html('<span style="color:#aaa;">' + escHtml(__('Sin imagen', 'aura-suite')) + '</span>');
         }
     };
 
@@ -814,7 +826,7 @@
             // Contador de seleccionados (Estudiantes)
             function refreshStudentSelectionUI() {
                 var count = $('.aura-bulk-cert-check:checked').length;
-                $('#aura-bulk-selected-count').text(count + ' seleccionado(s)');
+                $('#aura-bulk-selected-count').text(sprintf(__('%d seleccionado(s)', 'aura-suite'), count));
                 $('#aura-bulk-issue-btn').prop('disabled', count === 0);
             }
 
@@ -851,15 +863,15 @@
                 $('#aura-bulk-cp-empty').hide();
                 $('#aura-bulk-cp-table').show();
                 $('#aura-bulk-cp-issue-btn').prop('disabled', false);
-                $('#aura-bulk-cp-count').text(bulkIssue.cpItems.length + ' destinatario(s) en cola');
+                $('#aura-bulk-cp-count').text(sprintf(__('%d destinatario(s) en cola', 'aura-suite'), bulkIssue.cpItems.length));
 
                 bulkIssue.cpItems.forEach(function (it, idx) {
                     var badgeCls = it.wp_user_id ? 'aura-cert-badge--wpuser' : 'aura-cert-badge--thirdparty';
-                    var badgeTxt = it.wp_user_id ? 'Usuario WP' : 'Tercero';
+                    var badgeTxt = it.wp_user_id ? __('Usuario WP', 'aura-suite') : __('Tercero', 'aura-suite');
                     $tbody.append(
                         '<tr>' +
                         '<td><strong>' + escHtml(it.name) + '</strong></td>' +
-                        '<td><span class="aura-cert-badge ' + badgeCls + '">' + badgeTxt + '</span></td>' +
+                        '<td><span class="aura-cert-badge ' + badgeCls + '">' + escHtml(badgeTxt) + '</span></td>' +
                         '<td>' + escHtml(it.email || '—') + '</td>' +
                         '<td>' + escHtml(it.document_id || '—') + '</td>' +
                         '<td><button type="button" class="button button-small aura-bulk-cp-remove" data-idx="' + idx + '">✕</button></td>' +
@@ -927,7 +939,7 @@
                 if (!bulkIssue.cpItems.length) return;
                 var course = $('#aura-bulk-cp-course').val().trim();
                 if (!course) {
-                    alert('Ingresa el nombre del curso o evento para el lote.');
+                    alert(__('Ingresa el nombre del curso o evento para el lote.', 'aura-suite'));
                     $('#aura-bulk-cp-course').focus();
                     return;
                 }
@@ -960,11 +972,11 @@
                     $btn.prop('disabled', true);
                     bulkIssue.runStep(res.data.total || items.length);
                 } else {
-                    alert(extractError(res, 'Error al iniciar el lote.'));
+                    alert(extractError(res, __('Error al iniciar el lote.', 'aura-suite')));
                     btnReset($btn);
                 }
             }).fail(function () {
-                alert('Error de conexión.');
+                alert(__('Error de conexión.', 'aura-suite'));
                 btnReset($btn);
             });
         },
@@ -977,23 +989,23 @@
 
             ajaxPost('aura_cert_bulk_step', { batch_id: bulkIssue.batchId }).done(function (res) {
                 if (!res.success || !res.data) {
-                    $txt.text(extractError(res, 'Error procesando lote.'));
+                    $txt.text(extractError(res, __('Error procesando lote.', 'aura-suite')));
                     return;
                 }
                 var d   = res.data;
                 var pct = d.percent != null ? d.percent : calcPercent(d.done, d.total || total);
                 $bar.css('width', pct + '%');
-                $txt.text((d.done || 0) + ' / ' + (d.total || total) + ' procesados (' + (d.success || 0) + ' exitosos, ' + (d.failed || 0) + ' fallidos)');
+                $txt.text(sprintf(__('%1$d / %2$d procesados (%3$d exitosos, %4$d fallidos)', 'aura-suite'), (d.done || 0), (d.total || total), (d.success || 0), (d.failed || 0)));
 
                 if (d.status === 'done' || (d.done >= (d.total || total))) {
                     $bar.css('background', '#16a34a');
-                    $txt.append(' — ✅ Proceso completado.');
+                    $txt.append(' — ✅ ' + __('Proceso completado.', 'aura-suite'));
                     setTimeout(function () { location.reload(); }, 1800);
                 } else {
                     setTimeout(function () { bulkIssue.runStep(total); }, 350);
                 }
             }).fail(function () {
-                $txt.text('Error de conexión procesando el lote.');
+                $txt.text(__('Error de conexión procesando el lote.', 'aura-suite'));
             });
         }
     };
@@ -1023,17 +1035,17 @@
                     if (res.success && res.data) {
                         reports.lastData = res.data;
                         var rows = res.data.rows || [];
-                        $('#aura-cert-report-summary').text(rows.length + ' registro(s) encontrado(s).');
+                        $('#aura-cert-report-summary').text(sprintf(__('%d registro(s) encontrado(s).', 'aura-suite'), rows.length));
                         reports.renderTable(rows, res.data.columns || []);
                         $('#aura-cert-report-result').show();
                         $('#aura-cert-report-excel, #aura-cert-report-pdf').prop('disabled', rows.length === 0);
                     } else {
-                        alert(extractError(res, 'Error al generar reporte.'));
+                        alert(extractError(res, __('Error al generar reporte.', 'aura-suite')));
                     }
                 }).fail(function () {
                     btnReset($btn);
                     $('#aura-cert-report-loading').hide();
-                    alert('Error de conexión.');
+                    alert(__('Error de conexión.', 'aura-suite'));
                 });
             });
 
@@ -1049,7 +1061,7 @@
         renderTable: function (rows, cols) {
             var $wrap = $('#aura-cert-report-table-wrap');
             if (!rows || !rows.length) {
-                $wrap.html('<p><em>Sin resultados para el período seleccionado.</em></p>');
+                $wrap.html('<p><em>' + escHtml(__('Sin resultados para el período seleccionado.', 'aura-suite')) + '</em></p>');
                 return;
             }
             if (!cols.length && rows.length) {
@@ -1092,8 +1104,8 @@
                 e.preventDefault();
                 if (typeof wp === 'undefined' || !wp.media) return;
                 var frame = wp.media({
-                    title    : 'Seleccionar logo',
-                    button   : { text: 'Usar este logo' },
+                    title    : __('Seleccionar logo', 'aura-suite'),
+                    button   : { text: __('Usar este logo', 'aura-suite') },
                     library  : { type: 'image' },
                     multiple : false
                 });
@@ -1137,16 +1149,16 @@
                 ajaxPost('aura_cert_save_settings', data).done(function (res) {
                     btnReset($btn);
                     if (res.success) {
-                        var msg = (res.data && res.data.message) || (typeof res.data === 'string' ? res.data : 'Ajustes guardados.');
+                        var msg = (res.data && res.data.message) || (typeof res.data === 'string' ? res.data : __('Ajustes guardados.', 'aura-suite'));
                         var $notice = $('<div class="notice notice-success is-dismissible"><p>' + escHtml(msg) + '</p></div>');
                         $form.find('.aura-ajustes-notices').html($notice);
                         setTimeout(function () { $notice.fadeOut(); }, 4000);
                     } else {
-                        alert(extractError(res, 'Error al guardar ajustes.'));
+                        alert(extractError(res, __('Error al guardar ajustes.', 'aura-suite')));
                     }
                 }).fail(function () {
                     btnReset($btn);
-                    alert('Error de conexión.');
+                    alert(__('Error de conexión.', 'aura-suite'));
                 });
             });
 
@@ -1198,11 +1210,11 @@
                     if (res.success) {
                         location.reload();
                     } else {
-                        alert(extractError(res, 'Error al emitir certificado.'));
+                        alert(extractError(res, __('Error al emitir certificado.', 'aura-suite')));
                         btnReset($confirm);
                     }
                 }).fail(function () {
-                    alert('Error de conexión.');
+                    alert(__('Error de conexión.', 'aura-suite'));
                     btnReset($confirm);
                 });
             });

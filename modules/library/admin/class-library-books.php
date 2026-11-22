@@ -50,7 +50,7 @@ class Aura_Library_Books {
 
     public static function render_list(): void {
         if ( ! current_user_can( 'aura_library_view_catalog' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'No tienes permisos para ver esta página.', 'aura-business-suite' ) );
+            wp_die( esc_html__( 'No tienes permisos para ver esta página.', 'aura-suite' ) );
         }
         include AURA_PLUGIN_DIR . 'templates/library/books-list.php';
     }
@@ -63,7 +63,7 @@ class Aura_Library_Books {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_view_catalog' ) && ! current_user_can( 'aura_library_loan_create' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -143,7 +143,7 @@ class Aura_Library_Books {
             // Estado visual calculado: refleja la disponibilidad real de copias
             if ( $row->status === 'available' && (int) $row->available_copies === 0 ) {
                 $row->display_status       = 'on_loan';
-                $row->display_status_label = __( 'En Préstamo', 'aura-business-suite' );
+                $row->display_status_label = __( 'En Préstamo', 'aura-suite' );
             } else {
                 $row->display_status       = $row->status;
                 $row->display_status_label = $row->status_label;
@@ -180,26 +180,26 @@ class Aura_Library_Books {
         $is_new = $id === 0;
 
         if ( $is_new && ! current_user_can( 'aura_library_create' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para agregar libros.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para agregar libros.', 'aura-suite' ) ] );
         }
         if ( ! $is_new && ! current_user_can( 'aura_library_edit' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para editar libros.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para editar libros.', 'aura-suite' ) ] );
         }
 
         $title = sanitize_text_field( wp_unslash( $_POST['title'] ?? '' ) );
         if ( empty( $title ) ) {
-            wp_send_json_error( [ 'message' => __( 'El título del libro es obligatorio.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'El título del libro es obligatorio.', 'aura-suite' ) ] );
         }
 
         $author = sanitize_text_field( wp_unslash( $_POST['author'] ?? '' ) );
         if ( empty( $author ) ) {
-            wp_send_json_error( [ 'message' => __( 'El autor es obligatorio.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'El autor es obligatorio.', 'aura-suite' ) ] );
         }
 
         // Validar ISBN si proporcionado
         $isbn = sanitize_text_field( wp_unslash( $_POST['isbn'] ?? '' ) );
         if ( $isbn && ! self::validate_isbn( $isbn ) ) {
-            wp_send_json_error( [ 'message' => __( 'El ISBN proporcionado no es válido (use formato ISBN-10 o ISBN-13).', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'El ISBN proporcionado no es válido (use formato ISBN-10 o ISBN-13).', 'aura-suite' ) ] );
         }
 
         $total_copies = max( 1, intval( $_POST['total_copies'] ?? 1 ) );
@@ -255,7 +255,7 @@ class Aura_Library_Books {
 
             $result = $wpdb->insert( $table, $data );
             if ( $result === false ) {
-                wp_send_json_error( [ 'message' => __( 'Error al guardar el libro.', 'aura-business-suite' ) ] );
+                wp_send_json_error( [ 'message' => __( 'Error al guardar el libro.', 'aura-suite' ) ] );
             }
 
             $id = $wpdb->insert_id;
@@ -264,7 +264,7 @@ class Aura_Library_Books {
 
             wp_send_json_success( [
                 'id'      => $id,
-                'message' => __( 'Libro registrado correctamente.', 'aura-business-suite' ),
+                'message' => __( 'Libro registrado correctamente.', 'aura-suite' ),
             ] );
 
         } else {
@@ -272,7 +272,7 @@ class Aura_Library_Books {
                 "SELECT id, total_copies, available_copies FROM {$table} WHERE id = %d AND deleted_at IS NULL", $id
             ) );
             if ( ! $existing ) {
-                wp_send_json_error( [ 'message' => __( 'Libro no encontrado.', 'aura-business-suite' ) ] );
+                wp_send_json_error( [ 'message' => __( 'Libro no encontrado.', 'aura-suite' ) ] );
             }
 
             // Ajustar available_copies si cambió total_copies
@@ -284,14 +284,14 @@ class Aura_Library_Books {
             $old_data = (array) $existing;
             $result   = $wpdb->update( $table, $data, [ 'id' => $id ] );
             if ( $result === false ) {
-                wp_send_json_error( [ 'message' => __( 'Error al actualizar el libro.', 'aura-business-suite' ) ] );
+                wp_send_json_error( [ 'message' => __( 'Error al actualizar el libro.', 'aura-suite' ) ] );
             }
 
             Aura_Library_Setup::log( 'update_book', 'book', $id, $old_data, $data );
 
             wp_send_json_success( [
                 'id'      => $id,
-                'message' => __( 'Libro actualizado correctamente.', 'aura-business-suite' ),
+                'message' => __( 'Libro actualizado correctamente.', 'aura-suite' ),
             ] );
         }
     }
@@ -304,12 +304,12 @@ class Aura_Library_Books {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_delete' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -322,17 +322,17 @@ class Aura_Library_Books {
         ) );
 
         if ( $active > 0 ) {
-            wp_send_json_error( [ 'message' => __( 'No se puede eliminar un libro con préstamos activos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se puede eliminar un libro con préstamos activos.', 'aura-suite' ) ] );
         }
 
         $result = $wpdb->update( $table, [ 'deleted_at' => current_time( 'mysql' ) ], [ 'id' => $id ] );
         if ( $result === false ) {
-            wp_send_json_error( [ 'message' => __( 'Error al eliminar el libro.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Error al eliminar el libro.', 'aura-suite' ) ] );
         }
 
         Aura_Library_Setup::log( 'delete_book', 'book', $id );
 
-        wp_send_json_success( [ 'message' => __( 'Libro eliminado correctamente.', 'aura-business-suite' ) ] );
+        wp_send_json_success( [ 'message' => __( 'Libro eliminado correctamente.', 'aura-suite' ) ] );
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -343,12 +343,12 @@ class Aura_Library_Books {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_view_catalog' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -360,7 +360,7 @@ class Aura_Library_Books {
         ) );
 
         if ( ! $book ) {
-            wp_send_json_error( [ 'message' => __( 'Libro no encontrado.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Libro no encontrado.', 'aura-suite' ) ] );
         }
 
         $book->status_label    = self::get_status_label( $book->status );
@@ -410,7 +410,7 @@ class Aura_Library_Books {
         check_ajax_referer( self::NONCE, 'nonce' );
 
         if ( ! current_user_can( 'aura_library_view_catalog' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $q = sanitize_text_field( $_POST['q'] ?? '' );
@@ -489,22 +489,22 @@ class Aura_Library_Books {
 
     public static function get_status_label( string $status ): string {
         $labels = [
-            'available'      => __( 'Disponible',    'aura-business-suite' ),
-            'unavailable'    => __( 'Sin stock',     'aura-business-suite' ),
-            'reference_only' => __( 'Solo consulta', 'aura-business-suite' ),
-            'lost'           => __( 'Perdido',       'aura-business-suite' ),
-            'withdrawn'      => __( 'Retirado',      'aura-business-suite' ),
+            'available'      => __( 'Disponible',    'aura-suite' ),
+            'unavailable'    => __( 'Sin stock',     'aura-suite' ),
+            'reference_only' => __( 'Solo consulta', 'aura-suite' ),
+            'lost'           => __( 'Perdido',       'aura-suite' ),
+            'withdrawn'      => __( 'Retirado',      'aura-suite' ),
         ];
         return $labels[ $status ] ?? $status;
     }
 
     public static function get_loan_status_label( string $status ): string {
         $labels = [
-            'active'   => __( 'Activo',    'aura-business-suite' ),
-            'returned' => __( 'Devuelto',  'aura-business-suite' ),
-            'overdue'  => __( 'Vencido',   'aura-business-suite' ),
-            'lost'     => __( 'Perdido',   'aura-business-suite' ),
-            'extended' => __( 'Extendido', 'aura-business-suite' ),
+            'active'   => __( 'Activo',    'aura-suite' ),
+            'returned' => __( 'Devuelto',  'aura-suite' ),
+            'overdue'  => __( 'Vencido',   'aura-suite' ),
+            'lost'     => __( 'Perdido',   'aura-suite' ),
+            'extended' => __( 'Extendido', 'aura-suite' ),
         ];
         return $labels[ $status ] ?? $status;
     }
@@ -556,14 +556,14 @@ class Aura_Library_Books {
             ! current_user_can( 'aura_library_edit' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para consultar libros.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para consultar libros.', 'aura-suite' ) ] );
         }
 
         $raw_isbn   = sanitize_text_field( wp_unslash( $_POST['isbn'] ?? '' ) );
         $clean_isbn = preg_replace( '/[^0-9X]/i', '', strtoupper( $raw_isbn ) );
 
         if ( empty( $clean_isbn ) || ! self::validate_isbn( $clean_isbn ) ) {
-            wp_send_json_error( [ 'message' => __( 'Ingresa o escanea un ISBN-10 o ISBN-13 válido.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Ingresa o escanea un ISBN-10 o ISBN-13 válido.', 'aura-suite' ) ] );
         }
 
         $cache_key = 'aura_lib_isbn_v3_' . $clean_isbn;
@@ -598,7 +598,7 @@ class Aura_Library_Books {
 
         if ( empty( $merged['title'] ) ) {
             wp_send_json_error( [
-                'message' => __( 'No se encontraron datos para este ISBN en Google Books ni en Open Library.', 'aura-business-suite' ),
+                'message' => __( 'No se encontraron datos para este ISBN en Google Books ni en Open Library.', 'aura-suite' ),
             ] );
         }
 
@@ -642,12 +642,12 @@ class Aura_Library_Books {
             ! current_user_can( 'aura_library_edit' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos para consultar libros.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos para consultar libros.', 'aura-suite' ) ] );
         }
 
         $query = sanitize_text_field( wp_unslash( $_POST['query'] ?? '' ) );
         if ( mb_strlen( $query ) < 3 ) {
-            wp_send_json_error( [ 'message' => __( 'Escribe al menos 3 caracteres (título o autor) para buscar.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Escribe al menos 3 caracteres (título o autor) para buscar.', 'aura-suite' ) ] );
         }
 
         $url      = 'https://www.googleapis.com/books/v1/volumes?q=' . rawurlencode( $query ) . '&langRestrict=es&maxResults=5';
@@ -669,12 +669,12 @@ class Aura_Library_Books {
         }
 
         if ( empty( $items ) ) {
-            wp_send_json_error( [ 'message' => __( 'No se encontraron ediciones para esa búsqueda.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se encontraron ediciones para esa búsqueda.', 'aura-suite' ) ] );
         }
 
         $parsed = self::pick_best_google_volume( $items, true );
         if ( empty( $parsed['title'] ) ) {
-            wp_send_json_error( [ 'message' => __( 'No se encontraron datos completos para esa búsqueda.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se encontraron datos completos para esa búsqueda.', 'aura-suite' ) ] );
         }
 
         if ( empty( $parsed['description'] ) ) {
@@ -1135,7 +1135,7 @@ class Aura_Library_Books {
             ! current_user_can( 'aura_library_edit' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         try {
@@ -1196,11 +1196,11 @@ class Aura_Library_Books {
         $key   = 'aura_lib_rscan_' . $token;
         $state = get_transient( $key );
         if ( empty( $token ) || ! is_array( $state ) ) {
-            wp_send_json_error( [ 'message' => __( 'Sesión expirada. Genera un nuevo código QR en tu computadora.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sesión expirada. Genera un nuevo código QR en tu computadora.', 'aura-suite' ) ] );
         }
 
         if ( empty( $isbn ) || ! self::validate_isbn( $isbn ) ) {
-            wp_send_json_error( [ 'message' => __( 'Código no válido como ISBN-10 o ISBN-13.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Código no válido como ISBN-10 o ISBN-13.', 'aura-suite' ) ] );
         }
 
         $state['status'] = 'scanned';
@@ -1221,7 +1221,7 @@ class Aura_Library_Books {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title><?php esc_html_e( 'Escáner Móvil — Aura Biblioteca', 'aura-business-suite' ); ?></title>
+<title><?php esc_html_e( 'Escáner Móvil — Aura Biblioteca', 'aura-suite' ); ?></title>
 <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; min-height: 100dvh; display: flex; flex-direction: column; }
@@ -1238,18 +1238,18 @@ class Aura_Library_Books {
 </head>
 <body>
 <header>
-    <h1>📷 <?php esc_html_e( 'Escáner de Libros — Aura', 'aura-business-suite' ); ?></h1>
+    <h1>📷 <?php esc_html_e( 'Escáner de Libros — Aura', 'aura-suite' ); ?></h1>
 </header>
 <div class="wrap">
 <?php if ( ! is_array( $state ) ) : ?>
     <div class="status err">
-        <?php esc_html_e( 'Este enlace de escaneo ha expirado. Genera un nuevo código QR desde tu computadora.', 'aura-business-suite' ); ?>
+        <?php esc_html_e( 'Este enlace de escaneo ha expirado. Genera un nuevo código QR desde tu computadora.', 'aura-suite' ); ?>
     </div>
 <?php else : ?>
     <select id="cam-select" class="cam-select" style="display:none;"></select>
     <div id="reader"></div>
-    <div id="status" class="status"><?php esc_html_e( 'Iniciando cámara del teléfono…', 'aura-business-suite' ); ?></div>
-    <button type="button" id="btn-retry" class="btn" style="display:none;"><?php esc_html_e( 'Escanear otro libro', 'aura-business-suite' ); ?></button>
+    <div id="status" class="status"><?php esc_html_e( 'Iniciando cámara del teléfono…', 'aura-suite' ); ?></div>
+    <button type="button" id="btn-retry" class="btn" style="display:none;"><?php esc_html_e( 'Escanear otro libro', 'aura-suite' ); ?></button>
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script>
     (function() {

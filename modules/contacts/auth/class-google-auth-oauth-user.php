@@ -134,7 +134,7 @@ class Aura_Google_Auth_OAuth_User implements Aura_Google_Auth_Provider {
         $body     = json_decode( $body_raw, true );
 
         if ( empty( $body['access_token'] ) ) {
-            $error_desc = $body['error_description'] ?? ( $body['error'] ?? 'Respuesta inválida de Google.' );
+            $error_desc = $body['error_description'] ?? ( $body['error'] ?? __( 'Respuesta inválida de Google.', 'aura-suite' ) );
             self::redirect_with_notice( 'error', esc_html( $error_desc ) );
             return;
         }

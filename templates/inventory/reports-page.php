@@ -178,7 +178,7 @@ $categories = Aura_Inventory_Reports::get_categories();
                     <span class="dashicons dashicons-media-spreadsheet"></span> Excel
                 </button>
                 <button type="button" class="btn btn-glass btn-sm btn-lift js-print-report" data-report="maintenance" style="display:none;">
-                    <span class="dashicons dashicons-printer"></span> Imprimir
+                    <span class="dashicons dashicons-printer"></span> <?php esc_html_e( 'Imprimir', 'aura-suite' ); ?>
                 </button>
             </div>
         </div>
@@ -235,7 +235,7 @@ $categories = Aura_Inventory_Reports::get_categories();
                     <span class="dashicons dashicons-media-spreadsheet"></span> Excel
                 </button>
                 <button type="button" class="btn btn-glass btn-sm btn-lift js-print-report" data-report="efficiency" style="display:none;">
-                    <span class="dashicons dashicons-printer"></span> Imprimir
+                    <span class="dashicons dashicons-printer"></span> <?php esc_html_e( 'Imprimir', 'aura-suite' ); ?>
                 </button>
             </div>
         </div>
@@ -303,7 +303,7 @@ $categories = Aura_Inventory_Reports::get_categories();
 
     <div class="adp-footer">
         <div>
-            Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Diego Giraldo</a></strong> &bull; Versión <?php echo esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0' ); ?> &bull; Aura Business Suite &copy; <?php echo date('Y'); ?>
+            <?php esc_html_e( 'Desarrollado con ❤️ por', 'aura-suite' ); ?> <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Diego Giraldo</a></strong> &bull; <?php esc_html_e( 'Versión', 'aura-suite' ); ?> <?php echo esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '1.0.0' ); ?> &bull; Aura Business Suite &copy; <?php echo date('Y'); ?>
         </div>
     </div>
 
@@ -318,6 +318,81 @@ $categories = Aura_Inventory_Reports::get_categories();
     var nonce  = <?php echo json_encode( $nonce ); ?>;
     var ajaxurl = <?php echo json_encode( admin_url( 'admin-ajax.php' ) ); ?>;
     var cur_symbol = '<?php echo esc_js( function_exists( 'aura_get_currency_symbol' ) ? aura_get_currency_symbol() : get_option( 'aura_currency_symbol', '$' ) ); ?>';
+    var rptI18n = <?php echo wp_json_encode( [
+        'loading'           => __( 'Cargando...', 'aura-suite' ),
+        'generate'          => __( 'Generar', 'aura-suite' ),
+        'generate_report'   => __( 'Generar reporte', 'aura-suite' ),
+        'err_report'        => __( 'Error al generar el reporte.', 'aura-suite' ),
+        'err_network'       => __( 'Error de red.', 'aura-suite' ),
+        'err_export'        => __( 'Error al exportar.', 'aura-suite' ),
+        'err_export_xlsx'   => __( 'Error al exportar Excel.', 'aura-suite' ),
+        'generating'        => __( 'Generando...', 'aura-suite' ),
+        'excel'             => __( 'Excel', 'aura-suite' ),
+        'expand_tip'        => __( 'Desplegar ficha completa del registro', 'aura-suite' ),
+        'ind_replace_tip'   => __( 'Costo acumulado elevado o fin de vida útil: evaluar reemplazo', 'aura-suite' ),
+        'ind_replace'       => __( '🔴 Reemplazo', 'aura-suite' ),
+        'ind_review_tip'    => __( 'Revisar frecuencia e inversión de mantenimiento', 'aura-suite' ),
+        'ind_review'        => __( '⚠️ Revisar', 'aura-suite' ),
+        'ind_ok_tip'        => __( 'Relación costo-beneficio óptima', 'aura-suite' ),
+        'ind_ok'            => __( '✅ Ok', 'aura-suite' ),
+        'cat'               => __( 'Categoría', 'aura-suite' ),
+        'acq'               => __( 'Adquisición', 'aura-suite' ),
+        'tot_maint_short'   => __( 'Total Mant.', 'aura-suite' ),
+        'tot_inv'           => __( 'Total Invertido', 'aura-suite' ),
+        'inv_short'         => __( 'Inv:', 'aura-suite' ),
+        'equip'             => __( 'Equipo', 'aura-suite' ),
+        'acq_cost'          => __( 'Costo Adquisición', 'aura-suite' ),
+        'tot_maint'         => __( 'Total Mantenimiento', 'aura-suite' ),
+        'avg_maint'         => __( 'Prom. / Mant.', 'aura-suite' ),
+        'last_next'         => __( 'Último / Próximo', 'aura-suite' ),
+        'equips'            => __( 'Equipos', 'aura-suite' ),
+        'tot_maints_kpi'    => __( 'Total mantenimientos', 'aura-suite' ),
+        'tot_inv_kpi'       => __( 'Total invertido', 'aura-suite' ),
+        'replace_cand'      => __( 'Candidatos reemplazo', 'aura-suite' ),
+        'preventive'        => __( 'Preventivo', 'aura-suite' ),
+        'corrective'        => __( 'Correctivo', 'aura-suite' ),
+        'oil_change'        => __( 'Aceite', 'aura-suite' ),
+        'cleaning'          => __( 'Limpieza', 'aura-suite' ),
+        'inspection'        => __( 'Inspección', 'aura-suite' ),
+        'major_repair'      => __( 'Rep. Mayor', 'aura-suite' ),
+        'date'              => __( 'Fecha', 'aura-suite' ),
+        'type'              => __( 'Tipo', 'aura-suite' ),
+        'total'             => __( 'Total', 'aura-suite' ),
+        'executor'          => __( 'Ejecutor', 'aura-suite' ),
+        'external'          => __( 'Externo', 'aura-suite' ),
+        'internal'          => __( 'Interno', 'aura-suite' ),
+        'parts_labor'       => __( 'Repuestos / Mano de Obra', 'aura-suite' ),
+        'exec_inv'          => __( 'Ejecutor / Factura', 'aura-suite' ),
+        'desc'              => __( 'Descripción', 'aura-suite' ),
+        'records'           => __( 'Registros', 'aura-suite' ),
+        'total_cost'        => __( 'Costo total', 'aura-suite' ),
+        'preventives'       => __( 'Preventivos', 'aura-suite' ),
+        'correctives'       => __( 'Correctivos', 'aura-suite' ),
+        'overdue_unreg'     => __( 'Vencidos sin registrar', 'aura-suite' ),
+        'goal_lbl'          => __( 'Meta preventivos ≥70%:', 'aura-suite' ),
+        'goal_met'          => __( 'Cumplida', 'aura-suite' ),
+        'goal_not_met'      => __( 'No cumplida', 'aura-suite' ),
+        'goal_target'       => __( 'meta: 70%', 'aura-suite' ),
+        'top5_title'        => __( '🔴 Top 5 equipos con más mantenimientos correctivos', 'aura-suite' ),
+        'qty_short'         => __( 'Cant.', 'aura-suite' ),
+        'cost'              => __( 'Costo', 'aura-suite' ),
+        'overdue_title'     => __( '⏰ Equipos con mantenimiento vencido sin registrar', 'aura-suite' ),
+        'sched_date'        => __( 'Fecha programada', 'aura-suite' ),
+        'sched_date_cap'    => __( 'Fecha Programada', 'aura-suite' ),
+        'age'               => __( 'Antigüedad', 'aura-suite' ),
+        'est_val_short'     => __( 'Valor Est.', 'aura-suite' ),
+        'est_short'         => __( 'Est:', 'aura-suite' ),
+        'acq_age'           => __( 'Adquisición / Antigüedad', 'aura-suite' ),
+        'orig_cost'         => __( 'Costo Original', 'aura-suite' ),
+        'accum_maint'       => __( 'Mantenimiento Acumulado', 'aura-suite' ),
+        'res_val_est'       => __( 'Valor Residual Est.', 'aura-suite' ),
+        'status'            => __( 'Estado', 'aura-suite' ),
+        'eq_analyzed'       => __( 'Equipos analizados', 'aura-suite' ),
+        'replace_cands'     => __( 'Candidatos a reemplazo', 'aura-suite' ),
+        'need_review'       => __( 'Requieren revisión', 'aura-suite' ),
+        'good_cond'         => __( 'En buen estado', 'aura-suite' ),
+    ] ); ?>;
+    function t(k) { return rptI18n[k] || k; }
 
     // ── Pestañas ─────────────────────────────────────────────
     $(document).on('click', '.aura-inv-tab', function () {
@@ -351,7 +426,7 @@ $categories = Aura_Inventory_Reports::get_categories();
     // ── Generar reporte ──────────────────────────────────────
     $(document).on('click', '.js-run-report', function () {
         var report = $(this).data('report');
-        var $btn   = $(this).prop('disabled', true).text('Cargando...');
+        var $btn   = $(this).prop('disabled', true).text(t('loading'));
         hideNotice();
 
         var data = { action: 'aura_inventory_report_' + (report === 'maintenance' ? 'maintenance_log' : report), nonce: nonce, _t: Date.now() };
@@ -371,16 +446,16 @@ $categories = Aura_Inventory_Reports::get_categories();
 
         $.post(ajaxurl, data)
             .done(function (resp) {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-search"></span> Generar' + (report === 'costs' || report === 'lifecycle' ? ' reporte' : ''));
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-search"></span> ' + escHtml((report === 'costs' || report === 'lifecycle') ? t('generate_report') : t('generate')));
                 if (resp.success) {
                     renderReport(report, resp.data);
                 } else {
-                    showNotice('error', (resp.data && resp.data.message) || 'Error al generar el reporte.');
+                    showNotice('error', (resp.data && resp.data.message) || t('err_report'));
                 }
             })
             .fail(function () {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-search"></span> Generar' + (report === 'costs' || report === 'lifecycle' ? ' reporte' : ''));
-                showNotice('error', 'Error de red.');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-search"></span> ' + escHtml((report === 'costs' || report === 'lifecycle') ? t('generate_report') : t('generate')));
+                showNotice('error', t('err_network'));
             });
     });
 
@@ -393,7 +468,7 @@ $categories = Aura_Inventory_Reports::get_categories();
             if (resp.success) {
                 downloadBase64( resp.data.data, resp.data.filename, resp.data.mime );
             } else {
-                showNotice('error', (resp.data && resp.data.message) || 'Error al exportar.');
+                showNotice('error', (resp.data && resp.data.message) || t('err_export'));
             }
         });
     });
@@ -401,21 +476,21 @@ $categories = Aura_Inventory_Reports::get_categories();
     // ── Exportar Excel (XLSX) ────────────────────────────────
     $(document).on('click', '.js-export-xlsx', function () {
         var report = $(this).data('report');
-        var $btn   = $(this).prop('disabled', true).text('Generando...');
+        var $btn   = $(this).prop('disabled', true).text(t('generating'));
         var data   = { action: 'aura_inventory_export_report', nonce: nonce, report: report, format: 'xlsx' };
         $.extend( data, getReportFilters( report ) );
         $.post(ajaxurl, data)
             .done(function (resp) {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-media-spreadsheet"></span> Excel');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-media-spreadsheet"></span> ' + escHtml(t('excel')));
                 if (resp.success) {
                     downloadBase64( resp.data.data, resp.data.filename, resp.data.mime );
                 } else {
-                    showNotice('error', (resp.data && resp.data.message) || 'Error al exportar Excel.');
+                    showNotice('error', (resp.data && resp.data.message) || t('err_export_xlsx'));
                 }
             })
             .fail(function () {
-                $btn.prop('disabled', false).html('<span class="dashicons dashicons-media-spreadsheet"></span> Excel');
-                showNotice('error', 'Error de red.');
+                $btn.prop('disabled', false).html('<span class="dashicons dashicons-media-spreadsheet"></span> ' + escHtml(t('excel')));
+                showNotice('error', t('err_network'));
             });
     });
 
@@ -456,7 +531,7 @@ $categories = Aura_Inventory_Reports::get_categories();
     function fmt(n) { return parseFloat(n || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
     function fmtDate(d) { if (!d) return '—'; var p = d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
     function toggleBtn(cid) {
-        return '<button type="button" class="aura-inv-row-toggle aura-inv-report-row-toggle" data-target="' + escHtml(cid) + '" aria-expanded="false" data-tooltip="Desplegar ficha completa del registro"><span class="dashicons dashicons-plus-alt2"></span></button>';
+        return '<button type="button" class="aura-inv-row-toggle aura-inv-report-row-toggle" data-target="' + escHtml(cid) + '" aria-expanded="false" data-tooltip="' + escHtml(t('expand_tip')) + '"><span class="dashicons dashicons-plus-alt2"></span></button>';
     }
     function tipCard(title, pairs) {
         var rowsHtml = '';
@@ -468,9 +543,9 @@ $categories = Aura_Inventory_Reports::get_categories();
             '<div class="aura-tip-card-body">' + rowsHtml + '</div></div>';
     }
     function indicator(ind) {
-        if (ind === 'replace') return '<span class="badge badge-red" data-tooltip="Costo acumulado elevado o fin de vida útil: evaluar reemplazo">🔴 Reemplazo</span>';
-        if (ind === 'review')  return '<span class="badge badge-amber" data-tooltip="Revisar frecuencia e inversión de mantenimiento">⚠️ Revisar</span>';
-        return '<span class="badge badge-emerald" data-tooltip="Relación costo-beneficio óptima">✅ Ok</span>';
+        if (ind === 'replace') return '<span class="badge badge-red" data-tooltip="' + escHtml(t('ind_replace_tip')) + '">' + escHtml(t('ind_replace')) + '</span>';
+        if (ind === 'review')  return '<span class="badge badge-amber" data-tooltip="' + escHtml(t('ind_review_tip')) + '">' + escHtml(t('ind_review')) + '</span>';
+        return '<span class="badge badge-emerald" data-tooltip="' + escHtml(t('ind_ok_tip')) + '">' + escHtml(t('ind_ok')) + '</span>';
     }
 
     function renderReport(report, data) {
@@ -494,13 +569,13 @@ $categories = Aura_Inventory_Reports::get_categories();
             totalMaint += r.total_maintenance;
             var cid = 'rpt-cost-ch-' + i;
             var tip = tipCard(r.name, [
-                ['Categoría', r.category || '—'],
-                ['Adquisición', cur_symbol + ' ' + fmt(r.acquisition_cost)],
-                ['Total Mant.', cur_symbol + ' ' + fmt(r.total_maintenance)],
-                ['Total Invertido', cur_symbol + ' ' + fmt(r.total_invested)]
+                [t('cat'), r.category || '—'],
+                [t('acq'), cur_symbol + ' ' + fmt(r.acquisition_cost)],
+                [t('tot_maint_short'), cur_symbol + ' ' + fmt(r.total_maintenance)],
+                [t('tot_inv'), cur_symbol + ' ' + fmt(r.total_invested)]
             ]);
             tbody.append('<tr class="aura-parent-row">' +
-                '<td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<div data-aura-tooltip="' + escHtml(tip) + '"><strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? '<br><code>' + escHtml(r.internal_code) + '</code>' : '') + '</div></div><div class="aura-inv-mobile-sub">' + escHtml(r.category || '—') + ' · Inv: ' + cur_symbol + ' ' + fmt(r.total_invested) + '</div></td>' +
+                '<td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<div data-aura-tooltip="' + escHtml(tip) + '"><strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? '<br><code>' + escHtml(r.internal_code) + '</code>' : '') + '</div></div><div class="aura-inv-mobile-sub">' + escHtml(r.category || '—') + ' · ' + escHtml(t('inv_short')) + ' ' + cur_symbol + ' ' + fmt(r.total_invested) + '</div></td>' +
                 '<td class="aura-inv-col-secondary">' + escHtml(r.category || '—') + '</td>' +
                 '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.acquisition_cost) + '</td>' +
                 '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.total_maintenance) + '</td>' +
@@ -511,20 +586,20 @@ $categories = Aura_Inventory_Reports::get_categories();
                 '<td class="aura-inv-col-secondary">' + fmtDate(r.next_maintenance) + '</td>' +
                 '<td class="aura-inv-col-stat">' + indicator(r.indicator) + '</td></tr>' +
                 '<tr class="aura-child-row" id="' + cid + '"><td colspan="10"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
-                '<div class="aura-child-meta-item"><span>Equipo</span><strong>' + escHtml(r.name) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Categoría</span><strong>' + escHtml(r.category || '—') + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Costo Adquisición</span><strong>' + cur_symbol + ' ' + fmt(r.acquisition_cost) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Total Mantenimiento</span><strong>' + cur_symbol + ' ' + fmt(r.total_maintenance) + ' (' + r.maintenance_pct + '%)</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Total Invertido</span><strong>' + cur_symbol + ' ' + fmt(r.total_invested) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Prom. / Mant.</span><strong>' + cur_symbol + ' ' + fmt(r.average_maintenance) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Último / Próximo</span><strong>' + fmtDate(r.last_maintenance) + ' / ' + fmtDate(r.next_maintenance) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('equip')) + '</span><strong>' + escHtml(r.name) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('cat')) + '</span><strong>' + escHtml(r.category || '—') + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('acq_cost')) + '</span><strong>' + cur_symbol + ' ' + fmt(r.acquisition_cost) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('tot_maint')) + '</span><strong>' + cur_symbol + ' ' + fmt(r.total_maintenance) + ' (' + r.maintenance_pct + '%)</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('tot_inv')) + '</span><strong>' + cur_symbol + ' ' + fmt(r.total_invested) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('avg_maint')) + '</span><strong>' + cur_symbol + ' ' + fmt(r.average_maintenance) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('last_next')) + '</span><strong>' + fmtDate(r.last_maintenance) + ' / ' + fmtDate(r.next_maintenance) + '</strong></div>' +
                 '</div></div></td></tr>');
         });
         $('#rpt-costs-summary').html(
-            kpi(rows.length, 'Equipos', 'kpi-indigo') +
-            kpi(cur_symbol + ' ' + fmt(totalMaint), 'Total mantenimientos', 'kpi-amber') +
-            kpi(cur_symbol + ' ' + fmt(totalInv), 'Total invertido', 'kpi-emerald') +
-            kpi(rows.filter(function(r){return r.indicator==='replace';}).length, 'Candidatos reemplazo', 'kpi-red')
+            kpi(rows.length, escHtml(t('equips')), 'kpi-indigo') +
+            kpi(cur_symbol + ' ' + fmt(totalMaint), escHtml(t('tot_maints_kpi')), 'kpi-amber') +
+            kpi(cur_symbol + ' ' + fmt(totalInv), escHtml(t('tot_inv_kpi')), 'kpi-emerald') +
+            kpi(rows.filter(function(r){return r.indicator==='replace';}).length, escHtml(t('replace_cand')), 'kpi-red')
         ).show();
         $('#rpt-costs-table').show(); $('#rpt-costs-empty').hide();
         $('.js-export-report[data-report="costs"], .js-export-xlsx[data-report="costs"], .js-print-report[data-report="costs"]').show();
@@ -538,16 +613,16 @@ $categories = Aura_Inventory_Reports::get_categories();
             $('.js-export-report[data-report="maintenance"], .js-export-xlsx[data-report="maintenance"], .js-print-report[data-report="maintenance"]').hide();
             return;
         }
-        var typeLabels = { preventive:'Preventivo', corrective:'Correctivo', oil_change:'Aceite', cleaning:'Limpieza', inspection:'Inspección', major_repair:'Rep. Mayor' };
+        var typeLabels = { preventive: t('preventive'), corrective: t('corrective'), oil_change: t('oil_change'), cleaning: t('cleaning'), inspection: t('inspection'), major_repair: t('major_repair') };
         var totalCost = 0;
         $.each(rows, function (i, r) {
             totalCost += parseFloat(r.total_cost || 0);
             var cid = 'rpt-m-ch-' + i;
             var tip = tipCard(r.equipment_name, [
-                ['Fecha', fmtDate(r.maintenance_date)],
-                ['Tipo', typeLabels[r.type] || r.type],
-                ['Total', cur_symbol + ' ' + fmt(r.total_cost)],
-                ['Ejecutor', r.performed_by === 'external' ? (r.workshop_name || 'Externo') : 'Interno']
+                [t('date'), fmtDate(r.maintenance_date)],
+                [t('type'), typeLabels[r.type] || r.type],
+                [t('total'), cur_symbol + ' ' + fmt(r.total_cost)],
+                [t('executor'), r.performed_by === 'external' ? (r.workshop_name || t('external')) : t('internal')]
             ]);
             tbody.append('<tr class="aura-parent-row">' +
                 '<td class="aura-inv-col-secondary">' + fmtDate(r.maintenance_date) + '</td>' +
@@ -557,21 +632,21 @@ $categories = Aura_Inventory_Reports::get_categories();
                 '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.parts_cost) + '</td>' +
                 '<td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.labor_cost) + '</td>' +
                 '<td class="num aura-inv-col-stat"><strong>' + cur_symbol + ' ' + fmt(r.total_cost) + '</strong></td>' +
-                '<td class="aura-inv-col-secondary">' + (r.performed_by === 'external' ? ('🔧 ' + escHtml(r.workshop_name || 'Externo')) : '👷 Interno') + '</td>' +
+                '<td class="aura-inv-col-secondary">' + (r.performed_by === 'external' ? ('🔧 ' + escHtml(r.workshop_name || t('external'))) : ('👷 ' + escHtml(t('internal')))) + '</td>' +
                 '<td class="aura-inv-col-secondary">' + escHtml(r.invoice_number || '—') + '</td>' +
                 '<td class="aura-inv-col-secondary">' + escHtml(r.post_status || '—') + '</td></tr>' +
                 '<tr class="aura-child-row" id="' + cid + '"><td colspan="10"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
-                '<div class="aura-child-meta-item"><span>Fecha</span><strong>' + fmtDate(r.maintenance_date) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Tipo</span><strong>' + escHtml(typeLabels[r.type] || r.type) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Repuestos / Mano de Obra</span><strong>' + cur_symbol + ' ' + fmt(r.parts_cost) + ' + ' + cur_symbol + ' ' + fmt(r.labor_cost) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Total</span><strong>' + cur_symbol + ' ' + fmt(r.total_cost) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Ejecutor / Factura</span><strong>' + (r.performed_by === 'external' ? escHtml(r.workshop_name || 'Externo') : 'Interno') + (r.invoice_number ? ' · ' + escHtml(r.invoice_number) : '') + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Descripción</span><strong>' + escHtml(r.description || '—') + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('date')) + '</span><strong>' + fmtDate(r.maintenance_date) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('type')) + '</span><strong>' + escHtml(typeLabels[r.type] || r.type) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('parts_labor')) + '</span><strong>' + cur_symbol + ' ' + fmt(r.parts_cost) + ' + ' + cur_symbol + ' ' + fmt(r.labor_cost) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('total')) + '</span><strong>' + cur_symbol + ' ' + fmt(r.total_cost) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('exec_inv')) + '</span><strong>' + (r.performed_by === 'external' ? escHtml(r.workshop_name || t('external')) : escHtml(t('internal'))) + (r.invoice_number ? ' · ' + escHtml(r.invoice_number) : '') + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('desc')) + '</span><strong>' + escHtml(r.description || '—') + '</strong></div>' +
                 '</div></div></td></tr>');
         });
         $('#rpt-maint-summary').html(
-            kpi(rows.length, 'Registros', 'kpi-indigo') +
-            kpi(cur_symbol + ' ' + fmt(totalCost), 'Costo total', 'kpi-emerald')
+            kpi(rows.length, escHtml(t('records')), 'kpi-indigo') +
+            kpi(cur_symbol + ' ' + fmt(totalCost), escHtml(t('total_cost')), 'kpi-emerald')
         ).show();
         $('#rpt-maint-table').show(); $('#rpt-maint-empty').hide();
         $('.js-export-report[data-report="maintenance"], .js-export-xlsx[data-report="maintenance"], .js-print-report[data-report="maintenance"]').show();
@@ -581,42 +656,42 @@ $categories = Aura_Inventory_Reports::get_categories();
         var t    = data.totals;
         var goal = data.goal_met;
         var html = '<div class="aura-inv-report-kpis">' +
-            kpi(t.count, 'Total mantenimientos', 'kpi-indigo') +
-            kpi(t.prev_pct + '%', 'Preventivos', goal ? 'kpi-emerald' : 'kpi-red') +
-            kpi(t.corr_pct + '%', 'Correctivos', 'kpi-amber') +
-            kpi(cur_symbol + ' ' + fmt(t.total_cost), 'Costo total', 'kpi-blue') +
-            kpi(data.overdue_count, 'Vencidos sin registrar', data.overdue_count > 0 ? 'kpi-red' : 'kpi-emerald') +
+            kpi(t.count, escHtml(rptI18n.tot_maints_kpi), 'kpi-indigo') +
+            kpi(t.prev_pct + '%', escHtml(rptI18n.preventives), goal ? 'kpi-emerald' : 'kpi-red') +
+            kpi(t.corr_pct + '%', escHtml(rptI18n.correctives), 'kpi-amber') +
+            kpi(cur_symbol + ' ' + fmt(t.total_cost), escHtml(rptI18n.total_cost), 'kpi-blue') +
+            kpi(data.overdue_count, escHtml(rptI18n.overdue_unreg), data.overdue_count > 0 ? 'kpi-red' : 'kpi-emerald') +
         '</div>';
 
         html += '<div class="alert-card ' + (goal ? 'alert-success' : 'alert-warning') + ' aura-inv-goal-banner">' +
-            '<strong>' + (goal ? '✅' : '❌') + ' Meta preventivos ≥70%:</strong> ' +
-            (goal ? 'Cumplida (' + t.prev_pct + '%)' : 'No cumplida (' + t.prev_pct + '% — meta: 70%)') + '</div>';
+            '<strong>' + (goal ? '✅' : '❌') + ' ' + escHtml(rptI18n.goal_lbl) + '</strong> ' +
+            (goal ? escHtml(rptI18n.goal_met) + ' (' + t.prev_pct + '%)' : escHtml(rptI18n.goal_not_met) + ' (' + t.prev_pct + '% — ' + escHtml(rptI18n.goal_target) + ')') + '</div>';
 
         if (data.top_corrective && data.top_corrective.length) {
-            html += '<div class="aura-rpt-eff-section"><h3>🔴 Top 5 equipos con más mantenimientos correctivos</h3>';
-            html += '<div class="aura-dt-wrapper aura-table-responsive-wrap"><table class="aura-table display aura-inv-responsive-table" style="width:100%;"><thead><tr><th>Equipo</th><th class="num">Cant.</th><th class="num">Costo</th></tr></thead><tbody>';
+            html += '<div class="aura-rpt-eff-section"><h3>' + escHtml(rptI18n.top5_title) + '</h3>';
+            html += '<div class="aura-dt-wrapper aura-table-responsive-wrap"><table class="aura-table display aura-inv-responsive-table" style="width:100%;"><thead><tr><th>' + escHtml(rptI18n.equip) + '</th><th class="num">' + escHtml(rptI18n.qty_short) + '</th><th class="num">' + escHtml(rptI18n.cost) + '</th></tr></thead><tbody>';
             $.each(data.top_corrective, function (i, r) {
                 var cid = 'rpt-eff-top-' + i;
                 html += '<tr class="aura-parent-row"><td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? ' <code>'+escHtml(r.internal_code)+'</code>' : '') + '</div></td><td class="num aura-inv-col-stat">' + r.qty + '</td><td class="num aura-inv-col-secondary">' + cur_symbol + ' ' + fmt(r.cost) + '</td></tr>' +
                     '<tr class="aura-child-row" id="' + cid + '"><td colspan="3"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
-                    '<div class="aura-child-meta-item"><span>Equipo</span><strong>' + escHtml(r.name) + '</strong></div>' +
-                    '<div class="aura-child-meta-item"><span>Correctivos</span><strong>' + r.qty + '</strong></div>' +
-                    '<div class="aura-child-meta-item"><span>Costo</span><strong>' + cur_symbol + ' ' + fmt(r.cost) + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>' + escHtml(rptI18n.equip) + '</span><strong>' + escHtml(r.name) + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>' + escHtml(rptI18n.correctives) + '</span><strong>' + r.qty + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>' + escHtml(rptI18n.cost) + '</span><strong>' + cur_symbol + ' ' + fmt(r.cost) + '</strong></div>' +
                     '</div></div></td></tr>';
             });
             html += '</tbody></table></div></div>';
         }
 
         if (data.pending_list && data.pending_list.length) {
-            html += '<div class="aura-rpt-eff-section"><h3>⏰ Equipos con mantenimiento vencido sin registrar</h3>';
-            html += '<div class="aura-dt-wrapper aura-table-responsive-wrap"><table class="aura-table display aura-inv-responsive-table" style="width:100%;"><thead><tr><th>Equipo</th><th>Categoría</th><th>Fecha programada</th></tr></thead><tbody>';
+            html += '<div class="aura-rpt-eff-section"><h3>' + escHtml(rptI18n.overdue_title) + '</h3>';
+            html += '<div class="aura-dt-wrapper aura-table-responsive-wrap"><table class="aura-table display aura-inv-responsive-table" style="width:100%;"><thead><tr><th>' + escHtml(rptI18n.equip) + '</th><th>' + escHtml(rptI18n.cat) + '</th><th>' + escHtml(rptI18n.sched_date) + '</th></tr></thead><tbody>';
             $.each(data.pending_list, function (i, r) {
                 var cid = 'rpt-eff-pen-' + i;
                 html += '<tr class="aura-parent-row"><td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<strong>' + escHtml(r.name) + '</strong></div></td><td class="aura-inv-col-secondary">' + escHtml(r.category || '—') + '</td><td class="aura-inv-col-stat"><span class="badge badge-red">' + fmtDate(r.next_maintenance_date) + '</span></td></tr>' +
                     '<tr class="aura-child-row" id="' + cid + '"><td colspan="3"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
-                    '<div class="aura-child-meta-item"><span>Equipo</span><strong>' + escHtml(r.name) + '</strong></div>' +
-                    '<div class="aura-child-meta-item"><span>Categoría</span><strong>' + escHtml(r.category || '—') + '</strong></div>' +
-                    '<div class="aura-child-meta-item"><span>Fecha Programada</span><strong>' + fmtDate(r.next_maintenance_date) + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>' + escHtml(rptI18n.equip) + '</span><strong>' + escHtml(r.name) + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>' + escHtml(rptI18n.cat) + '</span><strong>' + escHtml(r.category || '—') + '</strong></div>' +
+                    '<div class="aura-child-meta-item"><span>' + escHtml(rptI18n.sched_date_cap) + '</span><strong>' + fmtDate(r.next_maintenance_date) + '</strong></div>' +
                     '</div></div></td></tr>';
             });
             html += '</tbody></table></div></div>';
@@ -640,13 +715,13 @@ $categories = Aura_Inventory_Reports::get_categories();
             if (r.indicator === 'review')  reviews++;
             var cid = 'rpt-lc-ch-' + i;
             var tip = tipCard(r.name, [
-                ['Categoría', r.category || '—'],
-                ['Adquisición', fmtDate(r.acquisition_date)],
-                ['Antigüedad', r.age || '—'],
-                ['Valor Est.', cur_symbol + ' ' + fmt(r.estimated_value)]
+                [t('cat'), r.category || '—'],
+                [t('acq'), fmtDate(r.acquisition_date)],
+                [t('age'), r.age || '—'],
+                [t('est_val_short'), cur_symbol + ' ' + fmt(r.estimated_value)]
             ]);
             tbody.append('<tr class="aura-parent-row">' +
-                '<td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<div data-aura-tooltip="' + escHtml(tip) + '"><strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? '<br><code>'+escHtml(r.internal_code)+'</code>' : '') + '</div></div><div class="aura-inv-mobile-sub">' + escHtml(r.age || '') + ' · Est: ' + cur_symbol + ' ' + fmt(r.estimated_value) + '</div></td>' +
+                '<td class="aura-inv-col-main"><div class="aura-id-toggle-wrap">' + toggleBtn(cid) + '<div data-aura-tooltip="' + escHtml(tip) + '"><strong>' + escHtml(r.name) + '</strong>' + (r.internal_code ? '<br><code>'+escHtml(r.internal_code)+'</code>' : '') + '</div></div><div class="aura-inv-mobile-sub">' + escHtml(r.age || '') + ' · ' + escHtml(t('est_short')) + ' ' + cur_symbol + ' ' + fmt(r.estimated_value) + '</div></td>' +
                 '<td class="aura-inv-col-secondary">' + escHtml(r.category || '—') + '</td>' +
                 '<td class="aura-inv-col-secondary">' + fmtDate(r.acquisition_date) + '</td>' +
                 '<td class="aura-inv-col-secondary">' + escHtml(r.age) + '</td>' +
@@ -657,19 +732,19 @@ $categories = Aura_Inventory_Reports::get_categories();
                 '<td class="aura-inv-col-secondary">' + escHtml(r.status) + '</td>' +
                 '<td class="aura-inv-col-stat">' + indicator(r.indicator) + '</td></tr>' +
                 '<tr class="aura-child-row" id="' + cid + '"><td colspan="10"><div class="aura-inv-child-card"><div class="aura-child-meta-grid">' +
-                '<div class="aura-child-meta-item"><span>Categoría</span><strong>' + escHtml(r.category || '—') + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Adquisición / Antigüedad</span><strong>' + fmtDate(r.acquisition_date) + ' (' + escHtml(r.age) + ')</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Costo Original</span><strong>' + cur_symbol + ' ' + fmt(r.original_cost) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Mantenimiento Acumulado</span><strong>' + cur_symbol + ' ' + fmt(r.total_maintenance) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Valor Residual Est.</span><strong>' + cur_symbol + ' ' + fmt(r.estimated_value) + '</strong></div>' +
-                '<div class="aura-child-meta-item"><span>Estado</span><strong>' + escHtml(r.status) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('cat')) + '</span><strong>' + escHtml(r.category || '—') + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('acq_age')) + '</span><strong>' + fmtDate(r.acquisition_date) + ' (' + escHtml(r.age) + ')</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('orig_cost')) + '</span><strong>' + cur_symbol + ' ' + fmt(r.original_cost) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('accum_maint')) + '</span><strong>' + cur_symbol + ' ' + fmt(r.total_maintenance) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('res_val_est')) + '</span><strong>' + cur_symbol + ' ' + fmt(r.estimated_value) + '</strong></div>' +
+                '<div class="aura-child-meta-item"><span>' + escHtml(t('status')) + '</span><strong>' + escHtml(r.status) + '</strong></div>' +
                 '</div></div></td></tr>');
         });
         $('#rpt-lc-summary').html(
-            kpi(rows.length, 'Equipos analizados', 'kpi-indigo') +
-            kpi(replacements, 'Candidatos a reemplazo', 'kpi-red') +
-            kpi(reviews, 'Requieren revisión', 'kpi-amber') +
-            kpi(rows.length - replacements - reviews, 'En buen estado', 'kpi-emerald')
+            kpi(rows.length, escHtml(t('eq_analyzed')), 'kpi-indigo') +
+            kpi(replacements, escHtml(t('replace_cands')), 'kpi-red') +
+            kpi(reviews, escHtml(t('need_review')), 'kpi-amber') +
+            kpi(rows.length - replacements - reviews, escHtml(t('good_cond')), 'kpi-emerald')
         ).show();
         $('#rpt-lc-table').show(); $('#rpt-lc-empty').hide();
         $('.js-export-report[data-report="lifecycle"], .js-export-xlsx[data-report="lifecycle"], .js-print-report[data-report="lifecycle"]').show();

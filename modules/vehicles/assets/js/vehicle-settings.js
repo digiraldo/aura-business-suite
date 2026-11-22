@@ -17,6 +17,18 @@
 ( function ( $ ) {
     'use strict';
 
+    var __ = ( window.wp && window.wp.i18n && window.wp.i18n.__ ) ? window.wp.i18n.__ : function ( s ) { return s; };
+    var sprintf = ( window.wp && window.wp.i18n && window.wp.i18n.sprintf ) ? window.wp.i18n.sprintf : function () {
+        var args = Array.prototype.slice.call( arguments );
+        var fmt = args.shift() || '';
+        var i = 0;
+        return String( fmt ).replace( /%(?:(\d+)\$)?([sd%])/g, function ( m, pos, type ) {
+            if ( type === '%' ) return '%';
+            var idx = pos ? ( parseInt( pos, 10 ) - 1 ) : i++;
+            return args[ idx ] !== undefined ? args[ idx ] : '';
+        } );
+    };
+
     // ── Config ─────────────────────────────────────────────────────
     var nonce    = $( '#aura-veh-cfg-nonce' ).val();
     var restBase = $( '#aura-veh-cfg-rest-base' ).val();
@@ -94,7 +106,7 @@
                 populateForm( data );
             },
             error: function () {
-                showNotice( 'error', 'No se pudo cargar la configuración actual.' );
+                showNotice( 'error', __( 'No se pudo cargar la configuración actual.', 'aura-suite' ) );
             },
         } );
     }
@@ -135,11 +147,11 @@
             data   : JSON.stringify( payload ),
             success: function ( response ) {
                 $spinner.css( 'visibility', 'hidden' );
-                showNotice( 'success', response.message || 'Configuración guardada.' );
+                showNotice( 'success', response.message || __( 'Configuración guardada.', 'aura-suite' ) );
             },
             error: function ( xhr ) {
                 $spinner.css( 'visibility', 'hidden' );
-                var errMsg = 'Error al guardar la configuración.';
+                var errMsg = __( 'Error al guardar la configuración.', 'aura-suite' );
                 if ( xhr.responseJSON && xhr.responseJSON.message ) {
                     errMsg = xhr.responseJSON.message;
                 }
@@ -176,7 +188,7 @@
         var $result = $( '#aura-veh-alerts-result' );
 
         $btn.prop( 'disabled', true );
-        $result.text( 'Ejecutando…' );
+        $result.text( __( 'Ejecutando…', 'aura-suite' ) );
 
         $.ajax( {
             url    : restBase + 'vehicles/settings/run-alerts',
@@ -185,10 +197,10 @@
                 xhr.setRequestHeader( 'X-WP-Nonce', nonce );
             },
             success: function ( data ) {
-                $result.text( data.message || 'Revisión completada.' );
+                $result.text( data.message || __( 'Revisión completada.', 'aura-suite' ) );
             },
             error: function () {
-                $result.text( 'Error al ejecutar la revisión.' );
+                $result.text( __( 'Error al ejecutar la revisión.', 'aura-suite' ) );
             },
             complete: function () {
                 $btn.prop( 'disabled', false );
@@ -241,7 +253,7 @@
 
         function buildOptions( $select, items, selectedId ) {
             $select.empty();
-            $select.append( $( '<option>', { value: 0, text: '— Selecciona una categoría —' } ) );
+            $select.append( $( '<option>', { value: 0, text: __( '— Selecciona una categoría —', 'aura-suite' ) } ) );
             $.each( items, function ( i, cat ) {
                 var $opt = $( '<option>', { value: cat.id, text: cat.name } );
                 if ( cat.id === selectedId ) {
@@ -261,11 +273,11 @@
                 if ( items && items.length ) {
                     buildOptions( $incomeSelect, items, savedIncomeCat );
                 } else {
-                    $incomeSelect.html( '<option value="0">— Módulo Financial no disponible —</option>' );
+                    $incomeSelect.html( '<option value="0">' + escHtml( __( '— Módulo Financial no disponible —', 'aura-suite' ) ) + '</option>' );
                 }
             },
             error: function () {
-                $incomeSelect.html( '<option value="0">— Error al cargar —</option>' );
+                $incomeSelect.html( '<option value="0">' + escHtml( __( '— Error al cargar —', 'aura-suite' ) ) + '</option>' );
             },
         } );
 
@@ -279,11 +291,11 @@
                 if ( items && items.length ) {
                     buildOptions( $expenseSelect, items, savedExpenseCat );
                 } else {
-                    $expenseSelect.html( '<option value="0">— Módulo Financial no disponible —</option>' );
+                    $expenseSelect.html( '<option value="0">' + escHtml( __( '— Módulo Financial no disponible —', 'aura-suite' ) ) + '</option>' );
                 }
             },
             error: function () {
-                $expenseSelect.html( '<option value="0">— Error al cargar —</option>' );
+                $expenseSelect.html( '<option value="0">' + escHtml( __( '— Error al cargar —', 'aura-suite' ) ) + '</option>' );
             },
         } );
     }
@@ -295,9 +307,9 @@
     var catalogEndpoint = restBase + 'vehicles/catalogs';
 
     var catalogLabels = {
-        destination : { singular: 'Destino',   plural: 'Destinos'   },
-        purpose     : { singular: 'Propósito',  plural: 'Propósitos' },
-        expense     : { singular: 'Gasto',      plural: 'Gastos'     },
+        destination : { singular: __( 'Destino', 'aura-suite' ),   plural: __( 'Destinos', 'aura-suite' )   },
+        purpose     : { singular: __( 'Propósito', 'aura-suite' ),  plural: __( 'Propósitos', 'aura-suite' ) },
+        expense     : { singular: __( 'Gasto', 'aura-suite' ),      plural: __( 'Gastos', 'aura-suite' )     },
     };
 
     // ── Cargar lista ──────────────────────────────────────────────
@@ -306,7 +318,7 @@
         $container.html(
             '<div class="aura-veh-cat-loading">' +
             '<span class="spinner is-active" style="float:none;vertical-align:middle;"></span> ' +
-            'Cargando…</div>'
+            escHtml( __( 'Cargando…', 'aura-suite' ) ) + '</div>'
         );
 
         $.ajax( {
@@ -322,7 +334,7 @@
                 renderCatalogTable( type, items );
             },
             error: function () {
-                $container.html( '<p class="aura-veh-cat-empty">Error al cargar los ítems.</p>' );
+                $container.html( '<p class="aura-veh-cat-empty">' + escHtml( __( 'Error al cargar los ítems.', 'aura-suite' ) ) + '</p>' );
             },
         } );
     }
@@ -330,13 +342,13 @@
     // ── Renderizar tabla ─────────────────────────────────────────
     function renderCatalogTable( type, items ) {
         var $container = $( '#aura-veh-cat-list-' + type );
-        var label = catalogLabels[ type ] || { singular: 'Ítem', plural: 'Ítems' };
+        var label = catalogLabels[ type ] || { singular: __( 'Ítem', 'aura-suite' ), plural: __( 'Ítems', 'aura-suite' ) };
 
         if ( ! items || ! items.length ) {
             $container.html(
                 '<p class="aura-veh-cat-empty">' +
                 '<span class="dashicons dashicons-info-outline"></span> ' +
-                'No hay ' + label.plural.toLowerCase() + ' registrados todavía.' +
+                escHtml( sprintf( __( 'No hay %s registrados todavía.', 'aura-suite' ), label.plural.toLowerCase() ) ) +
                 '</p>'
             );
             return;
@@ -344,16 +356,16 @@
 
         var html = '<table class="aura-veh-cat-table wp-list-table widefat fixed striped">' +
             '<thead><tr>' +
-            '<th style="width:44%">Nombre</th>' +
-            '<th>Descripción</th>' +
-            '<th style="width:90px;text-align:center;">Estado</th>' +
-            '<th style="width:110px;text-align:right;">Acciones</th>' +
+            '<th style="width:44%">' + escHtml( __( 'Nombre', 'aura-suite' ) ) + '</th>' +
+            '<th>' + escHtml( __( 'Descripción', 'aura-suite' ) ) + '</th>' +
+            '<th style="width:90px;text-align:center;">' + escHtml( __( 'Estado', 'aura-suite' ) ) + '</th>' +
+            '<th style="width:110px;text-align:right;">' + escHtml( __( 'Acciones', 'aura-suite' ) ) + '</th>' +
             '</tr></thead><tbody>';
 
         $.each( items, function ( i, item ) {
             var activeHtml = item.active
-                ? '<span class="aura-veh-cat-badge aura-veh-cat-badge--active">Activo</span>'
-                : '<span class="aura-veh-cat-badge aura-veh-cat-badge--inactive">Inactivo</span>';
+                ? '<span class="aura-veh-cat-badge aura-veh-cat-badge--active">' + escHtml( __( 'Activo', 'aura-suite' ) ) + '</span>'
+                : '<span class="aura-veh-cat-badge aura-veh-cat-badge--inactive">' + escHtml( __( 'Inactivo', 'aura-suite' ) ) + '</span>';
 
             html += '<tr data-id="' + item.id + '" data-active="' + ( item.active ? '1' : '0' ) + '">' +
                 '<td><strong>' + escHtml( item.name ) + '</strong></td>' +
@@ -366,21 +378,21 @@
                     'data-description="' + escAttr( item.description || '' ) + '" ' +
                     'data-active="' + ( item.active ? '1' : '0' ) + '" ' +
                     'data-type="' + escAttr( type ) + '" ' +
-                    'title="Editar">' +
+                    'title="' + escAttr( __( 'Editar', 'aura-suite' ) ) + '">' +
                     '<span class="dashicons dashicons-edit"></span>' +
                 '</button> ' +
                 '<button type="button" class="button button-small aura-veh-cat-toggle-btn" ' +
                     'data-id="' + item.id + '" ' +
                     'data-active="' + ( item.active ? '1' : '0' ) + '" ' +
                     'data-type="' + escAttr( type ) + '" ' +
-                    'title="' + ( item.active ? 'Desactivar' : 'Activar' ) + '">' +
+                    'title="' + escAttr( item.active ? __( 'Desactivar', 'aura-suite' ) : __( 'Activar', 'aura-suite' ) ) + '">' +
                     '<span class="dashicons ' + ( item.active ? 'dashicons-hidden' : 'dashicons-visibility' ) + '"></span>' +
                 '</button> ' +
                 '<button type="button" class="button button-small aura-veh-cat-delete-btn" ' +
                     'data-id="' + item.id + '" ' +
                     'data-name="' + escAttr( item.name ) + '" ' +
                     'data-type="' + escAttr( type ) + '" ' +
-                    'title="Eliminar">' +
+                    'title="' + escAttr( __( 'Eliminar', 'aura-suite' ) ) + '">' +
                     '<span class="dashicons dashicons-trash"></span>' +
                 '</button>' +
                 '</td></tr>';
@@ -392,10 +404,10 @@
 
     // ── Abrir modal ───────────────────────────────────────────────
     function openCatalogModal( type, item ) {
-        var label = catalogLabels[ type ] || { singular: 'Ítem' };
+        var label = catalogLabels[ type ] || { singular: __( 'Ítem', 'aura-suite' ) };
         var isEdit = item && item.id;
 
-        $( '#aura-veh-settings-cat-modal-title' ).text( ( isEdit ? 'Editar ' : 'Nuevo ' ) + label.singular );
+        $( '#aura-veh-settings-cat-modal-title' ).text( isEdit ? sprintf( __( 'Editar %s', 'aura-suite' ), label.singular ) : sprintf( __( 'Nuevo %s', 'aura-suite' ), label.singular ) );
         $( '#aura-veh-scat-type' ).val( type );
         $( '#aura-veh-scat-id' ).val( isEdit ? item.id : '' );
         $( '#aura-veh-scat-name' ).val( isEdit ? item.name : '' );
@@ -456,7 +468,7 @@
                 }
             },
             error: function ( xhr ) {
-                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error al cambiar estado.';
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : __( 'Error al cambiar estado.', 'aura-suite' );
                 showNotice( 'error', msg );
                 $btn.prop( 'disabled', false );
             },
@@ -470,7 +482,7 @@
         var name = $btn.data( 'name' );
         var type = $btn.data( 'type' );
 
-        if ( ! window.confirm( '¿Eliminar "' + name + '"? Esta acción no se puede deshacer.' ) ) {
+        if ( ! window.confirm( sprintf( __( '¿Eliminar "%s"? Esta acción no se puede deshacer.', 'aura-suite' ), name ) ) ) {
             return;
         }
 
@@ -483,10 +495,10 @@
             success: function ( response ) {
                 var showInactive = $( '#aura-veh-cat-show-inactive-' + type ).is( ':checked' );
                 loadCatalogItems( type, showInactive );
-                showNotice( 'success', response && response.message ? response.message : '"' + name + '" eliminado correctamente.' );
+                showNotice( 'success', response && response.message ? response.message : sprintf( __( '"%s" eliminado correctamente.', 'aura-suite' ), name ) );
             },
             error: function ( xhr ) {
-                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error al eliminar.';
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : __( 'Error al eliminar.', 'aura-suite' );
                 showNotice( 'error', msg );
                 $btn.prop( 'disabled', false );
             },
@@ -504,7 +516,7 @@
         var active = $( '#aura-veh-scat-active' ).is( ':checked' ) ? 1 : 0;
 
         if ( ! name ) {
-            $( '#aura-veh-scat-error' ).text( 'El nombre es obligatorio.' ).show();
+            $( '#aura-veh-scat-error' ).text( __( 'El nombre es obligatorio.', 'aura-suite' ) ).show();
             $( '#aura-veh-scat-name' ).trigger( 'focus' );
             return;
         }
@@ -530,11 +542,11 @@
                 closeCatalogModal();
                 var showInactive = $( '#aura-veh-cat-show-inactive-' + type ).is( ':checked' );
                 loadCatalogItems( type, showInactive );
-                var label = catalogLabels[ type ] || { singular: 'Ítem' };
-                showNotice( 'success', response && response.message ? response.message : label.singular + ( isEdit ? ' actualizado.' : ' creado correctamente.' ) );
+                var label = catalogLabels[ type ] || { singular: __( 'Ítem', 'aura-suite' ) };
+                showNotice( 'success', response && response.message ? response.message : ( isEdit ? sprintf( __( '%s actualizado.', 'aura-suite' ), label.singular ) : sprintf( __( '%s creado correctamente.', 'aura-suite' ), label.singular ) ) );
             },
             error: function ( xhr ) {
-                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Error al guardar.';
+                var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : __( 'Error al guardar.', 'aura-suite' );
                 $( '#aura-veh-scat-error' ).text( msg ).show();
                 $( '#aura-veh-scat-spinner' ).css( 'visibility', 'hidden' );
                 $( '#aura-veh-scat-submit' ).prop( 'disabled', false );

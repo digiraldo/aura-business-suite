@@ -281,10 +281,10 @@ tr.aura-is-expanded > td:first-child { color:#8b5cf6; }
     var currPage = 1;
 
     var payStatusConfig = {
-        paid:    { label:'✅ Pagado',    bg:'#dcfce7', color:'#166534' },
-        partial: { label:'🟡 Parcial',   bg:'#fef9c3', color:'#a16207' },
-        unpaid:  { label:'🔴 Sin pago',  bg:'#fee2e2', color:'#991b1b' },
-        overdue: { label:'🚨 Vencido',   bg:'#fce7f3', color:'#9d174d' }
+        paid:    { label:'<?php echo esc_js( __( '✅ Pagado', 'aura-suite' ) ); ?>',    bg:'#dcfce7', color:'#166534' },
+        partial: { label:'<?php echo esc_js( __( '🟡 Parcial', 'aura-suite' ) ); ?>',   bg:'#fef9c3', color:'#a16207' },
+        unpaid:  { label:'<?php echo esc_js( __( '🔴 Sin pago', 'aura-suite' ) ); ?>',  bg:'#fee2e2', color:'#991b1b' },
+        overdue: { label:'<?php echo esc_js( __( '🚨 Vencido', 'aura-suite' ) ); ?>',   bg:'#fce7f3', color:'#9d174d' }
     };
 
     var urgencyConfig = {

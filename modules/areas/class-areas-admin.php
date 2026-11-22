@@ -109,10 +109,11 @@ class Aura_Areas_Admin {
         wp_enqueue_script(
             'aura-areas-admin',
             AURA_PLUGIN_URL . 'assets/js/areas-admin.js',
-            [ 'jquery', 'wp-color-picker', 'datatables-responsive-js', 'cropperjs', 'aura-ui-core' ],
+            [ 'jquery', 'wp-color-picker', 'datatables-responsive-js', 'cropperjs', 'aura-ui-core', 'wp-i18n' ],
             AURA_VERSION . '.' . filemtime( AURA_PLUGIN_DIR . 'assets/js/areas-admin.js' ),
             true
         );
+        wp_set_script_translations( 'aura-areas-admin', 'aura-suite', AURA_PLUGIN_DIR . 'languages' );
 
         wp_localize_script( 'aura-areas-admin', 'auraAreasAdmin', [
             'ajaxUrl' => admin_url( 'admin-ajax.php' ),

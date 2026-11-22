@@ -281,19 +281,19 @@ class Aura_Calendar_Subjects {
         $time_fmt = get_option( 'time_format', 'H:i' );
 
         $type_labels = [
-            'class'    => [ 'label' => __( 'Clase Regular', 'aura' ), 'icon' => '📖' ],
-            'exam'     => [ 'label' => __( 'Examen / Evaluación', 'aura' ), 'icon' => '📝' ],
-            'workshop' => [ 'label' => __( 'Taller / Práctica', 'aura' ), 'icon' => '🔬' ],
-            'activity' => [ 'label' => __( 'Actividad', 'aura' ), 'icon' => '🎯' ],
-            'break'    => [ 'label' => __( 'Receso', 'aura' ), 'icon' => '☕' ],
-            'other'    => [ 'label' => __( 'Otro', 'aura' ), 'icon' => '📍' ],
+            'class'    => [ 'label' => __( 'Clase Regular', 'aura-suite' ), 'icon' => '📖' ],
+            'exam'     => [ 'label' => __( 'Examen / Evaluación', 'aura-suite' ), 'icon' => '📝' ],
+            'workshop' => [ 'label' => __( 'Taller / Práctica', 'aura-suite' ), 'icon' => '🔬' ],
+            'activity' => [ 'label' => __( 'Actividad', 'aura-suite' ), 'icon' => '🎯' ],
+            'break'    => [ 'label' => __( 'Receso', 'aura-suite' ), 'icon' => '☕' ],
+            'other'    => [ 'label' => __( 'Otro', 'aura-suite' ), 'icon' => '📍' ],
         ];
 
         $status_labels = [
-            'scheduled' => __( 'Programado', 'aura' ),
-            'completed' => __( 'Completado', 'aura' ),
-            'cancelled' => __( 'Cancelado', 'aura' ),
-            'postponed' => __( 'Pospuesto', 'aura' ),
+            'scheduled' => __( 'Programado', 'aura-suite' ),
+            'completed' => __( 'Completado', 'aura-suite' ),
+            'cancelled' => __( 'Cancelado', 'aura-suite' ),
+            'postponed' => __( 'Pospuesto', 'aura-suite' ),
         ];
 
         if ( ! empty( $rows ) ) {
@@ -398,12 +398,12 @@ class Aura_Calendar_Subjects {
         $program_id = ! empty( $data['program_id'] ) ? intval( $data['program_id'] ) : 0;
 
         if ( ! $program_id ) {
-            return new WP_Error( 'missing_program', __( 'Debe seleccionar un programa académico para la materia.', 'aura' ) );
+            return new WP_Error( 'missing_program', __( 'Debe seleccionar un programa académico para la materia.', 'aura-suite' ) );
         }
 
         $name = sanitize_text_field( $data['name'] ?? '' );
         if ( empty( $name ) ) {
-            return new WP_Error( 'missing_name', __( 'El nombre de la materia es obligatorio.', 'aura' ) );
+            return new WP_Error( 'missing_name', __( 'El nombre de la materia es obligatorio.', 'aura-suite' ) );
         }
 
         $code = sanitize_text_field( $data['code'] ?? '' );
@@ -545,7 +545,7 @@ class Aura_Calendar_Subjects {
         if ( $id > 0 ) {
             $updated = $wpdb->update( $table, $clean_fields, [ 'id' => $id ], $clean_formats, [ '%d' ] );
             if ( $updated === false ) {
-                return new WP_Error( 'db_error', __( 'Error al actualizar la materia.', 'aura' ) );
+                return new WP_Error( 'db_error', __( 'Error al actualizar la materia.', 'aura-suite' ) );
             }
             return $id;
         } else {
@@ -554,7 +554,7 @@ class Aura_Calendar_Subjects {
 
             $inserted = $wpdb->insert( $table, $clean_fields, $clean_formats );
             if ( ! $inserted ) {
-                return new WP_Error( 'db_error', __( 'Error al registrar la materia.', 'aura' ) );
+                return new WP_Error( 'db_error', __( 'Error al registrar la materia.', 'aura-suite' ) );
             }
             return (int) $wpdb->insert_id;
         }
@@ -592,7 +592,7 @@ class Aura_Calendar_Subjects {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_cal_view_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $program_id = intval( $_POST['program_id'] ?? 0 );
@@ -609,17 +609,17 @@ class Aura_Calendar_Subjects {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_cal_view_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_view_tasks' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $subject = self::get( $id );
         if ( ! $subject ) {
-            wp_send_json_error( [ 'message' => __( 'Materia no encontrada.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Materia no encontrada.', 'aura-suite' ) ] );
         }
 
         wp_send_json_success( [ 'subject' => $subject ] );
@@ -629,7 +629,7 @@ class Aura_Calendar_Subjects {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para gestionar materias.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para gestionar materias.', 'aura-suite' ) ] );
         }
 
         $res = self::save( $_POST );
@@ -638,7 +638,7 @@ class Aura_Calendar_Subjects {
         }
 
         wp_send_json_success( [
-            'message'    => __( 'Materia guardada con éxito.', 'aura' ),
+            'message'    => __( 'Materia guardada con éxito.', 'aura-suite' ),
             'subject_id' => $res,
         ] );
     }
@@ -647,19 +647,19 @@ class Aura_Calendar_Subjects {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_delete_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $ok = self::delete( $id );
         if ( $ok ) {
-            wp_send_json_success( [ 'message' => __( 'Materia eliminada correctamente.', 'aura' ) ] );
+            wp_send_json_success( [ 'message' => __( 'Materia eliminada correctamente.', 'aura-suite' ) ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'No se pudo eliminar la materia.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se pudo eliminar la materia.', 'aura-suite' ) ] );
         }
     }
 
@@ -686,7 +686,7 @@ class Aura_Calendar_Subjects {
         }
 
         if ( ! $can_manage ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para subir material.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para subir material.', 'aura-suite' ) ] );
         }
 
         $audience     = sanitize_text_field( $_POST['audience'] ?? ( $_POST['material_type'] ?? 'student' ) );
@@ -788,7 +788,7 @@ class Aura_Calendar_Subjects {
         // ── CASO B: ENLACE WEB O GOOGLE DRIVE DIRECTO ──
         elseif ( ! empty( $external_url ) ) {
             if ( empty( $title ) ) {
-                $title = __( 'Documento de Estudio en la Nube', 'aura' );
+                $title = __( 'Documento de Estudio en la Nube', 'aura-suite' );
             }
 
             $is_drive = class_exists( 'Aura_Drive_Manager' ) && \Aura_Drive_Manager::is_drive_url( $external_url );
@@ -812,7 +812,7 @@ class Aura_Calendar_Subjects {
                 'uploader_name'  => wp_get_current_user()->display_name,
             ];
         } else {
-            wp_send_json_error( [ 'message' => __( 'Debe adjuntar un archivo o ingresar una URL de Google Drive.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Debe adjuntar un archivo o ingresar una URL de Google Drive.', 'aura-suite' ) ] );
         }
 
         // Si la materia ya existe en la base de datos, guardar el archivo en su registro de inmediato
@@ -843,7 +843,7 @@ class Aura_Calendar_Subjects {
         wp_send_json_success( [
             'material' => $file_entry,
             'audience' => $audience,
-            'message'  => __( 'Material registrado exitosamente.', 'aura' ),
+            'message'  => __( 'Material registrado exitosamente.', 'aura-suite' ),
         ] );
     }
 
@@ -875,7 +875,7 @@ class Aura_Calendar_Subjects {
         }
 
         if ( ! $can_manage ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         if ( $subject_id > 0 && ! empty( $material_id ) ) {
@@ -905,7 +905,7 @@ class Aura_Calendar_Subjects {
         wp_send_json_success( [
             'material_id' => $material_id,
             'audience'    => $audience,
-            'message'     => __( 'Material eliminado correctamente.', 'aura' ),
+            'message'     => __( 'Material eliminado correctamente.', 'aura-suite' ),
         ] );
     }
 

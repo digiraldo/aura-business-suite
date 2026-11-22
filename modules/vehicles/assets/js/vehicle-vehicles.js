@@ -14,6 +14,18 @@
         return;
     }
 
+    var __ = ( window.wp && window.wp.i18n && window.wp.i18n.__ ) ? window.wp.i18n.__ : function ( s ) { return s; };
+    var sprintf = ( window.wp && window.wp.i18n && window.wp.i18n.sprintf ) ? window.wp.i18n.sprintf : function () {
+        var args = Array.prototype.slice.call( arguments );
+        var fmt = args.shift() || '';
+        var i = 0;
+        return String( fmt ).replace( /%(?:(\d+)\$)?([sd%])/g, function ( m, pos, type ) {
+            if ( type === '%' ) return '%';
+            var idx = pos ? ( parseInt( pos, 10 ) - 1 ) : i++;
+            return args[ idx ] !== undefined ? args[ idx ] : '';
+        } );
+    };
+
     var CFG      = auraVehiclesListCfg;
     var API      = CFG.apiBase + 'vehicles';
     var NONCE    = CFG.nonce;
@@ -82,10 +94,10 @@
                 search     : '',
                 searchPlaceholder: '',
                 paginate   : { first: '«', last: '»', previous: '‹', next: '›' },
-                info       : '_TOTAL_ vehículos',
-                infoEmpty  : '0 vehículos',
-                infoFiltered: '(filtrado de _MAX_ total)',
-                lengthMenu : 'Mostrar _MENU_ por página',
+                info       : __( '_TOTAL_ vehículos', 'aura-suite' ),
+                infoEmpty  : __( '0 vehículos', 'aura-suite' ),
+                infoFiltered: __( '(filtrado de _MAX_ total)', 'aura-suite' ),
+                lengthMenu : __( 'Mostrar _MENU_ por página', 'aura-suite' ),
             },
             dom      : '<"aura-dt-top"li>rt<"aura-dt-bottom"p>',
             columns  : [
@@ -125,7 +137,7 @@
     }
 
     function renderAreas( row ) {
-        if ( ! row.areas || ! row.areas.length ) return '<em style="color:#999;">Sin áreas</em>';
+        if ( ! row.areas || ! row.areas.length ) return '<em style="color:#999;">' + escHtml( __( 'Sin áreas', 'aura-suite' ) ) + '</em>';
         return row.areas.map( function ( a ) {
             return '<span style="background:' + escHtml( a.color || '#ccc' ) + ';color:#fff;padding:1px 7px;border-radius:9px;font-size:11px;margin:1px;">' + escHtml( a.name ) + '</span>';
         } ).join( ' ' );
@@ -136,31 +148,31 @@
         var id    = row.id;
         var qrIcon = CFG.qrIconUrl ? '<span class="aura-veh-qr-icon" aria-hidden="true" style="--qr-icon-url:url(' + escHtml( CFG.qrIconUrl ) + ')"></span>' : '<span class="dashicons dashicons-share"></span>';
 
-        html += '<button class="button button-small aura-veh-action aura-veh-action--view" data-action="view" data-id="' + id + '" title="Ver detalle"><span class="dashicons dashicons-visibility"></span></button> ';
+        html += '<button class="button button-small aura-veh-action aura-veh-action--view" data-action="view" data-id="' + id + '" title="' + escHtml( __( 'Ver detalle', 'aura-suite' ) ) + '"><span class="dashicons dashicons-visibility"></span></button> ';
 
         if ( CFG.canEdit ) {
-            html += '<button class="button button-small aura-veh-action aura-veh-action--edit" data-action="edit" data-id="' + id + '" title="Editar"><span class="dashicons dashicons-edit"></span></button> ';
-            html += '<button class="button button-small aura-veh-action aura-veh-action--areas" data-action="areas" data-id="' + id + '" title="Áreas"><span class="dashicons dashicons-networking"></span></button> ';
-            html += '<button class="button button-small aura-veh-action aura-veh-action--photos" data-action="photos" data-id="' + id + '" title="Fotos"><span class="dashicons dashicons-format-image"></span></button> ';
+            html += '<button class="button button-small aura-veh-action aura-veh-action--edit" data-action="edit" data-id="' + id + '" title="' + escHtml( __( 'Editar', 'aura-suite' ) ) + '"><span class="dashicons dashicons-edit"></span></button> ';
+            html += '<button class="button button-small aura-veh-action aura-veh-action--areas" data-action="areas" data-id="' + id + '" title="' + escHtml( __( 'Áreas', 'aura-suite' ) ) + '"><span class="dashicons dashicons-networking"></span></button> ';
+            html += '<button class="button button-small aura-veh-action aura-veh-action--photos" data-action="photos" data-id="' + id + '" title="' + escHtml( __( 'Fotos', 'aura-suite' ) ) + '"><span class="dashicons dashicons-format-image"></span></button> ';
 
             if ( row.status !== 'unavailable' ) {
-                html += '<button class="button button-small aura-veh-action aura-veh-action--unavailable" data-action="unavailable" data-id="' + id + '" title="Dar de baja"><span class="dashicons dashicons-remove"></span></button> ';
+                html += '<button class="button button-small aura-veh-action aura-veh-action--unavailable" data-action="unavailable" data-id="' + id + '" title="' + escHtml( __( 'Dar de baja', 'aura-suite' ) ) + '"><span class="dashicons dashicons-remove"></span></button> ';
             } else {
-                html += '<button class="button button-small aura-veh-action aura-veh-action--restore" data-action="restore" data-id="' + id + '" title="Restaurar"><span class="dashicons dashicons-update"></span></button> ';
+                html += '<button class="button button-small aura-veh-action aura-veh-action--restore" data-action="restore" data-id="' + id + '" title="' + escHtml( __( 'Restaurar', 'aura-suite' ) ) + '"><span class="dashicons dashicons-update"></span></button> ';
             }
 
             if ( row.areas && row.areas.length > 1 ) {
-                html += '<button class="button button-small aura-veh-action aura-veh-action--transfer" data-action="transfer" data-id="' + id + '" title="Transferir"><span class="dashicons dashicons-migrate"></span></button> ';
+                html += '<button class="button button-small aura-veh-action aura-veh-action--transfer" data-action="transfer" data-id="' + id + '" title="' + escHtml( __( 'Transferir', 'aura-suite' ) ) + '"><span class="dashicons dashicons-migrate"></span></button> ';
             }
         }
 
         // Botón QR (siempre visible para quienes pueden editar)
         if ( CFG.canEdit ) {
-            html += '<button class="button button-small aura-veh-action aura-veh-action--qr" data-action="qr" data-id="' + id + '" data-plate="' + escHtml( row.plate ) + '" data-name="' + escHtml( row.brand + ' ' + row.model ) + '" title="Código QR">' + qrIcon + '</button> ';
+            html += '<button class="button button-small aura-veh-action aura-veh-action--qr" data-action="qr" data-id="' + id + '" data-plate="' + escHtml( row.plate ) + '" data-name="' + escHtml( row.brand + ' ' + row.model ) + '" title="' + escHtml( __( 'Código QR', 'aura-suite' ) ) + '">' + qrIcon + '</button> ';
         }
 
         if ( CFG.canDelete ) {
-            html += '<button class="button button-small button-link-delete aura-veh-action aura-veh-action--delete" data-action="delete" data-id="' + id + '" title="Eliminar"><span class="dashicons dashicons-trash"></span></button>';
+            html += '<button class="button button-small button-link-delete aura-veh-action aura-veh-action--delete" data-action="delete" data-id="' + id + '" title="' + escHtml( __( 'Eliminar', 'aura-suite' ) ) + '"><span class="dashicons dashicons-trash"></span></button>';
         }
 
         html += '</div>';
@@ -212,7 +224,7 @@
     }
 
     function fillAreaSelect( $select, selectedIds ) {
-        $select.empty().append( '<option value="">— Seleccionar área —</option>' );
+        $select.empty().append( '<option value="">' + escHtml( __( '— Seleccionar área —', 'aura-suite' ) ) + '</option>' );
         $.each( _allAreas, function ( i, a ) {
             var opt = $( '<option>' ).val( a.id ).text( a.name );
             if ( $.inArray( a.id, selectedIds ) >= 0 ) opt.prop( 'selected', true );
@@ -257,7 +269,7 @@
         var $modal = $( '#aura-veh-modal-view' );
         var $body  = $modal.find( '#aura-veh-view-body' );
 
-        $body.html( '<div class="aura-veh-view-loading"><span class="spinner is-active"></span><p>Cargando detalle del vehículo...</p></div>' );
+        $body.html( '<div class="aura-veh-view-loading"><span class="spinner is-active"></span><p>' + escHtml( __( 'Cargando detalle del vehículo...', 'aura-suite' ) ) + '</p></div>' );
         openModal( '#aura-veh-modal-view' );
 
         api( API + '/' + vehicleId, 'GET' ).done( function ( v ) {
@@ -295,12 +307,12 @@
                 + '<div class="aura-veh-view-hero">'
                 + '  <div class="aura-veh-view-photo">'
                 + ( heroPhoto
-                    ? '    <img src="' + escHtml( heroPhoto ) + '" alt="Vehículo" class="aura-veh-view-photo-img" data-full="' + escHtml( heroPhoto ) + '" data-index="0">'
-                    : '    <div class="aura-veh-view-photo-empty"><span class="dashicons dashicons-car"></span><p>Sin foto</p></div>' )
+                    ? '    <img src="' + escHtml( heroPhoto ) + '" alt="' + escHtml( __( 'Vehículo', 'aura-suite' ) ) + '" class="aura-veh-view-photo-img" data-full="' + escHtml( heroPhoto ) + '" data-index="0">'
+                    : '    <div class="aura-veh-view-photo-empty"><span class="dashicons dashicons-car"></span><p>' + escHtml( __( 'Sin foto', 'aura-suite' ) ) + '</p></div>' )
                 + '  </div>'
                 + '  <div class="aura-veh-view-main">'
-                + '    <h3>' + escHtml( vehicleName || 'Vehículo' ) + '</h3>'
-                + '    <div class="aura-veh-license-plate" title="Placa del vehículo">' + escHtml( v.plate || 'N/D' ) + '</div>'
+                + '    <h3>' + escHtml( vehicleName || __( 'Vehículo', 'aura-suite' ) ) + '</h3>'
+                + '    <div class="aura-veh-license-plate" title="' + escHtml( __( 'Placa del vehículo', 'aura-suite' ) ) + '">' + escHtml( v.plate || 'N/D' ) + '</div>'
                 + '    <div class="aura-veh-view-meta">'
                 +          badge( v.status )
                 + '      <span class="aura-veh-view-pill">' + escHtml( TXT.type[ v.type ] || v.type || 'N/D' ) + '</span>'
@@ -310,31 +322,31 @@
                 + '</div>'
                 + '<div class="aura-veh-view-grid">'
                 + '  <div class="aura-veh-view-card">'
-                + '    <h4>Identificación</h4>'
+                + '    <h4>' + escHtml( __( 'Identificación', 'aura-suite' ) ) + '</h4>'
                 + '    <dl>'
-                + '      <div><dt>Marca</dt><dd>' + escHtml( v.brand || 'N/D' ) + '</dd></div>'
-                + '      <div><dt>Modelo</dt><dd>' + escHtml( v.model || 'N/D' ) + '</dd></div>'
-                + '      <div><dt>Año</dt><dd>' + escHtml( v.year ? String( v.year ) : 'N/D' ) + '</dd></div>'
-                + '      <div><dt>Color</dt><dd>' + escHtml( v.color || 'N/D' ) + '</dd></div>'
+                + '      <div><dt>' + escHtml( __( 'Marca', 'aura-suite' ) ) + '</dt><dd>' + escHtml( v.brand || 'N/D' ) + '</dd></div>'
+                + '      <div><dt>' + escHtml( __( 'Modelo', 'aura-suite' ) ) + '</dt><dd>' + escHtml( v.model || 'N/D' ) + '</dd></div>'
+                + '      <div><dt>' + escHtml( __( 'Año', 'aura-suite' ) ) + '</dt><dd>' + escHtml( v.year ? String( v.year ) : 'N/D' ) + '</dd></div>'
+                + '      <div><dt>' + escHtml( __( 'Color', 'aura-suite' ) ) + '</dt><dd>' + escHtml( v.color || 'N/D' ) + '</dd></div>'
                 + '      <div><dt>VIN</dt><dd>' + escHtml( v.vin || 'N/D' ) + '</dd></div>'
                 + '    </dl>'
                 + '  </div>'
                 + '  <div class="aura-veh-view-card">'
-                + '    <h4>Operación</h4>'
+                + '    <h4>' + escHtml( __( 'Operación', 'aura-suite' ) ) + '</h4>'
                 + '    <dl>'
-                + '      <div><dt>Combustible</dt><dd>' + escHtml( TXT.fuel[ v.fuel_type ] || v.fuel_type || 'N/D' ) + '</dd></div>'
-                + '      <div><dt>Transmisión</dt><dd>' + escHtml( TXT.transmission[ v.transmission ] || v.transmission || 'N/D' ) + '</dd></div>'
-                + '      <div><dt>Tarifa por km</dt><dd>$ ' + escHtml( Number( v.rate_per_km || 0 ).toLocaleString() ) + '</dd></div>'
-                + '      <div><dt>Áreas</dt><dd>' + ( areas || '<span style="color:#6b7280;">Sin áreas</span>' ) + '</dd></div>'
+                + '      <div><dt>' + escHtml( __( 'Combustible', 'aura-suite' ) ) + '</dt><dd>' + escHtml( TXT.fuel[ v.fuel_type ] || v.fuel_type || 'N/D' ) + '</dd></div>'
+                + '      <div><dt>' + escHtml( __( 'Transmisión', 'aura-suite' ) ) + '</dt><dd>' + escHtml( TXT.transmission[ v.transmission ] || v.transmission || 'N/D' ) + '</dd></div>'
+                + '      <div><dt>' + escHtml( __( 'Tarifa por km', 'aura-suite' ) ) + '</dt><dd>$ ' + escHtml( Number( v.rate_per_km || 0 ).toLocaleString() ) + '</dd></div>'
+                + '      <div><dt>' + escHtml( __( 'Áreas', 'aura-suite' ) ) + '</dt><dd>' + ( areas || '<span style="color:#6b7280;">' + escHtml( __( 'Sin áreas', 'aura-suite' ) ) + '</span>' ) + '</dd></div>'
                 + '    </dl>'
                 + '  </div>'
                 + '</div>'
                 + '<div class="aura-veh-view-card aura-veh-view-notes">'
-                + '  <h4>Notas</h4>'
-                + '  <p>' + escHtml( v.notes || 'Sin observaciones registradas.' ) + '</p>'
+                + '  <h4>' + escHtml( __( 'Notas', 'aura-suite' ) ) + '</h4>'
+                + '  <p>' + escHtml( v.notes || __( 'Sin observaciones registradas.', 'aura-suite' ) ) + '</p>'
                 + '</div>'
                 + '<div id="aura-veh-view-trips" class="aura-veh-view-card">'
-                + '  <h4>Historial de Salidas</h4>'
+                + '  <h4>' + escHtml( __( 'Historial de Salidas', 'aura-suite' ) ) + '</h4>'
                 + '  <div id="aura-veh-trips-loading" style="text-align:center;padding:16px;"><span class="spinner is-active"></span></div>'
                 + '  <div id="aura-veh-trips-list"></div>'
                 + '</div>';
@@ -349,37 +361,37 @@
 
                 var trips = tripsData.data || [];
                 if ( ! trips || trips.length === 0 ) {
-                    $tripsList.html( '<p style="color:#6b7280;text-align:center;padding:12px;">Sin salidas registradas</p>' );
+                    $tripsList.html( '<p style="color:#6b7280;text-align:center;padding:12px;">' + escHtml( __( 'Sin salidas registradas', 'aura-suite' ) ) + '</p>' );
                     return;
                 }
 
                 // Mapeo de estados y tipos de viajes
                 var tripStatusLabels = {
-                    'active': 'Activa',
-                    'returned': 'Retornada',
-                    'cancelled': 'Cancelada'
+                    'active': __( 'Activa', 'aura-suite' ),
+                    'returned': __( 'Retornada', 'aura-suite' ),
+                    'cancelled': __( 'Cancelada', 'aura-suite' )
                 };
                 var tripTypeLabels = {
-                    'rental': 'Renta',
-                    'errand': 'Encargo',
-                    'maintenance': 'Mantenimiento',
-                    'other': 'Otro'
+                    'rental': __( 'Renta', 'aura-suite' ),
+                    'errand': __( 'Encargo', 'aura-suite' ),
+                    'maintenance': __( 'Mantenimiento', 'aura-suite' ),
+                    'other': __( 'Otro', 'aura-suite' )
                 };
                 var maintenanceSubtypeLabels = {
-                    'preventive': 'Preventivo',
-                    'corrective': 'Correctivo',
-                    'inspection': 'Inspección'
+                    'preventive': __( 'Preventivo', 'aura-suite' ),
+                    'corrective': __( 'Correctivo', 'aura-suite' ),
+                    'inspection': __( 'Inspección', 'aura-suite' )
                 };
 
                 var tripsHtml = '<table class="aura-veh-view-trips-table">'
                     + '<thead>'
                     + '<tr>'
-                    + '<th>Fecha</th>'
-                    + '<th>Tipo</th>'
-                    + '<th>Responsable</th>'
-                    + '<th>Destino</th>'
+                    + '<th>' + escHtml( __( 'Fecha', 'aura-suite' ) ) + '</th>'
+                    + '<th>' + escHtml( __( 'Tipo', 'aura-suite' ) ) + '</th>'
+                    + '<th>' + escHtml( __( 'Responsable', 'aura-suite' ) ) + '</th>'
+                    + '<th>' + escHtml( __( 'Destino', 'aura-suite' ) ) + '</th>'
                     + '<th>KM</th>'
-                    + '<th>Estado</th>'
+                    + '<th>' + escHtml( __( 'Estado', 'aura-suite' ) ) + '</th>'
                     + '</tr>'
                     + '</thead>'
                     + '<tbody>';
@@ -452,7 +464,7 @@
             } ).fail( function () {
                 var $tripsLoading = $( '#aura-veh-trips-loading' );
                 $tripsLoading.hide();
-                $( '#aura-veh-trips-list' ).html( '<p style="color:#d32f2f;text-align:center;padding:12px;">Error al cargar historial de salidas</p>' );
+                $( '#aura-veh-trips-list' ).html( '<p style="color:#d32f2f;text-align:center;padding:12px;">' + escHtml( __( 'Error al cargar historial de salidas', 'aura-suite' ) ) + '</p>' );
             } );
 
         } ).fail( function ( xhr ) {
@@ -471,7 +483,7 @@
         $modal.find( '#aura-veh-form' )[0].reset();
         $modal.find( '#aura-veh-form-id' ).val( '' );
         $modal.find( '#aura-veh-form-error' ).hide().text( '' );
-        $modal.find( '#aura-veh-modal-form-title' ).text( vehicleId ? 'Editar Vehículo' : 'Nuevo Vehículo' );
+        $modal.find( '#aura-veh-modal-form-title' ).text( vehicleId ? __( 'Editar Vehículo', 'aura-suite' ) : __( 'Nuevo Vehículo', 'aura-suite' ) );
         $modal.find( '#veh-photo' ).val( 0 );
         $modal.find( '#aura-veh-photo-preview' ).empty();
         $modal.find( '#aura-veh-photo-remove-btn' ).hide();
@@ -535,7 +547,7 @@
         };
 
         if ( ! data.plate || ! data.brand || ! data.model ) {
-            $err.text( 'Placa, marca y modelo son obligatorios.' ).show();
+            $err.text( __( 'Placa, marca y modelo son obligatorios.', 'aura-suite' ) ).show();
             return;
         }
 
@@ -554,7 +566,7 @@
             var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : TXT.error;
             $err.text( msg ).show();
         } ).always( function () {
-            $btn.prop( 'disabled', false ).text( 'Guardar' );
+            $btn.prop( 'disabled', false ).text( __( 'Guardar', 'aura-suite' ) );
         } );
     }
 
@@ -581,7 +593,7 @@
         var $wrap = $( '#aura-veh-current-areas' ).empty();
 
         if ( ! areas.length ) {
-            $wrap.html( '<em style="color:#999;">Sin áreas asignadas.</em>' );
+            $wrap.html( '<em style="color:#999;">' + escHtml( __( 'Sin áreas asignadas.', 'aura-suite' ) ) + '</em>' );
             return;
         }
 
@@ -591,7 +603,7 @@
                 .text( a.name );
 
             if ( CFG.canEdit ) {
-                var $rm = $( '<button type="button" title="Quitar">' )
+                var $rm = $( '<button type="button">' ).attr( 'title', __( 'Quitar', 'aura-suite' ) )
                     .css( { background: 'none', border: 'none', color: '#fff', cursor: 'pointer', marginLeft: '4px' } )
                     .html( '&times;' )
                     .on( 'click', function () {
@@ -647,8 +659,8 @@
             var $from = $modal.find( '#aura-veh-transfer-from' );
             var $to   = $modal.find( '#aura-veh-transfer-to' );
 
-            $from.empty().append( '<option value="">— Origen —</option>' );
-            $to.empty().append( '<option value="">— Destino —</option>' );
+            $from.empty().append( '<option value="">' + escHtml( __( '— Origen —', 'aura-suite' ) ) + '</option>' );
+            $to.empty().append( '<option value="">' + escHtml( __( '— Destino —', 'aura-suite' ) ) + '</option>' );
 
             $.each( v.areas || [], function ( i, a ) {
                 $from.append( $( '<option>' ).val( a.id ).text( a.name ) );
@@ -682,7 +694,7 @@
             var photos   = v.photos || [];
 
             if ( ! photos.length ) {
-                $gallery.html( '<p style="color:#999;">Sin fotos.</p>' );
+                $gallery.html( '<p style="color:#999;">' + escHtml( __( 'Sin fotos.', 'aura-suite' ) ) + '</p>' );
                 return;
             }
 
@@ -694,12 +706,12 @@
                 $item.append( $img );
 
                 if ( CFG.canEdit ) {
-                    var $del = $( '<button type="button" title="Eliminar foto">' )
+                    var $del = $( '<button type="button">' ).attr( 'title', __( 'Eliminar foto', 'aura-suite' ) )
                         .addClass( 'button button-small button-link-delete' )
                         .css( { marginTop: '4px', width: '100%' } )
                         .html( '<span class="dashicons dashicons-trash"></span>' )
                         .on( 'click', function () {
-                            if ( confirm( '¿Eliminar esta foto?' ) ) {
+                            if ( confirm( __( '¿Eliminar esta foto?', 'aura-suite' ) ) ) {
                                 deletePhoto( vehicleId, filename );
                             }
                         } );
@@ -795,7 +807,7 @@
                     openUnavailableModal( id );
                     break;
                 case 'restore':
-                    if ( confirm( '¿Restaurar este vehículo?' ) ) {
+                    if ( confirm( __( '¿Restaurar este vehículo?', 'aura-suite' ) ) ) {
                         api( API + '/' + id + '/restore', 'POST' ).done( function () {
                             showAdminNotice( TXT.restored, 'success' );
                             loadVehicles();
@@ -854,7 +866,7 @@
             var areaId    = $( '#aura-veh-area-select' ).val();
 
             if ( ! areaId ) {
-                showMsg( $( '#aura-veh-areas-msg' ), 'Elige un área.', true );
+                showMsg( $( '#aura-veh-areas-msg' ), __( 'Elige un área.', 'aura-suite' ), true );
                 return;
             }
 
@@ -875,7 +887,7 @@
             var notes     = $( '#aura-veh-unavail-notes' ).val().trim();
 
             if ( ! reason ) {
-                showMsg( $( '#aura-veh-unavail-msg' ), 'El motivo es obligatorio.', true );
+                showMsg( $( '#aura-veh-unavail-msg' ), __( 'El motivo es obligatorio.', 'aura-suite' ), true );
                 return;
             }
 
@@ -896,11 +908,11 @@
             var to        = $( '#aura-veh-transfer-to' ).val();
 
             if ( ! from || ! to ) {
-                showMsg( $( '#aura-veh-transfer-msg' ), 'Selecciona origen y destino.', true );
+                showMsg( $( '#aura-veh-transfer-msg' ), __( 'Selecciona origen y destino.', 'aura-suite' ), true );
                 return;
             }
             if ( from === to ) {
-                showMsg( $( '#aura-veh-transfer-msg' ), 'El origen y destino no pueden ser iguales.', true );
+                showMsg( $( '#aura-veh-transfer-msg' ), __( 'El origen y destino no pueden ser iguales.', 'aura-suite' ), true );
                 return;
             }
 
@@ -964,7 +976,7 @@
                 var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : TXT.error;
                 showMsg( $( '#aura-veh-photos-msg' ), msg, true );
             } ).always( function () {
-                $btn.prop( 'disabled', false ).html( 'Subir' );
+                $btn.prop( 'disabled', false ).html( escHtml( __( 'Subir', 'aura-suite' ) ) );
             } );
         } );
 
@@ -1000,13 +1012,13 @@
         // ── Foto principal: Seleccionar desde Media Library ───────
         $( document ).on( 'click', '#aura-veh-photo-select-btn', function () {
             if ( typeof wp === 'undefined' || ! wp.media ) {
-                alert( 'La librería de medios no está disponible.' );
+                alert( __( 'La librería de medios no está disponible.', 'aura-suite' ) );
                 return;
             }
 
             var frame = wp.media( {
-                title   : 'Seleccionar foto del vehículo',
-                button  : { text: 'Usar esta imagen' },
+                title   : __( 'Seleccionar foto del vehículo', 'aura-suite' ),
+                button  : { text: __( 'Usar esta imagen', 'aura-suite' ) },
                 multiple: false,
                 library : { type: 'image' },
             } );
@@ -1096,13 +1108,13 @@
                     $( '#aura-veh-crop-modal' ).hide();
                     $( 'body' ).removeClass( 'aura-veh-modal-open' );
                 } else {
-                    var errMsg = ( res.data && res.data.message ) ? res.data.message : 'Error al procesar la imagen.';
+                    var errMsg = ( res.data && res.data.message ) ? res.data.message : __( 'Error al procesar la imagen.', 'aura-suite' );
                     $msg.html( '<p class="notice-error" style="padding:6px 10px;margin:0;">' + escHtml( errMsg ) + '</p>' ).show();
                 }
             } ).fail( function () {
-                $msg.html( '<p class="notice-error" style="padding:6px 10px;margin:0;">Error de conexión.</p>' ).show();
+                $msg.html( '<p class="notice-error" style="padding:6px 10px;margin:0;">' + escHtml( __( 'Error de conexión.', 'aura-suite' ) ) + '</p>' ).show();
             } ).always( function () {
-                $btn.prop( 'disabled', false ).text( 'Aplicar recorte' );
+                $btn.prop( 'disabled', false ).text( __( 'Aplicar recorte', 'aura-suite' ) );
             } );
         } );
 
@@ -1202,7 +1214,7 @@
         }
 
         $.each( _lightboxImages, function ( idx, url ) {
-            var $btn = $( '<button type="button" class="aura-veh-lightbox-thumb" aria-label="Ir a foto"></button>' )
+            var $btn = $( '<button type="button" class="aura-veh-lightbox-thumb"></button>' ).attr( 'aria-label', __( 'Ir a foto', 'aura-suite' ) )
                 .attr( 'data-index', idx )
                 .append( $( '<img alt="">' ).attr( 'src', url ) );
 
@@ -1245,15 +1257,15 @@
             $( '#aura-veh-qr-generate' ).hide();
             renderQrCode( res.qr_token, res.qr_url );
         } ).fail( function () {
-            showMsg( $( '#aura-veh-qr-msg' ), 'Error al generar el QR.', true );
+            showMsg( $( '#aura-veh-qr-msg' ), __( 'Error al generar el QR.', 'aura-suite' ), true );
         } ).always( function () {
-            $btn.prop( 'disabled', false ).text( 'Generar QR' );
+            $btn.prop( 'disabled', false ).text( __( 'Generar QR', 'aura-suite' ) );
         } );
     } );
 
     // Invalidar / regenerar QR
     $( document ).on( 'click', '#aura-veh-qr-invalidate', function () {
-        if ( ! confirm( '¿Regenerar el QR? El código impreso anterior quedará inválido.' ) ) { return; }
+        if ( ! confirm( __( '¿Regenerar el QR? El código impreso anterior quedará inválido.', 'aura-suite' ) ) ) { return; }
         var vehicleId = $( '#aura-veh-qr-vehicle-id' ).val();
         var $btn = $( this ).prop( 'disabled', true ).text( '…' );
 
@@ -1262,11 +1274,11 @@
 
         api( CFG.apiBase + 'vehicles/' + vehicleId + '/qr', 'DELETE' ).done( function ( res ) {
             renderQrCode( res.qr_token, res.qr_url );
-            showMsg( $( '#aura-veh-qr-msg' ), 'QR regenerado. El anterior ya no es válido.', false );
+            showMsg( $( '#aura-veh-qr-msg' ), __( 'QR regenerado. El anterior ya no es válido.', 'aura-suite' ), false );
         } ).fail( function () {
-            showMsg( $( '#aura-veh-qr-msg' ), 'Error al regenerar el QR.', true );
+            showMsg( $( '#aura-veh-qr-msg' ), __( 'Error al regenerar el QR.', 'aura-suite' ), true );
         } ).always( function () {
-            $btn.prop( 'disabled', false ).html( '<span class="dashicons dashicons-update" style="vertical-align:middle;"></span> Regenerar QR' );
+            $btn.prop( 'disabled', false ).html( '<span class="dashicons dashicons-update" style="vertical-align:middle;"></span> ' + escHtml( __( 'Regenerar QR', 'aura-suite' ) ) );
         } );
     } );
 
@@ -1284,7 +1296,7 @@
     $( document ).on( 'click', '#aura-veh-qr-copy', function () {
         if ( _qrUrl && navigator.clipboard ) {
             navigator.clipboard.writeText( _qrUrl ).then( function () {
-                showMsg( $( '#aura-veh-qr-msg' ), 'URL copiada al portapapeles.', false );
+                showMsg( $( '#aura-veh-qr-msg' ), __( 'URL copiada al portapapeles.', 'aura-suite' ), false );
             } );
         }
     } );
@@ -1328,7 +1340,7 @@
 
         w.document.write( '<!DOCTYPE html><html lang="es"><head>' +
             '<meta charset="UTF-8">' +
-            '<title>Etiqueta QR · ' + plate + '</title>' +
+            '<title>' + escHtml( sprintf( __( 'Etiqueta QR · %s', 'aura-suite' ), plate ) ) + '</title>' +
             '<style>' +
 
             /* ── Reset & base ─────────────────────────────── */
@@ -1394,7 +1406,7 @@
 
             /* ── Líneas de corte ──────────────────────────── */
             '.cut-line{border:0;border-top:1px dashed #94a3b8;margin:2mm 0;position:relative;}' +
-            '.cut-line::before{content:"✂  recorte aquí";position:absolute;top:-8px;left:50%;transform:translateX(-50%);' +
+            '.cut-line::before{content:"✂  ' + escHtml( __( 'recorte aquí', 'aura-suite' ) ) + '";position:absolute;top:-8px;left:50%;transform:translateX(-50%);' +
                                'background:#fff;padding:0 5px;font-size:7px;color:#94a3b8;white-space:nowrap;}' +
 
             /* ── Media print ──────────────────────────────── */
@@ -1410,11 +1422,11 @@
 
             /* ── Barra de herramientas ──────────────────────── */
             '<div class="print-toolbar">' +
-                '<h1>Etiqueta QR · ' + plate + '</h1>' +
-                '<span class="tip">Diseño optimizado para recorte rapido con margenes minimos.</span>' +
+                '<h1>' + escHtml( sprintf( __( 'Etiqueta QR · %s', 'aura-suite' ), plate ) ) + '</h1>' +
+                '<span class="tip">' + escHtml( __( 'Diseño optimizado para recorte rápido con márgenes mínimos.', 'aura-suite' ) ) + '</span>' +
                 '<button class="print-btn" onclick="window.print()">' +
                     '<svg viewBox="0 0 24 24"><path d="M6 9V2h12v7H6zm-1 3h14a1 1 0 0 1 1 1v5h-3v3H7v-3H4v-5a1 1 0 0 1 1-1zm11 6v-3H8v3h8z"/></svg>' +
-                    'Imprimir ahora' +
+                    escHtml( __( 'Imprimir ahora', 'aura-suite' ) ) +
                 '</button>' +
             '</div>' +
 
@@ -1423,11 +1435,11 @@
 
                 /* Instrucciones */
                 '<div class="instructions">' +
-                    '<strong>Instrucciones:</strong> ' +
-                    'Imprima en papel normal o etiqueta autoadhesiva · ' +
-                    'Recorte por la línea punteada · ' +
-                    '<strong>Tarjeta (izq.)</strong>: pegue en el tablero o guantera · ' +
-                    '<strong>Colgante (der.)</strong>: perfore el círculo y use con hilo o plástico de llave.' +
+                    '<strong>' + escHtml( __( 'Instrucciones:', 'aura-suite' ) ) + '</strong> ' +
+                    escHtml( __( 'Imprima en papel normal o etiqueta autoadhesiva ·', 'aura-suite' ) ) + ' ' +
+                    escHtml( __( 'Recorte por la línea punteada ·', 'aura-suite' ) ) + ' ' +
+                    '<strong>' + escHtml( __( 'Tarjeta (izq.)', 'aura-suite' ) ) + '</strong>: ' + escHtml( __( 'pegue en el tablero o guantera ·', 'aura-suite' ) ) + ' ' +
+                    '<strong>' + escHtml( __( 'Colgante (der.)', 'aura-suite' ) ) + '</strong>: ' + escHtml( __( 'perfore el círculo y use con hilo o plástico de llave.', 'aura-suite' ) ) +
                 '</div>' +
 
                 /* Grid: tarjeta + colgante */
@@ -1436,20 +1448,20 @@
                     /* ── Tarjeta (tablero) ─── */
                     '<div class="label-card">' +
                         '<div class="label-card-header">' +
-                            '<span class="brand">VEHÍCULO</span>' +
+                            '<span class="brand">' + escHtml( __( 'VEHÍCULO', 'aura-suite' ) ) + '</span>' +
                             '<span class="plate">' + plate + '</span>' +
                         '</div>' +
                         '<div class="label-card-body">' +
                             '<img src="' + printQrSrc + '" alt="QR">' +
                             '<div class="label-card-info">' +
                                 '<span class="veh-name">' + fullName + '</span>' +
-                                '<span class="scan-tip">📱 Escanea el QR con tu celular para registrar salidas y retornos.</span>' +
+                                '<span class="scan-tip">📱 ' + escHtml( __( 'Escanea el QR con tu celular para registrar salidas y retornos.', 'aura-suite' ) ) + '</span>' +
                                 '<span class="url-small">' + url + '</span>' +
                             '</div>' +
                         '</div>' +
                         '<div class="label-card-footer">' +
                             '<span class="site">' + siteName + '</span>' +
-                            '<span class="cut-hint">✂ recorte y pegue en tablero</span>' +
+                            '<span class="cut-hint">✂ ' + escHtml( __( 'recorte y pegue en tablero', 'aura-suite' ) ) + '</span>' +
                         '</div>' +
                     '</div>' +
 
@@ -1458,15 +1470,15 @@
                         '<div class="label-hang-hole">' +
                             '<div class="hole"></div>' +
                             '<span class="plate">' + plate + '</span>' +
-                            '<span class="brand">VEHÍCULO</span>' +
+                            '<span class="brand">' + escHtml( __( 'VEHÍCULO', 'aura-suite' ) ) + '</span>' +
                         '</div>' +
                         '<div class="label-hang-body">' +
                             '<img src="' + printQrSrc + '" alt="QR">' +
                             '<span class="veh-name">' + fullName + '</span>' +
-                            '<span class="scan-tip">📱 Escanea para registrar salidas / retornos</span>' +
+                            '<span class="scan-tip">📱 ' + escHtml( __( 'Escanea para registrar salidas / retornos', 'aura-suite' ) ) + '</span>' +
                             '<span class="url-small">' + url + '</span>' +
                         '</div>' +
-                        '<div class="label-hang-footer">' + siteName + ' · Perfore el círculo para colgar</div>' +
+                        '<div class="label-hang-footer">' + siteName + ' · ' + escHtml( __( 'Perfore el círculo para colgar', 'aura-suite' ) ) + '</div>' +
                     '</div>' +
 
                 '</div>' + /* /labels-grid */
@@ -1478,35 +1490,35 @@
                 '<div class="labels-grid">' +
                     '<div class="label-card">' +
                         '<div class="label-card-header">' +
-                            '<span class="brand">VEHÍCULO</span>' +
+                            '<span class="brand">' + escHtml( __( 'VEHÍCULO', 'aura-suite' ) ) + '</span>' +
                             '<span class="plate">' + plate + '</span>' +
                         '</div>' +
                         '<div class="label-card-body">' +
                             '<img src="' + imgSrc + '" alt="QR">' +
                             '<div class="label-card-info">' +
                                 '<span class="veh-name">' + fullName + '</span>' +
-                                '<span class="scan-tip">📱 Escanea el QR con tu celular para registrar salidas y retornos.</span>' +
+                                '<span class="scan-tip">📱 ' + escHtml( __( 'Escanea el QR con tu celular para registrar salidas y retornos.', 'aura-suite' ) ) + '</span>' +
                                 '<span class="url-small">' + url + '</span>' +
                             '</div>' +
                         '</div>' +
                         '<div class="label-card-footer">' +
                             '<span class="site">' + siteName + '</span>' +
-                            '<span class="cut-hint">✂ recorte y pegue en tablero</span>' +
+                            '<span class="cut-hint">✂ ' + escHtml( __( 'recorte y pegue en tablero', 'aura-suite' ) ) + '</span>' +
                         '</div>' +
                     '</div>' +
                     '<div class="label-hang">' +
                         '<div class="label-hang-hole">' +
                             '<div class="hole"></div>' +
                             '<span class="plate">' + plate + '</span>' +
-                            '<span class="brand">VEHÍCULO</span>' +
+                            '<span class="brand">' + escHtml( __( 'VEHÍCULO', 'aura-suite' ) ) + '</span>' +
                         '</div>' +
                         '<div class="label-hang-body">' +
                             '<img src="' + imgSrc + '" alt="QR">' +
                             '<span class="veh-name">' + fullName + '</span>' +
-                            '<span class="scan-tip">📱 Escanea para registrar salidas / retornos</span>' +
+                            '<span class="scan-tip">📱 ' + escHtml( __( 'Escanea para registrar salidas / retornos', 'aura-suite' ) ) + '</span>' +
                             '<span class="url-small">' + url + '</span>' +
                         '</div>' +
-                        '<div class="label-hang-footer">' + siteName + ' · Perfore el círculo para colgar</div>' +
+                        '<div class="label-hang-footer">' + siteName + ' · ' + escHtml( __( 'Perfore el círculo para colgar', 'aura-suite' ) ) + '</div>' +
                     '</div>' +
                 '</div>' + /* /labels-grid 2 */
 

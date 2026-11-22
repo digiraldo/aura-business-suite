@@ -375,7 +375,7 @@ class Aura_Calendar_Programs {
 
         $name = sanitize_text_field( $data['name'] ?? '' );
         if ( empty( $name ) ) {
-            return new WP_Error( 'missing_name', __( 'El nombre del programa es obligatorio.', 'aura' ) );
+            return new WP_Error( 'missing_name', __( 'El nombre del programa es obligatorio.', 'aura-suite' ) );
         }
 
         $code = sanitize_text_field( $data['code'] ?? '' );
@@ -479,7 +479,7 @@ class Aura_Calendar_Programs {
         // Validar coherencia de rango de fechas
         if ( ! empty( $fields['start_date'] ) && ! empty( $fields['end_date'] ) ) {
             if ( strtotime( $fields['end_date'] ) < strtotime( $fields['start_date'] ) ) {
-                return new WP_Error( 'invalid_dates', __( 'La fecha de fin no puede ser anterior a la fecha de inicio.', 'aura' ) );
+                return new WP_Error( 'invalid_dates', __( 'La fecha de fin no puede ser anterior a la fecha de inicio.', 'aura-suite' ) );
             }
         }
 
@@ -510,7 +510,7 @@ class Aura_Calendar_Programs {
         if ( $id > 0 ) {
             $updated = $wpdb->update( $table, $clean_fields, [ 'id' => $id ], $clean_formats, [ '%d' ] );
             if ( $updated === false ) {
-                return new WP_Error( 'db_error', __( 'Error al actualizar el programa.', 'aura' ) );
+                return new WP_Error( 'db_error', __( 'Error al actualizar el programa.', 'aura-suite' ) );
             }
             self::sync_to_student_course( $id );
             return $id;
@@ -522,7 +522,7 @@ class Aura_Calendar_Programs {
 
             $inserted = $wpdb->insert( $table, $clean_fields, $clean_formats );
             if ( ! $inserted ) {
-                return new WP_Error( 'db_error', __( 'Error al registrar el programa.', 'aura' ) );
+                return new WP_Error( 'db_error', __( 'Error al registrar el programa.', 'aura-suite' ) );
             }
             $new_prog_id = (int) $wpdb->insert_id;
             self::sync_to_student_course( $new_prog_id );
@@ -717,7 +717,7 @@ class Aura_Calendar_Programs {
             ! current_user_can( 'aura_areas_view_all' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para ver programas.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para ver programas.', 'aura-suite' ) ] );
         }
 
         $area_id          = isset( $_POST['area_id'] ) && $_POST['area_id'] !== '' ? intval( $_POST['area_id'] ) : null;
@@ -767,17 +767,17 @@ class Aura_Calendar_Programs {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_calendar' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_cal_view_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $program = self::get( $id );
         if ( ! $program ) {
-            wp_send_json_error( [ 'message' => __( 'Programa no encontrado.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Programa no encontrado.', 'aura-suite' ) ] );
         }
 
         wp_send_json_success( [ 'program' => $program ] );
@@ -787,7 +787,7 @@ class Aura_Calendar_Programs {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'aura_create_calendar_events' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para gestionar programas.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para gestionar programas.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -801,13 +801,13 @@ class Aura_Calendar_Programs {
             $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
             $target_area      = ! empty( $_POST['area_id'] ) ? intval( $_POST['area_id'] ) : 0;
             if ( $target_area && ! in_array( $target_area, $allowed_area_ids, true ) ) {
-                wp_send_json_error( [ 'message' => __( 'No tienes autorización para gestionar programas en esta área.', 'aura' ) ], 403 );
+                wp_send_json_error( [ 'message' => __( 'No tienes autorización para gestionar programas en esta área.', 'aura-suite' ) ], 403 );
             }
             $prog_id = intval( $_POST['id'] ?? 0 );
             if ( $prog_id > 0 ) {
                 $prev_area = (int) $wpdb->get_var( $wpdb->prepare( "SELECT area_id FROM {$wpdb->prefix}aura_cal_programs WHERE id = %d", $prog_id ) );
                 if ( $prev_area && ! in_array( $prev_area, $allowed_area_ids, true ) ) {
-                    wp_send_json_error( [ 'message' => __( 'No tienes autorización para modificar programas de esta área.', 'aura' ) ], 403 );
+                    wp_send_json_error( [ 'message' => __( 'No tienes autorización para modificar programas de esta área.', 'aura-suite' ) ], 403 );
                 }
             }
         }
@@ -818,7 +818,7 @@ class Aura_Calendar_Programs {
         }
 
         wp_send_json_success( [
-            'message'    => __( 'Programa guardado con éxito.', 'aura' ),
+            'message'    => __( 'Programa guardado con éxito.', 'aura-suite' ),
             'program_id' => $res,
         ] );
     }
@@ -827,12 +827,12 @@ class Aura_Calendar_Programs {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_delete_programs' ) && ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para eliminar programas.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para eliminar programas.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -846,7 +846,7 @@ class Aura_Calendar_Programs {
             $prog_area = (int) $wpdb->get_var( $wpdb->prepare( "SELECT area_id FROM {$wpdb->prefix}aura_cal_programs WHERE id = %d", $id ) );
             $allowed_area_ids = Aura_Areas_Setup::get_user_area_ids( get_current_user_id() );
             if ( $prog_area && ! in_array( $prog_area, $allowed_area_ids, true ) ) {
-                wp_send_json_error( [ 'message' => __( 'No tienes autorización para eliminar programas de esta área.', 'aura' ) ], 403 );
+                wp_send_json_error( [ 'message' => __( 'No tienes autorización para eliminar programas de esta área.', 'aura-suite' ) ], 403 );
             }
         }
 
@@ -854,11 +854,11 @@ class Aura_Calendar_Programs {
         $ok    = self::delete( $id, $force );
         if ( $ok ) {
             $msg = $force
-                ? __( 'Programa y sus materias eliminados permanentemente.', 'aura' )
-                : __( 'Programa archivado correctamente.', 'aura' );
+                ? __( 'Programa y sus materias eliminados permanentemente.', 'aura-suite' )
+                : __( 'Programa archivado correctamente.', 'aura-suite' );
             wp_send_json_success( [ 'message' => $msg ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'No se pudo eliminar el programa.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se pudo eliminar el programa.', 'aura-suite' ) ] );
         }
     }
 
@@ -866,19 +866,19 @@ class Aura_Calendar_Programs {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'aura_cal_manage_calendar' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para restaurar programas.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para restaurar programas.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $ok = self::restore( $id );
         if ( $ok ) {
-            wp_send_json_success( [ 'message' => __( 'Programa y sus materias han sido restaurados exitosamente.', 'aura' ) ] );
+            wp_send_json_success( [ 'message' => __( 'Programa y sus materias han sido restaurados exitosamente.', 'aura-suite' ) ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'No se pudo restaurar el programa.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'No se pudo restaurar el programa.', 'aura-suite' ) ] );
         }
     }
 
@@ -886,7 +886,7 @@ class Aura_Calendar_Programs {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_programs' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para sincronizar cursos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para sincronizar cursos.', 'aura-suite' ) ] );
         }
 
         $result = self::sync_from_student_courses();
@@ -900,7 +900,7 @@ class Aura_Calendar_Programs {
 
         /* translators: %1$d: programas creados, %2$d: cursos ya existentes */
         $message = sprintf(
-            __( 'Sincronización completada: %1$d programa(s) nuevo(s) importado(s) desde Cursos de Estudiantes. %2$d ya existía(n) en el Calendario.', 'aura' ),
+            __( 'Sincronización completada: %1$d programa(s) nuevo(s) importado(s) desde Cursos de Estudiantes. %2$d ya existía(n) en el Calendario.', 'aura-suite' ),
             $created_count,
             $skipped_count
         );

@@ -247,16 +247,16 @@ if ( ! wp_script_is( 'aura-inventory-maintenance', 'enqueued' ) ) {
                                                 ?>
                                                 <optgroup label="<?php echo esc_attr( $group_labels[ $gkey ] ); ?>">
                                                     <?php foreach ( $glist as $eq ) :
-                                                        $interval_str = 'Bajo demanda';
+                                                        $interval_str = __( 'Bajo demanda', 'aura-suite' );
                                                         if ( $eq->requires_maintenance ) {
                                                             $p = [];
-                                                            if ( $eq->interval_months ) $p[] = $eq->interval_months . ' meses';
+                                                            if ( $eq->interval_months ) $p[] = sprintf( _n( '%d mes', '%d meses', $eq->interval_months, 'aura-suite' ), $eq->interval_months );
                                                             if ( $eq->interval_hours )  $p[] = $eq->interval_hours . ' h';
-                                                            $interval_str = implode( ' o ', $p ) ?: 'Programada';
+                                                            $interval_str = implode( ' ' . __( 'o', 'aura-suite' ) . ' ', $p ) ?: __( 'Programada', 'aura-suite' );
                                                         }
                                                         $label = $eq->name;
                                                         if ( $eq->brand )         $label .= ' · ' . $eq->brand;
-                                                        if ( $eq->internal_code ) $label .= ' [Cód: ' . $eq->internal_code . ']';
+                                                        if ( $eq->internal_code ) $label .= ' ' . sprintf( __( '[Cód: %s]', 'aura-suite' ), $eq->internal_code );
                                                         $label .= ' — ' . $eq->badge_text;
                                                     ?>
                                                     <option value="<?php echo esc_attr( $eq->id ); ?>"
@@ -268,7 +268,7 @@ if ( ! wp_script_is( 'aura-inventory-maintenance', 'enqueued' ) ) {
                                                             data-brand="<?php echo esc_attr( $eq->brand ); ?>"
                                                             data-model="<?php echo esc_attr( $eq->model ); ?>"
                                                             data-interval="<?php echo esc_attr( $interval_str ); ?>"
-                                                            data-oil="<?php echo esc_attr( $eq->oil_type ? $eq->oil_type . ( $eq->oil_capacity ? ' (' . $eq->oil_capacity . ' L)' : '' ) : 'No especificado' ); ?>"
+                                                            data-oil="<?php echo esc_attr( $eq->oil_type ? $eq->oil_type . ( $eq->oil_capacity ? ' (' . $eq->oil_capacity . ' L)' : '' ) : __( 'No especificado', 'aura-suite' ) ); ?>"
                                                             <?php selected( intval( $v('equipment_id', $preequip_id) ), intval( $eq->id ) ); ?>>
                                                         <?php echo esc_html( $label ); ?>
                                                     </option>
@@ -309,10 +309,10 @@ if ( ! wp_script_is( 'aura-inventory-maintenance', 'enqueued' ) ) {
                                                         </h3>
                                                         <div id="maint-card-badges" class="aura-maint-card-badges">
                                                             <span id="maint-card-code-badge" class="aura-inv-code-chip">
-                                                                <?php echo $preequip && ! empty( $preequip->internal_code ) ? 'Cód: ' . esc_html( wp_unslash( $preequip->internal_code ) ) : 'Activo'; ?>
+                                                                <?php echo $preequip && ! empty( $preequip->internal_code ) ? sprintf( esc_html__( 'Cód: %s', 'aura-suite' ), esc_html( wp_unslash( $preequip->internal_code ) ) ) : esc_html__( 'Activo', 'aura-suite' ); ?>
                                                             </span>
                                                             <span id="maint-card-status-badge" class="aura-inv-cat-chip">
-                                                                <?php echo $preequip && ! empty( $preequip->status ) ? esc_html( Aura_Inventory_Equipment::get_status_label( $preequip->status ) ) : 'Disponible'; ?>
+                                                                <?php echo $preequip && ! empty( $preequip->status ) ? esc_html( Aura_Inventory_Equipment::get_status_label( $preequip->status ) ) : esc_html__( 'Disponible', 'aura-suite' ); ?>
                                                             </span>
                                                         </div>
                                                     </div>
@@ -324,7 +324,7 @@ if ( ! wp_script_is( 'aura-inventory-maintenance', 'enqueued' ) ) {
                                                         </div>
                                                         <div>
                                                             <span class="aura-maint-meta-lbl"><?php _e( 'Aceite recomendado', 'aura-suite' ); ?></span>
-                                                            <strong id="maint-card-oil"><?php echo $preequip && $preequip->oil_type ? esc_html( $preequip->oil_type . ( $preequip->oil_capacity ? ' (' . $preequip->oil_capacity . ' L)' : '' ) ) : 'No especificado'; ?></strong>
+                                                            <strong id="maint-card-oil"><?php echo $preequip && $preequip->oil_type ? esc_html( $preequip->oil_type . ( $preequip->oil_capacity ? ' (' . $preequip->oil_capacity . ' L)' : '' ) ) : esc_html__( 'No especificado', 'aura-suite' ); ?></strong>
                                                         </div>
                                                         <div>
                                                             <span class="aura-maint-meta-lbl"><?php _e( 'Periodicidad', 'aura-suite' ); ?></span>
@@ -332,11 +332,11 @@ if ( ! wp_script_is( 'aura-inventory-maintenance', 'enqueued' ) ) {
                                                                 <?php
                                                                 if ( $preequip && $preequip->requires_maintenance ) {
                                                                     $p = [];
-                                                                    if ( $preequip->interval_months ) $p[] = $preequip->interval_months . ' meses';
+                                                                    if ( $preequip->interval_months ) $p[] = sprintf( _n( '%d mes', '%d meses', $preequip->interval_months, 'aura-suite' ), $preequip->interval_months );
                                                                     if ( $preequip->interval_hours )  $p[] = $preequip->interval_hours . ' h';
-                                                                    echo esc_html( implode( ' o ', $p ) ?: 'Programada' );
+                                                                    echo esc_html( implode( ' ' . __( 'o', 'aura-suite' ) . ' ', $p ) ?: __( 'Programada', 'aura-suite' ) );
                                                                 } else {
-                                                                    echo 'Bajo demanda';
+                                                                    esc_html_e( 'Bajo demanda', 'aura-suite' );
                                                                 }
                                                                 ?>
                                                             </strong>

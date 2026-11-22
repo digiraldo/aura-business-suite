@@ -6,6 +6,9 @@
 ( function ( $ ) {
     'use strict';
 
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
+
     // ─── Estado ──────────────────────────────────────────────────────────────
     const state = {
         currentType  : null,
@@ -16,20 +19,20 @@
 
     // ─── Mapas ─────────────────────────────────────────────────────────────
     const REPORT_LABELS = {
-        pl                 : 'Estado de Resultados (P&L)',
-        cashflow           : 'Flujo de Efectivo',
-        categories         : 'Análisis por Categoría',
-        pending            : 'Transacciones Pendientes',
-        budget             : 'Presupuesto vs Ejecutado',
-        budget_area_detail : 'Detalle por Área',
-        audit              : 'Auditoría Completa',
-        user_payments      : 'Sueldos / Pagos a Usuarios',
+        pl                 : __('Estado de Resultados (P&L)', 'aura-suite'),
+        cashflow           : __('Flujo de Efectivo', 'aura-suite'),
+        categories         : __('Análisis por Categoría', 'aura-suite'),
+        pending            : __('Transacciones Pendientes', 'aura-suite'),
+        budget             : __('Presupuesto vs Ejecutado', 'aura-suite'),
+        budget_area_detail : __('Detalle por Área', 'aura-suite'),
+        audit              : __('Auditoría Completa', 'aura-suite'),
+        user_payments      : __('Sueldos / Pagos a Usuarios', 'aura-suite'),
     };
 
     const STATUS_LABELS = {
-        approved: 'Aprobado',
-        pending : 'Pendiente',
-        rejected: 'Rechazado',
+        approved: __('Aprobado', 'aura-suite'),
+        pending : __('Pendiente', 'aura-suite'),
+        rejected: __('Rechazado', 'aura-suite'),
     };
 
     // ─── Init ─────────────────────────────────────────────────────────────
@@ -202,11 +205,11 @@
                     state.currentData   = res.data.data;
                     renderReport( res.data.type, res.data.params, res.data.data );
                 } else {
-                    showError( res.data || 'Error al generar el reporte.' );
+                    showError( res.data || __('Error al generar el reporte.', 'aura-suite') );
                 }
             },
             error: function () {
-                showError( 'Error de conexión. Intenta nuevamente.' );
+                showError( __('Error de conexión. Intenta nuevamente.', 'aura-suite') );
             },
         } );
     }
@@ -217,9 +220,9 @@
         // Cabecera de impresión
         $( '#print-report-title' ).text( REPORT_LABELS[ type ] || type );
         $( '#print-report-period' ).text(
-            params.start ? `${params.start} — ${params.end}` : 'Período global'
+            params.start ? `${params.start} — ${params.end}` : __('Período global', 'aura-suite')
         );
-        $( '#print-report-date' ).text( 'Generado: ' + new Date().toLocaleString( 'es' ) );
+        $( '#print-report-date' ).text( __('Generado:', 'aura-suite') + ' ' + new Date().toLocaleString( 'es' ) );
 
         // Destruir gráfico anterior si existe
         if ( state.reportChart ) {
@@ -249,19 +252,19 @@
         // KPIs
         const kpisHtml = `
             <div class="aura-report-kpi income">
-                <div class="aura-report-kpi__label">Total Ingresos</div>
+                <div class="aura-report-kpi__label">${__('Total Ingresos', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_income )}</div>
                 ${yearChangeHtml( data.prev_year?.income_pct_change )}
             </div>
             <div class="aura-report-kpi expense">
-                <div class="aura-report-kpi__label">Total Egresos</div>
+                <div class="aura-report-kpi__label">${__('Total Egresos', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_expense )}</div>
                 ${yearChangeHtml( data.prev_year?.expense_pct_change )}
             </div>
             <div class="aura-report-kpi balance">
-                <div class="aura-report-kpi__label">Balance Neto</div>
+                <div class="aura-report-kpi__label">${__('Balance Neto', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value ${data.net_balance >= 0 ? 'amount-income' : 'amount-expense'}">${formatMoney( data.net_balance )}</div>
-                ${data.prev_year ? `<div class="aura-report-kpi__sub">Año ant.: Ingresos ${formatMoney( data.prev_year.income )} / Egresos ${formatMoney( data.prev_year.expense )}</div>` : ''}
+                ${data.prev_year ? `<div class="aura-report-kpi__sub">${sprintf(__('Año ant.: Ingresos %1$s / Egresos %2$s', 'aura-suite'), formatMoney( data.prev_year.income ), formatMoney( data.prev_year.expense ))}</div>` : ''}
             </div>`;
         $( '#report-kpis' ).html( kpisHtml ).show();
 
@@ -274,29 +277,29 @@
         const exMap  = Object.fromEntries( data.expenses.map( r => [ r.category, r.total ] ) );
 
         state.reportChart = createBarChart( 'report-chart', allCats, [
-            { label: 'Ingresos', data: allCats.map( c => incMap[ c ] || 0 ), backgroundColor: 'rgba(22,163,74,.7)' },
-            { label: 'Egresos',  data: allCats.map( c => exMap[ c ]  || 0 ), backgroundColor: 'rgba(220,38,38,.7)' },
+            { label: __('Ingresos', 'aura-suite'), data: allCats.map( c => incMap[ c ] || 0 ), backgroundColor: 'rgba(22,163,74,.7)' },
+            { label: __('Egresos', 'aura-suite'),  data: allCats.map( c => exMap[ c ]  || 0 ), backgroundColor: 'rgba(220,38,38,.7)' },
         ] );
         $( '#report-chart-wrap' ).show();
 
         // Tabla
         let html = `<table class="aura-report-table">
-            <thead><tr><th>Tipo</th><th>Categoría</th><th>Monto</th></tr></thead><tbody>`;
+            <thead><tr><th>${__('Tipo', 'aura-suite')}</th><th>${__('Categoría', 'aura-suite')}</th><th>${__('Monto', 'aura-suite')}</th></tr></thead><tbody>`;
         if ( data.income.length ) {
-            html += `<tr class="section-header"><td colspan="3">Ingresos</td></tr>`;
+            html += `<tr class="section-header"><td colspan="3">${__('Ingresos', 'aura-suite')}</td></tr>`;
             data.income.forEach( r => {
-                html += `<tr><td>Ingreso</td><td>${esc( r.category )}</td><td class="amount-income">${formatMoney( r.total )}</td></tr>`;
+                html += `<tr><td>${__('Ingreso', 'aura-suite')}</td><td>${esc( r.category )}</td><td class="amount-income">${formatMoney( r.total )}</td></tr>`;
             } );
         }
         if ( data.expenses.length ) {
-            html += `<tr class="section-header"><td colspan="3">Egresos</td></tr>`;
+            html += `<tr class="section-header"><td colspan="3">${__('Egresos', 'aura-suite')}</td></tr>`;
             data.expenses.forEach( r => {
-                html += `<tr><td>Egreso</td><td>${esc( r.category )}</td><td class="amount-expense">${formatMoney( r.total )}</td></tr>`;
+                html += `<tr><td>${__('Egreso', 'aura-suite')}</td><td>${esc( r.category )}</td><td class="amount-expense">${formatMoney( r.total )}</td></tr>`;
             } );
         }
-        html += `<tr class="totals-row"><td colspan="2">Total Ingresos</td><td class="amount-income">${formatMoney( data.total_income )}</td></tr>`;
-        html += `<tr class="totals-row"><td colspan="2">Total Egresos</td><td class="amount-expense">${formatMoney( data.total_expense )}</td></tr>`;
-        html += `<tr class="totals-row"><td colspan="2"><strong>Balance Neto</strong></td><td class="${data.net_balance >= 0 ? 'amount-income' : 'amount-expense'}"><strong>${formatMoney( data.net_balance )}</strong></td></tr>`;
+        html += `<tr class="totals-row"><td colspan="2">${__('Total Ingresos', 'aura-suite')}</td><td class="amount-income">${formatMoney( data.total_income )}</td></tr>`;
+        html += `<tr class="totals-row"><td colspan="2">${__('Total Egresos', 'aura-suite')}</td><td class="amount-expense">${formatMoney( data.total_expense )}</td></tr>`;
+        html += `<tr class="totals-row"><td colspan="2"><strong>${__('Balance Neto', 'aura-suite')}</strong></td><td class="${data.net_balance >= 0 ? 'amount-income' : 'amount-expense'}"><strong>${formatMoney( data.net_balance )}</strong></td></tr>`;
         html += '</tbody></table>';
         $( '#report-table-wrap' ).html( html );
     }
@@ -306,15 +309,15 @@
     function renderCashflow( data ) {
         const kpisHtml = `
             <div class="aura-report-kpi income">
-                <div class="aura-report-kpi__label">Total Entradas</div>
+                <div class="aura-report-kpi__label">${__('Total Entradas', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_in )}</div>
             </div>
             <div class="aura-report-kpi expense">
-                <div class="aura-report-kpi__label">Total Salidas</div>
+                <div class="aura-report-kpi__label">${__('Total Salidas', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_out )}</div>
             </div>
             <div class="aura-report-kpi balance">
-                <div class="aura-report-kpi__label">Flujo Neto</div>
+                <div class="aura-report-kpi__label">${__('Flujo Neto', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value ${data.net >= 0 ? 'amount-income' : 'amount-expense'}">${formatMoney( data.net )}</div>
             </div>`;
         $( '#report-kpis' ).html( kpisHtml ).show();
@@ -324,13 +327,13 @@
         const outs = methods.map( m => data.by_method[ m ]?.expense?.total || 0 );
 
         state.reportChart = createBarChart( 'report-chart', methods, [
-            { label: 'Entradas', data: ins,  backgroundColor: 'rgba(22,163,74,.7)' },
-            { label: 'Salidas',  data: outs, backgroundColor: 'rgba(220,38,38,.7)' },
+            { label: __('Entradas', 'aura-suite'), data: ins,  backgroundColor: 'rgba(22,163,74,.7)' },
+            { label: __('Salidas', 'aura-suite'),  data: outs, backgroundColor: 'rgba(220,38,38,.7)' },
         ] );
         $( '#report-chart-wrap' ).show();
 
         let html = `<table class="aura-report-table">
-            <thead><tr><th>Método de Pago</th><th>Entradas</th><th># Tx</th><th>Salidas</th><th># Tx</th><th>Neto</th></tr></thead><tbody>`;
+            <thead><tr><th>${__('Método de Pago', 'aura-suite')}</th><th>${__('Entradas', 'aura-suite')}</th><th>${__('# Tx', 'aura-suite')}</th><th>${__('Salidas', 'aura-suite')}</th><th>${__('# Tx', 'aura-suite')}</th><th>${__('Neto', 'aura-suite')}</th></tr></thead><tbody>`;
         for ( const [ method, types ] of Object.entries( data.by_method ) ) {
             const inc_t = types.income?.total  || 0;
             const inc_c = types.income?.count  || 0;
@@ -346,7 +349,7 @@
         }
         const netClass = data.net >= 0 ? 'amount-income' : 'amount-expense';
         html += `<tr class="totals-row">
-            <td><strong>TOTALES</strong></td>
+            <td><strong>${__('TOTALES', 'aura-suite')}</strong></td>
             <td class="amount-income"><strong>${formatMoney( data.total_in )}</strong></td><td></td>
             <td class="amount-expense"><strong>${formatMoney( data.total_out )}</strong></td><td></td>
             <td class="${netClass}"><strong>${formatMoney( data.net )}</strong></td>
@@ -367,14 +370,14 @@
 
         let kpisHtml = `
             <div class="aura-report-kpi balance">
-                <div class="aura-report-kpi__label">Total Movimiento</div>
+                <div class="aura-report-kpi__label">${__('Total Movimiento', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( grandTotal )}</div>
             </div>`;
 
         if ( selectedTypes.includes( 'income' ) || totalIncome > 0 ) {
             kpisHtml += `
             <div class="aura-report-kpi income">
-                <div class="aura-report-kpi__label">Total Ingresos</div>
+                <div class="aura-report-kpi__label">${__('Total Ingresos', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( totalIncome )}</div>
             </div>`;
         }
@@ -382,7 +385,7 @@
         if ( selectedTypes.includes( 'expense' ) || totalExpense > 0 ) {
             kpisHtml += `
             <div class="aura-report-kpi expense">
-                <div class="aura-report-kpi__label">Total Egresos</div>
+                <div class="aura-report-kpi__label">${__('Total Egresos', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( totalExpense )}</div>
             </div>`;
         }
@@ -390,14 +393,14 @@
         if ( selectedTypes.includes( 'capital' ) || totalCapital > 0 ) {
             kpisHtml += `
             <div class="aura-report-kpi capital" style="border-left-color: #8b5cf6;">
-                <div class="aura-report-kpi__label">Gastos Capital (CapEx)</div>
+                <div class="aura-report-kpi__label">${__('Gastos Capital (CapEx)', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value" style="color: #7c3aed;">${formatMoney( totalCapital )}</div>
             </div>`;
         }
 
         kpisHtml += `
             <div class="aura-report-kpi pending">
-                <div class="aura-report-kpi__label">Categorías Principales</div>
+                <div class="aura-report-kpi__label">${__('Categorías Principales', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${parents.length}</div>
             </div>`;
         $( '#report-kpis' ).html( kpisHtml ).show();
@@ -421,10 +424,10 @@
                 colors       = parents.map( p => p.color || '#6366f1' );
                 subcatCounts = parents.map( p => p.subcategories ? p.subcategories.length : 0 );
                 catIds       = parents.map( p => p.id );
-                chartTitle   = 'Distribución por Categorías Principales';
+                chartTitle   = __('Distribución por Categorías Principales', 'aura-suite');
                 $( '#report-cat-drilldown-bar' ).hide();
-                $( '#report-donut-legend-title' ).text( 'Categorías Principales' );
-                $( '#report-donut-legend-count' ).text( `${parents.length} categorías` );
+                $( '#report-donut-legend-title' ).text( __('Categorías Principales', 'aura-suite') );
+                $( '#report-donut-legend-count' ).text( sprintf(__('%d categorías', 'aura-suite'), parents.length) );
             } else {
                 // Nivel 2: Subcategorías del Padre seleccionado
                 const parentObj = parents.find( p => p.id === parentId );
@@ -434,11 +437,11 @@
                     colors       = parentObj.subcategories.map( s => s.color || '#10b981' );
                     subcatCounts = parentObj.subcategories.map( () => 0 );
                     catIds       = [];
-                    chartTitle   = 'Desglose de Subcategorías: ' + parentObj.name;
+                    chartTitle   = __('Desglose de Subcategorías:', 'aura-suite') + ' ' + parentObj.name;
                     $( '#report-cat-drilldown-title' ).text( parentObj.name );
                     $( '#report-cat-drilldown-bar' ).show();
-                    $( '#report-donut-legend-title' ).text( 'Subcategorías: ' + parentObj.name );
-                    $( '#report-donut-legend-count' ).text( `${parentObj.subcategories.length} subcats` );
+                    $( '#report-donut-legend-title' ).text( __('Subcategorías:', 'aura-suite') + ' ' + parentObj.name );
+                    $( '#report-donut-legend-count' ).text( sprintf(__('%d subcats', 'aura-suite'), parentObj.subcategories.length) );
                 } else {
                     drawCategoriesChart( null );
                     return;
@@ -515,9 +518,9 @@
 
                 if ( isLevel1 ) {
                     if ( subCount > 1 ) {
-                        $nameWrap.append( `<span class="aura-subcat-badge" title="${subCount} subcategorías registradas"><span class="dashicons dashicons-category"></span> ${subCount} subcats</span>` );
+                        $nameWrap.append( `<span class="aura-subcat-badge" title="${sprintf(__('%d subcategorías registradas', 'aura-suite'), subCount)}"><span class="dashicons dashicons-category"></span> ${sprintf(__('%d subcats', 'aura-suite'), subCount)}</span>` );
                     } else {
-                        $nameWrap.append( '<span class="aura-subcat-badge aura-subcat-badge--none" title="Sin subcategorías">Directo</span>' );
+                        $nameWrap.append( '<span class="aura-subcat-badge aura-subcat-badge--none" title="' + __('Sin subcategorías', 'aura-suite') + '">' + __('Directo', 'aura-suite') + '</span>' );
                     }
                 }
 
@@ -540,7 +543,7 @@
 
                 // Click para drilldown si es nivel 1 y tiene subcategorías
                 if ( hasSubs && catIds[i] ) {
-                    $item.attr( 'title', 'Haz clic para ver el desglose de ' + lbl );
+                    $item.attr( 'title', sprintf(__('Haz clic para ver el desglose de %s', 'aura-suite'), lbl) );
                     $item.on( 'click', function () {
                         currentChartParentId = catIds[i];
                         drawCategoriesChart( currentChartParentId );
@@ -555,9 +558,9 @@
         let chartWrapHtml = `
             <div id="report-cat-drilldown-bar" class="aura-drilldown-nav-bar" style="display:none;margin-bottom:14px;">
                 <button type="button" class="button button-small" id="btn-back-to-parents">
-                    <span class="dashicons dashicons-arrow-left-alt2"></span> Volver a Categorías Principales
+                    <span class="dashicons dashicons-arrow-left-alt2"></span> ${__('Volver a Categorías Principales', 'aura-suite')}
                 </button>
-                <span class="aura-drilldown-badge">Desglose: <strong id="report-cat-drilldown-title"></strong></span>
+                <span class="aura-drilldown-badge">${__('Desglose:', 'aura-suite')} <strong id="report-cat-drilldown-title"></strong></span>
             </div>
             <div class="aura-donut-report-layout">
                 <div class="aura-donut-chart-box">
@@ -565,7 +568,7 @@
                 </div>
                 <div class="aura-donut-legend-box">
                     <div class="aura-donut-legend-header">
-                        <span class="aura-donut-legend-header__title" id="report-donut-legend-title">Categorías Principales</span>
+                        <span class="aura-donut-legend-header__title" id="report-donut-legend-title">${__('Categorías Principales', 'aura-suite')}</span>
                         <span class="aura-donut-legend-header__count" id="report-donut-legend-count"></span>
                     </div>
                     <div class="aura-donut-legend" id="report-donut-legend"></div>
@@ -583,11 +586,11 @@
         // Helpers de badges de tipo
         function getTypeBadgeHtml( type ) {
             if ( type === 'income' ) {
-                return '<span class="aura-status-badge approved" style="background:#ecfdf5;color:#047857;border-color:#10b981;">Ingreso</span>';
+                return '<span class="aura-status-badge approved" style="background:#ecfdf5;color:#047857;border-color:#10b981;">' + __('Ingreso', 'aura-suite') + '</span>';
             } else if ( type === 'capital' ) {
                 return '<span class="aura-status-badge capital" style="background:#f5f3ff;color:#6d28d9;border-color:#8b5cf6;">CapEx</span>';
             } else {
-                return '<span class="aura-status-badge rejected" style="background:#fef2f2;color:#b91c1c;border-color:#ef4444;">Egreso</span>';
+                return '<span class="aura-status-badge rejected" style="background:#fef2f2;color:#b91c1c;border-color:#ef4444;">' + __('Egreso', 'aura-suite') + '</span>';
             }
         }
 
@@ -600,13 +603,13 @@
         // Tabla Jerárquica con Acordeón
         let html = `
             <div class="aura-table-toolbar">
-                <span class="aura-table-toolbar__title"><strong>Estructura Jerárquica de Categorías y Subcategorías</strong></span>
+                <span class="aura-table-toolbar__title"><strong>${__('Estructura Jerárquica de Categorías y Subcategorías', 'aura-suite')}</strong></span>
                 <div class="aura-table-toolbar__actions">
                     <button type="button" class="button button-small" id="btn-expand-all-cats">
-                        <span class="dashicons dashicons-plus-alt2"></span> Expandir Todas
+                        <span class="dashicons dashicons-plus-alt2"></span> ${__('Expandir Todas', 'aura-suite')}
                     </button>
                     <button type="button" class="button button-small" id="btn-collapse-all-cats">
-                        <span class="dashicons dashicons-minus"></span> Colapsar Todas
+                        <span class="dashicons dashicons-minus"></span> ${__('Colapsar Todas', 'aura-suite')}
                     </button>
                 </div>
             </div>
@@ -614,13 +617,13 @@
             <thead>
                 <tr>
                     <th style="width:38px;"></th>
-                    <th>Categoría / Subcategoría</th>
-                    <th>Tipo</th>
-                    <th>Monto Total</th>
-                    <th>Movimientos</th>
-                    <th>% Sobre Padre</th>
-                    <th>% Sobre Total</th>
-                    <th style="width:110px;text-align:center;">Acción</th>
+                    <th>${__('Categoría / Subcategoría', 'aura-suite')}</th>
+                    <th>${__('Tipo', 'aura-suite')}</th>
+                    <th>${__('Monto Total', 'aura-suite')}</th>
+                    <th>${__('Movimientos', 'aura-suite')}</th>
+                    <th>${__('% Sobre Padre', 'aura-suite')}</th>
+                    <th>${__('% Sobre Total', 'aura-suite')}</th>
+                    <th style="width:110px;text-align:center;">${__('Acción', 'aura-suite')}</th>
                 </tr>
             </thead>
             <tbody>`;
@@ -632,12 +635,12 @@
 
             html += `<tr class="aura-cat-parent-row ${hasSubs && !isSingleDirect ? 'has-children' : ''}" data-parent-id="${p.id}">
                 <td style="text-align:center;">
-                    ${hasSubs && !isSingleDirect ? `<button type="button" class="aura-tree-toggle-btn" title="Mostrar/Ocultar subcategorías"><span class="dashicons dashicons-plus-alt2"></span></button>` : `<span class="aura-tree-dot"></span>`}
+                    ${hasSubs && !isSingleDirect ? `<button type="button" class="aura-tree-toggle-btn" title="${__('Mostrar/Ocultar subcategorías', 'aura-suite')}"><span class="dashicons dashicons-plus-alt2"></span></button>` : `<span class="aura-tree-dot"></span>`}
                 </td>
                 <td>
                     <span class="aura-cat-color-dot" style="background:${p.color};"></span>
                     <strong class="aura-cat-parent-name">${esc( p.name )}</strong>
-                    ${hasSubs && !isSingleDirect ? `<span class="aura-subcat-count-badge">${subCount} subcats</span>` : `<span class="aura-subcat-count-badge aura-subcat-count-badge--direct">Directo</span>`}
+                    ${hasSubs && !isSingleDirect ? `<span class="aura-subcat-count-badge">${sprintf(__('%d subcats', 'aura-suite'), subCount)}</span>` : `<span class="aura-subcat-count-badge aura-subcat-count-badge--direct">${__('Directo', 'aura-suite')}</span>`}
                 </td>
                 <td>${getTypeBadgeHtml( p.type )}</td>
                 <td class="${getTypeAmountClass( p.type )}"><strong>${formatMoney( p.total )}</strong></td>
@@ -645,7 +648,7 @@
                 <td><span style="color:#64748b;font-size:11px;">100.0%</span></td>
                 <td><span class="aura-pct-pill">${p.percentage}%</span></td>
                 <td style="text-align:center;">
-                    ${hasSubs && !isSingleDirect ? `<button type="button" class="button button-small aura-btn-drill-chart" data-parent-id="${p.id}" title="Ver gráfico de subcategorías"><span class="dashicons dashicons-chart-pie"></span> Gráfico</button>` : '—'}
+                    ${hasSubs && !isSingleDirect ? `<button type="button" class="button button-small aura-btn-drill-chart" data-parent-id="${p.id}" title="${__('Ver gráfico de subcategorías', 'aura-suite')}"><span class="dashicons dashicons-chart-pie"></span> ${__('Gráfico', 'aura-suite')}</button>` : '—'}
                 </td>
             </tr>`;
 
@@ -670,11 +673,11 @@
         } );
 
         if ( ! parents.length ) {
-            html += '<tr><td colspan="8" class="aura-no-data">Sin movimientos para el período seleccionado.</td></tr>';
+            html += '<tr><td colspan="8" class="aura-no-data">' + __('Sin movimientos para el período seleccionado.', 'aura-suite') + '</td></tr>';
         } else {
             html += `<tr class="totals-row">
                 <td></td>
-                <td><strong>TOTAL GENERAL</strong></td>
+                <td><strong>${__('TOTAL GENERAL', 'aura-suite')}</strong></td>
                 <td>—</td>
                 <td class="amount-expense"><strong>${formatMoney( grandTotal )}</strong></td>
                 <td><strong>${parents.reduce( ( sum, p ) => sum + p.count, 0 )}</strong></td>
@@ -734,38 +737,38 @@
     function renderPending( data ) {
         const kpisHtml = `
             <div class="aura-report-kpi pending">
-                <div class="aura-report-kpi__label">Transacciones pendientes</div>
+                <div class="aura-report-kpi__label">${__('Transacciones pendientes', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${data.count}</div>
             </div>
             <div class="aura-report-kpi expense">
-                <div class="aura-report-kpi__label">Monto total pendiente</div>
+                <div class="aura-report-kpi__label">${__('Monto total pendiente', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_pending )}</div>
             </div>`;
         $( '#report-kpis' ).html( kpisHtml ).show();
         $( '#report-chart-wrap' ).hide();
 
         let html = `<table class="aura-report-table">
-            <thead><tr><th>Usuario</th><th>Tipo</th><th>Categoría</th><th>Monto</th><th>Descripción</th><th>Fecha</th><th>Días</th></tr></thead><tbody>`;
+            <thead><tr><th>${__('Usuario', 'aura-suite')}</th><th>${__('Tipo', 'aura-suite')}</th><th>${__('Categoría', 'aura-suite')}</th><th>${__('Monto', 'aura-suite')}</th><th>${__('Descripción', 'aura-suite')}</th><th>${__('Fecha', 'aura-suite')}</th><th>${__('Días', 'aura-suite')}</th></tr></thead><tbody>`;
 
         let totalRendered = 0;
         for ( const [ user, txs ] of Object.entries( data.by_user ) ) {
-            html += `<tr class="section-header"><td colspan="7">👤 ${esc( user )} — ${txs.length} pendiente(s)</td></tr>`;
+            html += `<tr class="section-header"><td colspan="7">👤 ${esc( user )} — ${sprintf(__('%d pendiente(s)', 'aura-suite'), txs.length)}</td></tr>`;
             txs.forEach( r => {
                 const ageCls = r.age_days > 14 ? 'amount-expense' : ( r.age_days > 7 ? 'amount-net negative' : '' );
                 html += `<tr>
                     <td>${esc( user )}</td>
-                    <td>${r.transaction_type === 'income' ? 'Ingreso' : 'Egreso'}</td>
+                    <td>${r.transaction_type === 'income' ? __('Ingreso', 'aura-suite') : __('Egreso', 'aura-suite')}</td>
                     <td>${esc( r.category_name )}</td>
                     <td class="${r.transaction_type === 'income' ? 'amount-income' : 'amount-expense'}">${formatMoney( r.amount )}</td>
                     <td>${esc( r.description || '—' )}</td>
                     <td>${r.transaction_date}</td>
-                    <td class="${ageCls}">${r.age_days} días</td>
+                    <td class="${ageCls}">${sprintf(__('%d días', 'aura-suite'), r.age_days)}</td>
                 </tr>`;
                 totalRendered++;
             } );
         }
-        if ( totalRendered === 0 ) html += '<tr><td colspan="7" class="aura-no-data">No hay transacciones pendientes. ✅</td></tr>';
-        html += `<tr class="totals-row"><td colspan="3"><strong>TOTAL PENDIENTE</strong></td><td class="amount-expense"><strong>${formatMoney( data.total_pending )}</strong></td><td colspan="3"></td></tr>`;
+        if ( totalRendered === 0 ) html += '<tr><td colspan="7" class="aura-no-data">' + __('No hay transacciones pendientes. ✅', 'aura-suite') + '</td></tr>';
+        html += `<tr class="totals-row"><td colspan="3"><strong>${__('TOTAL PENDIENTE', 'aura-suite')}</strong></td><td class="amount-expense"><strong>${formatMoney( data.total_pending )}</strong></td><td colspan="3"></td></tr>`;
         html += '</tbody></table>';
         $( '#report-table-wrap' ).html( html );
     }
@@ -778,37 +781,37 @@
             : 0;
         const kpisHtml = `
             <div class="aura-report-kpi balance">
-                <div class="aura-report-kpi__label">Presupuesto Total</div>
+                <div class="aura-report-kpi__label">${__('Presupuesto Total', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_budget )}</div>
             </div>
             <div class="aura-report-kpi expense">
-                <div class="aura-report-kpi__label">Ejecutado Total</div>
+                <div class="aura-report-kpi__label">${__('Ejecutado Total', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_executed )}</div>
-                <div class="aura-report-kpi__sub">${exec_pct}% del presupuesto</div>
+                <div class="aura-report-kpi__sub">${sprintf(__('%s%% del presupuesto', 'aura-suite'), exec_pct)}</div>
             </div>
             <div class="aura-report-kpi income">
-                <div class="aura-report-kpi__label">Disponible</div>
+                <div class="aura-report-kpi__label">${__('Disponible', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_budget - data.total_executed )}</div>
             </div>`;
         $( '#report-kpis' ).html( kpisHtml ).show();
 
         // Labels combinados: Área / Categoría
         const labels = data.budgets.map( r => {
-            const area = r.area_name || 'Sin área';
-            const cat = r.category_name || 'Sin categoría';
+            const area = r.area_name || __('Sin área', 'aura-suite');
+            const cat = r.category_name || __('Sin categoría', 'aura-suite');
             return `${area} / ${cat}`;
         } );
         const budgets  = data.budgets.map( r => r.budget_amount );
         const executed = data.budgets.map( r => r.executed );
 
         state.reportChart = createBarChart( 'report-chart', labels, [
-            { label: 'Presupuesto', data: budgets,  backgroundColor: 'rgba(37,99,235,.6)' },
-            { label: 'Ejecutado',  data: executed, backgroundColor: data.budgets.map( r => r.overrun ? 'rgba(220,38,38,.7)' : 'rgba(22,163,74,.7)' ) },
+            { label: __('Presupuesto', 'aura-suite'), data: budgets,  backgroundColor: 'rgba(37,99,235,.6)' },
+            { label: __('Ejecutado', 'aura-suite'),  data: executed, backgroundColor: data.budgets.map( r => r.overrun ? 'rgba(220,38,38,.7)' : 'rgba(22,163,74,.7)' ) },
         ] );
         $( '#report-chart-wrap' ).show();
 
         let html = `<table class="aura-report-table">
-            <thead><tr><th>Área/Programa</th><th>Categoría</th><th>Presupuesto</th><th>Ejecutado</th><th>% Ejecución</th><th>Disponible</th><th>Proyectado</th><th>Estado</th></tr></thead><tbody>`;
+            <thead><tr><th>${__('Área/Programa', 'aura-suite')}</th><th>${__('Categoría', 'aura-suite')}</th><th>${__('Presupuesto', 'aura-suite')}</th><th>${__('Ejecutado', 'aura-suite')}</th><th>${__('% Ejecución', 'aura-suite')}</th><th>${__('Disponible', 'aura-suite')}</th><th>${__('Proyectado', 'aura-suite')}</th><th>${__('Estado', 'aura-suite')}</th></tr></thead><tbody>`;
         data.budgets.forEach( r => {
             const fillCls = r.pct > 100 ? 'over' : ( r.pct > 80 ? 'warn' : '' );
             const bar = `<div class="aura-progress-wrap">
@@ -821,21 +824,21 @@
             const areaColor = r.area_color || '#6B7280';
             const areaBadge = `<span class="aura-area-badge" style="background-color:${areaColor}20;border-color:${areaColor}">
                 <span class="dashicons ${areaIcon}" style="color:${areaColor}"></span>
-                ${esc( r.area_name || 'Sin área' )}
+                ${esc( r.area_name || __('Sin área', 'aura-suite') )}
             </span>`;
             
             html += `<tr>
                 <td>${areaBadge}</td>
-                <td>${esc( r.category_name || 'Sin categoría' )}</td>
+                <td>${esc( r.category_name || __('Sin categoría', 'aura-suite') )}</td>
                 <td>${formatMoney( r.budget_amount )}</td>
                 <td class="${r.overrun ? 'amount-expense' : 'amount-income'}">${formatMoney( r.executed )}</td>
                 <td>${bar}</td>
                 <td>${formatMoney( r.remaining )}</td>
                 <td>${formatMoney( r.projected )}</td>
-                <td>${r.overrun ? '<span class="aura-status-badge rejected">Sobregiro</span>' : '<span class="aura-status-badge approved">OK</span>'}</td>
+                <td>${r.overrun ? '<span class="aura-status-badge rejected">' + __('Sobregiro', 'aura-suite') + '</span>' : '<span class="aura-status-badge approved">' + __('OK', 'aura-suite') + '</span>'}</td>
             </tr>`;
         } );
-        if ( ! data.budgets.length ) html += '<tr><td colspan="8" class="aura-no-data">No hay presupuestos activos configurados.</td></tr>';
+        if ( ! data.budgets.length ) html += '<tr><td colspan="8" class="aura-no-data">' + __('No hay presupuestos activos configurados.', 'aura-suite') + '</td></tr>';
         html += '</tbody></table>';
         $( '#report-table-wrap' ).html( html );
     }
@@ -847,7 +850,7 @@
             return;
         }
 
-        const areaName  = data.area?.name || 'Área';
+        const areaName  = data.area?.name || __('Área', 'aura-suite');
         const areaColor = data.area?.color || '#2271b1';
         const areaIcon  = data.area?.icon  || 'dashicons-building';
         const pctColor  = data.pct > 100 ? '#d63638' : ( data.pct >= 80 ? '#f97316' : '#00a32a' );
@@ -855,24 +858,24 @@
         // KPIs
         const kpisHtml = `
             <div class="aura-report-kpi balance">
-                <div class="aura-report-kpi__label">Presupuesto Total Área</div>
+                <div class="aura-report-kpi__label">${__('Presupuesto Total Área', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_budget )}</div>
             </div>
             <div class="aura-report-kpi income">
-                <div class="aura-report-kpi__label">Total Ingresos</div>
+                <div class="aura-report-kpi__label">${__('Total Ingresos', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_income )}</div>
             </div>
             <div class="aura-report-kpi expense">
-                <div class="aura-report-kpi__label">Total Egresos</div>
+                <div class="aura-report-kpi__label">${__('Total Egresos', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.total_expense )}</div>
-                <div class="aura-report-kpi__sub" style="color:${pctColor}">${data.pct}% ejecutado</div>
+                <div class="aura-report-kpi__sub" style="color:${pctColor}">${sprintf(__('%s%% ejecutado', 'aura-suite'), data.pct)}</div>
             </div>
             <div class="aura-report-kpi ${data.total_expense > data.total_budget && data.total_budget > 0 ? 'expense' : 'income'}">
-                <div class="aura-report-kpi__label">Disponible</div>
+                <div class="aura-report-kpi__label">${__('Disponible', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( data.available )}</div>
             </div>
             <div class="aura-report-kpi balance">
-                <div class="aura-report-kpi__label">Transacciones</div>
+                <div class="aura-report-kpi__label">${__('Transacciones', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${data.tx_count}</div>
             </div>`;
         $( '#report-kpis' ).html( kpisHtml ).show();
@@ -885,9 +888,9 @@
         const incomes   = cats.map( c => c.total_income );
 
         state.reportChart = createBarChart( 'report-chart', labels, [
-            { label: 'Presupuesto', data: budgets,  backgroundColor: 'rgba(37,99,235,.45)' },
-            { label: 'Ejecutado',   data: expenses, backgroundColor: cats.map( c => c.overrun ? 'rgba(220,38,38,.7)' : 'rgba(22,163,74,.7)' ) },
-            { label: 'Ingresos',    data: incomes,  backgroundColor: 'rgba(16,185,129,.5)' },
+            { label: __('Presupuesto', 'aura-suite'), data: budgets,  backgroundColor: 'rgba(37,99,235,.45)' },
+            { label: __('Ejecutado', 'aura-suite'),   data: expenses, backgroundColor: cats.map( c => c.overrun ? 'rgba(220,38,38,.7)' : 'rgba(22,163,74,.7)' ) },
+            { label: __('Ingresos', 'aura-suite'),    data: incomes,  backgroundColor: 'rgba(16,185,129,.5)' },
         ] );
         $( '#report-chart-wrap' ).show();
 
@@ -904,8 +907,8 @@
             const fillCls  = pct > 100 ? 'over' : ( pct >= 80 ? 'warn' : '' );
             const budgetInfo = cat.budget > 0
                 ? `<span style="margin-left:12px;font-size:12px;color:#6b7280;">
-                       Presupuesto: ${formatMoney(cat.budget)} &nbsp;|&nbsp;
-                       Ejecutado: ${formatMoney(cat.total_expense)} &nbsp;|&nbsp;
+                       ${__('Presupuesto:', 'aura-suite')} ${formatMoney(cat.budget)} &nbsp;|&nbsp;
+                       ${__('Ejecutado:', 'aura-suite')} ${formatMoney(cat.total_expense)} &nbsp;|&nbsp;
                        <span class="aura-progress-wrap" style="display:inline-flex;gap:6px;align-items:center;">
                            <span class="aura-progress-bar" style="width:80px;display:inline-block;">
                                <span class="aura-progress-bar__fill ${fillCls}" style="width:${Math.min(pct,100)}%"></span>
@@ -922,17 +925,17 @@
                 </h3>
                 <table class="aura-report-table" style="margin:0;">
                     <thead><tr>
-                        <th>ID</th><th>Fecha</th><th>Tipo</th><th>Monto</th>
-                        <th>Descripción</th><th>M\u00e9todo</th><th>Estado</th><th>Registrado por</th>
+                        <th>${__('ID', 'aura-suite')}</th><th>${__('Fecha', 'aura-suite')}</th><th>${__('Tipo', 'aura-suite')}</th><th>${__('Monto', 'aura-suite')}</th>
+                        <th>${__('Descripción', 'aura-suite')}</th><th>${__('Método', 'aura-suite')}</th><th>${__('Estado', 'aura-suite')}</th><th>${__('Registrado por', 'aura-suite')}</th>
                     </tr></thead><tbody>`;
 
-            const PAYMENT_LABELS = { cash:'Efectivo', transfer:'Transferencia', check:'Cheque', card:'Tarjeta', other:'Otro' };
+            const PAYMENT_LABELS = { cash:__('Efectivo', 'aura-suite'), transfer:__('Transferencia', 'aura-suite'), check:__('Cheque', 'aura-suite'), card:__('Tarjeta', 'aura-suite'), other:__('Otro', 'aura-suite') };
             cat.transactions.forEach( tx => {
                 const isIncome = tx.transaction_type === 'income';
                 html += `<tr>
                     <td>${tx.id}</td>
                     <td>${tx.transaction_date}</td>
-                    <td>${isIncome ? '<span class="aura-status-badge approved">Ingreso</span>' : '<span class="aura-status-badge rejected">Egreso</span>'}</td>
+                    <td>${isIncome ? '<span class="aura-status-badge approved">' + __('Ingreso', 'aura-suite') + '</span>' : '<span class="aura-status-badge rejected">' + __('Egreso', 'aura-suite') + '</span>'}</td>
                     <td class="${isIncome?'amount-income':'amount-expense'}">${formatMoney(tx.amount)}</td>
                     <td>${esc(tx.description||'\u2014')}</td>
                     <td>${PAYMENT_LABELS[tx.payment_method]||tx.payment_method||'\u2014'}</td>
@@ -944,14 +947,14 @@
             const subtotalInc = cat.total_income > 0
                 ? `<td class="amount-income">${formatMoney(cat.total_income)}</td><td colspan="5"></td>` : '';
             html += `<tr class="totals-row">
-                <td colspan="3"><strong>Subtotal ${esc(cat.name)}</strong></td>
+                <td colspan="3"><strong>${sprintf(__('Subtotal %s', 'aura-suite'), esc(cat.name))}</strong></td>
                 <td class="amount-expense"><strong>${formatMoney(cat.total_expense)}</strong></td>
                 <td colspan="4"></td>
             </tr></tbody></table></div>`;
         } );
 
         if ( ! data.by_category.length ) {
-            html += '<p class="aura-no-data">No hay transacciones para esta área en el período seleccionado.</p>';
+            html += '<p class="aura-no-data">' + __('No hay transacciones para esta área en el período seleccionado.', 'aura-suite') + '</p>';
         }
 
         $( '#report-table-wrap' ).html( html );
@@ -961,15 +964,15 @@
     function renderAudit( data ) {
         const kpisHtml = `
             <div class="aura-report-kpi balance">
-                <div class="aura-report-kpi__label">Total transacciones</div>
+                <div class="aura-report-kpi__label">${__('Total transacciones', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${data.count}</div>
-                ${data.count >= 500 ? '<div class="aura-report-kpi__sub">Limitado a 500 registros</div>' : ''}
+                ${data.count >= 500 ? '<div class="aura-report-kpi__sub">' + __('Limitado a 500 registros', 'aura-suite') + '</div>' : ''}
             </div>`;
         $( '#report-kpis' ).html( kpisHtml ).show();
         $( '#report-chart-wrap' ).hide();
 
         let html = `<table class="aura-report-table">
-            <thead><tr><th>ID</th><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Monto</th><th>Estado</th><th>Creado por</th><th>Aprobado por</th><th>Comprobante</th></tr></thead><tbody>`;
+            <thead><tr><th>${__('ID', 'aura-suite')}</th><th>${__('Fecha', 'aura-suite')}</th><th>${__('Tipo', 'aura-suite')}</th><th>${__('Categoría', 'aura-suite')}</th><th>${__('Monto', 'aura-suite')}</th><th>${__('Estado', 'aura-suite')}</th><th>${__('Creado por', 'aura-suite')}</th><th>${__('Aprobado por', 'aura-suite')}</th><th>${__('Comprobante', 'aura-suite')}</th></tr></thead><tbody>`;
         data.rows.forEach( r => {
             html += `<tr>
                 <td>${r.id}</td>
@@ -983,7 +986,7 @@
                 <td>${r.receipt_file ? '✅' : '—'}</td>
             </tr>`;
         } );
-        if ( ! data.rows.length ) html += '<tr><td colspan="9" class="aura-no-data">Sin transacciones para el período y filtros seleccionados.</td></tr>';
+        if ( ! data.rows.length ) html += '<tr><td colspan="9" class="aura-no-data">' + __('Sin transacciones para el período y filtros seleccionados.', 'aura-suite') + '</td></tr>';
         html += '</tbody></table>';
         $( '#report-table-wrap' ).html( html );
     }
@@ -997,15 +1000,15 @@
 
         const kpisHtml = `
             <div class="aura-report-kpi expense">
-                <div class="aura-report-kpi__label">Total Pagado</div>
+                <div class="aura-report-kpi__label">${__('Total Pagado', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( totals.paid || 0 )}</div>
             </div>
             <div class="aura-report-kpi income">
-                <div class="aura-report-kpi__label">Total Cobrado</div>
+                <div class="aura-report-kpi__label">${__('Total Cobrado', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${formatMoney( totals.received || 0 )}</div>
             </div>
             <div class="aura-report-kpi balance">
-                <div class="aura-report-kpi__label">Transacciones</div>
+                <div class="aura-report-kpi__label">${__('Transacciones', 'aura-suite')}</div>
                 <div class="aura-report-kpi__value">${totals.count || 0}</div>
             </div>`;
         $( '#report-kpis' ).html( kpisHtml ).show();
@@ -1015,7 +1018,7 @@
         let html = '';
         if ( summary.length ) {
             html += `<table class="aura-report-table">
-                <thead><tr><th>Usuario</th><th>Email</th><th>Total Pagado</th><th>Total Cobrado</th><th>Movimientos</th></tr></thead><tbody>`;
+                <thead><tr><th>${__('Usuario', 'aura-suite')}</th><th>${__('Email', 'aura-suite')}</th><th>${__('Total Pagado', 'aura-suite')}</th><th>${__('Total Cobrado', 'aura-suite')}</th><th>${__('Movimientos', 'aura-suite')}</th></tr></thead><tbody>`;
             summary.forEach( s => {
                 html += `<tr>
                     <td>${esc( s.user_name )}</td>
@@ -1031,7 +1034,7 @@
 
         // Tabla detalle
         html += `<table class="aura-report-table">
-            <thead><tr><th>ID</th><th>Fecha</th><th>Usuario</th><th>Concepto</th><th>Tipo</th><th>Categoría</th><th>Monto</th><th>Estado</th><th>Registrado por</th></tr></thead><tbody>`;
+            <thead><tr><th>${__('ID', 'aura-suite')}</th><th>${__('Fecha', 'aura-suite')}</th><th>${__('Usuario', 'aura-suite')}</th><th>${__('Concepto', 'aura-suite')}</th><th>${__('Tipo', 'aura-suite')}</th><th>${__('Categoría', 'aura-suite')}</th><th>${__('Monto', 'aura-suite')}</th><th>${__('Estado', 'aura-suite')}</th><th>${__('Registrado por', 'aura-suite')}</th></tr></thead><tbody>`;
         rows.forEach( r => {
             const isExpense = r.transaction_type === 'expense';
             html += `<tr>
@@ -1039,14 +1042,14 @@
                 <td>${r.transaction_date}</td>
                 <td>${esc( r.related_user_name || '—' )}</td>
                 <td>${esc( r.concept_label || r.related_user_concept || '—' )}</td>
-                <td>${isExpense ? 'Pago a usuario' : 'Cobro a usuario'}</td>
+                <td>${isExpense ? __('Pago a usuario', 'aura-suite') : __('Cobro a usuario', 'aura-suite')}</td>
                 <td>${esc( r.category_name )}</td>
                 <td class="${isExpense ? 'amount-expense' : 'amount-income'}">${formatMoney( r.amount )}</td>
                 <td><span class="aura-status-badge ${r.status}">${STATUS_LABELS[ r.status ] || r.status}</span></td>
                 <td>${esc( r.creator_name || '—' )}</td>
             </tr>`;
         } );
-        if ( ! rows.length ) html += '<tr><td colspan="9" class="aura-no-data">Sin transacciones para el período y filtros seleccionados.</td></tr>';
+        if ( ! rows.length ) html += '<tr><td colspan="9" class="aura-no-data">' + __('Sin transacciones para el período y filtros seleccionados.', 'aura-suite') + '</td></tr>';
         html += '</tbody></table>';
         $( '#report-table-wrap' ).html( html );
     }
@@ -1104,8 +1107,8 @@
 
     function saveConfig() {
         const name = $( '#config-name-input' ).val().trim();
-        if ( ! name ) { alert( 'Ingresa un nombre para la configuración.' ); return; }
-        if ( ! state.currentType ) { alert( 'Genera un reporte primero.' ); return; }
+        if ( ! name ) { alert( __('Ingresa un nombre para la configuración.', 'aura-suite') ); return; }
+        if ( ! state.currentType ) { alert( __('Genera un reporte primero.', 'aura-suite') ); return; }
 
         $.ajax( {
             url    : auraReports.ajaxUrl,
@@ -1124,14 +1127,14 @@
                 if ( res.success ) {
                     renderConfigs( res.data.configs );
                     $( '#config-name-input' ).val( '' );
-                    showInlineNotice( '✓ Configuración guardada.', 'success' );
+                    showInlineNotice( __('✓ Configuración guardada.', 'aura-suite'), 'success' );
                 }
             },
         } );
     }
 
     function deleteConfig( key ) {
-        if ( ! confirm( '¿Eliminar esta configuración?' ) ) return;
+        if ( ! confirm( __('¿Eliminar esta configuración?', 'aura-suite') ) ) return;
         $.ajax( {
             url    : auraReports.ajaxUrl,
             method : 'POST',
@@ -1158,7 +1161,7 @@
     function renderConfigs( configs ) {
         const $wrap = $( '#aura-saved-configs' );
         if ( ! configs.length ) {
-            $wrap.html( '<p class="aura-empty-msg">No hay configuraciones guardadas.</p>' );
+            $wrap.html( '<p class="aura-empty-msg">' + __('No hay configuraciones guardadas.', 'aura-suite') + '</p>' );
             return;
         }
         let html = '';
@@ -1248,7 +1251,7 @@
         if ( pct === undefined || pct === null ) return '';
         const cls = pct >= 0 ? 'up' : 'down';
         const arrow = pct >= 0 ? '▲' : '▼';
-        return `<span class="aura-report-kpi__change ${cls}">${arrow} ${Math.abs( pct )}% vs año ant.</span>`;
+        return `<span class="aura-report-kpi__change ${cls}">${arrow} ${sprintf(__('%s%% vs año ant.', 'aura-suite'), Math.abs( pct ))}</span>`;
     }
 
     function esc( str ) {

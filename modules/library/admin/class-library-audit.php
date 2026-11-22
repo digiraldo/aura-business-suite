@@ -38,7 +38,7 @@ class Aura_Library_Audit {
             ! current_user_can( 'aura_library_audit' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -119,7 +119,7 @@ class Aura_Library_Audit {
         $formatted = array_map( static function( $r ) use ( $action_labels ) {
             return [
                 'id'          => (int) $r->id,
-                'user_name'   => $r->user_name ?? __( '(usuario eliminado)', 'aura-business-suite' ),
+                'user_name'   => $r->user_name ?? __( '(usuario eliminado)', 'aura-suite' ),
                 'action'      => $r->action,
                 'action_label'=> $action_labels[ $r->action ] ?? $r->action,
                 'entity_type' => $r->entity_type,
@@ -148,14 +148,14 @@ class Aura_Library_Audit {
             ! isset( $_POST['nonce'] ) ||
             ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), self::NONCE )
         ) {
-            wp_die( esc_html__( 'Solicitud no válida.', 'aura-business-suite' ) );
+            wp_die( esc_html__( 'Solicitud no válida.', 'aura-suite' ) );
         }
 
         if (
             ! current_user_can( 'aura_library_audit' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_die( esc_html__( 'Sin permisos.', 'aura-business-suite' ) );
+            wp_die( esc_html__( 'Sin permisos.', 'aura-suite' ) );
         }
 
         global $wpdb;
@@ -183,13 +183,13 @@ class Aura_Library_Audit {
         $out = fopen( 'php://output', 'w' );
         // BOM para Excel
         fwrite( $out, "\xEF\xBB\xBF" );
-        fputcsv( $out, [ 'ID', 'Fecha', 'Usuario', 'Acción', 'Entidad', 'ID Entidad', 'IP' ] );
+        fputcsv( $out, [ __( 'ID', 'aura-suite' ), __( 'Fecha', 'aura-suite' ), __( 'Usuario', 'aura-suite' ), __( 'Acción', 'aura-suite' ), __( 'Entidad', 'aura-suite' ), __( 'ID Entidad', 'aura-suite' ), __( 'IP', 'aura-suite' ) ] );
 
         foreach ( $rows as $r ) {
             fputcsv( $out, [
                 $r->id,
                 $r->created_at,
-                $r->user_name ?? '(eliminado)',
+                $r->user_name ?? __( '(eliminado)', 'aura-suite' ),
                 $labels[ $r->action ] ?? $r->action,
                 $r->entity_type,
                 $r->entity_id,
@@ -211,12 +211,12 @@ class Aura_Library_Audit {
             ! current_user_can( 'aura_library_settings' ) &&
             ! current_user_can( 'manage_options' )
         ) {
-            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Sin permisos.', 'aura-suite' ) ] );
         }
 
         $days = absint( $_POST['days'] ?? 90 );
         if ( $days < 7 ) {
-            wp_send_json_error( [ 'message' => __( 'El mínimo es 7 días.', 'aura-business-suite' ) ] );
+            wp_send_json_error( [ 'message' => __( 'El mínimo es 7 días.', 'aura-suite' ) ] );
         }
 
         global $wpdb;
@@ -232,7 +232,7 @@ class Aura_Library_Audit {
             'deleted' => (int) $deleted,
             'message' => sprintf(
                 /* translators: %d = number of records deleted */
-                __( '%d registros eliminados.', 'aura-business-suite' ),
+                __( '%d registros eliminados.', 'aura-suite' ),
                 (int) $deleted
             ),
         ] );
@@ -249,16 +249,16 @@ class Aura_Library_Audit {
      */
     public static function get_action_labels(): array {
         return [
-            'create_book'       => __( 'Crear libro', 'aura-business-suite' ),
-            'update_book'       => __( 'Editar libro', 'aura-business-suite' ),
-            'delete_book'       => __( 'Eliminar libro', 'aura-business-suite' ),
-            'create_loan'       => __( 'Registrar préstamo', 'aura-business-suite' ),
-            'return_book'       => __( 'Registrar devolución', 'aura-business-suite' ),
-            'extend_loan'       => __( 'Extender préstamo', 'aura-business-suite' ),
-            'create_reservation'=> __( 'Crear reserva', 'aura-business-suite' ),
-            'cancel_reservation'=> __( 'Cancelar reserva', 'aura-business-suite' ),
-            'register_fine'     => __( 'Registrar multa', 'aura-business-suite' ),
-            'update_settings'   => __( 'Actualizar configuración', 'aura-business-suite' ),
+            'create_book'       => __( 'Crear libro', 'aura-suite' ),
+            'update_book'       => __( 'Editar libro', 'aura-suite' ),
+            'delete_book'       => __( 'Eliminar libro', 'aura-suite' ),
+            'create_loan'       => __( 'Registrar préstamo', 'aura-suite' ),
+            'return_book'       => __( 'Registrar devolución', 'aura-suite' ),
+            'extend_loan'       => __( 'Extender préstamo', 'aura-suite' ),
+            'create_reservation'=> __( 'Crear reserva', 'aura-suite' ),
+            'cancel_reservation'=> __( 'Cancelar reserva', 'aura-suite' ),
+            'register_fine'     => __( 'Registrar multa', 'aura-suite' ),
+            'update_settings'   => __( 'Actualizar configuración', 'aura-suite' ),
         ];
     }
 

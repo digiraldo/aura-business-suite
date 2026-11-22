@@ -49,12 +49,12 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
         <div class="aura-glass-card aura-lib-settings-tabs" role="tablist">
             <?php
             $tabs = [
-                'loans'         => '📋 ' . __( 'Préstamos', 'aura-business-suite' ),
-                'fines'         => '💸 ' . __( 'Multas', 'aura-business-suite' ),
-                'reservations'  => '🔖 ' . __( 'Reservas', 'aura-business-suite' ),
-                'notifications' => '🔔 ' . __( 'Notificaciones', 'aura-business-suite' ),
-                'integrations'  => '🔗 ' . __( 'Integraciones', 'aura-business-suite' ),
-                'maintenance'   => '🔧 ' . __( 'Mantenimiento', 'aura-business-suite' ),
+                'loans'         => '📋 ' . __( 'Préstamos', 'aura-suite' ),
+                'fines'         => '💸 ' . __( 'Multas', 'aura-suite' ),
+                'reservations'  => '🔖 ' . __( 'Reservas', 'aura-suite' ),
+                'notifications' => '🔔 ' . __( 'Notificaciones', 'aura-suite' ),
+                'integrations'  => '🔗 ' . __( 'Integraciones', 'aura-suite' ),
+                'maintenance'   => '🔧 ' . __( 'Mantenimiento', 'aura-suite' ),
             ];
             foreach ( $tabs as $tabId => $tabLabel ) :
             ?>
@@ -74,40 +74,40 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                 <div class="aura-lib-settings-grid">
 
                     <div class="aura-lib-sfield">
-                        <label for="cfg-loan-days"><?php esc_html_e( 'Días de préstamo por defecto', 'aura-business-suite' ); ?></label>
+                        <label for="cfg-loan-days"><?php esc_html_e( 'Días de préstamo por defecto', 'aura-suite' ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">📆</span>
                             <input type="number" id="cfg-loan-days" name="loan_days" class="form-control" min="1" max="365"
                                    value="<?php echo esc_attr( $g( 'loan_days', 14 ) ); ?>">
                         </div>
-                        <p class="description"><?php esc_html_e( 'Días que el lector tiene para devolver el libro.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Días que el lector tiene para devolver el libro.', 'aura-suite' ); ?></p>
                     </div>
 
                     <div class="aura-lib-sfield">
-                        <label for="cfg-extension-days"><?php esc_html_e( 'Días de extensión por solicitud', 'aura-business-suite' ); ?></label>
+                        <label for="cfg-extension-days"><?php esc_html_e( 'Días de extensión por solicitud', 'aura-suite' ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">➕</span>
                             <input type="number" id="cfg-extension-days" name="extension_days" class="form-control" min="1" max="90"
                                    value="<?php echo esc_attr( $g( 'extension_days', 7 ) ); ?>">
                         </div>
-                        <p class="description"><?php esc_html_e( 'Días que se añaden al plazo cuando se solicita extensión.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Días que se añaden al plazo cuando se solicita extensión.', 'aura-suite' ); ?></p>
                     </div>
 
                     <div class="aura-lib-sfield">
-                        <label for="cfg-max-extensions"><?php esc_html_e( 'Extensiones máximas por préstamo', 'aura-business-suite' ); ?></label>
+                        <label for="cfg-max-extensions"><?php esc_html_e( 'Extensiones máximas por préstamo', 'aura-suite' ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">🔁</span>
                             <input type="number" id="cfg-max-extensions" name="max_extensions" class="form-control" min="0" max="10"
                                    value="<?php echo esc_attr( $g( 'max_extensions', 2 ) ); ?>">
                         </div>
-                        <p class="description"><?php esc_html_e( 'Cuántas veces se puede extender un mismo préstamo.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Cuántas veces se puede extender un mismo préstamo.', 'aura-suite' ); ?></p>
                     </div>
 
                 </div>
                 <div class="aura-lib-settings-actions">
                     <button type="button" class="btn btn-shimmer btn-violet btn-lift aura-lib-save-btn" data-section="loans"
-                            data-default-label="<?php esc_attr_e( '💾 Guardar Préstamos', 'aura-business-suite' ); ?>">
-                        💾 <?php esc_html_e( 'Guardar Préstamos', 'aura-business-suite' ); ?>
+                            data-default-label="<?php esc_attr_e( '💾 Guardar Préstamos', 'aura-suite' ); ?>">
+                        💾 <?php esc_html_e( 'Guardar Préstamos', 'aura-suite' ); ?>
                     </button>
                 </div>
             </div>
@@ -120,46 +120,46 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                         <label class="aura-lib-toggle-label">
                             <input type="checkbox" name="fines_enabled" value="1"
                                    <?php checked( $g( 'fines_enabled', false ) ); ?>>
-                            <span><?php esc_html_e( 'Activar sistema de multas', 'aura-business-suite' ); ?></span>
+                            <span><?php esc_html_e( 'Activar sistema de multas', 'aura-suite' ); ?></span>
                         </label>
-                        <p class="description"><?php esc_html_e( 'Si se desactiva, no se calculará ni cobrará multa por devoluciones tardías.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Si se desactiva, no se calculará ni cobrará multa por devoluciones tardías.', 'aura-suite' ); ?></p>
                     </div>
 
                     <div class="aura-lib-sfield">
-                        <label for="cfg-fine-per-day"><?php esc_html_e( 'Tarifa diaria de multa', 'aura-business-suite' ); ?></label>
+                        <label for="cfg-fine-per-day"><?php esc_html_e( 'Tarifa diaria de multa', 'aura-suite' ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">💵 $</span>
                             <input type="number" id="cfg-fine-per-day" name="fine_per_day" class="form-control" min="0" step="0.01"
                                    value="<?php echo esc_attr( $g( 'fine_per_day', '0.00' ) ); ?>">
                         </div>
-                        <p class="description"><?php esc_html_e( 'Monto cobrado por cada día de retraso.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Monto cobrado por cada día de retraso.', 'aura-suite' ); ?></p>
                     </div>
 
                     <div class="aura-lib-sfield">
-                        <label for="cfg-grace-days"><?php esc_html_e( 'Período de gracia (días)', 'aura-business-suite' ); ?></label>
+                        <label for="cfg-grace-days"><?php esc_html_e( 'Período de gracia (días)', 'aura-suite' ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">⏳</span>
                             <input type="number" id="cfg-grace-days" name="grace_days" class="form-control" min="0" max="30"
                                    value="<?php echo esc_attr( $g( 'grace_days', 1 ) ); ?>">
                         </div>
-                        <p class="description"><?php esc_html_e( 'Días después de la fecha de vencimiento antes de aplicar multa.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Días después de la fecha de vencimiento antes de aplicar multa.', 'aura-suite' ); ?></p>
                     </div>
 
                     <div class="aura-lib-sfield">
-                        <label for="cfg-fine-max"><?php esc_html_e( 'Multa máxima por préstamo', 'aura-business-suite' ); ?></label>
+                        <label for="cfg-fine-max"><?php esc_html_e( 'Multa máxima por préstamo', 'aura-suite' ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">🛡️ $</span>
                             <input type="number" id="cfg-fine-max" name="fine_max" class="form-control" min="0" step="0.01"
                                    value="<?php echo esc_attr( $g( 'fine_max', '0.00' ) ); ?>">
                         </div>
-                        <p class="description"><?php esc_html_e( 'Tope máximo por préstamo. 0 = sin límite.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Tope máximo por préstamo. 0 = sin límite.', 'aura-suite' ); ?></p>
                     </div>
 
                 </div>
                 <div class="aura-lib-settings-actions">
                     <button type="button" class="btn btn-shimmer btn-violet btn-lift aura-lib-save-btn" data-section="fines"
-                            data-default-label="<?php esc_attr_e( '💾 Guardar Multas', 'aura-business-suite' ); ?>">
-                        💾 <?php esc_html_e( 'Guardar Multas', 'aura-business-suite' ); ?>
+                            data-default-label="<?php esc_attr_e( '💾 Guardar Multas', 'aura-suite' ); ?>">
+                        💾 <?php esc_html_e( 'Guardar Multas', 'aura-suite' ); ?>
                     </button>
                 </div>
             </div>
@@ -169,20 +169,20 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                 <div class="aura-lib-settings-grid">
 
                     <div class="aura-lib-sfield">
-                        <label for="cfg-reservation-expire-days"><?php esc_html_e( 'Días para expirar una reserva', 'aura-business-suite' ); ?></label>
+                        <label for="cfg-reservation-expire-days"><?php esc_html_e( 'Días para expirar una reserva', 'aura-suite' ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">🔖</span>
                             <input type="number" id="cfg-reservation-expire-days" name="reservation_expire_days" class="form-control" min="1" max="30"
                                    value="<?php echo esc_attr( $g( 'reservation_expire_days', 2 ) ); ?>">
                         </div>
-                        <p class="description"><?php esc_html_e( 'Si el lector no recoge el libro en estos días, la reserva se cancela automáticamente.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Si el lector no recoge el libro en estos días, la reserva se cancela automáticamente.', 'aura-suite' ); ?></p>
                     </div>
 
                 </div>
                 <div class="aura-lib-settings-actions">
                     <button type="button" class="btn btn-shimmer btn-violet btn-lift aura-lib-save-btn" data-section="reservations"
-                            data-default-label="<?php esc_attr_e( '💾 Guardar Reservas', 'aura-business-suite' ); ?>">
-                        💾 <?php esc_html_e( 'Guardar Reservas', 'aura-business-suite' ); ?>
+                            data-default-label="<?php esc_attr_e( '💾 Guardar Reservas', 'aura-suite' ); ?>">
+                        💾 <?php esc_html_e( 'Guardar Reservas', 'aura-suite' ); ?>
                     </button>
                 </div>
             </div>
@@ -195,46 +195,46 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                         <label class="aura-lib-toggle-label">
                             <input type="checkbox" name="email_alerts" value="1"
                                    <?php checked( $g( 'email_alerts', true ) ); ?>>
-                            <span><?php esc_html_e( 'Activar alertas por email', 'aura-business-suite' ); ?></span>
+                            <span><?php esc_html_e( 'Activar alertas por email', 'aura-suite' ); ?></span>
                         </label>
-                        <p class="description"><?php esc_html_e( 'Envía alertas de vencimiento y recordatorios por correo electrónico.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Envía alertas de vencimiento y recordatorios por correo electrónico.', 'aura-suite' ); ?></p>
                     </div>
 
                     <div class="aura-lib-sfield">
-                        <label for="cfg-email-extra"><?php esc_html_e( 'Email extra del bibliotecario', 'aura-business-suite' ); ?></label>
+                        <label for="cfg-email-extra"><?php esc_html_e( 'Email extra del bibliotecario', 'aura-suite' ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">📧</span>
                             <input type="email" id="cfg-email-extra" name="email_extra" class="form-control"
                                    placeholder="bibliotecario@ejemplo.com"
                                    value="<?php echo esc_attr( $g( 'email_extra', '' ) ); ?>">
                         </div>
-                        <p class="description"><?php esc_html_e( 'Recibirá copia de todas las alertas. Dejar vacío para no enviar copia.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Recibirá copia de todas las alertas. Dejar vacío para no enviar copia.', 'aura-suite' ); ?></p>
                     </div>
 
                     <div class="aura-lib-sfield aura-lib-sfield--toggle">
                         <label class="aura-lib-toggle-label">
                             <input type="checkbox" name="whatsapp_alerts" value="1"
                                    <?php checked( $g( 'whatsapp_alerts', false ) ); ?>>
-                            <span><?php esc_html_e( 'Activar alertas por WhatsApp', 'aura-business-suite' ); ?></span>
+                            <span><?php esc_html_e( 'Activar alertas por WhatsApp', 'aura-suite' ); ?></span>
                         </label>
-                        <p class="description"><?php esc_html_e( 'Requiere que el módulo de Notificaciones de Aura Suite esté configurado.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Requiere que el módulo de Notificaciones de Aura Suite esté configurado.', 'aura-suite' ); ?></p>
                     </div>
 
                     <div class="aura-lib-sfield">
-                        <label for="cfg-cron-hour"><?php esc_html_e( 'Hora del cron diario (0-23)', 'aura-business-suite' ); ?></label>
+                        <label for="cfg-cron-hour"><?php esc_html_e( 'Hora del cron diario (0-23)', 'aura-suite' ); ?></label>
                         <div class="input-group">
                             <span class="input-group-text" aria-hidden="true">🕒</span>
                             <input type="number" id="cfg-cron-hour" name="cron_hour" class="form-control" min="0" max="23"
                                    value="<?php echo esc_attr( $g( 'cron_hour', 8 ) ); ?>">
                         </div>
-                        <p class="description"><?php esc_html_e( 'Hora (formato 24h) en que se procesan préstamos vencidos y envían alertas.', 'aura-business-suite' ); ?></p>
+                        <p class="description"><?php esc_html_e( 'Hora (formato 24h) en que se procesan préstamos vencidos y envían alertas.', 'aura-suite' ); ?></p>
                     </div>
 
                 </div>
                 <div class="aura-lib-settings-actions">
                     <button type="button" class="btn btn-shimmer btn-violet btn-lift aura-lib-save-btn" data-section="notifications"
-                            data-default-label="<?php esc_attr_e( '💾 Guardar Notificaciones', 'aura-business-suite' ); ?>">
-                        💾 <?php esc_html_e( 'Guardar Notificaciones', 'aura-business-suite' ); ?>
+                            data-default-label="<?php esc_attr_e( '💾 Guardar Notificaciones', 'aura-suite' ); ?>">
+                        💾 <?php esc_html_e( 'Guardar Notificaciones', 'aura-suite' ); ?>
                     </button>
                 </div>
             </div>
@@ -247,12 +247,12 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                         <label class="aura-lib-toggle-label">
                             <input type="checkbox" name="fines_to_finance" value="1"
                                    <?php checked( $g( 'fines_to_finance', false ) ); ?>>
-                            <span><?php esc_html_e( 'Registrar multas en Módulo de Finanzas', 'aura-business-suite' ); ?></span>
+                            <span><?php esc_html_e( 'Registrar multas en Módulo de Finanzas', 'aura-suite' ); ?></span>
                         </label>
                         <p class="description">
-                            <?php esc_html_e( 'Cuando se cobra una multa, se crea automáticamente una transacción de ingreso en Finanzas.', 'aura-business-suite' ); ?>
+                            <?php esc_html_e( 'Cuando se cobra una multa, se crea automáticamente una transacción de ingreso en Finanzas.', 'aura-suite' ); ?>
                             <?php if ( ! class_exists( 'Aura_Finances' ) ) : ?>
-                                <strong class="aura-lib-warning-text"><?php esc_html_e( '⚠ El módulo de Finanzas no está activo.', 'aura-business-suite' ); ?></strong>
+                                <strong class="aura-lib-warning-text"><?php esc_html_e( '⚠ El módulo de Finanzas no está activo.', 'aura-suite' ); ?></strong>
                             <?php endif; ?>
                         </p>
                     </div>
@@ -261,12 +261,12 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                         <label class="aura-lib-toggle-label">
                             <input type="checkbox" name="paz_y_salvo" value="1"
                                    <?php checked( $g( 'paz_y_salvo', false ) ); ?>>
-                            <span><?php esc_html_e( 'Incluir biblioteca en Paz y Salvo de Estudiantes', 'aura-business-suite' ); ?></span>
+                            <span><?php esc_html_e( 'Incluir biblioteca en Paz y Salvo de Estudiantes', 'aura-suite' ); ?></span>
                         </label>
                         <p class="description">
-                            <?php esc_html_e( 'Si está activo, el paz y salvo bloqueará a estudiantes con préstamos vencidos o multas pendientes.', 'aura-business-suite' ); ?>
+                            <?php esc_html_e( 'Si está activo, el paz y salvo bloqueará a estudiantes con préstamos vencidos o multas pendientes.', 'aura-suite' ); ?>
                             <?php if ( ! class_exists( 'Aura_Students_Dashboard' ) ) : ?>
-                                <strong class="aura-lib-warning-text"><?php esc_html_e( '⚠ El módulo de Estudiantes no está activo.', 'aura-business-suite' ); ?></strong>
+                                <strong class="aura-lib-warning-text"><?php esc_html_e( '⚠ El módulo de Estudiantes no está activo.', 'aura-suite' ); ?></strong>
                             <?php endif; ?>
                         </p>
                     </div>
@@ -274,38 +274,38 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                     <!-- Info API REST -->
                     <div class="aura-lib-sfield aura-lib-sfield--full">
                         <h4 class="aura-lib-settings-card-heading">
-                            🔌 <?php esc_html_e( 'API REST', 'aura-business-suite' ); ?>
+                            🔌 <?php esc_html_e( 'API REST', 'aura-suite' ); ?>
                         </h4>
                         <p class="aura-lib-muted-line">
-                            <?php esc_html_e( 'Base URL de la API:', 'aura-business-suite' ); ?>
+                            <?php esc_html_e( 'Base URL de la API:', 'aura-suite' ); ?>
                             <code><?php echo esc_html( rest_url( 'aura/v1/library/' ) ); ?></code>
                         </p>
                         <p class="description">
-                            <?php esc_html_e( 'Autenticación: Cookie + X-WP-Nonce (panel) o Application Passwords (externo).', 'aura-business-suite' ); ?>
+                            <?php esc_html_e( 'Autenticación: Cookie + X-WP-Nonce (panel) o Application Passwords (externo).', 'aura-suite' ); ?>
                         </p>
                         <div class="aura-dt-wrapper aura-table-responsive-wrap" style="margin-top:12px;">
                             <table class="aura-table widefat aura-lib-api-table">
                                 <thead><tr>
-                                    <th style="width:90px;"><?php esc_html_e( 'Método', 'aura-business-suite' ); ?></th>
-                                    <th><?php esc_html_e( 'Endpoint', 'aura-business-suite' ); ?></th>
-                                    <th><?php esc_html_e( 'Descripción', 'aura-business-suite' ); ?></th>
+                                    <th style="width:90px;"><?php esc_html_e( 'Método', 'aura-suite' ); ?></th>
+                                    <th><?php esc_html_e( 'Endpoint', 'aura-suite' ); ?></th>
+                                    <th><?php esc_html_e( 'Descripción', 'aura-suite' ); ?></th>
                                 </tr></thead>
                                 <tbody>
                                     <?php
                                     $endpoints = [
-                                        [ 'GET',    '/books',              __( 'Listar libros', 'aura-business-suite' ) ],
-                                        [ 'POST',   '/books',              __( 'Crear libro', 'aura-business-suite' ) ],
-                                        [ 'GET',    '/books/{id}',         __( 'Detalle de libro', 'aura-business-suite' ) ],
-                                        [ 'PUT',    '/books/{id}',         __( 'Actualizar libro', 'aura-business-suite' ) ],
-                                        [ 'DELETE', '/books/{id}',         __( 'Eliminar libro', 'aura-business-suite' ) ],
-                                        [ 'GET',    '/loans',              __( 'Listar préstamos', 'aura-business-suite' ) ],
-                                        [ 'POST',   '/loans',              __( 'Crear préstamo', 'aura-business-suite' ) ],
-                                        [ 'PUT',    '/loans/{id}/return',  __( 'Registrar devolución', 'aura-business-suite' ) ],
-                                        [ 'PUT',    '/loans/{id}/extend',  __( 'Extender préstamo', 'aura-business-suite' ) ],
-                                        [ 'GET',    '/reservations',       __( 'Listar reservas', 'aura-business-suite' ) ],
-                                        [ 'POST',   '/reservations',       __( 'Crear reserva', 'aura-business-suite' ) ],
-                                        [ 'GET',    '/dashboard',          __( 'KPIs del dashboard', 'aura-business-suite' ) ],
-                                        [ 'GET',    '/reports/summary',    __( 'Reporte resumen', 'aura-business-suite' ) ],
+                                        [ 'GET',    '/books',              __( 'Listar libros', 'aura-suite' ) ],
+                                        [ 'POST',   '/books',              __( 'Crear libro', 'aura-suite' ) ],
+                                        [ 'GET',    '/books/{id}',         __( 'Detalle de libro', 'aura-suite' ) ],
+                                        [ 'PUT',    '/books/{id}',         __( 'Actualizar libro', 'aura-suite' ) ],
+                                        [ 'DELETE', '/books/{id}',         __( 'Eliminar libro', 'aura-suite' ) ],
+                                        [ 'GET',    '/loans',              __( 'Listar préstamos', 'aura-suite' ) ],
+                                        [ 'POST',   '/loans',              __( 'Crear préstamo', 'aura-suite' ) ],
+                                        [ 'PUT',    '/loans/{id}/return',  __( 'Registrar devolución', 'aura-suite' ) ],
+                                        [ 'PUT',    '/loans/{id}/extend',  __( 'Extender préstamo', 'aura-suite' ) ],
+                                        [ 'GET',    '/reservations',       __( 'Listar reservas', 'aura-suite' ) ],
+                                        [ 'POST',   '/reservations',       __( 'Crear reserva', 'aura-suite' ) ],
+                                        [ 'GET',    '/dashboard',          __( 'KPIs del dashboard', 'aura-suite' ) ],
+                                        [ 'GET',    '/reports/summary',    __( 'Reporte resumen', 'aura-suite' ) ],
                                     ];
                                     $method_badges = [ 'GET' => 'badge-blue', 'POST' => 'badge-emerald', 'PUT' => 'badge-amber', 'DELETE' => 'badge-red' ];
                                     foreach ( $endpoints as [ $method, $path, $desc ] ) :
@@ -325,8 +325,8 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                 </div>
                 <div class="aura-lib-settings-actions">
                     <button type="button" class="btn btn-shimmer btn-violet btn-lift aura-lib-save-btn" data-section="integrations"
-                            data-default-label="<?php esc_attr_e( '💾 Guardar Integraciones', 'aura-business-suite' ); ?>">
-                        💾 <?php esc_html_e( 'Guardar Integraciones', 'aura-business-suite' ); ?>
+                            data-default-label="<?php esc_attr_e( '💾 Guardar Integraciones', 'aura-suite' ); ?>">
+                        💾 <?php esc_html_e( 'Guardar Integraciones', 'aura-suite' ); ?>
                     </button>
                 </div>
             </div>
@@ -335,10 +335,10 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
             <div class="aura-glass-card aura-lib-spanel" id="stab-maintenance" style="display:none;">
 
                 <div class="aura-lib-settings-section-card">
-                    <h4>🧹 <?php esc_html_e( 'Limpiar log de auditoría', 'aura-business-suite' ); ?></h4>
-                    <p class="aura-lib-muted-line"><?php esc_html_e( 'Elimina registros de auditoría más antiguos que N días. Esta acción es irreversible.', 'aura-business-suite' ); ?></p>
+                    <h4>🧹 <?php esc_html_e( 'Limpiar log de auditoría', 'aura-suite' ); ?></h4>
+                    <p class="aura-lib-muted-line"><?php esc_html_e( 'Elimina registros de auditoría más antiguos que N días. Esta acción es irreversible.', 'aura-suite' ); ?></p>
                     <div class="aura-lib-clean-bar">
-                        <label for="audit-clean-days"><?php esc_html_e( 'Antigüedad mínima (días):', 'aura-business-suite' ); ?></label>
+                        <label for="audit-clean-days"><?php esc_html_e( 'Antigüedad mínima (días):', 'aura-suite' ); ?></label>
                         <div class="aura-lib-clean-input-wrap">
                             <div class="input-group">
                                 <span class="input-group-text" aria-hidden="true">🗓️</span>
@@ -346,14 +346,14 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                             </div>
                         </div>
                         <button type="button" id="btn-audit-clean" class="btn btn-rose btn-lift">
-                            🗑️ <?php esc_html_e( 'Limpiar auditoría', 'aura-business-suite' ); ?>
+                            🗑️ <?php esc_html_e( 'Limpiar auditoría', 'aura-suite' ); ?>
                         </button>
                         <span id="audit-clean-result" class="aura-lib-clean-result" style="display:none;"></span>
                     </div>
                 </div>
 
                 <div class="aura-lib-settings-section-card" style="margin-top:16px;">
-                    <h4>ℹ️ <?php esc_html_e( 'Información del módulo', 'aura-business-suite' ); ?></h4>
+                    <h4>ℹ️ <?php esc_html_e( 'Información del módulo', 'aura-suite' ); ?></h4>
                     <?php
                     global $wpdb;
                     $cnt_books = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}aura_library_books WHERE deleted_at IS NULL" ); // phpcs:ignore
@@ -363,10 +363,10 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                     <div class="aura-dt-wrapper aura-table-responsive-wrap" style="max-width:480px;">
                         <table class="aura-table widefat aura-lib-info-table">
                             <tbody>
-                                <tr><td><?php esc_html_e( 'Libros en catálogo', 'aura-business-suite' ); ?></td><td><strong><?php echo esc_html( $cnt_books ); ?></strong></td></tr>
-                                <tr><td><?php esc_html_e( 'Préstamos registrados', 'aura-business-suite' ); ?></td><td><strong><?php echo esc_html( $cnt_loans ); ?></strong></td></tr>
-                                <tr><td><?php esc_html_e( 'Registros de auditoría', 'aura-business-suite' ); ?></td><td><strong><?php echo esc_html( $cnt_aud ); ?></strong></td></tr>
-                                <tr><td><?php esc_html_e( 'Versión del plugin', 'aura-business-suite' ); ?></td><td><code><?php echo esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '—' ); ?></code></td></tr>
+                                <tr><td><?php esc_html_e( 'Libros en catálogo', 'aura-suite' ); ?></td><td><strong><?php echo esc_html( $cnt_books ); ?></strong></td></tr>
+                                <tr><td><?php esc_html_e( 'Préstamos registrados', 'aura-suite' ); ?></td><td><strong><?php echo esc_html( $cnt_loans ); ?></strong></td></tr>
+                                <tr><td><?php esc_html_e( 'Registros de auditoría', 'aura-suite' ); ?></td><td><strong><?php echo esc_html( $cnt_aud ); ?></strong></td></tr>
+                                <tr><td><?php esc_html_e( 'Versión del plugin', 'aura-suite' ); ?></td><td><code><?php echo esc_html( defined( 'AURA_VERSION' ) ? AURA_VERSION : '—' ); ?></code></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -405,7 +405,7 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
     $(document).on('click', '.aura-lib-save-btn', function(){
         var $btn         = $(this);
         var section      = $btn.data('section');
-        var defaultLabel = $btn.data('default-label') || '<?php echo esc_js( __( '💾 Guardar', 'aura-business-suite' ) ); ?>';
+        var defaultLabel = $btn.data('default-label') || '<?php echo esc_js( __( '💾 Guardar', 'aura-suite' ) ); ?>';
         var $panel       = $('#stab-' + section);
         var data         = { action: 'aura_library_settings_save', nonce: nonce };
 
@@ -420,19 +420,19 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
             }
         });
 
-        $btn.prop('disabled', true).text('<?php echo esc_js( __( 'Guardando…', 'aura-business-suite' ) ); ?>');
+        $btn.prop('disabled', true).text('<?php echo esc_js( __( 'Guardando…', 'aura-suite' ) ); ?>');
 
         $.post(ajaxUrl, data, function(res){
             var $notice = $('#settings-notice');
             if (res.success){
-                var okMsg = (res.data && res.data.message) || '<?php echo esc_js( __( 'Guardado.', 'aura-business-suite' ) ); ?>';
+                var okMsg = (res.data && res.data.message) || '<?php echo esc_js( __( 'Guardado.', 'aura-suite' ) ); ?>';
                 $notice.removeClass('notice-error').addClass('notice notice-success is-dismissible').show();
                 $('#settings-notice-msg').text(okMsg);
                 if (typeof AuraUI !== 'undefined' && typeof AuraUI.showToast === 'function') {
                     AuraUI.showToast(okMsg, 'success');
                 }
             } else {
-                var errMsg = (res.data && res.data.message) || '<?php echo esc_js( __( 'Error al guardar.', 'aura-business-suite' ) ); ?>';
+                var errMsg = (res.data && res.data.message) || '<?php echo esc_js( __( 'Error al guardar.', 'aura-suite' ) ); ?>';
                 $notice.removeClass('notice-success').addClass('notice notice-error is-dismissible').show();
                 $('#settings-notice-msg').text(errMsg);
                 if (typeof AuraUI !== 'undefined' && typeof AuraUI.showToast === 'function') {
@@ -442,9 +442,9 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
             setTimeout(function(){ $notice.hide(); }, 5000);
         }).fail(function(){
             if (typeof AuraUI !== 'undefined' && typeof AuraUI.showToast === 'function') {
-                AuraUI.showToast('<?php echo esc_js( __( 'Error de conexión.', 'aura-business-suite' ) ); ?>', 'error');
+                AuraUI.showToast('<?php echo esc_js( __( 'Error de conexión.', 'aura-suite' ) ); ?>', 'error');
             } else {
-                alert('<?php echo esc_js( __( 'Error de conexión.', 'aura-business-suite' ) ); ?>');
+                alert('<?php echo esc_js( __( 'Error de conexión.', 'aura-suite' ) ); ?>');
             }
         }).always(function(){
             $btn.prop('disabled', false).text(defaultLabel);
@@ -456,13 +456,13 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
         var days = parseInt($('#audit-clean-days').val(), 10);
         if (isNaN(days) || days < 7){
             if (typeof AuraUI !== 'undefined' && typeof AuraUI.showToast === 'function') {
-                AuraUI.showToast('<?php echo esc_js( __( 'El mínimo es 7 días.', 'aura-business-suite' ) ); ?>', 'warning');
+                AuraUI.showToast('<?php echo esc_js( __( 'El mínimo es 7 días.', 'aura-suite' ) ); ?>', 'warning');
             } else {
-                alert('<?php echo esc_js( __( 'El mínimo es 7 días.', 'aura-business-suite' ) ); ?>');
+                alert('<?php echo esc_js( __( 'El mínimo es 7 días.', 'aura-suite' ) ); ?>');
             }
             return;
         }
-        if (!confirm('<?php echo esc_js( __( '¿Eliminar registros de auditoría anteriores a los días indicados? Esta acción es irreversible.', 'aura-business-suite' ) ); ?>')) return;
+        if (!confirm('<?php echo esc_js( __( '¿Eliminar registros de auditoría anteriores a los días indicados? Esta acción es irreversible.', 'aura-suite' ) ); ?>')) return;
 
         var $btn = $(this).prop('disabled', true);
         $.post(ajaxUrl, { action:'aura_library_audit_clean', nonce:nonce, days:days }, function(res){
@@ -473,7 +473,7 @@ $g = static function( string $key, $default = '' ) use ( $cfg ) {
                     AuraUI.showToast(res.data.message, 'success');
                 }
             } else {
-                var msg = (res.data && res.data.message) || 'Error';
+                var msg = (res.data && res.data.message) || '<?php echo esc_js( __( 'Error', 'aura-suite' ) ); ?>';
                 $r.removeClass('is-success').addClass('is-error').text(msg).show();
                 if (typeof AuraUI !== 'undefined' && typeof AuraUI.showToast === 'function') {
                     AuraUI.showToast(msg, 'error');

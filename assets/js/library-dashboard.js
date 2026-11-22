@@ -5,6 +5,7 @@
  * @package AuraBusinessSuite
  */
 /* global jQuery, Chart, auraLibDash */
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
 (function ($) {
     'use strict';
 
@@ -89,7 +90,7 @@
                 data: {
                     labels,
                     datasets: [{
-                        label: auraLibDash.i18n.loans || 'Préstamos',
+                        label: auraLibDash.i18n.loans || __('Préstamos', 'aura-suite'),
                         data,
                         backgroundColor: 'rgba(79, 70, 229, 0.72)',
                         borderColor: '#4f46e5',
@@ -226,10 +227,10 @@
         const $container = $('#aura-lib-overdue-list');
         ajax('aura_library_dashboard_overdue_list').done(function (res) {
             hideSpinner('aura-lib-overdue-spinner');
-            if (!res.success) { $container.html('<p>' + (auraLibDash.i18n.error || 'Error') + '</p>'); return; }
+            if (!res.success) { $container.html('<p>' + (auraLibDash.i18n.error || __('Error', 'aura-suite')) + '</p>'); return; }
             const items = res.data;
             if (!items.length) {
-                $container.html('<p class="aura-lib-empty">' + (auraLibDash.i18n.no_overdue || 'Sin préstamos vencidos.') + '</p>');
+                $container.html('<p class="aura-lib-empty">' + (auraLibDash.i18n.no_overdue || __('Sin préstamos vencidos.', 'aura-suite')) + '</p>');
                 return;
             }
             let html = '<ul class="aura-lib-quick-list">';
@@ -238,7 +239,7 @@
                     <span class="aura-lib-quick-icon dashicons dashicons-warning"></span>
                     <div class="aura-lib-quick-info">
                         <strong>${escHtml(item.book_title)}</strong>
-                        <span>${escHtml(item.borrower)} — ${item.days_overdue} ${auraLibDash.i18n.days_late || 'días'}</span>
+                        <span>${escHtml(item.borrower)} — ${item.days_overdue} ${auraLibDash.i18n.days_late || __('días', 'aura-suite')}</span>
                     </div>
                     <span class="badge badge-red aura-lib-quick-badge">${item.days_overdue}d</span>
                 </li>`;
@@ -254,10 +255,10 @@
         const $container = $('#aura-lib-top-books-list');
         ajax('aura_library_dashboard_top_books').done(function (res) {
             hideSpinner('aura-lib-top-books-spinner');
-            if (!res.success) { $container.html('<p>' + (auraLibDash.i18n.error || 'Error') + '</p>'); return; }
+            if (!res.success) { $container.html('<p>' + (auraLibDash.i18n.error || __('Error', 'aura-suite')) + '</p>'); return; }
             const items = res.data;
             if (!items.length) {
-                $container.html('<p class="aura-lib-empty">' + (auraLibDash.i18n.no_loans || 'Sin préstamos registrados.') + '</p>');
+                $container.html('<p class="aura-lib-empty">' + (auraLibDash.i18n.no_loans || __('Sin préstamos registrados.', 'aura-suite')) + '</p>');
                 return;
             }
             let html = '<ul class="aura-lib-quick-list">';
@@ -285,22 +286,23 @@
         const $container = $('#aura-lib-reservations-list');
         ajax('aura_library_dashboard_recent_res').done(function (res) {
             hideSpinner('aura-lib-reservations-spinner');
-            if (!res.success) { $container.html('<p>' + (auraLibDash.i18n.error || 'Error') + '</p>'); return; }
+            if (!res.success) { $container.html('<p>' + (auraLibDash.i18n.error || __('Error', 'aura-suite')) + '</p>'); return; }
             const items = res.data;
             if (!items.length) {
-                $container.html('<p class="aura-lib-empty">' + (auraLibDash.i18n.no_reservations || 'Sin reservas pendientes.') + '</p>');
+                $container.html('<p class="aura-lib-empty">' + (auraLibDash.i18n.no_reservations || __('Sin reservas pendientes.', 'aura-suite')) + '</p>');
                 return;
             }
             let html = '<ul class="aura-lib-quick-list">';
             items.forEach(function (item) {
                 const badgeClass = item.status === 'notified' ? 'badge-emerald' : 'badge-amber';
+                const statusTxt  = item.status === 'notified' ? __('Notificado', 'aura-suite') : (item.status === 'waiting' ? __('En espera', 'aura-suite') : item.status);
                 html += `<li class="aura-lib-quick-item">
                     <span class="aura-lib-quick-icon dashicons dashicons-calendar"></span>
                     <div class="aura-lib-quick-info">
                         <strong>${escHtml(item.book_title)}</strong>
                         <span>${escHtml(item.user_name)} — ${escHtml(item.reserved_at)}</span>
                     </div>
-                    <span class="badge ${badgeClass} aura-lib-quick-badge">${escHtml(item.status)}</span>
+                    <span class="badge ${badgeClass} aura-lib-quick-badge">${escHtml(statusTxt)}</span>
                 </li>`;
             });
             html += '</ul>';

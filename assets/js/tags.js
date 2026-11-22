@@ -7,6 +7,9 @@
 (function ($) {
     'use strict';
 
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
+
     /* ============================================================
        Estado Global del Módulo
        ============================================================ */
@@ -64,7 +67,7 @@
                 renderTableError(res.data && res.data.message);
             }
         }).fail(function () {
-            renderTableError('Error de comunicación con el servidor.');
+            renderTableError(__('Error de comunicación con el servidor.', 'aura-suite'));
         });
     }
 
@@ -97,9 +100,9 @@
         $balanceEl.text((totalBalance >= 0 ? '+' : '') + formatMoney(totalBalance, globalCurrency));
         $balanceEl.css('color', totalBalance >= 0 ? '#059669' : '#dc2626');
 
-        $('#kpi-tags-breakdown').text(`${activeCount} con movimientos · ${emptyCount} sin usar`);
-        $('#kpi-balance-status').text(totalBalance >= 0 ? 'Superávit global consolidado' : 'Déficit global consolidado');
-        $('#table-tags-counter').text(`${totalTags} etiquetas`);
+        $('#kpi-tags-breakdown').text(sprintf(__('%1$d con movimientos · %2$d sin usar', 'aura-suite'), activeCount, emptyCount));
+        $('#kpi-balance-status').text(totalBalance >= 0 ? __('Superávit global consolidado', 'aura-suite') : __('Déficit global consolidado', 'aura-suite'));
+        $('#table-tags-counter').text(sprintf(__('%d etiquetas', 'aura-suite'), totalTags));
     }
 
     /* ============================================================
@@ -228,9 +231,9 @@
                 '<tr><td colspan="8" style="text-align:center; padding: 48px 20px;">' +
                 '<div class="aura-empty-state-box" style="padding:0;">' +
                 '<span class="dashicons dashicons-tag" style="font-size:38px;width:38px;height:38px;color:#94a3b8;margin-bottom:8px;"></span>' +
-                '<h4 style="margin:0 0 6px 0; color:#334155; font-size:15px;">No se encontraron etiquetas</h4>' +
+                '<h4 style="margin:0 0 6px 0; color:#334155; font-size:15px;">' + __('No se encontraron etiquetas', 'aura-suite') + '</h4>' +
                 '<p style="color:#64748b;margin:0;font-size:13px;">' +
-                (allTags.length === 0 ? 'Aún no hay etiquetas registradas. ¡Haz clic en "+ Nueva Etiqueta" para crear la primera!' : 'No hay etiquetas que coincidan con los filtros o la búsqueda actual.') +
+                (allTags.length === 0 ? __('Aún no hay etiquetas registradas. ¡Haz clic en "+ Nueva Etiqueta" para crear la primera!', 'aura-suite') : __('No hay etiquetas que coincidan con los filtros o la búsqueda actual.', 'aura-suite')) +
                 '</p>' +
                 '</div></td></tr>'
             );
@@ -264,14 +267,14 @@
                 `<div class="aura-tip-avatar-large" style="background:${color}22;color:${color};font-size:22px;font-weight:900;">#</div>` +
                 `<div class="aura-tip-info">` +
                 `<div class="aura-tip-title">#${escaped}</div>` +
-                `<div class="aura-tip-subtitle">${description ? description.substring(0, 45) : 'Taxonomía Transversal'}</div>` +
+                `<div class="aura-tip-subtitle">${description ? description.substring(0, 45) : __('Taxonomía Transversal', 'aura-suite')}</div>` +
                 `</div>` +
                 `</div>` +
                 `<div class="aura-tip-card-body">` +
-                `<div class="aura-tip-row"><span>Movimientos:</span><strong>${count} transacciones</strong></div>` +
-                `<div class="aura-tip-row"><span>🟢 Ingresos:</span><strong>+${formatMoney(incomeAmount, globalCurrency)} (${incomeCount})</strong></div>` +
-                `<div class="aura-tip-row"><span>🔴 Egresos:</span><strong>-${formatMoney(expenseAmount, globalCurrency)} (${expenseCount})</strong></div>` +
-                `<div class="aura-tip-row"><span>Balance Neto:</span><strong style="color:${netBalance >= 0 ? '#10b981' : '#ef4444'}">${netBalance >= 0 ? '+' : ''}${formatMoney(netBalance, globalCurrency)}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Movimientos:', 'aura-suite')}</span><strong>${sprintf(__('%d transacciones', 'aura-suite'), count)}</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('🟢 Ingresos:', 'aura-suite')}</span><strong>+${formatMoney(incomeAmount, globalCurrency)} (${incomeCount})</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('🔴 Egresos:', 'aura-suite')}</span><strong>-${formatMoney(expenseAmount, globalCurrency)} (${expenseCount})</strong></div>` +
+                `<div class="aura-tip-row"><span>${__('Balance Neto:', 'aura-suite')}</span><strong style="color:${netBalance >= 0 ? '#10b981' : '#ef4444'}">${netBalance >= 0 ? '+' : ''}${formatMoney(netBalance, globalCurrency)}</strong></div>` +
                 `</div>` +
                 `</div>`;
 
@@ -282,7 +285,7 @@
                 </td>
                 <td style="text-align: center;">
                     <div class="aura-id-toggle-wrap">
-                        <button type="button" class="aura-row-toggle" aria-expanded="false" title="Desplegar desglose contable">+</button>
+                        <button type="button" class="aura-row-toggle" aria-expanded="false" title="${__('Desplegar desglose contable', 'aura-suite')}">+</button>
                         <span class="aura-txn-id-pill">#${globalIndex + 1}</span>
                     </div>
                 </td>
@@ -299,7 +302,7 @@
                     ${count > 0 ? `
                         <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
                             <span class="aura-badge aura-badge-blue" style="font-weight:700;font-size:11px;padding:2px 7px;">
-                                ${count} ${count === 1 ? 'mov.' : 'movs.'}
+                                ${count} ${count === 1 ? __('mov.', 'aura-suite') : __('movs.', 'aura-suite')}
                             </span>
                             <div style="font-size:10.5px;color:#64748b;display:flex;gap:6px;">
                                 <span style="color:#059669;font-weight:600;">🟢 ${incomeCount}</span>
@@ -307,7 +310,7 @@
                             </div>
                         </div>
                     ` : `
-                        <span class="aura-badge" style="background:#f1f5f9; color:#94a3b8; font-size:11px;">0 usos</span>
+                        <span class="aura-badge" style="background:#f1f5f9; color:#94a3b8; font-size:11px;">${__('0 usos', 'aura-suite')}</span>
                     `}
                 </td>
                 <td style="text-align: right;">
@@ -325,19 +328,19 @@
                 </td>
                 <td style="text-align: right;">
                     <div class="aura-table-actions-cell" style="display:inline-flex;gap:4px;justify-content:flex-end;">
-                        <button type="button" class="aura-btn-icon btn-view-txns" data-tag="${escaped}" title="Ver transacciones vinculadas" aria-label="Ver transacciones">
+                        <button type="button" class="aura-btn-icon btn-view-txns" data-tag="${escaped}" title="${__('Ver transacciones vinculadas', 'aura-suite')}" aria-label="${__('Ver transacciones', 'aura-suite')}">
                             <span class="dashicons dashicons-visibility"></span>
                         </button>
                         ${auraTagsConfig.canEdit ? `
-                            <button type="button" class="aura-btn-icon aura-btn-icon--edit btn-edit-tag" data-tag="${escaped}" title="Editar nombre, color y descripción" aria-label="Editar">
+                            <button type="button" class="aura-btn-icon aura-btn-icon--edit btn-edit-tag" data-tag="${escaped}" title="${__('Editar nombre, color y descripción', 'aura-suite')}" aria-label="${__('Editar', 'aura-suite')}">
                                 <span class="dashicons dashicons-edit"></span>
                             </button>
-                            <button type="button" class="aura-btn-icon btn-merge-single" data-tag="${escaped}" title="Fusionar con otra etiqueta" aria-label="Fusionar">
+                            <button type="button" class="aura-btn-icon btn-merge-single" data-tag="${escaped}" title="${__('Fusionar con otra etiqueta', 'aura-suite')}" aria-label="${__('Fusionar', 'aura-suite')}">
                                 <span class="dashicons dashicons-randomize"></span>
                             </button>
                         ` : ''}
                         ${auraTagsConfig.canDelete ? `
-                            <button type="button" class="aura-btn-icon aura-btn-icon--danger btn-delete-tag" data-tag="${escaped}" data-count="${count}" title="Eliminar etiqueta" aria-label="Eliminar">
+                            <button type="button" class="aura-btn-icon aura-btn-icon--danger btn-delete-tag" data-tag="${escaped}" data-count="${count}" title="${__('Eliminar etiqueta', 'aura-suite')}" aria-label="${__('Eliminar', 'aura-suite')}">
                                 <span class="dashicons dashicons-trash"></span>
                             </button>
                         ` : ''}
@@ -353,39 +356,39 @@
                             <div class="aura-child-hero-left">
                                 <span class="aura-type-pill" style="background:${color}22;color:${color};font-weight:900;">#</span>
                                 <div>
-                                    <h4 class="aura-child-hero-title">Etiqueta: #${escaped}</h4>
+                                    <h4 class="aura-child-hero-title">${sprintf(__('Etiqueta: #%s', 'aura-suite'), escaped)}</h4>
                                     <div style="font-size:12px;color:#64748b;margin-top:2px;">
-                                        ${description || 'Taxonomía contable sin descripción adicional registrada.'}
+                                        ${description || __('Taxonomía contable sin descripción adicional registrada.', 'aura-suite')}
                                     </div>
                                 </div>
                             </div>
                             <div class="aura-child-hero-right">
                                 <span class="aura-badge ${netBalance >= 0 ? 'aura-badge-green' : 'aura-badge-red'}" style="font-size:12.5px;font-weight:700;padding:4px 10px;">
-                                    Balance Neto: ${netBalance >= 0 ? '+' : ''}${formatMoney(netBalance, globalCurrency)}
+                                    ${__('Balance Neto:', 'aura-suite')} ${netBalance >= 0 ? '+' : ''}${formatMoney(netBalance, globalCurrency)}
                                 </span>
                             </div>
                         </div>
                         <div class="aura-child-sections-grid">
                             <div class="aura-child-section">
-                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-chart-pie"></span>Flujo Contable</h5>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Total Ingresos:</span><span class="aura-child-meta-val" style="color:#059669;">+${formatMoney(incomeAmount, globalCurrency)} (${incomeCount} mov.)</span></div>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Total Egresos:</span><span class="aura-child-meta-val" style="color:#dc2626;">-${formatMoney(expenseAmount, globalCurrency)} (${expenseCount} mov.)</span></div>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Volumen Acumulado:</span><span class="aura-child-meta-val">${formatMoney(totalAmount, globalCurrency)}</span></div>
+                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-chart-pie"></span>${__('Flujo Contable', 'aura-suite')}</h5>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Total Ingresos:', 'aura-suite')}</span><span class="aura-child-meta-val" style="color:#059669;">+${formatMoney(incomeAmount, globalCurrency)} (${incomeCount} ${__('mov.', 'aura-suite')})</span></div>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Total Egresos:', 'aura-suite')}</span><span class="aura-child-meta-val" style="color:#dc2626;">-${formatMoney(expenseAmount, globalCurrency)} (${expenseCount} ${__('mov.', 'aura-suite')})</span></div>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Volumen Acumulado:', 'aura-suite')}</span><span class="aura-child-meta-val">${formatMoney(totalAmount, globalCurrency)}</span></div>
                             </div>
                             <div class="aura-child-section">
-                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-calendar-alt"></span>Trazabilidad Temporal</h5>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Primer Registro:</span><span class="aura-child-meta-val">${firstDate || 'Sin movimientos'}</span></div>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Último Registro:</span><span class="aura-child-meta-val">${latestDate || 'Sin movimientos'}</span></div>
-                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">Frecuencia Total:</span><span class="aura-child-meta-val">${count} transacciones</span></div>
+                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-calendar-alt"></span>${__('Trazabilidad Temporal', 'aura-suite')}</h5>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Primer Registro:', 'aura-suite')}</span><span class="aura-child-meta-val">${firstDate || __('Sin movimientos', 'aura-suite')}</span></div>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Último Registro:', 'aura-suite')}</span><span class="aura-child-meta-val">${latestDate || __('Sin movimientos', 'aura-suite')}</span></div>
+                                <div class="aura-child-meta-item"><span class="aura-child-meta-label">${__('Frecuencia Total:', 'aura-suite')}</span><span class="aura-child-meta-val">${sprintf(__('%d transacciones', 'aura-suite'), count)}</span></div>
                             </div>
                             <div class="aura-child-section">
-                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-admin-tools"></span>Operaciones Directas</h5>
+                                <h5 class="aura-child-section-title"><span class="dashicons dashicons-admin-tools"></span>${__('Operaciones Directas', 'aura-suite')}</h5>
                                 <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
                                     <button type="button" class="aura-btn aura-btn-secondary btn-view-txns" data-tag="${escaped}" style="font-size:12px;padding:6px 10px;justify-content:flex-start;">
-                                        <span class="dashicons dashicons-visibility"></span><span>Ver Transacciones Asociadas</span>
+                                        <span class="dashicons dashicons-visibility"></span><span>${__('Ver Transacciones Asociadas', 'aura-suite')}</span>
                                     </button>
                                     <a href="${searchUrl}" target="_blank" class="aura-btn aura-btn-secondary" style="font-size:12px;padding:6px 10px;justify-content:flex-start;">
-                                        <span class="dashicons dashicons-search"></span><span>Abrir en Búsqueda Avanzada</span>
+                                        <span class="dashicons dashicons-search"></span><span>${__('Abrir en Búsqueda Avanzada', 'aura-suite')}</span>
                                     </a>
                                 </div>
                             </div>
@@ -409,12 +412,12 @@
         const $ctrls = $('#pagination-buttons');
 
         if (totalItems === 0) {
-            $info.text('0 etiquetas');
+            $info.text(__('0 etiquetas', 'aura-suite'));
             $ctrls.empty();
             return;
         }
 
-        $info.text(`Mostrando ${startIndex + 1} - ${endIndex} de ${totalItems} etiquetas`);
+        $info.text(sprintf(__('Mostrando %1$d - %2$d de %3$d etiquetas', 'aura-suite'), startIndex + 1, endIndex, totalItems));
 
         if (totalPages <= 1) {
             $ctrls.empty();
@@ -494,7 +497,7 @@
                 $cloud.html(
                     '<div style="text-align:center;width:100%;color:#94a3b8;font-size:13px;padding:24px 0;">' +
                     '<span class="dashicons dashicons-tag" style="font-size:24px;width:24px;height:24px;display:block;margin:0 auto 6px auto;"></span>' +
-                    'No hay etiquetas registradas todavía.' +
+                    __('No hay etiquetas registradas todavía.', 'aura-suite') +
                     '</div>'
                 );
                 return;
@@ -508,12 +511,12 @@
                     `<div class="aura-tip-avatar-large" style="background:${color}22;color:${color};font-size:22px;font-weight:900;">#</div>` +
                     `<div class="aura-tip-info">` +
                     `<div class="aura-tip-title">#${escaped}</div>` +
-                    `<div class="aura-tip-subtitle">${t.description ? escHtml(t.description) : 'Nube de Frecuencia'}</div>` +
+                    `<div class="aura-tip-subtitle">${t.description ? escHtml(t.description) : __('Nube de Frecuencia', 'aura-suite')}</div>` +
                     `</div>` +
                     `</div>` +
                     `<div class="aura-tip-card-body">` +
-                    `<div class="aura-tip-row"><span>Movimientos:</span><strong>${t.count} transacciones</strong></div>` +
-                    `<div class="aura-tip-row"><span>Acción:</span><strong>Haz clic para filtrar la tabla</strong></div>` +
+                    `<div class="aura-tip-row"><span>${__('Movimientos:', 'aura-suite')}</span><strong>${sprintf(__('%d transacciones', 'aura-suite'), t.count)}</strong></div>` +
+                    `<div class="aura-tip-row"><span>${__('Acción:', 'aura-suite')}</span><strong>${__('Haz clic para filtrar la tabla', 'aura-suite')}</strong></div>` +
                     `</div>` +
                     `</div>`;
 
@@ -711,7 +714,7 @@
             $('#create-tag-name').val('');
             $('#create-tag-desc').val('');
             setCreateColor('#3b82f6');
-            $('#create-tag-preview-text').text('#etiqueta');
+            $('#create-tag-preview-text').text('#' + __('etiqueta', 'aura-suite'));
             showModal('#aura-create-tag-modal');
             setTimeout(function () {
                 $('#create-tag-name').focus();
@@ -745,7 +748,7 @@
 
         $('#create-tag-name').on('input', function () {
             const val = $(this).val().trim().replace(/#/g, '');
-            $('#create-tag-preview-text').text('#' + (val || 'etiqueta'));
+            $('#create-tag-preview-text').text('#' + (val || __('etiqueta', 'aura-suite')));
         }).on('keydown', function (e) {
             if (e.key === 'Enter' || e.keyCode === 13) {
                 e.preventDefault();
@@ -759,12 +762,12 @@
             const desc = $('#create-tag-desc').val().trim();
 
             if (!name) {
-                return showNotice('Por favor ingresa un nombre para la etiqueta.', 'error');
+                return showNotice(__('Por favor ingresa un nombre para la etiqueta.', 'aura-suite'), 'error');
             }
 
             const $btn = $(this).prop('disabled', true);
             const origHtml = $btn.html();
-            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> Guardando...');
+            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> ' + __('Guardando...', 'aura-suite'));
 
             $.post(auraTagsConfig.ajaxUrl, {
                 action:      'aura_tags_create',
@@ -784,7 +787,7 @@
                 }
             }).fail(function () {
                 $btn.prop('disabled', false).html(origHtml);
-                showNotice('Error al crear la etiqueta.', 'error');
+                showNotice(__('Error al crear la etiqueta.', 'aura-suite'), 'error');
             });
         });
 
@@ -835,7 +838,7 @@
 
         $('#edit-tag-name').on('input', function () {
             const val = $(this).val().trim().replace(/#/g, '');
-            $('#edit-tag-preview-text').text('#' + (val || 'etiqueta'));
+            $('#edit-tag-preview-text').text('#' + (val || __('etiqueta', 'aura-suite')));
         }).on('keydown', function (e) {
             if (e.key === 'Enter' || e.keyCode === 13) {
                 e.preventDefault();
@@ -852,12 +855,12 @@
             const syncTxns = $('#edit-tag-sync-txns').is(':checked') ? 1 : 0;
 
             if (!newName) {
-                return showNotice('El nombre no puede estar vacío.', 'error');
+                return showNotice(__('El nombre no puede estar vacío.', 'aura-suite'), 'error');
             }
 
             const $btn = $(this).prop('disabled', true);
             const origHtml = $btn.html();
-            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> Guardando...');
+            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> ' + __('Guardando...', 'aura-suite'));
 
             $.post(auraTagsConfig.ajaxUrl, {
                 action:              'aura_tags_update',
@@ -880,7 +883,7 @@
                 }
             }).fail(function () {
                 $btn.prop('disabled', false).html(origHtml);
-                showNotice('Error al actualizar la etiqueta.', 'error');
+                showNotice(__('Error al actualizar la etiqueta.', 'aura-suite'), 'error');
             });
         });
 
@@ -909,15 +912,15 @@
         $('#btn-confirm-merge').on('click', function () {
             const target = $('#modal-merge-target').val().trim().replace(/#/g, '');
             if (!pendingMergeSource || !target) {
-                return showNotice('Por favor indica la etiqueta destino.', 'error');
+                return showNotice(__('Por favor indica la etiqueta destino.', 'aura-suite'), 'error');
             }
             if (pendingMergeSource.toLowerCase() === target.toLowerCase()) {
-                return showNotice('La etiqueta origen y destino deben ser distintas.', 'error');
+                return showNotice(__('La etiqueta origen y destino deben ser distintas.', 'aura-suite'), 'error');
             }
 
             const $btn = $(this).prop('disabled', true);
             const origHtml = $btn.html();
-            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> Fusionando...');
+            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> ' + __('Fusionando...', 'aura-suite'));
 
             $.post(auraTagsConfig.ajaxUrl, {
                 action: 'aura_tags_merge',
@@ -936,7 +939,7 @@
                 }
             }).fail(function () {
                 $btn.prop('disabled', false).html(origHtml);
-                showNotice('Error al fusionar las etiquetas.', 'error');
+                showNotice(__('Error al fusionar las etiquetas.', 'aura-suite'), 'error');
             });
         });
 
@@ -969,13 +972,13 @@
         $('#btn-confirm-bulk-merge').on('click', function () {
             const target = $('#bulk-merge-target').val().trim().replace(/#/g, '');
             if (!target) {
-                return showNotice('Por favor indica la etiqueta destino.', 'error');
+                return showNotice(__('Por favor indica la etiqueta destino.', 'aura-suite'), 'error');
             }
 
             const sources = Array.from(selectedTags);
             const $btn = $(this).prop('disabled', true);
             const origHtml = $btn.html();
-            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> Fusionando...');
+            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> ' + __('Fusionando...', 'aura-suite'));
 
             $.post(auraTagsConfig.ajaxUrl, {
                 action:  'aura_tags_bulk_merge',
@@ -995,7 +998,7 @@
                 }
             }).fail(function () {
                 $btn.prop('disabled', false).html(origHtml);
-                showNotice('Error en la fusión masiva.', 'error');
+                showNotice(__('Error en la fusión masiva.', 'aura-suite'), 'error');
             });
         });
 
@@ -1008,9 +1011,9 @@
             $('#delete-tag-name').text('#' + pendingDeleteTag);
             
             if (count > 0) {
-                $('#delete-tag-impact-text').text(`Esta acción desvinculará esta etiqueta de las ${count} transacciones históricas donde se encuentra asignada y la eliminará del catálogo.`);
+                $('#delete-tag-impact-text').text(sprintf(__('Esta acción desvinculará esta etiqueta de las %d transacciones históricas donde se encuentra asignada y la eliminará del catálogo.', 'aura-suite'), count));
             } else {
-                $('#delete-tag-impact-text').text('Esta etiqueta no tiene transacciones asociadas. Se eliminará del catálogo de taxonomías.');
+                $('#delete-tag-impact-text').text(__('Esta etiqueta no tiene transacciones asociadas. Se eliminará del catálogo de taxonomías.', 'aura-suite'));
             }
 
             showModal('#aura-delete-tag-modal');
@@ -1025,7 +1028,7 @@
             if (!pendingDeleteTag) return;
             const $btn = $(this).prop('disabled', true);
             const origHtml = $btn.html();
-            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> Eliminando...');
+            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> ' + __('Eliminando...', 'aura-suite'));
 
             $.post(auraTagsConfig.ajaxUrl, {
                 action: 'aura_tags_delete',
@@ -1045,7 +1048,7 @@
                 }
             }).fail(function () {
                 $btn.prop('disabled', false).html(origHtml);
-                showNotice('Error al eliminar la etiqueta.', 'error');
+                showNotice(__('Error al eliminar la etiqueta.', 'aura-suite'), 'error');
             });
         });
 
@@ -1073,7 +1076,7 @@
             const tags = Array.from(selectedTags);
             const $btn = $(this).prop('disabled', true);
             const origHtml = $btn.html();
-            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> Eliminando...');
+            $btn.html('<span class="dashicons dashicons-update aura-spin"></span> ' + __('Eliminando...', 'aura-suite'));
 
             $.post(auraTagsConfig.ajaxUrl, {
                 action: 'aura_tags_bulk_delete',
@@ -1092,7 +1095,7 @@
                 }
             }).fail(function () {
                 $btn.prop('disabled', false).html(origHtml);
-                showNotice('Error al eliminar las etiquetas.', 'error');
+                showNotice(__('Error al eliminar las etiquetas.', 'aura-suite'), 'error');
             });
         });
 
@@ -1114,7 +1117,7 @@
             $('#txns-modal-tbody').html(
                 '<tr><td colspan="7" style="text-align: center; padding: 40px 20px;">' +
                 '<span class="spinner is-active" style="float:none; margin:0 auto 10px auto;"></span>' +
-                '<p style="color:#64748b; margin:0; font-size:13px;">Cargando transacciones vinculadas...</p>' +
+                '<p style="color:#64748b; margin:0; font-size:13px;">' + __('Cargando transacciones vinculadas...', 'aura-suite') + '</p>' +
                 '</td></tr>'
             );
             showModal('#aura-tag-txns-modal');
@@ -1128,25 +1131,25 @@
                     renderTransactionsList(res.data.transactions || [], res.data.currency || globalCurrency, tag);
                 } else {
                     $('#txns-modal-tbody').html(
-                        `<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:30px;">${escHtml(res.data && res.data.message || 'Error al cargar transacciones.')}</td></tr>`
+                        `<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:30px;">${escHtml(res.data && res.data.message || __('Error al cargar transacciones.', 'aura-suite'))}</td></tr>`
                     );
                 }
             }).fail(function () {
                 $('#txns-modal-tbody').html(
-                    '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:30px;">Error de conexión con el servidor.</td></tr>'
+                    '<tr><td colspan="7" style="text-align:center; color:#ef4444; padding:30px;">' + __('Error de conexión con el servidor.', 'aura-suite') + '</td></tr>'
                 );
             });
         }
 
         function renderTransactionsList(txns, curr, tag) {
             const $body = $('#txns-modal-tbody');
-            $('#txns-modal-counter').text(`${txns.length} transacciones vinculadas`);
+            $('#txns-modal-counter').text(sprintf(__('%d transacciones vinculadas', 'aura-suite'), txns.length));
 
             if (!txns || txns.length === 0) {
                 $body.html(
                     '<tr><td colspan="7" style="text-align:center; padding: 40px 20px; color:#64748b;">' +
                     '<span class="dashicons dashicons-info" style="font-size:30px;width:30px;height:30px;display:block;margin:0 auto 6px auto;color:#94a3b8;"></span>' +
-                    `No hay transacciones activas con la etiqueta #${escHtml(tag)}.` +
+                    sprintf(__('No hay transacciones activas con la etiqueta #%s.', 'aura-suite'), escHtml(tag)) +
                     '</td></tr>'
                 );
                 return;
@@ -1155,8 +1158,8 @@
             const rows = txns.map(t => {
                 const isIncome = t.transaction_type === 'income';
                 const typeBadge = isIncome
-                    ? '<span class="aura-badge aura-badge-green" style="font-size:10.5px;">Ingreso</span>'
-                    : '<span class="aura-badge aura-badge-red" style="font-size:10.5px;">Egreso</span>';
+                    ? '<span class="aura-badge aura-badge-green" style="font-size:10.5px;">' + __('Ingreso', 'aura-suite') + '</span>'
+                    : '<span class="aura-badge aura-badge-red" style="font-size:10.5px;">' + __('Egreso', 'aura-suite') + '</span>';
                 const sign = isIncome ? '+' : '-';
                 const amtColor = isIncome ? '#059669' : '#dc2626';
 
@@ -1173,7 +1176,7 @@
                         ${sign}${formatMoney(t.amount, curr)}
                     </td>
                     <td style="text-align:center;">
-                        <a href="${t.edit_url}" target="_blank" class="aura-btn-icon aura-btn-icon--edit" title="Editar transacción" style="display:inline-flex;">
+                        <a href="${t.edit_url}" target="_blank" class="aura-btn-icon aura-btn-icon--edit" title="${__('Editar transacción', 'aura-suite')}" style="display:inline-flex;">
                             <span class="dashicons dashicons-edit"></span>
                         </a>
                     </td>
@@ -1192,22 +1195,22 @@
 
         function exportTagsCSV() {
             if (!allTags || allTags.length === 0) {
-                return showNotice('No hay etiquetas disponibles para exportar.', 'error');
+                return showNotice(__('No hay etiquetas disponibles para exportar.', 'aura-suite'), 'error');
             }
 
             const headers = [
-                'Etiqueta',
-                'Color',
-                'Descripcion',
-                'Usos Totales',
-                'Ingresos Cantidad',
-                'Ingresos Monto',
-                'Egresos Cantidad',
-                'Egresos Monto',
-                'Volumen Total',
-                'Balance Neto',
-                'Primer Registro',
-                'Ultimo Registro'
+                __('Etiqueta', 'aura-suite'),
+                __('Color', 'aura-suite'),
+                __('Descripcion', 'aura-suite'),
+                __('Usos Totales', 'aura-suite'),
+                __('Ingresos Cantidad', 'aura-suite'),
+                __('Ingresos Monto', 'aura-suite'),
+                __('Egresos Cantidad', 'aura-suite'),
+                __('Egresos Monto', 'aura-suite'),
+                __('Volumen Total', 'aura-suite'),
+                __('Balance Neto', 'aura-suite'),
+                __('Primer Registro', 'aura-suite'),
+                __('Ultimo Registro', 'aura-suite')
             ];
 
             const rows = [headers];
@@ -1242,7 +1245,7 @@
             link.click();
             document.body.removeChild(link);
 
-            showNotice('Archivo CSV exportado exitosamente.', 'success');
+            showNotice(__('Archivo CSV exportado exitosamente.', 'aura-suite'), 'success');
         }
 
         // ══════════════════════════════════════════════════════════
@@ -1251,7 +1254,7 @@
         $('#btn-rename-tag').on('click', function () {
             const oldName = $('#rename-old').val().trim();
             const newName = $('#rename-new').val().trim();
-            if (!oldName || !newName) return showNotice('Por favor completa ambos campos.', 'error');
+            if (!oldName || !newName) return showNotice(__('Por favor completa ambos campos.', 'aura-suite'), 'error');
 
             const $btn = $(this).prop('disabled', true);
             $.post(auraTagsConfig.ajaxUrl, {
@@ -1271,15 +1274,15 @@
                 }
             }).fail(function () {
                 $btn.prop('disabled', false);
-                showNotice('Error al renombrar etiqueta.', 'error');
+                showNotice(__('Error al renombrar etiqueta.', 'aura-suite'), 'error');
             });
         });
 
         $('#btn-merge-tags').on('click', function () {
             const source = $('#merge-source').val().trim();
             const target = $('#merge-target').val().trim();
-            if (!source || !target) return showNotice('Completa ambos campos para la fusión.', 'error');
-            if (source.toLowerCase() === target.toLowerCase()) return showNotice('La etiqueta origen y destino deben ser distintas.', 'error');
+            if (!source || !target) return showNotice(__('Completa ambos campos para la fusión.', 'aura-suite'), 'error');
+            if (source.toLowerCase() === target.toLowerCase()) return showNotice(__('La etiqueta origen y destino deben ser distintas.', 'aura-suite'), 'error');
             if (!confirm(auraTagsConfig.i18n.confirmMerge)) return;
 
             const $btn = $(this).prop('disabled', true);
@@ -1300,7 +1303,7 @@
                 }
             }).fail(function () {
                 $btn.prop('disabled', false);
-                showNotice('Error al fusionar etiquetas.', 'error');
+                showNotice(__('Error al fusionar etiquetas.', 'aura-suite'), 'error');
             });
         });
 
@@ -1325,7 +1328,7 @@
         $('#tags-table-body').html(
             `<tr><td colspan="8" style="color:#ef4444;text-align:center;padding:36px 20px;">` +
             `<span class="dashicons dashicons-warning" style="font-size:28px;width:28px;height:28px;vertical-align:middle;margin-right:6px;"></span>` +
-            `<span style="font-size:14px; font-weight:600;">${escHtml(msg || 'Error al cargar las etiquetas.')}</span></td></tr>`
+            `<span style="font-size:14px; font-weight:600;">${escHtml(msg || __('Error al cargar las etiquetas.', 'aura-suite'))}</span></td></tr>`
         );
     }
 

@@ -17,6 +17,9 @@
 (function($) {
     'use strict';
 
+    function __(s, domain) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, domain || 'aura-suite') : s; }
+    function sprintf(fmt, ...args) { return (window.wp && wp.i18n && typeof wp.i18n.sprintf === 'function') ? wp.i18n.sprintf(fmt, ...args) : fmt; }
+
     let dataTable = null;
     let currentFilterType = '';
     let currentFilterStatus = 'all';
@@ -24,12 +27,12 @@
     let thirdPartiesMap = {};
 
     const partyTypeLabels = {
-        'company': 'Empresa',
-        'store': 'Tienda',
-        'organization_foundation': 'Fundación',
-        'person': 'Persona Natural',
-        'religious': 'Entidad Religiosa',
-        'other': 'Otra Entidad'
+        'company': __('Empresa', 'aura-suite'),
+        'store': __('Tienda', 'aura-suite'),
+        'organization_foundation': __('Fundación', 'aura-suite'),
+        'person': __('Persona Natural', 'aura-suite'),
+        'religious': __('Entidad Religiosa', 'aura-suite'),
+        'other': __('Otra Entidad', 'aura-suite')
     };
 
     const partyTypeIcons = {
@@ -51,12 +54,12 @@
     };
 
     const partyTypeDescriptions = {
-        'company': 'Empresa / Sociedad Jurídica: Sociedades comerciales, corporaciones y personas jurídicas con registro mercantil.',
-        'store': 'Tienda / Local Comercial: Establecimientos comerciales minoristas o mayoristas, locales y proveedores de insumos.',
-        'organization_foundation': 'Fundación / ONG: Organizaciones no gubernamentales, fundaciones e instituciones benéficas sin ánimo de lucro.',
-        'person': 'Persona Natural: Contratistas, clientes, prestatarios, lectores de biblioteca o particulares.',
-        'religious': 'Entidad Religiosa: Parroquias, diócesis, templos, iglesias y congregaciones de culto.',
-        'other': 'Otra Entidad: Prestaciones de servicios públicos, entidades municipales o instituciones no catalogadas.'
+        'company': __('Empresa / Sociedad Jurídica: Sociedades comerciales, corporaciones y personas jurídicas con registro mercantil.', 'aura-suite'),
+        'store': __('Tienda / Local Comercial: Establecimientos comerciales minoristas o mayoristas, locales y proveedores de insumos.', 'aura-suite'),
+        'organization_foundation': __('Fundación / ONG: Organizaciones no gubernamentales, fundaciones e instituciones benéficas sin ánimo de lucro.', 'aura-suite'),
+        'person': __('Persona Natural: Contratistas, clientes, prestatarios, lectores de biblioteca o particulares.', 'aura-suite'),
+        'religious': __('Entidad Religiosa: Parroquias, diócesis, templos, iglesias y congregaciones de culto.', 'aura-suite'),
+        'other': __('Otra Entidad: Prestaciones de servicios públicos, entidades municipales o instituciones no catalogadas.', 'aura-suite')
     };
 
     $(document).ready(function() {
@@ -162,7 +165,7 @@
                 const imgUrl = container.getAttribute('data-img-url') || (imgEl ? imgEl.src : '');
                 const row = el.closest ? el.closest('tr') : null;
                 const rowName = row ? ($(row).find('.aura-tp-fullname').text() || $(row).find('strong').text()) : '';
-                const imgTitle = container.getAttribute('data-img-title') || container.getAttribute('data-tooltip') || (imgEl ? imgEl.getAttribute('alt') : '') || rowName || 'Previsualización';
+                const imgTitle = container.getAttribute('data-img-title') || container.getAttribute('data-tooltip') || (imgEl ? imgEl.getAttribute('alt') : '') || rowName || __('Previsualización', 'aura-suite');
 
                 if (imgUrl) {
                     htmlContent = '<div class="aura-floating-img-card">' +
@@ -398,7 +401,7 @@
     function formatChildRow(tp) {
         if (!tp) return '';
         const ptype = tp.party_type || 'company';
-        const ptypeLabel = partyTypeLabels[ptype] || 'Empresa';
+        const ptypeLabel = partyTypeLabels[ptype] || __('Empresa', 'aura-suite');
         const ptypeIcon = partyTypeIcons[ptype] || 'dashicons-building';
         const ptypeEmoji = partyTypeEmojis[ptype] || '🏢';
         const isActive = parseInt(tp.is_active, 10) === 1;
@@ -422,11 +425,11 @@
         if (tp.email) {
             contactArr.push('<a href="mailto:' + tp.email + '" class="aura-contact-link aura-contact-link--email" title="Email"><span class="dashicons dashicons-email-alt"></span> ' + $('<span>').text(tp.email).html() + '</a>');
         }
-        const contactHtml = contactArr.length ? contactArr.join('<br>') : '<em class="aura-text-muted">Sin datos de contacto</em>';
+        const contactHtml = contactArr.length ? contactArr.join('<br>') : '<em class="aura-text-muted">' + __('Sin datos de contacto', 'aura-suite') + '</em>';
 
         const statusPill = isActive
-            ? '<span class="aura-pill is-active">Activo</span>'
-            : '<span class="aura-pill is-inactive">Inactivo</span>';
+            ? '<span class="aura-pill is-active">' + __('Activo', 'aura-suite') + '</span>'
+            : '<span class="aura-pill is-inactive">' + __('Inactivo', 'aura-suite') + '</span>';
 
         const typePill = '<span class="aura-pill is-party-' + ptype + '"><span class="aura-tp-pill-emoji" style="margin-right:4px;">' + ptypeEmoji + '</span> ' + ptypeLabel + '</span>';
 
@@ -447,25 +450,25 @@
                    '</div>' +
                    '<div class="aura-child-sections-grid">' +
                    '<div class="aura-child-subcard">' +
-                   '<div class="aura-child-subcard-title"><span class="dashicons dashicons-id"></span> Documento Fiscal</div>' +
-                   '<div>' + (tp.document_id ? '<span class="aura-doc-badge"><strong>' + (tp.tax_id_type || 'NIT') + ':</strong> ' + $('<span>').text(tp.document_id).html() + '</span>' : '<em class="aura-text-muted">Sin documento</em>') + '</div>' +
+                   '<div class="aura-child-subcard-title"><span class="dashicons dashicons-id"></span> ' + __('Documento Fiscal', 'aura-suite') + '</div>' +
+                   '<div>' + (tp.document_id ? '<span class="aura-doc-badge"><strong>' + (tp.tax_id_type || 'NIT') + ':</strong> ' + $('<span>').text(tp.document_id).html() + '</span>' : '<em class="aura-text-muted">' + __('Sin documento', 'aura-suite') + '</em>') + '</div>' +
                    '</div>' +
                    '<div class="aura-child-subcard">' +
-                   '<div class="aura-child-subcard-title"><span class="dashicons dashicons-phone"></span> Contacto Directo</div>' +
+                   '<div class="aura-child-subcard-title"><span class="dashicons dashicons-phone"></span> ' + __('Contacto Directo', 'aura-suite') + '</div>' +
                    '<div>' + contactHtml + '</div>' +
                    '</div>' +
-                   (tp.address ? '<div class="aura-child-subcard"><div class="aura-child-subcard-title"><span class="dashicons dashicons-location"></span> Dirección</div><div>' + $('<span>').text(tp.address).html() + '</div></div>' : '') +
-                   (tp.website ? '<div class="aura-child-subcard"><div class="aura-child-subcard-title"><span class="dashicons dashicons-admin-site-alt3"></span> Sitio Web</div><div><a href="' + tp.website + '" target="_blank" style="color:#2563eb;text-decoration:underline;">' + $('<span>').text(tp.website).html() + '</a></div></div>' : '') +
-                   (tp.notes ? '<div class="aura-child-subcard" style="grid-column: 1 / -1;"><div class="aura-child-subcard-title"><span class="dashicons dashicons-edit"></span> Notas</div><div>' + $('<span>').text(tp.notes).html() + '</div></div>' : '') +
+                   (tp.address ? '<div class="aura-child-subcard"><div class="aura-child-subcard-title"><span class="dashicons dashicons-location"></span> ' + __('Dirección', 'aura-suite') + '</div><div>' + $('<span>').text(tp.address).html() + '</div></div>' : '') +
+                   (tp.website ? '<div class="aura-child-subcard"><div class="aura-child-subcard-title"><span class="dashicons dashicons-admin-site-alt3"></span> ' + __('Sitio Web', 'aura-suite') + '</div><div><a href="' + tp.website + '" target="_blank" style="color:#2563eb;text-decoration:underline;">' + $('<span>').text(tp.website).html() + '</a></div></div>' : '') +
+                   (tp.notes ? '<div class="aura-child-subcard" style="grid-column: 1 / -1;"><div class="aura-child-subcard-title"><span class="dashicons dashicons-edit"></span> ' + __('Notas', 'aura-suite') + '</div><div>' + $('<span>').text(tp.notes).html() + '</div></div>' : '') +
                    '</div>' +
                    '<div class="aura-child-action-dock">' +
-                   '<button type="button" class="aura-btn-action aura-btn-action--view aura-btn-360" data-id="' + tp.id + '" title="Ver Ficha 360°" style="width:auto;padding:0 12px;gap:6px;"><span class="dashicons dashicons-visibility"></span> Ver Ficha 360°</button>';
+                   '<button type="button" class="aura-btn-action aura-btn-action--view aura-btn-360" data-id="' + tp.id + '" title="' + __('Ver Ficha 360°', 'aura-suite') + '" style="width:auto;padding:0 12px;gap:6px;"><span class="dashicons dashicons-visibility"></span> ' + __('Ver Ficha 360°', 'aura-suite') + '</button>';
 
         if (typeof auraThirdPartiesData !== 'undefined' && auraThirdPartiesData.canEdit) {
-            html += '<button type="button" class="aura-btn-action aura-btn-action--edit aura-btn-edit" data-id="' + tp.id + '" title="Editar" style="width:auto;padding:0 12px;gap:6px;"><span class="dashicons dashicons-edit"></span> Editar</button>';
+            html += '<button type="button" class="aura-btn-action aura-btn-action--edit aura-btn-edit" data-id="' + tp.id + '" title="' + __('Editar', 'aura-suite') + '" style="width:auto;padding:0 12px;gap:6px;"><span class="dashicons dashicons-edit"></span> ' + __('Editar', 'aura-suite') + '</button>';
         }
         if (typeof auraThirdPartiesData !== 'undefined' && auraThirdPartiesData.canDelete) {
-            html += '<button type="button" class="aura-btn-action aura-btn-action--toggle aura-btn-toggle" data-id="' + tp.id + '" title="' + (isActive ? 'Desactivar' : 'Activar') + '" style="width:auto;padding:0 12px;gap:6px;"><span class="dashicons ' + (isActive ? 'dashicons-hidden' : 'dashicons-visibility') + '"></span> ' + (isActive ? 'Desactivar' : 'Activar') + '</button>';
+            html += '<button type="button" class="aura-btn-action aura-btn-action--toggle aura-btn-toggle" data-id="' + tp.id + '" title="' + (isActive ? __('Desactivar', 'aura-suite') : __('Activar', 'aura-suite')) + '" style="width:auto;padding:0 12px;gap:6px;"><span class="dashicons ' + (isActive ? 'dashicons-hidden' : 'dashicons-visibility') + '"></span> ' + (isActive ? __('Desactivar', 'aura-suite') : __('Activar', 'aura-suite')) + '</button>';
         }
 
         html += '</div></div></div>';
@@ -519,17 +522,17 @@
             dataTable = $table.DataTable({
                 language: {
                     search: "_INPUT_",
-                    searchPlaceholder: "Filtrar resultados...",
-                    lengthMenu: "Mostrar _MENU_ registros",
-                    info: "Mostrando _START_ a _END_ de _TOTAL_ terceros",
-                    infoEmpty: "Mostrando 0 a 0 de 0 terceros",
-                    infoFiltered: "(filtrado de _MAX_ totales)",
-                    zeroRecords: "No se encontraron terceros registrados",
+                    searchPlaceholder: __("Filtrar resultados...", 'aura-suite'),
+                    lengthMenu: __("Mostrar _MENU_ registros", 'aura-suite'),
+                    info: __("Mostrando _START_ a _END_ de _TOTAL_ terceros", 'aura-suite'),
+                    infoEmpty: __("Mostrando 0 a 0 de 0 terceros", 'aura-suite'),
+                    infoFiltered: __("(filtrado de _MAX_ totales)", 'aura-suite'),
+                    zeroRecords: __("No se encontraron terceros registrados", 'aura-suite'),
                     paginate: {
-                        first: "Primero",
-                        previous: "Anterior",
-                        next: "Siguiente",
-                        last: "Último"
+                        first: __("Primero", 'aura-suite'),
+                        previous: __("Anterior", 'aura-suite'),
+                        next: __("Siguiente", 'aura-suite'),
+                        last: __("Último", 'aura-suite')
                     }
                 },
                 order: [[1, 'asc']],
@@ -699,7 +702,7 @@
                         dataTable.clear();
                         (res.data.items || []).forEach(function(tp) {
                             const ptype = tp.party_type || 'company';
-                            const ptypeLabel = partyTypeLabels[ptype] || 'Empresa';
+                            const ptypeLabel = partyTypeLabels[ptype] || __('Empresa', 'aura-suite');
                             const ptypeIcon = partyTypeIcons[ptype] || 'dashicons-building';
                             const ptypeEmoji = partyTypeEmojis[ptype] || '🏢';
                             const isActive = parseInt(tp.is_active, 10) === 1;
@@ -724,7 +727,7 @@
                                                   (tp.commercial_name && tp.commercial_name !== tp.full_name ? '<div class="aura-tip-subtitle">' + $('<span>').text(tp.full_name).html() + '</div>' : '') +
                                                   '<div class="aura-tip-badges">' +
                                                   '<span class="aura-tip-badge aura-tip-badge--' + ptype + '"><span class="aura-tp-pill-emoji">' + ptypeEmoji + '</span> ' + ptypeLabel + '</span>' +
-                                                  '<span class="aura-tip-badge aura-tip-badge--' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'Activo' : 'Inactivo') + '</span>' +
+                                                  '<span class="aura-tip-badge aura-tip-badge--' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? __('Activo', 'aura-suite') : __('Inactivo', 'aura-suite')) + '</span>' +
                                                   '</div>' +
                                                   '</div></div></div>';
                             }
@@ -745,19 +748,19 @@
                                                     (tp.commercial_name && tp.commercial_name !== tp.full_name ? '<div class="aura-tip-subtitle">' + $('<span>').text(tp.full_name).html() + '</div>' : '') +
                                                     '<div class="aura-tip-badges">' +
                                                     '<span class="aura-tip-badge aura-tip-badge--' + ptype + '"><span class="aura-tp-pill-emoji">' + ptypeEmoji + '</span> ' + ptypeLabel + '</span>' +
-                                                    '<span class="aura-tip-badge aura-tip-badge--' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? 'Activo' : 'Inactivo') + '</span>' +
+                                                    '<span class="aura-tip-badge aura-tip-badge--' + (isActive ? 'active' : 'inactive') + '">' + (isActive ? __('Activo', 'aura-suite') : __('Inactivo', 'aura-suite')) + '</span>' +
                                                     '</div></div></div>' +
                                                     '<div class="aura-tip-card-body">' +
-                                                    '<div class="aura-tip-row"><span>🆔 Código / ID:</span><strong>#TP-' + $('<span>').text(tp.id).html() + '</strong></div>' +
-                                                    (tp.wp_user_id ? '<div class="aura-tip-row"><span>👤 Usuario WP:</span><strong>@' + $('<span>').text(tp.wp_user_login || '').html() + '</strong></div>' : '') +
+                                                    '<div class="aura-tip-row"><span>' + __('🆔 Código / ID:', 'aura-suite') + '</span><strong>#TP-' + $('<span>').text(tp.id).html() + '</strong></div>' +
+                                                    (tp.wp_user_id ? '<div class="aura-tip-row"><span>' + __('👤 Usuario WP:', 'aura-suite') + '</span><strong>@' + $('<span>').text(tp.wp_user_login || '').html() + '</strong></div>' : '') +
                                                     (tp.document_id ? '<div class="aura-tip-row"><span>📄 ' + (tp.tax_id_type || 'NIT') + ':</span><strong>' + $('<span>').text(tp.document_id).html() + '</strong></div>' : '') +
-                                                    (tp.phone ? '<div class="aura-tip-row"><span>📞 Teléfono:</span><strong>' + $('<span>').text(tp.phone).html() + '</strong></div>' : '') +
-                                                    (tp.email ? '<div class="aura-tip-row"><span>✉️ Correo:</span><strong>' + $('<span>').text(tp.email).html() + '</strong></div>' : '') +
-                                                    (tp.address ? '<div class="aura-tip-row"><span>📍 Dirección:</span><strong>' + $('<span>').text(tp.address).html() + '</strong></div>' : '') +
-                                                    (tp.website ? '<div class="aura-tip-row"><span>🌐 Sitio Web:</span><strong>' + $('<span>').text(tp.website).html() + '</strong></div>' : '') +
+                                                    (tp.phone ? '<div class="aura-tip-row"><span>' + __('📞 Teléfono:', 'aura-suite') + '</span><strong>' + $('<span>').text(tp.phone).html() + '</strong></div>' : '') +
+                                                    (tp.email ? '<div class="aura-tip-row"><span>' + __('✉️ Correo:', 'aura-suite') + '</span><strong>' + $('<span>').text(tp.email).html() + '</strong></div>' : '') +
+                                                    (tp.address ? '<div class="aura-tip-row"><span>' + __('📍 Dirección:', 'aura-suite') + '</span><strong>' + $('<span>').text(tp.address).html() + '</strong></div>' : '') +
+                                                    (tp.website ? '<div class="aura-tip-row"><span>' + __('🌐 Sitio Web:', 'aura-suite') + '</span><strong>' + $('<span>').text(tp.website).html() + '</strong></div>' : '') +
                                                     '</div></div>';
 
-                            const wpUserBadge = tp.wp_user_id ? ' <span class="aura-badge-wp-user" data-tooltip="' + $('<span>').text('Usuario WP vinculado: @' + (tp.wp_user_login || '') + ' (' + (tp.wp_user_email || '') + ')').html() + '"><span class="dashicons dashicons-admin-users"></span> WP</span>' : '';
+                            const wpUserBadge = tp.wp_user_id ? ' <span class="aura-badge-wp-user" data-tooltip="' + $('<span>').text(sprintf(__('Usuario WP vinculado: @%1$s (%2$s)', 'aura-suite'), tp.wp_user_login || '', tp.wp_user_email || '')).html() + '"><span class="dashicons dashicons-admin-users"></span> WP</span>' : '';
 
                             const nameHtml = '<div class="aura-tooltip-wrap aura-tp-name-wrap">' +
                                              '<div class="aura-tp-name-block"><strong class="aura-tp-fullname">' + $('<span>').text(tp.full_name || '').html() + '</strong>' + wpUserBadge + '</div>' +
@@ -777,8 +780,8 @@
                                                     '<span class="aura-tip-badge aura-tip-badge--' + ptype + '"><span class="aura-tp-pill-emoji">' + ptypeEmoji + '</span> ' + ptypeLabel + '</span>' +
                                                     '</div></div></div>' +
                                                     '<div class="aura-tip-card-body">' +
-                                                    '<div class="aura-tip-row"><span>🏷️ Rótulo Comercial:</span><strong>' + $('<span>').text(tp.commercial_name).html() + '</strong></div>' +
-                                                    '<div class="aura-tip-row"><span>🏢 Razón Social Formal:</span><strong>' + $('<span>').text(tp.full_name).html() + '</strong></div>' +
+                                                    '<div class="aura-tip-row"><span>' + __('🏷️ Rótulo Comercial:', 'aura-suite') + '</span><strong>' + $('<span>').text(tp.commercial_name).html() + '</strong></div>' +
+                                                    '<div class="aura-tip-row"><span>' + __('🏢 Razón Social Formal:', 'aura-suite') + '</span><strong>' + $('<span>').text(tp.full_name).html() + '</strong></div>' +
                                                     '</div></div>';
 
                                 commHtml = '<div class="aura-tooltip-wrap">' +
@@ -793,7 +796,7 @@
                                                 '<div class="aura-tip-avatar-large is-emoji"><span class="aura-tp-emoji">' + ptypeEmoji + '</span></div>' +
                                                 '<div class="aura-tip-info">' +
                                                 '<div class="aura-tip-title">' + $('<span>').text(ptypeLabel).html() + '</div>' +
-                                                '<div class="aura-tip-subtitle">Clasificación Maestro</div>' +
+                                                '<div class="aura-tip-subtitle">' + __('Clasificación Maestro', 'aura-suite') + '</div>' +
                                                 '</div></div>' +
                                                 '<div class="aura-tip-card-body">' +
                                                 '<div style="color:#cbd5e1;line-height:1.5;">' + $('<span>').text(ptypeDesc).html() + '</div>' +
@@ -815,9 +818,9 @@
                                                    '<div class="aura-tip-subtitle">' + $('<span>').text(displayName).html() + '</div>' +
                                                    '</div></div>' +
                                                    '<div class="aura-tip-card-body">' +
-                                                   '<div class="aura-tip-row"><span>📄 Tipo de Documento:</span><strong>' + (tp.tax_id_type || 'NIT') + '</strong></div>' +
-                                                   '<div class="aura-tip-row"><span>🔢 Número Identificación:</span><strong>' + $('<span>').text(tp.document_id).html() + '</strong></div>' +
-                                                   '<div class="aura-tip-row"><span>🏛️ Titular Registrado:</span><strong>' + $('<span>').text(tp.full_name).html() + '</strong></div>' +
+                                                   '<div class="aura-tip-row"><span>' + __('📄 Tipo de Documento:', 'aura-suite') + '</span><strong>' + (tp.tax_id_type || 'NIT') + '</strong></div>' +
+                                                   '<div class="aura-tip-row"><span>' + __('🔢 Número Identificación:', 'aura-suite') + '</span><strong>' + $('<span>').text(tp.document_id).html() + '</strong></div>' +
+                                                   '<div class="aura-tip-row"><span>' + __('🏛️ Titular Registrado:', 'aura-suite') + '</span><strong>' + $('<span>').text(tp.full_name).html() + '</strong></div>' +
                                                    '</div></div>';
 
                                 docHtml = '<div class="aura-tooltip-wrap">' +
@@ -830,11 +833,11 @@
                             let contactArr = [];
                             if (tp.phone) {
                                 const cleanPhone = tp.phone.replace(/[^0-9+]/g, '');
-                                const waTip = '💬 Abrir chat directo de WhatsApp con ' + displayName + ' (' + tp.phone + ')';
+                                const waTip = sprintf(__('💬 Abrir chat directo de WhatsApp con %1$s (%2$s)', 'aura-suite'), displayName, tp.phone);
                                 contactArr.push('<a href="https://wa.me/' + cleanPhone.replace('+', '') + '" target="_blank" class="aura-contact-link aura-contact-link--wa" data-tooltip="' + $('<span>').text(waTip).html() + '"><span class="dashicons dashicons-whatsapp"></span> ' + $('<span>').text(tp.phone).html() + '</a>');
                             }
                             if (tp.email) {
-                                const emailTip = '✉️ Enviar correo electrónico a ' + displayName + ' (' + tp.email + ')';
+                                const emailTip = sprintf(__('✉️ Enviar correo electrónico a %1$s (%2$s)', 'aura-suite'), displayName, tp.email);
                                 contactArr.push('<a href="mailto:' + tp.email + '" class="aura-contact-link aura-contact-link--email" data-tooltip="' + $('<span>').text(emailTip).html() + '"><span class="dashicons dashicons-email-alt"></span> ' + $('<span>').text(tp.email).html() + '</a>');
                             }
                             const contactHtml = contactArr.length ? contactArr.join('<br>') : '<em class="aura-text-muted">-</em>';
@@ -848,7 +851,7 @@
                                                      '<div class="aura-tip-card-header">' +
                                                      '<div class="aura-tip-avatar-large"><span class="dashicons dashicons-edit"></span></div>' +
                                                      '<div class="aura-tip-info">' +
-                                                     '<div class="aura-tip-title">Notas Internas</div>' +
+                                                     '<div class="aura-tip-title">' + __('Notas Internas', 'aura-suite') + '</div>' +
                                                      '<div class="aura-tip-subtitle">' + $('<span>').text(displayName).html() + '</div>' +
                                                      '</div></div>' +
                                                      '<div class="aura-tip-card-body">' +
@@ -863,14 +866,14 @@
 
                             // 8. Estado con Tooltip
                             const statusDesc = isActive
-                                ? '✅ Entidad Operativa: Habilitada para transacciones financieras, presupuestos, contratos y biblioteca.'
-                                : '⛔ Entidad Deshabilitada: Bloqueada temporalmente para nuevas operaciones en el sistema.';
+                                ? __('✅ Entidad Operativa: Habilitada para transacciones financieras, presupuestos, contratos y biblioteca.', 'aura-suite')
+                                : __('⛔ Entidad Deshabilitada: Bloqueada temporalmente para nuevas operaciones en el sistema.', 'aura-suite');
 
                             const statusTipHtml = '<div class="aura-tip-card">' +
                                                   '<div class="aura-tip-card-header">' +
                                                   '<div class="aura-tip-avatar-large"><span class="dashicons ' + (isActive ? 'dashicons-yes-alt' : 'dashicons-dismiss') + '"></span></div>' +
                                                   '<div class="aura-tip-info">' +
-                                                  '<div class="aura-tip-title">' + (isActive ? 'Entidad Activa' : 'Entidad Inactiva') + '</div>' +
+                                                  '<div class="aura-tip-title">' + (isActive ? __('Entidad Activa', 'aura-suite') : __('Entidad Inactiva', 'aura-suite')) + '</div>' +
                                                   '<div class="aura-tip-subtitle">' + $('<span>').text(displayName).html() + '</div>' +
                                                   '</div></div>' +
                                                   '<div class="aura-tip-card-body">' +
@@ -878,24 +881,24 @@
                                                   '</div></div>';
 
                             const statusHtml = '<div class="aura-tooltip-wrap">' +
-                                               (isActive ? '<span class="aura-pill is-active">Activo</span>' : '<span class="aura-pill is-inactive">Inactivo</span>') +
+                                               (isActive ? '<span class="aura-pill is-active">' + __('Activo', 'aura-suite') + '</span>' : '<span class="aura-pill is-inactive">' + __('Inactivo', 'aura-suite') + '</span>') +
                                                '<div class="aura-tooltip-content">' + statusTipHtml + '</div>' +
                                                '</div>';
 
                             // 9. Acciones con data-tooltip
                             let actionsHtml = '<div class="aura-table-actions">' +
-                                              '<button type="button" class="aura-btn-action aura-btn-action--view aura-btn-360" data-id="' + tp.id + '" data-tooltip="👁️ Ficha 360°: Resumen integral, balance contable y movimientos vinculados"><span class="dashicons dashicons-visibility"></span></button>';
+                                              '<button type="button" class="aura-btn-action aura-btn-action--view aura-btn-360" data-id="' + tp.id + '" data-tooltip="' + __('👁️ Ficha 360°: Resumen integral, balance contable y movimientos vinculados', 'aura-suite') + '"><span class="dashicons dashicons-visibility"></span></button>';
                             if (tp.wp_user_id) {
-                                actionsHtml += '<a href="user-edit.php?user_id=' + tp.wp_user_id + '" class="aura-btn-action aura-btn-action--wp-user" target="_blank" data-tooltip="' + $('<span>').text('👤 Usuario WordPress: @' + (tp.wp_user_login || '') + ' (Ver perfil)').html() + '"><span class="dashicons dashicons-admin-users"></span></a>';
+                                actionsHtml += '<a href="user-edit.php?user_id=' + tp.wp_user_id + '" class="aura-btn-action aura-btn-action--wp-user" target="_blank" data-tooltip="' + $('<span>').text(sprintf(__('👤 Usuario WordPress: @%s (Ver perfil)', 'aura-suite'), tp.wp_user_login || '')).html() + '"><span class="dashicons dashicons-admin-users"></span></a>';
                             } else if (auraThirdPartiesData.canCreateUser) {
-                                actionsHtml += '<button type="button" class="aura-btn-action aura-btn-action--create-wp aura-btn-create-wp" data-id="' + tp.id + '" data-tooltip="👤 Crear usuario de WordPress (Suscriptor)"><span class="dashicons dashicons-admin-users"></span></button>';
+                                actionsHtml += '<button type="button" class="aura-btn-action aura-btn-action--create-wp aura-btn-create-wp" data-id="' + tp.id + '" data-tooltip="' + __('👤 Crear usuario de WordPress (Suscriptor)', 'aura-suite') + '"><span class="dashicons dashicons-admin-users"></span></button>';
                             }
                             if (auraThirdPartiesData.canEdit) {
-                                actionsHtml += '<button type="button" class="aura-btn-action aura-btn-action--edit aura-btn-edit" data-id="' + tp.id + '" data-tooltip="✏️ Editar Tercero: Actualizar razón social, contacto, identificación y logotipo"><span class="dashicons dashicons-edit"></span></button>';
+                                actionsHtml += '<button type="button" class="aura-btn-action aura-btn-action--edit aura-btn-edit" data-id="' + tp.id + '" data-tooltip="' + __('✏️ Editar Tercero: Actualizar razón social, contacto, identificación y logotipo', 'aura-suite') + '"><span class="dashicons dashicons-edit"></span></button>';
                             }
                             if (auraThirdPartiesData.canDelete) {
-                                actionsHtml += '<button type="button" class="aura-btn-action aura-btn-action--toggle ' + (isActive ? 'aura-btn-action--deactivate' : 'aura-btn-action--activate') + ' aura-btn-toggle" data-id="' + tp.id + '" data-tooltip="' + (isActive ? '⛔ Desactivar Tercero: Ocultar de nuevos registros manteniendo historial' : '✅ Reactivar Tercero: Restablecer operatividad en la suite') + '"><span class="dashicons ' + (isActive ? 'dashicons-hidden' : 'dashicons-undo') + '"></span></button>';
-                                actionsHtml += '<button type="button" class="aura-btn-action aura-btn-action--delete aura-btn-hard-delete" data-id="' + tp.id + '" data-name="' + $('<span>').text(tp.commercial_name || tp.full_name).html() + '" data-tooltip="🗑️ Eliminar Tercero: Borrar definitivamente de la base de datos sin dejar rastro"><span class="dashicons dashicons-trash"></span></button>';
+                                actionsHtml += '<button type="button" class="aura-btn-action aura-btn-action--toggle ' + (isActive ? 'aura-btn-action--deactivate' : 'aura-btn-action--activate') + ' aura-btn-toggle" data-id="' + tp.id + '" data-tooltip="' + (isActive ? __('⛔ Desactivar Tercero: Ocultar de nuevos registros manteniendo historial', 'aura-suite') : __('✅ Reactivar Tercero: Restablecer operatividad en la suite', 'aura-suite')) + '"><span class="dashicons ' + (isActive ? 'dashicons-hidden' : 'dashicons-undo') + '"></span></button>';
+                                actionsHtml += '<button type="button" class="aura-btn-action aura-btn-action--delete aura-btn-hard-delete" data-id="' + tp.id + '" data-name="' + $('<span>').text(tp.commercial_name || tp.full_name).html() + '" data-tooltip="' + __('🗑️ Eliminar Tercero: Borrar definitivamente de la base de datos sin dejar rastro', 'aura-suite') + '"><span class="dashicons dashicons-trash"></span></button>';
                             }
                             actionsHtml += '</div>';
 
@@ -977,7 +980,7 @@
         $(document).on('click', '#aura-tp-btn-new', function(e) {
             e.preventDefault();
             resetModalForm();
-            $('#aura-tp-modal-title span:last-child').text('Registrar Tercero / Empresa');
+            $('#aura-tp-modal-title span:last-child').text(__('Registrar Tercero / Empresa', 'aura-suite'));
             $('#aura-third-party-modal').addClass('is-active').show();
         });
 
@@ -1055,11 +1058,9 @@
         $(document).on('click', '.aura-btn-hard-delete, .aura-btn-delete', function(e) {
             e.preventDefault();
             const id = $(this).data('id') || $(this).closest('tr').data('id');
-            const name = $(this).data('name') || $(this).closest('tr').find('.aura-tp-fullname').text() || 'este tercero';
+            const name = $(this).data('name') || $(this).closest('tr').find('.aura-tp-fullname').text() || __('este tercero', 'aura-suite');
             if (!id) return;
-            const confirmMsg = '¿Estás seguro de que deseas ELIMINAR DEFINITIVAMENTE a "' + name.trim() + '" de la base de datos?\n\n' +
-                               '⚠️ Esta acción borrará todo rastro del tercero en el sistema y desvinculará cualquier historial.\n\n' +
-                               'Podrás volver a registrar a esta persona o empresa en cualquier momento con el mismo correo, NIT o teléfono sin ningún error.';
+            const confirmMsg = sprintf(__('¿Estás seguro de que deseas ELIMINAR DEFINITIVAMENTE a "%s" de la base de datos?\n\n⚠️ Esta acción borrará todo rastro del tercero en el sistema y desvinculará cualquier historial.\n\nPodrás volver a registrar a esta persona o empresa en cualquier momento con el mismo correo, NIT o teléfono sin ningún error.', 'aura-suite'), name.trim());
             if (confirm(confirmMsg)) {
                 deleteThirdParty(id);
             }
@@ -1198,7 +1199,7 @@
      */
     function openMediaUploader() {
         if (typeof wp === 'undefined' || !wp.media) {
-            alert('El selector de medios de WordPress no está disponible.');
+            alert(__('El selector de medios de WordPress no está disponible.', 'aura-suite'));
             return;
         }
 
@@ -1208,8 +1209,8 @@
         }
 
         mediaUploader = wp.media({
-            title: 'Seleccionar Logo o Imagen del Tercero',
-            button: { text: 'Usar esta imagen' },
+            title: __('Seleccionar Logo o Imagen del Tercero', 'aura-suite'),
+            button: { text: __('Usar esta imagen', 'aura-suite') },
             multiple: false
         });
 
@@ -1277,7 +1278,7 @@
             $('#aura-tp-logo-preview').html('<span class="aura-tp-preview-emoji" style="font-size:28px;line-height:1;">' + emoji + '</span>');
         }
 
-        $('#aura-tp-modal-title span:last-child').text('Editar Tercero / Empresa');
+        $('#aura-tp-modal-title span:last-child').text(__('Editar Tercero / Empresa', 'aura-suite'));
         $('#aura-third-party-modal').addClass('is-active').show();
     }
 
@@ -1290,7 +1291,7 @@
         const $submitBtn = $('#aura-tp-modal-submit');
         const origText = $submitBtn.text();
 
-        $submitBtn.prop('disabled', true).text(auraThirdPartiesData.i18n.saving || 'Guardando...');
+        $submitBtn.prop('disabled', true).text(auraThirdPartiesData.i18n.saving || __('Guardando...', 'aura-suite'));
 
         const formData = {
             action: action,
@@ -1319,12 +1320,12 @@
                     $('#aura-third-party-modal').removeClass('is-active').hide();
                     reloadTableFull();
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : (auraThirdPartiesData.i18n.error || 'Error al guardar.'));
+                    alert(res.data && res.data.message ? res.data.message : (auraThirdPartiesData.i18n.error || __('Error al guardar.', 'aura-suite')));
                 }
             },
             error: function() {
                 $submitBtn.prop('disabled', false).text(origText);
-                alert(auraThirdPartiesData.i18n.error || 'Error de conexión con el servidor.');
+                alert(auraThirdPartiesData.i18n.error || __('Error de conexión con el servidor.', 'aura-suite'));
             }
         });
     }
@@ -1347,7 +1348,7 @@
                 if (res.success) {
                     reloadTableFull();
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al cambiar estado.');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al cambiar estado.', 'aura-suite'));
                 }
             }
         });
@@ -1371,7 +1372,7 @@
                 if (res.success) {
                     reloadTableFull();
                 } else {
-                    alert(res.data && res.data.message ? res.data.message : 'Error al eliminar.');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al eliminar.', 'aura-suite'));
                 }
             }
         });
@@ -1393,8 +1394,8 @@
         if (cachedItem) {
             $('#aura-tp-360-name').text(cachedItem.commercial_name ? (cachedItem.commercial_name + ' (' + cachedItem.full_name + ')') : cachedItem.full_name);
             const pt = cachedItem.party_type || 'company';
-            $('#aura-tp-360-badge').attr('class', 'aura-pill is-party-' + pt).html('<span class="dashicons ' + (partyTypeIcons[pt] || 'dashicons-building') + '"></span> ' + (partyTypeLabels[pt] || 'Empresa'));
-            $('#aura-tp-360-doc').text(cachedItem.document_id ? ((cachedItem.tax_id_type || 'NIT') + ': ' + cachedItem.document_id) : 'Sin documento fiscal');
+            $('#aura-tp-360-badge').attr('class', 'aura-pill is-party-' + pt).html('<span class="dashicons ' + (partyTypeIcons[pt] || 'dashicons-building') + '"></span> ' + (partyTypeLabels[pt] || __('Empresa', 'aura-suite')));
+            $('#aura-tp-360-doc').text(cachedItem.document_id ? ((cachedItem.tax_id_type || 'NIT') + ': ' + cachedItem.document_id) : __('Sin documento fiscal', 'aura-suite'));
 
             if (cachedItem.logo_url) {
                 $('#aura-tp-360-avatar').html('<img src="' + cachedItem.logo_url + '" style="width:100%;height:100%;object-fit:cover;">');
@@ -1403,7 +1404,7 @@
                 $('#aura-tp-360-avatar').html('<span class="aura-tp-emoji" style="font-size:26px;line-height:1;">' + emoji + '</span>');
             }
         } else {
-            $('#aura-tp-360-name').text('Cargando información...');
+            $('#aura-tp-360-name').text(__('Cargando información...', 'aura-suite'));
             $('#aura-tp-360-badge').attr('class', 'aura-pill').text('...');
             $('#aura-tp-360-doc').text('...');
             $('#aura-tp-360-avatar').html('<span class="aura-tp-emoji" style="font-size:26px;line-height:1;">🏢</span>');
@@ -1439,7 +1440,7 @@
                     if (typeof AuraUI !== 'undefined') {
                         AuraUI.hideModalSkeleton('aura-tp-modal-360');
                     }
-                    alert(res.data && res.data.message ? res.data.message : 'Error al obtener la ficha 360°.');
+                    alert(res.data && res.data.message ? res.data.message : __('Error al obtener la ficha 360°.', 'aura-suite'));
                     return;
                 }
 
@@ -1450,8 +1451,8 @@
                 $('#aura-tp-360-name').text(tp.commercial_name ? (tp.commercial_name + ' (' + tp.full_name + ')') : tp.full_name);
                 const pt = tp.party_type || 'company';
                 const emoji = partyTypeEmojis[pt] || '🏢';
-                $('#aura-tp-360-badge').attr('class', 'aura-pill is-party-' + pt).html('<span class="aura-tp-pill-emoji" style="margin-right:4px;">' + emoji + '</span> ' + (partyTypeLabels[pt] || 'Empresa'));
-                $('#aura-tp-360-doc').text(tp.document_id ? ((tp.tax_id_type || 'NIT') + ': ' + tp.document_id) : 'Sin documento fiscal');
+                $('#aura-tp-360-badge').attr('class', 'aura-pill is-party-' + pt).html('<span class="aura-tp-pill-emoji" style="margin-right:4px;">' + emoji + '</span> ' + (partyTypeLabels[pt] || __('Empresa', 'aura-suite')));
+                $('#aura-tp-360-doc').text(tp.document_id ? ((tp.tax_id_type || 'NIT') + ': ' + tp.document_id) : __('Sin documento fiscal', 'aura-suite'));
 
                 if (tp.logo_url) {
                     $('#aura-tp-360-avatar').html('<img src="' + tp.logo_url + '" style="width:100%;height:100%;object-fit:cover;">');
@@ -1474,11 +1475,11 @@
 
                 // Usuario WordPress vinculado
                 if (tp.wp_user_id) {
-                    $('#tp-360-wp-user').html('<span class="aura-badge-wp-user" style="display:inline-flex;padding:3px 8px;font-size:12px;border-radius:6px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-weight:600;"><span class="dashicons dashicons-admin-users" style="font-size:14px;width:14px;height:14px;margin-right:4px;"></span> @' + (tp.wp_user_login || tp.wp_user_id) + '</span> <a href="user-edit.php?user_id=' + tp.wp_user_id + '" target="_blank" style="margin-left:8px;font-size:12px;color:#2563eb;text-decoration:underline;font-weight:500;">Ver perfil en WP &rarr;</a>');
+                    $('#tp-360-wp-user').html('<span class="aura-badge-wp-user" style="display:inline-flex;padding:3px 8px;font-size:12px;border-radius:6px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-weight:600;"><span class="dashicons dashicons-admin-users" style="font-size:14px;width:14px;height:14px;margin-right:4px;"></span> @' + (tp.wp_user_login || tp.wp_user_id) + '</span> <a href="user-edit.php?user_id=' + tp.wp_user_id + '" target="_blank" style="margin-left:8px;font-size:12px;color:#2563eb;text-decoration:underline;font-weight:500;">' + __('Ver perfil en WP →', 'aura-suite') + '</a>');
                 } else {
-                    let wpUserHtml = '<em class="aura-text-muted">No vinculado</em>';
+                    let wpUserHtml = '<em class="aura-text-muted">' + __('No vinculado', 'aura-suite') + '</em>';
                     if (auraThirdPartiesData.canCreateUser) {
-                        wpUserHtml += ' <button type="button" class="aura-btn-secondary aura-btn-sm aura-btn-create-wp" data-id="' + tp.id + '" style="margin-left:8px;padding:3px 10px;font-size:11px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-admin-users" style="font-size:13px;width:13px;height:13px;"></span> Crear Suscriptor WP</button>';
+                        wpUserHtml += ' <button type="button" class="aura-btn-secondary aura-btn-sm aura-btn-create-wp" data-id="' + tp.id + '" style="margin-left:8px;padding:3px 10px;font-size:11px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-admin-users" style="font-size:13px;width:13px;height:13px;"></span> ' + __('Crear Suscriptor WP', 'aura-suite') + '</button>';
                     }
                     $('#tp-360-wp-user').html(wpUserHtml);
                 }
@@ -1488,12 +1489,12 @@
                 if (d.financial.recent_txs && d.financial.recent_txs.length) {
                     let html = '<table style="width:100%;border-collapse:collapse;margin-top:6px;">' +
                                '<thead><tr style="border-bottom:1px solid #cbd5e1;color:#64748b;text-align:left;font-size:11px;text-transform:uppercase;">' +
-                               '<th style="padding:4px 0;">Fecha</th><th>Tipo</th><th>Descripción</th><th style="text-align:right;">Monto</th></tr></thead><tbody>';
+                               '<th style="padding:4px 0;">' + __('Fecha', 'aura-suite') + '</th><th>' + __('Tipo', 'aura-suite') + '</th><th>' + __('Descripción', 'aura-suite') + '</th><th style="text-align:right;">' + __('Monto', 'aura-suite') + '</th></tr></thead><tbody>';
                     d.financial.recent_txs.forEach(function(tx) {
                         const isIncome = tx.transaction_type === 'income';
                         html += '<tr style="border-bottom:1px solid #f1f5f9;">' +
                                 '<td style="padding:6px 0;">' + tx.transaction_date + '</td>' +
-                                '<td><span class="aura-pill ' + (isIncome ? 'is-active' : 'is-party-organization_foundation') + '">' + (isIncome ? 'Ingreso' : 'Egreso') + '</span></td>' +
+                                '<td><span class="aura-pill ' + (isIncome ? 'is-active' : 'is-party-organization_foundation') + '">' + (isIncome ? __('Ingreso', 'aura-suite') : __('Egreso', 'aura-suite')) + '</span></td>' +
                                 '<td>' + $('<span>').text(tx.description || '').html() + '</td>' +
                                 '<td style="text-align:right;font-weight:600;color:' + (isIncome ? '#16a34a' : '#dc2626') + ';">$' + Number(tx.amount).toLocaleString('es-CO') + '</td>' +
                                 '</tr>';
@@ -1501,7 +1502,7 @@
                     html += '</tbody></table>';
                     $txContainer.html(html);
                 } else {
-                    $txContainer.html('<p class="aura-text-muted" style="margin:0;">No hay transacciones registradas para este tercero.</p>');
+                    $txContainer.html('<p class="aura-text-muted" style="margin:0;">' + __('No hay transacciones registradas para este tercero.', 'aura-suite') + '</p>');
                 }
 
                 // Ocultar loader y revelar contenido con animación suave
@@ -1520,7 +1521,7 @@
                     AuraUI.hideModalSkeleton('aura-tp-modal-360');
                 }
                 $('#aura-tp-modal-360').removeClass('is-active').hide();
-                alert('Error de conexión al cargar la Ficha 360°.');
+                alert(__('Error de conexión al cargar la Ficha 360°.', 'aura-suite'));
             }
         });
     }
@@ -1587,7 +1588,7 @@
         const $submitBtn = $('#aura-wp-user-modal-submit');
         $submitBtn.prop('disabled', false);
         $submitBtn.find('.dashicons').attr('class', 'dashicons dashicons-saved');
-        $submitBtn.find('span:last-child').text('Crear Usuario Suscriptor');
+        $submitBtn.find('span:last-child').text(__('Crear Usuario Suscriptor', 'aura-suite'));
 
         $('#aura-modal-create-wp-user').addClass('is-active').show();
         if (typeof AuraUI !== 'undefined') {
@@ -1608,14 +1609,14 @@
 
         if (!email) {
             $alert.attr('style', 'display:block;padding:10px 14px;border-radius:8px;font-size:0.88rem;background:#fef2f2;color:#991b1b;border:1px solid #f87171;')
-                  .text('Debes ingresar un correo electrónico válido.');
+                  .text(__('Debes ingresar un correo electrónico válido.', 'aura-suite'));
             return;
         }
 
         $alert.hide();
         $submitBtn.prop('disabled', true);
         $submitBtn.find('.dashicons').attr('class', 'dashicons dashicons-update aura-spin');
-        $submitBtn.find('span:last-child').text(auraThirdPartiesData.i18n.creatingUser || 'Creando usuario...');
+        $submitBtn.find('span:last-child').text(auraThirdPartiesData.i18n.creatingUser || __('Creando usuario...', 'aura-suite'));
 
         $.ajax({
             url: auraThirdPartiesData.ajaxUrl,
@@ -1631,11 +1632,11 @@
             success: function(res) {
                 $submitBtn.prop('disabled', false);
                 $submitBtn.find('.dashicons').attr('class', 'dashicons dashicons-saved');
-                $submitBtn.find('span:last-child').text('Crear Usuario Suscriptor');
+                $submitBtn.find('span:last-child').text(__('Crear Usuario Suscriptor', 'aura-suite'));
 
                 if (res.success) {
                     $alert.attr('style', 'display:block;padding:10px 14px;border-radius:8px;font-size:0.88rem;background:#f0fdf4;color:#166534;border:1px solid #86efac;')
-                          .html('<strong>✅ Éxito:</strong> ' + res.data.message);
+                          .html('<strong>' + __('✅ Éxito:', 'aura-suite') + '</strong> ' + res.data.message);
 
                     if (thirdPartiesMap[id]) {
                         thirdPartiesMap[id].wp_user_id = res.data.user_id;
@@ -1649,11 +1650,11 @@
                     if ($row.length) {
                         const $nameBlock = $row.find('.aura-tp-name-block');
                         if ($nameBlock.length && !$nameBlock.find('.aura-badge-wp-user').length) {
-                            $nameBlock.append(' <span class="aura-badge-wp-user" data-tooltip="Usuario WP vinculado: @' + res.data.user_login + '"><span class="dashicons dashicons-admin-users"></span> WP</span>');
+                            $nameBlock.append(' <span class="aura-badge-wp-user" data-tooltip="' + sprintf(__('Usuario WP vinculado: @%s', 'aura-suite'), res.data.user_login) + '"><span class="dashicons dashicons-admin-users"></span> WP</span>');
                         }
                         const $btnCreate = $row.find('.aura-btn-create-wp');
                         if ($btnCreate.length) {
-                            $btnCreate.replaceWith('<a href="' + (res.data.edit_url || ('user-edit.php?user_id=' + res.data.user_id)) + '" class="aura-btn-action aura-btn-action--wp-user" target="_blank" data-tooltip="👤 Usuario WordPress: @' + res.data.user_login + ' (Ver perfil)"><span class="dashicons dashicons-admin-users"></span></a>');
+                            $btnCreate.replaceWith('<a href="' + (res.data.edit_url || ('user-edit.php?user_id=' + res.data.user_id)) + '" class="aura-btn-action aura-btn-action--wp-user" target="_blank" data-tooltip="' + sprintf(__('👤 Usuario WordPress: @%s (Ver perfil)', 'aura-suite'), res.data.user_login) + '"><span class="dashicons dashicons-admin-users"></span></a>');
                         }
                     }
 
@@ -1663,15 +1664,15 @@
                     }, 1400);
                 } else {
                     $alert.attr('style', 'display:block;padding:10px 14px;border-radius:8px;font-size:0.88rem;background:#fef2f2;color:#991b1b;border:1px solid #f87171;')
-                          .html('<strong>⚠️ Error:</strong> ' + (res.data && res.data.message ? res.data.message : 'No se pudo crear el usuario.'));
+                          .html('<strong>' + __('⚠️ Error:', 'aura-suite') + '</strong> ' + (res.data && res.data.message ? res.data.message : __('No se pudo crear el usuario.', 'aura-suite')));
                 }
             },
             error: function() {
                 $submitBtn.prop('disabled', false);
                 $submitBtn.find('.dashicons').attr('class', 'dashicons dashicons-saved');
-                $submitBtn.find('span:last-child').text('Crear Usuario Suscriptor');
+                $submitBtn.find('span:last-child').text(__('Crear Usuario Suscriptor', 'aura-suite'));
                 $alert.attr('style', 'display:block;padding:10px 14px;border-radius:8px;font-size:0.88rem;background:#fef2f2;color:#991b1b;border:1px solid #f87171;')
-                      .html('<strong>⚠️ Error:</strong> Error de conexión con el servidor.');
+                      .html('<strong>' + __('⚠️ Error:', 'aura-suite') + '</strong> ' + __('Error de conexión con el servidor.', 'aura-suite'));
             }
         });
     }
@@ -1681,24 +1682,24 @@
      */
     function formatChildRow(item) {
         const ptype = item.party_type || 'company';
-        const ptypeLabel = partyTypeLabels[ptype] || 'Empresa';
+        const ptypeLabel = partyTypeLabels[ptype] || __('Empresa', 'aura-suite');
         const ptypeEmoji = partyTypeEmojis[ptype] || '🏢';
         const isActive = parseInt(item.is_active, 10) === 1;
 
         let wpUserSection = '';
         if (item.wp_user_id) {
-            wpUserSection = '<div class="aura-child-row-item"><strong>Usuario WP:</strong> <span class="aura-badge-wp-user" style="display:inline-flex;padding:2px 6px;font-size:11px;border-radius:4px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;"><span class="dashicons dashicons-admin-users" style="font-size:13px;width:13px;height:13px;margin-right:2px;"></span> @' + (item.wp_user_login || item.wp_user_id) + '</span></div>';
+            wpUserSection = '<div class="aura-child-row-item"><strong>' + __('Usuario WP:', 'aura-suite') + '</strong> <span class="aura-badge-wp-user" style="display:inline-flex;padding:2px 6px;font-size:11px;border-radius:4px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;"><span class="dashicons dashicons-admin-users" style="font-size:13px;width:13px;height:13px;margin-right:2px;"></span> @' + (item.wp_user_login || item.wp_user_id) + '</span></div>';
         } else if (auraThirdPartiesData.canCreateUser) {
-            wpUserSection = '<div class="aura-child-row-item"><strong>Usuario WP:</strong> <button type="button" class="aura-btn-secondary aura-btn-sm aura-btn-create-wp" data-id="' + item.id + '" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-admin-users" style="font-size:12px;width:12px;height:12px;"></span> Crear Suscriptor</button></div>';
+            wpUserSection = '<div class="aura-child-row-item"><strong>' + __('Usuario WP:', 'aura-suite') + '</strong> <button type="button" class="aura-btn-secondary aura-btn-sm aura-btn-create-wp" data-id="' + item.id + '" style="padding:2px 8px;font-size:11px;display:inline-flex;align-items:center;gap:4px;"><span class="dashicons dashicons-admin-users" style="font-size:12px;width:12px;height:12px;"></span> ' + __('Crear Suscriptor', 'aura-suite') + '</button></div>';
         }
 
         return '<div class="aura-child-row-content" style="padding:12px 16px;background:var(--aura-bg-card,#f8fafc);border-left:3px solid #2563eb;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:12px;">' +
-               '<div class="aura-child-row-item"><strong>Tipo:</strong> ' + ptypeEmoji + ' ' + ptypeLabel + '</div>' +
-               '<div class="aura-child-row-item"><strong>Documento:</strong> ' + (item.document_id ? (item.tax_id_type || 'NIT') + ': ' + item.document_id : '-') + '</div>' +
-               '<div class="aura-child-row-item"><strong>Teléfono:</strong> ' + (item.phone || '-') + '</div>' +
-               '<div class="aura-child-row-item"><strong>Email:</strong> ' + (item.email || '-') + '</div>' +
-               '<div class="aura-child-row-item"><strong>Dirección:</strong> ' + (item.address || '-') + '</div>' +
-               '<div class="aura-child-row-item"><strong>Estado:</strong> ' + (isActive ? 'Activo' : 'Inactivo') + '</div>' +
+               '<div class="aura-child-row-item"><strong>' + __('Tipo:', 'aura-suite') + '</strong> ' + ptypeEmoji + ' ' + ptypeLabel + '</div>' +
+               '<div class="aura-child-row-item"><strong>' + __('Documento:', 'aura-suite') + '</strong> ' + (item.document_id ? (item.tax_id_type || 'NIT') + ': ' + item.document_id : '-') + '</div>' +
+               '<div class="aura-child-row-item"><strong>' + __('Teléfono:', 'aura-suite') + '</strong> ' + (item.phone || '-') + '</div>' +
+               '<div class="aura-child-row-item"><strong>' + __('Email:', 'aura-suite') + '</strong> ' + (item.email || '-') + '</div>' +
+               '<div class="aura-child-row-item"><strong>' + __('Dirección:', 'aura-suite') + '</strong> ' + (item.address || '-') + '</div>' +
+               '<div class="aura-child-row-item"><strong>' + __('Estado:', 'aura-suite') + '</strong> ' + (isActive ? __('Activo', 'aura-suite') : __('Inactivo', 'aura-suite')) + '</div>' +
                wpUserSection +
                '</div>';
     }

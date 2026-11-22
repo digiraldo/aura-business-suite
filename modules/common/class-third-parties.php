@@ -37,6 +37,7 @@ class Aura_Third_Parties {
 
         // Integración de Avatar de WordPress con logotipo/foto del tercero
         add_filter('pre_get_avatar_data', array(__CLASS__, 'filter_pre_get_avatar_data'), 20, 2);
+        add_filter('get_avatar_data', array(__CLASS__, 'filter_default_avatar_fallback'), 99, 2);
 
         // Catálogo para el Modal Explorador de Terceros clasificado por rol contable
         add_action('wp_ajax_aura_third_parties_catalog_by_role', array(__CLASS__, 'ajax_catalog_by_role'));
@@ -1666,34 +1667,101 @@ class Aura_Third_Parties {
     }
 
     /**
-     * Filtro universal pre_get_avatar_data para resolver el avatar de WP desde el logotipo/foto del tercero
+     * Normaliza el protocolo (http/https) de una URL de avatar local para evitar Mixed Content
+     * cuando Simple Local Avatars o metadatos antiguos almacenaron URLs http:// en sitios https://.
      */
-    public static function filter_pre_get_avatar_data($args, $id_or_email) {
-        if (!empty($args['url']) && empty($args['force_default'])) {
-            return $args;
+    public static function normalize_local_avatar_url(string $url): string {
+        $url = trim($url);
+        if ($url === '' || stripos($url, 'gravatar.com') !== false) {
+            return $url;
         }
 
-        $user_id = 0;
+        $parsed_url = function_exists('wp_parse_url') ? wp_parse_url($url) : parse_url($url);
+        $url_host   = strtolower((string) ($parsed_url['host'] ?? ''));
+        if ($url_host === '') {
+            return $url;
+        }
+
+        $site_host = function_exists('home_url')
+            ? strtolower((string) wp_parse_url(home_url(), PHP_URL_HOST))
+            : '';
+        $req_host = '';
+        if (!empty($_SERVER['HTTP_HOST'])) {
+            $req_host = strtolower(preg_replace('/:\d+$/', '', (string) $_SERVER['HTTP_HOST']));
+        }
+
+        if ($url_host === $site_host || ($req_host !== '' && $url_host === $req_host)) {
+            if (function_exists('set_url_scheme')) {
+                $url = set_url_scheme($url);
+            } elseif (function_exists('is_ssl') && is_ssl() && stripos($url, 'http://') === 0) {
+                $url = 'https://' . substr($url, 7);
+            }
+        }
+
+        return $url;
+    }
+
+    /**
+     * Verifica si una URL apunta a un archivo local dentro de wp-content/uploads que no existe en disco.
+     */
+    private static function is_missing_local_upload(string $url): bool {
+        if ($url === '' || !function_exists('wp_upload_dir')) {
+            return false;
+        }
+        $upload = wp_upload_dir();
+        $baseurl = (string) ($upload['baseurl'] ?? '');
+        $basedir = (string) ($upload['basedir'] ?? '');
+        if ($baseurl === '' || $basedir === '') {
+            return false;
+        }
+
+        $url_path  = (string) wp_parse_url($url, PHP_URL_PATH);
+        $base_path = (string) wp_parse_url($baseurl, PHP_URL_PATH);
+        if ($url_path === '' || $base_path === '' || strpos($url_path, $base_path . '/') !== 0) {
+            return false;
+        }
+
+        $rel_path = ltrim(substr($url_path, strlen($base_path)), '/');
+        if ($rel_path === '') {
+            return false;
+        }
+
+        $disk_path = wp_normalize_path(trailingslashit($basedir) . $rel_path);
+        return !file_exists($disk_path);
+    }
+
+    /**
+     * Resuelve el ID de usuario WP desde un ID, email, WP_User, WP_Post o WP_Comment.
+     */
+    private static function resolve_avatar_user_id($id_or_email): int {
         if (is_numeric($id_or_email)) {
-            $user_id = (int) $id_or_email;
-        } elseif (is_string($id_or_email) && is_email($id_or_email)) {
+            return (int) $id_or_email;
+        }
+        if (is_string($id_or_email) && is_email($id_or_email)) {
             $user = get_user_by('email', $id_or_email);
-            if ($user) {
-                $user_id = (int) $user->ID;
-            }
-        } elseif (is_object($id_or_email)) {
+            return $user ? (int) $user->ID : 0;
+        }
+        if (is_object($id_or_email)) {
             if (!empty($id_or_email->user_id)) {
-                $user_id = (int) $id_or_email->user_id;
-            } elseif ($id_or_email instanceof \WP_User) {
-                $user_id = (int) $id_or_email->ID;
+                return (int) $id_or_email->user_id;
+            }
+            if ($id_or_email instanceof \WP_User) {
+                return (int) $id_or_email->ID;
+            }
+            if ($id_or_email instanceof \WP_Post && !empty($id_or_email->post_author)) {
+                return (int) $id_or_email->post_author;
             }
         }
+        return 0;
+    }
 
+    /**
+     * Resuelve el attachment ID de avatar/foto local del usuario (metadatos WP/AURA o Tercero vinculado).
+     */
+    private static function resolve_user_avatar_attachment_id(int $user_id): int {
         if ($user_id <= 0) {
-            return $args;
+            return 0;
         }
-
-        // Buscar logo_id en metadatos del usuario
         $logo_id = (int) get_user_meta($user_id, 'aura_avatar_id', true);
         if ($logo_id <= 0) {
             $logo_id = (int) get_user_meta($user_id, 'wp_user_avatar', true);
@@ -1705,7 +1773,6 @@ class Aura_Third_Parties {
             }
         }
         if ($logo_id <= 0) {
-            // Verificar si tiene un tercero vinculado en la base de datos
             global $wpdb;
             $table = self::get_table_name();
             $logo_id = (int) $wpdb->get_var($wpdb->prepare(
@@ -1713,20 +1780,117 @@ class Aura_Third_Parties {
                 $user_id
             ));
         }
+        return $logo_id;
+    }
 
+    /**
+     * Filtro universal pre_get_avatar_data para resolver el avatar de WP desde el logotipo/foto del tercero
+     * y corregir URLs locales (esquema http/https o archivos faltantes).
+     */
+    public static function filter_pre_get_avatar_data($args, $id_or_email) {
+        if (!empty($args['force_default'])) {
+            return $args;
+        }
+
+        $user_id = self::resolve_avatar_user_id($id_or_email);
+
+        if (!empty($args['url'])) {
+            $normalized = self::normalize_local_avatar_url((string) $args['url']);
+            if (!self::is_missing_local_upload($normalized)) {
+                $args['url'] = $normalized;
+                return $args;
+            }
+            // Si la URL precalculada apuntaba a un thumbnail inexistente en disco, limpiar para resolver por attachment
+            $args['url'] = null;
+        }
+
+        if ($user_id <= 0) {
+            return $args;
+        }
+
+        $logo_id = self::resolve_user_avatar_attachment_id($user_id);
         if ($logo_id > 0) {
             $size = !empty($args['size']) ? (int) $args['size'] : 96;
             $image_src = wp_get_attachment_image_src($logo_id, array($size, $size));
-            if ($image_src && !empty($image_src[0])) {
-                $args['url'] = $image_src[0];
+            if ($image_src && !empty($image_src[0]) && !self::is_missing_local_upload($image_src[0])) {
+                $args['url'] = self::normalize_local_avatar_url((string) $image_src[0]);
                 $args['found_avatar'] = true;
-            } else {
-                $full_url = wp_get_attachment_url($logo_id);
-                if ($full_url) {
-                    $args['url'] = $full_url;
+                return $args;
+            }
+            $full_url = wp_get_attachment_url($logo_id);
+            if ($full_url && !self::is_missing_local_upload($full_url)) {
+                $args['url'] = self::normalize_local_avatar_url((string) $full_url);
+                $args['found_avatar'] = true;
+                return $args;
+            }
+        }
+
+        foreach (array('aura_avatar_url', 'profile_photo') as $meta_key) {
+            $meta_url = (string) get_user_meta($user_id, $meta_key, true);
+            if ($meta_url !== '' && filter_var($meta_url, FILTER_VALIDATE_URL)) {
+                $normalized = self::normalize_local_avatar_url($meta_url);
+                if (!self::is_missing_local_upload($normalized)) {
+                    $args['url'] = $normalized;
                     $args['found_avatar'] = true;
+                    return $args;
                 }
             }
+        }
+
+        return $args;
+    }
+
+    /**
+     * Normalización final de esquema (http -> https) y respaldo local (assets/images/default-avatar.svg)
+     * cuando el usuario realmente no posee imagen subida en entornos locales.
+     */
+    public static function filter_default_avatar_fallback($args, $id_or_email) {
+        $url = (string) ($args['url'] ?? '');
+        $is_gravatar = ($url === '' || stripos($url, 'gravatar.com') !== false);
+
+        // Garantizar protocolo correcto (p. ej. https://) para cualquier avatar local ya resuelto
+        if (!$is_gravatar) {
+            $normalized = self::normalize_local_avatar_url($url);
+            if (!self::is_missing_local_upload($normalized)) {
+                $args['url'] = $normalized;
+                return $args;
+            }
+            $url = '';
+            $is_gravatar = true;
+        }
+
+        if (($args['default'] ?? '') === '404' || ($args['default'] ?? '') === 'blank') {
+            if ($url === '') {
+                $args['url'] = false;
+                $args['found_avatar'] = false;
+            }
+            return $args;
+        }
+
+        if (!defined('AURA_PLUGIN_DIR') || !defined('AURA_PLUGIN_URL')) {
+            return $args;
+        }
+
+        $default_rel = 'assets/images/default-avatar.svg';
+        if (!file_exists(AURA_PLUGIN_DIR . $default_rel)) {
+            return $args;
+        }
+
+        $host = '';
+        if (function_exists('home_url')) {
+            $host = strtolower((string) wp_parse_url(home_url(), PHP_URL_HOST));
+        }
+        $is_local_env = (
+            $host === 'localhost'
+            || $host === '127.0.0.1'
+            || $host === '::1'
+            || (bool) preg_match('/\.(test|local|localhost|internal|lan)$/i', $host)
+            || (function_exists('wp_get_environment_type') && in_array(wp_get_environment_type(), array('local', 'development'), true))
+        );
+
+        if (($url === '' || $is_local_env) && $is_gravatar) {
+            $args['url'] = self::normalize_local_avatar_url(AURA_PLUGIN_URL . $default_rel);
+            $args['found_avatar'] = true;
         }
 
         return $args;

@@ -1509,7 +1509,7 @@ class Aura_Financial_Transactions {
                 'document_id'      => $tp['document_id'] ?: '',
                 'tax_id_type'      => $tp['tax_id_type'] ?: 'NIT',
                 'avatar_url'       => $logo_url,
-                'label'            => '[' . ( $type_labels[ $ptype ] ?? 'Tercero' ) . '] ' . $display_name . ( $tp['document_id'] ? ' - ' . ( $tp['tax_id_type'] ?: 'Doc' ) . ': ' . $tp['document_id'] : '' ),
+                'label'            => '[' . ( $type_labels[ $ptype ] ?? __( 'Tercero', 'aura-suite' ) ) . '] ' . $display_name . ( $tp['document_id'] ? ' - ' . ( $tp['tax_id_type'] ?: __( 'Doc', 'aura-suite' ) ) . ': ' . $tp['document_id'] : '' ),
                 'value'            => $tp['commercial_name'] ?: $tp['full_name'],
             ];
         }
@@ -1536,7 +1536,7 @@ class Aura_Financial_Transactions {
                 'party_type_label' => __( 'Usuario del Sistema', 'aura-suite' ),
                 'icon'             => 'dashicons-admin-users',
                 'avatar_url'       => $avatar,
-                'label'            => '[Usuario] ' . $user->display_name . ' (' . $user->user_email . ')',
+                'label'            => sprintf( __( '[Usuario] %1$s (%2$s)', 'aura-suite' ), $user->display_name, $user->user_email ),
                 'value'            => $user->display_name,
             ];
         }

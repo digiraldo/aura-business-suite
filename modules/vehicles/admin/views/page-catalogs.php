@@ -25,46 +25,46 @@ $areas = $wpdb->get_results(
 // Iconos dashicons disponibles para catálogos
 $available_icons = array(
     // Ubicación / destino
-    'dashicons-location'        => 'Ubicación',
-    'dashicons-location-alt'    => 'Marcador',
-    'dashicons-admin-home'      => 'Casa',
-    'dashicons-building'        => 'Edificio',
-    'dashicons-store'           => 'Tienda',
-    'dashicons-airplane'        => 'Avión',
+    'dashicons-location'        => __( 'Ubicación', 'aura-suite' ),
+    'dashicons-location-alt'    => __( 'Marcador', 'aura-suite' ),
+    'dashicons-admin-home'      => __( 'Casa', 'aura-suite' ),
+    'dashicons-building'        => __( 'Edificio', 'aura-suite' ),
+    'dashicons-store'           => __( 'Tienda', 'aura-suite' ),
+    'dashicons-airplane'        => __( 'Avión', 'aura-suite' ),
     // Transporte
-    'dashicons-car'             => 'Auto',
-    'dashicons-carrot'          => 'Ruta',
-    'dashicons-cart'            => 'Carga',
+    'dashicons-car'             => __( 'Auto', 'aura-suite' ),
+    'dashicons-carrot'          => __( 'Ruta', 'aura-suite' ),
+    'dashicons-cart'            => __( 'Carga', 'aura-suite' ),
     // Trabajo / propósito
-    'dashicons-businessman'     => 'Persona',
-    'dashicons-groups'          => 'Grupo',
-    'dashicons-clipboard'       => 'Portapapeles',
-    'dashicons-media-document'  => 'Documento',
-    'dashicons-hammer'          => 'Herramienta',
-    'dashicons-admin-tools'     => 'Herramientas',
-    'dashicons-chart-bar'       => 'Gráfico',
-    'dashicons-megaphone'       => 'Anuncio',
-    'dashicons-calendar-alt'    => 'Calendario',
+    'dashicons-businessman'     => __( 'Persona', 'aura-suite' ),
+    'dashicons-groups'          => __( 'Grupo', 'aura-suite' ),
+    'dashicons-clipboard'       => __( 'Portapapeles', 'aura-suite' ),
+    'dashicons-media-document'  => __( 'Documento', 'aura-suite' ),
+    'dashicons-hammer'          => __( 'Herramienta', 'aura-suite' ),
+    'dashicons-admin-tools'     => __( 'Herramientas', 'aura-suite' ),
+    'dashicons-chart-bar'       => __( 'Gráfico', 'aura-suite' ),
+    'dashicons-megaphone'       => __( 'Anuncio', 'aura-suite' ),
+    'dashicons-calendar-alt'    => __( 'Calendario', 'aura-suite' ),
     // Finanzas / gastos
-    'dashicons-money-alt'       => 'Dinero',
-    'dashicons-tag'             => 'Etiqueta',
-    'dashicons-tickets-alt'     => 'Ticket',
-    'dashicons-admin-generic'   => 'Genérico',
+    'dashicons-money-alt'       => __( 'Dinero', 'aura-suite' ),
+    'dashicons-tag'             => __( 'Etiqueta', 'aura-suite' ),
+    'dashicons-tickets-alt'     => __( 'Ticket', 'aura-suite' ),
+    'dashicons-admin-generic'   => __( 'Genérico', 'aura-suite' ),
     // Mantenimiento
-    'dashicons-admin-settings'  => 'Configuración',
-    'dashicons-update'          => 'Actualizar',
-    'dashicons-welcome-widgets-menus' => 'Lista',
+    'dashicons-admin-settings'  => __( 'Configuración', 'aura-suite' ),
+    'dashicons-update'          => __( 'Actualizar', 'aura-suite' ),
+    'dashicons-welcome-widgets-menus' => __( 'Lista', 'aura-suite' ),
     // Otros
-    'dashicons-star-filled'     => 'Estrella',
-    'dashicons-info'            => 'Info',
-    'dashicons-marker'          => 'Marcador 2',
-    'dashicons-plus-alt'        => 'Plus',
+    'dashicons-star-filled'     => __( 'Estrella', 'aura-suite' ),
+    'dashicons-info'            => __( 'Info', 'aura-suite' ),
+    'dashicons-marker'          => __( 'Marcador 2', 'aura-suite' ),
+    'dashicons-plus-alt'        => __( 'Plus', 'aura-suite' ),
 );
 
 $tabs = array(
-    'destination' => array( 'label' => 'Destinos',    'icon' => 'dashicons-location',  'singular' => 'Destino' ),
-    'purpose'     => array( 'label' => 'Propósitos',  'icon' => 'dashicons-clipboard',  'singular' => 'Propósito' ),
-    'expense'     => array( 'label' => 'Gastos',      'icon' => 'dashicons-money-alt',  'singular' => 'Gasto' ),
+    'destination' => array( 'label' => __( 'Destinos', 'aura-suite' ),    'icon' => 'dashicons-location',  'singular' => __( 'Destino', 'aura-suite' ) ),
+    'purpose'     => array( 'label' => __( 'Propósitos', 'aura-suite' ),  'icon' => 'dashicons-clipboard',  'singular' => __( 'Propósito', 'aura-suite' ) ),
+    'expense'     => array( 'label' => __( 'Gastos', 'aura-suite' ),      'icon' => 'dashicons-money-alt',  'singular' => __( 'Gasto', 'aura-suite' ) ),
 );
 ?>
 
@@ -111,9 +111,9 @@ $tabs = array(
             <p class="aura-cat-panel-desc">
                 <?php
                 $descriptions = array(
-                    'destination' => 'Lista de destinos disponibles para registrar en salidas de tipo Encargo. Las áreas pueden tener sus propios destinos adicionales.',
-                    'purpose'     => 'Propósitos o motivos de viaje para salidas de tipo Encargo. Se ven en el formulario de nueva salida.',
-                    'expense'     => 'Tipos de gastos que pueden registrarse al hacer el check-in de una salida. El total se suma automáticamente.',
+                    'destination' => __( 'Lista de destinos disponibles para registrar en salidas de tipo Encargo. Las áreas pueden tener sus propios destinos adicionales.', 'aura-suite' ),
+                    'purpose'     => __( 'Propósitos o motivos de viaje para salidas de tipo Encargo. Se ven en el formulario de nueva salida.', 'aura-suite' ),
+                    'expense'     => __( 'Tipos de gastos que pueden registrarse al hacer el check-in de una salida. El total se suma automáticamente.', 'aura-suite' ),
                 );
                 echo esc_html( $descriptions[ $type ] );
                 ?>
@@ -121,7 +121,7 @@ $tabs = array(
             <?php if ( $can_manage ) : ?>
             <button type="button" class="button button-primary aura-cat-btn-new" data-type="<?php echo esc_attr( $type ); ?>">
                 <span class="dashicons dashicons-plus-alt2"></span>
-                Nuevo <?php echo esc_html( $tab['singular'] ); ?>
+                <?php echo esc_html( sprintf( __( 'Nuevo %s', 'aura-suite' ), $tab['singular'] ) ); ?>
             </button>
             <?php endif; ?>
         </div>
@@ -130,16 +130,16 @@ $tabs = array(
             <thead>
                 <tr>
                     <?php if ( $can_manage ) : ?>
-                    <th class="aura-cat-th-handle" title="Arrastrar para reordenar">
+                    <th class="aura-cat-th-handle" title="<?php esc_attr_e( 'Arrastrar para reordenar', 'aura-suite' ); ?>">
                         <span class="dashicons dashicons-menu"></span>
                     </th>
                     <?php endif; ?>
-                    <th class="aura-cat-th-icon">Icono</th>
-                    <th>Nombre / Descripción</th>
-                    <th class="aura-cat-th-area">Ámbito</th>
-                    <th class="aura-cat-th-status">Estado</th>
+                    <th class="aura-cat-th-icon"><?php esc_html_e( 'Icono', 'aura-suite' ); ?></th>
+                    <th><?php esc_html_e( 'Nombre / Descripción', 'aura-suite' ); ?></th>
+                    <th class="aura-cat-th-area"><?php esc_html_e( 'Ámbito', 'aura-suite' ); ?></th>
+                    <th class="aura-cat-th-status"><?php esc_html_e( 'Estado', 'aura-suite' ); ?></th>
                     <?php if ( $can_manage ) : ?>
-                    <th class="aura-cat-th-actions">Acciones</th>
+                    <th class="aura-cat-th-actions"><?php esc_html_e( 'Acciones', 'aura-suite' ); ?></th>
                     <?php endif; ?>
                 </tr>
             </thead>
@@ -147,7 +147,7 @@ $tabs = array(
                 <tr>
                     <td colspan="6" class="aura-cat-empty">
                         <span class="spinner is-active" style="float:none;vertical-align:middle;"></span>
-                        Cargando…
+                        <?php esc_html_e( 'Cargando…', 'aura-suite' ); ?>
                     </td>
                 </tr>
             </tbody>
@@ -166,8 +166,8 @@ $tabs = array(
     <div class="aura-veh-modal-content" role="dialog" aria-modal="true" aria-labelledby="aura-cat-modal-title">
 
         <div class="aura-veh-modal-header">
-            <h2 id="aura-cat-modal-title">Nuevo Destino</h2>
-            <button type="button" class="aura-veh-modal-close aura-cat-modal-close" aria-label="Cerrar">
+            <h2 id="aura-cat-modal-title"><?php esc_html_e( 'Nuevo Destino', 'aura-suite' ); ?></h2>
+            <button type="button" class="aura-veh-modal-close aura-cat-modal-close" aria-label="<?php esc_attr_e( 'Cerrar', 'aura-suite' ); ?>">
                 <span class="dashicons dashicons-no-alt"></span>
             </button>
         </div>
@@ -180,7 +180,7 @@ $tabs = array(
                 <!-- Nombre -->
                 <div class="aura-veh-form-field">
                     <label for="aura-cat-name">
-                        Nombre <span class="required">*</span>
+                        <?php esc_html_e( 'Nombre', 'aura-suite' ); ?> <span class="required">*</span>
                     </label>
                     <input
                         type="text"
@@ -189,14 +189,14 @@ $tabs = array(
                         class="regular-text"
                         maxlength="150"
                         required
-                        placeholder="Ej. Aeropuerto Internacional"
+                        placeholder="<?php esc_attr_e( 'Ej. Aeropuerto Internacional', 'aura-suite' ); ?>"
                     >
                 </div>
 
                 <!-- Descripción -->
                 <div class="aura-veh-form-field">
-                    <label for="aura-cat-description">Descripción
-                        <span class="aura-veh-field-hint">(opcional)</span>
+                    <label for="aura-cat-description"><?php esc_html_e( 'Descripción', 'aura-suite' ); ?>
+                        <span class="aura-veh-field-hint"><?php esc_html_e( '(opcional)', 'aura-suite' ); ?></span>
                     </label>
                     <input
                         type="text"
@@ -204,18 +204,18 @@ $tabs = array(
                         name="description"
                         class="regular-text"
                         maxlength="300"
-                        placeholder="Breve aclaración o nota"
+                        placeholder="<?php esc_attr_e( 'Breve aclaración o nota', 'aura-suite' ); ?>"
                     >
                 </div>
 
                 <!-- Ícono -->
                 <div class="aura-veh-form-field">
-                    <label>Ícono</label>
+                    <label><?php esc_html_e( 'Ícono', 'aura-suite' ); ?></label>
                     <input type="hidden" id="aura-cat-icon" name="icon">
                     <div class="aura-cat-icon-grid">
-                        <button type="button" class="aura-icon-option aura-icon-none" data-icon="" title="Sin ícono">
+                        <button type="button" class="aura-icon-option aura-icon-none" data-icon="" title="<?php esc_attr_e( 'Sin ícono', 'aura-suite' ); ?>">
                             <span class="dashicons dashicons-minus"></span>
-                            <small>Ninguno</small>
+                            <small><?php esc_html_e( 'Ninguno', 'aura-suite' ); ?></small>
                         </button>
                         <?php foreach ( $available_icons as $dashicon => $label ) : ?>
                         <button type="button" class="aura-icon-option" data-icon="<?php echo esc_attr( $dashicon ); ?>" title="<?php echo esc_attr( $label ); ?>">
@@ -228,18 +228,18 @@ $tabs = array(
 
                 <!-- Ámbito (global vs área) -->
                 <div class="aura-veh-form-field">
-                    <label>Ámbito</label>
+                    <label><?php esc_html_e( 'Ámbito', 'aura-suite' ); ?></label>
                     <div class="aura-cat-radio-group">
                         <label class="aura-cat-radio-option">
                             <input type="radio" id="aura-cat-area-type" name="area_type" value="global" checked>
                             <span class="dashicons dashicons-networking"></span>
-                            <span>Global — visible en todas las áreas</span>
+                            <span><?php esc_html_e( 'Global — visible en todas las áreas', 'aura-suite' ); ?></span>
                         </label>
                         <?php if ( ! empty( $areas ) ) : ?>
                         <label class="aura-cat-radio-option">
                             <input type="radio" name="area_type" id="aura-cat-area-type-area" value="area">
                             <span class="dashicons dashicons-groups"></span>
-                            <span>Específico de un área</span>
+                            <span><?php esc_html_e( 'Específico de un área', 'aura-suite' ); ?></span>
                         </label>
                         <?php endif; ?>
                     </div>
@@ -247,7 +247,7 @@ $tabs = array(
                     <?php if ( ! empty( $areas ) ) : ?>
                     <div id="aura-cat-area-selector" style="display:none;margin-top:8px;">
                         <select id="aura-cat-area-id" name="area_id" class="regular-text">
-                            <option value="">— Seleccionar área —</option>
+                            <option value=""><?php esc_html_e( '— Seleccionar área —', 'aura-suite' ); ?></option>
                             <?php foreach ( $areas as $area ) : ?>
                             <option value="<?php echo esc_attr( $area->id ); ?>">
                                 <?php echo esc_html( $area->name ); ?>
@@ -257,7 +257,7 @@ $tabs = array(
                     </div>
                     <?php else : ?>
                     <p class="description" style="margin-top:6px;">
-                        No hay áreas configuradas. Todos los ítems serán globales.
+                        <?php esc_html_e( 'No hay áreas configuradas. Todos los ítems serán globales.', 'aura-suite' ); ?>
                     </p>
                     <?php endif; ?>
                 </div>
@@ -265,8 +265,8 @@ $tabs = array(
             </div><!-- .aura-veh-modal-body -->
 
             <div class="aura-veh-modal-footer">
-                <button type="submit" class="button button-primary">Guardar</button>
-                <button type="button" class="button aura-cat-modal-close">Cancelar</button>
+                <button type="submit" class="button button-primary"><?php esc_html_e( 'Guardar', 'aura-suite' ); ?></button>
+                <button type="button" class="button aura-cat-modal-close"><?php esc_html_e( 'Cancelar', 'aura-suite' ); ?></button>
             </div>
         </form>
     </div><!-- .aura-veh-modal-content -->

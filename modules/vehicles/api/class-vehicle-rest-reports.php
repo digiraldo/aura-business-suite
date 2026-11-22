@@ -25,13 +25,13 @@ class Aura_Vehicle_Rest_Reports {
     /** Títulos para exportaciones */
     private static function type_label( string $type ): string {
         $labels = array(
-            'trips'         => 'Reporte de Salidas',
-            'maintenances'  => 'Reporte de Mantenimientos',
-            'costs'         => 'Reporte de Costos',
-            'vehicles'      => 'Reporte de Flota',
-            'mileage'       => 'Reporte de Kilometraje',
+            'trips'         => __( 'Reporte de Salidas', 'aura-suite' ),
+            'maintenances'  => __( 'Reporte de Mantenimientos', 'aura-suite' ),
+            'costs'         => __( 'Reporte de Costos', 'aura-suite' ),
+            'vehicles'      => __( 'Reporte de Flota', 'aura-suite' ),
+            'mileage'       => __( 'Reporte de Kilometraje', 'aura-suite' ),
         );
-        return $labels[ $type ] ?? 'Reporte';
+        return $labels[ $type ] ?? __( 'Reporte', 'aura-suite' );
     }
 
     // ------------------------------------------------------------------
@@ -223,13 +223,13 @@ class Aura_Vehicle_Rest_Reports {
         $parts = array();
         if ( $request->get_param( 'area_id' ) ) {
             $area = get_term( (int) $request->get_param( 'area_id' ) );
-            $parts[] = 'Área: ' . ( is_object( $area ) ? $area->name : '—' );
+            $parts[] = __( 'Área:', 'aura-suite' ) . ' ' . ( is_object( $area ) ? $area->name : '—' );
         }
         $period = $request->get_param( 'period' );
         if ( 'custom' === $period ) {
             $parts[] = $request->get_param( 'date_from' ) . ' al ' . $request->get_param( 'date_to' );
         } else {
-            $period_labels = array( '7d' => 'Últimos 7 días', '30d' => 'Últimos 30 días', '90d' => 'Últimos 90 días', 'year' => 'Este año' );
+            $period_labels = array( '7d' => __( 'Últimos 7 días', 'aura-suite' ), '30d' => __( 'Últimos 30 días', 'aura-suite' ), '90d' => __( 'Últimos 90 días', 'aura-suite' ), 'year' => __( 'Este año', 'aura-suite' ) );
             $parts[] = $period_labels[ $period ] ?? $period;
         }
         $subtitle = implode( ' | ', $parts );

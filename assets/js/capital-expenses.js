@@ -6,6 +6,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     var nonce   = auraCapital.nonce;
     var ajaxUrl = auraCapital.ajaxUrl;
     var currentPage = 1;
@@ -65,7 +67,7 @@
     }
 
     /* ── Gráfico de barras mensual ── */
-    var MONTH_NAMES = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    var MONTH_NAMES = ['', __('Ene', 'aura-suite'), __('Feb', 'aura-suite'), __('Mar', 'aura-suite'), __('Abr', 'aura-suite'), __('May', 'aura-suite'), __('Jun', 'aura-suite'), __('Jul', 'aura-suite'), __('Ago', 'aura-suite'), __('Sep', 'aura-suite'), __('Oct', 'aura-suite'), __('Nov', 'aura-suite'), __('Dic', 'aura-suite')];
     function renderChart(byMonth) {
         var $chart  = $('#aura-capital-chart');
         var $labels = $('#aura-capital-chart-labels');
@@ -79,7 +81,7 @@
         var max = 0;
         for (var m = 1; m <= 12; m++) { if ((map[m] || 0) > max) max = map[m] || 0; }
         if (max === 0) {
-            $chart.html('<span style="color:#bbb;align-self:center;width:100%;text-align:center;">Sin datos</span>');
+            $chart.html('<span style="color:#bbb;align-self:center;width:100%;text-align:center;">' + escHtml(__('Sin datos', 'aura-suite')) + '</span>');
             return;
         }
 
@@ -112,7 +114,7 @@
     function renderByCat(byCat) {
         var $el = $('#aura-capital-by-cat');
         if (!byCat || !byCat.length) {
-            $el.html('<span style="color:#bbb;font-size:13px;">Sin datos para este año.</span>');
+            $el.html('<span style="color:#bbb;font-size:13px;">' + escHtml(__('Sin datos para este año.', 'aura-suite')) + '</span>');
             return;
         }
         var maxVal = parseFloat(byCat[0].total);
@@ -160,9 +162,9 @@
             }
 
             var statusColors = {
-                approved: { bg: '#d1fae5', color: '#065f46', label: 'Aprobado' },
-                pending:  { bg: '#fef3c7', color: '#92400e', label: 'Pendiente' },
-                rejected: { bg: '#fee2e2', color: '#991b1b', label: 'Rechazado' },
+                approved: { bg: '#d1fae5', color: '#065f46', label: __('Aprobado', 'aura-suite') },
+                pending:  { bg: '#fef3c7', color: '#92400e', label: __('Pendiente', 'aura-suite') },
+                rejected: { bg: '#fee2e2', color: '#991b1b', label: __('Rechazado', 'aura-suite') },
             };
 
             var rows = '';
@@ -193,7 +195,7 @@
     function updatePagination(page, pages, total) {
         currentPage = page;
         totalPages  = pages;
-        $('#cap-page-info').text('Mostrando página ' + page + ' de ' + pages + ' (' + total + ' registros)');
+        $('#cap-page-info').text(__('Mostrando página', 'aura-suite') + ' ' + page + ' ' + __('de', 'aura-suite') + ' ' + pages + ' (' + total + ' ' + __('registros', 'aura-suite') + ')');
         $('#cap-prev-page').prop('disabled', page <= 1);
         $('#cap-next-page').prop('disabled', page >= pages);
     }

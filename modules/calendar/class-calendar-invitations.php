@@ -125,25 +125,25 @@ class Aura_Calendar_Invitations {
                 }
                 return $name . ' (' . $role . ')';
             }, (array) $event->instructors );
-            $desc_parts[] = 'Profesor(es): ' . implode( ', ', $inst_names );
+            $desc_parts[] = __( 'Profesor(es): ', 'aura-suite' ) . implode( ', ', $inst_names );
         }
         if ( ! empty( $event->student_leaders ) ) {
             $ldr_names = array_map( function( $l ) {
                 $l_arr = (array) $l;
-                return ( $l_arr['name'] ?? '' ) . ' (' . ( $l_arr['role_label'] ?? 'Líder' ) . ')';
+                return ( $l_arr['name'] ?? '' ) . ' (' . ( $l_arr['role_label'] ?? __( 'Líder', 'aura-suite' ) ) . ')';
             }, (array) $event->student_leaders );
-            $desc_parts[] = 'Líderes Estudiantiles: ' . implode( ', ', $ldr_names );
+            $desc_parts[] = __( 'Líderes Estudiantiles: ', 'aura-suite' ) . implode( ', ', $ldr_names );
         }
         if ( ! empty( $event->location ) ) {
-            $desc_parts[] = 'Aula / Salón: ' . $event->location;
+            $desc_parts[] = __( 'Aula / Salón: ', 'aura-suite' ) . $event->location;
         }
         if ( ! empty( $event->online_url ) ) {
-            $desc_parts[] = 'Sesión Virtual: ' . $event->online_url;
+            $desc_parts[] = __( 'Sesión Virtual: ', 'aura-suite' ) . $event->online_url;
         }
         if ( ! empty( $event->description ) ) {
-            $desc_parts[] = "\nDetalles y Temario:\n" . $event->description;
+            $desc_parts[] = "\n" . __( 'Detalles y Temario:', 'aura-suite' ) . "\n" . $event->description;
         }
-        $desc_parts[] = "\nPortal Académico: " . $site_url;
+        $desc_parts[] = "\n" . __( 'Portal Académico: ', 'aura-suite' ) . $site_url;
 
         $description = implode( "\n", $desc_parts );
 
@@ -296,21 +296,21 @@ class Aura_Calendar_Invitations {
 
         $details_parts = [];
         if ( ! empty( $event->program_name ) ) {
-            $details_parts[] = '🎓 Programa: ' . $event->program_name;
+            $details_parts[] = __( '🎓 Programa: ', 'aura-suite' ) . $event->program_name;
         }
         if ( ! empty( $event->subject_name ) ) {
-            $details_parts[] = '📚 Materia: ' . $event->subject_name;
+            $details_parts[] = __( '📚 Materia: ', 'aura-suite' ) . $event->subject_name;
         }
         if ( ! empty( $event->location ) ) {
-            $details_parts[] = '📍 Aula: ' . $event->location;
+            $details_parts[] = __( '📍 Aula: ', 'aura-suite' ) . $event->location;
         }
         if ( ! empty( $event->online_url ) ) {
-            $details_parts[] = '💻 Sesión Virtual: ' . $event->online_url;
+            $details_parts[] = __( '💻 Sesión Virtual: ', 'aura-suite' ) . $event->online_url;
         }
         if ( ! empty( $event->description ) ) {
-            $details_parts[] = "\nDetalles:\n" . $event->description;
+            $details_parts[] = "\n" . __( 'Detalles:', 'aura-suite' ) . "\n" . $event->description;
         }
-        $details_parts[] = "\nPortal: " . home_url();
+        $details_parts[] = "\n" . __( 'Portal: ', 'aura-suite' ) . home_url();
         $details = implode( "\n", $details_parts );
 
         // Lista de emails de instructores para auto-añadir en Google Calendar
@@ -379,7 +379,7 @@ class Aura_Calendar_Invitations {
             'ics_download'=> $ics_link,
             'title'       => $title,
             'date_label'  => $start_dt->format( 'd/m/Y' ),
-            'time_label'  => $is_all_day ? __( 'Todo el día', 'aura' ) : ( $start_dt->format( 'H:i' ) . ' — ' . $end_dt->format( 'H:i' ) ),
+            'time_label'  => $is_all_day ? __( 'Todo el día', 'aura-suite' ) : ( $start_dt->format( 'H:i' ) . ' — ' . $end_dt->format( 'H:i' ) ),
         ];
     }
 
@@ -393,12 +393,12 @@ class Aura_Calendar_Invitations {
      */
     public static function send_invitations_email( int $event_id, array $recipient_emails = [], string $custom_note = '' ): array {
         if ( ! class_exists( 'Aura_Calendar_Events' ) ) {
-            return [ 'success' => false, 'message' => __( 'Módulo de eventos no disponible.', 'aura' ) ];
+            return [ 'success' => false, 'message' => __( 'Módulo de eventos no disponible.', 'aura-suite' ) ];
         }
 
         $event = Aura_Calendar_Events::get( $event_id );
         if ( ! $event ) {
-            return [ 'success' => false, 'message' => __( 'Evento no encontrado.', 'aura' ) ];
+            return [ 'success' => false, 'message' => __( 'Evento no encontrado.', 'aura-suite' ) ];
         }
 
         // Recopilar destinatarios
@@ -448,7 +448,7 @@ class Aura_Calendar_Invitations {
                     }
 
                     if ( ! empty( $em ) && is_email( $em ) ) {
-                        $role_label = ( isset( $inst_arr['role'] ) && $inst_arr['role'] === 'lead' ) ? __( 'Profesor Titular', 'aura' ) : __( 'Docente / Expositor', 'aura' );
+                        $role_label = ( isset( $inst_arr['role'] ) && $inst_arr['role'] === 'lead' ) ? __( 'Profesor Titular', 'aura-suite' ) : __( 'Docente / Expositor', 'aura-suite' );
                         $recipients[] = [
                             'name'  => $name,
                             'email' => sanitize_email( $em ),
@@ -465,7 +465,7 @@ class Aura_Calendar_Invitations {
                     $recipients[] = [
                         'name'  => $creator->display_name,
                         'email' => $creator->user_email,
-                        'role'  => __( 'Titular del Evento', 'aura' ),
+                        'role'  => __( 'Titular del Evento', 'aura-suite' ),
                     ];
                 }
             }
@@ -476,14 +476,14 @@ class Aura_Calendar_Invitations {
                 'success' => false,
                 'sent'    => 0,
                 'failed'  => 0,
-                'message' => __( 'No se encontraron correos electrónicos válidos para los profesores o instructores de este evento.', 'aura' ),
+                'message' => __( 'No se encontraron correos electrónicos válidos para los profesores o instructores de este evento.', 'aura-suite' ),
             ];
         }
 
         // Generar archivo .ics temporal
         $ics_content = self::generate_ics( $event_id, true, 'REQUEST' );
         if ( empty( $ics_content ) ) {
-            return [ 'success' => false, 'message' => __( 'Error al generar el archivo de calendario .ics.', 'aura' ) ];
+            return [ 'success' => false, 'message' => __( 'Error al generar el archivo de calendario .ics.', 'aura-suite' ) ];
         }
 
         $upload_dir = wp_upload_dir();
@@ -502,7 +502,7 @@ class Aura_Calendar_Invitations {
         // Datos del correo
         $site_name = get_bloginfo( 'name' ) ?: 'Centro Mateo';
         $admin_em  = get_option( 'admin_email' );
-        $subject   = sprintf( __( '📅 Invitación de Clase: %s', 'aura' ), $cal_links['title'] );
+        $subject   = sprintf( __( '📅 Invitación de Clase: %s', 'aura-suite' ), $cal_links['title'] );
 
         $sent_count   = 0;
         $failed_count = 0;
@@ -542,9 +542,9 @@ class Aura_Calendar_Invitations {
             'failed'     => $failed_count,
             'recipients' => $sent_to,
             'message'    => sprintf(
-                __( 'Invitaciones procesadas: %d enviadas exitosamente%s.', 'aura' ),
+                __( 'Invitaciones procesadas: %d enviadas exitosamente%s.', 'aura-suite' ),
                 $sent_count,
-                $failed_count > 0 ? sprintf( __( ', %d fallidas', 'aura' ), $failed_count ) : ''
+                $failed_count > 0 ? sprintf( __( ', %d fallidas', 'aura-suite' ), $failed_count ) : ''
             ),
         ];
     }
@@ -560,13 +560,13 @@ class Aura_Calendar_Invitations {
 
         // Tipo de evento badge
         $type_labels = [
-            'class'    => __( '📖 Clase Académica', 'aura' ),
-            'exam'     => __( '📝 Evaluación / Examen', 'aura' ),
-            'workshop' => __( '🔬 Taller Práctico', 'aura' ),
-            'activity' => __( '🎯 Actividad Institucional', 'aura' ),
-            'break'    => __( '☕ Receso / Pausa', 'aura' ),
+            'class'    => __( '📖 Clase Académica', 'aura-suite' ),
+            'exam'     => __( '📝 Evaluación / Examen', 'aura-suite' ),
+            'workshop' => __( '🔬 Taller Práctico', 'aura-suite' ),
+            'activity' => __( '🎯 Actividad Institucional', 'aura-suite' ),
+            'break'    => __( '☕ Receso / Pausa', 'aura-suite' ),
         ];
-        $type_badge = $type_labels[ $event->event_type ] ?? __( '📍 Sesión de Calendario', 'aura' );
+        $type_badge = $type_labels[ $event->event_type ] ?? __( '📍 Sesión de Calendario', 'aura-suite' );
 
         $color = ! empty( $event->color ) ? $event->color : '#6366f1';
 
@@ -580,20 +580,42 @@ class Aura_Calendar_Invitations {
         $start_dt = new DateTimeImmutable( $event->start_datetime, $site_tz );
         $end_dt   = new DateTimeImmutable( $event->end_datetime, $site_tz );
 
-        // Nombres de días y meses en español
-        $dias   = [ 'Sunday' => 'Domingo', 'Monday' => 'Lunes', 'Tuesday' => 'Martes', 'Wednesday' => 'Miércoles', 'Thursday' => 'Jueves', 'Friday' => 'Viernes', 'Saturday' => 'Sábado' ];
-        $meses  = [ 1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre' ];
+        // Nombres de días y meses localizados
+        $dias   = [
+            'Sunday'    => __( 'Domingo', 'aura-suite' ),
+            'Monday'    => __( 'Lunes', 'aura-suite' ),
+            'Tuesday'   => __( 'Martes', 'aura-suite' ),
+            'Wednesday' => __( 'Miércoles', 'aura-suite' ),
+            'Thursday'  => __( 'Jueves', 'aura-suite' ),
+            'Friday'    => __( 'Viernes', 'aura-suite' ),
+            'Saturday'  => __( 'Sábado', 'aura-suite' ),
+        ];
+        $meses  = [
+            1  => __( 'Enero', 'aura-suite' ),
+            2  => __( 'Febrero', 'aura-suite' ),
+            3  => __( 'Marzo', 'aura-suite' ),
+            4  => __( 'Abril', 'aura-suite' ),
+            5  => __( 'Mayo', 'aura-suite' ),
+            6  => __( 'Junio', 'aura-suite' ),
+            7  => __( 'Julio', 'aura-suite' ),
+            8  => __( 'Agosto', 'aura-suite' ),
+            9  => __( 'Septiembre', 'aura-suite' ),
+            10 => __( 'Octubre', 'aura-suite' ),
+            11 => __( 'Noviembre', 'aura-suite' ),
+            12 => __( 'Diciembre', 'aura-suite' ),
+        ];
 
         $dia_semana = $dias[ $start_dt->format( 'l' ) ] ?? $start_dt->format( 'l' );
         $mes_nombre = $meses[ (int) $start_dt->format( 'n' ) ] ?? $start_dt->format( 'F' );
-        $fecha_txt  = $dia_semana . ', ' . $start_dt->format( 'j' ) . ' de ' . $mes_nombre . ' de ' . $start_dt->format( 'Y' );
-        $hora_txt   = $start_dt->format( 'H:i' ) . ' — ' . $end_dt->format( 'H:i' ) . ' hrs';
+        /* translators: 1: day of week, 2: day number, 3: month name, 4: year */
+        $fecha_txt  = sprintf( __( '%1$s, %2$s de %3$s de %4$s', 'aura-suite' ), $dia_semana, $start_dt->format( 'j' ), $mes_nombre, $start_dt->format( 'Y' ) );
+        $hora_txt   = $start_dt->format( 'H:i' ) . ' — ' . $end_dt->format( 'H:i' ) . ' ' . __( 'hrs', 'aura-suite' );
 
         $custom_note_html = '';
         if ( ! empty( $custom_note ) ) {
             $custom_note_html = '
             <div style="margin: 20px 0; padding: 14px 18px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px; font-size: 13.5px; color: #92400e; line-height: 1.5;">
-                <strong>' . esc_html__( 'Nota de Coordinación:', 'aura' ) . '</strong><br>' . nl2br( esc_html( $custom_note ) ) . '
+                <strong>' . esc_html__( 'Nota de Coordinación:', 'aura-suite' ) . '</strong><br>' . nl2br( esc_html( $custom_note ) ) . '
             </div>';
         }
 
@@ -602,7 +624,7 @@ class Aura_Calendar_Invitations {
             $online_button = '
             <div style="margin: 22px 0 10px 0; text-align: center;">
                 <a href="' . esc_url( $event->online_url ) . '" target="_blank" style="background: #10b981; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; display: inline-block; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">
-                    💻 ' . esc_html__( 'Unirse a la Sesión Virtual', 'aura' ) . '
+                    💻 ' . esc_html__( 'Unirse a la Sesión Virtual', 'aura-suite' ) . '
                 </a>
             </div>';
         }
@@ -610,7 +632,7 @@ class Aura_Calendar_Invitations {
         ob_start();
         ?>
 <!DOCTYPE html>
-<html lang="es">
+<html lang="<?php echo esc_attr( str_replace( '_', '-', determine_locale() ) ); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -629,10 +651,10 @@ class Aura_Calendar_Invitations {
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div>
                                     <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">
-                                        <?php echo esc_html( $org_name ); ?> &bull; <?php esc_html_e( 'Portal Académico', 'aura' ); ?>
+                                        <?php echo esc_html( $org_name ); ?> &bull; <?php esc_html_e( 'Portal Académico', 'aura-suite' ); ?>
                                     </span>
                                     <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 700; line-height: 1.3;">
-                                        <?php esc_html_e( 'Invitación a Sesión de Clase', 'aura' ); ?>
+                                        <?php esc_html_e( 'Invitación a Sesión de Clase', 'aura-suite' ); ?>
                                     </h1>
                                 </div>
                             </div>
@@ -644,10 +666,10 @@ class Aura_Calendar_Invitations {
                         <td style="padding: 30px;">
                             
                             <p style="margin: 0 0 16px 0; font-size: 15px; color: #334155; line-height: 1.5;">
-                                <?php printf( esc_html__( 'Hola %s,', 'aura' ), '<strong>' . esc_html( $recipient['name'] ?: $recipient['email'] ) . '</strong>' ); ?>
+                                <?php printf( esc_html__( 'Hola %s,', 'aura-suite' ), '<strong>' . esc_html( $recipient['name'] ?: $recipient['email'] ) . '</strong>' ); ?>
                             </p>
                             <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.55;">
-                                <?php esc_html_e( 'Has sido asignado como docente para la siguiente sesión programada en el calendario académico institucional. Adjuntamos el archivo de calendario (.ics) y los botones directos para incorporarla a tu agenda.', 'aura' ); ?>
+                                <?php esc_html_e( 'Has sido asignado como docente para la siguiente sesión programada en el calendario académico institucional. Adjuntamos el archivo de calendario (.ics) y los botones directos para incorporarla a tu agenda.', 'aura-suite' ); ?>
                             </p>
 
                             <?php echo $custom_note_html; ?>
@@ -716,7 +738,7 @@ class Aura_Calendar_Invitations {
                             <!-- Botones Directos de "Agregar a Calendario" -->
                             <div style="text-align: center; margin-bottom: 24px;">
                                 <span style="font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; display: block; margin-bottom: 12px;">
-                                    <?php esc_html_e( 'Agrega esta clase a tu calendario personal:', 'aura' ); ?>
+                                    <?php esc_html_e( 'Agrega esta clase a tu calendario personal:', 'aura-suite' ); ?>
                                 </span>
 
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center" style="margin: 0 auto;">
@@ -736,7 +758,7 @@ class Aura_Calendar_Invitations {
                                         <!-- Archivo .ics -->
                                         <td style="padding: 4px;">
                                             <a href="<?php echo esc_url( $cal_links['ics_download'] ); ?>" style="background-color: #475569; color: #ffffff; padding: 10px 16px; font-size: 12.5px; font-weight: 700; text-decoration: none; border-radius: 8px; display: inline-block;">
-                                                📎 Descargar .ics
+                                                📎 <?php esc_html_e( 'Descargar .ics', 'aura-suite' ); ?>
                                             </a>
                                         </td>
                                     </tr>
@@ -744,7 +766,7 @@ class Aura_Calendar_Invitations {
                             </div>
 
                             <p style="margin: 0; font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.4;">
-                                <?php esc_html_e( 'Nota: El archivo de invitación .ics también se encuentra adjunto a este correo para apertura automática en Apple Calendar, Outlook de escritorio o Thunderbird.', 'aura' ); ?>
+                                <?php esc_html_e( 'Nota: El archivo de invitación .ics también se encuentra adjunto a este correo para apertura automática en Apple Calendar, Outlook de escritorio o Thunderbird.', 'aura-suite' ); ?>
                             </p>
 
                         </td>
@@ -754,7 +776,7 @@ class Aura_Calendar_Invitations {
                     <tr>
                         <td style="background-color: #f8fafc; padding: 20px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b;">
                             <p style="margin: 0 0 6px 0;">
-                                &copy; <?php echo esc_html( date( 'Y' ) ); ?> <?php echo esc_html( $site_name ); ?>. <?php esc_html_e( 'Todos los derechos reservados.', 'aura' ); ?>
+                                &copy; <?php echo esc_html( date( 'Y' ) ); ?> <?php echo esc_html( $site_name ); ?>. <?php esc_html_e( 'Todos los derechos reservados.', 'aura-suite' ); ?>
                             </p>
                             <p style="margin: 0;">
                                 <a href="<?php echo esc_url( $site_url ); ?>" style="color: #6366f1; text-decoration: none; font-weight: 600;">
@@ -786,19 +808,19 @@ class Aura_Calendar_Invitations {
         $token    = sanitize_text_field( $_GET['token'] ?? '' );
 
         if ( ! $event_id ) {
-            wp_die( esc_html__( 'ID de evento inválido.', 'aura' ), 400 );
+            wp_die( esc_html__( 'ID de evento inválido.', 'aura-suite' ), 400 );
         }
 
         // Si no está logueado, validar el token firmado
         if ( ! is_user_logged_in() ) {
             if ( ! wp_verify_nonce( $token, 'aura_cal_ics_' . $event_id ) ) {
-                wp_die( esc_html__( 'Enlace de descarga expirado o no autorizado.', 'aura' ), 403 );
+                wp_die( esc_html__( 'Enlace de descarga expirado o no autorizado.', 'aura-suite' ), 403 );
             }
         }
 
         $ics = self::generate_ics( $event_id, true, 'PUBLISH' );
         if ( empty( $ics ) ) {
-            wp_die( esc_html__( 'Evento no encontrado.', 'aura' ), 404 );
+            wp_die( esc_html__( 'Evento no encontrado.', 'aura-suite' ), 404 );
         }
 
         $event = Aura_Calendar_Events::get( $event_id );
@@ -825,12 +847,12 @@ class Aura_Calendar_Invitations {
 
         $event_id = intval( $_POST['event_id'] ?? 0 );
         if ( ! $event_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura-suite' ) ] );
         }
 
         $links = self::get_calendar_links( $event_id );
         if ( empty( $links ) ) {
-            wp_send_json_error( [ 'message' => __( 'Evento no encontrado.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Evento no encontrado.', 'aura-suite' ) ] );
         }
 
         wp_send_json_success( $links );
@@ -846,7 +868,7 @@ class Aura_Calendar_Invitations {
              ! current_user_can( 'aura_create_calendar_events' ) &&
              ! current_user_can( 'aura_teach_calendar' ) &&
              ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para enviar invitaciones.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para enviar invitaciones.', 'aura-suite' ) ] );
         }
 
         $event_id    = intval( $_POST['event_id'] ?? 0 );
@@ -864,7 +886,7 @@ class Aura_Calendar_Invitations {
         }
 
         if ( ! $event_id ) {
-            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID de evento inválido.', 'aura-suite' ) ] );
         }
 
         $res = self::send_invitations_email( $event_id, $recipient_emails, $custom_note );

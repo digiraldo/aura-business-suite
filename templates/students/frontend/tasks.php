@@ -399,14 +399,14 @@ document.addEventListener('DOMContentLoaded', function() {
         var $badge = $('#stu-words-badge');
 
         if (currentMinWords > 0) {
-            $badge.text(words + ' / ' + currentMinWords + ' palabras requeridas');
+            $badge.text(words + ' / ' + currentMinWords + ' <?php echo esc_js( __( 'palabras requeridas', 'aura-suite' ) ); ?>');
             if (words >= currentMinWords) {
                 $badge.css({ 'background': '#10b981', 'color': '#ffffff', 'border-color': '#059669' });
             } else {
                 $badge.css({ 'background': 'rgba(239,68,68,0.15)', 'color': '#ef4444', 'border-color': 'rgba(239,68,68,0.3)' });
             }
         } else {
-            $badge.text(words + ' palabras').css({ 'background': 'var(--aura-surface-alt)', 'color': 'var(--aura-text-secondary)', 'border-color': 'var(--aura-border)' });
+            $badge.text(words + ' <?php echo esc_js( __( 'palabras', 'aura-suite' ) ); ?>').css({ 'background': 'var(--aura-surface-alt)', 'color': 'var(--aura-text-secondary)', 'border-color': 'var(--aura-border)' });
         }
     }
 
@@ -438,13 +438,13 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#stu-modal-title').text('✍️ ' + taskTitle);
 
         if (bookTitle) {
-            $('#stu-modal-book-box').html('📖 <strong>Libro de Lectura:</strong> ' + $('<div>').text(bookTitle + (bookAuthor ? ' — ' + bookAuthor : '')).html()).show();
+            $('#stu-modal-book-box').html('📖 <strong><?php echo esc_js( __( 'Libro de Lectura:', 'aura-suite' ) ); ?></strong> ' + $('<div>').text(bookTitle + (bookAuthor ? ' — ' + bookAuthor : '')).html()).show();
         } else {
             $('#stu-modal-book-box').hide();
         }
 
         if (desc) {
-            $('#stu-modal-instructions').html('<strong>Instrucciones:</strong><br>' + $('<div>').text(desc).html()).show();
+            $('#stu-modal-instructions').html('<strong><?php echo esc_js( __( 'Instrucciones:', 'aura-suite' ) ); ?></strong><br>' + $('<div>').text(desc).html()).show();
         } else {
             $('#stu-modal-instructions').hide();
         }
@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isGraded) {
             $('#stu-modal-grade-banner').show();
             $('#stu-modal-score-badge').text(score + ' / ' + maxScore + ' pts');
-            $('#stu-modal-feedback-text').text(feedback ? 'Retroalimentación: ' + feedback : 'Sin comentarios adicionales.');
+            $('#stu-modal-feedback-text').text(feedback ? ('<?php echo esc_js( __( 'Retroalimentación:', 'aura-suite' ) ); ?> ' + feedback) : '<?php echo esc_js( __( 'Sin comentarios adicionales.', 'aura-suite' ) ); ?>');
             $('#btn-submit-student-task').hide();
             $('#stu-task-text').prop('readonly', true);
             $('#stu-task-attachment').prop('readonly', true);
@@ -476,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (minWords > 0) {
-            $('#stu-min-words-hint').text('📏 Este resumen exige un mínimo de ' + minWords + ' palabras escritas.');
+            $('#stu-min-words-hint').text('<?php echo esc_js( __( '📏 Este resumen exige un mínimo de', 'aura-suite' ) ); ?> ' + minWords + ' <?php echo esc_js( __( 'palabras escritas.', 'aura-suite' ) ); ?>');
         } else {
             $('#stu-min-words-hint').text('');
         }
@@ -495,14 +495,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentMinWords > 0) {
             var words = countWords($('#stu-task-text').val() || '');
             if (words < currentMinWords) {
-                alert('⚠️ Tu resumen cuenta con ' + words + ' palabras. Debes escribir al menos ' + currentMinWords + ' palabras para poder enviar la tarea.');
+                alert('<?php echo esc_js( __( '⚠️ Tu resumen cuenta con', 'aura-suite' ) ); ?> ' + words + ' <?php echo esc_js( __( 'palabras. Debes escribir al menos', 'aura-suite' ) ); ?> ' + currentMinWords + ' <?php echo esc_js( __( 'palabras para poder enviar la tarea.', 'aura-suite' ) ); ?>');
                 $('#stu-task-text').focus();
                 return;
             }
         }
 
         var $btn = $('#btn-submit-student-task');
-        $btn.prop('disabled', true).text('Enviando entrega...');
+        $btn.prop('disabled', true).text('<?php echo esc_js( __( 'Enviando entrega...', 'aura-suite' ) ); ?>');
 
         var postData = $(this).serializeArray();
         postData.push({ name: 'action', value: 'aura_cal_submit_task' });
@@ -512,18 +512,18 @@ document.addEventListener('DOMContentLoaded', function() {
         var ajaxUrl = typeof auraCalData !== 'undefined' ? auraCalData.ajax_url : '<?php echo admin_url( "admin-ajax.php" ); ?>';
 
         $.post(ajaxUrl, postData, function(res) {
-            $btn.prop('disabled', false).text('🚀 Enviar Entrega al Profesor');
+            $btn.prop('disabled', false).text('<?php echo esc_js( __( '🚀 Enviar Entrega al Profesor', 'aura-suite' ) ); ?>');
             if (res && res.success) {
-                alert(res.data.message || '¡Tarea entregada exitosamente!');
+                alert(res.data.message || '<?php echo esc_js( __( '¡Tarea entregada exitosamente!', 'aura-suite' ) ); ?>');
                 $('#modal-student-submission').fadeOut(150);
                 location.reload();
             } else {
-                var err = res && res.data && res.data.message ? res.data.message : 'Error al enviar la tarea.';
+                var err = res && res.data && res.data.message ? res.data.message : '<?php echo esc_js( __( 'Error al enviar la tarea.', 'aura-suite' ) ); ?>';
                 alert('⚠️ ' + err);
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('🚀 Enviar Entrega al Profesor');
-            alert('Error de conexión con el servidor al enviar la entrega.');
+            $btn.prop('disabled', false).text('<?php echo esc_js( __( '🚀 Enviar Entrega al Profesor', 'aura-suite' ) ); ?>');
+            alert('<?php echo esc_js( __( 'Error de conexión con el servidor al enviar la entrega.', 'aura-suite' ) ); ?>');
         });
     });
 });

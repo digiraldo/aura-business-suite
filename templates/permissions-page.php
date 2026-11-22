@@ -135,7 +135,7 @@ foreach ( $all_users as $listed_user ) {
     $user_areas_for_list = Aura_Areas_Setup::get_user_areas( $listed_user->ID );
     $areas_count = is_array( $user_areas_for_list ) ? count( $user_areas_for_list ) : 0;
     $total_area_assignments += $areas_count;
-    $user_roles  = !empty($listed_user->roles) ? implode( ', ', array_map( 'ucfirst', $listed_user->roles ) ) : __('Sin rol', 'aura-suite');
+    $user_roles  = !empty($listed_user->roles) ? implode( ', ', array_map( [ 'Aura_Roles_Manager', 'get_role_label' ], $listed_user->roles ) ) : __('Sin rol', 'aura-suite');
     $user_avatar = get_avatar_url( $listed_user->ID, array( 'size' => 64 ) );
 
     if ( $aura_caps_count > 0 || $areas_count > 0 ) {
@@ -439,7 +439,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
 
                                 // Construir Tooltip Enriquecido .aura-tip-card
                                 $tip_student_badge = $row_student ? '<span class="aura-tip-badge" style="background:rgba(124,58,237,0.2);color:#7c3aed;">🎓 ' . esc_html($row_student->student_code ?: __('Estudiante', 'aura-suite')) . '</span>' : '';
-                                $tip_student_row   = $row_student ? '<div class="aura-tip-row"><span>🎓 Expediente:</span><strong style="color:#7c3aed;">#' . (int)$row_student->id . ' (' . esc_html(ucfirst($row_student->status)) . ')</strong></div>' : '';
+                                $tip_student_row   = $row_student ? '<div class="aura-tip-row"><span>🎓 ' . esc_html__('Expediente:', 'aura-suite') . '</span><strong style="color:#7c3aed;">#' . (int)$row_student->id . ' (' . esc_html(ucfirst($row_student->status)) . ')</strong></div>' : '';
 
                                 $tip_user_html = '<div class="aura-tip-card">'
                                     . '<div class="aura-tip-card-header">'
@@ -455,9 +455,9 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                     . '</div>'
                                     . '</div>'
                                     . '<div class="aura-tip-card-body">'
-                                    . '<div class="aura-tip-row"><span>📧 Email:</span><strong>' . esc_html($row_user->user_email) . '</strong></div>'
-                                    . '<div class="aura-tip-row"><span>🆔 ID WP:</span><strong>#' . (int)$row_user->ID . '</strong></div>'
-                                    . '<div class="aura-tip-row"><span>📅 Registro:</span><strong>' . esc_html(date_i18n(get_option('date_format'), strtotime($row_user->user_registered))) . '</strong></div>'
+                                    . '<div class="aura-tip-row"><span>📧 ' . esc_html__('Email:', 'aura-suite') . '</span><strong>' . esc_html($row_user->user_email) . '</strong></div>'
+                                    . '<div class="aura-tip-row"><span>🆔 ' . esc_html__('ID WP:', 'aura-suite') . '</span><strong>#' . (int)$row_user->ID . '</strong></div>'
+                                    . '<div class="aura-tip-row"><span>📅 ' . esc_html__('Registro:', 'aura-suite') . '</span><strong>' . esc_html(date_i18n(get_option('date_format'), strtotime($row_user->user_registered))) . '</strong></div>'
                                     . $tip_student_row
                                     . '</div>'
                                     . '</div>';
@@ -550,7 +550,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                                         <?php foreach ($aura_row['areas'] as $u_area): 
                                                             $u_role = $u_area->role ?? 'admin';
                                                             $u_role_icon = ($u_role === 'collaborator') ? '🤝' : (($u_role === 'editor') ? '✏️' : '👑');
-                                                            $u_role_name = ($u_role === 'collaborator') ? 'Colaborador' : (($u_role === 'editor') ? 'Editor' : 'Admin');
+                                                            $u_role_name = ($u_role === 'collaborator') ? __('Colaborador', 'aura-suite') : (($u_role === 'editor') ? __('Editor', 'aura-suite') : __('Admin', 'aura-suite'));
                                                         ?>
                                                         <span class="aura-area-badge-pill" style="--area-accent: <?php echo esc_attr($u_area->color ?: '#3b82f6'); ?>;">
                                                             <strong><?php echo esc_html($u_area->name); ?></strong>
@@ -584,8 +584,8 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                                     <span><?php _e('Cuenta de WordPress', 'aura-suite'); ?></span>
                                                 </div>
                                                 <div style="font-size:12.5px; line-height:1.6; color:var(--tx-secondary,#475569);">
-                                                    <div><strong>Email:</strong> <?php echo esc_html($row_user->user_email); ?></div>
-                                                    <div><strong>Rol WP:</strong> <?php echo esc_html($aura_row['roles']); ?></div>
+                                                    <div><strong><?php esc_html_e('Email:', 'aura-suite'); ?></strong> <?php echo esc_html($row_user->user_email); ?></div>
+                                                    <div><strong><?php esc_html_e('Rol WP:', 'aura-suite'); ?></strong> <?php echo esc_html($aura_row['roles']); ?></div>
                                                 </div>
                                             </div>
 
@@ -597,9 +597,9 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                                     <span><?php _e('Expediente Académico (Estudiante)', 'aura-suite'); ?></span>
                                                 </div>
                                                 <div style="font-size:12.5px; line-height:1.6; color:var(--tx-secondary,#475569);">
-                                                    <div><strong>Expediente:</strong> #<?php echo (int)$row_student->id; ?></div>
-                                                    <div><strong>Código:</strong> <code><?php echo esc_html($row_student->student_code ?: '—'); ?></code></div>
-                                                    <div><strong>Estado:</strong> <span class="badge badge-violet" style="font-size:10.5px; padding:1px 6px;"><?php echo esc_html(ucfirst($row_student->status)); ?></span></div>
+                                                    <div><strong><?php esc_html_e('Expediente:', 'aura-suite'); ?></strong> #<?php echo (int)$row_student->id; ?></div>
+                                                    <div><strong><?php esc_html_e('Código:', 'aura-suite'); ?></strong> <code><?php echo esc_html($row_student->student_code ?: '—'); ?></code></div>
+                                                    <div><strong><?php esc_html_e('Estado:', 'aura-suite'); ?></strong> <span class="badge badge-violet" style="font-size:10.5px; padding:1px 6px;"><?php echo esc_html(ucfirst($row_student->status)); ?></span></div>
                                                     <div style="margin-top:6px;">
                                                         <a href="<?php echo esc_url(admin_url('admin.php?page=aura-students-list&search=' . urlencode($row_student->student_code ?: $row_user->user_email))); ?>" class="btn btn-sm btn-glass" style="font-size:11px; padding:2px 8px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
                                                             <span class="dashicons dashicons-external"></span>
@@ -714,7 +714,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
 
                                 // Tooltip enriquecido
                                 $tip_in_student_badge = $in_student ? '<span class="aura-tip-badge" style="background:rgba(124,58,237,0.2);color:#7c3aed;">🎓 ' . esc_html($in_student->student_code ?: __('Estudiante', 'aura-suite')) . '</span>' : '';
-                                $tip_in_student_row   = $in_student ? '<div class="aura-tip-row"><span>🎓 Expediente:</span><strong style="color:#7c3aed;">#' . (int)$in_student->id . ' (' . esc_html(ucfirst($in_student->status)) . ')</strong></div>' : '';
+                                $tip_in_student_row   = $in_student ? '<div class="aura-tip-row"><span>🎓 ' . esc_html__('Expediente:', 'aura-suite') . '</span><strong style="color:#7c3aed;">#' . (int)$in_student->id . ' (' . esc_html(ucfirst($in_student->status)) . ')</strong></div>' : '';
 
                                 $tip_in_html = '<div class="aura-tip-card">'
                                     . '<div class="aura-tip-card-header">'
@@ -729,8 +729,8 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                     . '</div>'
                                     . '</div>'
                                     . '<div class="aura-tip-card-body">'
-                                    . '<div class="aura-tip-row"><span>📧 Email:</span><strong>' . esc_html($u->user_email) . '</strong></div>'
-                                    . '<div class="aura-tip-row"><span>🆔 ID WP:</span><strong>#' . (int)$u->ID . '</strong></div>'
+                                    . '<div class="aura-tip-row"><span>📧 ' . esc_html__('Email:', 'aura-suite') . '</span><strong>' . esc_html($u->user_email) . '</strong></div>'
+                                    . '<div class="aura-tip-row"><span>🆔 ' . esc_html__('ID WP:', 'aura-suite') . '</span><strong>#' . (int)$u->ID . '</strong></div>'
                                     . $tip_in_student_row
                                     . '</div>'
                                     . '</div>';
@@ -806,8 +806,8 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                                     <span><?php _e('Contacto y Rol', 'aura-suite'); ?></span>
                                                 </div>
                                                 <div style="font-size:12.5px; line-height:1.6; color:var(--tx-secondary,#475569);">
-                                                    <div><strong>Email:</strong> <?php echo esc_html($u->user_email); ?></div>
-                                                    <div><strong>Rol en WordPress:</strong> <?php echo esc_html($in_row['roles']); ?></div>
+                                                    <div><strong><?php esc_html_e('Email:', 'aura-suite'); ?></strong> <?php echo esc_html($u->user_email); ?></div>
+                                                    <div><strong><?php esc_html_e('Rol en WordPress:', 'aura-suite'); ?></strong> <?php echo esc_html($in_row['roles']); ?></div>
                                                 </div>
                                             </div>
 
@@ -819,9 +819,9 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                                                     <span><?php _e('Expediente Académico (Estudiante)', 'aura-suite'); ?></span>
                                                 </div>
                                                 <div style="font-size:12.5px; line-height:1.6; color:var(--tx-secondary,#475569);">
-                                                    <div><strong>Expediente:</strong> #<?php echo (int)$in_student->id; ?></div>
-                                                    <div><strong>Código:</strong> <code><?php echo esc_html($in_student->student_code ?: '—'); ?></code></div>
-                                                    <div><strong>Estado:</strong> <span class="badge badge-violet" style="font-size:10.5px; padding:1px 6px;"><?php echo esc_html(ucfirst($in_student->status)); ?></span></div>
+                                                    <div><strong><?php esc_html_e('Expediente:', 'aura-suite'); ?></strong> #<?php echo (int)$in_student->id; ?></div>
+                                                    <div><strong><?php esc_html_e('Código:', 'aura-suite'); ?></strong> <code><?php echo esc_html($in_student->student_code ?: '—'); ?></code></div>
+                                                    <div><strong><?php esc_html_e('Estado:', 'aura-suite'); ?></strong> <span class="badge badge-violet" style="font-size:10.5px; padding:1px 6px;"><?php echo esc_html(ucfirst($in_student->status)); ?></span></div>
                                                     <div style="margin-top:6px;">
                                                         <a href="<?php echo esc_url(admin_url('admin.php?page=aura-students-list&search=' . urlencode($in_student->student_code ?: $u->user_email))); ?>" class="btn btn-sm btn-glass" style="font-size:11px; padding:2px 8px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
                                                             <span class="dashicons dashicons-external"></span>
@@ -876,7 +876,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
         }
         $selected_user_areas = Aura_Areas_Setup::get_user_areas($selected_user->ID);
         $selected_areas_count = is_array($selected_user_areas) ? count($selected_user_areas) : 0;
-        $selected_roles_label = !empty($selected_user->roles) ? implode(', ', array_map('ucfirst', $selected_user->roles)) : __('Sin rol', 'aura-suite');
+        $selected_roles_label = !empty($selected_user->roles) ? implode(', ', array_map(['Aura_Roles_Manager', 'get_role_label'], $selected_user->roles)) : __('Sin rol', 'aura-suite');
     ?>
     <div id="aura-tab-panel-user-permissions" class="aura-tab-panel" style="<?php echo ($active_tab === 'user-permissions') ? '' : 'display:none;'; ?>">
         
@@ -893,9 +893,9 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
                             <span style="font-size:12px; font-weight:600; color:var(--tx-muted,#64748b);">(@<?php echo esc_html($selected_user->user_login); ?>)</span>
                         </h3>
                         <p style="margin:0; font-size:12.5px; color:var(--tx-muted,#64748b);">
-                            <strong>Email:</strong> <?php echo esc_html($selected_user->user_email); ?> &nbsp;|&nbsp; 
-                            <strong>Rol WP:</strong> <?php echo esc_html($selected_roles_label); ?> &nbsp;|&nbsp;
-                            <strong>ID:</strong> #<?php echo (int)$selected_user->ID; ?>
+                            <strong><?php esc_html_e('Email:', 'aura-suite'); ?></strong> <?php echo esc_html($selected_user->user_email); ?> &nbsp;|&nbsp; 
+                            <strong><?php esc_html_e('Rol WP:', 'aura-suite'); ?></strong> <?php echo esc_html($selected_roles_label); ?> &nbsp;|&nbsp;
+                            <strong><?php esc_html_e('ID:', 'aura-suite'); ?></strong> #<?php echo (int)$selected_user->ID; ?>
                         </p>
                     </div>
                     <div>
@@ -1579,7 +1579,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_key($_GET['tab']) : ($selected_user
     <!-- ── FOOTER GLOBAL CANÓNICO AURA BUSINESS SUITE ── -->
     <div class="adp-footer">
         <p>
-            Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Diego Giraldo</a></strong> &bull; Versión <?php echo esc_html(AURA_VERSION); ?> &bull; Aura Business Suite &copy; <?php echo date('Y'); ?>
+            <?php esc_html_e('Desarrollado con ❤️ por', 'aura-suite'); ?> <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> Diego Giraldo</a></strong> &bull; <?php esc_html_e('Versión', 'aura-suite'); ?> <?php echo esc_html(AURA_VERSION); ?> &bull; Aura Business Suite &copy; <?php echo date('Y'); ?>
         </p>
     </div>
 

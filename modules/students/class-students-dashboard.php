@@ -533,7 +533,19 @@ class Aura_Students_Dashboard {
 
         // Generar CSV en memoria
         $csv_rows = [];
-        $csv_rows[] = [ 'Nombre', 'Apellido', 'Email', 'Teléfono', 'Curso', 'Costo Neto', 'Pagado', 'Saldo', 'Estado Pago', 'Cuotas Vencidas', 'Fecha Venc. más Antigua' ];
+        $csv_rows[] = [
+            __( 'Nombre', 'aura-suite' ),
+            __( 'Apellido', 'aura-suite' ),
+            __( 'Email', 'aura-suite' ),
+            __( 'Teléfono', 'aura-suite' ),
+            __( 'Curso', 'aura-suite' ),
+            __( 'Costo Neto', 'aura-suite' ),
+            __( 'Pagado', 'aura-suite' ),
+            __( 'Saldo', 'aura-suite' ),
+            __( 'Estado Pago', 'aura-suite' ),
+            __( 'Cuotas Vencidas', 'aura-suite' ),
+            __( 'Fecha Venc. más Antigua', 'aura-suite' ),
+        ];
         foreach ( $rows as $r ) {
             $csv_rows[] = [
                 $r->first_name, $r->last_name, $r->email, $r->phone ?? '',

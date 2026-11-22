@@ -79,23 +79,23 @@ foreach ( $data_raw as $uid => $value ) {
         // Fila 1: fecha de nacimiento
         $data_parsed[] = [
             'uid'   => $uid . '_iso_date',
-            'label' => $label . ' (fecha)',
+            'label' => $label . ' (' . __( 'fecha', 'aura-suite' ) . ')',
             'type'  => 'text',
             'value' => $iso_date ?: '—',
         ];
         // Fila 2: edad calculada
         $data_parsed[] = [
             'uid'   => $uid,
-            'label' => $label . ' (edad)',
+            'label' => $label . ' (' . __( 'edad', 'aura-suite' ) . ')',
             'type'  => 'text',
-            'value' => $value !== '' && $value !== null ? sprintf( '%d años', (int) $value ) : '—',
+            'value' => $value !== '' && $value !== null ? sprintf( __( '%d años', 'aura-suite' ), (int) $value ) : '—',
         ];
         continue;
     }
 
     // Terms (agree/disagree): mostrar en español
     if ( $ftype === 'terms' ) {
-        $terms_labels = [ 'agree' => 'De acuerdo', 'disagree' => 'En desacuerdo' ];
+        $terms_labels = [ 'agree' => __( 'De acuerdo', 'aura-suite' ), 'disagree' => __( 'En desacuerdo', 'aura-suite' ) ];
         $value = $terms_labels[ (string) $value ] ?? $value;
     }
 
@@ -385,7 +385,7 @@ $type_labels = [
             }
         } )
         .fail( function () {
-            alert( 'Error de red.' );
+            alert( <?php echo wp_json_encode( __( 'Error de red.', 'aura-suite' ) ); ?> );
             $btn.prop( 'disabled', false ).text( <?php echo wp_json_encode( __( 'Marcar como revisada', 'aura-suite' ) ); ?> );
         } );
     } );
@@ -411,7 +411,7 @@ $type_labels = [
                 }
             } )
             .fail( function () {
-                alert( 'Error de red.' );
+                alert( <?php echo wp_json_encode( __( 'Error de red.', 'aura-suite' ) ); ?> );
                 $btn.prop( 'disabled', false ).text( <?php echo wp_json_encode( __( 'Eliminar esta respuesta', 'aura-suite' ) ); ?> );
             } );
     } );

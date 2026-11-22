@@ -25,10 +25,10 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
                 
                 <div style="min-width: 240px;">
                     <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary); margin-bottom: 4px; display: block;">
-                        🎓 <?php esc_html_e( 'Programa', 'aura' ); ?>
+                        🎓 <?php esc_html_e( 'Programa', 'aura-suite' ); ?>
                     </label>
                     <select id="grades-filter-program" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; font-size: 13px;">
-                        <option value=""><?php esc_html_e( 'Selecciona un programa...', 'aura' ); ?></option>
+                        <option value=""><?php esc_html_e( 'Selecciona un programa...', 'aura-suite' ); ?></option>
                         <?php foreach ( $programs as $p ) : ?>
                             <option value="<?php echo esc_attr( $p->id ); ?>">
                                 <?php echo esc_html( $p->name ); ?>
@@ -39,16 +39,16 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
 
                 <div style="min-width: 240px;">
                     <label class="form-label" style="font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--aura-text-secondary); margin-bottom: 4px; display: block;">
-                        📚 <?php esc_html_e( 'Materia', 'aura' ); ?>
+                        📚 <?php esc_html_e( 'Materia', 'aura-suite' ); ?>
                     </label>
                     <select id="grades-filter-subject" class="form-control" style="width: 100%; border-radius: 8px; padding: 8px 12px; font-size: 13px;" disabled>
-                        <option value=""><?php esc_html_e( 'Primero selecciona un programa', 'aura' ); ?></option>
+                        <option value=""><?php esc_html_e( 'Primero selecciona un programa', 'aura-suite' ); ?></option>
                     </select>
                 </div>
 
                 <div style="align-self: flex-end;">
                     <button type="button" id="btn-load-grades" class="btn btn-indigo btn-lift" style="padding: 9px 16px; font-size: 13px;" disabled>
-                        🔍 <?php esc_html_e( 'Cargar Calificaciones', 'aura' ); ?>
+                        🔍 <?php esc_html_e( 'Cargar Calificaciones', 'aura-suite' ); ?>
                     </button>
                 </div>
             </div>
@@ -59,7 +59,7 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
             if ( $can_manage_grades ) : ?>
                 <div style="align-self: flex-end;">
                     <button type="button" class="btn btn-emerald btn-shimmer btn-lift" id="btn-new-grade" style="display: none; padding: 9px 16px; font-size: 13px;">
-                        ➕ <?php esc_html_e( 'Registrar Nota', 'aura' ); ?>
+                        ➕ <?php esc_html_e( 'Registrar Nota', 'aura-suite' ); ?>
                     </button>
                 </div>
             <?php endif; ?>
@@ -71,7 +71,7 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
         <div id="grades-placeholder" style="text-align: center; padding: 40px 20px; color: var(--aura-text-muted);">
             <div style="font-size: 36px; margin-bottom: 8px;">📊</div>
             <p style="font-size: 14px; margin: 0;">
-                <?php esc_html_e( 'Selecciona un programa y una materia para ver y gestionar las notas de los estudiantes.', 'aura' ); ?>
+                <?php esc_html_e( 'Selecciona un programa y una materia para ver y gestionar las notas de los estudiantes.', 'aura-suite' ); ?>
             </p>
         </div>
 
@@ -79,11 +79,11 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
             <table class="adp-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
                 <thead>
                     <tr style="background: var(--aura-surface-alt, #f8fafc); border-bottom: 2px solid var(--aura-border);">
-                        <th style="padding: 12px 16px; text-align: left;"><?php esc_html_e( 'Estudiante', 'aura' ); ?></th>
-                        <th style="padding: 12px 16px; text-align: left;"><?php esc_html_e( 'Código', 'aura' ); ?></th>
-                        <th style="padding: 12px 16px; text-align: left;"><?php esc_html_e( 'Evaluaciones Registradas', 'aura' ); ?></th>
-                        <th style="padding: 12px 16px; text-align: center; width: 140px;"><?php esc_html_e( 'Promedio Ponderado', 'aura' ); ?></th>
-                        <th style="padding: 12px 16px; text-align: center; width: 100px;"><?php esc_html_e( 'Acción', 'aura' ); ?></th>
+                        <th style="padding: 12px 16px; text-align: left;"><?php esc_html_e( 'Estudiante', 'aura-suite' ); ?></th>
+                        <th style="padding: 12px 16px; text-align: left;"><?php esc_html_e( 'Código', 'aura-suite' ); ?></th>
+                        <th style="padding: 12px 16px; text-align: left;"><?php esc_html_e( 'Evaluaciones Registradas', 'aura-suite' ); ?></th>
+                        <th style="padding: 12px 16px; text-align: center; width: 140px;"><?php esc_html_e( 'Promedio Ponderado', 'aura-suite' ); ?></th>
+                        <th style="padding: 12px 16px; text-align: center; width: 100px;"><?php esc_html_e( 'Acción', 'aura-suite' ); ?></th>
                     </tr>
                 </thead>
                 <tbody id="grades-table-body">
@@ -102,7 +102,7 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
     <div class="aura-modal-container" style="max-width: 500px;">
         <div class="aura-modal-header">
             <h3 class="adp-card-title" id="modal-grade-title" style="margin: 0; font-size: 18px;">
-                📝 <?php esc_html_e( 'Registrar Calificación', 'aura' ); ?>
+                📝 <?php esc_html_e( 'Registrar Calificación', 'aura-suite' ); ?>
             </h3>
             <button type="button" class="aura-modal-close" data-close-modal="#modal-grade-editor">&times;</button>
         </div>
@@ -116,35 +116,35 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
 
                 <div style="display: flex; flex-direction: column; gap: 14px;">
                     <div>
-                        <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Estudiante:', 'aura' ); ?></span>
+                        <span style="font-size: 12px; color: var(--aura-text-secondary);"><?php esc_html_e( 'Estudiante:', 'aura-suite' ); ?></span>
                         <strong id="grd-stud-name-display" style="display: block; font-size: 15px; color: var(--aura-text-primary);"></strong>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Nombre de la Evaluación', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                            <?php esc_html_e( 'Nombre de la Evaluación', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                         </label>
-                        <input type="text" name="eval_title" id="grd-eval-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Examen Parcial 1 / Ensayo Teológico', 'aura' ); ?>" style="width: 100%; border-radius: 8px;">
+                        <input type="text" name="eval_title" id="grd-eval-title" required class="form-control" placeholder="<?php esc_attr_e( 'Ej: Examen Parcial 1 / Ensayo Teológico', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;">
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Tipo', 'aura' ); ?>
+                                <?php esc_html_e( 'Tipo', 'aura-suite' ); ?>
                             </label>
                             <select name="eval_type" id="grd-eval-type" class="form-control" style="width: 100%; border-radius: 8px;">
-                                <option value="partial"><?php esc_html_e( 'Parcial', 'aura' ); ?></option>
-                                <option value="final"><?php esc_html_e( 'Examen Final', 'aura' ); ?></option>
-                                <option value="task"><?php esc_html_e( 'Tarea / Trabajo', 'aura' ); ?></option>
-                                <option value="project"><?php esc_html_e( 'Proyecto', 'aura' ); ?></option>
-                                <option value="participation"><?php esc_html_e( 'Participación / Asistencia', 'aura' ); ?></option>
-                                <option value="other"><?php esc_html_e( 'Otro', 'aura' ); ?></option>
+                                <option value="partial"><?php esc_html_e( 'Parcial', 'aura-suite' ); ?></option>
+                                <option value="final"><?php esc_html_e( 'Examen Final', 'aura-suite' ); ?></option>
+                                <option value="task"><?php esc_html_e( 'Tarea / Trabajo', 'aura-suite' ); ?></option>
+                                <option value="project"><?php esc_html_e( 'Proyecto', 'aura-suite' ); ?></option>
+                                <option value="participation"><?php esc_html_e( 'Participación / Asistencia', 'aura-suite' ); ?></option>
+                                <option value="other"><?php esc_html_e( 'Otro', 'aura-suite' ); ?></option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Ponderación (Peso)', 'aura' ); ?>
+                                <?php esc_html_e( 'Ponderación (Peso)', 'aura-suite' ); ?>
                             </label>
                             <input type="number" step="0.1" name="weight" id="grd-weight" value="1.0" class="form-control" style="width: 100%; border-radius: 8px;">
                         </div>
@@ -153,13 +153,13 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Nota Obtenida', 'aura' ); ?> <span style="color: #ef4444;">*</span>
+                                <?php esc_html_e( 'Nota Obtenida', 'aura-suite' ); ?> <span style="color: #ef4444;">*</span>
                             </label>
                             <input type="number" step="0.01" name="score" id="grd-score" required class="form-control" placeholder="100" style="width: 100%; border-radius: 8px; font-weight: 700; font-size: 16px;">
                         </div>
                         <div class="form-group">
                             <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                                <?php esc_html_e( 'Nota Máxima', 'aura' ); ?>
+                                <?php esc_html_e( 'Nota Máxima', 'aura-suite' ); ?>
                             </label>
                             <input type="number" step="0.01" name="max_score" id="grd-max-score" value="100" class="form-control" style="width: 100%; border-radius: 8px;">
                         </div>
@@ -167,9 +167,9 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
 
                     <div class="form-group">
                         <label class="form-label" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block;">
-                            <?php esc_html_e( 'Retroalimentación / Comentarios', 'aura' ); ?>
+                            <?php esc_html_e( 'Retroalimentación / Comentarios', 'aura-suite' ); ?>
                         </label>
-                        <textarea name="feedback" id="grd-feedback" rows="2" class="form-control" placeholder="<?php esc_attr_e( 'Excelente trabajo, se recomienda profundizar en...', 'aura' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
+                        <textarea name="feedback" id="grd-feedback" rows="2" class="form-control" placeholder="<?php esc_attr_e( 'Excelente trabajo, se recomienda profundizar en...', 'aura-suite' ); ?>" style="width: 100%; border-radius: 8px;"></textarea>
                     </div>
                 </div>
             </div>
@@ -178,16 +178,16 @@ $programs = Aura_Calendar_Programs::get_all( [ 'status' => 'active', 'limit' => 
                 <div>
                     <?php if ( $can_delete_grades ) : ?>
                         <button type="button" class="btn btn-ghost" id="btn-delete-grade-modal" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); display: none;">
-                            🗑️ <?php esc_html_e( 'Eliminar Nota', 'aura' ); ?>
+                            🗑️ <?php esc_html_e( 'Eliminar Nota', 'aura-suite' ); ?>
                         </button>
                     <?php endif; ?>
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button type="button" class="btn btn-ghost" data-close-modal="#modal-grade-editor">
-                        <?php esc_html_e( 'Cancelar', 'aura' ); ?>
+                        <?php esc_html_e( 'Cancelar', 'aura-suite' ); ?>
                     </button>
                     <button type="submit" class="btn btn-emerald btn-shimmer btn-lift" id="btn-save-grade">
-                        💾 <?php esc_html_e( 'Guardar Nota', 'aura' ); ?>
+                        💾 <?php esc_html_e( 'Guardar Nota', 'aura-suite' ); ?>
                     </button>
                 </div>
             </div>

@@ -8,6 +8,8 @@
 (function ($) {
     'use strict';
 
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
+
     const NONCE    = (typeof auraLibReports !== 'undefined') ? auraLibReports.nonce : '';
     const AJAX_URL = (typeof auraLibReports !== 'undefined') ? auraLibReports.ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '');
     const I18N     = (typeof auraLibReports !== 'undefined') ? auraLibReports.i18n : {};
@@ -59,7 +61,7 @@
             $('#activity-summary').show();
 
             function repToggleBtn(childId) {
-                return '<button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="' + escHtml(childId) + '" aria-expanded="false" data-tooltip="Desplegar detalles completos de la fila"><span class="dashicons dashicons-plus-alt2"></span></button>';
+                return '<button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="' + escHtml(childId) + '" aria-expanded="false" data-tooltip="' + escHtml(__('Desplegar detalles completos de la fila', 'aura-suite')) + '"><span class="dashicons dashicons-plus-alt2"></span></button>';
             }
 
             // Top libros
@@ -68,15 +70,15 @@
                 const cid = 'rep-top-book-' + i;
                 html += `<tr class="aura-parent-row">
                     <td data-label="#" class="aura-lib-col-expand"><div class="aura-id-toggle-wrap">${repToggleBtn(cid)}<span>${i + 1}</span></div></td>
-                    <td data-label="Título" class="aura-lib-col-main" data-tooltip="${escHtml(b.title)}${b.author ? ' — ' + escHtml(b.author) : ''}"><strong>${escHtml(b.title)}</strong><div class="aura-lib-mobile-sub">${escHtml(b.author || '—')}</div></td>
-                    <td data-label="Autor" class="aura-lib-col-secondary">${escHtml(b.author || '—')}</td>
-                    <td data-label="Préstamos" class="aura-lib-col-stat"><strong data-tooltip="${escHtml(b.loan_count)} préstamos en el período">${escHtml(b.loan_count)}</strong></td>
+                    <td data-label="${escHtml(__('Título', 'aura-suite'))}" class="aura-lib-col-main" data-tooltip="${escHtml(b.title)}${b.author ? ' — ' + escHtml(b.author) : ''}"><strong>${escHtml(b.title)}</strong><div class="aura-lib-mobile-sub">${escHtml(b.author || '—')}</div></td>
+                    <td data-label="${escHtml(__('Autor', 'aura-suite'))}" class="aura-lib-col-secondary">${escHtml(b.author || '—')}</td>
+                    <td data-label="${escHtml(__('Préstamos', 'aura-suite'))}" class="aura-lib-col-stat"><strong data-tooltip="${escHtml(b.loan_count)} ${escHtml(__('préstamos en el período', 'aura-suite'))}">${escHtml(b.loan_count)}</strong></td>
                 </tr>
                 <tr class="aura-child-row" id="${cid}"><td colspan="4"><div class="aura-lib-child-card"><div class="aura-child-meta-grid">
-                    <div class="aura-child-meta-item"><span>Posición</span><strong>#${i + 1}</strong></div>
-                    <div class="aura-child-meta-item"><span>Título</span><strong>${escHtml(b.title)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Autor</span><strong>${escHtml(b.author || '—')}</strong></div>
-                    <div class="aura-child-meta-item"><span>Préstamos</span><strong>${escHtml(b.loan_count)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Posición', 'aura-suite'))}</span><strong>#${i + 1}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Título', 'aura-suite'))}</span><strong>${escHtml(b.title)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Autor', 'aura-suite'))}</span><strong>${escHtml(b.author || '—')}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Préstamos', 'aura-suite'))}</span><strong>${escHtml(b.loan_count)}</strong></div>
                 </div></div></td></tr>`;
             });
             $('#activity-top-books-body').html(html || `<tr><td colspan="4">${I18N.no_data || ''}</td></tr>`);
@@ -87,13 +89,13 @@
                 const cid = 'rep-top-reader-' + i;
                 html2 += `<tr class="aura-parent-row">
                     <td data-label="#" class="aura-lib-col-expand"><div class="aura-id-toggle-wrap">${repToggleBtn(cid)}<span>${i + 1}</span></div></td>
-                    <td data-label="Lector" class="aura-lib-col-main" data-tooltip="Lector activo: ${escHtml(r.display_name)}"><strong>${escHtml(r.display_name)}</strong></td>
-                    <td data-label="Préstamos" class="aura-lib-col-stat"><strong data-tooltip="${escHtml(r.loan_count)} préstamos realizados">${escHtml(r.loan_count)}</strong></td>
+                    <td data-label="${escHtml(__('Lector', 'aura-suite'))}" class="aura-lib-col-main" data-tooltip="${escHtml(__('Lector activo:', 'aura-suite'))} ${escHtml(r.display_name)}"><strong>${escHtml(r.display_name)}</strong></td>
+                    <td data-label="${escHtml(__('Préstamos', 'aura-suite'))}" class="aura-lib-col-stat"><strong data-tooltip="${escHtml(r.loan_count)} ${escHtml(__('préstamos realizados', 'aura-suite'))}">${escHtml(r.loan_count)}</strong></td>
                 </tr>
                 <tr class="aura-child-row" id="${cid}"><td colspan="3"><div class="aura-lib-child-card"><div class="aura-child-meta-grid">
-                    <div class="aura-child-meta-item"><span>Posición</span><strong>#${i + 1}</strong></div>
-                    <div class="aura-child-meta-item"><span>Lector</span><strong>${escHtml(r.display_name)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Préstamos</span><strong>${escHtml(r.loan_count)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Posición', 'aura-suite'))}</span><strong>#${i + 1}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Lector', 'aura-suite'))}</span><strong>${escHtml(r.display_name)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Préstamos', 'aura-suite'))}</span><strong>${escHtml(r.loan_count)}</strong></div>
                 </div></div></td></tr>`;
             });
             $('#activity-top-readers-body').html(html2 || `<tr><td colspan="3">${I18N.no_data || ''}</td></tr>`);
@@ -114,16 +116,16 @@
             rows.forEach(function (r, i) {
                 const cid = 'rep-dewey-' + i;
                 html += `<tr class="aura-parent-row">
-                    <td data-label="Dewey" class="aura-lib-col-expand"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="Desplegar ficha del registro"><span class="dashicons dashicons-plus-alt2"></span></button><span class="badge badge-indigo" data-tooltip="Clase Dewey ${escHtml(r.dewey_class)}">${escHtml(r.dewey_class)}</span></div></td>
-                    <td data-label="Título" class="aura-lib-col-main"><strong>${escHtml(r.title)}</strong><div class="aura-lib-mobile-sub">${escHtml(r.author || '—')}</div></td>
-                    <td data-label="Autor" class="aura-lib-col-secondary">${escHtml(r.author || '—')}</td>
-                    <td data-label="Préstamos" class="aura-lib-col-stat"><strong>${escHtml(r.total_loans)}</strong></td>
+                    <td data-label="${escHtml(__('Dewey', 'aura-suite'))}" class="aura-lib-col-expand"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="${escHtml(__('Desplegar ficha del registro', 'aura-suite'))}"><span class="dashicons dashicons-plus-alt2"></span></button><span class="badge badge-indigo" data-tooltip="${escHtml(__('Clase Dewey', 'aura-suite'))} ${escHtml(r.dewey_class)}">${escHtml(r.dewey_class)}</span></div></td>
+                    <td data-label="${escHtml(__('Título', 'aura-suite'))}" class="aura-lib-col-main"><strong>${escHtml(r.title)}</strong><div class="aura-lib-mobile-sub">${escHtml(r.author || '—')}</div></td>
+                    <td data-label="${escHtml(__('Autor', 'aura-suite'))}" class="aura-lib-col-secondary">${escHtml(r.author || '—')}</td>
+                    <td data-label="${escHtml(__('Préstamos', 'aura-suite'))}" class="aura-lib-col-stat"><strong>${escHtml(r.total_loans)}</strong></td>
                 </tr>
                 <tr class="aura-child-row" id="${cid}"><td colspan="4"><div class="aura-lib-child-card"><div class="aura-child-meta-grid">
-                    <div class="aura-child-meta-item"><span>Clase Dewey</span><strong>${escHtml(r.dewey_class)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Título</span><strong>${escHtml(r.title)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Autor</span><strong>${escHtml(r.author || '—')}</strong></div>
-                    <div class="aura-child-meta-item"><span>Préstamos</span><strong>${escHtml(r.total_loans)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Clase Dewey', 'aura-suite'))}</span><strong>${escHtml(r.dewey_class)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Título', 'aura-suite'))}</span><strong>${escHtml(r.title)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Autor', 'aura-suite'))}</span><strong>${escHtml(r.author || '—')}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Préstamos', 'aura-suite'))}</span><strong>${escHtml(r.total_loans)}</strong></div>
                 </div></div></td></tr>`;
             });
             $('#dewey-body').html(html || `<tr><td colspan="4">${I18N.no_data || ''}</td></tr>`);
@@ -150,19 +152,19 @@
             (d.current_overdue || []).forEach(function (r, i) {
                 const cid = 'rep-ov-curr-' + i;
                 html += `<tr class="aura-parent-row">
-                    <td data-label="#" class="aura-lib-col-expand"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="Desplegar detalles de morosidad"><span class="dashicons dashicons-plus-alt2"></span></button><span>${i + 1}</span></div></td>
-                    <td data-label="Libro" class="aura-lib-col-main"><strong>${escHtml(r.book_title)}</strong><div class="aura-lib-mobile-sub">👤 ${escHtml(r.borrower)} · ${escHtml(r.due_date)}</div></td>
-                    <td data-label="Lector" class="aura-lib-col-secondary">${escHtml(r.borrower)}</td>
-                    <td data-label="Fec. Venc." class="aura-lib-col-secondary" data-tooltip="Debió devolverse el ${escHtml(r.due_date)}">${escHtml(r.due_date)}</td>
-                    <td data-label="Días" class="aura-lib-col-stat"><span class="badge badge-red" data-tooltip="${escHtml(r.days_overdue)} días en mora">${escHtml(r.days_overdue)}</span></td>
-                    <td data-label="Multa" class="aura-lib-col-secondary" data-tooltip="Multa calculada al día de hoy">${escHtml(r.fine_amount)}</td>
+                    <td data-label="#" class="aura-lib-col-expand"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="${escHtml(__('Desplegar detalles de morosidad', 'aura-suite'))}"><span class="dashicons dashicons-plus-alt2"></span></button><span>${i + 1}</span></div></td>
+                    <td data-label="${escHtml(__('Libro', 'aura-suite'))}" class="aura-lib-col-main"><strong>${escHtml(r.book_title)}</strong><div class="aura-lib-mobile-sub">👤 ${escHtml(r.borrower)} · ${escHtml(r.due_date)}</div></td>
+                    <td data-label="${escHtml(__('Lector', 'aura-suite'))}" class="aura-lib-col-secondary">${escHtml(r.borrower)}</td>
+                    <td data-label="${escHtml(__('Fec. Venc.', 'aura-suite'))}" class="aura-lib-col-secondary" data-tooltip="${escHtml(__('Debió devolverse el', 'aura-suite'))} ${escHtml(r.due_date)}">${escHtml(r.due_date)}</td>
+                    <td data-label="${escHtml(__('Días', 'aura-suite'))}" class="aura-lib-col-stat"><span class="badge badge-red" data-tooltip="${escHtml(r.days_overdue)} ${escHtml(__('días en mora', 'aura-suite'))}">${escHtml(r.days_overdue)}</span></td>
+                    <td data-label="${escHtml(__('Multa', 'aura-suite'))}" class="aura-lib-col-secondary" data-tooltip="${escHtml(__('Multa calculada al día de hoy', 'aura-suite'))}">${escHtml(r.fine_amount)}</td>
                 </tr>
                 <tr class="aura-child-row" id="${cid}"><td colspan="6"><div class="aura-lib-child-card"><div class="aura-child-meta-grid">
-                    <div class="aura-child-meta-item"><span>Libro</span><strong>${escHtml(r.book_title)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Lector</span><strong>${escHtml(r.borrower)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Vencimiento</span><strong>${escHtml(r.due_date)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Días de Atraso</span><strong>${escHtml(r.days_overdue)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Multa</span><strong>${escHtml(r.fine_amount)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Libro', 'aura-suite'))}</span><strong>${escHtml(r.book_title)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Lector', 'aura-suite'))}</span><strong>${escHtml(r.borrower)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Vencimiento', 'aura-suite'))}</span><strong>${escHtml(r.due_date)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Días de Atraso', 'aura-suite'))}</span><strong>${escHtml(r.days_overdue)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Multa', 'aura-suite'))}</span><strong>${escHtml(r.fine_amount)}</strong></div>
                 </div></div></td></tr>`;
             });
             $('#overdue-current-body').html(html || `<tr><td colspan="6">${I18N.no_data || ''}</td></tr>`);
@@ -173,16 +175,16 @@
             (d.paid_fines || []).forEach(function (r, i) {
                 const cid = 'rep-ov-paid-' + i;
                 html2 += `<tr class="aura-parent-row">
-                    <td data-label="Libro" class="aura-lib-col-main"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="Desplegar detalles del cobro"><span class="dashicons dashicons-plus-alt2"></span></button><strong>${escHtml(r.book_title)}</strong></div><div class="aura-lib-mobile-sub">👤 ${escHtml(r.borrower)}</div></td>
-                    <td data-label="Lector" class="aura-lib-col-secondary">${escHtml(r.borrower)}</td>
-                    <td data-label="Monto" class="aura-lib-col-stat"><strong data-tooltip="Monto pagado por retraso/daño">${escHtml(r.fine_amount)}</strong></td>
-                    <td data-label="Fecha Devolución" class="aura-lib-col-secondary">${escHtml(r.return_date || '—')}</td>
+                    <td data-label="${escHtml(__('Libro', 'aura-suite'))}" class="aura-lib-col-main"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="${escHtml(__('Desplegar detalles del cobro', 'aura-suite'))}"><span class="dashicons dashicons-plus-alt2"></span></button><strong>${escHtml(r.book_title)}</strong></div><div class="aura-lib-mobile-sub">👤 ${escHtml(r.borrower)}</div></td>
+                    <td data-label="${escHtml(__('Lector', 'aura-suite'))}" class="aura-lib-col-secondary">${escHtml(r.borrower)}</td>
+                    <td data-label="${escHtml(__('Monto', 'aura-suite'))}" class="aura-lib-col-stat"><strong data-tooltip="${escHtml(__('Monto pagado por retraso/daño', 'aura-suite'))}">${escHtml(r.fine_amount)}</strong></td>
+                    <td data-label="${escHtml(__('Fecha Devolución', 'aura-suite'))}" class="aura-lib-col-secondary">${escHtml(r.return_date || '—')}</td>
                 </tr>
                 <tr class="aura-child-row" id="${cid}"><td colspan="4"><div class="aura-lib-child-card"><div class="aura-child-meta-grid">
-                    <div class="aura-child-meta-item"><span>Libro</span><strong>${escHtml(r.book_title)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Lector</span><strong>${escHtml(r.borrower)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Monto Cobrado</span><strong>${escHtml(r.fine_amount)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Fecha Devolución</span><strong>${escHtml(r.return_date || '—')}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Libro', 'aura-suite'))}</span><strong>${escHtml(r.book_title)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Lector', 'aura-suite'))}</span><strong>${escHtml(r.borrower)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Monto Cobrado', 'aura-suite'))}</span><strong>${escHtml(r.fine_amount)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Fecha Devolución', 'aura-suite'))}</span><strong>${escHtml(r.return_date || '—')}</strong></div>
                 </div></div></td></tr>`;
             });
             $('#overdue-paid-body').html(html2 || `<tr><td colspan="4">${I18N.no_data || ''}</td></tr>`);
@@ -193,12 +195,12 @@
     // ─── Tab 4: Inventario ──────────────────────────────────────
 
     const statusLabels = {
-        available:      'Disponible',
-        loaned:         'Prestado',
-        reserved:       'Reservado',
-        maintenance:    'Mantenimiento',
-        reference_only: 'Solo Consulta',
-        inactive:       'Inactivo',
+        available:      __('Disponible', 'aura-suite'),
+        loaned:         __('Prestado', 'aura-suite'),
+        reserved:       __('Reservado', 'aura-suite'),
+        maintenance:    __('Mantenimiento', 'aura-suite'),
+        reference_only: __('Solo Consulta', 'aura-suite'),
+        inactive:       __('Inactivo', 'aura-suite'),
     };
 
     function loadInventory() {
@@ -214,14 +216,14 @@
             (d.by_status || []).forEach(function (r, i) {
                 const cid = 'rep-inv-st-' + i;
                 html += `<tr class="aura-parent-row">
-                    <td data-label="Estado" class="aura-lib-col-main"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="Desplegar resumen de estado"><span class="dashicons dashicons-plus-alt2"></span></button><span class="badge badge-slate">${escHtml(statusLabels[r.status] || r.status)}</span></div></td>
-                    <td data-label="Títulos" class="aura-lib-col-secondary">${escHtml(r.cnt)}</td>
-                    <td data-label="Ejemplares" class="aura-lib-col-stat">${escHtml(r.total_copies)}</td>
+                    <td data-label="${escHtml(__('Estado', 'aura-suite'))}" class="aura-lib-col-main"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="${escHtml(__('Desplegar resumen de estado', 'aura-suite'))}"><span class="dashicons dashicons-plus-alt2"></span></button><span class="badge badge-slate">${escHtml(statusLabels[r.status] || r.status)}</span></div></td>
+                    <td data-label="${escHtml(__('Títulos', 'aura-suite'))}" class="aura-lib-col-secondary">${escHtml(r.cnt)}</td>
+                    <td data-label="${escHtml(__('Ejemplares', 'aura-suite'))}" class="aura-lib-col-stat">${escHtml(r.total_copies)}</td>
                 </tr>
                 <tr class="aura-child-row" id="${cid}"><td colspan="3"><div class="aura-lib-child-card"><div class="aura-child-meta-grid">
-                    <div class="aura-child-meta-item"><span>Estado</span><strong>${escHtml(statusLabels[r.status] || r.status)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Títulos Distintos</span><strong>${escHtml(r.cnt)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Total Ejemplares</span><strong>${escHtml(r.total_copies)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Estado', 'aura-suite'))}</span><strong>${escHtml(statusLabels[r.status] || r.status)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Títulos Distintos', 'aura-suite'))}</span><strong>${escHtml(r.cnt)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Total Ejemplares', 'aura-suite'))}</span><strong>${escHtml(r.total_copies)}</strong></div>
                 </div></div></td></tr>`;
             });
             $('#inventory-by-status-body').html(html || `<tr><td colspan="3">${I18N.no_data || ''}</td></tr>`);
@@ -231,16 +233,16 @@
             (d.top_rotation || []).forEach(function (r, i) {
                 const cid = 'rep-inv-rot-' + i;
                 html3 += `<tr class="aura-parent-row">
-                    <td data-label="#" class="aura-lib-col-expand"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="Desplegar detalles de rotación"><span class="dashicons dashicons-plus-alt2"></span></button><span>${i + 1}</span></div></td>
-                    <td data-label="Título" class="aura-lib-col-main"><strong>${escHtml(r.title)}</strong></td>
-                    <td data-label="Dewey" class="aura-lib-col-secondary"><code>${escHtml(r.dewey_number || '—')}</code></td>
-                    <td data-label="Préstamos" class="aura-lib-col-stat"><strong>${escHtml(r.total_loans)}</strong></td>
+                    <td data-label="#" class="aura-lib-col-expand"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="${escHtml(__('Desplegar detalles de rotación', 'aura-suite'))}"><span class="dashicons dashicons-plus-alt2"></span></button><span>${i + 1}</span></div></td>
+                    <td data-label="${escHtml(__('Título', 'aura-suite'))}" class="aura-lib-col-main"><strong>${escHtml(r.title)}</strong></td>
+                    <td data-label="${escHtml(__('Dewey', 'aura-suite'))}" class="aura-lib-col-secondary"><code>${escHtml(r.dewey_number || '—')}</code></td>
+                    <td data-label="${escHtml(__('Préstamos', 'aura-suite'))}" class="aura-lib-col-stat"><strong>${escHtml(r.total_loans)}</strong></td>
                 </tr>
                 <tr class="aura-child-row" id="${cid}"><td colspan="4"><div class="aura-lib-child-card"><div class="aura-child-meta-grid">
-                    <div class="aura-child-meta-item"><span>Ranking</span><strong>#${i + 1}</strong></div>
-                    <div class="aura-child-meta-item"><span>Título</span><strong>${escHtml(r.title)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Dewey</span><strong>${escHtml(r.dewey_number || '—')}</strong></div>
-                    <div class="aura-child-meta-item"><span>Préstamos</span><strong>${escHtml(r.total_loans)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Ranking', 'aura-suite'))}</span><strong>#${i + 1}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Título', 'aura-suite'))}</span><strong>${escHtml(r.title)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Dewey', 'aura-suite'))}</span><strong>${escHtml(r.dewey_number || '—')}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Préstamos', 'aura-suite'))}</span><strong>${escHtml(r.total_loans)}</strong></div>
                 </div></div></td></tr>`;
             });
             $('#inventory-top-rotation-body').html(html3 || `<tr><td colspan="4">${I18N.no_data || ''}</td></tr>`);
@@ -250,15 +252,15 @@
             (d.inactive || []).forEach(function (r, i) {
                 const cid = 'rep-inv-inac-' + i;
                 html2 += `<tr class="aura-parent-row">
-                    <td data-label="Título" class="aura-lib-col-main" data-tooltip="Sin circulación en los últimos ${escHtml(months)} meses"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="Desplegar ficha inactiva"><span class="dashicons dashicons-plus-alt2"></span></button><strong>${escHtml(r.title)}</strong></div><div class="aura-lib-mobile-sub">${escHtml(r.author || '—')}</div></td>
-                    <td data-label="Autor" class="aura-lib-col-secondary">${escHtml(r.author || '—')}</td>
-                    <td data-label="Ejs." class="aura-lib-col-stat">${escHtml(r.total_copies)}</td>
+                    <td data-label="${escHtml(__('Título', 'aura-suite'))}" class="aura-lib-col-main" data-tooltip="${escHtml(__('Sin circulación en los últimos', 'aura-suite'))} ${escHtml(months)} ${escHtml(__('meses', 'aura-suite'))}"><div class="aura-id-toggle-wrap"><button type="button" class="aura-lib-row-toggle aura-report-row-toggle" data-target="${cid}" aria-expanded="false" data-tooltip="${escHtml(__('Desplegar ficha inactiva', 'aura-suite'))}"><span class="dashicons dashicons-plus-alt2"></span></button><strong>${escHtml(r.title)}</strong></div><div class="aura-lib-mobile-sub">${escHtml(r.author || '—')}</div></td>
+                    <td data-label="${escHtml(__('Autor', 'aura-suite'))}" class="aura-lib-col-secondary">${escHtml(r.author || '—')}</td>
+                    <td data-label="${escHtml(__('Ejs.', 'aura-suite'))}" class="aura-lib-col-stat">${escHtml(r.total_copies)}</td>
                 </tr>
                 <tr class="aura-child-row" id="${cid}"><td colspan="3"><div class="aura-lib-child-card"><div class="aura-child-meta-grid">
-                    <div class="aura-child-meta-item"><span>Título</span><strong>${escHtml(r.title)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Autor</span><strong>${escHtml(r.author || '—')}</strong></div>
-                    <div class="aura-child-meta-item"><span>Ejemplares</span><strong>${escHtml(r.total_copies)}</strong></div>
-                    <div class="aura-child-meta-item"><span>Inactividad</span><strong>>${escHtml(months)} meses sin préstamos</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Título', 'aura-suite'))}</span><strong>${escHtml(r.title)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Autor', 'aura-suite'))}</span><strong>${escHtml(r.author || '—')}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Ejemplares', 'aura-suite'))}</span><strong>${escHtml(r.total_copies)}</strong></div>
+                    <div class="aura-child-meta-item"><span>${escHtml(__('Inactividad', 'aura-suite'))}</span><strong>>${escHtml(months)} ${escHtml(__('meses sin préstamos', 'aura-suite'))}</strong></div>
                 </div></div></td></tr>`;
             });
             $('#inventory-inactive-body').html(html2 || `<tr><td colspan="3">${I18N.no_data || ''}</td></tr>`);

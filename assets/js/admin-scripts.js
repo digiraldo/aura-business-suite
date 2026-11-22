@@ -4,6 +4,8 @@
 
 (function($) {
     'use strict';
+
+    function __(s) { return (window.wp && wp.i18n && typeof wp.i18n.__ === 'function') ? wp.i18n.__(s, 'aura-suite') : s; }
     
     $(document).ready(function() {
         
@@ -18,14 +20,14 @@
         // Exportar a PDF
         $('#aura-export-pdf').on('click', function(e) {
             e.preventDefault();
-            alert('Función de exportación a PDF en desarrollo');
+            alert(__('Función de exportación a PDF en desarrollo', 'aura-suite'));
             // TODO: Implementar exportación real
         });
         
         // Exportar a Excel
         $('#aura-export-excel').on('click', function(e) {
             e.preventDefault();
-            alert('Función de exportación a Excel en desarrollo');
+            alert(__('Función de exportación a Excel en desarrollo', 'aura-suite'));
             // TODO: Implementar exportación real
         });
         
@@ -71,7 +73,7 @@
             today.setHours(0, 0, 0, 0);
             
             if (selectedDate > today) {
-                alert('La fecha no puede ser futura');
+                alert(__('La fecha no puede ser futura', 'aura-suite'));
                 $(this).val('');
             }
         });
@@ -126,7 +128,7 @@
             var userId = $(this).val();
             if (!userId) return;
             
-            if (confirm('¿Estás seguro de copiar los permisos de este usuario? Se reemplazarán los permisos actuales.')) {
+            if (confirm(__('¿Estás seguro de copiar los permisos de este usuario? Se reemplazarán los permisos actuales.', 'aura-suite'))) {
                 // AJAX para copiar permisos
                 $.ajax({
                     url: auraData.ajaxUrl,

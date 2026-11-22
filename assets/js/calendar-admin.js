@@ -6,6 +6,13 @@
 (function($) {
     'use strict';
 
+    var __ = (window.wp && window.wp.i18n && window.wp.i18n.__) ? window.wp.i18n.__ : function (s) { return s; };
+    var sprintf = (window.wp && window.wp.i18n && window.wp.i18n.sprintf) ? window.wp.i18n.sprintf : function (fmt) {
+        var args = Array.prototype.slice.call(arguments, 1), i = 0;
+        return String(fmt).replace(/%(?:\d+\$)?[sd]/g, function () { return i < args.length ? args[i++] : ''; });
+    };
+    var dateLoc = (typeof auraCalData !== 'undefined' && auraCalData.date_locale) ? auraCalData.date_locale : undefined;
+
     var calendar = null;
     var currentDetailEvent = null;
 
@@ -94,7 +101,7 @@
 
     function renderGoogleStyleEvent(arg, currentUserId) {
         var p = arg.event.extendedProps || {};
-        var title = p.raw_title || arg.event.title || 'Evento';
+        var title = p.raw_title || arg.event.title || __( 'Evento', 'aura-suite' );
         var timeText = arg.timeText || '';
         var viewType = (arg.view && arg.view.type) ? arg.view.type : '';
         var isTimeGrid = viewType.indexOf('timeGrid') !== -1;
@@ -114,19 +121,19 @@
             var avatarBg = (textColor === '#ffffff') ? 'rgba(255,255,255,0.32)' : 'rgba(15,23,42,0.18)';
             avatarImg = '<span style="width:16px;height:16px;border-radius:50%;background:' + avatarBg + ';color:' + textColor + ';display:inline-flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;flex-shrink:0;vertical-align:middle;line-height:1;border:1px solid rgba(255,255,255,0.5);" title="' + escapeHtml(p.primary_name) + '">' + escapeHtml(initial) + '</span>';
         } else if (isPrimaryExt) {
-            avatarImg = '<span style="font-size:12px;flex-shrink:0;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.25);line-height:1;" title="Instructor Externo">🏢</span>';
+            avatarImg = '<span style="font-size:12px;flex-shrink:0;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.25);line-height:1;" title="' + escapeHtml( __( 'Instructor Externo', 'aura-suite' ) ) + '">🏢</span>';
         }
 
         // Chip de líder estudiantil
         var leaderBadge = '';
         if (p.student_leaders && p.student_leaders.length > 0) {
             var isMe = false;
-            var lName = p.student_leaders[0].name ? p.student_leaders[0].name.split(' ')[0] : (p.student_leaders[0].role_label || 'Líder');
+            var lName = p.student_leaders[0].name ? p.student_leaders[0].name.split(' ')[0] : (p.student_leaders[0].role_label || __( 'Líder', 'aura-suite' ));
             if (currentUserId) {
                 for (var i = 0; i < p.student_leaders.length; i++) {
                     if (parseInt(p.student_leaders[i].student_id, 10) === parseInt(currentUserId, 10)) {
                         isMe = true;
-                        lName = p.student_leaders[i].role_label || 'Tú (Líder)';
+                        lName = p.student_leaders[i].role_label || __( 'Tú (Líder)', 'aura-suite' );
                         break;
                     }
                 }
@@ -394,7 +401,7 @@
         calendar = new FullCalendar.Calendar(calEl, {
             initialView: initialView,
             initialDate: initialDate,
-            locale: 'es',
+            locale: (auraCalData.locale || 'es'),
             firstDay: parseInt(auraCalData.first_day || 1, 10),
             headerToolbar: {
                 left: 'prev,next today',
@@ -416,7 +423,7 @@
             slotLabelFormat: timeFormatConfig,
             eventTimeFormat: timeFormatConfig,
             allDaySlot: true,
-            allDayText: (auraCalData.i18n && auraCalData.i18n.all_day) ? auraCalData.i18n.all_day : 'Todo el día',
+            allDayText: (auraCalData.i18n && auraCalData.i18n.all_day) ? auraCalData.i18n.all_day : __( 'Todo el día', 'aura-suite' ),
             timeZone: 'local',
             nowIndicator: true,
             eventDisplay: 'block',
@@ -438,7 +445,7 @@
                 }
                 var subId = parseInt($el.data('subject-id') || 0, 10);
                 var progId = parseInt($el.data('program-id') || 0, 10);
-                var title = $el.data('title') || 'Clase';
+                var title = $el.data('title') || __( 'Clase', 'aura-suite' );
                 var color = $el.data('color') || '#6366f1';
                 var durMins = parseInt($el.data('duration-mins') || 120, 10);
                 var teacherId = parseInt($el.data('teacher-id') || 0, 10);
@@ -618,25 +625,25 @@
         }
 
         var typeLabels = {
-            'class': '📖 Clase Regular',
-            'exam': '📝 Examen / Evaluación',
-            'workshop': '🔬 Taller / Práctica',
-            'activity': '🎯 Actividad',
-            'break': '☕ Receso',
-            'other': '📍 Evento'
+            'class': __( '📖 Clase Regular', 'aura-suite' ),
+            'exam': __( '📝 Examen / Evaluación', 'aura-suite' ),
+            'workshop': __( '🔬 Taller / Práctica', 'aura-suite' ),
+            'activity': __( '🎯 Actividad', 'aura-suite' ),
+            'break': __( '☕ Receso', 'aura-suite' ),
+            'other': __( '📍 Evento', 'aura-suite' )
         };
-        var typeLabel = typeLabels[p.event_type] || '📖 ' + (p.event_type || 'Clase');
+        var typeLabel = typeLabels[p.event_type] || ('📖 ' + (p.event_type || __( 'Clase', 'aura-suite' )));
 
         var statusBadges = {
-            'scheduled': '<span class="adp-badge badge-indigo" style="font-size:10px;padding:2px 7px;">Programado</span>',
-            'completed': '<span class="adp-badge badge-emerald" style="font-size:10px;padding:2px 7px;">Completado</span>',
-            'cancelled': '<span class="adp-badge" style="font-size:10px;padding:2px 7px;background:#ef4444;color:#fff;">Cancelado</span>',
-            'postponed': '<span class="adp-badge badge-amber" style="font-size:10px;padding:2px 7px;">Pospuesto</span>'
+            'scheduled': '<span class="adp-badge badge-indigo" style="font-size:10px;padding:2px 7px;">' + escapeHtml( __( 'Programado', 'aura-suite' ) ) + '</span>',
+            'completed': '<span class="adp-badge badge-emerald" style="font-size:10px;padding:2px 7px;">' + escapeHtml( __( 'Completado', 'aura-suite' ) ) + '</span>',
+            'cancelled': '<span class="adp-badge" style="font-size:10px;padding:2px 7px;background:#ef4444;color:#fff;">' + escapeHtml( __( 'Cancelado', 'aura-suite' ) ) + '</span>',
+            'postponed': '<span class="adp-badge badge-amber" style="font-size:10px;padding:2px 7px;">' + escapeHtml( __( 'Pospuesto', 'aura-suite' ) ) + '</span>'
         };
         var statusBadge = statusBadges[p.status] || '';
 
         var gcalChip = (p.gcal_sync_status === 'synced') 
-            ? '<span class="adp-badge badge-emerald" style="font-size:10px;padding:2px 7px;" title="Sincronizado con Google Calendar">✓ GCal</span>' 
+            ? '<span class="adp-badge badge-emerald" style="font-size:10px;padding:2px 7px;" title="' + escapeHtml( __( 'Sincronizado con Google Calendar', 'aura-suite' ) ) + '">✓ GCal</span>' 
             : '';
 
         var is12h = /[aAgGh]/.test(auraCalData.time_format || '') && !/[HG]/.test(auraCalData.time_format || '');
@@ -646,13 +653,13 @@
         if (event.allDay || p.is_all_day) {
             if (p.is_multi_day) {
                 var hasRealTimes = p.start_time_label && p.end_time_label && (p.start_time_label !== '00:00' || p.end_time_label !== '00:00');
-                timeRange = hasRealTimes ? (p.start_time_label + ' — ' + p.end_time_label) : 'Todo el día';
+                timeRange = hasRealTimes ? (p.start_time_label + ' — ' + p.end_time_label) : __( 'Todo el día', 'aura-suite' );
             } else {
-                timeRange = 'Todo el día';
+                timeRange = __( 'Todo el día', 'aura-suite' );
             }
         } else {
-            var startStr = event.start ? event.start.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
-            var endStr = event.end ? event.end.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+            var startStr = event.start ? event.start.toLocaleTimeString(dateLoc, { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+            var endStr = event.end ? event.end.toLocaleTimeString(dateLoc, { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
             if (startStr && endStr) {
                 timeRange = startStr + ' — ' + endStr;
             } else if (startStr) {
@@ -662,7 +669,7 @@
             }
         }
         if (!dateStr && event.start) {
-            dateStr = event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+            dateStr = event.start.toLocaleDateString(dateLoc, { weekday: 'short', day: 'numeric', month: 'short' });
         }
 
         var teachersHtml = '';
@@ -678,7 +685,7 @@
                 '</div>';
             } else if (primaryInst.is_external) {
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
-                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="background:linear-gradient(135deg,#0284c7,#0369a1);display:flex;align-items:center;justify-content:center;font-size:20px;" title="' + escapeHtml(primaryInst.external_org ? primaryInst.external_org : 'Instructor Externo') + '">🏢</div>' +
+                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="background:linear-gradient(135deg,#0284c7,#0369a1);display:flex;align-items:center;justify-content:center;font-size:20px;" title="' + escapeHtml(primaryInst.external_org ? primaryInst.external_org : __( 'Instructor Externo', 'aura-suite' )) + '">🏢</div>' +
                 '</div>';
             } else {
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
@@ -719,7 +726,7 @@
                         stackedAvatarsHtml +
                     '</div>' +
                     '<div style="flex:1;overflow:hidden;min-width:0;">' +
-                        '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;color:#94a3b8;">' + (otherInsts.length > 0 ? 'Equipo Docente' : 'Docente a Cargo') + '</div>' +
+                        '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;color:#94a3b8;">' + escapeHtml(otherInsts.length > 0 ? __( 'Equipo Docente', 'aura-suite' ) : __( 'Docente a Cargo', 'aura-suite' )) + '</div>' +
                         '<div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ffffff;">' + escapeHtml(primaryInst.name) + '</div>' +
                         othersNames +
                     '</div>' +
@@ -735,7 +742,7 @@
                         avBigFallback +
                     '</div>' +
                     '<div style="flex:1;overflow:hidden;min-width:0;">' +
-                        '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;color:#94a3b8;">Docente</div>' +
+                        '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.75;font-weight:700;color:#94a3b8;">' + escapeHtml( __( 'Docente', 'aura-suite' ) ) + '</div>' +
                         '<div style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ffffff;">' + escapeHtml(p.primary_name) + '</div>' +
                     '</div>' +
                 '</div>' +
@@ -759,7 +766,7 @@
                 leadStackHtml += '<div class="aura-avatar-more" style="width:24px;height:24px;margin-left:-8px;font-size:10px;border:1.5px solid #0f172a;">+' + (p.student_leaders.length - 3) + '</div>';
             }
             leadersHtml = '<div class="tooltip-meta-row" style="align-items:center;">' +
-                '<strong>🌟 Liderazgo:</strong>' +
+                '<strong>' + escapeHtml( __( '🌟 Liderazgo:', 'aura-suite' ) ) + '</strong>' +
                 '<div style="display:flex;align-items:center;gap:6px;">' +
                     '<div class="aura-avatar-stack">' + leadStackHtml + '</div>' +
                     '<span style="font-size:11.5px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(leadNames.join(' • ')) + '">' + escapeHtml(p.student_leaders[0].name) + (p.student_leaders.length > 1 ? ' +' + (p.student_leaders.length - 1) : '') + '</span>' +
@@ -769,10 +776,10 @@
 
         var locHtml = '';
         if (p.location) {
-            locHtml += '<div class="tooltip-meta-row"><strong>📍 Aula:</strong> <span>' + escapeHtml(p.location) + '</span></div>';
+            locHtml += '<div class="tooltip-meta-row"><strong>' + escapeHtml( __( '📍 Aula:', 'aura-suite' ) ) + '</strong> <span>' + escapeHtml(p.location) + '</span></div>';
         }
         if (p.online_url) {
-            locHtml += '<div class="tooltip-meta-row"><strong>💻 Virtual:</strong> <span style="color:#818cf8;text-decoration:underline;">Enlace disponible</span></div>';
+            locHtml += '<div class="tooltip-meta-row"><strong>' + escapeHtml( __( '💻 Virtual:', 'aura-suite' ) ) + '</strong> <span style="color:#818cf8;text-decoration:underline;">' + escapeHtml( __( 'Enlace disponible', 'aura-suite' ) ) + '</span></div>';
         }
 
         var descHtml = '';
@@ -868,25 +875,25 @@
         var html = '<div class="tooltip-header" style="display:flex;align-items:center;gap:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.12);">' +
             '<div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 10px rgba(99,102,241,0.35);flex-shrink:0;">🌅</div>' +
             '<div style="flex:1;min-width:0;">' +
-                '<div class="tooltip-title" style="margin:0;font-size:14px;font-weight:700;line-height:1.2;">Todo el Día / Multi-Día</div>' +
-                '<div style="font-size:11px;color:#818cf8;font-weight:600;margin-top:2px;">Sección de Jornada Continua</div>' +
+                '<div class="tooltip-title" style="margin:0;font-size:14px;font-weight:700;line-height:1.2;">' + escapeHtml( __( 'Todo el Día / Multi-Día', 'aura-suite' ) ) + '</div>' +
+                '<div style="font-size:11px;color:#818cf8;font-weight:600;margin-top:2px;">' + escapeHtml( __( 'Sección de Jornada Continua', 'aura-suite' ) ) + '</div>' +
             '</div>' +
         '</div>' +
         '<div class="tooltip-desc" style="margin:10px 0;font-size:12px;line-height:1.5;background:rgba(99,102,241,0.08);border-left:3px solid #6366f1;padding:8px 10px;border-radius:4px;">' +
-            'Esta fila superior está reservada para <strong>actividades de día completo</strong> o <strong>eventos continuos de múltiples días</strong> (talleres intensivos, retiros, diplomados, congresos o feriados).' +
+            __( 'Esta fila superior está reservada para <strong>actividades de día completo</strong> o <strong>eventos continuos de múltiples días</strong> (talleres intensivos, retiros, diplomados, congresos o feriados).', 'aura-suite' ) +
         '</div>' +
         '<div class="tooltip-meta-grid" style="display:grid;gap:7px;font-size:11.5px;margin-bottom:8px;">' +
             '<div class="tooltip-meta-row" style="display:flex;gap:6px;align-items:flex-start;">' +
                 '<strong style="color:#6366f1;flex-shrink:0;">💻 Frontend:</strong>' +
-                '<span style="opacity:0.9;">Estudiantes y profesores ven con total claridad hitos globales sin invadir la cuadrícula horaria de clases regulares.</span>' +
+                '<span style="opacity:0.9;">' + escapeHtml( __( 'Estudiantes y profesores ven con total claridad hitos globales sin invadir la cuadrícula horaria de clases regulares.', 'aura-suite' ) ) + '</span>' +
             '</div>' +
             '<div class="tooltip-meta-row" style="display:flex;gap:6px;align-items:flex-start;">' +
                 '<strong style="color:#6366f1;flex-shrink:0;">⚙️ Backend:</strong>' +
-                '<span style="opacity:0.9;">Administradores coordinan fechas completas con barras horizontales continuas que abarcan varios días con un solo evento.</span>' +
+                '<span style="opacity:0.9;">' + escapeHtml( __( 'Administradores coordinan fechas completas con barras horizontales continuas que abarcan varios días con un solo evento.', 'aura-suite' ) ) + '</span>' +
             '</div>' +
         '</div>' +
         '<div class="tooltip-footer" style="font-size:11px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.08);color:#94a3b8;">' +
-            '💡 <em>Al crear un evento, activa la opción <strong>"Todo el día"</strong> para fijarlo automáticamente aquí.</em>' +
+            __( '💡 <em>Al crear un evento, activa la opción <strong>"Todo el día"</strong> para fijarlo automáticamente aquí.</em>', 'aura-suite' ) +
         '</div>';
 
         $tt.html(html);
@@ -1083,7 +1090,7 @@
         var progId = $(this).val();
         var $subSelect = $('#filter-subject');
 
-        $subSelect.html('<option value="">' + (auraCalData.i18n && auraCalData.i18n.all_subjects ? auraCalData.i18n.all_subjects : 'Materia: Todas') + '</option>');
+        $subSelect.html('<option value="">' + escapeHtml( (auraCalData.i18n && auraCalData.i18n.all_subjects) ? auraCalData.i18n.all_subjects : __( 'Materia: Todas', 'aura-suite' ) ) + '</option>');
 
         if (progId) {
             $.post(auraCalData.ajax_url, {
@@ -1111,7 +1118,7 @@
 
     $('#btn-filter-reset').on('click', function() {
         $('#filter-program').val('');
-        $('#filter-subject').html('<option value="">' + (auraCalData.i18n && auraCalData.i18n.all_subjects ? auraCalData.i18n.all_subjects : 'Materia: Todas') + '</option>').val('');
+        $('#filter-subject').html('<option value="">' + escapeHtml( (auraCalData.i18n && auraCalData.i18n.all_subjects) ? auraCalData.i18n.all_subjects : __( 'Materia: Todas', 'aura-suite' ) ) + '</option>').val('');
         $('#filter-event-type').val('');
         $('#filter-assignment-status').val('');
         if (calendar) calendar.refetchEvents();
@@ -1203,7 +1210,7 @@
         container.empty();
 
         if (!auraCalData.teachers || !auraCalData.teachers.length) {
-            container.append('<span style="font-size:12px;color:var(--aura-text-muted);">No hay profesores registrados en el sistema.</span>');
+            container.append('<span style="font-size:12px;color:var(--aura-text-muted);">' + escapeHtml( __( 'No hay profesores registrados en el sistema.', 'aura-suite' ) ) + '</span>');
             return;
         }
 
@@ -1214,8 +1221,8 @@
             var av = t.avatar ? '<img src="' + escapeHtml(t.avatar) + '" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;" />' : '';
             
             var primaryBadge = isPrimary
-                ? '<button type="button" class="aura-primary-badge btn-make-primary-teacher is-active" data-tid="' + tid + '" title="Profesor Titular / Principal">⭐</button><span class="aura-primary-tag">Titular</span>'
-                : '<button type="button" class="aura-primary-badge btn-make-primary-teacher" data-tid="' + tid + '" title="Hacer Titular / Principal">☆</button>';
+                ? '<button type="button" class="aura-primary-badge btn-make-primary-teacher is-active" data-tid="' + tid + '" title="' + escapeHtml( __( 'Profesor Titular / Principal', 'aura-suite' ) ) + '">⭐</button><span class="aura-primary-tag">' + escapeHtml( __( 'Titular', 'aura-suite' ) ) + '</span>'
+                : '<button type="button" class="aura-primary-badge btn-make-primary-teacher" data-tid="' + tid + '" title="' + escapeHtml( __( 'Hacer Titular / Principal', 'aura-suite' ) ) + '">☆</button>';
 
             var pill = $(
                 '<label class="aura-user-chip ' + (isChecked ? 'is-checked' : '') + (isPrimary ? ' is-primary-teacher' : '') + '" data-teacher-id="' + tid + '">' +
@@ -1253,12 +1260,12 @@
             var $badge = $(this).find('.btn-make-primary-teacher');
             var $tag = $(this).find('.aura-primary-tag');
             if (isThis) {
-                $badge.addClass('is-active').html('⭐').attr('title', 'Profesor Titular / Principal');
+                $badge.addClass('is-active').html('⭐').attr('title', __( 'Profesor Titular / Principal', 'aura-suite' ));
                 if (!$tag.length) {
-                    $badge.after('<span class="aura-primary-tag">Titular</span>');
+                    $badge.after('<span class="aura-primary-tag">' + escapeHtml( __( 'Titular', 'aura-suite' ) ) + '</span>');
                 }
             } else {
-                $badge.removeClass('is-active').html('☆').attr('title', 'Hacer Titular / Principal');
+                $badge.removeClass('is-active').html('☆').attr('title', __( 'Hacer Titular / Principal', 'aura-suite' ));
                 $tag.remove();
             }
         });
@@ -1285,7 +1292,7 @@
                 } else {
                     $('#evt-primary-teacher-id').val(0);
                     $chip.removeClass('is-primary-teacher');
-                    $chip.find('.btn-make-primary-teacher').removeClass('is-active').html('☆').attr('title', 'Hacer Titular / Principal');
+                    $chip.find('.btn-make-primary-teacher').removeClass('is-active').html('☆').attr('title', __( 'Hacer Titular / Principal', 'aura-suite' ));
                     $chip.find('.aura-primary-tag').remove();
                 }
             }
@@ -1298,7 +1305,7 @@
         container.empty();
 
         if (!auraCalData.teachers || !auraCalData.teachers.length) {
-            container.append('<span style="font-size:12px;color:var(--aura-text-muted);">No hay usuarios registrados como coordinadores o docentes.</span>');
+            container.append('<span style="font-size:12px;color:var(--aura-text-muted);">' + escapeHtml( __( 'No hay usuarios registrados como coordinadores o docentes.', 'aura-suite' ) ) + '</span>');
             return;
         }
 
@@ -1321,7 +1328,7 @@
         container.empty();
 
         if (!auraCalData.teachers || !auraCalData.teachers.length) {
-            container.append('<span style="font-size:12px;color:var(--aura-text-muted);">No hay profesores disponibles en el sistema.</span>');
+            container.append('<span style="font-size:12px;color:var(--aura-text-muted);">' + escapeHtml( __( 'No hay profesores disponibles en el sistema.', 'aura-suite' ) ) + '</span>');
             return;
         }
 
@@ -1345,7 +1352,7 @@
 
     function initStudentLeadersSelect() {
         var $sel = $('#select-add-leader-user');
-        $sel.html('<option value="">' + (auraCalData.i18n.select_student || 'Seleccionar estudiante...') + '</option>');
+        $sel.html('<option value="">' + escapeHtml( auraCalData.i18n.select_student || __( 'Seleccionar estudiante...', 'aura-suite' ) ) + '</option>');
 
         if (auraCalData.students && auraCalData.students.length) {
             $.each(auraCalData.students, function(i, st) {
@@ -1362,16 +1369,16 @@
         $box.empty();
 
         if (!currentEventLeaders || !currentEventLeaders.length) {
-            $box.html('<span style="font-size:12px;color:var(--aura-text-muted);font-style:italic;">No hay estudiantes con responsabilidad asignada en esta actividad.</span>');
+            $box.html('<span style="font-size:12px;color:var(--aura-text-muted);font-style:italic;">' + escapeHtml( __( 'No hay estudiantes con responsabilidad asignada en esta actividad.', 'aura-suite' ) ) + '</span>');
             $('#evt-student-leaders-json').val('[]');
             return;
         }
 
         var roleBadges = {
-            'program_leader': '👑 Líder Programa',
-            'activity_leader': '🎯 Líder Actividad',
-            'presenter': '🗣️ Expositor / Clase',
-            'monitor': '🛡️ Monitor'
+            'program_leader': __( '👑 Líder Programa', 'aura-suite' ),
+            'activity_leader': __( '🎯 Líder Actividad', 'aura-suite' ),
+            'presenter': __( '🗣️ Expositor / Clase', 'aura-suite' ),
+            'monitor': __( '🛡️ Monitor', 'aura-suite' )
         };
 
         $.each(currentEventLeaders, function(idx, ldr) {
@@ -1385,7 +1392,7 @@
                     avImg +
                     '<span style="font-weight:600;">' + escapeHtml(ldr.name) + '</span>' +
                     '<span class="aura-badge" style="font-size:10.5px;padding:2px 6px;border-radius:10px;background:rgba(93,95,239,0.12);color:var(--aura-primary,#5d5fef);font-weight:600;">' + escapeHtml(roleText) + '</span>' +
-                    '<button type="button" class="btn-remove-leader" data-index="' + idx + '" title="Remover" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:14px;line-height:1;padding:0 2px;">&times;</button>' +
+                    '<button type="button" class="btn-remove-leader" data-index="' + idx + '" title="' + escapeHtml( __( 'Remover', 'aura-suite' ) ) + '" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:14px;line-height:1;padding:0 2px;">&times;</button>' +
                 '</div>'
             );
             $box.append($chip);
@@ -1401,7 +1408,7 @@
         var role = $('#select-add-leader-role').val() || 'activity_leader';
 
         if (!uid) {
-            showToast('Por favor selecciona un estudiante.', 'warning');
+            showToast( __( 'Por favor selecciona un estudiante.', 'aura-suite' ), 'warning');
             $('#select-add-leader-user').focus();
             return;
         }
@@ -1417,7 +1424,7 @@
             }
         }
 
-        var stName = studentData ? studentData.name : 'Estudiante #' + uid;
+        var stName = studentData ? studentData.name : sprintf( __( 'Estudiante #%s', 'aura-suite' ), uid );
         var stAvatar = studentData ? studentData.avatar : '';
 
         // Verificar si ya fue añadido con ese rol
@@ -1426,7 +1433,7 @@
         });
 
         if (already) {
-            showToast('Este estudiante ya tiene este rol asignado en la actividad.', 'info');
+            showToast( __( 'Este estudiante ya tiene este rol asignado en la actividad.', 'aura-suite' ), 'info');
             return;
         }
 
@@ -1466,29 +1473,29 @@
         $box.empty();
 
         if (!currentEventExternalInstructors || !currentEventExternalInstructors.length) {
-            $box.html('<span style="font-size:12px;color:var(--aura-text-muted);font-style:italic;">No hay instructores externos o terceros asignados a este evento.</span>');
+            $box.html('<span style="font-size:12px;color:var(--aura-text-muted);font-style:italic;">' + escapeHtml( __( 'No hay instructores externos o terceros asignados a este evento.', 'aura-suite' ) ) + '</span>');
             $('#evt-external-instructors-json').val('[]');
             return;
         }
 
         var roleBadges = {
-            'lead': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Titular Externo</span>',
-            'primary': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Titular Externo</span>',
-            'guest': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">Invitado / Ponente</span>',
-            'assistant': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">Co-instructor</span>',
-            'co_instructor': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">Co-instructor</span>'
+            'lead': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Titular Externo', 'aura-suite' ) ) + '</span>',
+            'primary': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Titular Externo', 'aura-suite' ) ) + '</span>',
+            'guest': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Invitado / Ponente', 'aura-suite' ) ) + '</span>',
+            'assistant': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Co-instructor', 'aura-suite' ) ) + '</span>',
+            'co_instructor': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Co-instructor', 'aura-suite' ) ) + '</span>'
         };
 
         $.each(currentEventExternalInstructors, function(idx, inst) {
-            var roleBadge = roleBadges[inst.role] || '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(inst.role || 'Invitado') + '</span>';
+            var roleBadge = roleBadges[inst.role] || '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(inst.role || __( 'Invitado', 'aura-suite' )) + '</span>';
             var orgText = inst.organization ? ' <span style="color:#64748b;font-size:11px;">(' + escapeHtml(inst.organization) + ')</span>' : '';
             var emailText = inst.email ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; ' + escapeHtml(inst.email) + '</span>' : '';
             var phoneText = inst.phone ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; 📞 ' + escapeHtml(inst.phone) + '</span>' : '';
             
             var isWpUser = inst.is_wp_user || (inst.wp_user_id && parseInt(inst.wp_user_id, 10) > 0) || (inst.type === 'wp_user');
             var tpBadge = isWpUser
-                ? ' <span style="font-size:9.5px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado como Usuario WordPress (ID #' + (inst.wp_user_id || '') + ')">👤 Usuario WP</span>'
-                : (inst.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado al Catálogo Contable #ID ' + inst.third_party_id + '">🏛️ Tercero</span>' : '');
+                ? ' <span style="font-size:9.5px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:600;" title="' + escapeHtml( sprintf( __( 'Vinculado como Usuario WordPress (ID #%s)', 'aura-suite' ), (inst.wp_user_id || '') ) ) + '">' + escapeHtml( __( '👤 Usuario WP', 'aura-suite' ) ) + '</span>'
+                : (inst.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="' + escapeHtml( sprintf( __( 'Vinculado al Catálogo Contable #ID %s', 'aura-suite' ), inst.third_party_id ) ) + '">' + escapeHtml( __( '🏛️ Tercero', 'aura-suite' ) ) + '</span>' : '');
 
             var avatarSrc = inst.avatar || inst.avatar_url || '';
             var avatarHtml = avatarSrc
@@ -1511,7 +1518,7 @@
                             '</div>' +
                         '</div>' +
                     '</div>' +
-                    '<button type="button" class="btn-remove-ext-inst" data-index="' + idx + '" title="Eliminar instructor externo" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;">&times;</button>' +
+                    '<button type="button" class="btn-remove-ext-inst" data-index="' + idx + '" title="' + escapeHtml( __( 'Eliminar instructor externo', 'aura-suite' ) ) + '" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;">&times;</button>' +
                 '</div>'
             );
             $box.append($chip);
@@ -1544,7 +1551,7 @@
         e.preventDefault();
         if (window.AuraThirdPartySelector && typeof window.AuraThirdPartySelector.openExplorer === 'function') {
             window.AuraThirdPartySelector.openExplorer({
-                title: 'Catálogo de Terceros — Asignar a la Clase',
+                title: __( 'Catálogo de Terceros — Asignar a la Clase', 'aura-suite' ),
                 onSelect: function(item) {
                     var displayName = item.commercial_name || item.name || '';
                     var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
@@ -1567,7 +1574,7 @@
 
                     $('#box-add-external-inst').slideDown(180);
                     $('#ext-inst-role').focus();
-                    showToast('Tercero "' + displayName + '" seleccionado del catálogo. Revisa su rol y agrégalo a la clase.', 'info');
+                    showToast(sprintf( __( 'Tercero "%s" seleccionado del catálogo. Revisa su rol y agrégalo a la clase.', 'aura-suite' ), displayName ), 'info');
                 }
             });
         } else {
@@ -1646,7 +1653,7 @@
         e.preventDefault();
         var name = $.trim($('#ext-inst-name').val());
         if (!name) {
-            showToast('Por favor escribe el nombre del instructor tercero.', 'warning');
+            showToast( __( 'Por favor escribe el nombre del instructor tercero.', 'aura-suite' ), 'warning');
             $('#ext-inst-name').focus();
             return;
         }
@@ -1677,7 +1684,7 @@
         $('#ext-inst-name, #ext-inst-email, #ext-inst-phone, #ext-inst-org, #ext-inst-third-party-id, #ext-inst-wp-user-id, #ext-inst-avatar-url').val('');
         $('#ext-inst-linked-badge').hide();
         $('#box-add-external-inst').slideUp(180);
-        showToast('Instructor externo "' + name + '" añadido.', 'success');
+        showToast(sprintf( __( 'Instructor externo "%s" añadido.', 'aura-suite' ), name ), 'success');
     });
 
     // Remover instructor externo
@@ -1701,26 +1708,26 @@
         $box.empty();
 
         if (!currentProgramExternalCoordinators || !currentProgramExternalCoordinators.length) {
-            $box.html('<span id="prog-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;">Sin coordinadores externos asignados.</span>');
+            $box.html('<span id="prog-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;">' + escapeHtml( __( 'Sin coordinadores externos asignados.', 'aura-suite' ) ) + '</span>');
             $('#prog-external-coordinators-json').val('[]');
             return;
         }
 
         var roleBadges = {
-            'Coordinador Externo': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Coordinador Externo</span>',
-            'Director Académico': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">Director Académico</span>',
-            'Asesor / Enlace': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">Asesor / Enlace</span>'
+            'Coordinador Externo': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Coordinador Externo', 'aura-suite' ) ) + '</span>',
+            'Director Académico': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Director Académico', 'aura-suite' ) ) + '</span>',
+            'Asesor / Enlace': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Asesor / Enlace', 'aura-suite' ) ) + '</span>'
         };
 
         $.each(currentProgramExternalCoordinators, function(idx, coord) {
-            var roleBadge = roleBadges[coord.role] || '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(coord.role || 'Coordinador') + '</span>';
+            var roleBadge = roleBadges[coord.role] || '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(coord.role || __( 'Coordinador', 'aura-suite' )) + '</span>';
             var orgText = coord.organization ? ' <span style="color:#64748b;font-size:11px;">(' + escapeHtml(coord.organization) + ')</span>' : '';
             var emailText = coord.email ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; ' + escapeHtml(coord.email) + '</span>' : '';
             var phoneText = coord.phone ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; 📞 ' + escapeHtml(coord.phone) + '</span>' : '';
             var isWpUser = coord.is_wp_user || (coord.wp_user_id && parseInt(coord.wp_user_id, 10) > 0);
             var tpBadge = isWpUser
-                ? ' <span style="font-size:9.5px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado como Usuario WordPress (ID #' + coord.wp_user_id + ')">👤 Usuario WP</span>'
-                : (coord.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado al Catálogo Contable #ID ' + coord.third_party_id + '">🏛️ Tercero</span>' : '');
+                ? ' <span style="font-size:9.5px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:600;" title="' + escapeHtml( sprintf( __( 'Vinculado como Usuario WordPress (ID #%s)', 'aura-suite' ), coord.wp_user_id ) ) + '">' + escapeHtml( __( '👤 Usuario WP', 'aura-suite' ) ) + '</span>'
+                : (coord.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="' + escapeHtml( sprintf( __( 'Vinculado al Catálogo Contable #ID %s', 'aura-suite' ), coord.third_party_id ) ) + '">' + escapeHtml( __( '🏛️ Tercero', 'aura-suite' ) ) + '</span>' : '');
 
             var avatarHtml = coord.avatar_url
                 ? '<img src="' + escapeHtml(coord.avatar_url) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'inline-flex\';">' +
@@ -1742,7 +1749,7 @@
                             '</div>' +
                         '</div>' +
                     '</div>' +
-                    '<button type="button" class="btn-remove-ext-coord" data-index="' + idx + '" title="Eliminar coordinador externo" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;">&times;</button>' +
+                    '<button type="button" class="btn-remove-ext-coord" data-index="' + idx + '" title="' + escapeHtml( __( 'Eliminar coordinador externo', 'aura-suite' ) ) + '" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;">&times;</button>' +
                 '</div>'
             );
             $box.append($chip);
@@ -1773,7 +1780,7 @@
         e.preventDefault();
         if (window.AuraThirdPartySelector && typeof window.AuraThirdPartySelector.openExplorer === 'function') {
             window.AuraThirdPartySelector.openExplorer({
-                title: 'Catálogo de Terceros — Coordinador del Programa',
+                title: __( 'Catálogo de Terceros — Coordinador del Programa', 'aura-suite' ),
                 onSelect: function(item) {
                     var displayName = item.commercial_name || item.name || '';
                     var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
@@ -1794,7 +1801,7 @@
 
                     $('#box-add-external-coord').slideDown(180);
                     $('#ext-coord-role').focus();
-                    showToast('Tercero "' + displayName + '" seleccionado del catálogo. Asigna su rol de coordinación.', 'info');
+                    showToast(sprintf( __( 'Tercero "%s" seleccionado del catálogo. Asigna su rol de coordinación.', 'aura-suite' ), displayName ), 'info');
                 }
             });
         } else {
@@ -1862,7 +1869,7 @@
         e.preventDefault();
         var name = $.trim($('#ext-coord-name').val());
         if (!name) {
-            showToast('Por favor escribe el nombre del coordinador.', 'warning');
+            showToast( __( 'Por favor escribe el nombre del coordinador.', 'aura-suite' ), 'warning');
             $('#ext-coord-name').focus();
             return;
         }
@@ -1892,7 +1899,7 @@
         $('#ext-coord-name, #ext-coord-email, #ext-coord-phone, #ext-coord-org, #ext-coord-third-party-id, #ext-coord-wp-user-id, #ext-coord-avatar-url').val('');
         $('#ext-coord-linked-badge').hide();
         $('#box-add-external-coord').slideUp(180);
-        showToast('Coordinador externo "' + name + '" añadido al programa.', 'success');
+        showToast(sprintf( __( 'Coordinador externo "%s" añadido al programa.', 'aura-suite' ), name ), 'success');
     });
 
     $(document).on('click', '.btn-remove-ext-coord', function(e) {
@@ -1915,26 +1922,26 @@
         $box.empty();
 
         if (!currentSubjectExternalTeachers || !currentSubjectExternalTeachers.length) {
-            $box.html('<span id="subj-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;">Sin docentes externos asignados.</span>');
+            $box.html('<span id="subj-ext-none-hint" style="font-size: 11.5px; color: var(--aura-text-muted); font-style: italic;">' + escapeHtml( __( 'Sin docentes externos asignados.', 'aura-suite' ) ) + '</span>');
             $('#subj-external-teachers-json').val('[]');
             return;
         }
 
         var roleBadges = {
-            'Docente Titular': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">Docente Titular</span>',
-            'Profesor Invitado': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">Profesor Invitado</span>',
-            'Auxiliar / Adjunto': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">Auxiliar / Adjunto</span>'
+            'Docente Titular': '<span style="font-size:10px;background:rgba(99,102,241,0.15);color:#6366f1;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Docente Titular', 'aura-suite' ) ) + '</span>',
+            'Profesor Invitado': '<span style="font-size:10px;background:rgba(16,185,129,0.15);color:#10b981;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Profesor Invitado', 'aura-suite' ) ) + '</span>',
+            'Auxiliar / Adjunto': '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml( __( 'Auxiliar / Adjunto', 'aura-suite' ) ) + '</span>'
         };
 
         $.each(currentSubjectExternalTeachers, function(idx, teacher) {
-            var roleBadge = roleBadges[teacher.role] || '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(teacher.role || 'Docente') + '</span>';
+            var roleBadge = roleBadges[teacher.role] || '<span style="font-size:10px;background:rgba(14,165,233,0.15);color:#0ea5e9;padding:1px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(teacher.role || __( 'Docente', 'aura-suite' )) + '</span>';
             var orgText = teacher.organization ? ' <span style="color:#64748b;font-size:11px;">(' + escapeHtml(teacher.organization) + ')</span>' : '';
             var emailText = teacher.email ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; ' + escapeHtml(teacher.email) + '</span>' : '';
             var phoneText = teacher.phone ? ' <span style="color:#94a3b8;font-size:10.5px;">&bull; 📞 ' + escapeHtml(teacher.phone) + '</span>' : '';
             var isWpUser = teacher.is_wp_user || (teacher.wp_user_id && parseInt(teacher.wp_user_id, 10) > 0);
             var tpBadge = isWpUser
-                ? ' <span style="font-size:9.5px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado como Usuario WordPress (ID #' + teacher.wp_user_id + ')">👤 Usuario WP</span>'
-                : (teacher.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="Vinculado al Catálogo Contable #ID ' + teacher.third_party_id + '">🏛️ Tercero</span>' : '');
+                ? ' <span style="font-size:9.5px;background:#d1fae5;color:#065f46;padding:1px 5px;border-radius:4px;font-weight:600;" title="' + escapeHtml( sprintf( __( 'Vinculado como Usuario WordPress (ID #%s)', 'aura-suite' ), teacher.wp_user_id ) ) + '">' + escapeHtml( __( '👤 Usuario WP', 'aura-suite' ) ) + '</span>'
+                : (teacher.third_party_id ? ' <span style="font-size:9.5px;background:#e0f2fe;color:#0369a1;padding:1px 5px;border-radius:4px;font-weight:600;" title="' + escapeHtml( sprintf( __( 'Vinculado al Catálogo Contable #ID %s', 'aura-suite' ), teacher.third_party_id ) ) + '">' + escapeHtml( __( '🏛️ Tercero', 'aura-suite' ) ) + '</span>' : '');
 
             var avatarHtml = teacher.avatar_url
                 ? '<img src="' + escapeHtml(teacher.avatar_url) + '" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'inline-flex\';">' +
@@ -1956,7 +1963,7 @@
                             '</div>' +
                         '</div>' +
                     '</div>' +
-                    '<button type="button" class="btn-remove-ext-teacher" data-index="' + idx + '" title="Eliminar docente externo" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;">&times;</button>' +
+                    '<button type="button" class="btn-remove-ext-teacher" data-index="' + idx + '" title="' + escapeHtml( __( 'Eliminar docente externo', 'aura-suite' ) ) + '" style="border:none;background:transparent;cursor:pointer;color:#ef4444;font-size:16px;line-height:1;padding:2px 6px;border-radius:4px;">&times;</button>' +
                 '</div>'
             );
             $box.append($chip);
@@ -1987,7 +1994,7 @@
         e.preventDefault();
         if (window.AuraThirdPartySelector && typeof window.AuraThirdPartySelector.openExplorer === 'function') {
             window.AuraThirdPartySelector.openExplorer({
-                title: 'Catálogo de Terceros — Docente de la Materia',
+                title: __( 'Catálogo de Terceros — Docente de la Materia', 'aura-suite' ),
                 onSelect: function(item) {
                     var displayName = item.commercial_name || item.name || '';
                     var orgName = (item.commercial_name && item.name !== item.commercial_name) ? item.name : (item.party_type_label || '');
@@ -2076,7 +2083,7 @@
         e.preventDefault();
         var name = $.trim($('#ext-teacher-name').val());
         if (!name) {
-            showToast('Por favor escribe el nombre del docente.', 'warning');
+            showToast( __( 'Por favor escribe el nombre del docente.', 'aura-suite' ), 'warning');
             $('#ext-teacher-name').focus();
             return;
         }
@@ -2106,7 +2113,7 @@
         $('#ext-teacher-name, #ext-teacher-email, #ext-teacher-phone, #ext-teacher-org, #ext-teacher-third-party-id, #ext-teacher-wp-user-id, #ext-teacher-avatar-url').val('');
         $('#ext-teacher-linked-badge').hide();
         $('#box-add-external-teacher').slideUp(180);
-        showToast('Docente externo "' + name + '" añadido a la materia.', 'success');
+        showToast(sprintf( __( 'Docente externo "%s" añadido a la materia.', 'aura-suite' ), name ), 'success');
     });
 
     $(document).on('click', '.btn-remove-ext-teacher', function(e) {
@@ -2120,7 +2127,7 @@
 
     function loadSubjectsForProgram(progId, selectedSubjectId) {
         var $subSelect = $('#evt-subject-id');
-        $subSelect.html('<option value="">General / Sin materia específica</option>');
+        $subSelect.html('<option value="">' + escapeHtml( __( 'General / Sin materia específica', 'aura-suite' ) ) + '</option>');
         window.auraCurrentProgramSubjects = [];
 
         if (progId) {
@@ -2173,7 +2180,7 @@
             // Precargar docentes externos de la materia si la lista está vacía o si es evento nuevo
             if ((currentEventExternalInstructors.length === 0 || isNewEvent) && Array.isArray(subj.external_teachers_list) && subj.external_teachers_list.length > 0) {
                 currentEventExternalInstructors = subj.external_teachers_list.map(function(ext) {
-                    var extName = ext.commercial_name || ext.name || ext.external_name || 'Docente Externo';
+                    var extName = ext.commercial_name || ext.name || ext.external_name || __( 'Docente Externo', 'aura-suite' );
                     return {
                         id: ext.wp_user_id || ext.user_id || 0,
                         name: extName,
@@ -2204,7 +2211,7 @@
         form.reset();
 
         $('#evt-id').val(data.id || '0');
-        $('#modal-event-title').text(data.id ? '✏️ Editar Evento' : '➕ Crear Evento');
+        $('#modal-event-title').text(data.id ? __( '✏️ Editar Evento', 'aura-suite' ) : __( '➕ Crear Evento', 'aura-suite' ));
 
         if (data.id) {
             $('#sec-recurrence-toggle').hide();
@@ -2302,7 +2309,7 @@
             loadSubjectsForProgram(progToLoad, data.subject_id || 0);
         } else {
             $('#evt-program-id').val('');
-            $('#evt-subject-id').html('<option value="">General / Sin materia específica</option>');
+            $('#evt-subject-id').html('<option value="">' + escapeHtml( __( 'General / Sin materia específica', 'aura-suite' ) ) + '</option>');
         }
 
         renderTeacherCheckboxes(data.teacher_ids || [], data.primary_teacher_id || 0);
@@ -2345,7 +2352,7 @@
 
         var events = (auraCalData && Array.isArray(auraCalData.generic_events)) ? auraCalData.generic_events : [];
         if (!events.length) {
-            $list.html('<p style="font-size: 12px; color: var(--aura-text-secondary); margin: 0;">No hay eventos rápidos disponibles.</p>');
+            $list.html('<p style="font-size: 12px; color: var(--aura-text-secondary); margin: 0;">' + escapeHtml( __( 'No hay eventos rápidos disponibles.', 'aura-suite' ) ) + '</p>');
             return;
         }
 
@@ -2362,7 +2369,7 @@
                 html: '<span style="font-size: 14px; line-height: 1;">' + icon + '</span> ' +
                       '<span style="font-weight: 600;">' + name + '</span> ' +
                       '<span class="btn-quick-generic-dur">' + dur + 'm</span>',
-                title: 'Aplicar ' + name + ' (+ ' + dur + ' min)'
+                title: sprintf( __( 'Aplicar %1$s (+ %2$s min)', 'aura-suite' ), (ev.name || ''), dur )
             }).css({
                 '--chip-accent': color,
                 'border-left-color': color
@@ -2437,7 +2444,7 @@
             $chip.css({ 'transform': 'none', 'box-shadow': 'none' });
         }, 180);
 
-        showToast('⚡ ' + ev.name + ' agregado (+ ' + durationMinutes + ' min). Totalmente editable en el formulario.', 'success');
+        showToast(sprintf( __( '⚡ %1$s agregado (+ %2$s min). Totalmente editable en el formulario.', 'aura-suite' ), ev.name, durationMinutes ), 'success');
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -2452,7 +2459,7 @@
     // Abrir modal para Crear Nuevo Evento Genérico
     $(document).on('click', '#btn-add-generic-event', function(e) {
         e.preventDefault();
-        $('#modal-generic-event-title').text('➕ ' + 'Nuevo Evento Genérico / Rápido');
+        $('#modal-generic-event-title').text( __( '➕ Nuevo Evento Genérico / Rápido', 'aura-suite' ) );
         var f = document.getElementById('form-generic-event-editor');
         if (f) f.reset();
         $('#gen-id').val('');
@@ -2479,7 +2486,7 @@
         var color     = $btn.data('color') || '#5D5FEF';
         var active    = $btn.data('active');
 
-        $('#modal-generic-event-title').text('✏️ ' + 'Editar Evento Genérico');
+        $('#modal-generic-event-title').text( __( '✏️ Editar Evento Genérico', 'aura-suite' ) );
         $('#gen-id').val(id);
         $('#gen-name').val(name);
         $('#gen-icon').val(icon);
@@ -2496,7 +2503,7 @@
     $(document).on('submit', '#form-generic-event-editor', function(e) {
         e.preventDefault();
         var $btn = $('#btn-save-generic-item');
-        $btn.prop('disabled', true).html('⏳ Guardando...');
+        $btn.prop('disabled', true).html( __( '⏳ Guardando...', 'aura-suite' ) );
 
         var payload = {
             action:   'aura_cal_save_generic_event',
@@ -2511,9 +2518,9 @@
         };
 
         $.post(auraCalData.ajax_url, payload, function(res) {
-            $btn.prop('disabled', false).html('💾 Guardar Evento');
+            $btn.prop('disabled', false).html( __( '💾 Guardar Evento', 'aura-suite' ) );
             if (res && res.success) {
-                showToast(res.data.message || 'Evento genérico guardado correctamente.', 'success');
+                showToast(res.data.message || __( 'Evento genérico guardado correctamente.', 'aura-suite' ), 'success');
                 closeModal('#modal-generic-event-editor');
                 if ($('#table-generic-events').length) {
                     location.reload();
@@ -2524,12 +2531,12 @@
                     renderQuickGenericChips();
                 }
             } else {
-                var err = (res && res.data && res.data.message) ? res.data.message : 'Error al guardar el evento.';
+                var err = (res && res.data && res.data.message) ? res.data.message : __( 'Error al guardar el evento.', 'aura-suite' );
                 showToast(err, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).html('💾 Guardar Evento');
-            showToast('Error de conexión con el servidor.', 'error');
+            $btn.prop('disabled', false).html( __( '💾 Guardar Evento', 'aura-suite' ) );
+            showToast( __( 'Error de conexión con el servidor.', 'aura-suite' ), 'error');
         });
     });
 
@@ -2538,7 +2545,7 @@
         e.preventDefault();
         var id   = $(this).data('id');
         var name = $(this).data('name') || '';
-        if (!confirm('¿Deseas eliminar el evento rápido "' + name + '" del catálogo?')) {
+        if (!confirm(sprintf( __( '¿Deseas eliminar el evento rápido "%s" del catálogo?', 'aura-suite' ), name ))) {
             return;
         }
 
@@ -2549,7 +2556,7 @@
             id:     id
         }, function(res) {
             if (res && res.success) {
-                showToast(res.data.message || 'Evento eliminado.', 'success');
+                showToast(res.data.message || __( 'Evento eliminado.', 'aura-suite' ), 'success');
                 $row.fadeOut(200, function() {
                     $row.remove();
                 });
@@ -2558,18 +2565,18 @@
                 }
                 renderQuickGenericChips();
             } else {
-                var err = (res && res.data && res.data.message) ? res.data.message : 'Error al eliminar el evento.';
+                var err = (res && res.data && res.data.message) ? res.data.message : __( 'Error al eliminar el evento.', 'aura-suite' );
                 showToast(err, 'error');
             }
         }).fail(function() {
-            showToast('Error de conexión con el servidor.', 'error');
+            showToast( __( 'Error de conexión con el servidor.', 'aura-suite' ), 'error');
         });
     });
 
     // Restablecer catálogo inicial
     $(document).on('click', '#btn-reset-generic-events', function(e) {
         e.preventDefault();
-        if (!confirm('¿Restablecer el catálogo a los 11 eventos predeterminados (Descanso, Introducción, Reflexión, Deportes, Lectura, Trabajo, Refrigerio, Desayuno, Almuerzo, Comida, Cena)?')) {
+        if (!confirm( __( '¿Restablecer el catálogo a los 11 eventos predeterminados (Descanso, Introducción, Reflexión, Deportes, Lectura, Trabajo, Refrigerio, Desayuno, Almuerzo, Comida, Cena)?', 'aura-suite' ) )) {
             return;
         }
 
@@ -2581,15 +2588,15 @@
         }, function(res) {
             $btn.prop('disabled', false);
             if (res && res.success) {
-                showToast('Catálogo restablecido con éxito.', 'success');
+                showToast( __( 'Catálogo restablecido con éxito.', 'aura-suite' ), 'success');
                 location.reload();
             } else {
-                var err = (res && res.data && res.data.message) ? res.data.message : 'Error al restablecer.';
+                var err = (res && res.data && res.data.message) ? res.data.message : __( 'Error al restablecer.', 'aura-suite' );
                 showToast(err, 'error');
             }
         }).fail(function() {
             $btn.prop('disabled', false);
-            showToast('Error de conexión con el servidor.', 'error');
+            showToast( __( 'Error de conexión con el servidor.', 'aura-suite' ), 'error');
         });
     });
 
@@ -2680,14 +2687,14 @@
         // Validaciones JS exhaustivas con feedback amigable
         var title = $.trim($('#evt-title').val());
         if (!title) {
-            showToast('Por favor ingresa el título o nombre del evento.', 'error');
+            showToast( __( 'Por favor ingresa el título o nombre del evento.', 'aura-suite' ), 'error');
             $('#evt-title').focus();
             return false;
         }
 
         var progId = $('#evt-program-id').val();
         if (!progId) {
-            showToast('Por favor selecciona un programa académico.', 'error');
+            showToast( __( 'Por favor selecciona un programa académico.', 'aura-suite' ), 'error');
             $('#evt-program-id').focus();
             return false;
         }
@@ -2697,39 +2704,39 @@
             var rStart = $('#rec-date-start').val();
             var rEnd = $('#rec-date-end').val();
             if (!rStart) {
-                showToast('Por favor ingresa la fecha de inicio de la recurrencia.', 'error');
+                showToast( __( 'Por favor ingresa la fecha de inicio de la recurrencia.', 'aura-suite' ), 'error');
                 $('#rec-date-start').focus();
                 return false;
             }
             if (!rEnd) {
-                showToast('Por favor ingresa la fecha fin de la recurrencia.', 'error');
+                showToast( __( 'Por favor ingresa la fecha fin de la recurrencia.', 'aura-suite' ), 'error');
                 $('#rec-date-end').focus();
                 return false;
             }
             if (rStart && rEnd && rEnd < rStart) {
-                showToast('La fecha fin de la recurrencia no puede ser anterior a la de inicio.', 'error');
+                showToast( __( 'La fecha fin de la recurrencia no puede ser anterior a la de inicio.', 'aura-suite' ), 'error');
                 $('#rec-date-end').focus();
                 return false;
             }
             if ($('input[name="recurring_days[]"]:checked').length === 0) {
-                showToast('Por favor selecciona al menos un día de la semana para la serie recurrente.', 'error');
+                showToast( __( 'Por favor selecciona al menos un día de la semana para la serie recurrente.', 'aura-suite' ), 'error');
                 return false;
             }
         } else {
             var dtStart = $('#evt-start-dt').val();
             var dtEnd = $('#evt-end-dt').val();
             if (!dtStart) {
-                showToast('Por favor ingresa la fecha y hora de inicio del evento.', 'error');
+                showToast( __( 'Por favor ingresa la fecha y hora de inicio del evento.', 'aura-suite' ), 'error');
                 $('#evt-start-dt').focus();
                 return false;
             }
             if (!dtEnd) {
-                showToast('Por favor ingresa la fecha y hora de fin del evento.', 'error');
+                showToast( __( 'Por favor ingresa la fecha y hora de fin del evento.', 'aura-suite' ), 'error');
                 $('#evt-end-dt').focus();
                 return false;
             }
             if (dtStart && dtEnd && dtEnd < dtStart) {
-                showToast('La fecha y hora de fin debe ser posterior a la de inicio.', 'error');
+                showToast( __( 'La fecha y hora de fin debe ser posterior a la de inicio.', 'aura-suite' ), 'error');
                 $('#evt-end-dt').focus();
                 return false;
             }
@@ -2744,10 +2751,10 @@
         formData.push({ name: 'nonce', value: auraCalData.nonce });
 
         var $btn = $('#btn-save-event');
-        $btn.prop('disabled', true).text('Guardando...');
+        $btn.prop('disabled', true).text( __( 'Guardando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, formData, function(res) {
-            $btn.prop('disabled', false).text('💾 Guardar Evento');
+            $btn.prop('disabled', false).text( __( '💾 Guardar Evento', 'aura-suite' ) );
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
                 closeModal('#modal-event-editor');
@@ -2759,7 +2766,7 @@
                 showToast(res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('💾 Guardar Evento');
+            $btn.prop('disabled', false).text( __( '💾 Guardar Evento', 'aura-suite' ) );
             showToast(auraCalData.i18n.error, 'error');
         });
     });
@@ -2775,22 +2782,22 @@
         $('#det-title').text(p.raw_title || event.title);
 
         var typeLabels = {
-            'class': '📖 Clase Regular',
-            'exam': '📝 Examen / Evaluación',
-            'workshop': '🔬 Taller / Práctica',
-            'activity': '🎯 Actividad',
-            'break': '☕ Receso',
-            'other': '📍 Evento'
+            'class': __( '📖 Clase Regular', 'aura-suite' ),
+            'exam': __( '📝 Examen / Evaluación', 'aura-suite' ),
+            'workshop': __( '🔬 Taller / Práctica', 'aura-suite' ),
+            'activity': __( '🎯 Actividad', 'aura-suite' ),
+            'break': __( '☕ Receso', 'aura-suite' ),
+            'other': __( '📍 Evento', 'aura-suite' )
         };
-        $('#det-type-badge').text(typeLabels[p.event_type] || ('📖 ' + (p.event_type || 'Clase')));
+        $('#det-type-badge').text(typeLabels[p.event_type] || ('📖 ' + (p.event_type || __( 'Clase', 'aura-suite' ))));
 
         var statusLabels = {
-            'scheduled': 'Programado',
-            'completed': 'Completado',
-            'cancelled': 'Cancelado',
-            'postponed': 'Pospuesto'
+            'scheduled': __( 'Programado', 'aura-suite' ),
+            'completed': __( 'Completado', 'aura-suite' ),
+            'cancelled': __( 'Cancelado', 'aura-suite' ),
+            'postponed': __( 'Pospuesto', 'aura-suite' )
         };
-        $('#det-status-badge').text(statusLabels[p.status] || (p.status ? p.status.toUpperCase() : 'PROGRAMADO'));
+        $('#det-status-badge').text(statusLabels[p.status] || (p.status ? p.status.toUpperCase() : __( 'PROGRAMADO', 'aura-suite' )));
         if (p.status === 'completed') {
             $('#det-status-badge').attr('class', 'adp-badge badge-emerald');
         } else if (p.status === 'cancelled') {
@@ -2821,7 +2828,7 @@
             } else if (primaryInst.is_external) {
                 var initExt = escapeHtml((primaryInst.name || 'D').charAt(0).toUpperCase());
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
-                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;" title="' + escapeHtml(primaryInst.external_org ? primaryInst.external_org : 'Instructor Externo') + '">' + initExt + '</div>' +
+                    '<div class="tooltip-teacher-avatar-lg aura-avatar-ring-animated" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#0284c7);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;" title="' + escapeHtml(primaryInst.external_org ? primaryInst.external_org : __( 'Instructor Externo', 'aura-suite' )) + '">' + initExt + '</div>' +
                 '</div>';
             } else {
                 primaryAvHtml = '<div class="aura-avatar-ring-container">' +
@@ -2837,10 +2844,10 @@
             visibleOthers.forEach(function(inst) {
                 var oAvUrl = inst.avatar_url || inst.avatar || '';
                 if (oAvUrl) {
-                    stackedAvatarsHtml += '<img src="' + escapeHtml(oAvUrl) + '" class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" alt="' + escapeHtml(inst.name) + '" title="' + escapeHtml(inst.name + (inst.is_external ? ' [Externo]' : '')) + '" />';
+                    stackedAvatarsHtml += '<img src="' + escapeHtml(oAvUrl) + '" class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" alt="' + escapeHtml(inst.name) + '" title="' + escapeHtml(inst.name + (inst.is_external ? ' [' + __( 'Externo', 'aura-suite' ) + ']' : '')) + '" />';
                 } else if (inst.is_external) {
                     var initExtO = escapeHtml((inst.name || 'D').charAt(0).toUpperCase());
-                    stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;background:#0ea5e9;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" title="' + escapeHtml(inst.name + (inst.external_org ? ' (' + inst.external_org + ')' : ' [Externo]')) + '">' + initExtO + '</div>';
+                    stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;background:#0ea5e9;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" title="' + escapeHtml(inst.name + (inst.external_org ? ' (' + inst.external_org + ')' : ' [' + __( 'Externo', 'aura-suite' ) + ']')) + '">' + initExtO + '</div>';
                 } else {
                     var init = escapeHtml((inst.name || 'P').charAt(0).toUpperCase());
                     stackedAvatarsHtml += '<div class="aura-avatar-stacked" style="width:28px;height:28px;border-radius:50%;background:#6366f1;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;margin-left:-8px;border:2px solid var(--aura-surface-card,#fff);" title="' + escapeHtml(inst.name) + '">' + init + '</div>';
@@ -2885,7 +2892,7 @@
             });
         }
         if (myLead) {
-            $('#det-student-personal-leader-text').html('🎯 <strong>¡Fuiste asignado como ' + escapeHtml(myLead) + ' para esta actividad!</strong> Prepárate para guiar y colaborar con el grupo.');
+            $('#det-student-personal-leader-text').html(sprintf( __( '🎯 <strong>¡Fuiste asignado como %s para esta actividad!</strong> Prepárate para guiar y colaborar con el grupo.', 'aura-suite' ), escapeHtml(myLead) ));
             $('#det-student-personal-leader-banner').show();
         } else {
             $('#det-student-personal-leader-banner').hide();
@@ -2909,16 +2916,16 @@
                 if (hasRealTimes) {
                     timeRange = (dateStr ? dateStr + ' | ' : '') + p.start_time_label + ' — ' + p.end_time_label;
                 } else {
-                    timeRange = (dateStr ? dateStr + ' | ' : '') + 'Todo el día';
+                    timeRange = (dateStr ? dateStr + ' | ' : '') + __( 'Todo el día', 'aura-suite' );
                 }
             } else {
-                timeRange = (dateStr ? dateStr + ' | ' : '') + 'Todo el día';
+                timeRange = (dateStr ? dateStr + ' | ' : '') + __( 'Todo el día', 'aura-suite' );
             }
         } else {
-            var startStr = event.start ? event.start.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
-            var endStr = event.end ? event.end.toLocaleTimeString([], { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+            var startStr = event.start ? event.start.toLocaleTimeString(dateLoc, { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
+            var endStr = event.end ? event.end.toLocaleTimeString(dateLoc, { hour: is12h ? 'numeric' : '2-digit', minute: '2-digit', hour12: is12h }) : '';
             if (!dateStr && event.start) {
-                dateStr = event.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+                dateStr = event.start.toLocaleDateString(dateLoc, { weekday: 'short', day: 'numeric', month: 'short' });
             }
             if (startStr && endStr) {
                 timeRange = (dateStr ? dateStr + ' | ' : '') + startStr + ' — ' + endStr;
@@ -2929,7 +2936,7 @@
             }
         }
         $('#det-time').text(timeRange || '—');
-        $('#det-location').text(p.location || 'Por definir');
+        $('#det-location').text(p.location || __( 'Por definir', 'aura-suite' ));
 
         // Enlace de Sesión Virtual / Videollamada
         if (p.online_url) {
@@ -2948,7 +2955,7 @@
                 return '<div class="aura-leader-chip" style="display:inline-flex;align-items:center;background:var(--aura-surface-alt,#f8fafc);border:1px solid var(--aura-border,#cbd5e1);padding:3px 10px;border-radius:18px;font-size:12px;">' +
                     av +
                     '<span style="font-weight:600;margin-right:6px;color:var(--aura-text-primary,#0f172a);">' + escapeHtml(ldr.name) + '</span>' +
-                    '<span class="aura-badge aura-badge--sm" style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(99,102,241,0.12);color:#4f46e5;font-weight:600;">' + escapeHtml(ldr.role_label || 'Líder') + '</span>' +
+                    '<span class="aura-badge aura-badge--sm" style="font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(99,102,241,0.12);color:#4f46e5;font-weight:600;">' + escapeHtml(ldr.role_label || __( 'Líder', 'aura-suite' )) + '</span>' +
                 '</div>';
             }).join(' ');
             $('#det-leaders').html(leadHtml);
@@ -2963,13 +2970,13 @@
             fullDescParts.push('🏷️ ' + p.module_name);
         }
         if (p.subject_description) {
-            fullDescParts.push('📚 Descripción de Materia:\n' + p.subject_description);
+            fullDescParts.push( __( '📚 Descripción de Materia:', 'aura-suite' ) + '\n' + p.subject_description);
         }
         if (p.program_description) {
-            fullDescParts.push('🎓 Descripción de Programa:\n' + p.program_description);
+            fullDescParts.push( __( '🎓 Descripción de Programa:', 'aura-suite' ) + '\n' + p.program_description);
         }
         if (p.description) {
-            fullDescParts.push('📝 Detalle de Clase:\n' + p.description);
+            fullDescParts.push( __( '📝 Detalle de Clase:', 'aura-suite' ) + '\n' + p.description);
         }
 
         if (fullDescParts.length > 0) {
@@ -3107,7 +3114,7 @@
         e.preventDefault();
         window.auraEventClipboard = null;
         updateClipboardBarUI();
-        showToast('Portapapeles descartado.', 'info');
+        showToast( __( 'Portapapeles descartado.', 'aura-suite' ), 'info');
     });
 
     // Copiar Evento desde Modal Detalle
@@ -3122,7 +3129,7 @@
         };
         updateClipboardBarUI();
         closeModal('#modal-event-detail');
-        showToast('📋 Evento copiado. Haz clic en cualquier fecha/hora para pegarlo.', 'success');
+        showToast( __( '📋 Evento copiado. Haz clic en cualquier fecha/hora para pegarlo.', 'aura-suite' ), 'success');
     });
 
     // Clonar Evento Inmediato
@@ -3130,25 +3137,25 @@
         if (!currentDetailEvent) return;
         var evtId = currentDetailEvent.id;
         var $btn = $(this);
-        $btn.prop('disabled', true).html('<span>⏳</span> <span>Clonando...</span>');
+        $btn.prop('disabled', true).html('<span>⏳</span> <span>' + escapeHtml( __( 'Clonando...', 'aura-suite' ) ) + '</span>');
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_duplicate_event',
             nonce: auraCalData.nonce,
             id: evtId
         }, function(res) {
-            $btn.prop('disabled', false).html('<span>⚡</span> <span>Clonar</span>');
+            $btn.prop('disabled', false).html('<span>⚡</span> <span>' + escapeHtml( __( 'Clonar', 'aura-suite' ) ) + '</span>');
             if (res && res.success) {
                 closeModal('#modal-event-detail');
-                showToast(res.data && res.data.message ? res.data.message : 'Evento clonado exitosamente.', 'success');
+                showToast(res.data && res.data.message ? res.data.message : __( 'Evento clonado exitosamente.', 'aura-suite' ), 'success');
                 if (typeof calendar !== 'undefined' && calendar) calendar.refetchEvents();
                 if (window.teacherCalendarInstance) window.teacherCalendarInstance.refetchEvents();
             } else {
-                showToast(res && res.data && res.data.message ? res.data.message : 'Error al clonar el evento.', 'error');
+                showToast(res && res.data && res.data.message ? res.data.message : __( 'Error al clonar el evento.', 'aura-suite' ), 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).html('<span>⚡</span> <span>Clonar</span>');
-            showToast('Error de conexión al clonar el evento.', 'error');
+            $btn.prop('disabled', false).html('<span>⚡</span> <span>' + escapeHtml( __( 'Clonar', 'aura-suite' ) ) + '</span>');
+            showToast( __( 'Error de conexión al clonar el evento.', 'aura-suite' ), 'error');
         });
     });
 
@@ -3161,13 +3168,13 @@
         closeModal('#modal-event-detail');
 
         $('#repeat-event-id').val(ev.id);
-        var dateLabel = ev.start ? ev.start.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
-        var timeLabel = (ev.start ? ev.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '') + (ev.end ? ' — ' + ev.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+        var dateLabel = ev.start ? ev.start.toLocaleDateString(dateLoc, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
+        var timeLabel = (ev.start ? ev.start.toLocaleTimeString(dateLoc, { hour: '2-digit', minute: '2-digit' }) : '') + (ev.end ? ' — ' + ev.end.toLocaleTimeString(dateLoc, { hour: '2-digit', minute: '2-digit' }) : '');
 
         $('#repeat-event-summary').html(
-            '<strong>Clase:</strong> ' + escapeHtml(p.raw_title || ev.title) + '<br>' +
-            '<strong>Día base:</strong> ' + escapeHtml(dateLabel) + '<br>' +
-            '<strong>Horario:</strong> ' + escapeHtml(timeLabel)
+            '<strong>' + escapeHtml( __( 'Clase:', 'aura-suite' ) ) + '</strong> ' + escapeHtml(p.raw_title || ev.title) + '<br>' +
+            '<strong>' + escapeHtml( __( 'Día base:', 'aura-suite' ) ) + '</strong> ' + escapeHtml(dateLabel) + '<br>' +
+            '<strong>' + escapeHtml( __( 'Horario:', 'aura-suite' ) ) + '</strong> ' + escapeHtml(timeLabel)
         );
 
         // Pre-llenar fecha inicio con la fecha del evento original
@@ -3192,12 +3199,12 @@
         var dtEnd = $('#repeat-date-end').val();
 
         if (!evtId || !dtStart || !dtEnd) {
-            showToast('Por favor completa todos los campos requeridos.', 'error');
+            showToast( __( 'Por favor completa todos los campos requeridos.', 'aura-suite' ), 'error');
             return;
         }
 
         var $submitBtn = $('#btn-submit-repeat-series');
-        $submitBtn.prop('disabled', true).text('⏳ Generando repeticiones...');
+        $submitBtn.prop('disabled', true).text( __( '⏳ Generando repeticiones...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_replicate_series',
@@ -3207,18 +3214,18 @@
             date_start: dtStart,
             date_end: dtEnd
         }, function(res) {
-            $submitBtn.prop('disabled', false).html('🔁 Generar Repeticiones');
+            $submitBtn.prop('disabled', false).html( __( '🔁 Generar Repeticiones', 'aura-suite' ) );
             if (res && res.success) {
                 closeModal('#modal-repeat-series');
-                showToast(res.data && res.data.message ? res.data.message : 'Serie recurrente generada exitosamente.', 'success');
+                showToast(res.data && res.data.message ? res.data.message : __( 'Serie recurrente generada exitosamente.', 'aura-suite' ), 'success');
                 if (typeof calendar !== 'undefined' && calendar) calendar.refetchEvents();
                 if (window.teacherCalendarInstance) window.teacherCalendarInstance.refetchEvents();
             } else {
-                showToast(res && res.data && res.data.message ? res.data.message : 'Error al generar la serie.', 'error');
+                showToast(res && res.data && res.data.message ? res.data.message : __( 'Error al generar la serie.', 'aura-suite' ), 'error');
             }
         }).fail(function() {
-            $submitBtn.prop('disabled', false).html('🔁 Generar Repeticiones');
-            showToast('Error de conexión al generar la serie recurrente.', 'error');
+            $submitBtn.prop('disabled', false).html( __( '🔁 Generar Repeticiones', 'aura-suite' ) );
+            showToast( __( 'Error de conexión al generar la serie recurrente.', 'aura-suite' ), 'error');
         });
     });
 
@@ -3241,18 +3248,18 @@
         try {
             var d = new Date(startStr);
             if (!isNaN(d.getTime())) {
-                dateFormatted = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                dateFormatted = d.toLocaleDateString(dateLoc) + ' ' + d.toLocaleTimeString(dateLoc, { hour: '2-digit', minute: '2-digit' });
             }
         } catch(e) {}
 
-        if (!confirm('¿Deseas pegar el evento "' + clip.title + '" en ' + dateFormatted + '?')) {
+        if (!confirm(sprintf( __( '¿Deseas pegar el evento "%1$s" en %2$s?', 'aura-suite' ), clip.title, dateFormatted ))) {
             isPastingEvent = false;
             if (typeof calendar !== 'undefined' && calendar) calendar.unselect();
             return;
         }
 
         if (typeof calendar !== 'undefined' && calendar) calendar.unselect();
-        showToast('⏳ Pegando evento...', 'info');
+        showToast( __( '⏳ Pegando evento...', 'aura-suite' ), 'info');
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_duplicate_event',
@@ -3264,15 +3271,15 @@
         }, function(res) {
             isPastingEvent = false;
             if (res && res.success) {
-                showToast(res.data && res.data.message ? res.data.message : 'Evento pegado exitosamente.', 'success');
+                showToast(res.data && res.data.message ? res.data.message : __( 'Evento pegado exitosamente.', 'aura-suite' ), 'success');
                 if (typeof calendar !== 'undefined' && calendar) calendar.refetchEvents();
                 if (window.teacherCalendarInstance) window.teacherCalendarInstance.refetchEvents();
             } else {
-                showToast(res && res.data && res.data.message ? res.data.message : 'Error al pegar el evento.', 'error');
+                showToast(res && res.data && res.data.message ? res.data.message : __( 'Error al pegar el evento.', 'aura-suite' ), 'error');
             }
         }).fail(function() {
             isPastingEvent = false;
-            showToast('Error al procesar el pegado de evento.', 'error');
+            showToast( __( 'Error al procesar el pegado de evento.', 'aura-suite' ), 'error');
         });
     }
     window.handlePasteEventToDate = handlePasteEventToDate;
@@ -3285,11 +3292,11 @@
         if (!currentDetailEvent) return;
         var p = currentDetailEvent.extendedProps || {};
         var eventId = currentDetailEvent.id;
-        var title = p.raw_title || currentDetailEvent.title || 'Evento';
+        var title = p.raw_title || currentDetailEvent.title || __( 'Evento', 'aura-suite' );
 
-        var dateStr = (currentDetailEvent.start ? currentDetailEvent.start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }) : '') || p.date_label || '';
-        var startStr = currentDetailEvent.start ? currentDetailEvent.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        var endStr = currentDetailEvent.end ? currentDetailEvent.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        var dateStr = (currentDetailEvent.start ? currentDetailEvent.start.toLocaleDateString(dateLoc, { weekday: 'short', day: 'numeric', month: 'short' }) : '') || p.date_label || '';
+        var startStr = currentDetailEvent.start ? currentDetailEvent.start.toLocaleTimeString(dateLoc, { hour: '2-digit', minute: '2-digit' }) : '';
+        var endStr = currentDetailEvent.end ? currentDetailEvent.end.toLocaleTimeString(dateLoc, { hour: '2-digit', minute: '2-digit' }) : '';
         var timeSummary = dateStr + (startStr ? ' (' + startStr + (endStr ? ' - ' + endStr : '') + ')' : '');
 
         $('#invite-event-id').val(eventId);
@@ -3304,19 +3311,19 @@
             instructors.forEach(function(inst) {
                 var email = inst.email || '';
                 var isExt = !!inst.is_external;
-                var badge = isExt ? '<span style="font-size:10px;background:#0ea5e9;color:#fff;padding:1px 6px;border-radius:10px;margin-left:4px;">Externo</span>' : '<span style="font-size:10px;background:#6366f1;color:#fff;padding:1px 6px;border-radius:10px;margin-left:4px;">Docente</span>';
+                var badge = isExt ? '<span style="font-size:10px;background:#0ea5e9;color:#fff;padding:1px 6px;border-radius:10px;margin-left:4px;">' + escapeHtml( __( 'Externo', 'aura-suite' ) ) + '</span>' : '<span style="font-size:10px;background:#6366f1;color:#fff;padding:1px 6px;border-radius:10px;margin-left:4px;">' + escapeHtml( __( 'Docente', 'aura-suite' ) ) + '</span>';
                 if (email) {
                     instHtml += '<div style="display:flex;align-items:center;gap:6px;">' +
                         '<span>👤</span> <strong>' + escapeHtml(inst.name) + '</strong> ' + badge + ' &lt;<code>' + escapeHtml(email) + '</code>&gt;' +
                     '</div>';
                 } else {
                     instHtml += '<div style="display:flex;align-items:center;gap:6px;opacity:0.6;">' +
-                        '<span>⚠️</span> <span>' + escapeHtml(inst.name) + ' ' + badge + ' (sin correo registrado)</span>' +
+                        '<span>⚠️</span> <span>' + escapeHtml(inst.name) + ' ' + badge + ' ' + escapeHtml( __( '(sin correo registrado)', 'aura-suite' ) ) + '</span>' +
                     '</div>';
                 }
             });
         } else {
-            instHtml = '<span style="color:var(--aura-text-muted,#94a3b8);font-style:italic;">No hay instructores asignados a esta clase. Puedes escribir correos en el campo adicional abajo.</span>';
+            instHtml = '<span style="color:var(--aura-text-muted,#94a3b8);font-style:italic;">' + escapeHtml( __( 'No hay instructores asignados a esta clase. Puedes escribir correos en el campo adicional abajo.', 'aura-suite' ) ) + '</span>';
         }
         $('#invite-recipients-list').html(instHtml);
 
@@ -3334,7 +3341,7 @@
         e.preventDefault();
         var eventId = parseInt($('#invite-event-id').val(), 10);
         if (!eventId) {
-            showToast('No se especificó el ID del evento.', 'error');
+            showToast( __( 'No se especificó el ID del evento.', 'aura-suite' ), 'error');
             return;
         }
 
@@ -3343,8 +3350,8 @@
         var $btn = $('#btn-submit-send-invite');
         var originalBtnHtml = $btn.html();
 
-        $btn.prop('disabled', true).html('⏳ Enviando invitaciones...');
-        showToast('Enviando invitaciones de calendario...', 'info');
+        $btn.prop('disabled', true).html( __( '⏳ Enviando invitaciones...', 'aura-suite' ) );
+        showToast( __( 'Enviando invitaciones de calendario...', 'aura-suite' ), 'info');
 
         $.ajax({
             url: auraCalData.ajax_url,
@@ -3361,15 +3368,15 @@
                 $btn.prop('disabled', false).html(originalBtnHtml);
                 if (resp && resp.success) {
                     closeModal('#modal-send-invitation');
-                    showToast(resp.data && resp.data.message ? resp.data.message : '¡Invitaciones de calendario enviadas con éxito!', 'success');
+                    showToast(resp.data && resp.data.message ? resp.data.message : __( '¡Invitaciones de calendario enviadas con éxito!', 'aura-suite' ), 'success');
                 } else {
-                    var errMsg = resp && resp.data && resp.data.message ? resp.data.message : 'Error al enviar las invitaciones.';
+                    var errMsg = resp && resp.data && resp.data.message ? resp.data.message : __( 'Error al enviar las invitaciones.', 'aura-suite' );
                     showToast(errMsg, 'error');
                 }
             },
             error: function() {
                 $btn.prop('disabled', false).html(originalBtnHtml);
-                showToast('Error de red al procesar el envío de invitaciones.', 'error');
+                showToast( __( 'Error de red al procesar el envío de invitaciones.', 'aura-suite' ), 'error');
             }
         });
     });
@@ -3385,9 +3392,9 @@
 
         closeModal('#modal-event-detail');
 
-        $('#att-modal-title').text('📋 Control de Asistencia — ' + title);
-        $('#att-modal-subtitle').text(currentDetailEvent.start.toLocaleDateString() + ' ' + currentDetailEvent.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-        $('#att-table-body').html('<tr><td colspan="3" style="text-align:center;padding:20px;">Cargando lista de estudiantes...</td></tr>');
+        $('#att-modal-title').text(__( '📋 Control de Asistencia — ', 'aura-suite' ) + title);
+        $('#att-modal-subtitle').text(currentDetailEvent.start.toLocaleDateString(dateLoc) + ' ' + currentDetailEvent.start.toLocaleTimeString(dateLoc, { hour: '2-digit', minute: '2-digit' }));
+        $('#att-table-body').html('<tr><td colspan="3" style="text-align:center;padding:20px;">' + escapeHtml( __( 'Cargando lista de estudiantes...', 'aura-suite' ) ) + '</td></tr>');
 
         openModal('#modal-attendance', { async: true });
 
@@ -3401,7 +3408,7 @@
                 $('#att-roster-count').text(roster.length);
 
                 if (!roster.length) {
-                    $('#att-table-body').html('<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--aura-text-muted);">No hay estudiantes inscritos en este programa.</td></tr>');
+                    $('#att-table-body').html('<tr><td colspan="3" style="text-align:center;padding:24px;color:var(--aura-text-muted);">' + escapeHtml( __( 'No hay estudiantes inscritos en este programa.', 'aura-suite' ) ) + '</td></tr>');
                     if (typeof AuraUI !== 'undefined') {
                         AuraUI.hideModalSkeleton('#modal-attendance');
                     }
@@ -3421,13 +3428,13 @@
                     tbody += '<td style="padding: 10px 14px;"><div style="display:flex;align-items:center;gap:10px;">' + avHtml + '<div><strong>' + escapeHtml(st.last_name + ', ' + st.first_name) + '</strong><br><small style="color:var(--aura-text-muted);">' + escapeHtml(st.student_code || st.email) + '</small></div></div></td>';
                     tbody += '<td style="padding: 10px 14px; text-align: center;">';
                     tbody += '<div class="att-status-btn-group">';
-                    tbody += '<button type="button" class="att-btn ' + (status === 'present' ? 'active-present' : '') + '" data-status="present">P</button>';
-                    tbody += '<button type="button" class="att-btn ' + (status === 'late' ? 'active-late' : '') + '" data-status="late">T</button>';
-                    tbody += '<button type="button" class="att-btn ' + (status === 'absent_excused' ? 'active-excused' : '') + '" data-status="absent_excused">FJ</button>';
-                    tbody += '<button type="button" class="att-btn ' + (status === 'absent_unexcused' ? 'active-unexcused' : '') + '" data-status="absent_unexcused">FI</button>';
+                    tbody += '<button type="button" class="att-btn ' + (status === 'present' ? 'active-present' : '') + '" data-status="present">' + escapeHtml( __( 'P', 'aura-suite' ) ) + '</button>';
+                    tbody += '<button type="button" class="att-btn ' + (status === 'late' ? 'active-late' : '') + '" data-status="late">' + escapeHtml( __( 'T', 'aura-suite' ) ) + '</button>';
+                    tbody += '<button type="button" class="att-btn ' + (status === 'absent_excused' ? 'active-excused' : '') + '" data-status="absent_excused">' + escapeHtml( __( 'FJ', 'aura-suite' ) ) + '</button>';
+                    tbody += '<button type="button" class="att-btn ' + (status === 'absent_unexcused' ? 'active-unexcused' : '') + '" data-status="absent_unexcused">' + escapeHtml( __( 'FI', 'aura-suite' ) ) + '</button>';
                     tbody += '</div>';
                     tbody += '</td>';
-                    tbody += '<td style="padding: 10px 14px;"><input type="text" class="form-control att-notes-input" value="' + (notes ? notes.replace(/"/g, '&quot;') : '') + '" placeholder="Observación..." style="width:100%;font-size:12px;border-radius:6px;padding:4px 8px;"></td>';
+                    tbody += '<td style="padding: 10px 14px;"><input type="text" class="form-control att-notes-input" value="' + (notes ? notes.replace(/"/g, '&quot;') : '') + '" placeholder="' + escapeHtml( __( 'Observación...', 'aura-suite' ) ) + '" style="width:100%;font-size:12px;border-radius:6px;padding:4px 8px;"></td>';
                     tbody += '</tr>';
                 });
 
@@ -3440,7 +3447,7 @@
             if (typeof AuraUI !== 'undefined') {
                 AuraUI.hideModalSkeleton('#modal-attendance');
             }
-            showToast('Error de conexión al cargar la lista de asistencia.', 'error');
+            showToast( __( 'Error de conexión al cargar la lista de asistencia.', 'aura-suite' ), 'error');
         });
     });
 
@@ -3485,7 +3492,7 @@
         });
 
         var $btn = $(this);
-        $btn.prop('disabled', true).text('Guardando...');
+        $btn.prop('disabled', true).text( __( 'Guardando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_save_attendance',
@@ -3493,7 +3500,7 @@
             event_id: currentDetailEvent.id,
             records: records
         }, function(res) {
-            $btn.prop('disabled', false).text('💾 Guardar Asistencia');
+            $btn.prop('disabled', false).text( __( '💾 Guardar Asistencia', 'aura-suite' ) );
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
                 closeModal('#modal-attendance');
@@ -3501,7 +3508,7 @@
                 showToast(res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('💾 Guardar Asistencia');
+            $btn.prop('disabled', false).text( __( '💾 Guardar Asistencia', 'aura-suite' ) );
             showToast(auraCalData.i18n.error, 'error');
         });
     });
@@ -3515,7 +3522,7 @@
         $('#prog-id').val('0');
         $('#prog-area-id').val('');
         $('#prog-end-date').removeAttr('min');
-        $('#modal-prog-title').text('🎓 Nuevo Programa Académico');
+        $('#modal-prog-title').text( __( '🎓 Nuevo Programa Académico', 'aura-suite' ) );
         $('#btn-delete-program-modal').hide();
 
         renderCoordinatorCheckboxes([]);
@@ -3538,7 +3545,7 @@
             if (res && res.success && res.data.program) {
                 var p = res.data.program;
                 $('#prog-id').val(p.id);
-                $('#modal-prog-title').text('✏️ Editar Programa: ' + p.name);
+                $('#modal-prog-title').text(__( '✏️ Editar Programa: ', 'aura-suite' ) + p.name);
                 $('#prog-name').val(p.name);
                 $('#prog-code').val(p.code);
                 $('#prog-period').val(p.academic_period || '');
@@ -3578,7 +3585,7 @@
             var endVal = $('#prog-end-date').val();
             if (endVal && endVal < startVal) {
                 $('#prog-end-date').val(startVal);
-                showToast('La fecha de fin se ajustó para no ser anterior a la de inicio.', 'info');
+                showToast( __( 'La fecha de fin se ajustó para no ser anterior a la de inicio.', 'aura-suite' ), 'info');
             }
         } else {
             $('#prog-end-date').removeAttr('min');
@@ -3589,7 +3596,7 @@
         var endVal = $(this).val();
         var startVal = $('#prog-start-date').val();
         if (startVal && endVal && endVal < startVal) {
-            showToast('La fecha de fin no puede ser anterior a la fecha de inicio.', 'warning');
+            showToast( __( 'La fecha de fin no puede ser anterior a la fecha de inicio.', 'aura-suite' ), 'warning');
             $(this).val(startVal);
         }
     });
@@ -3600,7 +3607,7 @@
         var startDate = $('#prog-start-date').val();
         var endDate = $('#prog-end-date').val();
         if (startDate && endDate && endDate < startDate) {
-            showToast('La fecha de fin no puede ser anterior a la fecha de inicio.', 'error');
+            showToast( __( 'La fecha de fin no puede ser anterior a la fecha de inicio.', 'aura-suite' ), 'error');
             $('#prog-end-date').focus();
             return false;
         }
@@ -3610,10 +3617,10 @@
         formData.push({ name: 'nonce', value: auraCalData.nonce });
 
         var $btn = $('#btn-save-program');
-        $btn.prop('disabled', true).text('Guardando...');
+        $btn.prop('disabled', true).text( __( 'Guardando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, formData, function(res) {
-            $btn.prop('disabled', false).text('💾 Guardar Programa');
+            $btn.prop('disabled', false).text( __( '💾 Guardar Programa', 'aura-suite' ) );
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
                 closeModal('#modal-program-editor');
@@ -3629,13 +3636,13 @@
         var $btn    = $(this);
         var progId  = $btn.data('program-id');
         var $card   = $btn.closest('.program-card');
-        var name    = $card.find('h4, strong').first().text().trim() || 'este programa';
+        var name    = $card.find('h4, strong').first().text().trim() || __( 'este programa', 'aura-suite' );
 
-        if (!confirm('¿Restaurar "' + name + '"? El programa y sus materias volverán al estado Activo.')) {
+        if (!confirm(sprintf( __( '¿Restaurar "%s"? El programa y sus materias volverán al estado Activo.', 'aura-suite' ), name ))) {
             return;
         }
 
-        $btn.prop('disabled', true).html('⏳ Restaurando...');
+        $btn.prop('disabled', true).html( __( '⏳ Restaurando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_restore_program',
@@ -3643,7 +3650,7 @@
             id:     progId
         }, function(res) {
             if (res && res.success) {
-                showToast(res.data.message || 'Programa restaurado exitosamente.', 'success');
+                showToast(res.data.message || __( 'Programa restaurado exitosamente.', 'aura-suite' ), 'success');
                 $card.fadeOut(400, function() {
                     $(this).remove();
                 });
@@ -3659,12 +3666,12 @@
                 }
                 setTimeout(function() { location.reload(); }, 800);
             } else {
-                $btn.prop('disabled', false).html('♻️ Restaurar');
-                showToast((res && res.data && res.data.message) ? res.data.message : 'No se pudo restaurar el programa.', 'error');
+                $btn.prop('disabled', false).html( __( '♻️ Restaurar', 'aura-suite' ) );
+                showToast((res && res.data && res.data.message) ? res.data.message : __( 'No se pudo restaurar el programa.', 'aura-suite' ), 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).html('♻️ Restaurar');
-            showToast('Error de conexión al restaurar el programa.', 'error');
+            $btn.prop('disabled', false).html( __( '♻️ Restaurar', 'aura-suite' ) );
+            showToast( __( 'Error de conexión al restaurar el programa.', 'aura-suite' ), 'error');
         });
     });
 
@@ -3673,8 +3680,8 @@
         var progId = $(this).data('program-id');
         var force  = $(this).data('force') ? 1 : 0;
         var promptMsg = force
-            ? '¿Estás seguro de eliminar PERMANENTEMENTE este programa y todas sus materias asociadas?\n\nEsta acción no se puede deshacer.'
-            : '¿Archivar este programa?\n\nEl programa y sus materias pasarán al archivo y podrán restaurarse más adelante.';
+            ? __( '¿Estás seguro de eliminar PERMANENTEMENTE este programa y todas sus materias asociadas?\n\nEsta acción no se puede deshacer.', 'aura-suite' )
+            : __( '¿Archivar este programa?\n\nEl programa y sus materias pasarán al archivo y podrán restaurarse más adelante.', 'aura-suite' );
 
         if (!confirm(promptMsg)) {
             return;
@@ -3690,7 +3697,7 @@
             force:  force
         }, function(res) {
             if (res && res.success) {
-                showToast(res.data.message || 'Operación completada.');
+                showToast(res.data.message || __( 'Operación completada.', 'aura-suite' ));
                 setTimeout(function() { location.reload(); }, 600);
             } else {
                 $btn.prop('disabled', false);
@@ -3698,7 +3705,7 @@
             }
         }).fail(function() {
             $btn.prop('disabled', false);
-            showToast('Error de conexión al eliminar el programa.', 'error');
+            showToast( __( 'Error de conexión al eliminar el programa.', 'aura-suite' ), 'error');
         });
     });
 
@@ -3707,12 +3714,12 @@
         var progId = $('#prog-id').val();
         if (!progId || progId === '0') return;
 
-        if (!confirm('¿Archivar este programa y sus materias asociadas?')) {
+        if (!confirm( __( '¿Archivar este programa y sus materias asociadas?', 'aura-suite' ) )) {
             return;
         }
 
         var $btn = $(this);
-        $btn.prop('disabled', true).text('Eliminando...');
+        $btn.prop('disabled', true).text( __( 'Eliminando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_delete_program',
@@ -3720,46 +3727,46 @@
             id:     progId,
             force:  0
         }, function(res) {
-            $btn.prop('disabled', false).text('🗑️ Eliminar Programa');
+            $btn.prop('disabled', false).text( __( '🗑️ Eliminar Programa', 'aura-suite' ) );
             if (res && res.success) {
-                showToast(res.data.message || 'Programa archivado.');
+                showToast(res.data.message || __( 'Programa archivado.', 'aura-suite' ));
                 closeModal('#modal-program-editor');
                 setTimeout(function() { location.reload(); }, 600);
             } else {
                 showToast((res && res.data && res.data.message) ? res.data.message : auraCalData.i18n.error, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('🗑️ Eliminar Programa');
-            showToast('Error de conexión al eliminar el programa.', 'error');
+            $btn.prop('disabled', false).text( __( '🗑️ Eliminar Programa', 'aura-suite' ) );
+            showToast( __( 'Error de conexión al eliminar el programa.', 'aura-suite' ), 'error');
         });
     });
 
     // Sincronizar cursos de Estudiantes → Programas del Calendario
     $('#btn-sync-student-courses').on('click', function() {
         var $btn = $(this);
-        if (!confirm('¿Importar los Cursos de Estudiantes activos como Programas del Calendario?\n\nSolo se crearán los que aún no existan. Los programas ya existentes no se modificarán.')) {
+        if (!confirm( __( '¿Importar los Cursos de Estudiantes activos como Programas del Calendario?\n\nSolo se crearán los que aún no existan. Los programas ya existentes no se modificarán.', 'aura-suite' ) )) {
             return;
         }
 
-        $btn.prop('disabled', true).html('⏳ Sincronizando...');
+        $btn.prop('disabled', true).html( __( '⏳ Sincronizando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_sync_student_courses',
             nonce:  auraCalData.nonce
         }, function(res) {
-            $btn.prop('disabled', false).html('🔄 Sincronizar desde Estudiantes');
+            $btn.prop('disabled', false).html( __( '🔄 Sincronizar desde Estudiantes', 'aura-suite' ) );
             if (res && res.success) {
-                showToast(res.data.message || 'Sincronización completada.', 'success');
+                showToast(res.data.message || __( 'Sincronización completada.', 'aura-suite' ), 'success');
                 if (res.data.reload) {
                     setTimeout(function() { location.reload(); }, 1200);
                 }
             } else {
-                var msg = (res && res.data && res.data.message) ? res.data.message : 'Error al sincronizar los cursos.';
+                var msg = (res && res.data && res.data.message) ? res.data.message : __( 'Error al sincronizar los cursos.', 'aura-suite' );
                 showToast(msg, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).html('🔄 Sincronizar desde Estudiantes');
-            showToast('Error de conexión al sincronizar.', 'error');
+            $btn.prop('disabled', false).html( __( '🔄 Sincronizar desde Estudiantes', 'aura-suite' ) );
+            showToast( __( 'Error de conexión al sincronizar.', 'aura-suite' ), 'error');
         });
     });
 
@@ -3793,9 +3800,9 @@
 
         if (!list || !list.length) {
             var emptyHint = (type === 'teacher')
-                ? 'No hay materiales de cátedra cargados aún.'
-                : 'No hay materiales para alumnos cargados aún.';
-            $container.html('<p class="aura-empty-hint" style="font-size:12px;color:var(--aura-text-muted);font-style:italic;margin:6px 0;">' + emptyHint + '</p>');
+                ? __( 'No hay materiales de cátedra cargados aún.', 'aura-suite' )
+                : __( 'No hay materiales para alumnos cargados aún.', 'aura-suite' );
+            $container.html('<p class="aura-empty-hint" style="font-size:12px;color:var(--aura-text-muted);font-style:italic;margin:6px 0;">' + escapeHtml(emptyHint) + '</p>');
             return;
         }
 
@@ -3814,14 +3821,14 @@
                                 escapeHtml(item.title || item.file_name) +
                             '</a>' +
                             '<span style="font-size:11px;color:var(--aura-text-muted);">' +
-                                (isDrive ? 'Google Drive (Nube)' : 'Almacenamiento Local') +
+                                escapeHtml(isDrive ? __( 'Google Drive (Nube)', 'aura-suite' ) : __( 'Almacenamiento Local', 'aura-suite' )) +
                                 (sizeStr ? ' &bull; ' + sizeStr : '') +
                             '</span>' +
                         '</div>' +
                     '</div>' +
                     '<div style="display:flex;align-items:center;gap:6px;">' +
-                        '<a href="' + escapeHtml(link) + '" target="_blank" class="btn btn-ghost" style="padding:4px 8px;font-size:11.5px;" title="Descargar / Abrir">📥</a>' +
-                        '<button type="button" class="btn btn-ghost btn-remove-material" data-type="' + type + '" data-id="' + escapeHtml(item.id) + '" style="padding:4px 8px;font-size:11.5px;color:#ef4444;" title="Eliminar">&times;</button>' +
+                        '<a href="' + escapeHtml(link) + '" target="_blank" class="btn btn-ghost" style="padding:4px 8px;font-size:11.5px;" title="' + escapeHtml( __( 'Descargar / Abrir', 'aura-suite' ) ) + '">📥</a>' +
+                        '<button type="button" class="btn btn-ghost btn-remove-material" data-type="' + type + '" data-id="' + escapeHtml(item.id) + '" style="padding:4px 8px;font-size:11.5px;color:#ef4444;" title="' + escapeHtml( __( 'Eliminar', 'aura-suite' ) ) + '">&times;</button>' +
                     '</div>' +
                 '</div>'
             );
@@ -3845,7 +3852,7 @@
         var subjId = parseInt($('#subj-id').val(), 10) || 0;
         var inputEl = this;
 
-        showToast('Subiendo archivo adjunto...', 'info');
+        showToast( __( 'Subiendo archivo adjunto...', 'aura-suite' ), 'info');
 
         var formData = new FormData();
         formData.append('action', 'aura_cal_upload_subject_material');
@@ -3864,7 +3871,7 @@
             success: function(res) {
                 inputEl.value = '';
                 if (res && res.success && res.data && res.data.material) {
-                    showToast(res.data.message || 'Archivo subido con éxito.');
+                    showToast(res.data.message || __( 'Archivo subido con éxito.', 'aura-suite' ));
                     if (type === 'teacher') {
                         currentTeacherMaterials.push(res.data.material);
                     } else {
@@ -3872,12 +3879,12 @@
                     }
                     renderSubjectMaterialsList(type);
                 } else {
-                    showToast(res && res.data && res.data.message ? res.data.message : 'Error al subir archivo.', 'error');
+                    showToast(res && res.data && res.data.message ? res.data.message : __( 'Error al subir archivo.', 'aura-suite' ), 'error');
                 }
             },
             error: function() {
                 inputEl.value = '';
-                showToast('Error en la llamada de subida de archivo.', 'error');
+                showToast( __( 'Error en la llamada de subida de archivo.', 'aura-suite' ), 'error');
             }
         });
     });
@@ -3889,7 +3896,7 @@
         $('#add-link-type').val(type);
         $('#add-link-url').val('');
         $('#add-link-title').val('');
-        $('#modal-add-link-title').text(type === 'teacher' ? '🔗 Añadir Enlace — Material Docente' : '🔗 Añadir Enlace — Material para Alumnos');
+        $('#modal-add-link-title').text(type === 'teacher' ? __( '🔗 Añadir Enlace — Material Docente', 'aura-suite' ) : __( '🔗 Añadir Enlace — Material para Alumnos', 'aura-suite' ));
         openModal('#modal-add-material-link');
     });
 
@@ -3898,16 +3905,16 @@
         e.preventDefault();
         var type = $('#add-link-type').val() || 'teacher';
         var driveUrl = $('#add-link-url').val().trim();
-        var docTitle = $('#add-link-title').val().trim() || 'Documento en la Nube';
+        var docTitle = $('#add-link-title').val().trim() || __( 'Documento en la Nube', 'aura-suite' );
         var subjId = parseInt($('#subj-id').val(), 10) || 0;
 
         if (!driveUrl) {
-            showToast('Por favor introduce la URL del material.', 'warning');
+            showToast( __( 'Por favor introduce la URL del material.', 'aura-suite' ), 'warning');
             return;
         }
 
         var $btn = $('#btn-save-material-link');
-        $btn.prop('disabled', true).text('Registrando...');
+        $btn.prop('disabled', true).text( __( 'Registrando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_upload_subject_material',
@@ -3920,9 +3927,9 @@
             title: docTitle,
             file_name: docTitle
         }, function(res) {
-            $btn.prop('disabled', false).text('🔗 Añadir Enlace');
+            $btn.prop('disabled', false).text( __( '🔗 Añadir Enlace', 'aura-suite' ) );
             if (res && res.success && res.data && res.data.material) {
-                showToast(res.data.message || 'Enlace registrado con éxito.');
+                showToast(res.data.message || __( 'Enlace registrado con éxito.', 'aura-suite' ));
                 closeModal('#modal-add-material-link');
                 if (type === 'teacher') {
                     currentTeacherMaterials.push(res.data.material);
@@ -3931,18 +3938,18 @@
                 }
                 renderSubjectMaterialsList(type);
             } else {
-                showToast(res && res.data && res.data.message ? res.data.message : 'Error al vincular enlace.', 'error');
+                showToast(res && res.data && res.data.message ? res.data.message : __( 'Error al vincular enlace.', 'aura-suite' ), 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('🔗 Añadir Enlace');
-            showToast('Error en la comunicación con el servidor.', 'error');
+            $btn.prop('disabled', false).text( __( '🔗 Añadir Enlace', 'aura-suite' ) );
+            showToast( __( 'Error en la comunicación con el servidor.', 'aura-suite' ), 'error');
         });
     });
 
     // Eliminar material de materia
     $(document).on('click', '.btn-remove-material', function(e) {
         e.preventDefault();
-        if (!confirm('¿Deseas eliminar este material de la materia?')) return;
+        if (!confirm( __( '¿Deseas eliminar este material de la materia?', 'aura-suite' ) )) return;
 
         var type = $(this).data('type') || 'teacher';
         var matId = $(this).data('id');
@@ -3956,7 +3963,7 @@
                 currentStudentMaterials = currentStudentMaterials.filter(function(m) { return String(m.id) !== String(matId); });
             }
             renderSubjectMaterialsList(type);
-            showToast('Material removido.');
+            showToast( __( 'Material removido.', 'aura-suite' ) );
             return;
         }
 
@@ -3969,7 +3976,7 @@
             material_id: matId
         }, function(res) {
             if (res && res.success) {
-                showToast(res.data.message || 'Material eliminado.');
+                showToast(res.data.message || __( 'Material eliminado.', 'aura-suite' ));
                 if (type === 'teacher') {
                     currentTeacherMaterials = currentTeacherMaterials.filter(function(m) { return String(m.id) !== String(matId); });
                 } else {
@@ -3977,7 +3984,7 @@
                 }
                 renderSubjectMaterialsList(type);
             } else {
-                showToast(res && res.data && res.data.message ? res.data.message : 'Error al eliminar material.', 'error');
+                showToast(res && res.data && res.data.message ? res.data.message : __( 'Error al eliminar material.', 'aura-suite' ), 'error');
             }
         });
     });
@@ -3991,7 +3998,7 @@
         $('#subj-id').val('0');
         $('#subj-prog-id').val(progId);
         $('#subj-prog-name-display').text(progName);
-        $('#modal-subj-title').text('📚 Añadir Materia');
+        $('#modal-subj-title').text( __( '📚 Añadir Materia', 'aura-suite' ) );
 
         renderSubjectTeacherCheckboxes([]);
         currentSubjectExternalTeachers = [];
@@ -4016,7 +4023,7 @@
     // Editar Materia
     $('.btn-edit-subject').on('click', function() {
         var subjId = $(this).data('subject-id');
-        $('#modal-subj-title').text('✏️ Cargando información de la materia...');
+        $('#modal-subj-title').text( __( '✏️ Cargando información de la materia...', 'aura-suite' ) );
         openModal('#modal-subject-editor', { async: true });
 
         $.post(auraCalData.ajax_url, {
@@ -4029,7 +4036,7 @@
                 $('#subj-id').val(s.id);
                 $('#subj-prog-id').val(s.program_id);
                 $('#subj-prog-name-display').text(s.program_name || '');
-                $('#modal-subj-title').text('✏️ Editar Materia: ' + s.name);
+                $('#modal-subj-title').text(__( '✏️ Editar Materia: ', 'aura-suite' ) + s.name);
                 $('#subj-name').val(s.name);
                 $('#subj-code').val(s.code);
                 $('#subj-hours').val(s.total_hours || 30);
@@ -4060,11 +4067,11 @@
                 }
             } else {
                 closeModal('#modal-subject-editor');
-                showToast('No se pudo cargar la materia seleccionada.', 'error');
+                showToast( __( 'No se pudo cargar la materia seleccionada.', 'aura-suite' ), 'error');
             }
         }).fail(function() {
             closeModal('#modal-subject-editor');
-            showToast('Error de conexión al cargar la materia.', 'error');
+            showToast( __( 'Error de conexión al cargar la materia.', 'aura-suite' ), 'error');
         });
     });
 
@@ -4078,10 +4085,10 @@
         formData.push({ name: 'student_materials', value: JSON.stringify(currentStudentMaterials || []) });
 
         var $btn = $('#btn-save-subject');
-        $btn.prop('disabled', true).text('Guardando...');
+        $btn.prop('disabled', true).text( __( 'Guardando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, formData, function(res) {
-            $btn.prop('disabled', false).text('💾 Guardar Materia');
+            $btn.prop('disabled', false).text( __( '💾 Guardar Materia', 'aura-suite' ) );
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
                 closeModal('#modal-subject-editor');
@@ -4117,7 +4124,7 @@
     $('#grades-filter-program').on('change', function() {
         var progId = $(this).val();
         var $subj = $('#grades-filter-subject');
-        $subj.html('<option value="">Selecciona una materia...</option>').prop('disabled', true);
+        $subj.html('<option value="">' + escapeHtml( __( 'Selecciona una materia...', 'aura-suite' ) ) + '</option>').prop('disabled', true);
         $('#btn-load-grades').prop('disabled', true);
 
         if (progId) {
@@ -4150,7 +4157,7 @@
 
         $('#grades-placeholder').hide();
         $('#grades-table-container').show();
-        $('#grades-table-body').html('<tr><td colspan="5" style="text-align:center;padding:24px;">Cargando calificaciones...</td></tr>');
+        $('#grades-table-body').html('<tr><td colspan="5" style="text-align:center;padding:24px;">' + escapeHtml( __( 'Cargando calificaciones...', 'aura-suite' ) ) + '</td></tr>');
         $('#btn-new-grade').show();
 
         $.post(auraCalData.ajax_url, {
@@ -4162,7 +4169,7 @@
             if (res && res.success && res.data.matrix) {
                 var matrix = res.data.matrix;
                 if (!matrix.length) {
-                    $('#grades-table-body').html('<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--aura-text-muted);">No hay estudiantes registrados o inscritos para esta materia.</td></tr>');
+                    $('#grades-table-body').html('<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--aura-text-muted);">' + escapeHtml( __( 'No hay estudiantes registrados o inscritos para esta materia.', 'aura-suite' ) ) + '</td></tr>');
                     return;
                 }
 
@@ -4179,12 +4186,12 @@
 
                     if (grades.length) {
                         $.each(grades, function(gi, g) {
-                            tbody += '<span class="adp-badge badge-slate grade-chip-item" data-grade-id="' + g.id + '" data-student-name="' + st.first_name + ' ' + st.last_name + '" style="margin:2px 4px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;" title="' + (g.feedback ? g.feedback + ' — Clic para editar/eliminar' : 'Clic para editar o eliminar nota') + '">' +
+                            tbody += '<span class="adp-badge badge-slate grade-chip-item" data-grade-id="' + g.id + '" data-student-name="' + st.first_name + ' ' + st.last_name + '" style="margin:2px 4px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;" title="' + escapeHtml(g.feedback ? (g.feedback + ' — ' + __( 'Clic para editar/eliminar', 'aura-suite' )) : __( 'Clic para editar o eliminar nota', 'aura-suite' )) + '">' +
                                      g.eval_title + ': <strong>' + parseFloat(g.score) + '</strong>/' + parseFloat(g.max_score) +
                                      ' <span style="font-size:10px;opacity:0.7;">✏️</span></span>';
                         });
                     } else {
-                        tbody += '<span style="color:var(--aura-text-muted);font-size:12px;">Sin evaluaciones</span>';
+                        tbody += '<span style="color:var(--aura-text-muted);font-size:12px;">' + escapeHtml( __( 'Sin evaluaciones', 'aura-suite' ) ) + '</span>';
                     }
 
                     tbody += '</td>';
@@ -4192,7 +4199,7 @@
                     tbody += avg !== null ? avg + '%' : '—';
                     tbody += '</td>';
                     tbody += '<td style="padding:12px 16px;text-align:center;">';
-                    tbody += '<button type="button" class="btn btn-ghost btn-add-st-grade" data-student-id="' + st.student_id + '" data-student-name="' + st.first_name + ' ' + st.last_name + '" style="padding:4px 8px;font-size:12px;" title="Añadir nota">';
+                    tbody += '<button type="button" class="btn btn-ghost btn-add-st-grade" data-student-id="' + st.student_id + '" data-student-name="' + st.first_name + ' ' + st.last_name + '" style="padding:4px 8px;font-size:12px;" title="' + escapeHtml( __( 'Añadir nota', 'aura-suite' ) ) + '">';
                     tbody += '➕';
                     tbody += '</button>';
                     tbody += '</td>';
@@ -4217,7 +4224,7 @@
         $('#grd-subj-id').val(subjId);
         $('#grd-stud-id').val(stId);
         $('#grd-stud-name-display').text(stName);
-        $('#modal-grade-title').text('📝 Registrar Calificación');
+        $('#modal-grade-title').text( __( '📝 Registrar Calificación', 'aura-suite' ) );
         $('#btn-delete-grade-modal').hide();
 
         openModal('#modal-grade-editor');
@@ -4228,7 +4235,7 @@
         var gradeId = $(this).data('grade-id');
         var fallbackStName = $(this).data('student-name') || '';
 
-        $('#modal-grade-title').text('✏️ Cargando calificación...');
+        $('#modal-grade-title').text( __( '✏️ Cargando calificación...', 'aura-suite' ) );
         openModal('#modal-grade-editor', { async: true });
 
         $.post(auraCalData.ajax_url, {
@@ -4244,7 +4251,7 @@
                 $('#grd-subj-id').val(g.subject_id);
                 $('#grd-stud-id').val(g.student_id);
                 $('#grd-stud-name-display').text(fallbackStName);
-                $('#modal-grade-title').text('✏️ Editar Calificación: ' + g.eval_title);
+                $('#modal-grade-title').text(__( '✏️ Editar Calificación: ', 'aura-suite' ) + g.eval_title);
 
                 $('#grd-eval-title').val(g.eval_title);
                 $('#grd-eval-type').val(g.eval_type || 'partial');
@@ -4260,11 +4267,11 @@
                 }
             } else {
                 closeModal('#modal-grade-editor');
-                showToast('No se pudo cargar la calificación seleccionada.', 'error');
+                showToast( __( 'No se pudo cargar la calificación seleccionada.', 'aura-suite' ), 'error');
             }
         }).fail(function() {
             closeModal('#modal-grade-editor');
-            showToast('Error de conexión al cargar la calificación.', 'error');
+            showToast( __( 'Error de conexión al cargar la calificación.', 'aura-suite' ), 'error');
         });
     });
 
@@ -4273,29 +4280,29 @@
         var gradeId = $('#grd-id').val();
         if (!gradeId || gradeId === '0') return;
 
-        if (!confirm('¿Estás seguro de eliminar esta calificación? Esta acción no se puede deshacer.')) {
+        if (!confirm( __( '¿Estás seguro de eliminar esta calificación? Esta acción no se puede deshacer.', 'aura-suite' ) )) {
             return;
         }
 
         var $btn = $(this);
-        $btn.prop('disabled', true).text('Eliminando...');
+        $btn.prop('disabled', true).text( __( 'Eliminando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_delete_grade',
             nonce:  auraCalData.nonce,
             id:     gradeId
         }, function(res) {
-            $btn.prop('disabled', false).text('🗑️ Eliminar Nota');
+            $btn.prop('disabled', false).text( __( '🗑️ Eliminar Nota', 'aura-suite' ) );
             if (res && res.success) {
-                showToast(res.data.message || 'Calificación eliminada.');
+                showToast(res.data.message || __( 'Calificación eliminada.', 'aura-suite' ));
                 closeModal('#modal-grade-editor');
                 $('#btn-load-grades').trigger('click');
             } else {
                 showToast((res && res.data && res.data.message) ? res.data.message : auraCalData.i18n.error, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('🗑️ Eliminar Nota');
-            showToast('Error de conexión al eliminar la calificación.', 'error');
+            $btn.prop('disabled', false).text( __( '🗑️ Eliminar Nota', 'aura-suite' ) );
+            showToast( __( 'Error de conexión al eliminar la calificación.', 'aura-suite' ), 'error');
         });
     });
 
@@ -4306,10 +4313,10 @@
         formData.push({ name: 'nonce', value: auraCalData.nonce });
 
         var $btn = $('#btn-save-grade');
-        $btn.prop('disabled', true).text('Guardando...');
+        $btn.prop('disabled', true).text( __( 'Guardando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, formData, function(res) {
-            $btn.prop('disabled', false).text('💾 Guardar Nota');
+            $btn.prop('disabled', false).text( __( '💾 Guardar Nota', 'aura-suite' ) );
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
                 closeModal('#modal-grade-editor');
@@ -4327,16 +4334,16 @@
     $('#btn-create-task, #btn-create-first-task').on('click', function() {
         $('#form-task-editor')[0].reset();
         $('#tsk-id').val('0');
-        $('#modal-task-title').text('📝 Nueva Tarea / Evaluación');
+        $('#modal-task-title').text( __( '📝 Nueva Tarea / Evaluación', 'aura-suite' ) );
         $('#btn-delete-task-modal').hide();
-        $('#tsk-subj-id').html('<option value="">General / Opcional</option>');
+        $('#tsk-subj-id').html('<option value="">' + escapeHtml( __( 'General / Opcional', 'aura-suite' ) ) + '</option>');
         openModal('#modal-task-editor');
     });
 
     // Editar tarea
     $(document).on('click', '.btn-edit-task', function() {
         var taskId = $(this).data('task-id');
-        $('#modal-task-title').text('✏️ Cargando información de la tarea...');
+        $('#modal-task-title').text( __( '✏️ Cargando información de la tarea...', 'aura-suite' ) );
         openModal('#modal-task-editor', { async: true });
 
         $.post(auraCalData.ajax_url, {
@@ -4348,12 +4355,12 @@
                 var t = res.data.task;
                 $('#form-task-editor')[0].reset();
                 $('#tsk-id').val(t.id);
-                $('#modal-task-title').text('✏️ Editar Tarea: ' + t.title);
+                $('#modal-task-title').text(__( '✏️ Editar Tarea: ', 'aura-suite' ) + t.title);
                 $('#tsk-title').val(t.title);
                 $('#tsk-prog-id').val(t.program_id);
 
                 var $subj = $('#tsk-subj-id');
-                $subj.html('<option value="">General / Opcional</option>');
+                $subj.html('<option value="">' + escapeHtml( __( 'General / Opcional', 'aura-suite' ) ) + '</option>');
                 if (t.program_id) {
                     $.post(auraCalData.ajax_url, {
                         action: 'aura_cal_get_subjects',
@@ -4395,18 +4402,18 @@
                 }
             } else {
                 closeModal('#modal-task-editor');
-                showToast('No se pudo cargar la información de la tarea.', 'error');
+                showToast( __( 'No se pudo cargar la información de la tarea.', 'aura-suite' ), 'error');
             }
         }).fail(function() {
             closeModal('#modal-task-editor');
-            showToast('Error de conexión al cargar la tarea.', 'error');
+            showToast( __( 'Error de conexión al cargar la tarea.', 'aura-suite' ), 'error');
         });
     });
 
     // Eliminar tarea desde tarjeta
     $(document).on('click', '.btn-delete-task', function() {
         var taskId = $(this).data('task-id');
-        if (!confirm('¿Estás seguro de eliminar esta tarea? También se eliminarán las entregas de los estudiantes asociadas a ella.')) {
+        if (!confirm( __( '¿Estás seguro de eliminar esta tarea? También se eliminarán las entregas de los estudiantes asociadas a ella.', 'aura-suite' ) )) {
             return;
         }
 
@@ -4419,7 +4426,7 @@
             id:     taskId
         }, function(res) {
             if (res && res.success) {
-                showToast(res.data.message || 'Tarea eliminada exitosamente.');
+                showToast(res.data.message || __( 'Tarea eliminada exitosamente.', 'aura-suite' ));
                 setTimeout(function() { location.reload(); }, 600);
             } else {
                 $btn.prop('disabled', false);
@@ -4427,7 +4434,7 @@
             }
         }).fail(function() {
             $btn.prop('disabled', false);
-            showToast('Error de conexión al eliminar la tarea.', 'error');
+            showToast( __( 'Error de conexión al eliminar la tarea.', 'aura-suite' ), 'error');
         });
     });
 
@@ -4436,36 +4443,36 @@
         var taskId = $('#tsk-id').val();
         if (!taskId || taskId === '0') return;
 
-        if (!confirm('¿Estás seguro de eliminar esta tarea y sus entregas asociadas?')) {
+        if (!confirm( __( '¿Estás seguro de eliminar esta tarea y sus entregas asociadas?', 'aura-suite' ) )) {
             return;
         }
 
         var $btn = $(this);
-        $btn.prop('disabled', true).text('Eliminando...');
+        $btn.prop('disabled', true).text( __( 'Eliminando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_delete_task',
             nonce:  auraCalData.nonce,
             id:     taskId
         }, function(res) {
-            $btn.prop('disabled', false).text('🗑️ Eliminar Tarea');
+            $btn.prop('disabled', false).text( __( '🗑️ Eliminar Tarea', 'aura-suite' ) );
             if (res && res.success) {
-                showToast(res.data.message || 'Tarea eliminada.');
+                showToast(res.data.message || __( 'Tarea eliminada.', 'aura-suite' ));
                 closeModal('#modal-task-editor');
                 setTimeout(function() { location.reload(); }, 600);
             } else {
                 showToast((res && res.data && res.data.message) ? res.data.message : auraCalData.i18n.error, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('🗑️ Eliminar Tarea');
-            showToast('Error de conexión al eliminar la tarea.', 'error');
+            $btn.prop('disabled', false).text( __( '🗑️ Eliminar Tarea', 'aura-suite' ) );
+            showToast( __( 'Error de conexión al eliminar la tarea.', 'aura-suite' ), 'error');
         });
     });
 
     $('#tsk-prog-id').on('change', function() {
         var progId = $(this).val();
         var $subj = $('#tsk-subj-id');
-        $subj.html('<option value="">General / Opcional</option>');
+        $subj.html('<option value="">' + escapeHtml( __( 'General / Opcional', 'aura-suite' ) ) + '</option>');
 
         if (progId) {
             $.post(auraCalData.ajax_url, {
@@ -4492,10 +4499,10 @@
         formData.push({ name: 'nonce', value: auraCalData.nonce });
 
         var $btn = $('#btn-save-task');
-        $btn.prop('disabled', true).text('Guardando...');
+        $btn.prop('disabled', true).text( __( 'Guardando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, formData, function(res) {
-            $btn.prop('disabled', false).text('💾 Guardar Tarea');
+            $btn.prop('disabled', false).text( __( '💾 Guardar Tarea', 'aura-suite' ) );
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
                 closeModal('#modal-task-editor');
@@ -4511,8 +4518,8 @@
         var taskId = $(this).data('task-id');
         var taskTitle = $(this).data('task-title');
 
-        $('#subs-modal-title').text('📥 Entregas — ' + taskTitle);
-        $('#subs-container').html('<p style="text-align:center;padding:20px;">Cargando entregas...</p>');
+        $('#subs-modal-title').text(__( '📥 Entregas — ', 'aura-suite' ) + taskTitle);
+        $('#subs-container').html('<p style="text-align:center;padding:20px;">' + escapeHtml( __( 'Cargando entregas...', 'aura-suite' ) ) + '</p>');
         openModal('#modal-task-submissions', { async: true });
 
         $.post(auraCalData.ajax_url, {
@@ -4523,7 +4530,7 @@
             if (res && res.success && res.data.submissions) {
                 var subs = res.data.submissions;
                 if (!subs.length) {
-                    $('#subs-container').html('<p style="text-align:center;padding:24px;color:var(--aura-text-muted);">Aún no se han recibido entregas para esta tarea.</p>');
+                    $('#subs-container').html('<p style="text-align:center;padding:24px;color:var(--aura-text-muted);">' + escapeHtml( __( 'Aún no se han recibido entregas para esta tarea.', 'aura-suite' ) ) + '</p>');
                     if (typeof AuraUI !== 'undefined') {
                         AuraUI.hideModalSkeleton('#modal-task-submissions');
                     }
@@ -4543,7 +4550,7 @@
                     }
 
                     if (s.score !== null) {
-                        html += '<div style="font-size:13px;color:#10b981;font-weight:600;">Nota asignada: ' + s.score + '</div>';
+                        html += '<div style="font-size:13px;color:#10b981;font-weight:600;">' + escapeHtml( __( 'Nota asignada:', 'aura-suite' ) ) + ' ' + s.score + '</div>';
                     }
                     html += '</div>';
                 });
@@ -4557,7 +4564,7 @@
             if (typeof AuraUI !== 'undefined') {
                 AuraUI.hideModalSkeleton('#modal-task-submissions');
             }
-            showToast('Error de conexión al cargar las entregas.', 'error');
+            showToast( __( 'Error de conexión al cargar las entregas.', 'aura-suite' ), 'error');
         });
     });
 
@@ -4568,7 +4575,7 @@
     $('#form-calendar-settings').on('submit', function(e) {
         e.preventDefault();
         var $btn = $('#btn-save-settings');
-        $btn.prop('disabled', true).text('Guardando...');
+        $btn.prop('disabled', true).text( __( 'Guardando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_save_settings',
@@ -4578,7 +4585,7 @@
             teacher_portal_page_id: $('#set-teacher-portal-page').val(),
             teacher_code_prefix: $('#set-teacher-code-prefix').val()
         }, function(res) {
-            $btn.prop('disabled', false).text('💾 Guardar Ajustes');
+            $btn.prop('disabled', false).text( __( '💾 Guardar Ajustes', 'aura-suite' ) );
             if (res && res.success) {
                 showToast(res.data.message || auraCalData.i18n.saved);
             } else {
@@ -4591,13 +4598,13 @@
     $('#btn-create-teacher-portal-page').on('click', function(e) {
         e.preventDefault();
         var $btn = $(this);
-        $btn.prop('disabled', true).text('Creando página...');
+        $btn.prop('disabled', true).text( __( 'Creando página...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_create_teacher_portal_page',
             nonce: auraCalData.nonce
         }, function(res) {
-            $btn.prop('disabled', false).text('🪄 Crear Página Automáticamente');
+            $btn.prop('disabled', false).text( __( '🪄 Crear Página Automáticamente', 'aura-suite' ) );
             if (res && res.success) {
                 showToast(res.data.message);
                 if (res.data.page_id) {
@@ -4606,7 +4613,7 @@
                     if (!exists) {
                         $select.append($('<option>', {
                             value: res.data.page_id,
-                            text: 'Portal del Docente (ID: ' + res.data.page_id + ')'
+                            text: sprintf( __( 'Portal del Docente (ID: %s)', 'aura-suite' ), res.data.page_id )
                         }));
                     }
                     $select.val(res.data.page_id);
@@ -4617,8 +4624,8 @@
                 showToast(err, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('🪄 Crear Página Automáticamente');
-            showToast('Error de red al crear la página', 'error');
+            $btn.prop('disabled', false).text( __( '🪄 Crear Página Automáticamente', 'aura-suite' ) );
+            showToast( __( 'Error de red al crear la página', 'aura-suite' ), 'error');
         });
     });
 
@@ -4627,14 +4634,14 @@
         var $btn = $(this);
         var $fb = $('#settings-sync-feedback');
 
-        $btn.prop('disabled', true).text('Verificando con Google...');
-        $fb.html('<div class="alert-card alert-info">Conectando con Google Calendar API...</div>').show();
+        $btn.prop('disabled', true).text( __( 'Verificando con Google...', 'aura-suite' ) );
+        $fb.html('<div class="alert-card alert-info">' + escapeHtml( __( 'Conectando con Google Calendar API...', 'aura-suite' ) ) + '</div>').show();
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_gcal_test_sync',
             nonce: auraCalData.nonce
         }, function(res) {
-            $btn.prop('disabled', false).text('🔌 Probar Conexión y Vincular Calendario');
+            $btn.prop('disabled', false).text( __( '🔌 Probar Conexión y Vincular Calendario', 'aura-suite' ) );
             if (res && res.success) {
                 $fb.html('<div class="alert-card alert-success">✅ ' + res.data.message + '</div>');
                 showToast(res.data.message);
@@ -4644,8 +4651,8 @@
                 $fb.html('<div class="alert-card alert-danger">⚠️ ' + err + '</div>');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('🔌 Probar Conexión y Vincular Calendario');
-            $fb.html('<div class="alert-card alert-danger">⚠️ Error en la llamada AJAX.</div>');
+            $btn.prop('disabled', false).text( __( '🔌 Probar Conexión y Vincular Calendario', 'aura-suite' ) );
+            $fb.html('<div class="alert-card alert-danger">' + escapeHtml( __( '⚠️ Error en la llamada AJAX.', 'aura-suite' ) ) + '</div>');
         });
     });
 
@@ -4654,26 +4661,26 @@
         var $btn = $(this);
         var $fb = $('#settings-sync-feedback');
 
-        $btn.prop('disabled', true).text('Reparando base de datos...');
-        $fb.html('<div class="alert-card alert-info">Verificando tablas, columnas, relaciones y roles docentes...</div>').show();
+        $btn.prop('disabled', true).text( __( 'Reparando base de datos...', 'aura-suite' ) );
+        $fb.html('<div class="alert-card alert-info">' + escapeHtml( __( 'Verificando tablas, columnas, relaciones y roles docentes...', 'aura-suite' ) ) + '</div>').show();
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_repair_db',
             nonce: auraCalData.nonce
         }, function(res) {
-            $btn.prop('disabled', false).text('🛠️ Sincronizar y Reparar BD');
+            $btn.prop('disabled', false).text( __( '🛠️ Sincronizar y Reparar BD', 'aura-suite' ) );
             if (res && res.success) {
-                var msg = res.data && res.data.message ? res.data.message : 'Base de datos reparada con éxito.';
+                var msg = res.data && res.data.message ? res.data.message : __( 'Base de datos reparada con éxito.', 'aura-suite' );
                 $fb.html('<div class="alert-card alert-success">✅ ' + msg + '</div>');
                 showToast(msg);
                 setTimeout(function() { location.reload(); }, 1500);
             } else {
-                var err = res && res.data && res.data.message ? res.data.message : 'Error al reparar base de datos.';
+                var err = res && res.data && res.data.message ? res.data.message : __( 'Error al reparar base de datos.', 'aura-suite' );
                 $fb.html('<div class="alert-card alert-danger">⚠️ ' + err + '</div>');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).text('🛠️ Sincronizar y Reparar BD');
-            $fb.html('<div class="alert-card alert-danger">⚠️ Error en la llamada AJAX.</div>');
+            $btn.prop('disabled', false).text( __( '🛠️ Sincronizar y Reparar BD', 'aura-suite' ) );
+            $fb.html('<div class="alert-card alert-danger">' + escapeHtml( __( '⚠️ Error en la llamada AJAX.', 'aura-suite' ) ) + '</div>');
         });
     });
 
@@ -4683,9 +4690,9 @@
         if (!$box.length || !stats) return;
 
         $('#gcal-sync-log-timestamp').text('(' + (stats.synced_at || '') + ')');
-        var summaryHtml = '<span class="badge" style="background: rgba(16,185,129,0.12); color: #059669; font-weight: 600; padding: 2px 8px; border-radius: 6px;">✅ ' + (stats.synced || 0) + ' ' + escapeHtml(auraCalData.i18n.synced || 'Correctos') + '</span>';
+        var summaryHtml = '<span class="badge" style="background: rgba(16,185,129,0.12); color: #059669; font-weight: 600; padding: 2px 8px; border-radius: 6px;">✅ ' + (stats.synced || 0) + ' ' + escapeHtml(auraCalData.i18n.synced || __( 'Correctos', 'aura-suite' )) + '</span>';
         if (stats.failed > 0) {
-            summaryHtml += ' <span class="badge" style="background: rgba(239,68,68,0.12); color: #dc2626; font-weight: 600; padding: 2px 8px; border-radius: 6px;">❌ ' + stats.failed + ' ' + escapeHtml(auraCalData.i18n.errors || 'Errores') + '</span>';
+            summaryHtml += ' <span class="badge" style="background: rgba(239,68,68,0.12); color: #dc2626; font-weight: 600; padding: 2px 8px; border-radius: 6px;">❌ ' + stats.failed + ' ' + escapeHtml(auraCalData.i18n.errors || __( 'Errores', 'aura-suite' )) + '</span>';
         }
         $('#gcal-sync-log-summary').html(summaryHtml);
 
@@ -4693,8 +4700,8 @@
         if (Array.isArray(stats.items) && stats.items.length) {
             stats.items.forEach(function(item) {
                 var statusBadge = item.success
-                    ? '<span style="color: #10b981; font-weight: 600;">✅ Sincronizado</span>'
-                    : '<span style="color: #ef4444; font-weight: 600;">❌ Falló</span>';
+                    ? '<span style="color: #10b981; font-weight: 600;">' + escapeHtml( __( '✅ Sincronizado', 'aura-suite' ) ) + '</span>'
+                    : '<span style="color: #ef4444; font-weight: 600;">' + escapeHtml( __( '❌ Falló', 'aura-suite' ) ) + '</span>';
                 var msgColor = item.success ? '#64748b' : '#ef4444';
                 rowsHtml += '<tr style="border-bottom: 1px solid var(--aura-border, #f1f5f9);">' +
                     '<td style="padding: 8px 12px; font-weight: 600;">#' + escapeHtml(item.id) + ' ' + escapeHtml(item.title) + '</td>' +
@@ -4712,7 +4719,7 @@
     $('#btn-sync-all-future, #btn-top-sync-gcal').on('click', function() {
         var $btn = $(this);
         var originalText = $btn.text();
-        $btn.prop('disabled', true).text('Sincronizando...');
+        $btn.prop('disabled', true).text( __( 'Sincronizando...', 'aura-suite' ) );
 
         showToast(auraCalData.i18n.syncing);
 
@@ -4737,7 +4744,7 @@
         }).fail(function() {
             $btn.prop('disabled', false).text(originalText);
             showToast(auraCalData.i18n.error, 'error');
-            $('#settings-sync-feedback').html('<div class="alert-card alert-danger">⚠️ Error en la llamada AJAX del servidor.</div>').slideDown(200);
+            $('#settings-sync-feedback').html('<div class="alert-card alert-danger">' + escapeHtml( __( '⚠️ Error en la llamada AJAX del servidor.', 'aura-suite' ) ) + '</div>').slideDown(200);
         });
     });
 
@@ -4816,12 +4823,12 @@
             if (gcalAclUsersCache.length === 0) {
                 $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 36px 20px; color: var(--aura-text-muted); font-size: 13.5px;">' +
                     '<div style="font-size: 28px; margin-bottom: 8px;">🛡️</div>' +
-                    '<strong>No hay usuarios ni accesos compartidos adicionales en Google Calendar.</strong><br>' +
-                    '<span style="font-size: 12.5px; opacity: 0.85; margin-top: 4px; display: inline-block;">Haz clic en <strong>"➕ Compartir con un Contacto"</strong> para conceder permisos a profesores, instructores o coordinadores.</span>' +
+                    '<strong>' + escapeHtml( __( 'No hay usuarios ni accesos compartidos adicionales en Google Calendar.', 'aura-suite' ) ) + '</strong><br>' +
+                    '<span style="font-size: 12.5px; opacity: 0.85; margin-top: 4px; display: inline-block;">' + __( 'Haz clic en <strong>"➕ Compartir con un Contacto"</strong> para conceder permisos a profesores, instructores o coordinadores.', 'aura-suite' ) + '</span>' +
                     '</td></tr>');
             } else {
                 $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 28px; color: var(--aura-text-muted); font-size: 13px;">' +
-                    '🔍 No se encontraron accesos que coincidan con los filtros aplicados.' +
+                    escapeHtml( __( '🔍 No se encontraron accesos que coincidan con los filtros aplicados.', 'aura-suite' ) ) +
                     '</td></tr>');
             }
             return;
@@ -4837,47 +4844,47 @@
                     : '<div style="width:38px;height:38px;min-width:38px;min-height:38px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;box-shadow:0 2px 4px rgba(79,70,229,0.2);aspect-ratio:1/1;overflow:hidden;">' + escapeHtml((u.contact.name || 'C').charAt(0).toUpperCase()) + '</div>';
                 
                 var badgeMatch = u.contact.matched_as === 'primary' 
-                    ? '<span class="badge" style="font-size:10px;background:rgba(99,102,241,0.12);color:#4338ca;margin-left:6px;font-weight:600;padding:2px 6px;border-radius:4px;">Email Principal</span>' 
-                    : '<span class="badge" style="font-size:10px;background:rgba(100,116,139,0.12);color:#475569;margin-left:6px;font-weight:600;padding:2px 6px;border-radius:4px;">Email Secundario</span>';
+                    ? '<span class="badge" style="font-size:10px;background:rgba(99,102,241,0.12);color:#4338ca;margin-left:6px;font-weight:600;padding:2px 6px;border-radius:4px;">' + escapeHtml( __( 'Email Principal', 'aura-suite' ) ) + '</span>' 
+                    : '<span class="badge" style="font-size:10px;background:rgba(100,116,139,0.12);color:#475569;margin-left:6px;font-weight:600;padding:2px 6px;border-radius:4px;">' + escapeHtml( __( 'Email Secundario', 'aura-suite' ) ) + '</span>';
 
                 var contactLink = 'admin.php?page=aura-contacts&action=view&id=' + u.contact.id;
                 contactHtml = '<div style="display:flex;align-items:center;gap:12px;">' + avatar +
                     '<div style="min-width:0;">' +
                     '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">' +
-                    '<a href="' + escapeHtml(contactLink) + '" target="_blank" style="text-decoration:none;font-weight:700;font-size:13.5px;color:var(--aura-text-primary,#0f172a);line-height:1.2;" title="Ver perfil en Directorio de Contactos">' + escapeHtml(u.contact.name) + '</a>' +
+                    '<a href="' + escapeHtml(contactLink) + '" target="_blank" style="text-decoration:none;font-weight:700;font-size:13.5px;color:var(--aura-text-primary,#0f172a);line-height:1.2;" title="' + escapeHtml( __( 'Ver perfil en Directorio de Contactos', 'aura-suite' ) ) + '">' + escapeHtml(u.contact.name) + '</a>' +
                     badgeMatch +
                     '</div>' +
-                    '<span style="font-size:12px;color:var(--aura-text-secondary,#64748b);display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(u.contact.company || 'Directorio Aura') + '</span>' +
+                    '<span style="font-size:12px;color:var(--aura-text-secondary,#64748b);display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(u.contact.company || __( 'Directorio Aura', 'aura-suite' )) + '</span>' +
                     '</div></div>';
             } else {
                 var initial = (u.email || 'G').charAt(0).toUpperCase();
-                var title = u.is_service_account ? 'Cuenta de Servicio (Google API)' : 'Usuario Externo';
+                var title = u.is_service_account ? __( 'Cuenta de Servicio (Google API)', 'aura-suite' ) : __( 'Usuario Externo', 'aura-suite' );
                 contactHtml = '<div style="display:flex;align-items:center;gap:12px;">' +
                     '<div style="width:38px;height:38px;min-width:38px;min-height:38px;border-radius:50%;background:#94a3b8;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;aspect-ratio:1/1;overflow:hidden;">' + escapeHtml(initial) + '</div>' +
                     '<div>' +
-                    '<strong style="font-size:13.5px;color:var(--aura-text-secondary,#475569);display:block;">' + title + '</strong>' +
-                    '<span style="font-size:11.5px;color:var(--aura-text-muted,#94a3b8);display:block;">No registrado en Directorio</span>' +
+                    '<strong style="font-size:13.5px;color:var(--aura-text-secondary,#475569);display:block;">' + escapeHtml(title) + '</strong>' +
+                    '<span style="font-size:11.5px;color:var(--aura-text-muted,#94a3b8);display:block;">' + escapeHtml( __( 'No registrado en Directorio', 'aura-suite' ) ) + '</span>' +
                     '</div></div>';
             }
 
             // Columna 2: Cuenta Google con corte de línea automático (break-all) y botón Copiar
             var emailHtml = '<div style="display:flex;align-items:flex-start;gap:6px;max-width:240px;">' +
                 '<code style="font-family:monospace;font-size:12px;background:#f8fafc;border:1px solid #e2e8f0;padding:4px 8px;border-radius:6px;color:#334155;word-break:break-all;overflow-wrap:anywhere;white-space:normal;display:inline-block;line-height:1.45;">' + escapeHtml(u.email) + '</code>' +
-                '<button type="button" class="btn btn-ghost btn-xs btn-copy-gcal-email" data-email="' + escapeHtml(u.email) + '" title="Copiar correo al portapapeles" style="padding:2px 6px;font-size:12px;color:#64748b;border-radius:4px;flex-shrink:0;margin-top:2px;">📋</button>' +
+                '<button type="button" class="btn btn-ghost btn-xs btn-copy-gcal-email" data-email="' + escapeHtml(u.email) + '" title="' + escapeHtml( __( 'Copiar correo al portapapeles', 'aura-suite' ) ) + '" style="padding:2px 6px;font-size:12px;color:#64748b;border-radius:4px;flex-shrink:0;margin-top:2px;">📋</button>' +
                 '</div>';
 
             // Columna 3: Rol / CRUD Update
             var roleHtml = '';
             if (u.is_owner) {
-                roleHtml = '<span class="badge" style="background:rgba(16,185,129,0.15);color:#047857;font-weight:700;padding:5px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;">👑 Propietario</span>';
+                roleHtml = '<span class="badge" style="background:rgba(16,185,129,0.15);color:#047857;font-weight:700;padding:5px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;">' + escapeHtml( __( '👑 Propietario', 'aura-suite' ) ) + '</span>';
             } else if (u.is_service_account) {
-                roleHtml = '<span class="badge" style="background:rgba(99,102,241,0.15);color:#4338ca;font-weight:700;padding:5px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;">⚙️ Service Account (Admin)</span>';
+                roleHtml = '<span class="badge" style="background:rgba(99,102,241,0.15);color:#4338ca;font-weight:700;padding:5px 10px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;">' + escapeHtml( __( '⚙️ Service Account (Admin)', 'aura-suite' ) ) + '</span>';
             } else if (u.is_deletable) {
                 // Selector interactivo para cambiar rol en 1 clic (CRUD UPDATE)
                 roleHtml = '<div style="display:inline-flex;align-items:center;gap:6px;">' +
                     '<select class="form-control form-control-sm gcal-change-acl-role" data-rule-id="' + escapeHtml(u.rule_id) + '" data-current-role="' + escapeHtml(u.role) + '" style="font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;border:1px solid #cbd5e1;cursor:pointer;background:#ffffff;height:30px;min-width:170px;">' +
-                    '<option value="reader" ' + (u.role === 'reader' ? 'selected' : '') + '>👁️ Lector (Lectura)</option>' +
-                    '<option value="writer" ' + (u.role === 'writer' ? 'selected' : '') + '>✏️ Editor (Escritura)</option>' +
+                    '<option value="reader" ' + (u.role === 'reader' ? 'selected' : '') + '>' + escapeHtml( __( '👁️ Lector (Lectura)', 'aura-suite' ) ) + '</option>' +
+                    '<option value="writer" ' + (u.role === 'writer' ? 'selected' : '') + '>' + escapeHtml( __( '✏️ Editor (Escritura)', 'aura-suite' ) ) + '</option>' +
                     '</select>' +
                     '<span class="spinner gcal-role-spinner" style="float:none;margin:0;display:none;"></span>' +
                     '</div>';
@@ -4888,24 +4895,24 @@
             // Columna 4: Trazabilidad / Origen
             var originBadge = '';
             if (u.is_service_account) {
-                originBadge = '<span class="adp-badge badge-ghost" style="font-size:11px;font-weight:600;">⚙️ Sistema</span>';
+                originBadge = '<span class="adp-badge badge-ghost" style="font-size:11px;font-weight:600;">' + escapeHtml( __( '⚙️ Sistema', 'aura-suite' ) ) + '</span>';
             } else if (u.contact) {
-                originBadge = '<span class="adp-badge badge-emerald" style="font-size:11px;font-weight:600;">✓ Directorio Aura</span>';
+                originBadge = '<span class="adp-badge badge-emerald" style="font-size:11px;font-weight:600;">' + escapeHtml( __( '✓ Directorio Aura', 'aura-suite' ) ) + '</span>';
             } else {
-                originBadge = '<span class="adp-badge badge-amber" style="font-size:11px;background:rgba(245,158,11,0.12);color:#b45309;font-weight:600;">⚠️ Externo</span>';
+                originBadge = '<span class="adp-badge badge-amber" style="font-size:11px;background:rgba(245,158,11,0.12);color:#b45309;font-weight:600;">' + escapeHtml( __( '⚠️ Externo', 'aura-suite' ) ) + '</span>';
             }
 
             // Columna 5: Acciones (CRUD DELETE & LINKS)
             var actionHtml = '';
             if (u.contact) {
-                actionHtml += '<a href="admin.php?page=aura-contacts&action=view&id=' + u.contact.id + '" target="_blank" class="btn btn-ghost btn-sm" title="Ver ficha en Directorio de Contactos" style="padding:4px 8px;font-size:13px;border-radius:6px;border:1px solid #e2e8f0;margin-right:6px;text-decoration:none;">👤</a>';
+                actionHtml += '<a href="admin.php?page=aura-contacts&action=view&id=' + u.contact.id + '" target="_blank" class="btn btn-ghost btn-sm" title="' + escapeHtml( __( 'Ver ficha en Directorio de Contactos', 'aura-suite' ) ) + '" style="padding:4px 8px;font-size:13px;border-radius:6px;border:1px solid #e2e8f0;margin-right:6px;text-decoration:none;">👤</a>';
             }
 
             if (u.is_deletable) {
                 var cName = u.contact ? u.contact.name : u.email;
-                actionHtml += '<button type="button" class="btn btn-ghost btn-sm btn-revoke-gcal-acl" data-rule-id="' + escapeHtml(u.rule_id) + '" data-email="' + escapeHtml(u.email) + '" data-contact-name="' + escapeHtml(cName) + '" style="font-size:12px;padding:4px 10px;color:#ef4444;border:1px solid rgba(239,68,68,0.25);border-radius:6px;font-weight:600;transition:all 0.15s;" title="Revocar de inmediato acceso a este usuario en Google Calendar">✕ Revocar</button>';
+                actionHtml += '<button type="button" class="btn btn-ghost btn-sm btn-revoke-gcal-acl" data-rule-id="' + escapeHtml(u.rule_id) + '" data-email="' + escapeHtml(u.email) + '" data-contact-name="' + escapeHtml(cName) + '" style="font-size:12px;padding:4px 10px;color:#ef4444;border:1px solid rgba(239,68,68,0.25);border-radius:6px;font-weight:600;transition:all 0.15s;" title="' + escapeHtml( __( 'Revocar de inmediato acceso a este usuario en Google Calendar', 'aura-suite' ) ) + '">' + escapeHtml( __( '✕ Revocar', 'aura-suite' ) ) + '</button>';
             } else {
-                actionHtml += '<span class="adp-badge badge-ghost" style="font-size:11px;opacity:0.75;" title="Cuenta esencial del sistema o propietaria del recurso">🔒 Protegido</span>';
+                actionHtml += '<span class="adp-badge badge-ghost" style="font-size:11px;opacity:0.75;" title="' + escapeHtml( __( 'Cuenta esencial del sistema o propietaria del recurso', 'aura-suite' ) ) + '">' + escapeHtml( __( '🔒 Protegido', 'aura-suite' ) ) + '</span>';
             }
 
             html += '<tr data-rule-id="' + escapeHtml(u.rule_id) + '" style="border-bottom: 1px solid var(--aura-border, #f1f5f9); transition: background 0.15s;">' +
@@ -4948,7 +4955,7 @@
             var email = $(this).data('email');
             if (email && navigator.clipboard) {
                 navigator.clipboard.writeText(email);
-                showToast('Correo copiado: ' + email, 'info');
+                showToast(sprintf( __( 'Correo copiado: %s', 'aura-suite' ), email ), 'info');
             }
         });
 
@@ -4986,7 +4993,7 @@
                     }
                     updateGCalAclKpis(gcalAclUsersCache);
 
-                    var msg = res.data && res.data.message ? res.data.message : '¡Permiso de Google Calendar actualizado!';
+                    var msg = res.data && res.data.message ? res.data.message : __( '¡Permiso de Google Calendar actualizado!', 'aura-suite' );
                     showToast(msg, 'success');
 
                     // Destello de feedback visual en la fila
@@ -4998,12 +5005,12 @@
                     $select.val(prevRole);
                     var errMsg = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
                     showToast(errMsg, 'error');
-                    alert('⚠️ Error al actualizar permiso en Google Calendar:\n' + errMsg);
+                    alert(sprintf( __( '⚠️ Error al actualizar permiso en Google Calendar:\n%s', 'aura-suite' ), errMsg ));
                 }
             }).fail(function() {
                 $select.prop('disabled', false).val(prevRole);
                 $spinner.removeClass('is-active').hide();
-                showToast('Error de red al actualizar permiso en Google Calendar', 'error');
+                showToast( __( 'Error de red al actualizar permiso en Google Calendar', 'aura-suite' ), 'error');
             });
         });
 
@@ -5166,27 +5173,27 @@
                         if (query.length > 0) {
                             filterInfo.push('"' + query + '"');
                         }
-                        $activeBadge.text('Filtros: ' + filterInfo.join(' • ')).show();
+                        $activeBadge.text(__( 'Filtros:', 'aura-suite' ) + ' ' + filterInfo.join(' • ')).show();
                     } else {
                         $activeBadge.hide().empty();
                     }
 
                     if (contacts.length === 0) {
-                        $resultsCount.text('No se encontraron contactos coincidentes');
+                        $resultsCount.text( __( 'No se encontraron contactos coincidentes', 'aura-suite' ) );
                         $empty.show();
                         return;
                     }
 
-                    $resultsCount.text('Mostrando ' + contacts.length + ' contacto' + (contacts.length === 1 ? '' : 's') + ' con correo disponible');
+                    $resultsCount.text(sprintf( __( 'Mostrando %s contacto(s) con correo disponible', 'aura-suite' ), contacts.length ));
                     renderGCalContactsCards(contacts);
                     $grid.show();
                 } else {
-                    $resultsCount.text('Error al consultar contactos');
+                    $resultsCount.text( __( 'Error al consultar contactos', 'aura-suite' ) );
                     $empty.show();
                 }
             }).fail(function() {
                 $loading.hide();
-                $resultsCount.text('Error de red al consultar el catálogo');
+                $resultsCount.text( __( 'Error de red al consultar el catálogo', 'aura-suite' ) );
                 $empty.show();
             });
         }
@@ -5227,7 +5234,7 @@
                 var metaParts = [];
                 if (c.organization || c.company) metaParts.push(c.organization || c.company);
                 if (c.job_title) metaParts.push(c.job_title);
-                var metaText = metaParts.join(' • ') || 'Directorio Aura';
+                var metaText = metaParts.join(' • ') || __( 'Directorio Aura', 'aura-suite' );
 
                 // Selector / Chips de Correo
                 var emailsHtml = '';
@@ -5270,14 +5277,14 @@
 
                     // Mid: Emails
                     '<div style="display:flex;flex-direction:column;gap:4px;">' +
-                    '<span style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;">' + (c.emails.length > 1 ? 'Selecciona una cuenta de correo:' : 'Cuenta de correo:') + '</span>' +
+                    '<span style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;">' + escapeHtml(c.emails.length > 1 ? __( 'Selecciona una cuenta de correo:', 'aura-suite' ) : __( 'Cuenta de correo:', 'aura-suite' )) + '</span>' +
                     emailsHtml +
                     '</div>' +
 
                     // Botón Acción
                     '<div style="padding-top:4px;border-top:1px solid #f1f5f9;display:flex;justify-content:flex-end;">' +
                     '<button type="button" class="btn btn-indigo btn-sm btn-lift btn-gcal-open-confirm-share" data-contact-id="' + c.id + '" style="font-size:12.5px;padding:6px 14px;border-radius:8px;font-weight:600;width:100%;justify-content:center;">' +
-                    '➕ Conceder Acceso ➔' +
+                    escapeHtml( __( '➕ Conceder Acceso ➔', 'aura-suite' ) ) +
                     '</button>' +
                     '</div>' +
 
@@ -5303,7 +5310,7 @@
             }
 
             if (!selectedEmail) {
-                alert('Por favor selecciona una cuenta de correo para este contacto.');
+                alert( __( 'Por favor selecciona una cuenta de correo para este contacto.', 'aura-suite' ) );
                 return;
             }
 
@@ -5313,7 +5320,7 @@
             $('#gcal-confirm-name').text(contact.name);
             $('#gcal-confirm-email-display').text(selectedEmail);
 
-            var metaText = (contact.organization || contact.company || 'Directorio Aura');
+            var metaText = (contact.organization || contact.company || __( 'Directorio Aura', 'aura-suite' ));
             if (contact.job_title) metaText += ' • ' + contact.job_title;
             $('#gcal-confirm-meta').text(metaText);
 
@@ -5328,7 +5335,7 @@
             $('#gcal-confirm-role').val('reader');
             $('#gcal-confirm-notifications').prop('checked', true);
             $('#gcal-confirm-feedback').hide().empty();
-            $('#btn-submit-gcal-share').prop('disabled', false).html('🚀 Confirmar y Conceder Acceso');
+            $('#btn-submit-gcal-share').prop('disabled', false).html( __( '🚀 Confirmar y Conceder Acceso', 'aura-suite' ) );
 
             // Mostrar el panel de confirmación
             $('#gcal-share-confirmation-panel').fadeIn(180);
@@ -5351,11 +5358,11 @@
             var $btn = $('#btn-submit-gcal-share');
 
             if (!contactId || !email) {
-                $feedback.html('<div class="alert-card alert-warning" style="margin:0;padding:10px 14px;border-radius:8px;">⚠️ Contacto o correo electrónico inválido.</div>').show();
+                $feedback.html('<div class="alert-card alert-warning" style="margin:0;padding:10px 14px;border-radius:8px;">' + escapeHtml( __( '⚠️ Contacto o correo electrónico inválido.', 'aura-suite' ) ) + '</div>').show();
                 return;
             }
 
-            $btn.prop('disabled', true).html('⏳ Concediendo acceso en Google Calendar...');
+            $btn.prop('disabled', true).html( __( '⏳ Concediendo acceso en Google Calendar...', 'aura-suite' ) );
             $feedback.hide().empty();
 
             $.post(auraCalData.ajax_url, {
@@ -5366,9 +5373,9 @@
                 role: role,
                 send_notifications: sendNotifications
             }, function(res) {
-                $btn.prop('disabled', false).html('🚀 Confirmar y Conceder Acceso');
+                $btn.prop('disabled', false).html( __( '🚀 Confirmar y Conceder Acceso', 'aura-suite' ) );
                 if (res && res.success) {
-                    var successMsg = res.data && res.data.message ? res.data.message : '¡Acceso concedido exitosamente en Google Calendar!';
+                    var successMsg = res.data && res.data.message ? res.data.message : __( '¡Acceso concedido exitosamente en Google Calendar!', 'aura-suite' );
                     $feedback.html('<div class="alert-card alert-success" style="margin:0;padding:10px 14px;border-radius:8px;">✅ ' + escapeHtml(successMsg) + '</div>').show();
                     showToast(successMsg, 'success');
                     setTimeout(function() {
@@ -5382,9 +5389,9 @@
                     showToast(errMsg, 'error');
                 }
             }).fail(function() {
-                $btn.prop('disabled', false).html('🚀 Confirmar y Conceder Acceso');
-                $feedback.html('<div class="alert-card alert-danger" style="margin:0;padding:10px 14px;border-radius:8px;">⚠️ Error de conexión al comunicarse con el servidor.</div>').show();
-                showToast('Error de red al conceder acceso en Google Calendar', 'error');
+                $btn.prop('disabled', false).html( __( '🚀 Confirmar y Conceder Acceso', 'aura-suite' ) );
+                $feedback.html('<div class="alert-card alert-danger" style="margin:0;padding:10px 14px;border-radius:8px;">' + escapeHtml( __( '⚠️ Error de conexión al comunicarse con el servidor.', 'aura-suite' ) ) + '</div>').show();
+                showToast( __( 'Error de red al conceder acceso en Google Calendar', 'aura-suite' ), 'error');
             });
         });
 
@@ -5398,12 +5405,12 @@
 
             if (!ruleId) return;
 
-            var confirmMsg = '¿Deseas revocar de inmediato el acceso al calendario para "' + contactName + '" (' + email + ')?\n\nEl calendario desaparecerá de forma definitiva de su cuenta de Google Calendar.';
+            var confirmMsg = sprintf( __( '¿Deseas revocar de inmediato el acceso al calendario para "%1$s" (%2$s)?\n\nEl calendario desaparecerá de forma definitiva de su cuenta de Google Calendar.', 'aura-suite' ), contactName, email );
             if (!confirm(confirmMsg)) {
                 return;
             }
 
-            $btn.prop('disabled', true).text('Revocando...');
+            $btn.prop('disabled', true).text( __( 'Revocando...', 'aura-suite' ) );
 
             $.post(auraCalData.ajax_url, {
                 action: 'aura_cal_gcal_revoke_access',
@@ -5411,19 +5418,19 @@
                 rule_id: ruleId
             }, function(res) {
                 if (res && res.success) {
-                    showToast(res.data && res.data.message ? res.data.message : 'Acceso revocado correctamente.', 'success');
+                    showToast(res.data && res.data.message ? res.data.message : __( 'Acceso revocado correctamente.', 'aura-suite' ), 'success');
                     // Remover de caché y re-renderizar
                     gcalAclUsersCache = gcalAclUsersCache.filter(function(u) { return u.rule_id !== ruleId; });
                     updateGCalAclKpis(gcalAclUsersCache);
                     renderGCalAclTable();
                 } else {
                     var errMsg = res && res.data && res.data.message ? res.data.message : auraCalData.i18n.error;
-                    alert('Error al revocar acceso: ' + errMsg);
-                    $btn.prop('disabled', false).text('✕ Revocar');
+                    alert(sprintf( __( 'Error al revocar acceso: %s', 'aura-suite' ), errMsg ));
+                    $btn.prop('disabled', false).text( __( '✕ Revocar', 'aura-suite' ) );
                 }
             }).fail(function() {
-                alert('Error de red al intentar revocar acceso en Google Calendar.');
-                $btn.prop('disabled', false).text('✕ Revocar');
+                alert( __( 'Error de red al intentar revocar acceso en Google Calendar.', 'aura-suite' ) );
+                $btn.prop('disabled', false).text( __( '✕ Revocar', 'aura-suite' ) );
             });
         });
     }
@@ -5432,7 +5439,7 @@
         var $tbody = $('#tbody-gcal-acl-users');
         if (!$tbody.length) return;
 
-        $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 28px; color: var(--aura-text-muted);"><span class="spinner is-active" style="float: none; margin: 0 8px 0 0;"></span>Consultando reglas de Google Calendar...</td></tr>');
+        $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 28px; color: var(--aura-text-muted);"><span class="spinner is-active" style="float: none; margin: 0 8px 0 0;"></span>' + escapeHtml( __( 'Consultando reglas de Google Calendar...', 'aura-suite' ) ) + '</td></tr>');
 
         $.post(auraCalData.ajax_url, {
             action: 'aura_cal_gcal_get_shared_users',
@@ -5447,7 +5454,7 @@
                 $tbody.html('<tr><td colspan="5" style="text-align: center; padding: 24px; color: #ef4444; font-size: 13.5px;">⚠️ ' + escapeHtml(err) + '</td></tr>');
             }
         }).fail(function(xhr) {
-            var err = 'Error al consultar usuarios en Google Calendar.';
+            var err = __( 'Error al consultar usuarios en Google Calendar.', 'aura-suite' );
             if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
                 err = xhr.responseJSON.data.message;
             } else if (xhr && xhr.statusText) {
@@ -5467,7 +5474,7 @@
 
         // Añadir indicador verde en la barra superior si no existe
         if (!$('#aura-live-sync-indicator').length) {
-            var $indicator = $('<div id="aura-live-sync-indicator" title="' + escapeHtml(auraCalData.i18n.live_sync_active || 'Sincronización en vivo activa') + '" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--aura-text-secondary,#475569);padding:4px 10px;border-radius:20px;background:var(--aura-surface-alt,#f8fafc);border:1px solid var(--aura-border,#e2e8f0);margin-left:8px;"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,0.25);"></span> <span style="font-weight:600;">En vivo</span></div>');
+            var $indicator = $('<div id="aura-live-sync-indicator" title="' + escapeHtml(auraCalData.i18n.live_sync_active || __( 'Sincronización en vivo activa', 'aura-suite' )) + '" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--aura-text-secondary,#475569);padding:4px 10px;border-radius:20px;background:var(--aura-surface-alt,#f8fafc);border:1px solid var(--aura-border,#e2e8f0);margin-left:8px;"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,0.25);"></span> <span style="font-weight:600;">' + escapeHtml( __( 'En vivo', 'aura-suite' ) ) + '</span></div>');
             $('.adp-section-header, .aura-calendar-toolbar-right, .aura-cal-header-left, .tab-navigation').first().append($indicator);
         }
 
@@ -5485,8 +5492,8 @@
                         lastSyncVersion = res.data.current_version;
                         if (!hasModalOpen) {
                             calendar.refetchEvents();
-                            var byUser = res.data.updated_by ? ' por ' + res.data.updated_by : '';
-                            showToast('🔄 Calendario actualizado' + byUser, 'info');
+                            var byUser = res.data.updated_by ? sprintf( __( ' por %s', 'aura-suite' ), res.data.updated_by ) : '';
+                            showToast(__( '🔄 Calendario actualizado', 'aura-suite' ) + byUser, 'info');
                         }
                     } else if (res.data.current_version) {
                         lastSyncVersion = res.data.current_version;
@@ -5618,7 +5625,7 @@
     $(document).on('click', '.btn-export-all', function() {
         var format = $(this).data('format'); // 'json' | 'csv'
         var $btn   = $(this);
-        $btn.prop('disabled', true).text('⏳ Exportando...');
+        $btn.prop('disabled', true).text( __( '⏳ Exportando...', 'aura-suite' ) );
         $('#export-all-menu').removeClass('open');
 
         $.post(auraCalData.ajax_url, {
@@ -5627,20 +5634,20 @@
             program_id: '',           // vacío = todos
             nonce:      auraCalData.nonce
         }, function(res) {
-            $btn.prop('disabled', false).html(format === 'json' ? '📄 JSON <small style="opacity:.6;margin-left:auto;">Jerarquía completa</small>' : '📊 CSV <small style="opacity:.6;margin-left:auto;">Editable en Excel</small>');
+            $btn.prop('disabled', false).html(format === 'json' ? '📄 JSON <small style="opacity:.6;margin-left:auto;">' + escapeHtml( __( 'Jerarquía completa', 'aura-suite' ) ) + '</small>' : '📊 CSV <small style="opacity:.6;margin-left:auto;">' + escapeHtml( __( 'Editable en Excel', 'aura-suite' ) ) + '</small>');
             if (res && res.success) {
                 var ts   = new Date().toISOString().slice(0,10);
                 var name = 'aura-programas-' + ts + '.' + format;
                 var mime = (format === 'csv') ? 'text/csv' : 'application/json';
                 downloadBlob(res.data.content, name, mime);
-                showToast('✅ Exportación lista: ' + name, 'success');
+                showToast(sprintf( __( '✅ Exportación lista: %s', 'aura-suite' ), name ), 'success');
             } else {
-                var msg = (res && res.data && res.data.message) ? res.data.message : 'Error al exportar.';
+                var msg = (res && res.data && res.data.message) ? res.data.message : __( 'Error al exportar.', 'aura-suite' );
                 showToast(msg, 'error');
             }
         }).fail(function() {
             $btn.prop('disabled', false);
-            showToast('Error de conexión al exportar.', 'error');
+            showToast( __( 'Error de conexión al exportar.', 'aura-suite' ), 'error');
         });
     });
 
@@ -5666,14 +5673,14 @@
                 var name = 'aura-programa-' + programId + '-' + ts + '.' + format;
                 var mime = (format === 'csv') ? 'text/csv' : 'application/json';
                 downloadBlob(res.data.content, name, mime);
-                showToast('✅ Exportado: ' + name, 'success');
+                showToast(sprintf( __( '✅ Exportado: %s', 'aura-suite' ), name ), 'success');
             } else {
-                var msg = (res && res.data && res.data.message) ? res.data.message : 'Error al exportar.';
+                var msg = (res && res.data && res.data.message) ? res.data.message : __( 'Error al exportar.', 'aura-suite' );
                 showToast(msg, 'error');
             }
         }).fail(function() {
             $btn.prop('disabled', false).html(format === 'json' ? '📄 JSON' : '📊 CSV');
-            showToast('Error de conexión al exportar.', 'error');
+            showToast( __( 'Error de conexión al exportar.', 'aura-suite' ), 'error');
         });
     });
 
@@ -5702,13 +5709,13 @@
         $('#import-file-input').val('');
         $('#import-dropzone').removeClass('dragover').html(
             '<div style="font-size:36px;margin-bottom:10px;">📤</div>' +
-            '<p style="font-size:14px;font-weight:600;margin:0 0 4px;">Arrastra tu archivo JSON aquí</p>' +
-            '<p style="font-size:12px;color:var(--aura-text-muted);margin:0 0 14px;">o haz clic para seleccionar</p>' +
-            '<label for="import-file-input" class="btn btn-ghost" style="cursor:pointer;font-size:13px;">📂 Seleccionar archivo</label>' +
+            '<p style="font-size:14px;font-weight:600;margin:0 0 4px;">' + escapeHtml( __( 'Arrastra tu archivo JSON aquí', 'aura-suite' ) ) + '</p>' +
+            '<p style="font-size:12px;color:var(--aura-text-muted);margin:0 0 14px;">' + escapeHtml( __( 'o haz clic para seleccionar', 'aura-suite' ) ) + '</p>' +
+            '<label for="import-file-input" class="btn btn-ghost" style="cursor:pointer;font-size:13px;">' + escapeHtml( __( '📂 Seleccionar archivo', 'aura-suite' ) ) + '</label>' +
             '<input type="file" id="import-file-input" accept=".json" style="display:none;">'
         );
         $('#import-result').hide().empty();
-        $('#btn-do-import').prop('disabled', true).html('📤 Importar');
+        $('#btn-do-import').prop('disabled', true).html( __( '📤 Importar', 'aura-suite' ) );
         window._importFileData = null;
     }
 
@@ -5744,7 +5751,7 @@
 
     function readImportFile(file) {
         if (!file.name.endsWith('.json')) {
-            showToast('Solo se aceptan archivos .json', 'error');
+            showToast( __( 'Solo se aceptan archivos .json', 'aura-suite' ), 'error');
             return;
         }
         var reader = new FileReader();
@@ -5754,7 +5761,7 @@
             $('#import-dropzone').html(
                 '<div style="font-size:28px;margin-bottom:8px;">✅</div>' +
                 '<p style="font-weight:700;margin:0 0 2px;font-size:14px;">' + escapeHtml(file.name) + '</p>' +
-                '<p style="font-size:12px;color:var(--aura-text-secondary);margin:0;">' + sizeKb + ' KB · JSON listo para importar</p>'
+                '<p style="font-size:12px;color:var(--aura-text-secondary);margin:0;">' + sizeKb + ' ' + escapeHtml( __( 'KB · JSON listo para importar', 'aura-suite' ) ) + '</p>'
             );
             $('#btn-do-import').prop('disabled', false);
         };
@@ -5766,7 +5773,7 @@
         if (!window._importFileData) return;
         var $btn    = $(this);
         var skipEx  = $('#import-skip-existing').prop('checked') !== false;
-        $btn.prop('disabled', true).html('⏳ Importando...');
+        $btn.prop('disabled', true).html( __( '⏳ Importando...', 'aura-suite' ) );
 
         $.post(auraCalData.ajax_url, {
             action:        'aura_cal_import_programs',
@@ -5774,31 +5781,31 @@
             skip_existing: skipEx ? '1' : '0',
             nonce:         auraCalData.nonce
         }, function(res) {
-            $btn.prop('disabled', false).html('📤 Importar');
+            $btn.prop('disabled', false).html( __( '📤 Importar', 'aura-suite' ) );
             var $result = $('#import-result');
             if (res && res.success) {
                 var d   = res.data;
                 var msg = '<div style="text-align:center;">' +
                     '<div style="font-size:32px;margin-bottom:8px;">🎉</div>' +
-                    '<p style="font-weight:700;font-size:15px;margin:0 0 6px;">Importación completada</p>' +
+                    '<p style="font-weight:700;font-size:15px;margin:0 0 6px;">' + escapeHtml( __( 'Importación completada', 'aura-suite' ) ) + '</p>' +
                     '<div style="display:flex;gap:16px;justify-content:center;font-size:13px;flex-wrap:wrap;">' +
-                    '<span>✅ <strong>' + (d.created_programs || 0) + '</strong> programas nuevos</span>' +
-                    '<span>📚 <strong>' + (d.created_subjects || 0) + '</strong> materias nuevas</span>' +
-                    '<span>⏭️ <strong>' + (d.skipped || 0) + '</strong> omitidos</span>' +
+                    '<span>✅ <strong>' + (d.created_programs || 0) + '</strong> ' + escapeHtml( __( 'programas nuevos', 'aura-suite' ) ) + '</span>' +
+                    '<span>📚 <strong>' + (d.created_subjects || 0) + '</strong> ' + escapeHtml( __( 'materias nuevas', 'aura-suite' ) ) + '</span>' +
+                    '<span>⏭️ <strong>' + (d.skipped || 0) + '</strong> ' + escapeHtml( __( 'omitidos', 'aura-suite' ) ) + '</span>' +
                     '</div>' +
                     (d.errors && d.errors.length ? '<p style="color:#ef4444;font-size:12px;margin-top:8px;">' + d.errors.join('<br>') + '</p>' : '') +
                     '</div>';
                 $result.html(msg).show();
-                showToast('Importación completada. ' + (d.created_programs || 0) + ' programas, ' + (d.created_subjects || 0) + ' materias.', 'success');
+                showToast(sprintf( __( 'Importación completada. %1$s programas, %2$s materias.', 'aura-suite' ), (d.created_programs || 0), (d.created_subjects || 0) ), 'success');
                 setTimeout(function() { location.reload(); }, 2000);
             } else {
-                var errMsg = (res && res.data && res.data.message) ? res.data.message : 'Error al importar.';
+                var errMsg = (res && res.data && res.data.message) ? res.data.message : __( 'Error al importar.', 'aura-suite' );
                 $result.html('<p style="color:#ef4444;font-size:13px;text-align:center;">❌ ' + escapeHtml(errMsg) + '</p>').show();
                 showToast(errMsg, 'error');
             }
         }).fail(function() {
-            $btn.prop('disabled', false).html('📤 Importar');
-            showToast('Error de conexión al importar.', 'error');
+            $btn.prop('disabled', false).html( __( '📤 Importar', 'aura-suite' ) );
+            showToast( __( 'Error de conexión al importar.', 'aura-suite' ), 'error');
         });
     });
 
@@ -5867,7 +5874,7 @@
         }
 
         $('#aura-subj-cal-tip-name').text(subjName);
-        $('#aura-subj-cal-tip-prog').text(progName ? ('Programa: ' + progName) : '');
+        $('#aura-subj-cal-tip-prog').text(progName ? (__( 'Programa:', 'aura-suite' ) + ' ' + progName) : '');
 
         // Badges de metadatos en cabecera
         var metaBadgesHtml = '';
@@ -5875,42 +5882,42 @@
             metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--code">' + escapeHtmlSafe(subjCode) + '</span>';
         }
         if (subjHours > 0) {
-            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--hours">' + subjHours + ' hrs</span>';
+            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--hours">' + subjHours + ' ' + escapeHtmlSafe( __( 'hrs', 'aura-suite' ) ) + '</span>';
         }
-        var countText = events.length === 1 ? '1 fecha agendada' : (events.length + ' fechas agendadas');
-        metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--count">' + countText + '</span>';
+        var countText = events.length === 1 ? __( '1 fecha agendada', 'aura-suite' ) : sprintf( __( '%s fechas agendadas', 'aura-suite' ), events.length );
+        metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--count">' + escapeHtmlSafe(countText) + '</span>';
         $('#aura-subj-cal-tip-meta-badges').html(metaBadgesHtml);
 
-        $('#aura-subj-cal-tip-count').text(events.length === 1 ? '1 sesión' : (events.length + ' sesiones'));
+        $('#aura-subj-cal-tip-count').text(events.length === 1 ? __( '1 sesión', 'aura-suite' ) : sprintf( __( '%s sesiones', 'aura-suite' ), events.length ));
 
         // 2. Renderizado del listado de fechas sin iconos repetidos (Date Tiles)
         var itemsHtml = '';
         $.each(events, function(idx, ev) {
-            var monthStr   = ev.month_short || 'FECHA';
+            var monthStr   = ev.month_short || __( 'FECHA', 'aura-suite' );
             var dayNum     = ev.day_num || (idx + 1);
             var wdayStr    = ev.weekday_short || '';
             var timeStr    = ev.time_formatted || '';
-            var typeLbl    = ev.type_label || ev.event_type_label || 'Sesión de clase';
+            var typeLbl    = ev.type_label || ev.event_type_label || __( 'Sesión de clase', 'aura-suite' );
             var sessionTit = (ev.title && ev.title !== subjName) ? ev.title : typeLbl;
             var tileAccent = ev.color || subjColor;
 
             // Insignia de estado semántico
             var statusBadgeClass = 'status-scheduled';
-            var statusText = ev.status_label || 'Programado';
+            var statusText = ev.status_label || __( 'Programado', 'aura-suite' );
             if (ev.status === 'completed') {
                 statusBadgeClass = 'status-completed';
-                statusText = 'Completado';
+                statusText = __( 'Completado', 'aura-suite' );
             } else if (ev.status === 'cancelled') {
                 statusBadgeClass = 'status-cancelled';
-                statusText = 'Cancelado';
+                statusText = __( 'Cancelado', 'aura-suite' );
             }
 
             // Metadatos de aula / enlace
             var metaHtml = '';
             if (ev.location) {
-                metaHtml = '<div class="aura-tip-session-meta">Aula / Espacio: <strong>' + escapeHtmlSafe(ev.location) + '</strong></div>';
+                metaHtml = '<div class="aura-tip-session-meta">' + escapeHtmlSafe( __( 'Aula / Espacio:', 'aura-suite' ) ) + ' <strong>' + escapeHtmlSafe(ev.location) + '</strong></div>';
             } else if (ev.online_url) {
-                metaHtml = '<div class="aura-tip-session-meta"><a href="' + escapeHtmlSafe(ev.online_url) + '" target="_blank" style="color:var(--aura-primary,#4f46e5);text-decoration:none;font-weight:600;">Enlace de sesión virtual &rarr;</a></div>';
+                metaHtml = '<div class="aura-tip-session-meta"><a href="' + escapeHtmlSafe(ev.online_url) + '" target="_blank" style="color:var(--aura-primary,#4f46e5);text-decoration:none;font-weight:600;">' + escapeHtmlSafe( __( 'Enlace de sesión virtual', 'aura-suite' ) ) + ' &rarr;</a></div>';
             }
 
             // Generación de la URL al día del calendario (#/u/0/r/day/YYYY/M/D)
@@ -5959,9 +5966,9 @@
             itemsHtml += '  </div>';
 
             // Botón directo a la vista de ese día en el calendario
-            itemsHtml += '  <a href="' + escapeHtmlSafe(dayFullUrl) + '" class="aura-tip-goto-day-btn" data-date="' + dateIso + '" title="Ver día ' + dayFormatted + ' en el calendario" aria-label="Abrir ' + dayFormatted + ' en el calendario">';
+            itemsHtml += '  <a href="' + escapeHtmlSafe(dayFullUrl) + '" class="aura-tip-goto-day-btn" data-date="' + dateIso + '" title="' + escapeHtmlSafe( sprintf( __( 'Ver día %s en el calendario', 'aura-suite' ), dayFormatted ) ) + '" aria-label="' + escapeHtmlSafe( sprintf( __( 'Abrir %s en el calendario', 'aura-suite' ), dayFormatted ) ) + '">';
             itemsHtml += '    <svg class="aura-tip-goto-icon-cal" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
-            itemsHtml += '    <span class="aura-tip-goto-text">Ver día</span>';
+            itemsHtml += '    <span class="aura-tip-goto-text">' + escapeHtmlSafe( __( 'Ver día', 'aura-suite' ) ) + '</span>';
             itemsHtml += '    <svg class="aura-tip-goto-icon-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>';
             itemsHtml += '  </a>';
 
@@ -6096,7 +6103,7 @@
         }
 
         $('#aura-subj-desc-tip-name').text(subjName);
-        $('#aura-subj-desc-tip-prog').text(progName ? ('Programa: ' + progName) : '');
+        $('#aura-subj-desc-tip-prog').text(progName ? (__( 'Programa:', 'aura-suite' ) + ' ' + progName) : '');
 
         // Badges canónicos
         var metaBadgesHtml = '';
@@ -6104,20 +6111,20 @@
             metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--code">' + escapeHtmlSafe(subjCode) + '</span>';
         }
         if (subjHours > 0) {
-            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--hours">' + subjHours + ' hrs</span>';
+            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--hours">' + subjHours + ' ' + escapeHtmlSafe( __( 'hrs', 'aura-suite' ) ) + '</span>';
         }
         if (subjModule) {
-            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--module">Módulo: ' + escapeHtmlSafe(subjModule) + '</span>';
+            metaBadgesHtml += '<span class="aura-tip-badge aura-tip-badge--module">' + escapeHtmlSafe( __( 'Módulo:', 'aura-suite' ) ) + ' ' + escapeHtmlSafe(subjModule) + '</span>';
         }
         $('#aura-subj-desc-tip-meta-badges').html(metaBadgesHtml);
 
         // 2. Módulo & Contenido de la descripción
-        $('#aura-subj-desc-tip-module').text(subjModule ? ('Módulo: ' + subjModule) : '');
+        $('#aura-subj-desc-tip-module').text(subjModule ? (__( 'Módulo:', 'aura-suite' ) + ' ' + subjModule) : '');
 
         if (subjDesc && $.trim(subjDesc)) {
             $('#aura-subj-desc-tip-text').removeClass('aura-subj-desc-empty').html(escapeHtmlSafe($.trim(subjDesc)));
         } else {
-            $('#aura-subj-desc-tip-text').addClass('aura-subj-desc-empty').text('Esta materia no tiene una descripción pedagógica registrada.');
+            $('#aura-subj-desc-tip-text').addClass('aura-subj-desc-empty').text( __( 'Esta materia no tiene una descripción pedagógica registrada.', 'aura-suite' ) );
         }
 
         // 3. Posicionamiento inteligente
@@ -6204,7 +6211,7 @@
                 var dur = parseInt($el.data('duration-mins') || 120, 10);
                 var col = $el.data('color') || '#6366f1';
                 return {
-                    title: $el.data('title') || 'Clase',
+                    title: $el.data('title') || __( 'Clase', 'aura-suite' ),
                     duration: { minutes: dur },
                     backgroundColor: col,
                     borderColor: col,
@@ -6240,8 +6247,8 @@
             $list.html(
                 '<div style="text-align:center;padding:40px 20px;color:var(--aura-text-muted);">' +
                     '<div style="font-size:36px;margin-bottom:8px;">🎉</div>' +
-                    '<div style="font-weight:700;font-size:14px;color:var(--aura-text-primary);">¡No hay materias pendientes!</div>' +
-                    '<p style="font-size:12px;margin:6px 0 0;line-height:1.4;">Todas las materias coinciden con los filtros o ya tienen fechas agendadas en el calendario.</p>' +
+                    '<div style="font-weight:700;font-size:14px;color:var(--aura-text-primary);">' + escapeHtml( __( '¡No hay materias pendientes!', 'aura-suite' ) ) + '</div>' +
+                    '<p style="font-size:12px;margin:6px 0 0;line-height:1.4;">' + escapeHtml( __( 'Todas las materias coinciden con los filtros o ya tienen fechas agendadas en el calendario.', 'aura-suite' ) ) + '</p>' +
                 '</div>'
             );
             return;
@@ -6252,7 +6259,7 @@
             if (durMins <= 0) durMins = 120;
             var durHours = Math.round(durMins / 60 * 10) / 10;
             var color = sub.color || '#6366f1';
-            var teacherName = sub.teacher_name || (sub.teacher_id ? 'Docente asignado' : 'Sin docente predeterminado');
+            var teacherName = sub.teacher_name || (sub.teacher_id ? __( 'Docente asignado', 'aura-suite' ) : __( 'Sin docente predeterminado', 'aura-suite' ));
 
             var modBadge = sub.module_name
                 ? '<span style="font-size:10px;background:rgba(99,102,241,0.12);color:#4f46e5;font-weight:700;padding:1px 6px;border-radius:4px;">🏷️ ' + escapeHtml(sub.module_name) + '</span>'
@@ -6267,9 +6274,9 @@
                     'data-duration-mins="' + durMins + '" ' +
                     'data-teacher-id="' + (sub.teacher_id || 0) + '" ' +
                     'style="border-left-color:' + color + ';">' +
-                    '<div class="aura-drag-handle" title="Arrastrar al calendario">⠿</div>' +
+                    '<div class="aura-drag-handle" title="' + escapeHtml( __( 'Arrastrar al calendario', 'aura-suite' ) ) + '">⠿</div>' +
                     '<div class="aura-drag-info">' +
-                        '<div class="aura-drag-prog-badge">' + escapeHtml(sub.program_name || 'Programa General') + '</div>' +
+                        '<div class="aura-drag-prog-badge">' + escapeHtml(sub.program_name || __( 'Programa General', 'aura-suite' )) + '</div>' +
                         '<div class="aura-drag-title">' + escapeHtml(sub.name) + (sub.code ? ' <span style="font-weight:400;color:var(--aura-text-muted);">(' + escapeHtml(sub.code) + ')</span>' : '') + '</div>' +
                         '<div class="aura-drag-meta">' +
                             modBadge +
@@ -6277,7 +6284,7 @@
                             '<span style="font-size:10.5px;color:var(--aura-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">👨‍🏫 ' + escapeHtml(teacherName) + '</span>' +
                         '</div>' +
                     '</div>' +
-                    '<button type="button" class="btn-unassigned-card-schedule" title="Agendar fecha para esta materia">➕ Agendar</button>' +
+                    '<button type="button" class="btn-unassigned-card-schedule" title="' + escapeHtml( __( 'Agendar fecha para esta materia', 'aura-suite' ) ) + '">' + escapeHtml( __( '➕ Agendar', 'aura-suite' ) ) + '</button>' +
                 '</div>'
             );
 
@@ -6299,7 +6306,7 @@
                 var count = res.data.unassigned_count || 0;
                 
                 $('#unassigned-badge-count').text(count);
-                $('#aura-unassigned-count').text(count + (count === 1 ? ' materia' : ' materias'));
+                $('#aura-unassigned-count').text(count === 1 ? __( '1 materia', 'aura-suite' ) : sprintf( __( '%s materias', 'aura-suite' ), count ));
                 
                 if (count > 0) {
                     $('#unassigned-badge-count').show();

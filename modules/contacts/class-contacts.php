@@ -2215,7 +2215,7 @@ class Aura_Contacts {
             }
             self::update_contact( (int) $existing['id'], $update_data );
         } else {
-            $note = sprintf( 'Capturado desde formulario: "%s" (Envío #%d, IP: %s)', $form_title, $submission_id, $sub['ip_address'] ?? 'N/A' );
+            $note = sprintf( __( 'Capturado desde formulario: "%1$s" (Envío #%2$d, IP: %3$s)', 'aura-suite' ), $form_title, $submission_id, $sub['ip_address'] ?? 'N/A' );
             $contact_data = array(
                 'contact_type'  => 'person',
                 'first_name'    => $first_name,
@@ -2339,7 +2339,7 @@ class Aura_Contacts {
                 'updated' => $updated_count,
             ) );
         } catch ( \Throwable $e ) {
-            wp_send_json_error( array( 'message' => 'Error al procesar edición masiva: ' . $e->getMessage() ) );
+            wp_send_json_error( array( 'message' => sprintf( __( 'Error al procesar edición masiva: %s', 'aura-suite' ), $e->getMessage() ) ) );
         }
     }
 
@@ -2384,7 +2384,7 @@ class Aura_Contacts {
                 'force'   => $force,
             ) );
         } catch ( \Throwable $e ) {
-            wp_send_json_error( array( 'message' => 'Error al procesar la eliminación masiva: ' . $e->getMessage() ) );
+            wp_send_json_error( array( 'message' => sprintf( __( 'Error al procesar la eliminación masiva: %s', 'aura-suite' ), $e->getMessage() ) ) );
         }
     }
 

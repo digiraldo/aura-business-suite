@@ -384,7 +384,7 @@ class Aura_Financial_Audit {
         );
 
         $rows   = [];
-        $rows[] = implode( ',', [ 'ID', 'Fecha', 'Usuario', 'Acción', 'Entidad', 'ID Entidad', 'Valor Anterior', 'Valor Nuevo', 'IP', 'User Agent' ] );
+        $rows[] = implode( ',', [ 'ID', __( 'Fecha', 'aura-suite' ), __( 'Usuario', 'aura-suite' ), __( 'Acción', 'aura-suite' ), __( 'Entidad', 'aura-suite' ), __( 'ID Entidad', 'aura-suite' ), __( 'Valor Anterior', 'aura-suite' ), __( 'Valor Nuevo', 'aura-suite' ), 'IP', 'User Agent' ] );
 
         foreach ( $logs as $log ) {
             $rows[] = implode( ',', array_map( function ( $v ) {

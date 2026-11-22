@@ -193,12 +193,12 @@ class Aura_Calendar_Grades {
         }
 
         if ( ! $program_id || ! $subject_id || ! $student_id ) {
-            return new WP_Error( 'missing_keys', __( 'Programa, materia y estudiante son requeridos.', 'aura' ) );
+            return new WP_Error( 'missing_keys', __( 'Programa, materia y estudiante son requeridos.', 'aura-suite' ) );
         }
 
         $eval_title = sanitize_text_field( $data['eval_title'] ?? '' );
         if ( empty( $eval_title ) ) {
-            return new WP_Error( 'missing_title', __( 'El título de la evaluación es requerido.', 'aura' ) );
+            return new WP_Error( 'missing_title', __( 'El título de la evaluación es requerido.', 'aura-suite' ) );
         }
 
         $eval_type = in_array( $data['eval_type'] ?? '', [ 'partial', 'final', 'task', 'project', 'participation', 'other' ], true ) ? $data['eval_type'] : 'partial';
@@ -268,14 +268,14 @@ class Aura_Calendar_Grades {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $program_id = intval( $_POST['program_id'] ?? 0 );
         $subject_id = intval( $_POST['subject_id'] ?? 0 );
 
         if ( ! $program_id || ! $subject_id ) {
-            wp_send_json_error( [ 'message' => __( 'Parámetros inválidos.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Parámetros inválidos.', 'aura-suite' ) ] );
         }
 
         $matrix = self::get_grades( $program_id, $subject_id );
@@ -286,7 +286,7 @@ class Aura_Calendar_Grades {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para registrar notas.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes para registrar notas.', 'aura-suite' ) ] );
         }
 
         $res = self::save( $_POST );
@@ -295,7 +295,7 @@ class Aura_Calendar_Grades {
         }
 
         wp_send_json_success( [
-            'message'  => __( 'Calificación guardada con éxito.', 'aura' ),
+            'message'  => __( 'Calificación guardada con éxito.', 'aura-suite' ),
             'grade_id' => $res,
         ] );
     }
@@ -304,17 +304,17 @@ class Aura_Calendar_Grades {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_view_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_view_calendar' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'aura_students_view_all' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $grade = self::get_grade( $id );
         if ( ! $grade ) {
-            wp_send_json_error( [ 'message' => __( 'Calificación no encontrada.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Calificación no encontrada.', 'aura-suite' ) ] );
         }
 
         wp_send_json_success( [ 'grade' => $grade ] );
@@ -324,19 +324,19 @@ class Aura_Calendar_Grades {
         check_ajax_referer( 'aura_cal_nonce', 'nonce' );
 
         if ( ! current_user_can( 'aura_cal_delete_grades' ) && ! current_user_can( 'aura_cal_manage_grades' ) && ! current_user_can( 'aura_record_grades' ) && ! current_user_can( 'aura_students_courses_manage' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Permisos insuficientes.', 'aura-suite' ) ] );
         }
 
         $id = intval( $_POST['id'] ?? 0 );
         if ( ! $id ) {
-            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'ID inválido.', 'aura-suite' ) ] );
         }
 
         $ok = self::delete( $id );
         if ( $ok ) {
-            wp_send_json_success( [ 'message' => __( 'Calificación eliminada.', 'aura' ) ] );
+            wp_send_json_success( [ 'message' => __( 'Calificación eliminada.', 'aura-suite' ) ] );
         } else {
-            wp_send_json_error( [ 'message' => __( 'Error al eliminar la calificación.', 'aura' ) ] );
+            wp_send_json_error( [ 'message' => __( 'Error al eliminar la calificación.', 'aura-suite' ) ] );
         }
     }
 
@@ -356,7 +356,7 @@ class Aura_Calendar_Grades {
                 get_current_user_id()
             ) );
             if ( (int) $curr_st_id !== $student_id ) {
-                wp_send_json_error( [ 'message' => __( 'No autorizado.', 'aura' ) ] );
+                wp_send_json_error( [ 'message' => __( 'No autorizado.', 'aura-suite' ) ] );
             }
         }
 

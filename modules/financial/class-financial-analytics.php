@@ -553,7 +553,7 @@ class Aura_Financial_Analytics {
             'heatmap'    => $heatmap_matrix,
             'scatter'    => $scatter,
             'outliers'   => $outliers,
-            'dow_labels' => ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],
+            'dow_labels' => [__('Lun', 'aura-suite'), __('Mar', 'aura-suite'), __('Mié', 'aura-suite'), __('Jue', 'aura-suite'), __('Vie', 'aura-suite'), __('Sáb', 'aura-suite'), __('Dom', 'aura-suite')],
         ]);
     }
 
@@ -612,7 +612,7 @@ class Aura_Financial_Analytics {
             if (!isset($real[$id]) && !isset($budgets[$id])) {
                 continue;
             }
-            $name   = $real[$id]['name'] ?? ($budgets[$id]['name'] ?? 'Categoría ' . $id);
+            $name   = $real[$id]['name'] ?? ($budgets[$id]['name'] ?? sprintf(__('Categoría %s', 'aura-suite'), $id));
             $color  = $real[$id]['color'] ?? '#3498db';
             $budget = (float) ($budgets[$id]['amount'] ?? 0);
             $actual = (float) (($real[$id]['expense'] ?? 0) + ($real[$id]['income'] ?? 0));

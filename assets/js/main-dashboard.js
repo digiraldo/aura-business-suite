@@ -89,7 +89,7 @@
 
                 const timer = setInterval(function () {
                     count = Math.min(count + step, end);
-                    $el.text((isNeg ? '-' : '') + prefix + count.toLocaleString('es'));
+                    $el.text((isNeg ? '-' : '') + prefix + count.toLocaleString(document.documentElement.lang || 'es'));
                     if (count >= end) clearInterval(timer);
                 }, 30);
             });
@@ -130,7 +130,7 @@
                     // Pendientes de aprobación
                     if (typeof d.pending_approvals !== 'undefined') {
                         $('.adp-mini-stat').filter(function () {
-                            return $(this).find('.adp-mini-stat__label').text().indexOf('Pendiente') !== -1;
+                            return /pendiente|pending/i.test($(this).find('.adp-mini-stat__label').text());
                         }).find('.adp-mini-stat__value').text(d.pending_approvals);
                     }
 
@@ -140,8 +140,8 @@
                         const $expEl = $('.adp-module-card--finance .adp-mini-stat:eq(1) .adp-mini-stat__value');
                         const $penEl = $('.adp-module-card--finance .adp-mini-stat:eq(2) .adp-mini-stat__value');
 
-                        if (d.finance.income  !== undefined) $incEl.text('$' + Number(d.finance.income).toLocaleString('es'));
-                        if (d.finance.expense !== undefined) $expEl.text('$' + Number(d.finance.expense).toLocaleString('es'));
+                        if (d.finance.income  !== undefined) $incEl.text('$' + Number(d.finance.income).toLocaleString(document.documentElement.lang || 'es'));
+                        if (d.finance.expense !== undefined) $expEl.text('$' + Number(d.finance.expense).toLocaleString(document.documentElement.lang || 'es'));
                         if (d.finance.pending !== undefined) $penEl.text(d.finance.pending);
 
                         // Progress bar

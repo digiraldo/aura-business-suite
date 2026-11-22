@@ -240,14 +240,14 @@ class Aura_Library_Api {
         $id    = absint( $request->get_param( 'id' ) );
         $row   = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d AND deleted_at IS NULL", $id ) ); // phpcs:ignore
         if ( ! $row ) {
-            return new WP_REST_Response( [ 'message' => __( 'Libro no encontrado.', 'aura-business-suite' ) ], 404 );
+            return new WP_REST_Response( [ 'message' => __( 'Libro no encontrado.', 'aura-suite' ) ], 404 );
         }
         return new WP_REST_Response( $row );
     }
 
     public static function create_book( WP_REST_Request $request ): WP_REST_Response {
         if ( ! class_exists( 'Aura_Library_Books' ) ) {
-            return new WP_REST_Response( [ 'message' => __( 'Módulo no disponible.', 'aura-business-suite' ) ], 503 );
+            return new WP_REST_Response( [ 'message' => __( 'Módulo no disponible.', 'aura-suite' ) ], 503 );
         }
 
         // Reutilizar la lógica AJAX existente mapeando parámetros REST → $_POST
@@ -271,7 +271,7 @@ class Aura_Library_Api {
         $id    = absint( $request->get_param( 'id' ) );
         $row   = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM {$table} WHERE id = %d AND deleted_at IS NULL", $id ) ); // phpcs:ignore
         if ( ! $row ) {
-            return new WP_REST_Response( [ 'message' => __( 'Libro no encontrado.', 'aura-business-suite' ) ], 404 );
+            return new WP_REST_Response( [ 'message' => __( 'Libro no encontrado.', 'aura-suite' ) ], 404 );
         }
 
         $_POST = array_merge( $_POST, $request->get_params() );
@@ -295,7 +295,7 @@ class Aura_Library_Api {
         $id    = absint( $request->get_param( 'id' ) );
         $row   = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM {$table} WHERE id = %d AND deleted_at IS NULL", $id ) ); // phpcs:ignore
         if ( ! $row ) {
-            return new WP_REST_Response( [ 'message' => __( 'Libro no encontrado.', 'aura-business-suite' ) ], 404 );
+            return new WP_REST_Response( [ 'message' => __( 'Libro no encontrado.', 'aura-suite' ) ], 404 );
         }
 
         $wpdb->update(
@@ -380,7 +380,7 @@ class Aura_Library_Api {
              WHERE l.id = %d", $id
         ) );
         if ( ! $row ) {
-            return new WP_REST_Response( [ 'message' => __( 'Préstamo no encontrado.', 'aura-business-suite' ) ], 404 );
+            return new WP_REST_Response( [ 'message' => __( 'Préstamo no encontrado.', 'aura-suite' ) ], 404 );
         }
         return new WP_REST_Response( $row );
     }
@@ -497,7 +497,7 @@ class Aura_Library_Api {
 
     public static function get_dashboard( WP_REST_Request $request ): WP_REST_Response {
         if ( ! class_exists( 'Aura_Library_Reports' ) ) {
-            return new WP_REST_Response( [ 'message' => __( 'Módulo no disponible.', 'aura-business-suite' ) ], 503 );
+            return new WP_REST_Response( [ 'message' => __( 'Módulo no disponible.', 'aura-suite' ) ], 503 );
         }
         return new WP_REST_Response( Aura_Library_Reports::get_kpis() );
     }

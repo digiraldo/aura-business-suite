@@ -23,23 +23,23 @@ $pages = get_pages( [ 'post_status' => 'publish', 'sort_column' => 'post_title' 
 
 // Monedas disponibles
 $currencies = [
-    'USD' => 'USD — Dólar estadounidense ($)',
-    'EUR' => 'EUR — Euro (€)',
-    'COP' => 'COP — Peso colombiano ($)',
-    'MXN' => 'MXN — Peso mexicano ($)',
-    'ARS' => 'ARS — Peso argentino ($)',
-    'PEN' => 'PEN — Sol peruano (S/)',
-    'CLP' => 'CLP — Peso chileno ($)',
-    'BRL' => 'BRL — Real brasileño (R$)',
-    'VES' => 'VES — Bolívar venezolano (Bs.)',
-    'GTQ' => 'GTQ — Quetzal guatemalteco (Q)',
-    'HNL' => 'HNL — Lempira hondureño (L)',
-    'BOB' => 'BOB — Boliviano (Bs)',
-    'PYG' => 'PYG — Guaraní paraguayo (Gs)',
-    'UYU' => 'UYU — Peso uruguayo ($)',
-    'CRC' => 'CRC — Colón costarricense (₡)',
-    'DOP' => 'DOP — Peso dominicano (RD$)',
-    'NIO' => 'NIO — Córdoba nicaragüense (C$)',
+    'USD' => __( 'USD — Dólar estadounidense ($)', 'aura-suite' ),
+    'EUR' => __( 'EUR — Euro (€)', 'aura-suite' ),
+    'COP' => __( 'COP — Peso colombiano ($)', 'aura-suite' ),
+    'MXN' => __( 'MXN — Peso mexicano ($)', 'aura-suite' ),
+    'ARS' => __( 'ARS — Peso argentino ($)', 'aura-suite' ),
+    'PEN' => __( 'PEN — Sol peruano (S/)', 'aura-suite' ),
+    'CLP' => __( 'CLP — Peso chileno ($)', 'aura-suite' ),
+    'BRL' => __( 'BRL — Real brasileño (R$)', 'aura-suite' ),
+    'VES' => __( 'VES — Bolívar venezolano (Bs.)', 'aura-suite' ),
+    'GTQ' => __( 'GTQ — Quetzal guatemalteco (Q)', 'aura-suite' ),
+    'HNL' => __( 'HNL — Lempira hondureño (L)', 'aura-suite' ),
+    'BOB' => __( 'BOB — Boliviano (Bs)', 'aura-suite' ),
+    'PYG' => __( 'PYG — Guaraní paraguayo (Gs)', 'aura-suite' ),
+    'UYU' => __( 'UYU — Peso uruguayo ($)', 'aura-suite' ),
+    'CRC' => __( 'CRC — Colón costarricense (₡)', 'aura-suite' ),
+    'DOP' => __( 'DOP — Peso dominicano (RD$)', 'aura-suite' ),
+    'NIO' => __( 'NIO — Córdoba nicaragüense (C$)', 'aura-suite' ),
 ];
 
 $available_fields = Aura_Students_Settings::available_form_fields();
@@ -373,7 +373,7 @@ $active_fields    = is_array( $s['enrollment_form_fields'] ?? null ) ? $s['enrol
          ═══════════════════════════════════════════════════════════════ -->
     <div class="adp-footer" style="margin-top:20px;text-align:center;padding:12px 20px;font-size:12px;color:var(--aura-text-secondary, #64748b);">
         <p style="margin:0;">
-            Desarrollado con ❤️ por <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link" style="color:inherit;text-decoration:none;font-weight:600;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon" style="vertical-align:text-bottom;margin-right:4px;"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>DiGiraldo</a></strong> &nbsp;|&nbsp; © <?php echo esc_html( date( 'Y' ) ); ?> AURA Business Suite
+            <?php esc_html_e( 'Desarrollado con ❤️ por', 'aura-suite' ); ?> <strong><a href="https://github.com/digiraldo" target="_blank" rel="noopener noreferrer" class="adp-footer-link" style="color:inherit;text-decoration:none;font-weight:600;"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="adp-footer-link__icon" style="vertical-align:text-bottom;margin-right:4px;"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>DiGiraldo</a></strong> &nbsp;|&nbsp; © <?php echo esc_html( date( 'Y' ) ); ?> AURA Business Suite
         </p>
     </div>
 

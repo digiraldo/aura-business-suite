@@ -42,28 +42,28 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
 
     <?php
     Aura_UI::render_page_header( [
-        'title'    => __( 'Auditoría de Biblioteca', 'aura-business-suite' ),
-        'subtitle' => __( 'Historial y trazabilidad de eventos, préstamos, libros y configuraciones', 'aura-business-suite' ),
+        'title'    => __( 'Auditoría de Biblioteca', 'aura-suite' ),
+        'subtitle' => __( 'Historial y trazabilidad de eventos, préstamos, libros y configuraciones', 'aura-suite' ),
         'icon'     => 'dashicons-list-view',
         'badges'   => [
-            [ 'label' => __( 'Trazabilidad Completa', 'aura-business-suite' ), 'variant' => 'indigo' ],
+            [ 'label' => __( 'Trazabilidad Completa', 'aura-suite' ), 'variant' => 'indigo' ],
         ],
         'actions'  => [
             [
-                'label' => __( 'Exportar CSV', 'aura-business-suite' ),
+                'label' => __( 'Exportar CSV', 'aura-suite' ),
                 'url'   => '#',
                 'class' => 'btn btn-glass btn-sm btn-lift',
                 'icon'  => 'dashicons-download',
-                'attr'  => 'id="btn-audit-export" role="button" data-tooltip="' . esc_attr__( 'Descargar registro histórico en formato CSV', 'aura-business-suite' ) . '"',
+                'attr'  => 'id="btn-audit-export" role="button" data-tooltip="' . esc_attr__( 'Descargar registro histórico en formato CSV', 'aura-suite' ) . '"',
             ],
         ],
     ] );
     ?>
 
     <div class="aura-lib-audit-live-bar">
-        <span class="live-chip" data-tooltip="<?php esc_attr_e( 'Cada modificación de catálogo, préstamo, reserva o ajuste queda registrada en tiempo real', 'aura-business-suite' ); ?>">
+        <span class="live-chip" data-tooltip="<?php esc_attr_e( 'Cada modificación de catálogo, préstamo, reserva o ajuste queda registrada en tiempo real', 'aura-suite' ); ?>">
             <span class="pulse-dot"></span>
-            <?php esc_html_e( 'Registro de auditoría activo', 'aura-business-suite' ); ?>
+            <?php esc_html_e( 'Registro de auditoría activo', 'aura-suite' ); ?>
         </span>
         <span class="aura-lib-audit-count-pill" id="audit-total-pill" style="display:none;"></span>
     </div>
@@ -74,33 +74,33 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
             'id'      => 'kpi-audit-total',
             'icon'    => 'dashicons-shield',
             'value'   => number_format_i18n( $audit_stats['total'] ),
-            'label'   => __( 'Eventos Registrados', 'aura-business-suite' ),
+            'label'   => __( 'Eventos Registrados', 'aura-suite' ),
             'variant' => 'capital',
-            'tooltip' => __( 'Total acumulado de movimientos auditados en biblioteca', 'aura-business-suite' ),
+            'tooltip' => __( 'Total acumulado de movimientos auditados en biblioteca', 'aura-suite' ),
         ],
         [
             'id'      => 'kpi-audit-today',
             'icon'    => 'dashicons-clock',
             'value'   => number_format_i18n( $audit_stats['today'] ),
-            'label'   => __( 'Eventos Hoy', 'aura-business-suite' ),
+            'label'   => __( 'Eventos Hoy', 'aura-suite' ),
             'variant' => 'income',
-            'tooltip' => __( 'Operaciones registradas en el día actual', 'aura-business-suite' ),
+            'tooltip' => __( 'Operaciones registradas en el día actual', 'aura-suite' ),
         ],
         [
             'id'      => 'kpi-audit-week',
             'icon'    => 'dashicons-calendar-alt',
             'value'   => number_format_i18n( $audit_stats['week'] ),
-            'label'   => __( 'Últimos 7 Días', 'aura-business-suite' ),
+            'label'   => __( 'Últimos 7 Días', 'aura-suite' ),
             'variant' => 'balance',
-            'tooltip' => __( 'Actividad reciente registrada en la última semana', 'aura-business-suite' ),
+            'tooltip' => __( 'Actividad reciente registrada en la última semana', 'aura-suite' ),
         ],
         [
             'id'      => 'kpi-audit-actors',
             'icon'    => 'dashicons-admin-users',
             'value'   => number_format_i18n( $audit_stats['actors'] ),
-            'label'   => __( 'Usuarios Activos', 'aura-business-suite' ),
+            'label'   => __( 'Usuarios Activos', 'aura-suite' ),
             'variant' => 'investment',
-            'tooltip' => __( 'Cantidad de responsables distintos que ejecutaron cambios', 'aura-business-suite' ),
+            'tooltip' => __( 'Cantidad de responsables distintos que ejecutaron cambios', 'aura-suite' ),
         ],
     ] );
     ?>
@@ -113,13 +113,13 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
 
             <div class="aura-lib-audit-filter-col">
                 <label for="audit-filter-action">
-                    <?php esc_html_e( 'Acción', 'aura-business-suite' ); ?>
-                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Filtra por tipo de operación (alta de libro, préstamo, devolución, multa, ajuste)', 'aura-business-suite' ); ?>">?</span>
+                    <?php esc_html_e( 'Acción', 'aura-suite' ); ?>
+                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Filtra por tipo de operación (alta de libro, préstamo, devolución, multa, ajuste)', 'aura-suite' ); ?>">?</span>
                 </label>
                 <div class="input-group">
                     <span class="input-group-text" aria-hidden="true">⚡</span>
                     <select id="audit-filter-action" class="form-control">
-                        <option value=""><?php esc_html_e( '— Todas —', 'aura-business-suite' ); ?></option>
+                        <option value=""><?php esc_html_e( '— Todas —', 'aura-suite' ); ?></option>
                         <?php foreach ( $action_labels as $key => $label ) : ?>
                             <option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
                         <?php endforeach; ?>
@@ -129,25 +129,25 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
 
             <div class="aura-lib-audit-filter-col">
                 <label for="audit-filter-entity">
-                    <?php esc_html_e( 'Entidad', 'aura-business-suite' ); ?>
-                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Filtra por objeto afectado en la base de datos', 'aura-business-suite' ); ?>">?</span>
+                    <?php esc_html_e( 'Entidad', 'aura-suite' ); ?>
+                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Filtra por objeto afectado en la base de datos', 'aura-suite' ); ?>">?</span>
                 </label>
                 <div class="input-group">
                     <span class="input-group-text" aria-hidden="true">📦</span>
                     <select id="audit-filter-entity" class="form-control">
-                        <option value=""><?php esc_html_e( '— Todas —', 'aura-business-suite' ); ?></option>
-                        <option value="book"><?php esc_html_e( 'Libro', 'aura-business-suite' ); ?></option>
-                        <option value="loan"><?php esc_html_e( 'Préstamo', 'aura-business-suite' ); ?></option>
-                        <option value="reservation"><?php esc_html_e( 'Reserva', 'aura-business-suite' ); ?></option>
-                        <option value="settings"><?php esc_html_e( 'Configuración', 'aura-business-suite' ); ?></option>
+                        <option value=""><?php esc_html_e( '— Todas —', 'aura-suite' ); ?></option>
+                        <option value="book"><?php esc_html_e( 'Libro', 'aura-suite' ); ?></option>
+                        <option value="loan"><?php esc_html_e( 'Préstamo', 'aura-suite' ); ?></option>
+                        <option value="reservation"><?php esc_html_e( 'Reserva', 'aura-suite' ); ?></option>
+                        <option value="settings"><?php esc_html_e( 'Configuración', 'aura-suite' ); ?></option>
                     </select>
                 </div>
             </div>
 
             <div class="aura-lib-audit-filter-date">
                 <label for="audit-date-from">
-                    <?php esc_html_e( 'Desde', 'aura-business-suite' ); ?>
-                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha inicial del rango a consultar', 'aura-business-suite' ); ?>">?</span>
+                    <?php esc_html_e( 'Desde', 'aura-suite' ); ?>
+                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha inicial del rango a consultar', 'aura-suite' ); ?>">?</span>
                 </label>
                 <div class="input-group">
                     <span class="input-group-text" aria-hidden="true">📅</span>
@@ -157,8 +157,8 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
 
             <div class="aura-lib-audit-filter-date">
                 <label for="audit-date-to">
-                    <?php esc_html_e( 'Hasta', 'aura-business-suite' ); ?>
-                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha final del rango a consultar', 'aura-business-suite' ); ?>">?</span>
+                    <?php esc_html_e( 'Hasta', 'aura-suite' ); ?>
+                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha final del rango a consultar', 'aura-suite' ); ?>">?</span>
                 </label>
                 <div class="input-group">
                     <span class="input-group-text" aria-hidden="true">📅</span>
@@ -168,25 +168,25 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
 
             <div class="aura-lib-audit-filter-search">
                 <label for="audit-search">
-                    <?php esc_html_e( 'Buscar', 'aura-business-suite' ); ?>
-                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Busca por nombre de usuario, código de acción o tipo de entidad', 'aura-business-suite' ); ?>">?</span>
+                    <?php esc_html_e( 'Buscar', 'aura-suite' ); ?>
+                    <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Busca por nombre de usuario, código de acción o tipo de entidad', 'aura-suite' ); ?>">?</span>
                 </label>
                 <div class="input-group">
                     <span class="input-group-text" aria-hidden="true">🔍</span>
-                    <input type="search" id="audit-search" placeholder="<?php esc_attr_e( 'Acción, entidad, usuario…', 'aura-business-suite' ); ?>"
+                    <input type="search" id="audit-search" placeholder="<?php esc_attr_e( 'Acción, entidad, usuario…', 'aura-suite' ); ?>"
                            class="form-control">
                 </div>
             </div>
 
             <div class="aura-lib-audit-filter-actions">
                 <button type="button" id="btn-audit-filter" class="btn btn-shimmer btn-indigo btn-lift"
-                        data-tooltip="<?php esc_attr_e( 'Aplicar los filtros activos al log de auditoría', 'aura-business-suite' ); ?>">
+                        data-tooltip="<?php esc_attr_e( 'Aplicar los filtros activos al log de auditoría', 'aura-suite' ); ?>">
                     <span class="dashicons dashicons-filter"></span>
-                    <span><?php esc_html_e( 'Filtrar', 'aura-business-suite' ); ?></span>
+                    <span><?php esc_html_e( 'Filtrar', 'aura-suite' ); ?></span>
                 </button>
                 <button type="button" id="btn-audit-reset" class="btn btn-glass btn-lift"
-                        data-tooltip="<?php esc_attr_e( 'Restablecer todos los filtros y recargar la lista', 'aura-business-suite' ); ?>">
-                    <span><?php esc_html_e( 'Limpiar', 'aura-business-suite' ); ?></span>
+                        data-tooltip="<?php esc_attr_e( 'Restablecer todos los filtros y recargar la lista', 'aura-suite' ); ?>">
+                    <span><?php esc_html_e( 'Limpiar', 'aura-suite' ); ?></span>
                 </button>
             </div>
         </div>
@@ -197,13 +197,13 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
         <table class="aura-table display responsive aura-lib-audit-table aura-lib-responsive-table" style="width:100%;">
             <thead>
                 <tr>
-                    <th style="width:155px;"><?php esc_html_e( 'Fecha', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha y hora exacta en que ocurrió la operación', 'aura-business-suite' ); ?>">?</span></th>
-                    <th style="width:170px;"><?php esc_html_e( 'Usuario', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Usuario del sistema que ejecutó la acción', 'aura-business-suite' ); ?>">?</span></th>
-                    <th style="width:175px;"><?php esc_html_e( 'Acción', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Tipo de evento auditado con indicador cromático', 'aura-business-suite' ); ?>">?</span></th>
-                    <th style="width:120px;"><?php esc_html_e( 'Entidad', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Objeto o tabla afectada (Libro, Préstamo, Reserva, Configuración)', 'aura-business-suite' ); ?>">?</span></th>
-                    <th style="width:76px;text-align:center;"><?php esc_html_e( 'ID', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Identificador primario del registro afectado', 'aura-business-suite' ); ?>">?</span></th>
-                    <th><?php esc_html_e( 'Detalle (cambios)', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Comparativa antes/después; pasa el cursor o haz clic para inspeccionar todos los campos', 'aura-business-suite' ); ?>">?</span></th>
-                    <th style="width:130px;"><?php esc_html_e( 'IP', 'aura-business-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Dirección IP de origen de la petición', 'aura-business-suite' ); ?>">?</span></th>
+                    <th style="width:155px;"><?php esc_html_e( 'Fecha', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Fecha y hora exacta en que ocurrió la operación', 'aura-suite' ); ?>">?</span></th>
+                    <th style="width:170px;"><?php esc_html_e( 'Usuario', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Usuario del sistema que ejecutó la acción', 'aura-suite' ); ?>">?</span></th>
+                    <th style="width:175px;"><?php esc_html_e( 'Acción', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Tipo de evento auditado con indicador cromático', 'aura-suite' ); ?>">?</span></th>
+                    <th style="width:120px;"><?php esc_html_e( 'Entidad', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Objeto o tabla afectada (Libro, Préstamo, Reserva, Configuración)', 'aura-suite' ); ?>">?</span></th>
+                    <th style="width:76px;text-align:center;"><?php esc_html_e( 'ID', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Identificador primario del registro afectado', 'aura-suite' ); ?>">?</span></th>
+                    <th><?php esc_html_e( 'Detalle (cambios)', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Comparativa antes/después; pasa el cursor o haz clic para inspeccionar todos los campos', 'aura-suite' ); ?>">?</span></th>
+                    <th style="width:130px;"><?php esc_html_e( 'IP', 'aura-suite' ); ?> <span class="aura-help-icon" tabindex="0" data-tooltip="<?php esc_attr_e( 'Dirección IP de origen de la petición', 'aura-suite' ); ?>">?</span></th>
                 </tr>
             </thead>
             <tbody id="audit-tbody">
@@ -220,9 +220,9 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
             <span id="audit-page-info" class="aura-lib-audit-page-info"></span>
             <div class="aura-lib-page-btns">
                 <button type="button" id="audit-prev" class="btn btn-glass btn-sm btn-lift"
-                        data-tooltip="<?php esc_attr_e( 'Página anterior de eventos', 'aura-business-suite' ); ?>">‹</button>
+                        data-tooltip="<?php esc_attr_e( 'Página anterior de eventos', 'aura-suite' ); ?>">‹</button>
                 <button type="button" id="audit-next" class="btn btn-glass btn-sm btn-lift"
-                        data-tooltip="<?php esc_attr_e( 'Página siguiente de eventos', 'aura-business-suite' ); ?>">›</button>
+                        data-tooltip="<?php esc_attr_e( 'Página siguiente de eventos', 'aura-suite' ); ?>">›</button>
             </div>
         </div>
     </div>
@@ -240,13 +240,13 @@ if ( $wpdb->get_var( "SHOW TABLES LIKE '$audit_table'" ) === $audit_table ) {
 <div id="audit-diff-modal" class="aura-modal-overlay aura-lib-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="audit-diff-modal-title" aria-hidden="true">
     <div class="aura-modal-container aura-lib-audit-modal-container">
         <div class="aura-modal-header">
-            <h2 id="audit-diff-modal-title">🔎 <?php esc_html_e( 'Detalle Completo del Evento Auditado', 'aura-business-suite' ); ?></h2>
-            <button type="button" class="aura-modal-close aura-lib-audit-modal-close" aria-label="<?php esc_attr_e( 'Cerrar', 'aura-business-suite' ); ?>">✕</button>
+            <h2 id="audit-diff-modal-title">🔎 <?php esc_html_e( 'Detalle Completo del Evento Auditado', 'aura-suite' ); ?></h2>
+            <button type="button" class="aura-modal-close aura-lib-audit-modal-close" aria-label="<?php esc_attr_e( 'Cerrar', 'aura-suite' ); ?>">✕</button>
         </div>
         <div class="aura-modal-body" id="audit-diff-modal-body"></div>
         <div class="aura-modal-footer">
             <button type="button" class="btn btn-glass btn-lift aura-modal-close aura-lib-audit-modal-close">
-                <?php esc_html_e( 'Cerrar', 'aura-business-suite' ); ?>
+                <?php esc_html_e( 'Cerrar', 'aura-suite' ); ?>
             </button>
         </div>
     </div>
@@ -592,6 +592,57 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
     var currPage = 1;
     var lastRows = [];
 
+    var L = <?php echo wp_json_encode( [
+        'error'             => __( 'Error', 'aura-suite' ),
+        'entityBook'        => __( 'Libro', 'aura-suite' ),
+        'entityBookTip'     => __( 'Registro bibliográfico del catálogo', 'aura-suite' ),
+        'entityLoan'        => __( 'Préstamo', 'aura-suite' ),
+        'entityLoanTip'     => __( 'Operación de préstamo o devolución', 'aura-suite' ),
+        'entityRes'         => __( 'Reserva', 'aura-suite' ),
+        'entityResTip'      => __( 'Cola o asignación de reserva', 'aura-suite' ),
+        'entitySettings'    => __( 'Configuración', 'aura-suite' ),
+        'entitySettingsTip' => __( 'Parámetros globales de biblioteca', 'aura-suite' ),
+        'entityDefaultTip'  => __( 'Entidad afectada', 'aura-suite' ),
+        'dateTime'          => __( 'Fecha / Hora', 'aura-suite' ),
+        'responsible'       => __( 'Responsable', 'aura-suite' ),
+        'entityId'          => __( 'Entidad / ID', 'aura-suite' ),
+        'ipAddress'         => __( 'Dirección IP', 'aura-suite' ),
+        'openCompModal'     => __( 'Abrir en Modal Comparativo', 'aura-suite' ),
+        'colDate'           => __( 'Fecha', 'aura-suite' ),
+        'colUser'           => __( 'Usuario', 'aura-suite' ),
+        'colAction'         => __( 'Acción', 'aura-suite' ),
+        'colEntity'         => __( 'Entidad', 'aura-suite' ),
+        'colId'             => __( 'ID', 'aura-suite' ),
+        'colDetail'         => __( 'Detalle', 'aura-suite' ),
+        'colIp'             => __( 'IP', 'aura-suite' ),
+        'expandEventTip'    => __( 'Desplegar todos los detalles del evento', 'aura-suite' ),
+        'registeredPrefix'  => __( 'Registrado:', 'aura-suite' ),
+        'respPrefix'        => __( 'Responsable:', 'aura-suite' ),
+        'eventCodePrefix'   => __( 'Código de evento:', 'aura-suite' ),
+        'entityIdPrefix'    => __( 'ID de entidad #', 'aura-suite' ),
+        'sourceIpPrefix'    => __( 'Dirección IP origen:', 'aura-suite' ),
+        'notRecorded'       => __( 'No registrada', 'aura-suite' ),
+        'fullSummary'       => __( 'Resumen completo', 'aura-suite' ),
+        'fieldsWord'        => __( 'campos', 'aura-suite' ),
+        'moreFields'        => __( 'campos más', 'aura-suite' ),
+        'clickToViewAll'    => __( 'Haz clic para ver todo', 'aura-suite' ),
+        'noPayloadTip'      => __( 'Sin payload de cambios asociado', 'aura-suite' ),
+        'moreWord'          => __( 'más', 'aura-suite' ),
+        'openDetailCompTip' => __( 'Abrir comparativa detallada de todos los campos', 'aura-suite' ),
+        'viewDetail'        => __( 'Ver detalle', 'aura-suite' ),
+        'noDiffTip'         => __( 'Sin variaciones detectadas entre antes y después', 'aura-suite' ),
+        'noChanges'         => __( 'Sin cambios', 'aura-suite' ),
+        'openFullCompTip'   => __( 'Abrir comparativa completa antes / después', 'aura-suite' ),
+        'dateLabel'         => __( 'Fecha:', 'aura-suite' ),
+        'userLabel'         => __( 'Usuario:', 'aura-suite' ),
+        'actionLabel'       => __( 'Acción:', 'aura-suite' ),
+        'entityIdLabel'     => __( 'Entidad / ID:', 'aura-suite' ),
+        'fieldCol'          => __( 'Campo', 'aura-suite' ),
+        'prevValCol'        => __( 'Valor Anterior', 'aura-suite' ),
+        'newValCol'         => __( 'Valor Nuevo', 'aura-suite' ),
+        'noExtraFields'     => __( 'No se registraron campos adicionales para este evento.', 'aura-suite' ),
+    ] ); ?>;
+
     var actionBadgeClasses = {
         create_book:        'badge-emerald',
         update_book:        'badge-blue',
@@ -606,10 +657,10 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
     };
 
     var entityMeta = {
-        book:        { label: 'Libro',         cls: 'badge-indigo', tip: 'Registro bibliográfico del catálogo' },
-        loan:        { label: 'Préstamo',      cls: 'badge-violet', tip: 'Operación de préstamo o devolución' },
-        reservation: { label: 'Reserva',       cls: 'badge-cyan',   tip: 'Cola o asignación de reserva' },
-        settings:    { label: 'Configuración', cls: 'badge-slate',  tip: 'Parámetros globales de biblioteca' }
+        book:        { label: L.entityBook,     cls: 'badge-indigo', tip: L.entityBookTip },
+        loan:        { label: L.entityLoan,     cls: 'badge-violet', tip: L.entityLoanTip },
+        reservation: { label: L.entityRes,      cls: 'badge-cyan',   tip: L.entityResTip },
+        settings:    { label: L.entitySettings, cls: 'badge-slate',  tip: L.entitySettingsTip }
     };
 
     var escHtml = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
@@ -630,13 +681,13 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
             search        : $('#audit-search').val(),
             _t            : Date.now()
         }, function(res){
-            if (!res.success){ $tbody.html('<tr><td colspan="7">' + escHtml(res.data && res.data.message ? res.data.message : 'Error') + '</td></tr>'); return; }
+            if (!res.success){ $tbody.html('<tr><td colspan="7">' + escHtml(res.data && res.data.message ? res.data.message : L.error) + '</td></tr>'); return; }
             lastRows = res.data.rows || [];
             renderTable(lastRows);
             renderPagination(res.data.page, res.data.total_pages, res.data.total);
-            $('#audit-total-pill').text(res.data.total + ' <?php echo esc_js( __( 'eventos coincidentes', 'aura-business-suite' ) ); ?>').show();
+            $('#audit-total-pill').text(res.data.total + ' <?php echo esc_js( __( 'eventos coincidentes', 'aura-suite' ) ); ?>').show();
         }).fail(function(){
-            $tbody.html('<tr><td colspan="7"><?php echo esc_js( __( 'Error de conexión.', 'aura-business-suite' ) ); ?></td></tr>');
+            $tbody.html('<tr><td colspan="7"><?php echo esc_js( __( 'Error de conexión.', 'aura-suite' ) ); ?></td></tr>');
         });
     }
 
@@ -659,40 +710,40 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
         }
         return '<div class="aura-child-card aura-lib-child-card">' +
             '<div class="aura-child-meta-grid">' +
-            '<div class="aura-child-meta-item"><span>Fecha / Hora</span><strong>' + escHtml(r.created_at) + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Responsable</span><strong>' + escHtml(r.user_name) + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Entidad / ID</span><strong>' + escHtml(eInfo.label) + ' #' + parseInt(r.entity_id, 10) + '</strong></div>' +
-            '<div class="aura-child-meta-item"><span>Dirección IP</span><strong><code>' + escHtml(r.ip_address || '—') + '</code></strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(L.dateTime) + '</span><strong>' + escHtml(r.created_at) + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(L.responsible) + '</span><strong>' + escHtml(r.user_name) + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(L.entityId) + '</span><strong>' + escHtml(eInfo.label) + ' #' + parseInt(r.entity_id, 10) + '</strong></div>' +
+            '<div class="aura-child-meta-item"><span>' + escHtml(L.ipAddress) + '</span><strong><code>' + escHtml(r.ip_address || '—') + '</code></strong></div>' +
             '</div>' +
             diffBlock +
-            '<div style="margin-top:8px;"><button type="button" class="btn btn-glass btn-sm aura-audit-inspect-btn" data-idx="' + i + '">🔎 Abrir en Modal Comparativo</button></div>' +
+            '<div style="margin-top:8px;"><button type="button" class="btn btn-glass btn-sm aura-audit-inspect-btn" data-idx="' + i + '">🔎 ' + escHtml(L.openCompModal) + '</button></div>' +
             '</div>';
     }
 
     function renderTable(rows){
         if (!rows || !rows.length){
-            $('#audit-tbody').html('<tr><td colspan="7" style="text-align:center;padding:24px;"><?php echo esc_js( __( 'No hay registros con los filtros aplicados.', 'aura-business-suite' ) ); ?></td></tr>');
+            $('#audit-tbody').html('<tr><td colspan="7" style="text-align:center;padding:24px;"><?php echo esc_js( __( 'No hay registros con los filtros aplicados.', 'aura-suite' ) ); ?></td></tr>');
             return;
         }
         var html = '';
         $.each(rows, function(i, r){
             var badgeCls = actionBadgeClasses[r.action] || 'badge-slate';
-            var eInfo    = entityMeta[r.entity_type] || { label: r.entity_type, cls: 'badge-slate', tip: 'Entidad afectada' };
+            var eInfo    = entityMeta[r.entity_type] || { label: r.entity_type, cls: 'badge-slate', tip: L.entityDefaultTip };
             var initials = (r.user_name || '?').trim().charAt(0).toUpperCase();
             var diffHtml = buildDiff(r.old_data, r.new_data, i);
 
             html += '<tr class="aura-parent-row" data-row-idx="' + i + '">';
-            html += '<td data-label="Fecha" class="aura-lib-audit-meta aura-lib-col-expand">' +
+            html += '<td data-label="' + escHtml(L.colDate) + '" class="aura-lib-audit-meta aura-lib-col-expand">' +
                 '<div class="aura-id-toggle-wrap">' +
-                '<button type="button" class="aura-lib-row-toggle aura-audit-row-toggle" data-idx="' + i + '" aria-expanded="false" data-tooltip="Desplegar todos los detalles del evento"><span class="dashicons dashicons-plus-alt2"></span></button>' +
-                '<span data-tooltip="Registrado: ' + escHtml(r.created_at) + '">' + escHtml(r.created_at) + '</span>' +
+                '<button type="button" class="aura-lib-row-toggle aura-audit-row-toggle" data-idx="' + i + '" aria-expanded="false" data-tooltip="' + escHtml(L.expandEventTip) + '"><span class="dashicons dashicons-plus-alt2"></span></button>' +
+                '<span data-tooltip="' + escHtml(L.registeredPrefix) + ' ' + escHtml(r.created_at) + '">' + escHtml(r.created_at) + '</span>' +
                 '</div></td>';
-            html += '<td data-label="Usuario" class="aura-lib-col-user"><div class="aura-lib-audit-user-cell" data-tooltip="Responsable: ' + escHtml(r.user_name) + '"><span class="aura-lib-audit-avatar">' + escHtml(initials) + '</span><span>' + escHtml(r.user_name) + '</span></div></td>';
-            html += '<td data-label="Acción" class="aura-lib-col-action"><span class="badge ' + badgeCls + '" data-tooltip="Código de evento: ' + escHtml(r.action) + '">' + escHtml(r.action_label) + '</span></td>';
-            html += '<td data-label="Entidad" class="aura-lib-col-secondary"><span class="badge ' + eInfo.cls + '" data-tooltip="' + escHtml(eInfo.tip) + '">' + escHtml(eInfo.label) + '</span></td>';
-            html += '<td data-label="ID" class="aura-lib-col-secondary" style="text-align:center;"><code data-tooltip="ID de entidad #' + parseInt(r.entity_id, 10) + '">#' + parseInt(r.entity_id, 10) + '</code></td>';
-            html += '<td data-label="Detalle" class="aura-lib-col-secondary">' + diffHtml + '</td>';
-            html += '<td data-label="IP" class="aura-lib-audit-muted aura-lib-col-secondary"><span data-tooltip="Dirección IP origen: ' + escHtml(r.ip_address || 'No registrada') + '">' + escHtml(r.ip_address || '—') + '</span></td>';
+            html += '<td data-label="' + escHtml(L.colUser) + '" class="aura-lib-col-user"><div class="aura-lib-audit-user-cell" data-tooltip="' + escHtml(L.respPrefix) + ' ' + escHtml(r.user_name) + '"><span class="aura-lib-audit-avatar">' + escHtml(initials) + '</span><span>' + escHtml(r.user_name) + '</span></div></td>';
+            html += '<td data-label="' + escHtml(L.colAction) + '" class="aura-lib-col-action"><span class="badge ' + badgeCls + '" data-tooltip="' + escHtml(L.eventCodePrefix) + ' ' + escHtml(r.action) + '">' + escHtml(r.action_label) + '</span></td>';
+            html += '<td data-label="' + escHtml(L.colEntity) + '" class="aura-lib-col-secondary"><span class="badge ' + eInfo.cls + '" data-tooltip="' + escHtml(eInfo.tip) + '">' + escHtml(eInfo.label) + '</span></td>';
+            html += '<td data-label="' + escHtml(L.colId) + '" class="aura-lib-col-secondary" style="text-align:center;"><code data-tooltip="' + escHtml(L.entityIdPrefix) + parseInt(r.entity_id, 10) + '">#' + parseInt(r.entity_id, 10) + '</code></td>';
+            html += '<td data-label="' + escHtml(L.colDetail) + '" class="aura-lib-col-secondary">' + diffHtml + '</td>';
+            html += '<td data-label="' + escHtml(L.colIp) + '" class="aura-lib-audit-muted aura-lib-col-secondary"><span data-tooltip="' + escHtml(L.sourceIpPrefix) + ' ' + escHtml(r.ip_address || L.notRecorded) + '">' + escHtml(r.ip_address || '—') + '</span></td>';
             html += '</tr>';
             html += '<tr class="aura-child-row" id="audit-child-row-' + i + '"><td colspan="7">' + buildAuditChildCard(r, i) + '</td></tr>';
         });
@@ -700,7 +751,7 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
     }
 
     function buildDiffTip(keys, oldData, newData){
-        var tip = '<div class="aura-tip-card"><div class="aura-tip-card-header"><div class="aura-tip-info"><div class="aura-tip-title">🔎 Resumen completo (' + keys.length + ' campos)</div></div></div><div class="aura-tip-card-body">';
+        var tip = '<div class="aura-tip-card"><div class="aura-tip-card-header"><div class="aura-tip-info"><div class="aura-tip-title">🔎 ' + escHtml(L.fullSummary) + ' (' + keys.length + ' ' + escHtml(L.fieldsWord) + ')</div></div></div><div class="aura-tip-card-body">';
         keys.slice(0, 10).forEach(function(k){
             var vOld = oldData && oldData[k] !== undefined && oldData[k] !== null ? String(oldData[k]) : '';
             var vNew = newData && newData[k] !== undefined && newData[k] !== null ? String(newData[k]) : '';
@@ -708,14 +759,14 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
             tip += '<div class="aura-tip-row"><span>' + escHtml(k) + ':</span><strong>' + escHtml(valTxt) + '</strong></div>';
         });
         if (keys.length > 10) {
-            tip += '<div class="aura-tip-row"><span>+ ' + (keys.length - 10) + ' campos más</span><strong>Haz clic para ver todo</strong></div>';
+            tip += '<div class="aura-tip-row"><span>+ ' + (keys.length - 10) + ' ' + escHtml(L.moreFields) + '</span><strong>' + escHtml(L.clickToViewAll) + '</strong></div>';
         }
         tip += '</div></div>';
         return encodeURIComponent(tip);
     }
 
     function buildDiff(oldData, newData, rowIdx){
-        if (!newData && !oldData) return '<span class="aura-lib-audit-muted" data-tooltip="Sin payload de cambios asociado">—</span>';
+        if (!newData && !oldData) return '<span class="aura-lib-audit-muted" data-tooltip="' + escHtml(L.noPayloadTip) + '">—</span>';
         if (newData && !oldData) {
             var keys = Object.keys(newData);
             if (keys.length === 0) return '<span class="aura-lib-audit-muted">—</span>';
@@ -723,22 +774,22 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
             keys.slice(0, 4).forEach(function(k){
                 out += '<div><span class="diff-key">' + escHtml(k) + ':</span> <span class="diff-new">' + escHtml(String(newData[k])) + '</span></div>';
             });
-            if (keys.length > 4) out += '<div class="aura-lib-audit-muted">…+' + (keys.length - 4) + ' más</div>';
-            out += '</div><button type="button" class="btn btn-glass btn-sm aura-audit-inspect-btn" data-idx="' + rowIdx + '" data-tooltip="Abrir comparativa detallada de todos los campos">🔎 Ver detalle</button></div>';
+            if (keys.length > 4) out += '<div class="aura-lib-audit-muted">…+' + (keys.length - 4) + ' ' + escHtml(L.moreWord) + '</div>';
+            out += '</div><button type="button" class="btn btn-glass btn-sm aura-audit-inspect-btn" data-idx="' + rowIdx + '" data-tooltip="' + escHtml(L.openDetailCompTip) + '">🔎 ' + escHtml(L.viewDetail) + '</button></div>';
             return out;
         }
         if (oldData && newData) {
             var allKeys = Object.keys(Object.assign({}, oldData, newData));
             var changed = allKeys.filter(function(k){ return String(oldData[k] || '') !== String(newData[k] || ''); });
-            if (!changed.length) return '<span class="aura-lib-audit-muted" data-tooltip="Sin variaciones detectadas entre antes y después">Sin cambios</span>';
+            if (!changed.length) return '<span class="aura-lib-audit-muted" data-tooltip="' + escHtml(L.noDiffTip) + '">' + escHtml(L.noChanges) + '</span>';
             var out = '<div class="audit-diff-wrap"><div class="audit-diff" data-aura-tooltip="' + buildDiffTip(changed, oldData, newData) + '">';
             changed.slice(0, 4).forEach(function(k){
                 out += '<div><span class="diff-key">' + escHtml(k) + ':</span> ';
                 out += '<span class="diff-old">' + escHtml(String(oldData[k] || '—')) + '</span> → ';
                 out += '<span class="diff-new">' + escHtml(String(newData[k] || '—')) + '</span></div>';
             });
-            if (changed.length > 4) out += '<div class="aura-lib-audit-muted">…+' + (changed.length - 4) + ' más</div>';
-            out += '</div><button type="button" class="btn btn-glass btn-sm aura-audit-inspect-btn" data-idx="' + rowIdx + '" data-tooltip="Abrir comparativa completa antes / después">🔎 Ver detalle (' + changed.length + ')</button></div>';
+            if (changed.length > 4) out += '<div class="aura-lib-audit-muted">…+' + (changed.length - 4) + ' ' + escHtml(L.moreWord) + '</div>';
+            out += '</div><button type="button" class="btn btn-glass btn-sm aura-audit-inspect-btn" data-idx="' + rowIdx + '" data-tooltip="' + escHtml(L.openFullCompTip) + '">🔎 ' + escHtml(L.viewDetail) + ' (' + changed.length + ')</button></div>';
             return out;
         }
         return '<span class="aura-lib-audit-muted">—</span>';
@@ -748,17 +799,17 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
         if (!row) return;
         var badgeCls = actionBadgeClasses[row.action] || 'badge-slate';
         var html = '<div class="aura-audit-modal-meta">' +
-            '<div><strong>Fecha:</strong><br>' + escHtml(row.created_at) + '</div>' +
-            '<div><strong>Usuario:</strong><br>' + escHtml(row.user_name) + '</div>' +
-            '<div><strong>Acción:</strong><br><span class="badge ' + badgeCls + '">' + escHtml(row.action_label) + '</span></div>' +
-            '<div><strong>Entidad / ID:</strong><br><code>' + escHtml(row.entity_type) + ' #' + parseInt(row.entity_id, 10) + '</code></div>' +
+            '<div><strong>' + escHtml(L.dateLabel) + '</strong><br>' + escHtml(row.created_at) + '</div>' +
+            '<div><strong>' + escHtml(L.userLabel) + '</strong><br>' + escHtml(row.user_name) + '</div>' +
+            '<div><strong>' + escHtml(L.actionLabel) + '</strong><br><span class="badge ' + badgeCls + '">' + escHtml(row.action_label) + '</span></div>' +
+            '<div><strong>' + escHtml(L.entityIdLabel) + '</strong><br><code>' + escHtml(row.entity_type) + ' #' + parseInt(row.entity_id, 10) + '</code></div>' +
             '</div>';
 
         var oldD = row.old_data || {};
         var newD = row.new_data || {};
         var keys = Object.keys(Object.assign({}, oldD, newD));
         if (keys.length) {
-            html += '<table class="aura-audit-modal-table"><thead><tr><th>Campo</th><th>Valor Anterior</th><th>Valor Nuevo</th></tr></thead><tbody>';
+            html += '<table class="aura-audit-modal-table"><thead><tr><th>' + escHtml(L.fieldCol) + '</th><th>' + escHtml(L.prevValCol) + '</th><th>' + escHtml(L.newValCol) + '</th></tr></thead><tbody>';
             keys.forEach(function(k){
                 var vOld = oldD[k] !== undefined && oldD[k] !== null ? String(oldD[k]) : '—';
                 var vNew = newD[k] !== undefined && newD[k] !== null ? String(newD[k]) : '—';
@@ -769,7 +820,7 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
             });
             html += '</tbody></table>';
         } else {
-            html += '<p class="aura-lib-audit-muted">No se registraron campos adicionales para este evento.</p>';
+            html += '<p class="aura-lib-audit-muted">' + escHtml(L.noExtraFields) + '</p>';
         }
 
         $('#audit-diff-modal-body').html(html);
@@ -791,8 +842,8 @@ html[data-wp-dark-mode-scheme="dark"] .aura-child-meta-item strong,
     function renderPagination(page, totalPages, total){
         if (totalPages <= 1){ $('#audit-pagination').hide(); return; }
         $('#audit-page-info').text(
-            '<?php echo esc_js( __( 'Pág.', 'aura-business-suite' ) ); ?> ' + page + ' / ' + totalPages +
-            ' — ' + total + ' <?php echo esc_js( __( 'registros', 'aura-business-suite' ) ); ?>'
+            '<?php echo esc_js( __( 'Pág.', 'aura-suite' ) ); ?> ' + page + ' / ' + totalPages +
+            ' — ' + total + ' <?php echo esc_js( __( 'registros', 'aura-suite' ) ); ?>'
         );
         $('#audit-prev').prop('disabled', page <= 1);
         $('#audit-next').prop('disabled', page >= totalPages);
